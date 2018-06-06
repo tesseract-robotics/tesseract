@@ -16,7 +16,7 @@
   <build_export_depend>roscpp</build_export_depend>
   <exec_depend>roscpp</exec_depend>
   <depend>geometric_shapes</depend>
-  <depend>trajopt_ext</depend>
+  <depend>tesseract_ext</depend>
   <depend>eigen_conversions</depend>
   <depend>pluginlib</depend>
   <depend>tesseract_core</depend>
