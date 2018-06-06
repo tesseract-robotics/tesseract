@@ -14,7 +14,6 @@
   <depend>urdf</depend>
   <depend>srdfdom</depend>
   <depend>geometric_shapes</depend>
-  <depend>trajopt_ext</depend>
   <depend>kdl_parser</depend>
   <depend>eigen_conversions</depend>
   <depend>tesseract_core</depend>

@@ -4,7 +4,7 @@ project(tesseract_collision)
 add_compile_options(-std=c++11 -Wall -Wextra)
 
 find_package(catkin REQUIRED COMPONENTS
-  trajopt_ext
+  tesseract_ext
   roscpp
   geometric_shapes
   tesseract_core
@@ -22,7 +22,7 @@ catkin_package(
     ${PROJECT_NAME}_bullet
     ${OCTOMAP_LIBRARIES}
   CATKIN_DEPENDS
-    trajopt_ext
+    tesseract_ext
     roscpp
     geometric_shapes
     tesseract_core
