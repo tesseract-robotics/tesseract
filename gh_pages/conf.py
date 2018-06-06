@@ -107,7 +107,7 @@ html_theme_path = ['_themes',]
 html_static_path = ['_static']
 
 html_context = {
-    "wiki_title": "ROS Qt Creator Plug-in",
+    "wiki_title": "Tesseract",
     "display_github": True,
     "github_user": "ros-industrial-consortium",
     "github_repo": "tesseract",
@@ -120,5 +120,5 @@ html_context = {
 }
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'ROSQtCreatorPluginDocumentation'
+htmlhelp_basename = 'TesseractDocumentation'
 
