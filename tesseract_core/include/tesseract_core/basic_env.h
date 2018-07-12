@@ -30,6 +30,8 @@
 #include <string>
 #include <tesseract_core/basic_types.h>
 #include <tesseract_core/basic_kin.h>
+#include <tesseract_core/discrete_contact_manager_base.h>
+#include <tesseract_core/continuous_contact_manager_base.h>
 
 namespace tesseract
 {
@@ -233,120 +235,64 @@ public:
   /** @brief Set the active function for determining if two links are allowed to be in collision */
   virtual void setIsContactAllowedFn(IsContactAllowedFn fn) = 0;
 
-  /**
-   * @brief Set the active contact request information
-   *
-   * This request information is used by calcDistancesDiscrete(ContactResultMap &contacts) and
-   * calcCollisionsDiscrete(ContactResultMap &contacts) only.
-   *
-   * @param req ContactRequest information
-   */
-  virtual void setContactRequest(const ContactRequest& req) = 0;
+  /** @brief Get a copy of the environments discrete contact manager */
+  virtual DiscreteContactManagerBasePtr getDiscreteContactManager() const = 0;
 
-  /**
-   * @brief Should return distance information for all links in list req.link_names (Discrete Check)
-   *
-   * This check uses the internal state and the the request set by setContactRequest. This is primarily
-   * to be used for collision monitoring. Use setState to set the state of the environment.
-   *
-   * @param contacts A list of contacts results.
-   */
-  virtual void calcDistancesDiscrete(ContactResultMap& contacts) = 0;
-
-  /**
-   * @brief calcDistances Should return distance information for all links in list req.link_names (Discrete Check)
-   * @param req   The distance request information.
-   * @param joint_names Name of joints
-   * @param joint_values The values corresponding to the joint name
-   * @param contacts A list of contacts results.
-   */
-  virtual void calcDistancesDiscrete(const ContactRequest& req,
-                                     const std::vector<std::string>& joint_names,
-                                     const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                     ContactResultMap& contacts) const = 0;
-
-  /**
-   * @brief calcDistances Should return distance information for all links in list link_names (Continuous Check)
-   * @param req   The distance request information.
-   * @param joint_names Name of joints
-   * @param joint_values1 The starting joint values corresponding to the joint names
-   * @param joint_values2 The ending joint values corresponding to the joint names
-   * @param contacts A list of contacts results.
-   */
-  virtual void calcDistancesContinuous(const ContactRequest& req,
-                                       const std::vector<std::string>& joint_names,
-                                       const Eigen::Ref<const Eigen::VectorXd>& joint_values1,
-                                       const Eigen::Ref<const Eigen::VectorXd>& joint_values2,
-                                       ContactResultMap& contacts) const = 0;
-
-  /**
-   * @brief Should return collision information for all links in list req.link_names (Discrete Check)
-   *
-   * This check uses the internal state and the the request set by setContactRequest. This is primarily
-   * to be used for collision monitoring. Use setState to set the state of the environment.
-   *
-   * @param contacts A list of contact results.
-   */
-  virtual void calcCollisionsDiscrete(ContactResultMap& contacts) = 0;
-
-  /**
-   * @brief calcCollisions Should return collision information for all links in list link_names (Discrete Check)
-   * @param req   The distance request information.
-   * @param joint_names Name of joints
-   * @param joint_values The values corresponding to the joint name
-   * @param contacts A list of contacts results.
-   */
-  virtual void calcCollisionsDiscrete(const ContactRequest& req,
-                                      const std::vector<std::string>& joint_names,
-                                      const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                      ContactResultMap& contacts) const = 0;
-
-  /**
-   * @brief calcCollisions Should return collision information for all links in list link_names (Continuous Check)
-   * @param req   The distance request information.
-   * @param joint_names Name of joints
-   * @param joint_values1 The starting joint values corresponding to the joint names
-   * @param joint_values2 The ending joint values corresponding to the joint names
-   * @param contacts A list of contacts results.
-   */
-  virtual void calcCollisionsContinuous(const ContactRequest& req,
-                                        const std::vector<std::string>& joint_names,
-                                        const Eigen::Ref<const Eigen::VectorXd>& joint_values1,
-                                        const Eigen::Ref<const Eigen::VectorXd>& joint_values2,
-                                        ContactResultMap& contacts) const = 0;
-
-  /**
-   * @brief continuousCollisionCheckTrajectory Should perform a continuous collision check over the trajectory
-   * and return every collision contact
-   * @param joint_names JointNames corresponding to the values in traj (must be in same order)
-   * @param link_names Name of the links to calculate collision data for.
-   * @param traj The joint values at each time step
-   * @param collisions The return collision data.
-   * @return True if collision was found, otherwise false.
-   */
-  virtual bool continuousCollisionCheckTrajectory(const std::vector<std::string>& joint_names,
-                                                  const std::vector<std::string>& link_names,
-                                                  const Eigen::Ref<const TrajArray>& traj,
-                                                  ContactResultMap& contacts) const = 0;
-
-  /**
-   * @brief continuousCollisionCheckTrajectory Should perform a continuous collision check over the trajectory
-   * and stop on first collision.
-   * @param joint_names JointNames corresponding to the values in traj (must be in same order)
-   * @param link_names Name of the links to calculate collision data for.
-   * @param traj The joint values at each time step
-   * @param collision The return collision data.
-   * @return True if collision was found, otherwise false.
-   */
-  virtual bool continuousCollisionCheckTrajectory(const std::vector<std::string>& joint_names,
-                                                  const std::vector<std::string>& link_names,
-                                                  const Eigen::Ref<const TrajArray>& traj,
-                                                  ContactResult& contacts) const = 0;
+  /** @brief Get a copy of the environments continuous contact manager */
+  virtual ContinuousContactManagerBasePtr getContinuousContactManager() const = 0;
 
 };  // class BasicEnvBase
 
 typedef std::shared_ptr<BasicEnv> BasicEnvPtr;
 typedef std::shared_ptr<const BasicEnv> BasicEnvConstPtr;
+
+/**
+ * @brief continuousCollisionCheckTrajectory Should perform a continuous collision check over the trajectory
+ * and stop on first collision.
+ * @param manager A continuous contact manager
+ * @param env The environment
+ * @param joint_names JointNames corresponding to the values in traj (must be in same order)
+ * @param link_names Name of the links to calculate collision data for.
+ * @param traj The joint values at each time step
+ * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
+ * @param first_only Indicates if it should return on first contact
+ * @return True if collision was found, otherwise false.
+ */
+inline bool continuousCollisionCheckTrajectory(ContinuousContactManagerBase &manager,
+                                               const BasicEnv &env,
+                                               const BasicKin &kin,
+                                               const Eigen::Ref<const TrajArray>& traj,
+                                               std::vector<ContactResultMap>& contacts,
+                                               bool first_only = true)
+{
+  bool found = false;
+  const std::vector<std::string>& joint_names = kin.getJointNames();
+  const std::vector<std::string>& link_names = kin.getLinkNames();
+
+  contacts.reserve(traj.rows() - 1);
+  for (int iStep = 0; iStep < traj.rows() - 1; ++iStep)
+  {
+    ContactResultMap collisions;
+
+    EnvStatePtr state0 = env.getState(joint_names, traj.row(iStep));
+    EnvStatePtr state1 = env.getState(joint_names, traj.row(iStep + 1));
+
+    for (const auto& link_name : link_names)
+      manager.setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
+
+    manager.contactTest(collisions);
+
+    if (collisions.size() > 0)
+      found = true;
+
+    contacts.push_back(collisions);
+
+    if (found && first_only)
+      break;
+  }
+
+  return found;
+}
 
 }  // namespace tesseract
 

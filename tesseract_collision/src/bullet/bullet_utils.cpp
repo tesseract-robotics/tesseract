@@ -126,7 +126,7 @@ btCollisionShape* createShapePrimitive(const shapes::ShapeConstPtr& geom,
             convexTrimesh.setMargin(BULLET_MARGIN);  // margin: hull padding
             // Create a hull shape to approximate Trimesh
 
-            bool useShapeHull;
+            bool useShapeHull = false;
 
             btShapeHull shapeHull(&convexTrimesh);
             if (mesh->vertex_count >= 50)
@@ -160,6 +160,9 @@ btCollisionShape* createShapePrimitive(const shapes::ShapeConstPtr& geom,
                     btVector3(mesh->vertices[3 * i], mesh->vertices[3 * i + 1], mesh->vertices[3 * i + 2]));
               }
             }
+
+            subshape->optimizeConvexHull();
+
             return subshape;
           }
           case CollisionObjectType::UseShapeType:
@@ -302,4 +305,5 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
   , m_data(data)
 {
 }
+
 }

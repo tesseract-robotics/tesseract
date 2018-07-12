@@ -63,17 +63,25 @@ bool TrajoptPlanner::solve(PlannerResponse&)
   opt.optimize();
   ROS_INFO("planning time: %.3f", (ros::Time::now() - tStart).toSec());
 
-  tesseract::ContactResultMap collisions;
-  const std::vector<std::string>& joint_names = prob->GetKin()->getJointNames();
-  const std::vector<std::string>& link_names = prob->GetKin()->getLinkNames();
+  std::vector<tesseract::ContactResultMap> collisions;
+  ContinuousContactManagerBasePtr manager = prob->GetEnv()->getContinuousContactManager();
 
   collisions.clear();
-  request_.env->continuousCollisionCheckTrajectory(
-      joint_names, link_names, getTraj(opt.x(), prob->GetVars()), collisions);
+  bool found = tesseract::continuousCollisionCheckTrajectory(*manager,
+                                                             *prob->GetEnv(),
+                                                             *prob->GetKin(),
+                                                             getTraj(opt.x(),prob->GetVars()),
+                                                             collisions);
 
-  tesseract::ContactResultVector collision_vector;
-  tesseract::moveContactResultsMapToContactResultsVector(collisions, collision_vector);
-  ROS_INFO("Final trajectory number of continuous collisions: %lui\n", collision_vector.size());
+  if (found)
+  {
+    ROS_INFO("Final trajectory is in collision");
+  }
+  else
+  {
+    ROS_INFO("Final trajectory is collision free");
+  }
+
   return true;
 }
 

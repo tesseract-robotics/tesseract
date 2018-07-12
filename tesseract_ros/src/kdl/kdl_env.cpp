@@ -52,7 +52,8 @@
 #include <limits>
 #include <octomap/octomap.h>
 
-const std::string DEFAULT_CONTACT_CHECKER_PLUGIN_PARAM = "tesseract_collision/BulletContactChecker";
+const std::string DEFAULT_DISCRETE_CONTACT_MANAGER_PLUGIN_PARAM = "tesseract_collision/BulletDiscreteBVHManager";
+const std::string DEFAULT_CONTINUOUS_CONTACT_MANAGER_PLUGIN_PARAM = "tesseract_collision/BulletCastBVHManager";
 
 namespace tesseract
 {
@@ -157,100 +158,10 @@ bool KDLEnv::init(urdf::ModelInterfaceConstSharedPtr urdf_model, srdf::ModelCons
   getActiveLinkNamesRecursive(active_link_names_, urdf_model_->getRoot(), false);
 
   // load the default contact checker plugin
-  loadContactCheckerPlugin(DEFAULT_CONTACT_CHECKER_PLUGIN_PARAM);
+  loadDiscreteContactManagerPlugin(DEFAULT_DISCRETE_CONTACT_MANAGER_PLUGIN_PARAM);
+  loadContinuousContactManagerPlugin(DEFAULT_CONTINUOUS_CONTACT_MANAGER_PLUGIN_PARAM);
 
   return initialized_;
-}
-
-void KDLEnv::calcDistancesDiscrete(const ContactRequest& req,
-                                   const std::vector<std::string>& joint_names,
-                                   const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                   ContactResultMap& contacts) const
-{
-  EnvStateConstPtr state = getState(joint_names, joint_values);
-  contact_checker_->calcDistancesDiscrete(req, state->transforms, contacts);
-}
-
-void KDLEnv::calcDistancesContinuous(const ContactRequest& req,
-                                     const std::vector<std::string>& joint_names,
-                                     const Eigen::Ref<const Eigen::VectorXd>& joint_values1,
-                                     const Eigen::Ref<const Eigen::VectorXd>& joint_values2,
-                                     ContactResultMap& contacts) const
-{
-  EnvStateConstPtr state1 = getState(joint_names, joint_values1);
-  EnvStateConstPtr state2 = getState(joint_names, joint_values2);
-
-  contact_checker_->calcDistancesContinuous(req, state1->transforms, state2->transforms, contacts);
-}
-
-void KDLEnv::calcCollisionsDiscrete(const ContactRequest& req,
-                                    const std::vector<std::string>& joint_names,
-                                    const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                    ContactResultMap& contacts) const
-{
-  calcDistancesDiscrete(req, joint_names, joint_values, contacts);
-}
-
-void KDLEnv::calcCollisionsContinuous(const ContactRequest& req,
-                                      const std::vector<std::string>& joint_names,
-                                      const Eigen::Ref<const Eigen::VectorXd>& joint_values1,
-                                      const Eigen::Ref<const Eigen::VectorXd>& joint_values2,
-                                      ContactResultMap& contacts) const
-{
-  calcDistancesContinuous(req, joint_names, joint_values1, joint_values2, contacts);
-}
-
-bool KDLEnv::continuousCollisionCheckTrajectory(const std::vector<std::string>& joint_names,
-                                                const std::vector<std::string>& link_names,
-                                                const Eigen::Ref<const TrajArray>& traj,
-                                                ContactResult& contacts) const
-{
-  ContactRequest req;
-  req.type = ContactRequestType::SINGLE;
-  req.link_names = link_names;
-  req.contact_distance = 0.0;
-  req.isContactAllowed = std::bind(&tesseract::AllowedCollisionMatrix::isCollisionAllowed,
-                                   allowed_collision_matrix_.get(),
-                                   std::placeholders::_1,
-                                   std::placeholders::_2);
-
-  ContactResultMap collisions;
-  for (int iStep = 0; iStep < traj.rows() - 1; ++iStep)
-  {
-    calcCollisionsContinuous(req, joint_names, traj.row(iStep), traj.row(iStep + 1), collisions);
-    if (collisions.size() > 0)
-    {
-      contacts = collisions.begin()->second.front();
-      return true;
-    }
-  }
-  return false;
-}
-
-bool KDLEnv::continuousCollisionCheckTrajectory(const std::vector<std::string>& joint_names,
-                                                const std::vector<std::string>& link_names,
-                                                const Eigen::Ref<const TrajArray>& traj,
-                                                ContactResultMap& contacts) const
-{
-  ContactRequest req;
-  req.type = ContactRequestType::ALL;
-  req.link_names = link_names;
-  req.contact_distance = 0.0;
-  req.isContactAllowed = std::bind(&tesseract::AllowedCollisionMatrix::isCollisionAllowed,
-                                   allowed_collision_matrix_.get(),
-                                   std::placeholders::_1,
-                                   std::placeholders::_2);
-
-  bool found = false;
-  for (int iStep = 0; iStep < traj.rows() - 1; ++iStep)
-  {
-    calcCollisionsContinuous(req, joint_names, traj.row(iStep), traj.row(iStep + 1), contacts);
-    if (contacts.size() > 0)
-    {
-      found = true;
-    }
-  }
-  return found;
 }
 
 void KDLEnv::setState(const std::unordered_map<std::string, double>& joints)
@@ -267,7 +178,8 @@ void KDLEnv::setState(const std::unordered_map<std::string, double>& joints)
 
   calculateTransforms(
       current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Affine3d::Identity());
-  contact_checker_->setObjectsTransform(current_state_->transforms);
+  discrete_manager_->setCollisionObjectsTransform(current_state_->transforms);
+  continuous_manager_->setCollisionObjectsTransform(current_state_->transforms);
 }
 
 void KDLEnv::setState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values)
@@ -282,7 +194,8 @@ void KDLEnv::setState(const std::vector<std::string>& joint_names, const std::ve
 
   calculateTransforms(
       current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Affine3d::Identity());
-  contact_checker_->setObjectsTransform(current_state_->transforms);
+  discrete_manager_->setCollisionObjectsTransform(current_state_->transforms);
+  continuous_manager_->setCollisionObjectsTransform(current_state_->transforms);
 }
 
 void KDLEnv::setState(const std::vector<std::string>& joint_names,
@@ -298,7 +211,8 @@ void KDLEnv::setState(const std::vector<std::string>& joint_names,
 
   calculateTransforms(
       current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Affine3d::Identity());
-  contact_checker_->setObjectsTransform(current_state_->transforms);
+  discrete_manager_->setCollisionObjectsTransform(current_state_->transforms);
+  continuous_manager_->setCollisionObjectsTransform(current_state_->transforms);
 }
 
 EnvStatePtr KDLEnv::getState(const std::unordered_map<std::string, double>& joints) const
@@ -462,19 +376,27 @@ void KDLEnv::addAttachableObject(const AttachableObjectConstPtr attachable_objec
   const auto object = attachable_objects_.find(attachable_object->name);
   if (object != attachable_objects_.end())
   {
-    contact_checker_->removeObject(attachable_object->name);
+    discrete_manager_->removeCollisionObject(attachable_object->name);
+    continuous_manager_->removeCollisionObject(attachable_object->name);
     ROS_DEBUG("Replacing attachable object %s!", attachable_object->name.c_str());
   }
 
   attachable_objects_[attachable_object->name] = attachable_object;
 
   // Add the object to the contact checker
-  contact_checker_->addObject(attachable_object->name,
-                              BodyTypes::ROBOT_ATTACHED,
-                              attachable_object->collision.shapes,
-                              attachable_object->collision.shape_poses,
-                              attachable_object->collision.collision_object_types,
-                              false);
+  discrete_manager_->addCollisionObject(attachable_object->name,
+                                        BodyTypes::ROBOT_ATTACHED,
+                                        attachable_object->collision.shapes,
+                                        attachable_object->collision.shape_poses,
+                                        attachable_object->collision.collision_object_types,
+                                        false);
+
+  continuous_manager_->addCollisionObject(attachable_object->name,
+                                          BodyTypes::ROBOT_ATTACHED,
+                                          attachable_object->collision.shapes,
+                                          attachable_object->collision.shape_poses,
+                                          attachable_object->collision.collision_object_types,
+                                          false);
 }
 
 void KDLEnv::removeAttachableObject(const std::string& name)
@@ -482,7 +404,8 @@ void KDLEnv::removeAttachableObject(const std::string& name)
   if (attachable_objects_.find(name) != attachable_objects_.end())
   {
     attachable_objects_.erase(name);
-    contact_checker_->removeObject(name);
+    discrete_manager_->removeCollisionObject(name);
+    continuous_manager_->removeCollisionObject(name);
   }
 }
 
@@ -490,7 +413,8 @@ void KDLEnv::clearAttachableObjects()
 {
   for (const auto& obj : attachable_objects_)
   {
-    contact_checker_->removeObject(obj.first);
+    discrete_manager_->removeCollisionObject(obj.first);
+    continuous_manager_->removeCollisionObject(obj.first);
   }
   attachable_objects_.clear();
 }
@@ -536,7 +460,8 @@ void KDLEnv::attachBody(const AttachedBodyInfo& attached_body_info)
   }
 
   attached_bodies_.insert(std::make_pair(attached_body_info.object_name, attached_body_info));
-  contact_checker_->enableObject(attached_body_info.object_name);
+  discrete_manager_->enableCollisionObject(attached_body_info.object_name);
+  continuous_manager_->enableCollisionObject(attached_body_info.object_name);
 
   calculateTransforms(
       current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Affine3d::Identity());
@@ -558,7 +483,8 @@ void KDLEnv::detachBody(const std::string& name)
   if (attached_bodies_.find(name) != attached_bodies_.end())
   {
     attached_bodies_.erase(name);
-    contact_checker_->disableObject(name);
+    discrete_manager_->disableCollisionObject(name);
+    continuous_manager_->disableCollisionObject(name);
     link_names_.erase(std::remove(link_names_.begin(), link_names_.end(), name), link_names_.end());
     active_link_names_.erase(std::remove(active_link_names_.begin(), active_link_names_.end(), name),
                              active_link_names_.end());
@@ -581,7 +507,8 @@ void KDLEnv::clearAttachedBodies()
   for (const auto& body : attached_bodies_)
   {
     std::string name = body.second.object_name;
-    contact_checker_->disableObject(name);
+    discrete_manager_->disableCollisionObject(name);
+    continuous_manager_->disableCollisionObject(name);
     link_names_.erase(std::remove(link_names_.begin(), link_names_.end(), name), link_names_.end());
     active_link_names_.erase(std::remove(active_link_names_.begin(), active_link_names_.end(), name),
                              active_link_names_.end());
@@ -672,12 +599,12 @@ bool KDLEnv::defaultIsContactAllowedFn(const std::string& link_name1, const std:
   return false;
 }
 
-void KDLEnv::loadContactCheckerPlugin(const std::string& plugin)
+void KDLEnv::loadDiscreteContactManagerPlugin(const std::string& plugin)
 {
-  ContactCheckerBasePtr temp = contact_checker_loader_->createUniqueInstance(plugin);
+  DiscreteContactManagerBasePtr temp = discrete_manager_loader_->createUniqueInstance(plugin);
   if (temp != nullptr)
   {
-    contact_checker_ = temp;
+    discrete_manager_ = temp;
   }
   else
   {
@@ -717,25 +644,104 @@ void KDLEnv::loadContactCheckerPlugin(const std::string& plugin)
             }
           }
         }
-        contact_checker_->addObject(
-            link.second->name, BodyType::ROBOT_LINK, shapes, shape_poses, collision_object_types, true);
+        discrete_manager_->addCollisionObject(link.second->name,
+                                              BodyType::ROBOT_LINK,
+                                              shapes,
+                                              shape_poses,
+                                              collision_object_types,
+                                              true);
       }
     }
 
     // Add attachable collision object to the contact checker in a disabled
     // state
     for (const auto& ao : attachable_objects_)
-      contact_checker_->addObject(ao.second->name,
-                                  BodyTypes::ROBOT_ATTACHED,
-                                  ao.second->collision.shapes,
-                                  ao.second->collision.shape_poses,
-                                  ao.second->collision.collision_object_types,
-                                  false);
+      discrete_manager_->addCollisionObject(ao.second->name,
+                                            BodyTypes::ROBOT_ATTACHED,
+                                            ao.second->collision.shapes,
+                                            ao.second->collision.shape_poses,
+                                            ao.second->collision.collision_object_types,
+                                            false);
 
     // Enable the attached objects in the contact checker
     for (const auto& ab : attached_bodies_)
-      contact_checker_->enableObject(ab.second.object_name);
+      discrete_manager_->enableCollisionObject(ab.second.object_name);
+
   }
 }
+
+void KDLEnv::loadContinuousContactManagerPlugin(const std::string& plugin)
+{
+  ContinuousContactManagerBasePtr temp = continuous_manager_loader_->createUniqueInstance(plugin);
+  if (temp != nullptr)
+  {
+    continuous_manager_ = temp;
+  }
+  else
+  {
+    ROS_ERROR("Failed to load tesseract continuous contact manager plugin: %s.", plugin.c_str());
+    return;
+  }
+
+  if (initialized_)
+  {
+    for (const auto& link : urdf_model_->links_)
+    {
+      if (link.second->collision_array.size() > 0)
+      {
+        const std::vector<urdf::CollisionSharedPtr>& col_array =
+            link.second->collision_array.empty() ? std::vector<urdf::CollisionSharedPtr>(1, link.second->collision) :
+                                                   link.second->collision_array;
+
+        std::vector<shapes::ShapeConstPtr> shapes;
+        EigenSTL::vector_Affine3d shape_poses;
+        CollisionObjectTypeVector collision_object_types;
+
+        for (std::size_t i = 0; i < col_array.size(); ++i)
+        {
+          if (col_array[i] && col_array[i]->geometry)
+          {
+            shapes::ShapeConstPtr s = constructShape(col_array[i]->geometry.get());
+            if (s)
+            {
+              shapes.push_back(s);
+              shape_poses.push_back(urdfPose2Affine3d(col_array[i]->origin));
+
+              // TODO: Need to encode this in the srdf
+              if (s->type == shapes::MESH)
+                collision_object_types.push_back(CollisionObjectType::ConvexHull);
+              else
+                collision_object_types.push_back(CollisionObjectType::UseShapeType);
+            }
+          }
+        }
+
+        continuous_manager_->addCollisionObject(link.second->name,
+                                                BodyType::ROBOT_LINK,
+                                                shapes,
+                                                shape_poses,
+                                                collision_object_types,
+                                                true);
+
+      }
+    }
+
+    // Add attachable collision object to the contact checker in a disabled
+    // state
+    for (const auto& ao : attachable_objects_)
+      continuous_manager_->addCollisionObject(ao.second->name,
+                                              BodyTypes::ROBOT_ATTACHED,
+                                              ao.second->collision.shapes,
+                                              ao.second->collision.shape_poses,
+                                              ao.second->collision.collision_object_types,
+                                              false);
+
+    // Enable the attached objects in the contact checker
+    for (const auto& ab : attached_bodies_)
+      continuous_manager_->enableCollisionObject(ab.second.object_name);
+
+  }
+}
+
 }
 }

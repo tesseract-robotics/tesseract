@@ -32,6 +32,14 @@ ChainOmplInterface::ChainOmplInterface(tesseract::BasicEnvConstPtr environment, 
   ss_->setStateValidityChecker(std::bind(&ChainOmplInterface::isStateValid, this, std::placeholders::_1));
   contact_fn_ = std::bind(&ChainOmplInterface::isContactAllowed, this, std::placeholders::_1, std::placeholders::_2);
 
+  tesseract::ContactRequest req;
+  req.link_names = link_names_;
+  req.isContactAllowed = contact_fn_;
+  req.type = tesseract::ContactRequestTypes::FIRST;
+
+  contact_manager_ = env_->getDiscreteContactManager();
+  contact_manager_->setContactRequest(req);
+
   // We need to set the planner and call setup before it can run
 }
 
@@ -78,14 +86,14 @@ bool ChainOmplInterface::isStateValid(const ompl::base::State* state) const
   const ompl::base::RealVectorStateSpace::StateType* s = state->as<ompl::base::RealVectorStateSpace::StateType>();
   const auto dof = joint_names_.size();
 
-  tesseract::ContactRequest req;
-  req.link_names = link_names_;
-  req.isContactAllowed = contact_fn_;
-
   Eigen::Map<Eigen::VectorXd> joint_angles(s->values, dof);
+  tesseract::EnvStatePtr env_state = env_->getState(joint_names_, joint_angles);
+
+  for (const auto& link_name : link_names_)
+    contact_manager_->setCollisionObjectsTransform(link_name, env_state->transforms[link_name]);
 
   tesseract::ContactResultMap contact_map;
-  env_->calcCollisionsDiscrete(req, joint_names_, joint_angles, contact_map);
+  contact_manager_->contactTest(contact_map);
 
   return contact_map.empty();
 }

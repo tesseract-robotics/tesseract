@@ -109,8 +109,9 @@ const std::string EnvironmentMonitor::MONITORED_ENVIRONMENT_TOPIC = "monitored_t
 
 EnvironmentMonitor::EnvironmentMonitor(const std::string& robot_description,
                                        const std::string& name,
-                                       const std::string& plugin)
-  : monitor_name_(name), plugin_name_(plugin), nh_("~")
+                                       const std::string& discrete_plugin,
+                                       const std::string& continuous_plugin)
+  : monitor_name_(name), discrete_plugin_name_(discrete_plugin), continuous_plugin_name_(continuous_plugin), nh_("~")
 {
   sleep(2);
   // Initial setup
@@ -129,8 +130,9 @@ EnvironmentMonitor::EnvironmentMonitor(const std::string& robot_description,
 EnvironmentMonitor::EnvironmentMonitor(const urdf::ModelInterfaceConstSharedPtr& urdf_model,
                                        const srdf::ModelConstSharedPtr& srdf_model,
                                        const std::string& name,
-                                       const std::string& plugin)
-  : monitor_name_(name), plugin_name_(plugin), nh_("~"), urdf_model_(urdf_model), srdf_model_(srdf_model)
+                                       const std::string& discrete_plugin,
+                                       const std::string& continuous_plugin)
+  : monitor_name_(name), discrete_plugin_name_(discrete_plugin), continuous_plugin_name_(continuous_plugin), nh_("~"), urdf_model_(urdf_model), srdf_model_(srdf_model)
 {
   initialize(urdf_model, srdf_model);
 }
@@ -172,12 +174,15 @@ void EnvironmentMonitor::initialize(const urdf::ModelInterfaceConstSharedPtr& ur
     env_const_ = env_;
     try
     {
-      if (!plugin_name_.empty())
-        env_->loadContactCheckerPlugin(plugin_name_);
+      if (!discrete_plugin_name_.empty() && !continuous_plugin_name_.empty())
+      {
+        env_->loadDiscreteContactManagerPlugin(discrete_plugin_name_);
+        env_->loadContinuousContactManagerPlugin(continuous_plugin_name_);
+      }
     }
     catch (int& e)
     {
-      ROS_ERROR_NAMED(LOGNAME, "Failed to load tesseract contact checker plugin");
+      ROS_ERROR_NAMED(LOGNAME, "Failed to load tesseract contact managers plugin");
       env_.reset();
       env_const_ = env_;
     }

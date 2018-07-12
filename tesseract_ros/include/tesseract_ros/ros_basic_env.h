@@ -48,7 +48,9 @@ public:
 
   virtual srdf::ModelConstSharedPtr getSRDF() const = 0;
 
-  virtual void loadContactCheckerPlugin(const std::string& plugin) = 0;
+  virtual void loadDiscreteContactManagerPlugin(const std::string& plugin) = 0;
+
+  virtual void loadContinuousContactManagerPlugin(const std::string& plugin) = 0;
 
 };  // class ROSBasicEnv
 typedef std::shared_ptr<ROSBasicEnv> ROSBasicEnvPtr;

@@ -55,7 +55,7 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
   req.link_names.push_back("box_link");
   req.link_names.push_back("sphere_link");
   req.contact_distance = 0.1;
-  req.type = tesseract::ContactRequestType::SINGLE;
+  req.type = tesseract::ContactRequestType::CLOSEST;
 
   // Test when object is inside another
   tesseract::TransformMap location;

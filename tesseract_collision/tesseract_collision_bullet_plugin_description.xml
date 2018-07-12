@@ -1,7 +1,25 @@
 <library path="libtesseract_collision_bullet_plugin">
-  <class name="tesseract_collision/BulletContactChecker" type="tesseract::BulletContactChecker" base_class_type="tesseract::ContactCheckerBase">
+  <class name="tesseract_collision/BulletDiscreteSimpleManager" type="tesseract::BulletDiscreteSimpleManager" base_class_type="tesseract::DiscreteContactManagerBase">
     <description>
-      Bullet implementation of the tesseract contact checker.
+      Bullet Discrete Simple implementation of the tesseract discrete contact manager.
+    </description>
+  </class>
+
+  <class name="tesseract_collision/BulletDiscreteBVHManager" type="tesseract::BulletDiscreteBVHManager" base_class_type="tesseract::DiscreteContactManagerBase">
+    <description>
+      Bullet Discrete BVH implementation of the tesseract discrete contact manager.
+    </description>
+  </class>
+
+  <class name="tesseract_collision/BulletCastSimpleManager" type="tesseract::BulletCastSimpleManager" base_class_type="tesseract::ContinuousContactManagerBase">
+    <description>
+      Bullet Continuous Simple implementation of the tesseract continuous contact manager.
+    </description>
+  </class>
+
+  <class name="tesseract_collision/BulletCastBVHManager" type="tesseract::BulletCastBVHManager" base_class_type="tesseract::ContinuousContactManagerBase">
+    <description>
+      Bullet Continuous BVH implementation of the tesseract continuous contact manager.
     </description>
   </class>
 </library>
