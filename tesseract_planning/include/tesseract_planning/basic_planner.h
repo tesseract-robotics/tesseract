@@ -37,7 +37,7 @@ class BasicPlanner
 public:
   /** @brief Construct a basic planner */
   BasicPlanner() {}
-  virtual ~BasicPlanner();
+  virtual ~BasicPlanner() {}
 
   /** @brief Get the name of this planner */
   const std::string& getName() const { return name_; }

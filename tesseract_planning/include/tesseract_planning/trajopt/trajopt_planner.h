@@ -27,6 +27,7 @@
 #define TESSERACT_PLANNING_TRAJOPT_PLANNER_H
 
 #include <tesseract_planning/basic_planner.h>
+#include <trajopt/problem_description.hpp>
 
 namespace tesseract
 {
@@ -48,13 +49,13 @@ public:
     // Converge Status Codes
   }
 
-  bool solve(PlannerResponse& res) override;
+  bool solve(PlannerResponse& response) override;
+
+  bool solve(trajopt::TrajOptProbPtr prob, PlannerResponse& response);
 
   bool terminate() override;
 
   void clear() override;
-
-private:
 };
 }
 }
