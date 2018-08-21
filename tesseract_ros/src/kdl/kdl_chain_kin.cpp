@@ -79,7 +79,7 @@ bool KDLChainKin::calcFwdKin(Eigen::Affine3d& pose,
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
 
-  const std::string& chain_link_name = link_name_too_chain_link_name_.at(link_name);
+  const std::string& chain_link_name = link_name_too_chain_link_name_.at(link_name);  
   assert(segment_index_.find(chain_link_name) != segment_index_.end());
 
   int segment_nr = segment_index_.at(chain_link_name);
@@ -351,6 +351,13 @@ bool KDLChainKin::init(urdf::ModelInterfaceConstSharedPtr model,
     urdf::LinkConstSharedPtr link_model = model_->getLink(seg.getName());
     while (!found)
     {
+      // Check if the link is the root
+      if (link_model->parent_joint == nullptr)
+      {
+        segment_index_[seg.getName()] = 0;
+        break;
+      }
+
       std::string joint_name = link_model->parent_joint->name;
       std::vector<std::string>::const_iterator it = std::find(joint_list_.begin(), joint_list_.end(), joint_name);
       if (it != joint_list_.end())
