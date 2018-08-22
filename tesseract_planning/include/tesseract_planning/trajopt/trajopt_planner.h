@@ -57,6 +57,6 @@ public:
 
   void clear() override;
 };
-}
-}
+}  // namespace tesseract_planning
+}  // namespace tesseract
 #endif  // TESSERACT_PLANNING_TRAJOPT_PLANNER_H

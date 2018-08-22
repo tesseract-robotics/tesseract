@@ -77,7 +77,6 @@ bool TrajoptPlanner::solve(trajopt::TrajOptProbPtr prob, PlannerResponse& respon
   std::vector<tesseract::ContactResultMap> collisions;
   ContinuousContactManagerBasePtr manager = prob->GetEnv()->getContinuousContactManager();
 
-
   collisions.clear();
   bool found = tesseract::continuousCollisionCheckTrajectory(
       *manager, *prob->GetEnv(), *prob->GetKin(), getTraj(opt.x(), prob->GetVars()), collisions);
@@ -101,5 +100,5 @@ bool TrajoptPlanner::solve(trajopt::TrajOptProbPtr prob, PlannerResponse& respon
 bool TrajoptPlanner::terminate() { return false; }
 void TrajoptPlanner::clear() { request_ = PlannerRequest(); }
 
-}
-}
+}  // namespace tesseract_planning
+}  // namespace tesseract

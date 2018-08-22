@@ -63,6 +63,6 @@ protected:
   PlannerRequest request_;        /**< @brief The planner request information */
   StatusCodeMap status_code_map_; /**< @brief A map of error codes to description */
 };
-}
-}
+}  // namespace tesseract_planning
+}  // namespace tesseract
 #endif  // TESSERACT_ROS_BASIC_PLANNER_H
