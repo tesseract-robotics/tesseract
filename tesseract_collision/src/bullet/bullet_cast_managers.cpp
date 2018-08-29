@@ -43,7 +43,6 @@
 
 namespace tesseract
 {
-
 COWPtr makeCastCollisionObject(const COWPtr& cow)
 {
   COWPtr new_cow = cow->clone();
@@ -55,7 +54,8 @@ COWPtr makeCastCollisionObject(const COWPtr& cow)
   {
     btConvexShape* convex = static_cast<btConvexShape*>(new_cow->getCollisionShape());
     assert(convex != NULL);
-    assert(convex->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE); // This checks if the collision object is already a cast collision object
+    assert(convex->getShapeType() !=
+           CUSTOM_CONVEX_SHAPE_TYPE);  // This checks if the collision object is already a cast collision object
 
     CastHullShape* shape = new CastHullShape(convex, tf);
     assert(shape != NULL);
@@ -72,7 +72,8 @@ COWPtr makeCastCollisionObject(const COWPtr& cow)
     {
       btConvexShape* convex = static_cast<btConvexShape*>(compound->getChildShape(i));
       assert(convex != NULL);
-      assert(convex->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE); // This checks if the collision object is already a cast collision object
+      assert(convex->getShapeType() !=
+             CUSTOM_CONVEX_SHAPE_TYPE);  // This checks if the collision object is already a cast collision object
 
       btTransform geomTrans = compound->getChildTransform(i);
 
@@ -158,7 +159,7 @@ bool BulletCastSimpleManager::addCollisionObject(const std::string& name,
   }
 }
 
-bool BulletCastSimpleManager::hasCollisionObject(const std::string &name) const
+bool BulletCastSimpleManager::hasCollisionObject(const std::string& name) const
 {
   return (link2cow_.find(name) != link2cow_.end());
 }
@@ -235,7 +236,8 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& na
     it->second->setWorldTransform(convertEigenToBt(pose));
 }
 
-void BulletCastSimpleManager::setCollisionObjectsTransform(const std::vector<std::string>& names, const EigenSTL::vector_Affine3d& poses)
+void BulletCastSimpleManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                                           const EigenSTL::vector_Affine3d& poses)
 {
   assert(names.size() == poses.size());
   for (auto i = 0u; i < names.size(); ++i)
@@ -248,7 +250,9 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const TransformMap& t
     setCollisionObjectsTransform(transform.first, transform.second);
 }
 
-void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& name, const Eigen::Affine3d& pose1, const Eigen::Affine3d& pose2)
+void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& name,
+                                                           const Eigen::Affine3d& pose1,
+                                                           const Eigen::Affine3d& pose2)
 {
   // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
   // geometry
@@ -265,14 +269,16 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& na
   }
 }
 
-void BulletCastSimpleManager::setCollisionObjectsTransform(const std::vector<std::string> &names, const EigenSTL::vector_Affine3d &pose1, const EigenSTL::vector_Affine3d &pose2)
+void BulletCastSimpleManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                                           const EigenSTL::vector_Affine3d& pose1,
+                                                           const EigenSTL::vector_Affine3d& pose2)
 {
   assert(names.size() == pose1.size() == pose2.size());
   for (auto i = 0u; i < names.size(); ++i)
     setCollisionObjectsTransform(names[i], pose1[i], pose2[i]);
 }
 
-void BulletCastSimpleManager::setCollisionObjectsTransform(const TransformMap &pose1, const TransformMap &pose2)
+void BulletCastSimpleManager::setCollisionObjectsTransform(const TransformMap& pose1, const TransformMap& pose2)
 {
   assert(pose1.size() == pose2.size());
   auto it1 = pose1.begin();
@@ -358,16 +364,12 @@ void BulletCastSimpleManager::setContactRequest(const ContactRequest& req)
   }
 }
 
-const ContactRequest& BulletCastSimpleManager::getContactRequest() const
-{
-  return request_;
-}
-
-void BulletCastSimpleManager::contactTest(ContactResultMap &collisions)
+const ContactRequest& BulletCastSimpleManager::getContactRequest() const { return request_; }
+void BulletCastSimpleManager::contactTest(ContactResultMap& collisions)
 {
   ContactDistanceData cdata(&request_, &collisions);
 
-  for (auto cow1_iter = cows_.begin(); cow1_iter!=(cows_.end() - 1); cow1_iter++)
+  for (auto cow1_iter = cows_.begin(); cow1_iter != (cows_.end() - 1); cow1_iter++)
   {
     const COWPtr& cow1 = *cow1_iter;
 
@@ -377,27 +379,31 @@ void BulletCastSimpleManager::contactTest(ContactResultMap &collisions)
     if (!cow1->m_enabled)
       continue;
 
-    btVector3 aabbMin[2],aabbMax[2];
-    cow1->getCollisionShape()->getAabb(cow1->getWorldTransform(),aabbMin[0],aabbMax[0]);
+    btVector3 aabbMin[2], aabbMax[2];
+    cow1->getCollisionShape()->getAabb(cow1->getWorldTransform(), aabbMin[0], aabbMax[0]);
 
-    //need to increase the aabb for contact thresholds
-    btVector3 contactThreshold1(cow1->getContactProcessingThreshold(), cow1->getContactProcessingThreshold(), cow1->getContactProcessingThreshold());
+    // need to increase the aabb for contact thresholds
+    btVector3 contactThreshold1(cow1->getContactProcessingThreshold(),
+                                cow1->getContactProcessingThreshold(),
+                                cow1->getContactProcessingThreshold());
     aabbMin[0] -= contactThreshold1;
     aabbMax[0] += contactThreshold1;
 
     btCollisionObjectWrapper obA(0, cow1->getCollisionShape(), cow1.get(), cow1->getWorldTransform(), -1, -1);
 
     CastCollisionCollector cc(cdata, cow1, cow1->getContactProcessingThreshold());
-    for (auto cow2_iter = cow1_iter + 1; cow2_iter!=cows_.end(); cow2_iter++)
+    for (auto cow2_iter = cow1_iter + 1; cow2_iter != cows_.end(); cow2_iter++)
     {
       assert(!cdata.done);
 
       const COWPtr& cow2 = *cow2_iter;
 
-      cow2->getCollisionShape()->getAabb(cow2->getWorldTransform(),aabbMin[1],aabbMax[1]);
+      cow2->getCollisionShape()->getAabb(cow2->getWorldTransform(), aabbMin[1], aabbMax[1]);
 
-      //need to increase the aabb for contact thresholds
-      btVector3 contactThreshold2(cow2->getContactProcessingThreshold(), cow2->getContactProcessingThreshold(), cow2->getContactProcessingThreshold());
+      // need to increase the aabb for contact thresholds
+      btVector3 contactThreshold2(cow2->getContactProcessingThreshold(),
+                                  cow2->getContactProcessingThreshold(),
+                                  cow2->getContactProcessingThreshold());
       aabbMin[1] -= contactThreshold2;
       aabbMax[1] += contactThreshold2;
 
@@ -407,11 +413,7 @@ void BulletCastSimpleManager::contactTest(ContactResultMap &collisions)
 
       if (aabb_check)
       {
-
-        bool needs_collision = needsCollisionCheck(*cow1,
-                                                   *cow2,
-                                                   cdata.req->isContactAllowed,
-                                                   false);
+        bool needs_collision = needsCollisionCheck(*cow1, *cow2, cdata.req->isContactAllowed, false);
 
         if (needs_collision)
         {
@@ -423,7 +425,7 @@ void BulletCastSimpleManager::contactTest(ContactResultMap &collisions)
             TesseractBridgedManifoldResult contactPointResult(&obA, &obB, cc);
             contactPointResult.m_closestPointDistanceThreshold = cc.m_closestDistanceThreshold;
 
-            //discrete collision detection query
+            // discrete collision detection query
             algorithm->processCollision(&obA, &obB, dispatch_info_, &contactPointResult);
 
             algorithm->~btCollisionAlgorithm();
@@ -446,7 +448,6 @@ void BulletCastSimpleManager::addCollisionObject(COWPtr& cow)
     cows_.insert(cows_.begin(), cow);
   else
     cows_.push_back(cow);
-
 }
 
 ////////////////////////////////////////////////
@@ -470,7 +471,7 @@ BulletCastBVHManager::BulletCastBVHManager()
 
 BulletCastBVHManager::~BulletCastBVHManager()
 {
-  //clean up remaining objects
+  // clean up remaining objects
   for (auto& co : link2cow_)
   {
     btCollisionObject* collisionObject = co.second.get();
@@ -485,7 +486,7 @@ BulletCastBVHManager::~BulletCastBVHManager()
     }
   }
 
-  //clean up remaining objects
+  // clean up remaining objects
   for (auto& co : link2castcow_)
   {
     btCollisionObject* collisionObject = co.second.get();
@@ -540,7 +541,7 @@ bool BulletCastBVHManager::addCollisionObject(const std::string& name,
   }
 }
 
-bool BulletCastBVHManager::hasCollisionObject(const std::string &name) const
+bool BulletCastBVHManager::hasCollisionObject(const std::string& name) const
 {
   return (link2cow_.find(name) != link2cow_.end());
 }
@@ -635,7 +636,8 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
   }
 }
 
-void BulletCastBVHManager::setCollisionObjectsTransform(const std::vector<std::string>& names, const EigenSTL::vector_Affine3d& poses)
+void BulletCastBVHManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                                        const EigenSTL::vector_Affine3d& poses)
 {
   assert(names.size() == poses.size());
   for (auto i = 0u; i < names.size(); ++i)
@@ -648,7 +650,9 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const TransformMap& tran
     setCollisionObjectsTransform(transform.first, transform.second);
 }
 
-void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name, const Eigen::Affine3d& pose1, const Eigen::Affine3d& pose2)
+void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
+                                                        const Eigen::Affine3d& pose1,
+                                                        const Eigen::Affine3d& pose2)
 {
   // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
   // geometry
@@ -665,45 +669,50 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
     cow->setWorldTransform(tf1);
 
     // Now update Broadphase AABB (Copied from BulletWorld updateSingleAabb function
-    btVector3 minAabb,maxAabb;
+    btVector3 minAabb, maxAabb;
     cow->getCollisionShape()->getAabb(cow->getWorldTransform(), minAabb, maxAabb);
-    //need to increase the aabb for contact thresholds
-    btVector3 contactThreshold(cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold());
+    // need to increase the aabb for contact thresholds
+    btVector3 contactThreshold(cow->getContactProcessingThreshold(),
+                               cow->getContactProcessingThreshold(),
+                               cow->getContactProcessingThreshold());
     minAabb -= contactThreshold;
     maxAabb += contactThreshold;
 
-    if(dispatch_info_.m_useContinuous && cow->getInternalType() == btCollisionObject::CO_RIGID_BODY && !cow->isStaticOrKinematicObject())
+    if (dispatch_info_.m_useContinuous && cow->getInternalType() == btCollisionObject::CO_RIGID_BODY &&
+        !cow->isStaticOrKinematicObject())
     {
-      btVector3 minAabb2,maxAabb2;
-      cow->getCollisionShape()->getAabb(cow->getInterpolationWorldTransform(),minAabb2,maxAabb2);
+      btVector3 minAabb2, maxAabb2;
+      cow->getCollisionShape()->getAabb(cow->getInterpolationWorldTransform(), minAabb2, maxAabb2);
       minAabb2 -= contactThreshold;
       maxAabb2 += contactThreshold;
       minAabb.setMin(minAabb2);
       maxAabb.setMax(maxAabb2);
     }
 
-    //moving objects should be moderately sized, probably something wrong if not
-    if ( cow->isStaticObject() || ((maxAabb-minAabb).length2() < btScalar(1e12)))
+    // moving objects should be moderately sized, probably something wrong if not
+    if (cow->isStaticObject() || ((maxAabb - minAabb).length2() < btScalar(1e12)))
     {
       broadphase_->setAabb(cow->getBroadphaseHandle(), minAabb, maxAabb, dispatcher_.get());
     }
     else
     {
-      //something went wrong, investigate
-      //this assert is unwanted in 3D modelers (danger of loosing work)
+      // something went wrong, investigate
+      // this assert is unwanted in 3D modelers (danger of loosing work)
       cow->setActivationState(DISABLE_SIMULATION);
     }
   }
 }
 
-void BulletCastBVHManager::setCollisionObjectsTransform(const std::vector<std::string> &names, const EigenSTL::vector_Affine3d &pose1, const EigenSTL::vector_Affine3d &pose2)
+void BulletCastBVHManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                                        const EigenSTL::vector_Affine3d& pose1,
+                                                        const EigenSTL::vector_Affine3d& pose2)
 {
   assert(names.size() == pose1.size() == pose2.size());
   for (auto i = 0u; i < names.size(); ++i)
     setCollisionObjectsTransform(names[i], pose1[i], pose2[i]);
 }
 
-void BulletCastBVHManager::setCollisionObjectsTransform(const TransformMap &pose1, const TransformMap &pose2)
+void BulletCastBVHManager::setCollisionObjectsTransform(const TransformMap& pose1, const TransformMap& pose2)
 {
   assert(pose1.size() == pose2.size());
   auto it1 = pose1.begin();
@@ -717,7 +726,7 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const TransformMap &pose
   }
 }
 
-void BulletCastBVHManager::contactTest(ContactResultMap &collisions)
+void BulletCastBVHManager::contactTest(ContactResultMap& collisions)
 {
   ContactDistanceData cdata(&request_, &collisions);
 
@@ -758,9 +767,11 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
         updateCollisionObjectWithRequest(request_, *active_cow);
 
         // Calculate the aabb
-        btVector3 minAabb,maxAabb;
+        btVector3 minAabb, maxAabb;
         active_cow->getCollisionShape()->getAabb(cow->getWorldTransform(), minAabb, maxAabb);
-        btVector3 contactThreshold(active_cow->getContactProcessingThreshold(), active_cow->getContactProcessingThreshold(), active_cow->getContactProcessingThreshold());
+        btVector3 contactThreshold(active_cow->getContactProcessingThreshold(),
+                                   active_cow->getContactProcessingThreshold(),
+                                   active_cow->getContactProcessingThreshold());
         minAabb -= contactThreshold;
         maxAabb += contactThreshold;
 
@@ -785,22 +796,23 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
         link2castcow_.erase(cow->getName());
 
         // Calculate broadphase aabb
-        btVector3 minAabb,maxAabb;
+        btVector3 minAabb, maxAabb;
         cow->getCollisionShape()->getAabb(cow->getWorldTransform(), minAabb, maxAabb);
-        btVector3 contactThreshold(cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold());
+        btVector3 contactThreshold(cow->getContactProcessingThreshold(),
+                                   cow->getContactProcessingThreshold(),
+                                   cow->getContactProcessingThreshold());
         minAabb -= contactThreshold;
         maxAabb += contactThreshold;
 
         // Add the static collision object to the broadphase
         int type = cow->getCollisionShape()->getShapeType();
-        cow->setBroadphaseHandle(broadphase_->createProxy(
-          minAabb,
-          maxAabb,
-          type,
-          cow.get(),
-          cow->m_collisionFilterGroup,
-          cow->m_collisionFilterMask,
-          dispatcher_.get()));
+        cow->setBroadphaseHandle(broadphase_->createProxy(minAabb,
+                                                          maxAabb,
+                                                          type,
+                                                          cow.get(),
+                                                          cow->m_collisionFilterGroup,
+                                                          cow->m_collisionFilterMask,
+                                                          dispatcher_.get()));
       }
     }
     else
@@ -830,22 +842,23 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
         }
 
         // Calculate broadphase aabb
-        btVector3 minAabb,maxAabb;
+        btVector3 minAabb, maxAabb;
         active_cow->getCollisionShape()->getAabb(active_cow->getWorldTransform(), minAabb, maxAabb);
-        btVector3 contactThreshold(active_cow->getContactProcessingThreshold(), active_cow->getContactProcessingThreshold(), active_cow->getContactProcessingThreshold());
+        btVector3 contactThreshold(active_cow->getContactProcessingThreshold(),
+                                   active_cow->getContactProcessingThreshold(),
+                                   active_cow->getContactProcessingThreshold());
         minAabb -= contactThreshold;
         maxAabb += contactThreshold;
 
         // Add the active collision object to the broadphase
         int type = active_cow->getCollisionShape()->getShapeType();
-        active_cow->setBroadphaseHandle(broadphase_->createProxy(
-          minAabb,
-          maxAabb,
-          type,
-          active_cow.get(),
-          active_cow->m_collisionFilterGroup,
-          active_cow->m_collisionFilterMask,
-          dispatcher_.get()));
+        active_cow->setBroadphaseHandle(broadphase_->createProxy(minAabb,
+                                                                 maxAabb,
+                                                                 type,
+                                                                 active_cow.get(),
+                                                                 active_cow->m_collisionFilterGroup,
+                                                                 active_cow->m_collisionFilterMask,
+                                                                 dispatcher_.get()));
 
         // Add it to the active map
         link2castcow_[active_cow->getName()] = active_cow;
@@ -853,9 +866,11 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
       else
       {
         // Calculate the aabb
-        btVector3 minAabb,maxAabb;
+        btVector3 minAabb, maxAabb;
         cow->getCollisionShape()->getAabb(cow->getWorldTransform(), minAabb, maxAabb);
-        btVector3 contactThreshold(cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold());
+        btVector3 contactThreshold(cow->getContactProcessingThreshold(),
+                                   cow->getContactProcessingThreshold(),
+                                   cow->getContactProcessingThreshold());
         minAabb -= contactThreshold;
         maxAabb += contactThreshold;
 
@@ -866,37 +881,27 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
   }
 }
 
-const ContactRequest& BulletCastBVHManager::getContactRequest() const
-{
-  return request_;
-}
-
+const ContactRequest& BulletCastBVHManager::getContactRequest() const { return request_; }
 void BulletCastBVHManager::addCollisionObject(COWPtr& cow)
 {
   link2cow_[cow->getName()] = cow;
 
-  //calculate new AABB
+  // calculate new AABB
   btTransform trans = cow->getWorldTransform();
 
-  btVector3	minAabb;
-  btVector3	maxAabb;
-  cow->getCollisionShape()->getAabb(trans,minAabb,maxAabb);
+  btVector3 minAabb;
+  btVector3 maxAabb;
+  cow->getCollisionShape()->getAabb(trans, minAabb, maxAabb);
 
-  //need to increase the aabb for contact thresholds
-  btVector3 contactThreshold(cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold());
+  // need to increase the aabb for contact thresholds
+  btVector3 contactThreshold(
+      cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold());
   minAabb -= contactThreshold;
   maxAabb += contactThreshold;
 
   int type = cow->getCollisionShape()->getShapeType();
   cow->setBroadphaseHandle(broadphase_->createProxy(
-    minAabb,
-    maxAabb,
-    type,
-    cow.get(),
-    cow->m_collisionFilterGroup,
-    cow->m_collisionFilterMask,
-    dispatcher_.get()));
-
+      minAabb, maxAabb, type, cow.get(), cow->m_collisionFilterGroup, cow->m_collisionFilterMask, dispatcher_.get()));
 }
 
 void BulletCastBVHManager::contactTest(const COWPtr& cow, ContactDistanceData& collisions)
@@ -904,8 +909,9 @@ void BulletCastBVHManager::contactTest(const COWPtr& cow, ContactDistanceData& c
   btVector3 aabbMin, aabbMax;
   cow->getCollisionShape()->getAabb(cow->getWorldTransform(), aabbMin, aabbMax);
 
-  //need to increase the aabb for contact thresholds
-  btVector3 contactThreshold1(cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold());
+  // need to increase the aabb for contact thresholds
+  btVector3 contactThreshold1(
+      cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold());
   aabbMin -= contactThreshold1;
   aabbMax += contactThreshold1;
 
@@ -915,5 +921,4 @@ void BulletCastBVHManager::contactTest(const COWPtr& cow, ContactDistanceData& c
 
   broadphase_->aabbTest(aabbMin, aabbMax, contactCB);
 }
-
 }

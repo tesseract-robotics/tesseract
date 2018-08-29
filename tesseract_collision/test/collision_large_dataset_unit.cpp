@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include <ros/ros.h>
 
-void runTest(tesseract::DiscreteContactManagerBase &checker, bool use_convex_mesh = false)
+void runTest(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mesh = false)
 {
   // Add Meshed Sphere to checker
   shapes::ShapePtr sphere;
@@ -69,8 +69,8 @@ void runTest(tesseract::DiscreteContactManagerBase &checker, bool use_convex_mes
 
   EXPECT_TRUE(result_vector.size() == 2700);
 
-//  checker.calcCollisionsContinuous(req, location, location2, result);
-//  tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
+  //  checker.calcCollisionsContinuous(req, location, location2, result);
+  //  tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
 }
 
 TEST(TesseractCollisionLargeDataSetUnit, BulletDiscreteSimpleCollisionLargeDataSetConvexHullUnit)

@@ -60,7 +60,8 @@ public:
    * @param shape_poses     A vector of poses for each shape, must be same length as shapes
    * @param shape_types     A vector of shape types for encode the collision object. If the vector is of length 1 it is
    * used for all shapes.
-   * @param collision_object_types A int identifying a conversion mode for the object. (ex. convert meshes to convex_hulls)
+   * @param collision_object_types A int identifying a conversion mode for the object. (ex. convert meshes to
+   * convex_hulls)
    * @param enabled         Indicate if the object is enabled for collision checking.
    * @return true if successfully added, otherwise false.
    */
@@ -109,7 +110,8 @@ public:
    * @param names The name of the object
    * @param poses The tranformation in world
    */
-  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names, const EigenSTL::vector_Affine3d& poses) = 0;
+  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                            const EigenSTL::vector_Affine3d& poses) = 0;
 
   /**
    * @brief Set a series of static collision object's tranforms
@@ -127,7 +129,9 @@ public:
    * @param pose1 The start tranformation in world
    * @param pose2 The end tranformation in world
    */
-  virtual void setCollisionObjectsTransform(const std::string& name, const Eigen::Affine3d& pose1, const Eigen::Affine3d& pose2) = 0;
+  virtual void setCollisionObjectsTransform(const std::string& name,
+                                            const Eigen::Affine3d& pose1,
+                                            const Eigen::Affine3d& pose2) = 0;
 
   /**
    * @brief Set a series of cast(moving) collision object's tranforms
@@ -139,7 +143,9 @@ public:
    * @param pose1 The start tranformations in world
    * @param pose2 The end tranformations in world
    */
-  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names, const EigenSTL::vector_Affine3d& pose1, const EigenSTL::vector_Affine3d& pose2) = 0;
+  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                            const EigenSTL::vector_Affine3d& pose1,
+                                            const EigenSTL::vector_Affine3d& pose2) = 0;
 
   /**
    * @brief Set a series of cast(moving) collision object's tranforms
@@ -174,4 +180,4 @@ typedef std::shared_ptr<ContinuousContactManagerBase> ContinuousContactManagerBa
 typedef std::shared_ptr<const ContinuousContactManagerBase> ContinuousContactManagerBaseConstPtr;
 }
 
-#endif // TESSERACT_COLLISION_CONTINUOUS_CONTACT_MANAGER_BASE_H
+#endif  // TESSERACT_COLLISION_CONTINUOUS_CONTACT_MANAGER_BASE_H

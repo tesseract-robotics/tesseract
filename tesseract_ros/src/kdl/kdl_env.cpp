@@ -644,12 +644,8 @@ void KDLEnv::loadDiscreteContactManagerPlugin(const std::string& plugin)
             }
           }
         }
-        discrete_manager_->addCollisionObject(link.second->name,
-                                              BodyType::ROBOT_LINK,
-                                              shapes,
-                                              shape_poses,
-                                              collision_object_types,
-                                              true);
+        discrete_manager_->addCollisionObject(
+            link.second->name, BodyType::ROBOT_LINK, shapes, shape_poses, collision_object_types, true);
       }
     }
 
@@ -666,7 +662,6 @@ void KDLEnv::loadDiscreteContactManagerPlugin(const std::string& plugin)
     // Enable the attached objects in the contact checker
     for (const auto& ab : attached_bodies_)
       discrete_manager_->enableCollisionObject(ab.second.object_name);
-
   }
 }
 
@@ -716,13 +711,8 @@ void KDLEnv::loadContinuousContactManagerPlugin(const std::string& plugin)
           }
         }
 
-        continuous_manager_->addCollisionObject(link.second->name,
-                                                BodyType::ROBOT_LINK,
-                                                shapes,
-                                                shape_poses,
-                                                collision_object_types,
-                                                true);
-
+        continuous_manager_->addCollisionObject(
+            link.second->name, BodyType::ROBOT_LINK, shapes, shape_poses, collision_object_types, true);
       }
     }
 
@@ -739,9 +729,7 @@ void KDLEnv::loadContinuousContactManagerPlugin(const std::string& plugin)
     // Enable the attached objects in the contact checker
     for (const auto& ab : attached_bodies_)
       continuous_manager_->enableCollisionObject(ab.second.object_name);
-
   }
 }
-
 }
 }

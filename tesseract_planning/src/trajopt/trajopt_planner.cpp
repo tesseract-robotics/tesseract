@@ -67,11 +67,8 @@ bool TrajoptPlanner::solve(PlannerResponse&)
   ContinuousContactManagerBasePtr manager = prob->GetEnv()->getContinuousContactManager();
 
   collisions.clear();
-  bool found = tesseract::continuousCollisionCheckTrajectory(*manager,
-                                                             *prob->GetEnv(),
-                                                             *prob->GetKin(),
-                                                             getTraj(opt.x(),prob->GetVars()),
-                                                             collisions);
+  bool found = tesseract::continuousCollisionCheckTrajectory(
+      *manager, *prob->GetEnv(), *prob->GetKin(), getTraj(opt.x(), prob->GetVars()), collisions);
 
   if (found)
   {

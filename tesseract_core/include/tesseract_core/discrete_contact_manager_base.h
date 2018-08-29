@@ -56,7 +56,8 @@ public:
    * @param shape_poses     A vector of poses for each shape, must be same length as shapes
    * @param shape_types     A vector of shape types for encode the collision object. If the vector is of length 1 it is
    * used for all shapes.
-   * @param collision_object_types A int identifying a conversion mode for the object. (ex. convert meshes to convex_hulls)
+   * @param collision_object_types A int identifying a conversion mode for the object. (ex. convert meshes to
+   * convex_hulls)
    * @return true if successfully added, otherwise false.
    */
   virtual bool addCollisionObject(const std::string& name,
@@ -104,7 +105,8 @@ public:
    * @param names The name of the object
    * @param poses The tranformation in world
    */
-  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names, const EigenSTL::vector_Affine3d& poses) = 0;
+  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                            const EigenSTL::vector_Affine3d& poses) = 0;
 
   /**
    * @brief Set a series of collision object's tranforms
@@ -129,9 +131,8 @@ public:
    * @param collisions The Contact results data
    */
   virtual void contactTest(ContactResultMap& collisions) = 0;
-
 };
 typedef std::shared_ptr<DiscreteContactManagerBase> DiscreteContactManagerBasePtr;
 typedef std::shared_ptr<const DiscreteContactManagerBase> DiscreteContactManagerBaseConstPtr;
 }
-#endif // TESSERACT_COLLISION_DISCRETE_CONTACT_MANAGER_BASE_H
+#endif  // TESSERACT_COLLISION_DISCRETE_CONTACT_MANAGER_BASE_H

@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include <ros/ros.h>
 
-void runTest(tesseract::DiscreteContactManagerBase &checker, bool use_convex_mesh = false)
+void runTest(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mesh = false)
 {
   // Add Meshed Sphere to checker
   shapes::ShapePtr sphere;
@@ -64,36 +64,36 @@ void runTest(tesseract::DiscreteContactManagerBase &checker, bool use_convex_mes
 
   ros::WallTime start_time = ros::WallTime::now();
 
-  #pragma omp parallel for num_threads (num_threads) shared (location)
+#pragma omp parallel for num_threads(num_threads) shared(location)
   for (unsigned i = 0; i < num_threads; ++i)
   {
     const int tn = omp_get_thread_num();
     ROS_DEBUG("Thread %i of %i", tn, omp_get_num_threads());
-    const tesseract::DiscreteContactManagerBasePtr &manager = contact_manager[tn];
+    const tesseract::DiscreteContactManagerBasePtr& manager = contact_manager[tn];
     for (const auto& co : location)
     {
       if (tn == 0)
       {
         Eigen::Affine3d pose = co.second;
-        pose.translation()[0]+=0.1;
+        pose.translation()[0] += 0.1;
         manager->setCollisionObjectsTransform(co.first, pose);
       }
       else if (tn == 1)
       {
         Eigen::Affine3d pose = co.second;
-        pose.translation()[1]+=0.1;
+        pose.translation()[1] += 0.1;
         manager->setCollisionObjectsTransform(co.first, pose);
       }
       else if (tn == 2)
       {
         Eigen::Affine3d pose = co.second;
-        pose.translation()[2]+=0.1;
+        pose.translation()[2] += 0.1;
         manager->setCollisionObjectsTransform(co.first, pose);
       }
       else
       {
         Eigen::Affine3d pose = co.second;
-        pose.translation()[0]-=0.1;
+        pose.translation()[0] -= 0.1;
         manager->setCollisionObjectsTransform(co.first, pose);
       }
     }

@@ -258,9 +258,9 @@ typedef std::shared_ptr<const BasicEnv> BasicEnvConstPtr;
  * @param first_only Indicates if it should return on first contact
  * @return True if collision was found, otherwise false.
  */
-inline bool continuousCollisionCheckTrajectory(ContinuousContactManagerBase &manager,
-                                               const BasicEnv &env,
-                                               const BasicKin &kin,
+inline bool continuousCollisionCheckTrajectory(ContinuousContactManagerBase& manager,
+                                               const BasicEnv& env,
+                                               const BasicKin& kin,
                                                const Eigen::Ref<const TrajArray>& traj,
                                                std::vector<ContactResultMap>& contacts,
                                                bool first_only = true)

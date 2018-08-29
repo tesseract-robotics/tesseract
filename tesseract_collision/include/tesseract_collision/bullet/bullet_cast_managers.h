@@ -47,15 +47,12 @@
 
 namespace tesseract
 {
-
 /** @brief A simple implementaiton of a tesseract manager which does not use BHV */
 class BulletCastSimpleManager : public ContinuousContactManagerBase
 {
 public:
-
   BulletCastSimpleManager();
   ~BulletCastSimpleManager() {}
-
   ContinuousContactManagerBasePtr clone() const override;
 
   bool addCollisionObject(const std::string& name,
@@ -75,13 +72,18 @@ public:
 
   void setCollisionObjectsTransform(const std::string& name, const Eigen::Affine3d& pose) override;
 
-  void setCollisionObjectsTransform(const std::vector<std::string>& names, const EigenSTL::vector_Affine3d& poses) override;
+  void setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                    const EigenSTL::vector_Affine3d& poses) override;
 
   void setCollisionObjectsTransform(const TransformMap& transforms) override;
 
-  void setCollisionObjectsTransform(const std::string& name, const Eigen::Affine3d& pose1, const Eigen::Affine3d& pose2) override;
+  void setCollisionObjectsTransform(const std::string& name,
+                                    const Eigen::Affine3d& pose1,
+                                    const Eigen::Affine3d& pose2) override;
 
-  void setCollisionObjectsTransform(const std::vector<std::string>& names, const EigenSTL::vector_Affine3d& pose1, const EigenSTL::vector_Affine3d& pose2) override;
+  void setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                    const EigenSTL::vector_Affine3d& pose1,
+                                    const EigenSTL::vector_Affine3d& pose2) override;
 
   void setCollisionObjectsTransform(const TransformMap& pose1, const TransformMap& pose2) override;
 
@@ -99,16 +101,15 @@ public:
 
 private:
   ContactRequest request_;                            /**< @brief The active contact request message */
-  std::unique_ptr<btCollisionDispatcher> dispatcher_; /**< @brief The bullet collision dispatcher used for getting object to object collison algorithm */
-  btDispatcherInfo dispatch_info_;                    /**< @brief The bullet collision dispatcher configuration information */
-  btDefaultCollisionConfiguration coll_config_;       /**< @brief The bullet collision configuration */
-  Link2Cow link2cow_;                                 /**< @brief A map of all (static and active) collision objects being managed */
-  std::vector<COWPtr> cows_;                          /**< @brief A vector of collision objects (active followed by static) */
-  Link2Cow link2castcow_;                             /**< @brief A map of cast (active) collision objects being managed. */
-
+  std::unique_ptr<btCollisionDispatcher> dispatcher_; /**< @brief The bullet collision dispatcher used for getting
+                                                         object to object collison algorithm */
+  btDispatcherInfo dispatch_info_;              /**< @brief The bullet collision dispatcher configuration information */
+  btDefaultCollisionConfiguration coll_config_; /**< @brief The bullet collision configuration */
+  Link2Cow link2cow_;        /**< @brief A map of all (static and active) collision objects being managed */
+  std::vector<COWPtr> cows_; /**< @brief A vector of collision objects (active followed by static) */
+  Link2Cow link2castcow_;    /**< @brief A map of cast (active) collision objects being managed. */
 };
 typedef std::shared_ptr<BulletCastSimpleManager> BulletCastSimpleManagerPtr;
-
 
 struct CastCollisionCollector : public btCollisionWorld::ContactResultCallback
 {
@@ -139,16 +140,16 @@ struct CastCollisionCollector : public btCollisionWorld::ContactResultCallback
     if (cp.m_distance1 > contact_distance_)
       return 0;
 
-    return addCastSingleResult(cp, colObj0Wrap, index0, colObj1Wrap, index1, collisions_, (colObj0Wrap->getCollisionObject() == cow_.get()));
+    return addCastSingleResult(
+        cp, colObj0Wrap, index0, colObj1Wrap, index1, collisions_, (colObj0Wrap->getCollisionObject() == cow_.get()));
   }
 
   bool needsCollision(btBroadphaseProxy* proxy0) const
   {
-    return !collisions_.done &&
-        needsCollisionCheck(*cow_,
-                            *(static_cast<CollisionObjectWrapper*>(proxy0->m_clientObject)),
-                            collisions_.req->isContactAllowed,
-                            verbose_);
+    return !collisions_.done && needsCollisionCheck(*cow_,
+                                                    *(static_cast<CollisionObjectWrapper*>(proxy0->m_clientObject)),
+                                                    collisions_.req->isContactAllowed,
+                                                    verbose_);
   }
 };
 
@@ -156,7 +157,6 @@ struct CastCollisionCollector : public btCollisionWorld::ContactResultCallback
 class BulletCastBVHManager : public ContinuousContactManagerBase
 {
 public:
-
   BulletCastBVHManager();
   ~BulletCastBVHManager();
 
@@ -179,13 +179,18 @@ public:
 
   void setCollisionObjectsTransform(const std::string& name, const Eigen::Affine3d& pose) override;
 
-  void setCollisionObjectsTransform(const std::vector<std::string>& names, const EigenSTL::vector_Affine3d& poses) override;
+  void setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                    const EigenSTL::vector_Affine3d& poses) override;
 
   void setCollisionObjectsTransform(const TransformMap& transforms) override;
 
-  void setCollisionObjectsTransform(const std::string& name, const Eigen::Affine3d& pose1, const Eigen::Affine3d& pose2) override;
+  void setCollisionObjectsTransform(const std::string& name,
+                                    const Eigen::Affine3d& pose1,
+                                    const Eigen::Affine3d& pose2) override;
 
-  void setCollisionObjectsTransform(const std::vector<std::string>& names, const EigenSTL::vector_Affine3d& pose1, const EigenSTL::vector_Affine3d& pose2) override;
+  void setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                    const EigenSTL::vector_Affine3d& pose1,
+                                    const EigenSTL::vector_Affine3d& pose2) override;
 
   void setCollisionObjectsTransform(const TransformMap& pose1, const TransformMap& pose2) override;
 
@@ -203,9 +208,10 @@ public:
 
 private:
   ContactRequest request_;                            /**< @brief The active contact request message */
-  std::unique_ptr<btCollisionDispatcher> dispatcher_; /**< @brief The bullet collision dispatcher used for getting object to object collison algorithm */
-  btDispatcherInfo dispatch_info_;                    /**< @brief The bullet collision dispatcher configuration information */
-  btDefaultCollisionConfiguration coll_config_;       /**< @brief The bullet collision configuration */
+  std::unique_ptr<btCollisionDispatcher> dispatcher_; /**< @brief The bullet collision dispatcher used for getting
+                                                         object to object collison algorithm */
+  btDispatcherInfo dispatch_info_;              /**< @brief The bullet collision dispatcher configuration information */
+  btDefaultCollisionConfiguration coll_config_; /**< @brief The bullet collision configuration */
   std::unique_ptr<btBroadphaseInterface> broadphase_; /**< @brief The bullet broadphase interface */
   Link2Cow link2cow_;                                 /**< @brief A map of all collision objects being managed */
   Link2Cow link2castcow_;                             /**< @brief A map of cast collision objects being managed. */
@@ -216,11 +222,10 @@ private:
    * @param collisions The collision results
    */
   void contactTest(const COWPtr& cow, ContactDistanceData& collisions);
-
 };
 typedef std::shared_ptr<BulletCastBVHManager> BulletCastBVHManagerPtr;
 
-template<typename T>
+template <typename T>
 void constructCastContactManager(T& manager,
                                  const Link2Cow& link2cow,
                                  const ContactRequest& req,
@@ -233,7 +238,7 @@ void constructCastContactManager(T& manager,
   auto it2 = transforms2.begin();
   while (it1 != transforms1.end())
   {
-    COWPtr new_cow =  link2cow.at(it1->first)->clone();
+    COWPtr new_cow = link2cow.at(it1->first)->clone();
     if (!new_cow || !new_cow->m_enabled)
     {
       std::advance(it1, 1);
@@ -331,4 +336,4 @@ void constructCastContactManager(T& manager,
 }
 }
 
-#endif // TESSERACT_COLLISION_BULLET_CAST_MANAGERS_H
+#endif  // TESSERACT_COLLISION_BULLET_CAST_MANAGERS_H

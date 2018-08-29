@@ -90,7 +90,6 @@ public:
   void setName(const std::string& name) override { name_ = name; }
   const std::string& getName() const override { return name_; }
   bool checkInitialized() const override { return initialized_; }
-
   EnvStateConstPtr getState() const override { return current_state_; }
   void setState(const std::unordered_map<std::string, double>& joints) override;
   void setState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values) override;
@@ -149,10 +148,8 @@ public:
   AllowedCollisionMatrixPtr getAllowedCollisionMatrixNonConst() override { return allowed_collision_matrix_; }
   IsContactAllowedFn getIsContactAllowedFn() const override { return is_contact_allowed_fn_; }
   void setIsContactAllowedFn(IsContactAllowedFn fn) override { is_contact_allowed_fn_ = fn; }
-
   DiscreteContactManagerBasePtr getDiscreteContactManager() const override { return discrete_manager_->clone(); }
   ContinuousContactManagerBasePtr getContinuousContactManager() const override { return continuous_manager_->clone(); }
-
   void loadDiscreteContactManagerPlugin(const std::string& plugin) override;
   void loadContinuousContactManagerPlugin(const std::string& plugin) override;
 
@@ -174,12 +171,12 @@ private:
   std::vector<std::string> active_link_names_;                /**< A vector of active link names */
   ObjectColorMapPtr object_colors_;                           /**< A map of objects to color */
   AllowedCollisionMatrixPtr
-      allowed_collision_matrix_;          /**< The allowed collision matrix used during collision checking */
+      allowed_collision_matrix_; /**< The allowed collision matrix used during collision checking */
   IsContactAllowedFn
       is_contact_allowed_fn_; /**< The function used to determine if two objects are allowed in collision */
-  DiscreteContactManagerBasePtr discrete_manager_;            /**< The discrete contact manager object */
-  ContinuousContactManagerBasePtr continuous_manager_;        /**< The continuous contact manager object */
-  DiscreteContactManagerBasePluginLoaderPtr discrete_manager_loader_; /**< The discrete contact manager loader */
+  DiscreteContactManagerBasePtr discrete_manager_;                        /**< The discrete contact manager object */
+  ContinuousContactManagerBasePtr continuous_manager_;                    /**< The continuous contact manager object */
+  DiscreteContactManagerBasePluginLoaderPtr discrete_manager_loader_;     /**< The discrete contact manager loader */
   ContinuousContactManagerBasePluginLoaderPtr continuous_manager_loader_; /**< The continuous contact manager loader */
 
   bool defaultIsContactAllowedFn(const std::string& link_name1, const std::string& link_name2) const;

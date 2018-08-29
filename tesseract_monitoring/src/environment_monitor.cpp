@@ -132,7 +132,12 @@ EnvironmentMonitor::EnvironmentMonitor(const urdf::ModelInterfaceConstSharedPtr&
                                        const std::string& name,
                                        const std::string& discrete_plugin,
                                        const std::string& continuous_plugin)
-  : monitor_name_(name), discrete_plugin_name_(discrete_plugin), continuous_plugin_name_(continuous_plugin), nh_("~"), urdf_model_(urdf_model), srdf_model_(srdf_model)
+  : monitor_name_(name)
+  , discrete_plugin_name_(discrete_plugin)
+  , continuous_plugin_name_(continuous_plugin)
+  , nh_("~")
+  , urdf_model_(urdf_model)
+  , srdf_model_(srdf_model)
 {
   initialize(urdf_model, srdf_model);
 }

@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include <ros/ros.h>
 
-void addCollisionObjects(tesseract::DiscreteContactManagerBase &checker, bool use_convex_mesh = false)
+void addCollisionObjects(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mesh = false)
 {
   //////////////////////
   // Add box to checker
@@ -55,7 +55,7 @@ void addCollisionObjects(tesseract::DiscreteContactManagerBase &checker, bool us
   checker.addCollisionObject("cone_link", 0, obj3_shapes, obj3_poses, obj3_types);
 }
 
-void runTest(tesseract::DiscreteContactManagerBase &checker)
+void runTest(tesseract::DiscreteContactManagerBase& checker)
 {
   //////////////////////////////////////
   // Test when object is in collision
@@ -84,9 +84,9 @@ void runTest(tesseract::DiscreteContactManagerBase &checker)
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.55, 0.0001);
 
-  std::vector<int> idx = {0, 1, 1};
+  std::vector<int> idx = { 0, 1, 1 };
   if (result_vector[0].link_names[0] != "box_link")
-    idx = {1, 0, -1};
+    idx = { 1, 0, -1 };
 
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.5, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.0, 0.001);
@@ -125,9 +125,9 @@ void runTest(tesseract::DiscreteContactManagerBase &checker)
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, 0.25, 0.001);
 
-  idx = {0, 1, 1};
+  idx = { 0, 1, 1 };
   if (result_vector[0].link_names[0] != "box_link")
-    idx = {1, 0, -1};
+    idx = { 1, 0, -1 };
 
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.5, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.0, 0.001);
@@ -145,7 +145,6 @@ TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionBoxConeUnit)
   tesseract::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker);
   runTest(checker);
-
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxConeUnit)

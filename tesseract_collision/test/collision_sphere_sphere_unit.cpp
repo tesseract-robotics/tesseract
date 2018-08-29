@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include <ros/ros.h>
 
-void addCollisionObjects(tesseract::DiscreteContactManagerBase &checker, bool use_convex_mesh = false)
+void addCollisionObjects(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mesh = false)
 {
   ////////////////////////
   // Add sphere to checker
@@ -73,7 +73,7 @@ void addCollisionObjects(tesseract::DiscreteContactManagerBase &checker, bool us
   checker.addCollisionObject("sphere1_link", 0, obj3_shapes, obj3_poses, obj3_types);
 }
 
-void runTest(tesseract::DiscreteContactManagerBase &checker)
+void runTest(tesseract::DiscreteContactManagerBase& checker)
 {
   //////////////////////////////////////
   // Test when object is in collision
@@ -102,9 +102,9 @@ void runTest(tesseract::DiscreteContactManagerBase &checker)
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.30, 0.0001);
 
-  std::vector<int> idx = {0, 1, 1};
+  std::vector<int> idx = { 0, 1, 1 };
   if (result_vector[0].link_names[0] != "sphere_link")
-    idx = {1, 0, -1};
+    idx = { 1, 0, -1 };
 
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.25, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.0, 0.001);
@@ -134,7 +134,7 @@ void runTest(tesseract::DiscreteContactManagerBase &checker)
   /////////////////////////////////////////////
   result.clear();
   result_vector.clear();
-  req.contact_distance = 0.52; //0.251;
+  req.contact_distance = 0.52;  // 0.251;
   checker.setContactRequest(req);
 
   checker.contactTest(result);
@@ -143,9 +143,9 @@ void runTest(tesseract::DiscreteContactManagerBase &checker)
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, 0.5, 0.0001);
 
-  idx = {0, 1, 1};
+  idx = { 0, 1, 1 };
   if (result_vector[0].link_names[0] != "sphere_link")
-    idx = {1, 0, -1};
+    idx = { 1, 0, -1 };
 
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.25, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.0, 0.001);
@@ -165,7 +165,7 @@ TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionSphereSphereUnit)
   runTest(checker);
 }
 
-//TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionSphereSphereConvexHullUnit)
+// TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionSphereSphereConvexHullUnit)
 //{
 //  tesseract::BulletDiscreteSimpleManager checker;
 //  addCollisionObjects(checker, true);
@@ -179,7 +179,7 @@ TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionSphereSphereUnit)
   runTest(checker);
 }
 
-//TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionSphereSphereConvexHullUnit)
+// TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionSphereSphereConvexHullUnit)
 //{
 //  tesseract::BulletDiscreteBVHManager checker;
 //  addCollisionObjects(checker, true);

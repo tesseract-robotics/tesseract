@@ -31,7 +31,6 @@
 
 namespace tesseract
 {
-
 typedef std::pair<std::string, std::string> ObjectPairKey;
 
 /**
@@ -53,7 +52,8 @@ inline ObjectPairKey getObjectPairKey(const std::string& obj1, const std::string
  * @param verbose If true print debug informaton
  * @return True if contact is allowed between the two object, otherwise false.
  */
-inline bool isContactAllowed(const std::string& name1, const std::string& name2, const IsContactAllowedFn acm, bool verbose = false)
+inline bool
+isContactAllowed(const std::string& name1, const std::string& name2, const IsContactAllowedFn acm, bool verbose = false)
 {
   // do not distance check geoms part of the same object / link / attached body
   if (name1 == name2)
@@ -63,9 +63,7 @@ inline bool isContactAllowed(const std::string& name1, const std::string& name2,
   {
     if (verbose)
     {
-      ROS_DEBUG("Collision between '%s' and '%s' is allowed. No contacts are computed.",
-                name1.c_str(),
-                name2.c_str());
+      ROS_DEBUG("Collision between '%s' and '%s' is allowed. No contacts are computed.", name1.c_str(), name2.c_str());
     }
     return true;
   }
@@ -128,4 +126,4 @@ inline ContactResult* processResult(ContactDistanceData& cdata,
 }
 }
 
-#endif // TESSERACT_COLLISION_CONTACT_CHECKER_COMMON_H
+#endif  // TESSERACT_COLLISION_CONTACT_CHECKER_COMMON_H

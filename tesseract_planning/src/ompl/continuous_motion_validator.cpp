@@ -80,7 +80,8 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
   tesseract::EnvStatePtr state1 = env_->getState(joints_, finish_joints);
 
   for (const auto& link_name : links_)
-    contact_manager_->setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
+    contact_manager_->setCollisionObjectsTransform(
+        link_name, state0->transforms[link_name], state1->transforms[link_name]);
 
   tesseract::ContactResultMap contact_map;
   contact_manager_->contactTest(contact_map);
