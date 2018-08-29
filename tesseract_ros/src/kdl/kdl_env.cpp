@@ -64,7 +64,6 @@ using Eigen::VectorXd;
 bool KDLEnv::init(urdf::ModelInterfaceConstSharedPtr urdf_model) { return init(urdf_model, nullptr); }
 bool KDLEnv::init(urdf::ModelInterfaceConstSharedPtr urdf_model, srdf::ModelConstSharedPtr srdf_model)
 {
-  ros::NodeHandle nh;
   initialized_ = false;
   urdf_model_ = urdf_model;
   object_colors_ = ObjectColorMapPtr(new ObjectColorMap());
