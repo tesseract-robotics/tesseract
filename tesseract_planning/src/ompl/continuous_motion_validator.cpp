@@ -14,6 +14,14 @@ ContinuousMotionValidator::ContinuousMotionValidator(ompl::base::SpaceInformatio
   links_ = env_->getManipulator(manipulator)->getLinkNames();
   is_allowed_cb_ =
       std::bind(&ContinuousMotionValidator::isContactAllowed, this, std::placeholders::_1, std::placeholders::_2);
+
+  tesseract::ContactRequest req;
+  req.link_names = links_;
+  req.isContactAllowed = is_allowed_cb_;
+  req.type = tesseract::ContactRequestTypes::FIRST;
+
+  contact_manager_ = env_->getContinuousContactManager();
+  contact_manager_->setContactRequest(req);
 }
 
 bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1, const ompl::base::State* s2) const
@@ -64,16 +72,19 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
   const ompl::base::RealVectorStateSpace::StateType* start = s1->as<ompl::base::RealVectorStateSpace::StateType>();
   const ompl::base::RealVectorStateSpace::StateType* finish = s2->as<ompl::base::RealVectorStateSpace::StateType>();
 
-  tesseract::ContactRequest req;
-  req.link_names = links_;
-  req.isContactAllowed = is_allowed_cb_;
-
   const auto dof = si_->getStateDimension();
   Eigen::Map<Eigen::VectorXd> start_joints(start->values, dof);
   Eigen::Map<Eigen::VectorXd> finish_joints(finish->values, dof);
 
+  tesseract::EnvStatePtr state0 = env_->getState(joints_, start_joints);
+  tesseract::EnvStatePtr state1 = env_->getState(joints_, finish_joints);
+
+  for (const auto& link_name : links_)
+    contact_manager_->setCollisionObjectsTransform(
+        link_name, state0->transforms[link_name], state1->transforms[link_name]);
+
   tesseract::ContactResultMap contact_map;
-  env_->calcCollisionsContinuous(req, joints_, start_joints, finish_joints, contact_map);
+  contact_manager_->contactTest(contact_map);
 
   return contact_map.empty();
 }

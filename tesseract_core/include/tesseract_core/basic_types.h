@@ -136,9 +136,10 @@ namespace ContactRequestTypes
 {
 enum ContactRequestType
 {
-  SINGLE, /**< Return the global minimum for a pair of objects */
-  ALL,    /**< Return all contacts for a pair of objects */
-  LIMITED /**< Return limited set of contacts for a pair of objects */
+  FIRST,   /**< Return at first contact for any pair of objects */
+  CLOSEST, /**< Return the global minimum for a pair of objects */
+  ALL,     /**< Return all contacts for a pair of objects */
+  LIMITED  /**< Return limited set of contacts for a pair of objects */
 };
 }
 typedef ContactRequestTypes::ContactRequestType ContactRequestType;
@@ -151,7 +152,7 @@ struct ContactRequest
   std::vector<std::string> link_names; /**< Name of the links to calculate distance data for. */
   IsContactAllowedFn isContactAllowed; /**< The allowed collision matrix */
 
-  ContactRequest() : type(ContactRequestType::SINGLE), contact_distance(0.0) {}
+  ContactRequest() : type(ContactRequestType::CLOSEST), contact_distance(0.0) {}
 };
 
 struct ContactResult
@@ -185,6 +186,20 @@ struct ContactResult
 };
 typedef std::vector<ContactResult> ContactResultVector;
 typedef std::map<std::pair<std::string, std::string>, ContactResultVector> ContactResultMap;
+
+/// Destance query results information
+struct ContactDistanceData
+{
+  ContactDistanceData(const ContactRequest* req, ContactResultMap* res) : req(req), res(res), done(false) {}
+  /// Distance query request information
+  const ContactRequest* req;
+
+  /// Destance query results information
+  ContactResultMap* res;
+
+  /// Indicate if search is finished
+  bool done;
+};
 
 static inline void moveContactResultsMapToContactResultsVector(ContactResultMap& contact_map,
                                                                ContactResultVector& contact_vector)

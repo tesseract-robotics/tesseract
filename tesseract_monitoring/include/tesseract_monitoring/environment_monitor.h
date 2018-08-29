@@ -100,7 +100,10 @@ public:
    *  @param tf A pointer to a tf::Transformer
    *  @param name A name identifying this planning scene monitor
    */
-  EnvironmentMonitor(const std::string& robot_description, const std::string& name, const std::string& plugin = "");
+  EnvironmentMonitor(const std::string& robot_description,
+                     const std::string& name,
+                     const std::string& discrete_plugin = "",
+                     const std::string& continuous_plugin = "");
 
   /** @brief Constructor
    *  @param rml A pointer to a kinematic model loader
@@ -110,7 +113,8 @@ public:
   EnvironmentMonitor(const urdf::ModelInterfaceConstSharedPtr& urdf_model,
                      const srdf::ModelConstSharedPtr& srdf_model,
                      const std::string& name,
-                     const std::string& plugin = "");
+                     const std::string& discrete_plugin = "",
+                     const std::string& continuous_plugin = "");
 
   ~EnvironmentMonitor();
 
@@ -277,7 +281,8 @@ protected:
 
   /// The name of this scene monitor
   std::string monitor_name_;
-  std::string plugin_name_;
+  std::string discrete_plugin_name_;
+  std::string continuous_plugin_name_;
 
   tesseract_ros::ROSBasicEnvPtr env_;
   tesseract_ros::ROSBasicEnvConstPtr env_const_;

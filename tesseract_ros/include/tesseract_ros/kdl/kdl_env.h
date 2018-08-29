@@ -43,7 +43,8 @@
 #ifndef TESSERACT_ROS_BULLET_ENV_H
 #define TESSERACT_ROS_BULLET_ENV_H
 
-#include <tesseract_collision/contact_checker_base.h>
+#include <tesseract_core/discrete_contact_manager_base.h>
+#include <tesseract_core/continuous_contact_manager_base.h>
 #include <tesseract_ros/ros_basic_env.h>
 #include <kdl/tree.hpp>
 #include <kdl_parser/kdl_parser.hpp>
@@ -58,8 +59,10 @@ namespace tesseract
 {
 namespace tesseract_ros
 {
-typedef pluginlib::ClassLoader<ContactCheckerBase> ContactCheckerBasePluginLoader;
-typedef std::shared_ptr<ContactCheckerBasePluginLoader> ContactCheckerBasePluginLoaderPtr;
+typedef pluginlib::ClassLoader<DiscreteContactManagerBase> DiscreteContactManagerBasePluginLoader;
+typedef pluginlib::ClassLoader<ContinuousContactManagerBase> ContinuousContactManagerBasePluginLoader;
+typedef std::shared_ptr<DiscreteContactManagerBasePluginLoader> DiscreteContactManagerBasePluginLoaderPtr;
+typedef std::shared_ptr<ContinuousContactManagerBasePluginLoader> ContinuousContactManagerBasePluginLoaderPtr;
 
 class KDLEnv : public ROSBasicEnv
 {
@@ -72,9 +75,13 @@ public:
                                        this,
                                        std::placeholders::_1,
                                        std::placeholders::_2);
-    contact_checker_loader_.reset(new ContactCheckerBasePluginLoader("tesseract_collision",
-                                                                     "tesseract::"
-                                                                     "ContactCheckerBase"));
+    discrete_manager_loader_.reset(new DiscreteContactManagerBasePluginLoader("tesseract_core",
+                                                                              "tesseract::"
+                                                                              "DiscreteContactManagerBase"));
+
+    continuous_manager_loader_.reset(new ContinuousContactManagerBasePluginLoader("tesseract_core",
+                                                                                  "tesseract::"
+                                                                                  "ContinuousContactManagerBase"));
   }
 
   bool init(urdf::ModelInterfaceConstSharedPtr urdf_model) override;
@@ -83,38 +90,6 @@ public:
   void setName(const std::string& name) override { name_ = name; }
   const std::string& getName() const override { return name_; }
   bool checkInitialized() const override { return initialized_; }
-  void calcDistancesDiscrete(const ContactRequest& req,
-                             const std::vector<std::string>& joint_names,
-                             const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                             ContactResultMap& contacts) const override;
-
-  void calcDistancesContinuous(const ContactRequest& req,
-                               const std::vector<std::string>& joint_names,
-                               const Eigen::Ref<const Eigen::VectorXd>& joint_values1,
-                               const Eigen::Ref<const Eigen::VectorXd>& joint_values2,
-                               ContactResultMap& contacts) const override;
-
-  void calcCollisionsDiscrete(const ContactRequest& req,
-                              const std::vector<std::string>& joint_names,
-                              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                              ContactResultMap& contacts) const override;
-
-  void calcCollisionsContinuous(const ContactRequest& req,
-                                const std::vector<std::string>& joint_names,
-                                const Eigen::Ref<const Eigen::VectorXd>& joint_values1,
-                                const Eigen::Ref<const Eigen::VectorXd>& joint_values2,
-                                ContactResultMap& contacts) const override;
-
-  bool continuousCollisionCheckTrajectory(const std::vector<std::string>& joint_names,
-                                          const std::vector<std::string>& link_names,
-                                          const Eigen::Ref<const TrajArray>& traj,
-                                          ContactResultMap& contacts) const override;
-
-  bool continuousCollisionCheckTrajectory(const std::vector<std::string>& joint_names,
-                                          const std::vector<std::string>& link_names,
-                                          const Eigen::Ref<const TrajArray>& traj,
-                                          ContactResult& contacts) const override;
-
   EnvStateConstPtr getState() const override { return current_state_; }
   void setState(const std::unordered_map<std::string, double>& joints) override;
   void setState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values) override;
@@ -173,15 +148,10 @@ public:
   AllowedCollisionMatrixPtr getAllowedCollisionMatrixNonConst() override { return allowed_collision_matrix_; }
   IsContactAllowedFn getIsContactAllowedFn() const override { return is_contact_allowed_fn_; }
   void setIsContactAllowedFn(IsContactAllowedFn fn) override { is_contact_allowed_fn_ = fn; }
-  void loadContactCheckerPlugin(const std::string& plugin) override;
-
-  // Methods used for environment contact monitors
-  void setContactRequest(const ContactRequest& req) override { contact_checker_->setContactRequest(req); }
-  void calcDistancesDiscrete(ContactResultMap& contacts) override { contact_checker_->calcDistancesDiscrete(contacts); }
-  void calcCollisionsDiscrete(ContactResultMap& contacts) override
-  {
-    contact_checker_->calcCollisionsDiscrete(contacts);
-  }
+  DiscreteContactManagerBasePtr getDiscreteContactManager() const override { return discrete_manager_->clone(); }
+  ContinuousContactManagerBasePtr getContinuousContactManager() const override { return continuous_manager_->clone(); }
+  void loadDiscreteContactManagerPlugin(const std::string& plugin) override;
+  void loadContinuousContactManagerPlugin(const std::string& plugin) override;
 
 private:
   bool initialized_;                                           /**< Identifies if the object has been initialized */
@@ -201,11 +171,13 @@ private:
   std::vector<std::string> active_link_names_;                /**< A vector of active link names */
   ObjectColorMapPtr object_colors_;                           /**< A map of objects to color */
   AllowedCollisionMatrixPtr
-      allowed_collision_matrix_;          /**< The allowed collision matrix used during collision checking */
-  ContactCheckerBasePtr contact_checker_; /**< The contact checker object */
+      allowed_collision_matrix_; /**< The allowed collision matrix used during collision checking */
   IsContactAllowedFn
       is_contact_allowed_fn_; /**< The function used to determine if two objects are allowed in collision */
-  ContactCheckerBasePluginLoaderPtr contact_checker_loader_; /**< The contact checker loader */
+  DiscreteContactManagerBasePtr discrete_manager_;                        /**< The discrete contact manager object */
+  ContinuousContactManagerBasePtr continuous_manager_;                    /**< The continuous contact manager object */
+  DiscreteContactManagerBasePluginLoaderPtr discrete_manager_loader_;     /**< The discrete contact manager loader */
+  ContinuousContactManagerBasePluginLoaderPtr continuous_manager_loader_; /**< The continuous contact manager loader */
 
   bool defaultIsContactAllowedFn(const std::string& link_name1, const std::string& link_name2) const;
 
