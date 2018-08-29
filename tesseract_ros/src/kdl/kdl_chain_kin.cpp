@@ -79,7 +79,7 @@ bool KDLChainKin::calcFwdKin(Eigen::Affine3d& pose,
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
 
-  const std::string& chain_link_name = link_name_too_chain_link_name_.at(link_name);
+  const std::string& chain_link_name = link_name_too_chain_link_name_.at(link_name);  
   assert(segment_index_.find(chain_link_name) != segment_index_.end());
 
   int segment_nr = segment_index_.at(chain_link_name);
