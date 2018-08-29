@@ -75,3 +75,16 @@ install(DIRECTORY include/${PROJECT_NAME}/
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
  )
+
+if (CATKIN_ENABLE_TESTING)
+
+  find_package(rostest REQUIRED)
+
+  include_directories(
+      ${catkin_INCLUDE_DIRS}
+  )
+
+  catkin_add_gtest(${PROJECT_NAME}_kdl_chain_kin_unit test/kdl_chain_kin_unit.cpp)
+  target_link_libraries(${PROJECT_NAME}_kdl_chain_kin_unit ${PROJECT_NAME}_kdl ${catkin_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${orocos_kdl_LIBRARIES})
+
+endif()
