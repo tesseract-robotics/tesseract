@@ -313,6 +313,8 @@ bool KDLChainKin::init(urdf::ModelInterfaceConstSharedPtr model,
   joint_too_segment.resize(robot_chain_.getNrOfJoints());
   joint_too_segment.back() = -1;
 
+  link_name_too_chain_link_name_[base_name_] = base_name_;
+  segment_index_[base_name_] = 0;
   for (unsigned i = 0, j = 0; i < robot_chain_.getNrOfSegments(); ++i)
   {
     const KDL::Segment& seg = robot_chain_.getSegment(i);
@@ -351,6 +353,13 @@ bool KDLChainKin::init(urdf::ModelInterfaceConstSharedPtr model,
     urdf::LinkConstSharedPtr link_model = model_->getLink(seg.getName());
     while (!found)
     {
+      // Check if the link is the root
+      if (link_model->parent_joint == nullptr)
+      {
+        segment_index_[seg.getName()] = 0;
+        break;
+      }
+
       std::string joint_name = link_model->parent_joint->name;
       std::vector<std::string>::const_iterator it = std::find(joint_list_.begin(), joint_list_.end(), joint_name);
       if (it != joint_list_.end())
