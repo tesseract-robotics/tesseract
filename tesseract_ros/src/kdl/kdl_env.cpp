@@ -322,7 +322,10 @@ bool KDLEnv::addManipulator(const std::string& base_link,
   if (!hasManipulator(manipulator_name))
   {
     KDLChainKinPtr manip(new KDLChainKin());
-    manip->init(urdf_model_, base_link, tip_link, manipulator_name);
+    if (!manip->init(urdf_model_, base_link, tip_link, manipulator_name))
+    {
+      return false;
+    }
 
     manipulators_.insert(std::make_pair(manipulator_name, manip));
     return true;
@@ -335,7 +338,10 @@ bool KDLEnv::addManipulator(const std::vector<std::string>& joint_names, const s
   if (!hasManipulator(manipulator_name))
   {
     KDLJointKinPtr manip(new KDLJointKin());
-    manip->init(urdf_model_, joint_names, manipulator_name);
+    if (!manip->init(urdf_model_, joint_names, manipulator_name))
+    {
+      return false;
+    }
 
     manipulators_.insert(std::make_pair(manipulator_name, manip));
     return true;
