@@ -39,10 +39,17 @@
 
 namespace tesseract
 {
+template <typename T>
+using AlignedVector = std::vector<T, Eigen::aligned_allocator<T>>;
+
+template <typename Key, typename Value>
+using AlignedMap = std::map<Key, Value, std::less<Key>, Eigen::aligned_allocator<std::pair<const Key, Value>>>;
+
+using VectorIsometry3d = AlignedVector<Eigen::Isometry3d>;
+using VectorVector4d = AlignedVector<Eigen::Vector4d>;
+using TransformMap = AlignedMap<std::string, Eigen::Isometry3d>;
+
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> TrajArray;
-typedef std::vector<Eigen::Isometry3d, Eigen::aligned_allocator<Eigen::Isometry3d> > VectorIsometry3d;
-typedef std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > VectorVector4d;
-typedef std::map<std::string, Eigen::Isometry3d> TransformMap;
 
 struct AllowedCollisionMatrix
 {
