@@ -48,28 +48,28 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   KDLJointKin() : ROSBasicKin(), initialized_(false) {}
-  bool calcFwdKin(Eigen::Affine3d& pose,
-                  const Eigen::Affine3d& change_base,
+  bool calcFwdKin(Eigen::Isometry3d& pose,
+                  const Eigen::Isometry3d& change_base,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
 
-  bool calcFwdKin(Eigen::Affine3d& pose,
-                  const Eigen::Affine3d& change_base,
+  bool calcFwdKin(Eigen::Isometry3d& pose,
+                  const Eigen::Isometry3d& change_base,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                   const std::string& link_name,
                   const EnvState& state) const override;
 
   bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                    const Eigen::Affine3d& change_base,
+                    const Eigen::Isometry3d& change_base,
                     const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
 
   bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                    const Eigen::Affine3d& change_base,
+                    const Eigen::Isometry3d& change_base,
                     const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                     const std::string& link_name,
                     const EnvState& state) const override;
 
   bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                    const Eigen::Affine3d& change_base,
+                    const Eigen::Isometry3d& change_base,
                     const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                     const std::string& link_name,
                     const EnvState& state,
@@ -141,14 +141,14 @@ private:
   std::vector<std::string> attached_link_list_;                /**< A list of attached link names */
 
   /** @brief calcFwdKin helper function */
-  bool calcFwdKinHelper(Eigen::Affine3d& pose,
-                        const Eigen::Affine3d& change_base,
+  bool calcFwdKinHelper(Eigen::Isometry3d& pose,
+                        const Eigen::Isometry3d& change_base,
                         const KDL::JntArray& kdl_joints,
                         const std::string& link_name) const;
 
   /** @brief calcJacobian helper function */
   bool calcJacobianHelper(KDL::Jacobian& jacobian,
-                          const Eigen::Affine3d& change_base,
+                          const Eigen::Isometry3d& change_base,
                           const KDL::JntArray& kdl_joints,
                           const std::string& link_name) const;
 

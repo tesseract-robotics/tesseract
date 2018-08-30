@@ -143,7 +143,7 @@ ContinuousContactManagerBasePtr BulletCastSimpleManager::clone() const
 bool BulletCastSimpleManager::addCollisionObject(const std::string& name,
                                                  const int& mask_id,
                                                  const std::vector<shapes::ShapeConstPtr>& shapes,
-                                                 const EigenSTL::vector_Affine3d& shape_poses,
+                                                 const VectorIsometry3d& shape_poses,
                                                  const CollisionObjectTypeVector& collision_object_types,
                                                  bool enabled)
 {
@@ -226,7 +226,7 @@ bool BulletCastSimpleManager::disableCollisionObject(const std::string& name)
   return disabled;
 }
 
-void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& name, const Eigen::Affine3d& pose)
+void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose)
 {
   // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
   // geometry
@@ -237,7 +237,7 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& na
 }
 
 void BulletCastSimpleManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                                           const EigenSTL::vector_Affine3d& poses)
+                                                           const VectorIsometry3d& poses)
 {
   assert(names.size() == poses.size());
   for (auto i = 0u; i < names.size(); ++i)
@@ -251,8 +251,8 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const TransformMap& t
 }
 
 void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& name,
-                                                           const Eigen::Affine3d& pose1,
-                                                           const Eigen::Affine3d& pose2)
+                                                           const Eigen::Isometry3d& pose1,
+                                                           const Eigen::Isometry3d& pose2)
 {
   // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
   // geometry
@@ -270,8 +270,8 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& na
 }
 
 void BulletCastSimpleManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                                           const EigenSTL::vector_Affine3d& pose1,
-                                                           const EigenSTL::vector_Affine3d& pose2)
+                                                           const VectorIsometry3d& pose1,
+                                                           const VectorIsometry3d& pose2)
 {
   assert(names.size() == pose1.size() == pose2.size());
   for (auto i = 0u; i < names.size(); ++i)
@@ -525,7 +525,7 @@ ContinuousContactManagerBasePtr BulletCastBVHManager::clone() const
 bool BulletCastBVHManager::addCollisionObject(const std::string& name,
                                               const int& mask_id,
                                               const std::vector<shapes::ShapeConstPtr>& shapes,
-                                              const EigenSTL::vector_Affine3d& shape_poses,
+                                              const VectorIsometry3d& shape_poses,
                                               const CollisionObjectTypeVector& collision_object_types,
                                               bool enabled)
 {
@@ -624,7 +624,7 @@ bool BulletCastBVHManager::disableCollisionObject(const std::string& name)
   return disabled;
 }
 
-void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name, const Eigen::Affine3d& pose)
+void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose)
 {
   // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
   // geometry
@@ -637,7 +637,7 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
 }
 
 void BulletCastBVHManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                                        const EigenSTL::vector_Affine3d& poses)
+                                                        const VectorIsometry3d& poses)
 {
   assert(names.size() == poses.size());
   for (auto i = 0u; i < names.size(); ++i)
@@ -651,8 +651,8 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const TransformMap& tran
 }
 
 void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
-                                                        const Eigen::Affine3d& pose1,
-                                                        const Eigen::Affine3d& pose2)
+                                                        const Eigen::Isometry3d& pose1,
+                                                        const Eigen::Isometry3d& pose2)
 {
   // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
   // geometry
@@ -704,8 +704,8 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
 }
 
 void BulletCastBVHManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                                        const EigenSTL::vector_Affine3d& pose1,
-                                                        const EigenSTL::vector_Affine3d& pose2)
+                                                        const VectorIsometry3d& pose1,
+                                                        const VectorIsometry3d& pose2)
 {
   assert(names.size() == pose1.size() == pose2.size());
   for (auto i = 0u; i < names.size(); ++i)

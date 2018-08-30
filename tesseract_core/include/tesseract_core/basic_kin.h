@@ -55,8 +55,8 @@ public:
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
    * @return True if calculation successful, False if anything is wrong (including uninitialized BasicKin)
    */
-  virtual bool calcFwdKin(Eigen::Affine3d& pose,
-                          const Eigen::Affine3d& change_base,
+  virtual bool calcFwdKin(Eigen::Isometry3d& pose,
+                          const Eigen::Isometry3d& change_base,
                           const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
 
   /**
@@ -68,8 +68,8 @@ public:
    * @param state The state of the environment
    * @return True if calculation successful, False if anything is wrong (including uninitialized BasicKin)
    */
-  virtual bool calcFwdKin(Eigen::Affine3d& pose,
-                          const Eigen::Affine3d& change_base,
+  virtual bool calcFwdKin(Eigen::Isometry3d& pose,
+                          const Eigen::Isometry3d& change_base,
                           const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                           const std::string& link_name,
                           const EnvState& state) const = 0;
@@ -82,7 +82,7 @@ public:
    * @return True if calculation successful, False if anything is wrong (including uninitialized BasicKin)
    */
   virtual bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                            const Eigen::Affine3d& change_base,
+                            const Eigen::Isometry3d& change_base,
                             const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
 
   /**
@@ -95,7 +95,7 @@ public:
    * @return True if calculation successful, False if anything is wrong (including uninitialized BasicKin)
    */
   virtual bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                            const Eigen::Affine3d& change_base,
+                            const Eigen::Isometry3d& change_base,
                             const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                             const std::string& link_name,
                             const EnvState& state) const = 0;
@@ -111,7 +111,7 @@ public:
    * @return True if calculation successful, False if anything is wrong (including uninitialized BasicKin)
    */
   virtual bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                            const Eigen::Affine3d& change_base,
+                            const Eigen::Isometry3d& change_base,
                             const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                             const std::string& link_name,
                             const EnvState& state,

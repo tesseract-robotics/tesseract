@@ -58,7 +58,7 @@ public:
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,
                           const std::vector<shapes::ShapeConstPtr>& shapes,
-                          const EigenSTL::vector_Affine3d& shape_poses,
+                          const VectorIsometry3d& shape_poses,
                           const CollisionObjectTypeVector& collision_object_types,
                           bool enabled = true) override;
 
@@ -70,20 +70,20 @@ public:
 
   bool disableCollisionObject(const std::string& name) override;
 
-  void setCollisionObjectsTransform(const std::string& name, const Eigen::Affine3d& pose) override;
+  void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override;
 
   void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                    const EigenSTL::vector_Affine3d& poses) override;
+                                    const VectorIsometry3d& poses) override;
 
   void setCollisionObjectsTransform(const TransformMap& transforms) override;
 
   void setCollisionObjectsTransform(const std::string& name,
-                                    const Eigen::Affine3d& pose1,
-                                    const Eigen::Affine3d& pose2) override;
+                                    const Eigen::Isometry3d& pose1,
+                                    const Eigen::Isometry3d& pose2) override;
 
   void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                    const EigenSTL::vector_Affine3d& pose1,
-                                    const EigenSTL::vector_Affine3d& pose2) override;
+                                    const VectorIsometry3d& pose1,
+                                    const VectorIsometry3d& pose2) override;
 
   void setCollisionObjectsTransform(const TransformMap& pose1, const TransformMap& pose2) override;
 
@@ -165,7 +165,7 @@ public:
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,
                           const std::vector<shapes::ShapeConstPtr>& shapes,
-                          const EigenSTL::vector_Affine3d& shape_poses,
+                          const VectorIsometry3d& shape_poses,
                           const CollisionObjectTypeVector& collision_object_types,
                           bool enabled = true) override;
 
@@ -177,20 +177,20 @@ public:
 
   bool disableCollisionObject(const std::string& name) override;
 
-  void setCollisionObjectsTransform(const std::string& name, const Eigen::Affine3d& pose) override;
+  void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override;
 
   void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                    const EigenSTL::vector_Affine3d& poses) override;
+                                    const VectorIsometry3d& poses) override;
 
   void setCollisionObjectsTransform(const TransformMap& transforms) override;
 
   void setCollisionObjectsTransform(const std::string& name,
-                                    const Eigen::Affine3d& pose1,
-                                    const Eigen::Affine3d& pose2) override;
+                                    const Eigen::Isometry3d& pose1,
+                                    const Eigen::Isometry3d& pose2) override;
 
   void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                    const EigenSTL::vector_Affine3d& pose1,
-                                    const EigenSTL::vector_Affine3d& pose2) override;
+                                    const VectorIsometry3d& pose1,
+                                    const VectorIsometry3d& pose2) override;
 
   void setCollisionObjectsTransform(const TransformMap& pose1, const TransformMap& pose2) override;
 
@@ -286,8 +286,8 @@ void constructCastContactManager(T& manager,
       else if (btBroadphaseProxy::isCompound(new_cow->getCollisionShape()->getShapeType()))
       {
         btCompoundShape* compound = static_cast<btCompoundShape*>(new_cow->getCollisionShape());
-        const Eigen::Affine3d& tf1 = it1->second;
-        const Eigen::Affine3d& tf2 = it2->second;
+        const Eigen::Isometry3d& tf1 = it1->second;
+        const Eigen::Isometry3d& tf2 = it2->second;
 
         btCompoundShape* new_compound = new btCompoundShape(/*dynamicAABBtree=*/false);
 

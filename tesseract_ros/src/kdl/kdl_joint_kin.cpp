@@ -55,8 +55,8 @@ KDL::JntArray KDLJointKin::getKDLJntArray(const EnvState& state,
   return kdl_joints;
 }
 
-bool KDLJointKin::calcFwdKinHelper(Eigen::Affine3d& pose,
-                                   const Eigen::Affine3d& change_base,
+bool KDLJointKin::calcFwdKinHelper(Eigen::Isometry3d& pose,
+                                   const Eigen::Isometry3d& change_base,
                                    const KDL::JntArray& kdl_joints,
                                    const std::string& link_name) const
 {
@@ -73,8 +73,8 @@ bool KDLJointKin::calcFwdKinHelper(Eigen::Affine3d& pose,
   return true;
 }
 
-bool KDLJointKin::calcFwdKin(Eigen::Affine3d& /*pose*/,
-                             const Eigen::Affine3d& /*change_base*/,
+bool KDLJointKin::calcFwdKin(Eigen::Isometry3d& /*pose*/,
+                             const Eigen::Isometry3d& /*change_base*/,
                              const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(checkInitialized());
@@ -86,8 +86,8 @@ bool KDLJointKin::calcFwdKin(Eigen::Affine3d& /*pose*/,
   return false;
 }
 
-bool KDLJointKin::calcFwdKin(Eigen::Affine3d& pose,
-                             const Eigen::Affine3d& change_base,
+bool KDLJointKin::calcFwdKin(Eigen::Isometry3d& pose,
+                             const Eigen::Isometry3d& change_base,
                              const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                              const std::string& link_name,
                              const EnvState& state) const
@@ -101,7 +101,7 @@ bool KDLJointKin::calcFwdKin(Eigen::Affine3d& pose,
 }
 
 bool KDLJointKin::calcJacobianHelper(KDL::Jacobian& jacobian,
-                                     const Eigen::Affine3d& change_base,
+                                     const Eigen::Isometry3d& change_base,
                                      const KDL::JntArray& kdl_joints,
                                      const std::string& link_name) const
 {
@@ -123,7 +123,7 @@ bool KDLJointKin::calcJacobianHelper(KDL::Jacobian& jacobian,
 }
 
 bool KDLJointKin::calcJacobian(Eigen::Ref<Eigen::MatrixXd> /*jacobian*/,
-                               const Eigen::Affine3d& /*change_base*/,
+                               const Eigen::Isometry3d& /*change_base*/,
                                const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(checkInitialized());
@@ -136,7 +136,7 @@ bool KDLJointKin::calcJacobian(Eigen::Ref<Eigen::MatrixXd> /*jacobian*/,
 }
 
 bool KDLJointKin::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                               const Eigen::Affine3d& change_base,
+                               const Eigen::Isometry3d& change_base,
                                const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                const std::string& link_name,
                                const EnvState& state) const
@@ -159,7 +159,7 @@ bool KDLJointKin::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
 }
 
 bool KDLJointKin::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                               const Eigen::Affine3d& change_base,
+                               const Eigen::Isometry3d& change_base,
                                const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                const std::string& link_name,
                                const EnvState& state,
@@ -179,7 +179,7 @@ bool KDLJointKin::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
     // required, but
     // need to figure out if there is a more direct way to get this information
     // from KDL.
-    Eigen::Affine3d refFrame;
+    Eigen::Isometry3d refFrame;
     calcFwdKinHelper(refFrame, change_base, kdl_joint_vals, link_name);
 
     Eigen::VectorXd refPoint = refFrame.translation();

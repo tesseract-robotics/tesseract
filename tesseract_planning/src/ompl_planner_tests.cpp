@@ -26,7 +26,7 @@ static void addBox(tesseract::tesseract_ros::ROSBasicEnv& env)
   tesseract::AttachableObjectPtr obj(new tesseract::AttachableObject());
   std::shared_ptr<shapes::Box> box(new shapes::Box(0.5, 0.001, 0.5));
 
-  Eigen::Affine3d box_pose;
+  Eigen::Isometry3d box_pose;
   box_pose.setIdentity();
   box_pose.translation() = Eigen::Vector3d(0.4, 0, 0.55);
 

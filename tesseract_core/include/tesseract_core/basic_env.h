@@ -215,13 +215,13 @@ public:
    *
    * @return Get a vector of transforms for all links in the environment.
    */
-  virtual vector_Affine3d getLinkTransforms() const = 0;
+  virtual VectorIsometry3d getLinkTransforms() const = 0;
 
   /**
    * @brief Get the transform corresponding to the link.
    * @return Transform and is identity when no transform is available.
    */
-  virtual const Eigen::Affine3d& getLinkTransform(const std::string& link_name) const = 0;
+  virtual const Eigen::Isometry3d& getLinkTransform(const std::string& link_name) const = 0;
 
   /** @brief Get the allowed collision matrix */
   virtual AllowedCollisionMatrixConstPtr getAllowedCollisionMatrix() const = 0;

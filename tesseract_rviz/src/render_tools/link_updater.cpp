@@ -50,7 +50,7 @@ bool tesseract_rviz::LinkUpdater::getLinkTransforms(const std::string& link_name
     return false;
   }
 
-  const Eigen::Affine3d& transform = it->second;
+  const Eigen::Isometry3d& transform = it->second;
   const Eigen::Vector3d& robot_visual_position = transform.translation();
   Eigen::Quaterniond robot_visual_orientation(transform.rotation());
   visual_position = Ogre::Vector3(robot_visual_position.x(), robot_visual_position.y(), robot_visual_position.z());

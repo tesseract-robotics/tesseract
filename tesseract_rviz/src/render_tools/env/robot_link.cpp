@@ -915,7 +915,7 @@ bool RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
 }
 
 bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
-                                               Eigen::Affine3d origin,
+                                               Eigen::Isometry3d origin,
                                                Eigen::Vector4d color,
                                                bool isVisual)
 {

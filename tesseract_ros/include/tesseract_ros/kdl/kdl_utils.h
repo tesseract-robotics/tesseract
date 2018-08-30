@@ -34,11 +34,11 @@ namespace tesseract
 namespace tesseract_ros
 {
 /**
- * @brief Convert KDL::Frame to Eigen::Affine3d
+ * @brief Convert KDL::Frame to Eigen::Isometry3d
  * @param frame Input KDL Frame
  * @param transform Output Eigen transform (Affine3d)
  */
-inline void KDLToEigen(const KDL::Frame& frame, Eigen::Affine3d& transform)
+inline void KDLToEigen(const KDL::Frame& frame, Eigen::Isometry3d& transform)
 {
   transform.setIdentity();
 
@@ -52,11 +52,11 @@ inline void KDLToEigen(const KDL::Frame& frame, Eigen::Affine3d& transform)
 }
 
 /**
- * @brief Convert Eigen::Affine3d to KDL::Frame
+ * @brief Convert Eigen::Isometry3d to KDL::Frame
  * @param transform Input Eigen transform (Affine3d)
  * @param frame Output KDL Frame
  */
-inline void EigenToKDL(const Eigen::Affine3d& transform, KDL::Frame& frame)
+inline void EigenToKDL(const Eigen::Isometry3d& transform, KDL::Frame& frame)
 {
   frame.Identity();
 

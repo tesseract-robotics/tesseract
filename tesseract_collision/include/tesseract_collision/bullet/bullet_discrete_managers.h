@@ -56,7 +56,7 @@ public:
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,
                           const std::vector<shapes::ShapeConstPtr>& shapes,
-                          const EigenSTL::vector_Affine3d& shape_poses,
+                          const VectorIsometry3d& shape_poses,
                           const CollisionObjectTypeVector& collision_object_types,
                           bool enabled = true) override;
 
@@ -68,10 +68,10 @@ public:
 
   bool disableCollisionObject(const std::string& name) override;
 
-  void setCollisionObjectsTransform(const std::string& name, const Eigen::Affine3d& pose) override;
+  void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override;
 
   void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                    const EigenSTL::vector_Affine3d& poses) override;
+                                    const VectorIsometry3d& poses) override;
 
   void setCollisionObjectsTransform(const TransformMap& transforms) override;
 
@@ -157,7 +157,7 @@ public:
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,
                           const std::vector<shapes::ShapeConstPtr>& shapes,
-                          const EigenSTL::vector_Affine3d& shape_poses,
+                          const VectorIsometry3d& shape_poses,
                           const CollisionObjectTypeVector& collision_object_types,
                           bool enabled = true) override;
 
@@ -169,10 +169,10 @@ public:
 
   bool disableCollisionObject(const std::string& name) override;
 
-  void setCollisionObjectsTransform(const std::string& name, const Eigen::Affine3d& pose) override;
+  void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override;
 
   void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                    const EigenSTL::vector_Affine3d& poses) override;
+                                    const VectorIsometry3d& poses) override;
 
   void setCollisionObjectsTransform(const TransformMap& transforms) override;
 

@@ -14,11 +14,11 @@ void addCollisionObjects(tesseract::DiscreteContactManagerBase& checker, bool us
   else
     sphere.reset(new shapes::Sphere(0.25));
 
-  Eigen::Affine3d sphere_pose;
+  Eigen::Isometry3d sphere_pose;
   sphere_pose.setIdentity();
 
   std::vector<shapes::ShapeConstPtr> obj1_shapes;
-  EigenSTL::vector_Affine3d obj1_poses;
+  tesseract::VectorIsometry3d obj1_poses;
   tesseract::CollisionObjectTypeVector obj1_types;
   obj1_shapes.push_back(sphere);
   obj1_poses.push_back(sphere_pose);
@@ -34,11 +34,11 @@ void addCollisionObjects(tesseract::DiscreteContactManagerBase& checker, bool us
   // Add thin box to checker which is disabled
   /////////////////////////////////////////////
   shapes::ShapePtr thin_box(new shapes::Box(0.1, 1, 1));
-  Eigen::Affine3d thin_box_pose;
+  Eigen::Isometry3d thin_box_pose;
   thin_box_pose.setIdentity();
 
   std::vector<shapes::ShapeConstPtr> obj2_shapes;
-  EigenSTL::vector_Affine3d obj2_poses;
+  tesseract::VectorIsometry3d obj2_poses;
   tesseract::CollisionObjectTypeVector obj2_types;
   obj2_shapes.push_back(thin_box);
   obj2_poses.push_back(thin_box_pose);
@@ -56,11 +56,11 @@ void addCollisionObjects(tesseract::DiscreteContactManagerBase& checker, bool us
   else
     sphere1.reset(new shapes::Sphere(0.25));
 
-  Eigen::Affine3d sphere1_pose;
+  Eigen::Isometry3d sphere1_pose;
   sphere1_pose.setIdentity();
 
   std::vector<shapes::ShapeConstPtr> obj3_shapes;
-  EigenSTL::vector_Affine3d obj3_poses;
+  tesseract::VectorIsometry3d obj3_poses;
   tesseract::CollisionObjectTypeVector obj3_types;
   obj3_shapes.push_back(sphere1);
   obj3_poses.push_back(sphere1_pose);
@@ -87,8 +87,8 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
 
   // Test when object is inside another
   tesseract::TransformMap location;
-  location["sphere_link"] = Eigen::Affine3d::Identity();
-  location["sphere1_link"] = Eigen::Affine3d::Identity();
+  location["sphere_link"] = Eigen::Isometry3d::Identity();
+  location["sphere1_link"] = Eigen::Isometry3d::Identity();
   location["sphere1_link"].translation()(0) = 0.2;
   checker.setCollisionObjectsTransform(location);
 
