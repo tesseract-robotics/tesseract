@@ -63,6 +63,7 @@ const float BULLET_SUPPORT_FUNC_TOLERANCE = .01 METERS;
 const float BULLET_LENGTH_TOLERANCE = .001 METERS;
 const float BULLET_EPSILON = 1e-3;
 const double BULLET_DEFAULT_CONTACT_DISTANCE = 0.05;
+const bool BULLET_COMPOUND_USE_DYNAMIC_AABB = true;
 
 inline btVector3 convertEigenToBt(const Eigen::Vector3d& v) { return btVector3(v[0], v[1], v[2]); }
 inline Eigen::Vector3d convertBtToEigen(const btVector3& v) { return Eigen::Vector3d(v.x(), v.y(), v.z()); }
