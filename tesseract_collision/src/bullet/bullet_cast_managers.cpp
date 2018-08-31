@@ -66,7 +66,7 @@ COWPtr makeCastCollisionObject(const COWPtr& cow)
   else if (btBroadphaseProxy::isCompound(new_cow->getCollisionShape()->getShapeType()))
   {
     btCompoundShape* compound = static_cast<btCompoundShape*>(new_cow->getCollisionShape());
-    btCompoundShape* new_compound = new btCompoundShape(/*dynamicAABBtree=*/false);
+    btCompoundShape* new_compound = new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, compound->getNumChildShapes());
 
     for (int i = 0; i < compound->getNumChildShapes(); ++i)
     {

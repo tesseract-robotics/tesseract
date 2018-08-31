@@ -289,7 +289,7 @@ void constructCastContactManager(T& manager,
         const Eigen::Isometry3d& tf1 = it1->second;
         const Eigen::Isometry3d& tf2 = it2->second;
 
-        btCompoundShape* new_compound = new btCompoundShape(/*dynamicAABBtree=*/false);
+        btCompoundShape* new_compound = new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, compound->getNumChildShapes());
 
         for (int i = 0; i < compound->getNumChildShapes(); ++i)
         {
