@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>fcl_ros</name>
+  <version>0.1.0</version>
+  <description>The FCL Catkin Package</description>
+  <maintainer email="levi.armstrong@swri.org">Levi Armstrong</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>libccd_ros</depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+
+</package>
