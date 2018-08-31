@@ -20,22 +20,22 @@ void runTest(tesseract::tesseract_ros::ROSBasicKin& kin)
   //////////////////////////////////////////////////////////////////
   // Test forward kinematics when tip link is the base of the chain
   //////////////////////////////////////////////////////////////////
-  Eigen::Affine3d pose;
+  Eigen::Isometry3d pose;
   Eigen::VectorXd jvals;
   tesseract::EnvState state;
 
   jvals.resize(7);
   jvals.setZero();
 
-  EXPECT_TRUE(kin.calcFwdKin(pose, Eigen::Affine3d::Identity(), jvals, "base_link", state));
-  EXPECT_TRUE(pose.isApprox(Eigen::Affine3d::Identity()));
+  EXPECT_TRUE(kin.calcFwdKin(pose, Eigen::Isometry3d::Identity(), jvals, "base_link", state));
+  EXPECT_TRUE(pose.isApprox(Eigen::Isometry3d::Identity()));
 
   ///////////////////////////
   // Test forward kinematics
   ///////////////////////////
   pose.setIdentity();
-  EXPECT_TRUE(kin.calcFwdKin(pose, Eigen::Affine3d::Identity(), jvals, "tool0", state));
-  Eigen::Affine3d result;
+  EXPECT_TRUE(kin.calcFwdKin(pose, Eigen::Isometry3d::Identity(), jvals, "tool0", state));
+  Eigen::Isometry3d result;
   result.setIdentity();
   result.translation()[0] = 0;
   result.translation()[1] = 0;
