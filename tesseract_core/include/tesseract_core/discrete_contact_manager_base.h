@@ -39,6 +39,8 @@ class DiscreteContactManagerBase
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  virtual ~DiscreteContactManagerBase() {}
+
   /**
    * @brief Clone the manager
    *

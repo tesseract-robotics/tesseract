@@ -40,6 +40,8 @@ class BasicEnv
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  virtual ~BasicEnv() {}
+
   /** @brief Give the environment a name */
   virtual void setName(const std::string& name) = 0;
 
