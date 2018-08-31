@@ -68,7 +68,7 @@ public:
    * @param axis The axis
    * @param scale The size of the axis
    */
-  virtual void plotAxis(const Eigen::Affine3d& axis, double scale) = 0;
+  virtual void plotAxis(const Eigen::Isometry3d& axis, double scale) = 0;
 
   /**
    * @brief This is called at the start of the plotting for each iteration

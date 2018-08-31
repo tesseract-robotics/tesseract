@@ -34,13 +34,22 @@
 #include <vector>
 #include <memory>
 #include <functional>
-#include <eigen_stl_containers/eigen_stl_containers.h>
+#include <map>
+
 
 namespace tesseract
 {
+template <typename T>
+using AlignedVector = std::vector<T, Eigen::aligned_allocator<T>>;
+
+template <typename Key, typename Value>
+using AlignedMap = std::map<Key, Value, std::less<Key>, Eigen::aligned_allocator<std::pair<const Key, Value>>>;
+
+using VectorIsometry3d = AlignedVector<Eigen::Isometry3d>;
+using VectorVector4d = AlignedVector<Eigen::Vector4d>;
+using TransformMap = AlignedMap<std::string, Eigen::Isometry3d>;
+
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> TrajArray;
-typedef std::vector<Eigen::Affine3d, Eigen::aligned_allocator<Eigen::Affine3d> > vector_Affine3d;
-typedef std::map<std::string, Eigen::Affine3d> TransformMap;
 
 struct AllowedCollisionMatrix
 {
@@ -225,10 +234,10 @@ typedef std::shared_ptr<const EnvState> EnvStateConstPtr;
 /**< @brief Information on how the object is attached to the environment */
 struct AttachedBodyInfo
 {
-  AttachedBodyInfo() : transform(Eigen::Affine3d::Identity()) {}
+  AttachedBodyInfo() : transform(Eigen::Isometry3d::Identity()) {}
   std::string object_name;              /**< @brief The name of the AttachableObject being used */
   std::string parent_link_name;         /**< @brief The name of the link to attach the body */
-  Eigen::Affine3d transform;            /**< @brief The transform between parent link and object */
+  Eigen::Isometry3d transform;          /**< @brief The transform between parent link and object */
   std::vector<std::string> touch_links; /**< @brief The names of links which the attached body is allowed to be in
                                            contact with */
 };
@@ -237,8 +246,8 @@ struct AttachedBodyInfo
 struct VisualObjectGeometry
 {
   std::vector<shapes::ShapeConstPtr> shapes; /**< @brief The shape */
-  EigenSTL::vector_Affine3d shape_poses;     /**< @brief The pose of the shape */
-  EigenSTL::vector_Vector4d shape_colors;    /**< @brief (Optional) The shape color (R, G, B, A) */
+  VectorIsometry3d shape_poses;     /**< @brief The pose of the shape */
+  VectorVector4d shape_colors;    /**< @brief (Optional) The shape color (R, G, B, A) */
 };
 
 /** @brief Contains visual geometry data */
@@ -261,8 +270,8 @@ typedef std::shared_ptr<const AttachableObject> AttachableObjectConstPtr;
 /** @brief ObjectColorMap Stores Object color in a 4d vector as RGBA*/
 struct ObjectColor
 {
-  EigenSTL::vector_Vector4d visual;
-  EigenSTL::vector_Vector4d collision;
+  VectorVector4d visual;
+  VectorVector4d collision;
 };
 typedef std::unordered_map<std::string, ObjectColor> ObjectColorMap;
 typedef std::shared_ptr<ObjectColorMap> ObjectColorMapPtr;

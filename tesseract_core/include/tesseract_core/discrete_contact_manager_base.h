@@ -30,7 +30,6 @@
 
 #include <tesseract_core/basic_types.h>
 #include <geometric_shapes/shapes.h>
-#include <eigen_stl_containers/eigen_stl_containers.h>
 #include <memory>
 
 namespace tesseract
@@ -63,7 +62,7 @@ public:
   virtual bool addCollisionObject(const std::string& name,
                                   const int& mask_id,
                                   const std::vector<shapes::ShapeConstPtr>& shapes,
-                                  const EigenSTL::vector_Affine3d& shape_poses,
+                                  const VectorIsometry3d& shape_poses,
                                   const CollisionObjectTypeVector& collision_object_types,
                                   bool enabled = true) = 0;
 
@@ -98,7 +97,7 @@ public:
    * @param name The name of the object
    * @param pose The tranformation in world
    */
-  virtual void setCollisionObjectsTransform(const std::string& name, const Eigen::Affine3d& pose) = 0;
+  virtual void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) = 0;
 
   /**
    * @brief Set a series of collision object's tranforms
@@ -106,7 +105,7 @@ public:
    * @param poses The tranformation in world
    */
   virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                            const EigenSTL::vector_Affine3d& poses) = 0;
+                                            const VectorIsometry3d& poses) = 0;
 
   /**
    * @brief Set a series of collision object's tranforms

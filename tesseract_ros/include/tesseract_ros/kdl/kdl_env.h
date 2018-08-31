@@ -110,9 +110,9 @@ public:
   const std::string& getRootLinkName() const override { return kdl_tree_->getRootSegment()->second.segment.getName(); }
   std::vector<std::string> getLinkNames() const override { return link_names_; }
   std::vector<std::string> getActiveLinkNames() const override { return active_link_names_; }
-  vector_Affine3d getLinkTransforms() const override;
+  VectorIsometry3d getLinkTransforms() const override;
 
-  const Eigen::Affine3d& getLinkTransform(const std::string& link_name) const override;
+  const Eigen::Isometry3d& getLinkTransform(const std::string& link_name) const override;
 
   bool hasManipulator(const std::string& manipulator_name) const override;
 
@@ -184,12 +184,12 @@ private:
   void calculateTransforms(TransformMap& transforms,
                            const KDL::JntArray& q_in,
                            const KDL::SegmentMap::const_iterator& it,
-                           const Eigen::Affine3d& parent_frame) const;
+                           const Eigen::Isometry3d& parent_frame) const;
 
   void calculateTransformsHelper(TransformMap& transforms,
                                  const KDL::JntArray& q_in,
                                  const KDL::SegmentMap::const_iterator& it,
-                                 const Eigen::Affine3d& parent_frame) const;
+                                 const Eigen::Isometry3d& parent_frame) const;
 
   bool setJointValuesHelper(KDL::JntArray& q, const std::string& joint_name, const double& joint_value) const;
 

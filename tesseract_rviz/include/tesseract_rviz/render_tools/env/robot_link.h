@@ -209,7 +209,7 @@ private:
                                       const std::string material_name,
                                       bool isVisual);
   bool createEntityForGeometryElement(const shapes::Shape& geom,
-                                      Eigen::Affine3d origin,
+                                      Eigen::Isometry3d origin,
                                       Eigen::Vector4d color,
                                       bool isVisual);
 

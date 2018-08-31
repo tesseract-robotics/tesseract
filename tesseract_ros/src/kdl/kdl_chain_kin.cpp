@@ -38,8 +38,8 @@ namespace tesseract_ros
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-bool KDLChainKin::calcFwdKinHelper(Eigen::Affine3d& pose,
-                                   const Eigen::Affine3d& change_base,
+bool KDLChainKin::calcFwdKinHelper(Eigen::Isometry3d& pose,
+                                   const Eigen::Isometry3d& change_base,
                                    const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                    int segment_num) const
 {
@@ -60,8 +60,8 @@ bool KDLChainKin::calcFwdKinHelper(Eigen::Affine3d& pose,
   return true;
 }
 
-bool KDLChainKin::calcFwdKin(Eigen::Affine3d& pose,
-                             const Eigen::Affine3d& change_base,
+bool KDLChainKin::calcFwdKin(Eigen::Isometry3d& pose,
+                             const Eigen::Isometry3d& change_base,
                              const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(checkInitialized());
@@ -70,8 +70,8 @@ bool KDLChainKin::calcFwdKin(Eigen::Affine3d& pose,
   return calcFwdKinHelper(pose, change_base, joint_angles);
 }
 
-bool KDLChainKin::calcFwdKin(Eigen::Affine3d& pose,
-                             const Eigen::Affine3d& change_base,
+bool KDLChainKin::calcFwdKin(Eigen::Isometry3d& pose,
+                             const Eigen::Isometry3d& change_base,
                              const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                              const std::string& link_name,
                              const EnvState& state) const
@@ -98,7 +98,7 @@ bool KDLChainKin::calcFwdKin(Eigen::Affine3d& pose,
 }
 
 bool KDLChainKin::calcJacobianHelper(KDL::Jacobian& jacobian,
-                                     const Eigen::Affine3d& change_base,
+                                     const Eigen::Isometry3d& change_base,
                                      const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                      int segment_num) const
 {
@@ -124,7 +124,7 @@ bool KDLChainKin::calcJacobianHelper(KDL::Jacobian& jacobian,
 }
 
 bool KDLChainKin::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                               const Eigen::Affine3d& change_base,
+                               const Eigen::Isometry3d& change_base,
                                const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(checkInitialized());
@@ -143,7 +143,7 @@ bool KDLChainKin::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
 }
 
 bool KDLChainKin::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                               const Eigen::Affine3d& change_base,
+                               const Eigen::Isometry3d& change_base,
                                const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                const std::string& link_name,
                                const EnvState& state) const
@@ -179,7 +179,7 @@ bool KDLChainKin::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
 }
 
 bool KDLChainKin::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                               const Eigen::Affine3d& change_base,
+                               const Eigen::Isometry3d& change_base,
                                const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                const std::string& link_name,
                                const EnvState& /*state*/,
@@ -201,7 +201,7 @@ bool KDLChainKin::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
     // required, but
     // need to figure out if there is a more direct way to get this information
     // from KDL.
-    Eigen::Affine3d refFrame;
+    Eigen::Isometry3d refFrame;
     calcFwdKinHelper(refFrame, change_base, joint_angles, segment_nr);
 
     Eigen::VectorXd refPoint = refFrame.translation();

@@ -24,9 +24,9 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mes
       for (std::size_t z = 0; z < t; ++z)
       {
         std::vector<shapes::ShapeConstPtr> obj3_shapes;
-        EigenSTL::vector_Affine3d obj3_poses;
+        tesseract::VectorIsometry3d obj3_poses;
         tesseract::CollisionObjectTypeVector obj3_types;
-        Eigen::Affine3d sphere_pose;
+        Eigen::Isometry3d sphere_pose;
         sphere_pose.setIdentity();
 
         obj3_shapes.push_back(shapes::ShapePtr(sphere->clone()));
@@ -74,25 +74,25 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mes
     {
       if (tn == 0)
       {
-        Eigen::Affine3d pose = co.second;
+        Eigen::Isometry3d pose = co.second;
         pose.translation()[0] += 0.1;
         manager->setCollisionObjectsTransform(co.first, pose);
       }
       else if (tn == 1)
       {
-        Eigen::Affine3d pose = co.second;
+        Eigen::Isometry3d pose = co.second;
         pose.translation()[1] += 0.1;
         manager->setCollisionObjectsTransform(co.first, pose);
       }
       else if (tn == 2)
       {
-        Eigen::Affine3d pose = co.second;
+        Eigen::Isometry3d pose = co.second;
         pose.translation()[2] += 0.1;
         manager->setCollisionObjectsTransform(co.first, pose);
       }
       else
       {
-        Eigen::Affine3d pose = co.second;
+        Eigen::Isometry3d pose = co.second;
         pose.translation()[0] -= 0.1;
         manager->setCollisionObjectsTransform(co.first, pose);
       }

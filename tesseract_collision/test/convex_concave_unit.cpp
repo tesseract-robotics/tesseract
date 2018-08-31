@@ -9,11 +9,11 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
 
   // Add box to checker
   shapes::ShapePtr box(new shapes::Box(1, 1, 1));
-  Eigen::Affine3d box_pose;
+  Eigen::Isometry3d box_pose;
   box_pose.setIdentity();
 
   std::vector<shapes::ShapeConstPtr> obj1_shapes;
-  EigenSTL::vector_Affine3d obj1_poses;
+  VectorIsometry3d obj1_poses;
   tesseract::CollisionObjectTypeVector obj1_types;
   obj1_shapes.push_back(box);
   obj1_poses.push_back(box_pose);
@@ -23,11 +23,11 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
 
   // Add box to checker
   shapes::ShapePtr thin_box(new shapes::Box(0.1, 1, 1));
-  Eigen::Affine3d thin_box_pose;
+  Eigen::Isometry3d thin_box_pose;
   thin_box_pose.setIdentity();
 
   std::vector<shapes::ShapeConstPtr> obj2_shapes;
-  EigenSTL::vector_Affine3d obj2_poses;
+  VectorIsometry3d obj2_poses;
   tesseract::CollisionObjectTypeVector obj2_types;
   obj2_shapes.push_back(thin_box);
   obj2_poses.push_back(thin_box_pose);
@@ -37,11 +37,11 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
 
   // Add Meshed Sphere to checker
   shapes::ShapePtr sphere(shapes::createMeshFromResource("package://tesseract_collision/test/sphere.stl"));
-  Eigen::Affine3d sphere_pose;
+  Eigen::Isometry3d sphere_pose;
   sphere_pose.setIdentity();
 
   std::vector<shapes::ShapeConstPtr> obj3_shapes;
-  EigenSTL::vector_Affine3d obj3_poses;
+  VectorIsometry3d obj3_poses;
   tesseract::CollisionObjectTypeVector obj3_types;
   obj3_shapes.push_back(sphere);
   obj3_poses.push_back(sphere_pose);
@@ -59,8 +59,8 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
 
   // Test when object is inside another
   tesseract::TransformMap location;
-  location["box_link"] = Eigen::Affine3d::Identity();
-  location["sphere_link"] = Eigen::Affine3d::Identity();
+  location["box_link"] = Eigen::Isometry3d::Identity();
+  location["sphere_link"] = Eigen::Isometry3d::Identity();
 
   tesseract::ContactResultMap result;
   checker.calcCollisionsDiscrete(req, location, result);
@@ -98,10 +98,10 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
   //  result_vector.clear();
   //  tesseract::TransformMap location2;
   //  location.clear();
-  //  location["thin_box_link"] = Eigen::Affine3d::Identity();
-  //  location["sphere_link"] = Eigen::Affine3d::Identity();
-  //  location2["thin_box_link"] = Eigen::Affine3d::Identity();
-  //  location2["sphere_link"] = Eigen::Affine3d::Identity();
+  //  location["thin_box_link"] = Eigen::Isometry3d::Identity();
+  //  location["sphere_link"] = Eigen::Isometry3d::Identity();
+  //  location2["thin_box_link"] = Eigen::Isometry3d::Identity();
+  //  location2["sphere_link"] = Eigen::Isometry3d::Identity();
 
   //  location["sphere_link"].translation() = Eigen::Vector3d(1, 0, 0);
   //  location2["sphere_link"].translation() = Eigen::Vector3d(-1, 0, 0);

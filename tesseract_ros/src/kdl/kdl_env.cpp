@@ -115,7 +115,7 @@ bool KDLEnv::init(urdf::ModelInterfaceConstSharedPtr urdf_model, srdf::ModelCons
     }
 
     calculateTransforms(
-        current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Affine3d::Identity());
+        current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
   }
 
   if (srdf_model != nullptr)
@@ -176,7 +176,7 @@ void KDLEnv::setState(const std::unordered_map<std::string, double>& joints)
   }
 
   calculateTransforms(
-      current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Affine3d::Identity());
+      current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
   discrete_manager_->setCollisionObjectsTransform(current_state_->transforms);
   continuous_manager_->setCollisionObjectsTransform(current_state_->transforms);
 }
@@ -192,7 +192,7 @@ void KDLEnv::setState(const std::vector<std::string>& joint_names, const std::ve
   }
 
   calculateTransforms(
-      current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Affine3d::Identity());
+      current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
   discrete_manager_->setCollisionObjectsTransform(current_state_->transforms);
   continuous_manager_->setCollisionObjectsTransform(current_state_->transforms);
 }
@@ -209,7 +209,7 @@ void KDLEnv::setState(const std::vector<std::string>& joint_names,
   }
 
   calculateTransforms(
-      current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Affine3d::Identity());
+      current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
   discrete_manager_->setCollisionObjectsTransform(current_state_->transforms);
   continuous_manager_->setCollisionObjectsTransform(current_state_->transforms);
 }
@@ -227,7 +227,7 @@ EnvStatePtr KDLEnv::getState(const std::unordered_map<std::string, double>& join
     }
   }
 
-  calculateTransforms(state->transforms, jnt_array, kdl_tree_->getRootSegment(), Eigen::Affine3d::Identity());
+  calculateTransforms(state->transforms, jnt_array, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
 
   return state;
 }
@@ -245,7 +245,7 @@ EnvStatePtr KDLEnv::getState(const std::vector<std::string>& joint_names, const 
     }
   }
 
-  calculateTransforms(state->transforms, jnt_array, kdl_tree_->getRootSegment(), Eigen::Affine3d::Identity());
+  calculateTransforms(state->transforms, jnt_array, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
 
   return state;
 }
@@ -264,7 +264,7 @@ EnvStatePtr KDLEnv::getState(const std::vector<std::string>& joint_names,
     }
   }
 
-  calculateTransforms(state->transforms, jnt_array, kdl_tree_->getRootSegment(), Eigen::Affine3d::Identity());
+  calculateTransforms(state->transforms, jnt_array, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
 
   return state;
 }
@@ -299,9 +299,9 @@ Eigen::VectorXd KDLEnv::getCurrentJointValues(const std::string& manipulator_nam
   return Eigen::VectorXd();
 }
 
-vector_Affine3d KDLEnv::getLinkTransforms() const
+VectorIsometry3d KDLEnv::getLinkTransforms() const
 {
-  vector_Affine3d link_tfs;
+  VectorIsometry3d link_tfs;
   link_tfs.resize(link_names_.size());
   for (const auto& link_name : link_names_)
   {
@@ -310,7 +310,7 @@ vector_Affine3d KDLEnv::getLinkTransforms() const
   return link_tfs;
 }
 
-const Eigen::Affine3d& KDLEnv::getLinkTransform(const std::string& link_name) const
+const Eigen::Isometry3d& KDLEnv::getLinkTransform(const std::string& link_name) const
 {
   return current_state_->transforms[link_name];
 }
@@ -469,7 +469,7 @@ void KDLEnv::attachBody(const AttachedBodyInfo& attached_body_info)
   continuous_manager_->enableCollisionObject(attached_body_info.object_name);
 
   calculateTransforms(
-      current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Affine3d::Identity());
+      current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
 
   // Update manipulators
   for (auto& manip : manipulators_)
@@ -544,14 +544,14 @@ bool KDLEnv::setJointValuesHelper(KDL::JntArray& q, const std::string& joint_nam
 void KDLEnv::calculateTransformsHelper(TransformMap& transforms,
                                        const KDL::JntArray& q_in,
                                        const KDL::SegmentMap::const_iterator& it,
-                                       const Eigen::Affine3d& parent_frame) const
+                                       const Eigen::Isometry3d& parent_frame) const
 {
   if (it != kdl_tree_->getSegments().end())
   {
     const KDL::TreeElementType& current_element = it->second;
     KDL::Frame current_frame = GetTreeElementSegment(current_element).pose(q_in(GetTreeElementQNr(current_element)));
 
-    Eigen::Affine3d local_frame, global_frame;
+    Eigen::Isometry3d local_frame, global_frame;
     KDLToEigen(current_frame, local_frame);
     global_frame = parent_frame * local_frame;
     transforms[current_element.segment.getName()] = global_frame;
@@ -566,7 +566,7 @@ void KDLEnv::calculateTransformsHelper(TransformMap& transforms,
 void KDLEnv::calculateTransforms(TransformMap& transforms,
                                  const KDL::JntArray& q_in,
                                  const KDL::SegmentMap::const_iterator& it,
-                                 const Eigen::Affine3d& parent_frame) const
+                                 const Eigen::Isometry3d& parent_frame) const
 {
   calculateTransformsHelper(transforms, q_in, it, parent_frame);
 
@@ -628,7 +628,7 @@ void KDLEnv::loadDiscreteContactManagerPlugin(const std::string& plugin)
                                                    link.second->collision_array;
 
         std::vector<shapes::ShapeConstPtr> shapes;
-        EigenSTL::vector_Affine3d shape_poses;
+        VectorIsometry3d shape_poses;
         CollisionObjectTypeVector collision_object_types;
 
         for (std::size_t i = 0; i < col_array.size(); ++i)
@@ -639,7 +639,7 @@ void KDLEnv::loadDiscreteContactManagerPlugin(const std::string& plugin)
             if (s)
             {
               shapes.push_back(s);
-              shape_poses.push_back(urdfPose2Affine3d(col_array[i]->origin));
+              shape_poses.push_back(urdfPose2Eigen(col_array[i]->origin));
 
               // TODO: Need to encode this in the srdf
               if (s->type == shapes::MESH)
@@ -694,7 +694,7 @@ void KDLEnv::loadContinuousContactManagerPlugin(const std::string& plugin)
                                                    link.second->collision_array;
 
         std::vector<shapes::ShapeConstPtr> shapes;
-        EigenSTL::vector_Affine3d shape_poses;
+        VectorIsometry3d shape_poses;
         CollisionObjectTypeVector collision_object_types;
 
         for (std::size_t i = 0; i < col_array.size(); ++i)
@@ -705,7 +705,7 @@ void KDLEnv::loadContinuousContactManagerPlugin(const std::string& plugin)
             if (s)
             {
               shapes.push_back(s);
-              shape_poses.push_back(urdfPose2Affine3d(col_array[i]->origin));
+              shape_poses.push_back(urdfPose2Eigen(col_array[i]->origin));
 
               // TODO: Need to encode this in the srdf
               if (s->type == shapes::MESH)

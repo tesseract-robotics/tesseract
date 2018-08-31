@@ -72,7 +72,7 @@ inline btMatrix3x3 convertEigenToBt(const Eigen::Matrix3d& r)
   return btMatrix3x3(r(0, 0), r(0, 1), r(0, 2), r(1, 0), r(1, 1), r(1, 2), r(2, 0), r(2, 1), r(2, 2));
 }
 
-inline btTransform convertEigenToBt(const Eigen::Affine3d& t)
+inline btTransform convertEigenToBt(const Eigen::Isometry3d& t)
 {
   const Eigen::Matrix3d& rot = t.matrix().block<3, 3>(0, 0);
   const Eigen::Vector3d& tran = t.translation();
@@ -92,7 +92,7 @@ public:
   CollisionObjectWrapper(const std::string& name,
                          const int& type_id,
                          const std::vector<shapes::ShapeConstPtr>& shapes,
-                         const EigenSTL::vector_Affine3d& shape_poses,
+                         const VectorIsometry3d& shape_poses,
                          const CollisionObjectTypeVector& collision_object_types);
 
   short int m_collisionFilterGroup;
@@ -142,14 +142,14 @@ protected:
   CollisionObjectWrapper(const std::string& name,
                          const int& type_id,
                          const std::vector<shapes::ShapeConstPtr>& shapes,
-                         const EigenSTL::vector_Affine3d& shape_poses,
+                         const VectorIsometry3d& shape_poses,
                          const CollisionObjectTypeVector& collision_object_types,
                          const std::vector<std::shared_ptr<void>>& data);
 
   std::string m_name;                                        /**< @brief The name of the collision object */
   int m_type_id;                                             /**< @brief A user defined type id */
   const std::vector<shapes::ShapeConstPtr>& m_shapes;        /**< @brief The shapes that define the collison object */
-  const EigenSTL::vector_Affine3d& m_shape_poses;            /**< @brief The shpaes poses information */
+  const VectorIsometry3d& m_shape_poses;                     /**< @brief The shpaes poses information */
   const CollisionObjectTypeVector& m_collision_object_types; /**< @brief The shape collision object type to be used */
 
   std::vector<std::shared_ptr<void>>
@@ -722,7 +722,7 @@ inline void updateCollisionObjectWithRequest(const ContactRequest& req, COW& cow
 inline COWPtr createCollisionObject(const std::string& name,
                                     const int& type_id,
                                     const std::vector<shapes::ShapeConstPtr>& shapes,
-                                    const EigenSTL::vector_Affine3d& shape_poses,
+                                    const VectorIsometry3d& shape_poses,
                                     const CollisionObjectTypeVector& collision_object_types,
                                     bool enabled = true)
 {

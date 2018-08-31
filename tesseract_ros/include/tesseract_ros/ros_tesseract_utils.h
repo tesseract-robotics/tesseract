@@ -423,7 +423,7 @@ static inline void attachableObjectMsgToAttachableObject(AttachableObject& ao,
     shapes::ShapePtr shape(shapes::constructShapeFromMsg(ao_msg.visual.primitives[i]));
     ao.visual.shapes.push_back(shape);
 
-    Eigen::Affine3d pose;
+    Eigen::Isometry3d pose;
     tf::poseMsgToEigen(ao_msg.visual.primitive_poses[i], pose);
     ao.visual.shape_poses.push_back(pose);
 
@@ -439,7 +439,7 @@ static inline void attachableObjectMsgToAttachableObject(AttachableObject& ao,
     shapes::ShapePtr shape(shapes::constructShapeFromMsg(ao_msg.visual.meshes[i]));
     ao.visual.shapes.push_back(shape);
 
-    Eigen::Affine3d pose;
+    Eigen::Isometry3d pose;
     tf::poseMsgToEigen(ao_msg.visual.mesh_poses[i], pose);
     ao.visual.shape_poses.push_back(pose);
 
@@ -455,7 +455,7 @@ static inline void attachableObjectMsgToAttachableObject(AttachableObject& ao,
     shapes::ShapePtr shape(shapes::constructShapeFromMsg(ao_msg.visual.planes[i]));
     ao.visual.shapes.push_back(shape);
 
-    Eigen::Affine3d pose;
+    Eigen::Isometry3d pose;
     tf::poseMsgToEigen(ao_msg.visual.plane_poses[i], pose);
     ao.visual.shape_poses.push_back(pose);
 
@@ -473,7 +473,7 @@ static inline void attachableObjectMsgToAttachableObject(AttachableObject& ao,
     shapes::ShapePtr shape(new shapes::OcTree(om));
     ao.visual.shapes.push_back(shape);
 
-    Eigen::Affine3d pose;
+    Eigen::Isometry3d pose;
     tf::poseMsgToEigen(ao_msg.visual.octomap_poses[i], pose);
     ao.visual.shape_poses.push_back(pose);
 
@@ -490,7 +490,7 @@ static inline void attachableObjectMsgToAttachableObject(AttachableObject& ao,
     shapes::ShapePtr shape(shapes::constructShapeFromMsg(ao_msg.collision.primitives[i]));
     ao.collision.shapes.push_back(shape);
 
-    Eigen::Affine3d pose;
+    Eigen::Isometry3d pose;
     tf::poseMsgToEigen(ao_msg.collision.primitive_poses[i], pose);
     ao.collision.shape_poses.push_back(pose);
 
@@ -509,7 +509,7 @@ static inline void attachableObjectMsgToAttachableObject(AttachableObject& ao,
     shapes::ShapePtr shape(shapes::constructShapeFromMsg(ao_msg.collision.meshes[i]));
     ao.collision.shapes.push_back(shape);
 
-    Eigen::Affine3d pose;
+    Eigen::Isometry3d pose;
     tf::poseMsgToEigen(ao_msg.collision.mesh_poses[i], pose);
     ao.collision.shape_poses.push_back(pose);
 
@@ -528,7 +528,7 @@ static inline void attachableObjectMsgToAttachableObject(AttachableObject& ao,
     shapes::ShapePtr shape(shapes::constructShapeFromMsg(ao_msg.collision.planes[i]));
     ao.collision.shapes.push_back(shape);
 
-    Eigen::Affine3d pose;
+    Eigen::Isometry3d pose;
     tf::poseMsgToEigen(ao_msg.collision.plane_poses[i], pose);
     ao.collision.shape_poses.push_back(pose);
 
@@ -549,7 +549,7 @@ static inline void attachableObjectMsgToAttachableObject(AttachableObject& ao,
     shapes::ShapePtr shape(new shapes::OcTree(om));
     ao.collision.shapes.push_back(shape);
 
-    Eigen::Affine3d pose;
+    Eigen::Isometry3d pose;
     tf::poseMsgToEigen(ao_msg.collision.octomap_poses[i], pose);
     ao.collision.shape_poses.push_back(pose);
 
@@ -844,11 +844,13 @@ inline shapes::ShapePtr constructShape(const urdf::Geometry* geom)
   return shapes::ShapePtr(result);
 }
 
-inline Eigen::Affine3d urdfPose2Affine3d(const urdf::Pose& pose)
+inline Eigen::Isometry3d urdfPose2Eigen(const urdf::Pose& pose)
 {
   Eigen::Quaterniond q(pose.rotation.w, pose.rotation.x, pose.rotation.y, pose.rotation.z);
-  Eigen::Affine3d af(Eigen::Translation3d(pose.position.x, pose.position.y, pose.position.z) * q.toRotationMatrix());
-  return af;
+  Eigen::Isometry3d result;
+  result.translation() = Eigen::Vector3d(pose.position.x, pose.position.y, pose.position.z);
+  result.linear() = q.toRotationMatrix();
+  return result;
 }
 }
 }
