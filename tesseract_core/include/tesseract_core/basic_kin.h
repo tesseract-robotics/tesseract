@@ -47,7 +47,7 @@ class BasicKin
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  BasicKin() {}
+  virtual ~BasicKin() {}
   /**
    * @brief Calculates tool pose of robot chain
    * @param pose Transform of end-of-tip relative to root

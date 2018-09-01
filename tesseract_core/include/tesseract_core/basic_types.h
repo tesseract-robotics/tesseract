@@ -53,6 +53,8 @@ typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> T
 
 struct AllowedCollisionMatrix
 {
+  virtual ~AllowedCollisionMatrix() {}
+
   /**
    * @brief Disable collision between two collision objects
    * @param obj1 Collision object name
