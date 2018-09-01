@@ -36,7 +36,7 @@ namespace tesseract_ros
 /**
  * @brief Convert KDL::Frame to Eigen::Isometry3d
  * @param frame Input KDL Frame
- * @param transform Output Eigen transform (Affine3d)
+ * @param transform Output Eigen transform (Isometry3d)
  */
 inline void KDLToEigen(const KDL::Frame& frame, Eigen::Isometry3d& transform)
 {
@@ -53,7 +53,7 @@ inline void KDLToEigen(const KDL::Frame& frame, Eigen::Isometry3d& transform)
 
 /**
  * @brief Convert Eigen::Isometry3d to KDL::Frame
- * @param transform Input Eigen transform (Affine3d)
+ * @param transform Input Eigen transform (Isometry3d)
  * @param frame Output KDL Frame
  */
 inline void EigenToKDL(const Eigen::Isometry3d& transform, KDL::Frame& frame)
