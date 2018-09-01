@@ -1,5 +1,6 @@
 
 #include "tesseract_collision/bullet/bullet_discrete_managers.h"
+#include "tesseract_collision/fcl/fcl_discrete_managers.h"
 #include <gtest/gtest.h>
 #include <ros/ros.h>
 
@@ -173,6 +174,20 @@ TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxBoxConvexHullUnit)
   addCollisionObjects(checker, true);
   runTest(checker);
 }
+
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxBoxUnit)
+{
+  tesseract::FCLDiscreteBVHManager checker;
+  addCollisionObjects(checker, false);
+  runTest(checker);
+}
+
+//TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxBoxConvexHullUnit)
+//{
+//  tesseract::FCLDiscreteBVHManager checker;
+//  addCollisionObjects(checker, true);
+//  runTest(checker);
+//}
 
 int main(int argc, char** argv)
 {

@@ -147,11 +147,11 @@ protected:
                          const CollisionObjectTypeVector& collision_object_types,
                          const std::vector<std::shared_ptr<void>>& data);
 
-  std::string m_name;                                        /**< @brief The name of the collision object */
-  int m_type_id;                                             /**< @brief A user defined type id */
-  const std::vector<shapes::ShapeConstPtr>& m_shapes;        /**< @brief The shapes that define the collison object */
-  const VectorIsometry3d& m_shape_poses;                     /**< @brief The shpaes poses information */
-  const CollisionObjectTypeVector& m_collision_object_types; /**< @brief The shape collision object type to be used */
+  std::string m_name;                                 /**< @brief The name of the collision object */
+  int m_type_id;                                      /**< @brief A user defined type id */
+  std::vector<shapes::ShapeConstPtr> m_shapes;        /**< @brief The shapes that define the collison object */
+  VectorIsometry3d m_shape_poses;                     /**< @brief The shpaes poses information */
+  CollisionObjectTypeVector m_collision_object_types; /**< @brief The shape collision object type to be used */
 
   std::vector<std::shared_ptr<void>>
       m_data; /**< @brief This manages the collision shape pointer so they get destroyed */

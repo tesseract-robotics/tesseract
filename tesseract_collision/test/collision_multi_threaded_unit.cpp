@@ -1,5 +1,6 @@
 
 #include "tesseract_collision/bullet/bullet_discrete_managers.h"
+#include "tesseract_collision/fcl/fcl_discrete_managers.h"
 #include <gtest/gtest.h>
 #include <ros/ros.h>
 
@@ -132,6 +133,12 @@ TEST(TesseractCollisionMultiThreadedUnit, BulletDiscreteBVHCollisionMultiThreade
 TEST(TesseractCollisionMultiThreadedUnit, BulletDiscreteBVHCollisionMultiThreadedUnit)
 {
   tesseract::BulletDiscreteBVHManager checker;
+  runTest(checker);
+}
+
+TEST(TesseractCollisionMultiThreadedUnit, FCLDiscreteBVHCollisionMultiThreadedUnit)
+{
+  tesseract::FCLDiscreteBVHManager checker;
   runTest(checker);
 }
 
