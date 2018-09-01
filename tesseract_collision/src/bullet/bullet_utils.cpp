@@ -187,7 +187,7 @@ btCollisionShape* createShapePrimitive(const shapes::ShapeConstPtr& geom,
              collision_object_type == CollisionObjectType::SDF ||
              collision_object_type == CollisionObjectType::MultiSphere);
       const shapes::OcTree* g = static_cast<const shapes::OcTree*>(geom.get());
-      btCompoundShape* subshape = new btCompoundShape(/*dynamicAABBtree=*/false);
+      btCompoundShape* subshape = new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, g->octree->size());
       double occupancy_threshold = g->octree->getOccupancyThres();
 
       // convert the mesh to the assigned collision object type
@@ -266,7 +266,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
   }
   else
   {
-    btCompoundShape* compound = new btCompoundShape(/*dynamicAABBtree=*/false);
+    btCompoundShape* compound = new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, m_shapes.size());
     manage(compound);
     compound->setMargin(BULLET_MARGIN);  // margin: compound. seems to have no
                                          // effect when positive but has an
