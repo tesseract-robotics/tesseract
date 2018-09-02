@@ -231,7 +231,6 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& na
   // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
   // geometry
   auto it = link2cow_.find(name);
-  assert(it->second->getCollisionShape()->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE);
   if (it != link2cow_.end())
     it->second->setWorldTransform(convertEigenToBt(pose));
 }
@@ -259,7 +258,7 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& na
   auto it = link2castcow_.find(name);
   if (it != link2castcow_.end())
   {
-    assert(it->second->getCollisionShape()->getShapeType() == CUSTOM_CONVEX_SHAPE_TYPE);
+    assert(it->second->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter);
 
     btTransform tf1 = convertEigenToBt(pose1);
     btTransform tf2 = convertEigenToBt(pose2);
@@ -630,10 +629,7 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
   // geometry
   auto it = link2cow_.find(name);
   if (it != link2cow_.end())
-  {
-    assert(it->second->getCollisionShape()->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE);
     it->second->setWorldTransform(convertEigenToBt(pose));
-  }
 }
 
 void BulletCastBVHManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
@@ -660,7 +656,7 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
   if (it != link2castcow_.end())
   {
     COWPtr& cow = it->second;
-    assert(cow->getCollisionShape()->getShapeType() == CUSTOM_CONVEX_SHAPE_TYPE);
+    assert(cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter);
 
     btTransform tf1 = convertEigenToBt(pose1);
     btTransform tf2 = convertEigenToBt(pose2);
