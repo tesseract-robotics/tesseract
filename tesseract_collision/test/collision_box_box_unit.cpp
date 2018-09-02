@@ -182,12 +182,12 @@ TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxBoxUnit)
   runTest(checker);
 }
 
-//TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxBoxConvexHullUnit)
-//{
-//  tesseract::FCLDiscreteBVHManager checker;
-//  addCollisionObjects(checker, true);
-//  runTest(checker);
-//}
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxBoxConvexHullUnit)
+{
+  tesseract::FCLDiscreteBVHManager checker;
+  addCollisionObjects(checker, true);
+  runTest(checker);
+}
 
 int main(int argc, char** argv)
 {

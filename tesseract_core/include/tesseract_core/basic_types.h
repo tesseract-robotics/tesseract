@@ -47,6 +47,7 @@ using AlignedMap = std::map<Key, Value, std::less<Key>, Eigen::aligned_allocator
 
 using VectorIsometry3d = AlignedVector<Eigen::Isometry3d>;
 using VectorVector4d = AlignedVector<Eigen::Vector4d>;
+using VectorVector3d = AlignedVector<Eigen::Vector3d>;
 using TransformMap = AlignedMap<std::string, Eigen::Isometry3d>;
 
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> TrajArray;

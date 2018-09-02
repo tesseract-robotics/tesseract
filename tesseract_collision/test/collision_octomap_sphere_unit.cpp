@@ -124,6 +124,13 @@ TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionOctomapSphereUnit)
   runTest(checker);
 }
 
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxSphereConvexHullUnit)
+{
+  tesseract::FCLDiscreteBVHManager checker;
+  addCollisionObjects(checker, true);
+  runTest(checker);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

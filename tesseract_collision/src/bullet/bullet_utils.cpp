@@ -121,47 +121,21 @@ btCollisionShape* createShapePrimitive(const shapes::ShapeConstPtr& geom,
         {
           case CollisionObjectType::ConvexHull:
           {
-            // CONVEX HULL
-            btConvexTriangleMeshShape convexTrimesh(ptrimesh.get());
-            convexTrimesh.setMargin(BULLET_MARGIN);  // margin: hull padding
-            // Create a hull shape to approximate Trimesh
+            // Create a convex hull shape to approximate Trimesh
+            tesseract::VectorVector3d input;
+            tesseract::VectorVector3d vertices;
+            std::vector<int> faces;
 
-            bool useShapeHull = false;
+            input.reserve(mesh->vertex_count);
+            for (unsigned int i = 0; i < mesh->vertex_count; ++i)
+              input.push_back(Eigen::Vector3d(mesh->vertices[3 * i], mesh->vertices[3 * i + 1], mesh->vertices[3 * i + 2]));
 
-            btShapeHull shapeHull(&convexTrimesh);
-            if (mesh->vertex_count >= 50)
-            {
-              bool success = shapeHull.buildHull(-666);  // note: margin argument not used
-              if (!success)
-              {
-                ROS_WARN("shapehull convex hull failed! falling back to original "
-                         "vertices");
-              }
-              useShapeHull = success;
-            }
-            else
-            {
-              useShapeHull = false;
-            }
+            if (tesseract::createConvexHull(vertices, faces, input) < 0)
+              return nullptr;
 
             btConvexHullShape* subshape = new btConvexHullShape();
-            if (useShapeHull)
-            {
-              for (int i = 0; i < shapeHull.numVertices(); ++i)
-              {
-                subshape->addPoint(shapeHull.getVertexPointer()[i]);
-              }
-            }
-            else
-            {
-              for (unsigned i = 0u; i < mesh->vertex_count; ++i)
-              {
-                subshape->addPoint(
-                    btVector3(mesh->vertices[3 * i], mesh->vertices[3 * i + 1], mesh->vertices[3 * i + 2]));
-              }
-            }
-
-            subshape->optimizeConvexHull();
+            for (auto& v : vertices)
+              subshape->addPoint(btVector3(v[0], v[1], v[2]));
 
             return subshape;
           }

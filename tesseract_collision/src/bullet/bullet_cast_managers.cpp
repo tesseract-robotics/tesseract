@@ -752,7 +752,7 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
 
       bool still_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](std::string link) {
                              return link == cow->getName();
-                           }) == req.link_names.end());
+                           }) != req.link_names.end());
 
       if (still_active)
       {
@@ -818,7 +818,7 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
 
       bool now_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](std::string link) {
                            return link == cow->getName();
-                         }) == req.link_names.end());
+                         }) != req.link_names.end());
       if (now_active)
       {
         // Create active collision object

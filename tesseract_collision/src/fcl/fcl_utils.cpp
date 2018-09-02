@@ -99,58 +99,26 @@ FCLCollisionGeometryPtr createShapePrimitive(const shapes::ShapeConstPtr& geom,
              collision_object_type == CollisionObjectType::SDF);
 
       const shapes::Mesh* mesh = static_cast<const shapes::Mesh*>(geom.get());
-      bodies::ConvexMesh convex(geom.get());
-      convex.correctVertexOrderFromPlanes();
-      bool is_convex = true;
-      for (unsigned i = 0; i < mesh->vertex_count; ++i)
-      {
-        Eigen::Vector3d pt(mesh->vertices[3 * i], mesh->vertices[3 * i + 1], mesh->vertices[3 * i + 2]);
-        if (!convex.containsPoint(pt))
-        {
-          is_convex = false;
-          break;
-        }
-      }
 
       // convert the mesh to the assigned collision object type
       switch (collision_object_type)
       {
         case CollisionObjectType::ConvexHull:
         {
-          const std::vector<unsigned int>& triangles = convex.getTriangles();
-          const EigenSTL::vector_Vector3d& vertices = convex.getVertices();
-          const EigenSTL::vector_Vector4d& planes = convex.getPlanes();
+          VectorVector3d mesh_vertices;
+          mesh_vertices.reserve(mesh->vertex_count);
 
-          int triangle_count = triangles.size()/3;
-          Eigen::Vector3d* fcl_vertices = new Eigen::Vector3d[vertices.size()];
-          Eigen::Vector3d* fcl_plane_normals = new Eigen::Vector3d[planes.size()];
-          double* fcl_plane_dis = new double[planes.size()];
-          int* polygons = new int[4 * triangle_count];
+          for (unsigned int i = 0; i < mesh->vertex_count; ++i)
+            mesh_vertices.push_back(Eigen::Vector3d(mesh->vertices[3 * i + 0], mesh->vertices[3 * i + 1], mesh->vertices[3 * i + 2]));
 
-          for (unsigned i = 0; i < vertices.size(); ++i)
-          {
-            fcl_vertices[i] = vertices[i];
-          }
+          VectorVector3d convex_hull_vertices;
+          std::vector<int> convex_hull_faces;
+          int num_faces = createConvexHull(convex_hull_vertices, convex_hull_faces, mesh_vertices);
 
-          for (unsigned i = 0; i < planes.size(); ++i)
-          {
-            fcl_plane_normals[i] = planes[i].head<3>();
-            fcl_plane_dis[i] = planes[i][3];
-          }
+          if (num_faces < 0)
+            return nullptr;
 
-          for(auto i = 0; i < triangle_count; ++i)
-          {
-            int i1 = triangles[3*i + 0];
-            int i2 = triangles[3*i + 1];
-            int i3 = triangles[3*i + 2];
-
-            polygons[4*i + 0] = 3;
-            polygons[4*i + 1] = i1;
-            polygons[4*i + 2] = i2;
-            polygons[4*i + 3] = i3;
-          }
-
-          return FCLCollisionGeometryPtr(new fcl::Convexd(fcl_plane_normals, fcl_plane_dis, planes.size(), fcl_vertices, vertices.size(), polygons));
+          return FCLCollisionGeometryPtr(new fcl::Convexd(convex_hull_vertices.size(), convex_hull_vertices.data(), num_faces, convex_hull_faces.data()));
         }
         case CollisionObjectType::UseShapeType:
         {

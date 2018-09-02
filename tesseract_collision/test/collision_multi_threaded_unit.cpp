@@ -136,6 +136,12 @@ TEST(TesseractCollisionMultiThreadedUnit, BulletDiscreteBVHCollisionMultiThreade
   runTest(checker);
 }
 
+TEST(TesseractCollisionMultiThreadedUnit, FCLDiscreteBVHCollisionMultiThreadedConvexHullUnit)
+{
+  tesseract::FCLDiscreteBVHManager checker;
+  runTest(checker, true);
+}
+
 TEST(TesseractCollisionMultiThreadedUnit, FCLDiscreteBVHCollisionMultiThreadedUnit)
 {
   tesseract::FCLDiscreteBVHManager checker;

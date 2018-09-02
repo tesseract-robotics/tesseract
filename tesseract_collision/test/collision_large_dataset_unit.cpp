@@ -98,6 +98,12 @@ TEST(TesseractCollisionLargeDataSetUnit, BulletDiscreteBVHCollisionLargeDataSetU
   runTest(checker);
 }
 
+TEST(TesseractCollisionLargeDataSetUnit, FCLDiscreteBVHCollisionLargeDataSetConvexHullUnit)
+{
+  tesseract::FCLDiscreteBVHManager checker;
+  runTest(checker, true);
+}
+
 TEST(TesseractCollisionLargeDataSetUnit, FCLDiscreteBVHCollisionLargeDataSetUnit)
 {
   tesseract::FCLDiscreteBVHManager checker;
