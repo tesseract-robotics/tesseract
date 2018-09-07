@@ -76,6 +76,9 @@ target_link_libraries(${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES}
 add_library(${PROJECT_NAME}_fcl_plugin src/fcl/fcl_plugin.cpp)
 target_link_libraries(${PROJECT_NAME}_fcl_plugin ${PROJECT_NAME}_fcl ${catkin_LIBRARIES})
 
+add_executable(create_convex_hull src/create_convex_hull.cpp)
+target_link_libraries(create_convex_hull ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES})
+
 # Mark executables and/or libraries for installation
 install(TARGETS ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
