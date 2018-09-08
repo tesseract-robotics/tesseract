@@ -37,11 +37,19 @@ typedef std::pair<std::string, std::string> ObjectPairKey;
  * @brief Get a key for two object to search the collision matrix
  * @param obj1 First collision object name
  * @param obj2 Second collision object name
- * @return The collision pair key
+ * @param pair A collision pair key. Will be updated if the obj's are valid.
+ * @return True if the collision pair key was updated successfully.
  */
-inline ObjectPairKey getObjectPairKey(const std::string& obj1, const std::string& obj2)
+inline bool getObjectPairKey(const std::string& obj1, const std::string& obj2, ObjectPairKey &pair)
 {
-  return obj1 < obj2 ? std::make_pair(obj1, obj2) : std::make_pair(obj2, obj1);
+  if (obj1 < obj2)
+  {
+    pair = std::make_pair(obj1, obj2);
+    return true;
+  }
+  // Avoid redundant entries like <link1,link2> and <link2,link1>
+  else
+    return false;
 }
 
 /**

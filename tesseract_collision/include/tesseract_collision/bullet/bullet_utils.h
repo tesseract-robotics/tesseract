@@ -294,9 +294,11 @@ inline btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   const CollisionObjectWrapper* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());
   const CollisionObjectWrapper* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());
 
-  ObjectPairKey pc = getObjectPairKey(cd0->getName(), cd1->getName());
+  ObjectPairKey pk;
+  if( !getObjectPairKey(cd0->getName(), cd1->getName(), pk) )
+    return 0;
 
-  const auto& it = collisions.res->find(pc);
+  const auto& it = collisions.res->find(pk);
   bool found = (it != collisions.res->end());
 
   //    size_t l = 0;
@@ -318,7 +320,7 @@ inline btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   contact.distance = cp.m_distance1;
   contact.normal = convertBtToEigen(-1 * cp.m_normalWorldOnB);
 
-  if (!processResult(collisions, contact, pc, found))
+  if (!processResult(collisions, contact, pk, found))
   {
     return 0;
   }
