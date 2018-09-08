@@ -178,7 +178,7 @@ void FCLDiscreteBVHManager::setContactRequest(const ContactRequest& req)
 
 const ContactRequest& FCLDiscreteBVHManager::getContactRequest() const { return request_; }
 
-void FCLDiscreteBVHManager::addCollisionObject(FCLCOWPtr& cow)
+void FCLDiscreteBVHManager::addCollisionObject(const FCLCOWPtr &cow)
 {
   link2cow_[cow->getName()] = cow;
 

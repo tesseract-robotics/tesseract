@@ -47,7 +47,7 @@ int main(int argc, char** argv)
   if (!pnh.hasParam("input") || !pnh.hasParam("output") )
   {
     ROS_ERROR(help.c_str());
-    return 0;
+    return -1;
   }
 
   pnh.getParam("input", input);
@@ -61,7 +61,7 @@ int main(int argc, char** argv)
   if (size < 0)
   {
     ROS_ERROR("Failed to locate input file!");
-    return 0;
+    return -1;
   }
 
   file.seekg(0, std::ios::beg);
@@ -69,15 +69,15 @@ int main(int argc, char** argv)
   if (!file.read(buffer.data(), size))
   {
     ROS_ERROR("Failed to read input file!");
-    return 0;
+    return -1;
   }
 
   std::shared_ptr<shapes::Mesh> mesh;
   mesh.reset(shapes::createMeshFromBinary(buffer.data(), size, Eigen::Vector3d(1.0, 1.0, 1.0), input));
   if (mesh == nullptr)
   {
-    ROS_ERROR("Failed to creat mesh from binary data!");
-    return 0;
+    ROS_ERROR("Failed to create mesh from binary data!");
+    return -1;
   }
 
   tesseract::VectorVector3d mesh_vertices;
@@ -93,9 +93,11 @@ int main(int argc, char** argv)
   if (num_faces < 0)
   {
     ROS_ERROR("Failed to create convex hull!");
-    return 0;
+    return -1;
   }
 
-  tesseract::writeSimplePlyFile(output, convex_hull_vertices, convex_hull_faces, num_faces);
+  if (!tesseract::writeSimplePlyFile(output, convex_hull_vertices, convex_hull_faces, num_faces))
+    return -1;
+
   return 0;
 }

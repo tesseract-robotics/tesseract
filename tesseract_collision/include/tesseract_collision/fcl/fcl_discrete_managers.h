@@ -52,7 +52,7 @@ class FCLDiscreteBVHManager : public DiscreteContactManagerBase
 {
 public:
   FCLDiscreteBVHManager();
-  ~FCLDiscreteBVHManager() {}
+
   DiscreteContactManagerBasePtr clone() const override;
 
   bool addCollisionObject(const std::string& name,
@@ -87,7 +87,7 @@ public:
    * @brief Add a fcl collision object to the manager
    * @param cow The tesseract fcl collision object
    */
-  void addCollisionObject(FCLCOWPtr& cow);
+  void addCollisionObject(const FCLCOWPtr& cow);
 
   /**
    * @brief Return collision objects

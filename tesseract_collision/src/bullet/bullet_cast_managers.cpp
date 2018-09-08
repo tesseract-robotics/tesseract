@@ -310,7 +310,7 @@ void BulletCastSimpleManager::setContactRequest(const ContactRequest& req)
 
       bool still_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](std::string link) {
                              return link == cow->getName();
-                           }) == req.link_names.end());
+                           }) != req.link_names.end());
 
       if (still_active)
       {
@@ -339,7 +339,7 @@ void BulletCastSimpleManager::setContactRequest(const ContactRequest& req)
 
       bool now_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](std::string link) {
                            return link == cow->getName();
-                         }) == req.link_names.end());
+                         }) != req.link_names.end());
       if (now_active)
       {
         // Create active collision object
@@ -439,7 +439,7 @@ void BulletCastSimpleManager::contactTest(ContactResultMap& collisions)
   }
 }
 
-void BulletCastSimpleManager::addCollisionObject(COWPtr& cow)
+void BulletCastSimpleManager::addCollisionObject(const COWPtr &cow)
 {
   link2cow_[cow->getName()] = cow;
 
@@ -878,7 +878,7 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
 }
 
 const ContactRequest& BulletCastBVHManager::getContactRequest() const { return request_; }
-void BulletCastBVHManager::addCollisionObject(COWPtr& cow)
+void BulletCastBVHManager::addCollisionObject(const COWPtr &cow)
 {
   link2cow_[cow->getName()] = cow;
 

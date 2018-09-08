@@ -50,7 +50,7 @@ class BulletDiscreteSimpleManager : public DiscreteContactManagerBase
 {
 public:
   BulletDiscreteSimpleManager();
-  ~BulletDiscreteSimpleManager() {}
+
   DiscreteContactManagerBasePtr clone() const override;
 
   bool addCollisionObject(const std::string& name,
@@ -85,7 +85,7 @@ public:
    * @brief A a bullet collision object to the manager
    * @param cow The tesseract bullet collision object
    */
-  void addCollisionObject(COWPtr& cow);
+  void addCollisionObject(const COWPtr& cow);
 
   /**
    * @brief Return collision objects
@@ -186,7 +186,7 @@ public:
    * @brief A a bullet collision object to the manager
    * @param cow The tesseract bullet collision object
    */
-  void addCollisionObject(COWPtr& cow);
+  void addCollisionObject(const COWPtr& cow);
 
   /**
    * @brief Return collision objects

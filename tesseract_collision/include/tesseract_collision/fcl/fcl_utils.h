@@ -86,8 +86,12 @@ public:
   /** \brief Check if two objects point to the same source object */
   bool sameObject(const FCLCollisionObjectWrapper& other) const
   {
-    return name_ == other.name_ && type_id_ == other.type_id_ && &shapes_ == &(other.shapes_) &&
-           &shape_poses_ == &(other.shape_poses_);
+    return name_ == other.name_ && type_id_ == other.type_id_ &&
+           shapes_.size() == other.shapes_.size() &&
+           shape_poses_.size() == other.shape_poses_.size() &&
+           std::equal(shapes_.begin(), shapes_.end(), other.shapes_.begin()) &&
+           std::equal(shape_poses_.begin(), shape_poses_.end(), other.shape_poses_.begin(), [&](const Eigen::Isometry3d& t1, const Eigen::Isometry3d& t2) { return t1.isApprox(t2); });
+
   }
 
   void setCollisionObjectsTransform(const Eigen::Isometry3d& pose)
@@ -113,7 +117,7 @@ public:
     return collision_objects_;
   }
 
-  std::shared_ptr<FCLCollisionObjectWrapper> clone()
+  std::shared_ptr<FCLCollisionObjectWrapper> clone() const
   {
     std::shared_ptr<FCLCollisionObjectWrapper> clone_cow(
         new FCLCollisionObjectWrapper(name_, type_id_, shapes_, shape_poses_, collision_object_types_, collision_geometries_, collision_objects_));
@@ -163,22 +167,14 @@ inline FCLCOWPtr createFCLCollisionObject(const std::string& name,
   if (shapes.empty() || shape_poses.empty() || (shapes.size() != shape_poses.size()))
   {
     ROS_DEBUG("ignoring link %s", name.c_str());
-    return false;
+    return nullptr;
   }
 
   FCLCOWPtr new_cow(new FCLCOW(name, type_id, shapes, shape_poses, collision_object_types));
 
-  if (new_cow)
-  {
-    new_cow->m_enabled = enabled;
-    ROS_DEBUG("Created collision object for link %s", new_cow->getName().c_str());
-    return new_cow;
-  }
-  else
-  {
-    ROS_DEBUG("Failed to create collision object for link %s", name.c_str());
-    return nullptr;
-  }
+  new_cow->m_enabled = enabled;
+  ROS_DEBUG("Created collision object for link %s", new_cow->getName().c_str());
+  return new_cow;
 }
 
 /**
@@ -193,7 +189,7 @@ inline void updateCollisionObjectWithRequest(const ContactRequest& req, FCLCOW& 
   cow.m_collisionFilterGroup = FCLCollisionFilterGroups::KinematicFilter;
   if (!req.link_names.empty())
   {
-    bool check = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](std::string link) {
+    bool check = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](const std::string& link) {
                     return link == cow.getName();
                   }) == req.link_names.end());
     if (check)

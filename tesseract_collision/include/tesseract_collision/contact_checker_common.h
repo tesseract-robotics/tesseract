@@ -209,8 +209,9 @@ inline int createConvexHull(VectorVector3d& vertices, std::vector<int>& faces, c
  * @param vertices A vector of vertices
  * @param faces The first values indicates the number of vertices that define the face followed by the vertice index
  * @param num_faces The number of faces
+ * @return False if failed to write file, otherwise true
  */
-inline void writeSimplePlyFile(const std::string& path, const VectorVector3d vertices, const std::vector<int> &faces, int num_faces)
+inline bool writeSimplePlyFile(const std::string& path, const VectorVector3d& vertices, const std::vector<int> &faces, int num_faces)
 {
 //  ply
 //  format ascii 1.0           { ascii/binary, format version number }
@@ -239,13 +240,19 @@ inline void writeSimplePlyFile(const std::string& path, const VectorVector3d ver
 //  4 3 7 4 0
   std::ofstream myfile;
   myfile.open (path);
+  if (myfile.fail())
+  {
+    ROS_ERROR("Failed to open file: %s", path.c_str());
+    return false;
+  }
+
   myfile << "ply\n";
   myfile << "format ascii 1.0\n";
   myfile << "comment made by tesseract\n";
   myfile << "element vertex " << vertices.size() << "\n";
-  myfile << "property float x\n";
-  myfile << "property float y\n";
-  myfile << "property float z\n";
+  myfile << "property double x\n";
+  myfile << "property double y\n";
+  myfile << "property double z\n";
   myfile << "element face " << num_faces << "\n";
   myfile << "property list uchar uint vertex_indices\n";
   myfile << "end_header\n";
@@ -253,7 +260,7 @@ inline void writeSimplePlyFile(const std::string& path, const VectorVector3d ver
   // Add vertices
   for (const auto& v : vertices)
   {
-    myfile << std::fixed << v[0] << " " << v[1] << " " << v[2] << "\n";
+    myfile << std::fixed << std::setprecision(std::numeric_limits<double>::digits10 + 1) << v[0] << " " << v[1] << " " << v[2] << "\n";
   }
 
   // Add faces
@@ -271,91 +278,9 @@ inline void writeSimplePlyFile(const std::string& path, const VectorVector3d ver
   }
 
   myfile.close();
+  return true;
 }
 
 }
 
 #endif  // TESSERACT_COLLISION_CONTACT_CHECKER_COMMON_H
-
-///**
-// * @brief Create a convex hull from points using QHull
-// * @param (Output) vertices A vector of vertices
-// * @param (Output) faces The first values indicates the number of vertices that define the face followed by the vertice index
-// * @param (input) input A vector of point to create a convex hull from
-// * @param (input) flags A string representing QHull flags. Recommends sending at least Tv.
-// * @return The number of faces. If less than zero an error occured when trying to create the convex hull
-// */
-//inline int createConvexHullQHull(VectorVector3d& vertices, std::vector<int>& faces, const VectorVector3d& input, const std::string& flags = "Tv")
-//{
-//  vertices.clear();
-//  faces.clear();
-
-//  /* compute convex hull */
-//  coordT* points = (coordT*)calloc(input.size() * 3, sizeof(coordT));
-//  for (unsigned int i = 0; i < input.size(); ++i)
-//  {
-//    points[3 * i + 0] = (coordT)input[i][0];
-//    points[3 * i + 1] = (coordT)input[i][1];
-//    points[3 * i + 2] = (coordT)input[i][2];
-//  }
-
-//  static FILE* null = fopen("/dev/null", "w");
-
-//  std::string s = "qhull " + flags;
-//  char cmd[s.length() + 1];
-//  strcpy(cmd, s.c_str());
-//  int exitcode = qh_new_qhull(3, input.size(), points, true, cmd, null, null);
-
-//  if (exitcode != 0)
-//  {
-//    ROS_ERROR("Failed to create convex hull");
-//    qh_freeqhull(!qh_ALL);
-//    int curlong, totlong;
-//    qh_memfreeshort(&curlong, &totlong);
-//    return -1;
-//  }
-
-//  int num_facets = qh num_facets;
-
-//  int num_vertices = qh num_vertices;
-//  vertices.reserve(num_vertices);
-
-//  // necessary for FORALLvertices
-//  std::map<unsigned int, unsigned int> qhull_vertex_table;
-//  vertexT* vertex, **vertexp;
-//  FORALLvertices
-//  {
-//    Eigen::Vector3d vert(vertex->point[0], vertex->point[1], vertex->point[2]);
-//    qhull_vertex_table[vertex->id] = vertices.size();
-//    vertices.push_back(vert);
-//  }
-
-//  faces.reserve(num_facets * 3);
-
-//  // neccessary for qhull macro
-//  facetT* facet;
-//  setT *v_set;
-//  FORALLfacets
-//  {
-//    v_set = qh_facet3vertex(facet);
-
-//    int num_face_verts = qh_setsize(v_set);
-//    std::vector<int> face;
-//    face.reserve(num_face_verts);
-//    faces.push_back(num_face_verts);
-
-//    FOREACHvertex_(v_set)
-//    {
-//      face.push_back(qhull_vertex_table[vertex->id]);
-//    }
-
-//    // The order creates normals pointing into the shape so need to reverse the order.
-//    faces.insert(faces.end(), face.rbegin(), face.rend());
-//  }
-
-//  qh_freeqhull(!qh_ALL);
-//  int curlong, totlong;
-//  qh_memfreeshort(&curlong, &totlong);
-
-//  return num_facets;
-//}

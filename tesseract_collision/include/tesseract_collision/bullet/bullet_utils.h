@@ -107,8 +107,11 @@ public:
   /** \brief Check if two CollisionObjectWrapper objects point to the same source object */
   bool sameObject(const CollisionObjectWrapper& other) const
   {
-    return m_name == other.m_name && m_type_id == other.m_type_id && &m_shapes == &(other.m_shapes) &&
-           &m_shape_poses == &(other.m_shape_poses);
+    return m_name == other.m_name && m_type_id == other.m_type_id &&
+           m_shapes.size() == other.m_shapes.size() &&
+           m_shape_poses.size() == other.m_shape_poses.size() &&
+           std::equal(m_shapes.begin(), m_shapes.end(), other.m_shapes.begin()) &&
+           std::equal(m_shape_poses.begin(), m_shape_poses.end(), other.m_shape_poses.begin(), [&](const Eigen::Isometry3d& t1, const Eigen::Isometry3d& t2) { return t1.isApprox(t2); });
   }
 
   /**
@@ -694,7 +697,7 @@ inline void updateCollisionObjectWithRequest(const ContactRequest& req, COW& cow
   cow.m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
   if (!req.link_names.empty())
   {
-    bool check = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](std::string link) {
+    bool check = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](const std::string& link) {
                     return link == cow.getName();
                   }) == req.link_names.end());
     if (check)
@@ -731,24 +734,16 @@ inline COWPtr createCollisionObject(const std::string& name,
   if (shapes.empty() || shape_poses.empty() || (shapes.size() != shape_poses.size()))
   {
     ROS_DEBUG("ignoring link %s", name.c_str());
-    return false;
+    return nullptr;
   }
 
   COWPtr new_cow(new COW(name, type_id, shapes, shape_poses, collision_object_types));
 
-  if (new_cow)
-  {
-    new_cow->m_enabled = enabled;
-    new_cow->setContactProcessingThreshold(BULLET_DEFAULT_CONTACT_DISTANCE);
+  new_cow->m_enabled = enabled;
+  new_cow->setContactProcessingThreshold(BULLET_DEFAULT_CONTACT_DISTANCE);
 
-    ROS_DEBUG("Created collision object for link %s", new_cow->getName().c_str());
-    return new_cow;
-  }
-  else
-  {
-    ROS_DEBUG("Failed to create collision object for link %s", name.c_str());
-    return nullptr;
-  }
+  ROS_DEBUG("Created collision object for link %s", new_cow->getName().c_str());
+  return new_cow;
 }
 }
 
