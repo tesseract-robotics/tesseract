@@ -66,7 +66,7 @@ COWPtr makeCastCollisionObject(const COWPtr& cow)
   else if (btBroadphaseProxy::isCompound(new_cow->getCollisionShape()->getShapeType()))
   {
     btCompoundShape* compound = static_cast<btCompoundShape*>(new_cow->getCollisionShape());
-    btCompoundShape* new_compound = new btCompoundShape(/*dynamicAABBtree=*/false);
+    btCompoundShape* new_compound = new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, compound->getNumChildShapes());
 
     for (int i = 0; i < compound->getNumChildShapes(); ++i)
     {
@@ -231,7 +231,6 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& na
   // TODO: Find a way to remove this check. Need to store information in Tesseract EnvState indicating transforms with
   // geometry
   auto it = link2cow_.find(name);
-  assert(it->second->getCollisionShape()->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE);
   if (it != link2cow_.end())
     it->second->setWorldTransform(convertEigenToBt(pose));
 }
@@ -259,7 +258,7 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& na
   auto it = link2castcow_.find(name);
   if (it != link2castcow_.end())
   {
-    assert(it->second->getCollisionShape()->getShapeType() == CUSTOM_CONVEX_SHAPE_TYPE);
+    assert(it->second->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter);
 
     btTransform tf1 = convertEigenToBt(pose1);
     btTransform tf2 = convertEigenToBt(pose2);
@@ -311,7 +310,7 @@ void BulletCastSimpleManager::setContactRequest(const ContactRequest& req)
 
       bool still_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](std::string link) {
                              return link == cow->getName();
-                           }) == req.link_names.end());
+                           }) != req.link_names.end());
 
       if (still_active)
       {
@@ -340,7 +339,7 @@ void BulletCastSimpleManager::setContactRequest(const ContactRequest& req)
 
       bool now_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](std::string link) {
                            return link == cow->getName();
-                         }) == req.link_names.end());
+                         }) != req.link_names.end());
       if (now_active)
       {
         // Create active collision object
@@ -440,7 +439,7 @@ void BulletCastSimpleManager::contactTest(ContactResultMap& collisions)
   }
 }
 
-void BulletCastSimpleManager::addCollisionObject(COWPtr& cow)
+void BulletCastSimpleManager::addCollisionObject(const COWPtr &cow)
 {
   link2cow_[cow->getName()] = cow;
 
@@ -630,10 +629,7 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
   // geometry
   auto it = link2cow_.find(name);
   if (it != link2cow_.end())
-  {
-    assert(it->second->getCollisionShape()->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE);
     it->second->setWorldTransform(convertEigenToBt(pose));
-  }
 }
 
 void BulletCastBVHManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
@@ -660,7 +656,7 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
   if (it != link2castcow_.end())
   {
     COWPtr& cow = it->second;
-    assert(cow->getCollisionShape()->getShapeType() == CUSTOM_CONVEX_SHAPE_TYPE);
+    assert(cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter);
 
     btTransform tf1 = convertEigenToBt(pose1);
     btTransform tf2 = convertEigenToBt(pose2);
@@ -756,7 +752,7 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
 
       bool still_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](std::string link) {
                              return link == cow->getName();
-                           }) == req.link_names.end());
+                           }) != req.link_names.end());
 
       if (still_active)
       {
@@ -822,7 +818,7 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
 
       bool now_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](std::string link) {
                            return link == cow->getName();
-                         }) == req.link_names.end());
+                         }) != req.link_names.end());
       if (now_active)
       {
         // Create active collision object
@@ -882,7 +878,7 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
 }
 
 const ContactRequest& BulletCastBVHManager::getContactRequest() const { return request_; }
-void BulletCastBVHManager::addCollisionObject(COWPtr& cow)
+void BulletCastBVHManager::addCollisionObject(const COWPtr &cow)
 {
   link2cow_[cow->getName()] = cow;
 

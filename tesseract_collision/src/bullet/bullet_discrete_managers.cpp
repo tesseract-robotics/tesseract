@@ -257,7 +257,7 @@ void BulletDiscreteSimpleManager::setContactRequest(const ContactRequest& req)
 }
 
 const ContactRequest& BulletDiscreteSimpleManager::getContactRequest() const { return request_; }
-void BulletDiscreteSimpleManager::addCollisionObject(COWPtr& cow)
+void BulletDiscreteSimpleManager::addCollisionObject(const COWPtr &cow)
 {
   link2cow_[cow->getName()] = cow;
 
@@ -489,7 +489,7 @@ void BulletDiscreteBVHManager::contactTest(ContactResultMap& collisions)
   pairCache->processAllOverlappingPairs(&collisionCallback, dispatcher_.get());
 }
 
-void BulletDiscreteBVHManager::addCollisionObject(COWPtr& cow)
+void BulletDiscreteBVHManager::addCollisionObject(const COWPtr& cow)
 {
   link2cow_[cow->getName()] = cow;
 

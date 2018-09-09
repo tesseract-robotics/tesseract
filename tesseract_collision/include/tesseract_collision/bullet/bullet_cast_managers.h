@@ -52,7 +52,7 @@ class BulletCastSimpleManager : public ContinuousContactManagerBase
 {
 public:
   BulletCastSimpleManager();
-  ~BulletCastSimpleManager() {}
+
   ContinuousContactManagerBasePtr clone() const override;
 
   bool addCollisionObject(const std::string& name,
@@ -97,7 +97,7 @@ public:
    * @brief A a bullet collision object to the manager
    * @param cow The tesseract bullet collision object
    */
-  void addCollisionObject(COWPtr& cow);
+  void addCollisionObject(const COWPtr& cow);
 
 private:
   ContactRequest request_;                            /**< @brief The active contact request message */
@@ -204,7 +204,7 @@ public:
    * @brief A a bullet collision object to the manager
    * @param cow The tesseract bullet collision object
    */
-  void addCollisionObject(COWPtr& cow);
+  void addCollisionObject(const COWPtr& cow);
 
 private:
   ContactRequest request_;                            /**< @brief The active contact request message */
@@ -289,7 +289,7 @@ void constructCastContactManager(T& manager,
         const Eigen::Isometry3d& tf1 = it1->second;
         const Eigen::Isometry3d& tf2 = it2->second;
 
-        btCompoundShape* new_compound = new btCompoundShape(/*dynamicAABBtree=*/false);
+        btCompoundShape* new_compound = new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, compound->getNumChildShapes());
 
         for (int i = 0; i < compound->getNumChildShapes(); ++i)
         {
