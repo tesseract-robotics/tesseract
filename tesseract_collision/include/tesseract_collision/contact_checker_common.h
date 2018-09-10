@@ -29,7 +29,7 @@
 #include <tesseract_core/basic_types.h>
 #include <ros/console.h>
 
-#include <bullet/LinearMath/btConvexHullComputer.h>
+#include <LinearMath/btConvexHullComputer.h>
 #include <cstdio>
 #include <Eigen/Geometry>
 #include <fstream>
