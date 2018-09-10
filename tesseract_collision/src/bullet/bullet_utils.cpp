@@ -259,10 +259,10 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
   , m_shape_poses(shape_poses)
   , m_collision_object_types(collision_object_types)
 {
-  assert(shapes.empty());
-  assert(shape_poses.empty());
-  assert(collision_object_types.empty());
-  assert(name.empty());
+  assert(!shapes.empty());
+  assert(!shape_poses.empty());
+  assert(!collision_object_types.empty());
+  assert(!name.empty());
   assert(shapes.size() == shape_poses.size());
   assert(shapes.size() == collision_object_types.size());
 
