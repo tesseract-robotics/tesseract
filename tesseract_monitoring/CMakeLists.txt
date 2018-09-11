@@ -33,8 +33,8 @@ include_directories(
 )
 
 # Tesseract ROS Nodes
-#add_executable(${PROJECT_NAME}_contacts_node src/contact_monitor.cpp)
-#target_link_libraries(${PROJECT_NAME}_contacts_node ${catkin_LIBRARIES})
+add_executable(${PROJECT_NAME}_contacts_node src/contact_monitor.cpp)
+target_link_libraries(${PROJECT_NAME}_contacts_node ${catkin_LIBRARIES})
 
 add_library(${PROJECT_NAME}_environment
   src/environment_monitor.cpp

@@ -323,10 +323,10 @@ FCLCollisionObjectWrapper::FCLCollisionObjectWrapper(const std::string& name,
   , shape_poses_(shape_poses)
   , collision_object_types_(collision_object_types)
 {
-  assert(shapes.empty());
-  assert(shape_poses.empty());
-  assert(collision_object_types.empty());
-  assert(name.empty());
+  assert(!shapes.empty());
+  assert(!shape_poses.empty());
+  assert(!collision_object_types.empty());
+  assert(!name.empty());
   assert(shapes.size() == shape_poses.size());
   assert(shapes.size() == collision_object_types.size());
 

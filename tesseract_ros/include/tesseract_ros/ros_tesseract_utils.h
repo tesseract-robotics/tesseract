@@ -741,8 +741,10 @@ static inline bool processTesseractStateMsg(tesseract_ros::ROSBasicEnvPtr env,
 }
 
 static inline void tesseractContactResultToContactResultMsg(tesseract_msgs::ContactResult& contact_result_msg,
-                                                            const tesseract::ContactResult& contact_result)
+                                                            const tesseract::ContactResult& contact_result,
+                                                            const ros::Time& stamp = ros::Time::now())
 {
+  contact_result_msg.stamp = stamp;
   contact_result_msg.distance = contact_result.distance;
   contact_result_msg.link_names[0] = contact_result.link_names[0];
   contact_result_msg.link_names[1] = contact_result.link_names[1];
@@ -777,9 +779,10 @@ static inline void tesseractContactResultToContactResultMsg(tesseract_msgs::Cont
 }
 
 static inline void tesseractContactResultToContactResultMsg(tesseract_msgs::ContactResultPtr contact_result_msg,
-                                                            const tesseract::ContactResult& contact_result)
+                                                            const tesseract::ContactResult& contact_result,
+                                                            const ros::Time& stamp = ros::Time::now())
 {
-  tesseractContactResultToContactResultMsg(*contact_result_msg, contact_result);
+  tesseractContactResultToContactResultMsg(*contact_result_msg, contact_result, stamp);
 }
 
 static inline void getActiveLinkNamesRecursive(std::vector<std::string>& active_links,

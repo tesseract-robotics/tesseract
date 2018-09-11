@@ -148,10 +148,10 @@ namespace ContactRequestTypes
 {
 enum ContactRequestType
 {
-  FIRST,   /**< Return at first contact for any pair of objects */
-  CLOSEST, /**< Return the global minimum for a pair of objects */
-  ALL,     /**< Return all contacts for a pair of objects */
-  LIMITED  /**< Return limited set of contacts for a pair of objects */
+  FIRST = 0,   /**< Return at first contact for any pair of objects */
+  CLOSEST = 1, /**< Return the global minimum for a pair of objects */
+  ALL = 2,     /**< Return all contacts for a pair of objects */
+  LIMITED = 3  /**< Return limited set of contacts for a pair of objects */
 };
 }
 typedef ContactRequestTypes::ContactRequestType ContactRequestType;
