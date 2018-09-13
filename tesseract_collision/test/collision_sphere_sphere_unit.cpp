@@ -313,42 +313,42 @@ void runConvexTest(tesseract::DiscreteContactManagerBase& checker)
 
 TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionSphereSphereUnit)
 {
-  tesseract::BulletDiscreteSimpleManager checker;
+  tesseract::tesseract_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionSphereSphereConvexHullUnit)
 {
-  tesseract::BulletDiscreteSimpleManager checker;
+  tesseract::tesseract_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker, true);
   runConvexTest(checker);
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionSphereSphereUnit)
 {
-  tesseract::BulletDiscreteBVHManager checker;
+  tesseract::tesseract_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionSphereSphereConvexHullUnit)
 {
-  tesseract::BulletDiscreteBVHManager checker;
+  tesseract::tesseract_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker, true);
   runConvexTest(checker);
 }
 
 TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionSphereSphereUnit)
 {
-  tesseract::FCLDiscreteBVHManager checker;
+  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionSphereSphereConvexHullUnit)
 {
-  tesseract::FCLDiscreteBVHManager checker;
+  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
   addCollisionObjects(checker, true);
   runConvexTest(checker);
 }

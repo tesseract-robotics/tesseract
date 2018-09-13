@@ -47,6 +47,8 @@
 
 namespace tesseract
 {
+namespace tesseract_fcl
+{
 /** @brief A FCL implementation of the discrete contact manager */
 class FCLDiscreteBVHManager : public DiscreteContactManagerBase
 {
@@ -72,8 +74,7 @@ public:
 
   void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override;
 
-  void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                    const VectorIsometry3d& poses) override;
+  void setCollisionObjectsTransform(const std::vector<std::string>& names, const VectorIsometry3d& poses) override;
 
   void setCollisionObjectsTransform(const TransformMap& transforms) override;
 
@@ -87,21 +88,20 @@ public:
    * @brief Add a fcl collision object to the manager
    * @param cow The tesseract fcl collision object
    */
-  void addCollisionObject(const FCLCOWPtr& cow);
+  void addCollisionObject(const COWPtr& cow);
 
   /**
    * @brief Return collision objects
    * @return A map of collision objects <name, collision object>
    */
-  const Link2FCLCOW& getCollisionObjects() const;
+  const Link2COW& getCollisionObjects() const;
 
 private:
   std::unique_ptr<fcl::BroadPhaseCollisionManagerd> manager_; /**< @brief FCL Broad Phase Collision Manager */
-  Link2FCLCOW link2cow_;                                      /**< @brief A map of all (static and active) collision objects being managed */
-  ContactRequest request_;                                    /**< @brief Active request to be used for methods that don't require a request */
-
+  Link2COW link2cow_;      /**< @brief A map of all (static and active) collision objects being managed */
+  ContactRequest request_; /**< @brief Active request to be used for methods that don't require a request */
 };
 typedef std::shared_ptr<FCLDiscreteBVHManager> FCLDiscreteBVHManagerPtr;
-
 }
-#endif // TESSERACT_COLLISION_FCL_DISCRETE_MANAGERS_H
+}
+#endif  // TESSERACT_COLLISION_FCL_DISCRETE_MANAGERS_H

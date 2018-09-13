@@ -57,30 +57,28 @@
 
 namespace tesseract
 {
-btCollisionShape* createShapePrimitive(const shapes::Box* geom,
-                                       const CollisionObjectType& collision_object_type)
+namespace tesseract_bullet
+{
+btCollisionShape* createShapePrimitive(const shapes::Box* geom, const CollisionObjectType& collision_object_type)
 {
   assert(collision_object_type == CollisionObjectType::UseShapeType);
   const double* size = geom->size;
   return (new btBoxShape(btVector3(size[0] / 2, size[1] / 2, size[2] / 2)));
 }
 
-btCollisionShape* createShapePrimitive(const shapes::Sphere* geom,
-                                       const CollisionObjectType& collision_object_type)
+btCollisionShape* createShapePrimitive(const shapes::Sphere* geom, const CollisionObjectType& collision_object_type)
 {
   assert(collision_object_type == CollisionObjectType::UseShapeType);
   return (new btSphereShape(geom->radius));
 }
 
-btCollisionShape* createShapePrimitive(const shapes::Cylinder* geom,
-                                       const CollisionObjectType& collision_object_type)
+btCollisionShape* createShapePrimitive(const shapes::Cylinder* geom, const CollisionObjectType& collision_object_type)
 {
   assert(collision_object_type == CollisionObjectType::UseShapeType);
   return (new btCylinderShapeZ(btVector3(geom->radius, geom->radius, geom->length / 2)));
 }
 
-btCollisionShape* createShapePrimitive(const shapes::Cone* geom,
-                                       const CollisionObjectType& collision_object_type)
+btCollisionShape* createShapePrimitive(const shapes::Cone* geom, const CollisionObjectType& collision_object_type)
 {
   assert(collision_object_type == CollisionObjectType::UseShapeType);
   return (new btConeShapeZ(geom->radius, geom->length));
@@ -91,8 +89,7 @@ btCollisionShape* createShapePrimitive(const shapes::Mesh* geom,
                                        CollisionObjectWrapper* cow)
 {
   assert(collision_object_type == CollisionObjectType::UseShapeType ||
-         collision_object_type == CollisionObjectType::ConvexHull ||
-         collision_object_type == CollisionObjectType::SDF);
+         collision_object_type == CollisionObjectType::ConvexHull || collision_object_type == CollisionObjectType::SDF);
 
   if (geom->vertex_count > 0 && geom->triangle_count > 0)
   {
@@ -158,7 +155,8 @@ btCollisionShape* createShapePrimitive(const shapes::OcTree* geom,
          collision_object_type == CollisionObjectType::SDF ||
          collision_object_type == CollisionObjectType::MultiSphere);
 
-  btCompoundShape* subshape = new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, geom->octree->size());
+  btCompoundShape* subshape =
+      new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, geom->octree->size());
   double occupancy_threshold = geom->octree->getOccupancyThres();
 
   // convert the mesh to the assigned collision object type
@@ -275,7 +273,8 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
   }
   else
   {
-    btCompoundShape* compound = new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, m_shapes.size());
+    btCompoundShape* compound =
+        new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, m_shapes.size());
     manage(compound);
     compound->setMargin(BULLET_MARGIN);  // margin: compound. seems to have no
                                          // effect when positive but has an
@@ -313,5 +312,6 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
   , m_collision_object_types(collision_object_types)
   , m_data(data)
 {
+}
 }
 }

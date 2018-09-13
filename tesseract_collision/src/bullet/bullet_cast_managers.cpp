@@ -43,6 +43,8 @@
 
 namespace tesseract
 {
+namespace tesseract_bullet
+{
 COWPtr makeCastCollisionObject(const COWPtr& cow)
 {
   COWPtr new_cow = cow->clone();
@@ -66,7 +68,8 @@ COWPtr makeCastCollisionObject(const COWPtr& cow)
   else if (btBroadphaseProxy::isCompound(new_cow->getCollisionShape()->getShapeType()))
   {
     btCompoundShape* compound = static_cast<btCompoundShape*>(new_cow->getCollisionShape());
-    btCompoundShape* new_compound = new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, compound->getNumChildShapes());
+    btCompoundShape* new_compound =
+        new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, compound->getNumChildShapes());
 
     for (int i = 0; i < compound->getNumChildShapes(); ++i)
     {
@@ -263,7 +266,7 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& na
     btTransform tf1 = convertEigenToBt(pose1);
     btTransform tf2 = convertEigenToBt(pose2);
 
-    static_cast<tesseract::CastHullShape*>(it->second->getCollisionShape())->updateCastTransform(tf1.inverseTimes(tf2));
+    static_cast<CastHullShape*>(it->second->getCollisionShape())->updateCastTransform(tf1.inverseTimes(tf2));
     it->second->setWorldTransform(tf1);
   }
 }
@@ -439,7 +442,7 @@ void BulletCastSimpleManager::contactTest(ContactResultMap& collisions)
   }
 }
 
-void BulletCastSimpleManager::addCollisionObject(const COWPtr &cow)
+void BulletCastSimpleManager::addCollisionObject(const COWPtr& cow)
 {
   link2cow_[cow->getName()] = cow;
 
@@ -661,7 +664,7 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
     btTransform tf1 = convertEigenToBt(pose1);
     btTransform tf2 = convertEigenToBt(pose2);
 
-    static_cast<tesseract::CastHullShape*>(cow->getCollisionShape())->updateCastTransform(tf1.inverseTimes(tf2));
+    static_cast<CastHullShape*>(cow->getCollisionShape())->updateCastTransform(tf1.inverseTimes(tf2));
     cow->setWorldTransform(tf1);
 
     // Now update Broadphase AABB (Copied from BulletWorld updateSingleAabb function
@@ -878,7 +881,7 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
 }
 
 const ContactRequest& BulletCastBVHManager::getContactRequest() const { return request_; }
-void BulletCastBVHManager::addCollisionObject(const COWPtr &cow)
+void BulletCastBVHManager::addCollisionObject(const COWPtr& cow)
 {
   link2cow_[cow->getName()] = cow;
 
@@ -916,5 +919,6 @@ void BulletCastBVHManager::contactTest(const COWPtr& cow, ContactDistanceData& c
   TesseractSingleContactCallback contactCB(cow.get(), dispatcher_.get(), dispatch_info_, cc);
 
   broadphase_->aabbTest(aabbMin, aabbMax, contactCB);
+}
 }
 }
