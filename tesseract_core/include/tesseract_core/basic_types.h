@@ -59,7 +59,7 @@ struct AllowedCollisionMatrix
    * @param obj2 Collision object name
    * @param reason The reason for disabling collison
    */
-  virtual void addAllowedCollision(const std::string& link_name1,
+  virtual void addDisallowedCollision(const std::string& link_name1,
                                    const std::string& link_name2,
                                    const std::string& reason)
   {
@@ -72,7 +72,7 @@ struct AllowedCollisionMatrix
    * @param obj1 Collision object name
    * @param obj2 Collision object name
    */
-  virtual void removeAllowedCollision(const std::string& link_name1, const std::string& link_name2)
+  virtual void removeDisallowedCollision(const std::string& link_name1, const std::string& link_name2)
   {
     lookup_table_.erase(link_name1 + link_name2);
     lookup_table_.erase(link_name2 + link_name1);
