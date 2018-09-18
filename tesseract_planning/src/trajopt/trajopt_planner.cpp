@@ -92,7 +92,7 @@ bool TrajoptPlanner::solve(trajopt::TrajOptProbPtr prob, PlannerResponse& respon
 
   response.trajectory = getTraj(opt.x(), prob->GetVars());
   response.status_code = opt.results().status;
-  response.joint_names = joint_names;
+  response.joint_names = prob->GetEnv()->getJointNames();
   response.status_description = sco::statusToString(opt.results().status);
   return true;
 }
