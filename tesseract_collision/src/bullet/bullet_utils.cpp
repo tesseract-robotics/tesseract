@@ -93,20 +93,6 @@ btCollisionShape* createShapePrimitive(const shapes::Mesh* geom,
 
   if (geom->vertex_count > 0 && geom->triangle_count > 0)
   {
-    std::shared_ptr<btTriangleMesh> ptrimesh(new btTriangleMesh());
-    for (unsigned int i = 0; i < geom->triangle_count; ++i)
-    {
-      unsigned int index1 = geom->triangles[3 * i];
-      unsigned int index2 = geom->triangles[3 * i + 1];
-      unsigned int index3 = geom->triangles[3 * i + 2];
-
-      btVector3 v1(geom->vertices[3 * index1], geom->vertices[3 * index1 + 1], geom->vertices[3 * index1 + 2]);
-      btVector3 v2(geom->vertices[3 * index2], geom->vertices[3 * index2 + 1], geom->vertices[3 * index2 + 2]);
-      btVector3 v3(geom->vertices[3 * index3], geom->vertices[3 * index3 + 1], geom->vertices[3 * index3 + 2]);
-
-      ptrimesh->addTriangle(v1, v2, v3);
-    }
-
     // convert the mesh to the assigned collision object type
     switch (collision_object_type)
     {
@@ -132,8 +118,34 @@ btCollisionShape* createShapePrimitive(const shapes::Mesh* geom,
       }
       case CollisionObjectType::UseShapeType:
       {
-        cow->manage(ptrimesh);
-        return (new btBvhTriangleMeshShape(ptrimesh.get(), true));
+        btCompoundShape* compound =
+            new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, geom->triangle_count);
+        compound->setMargin(BULLET_MARGIN);  // margin: compound. seems to have no
+                                             // effect when positive but has an
+                                             // effect when negative
+
+        for (unsigned int i = 0; i < geom->triangle_count; ++i)
+        {
+          unsigned int index1 = geom->triangles[3 * i];
+          unsigned int index2 = geom->triangles[3 * i + 1];
+          unsigned int index3 = geom->triangles[3 * i + 2];
+
+          btVector3 v1(geom->vertices[3 * index1], geom->vertices[3 * index1 + 1], geom->vertices[3 * index1 + 2]);
+          btVector3 v2(geom->vertices[3 * index2], geom->vertices[3 * index2 + 1], geom->vertices[3 * index2 + 2]);
+          btVector3 v3(geom->vertices[3 * index3], geom->vertices[3 * index3 + 1], geom->vertices[3 * index3 + 2]);
+
+          btCollisionShape* subshape = new btTriangleShapeEx(v1, v2, v3);
+          if (subshape != NULL)
+          {
+            cow->manage(subshape);
+            subshape->setMargin(BULLET_MARGIN);
+            btTransform geomTrans;
+            geomTrans.setIdentity();
+            compound->addChildShape(geomTrans, subshape);
+          }
+        }
+
+        return compound;
       }
       default:
       {

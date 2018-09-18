@@ -230,27 +230,34 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   if (!needs_collision)
     return false;
 
-  fcl::CollisionResultd col_result;
+  size_t num_contacts = std::numeric_limits<size_t>::max();
+  if (cdata->req->type == ContactRequestType::FIRST)
+    num_contacts = 1;
 
-  int num_contacts = fcl::collide(o1, o2, fcl::CollisionRequestd(1, true, 1, false), col_result);
+  fcl::CollisionResultd col_result;
+  fcl::collide(o1, o2, fcl::CollisionRequestd(num_contacts, true, 1, false), col_result);
 
   if (col_result.isCollision())
   {
-    ContactResult contact;
-    contact.link_names[0] = cd1->getName();
-    contact.link_names[1] = cd2->getName();
-    contact.nearest_points[0] = Eigen::Vector3d(-1, -1, -1);
-    contact.nearest_points[1] = Eigen::Vector3d(-1, -1, -1);
-    contact.type_id[0] = cd1->getTypeID();
-    contact.type_id[1] = cd2->getTypeID();
-    contact.distance = 0;
-    contact.normal = Eigen::Vector3d(-1, -1, -1);
+    for (size_t i = 0; i < col_result.numContacts(); ++i)
+    {
+      const fcl::Contactd& fcl_contact = col_result.getContact(i);
+      ContactResult contact;
+      contact.link_names[0] = cd1->getName();
+      contact.link_names[1] = cd2->getName();
+      contact.nearest_points[0] = fcl_contact.pos;
+      contact.nearest_points[1] = fcl_contact.pos;
+      contact.type_id[0] = cd1->getTypeID();
+      contact.type_id[1] = cd2->getTypeID();
+      contact.distance = -1.0 * fcl_contact.penetration_depth;
+      contact.normal = fcl_contact.normal;
 
-    ObjectPairKey pc = getObjectPairKey(cd1->getName(), cd2->getName());
-    const auto& it = cdata->res->find(pc);
-    bool found = (it != cdata->res->end());
+      ObjectPairKey pc = getObjectPairKey(cd1->getName(), cd2->getName());
+      const auto& it = cdata->res->find(pc);
+      bool found = (it != cdata->res->end());
 
-    processResult(*cdata, contact, pc, found);
+      processResult(*cdata, contact, pc, found);
+    }
   }
 
   return cdata->done;
