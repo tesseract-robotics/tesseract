@@ -16,7 +16,8 @@ catkin_package(
     include
     ${OMPL_INCLUDE_DIRS}
   LIBRARIES
-    tesseract_ros_trajopt_planner
+    ${PROJECT_NAME}_ompl
+    ${PROJECT_NAME}_trajopt
   CATKIN_DEPENDS
     roscpp
     tesseract_ros
