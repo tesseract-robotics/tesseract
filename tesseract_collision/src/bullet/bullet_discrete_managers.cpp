@@ -496,11 +496,8 @@ void BulletDiscreteBVHManager::addCollisionObject(const COWPtr& cow)
   link2cow_[cow->getName()] = cow;
 
   // calculate new AABB
-  btTransform trans = cow->getWorldTransform();
-
-  btVector3 minAabb;
-  btVector3 maxAabb;
-  cow->getCollisionShape()->getAabb(trans, minAabb, maxAabb);
+  btVector3 minAabb, maxAabb;
+  cow->getCollisionShape()->getAabb(cow->getWorldTransform(), minAabb, maxAabb);
 
   // need to increase the aabb for contact thresholds
   btVector3 contactThreshold(
