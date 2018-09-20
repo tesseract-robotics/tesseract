@@ -133,7 +133,8 @@ inline ContactResult* processResult(ContactDistanceData& cdata,
 /**
  * @brief Create a convex hull from vertices using Bullet Convex Hull Computer
  * @param (Output) vertices A vector of vertices
- * @param (Output) faces The first values indicates the number of vertices that define the face followed by the vertice index
+ * @param (Output) faces The first values indicates the number of vertices that define the face followed by the vertice
+ * index
  * @param (input) input A vector of point to create a convex hull from
  * @param (input) shrink If positive, the convex hull is shrunken by that amount (each face is moved by "shrink" length
  *                units towards the center along its normal).
@@ -141,7 +142,11 @@ inline ContactResult* processResult(ContactDistanceData& cdata,
  *                "innerRadius" is the minimum distance of a face to the center of the convex hull.
  * @return The number of faces. If less than zero an error occured when trying to create the convex hull
  */
-inline int createConvexHull(VectorVector3d& vertices, std::vector<int>& faces, const VectorVector3d& input, double shrink = -1, double shrinkClamp = -1)
+inline int createConvexHull(VectorVector3d& vertices,
+                            std::vector<int>& faces,
+                            const VectorVector3d& input,
+                            double shrink = -1,
+                            double shrinkClamp = -1)
 {
   vertices.clear();
   faces.clear();
@@ -211,35 +216,38 @@ inline int createConvexHull(VectorVector3d& vertices, std::vector<int>& faces, c
  * @param num_faces The number of faces
  * @return False if failed to write file, otherwise true
  */
-inline bool writeSimplePlyFile(const std::string& path, const VectorVector3d& vertices, const std::vector<int> &faces, int num_faces)
+inline bool writeSimplePlyFile(const std::string& path,
+                               const VectorVector3d& vertices,
+                               const std::vector<int>& faces,
+                               int num_faces)
 {
-//  ply
-//  format ascii 1.0           { ascii/binary, format version number }
-//  comment made by Greg Turk  { comments keyword specified, like all lines }
-//  comment this file is a cube
-//  element vertex 8           { define "vertex" element, 8 of them in file }
-//  property float x           { vertex contains float "x" coordinate }
-//  property float y           { y coordinate is also a vertex property }
-//  property float z           { z coordinate, too }
-//  element face 6             { there are 6 "face" elements in the file }
-//  property list uchar int vertex_index { "vertex_indices" is a list of ints }
-//  end_header                 { delimits the end of the header }
-//  0 0 0                      { start of vertex list }
-//  0 0 1
-//  0 1 1
-//  0 1 0
-//  1 0 0
-//  1 0 1
-//  1 1 1
-//  1 1 0
-//  4 0 1 2 3                  { start of face list }
-//  4 7 6 5 4
-//  4 0 4 5 1
-//  4 1 5 6 2
-//  4 2 6 7 3
-//  4 3 7 4 0
+  //  ply
+  //  format ascii 1.0           { ascii/binary, format version number }
+  //  comment made by Greg Turk  { comments keyword specified, like all lines }
+  //  comment this file is a cube
+  //  element vertex 8           { define "vertex" element, 8 of them in file }
+  //  property float x           { vertex contains float "x" coordinate }
+  //  property float y           { y coordinate is also a vertex property }
+  //  property float z           { z coordinate, too }
+  //  element face 6             { there are 6 "face" elements in the file }
+  //  property list uchar int vertex_index { "vertex_indices" is a list of ints }
+  //  end_header                 { delimits the end of the header }
+  //  0 0 0                      { start of vertex list }
+  //  0 0 1
+  //  0 1 1
+  //  0 1 0
+  //  1 0 0
+  //  1 0 1
+  //  1 1 1
+  //  1 1 0
+  //  4 0 1 2 3                  { start of face list }
+  //  4 7 6 5 4
+  //  4 0 4 5 1
+  //  4 1 5 6 2
+  //  4 2 6 7 3
+  //  4 3 7 4 0
   std::ofstream myfile;
-  myfile.open (path);
+  myfile.open(path);
   if (myfile.fail())
   {
     ROS_ERROR("Failed to open file: %s", path.c_str());
@@ -260,7 +268,8 @@ inline bool writeSimplePlyFile(const std::string& path, const VectorVector3d& ve
   // Add vertices
   for (const auto& v : vertices)
   {
-    myfile << std::fixed << std::setprecision(std::numeric_limits<double>::digits10 + 1) << v[0] << " " << v[1] << " " << v[2] << "\n";
+    myfile << std::fixed << std::setprecision(std::numeric_limits<double>::digits10 + 1) << v[0] << " " << v[1] << " "
+           << v[2] << "\n";
   }
 
   // Add faces
@@ -280,7 +289,6 @@ inline bool writeSimplePlyFile(const std::string& path, const VectorVector3d& ve
   myfile.close();
   return true;
 }
-
 }
 
 #endif  // TESSERACT_COLLISION_CONTACT_CHECKER_COMMON_H

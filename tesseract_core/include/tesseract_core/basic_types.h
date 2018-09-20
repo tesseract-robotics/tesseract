@@ -36,7 +36,6 @@
 #include <functional>
 #include <map>
 
-
 namespace tesseract
 {
 template <typename T>
@@ -55,7 +54,6 @@ typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> T
 struct AllowedCollisionMatrix
 {
   virtual ~AllowedCollisionMatrix() {}
-
   /**
    * @brief Disable collision between two collision objects
    * @param obj1 Collision object name
@@ -249,8 +247,8 @@ struct AttachedBodyInfo
 struct VisualObjectGeometry
 {
   std::vector<shapes::ShapeConstPtr> shapes; /**< @brief The shape */
-  VectorIsometry3d shape_poses;     /**< @brief The pose of the shape */
-  VectorVector4d shape_colors;    /**< @brief (Optional) The shape color (R, G, B, A) */
+  VectorIsometry3d shape_poses;              /**< @brief The pose of the shape */
+  VectorVector4d shape_colors;               /**< @brief (Optional) The shape color (R, G, B, A) */
 };
 
 /** @brief Contains visual geometry data */

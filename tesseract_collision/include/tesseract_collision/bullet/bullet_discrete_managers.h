@@ -45,6 +45,8 @@
 #include <tesseract_core/discrete_contact_manager_base.h>
 namespace tesseract
 {
+namespace tesseract_bullet
+{
 /** @brief A simple implementaiton of a bullet manager which does not use BHV */
 class BulletDiscreteSimpleManager : public DiscreteContactManagerBase
 {
@@ -70,8 +72,7 @@ public:
 
   void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override;
 
-  void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                    const VectorIsometry3d& poses) override;
+  void setCollisionObjectsTransform(const std::vector<std::string>& names, const VectorIsometry3d& poses) override;
 
   void setCollisionObjectsTransform(const TransformMap& transforms) override;
 
@@ -171,8 +172,7 @@ public:
 
   void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override;
 
-  void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                    const VectorIsometry3d& poses) override;
+  void setCollisionObjectsTransform(const std::vector<std::string>& names, const VectorIsometry3d& poses) override;
 
   void setCollisionObjectsTransform(const TransformMap& transforms) override;
 
@@ -235,7 +235,7 @@ void constructDiscreteContactManager(T& manager,
     new_cow->m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
     if (!req.link_names.empty())
     {
-      bool check = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](std::string link) {
+      bool check = (std::find_if(req.link_names.begin(), req.link_names.end(), [&transform](const std::string &link) {
                       return link == transform.first;
                     }) == req.link_names.end());
       if (check)
@@ -256,6 +256,7 @@ void constructDiscreteContactManager(T& manager,
     new_cow->setContactProcessingThreshold(req.contact_distance);
     manager.addCollisionObject(new_cow);
   }
+}
 }
 }
 #endif  // TESSERACT_COLLISION_BULLET_DISCRETE_MANAGERS_H

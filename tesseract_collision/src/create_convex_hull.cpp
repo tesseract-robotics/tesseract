@@ -36,15 +36,17 @@ int main(int argc, char** argv)
   double shrink;
   double clamp;
 
-  std::string help = "\nExample:\n" \
-                     "  create_convex_hull _input:=/home/mesh.stl _output:=/home/mesh.ply\n\n" \
-                     "Parameters:\n" \
-                     "  input  (required): File path to mesh used to create a convex hull.\n" \
-                     "  output (required): File path to save the generated convex hull as a ply.\n" \
-                     "  shrink (optional): If positive, the convex hull is shrunken by that amount (each face is moved by 'shrink' length units towards the center along its normal).\n" \
-                     "  clamp  (optional): If positive, 'shrink' is clamped to not exceed 'clamp * innerRadius', where 'innerRadius' is the minimum distance of a face to the center of the convex hull.\n";
+  std::string help = "\nExample:\n"
+                     "  create_convex_hull _input:=/home/mesh.stl _output:=/home/mesh.ply\n\n"
+                     "Parameters:\n"
+                     "  input  (required): File path to mesh used to create a convex hull.\n"
+                     "  output (required): File path to save the generated convex hull as a ply.\n"
+                     "  shrink (optional): If positive, the convex hull is shrunken by that amount (each face is moved "
+                     "by 'shrink' length units towards the center along its normal).\n"
+                     "  clamp  (optional): If positive, 'shrink' is clamped to not exceed 'clamp * innerRadius', where "
+                     "'innerRadius' is the minimum distance of a face to the center of the convex hull.\n";
 
-  if (!pnh.hasParam("input") || !pnh.hasParam("output") )
+  if (!pnh.hasParam("input") || !pnh.hasParam("output"))
   {
     ROS_ERROR(help.c_str());
     return -1;
@@ -54,7 +56,6 @@ int main(int argc, char** argv)
   pnh.getParam("output", output);
   pnh.param<double>("shrink", shrink, -1.0);
   pnh.param<double>("clamp", clamp, -1.0);
-
 
   std::ifstream file(input, std::ios::binary | std::ios::ate);
   std::streamsize size = file.tellg();
@@ -84,7 +85,8 @@ int main(int argc, char** argv)
   mesh_vertices.reserve(mesh->vertex_count);
 
   for (unsigned int i = 0; i < mesh->vertex_count; ++i)
-    mesh_vertices.push_back(Eigen::Vector3d(mesh->vertices[3 * i + 0], mesh->vertices[3 * i + 1], mesh->vertices[3 * i + 2]));
+    mesh_vertices.push_back(
+        Eigen::Vector3d(mesh->vertices[3 * i + 0], mesh->vertices[3 * i + 1], mesh->vertices[3 * i + 2]));
 
   tesseract::VectorVector3d convex_hull_vertices;
   std::vector<int> convex_hull_faces;

@@ -15,7 +15,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mes
 
   double delta = 0.55;
 
-  std::size_t t = 10;
+  std::size_t t = 5; // Because of unit test runtime this was reduced from 10 to 5.
   std::vector<std::string> link_names;
   tesseract::TransformMap location;
   for (std::size_t x = 0; x < t; ++x)
@@ -68,45 +68,42 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mes
   ros::WallTime end_time = ros::WallTime::now();
   ROS_INFO_STREAM("DT: " << (end_time - start_time).toSec());
 
-  EXPECT_TRUE(result_vector.size() == 2700);
-
-  //  checker.calcCollisionsContinuous(req, location, location2, result);
-  //  tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
+  EXPECT_TRUE(result_vector.size() == 300);
 }
 
 TEST(TesseractCollisionLargeDataSetUnit, BulletDiscreteSimpleCollisionLargeDataSetConvexHullUnit)
 {
-  tesseract::BulletDiscreteSimpleManager checker;
+  tesseract::tesseract_bullet::BulletDiscreteSimpleManager checker;
   runTest(checker, true);
 }
 
 TEST(TesseractCollisionLargeDataSetUnit, BulletDiscreteSimpleCollisionLargeDataSetUnit)
 {
-  tesseract::BulletDiscreteSimpleManager checker;
+  tesseract::tesseract_bullet::BulletDiscreteSimpleManager checker;
   runTest(checker);
 }
 
 TEST(TesseractCollisionLargeDataSetUnit, BulletDiscreteBVHCollisionLargeDataSetConvexHullUnit)
 {
-  tesseract::BulletDiscreteBVHManager checker;
+  tesseract::tesseract_bullet::BulletDiscreteBVHManager checker;
   runTest(checker, true);
 }
 
 TEST(TesseractCollisionLargeDataSetUnit, BulletDiscreteBVHCollisionLargeDataSetUnit)
 {
-  tesseract::BulletDiscreteBVHManager checker;
+  tesseract::tesseract_bullet::BulletDiscreteBVHManager checker;
   runTest(checker);
 }
 
 TEST(TesseractCollisionLargeDataSetUnit, FCLDiscreteBVHCollisionLargeDataSetConvexHullUnit)
 {
-  tesseract::FCLDiscreteBVHManager checker;
+  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
   runTest(checker, true);
 }
 
 TEST(TesseractCollisionLargeDataSetUnit, FCLDiscreteBVHCollisionLargeDataSetUnit)
 {
-  tesseract::FCLDiscreteBVHManager checker;
+  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
   runTest(checker);
 }
 

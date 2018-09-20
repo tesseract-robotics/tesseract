@@ -45,7 +45,8 @@
 
 namespace tesseract
 {
-
+namespace tesseract_fcl
+{
 FCLDiscreteBVHManager::FCLDiscreteBVHManager()
 {
   manager_ = std::unique_ptr<fcl::BroadPhaseCollisionManagerd>(new fcl::DynamicAABBTreeCollisionManagerd());
@@ -57,7 +58,7 @@ DiscreteContactManagerBasePtr FCLDiscreteBVHManager::clone() const
 
   for (const auto& cow : link2cow_)
   {
-    FCLCOWPtr new_cow = cow.second->clone();
+    COWPtr new_cow = cow.second->clone();
 
     // TODO LEVI: Should this happen as part of the clone?
     new_cow->setCollisionObjectsTransform(cow.second->getCollisionObjectsTransform());
@@ -69,13 +70,13 @@ DiscreteContactManagerBasePtr FCLDiscreteBVHManager::clone() const
 }
 
 bool FCLDiscreteBVHManager::addCollisionObject(const std::string& name,
-                        const int& mask_id,
-                        const std::vector<shapes::ShapeConstPtr>& shapes,
-                        const VectorIsometry3d& shape_poses,
-                        const CollisionObjectTypeVector& collision_object_types,
-                        bool enabled)
+                                               const int& mask_id,
+                                               const std::vector<shapes::ShapeConstPtr>& shapes,
+                                               const VectorIsometry3d& shape_poses,
+                                               const CollisionObjectTypeVector& collision_object_types,
+                                               bool enabled)
 {
-  FCLCOWPtr new_cow = createFCLCollisionObject(name, mask_id, shapes, shape_poses, collision_object_types, enabled);
+  COWPtr new_cow = createFCLCollisionObject(name, mask_id, shapes, shape_poses, collision_object_types, enabled);
   if (new_cow != nullptr)
   {
     addCollisionObject(new_cow);
@@ -97,7 +98,7 @@ bool FCLDiscreteBVHManager::removeCollisionObject(const std::string& name)
   auto it = link2cow_.find(name);
   if (it != link2cow_.end())
   {
-    std::vector<FCLCollisionObjectPtr>& objects = it->second->getCollisionObjects();
+    std::vector<CollisionObjectPtr>& objects = it->second->getCollisionObjects();
     for (auto& co : objects)
       manager_->unregisterObject(co.get());
 
@@ -137,7 +138,7 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const std::string& name
 }
 
 void FCLDiscreteBVHManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                  const VectorIsometry3d& poses)
+                                                         const VectorIsometry3d& poses)
 {
   assert(names.size() == poses.size());
   for (auto i = 0u; i < names.size(); ++i)
@@ -170,23 +171,22 @@ void FCLDiscreteBVHManager::setContactRequest(const ContactRequest& req)
   // Now need to update the broadphase with correct aabb
   for (auto& co : link2cow_)
   {
-    FCLCOWPtr& cow = co.second;
+    COWPtr& cow = co.second;
 
     updateCollisionObjectWithRequest(request_, *cow);
   }
 }
 
 const ContactRequest& FCLDiscreteBVHManager::getContactRequest() const { return request_; }
-
-void FCLDiscreteBVHManager::addCollisionObject(const FCLCOWPtr &cow)
+void FCLDiscreteBVHManager::addCollisionObject(const COWPtr& cow)
 {
   link2cow_[cow->getName()] = cow;
 
-  std::vector<FCLCollisionObjectPtr>& objects = cow->getCollisionObjects();
+  std::vector<CollisionObjectPtr>& objects = cow->getCollisionObjects();
   for (auto& co : objects)
     manager_->registerObject(co.get());
 }
 
-const Link2FCLCOW& FCLDiscreteBVHManager::getCollisionObjects() const { return link2cow_; }
-
+const Link2COW& FCLDiscreteBVHManager::getCollisionObjects() const { return link2cow_; }
+}
 }

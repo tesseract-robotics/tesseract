@@ -92,7 +92,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
   tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
-  EXPECT_NEAR(result_vector[0].distance, -0.55, 0.0001);
+  EXPECT_NEAR(result_vector[0].distance, -0.55, 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
   if (result_vector[0].link_names[0] != "box_link")
@@ -126,14 +126,14 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
   /////////////////////////////////////////////
   result.clear();
   result_vector.clear();
-  req.contact_distance = 0.27;  // 0.251;
+  req.contact_distance = 0.251;  // 0.251;
   checker.setContactRequest(req);
 
   checker.contactTest(result);
   tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
-  EXPECT_NEAR(result_vector[0].distance, 0.25, 0.0001);
+  EXPECT_NEAR(result_vector[0].distance, 0.25, 0.001);
 
   idx = { 0, 1, 1 };
   if (result_vector[0].link_names[0] != "box_link")
@@ -150,46 +150,125 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
   EXPECT_NEAR(result_vector[0].normal[2], idx[2] * 0.0, 0.001);
 }
 
+void runConvexTest(tesseract::DiscreteContactManagerBase& checker)
+{
+  //////////////////////////////////////
+  // Test when object is in collision
+  //////////////////////////////////////
+  tesseract::ContactRequest req;
+  req.link_names.push_back("box_link");
+  req.link_names.push_back("sphere_link");
+  req.contact_distance = 0.1;
+  req.type = tesseract::ContactRequestType::CLOSEST;
+  checker.setContactRequest(req);
+
+  // Set the collision object transforms
+  tesseract::TransformMap location;
+  location["box_link"] = Eigen::Isometry3d::Identity();
+  location["sphere_link"] = Eigen::Isometry3d::Identity();
+  location["sphere_link"].translation()(0) = 0.2;
+  checker.setCollisionObjectsTransform(location);
+
+  // Perform collision check
+  tesseract::ContactResultMap result;
+  checker.contactTest(result);
+
+  tesseract::ContactResultVector result_vector;
+  tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
+
+  EXPECT_TRUE(!result_vector.empty());
+  EXPECT_NEAR(result_vector[0].distance, -0.53776, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[0][1], result_vector[0].nearest_points[1][1], 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
+
+  std::vector<int> idx = { 0, 1, 1 };
+  if (result_vector[0].link_names[0] != "box_link")
+    idx = { 1, 0, -1 };
+
+  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.5, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], -0.03776, 0.001);
+  EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1,0,0)), 0.0);
+  EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1,0,0)))), 0.00001);
+
+  ////////////////////////////////////////////////
+  // Test object is out side the contact distance
+  ////////////////////////////////////////////////
+  location["sphere_link"].translation() = Eigen::Vector3d(1, 0, 0);
+  result.clear();
+  result_vector.clear();
+  checker.setCollisionObjectsTransform(location);
+
+  checker.contactTest(result);
+  tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
+
+  EXPECT_TRUE(result_vector.empty());
+
+  /////////////////////////////////////////////
+  // Test object inside the contact distance
+  /////////////////////////////////////////////
+  result.clear();
+  result_vector.clear();
+  req.contact_distance = 0.27;
+  checker.setContactRequest(req);
+
+  checker.contactTest(result);
+  tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
+
+  EXPECT_TRUE(!result_vector.empty());
+  EXPECT_NEAR(result_vector[0].distance, 0.26224, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[0][1], result_vector[0].nearest_points[1][1], 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
+
+  idx = { 0, 1, 1 };
+  if (result_vector[0].link_names[0] != "box_link")
+    idx = { 1, 0, -1 };
+
+  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.5, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], 0.76224, 0.001);
+  EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1,0,0)), 0.0);
+  EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1,0,0)))), 0.00001);
+}
+
 TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionBoxSphereUnit)
 {
-  tesseract::BulletDiscreteSimpleManager checker;
+  tesseract::tesseract_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionBoxSphereConvexHullUnit)
 {
-  tesseract::BulletDiscreteSimpleManager checker;
+  tesseract::tesseract_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker, true);
-  runTest(checker);
+  runConvexTest(checker);
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxSphereUnit)
 {
-  tesseract::BulletDiscreteBVHManager checker;
+  tesseract::tesseract_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxSphereConvexHullUnit)
 {
-  tesseract::BulletDiscreteBVHManager checker;
+  tesseract::tesseract_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker, true);
-  runTest(checker);
+  runConvexTest(checker);
 }
 
 TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxSphereUnit)
 {
-  tesseract::FCLDiscreteBVHManager checker;
+  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxSphereConvexHullUnit)
 {
-  tesseract::FCLDiscreteBVHManager checker;
+  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
   addCollisionObjects(checker, true);
-  runTest(checker);
+  runConvexTest(checker);
 }
 
 int main(int argc, char** argv)

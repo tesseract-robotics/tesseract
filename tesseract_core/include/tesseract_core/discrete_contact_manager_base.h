@@ -40,7 +40,6 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   virtual ~DiscreteContactManagerBase() {}
-
   /**
    * @brief Clone the manager
    *
@@ -106,8 +105,7 @@ public:
    * @param names The name of the object
    * @param poses The tranformation in world
    */
-  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                            const VectorIsometry3d& poses) = 0;
+  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names, const VectorIsometry3d& poses) = 0;
 
   /**
    * @brief Set a series of collision object's tranforms

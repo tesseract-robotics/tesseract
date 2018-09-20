@@ -35,7 +35,6 @@ class BasicPlotting
 {
 public:
   virtual ~BasicPlotting() {}
-
   /**
    * @brief Plot a trajectory
    * @param traj

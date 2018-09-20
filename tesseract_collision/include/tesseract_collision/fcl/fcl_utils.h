@@ -55,26 +55,28 @@
 
 namespace tesseract
 {
-typedef std::shared_ptr<fcl::CollisionGeometryd> FCLCollisionGeometryPtr;
-typedef std::shared_ptr<fcl::CollisionObjectd> FCLCollisionObjectPtr;
-typedef std::shared_ptr<const fcl::CollisionObjectd> FCLCollisionObjectConstPtr;
+namespace tesseract_fcl
+{
+typedef std::shared_ptr<fcl::CollisionGeometryd> CollisionGeometryPtr;
+typedef std::shared_ptr<fcl::CollisionObjectd> CollisionObjectPtr;
+typedef std::shared_ptr<const fcl::CollisionObjectd> CollisionObjectConstPtr;
 
-enum FCLCollisionFilterGroups
+enum CollisionFilterGroups
 {
   DefaultFilter = 1,
   StaticFilter = 2,
   KinematicFilter = 4,
-  AllFilter = -1 //all bits sets: DefaultFilter | StaticFilter | KinematicFilter
+  AllFilter = -1  // all bits sets: DefaultFilter | StaticFilter | KinematicFilter
 };
 
-class FCLCollisionObjectWrapper
+class CollisionObjectWrapper
 {
 public:
-  FCLCollisionObjectWrapper(const std::string& name,
-                            const int& type_id,
-                            const std::vector<shapes::ShapeConstPtr>& shapes,
-                            const VectorIsometry3d& shape_poses,
-                            const CollisionObjectTypeVector& collision_object_types);
+  CollisionObjectWrapper(const std::string& name,
+                         const int& type_id,
+                         const std::vector<shapes::ShapeConstPtr>& shapes,
+                         const VectorIsometry3d& shape_poses,
+                         const CollisionObjectTypeVector& collision_object_types);
 
   short int m_collisionFilterGroup;
   short int m_collisionFilterMask;
@@ -82,16 +84,16 @@ public:
 
   const std::string& getName() const { return name_; }
   const int& getTypeID() const { return type_id_; }
-
   /** \brief Check if two objects point to the same source object */
-  bool sameObject(const FCLCollisionObjectWrapper& other) const
+  bool sameObject(const CollisionObjectWrapper& other) const
   {
-    return name_ == other.name_ && type_id_ == other.type_id_ &&
-           shapes_.size() == other.shapes_.size() &&
+    return name_ == other.name_ && type_id_ == other.type_id_ && shapes_.size() == other.shapes_.size() &&
            shape_poses_.size() == other.shape_poses_.size() &&
            std::equal(shapes_.begin(), shapes_.end(), other.shapes_.begin()) &&
-           std::equal(shape_poses_.begin(), shape_poses_.end(), other.shape_poses_.begin(), [&](const Eigen::Isometry3d& t1, const Eigen::Isometry3d& t2) { return t1.isApprox(t2); });
-
+           std::equal(shape_poses_.begin(),
+                      shape_poses_.end(),
+                      other.shape_poses_.begin(),
+                      [](const Eigen::Isometry3d& t1, const Eigen::Isometry3d& t2) { return t1.isApprox(t2); });
   }
 
   void setCollisionObjectsTransform(const Eigen::Isometry3d& pose)
@@ -99,28 +101,19 @@ public:
     world_pose_ = pose;
     for (unsigned i = 0; i < collision_objects_.size(); ++i)
     {
-      FCLCollisionObjectPtr& co = collision_objects_[i];
+      CollisionObjectPtr& co = collision_objects_[i];
       co->setTransform(pose * shape_poses_[i]);
       co->computeAABB();
     }
   }
 
   const Eigen::Isometry3d& getCollisionObjectsTransform() const { return world_pose_; }
-
-  const std::vector<FCLCollisionObjectPtr>& getCollisionObjects() const
+  const std::vector<CollisionObjectPtr>& getCollisionObjects() const { return collision_objects_; }
+  std::vector<CollisionObjectPtr>& getCollisionObjects() { return collision_objects_; }
+  std::shared_ptr<CollisionObjectWrapper> clone() const
   {
-    return collision_objects_;
-  }
-
-  std::vector<FCLCollisionObjectPtr>& getCollisionObjects()
-  {
-    return collision_objects_;
-  }
-
-  std::shared_ptr<FCLCollisionObjectWrapper> clone() const
-  {
-    std::shared_ptr<FCLCollisionObjectWrapper> clone_cow(
-        new FCLCollisionObjectWrapper(name_, type_id_, shapes_, shape_poses_, collision_object_types_, collision_geometries_, collision_objects_));
+    std::shared_ptr<CollisionObjectWrapper> clone_cow(new CollisionObjectWrapper(
+        name_, type_id_, shapes_, shape_poses_, collision_object_types_, collision_geometries_, collision_objects_));
     clone_cow->m_collisionFilterGroup = m_collisionFilterGroup;
     clone_cow->m_collisionFilterMask = m_collisionFilterMask;
     clone_cow->m_enabled = m_enabled;
@@ -128,40 +121,39 @@ public:
   }
 
 protected:
+  CollisionObjectWrapper(const std::string& name,
+                         const int& type_id,
+                         const std::vector<shapes::ShapeConstPtr>& shapes,
+                         const VectorIsometry3d& shape_poses,
+                         const CollisionObjectTypeVector& collision_object_types,
+                         const std::vector<CollisionGeometryPtr>& collision_geometries,
+                         const std::vector<CollisionObjectPtr>& collision_objects);
 
-  FCLCollisionObjectWrapper(const std::string& name,
-                            const int& type_id,
-                            const std::vector<shapes::ShapeConstPtr>& shapes,
-                            const VectorIsometry3d& shape_poses,
-                            const CollisionObjectTypeVector& collision_object_types,
-                            const std::vector<FCLCollisionGeometryPtr>& collision_geometries,
-                            const std::vector<FCLCollisionObjectPtr>& collision_objects);
-
-  std::string name_;  // name of the collision object
-  int type_id_;       // user defined type id
+  std::string name_;             // name of the collision object
+  int type_id_;                  // user defined type id
   Eigen::Isometry3d world_pose_; /**< @brief Collision Object World Transformation */
   std::vector<shapes::ShapeConstPtr> shapes_;
   VectorIsometry3d shape_poses_;
   CollisionObjectTypeVector collision_object_types_;
-  std::vector<FCLCollisionGeometryPtr> collision_geometries_;
-  std::vector<FCLCollisionObjectPtr> collision_objects_;
+  std::vector<CollisionGeometryPtr> collision_geometries_;
+  std::vector<CollisionObjectPtr> collision_objects_;
 };
 
-FCLCollisionGeometryPtr createShapePrimitive(const shapes::ShapeConstPtr& geom,
-                                             const CollisionObjectType& collision_object_type);
+CollisionGeometryPtr createShapePrimitive(const shapes::ShapeConstPtr& geom,
+                                          const CollisionObjectType& collision_object_type);
 
-typedef FCLCollisionObjectWrapper FCLCOW;
-typedef std::shared_ptr<FCLCollisionObjectWrapper> FCLCOWPtr;
-typedef std::shared_ptr<const FCLCollisionObjectWrapper> FCLCOWConstPtr;
-typedef std::map<std::string, FCLCOWPtr> Link2FCLCOW;
-typedef std::map<std::string, FCLCOWConstPtr> Link2ConstFCLCOW;
+typedef CollisionObjectWrapper COW;
+typedef std::shared_ptr<CollisionObjectWrapper> COWPtr;
+typedef std::shared_ptr<const CollisionObjectWrapper> COWConstPtr;
+typedef std::map<std::string, COWPtr> Link2COW;
+typedef std::map<std::string, COWConstPtr> Link2ConstCOW;
 
-inline FCLCOWPtr createFCLCollisionObject(const std::string& name,
-                                          const int& type_id,
-                                          const std::vector<shapes::ShapeConstPtr>& shapes,
-                                          const VectorIsometry3d& shape_poses,
-                                          const CollisionObjectTypeVector& collision_object_types,
-                                          bool enabled)
+inline COWPtr createFCLCollisionObject(const std::string& name,
+                                       const int& type_id,
+                                       const std::vector<shapes::ShapeConstPtr>& shapes,
+                                       const VectorIsometry3d& shape_poses,
+                                       const CollisionObjectTypeVector& collision_object_types,
+                                       bool enabled)
 {
   // dont add object that does not have geometry
   if (shapes.empty() || shape_poses.empty() || (shapes.size() != shape_poses.size()))
@@ -170,7 +162,7 @@ inline FCLCOWPtr createFCLCollisionObject(const std::string& name,
     return nullptr;
   }
 
-  FCLCOWPtr new_cow(new FCLCOW(name, type_id, shapes, shape_poses, collision_object_types));
+  COWPtr new_cow(new COW(name, type_id, shapes, shape_poses, collision_object_types));
 
   new_cow->m_enabled = enabled;
   ROS_DEBUG("Created collision object for link %s", new_cow->getName().c_str());
@@ -182,35 +174,35 @@ inline FCLCOWPtr createFCLCollisionObject(const std::string& name,
  * @param req
  * @param cow
  */
-inline void updateCollisionObjectWithRequest(const ContactRequest& req, FCLCOW& cow)
+inline void updateCollisionObjectWithRequest(const ContactRequest& req, COW& cow)
 {
   // For descrete checks we can check static to kinematic and kinematic to
   // kinematic
-  cow.m_collisionFilterGroup = FCLCollisionFilterGroups::KinematicFilter;
+  cow.m_collisionFilterGroup = CollisionFilterGroups::KinematicFilter;
   if (!req.link_names.empty())
   {
-    bool check = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](const std::string& link) {
+    bool check = (std::find_if(req.link_names.begin(), req.link_names.end(), [&cow](const std::string& link) {
                     return link == cow.getName();
                   }) == req.link_names.end());
     if (check)
     {
-      cow.m_collisionFilterGroup = FCLCollisionFilterGroups::StaticFilter;
+      cow.m_collisionFilterGroup = CollisionFilterGroups::StaticFilter;
     }
   }
 
-  if (cow.m_collisionFilterGroup == FCLCollisionFilterGroups::StaticFilter)
+  if (cow.m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
   {
-    cow.m_collisionFilterMask = FCLCollisionFilterGroups::KinematicFilter;
+    cow.m_collisionFilterMask = CollisionFilterGroups::KinematicFilter;
   }
   else
   {
-    cow.m_collisionFilterMask = FCLCollisionFilterGroups::StaticFilter | FCLCollisionFilterGroups::KinematicFilter;
+    cow.m_collisionFilterMask = CollisionFilterGroups::StaticFilter | CollisionFilterGroups::KinematicFilter;
   }
 }
 
 bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data);
 
 bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data, double& min_dist);
-
 }
-#endif // TESSERACT_COLLISION_FCL_UTILS_H
+}
+#endif  // TESSERACT_COLLISION_FCL_UTILS_H

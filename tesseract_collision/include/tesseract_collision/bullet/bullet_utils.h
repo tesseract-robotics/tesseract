@@ -56,6 +56,8 @@
 
 namespace tesseract
 {
+namespace tesseract_bullet
+{
 #define METERS
 
 const float BULLET_MARGIN = 0;
@@ -107,11 +109,13 @@ public:
   /** \brief Check if two CollisionObjectWrapper objects point to the same source object */
   bool sameObject(const CollisionObjectWrapper& other) const
   {
-    return m_name == other.m_name && m_type_id == other.m_type_id &&
-           m_shapes.size() == other.m_shapes.size() &&
+    return m_name == other.m_name && m_type_id == other.m_type_id && m_shapes.size() == other.m_shapes.size() &&
            m_shape_poses.size() == other.m_shape_poses.size() &&
            std::equal(m_shapes.begin(), m_shapes.end(), other.m_shapes.begin()) &&
-           std::equal(m_shape_poses.begin(), m_shape_poses.end(), other.m_shape_poses.begin(), [&](const Eigen::Isometry3d& t1, const Eigen::Isometry3d& t2) { return t1.isApprox(t2); });
+           std::equal(m_shape_poses.begin(),
+                      m_shape_poses.end(),
+                      other.m_shape_poses.begin(),
+                      [](const Eigen::Isometry3d& t1, const Eigen::Isometry3d& t2) { return t1.isApprox(t2); });
   }
 
   /**
@@ -697,7 +701,7 @@ inline void updateCollisionObjectWithRequest(const ContactRequest& req, COW& cow
   cow.m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
   if (!req.link_names.empty())
   {
-    bool check = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](const std::string& link) {
+    bool check = (std::find_if(req.link_names.begin(), req.link_names.end(), [&cow](const std::string& link) {
                     return link == cow.getName();
                   }) == req.link_names.end());
     if (check)
@@ -746,5 +750,5 @@ inline COWPtr createCollisionObject(const std::string& name,
   return new_cow;
 }
 }
-
+}
 #endif  // TESSERACT_COLLISION_BULLET_UTILS_H

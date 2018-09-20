@@ -43,6 +43,8 @@
 
 namespace tesseract
 {
+namespace tesseract_bullet
+{
 ////////////////////////////////////////////////
 /////// BulletDiscreteManagerSimple ////////////
 ////////////////////////////////////////////////
@@ -257,7 +259,7 @@ void BulletDiscreteSimpleManager::setContactRequest(const ContactRequest& req)
 }
 
 const ContactRequest& BulletDiscreteSimpleManager::getContactRequest() const { return request_; }
-void BulletDiscreteSimpleManager::addCollisionObject(const COWPtr &cow)
+void BulletDiscreteSimpleManager::addCollisionObject(const COWPtr& cow)
 {
   link2cow_[cow->getName()] = cow;
 
@@ -528,5 +530,6 @@ void BulletDiscreteBVHManager::contactTest(const COWPtr& cow, ContactDistanceDat
   TesseractSingleContactCallback contactCB(cow.get(), dispatcher_.get(), dispatch_info_, cc);
 
   broadphase_->aabbTest(aabbMin, aabbMax, contactCB);
+}
 }
 }

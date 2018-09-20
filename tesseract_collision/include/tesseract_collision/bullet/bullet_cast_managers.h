@@ -47,6 +47,8 @@
 
 namespace tesseract
 {
+namespace tesseract_bullet
+{
 /** @brief A simple implementaiton of a tesseract manager which does not use BHV */
 class BulletCastSimpleManager : public ContinuousContactManagerBase
 {
@@ -72,8 +74,7 @@ public:
 
   void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override;
 
-  void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                    const VectorIsometry3d& poses) override;
+  void setCollisionObjectsTransform(const std::vector<std::string>& names, const VectorIsometry3d& poses) override;
 
   void setCollisionObjectsTransform(const TransformMap& transforms) override;
 
@@ -179,8 +180,7 @@ public:
 
   void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override;
 
-  void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                    const VectorIsometry3d& poses) override;
+  void setCollisionObjectsTransform(const std::vector<std::string>& names, const VectorIsometry3d& poses) override;
 
   void setCollisionObjectsTransform(const TransformMap& transforms) override;
 
@@ -252,7 +252,7 @@ void constructCastContactManager(T& manager,
     new_cow->m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
     if (!req.link_names.empty())
     {
-      bool check = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](std::string link) {
+      bool check = (std::find_if(req.link_names.begin(), req.link_names.end(), [&it1](const std::string &link) {
                       return link == it1->first;
                     }) == req.link_names.end());
       if (check)
@@ -289,7 +289,8 @@ void constructCastContactManager(T& manager,
         const Eigen::Isometry3d& tf1 = it1->second;
         const Eigen::Isometry3d& tf2 = it2->second;
 
-        btCompoundShape* new_compound = new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, compound->getNumChildShapes());
+        btCompoundShape* new_compound =
+            new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, compound->getNumChildShapes());
 
         for (int i = 0; i < compound->getNumChildShapes(); ++i)
         {
@@ -333,6 +334,7 @@ void constructCastContactManager(T& manager,
     std::advance(it1, 1);
     std::advance(it2, 1);
   }
+}
 }
 }
 
