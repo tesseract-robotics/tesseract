@@ -86,11 +86,10 @@ bool ChainOmplInterface::isStateValid(const ompl::base::State* state) const
   const ompl::base::RealVectorStateSpace::StateType* s = state->as<ompl::base::RealVectorStateSpace::StateType>();
   const auto dof = joint_names_.size();
 
-  Eigen::Map<Eigen::VectorXd> joint_angles(s->values, dof);
-  tesseract::EnvStatePtr env_state = env_->getState(joint_names_, joint_angles);
+  Eigen::Map<Eigen::VectorXd> joint_angles(s->values, long(dof));
+  tesseract::EnvStateConstPtr env_state = env_->getState(joint_names_, joint_angles);
 
-  for (const auto& link_name : link_names_)
-    contact_manager_->setCollisionObjectsTransform(link_name, env_state->transforms[link_name]);
+  contact_manager_->setCollisionObjectsTransform(env_state->transforms);
 
   tesseract::ContactResultMap contact_map;
   contact_manager_->contactTest(contact_map);
