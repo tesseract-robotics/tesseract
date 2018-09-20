@@ -115,7 +115,7 @@ public:
            std::equal(m_shape_poses.begin(),
                       m_shape_poses.end(),
                       other.m_shape_poses.begin(),
-                      [&](const Eigen::Isometry3d& t1, const Eigen::Isometry3d& t2) { return t1.isApprox(t2); });
+                      [](const Eigen::Isometry3d& t1, const Eigen::Isometry3d& t2) { return t1.isApprox(t2); });
   }
 
   /**
@@ -701,7 +701,7 @@ inline void updateCollisionObjectWithRequest(const ContactRequest& req, COW& cow
   cow.m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
   if (!req.link_names.empty())
   {
-    bool check = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](const std::string& link) {
+    bool check = (std::find_if(req.link_names.begin(), req.link_names.end(), [&cow](const std::string& link) {
                     return link == cow.getName();
                   }) == req.link_names.end());
     if (check)

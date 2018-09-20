@@ -311,7 +311,7 @@ void BulletCastSimpleManager::setContactRequest(const ContactRequest& req)
       // Update with request
       updateCollisionObjectWithRequest(request_, *cow);
 
-      bool still_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](std::string link) {
+      bool still_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&cow](const std::string &link) {
                              return link == cow->getName();
                            }) != req.link_names.end());
 
@@ -340,7 +340,7 @@ void BulletCastSimpleManager::setContactRequest(const ContactRequest& req)
       // Update with request
       updateCollisionObjectWithRequest(request_, *cow);
 
-      bool now_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](std::string link) {
+      bool now_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&cow](const std::string &link) {
                            return link == cow->getName();
                          }) != req.link_names.end());
       if (now_active)
@@ -753,7 +753,7 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
       // Update with request
       updateCollisionObjectWithRequest(request_, *cow);
 
-      bool still_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](std::string link) {
+      bool still_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&cow](const std::string& link) {
                              return link == cow->getName();
                            }) != req.link_names.end());
 
@@ -819,7 +819,7 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
       // Update with request
       updateCollisionObjectWithRequest(request_, *cow);
 
-      bool now_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](std::string link) {
+      bool now_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&cow](const std::string& link) {
                            return link == cow->getName();
                          }) != req.link_names.end());
       if (now_active)

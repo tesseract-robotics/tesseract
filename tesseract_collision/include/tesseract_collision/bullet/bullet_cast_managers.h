@@ -252,7 +252,7 @@ void constructCastContactManager(T& manager,
     new_cow->m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
     if (!req.link_names.empty())
     {
-      bool check = (std::find_if(req.link_names.begin(), req.link_names.end(), [&](std::string link) {
+      bool check = (std::find_if(req.link_names.begin(), req.link_names.end(), [&it1](const std::string &link) {
                       return link == it1->first;
                     }) == req.link_names.end());
       if (check)
