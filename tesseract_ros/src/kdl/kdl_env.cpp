@@ -149,7 +149,7 @@ bool KDLEnv::init(urdf::ModelInterfaceConstSharedPtr urdf_model, srdf::ModelCons
     // Populate allowed collision matrix
     for (const auto& pair : srdf_model_->getDisabledCollisionPairs())
     {
-      allowed_collision_matrix_->addAllowedCollision(pair.link1_, pair.link2_, pair.reason_);
+      allowed_collision_matrix_->addDisallowedCollision(pair.link1_, pair.link2_, pair.reason_);
     }
   }
 
