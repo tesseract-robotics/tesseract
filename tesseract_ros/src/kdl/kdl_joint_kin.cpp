@@ -145,10 +145,24 @@ bool KDLJointKin::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
   assert(checkJoints(joint_angles));
   assert(std::find(link_list_.begin(), link_list_.end(), link_name) != link_list_.end());
 
+  bool attached_link = std::find(attached_link_list_.begin(), attached_link_list_.end(), link_name) != attached_link_list_.end() ;
+  std::string tree_link_name = (attached_link) ? attached_link_too_parent_link_.at(link_name) : link_name;
+
   KDL::JntArray kdl_joint_vals = getKDLJntArray(state, joint_list_, joint_angles);
   KDL::Jacobian kdl_jacobian;
-  if (calcJacobianHelper(kdl_jacobian, change_base, kdl_joint_vals, link_name))
+  if (calcJacobianHelper(kdl_jacobian, change_base, kdl_joint_vals, tree_link_name))
   {
+    if (attached_link)
+    {
+      Eigen::Isometry3d ref_frame, ref_frame2;
+      calcFwdKinHelper(ref_frame, change_base, kdl_joint_vals, tree_link_name);
+
+      ref_frame2 = ref_frame * (state.transforms.at(tree_link_name).inverse() * state.transforms.at(link_name));
+      Eigen::VectorXd ref_point = ref_frame2.translation() - ref_frame.translation();
+      KDL::Vector pt(ref_point[0], ref_point[1], ref_point[2]);
+      kdl_jacobian.changeRefPoint(pt);
+    }
+
     KDLToEigen(kdl_jacobian, joint_qnr_, jacobian);
     return true;
   }
@@ -169,22 +183,22 @@ bool KDLJointKin::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
   assert(checkJoints(joint_angles));
   assert(std::find(link_list_.begin(), link_list_.end(), link_name) != link_list_.end());
 
+  bool attached_link = std::find(attached_link_list_.begin(), attached_link_list_.end(), link_name) != attached_link_list_.end();
+  std::string tree_link_name = (attached_link) ? attached_link_too_parent_link_.at(link_name) : link_name;
+
   KDL::JntArray kdl_joint_vals = getKDLJntArray(state, joint_list_, joint_angles);
   KDL::Jacobian kdl_jacobian;
-  if (calcJacobianHelper(kdl_jacobian, change_base, kdl_joint_vals, link_name))
+  if (calcJacobianHelper(kdl_jacobian, change_base, kdl_joint_vals, tree_link_name))
   {
     // When changing ref point you must provide a vector from the current ref
-    // point
-    // to the new ref point. This is why the forward kin calculation is
-    // required, but
-    // need to figure out if there is a more direct way to get this information
-    // from KDL.
-    Eigen::Isometry3d refFrame;
-    calcFwdKinHelper(refFrame, change_base, kdl_joint_vals, link_name);
+    // point to the new ref point. This is why the forward kin calculation is
+    // required, but need to figure out if there is a more direct way to get
+    // this information from KDL.
+    Eigen::Isometry3d ref_frame;
+    calcFwdKinHelper(ref_frame, change_base, kdl_joint_vals, tree_link_name);
 
-    Eigen::VectorXd refPoint = refFrame.translation();
-
-    KDL::Vector pt(link_point(0) - refPoint(0), link_point(1) - refPoint(1), link_point(2) - refPoint(2));
+    Eigen::VectorXd ref_point = link_point - ref_frame.translation();
+    KDL::Vector pt(ref_point(0), ref_point(1), ref_point(2));
     kdl_jacobian.changeRefPoint(pt);
 
     KDLToEigen(kdl_jacobian, joint_qnr_, jacobian);
@@ -280,6 +294,7 @@ bool KDLJointKin::init(urdf::ModelInterfaceConstSharedPtr model,
   joint_qnr_.resize(joint_names.size());
 
   unsigned j = 0;
+  link_list_.push_back(kdl_tree_.getRootSegment()->second.segment.getName());
   for (const auto& tree_element : kdl_tree_.getSegments())
   {
     const KDL::Segment& seg = tree_element.second.segment;
@@ -343,6 +358,7 @@ void KDLJointKin::addAttachedLink(const std::string& link_name, const std::strin
   {
     attached_link_list_.push_back(link_name);
     link_list_.push_back(link_name);
+    attached_link_too_parent_link_[link_name] = parent_link_name;
   }
   else
   {
@@ -359,6 +375,7 @@ void KDLJointKin::removeAttachedLink(const std::string& link_name)
     attached_link_list_.erase(std::remove(attached_link_list_.begin(), attached_link_list_.end(), link_name),
                               attached_link_list_.end());
     link_list_.erase(std::remove(link_list_.begin(), link_list_.end(), link_name), link_list_.end());
+    attached_link_too_parent_link_.erase(link_name);
   }
   else
   {
@@ -373,6 +390,7 @@ void KDLJointKin::clearAttachedLinks()
     link_list_.erase(std::remove(link_list_.begin(), link_list_.end(), al), link_list_.end());
 
   attached_link_list_.clear();
+  attached_link_too_parent_link_.clear();
 }
 
 KDLJointKin& KDLJointKin::operator=(const KDLJointKin& rhs)
@@ -386,6 +404,7 @@ KDLJointKin& KDLJointKin::operator=(const KDLJointKin& rhs)
   jac_solver_.reset(new KDL::TreeJntToJacSolver(kdl_tree_));
   model_ = rhs.model_;
   attached_link_list_ = rhs.attached_link_list_;
+  attached_link_too_parent_link_ = rhs.attached_link_too_parent_link_;
   joint_qnr_ = rhs.joint_qnr_;
   joint_to_qnr_ = rhs.joint_to_qnr_;
 

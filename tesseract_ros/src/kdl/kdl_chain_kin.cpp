@@ -159,20 +159,19 @@ bool KDLChainKin::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
 
   if (calcJacobianHelper(kdl_jacobian, change_base, joint_angles, segment_nr))
   {
-    if (chain_link_name == link_name)
+    if (chain_link_name != link_name)
     {
-      KDLToEigen(kdl_jacobian, jacobian);
-      return true;
-    }
-    else
-    {
-      Eigen::Vector3d temp =
-          (state.transforms.at(chain_link_name).inverse() * state.transforms.at(link_name)).translation();
-      KDL::Vector pt(temp[0], temp[1], temp[2]);
+      Eigen::Isometry3d ref_frame, ref_frame2;
+      calcFwdKinHelper(ref_frame, change_base, joint_angles, segment_nr);
+
+      ref_frame2 = ref_frame * (state.transforms.at(chain_link_name).inverse() * state.transforms.at(link_name));
+      Eigen::VectorXd ref_point = ref_frame2.translation() - ref_frame.translation();
+      KDL::Vector pt(ref_point[0], ref_point[1], ref_point[2]);
       kdl_jacobian.changeRefPoint(pt);
-      KDLToEigen(kdl_jacobian, jacobian);
-      return true;
     }
+
+    KDLToEigen(kdl_jacobian, jacobian);
+    return true;
   }
 
   return false;
@@ -196,17 +195,14 @@ bool KDLChainKin::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
   if (calcJacobianHelper(kdl_jacobian, change_base, joint_angles, segment_nr))
   {
     // When changing ref point you must provide a vector from the current ref
-    // point
-    // to the new ref point. This is why the forward kin calculation is
-    // required, but
-    // need to figure out if there is a more direct way to get this information
-    // from KDL.
-    Eigen::Isometry3d refFrame;
-    calcFwdKinHelper(refFrame, change_base, joint_angles, segment_nr);
+    // point to the new ref point. This is why the forward kin calculation is
+    // required, but need to figure out if there is a more direct way to get
+    // this information from KDL.
+    Eigen::Isometry3d ref_frame;
+    calcFwdKinHelper(ref_frame, change_base, joint_angles, segment_nr);
 
-    Eigen::VectorXd refPoint = refFrame.translation();
-
-    KDL::Vector pt(link_point(0) - refPoint(0), link_point(1) - refPoint(1), link_point(2) - refPoint(2));
+    Eigen::VectorXd ref_point = link_point - ref_frame.translation();
+    KDL::Vector pt(ref_point(0), ref_point(1), ref_point(2));
     kdl_jacobian.changeRefPoint(pt);
     KDLToEigen(kdl_jacobian, jacobian);
     return true;

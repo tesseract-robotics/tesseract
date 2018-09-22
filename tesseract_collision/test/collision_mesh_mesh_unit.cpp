@@ -157,21 +157,21 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
   EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(0,1,0)))), 0.00001);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionSphereSphereUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionMeshMeshUnit)
 {
   tesseract::tesseract_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionSphereSphereUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionMeshMeshUnit)
 {
   tesseract::tesseract_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
-TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionSphereSphereUnit)
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionMeshMeshUnit)
 {
   tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
   addCollisionObjects(checker);
