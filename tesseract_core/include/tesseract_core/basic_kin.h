@@ -107,7 +107,7 @@ public:
    * @param joint_angles Input vector of joint angles
    * @param link_name Name of link to calculate jacobian
    * @param state The state of the environment
-   * @param link_point Point in the link_name frame for which to calculate the jacobian about
+   * @param link_point Point in the base frame for which to calculate the jacobian about
    * @return True if calculation successful, False if anything is wrong (including uninitialized BasicKin)
    */
   virtual bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,

@@ -139,6 +139,7 @@ private:
   std::unique_ptr<KDL::TreeFkSolverPos_recursive> fk_solver_;  /**< KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::TreeJntToJacSolver> jac_solver_;        /**< KDL Jacobian Solver */
   std::vector<std::string> attached_link_list_;                /**< A list of attached link names */
+  std::unordered_map<std::string, std::string> attached_link_too_parent_link_; /**< A map from attached link name to parent link name */
 
   /** @brief calcFwdKin helper function */
   bool calcFwdKinHelper(Eigen::Isometry3d& pose,
