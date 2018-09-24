@@ -109,7 +109,7 @@ private:
   btDispatcherInfo dispatch_info_;              /**< @brief The bullet collision dispatcher configuration information */
   btDefaultCollisionConfiguration coll_config_; /**< @brief The bullet collision configuration */
   std::unique_ptr<btBroadphaseInterface> broadphase_; /**< @brief The bullet broadphase interface */
-  Link2Cow link2cow_;                                 /**< @brief A map of all collision objects being managed */
+  Link2Cow link2cow_;                                 /**< @brief A map of collision objects being managed */
   Link2Cow link2castcow_;                             /**< @brief A map of cast collision objects being managed. */
 
   /**

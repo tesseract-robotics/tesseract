@@ -105,64 +105,42 @@ bool BulletCastSimpleManager::hasCollisionObject(const std::string& name) const
 
 bool BulletCastSimpleManager::removeCollisionObject(const std::string& name)
 {
-  bool removed = false;
   auto it = link2cow_.find(name);
   if (it != link2cow_.end())
   {
     cows_.erase(std::find(cows_.begin(), cows_.end(), it->second));
     link2cow_.erase(name);
-    removed = true;
-  }
-
-  auto it2 = link2castcow_.find(name);
-  if (it2 != link2castcow_.end())
-  {
-    cows_.erase(std::find(cows_.begin(), cows_.end(), it2->second));
     link2castcow_.erase(name);
-    removed = true;
+    return true;
   }
 
-  return removed;
+  return false;
 }
 
 bool BulletCastSimpleManager::enableCollisionObject(const std::string& name)
 {
-  bool enabled = false;
   auto it = link2cow_.find(name);
   if (it != link2cow_.end())
   {
     it->second->m_enabled = true;
-    enabled = true;
+    link2castcow_[name]->m_enabled = true;
+    return true;
   }
 
-  auto it2 = link2castcow_.find(name);
-  if (it2 != link2castcow_.end())
-  {
-    it2->second->m_enabled = true;
-    enabled = true;
-  }
-
-  return enabled;
+  return false;
 }
 
 bool BulletCastSimpleManager::disableCollisionObject(const std::string& name)
 {
-  bool disabled = false;
   auto it = link2cow_.find(name);
   if (it != link2cow_.end())
   {
     it->second->m_enabled = false;
-    disabled = true;
+    link2castcow_[name]->m_enabled = false;
+    return true;
   }
 
-  auto it2 = link2castcow_.find(name);
-  if (it2 != link2castcow_.end())
-  {
-    it2->second->m_enabled = true;
-    disabled = true;
-  }
-
-  return disabled;
+  return false;
 }
 
 void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose)
@@ -197,13 +175,31 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& na
   auto it = link2castcow_.find(name);
   if (it != link2castcow_.end())
   {
-    assert(it->second->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter);
+    COWPtr& cow = it->second;
+    assert(cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter);
 
     btTransform tf1 = convertEigenToBt(pose1);
     btTransform tf2 = convertEigenToBt(pose2);
 
-    static_cast<CastHullShape*>(it->second->getCollisionShape())->updateCastTransform(tf1.inverseTimes(tf2));
+    if (btBroadphaseProxy::isConvex(cow->getCollisionShape()->getShapeType()))
+    {
+      assert(dynamic_cast<CastHullShape*>(cow->getCollisionShape()) != nullptr);
+      static_cast<CastHullShape*>(cow->getCollisionShape())->updateCastTransform(tf1.inverseTimes(tf2));
+    }
+    else if (btBroadphaseProxy::isCompound(cow->getCollisionShape()->getShapeType()))
+    {
+      assert(dynamic_cast<btCompoundShape*>(cow->getCollisionShape()) != nullptr);
+      btCompoundShape* compound = static_cast<btCompoundShape*>(cow->getCollisionShape());
+      for (int i = 0; i < compound->getNumChildShapes(); ++i)
+      {
+        assert(!btBroadphaseProxy::isCompound(compound->getChildShape(i)->getShapeType()));
+        assert(dynamic_cast<CastHullShape*>(compound->getChildShape(i)) != nullptr);
+        static_cast<CastHullShape*>(compound->getChildShape(i))->updateCastTransform(tf1.inverseTimes(tf2));
+      }
+    }
+
     it->second->setWorldTransform(tf1);
+    link2cow_[name]->setWorldTransform(tf1);
   }
 }
 
@@ -211,7 +207,8 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::vector<std
                                                            const VectorIsometry3d& pose1,
                                                            const VectorIsometry3d& pose2)
 {
-  assert(names.size() == pose1.size() == pose2.size());
+  assert(names.size() == pose1.size());
+  assert(names.size() == pose2.size());
   for (auto i = 0u; i < names.size(); ++i)
     setCollisionObjectsTransform(names[i], pose1[i], pose2[i]);
 }
@@ -230,79 +227,6 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const TransformMap& p
   }
 }
 
-void BulletCastSimpleManager::setContactRequest(const ContactRequest& req)
-{
-  request_ = req;
-  cows_.clear();
-  cows_.reserve(link2cow_.size());
-
-  // Now need to update the broadphase with correct aabb
-  for (auto& co : link2cow_)
-  {
-    COWPtr& cow = co.second;
-
-    // Need to check if a collision object is still active
-    if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
-    {
-      // Update with request
-      updateCollisionObjectWithRequest(request_, *cow);
-
-      bool still_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&cow](const std::string &link) {
-                             return link == cow->getName();
-                           }) != req.link_names.end());
-
-      if (still_active)
-      {
-        // Get the existing active collision object
-        COWPtr active_cow = link2castcow_[cow->getName()];
-
-        // Update with request
-        updateCollisionObjectWithRequest(request_, *active_cow);
-
-        // Add to collision object vector
-        cows_.insert(cows_.begin(), active_cow);
-      }
-      else
-      {
-        // Remove the collision object from active map
-        link2castcow_.erase(cow->getName());
-
-        // Add to collision object vector
-        cows_.push_back(cow);
-      }
-    }
-    else
-    {
-      // Update with request
-      updateCollisionObjectWithRequest(request_, *cow);
-
-      bool now_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&cow](const std::string &link) {
-                           return link == cow->getName();
-                         }) != req.link_names.end());
-      if (now_active)
-      {
-        // Create active collision object
-        COWPtr active_cow = makeCastCollisionObject(cow);
-
-        // Update with request
-        updateCollisionObjectWithRequest(request_, *active_cow);
-
-        // Add it to the active map
-        link2castcow_[active_cow->getName()] = active_cow;
-
-        // Add to collision object vector
-        cows_.insert(cows_.begin(), active_cow);
-      }
-      else
-      {
-        // Add to collision object vector
-        cows_.push_back(cow);
-      }
-    }
-  }
-}
-
-const ContactRequest& BulletCastSimpleManager::getContactRequest() const { return request_; }
 void BulletCastSimpleManager::contactTest(ContactResultMap& collisions)
 {
   ContactDistanceData cdata(&request_, &collisions);
@@ -351,13 +275,14 @@ void BulletCastSimpleManager::contactTest(ContactResultMap& collisions)
 
       if (aabb_check)
       {
-        bool needs_collision = needsCollisionCheck(*cow1, *cow2, cdata.req->isContactAllowed, false);
+        bool needs_collision = needsCollisionCheck(*cow1, *cow2, request_.isContactAllowed, false);
 
         if (needs_collision)
         {
           btCollisionObjectWrapper obB(0, cow2->getCollisionShape(), cow2.get(), cow2->getWorldTransform(), -1, -1);
 
           btCollisionAlgorithm* algorithm = dispatcher_->findAlgorithm(&obA, &obB, 0, BT_CLOSEST_POINT_ALGORITHMS);
+          assert(algorithm != nullptr);
           if (algorithm)
           {
             TesseractBridgedManifoldResult contactPointResult(&obA, &obB, cc);
@@ -378,12 +303,51 @@ void BulletCastSimpleManager::contactTest(ContactResultMap& collisions)
   }
 }
 
+void BulletCastSimpleManager::setContactRequest(const ContactRequest& req)
+{
+  request_ = req;
+  cows_.clear();
+  cows_.reserve(link2cow_.size());
+
+  // Now need to update the broadphase with correct aabb
+  for (auto& co : link2cow_)
+  {
+    COWPtr& cow = co.second;
+
+    // Update with request
+    updateCollisionObjectWithRequest(request_, *cow);
+
+    // Get the cast collision object
+    COWPtr cast_cow = link2castcow_[cow->getName()];
+
+    // Update with request
+    updateCollisionObjectWithRequest(request_, *cast_cow);
+
+    // Add to collision object vector
+    if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
+    {
+      cows_.insert(cows_.begin(), cast_cow);
+    }
+    else
+    {
+      cows_.push_back(cow);
+    }
+  }
+}
+
+const ContactRequest& BulletCastSimpleManager::getContactRequest() const { return request_; }
 void BulletCastSimpleManager::addCollisionObject(const COWPtr& cow)
 {
   link2cow_[cow->getName()] = cow;
 
+  // Create cast collision object
+  COWPtr cast_cow = makeCastCollisionObject(cow);
+
+  // Add it to the cast map
+  link2castcow_[cast_cow->getName()] = cast_cow;
+
   if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
-    cows_.insert(cows_.begin(), cow);
+    cows_.insert(cows_.begin(), cast_cow);
   else
     cows_.push_back(cow);
 }

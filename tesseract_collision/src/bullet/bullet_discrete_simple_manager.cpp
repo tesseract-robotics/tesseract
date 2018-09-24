@@ -217,6 +217,7 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions)
           btCollisionObjectWrapper obB(0, cow2->getCollisionShape(), cow2.get(), cow2->getWorldTransform(), -1, -1);
 
           btCollisionAlgorithm* algorithm = dispatcher_->findAlgorithm(&obA, &obB, 0, BT_CLOSEST_POINT_ALGORITHMS);
+          assert(algorithm != nullptr);
           if (algorithm)
           {
             TesseractBridgedManifoldResult contactPointResult(&obA, &obB, cc);

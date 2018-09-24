@@ -299,6 +299,8 @@ inline btScalar addDiscreteSingleResult(btManifoldPoint& cp,
                                         const btCollisionObjectWrapper* colObj1Wrap,
                                         ContactDistanceData& collisions)
 {
+  assert(dynamic_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject()) != nullptr);
+  assert(dynamic_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject()) != nullptr);
   const CollisionObjectWrapper* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());
   const CollisionObjectWrapper* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());
 
@@ -342,6 +344,8 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
                                     ContactDistanceData& collisions,
                                     bool castShapeIsFirst)
 {
+  assert(dynamic_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject()) != nullptr);
+  assert(dynamic_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject()) != nullptr);
   const CollisionObjectWrapper* cd0 = static_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject());
   const CollisionObjectWrapper* cd1 = static_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject());
 
@@ -392,14 +396,18 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
   const CastHullShape* shape;
   if (btBroadphaseProxy::isConvex(firstColObjWrap->getCollisionObject()->getCollisionShape()->getShapeType()))
   {
+    assert(dynamic_cast<const CastHullShape*>(firstColObjWrap->getCollisionObject()->getCollisionShape()) != nullptr);
     shape = static_cast<const CastHullShape*>(firstColObjWrap->getCollisionObject()->getCollisionShape());
     tfWorld0 = firstColObjWrap->getWorldTransform();
     tfWorld1 = firstColObjWrap->getWorldTransform() * shape->m_t01;
   }
   else if (btBroadphaseProxy::isCompound(firstColObjWrap->getCollisionObject()->getCollisionShape()->getShapeType()))
   {
+    assert(dynamic_cast<const btCompoundShape*>(firstColObjWrap->getCollisionObject()->getCollisionShape()) != nullptr);
     const btCompoundShape* compound =
         static_cast<const btCompoundShape*>(firstColObjWrap->getCollisionObject()->getCollisionShape());
+
+    assert(dynamic_cast<const CastHullShape*>(compound->getChildShape(shapeIndex)) != nullptr);
     shape = static_cast<const CastHullShape*>(compound->getChildShape(shapeIndex));
     tfWorld0 = firstColObjWrap->getWorldTransform() * compound->getChildTransform(shapeIndex);
     tfWorld1 = tfWorld0 * shape->m_t01;
@@ -842,41 +850,40 @@ inline COWPtr makeCastCollisionObject(const COWPtr& cow)
 
   if (btBroadphaseProxy::isConvex(new_cow->getCollisionShape()->getShapeType()))
   {
+    assert(dynamic_cast<btConvexShape*>(new_cow->getCollisionShape()) != nullptr);
     btConvexShape* convex = static_cast<btConvexShape*>(new_cow->getCollisionShape());
-    assert(convex != NULL);
     assert(convex->getShapeType() !=
            CUSTOM_CONVEX_SHAPE_TYPE);  // This checks if the collision object is already a cast collision object
 
     CastHullShape* shape = new CastHullShape(convex, tf);
-    assert(shape != NULL);
+    assert(shape != nullptr);
 
     new_cow->manage(shape);
     new_cow->setCollisionShape(shape);
   }
   else if (btBroadphaseProxy::isCompound(new_cow->getCollisionShape()->getShapeType()))
   {
+    assert(dynamic_cast<btCompoundShape*>(new_cow->getCollisionShape()) != nullptr);
     btCompoundShape* compound = static_cast<btCompoundShape*>(new_cow->getCollisionShape());
     btCompoundShape* new_compound =
         new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, compound->getNumChildShapes());
 
     for (int i = 0; i < compound->getNumChildShapes(); ++i)
     {
+      assert(!btBroadphaseProxy::isCompound(compound->getChildShape(i)->getShapeType()));
+      assert(dynamic_cast<btConvexShape*>(compound->getChildShape(i)) != nullptr);
       btConvexShape* convex = static_cast<btConvexShape*>(compound->getChildShape(i));
-      assert(convex != NULL);
       assert(convex->getShapeType() !=
              CUSTOM_CONVEX_SHAPE_TYPE);  // This checks if the collision object is already a cast collision object
 
       btTransform geomTrans = compound->getChildTransform(i);
 
       btCollisionShape* subshape = new CastHullShape(convex, tf);
-      assert(subshape != NULL);
+      assert(subshape != nullptr);
 
-      if (subshape != NULL)
-      {
-        new_cow->manage(subshape);
-        subshape->setMargin(BULLET_MARGIN);
-        new_compound->addChildShape(geomTrans, subshape);
-      }
+      new_cow->manage(subshape);
+      subshape->setMargin(BULLET_MARGIN);
+      new_compound->addChildShape(geomTrans, subshape);
     }
 
     new_compound->setMargin(BULLET_MARGIN);  // margin: compound. seems to
@@ -895,7 +902,6 @@ inline COWPtr makeCastCollisionObject(const COWPtr& cow)
 
   return new_cow;
 }
-
 }
 }
 #endif  // TESSERACT_COLLISION_BULLET_UTILS_H

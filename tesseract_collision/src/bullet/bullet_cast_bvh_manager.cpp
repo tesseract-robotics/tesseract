@@ -222,7 +222,32 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
   // geometry
   auto it = link2cow_.find(name);
   if (it != link2cow_.end())
-    it->second->setWorldTransform(convertEigenToBt(pose));
+  {
+    COWPtr& cow = it->second;
+    cow->setWorldTransform(convertEigenToBt(pose));
+
+    // Now update Broadphase AABB (Copied from BulletWorld updateSingleAabb function)
+    btVector3 minAabb, maxAabb;
+    cow->getCollisionShape()->getAabb(cow->getWorldTransform(), minAabb, maxAabb);
+    // need to increase the aabb for contact thresholds
+    btVector3 contactThreshold(cow->getContactProcessingThreshold(),
+                               cow->getContactProcessingThreshold(),
+                               cow->getContactProcessingThreshold());
+    minAabb -= contactThreshold;
+    maxAabb += contactThreshold;
+
+    // moving objects should be moderately sized, probably something wrong if not
+    if (cow->isStaticObject() || ((maxAabb - minAabb).length2() < btScalar(1e12)))
+    {
+      broadphase_->setAabb(cow->getBroadphaseHandle(), minAabb, maxAabb, dispatcher_.get());
+    }
+    else
+    {
+      // something went wrong, investigate
+      // this assert is unwanted in 3D modelers (danger of loosing work)
+      cow->setActivationState(DISABLE_SIMULATION);
+    }
+  }
 }
 
 void BulletCastBVHManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
@@ -256,6 +281,7 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
 
     static_cast<CastHullShape*>(cow->getCollisionShape())->updateCastTransform(tf1.inverseTimes(tf2));
     cow->setWorldTransform(tf1);
+    link2cow_[name]->setWorldTransform(tf1);
 
     // Now update Broadphase AABB (Copied from BulletWorld updateSingleAabb function
     btVector3 minAabb, maxAabb;
@@ -296,7 +322,8 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::vector<std::s
                                                         const VectorIsometry3d& pose1,
                                                         const VectorIsometry3d& pose2)
 {
-  assert(names.size() == pose1.size() == pose2.size());
+  assert(names.size() == pose1.size());
+  assert(names.size() == pose2.size());
   for (auto i = 0u; i < names.size(); ++i)
     setCollisionObjectsTransform(names[i], pose1[i], pose2[i]);
 }

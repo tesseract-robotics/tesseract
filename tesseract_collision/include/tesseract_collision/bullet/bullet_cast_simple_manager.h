@@ -107,9 +107,9 @@ private:
                                                          object to object collison algorithm */
   btDispatcherInfo dispatch_info_;              /**< @brief The bullet collision dispatcher configuration information */
   btDefaultCollisionConfiguration coll_config_; /**< @brief The bullet collision configuration */
-  Link2Cow link2cow_;        /**< @brief A map of all (static and active) collision objects being managed */
+  Link2Cow link2cow_;        /**< @brief A map of collision objects being managed */
   std::vector<COWPtr> cows_; /**< @brief A vector of collision objects (active followed by static) */
-  Link2Cow link2castcow_;    /**< @brief A map of cast (active) collision objects being managed. */
+  Link2Cow link2castcow_;    /**< @brief A map of cast collision objects being managed. */
 };
 typedef std::shared_ptr<BulletCastSimpleManager> BulletCastSimpleManagerPtr;
 
