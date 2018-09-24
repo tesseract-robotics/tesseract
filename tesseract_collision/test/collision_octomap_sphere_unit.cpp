@@ -1,4 +1,5 @@
-#include "tesseract_collision/bullet/bullet_discrete_managers.h"
+#include "tesseract_collision/bullet/bullet_discrete_simple_manager.h"
+#include "tesseract_collision/bullet/bullet_discrete_bvh_manager.h"
 #include "tesseract_collision/fcl/fcl_discrete_managers.h"
 #include <octomap/octomap.h>
 #include <ros/package.h>
