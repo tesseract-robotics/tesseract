@@ -195,10 +195,12 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& na
         assert(!btBroadphaseProxy::isCompound(compound->getChildShape(i)->getShapeType()));
         assert(dynamic_cast<CastHullShape*>(compound->getChildShape(i)) != nullptr);
         static_cast<CastHullShape*>(compound->getChildShape(i))->updateCastTransform(tf1.inverseTimes(tf2));
+        compound->updateChildTransform(i, compound->getChildTransform(i), false); // This is required to update the BVH tree
       }
+      compound->recalculateLocalAabb();
     }
 
-    it->second->setWorldTransform(tf1);
+    cow->setWorldTransform(tf1);
     link2cow_[name]->setWorldTransform(tf1);
   }
 }
