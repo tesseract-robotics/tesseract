@@ -174,10 +174,10 @@ private:
       allowed_collision_matrix_; /**< The allowed collision matrix used during collision checking */
   IsContactAllowedFn
       is_contact_allowed_fn_; /**< The function used to determine if two objects are allowed in collision */
-  DiscreteContactManagerBasePtr discrete_manager_;                        /**< The discrete contact manager object */
-  ContinuousContactManagerBasePtr continuous_manager_;                    /**< The continuous contact manager object */
   DiscreteContactManagerBasePluginLoaderPtr discrete_manager_loader_;     /**< The discrete contact manager loader */
   ContinuousContactManagerBasePluginLoaderPtr continuous_manager_loader_; /**< The continuous contact manager loader */
+  DiscreteContactManagerBasePtr discrete_manager_;                        /**< The discrete contact manager object */
+  ContinuousContactManagerBasePtr continuous_manager_;                    /**< The continuous contact manager object */
 
   bool defaultIsContactAllowedFn(const std::string& link_name1, const std::string& link_name2) const;
 
