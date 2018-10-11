@@ -186,9 +186,9 @@ public:
     Eigen::Vector3d z_axis = axis.matrix().block<3, 1>(0, 2);
     Eigen::Vector3d position = axis.matrix().block<3, 1>(0, 3);
 
-    msg.markers.push_back(getMarkerCylinderMsg(position, position + 0.1 * x_axis, Eigen::Vector4d(1, 0, 0, 1), scale));
-    msg.markers.push_back(getMarkerCylinderMsg(position, position + 0.1 * y_axis, Eigen::Vector4d(0, 1, 0, 1), scale));
-    msg.markers.push_back(getMarkerCylinderMsg(position, position + 0.1 * z_axis, Eigen::Vector4d(0, 0, 1, 1), scale));
+    msg.markers.push_back(getMarkerCylinderMsg(position, position + x_axis, Eigen::Vector4d(1, 0, 0, 1), scale));
+    msg.markers.push_back(getMarkerCylinderMsg(position, position + y_axis, Eigen::Vector4d(0, 1, 0, 1), scale));
+    msg.markers.push_back(getMarkerCylinderMsg(position, position + z_axis, Eigen::Vector4d(0, 0, 1, 1), scale));
     axes_pub_.publish(msg);
   }
 
@@ -284,14 +284,16 @@ private:
     marker.type = visualization_msgs::Marker::CYLINDER;
     marker.action = visualization_msgs::Marker::ADD;
 
-    Eigen::Vector3d x, y, z;
-    x = (pt2 - pt1).normalized();
-    marker.pose.position.x = pt1(0);
-    marker.pose.position.y = pt1(1);
-    marker.pose.position.z = pt1(2);
+    double length = scale * std::abs((pt2 - pt1).norm());
+    Eigen::Vector3d x, y, z, center;
+    z = (pt2 - pt1).normalized();
+    center = pt1 - (length / 2.0) * z;
+    marker.pose.position.x = center(0);
+    marker.pose.position.y = center(1);
+    marker.pose.position.z = center(2);
 
-    y = x.unitOrthogonal();
-    z = (x.cross(y)).normalized();
+    y = z.unitOrthogonal();
+    x = (y.cross(z)).normalized();
     Eigen::Matrix3d rot;
     rot.col(0) = x;
     rot.col(1) = y;
@@ -303,10 +305,9 @@ private:
     marker.pose.orientation.z = q.z();
     marker.pose.orientation.w = q.w();
 
-    double length = std::abs((pt2 - pt1).norm());
-    marker.scale.x = scale * length / 20.0;
-    marker.scale.y = scale * length / 20.0;
-    marker.scale.z = scale * length;
+    marker.scale.x = length / 20.0;
+    marker.scale.y = length / 20.0;
+    marker.scale.z = length;
 
     marker.color.r = rgba(0);
     marker.color.g = rgba(1);
