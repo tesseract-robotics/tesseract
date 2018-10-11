@@ -117,7 +117,6 @@ void runJacobianTest(tesseract::tesseract_ros::ROSBasicKin& kin)
   ///////////////////////////
   // Test Jacobian at Point
   ///////////////////////////
-
   for (int k = 0; k < 3; ++k)
   {
     Eigen::Vector3d link_point;
@@ -132,6 +131,55 @@ void runJacobianTest(tesseract::tesseract_ros::ROSBasicKin& kin)
       njvals[i] += delta;
       Eigen::Isometry3d updated_pose;
       kin.calcFwdKin(updated_pose, Eigen::Isometry3d::Identity(), njvals, "tool0", state);
+      Eigen::Vector3d temp = pose * link_point;
+      Eigen::Vector3d temp2 = updated_pose * link_point;
+      double delta_x = (temp2.x() - temp.x())/delta;
+      double delta_y = (temp2.y() - temp.y())/delta;
+      double delta_z = (temp2.z() - temp.z())/delta;
+      EXPECT_NEAR(delta_x, jacobian(0,i), 1e-3);
+      EXPECT_NEAR(delta_y, jacobian(1,i), 1e-3);
+      EXPECT_NEAR(delta_z, jacobian(2,i), 1e-3);
+      Eigen::AngleAxisd r12(pose.rotation().transpose()*updated_pose.rotation());   // rotation from p1 -> p2
+      double theta = r12.angle();
+      theta = copysign(fmod(fabs(theta),2.0*M_PI), theta);
+      if (theta < -M_PI) theta = theta+2.*M_PI;
+      if (theta > M_PI)  theta = theta-2.*M_PI;
+      Eigen::VectorXd omega = (pose.rotation() * r12.axis() * theta)/delta;
+      EXPECT_NEAR(omega(0), jacobian(3,i), 1e-3);
+      EXPECT_NEAR(omega(1), jacobian(4,i), 1e-3);
+      EXPECT_NEAR(omega(2), jacobian(5,i), 1e-3);
+    }
+  }
+
+  ///////////////////////////////////////////
+  // Test Jacobian at point with change base
+  ///////////////////////////////////////////
+
+  for (int k = 0; k < 3; ++k)
+  {
+    Eigen::Vector3d link_point;
+    link_point.setZero();
+    link_point[k] = 1;
+
+
+    Eigen::Isometry3d change_base;
+    change_base.setIdentity();
+    change_base(0,0) = 0;
+    change_base(1,0) = 1;
+    change_base(0,1) = -1;
+    change_base(1,1) = 0;
+    change_base.translation() = link_point;
+
+    kin.calcFwdKin(pose, change_base, jvals, "tool0", state);
+    //calcJacobian requires the link point to be in the base frame for which the jacobian is calculated.
+    EXPECT_TRUE(kin.calcJacobian(jacobian, change_base, jvals, "tool0", state, pose * link_point));
+
+    for(int i = 0; i < (int)jvals.size(); ++i)
+    {
+      njvals = jvals;
+      njvals[i] += delta;
+      Eigen::Isometry3d updated_pose;
+      kin.calcFwdKin(updated_pose, change_base, njvals, "tool0", state);
       Eigen::Vector3d temp = pose * link_point;
       Eigen::Vector3d temp2 = updated_pose * link_point;
       double delta_x = (temp2.x() - temp.x())/delta;

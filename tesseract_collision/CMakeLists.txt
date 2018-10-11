@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.8.3)
 project(tesseract_collision)
 
 add_compile_options(-std=c++11 -Wall -Wextra)
-add_definitions(-DBT_USE_DOUBLE_PRECISION)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
@@ -56,8 +55,10 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME}_bullet
-  src/bullet/bullet_cast_managers.cpp
-  src/bullet/bullet_discrete_managers.cpp
+  src/bullet/bullet_cast_bvh_manager.cpp
+  src/bullet/bullet_cast_simple_manager.cpp
+  src/bullet/bullet_discrete_bvh_manager.cpp
+  src/bullet/bullet_discrete_simple_manager.cpp
   src/bullet/bullet_utils.cpp
 )
 
