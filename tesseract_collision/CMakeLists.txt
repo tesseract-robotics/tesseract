@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.8.3)
 project(tesseract_collision)
 
 add_compile_options(-std=c++11 -Wall -Wextra)
-add_definitions(-DBT_USE_DOUBLE_PRECISION)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
