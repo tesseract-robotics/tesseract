@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   trajopt
 )
 
-find_package(OMPL REQUIRED)
+find_package(ompl REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS
