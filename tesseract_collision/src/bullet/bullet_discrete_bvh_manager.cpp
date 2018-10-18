@@ -65,18 +65,7 @@ BulletDiscreteBVHManager::~BulletDiscreteBVHManager()
 {
   // clean up remaining objects
   for (auto& co : link2cow_)
-  {
-    btCollisionObject* collisionObject = co.second.get();
-
-    btBroadphaseProxy* bp = collisionObject->getBroadphaseHandle();
-    if (bp)
-    {
-      // only clear the cached algorithms
-      broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(bp, dispatcher_.get());
-      broadphase_->destroyProxy(bp, dispatcher_.get());
-      collisionObject->setBroadphaseHandle(0);
-    }
-  }
+    removeCollisionObjectFromBroadphase(co.second, broadphase_, dispatcher_);
 }
 
 DiscreteContactManagerBasePtr BulletDiscreteBVHManager::clone() const
@@ -129,15 +118,7 @@ bool BulletDiscreteBVHManager::removeCollisionObject(const std::string& name)
   auto it = link2cow_.find(name);  // Levi TODO: Should these check be removed?
   if (it != link2cow_.end())
   {
-    btBroadphaseProxy* bp = it->second->getBroadphaseHandle();
-    if (bp)
-    {
-      // only clear the cached algorithms
-      broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(bp, dispatcher_.get());
-      broadphase_->destroyProxy(bp, dispatcher_.get());
-      it->second->setBroadphaseHandle(0);
-    }
-
+    removeCollisionObjectFromBroadphase(it->second, broadphase_, dispatcher_);
     link2cow_.erase(name);
     return true;
   }
@@ -177,27 +158,8 @@ void BulletDiscreteBVHManager::setCollisionObjectsTransform(const std::string& n
     COWPtr& cow = it->second;
     cow->setWorldTransform(convertEigenToBt(pose));
 
-    // Now update Broadphase AABB (Copied from BulletWorld updateSingleAabb function)
-    btVector3 minAabb, maxAabb;
-    cow->getCollisionShape()->getAabb(cow->getWorldTransform(), minAabb, maxAabb);
-    // need to increase the aabb for contact thresholds
-    btVector3 contactThreshold(cow->getContactProcessingThreshold(),
-                               cow->getContactProcessingThreshold(),
-                               cow->getContactProcessingThreshold());
-    minAabb -= contactThreshold;
-    maxAabb += contactThreshold;
-
-    // moving objects should be moderately sized, probably something wrong if not
-    if (cow->isStaticObject() || ((maxAabb - minAabb).length2() < btScalar(1e12)))
-    {
-      broadphase_->setAabb(cow->getBroadphaseHandle(), minAabb, maxAabb, dispatcher_.get());
-    }
-    else
-    {
-      // something went wrong, investigate
-      // this assert is unwanted in 3D modelers (danger of loosing work)
-      cow->setActivationState(DISABLE_SIMULATION);
-    }
+    // Update Collision Object Broadphase AABB
+    updateBroadphaseAABB(cow, broadphase_, dispatcher_);
   }
 }
 
@@ -224,28 +186,10 @@ void BulletDiscreteBVHManager::setContactRequest(const ContactRequest& req)
   {
     COWPtr& cow = co.second;
 
-    updateCollisionObjectWithRequest(request_, *cow);
+    updateCollisionObjectWithRequest(request_, *cow, false);
 
-    btVector3 minAabb, maxAabb;
-    cow->getCollisionShape()->getAabb(cow->getWorldTransform(), minAabb, maxAabb);
-    // need to increase the aabb for contact thresholds
-    btVector3 contactThreshold(cow->getContactProcessingThreshold(),
-                               cow->getContactProcessingThreshold(),
-                               cow->getContactProcessingThreshold());
-    minAabb -= contactThreshold;
-    maxAabb += contactThreshold;
-
-    // moving objects should be moderately sized, probably something wrong if not
-    if (cow->isStaticObject() || ((maxAabb - minAabb).length2() < btScalar(1e12)))
-    {
-      broadphase_->setAabb(cow->getBroadphaseHandle(), minAabb, maxAabb, dispatcher_.get());
-    }
-    else
-    {
-      // something went wrong, investigate
-      // this assert is unwanted in 3D modelers (danger of loosing work)
-      cow->setActivationState(DISABLE_SIMULATION);
-    }
+    // Update Collision Object Broadphase AABB
+    updateBroadphaseAABB(cow, broadphase_, dispatcher_);
   }
 }
 
@@ -258,7 +202,9 @@ void BulletDiscreteBVHManager::contactTest(ContactResultMap& collisions)
 
   btOverlappingPairCache* pairCache = broadphase_->getOverlappingPairCache();
 
-  TesseractCollisionPairCallback collisionCallback(dispatch_info_, dispatcher_.get(), cdata);
+  DiscreteBroadphaseContactResultCallback cc(cdata, request_.contact_distance);
+
+  TesseractCollisionPairCallback collisionCallback(dispatch_info_, dispatcher_.get(), cc);
 
   pairCache->processAllOverlappingPairs(&collisionCallback, dispatcher_.get());
 }
@@ -267,38 +213,21 @@ void BulletDiscreteBVHManager::addCollisionObject(const COWPtr& cow)
 {
   link2cow_[cow->getName()] = cow;
 
-  // calculate new AABB
-  btVector3 minAabb, maxAabb;
-  cow->getCollisionShape()->getAabb(cow->getWorldTransform(), minAabb, maxAabb);
-
-  // need to increase the aabb for contact thresholds
-  btVector3 contactThreshold(
-      cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold());
-  minAabb -= contactThreshold;
-  maxAabb += contactThreshold;
-
-  int type = cow->getCollisionShape()->getShapeType();
-  cow->setBroadphaseHandle(broadphase_->createProxy(
-      minAabb, maxAabb, type, cow.get(), cow->m_collisionFilterGroup, cow->m_collisionFilterMask, dispatcher_.get()));
+  // Add collision object to broadphase
+  addCollisionObjectToBroadphase(cow, broadphase_, dispatcher_);
 }
 
 const Link2Cow& BulletDiscreteBVHManager::getCollisionObjects() const { return link2cow_; }
 void BulletDiscreteBVHManager::contactTest(const COWPtr& cow, ContactDistanceData& collisions)
 {
-  btVector3 aabbMin, aabbMax;
-  cow->getCollisionShape()->getAabb(cow->getWorldTransform(), aabbMin, aabbMax);
-
-  // need to increase the aabb for contact thresholds
-  btVector3 contactThreshold1(
-      cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold());
-  aabbMin -= contactThreshold1;
-  aabbMax += contactThreshold1;
+  btVector3 min_aabb, max_aabb;
+  cow->getAABB(min_aabb, max_aabb);
 
   DiscreteCollisionCollector cc(collisions, cow, cow->getContactProcessingThreshold());
 
   TesseractSingleContactCallback contactCB(cow.get(), dispatcher_.get(), dispatch_info_, cc);
 
-  broadphase_->aabbTest(aabbMin, aabbMax, contactCB);
+  broadphase_->aabbTest(min_aabb, max_aabb, contactCB);
 }
 }
 }

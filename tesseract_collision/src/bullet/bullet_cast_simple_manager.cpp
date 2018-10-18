@@ -149,7 +149,11 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& na
   // geometry
   auto it = link2cow_.find(name);
   if (it != link2cow_.end())
-    it->second->setWorldTransform(convertEigenToBt(pose));
+  {
+    btTransform tf = convertEigenToBt(pose);
+    it->second->setWorldTransform(tf);
+    link2castcow_[name]->setWorldTransform(tf);
+  }
 }
 
 void BulletCastSimpleManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
@@ -181,27 +185,34 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& na
     btTransform tf1 = convertEigenToBt(pose1);
     btTransform tf2 = convertEigenToBt(pose2);
 
-    if (btBroadphaseProxy::isConvex(cow->getCollisionShape()->getShapeType()))
-    {
-      assert(dynamic_cast<CastHullShape*>(cow->getCollisionShape()) != nullptr);
-      static_cast<CastHullShape*>(cow->getCollisionShape())->updateCastTransform(tf1.inverseTimes(tf2));
-    }
-    else if (btBroadphaseProxy::isCompound(cow->getCollisionShape()->getShapeType()))
-    {
-      assert(dynamic_cast<btCompoundShape*>(cow->getCollisionShape()) != nullptr);
-      btCompoundShape* compound = static_cast<btCompoundShape*>(cow->getCollisionShape());
-      for (int i = 0; i < compound->getNumChildShapes(); ++i)
-      {
-        assert(!btBroadphaseProxy::isCompound(compound->getChildShape(i)->getShapeType()));
-        assert(dynamic_cast<CastHullShape*>(compound->getChildShape(i)) != nullptr);
-        static_cast<CastHullShape*>(compound->getChildShape(i))->updateCastTransform(tf1.inverseTimes(tf2));
-        compound->updateChildTransform(i, compound->getChildTransform(i), false); // This is required to update the BVH tree
-      }
-      compound->recalculateLocalAabb();
-    }
-
     cow->setWorldTransform(tf1);
     link2cow_[name]->setWorldTransform(tf1);
+
+    // If collision object is disabled dont proceed
+    if (cow->m_enabled)
+    {
+      if (btBroadphaseProxy::isConvex(cow->getCollisionShape()->getShapeType()))
+      {
+        assert(dynamic_cast<CastHullShape*>(cow->getCollisionShape()) != nullptr);
+        static_cast<CastHullShape*>(cow->getCollisionShape())->updateCastTransform(tf1.inverseTimes(tf2));
+      }
+      else if (btBroadphaseProxy::isCompound(cow->getCollisionShape()->getShapeType()))
+      {
+        assert(dynamic_cast<btCompoundShape*>(cow->getCollisionShape()) != nullptr);
+        btCompoundShape* compound = static_cast<btCompoundShape*>(cow->getCollisionShape());
+        for (int i = 0; i < compound->getNumChildShapes(); ++i)
+        {
+          assert(!btBroadphaseProxy::isCompound(compound->getChildShape(i)->getShapeType()));
+          assert(dynamic_cast<CastHullShape*>(compound->getChildShape(i)) != nullptr);
+          const btTransform& local_tf = compound->getChildTransform(i);
+
+          btTransform delta_tf = (tf1 * local_tf).inverseTimes(tf2 * local_tf);
+          static_cast<CastHullShape*>(compound->getChildShape(i))->updateCastTransform(delta_tf);
+          compound->updateChildTransform(i, local_tf, false); // This is required to update the BVH tree
+        }
+        compound->recalculateLocalAabb();
+      }
+    }
   }
 }
 
@@ -243,15 +254,8 @@ void BulletCastSimpleManager::contactTest(ContactResultMap& collisions)
     if (!cow1->m_enabled)
       continue;
 
-    btVector3 aabbMin[2], aabbMax[2];
-    cow1->getCollisionShape()->getAabb(cow1->getWorldTransform(), aabbMin[0], aabbMax[0]);
-
-    // need to increase the aabb for contact thresholds
-    btVector3 contactThreshold1(cow1->getContactProcessingThreshold(),
-                                cow1->getContactProcessingThreshold(),
-                                cow1->getContactProcessingThreshold());
-    aabbMin[0] -= contactThreshold1;
-    aabbMax[0] += contactThreshold1;
+    btVector3 min_aabb[2], max_aabb[2];
+    cow1->getAABB(min_aabb[0], max_aabb[0]);
 
     btCollisionObjectWrapper obA(0, cow1->getCollisionShape(), cow1.get(), cow1->getWorldTransform(), -1, -1);
 
@@ -261,19 +265,11 @@ void BulletCastSimpleManager::contactTest(ContactResultMap& collisions)
       assert(!cdata.done);
 
       const COWPtr& cow2 = *cow2_iter;
+      cow2->getAABB(min_aabb[1], max_aabb[1]);
 
-      cow2->getCollisionShape()->getAabb(cow2->getWorldTransform(), aabbMin[1], aabbMax[1]);
-
-      // need to increase the aabb for contact thresholds
-      btVector3 contactThreshold2(cow2->getContactProcessingThreshold(),
-                                  cow2->getContactProcessingThreshold(),
-                                  cow2->getContactProcessingThreshold());
-      aabbMin[1] -= contactThreshold2;
-      aabbMax[1] += contactThreshold2;
-
-      bool aabb_check = (aabbMin[0][0] <= aabbMax[1][0] && aabbMax[0][0] >= aabbMin[1][0]) &&
-                        (aabbMin[0][1] <= aabbMax[1][1] && aabbMax[0][1] >= aabbMin[1][1]) &&
-                        (aabbMin[0][2] <= aabbMax[1][2] && aabbMax[0][2] >= aabbMin[1][2]);
+      bool aabb_check = (min_aabb[0][0] <= max_aabb[1][0] && max_aabb[0][0] >= min_aabb[1][0]) &&
+                        (min_aabb[0][1] <= max_aabb[1][1] && max_aabb[0][1] >= min_aabb[1][1]) &&
+                        (min_aabb[0][2] <= max_aabb[1][2] && max_aabb[0][2] >= min_aabb[1][2]);
 
       if (aabb_check)
       {
@@ -302,6 +298,9 @@ void BulletCastSimpleManager::contactTest(ContactResultMap& collisions)
       if (cdata.done)
         break;
     }
+
+    if (cdata.done)
+      break;
   }
 }
 
@@ -317,13 +316,13 @@ void BulletCastSimpleManager::setContactRequest(const ContactRequest& req)
     COWPtr& cow = co.second;
 
     // Update with request
-    updateCollisionObjectWithRequest(request_, *cow);
+    updateCollisionObjectWithRequest(request_, *cow, false);
 
     // Get the cast collision object
     COWPtr cast_cow = link2castcow_[cow->getName()];
 
     // Update with request
-    updateCollisionObjectWithRequest(request_, *cast_cow);
+    updateCollisionObjectWithRequest(request_, *cast_cow, true);
 
     // Add to collision object vector
     if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)

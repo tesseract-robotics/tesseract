@@ -119,6 +119,20 @@ public:
   }
 
   /**
+   * @brief Get the collision objects axis aligned bounding box
+   * @param aabb_min The minimum point
+   * @param aabb_max The maximum point
+   */
+  void getAABB(btVector3& aabb_min, btVector3& aabb_max) const
+  {
+    getCollisionShape()->getAabb(getWorldTransform(), aabb_min, aabb_max);
+    const double &d = getContactProcessingThreshold();
+    btVector3 contactThreshold(d, d, d);
+    aabb_min -= contactThreshold;
+    aabb_max += contactThreshold;
+  }
+
+  /**
    * @brief This clones the collision objects but not the collision shape wich is const.
    * @return Shared Pointer to the cloned collision object
    */
@@ -341,8 +355,7 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
                                     int index0,
                                     const btCollisionObjectWrapper* colObj1Wrap,
                                     int index1,
-                                    ContactDistanceData& collisions,
-                                    bool castShapeIsFirst)
+                                    ContactDistanceData& collisions)
 {
   assert(dynamic_cast<const CollisionObjectWrapper*>(colObj0Wrap->getCollisionObject()) != nullptr);
   assert(dynamic_cast<const CollisionObjectWrapper*>(colObj1Wrap->getCollisionObject()) != nullptr);
@@ -380,6 +393,10 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
     return 0;
   }
 
+  assert(!((cd0->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter) &&
+           (cd1->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)));
+  bool castShapeIsFirst = (cd0->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter) ? true : false;
+
   btVector3 normalWorldFromCast = -(castShapeIsFirst ? 1 : -1) * cp.m_normalWorldOnB;
   const btCollisionObjectWrapper* firstColObjWrap = (castShapeIsFirst ? colObj0Wrap : colObj1Wrap);
   int shapeIndex = (castShapeIsFirst ? index0 : index1);
@@ -398,8 +415,6 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
   {
     assert(dynamic_cast<const CastHullShape*>(firstColObjWrap->getCollisionObject()->getCollisionShape()) != nullptr);
     shape = static_cast<const CastHullShape*>(firstColObjWrap->getCollisionObject()->getCollisionShape());
-    tfWorld0 = firstColObjWrap->getWorldTransform();
-    tfWorld1 = firstColObjWrap->getWorldTransform() * shape->m_t01;
   }
   else if (btBroadphaseProxy::isCompound(firstColObjWrap->getCollisionObject()->getCollisionShape()->getShapeType()))
   {
@@ -409,8 +424,6 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
 
     assert(dynamic_cast<const CastHullShape*>(compound->getChildShape(shapeIndex)) != nullptr);
     shape = static_cast<const CastHullShape*>(compound->getChildShape(shapeIndex));
-    tfWorld0 = firstColObjWrap->getWorldTransform() * compound->getChildTransform(shapeIndex);
-    tfWorld1 = tfWorld0 * shape->m_t01;
   }
   else
   {
@@ -418,6 +431,9 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
                              "shapes");
   }
   assert(!!shape);
+
+  tfWorld0 = firstColObjWrap->getWorldTransform();
+  tfWorld1 = firstColObjWrap->getWorldTransform() * shape->m_t01;
 
   btVector3 normalLocal0 = normalWorldFromCast * tfWorld0.getBasis();
   btVector3 normalLocal1 = normalWorldFromCast * tfWorld1.getBasis();
@@ -448,7 +464,8 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
   else
   {
     const btVector3& ptOnCast = castShapeIsFirst ? cp.m_positionWorldOnA : cp.m_positionWorldOnB;
-    float l0c = (ptOnCast - ptWorld0).length(), l1c = (ptOnCast - ptWorld1).length();
+    float l0c = (ptOnCast - ptWorld0).length();
+    float l1c = (ptOnCast - ptWorld1).length();
 
     col->cc_nearest_points[0] = col->nearest_points[1];
     col->nearest_points[1] = convertBtToEigen(ptWorld0);
@@ -526,22 +543,93 @@ struct TesseractBridgedManifoldResult : public btManifoldResult
   }
 };
 
-struct TesseractBroadphaseBridgedManifoldResult : public btManifoldResult
+/** @brief The BroadphaseContactResultCallback is used to report contact points */
+struct	BroadphaseContactResultCallback
 {
   ContactDistanceData& collisions_;
+  double contact_distance_;
+  bool verbose_;
+
+  BroadphaseContactResultCallback(ContactDistanceData& collisions, double contact_distance, bool verbose = false) :
+    collisions_(collisions), contact_distance_(contact_distance), verbose_(verbose)
+  {
+  }
+
+  virtual ~BroadphaseContactResultCallback()
+  {
+  }
+
+  virtual bool needsCollision(const CollisionObjectWrapper* cow0, const CollisionObjectWrapper* cow1) const
+  {
+    return !collisions_.done && needsCollisionCheck(*cow0, *cow1, collisions_.req->isContactAllowed, verbose_);
+  }
+
+  virtual	btScalar addSingleResult(btManifoldPoint& cp,
+                                   const btCollisionObjectWrapper* colObj0Wrap,
+                                   int partId0,
+                                   int index0,
+                                   const btCollisionObjectWrapper* colObj1Wrap,
+                                   int partId1,
+                                   int index1) = 0;
+};
+
+struct	DiscreteBroadphaseContactResultCallback : public BroadphaseContactResultCallback
+{
+  DiscreteBroadphaseContactResultCallback(ContactDistanceData& collisions,
+                                          double contact_distance,
+                                          bool verbose = false) :
+    BroadphaseContactResultCallback(collisions, contact_distance, verbose) {}
+
+  btScalar addSingleResult(btManifoldPoint& cp,
+                           const btCollisionObjectWrapper* colObj0Wrap,
+                           int /*partId0*/,
+                           int /*index0*/,
+                           const btCollisionObjectWrapper* colObj1Wrap,
+                           int /*partId1*/,
+                           int /*index1*/) override
+  {
+    if (cp.m_distance1 > contact_distance_)
+      return 0;
+
+    return addDiscreteSingleResult(cp, colObj0Wrap, colObj1Wrap, collisions_);
+  }
+};
+
+struct	CastBroadphaseContactResultCallback : public BroadphaseContactResultCallback
+{
+  CastBroadphaseContactResultCallback(ContactDistanceData& collisions,
+                                      double contact_distance,
+                                      bool verbose = false) :
+    BroadphaseContactResultCallback(collisions, contact_distance, verbose) {}
+
+  btScalar addSingleResult(btManifoldPoint& cp,
+                           const btCollisionObjectWrapper* colObj0Wrap,
+                           int /*partId0*/,
+                           int index0,
+                           const btCollisionObjectWrapper* colObj1Wrap,
+                           int /*partId1*/,
+                           int index1) override
+  {
+    if (cp.m_distance1 > contact_distance_)
+      return 0;
+
+    return addCastSingleResult(cp, colObj0Wrap, index0, colObj1Wrap, index1, collisions_);
+  }
+};
+
+struct TesseractBroadphaseBridgedManifoldResult : public btManifoldResult
+{
+  BroadphaseContactResultCallback& result_callback_;
 
   TesseractBroadphaseBridgedManifoldResult(const btCollisionObjectWrapper* obj0Wrap,
                                            const btCollisionObjectWrapper* obj1Wrap,
-                                           ContactDistanceData& collisions)
-    : btManifoldResult(obj0Wrap, obj1Wrap), collisions_(collisions)
+                                           BroadphaseContactResultCallback& result_callback)
+    : btManifoldResult(obj0Wrap, obj1Wrap), result_callback_(result_callback)
   {
   }
 
   virtual void addContactPoint(const btVector3& normalOnBInWorld, const btVector3& pointInWorld, btScalar depth)
   {
-    if (depth > collisions_.req->contact_distance)
-      return;
-
     bool isSwapped = m_manifoldPtr->getBody0() != m_body0Wrap->getCollisionObject();
     btVector3 pointA = pointInWorld + normalOnBInWorld * depth;
     btVector3 localA;
@@ -580,8 +668,8 @@ struct TesseractBroadphaseBridgedManifoldResult : public btManifoldResult
     // experimental feature info, for per-triangle material etc.
     const btCollisionObjectWrapper* obj0Wrap = isSwapped ? m_body1Wrap : m_body0Wrap;
     const btCollisionObjectWrapper* obj1Wrap = isSwapped ? m_body0Wrap : m_body1Wrap;
-    //    addDiscreteSingleResult(newPt,obj0Wrap,newPt.m_partId0,newPt.m_index0,obj1Wrap,newPt.m_partId1,newPt.m_index1);
-    addDiscreteSingleResult(newPt, obj0Wrap, obj1Wrap, collisions_);
+    result_callback_.addSingleResult(newPt, obj0Wrap, newPt.m_partId0, newPt.m_index0,
+                                     obj1Wrap, newPt.m_partId1, newPt.m_index1);
   }
 };
 
@@ -651,28 +739,27 @@ class TesseractCollisionPairCallback : public btOverlapCallback
 {
   const btDispatcherInfo& dispatch_info_;
   btCollisionDispatcher* dispatcher_;
-  ContactDistanceData& collisions_;
+  BroadphaseContactResultCallback& results_callback_;
 
 public:
   TesseractCollisionPairCallback(const btDispatcherInfo& dispatchInfo,
                                  btCollisionDispatcher* dispatcher,
-                                 ContactDistanceData& collisions)
-    : dispatch_info_(dispatchInfo), dispatcher_(dispatcher), collisions_(collisions)
+                                 BroadphaseContactResultCallback& results_callback)
+    : dispatch_info_(dispatchInfo), dispatcher_(dispatcher), results_callback_(results_callback)
   {
   }
 
   virtual ~TesseractCollisionPairCallback() {}
+
   virtual bool processOverlap(btBroadphasePair& pair)
   {
-    const CollisionObjectWrapper* cow1 = static_cast<const CollisionObjectWrapper*>(pair.m_pProxy0->m_clientObject);
-    const CollisionObjectWrapper* cow2 = static_cast<const CollisionObjectWrapper*>(pair.m_pProxy1->m_clientObject);
+    const CollisionObjectWrapper* cow0 = static_cast<const CollisionObjectWrapper*>(pair.m_pProxy0->m_clientObject);
+    const CollisionObjectWrapper* cow1 = static_cast<const CollisionObjectWrapper*>(pair.m_pProxy1->m_clientObject);
 
-    bool needs_collision = needsCollisionCheck(*cow1, *cow2, collisions_.req->isContactAllowed, false);
-
-    if (needs_collision)
+    if (results_callback_.needsCollision(cow0, cow1))
     {
-      btCollisionObjectWrapper obj0Wrap(0, cow1->getCollisionShape(), cow1, cow1->getWorldTransform(), -1, -1);
-      btCollisionObjectWrapper obj1Wrap(0, cow2->getCollisionShape(), cow2, cow2->getWorldTransform(), -1, -1);
+      btCollisionObjectWrapper obj0Wrap(0, cow0->getCollisionShape(), cow0, cow0->getWorldTransform(), -1, -1);
+      btCollisionObjectWrapper obj1Wrap(0, cow1->getCollisionShape(), cow1, cow1->getWorldTransform(), -1, -1);
 
       // dispatcher will keep algorithms persistent in the collision pair
       if (!pair.m_algorithm)
@@ -682,8 +769,8 @@ public:
 
       if (pair.m_algorithm)
       {
-        TesseractBroadphaseBridgedManifoldResult contactPointResult(&obj0Wrap, &obj1Wrap, collisions_);
-        contactPointResult.m_closestPointDistanceThreshold = collisions_.req->contact_distance;
+        TesseractBroadphaseBridgedManifoldResult contactPointResult(&obj0Wrap, &obj1Wrap, results_callback_);
+        contactPointResult.m_closestPointDistanceThreshold = results_callback_.contact_distance_;
 
         // discrete collision detection query
         pair.m_algorithm->processCollision(&obj0Wrap, &obj1Wrap, dispatch_info_, &contactPointResult);
@@ -698,14 +785,16 @@ btCollisionShape* createShapePrimitive(const shapes::ShapeConstPtr& geom,
                                        CollisionObjectWrapper* cow);
 
 /**
- * @brief updateCollisionObjectsWithRequest
- * @param req
- * @param link2cow
+ * @brief Update a collision objects data based on request information
+ * @param req The active contact request information
+ * @param cow The collision object to update.
+ * @param continuous Indicate if the object is a continuous collision object.
+ *
+ * Currently continuous collision objects can only be checked against static objects. Continuous to Continuous
+ * collision checking is currently not supports. TODO LEVI: Add support for Continuous to Continuous collision checking.
  */
-inline void updateCollisionObjectWithRequest(const ContactRequest& req, COW& cow)
+inline void updateCollisionObjectWithRequest(const ContactRequest& req, COW& cow, bool continuous)
 {
-  // For descrete checks we can check static to kinematic and kinematic to
-  // kinematic
   cow.m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
   if (!req.link_names.empty())
   {
@@ -724,7 +813,9 @@ inline void updateCollisionObjectWithRequest(const ContactRequest& req, COW& cow
   }
   else
   {
-    cow.m_collisionFilterMask = btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter;
+    (continuous) ?
+        (cow.m_collisionFilterMask = btBroadphaseProxy::StaticFilter) :
+        (cow.m_collisionFilterMask = btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter);
   }
 
   if (cow.getBroadphaseHandle())
@@ -828,8 +919,7 @@ struct CastCollisionCollector : public btCollisionWorld::ContactResultCallback
     if (cp.m_distance1 > contact_distance_)
       return 0;
 
-    return addCastSingleResult(
-        cp, colObj0Wrap, index0, colObj1Wrap, index1, collisions_, (colObj0Wrap->getCollisionObject() == cow_.get()));
+    return addCastSingleResult(cp, colObj0Wrap, index0, colObj1Wrap, index1, collisions_);
   }
 
   bool needsCollision(btBroadphaseProxy* proxy0) const
@@ -901,6 +991,69 @@ inline COWPtr makeCastCollisionObject(const COWPtr& cow)
   }
 
   return new_cow;
+}
+
+/**
+ * @brief Update the Broadphase AABB for the input collision object
+ * @param cow The collision objects
+ * @param broadphase The bullet broadphase interface
+ * @param dispatcher The bullet collision dispatcher
+ */
+inline void updateBroadphaseAABB(const COWPtr& cow,
+                                 const std::unique_ptr<btBroadphaseInterface>& broadphase,
+                                 const std::unique_ptr<btCollisionDispatcher>& dispatcher)
+{
+  // Calculate the aabb
+  btVector3 aabb_min, aabb_max;
+  cow->getAABB(aabb_min, aabb_max);
+
+  // Update the broadphase aabb
+  assert(cow->getBroadphaseHandle() != nullptr);
+  broadphase->setAabb(cow->getBroadphaseHandle(), aabb_min, aabb_max, dispatcher.get());
+}
+
+/**
+ * @brief Remove the collision object from broadphase
+ * @param cow The collision objects
+ * @param broadphase The bullet broadphase interface
+ * @param dispatcher The bullet collision dispatcher
+ */
+inline void removeCollisionObjectFromBroadphase(const COWPtr& cow,
+                                                const std::unique_ptr<btBroadphaseInterface>& broadphase,
+                                                const std::unique_ptr<btCollisionDispatcher>& dispatcher)
+{
+  btBroadphaseProxy* bp = cow->getBroadphaseHandle();
+  if (bp)
+  {
+    // only clear the cached algorithms
+    broadphase->getOverlappingPairCache()->cleanProxyFromPairs(bp, dispatcher.get());
+    broadphase->destroyProxy(bp, dispatcher.get());
+    cow->setBroadphaseHandle(0);
+  }
+}
+
+/**
+ * @brief Add the collision object to broadphase
+ * @param cow The collision objects
+ * @param broadphase The bullet broadphase interface
+ * @param dispatcher The bullet collision dispatcher
+ */
+inline void addCollisionObjectToBroadphase(const COWPtr& cow,
+                                           const std::unique_ptr<btBroadphaseInterface>& broadphase,
+                                           const std::unique_ptr<btCollisionDispatcher>& dispatcher)
+{
+  btVector3 aabb_min, aabb_max;
+  cow->getAABB(aabb_min, aabb_max);
+
+  // Add the active collision object to the broadphase
+  int type = cow->getCollisionShape()->getShapeType();
+  cow->setBroadphaseHandle(broadphase->createProxy(aabb_min,
+                                                   aabb_max,
+                                                   type,
+                                                   cow.get(),
+                                                   cow->m_collisionFilterGroup,
+                                                   cow->m_collisionFilterMask,
+                                                   dispatcher.get()));
 }
 }
 }

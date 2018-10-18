@@ -65,33 +65,11 @@ BulletCastBVHManager::~BulletCastBVHManager()
 {
   // clean up remaining objects
   for (auto& co : link2cow_)
-  {
-    btCollisionObject* collisionObject = co.second.get();
-
-    btBroadphaseProxy* bp = collisionObject->getBroadphaseHandle();
-    if (bp)
-    {
-      // only clear the cached algorithms
-      broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(bp, dispatcher_.get());
-      broadphase_->destroyProxy(bp, dispatcher_.get());
-      collisionObject->setBroadphaseHandle(0);
-    }
-  }
+    removeCollisionObjectFromBroadphase(co.second, broadphase_, dispatcher_);
 
   // clean up remaining objects
   for (auto& co : link2castcow_)
-  {
-    btCollisionObject* collisionObject = co.second.get();
-
-    btBroadphaseProxy* bp = collisionObject->getBroadphaseHandle();
-    if (bp)
-    {
-      // only clear the cached algorithms
-      broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(bp, dispatcher_.get());
-      broadphase_->destroyProxy(bp, dispatcher_.get());
-      collisionObject->setBroadphaseHandle(0);
-    }
-  }
+    removeCollisionObjectFromBroadphase(co.second, broadphase_, dispatcher_);
 }
 
 ContinuousContactManagerBasePtr BulletCastBVHManager::clone() const
@@ -140,80 +118,47 @@ bool BulletCastBVHManager::hasCollisionObject(const std::string& name) const
 
 bool BulletCastBVHManager::removeCollisionObject(const std::string& name)
 {
-  bool removed = false;
-  auto it = link2castcow_.find(name);
-  if (it != link2castcow_.end())
+  auto it = link2cow_.find(name);
+  if (it != link2cow_.end())
   {
-    btBroadphaseProxy* bp = it->second->getBroadphaseHandle();
-    if (bp)
-    {
-      // only clear the cached algorithms
-      broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(bp, dispatcher_.get());
-      broadphase_->destroyProxy(bp, dispatcher_.get());
-      it->second->setBroadphaseHandle(0);
-    }
-
-    link2castcow_.erase(name);
-    removed = true;
-  }
-
-  auto it2 = link2cow_.find(name);
-  if (it2 != link2cow_.end())
-  {
-    btBroadphaseProxy* bp = it2->second->getBroadphaseHandle();
-    if (bp)
-    {
-      // only clear the cached algorithms
-      broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(bp, dispatcher_.get());
-      broadphase_->destroyProxy(bp, dispatcher_.get());
-      it2->second->setBroadphaseHandle(0);
-    }
-
+    COWPtr& cow1 = it->second;
+    removeCollisionObjectFromBroadphase(cow1, broadphase_, dispatcher_);
     link2cow_.erase(name);
-    removed = true;
+
+    COWPtr& cow2 = link2castcow_[name];
+    removeCollisionObjectFromBroadphase(cow2, broadphase_, dispatcher_);
+    link2castcow_.erase(name);
+
+    return true;
   }
 
-  return removed;
+  return false;
 }
 
 bool BulletCastBVHManager::enableCollisionObject(const std::string& name)
 {
-  bool enabled = false;
   auto it = link2cow_.find(name);
   if (it != link2cow_.end())
   {
     it->second->m_enabled = true;
-    enabled = true;
+    link2castcow_[name]->m_enabled = true;
+    return true;
   }
 
-  auto it2 = link2castcow_.find(name);
-  if (it2 != link2castcow_.end())
-  {
-    it2->second->m_enabled = true;
-    enabled = true;
-  }
-
-  return enabled;
+  return false;
 }
 
 bool BulletCastBVHManager::disableCollisionObject(const std::string& name)
 {
-  bool disabled = false;
   auto it = link2cow_.find(name);
   if (it != link2cow_.end())
   {
     it->second->m_enabled = false;
-    disabled = true;
+    link2castcow_[name]->m_enabled = false;
+    return true;
   }
 
-  auto it2 = link2castcow_.find(name);
-  if (it2 != link2castcow_.end())
-  {
-    it2->second->m_enabled = true;
-    disabled = true;
-  }
-
-  return disabled;
+  return false;
 }
 
 void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose)
@@ -224,29 +169,12 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
   if (it != link2cow_.end())
   {
     COWPtr& cow = it->second;
-    cow->setWorldTransform(convertEigenToBt(pose));
+    btTransform tf = convertEigenToBt(pose);
+    cow->setWorldTransform(tf);
+    link2castcow_[name]->setWorldTransform(tf);
 
-    // Now update Broadphase AABB (Copied from BulletWorld updateSingleAabb function)
-    btVector3 minAabb, maxAabb;
-    cow->getCollisionShape()->getAabb(cow->getWorldTransform(), minAabb, maxAabb);
-    // need to increase the aabb for contact thresholds
-    btVector3 contactThreshold(cow->getContactProcessingThreshold(),
-                               cow->getContactProcessingThreshold(),
-                               cow->getContactProcessingThreshold());
-    minAabb -= contactThreshold;
-    maxAabb += contactThreshold;
-
-    // moving objects should be moderately sized, probably something wrong if not
-    if (cow->isStaticObject() || ((maxAabb - minAabb).length2() < btScalar(1e12)))
-    {
-      broadphase_->setAabb(cow->getBroadphaseHandle(), minAabb, maxAabb, dispatcher_.get());
-    }
-    else
-    {
-      // something went wrong, investigate
-      // this assert is unwanted in 3D modelers (danger of loosing work)
-      cow->setActivationState(DISABLE_SIMULATION);
-    }
+    // Now update Broadphase AABB (See BulletWorld updateSingleAabb function)
+    updateBroadphaseAABB(cow, broadphase_, dispatcher_);
   }
 }
 
@@ -279,41 +207,36 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
     btTransform tf1 = convertEigenToBt(pose1);
     btTransform tf2 = convertEigenToBt(pose2);
 
-    static_cast<CastHullShape*>(cow->getCollisionShape())->updateCastTransform(tf1.inverseTimes(tf2));
     cow->setWorldTransform(tf1);
     link2cow_[name]->setWorldTransform(tf1);
 
-    // Now update Broadphase AABB (Copied from BulletWorld updateSingleAabb function
-    btVector3 minAabb, maxAabb;
-    cow->getCollisionShape()->getAabb(cow->getWorldTransform(), minAabb, maxAabb);
-    // need to increase the aabb for contact thresholds
-    btVector3 contactThreshold(cow->getContactProcessingThreshold(),
-                               cow->getContactProcessingThreshold(),
-                               cow->getContactProcessingThreshold());
-    minAabb -= contactThreshold;
-    maxAabb += contactThreshold;
+    // If collision object is disabled dont proceed
+    if (cow->m_enabled)
+    {
+      if (btBroadphaseProxy::isConvex(cow->getCollisionShape()->getShapeType()))
+      {
+        assert(dynamic_cast<CastHullShape*>(cow->getCollisionShape()) != nullptr);
+        static_cast<CastHullShape*>(cow->getCollisionShape())->updateCastTransform(tf1.inverseTimes(tf2));
+      }
+      else if (btBroadphaseProxy::isCompound(cow->getCollisionShape()->getShapeType()))
+      {
+        assert(dynamic_cast<btCompoundShape*>(cow->getCollisionShape()) != nullptr);
+        btCompoundShape* compound = static_cast<btCompoundShape*>(cow->getCollisionShape());
+        for (int i = 0; i < compound->getNumChildShapes(); ++i)
+        {
+          assert(!btBroadphaseProxy::isCompound(compound->getChildShape(i)->getShapeType()));
+          assert(dynamic_cast<CastHullShape*>(compound->getChildShape(i)) != nullptr);
+          const btTransform& local_tf = compound->getChildTransform(i);
 
-    if (dispatch_info_.m_useContinuous && cow->getInternalType() == btCollisionObject::CO_RIGID_BODY &&
-        !cow->isStaticOrKinematicObject())
-    {
-      btVector3 minAabb2, maxAabb2;
-      cow->getCollisionShape()->getAabb(cow->getInterpolationWorldTransform(), minAabb2, maxAabb2);
-      minAabb2 -= contactThreshold;
-      maxAabb2 += contactThreshold;
-      minAabb.setMin(minAabb2);
-      maxAabb.setMax(maxAabb2);
-    }
+          btTransform delta_tf = (tf1 * local_tf).inverseTimes(tf2 * local_tf);
+          static_cast<CastHullShape*>(compound->getChildShape(i))->updateCastTransform(delta_tf);
+          compound->updateChildTransform(i, local_tf, false); // This is required to update the BVH tree
+        }
+        compound->recalculateLocalAabb();
+      }
 
-    // moving objects should be moderately sized, probably something wrong if not
-    if (cow->isStaticObject() || ((maxAabb - minAabb).length2() < btScalar(1e12)))
-    {
-      broadphase_->setAabb(cow->getBroadphaseHandle(), minAabb, maxAabb, dispatcher_.get());
-    }
-    else
-    {
-      // something went wrong, investigate
-      // this assert is unwanted in 3D modelers (danger of loosing work)
-      cow->setActivationState(DISABLE_SIMULATION);
+      // Now update Broadphase AABB (See BulletWorld updateSingleAabb function)
+      updateBroadphaseAABB(cow, broadphase_, dispatcher_);
     }
   }
 }
@@ -350,7 +273,9 @@ void BulletCastBVHManager::contactTest(ContactResultMap& collisions)
 
   btOverlappingPairCache* pairCache = broadphase_->getOverlappingPairCache();
 
-  TesseractCollisionPairCallback collisionCallback(dispatch_info_, dispatcher_.get(), cdata);
+  CastBroadphaseContactResultCallback cc(cdata, request_.contact_distance);
+
+  TesseractCollisionPairCallback collisionCallback(dispatch_info_, dispatcher_.get(), cc);
 
   pairCache->processAllOverlappingPairs(&collisionCallback, dispatcher_.get());
 }
@@ -368,7 +293,13 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
     if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
     {
       // Update with request
-      updateCollisionObjectWithRequest(request_, *cow);
+      updateCollisionObjectWithRequest(request_, *cow, false);
+
+      // Get the active collision object
+      COWPtr &active_cow = link2castcow_[cow->getName()];
+
+      // Update with request
+      updateCollisionObjectWithRequest(request_, *active_cow, true);
 
       bool still_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&cow](const std::string& link) {
                              return link == cow->getName();
@@ -376,122 +307,43 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
 
       if (still_active)
       {
-        // Get the existing active collision object
-        COWPtr active_cow = link2castcow_[cow->getName()];
-
-        // Update with request
-        updateCollisionObjectWithRequest(request_, *active_cow);
-
-        // Calculate the aabb
-        btVector3 minAabb, maxAabb;
-        active_cow->getCollisionShape()->getAabb(cow->getWorldTransform(), minAabb, maxAabb);
-        btVector3 contactThreshold(active_cow->getContactProcessingThreshold(),
-                                   active_cow->getContactProcessingThreshold(),
-                                   active_cow->getContactProcessingThreshold());
-        minAabb -= contactThreshold;
-        maxAabb += contactThreshold;
-
-        // Update the broadphase aabb
-        broadphase_->setAabb(active_cow->getBroadphaseHandle(), minAabb, maxAabb, dispatcher_.get());
+        // Update Collision Object Broadphase AABB
+        updateBroadphaseAABB(active_cow, broadphase_, dispatcher_);
       }
       else
       {
-        COWPtr active_cow = link2castcow_[cow->getName()];
-
         // Remove the active collision object from the broadphase
-        btBroadphaseProxy* bp = active_cow->getBroadphaseHandle();
-        if (bp)
-        {
-          // only clear the cached algorithms
-          broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(bp, dispatcher_.get());
-          broadphase_->destroyProxy(bp, dispatcher_.get());
-          active_cow->setBroadphaseHandle(0);
-        }
+        removeCollisionObjectFromBroadphase(active_cow, broadphase_, dispatcher_);
 
-        // Remove the collision object from active map
-        link2castcow_.erase(cow->getName());
-
-        // Calculate broadphase aabb
-        btVector3 minAabb, maxAabb;
-        cow->getCollisionShape()->getAabb(cow->getWorldTransform(), minAabb, maxAabb);
-        btVector3 contactThreshold(cow->getContactProcessingThreshold(),
-                                   cow->getContactProcessingThreshold(),
-                                   cow->getContactProcessingThreshold());
-        minAabb -= contactThreshold;
-        maxAabb += contactThreshold;
-
-        // Add the static collision object to the broadphase
-        int type = cow->getCollisionShape()->getShapeType();
-        cow->setBroadphaseHandle(broadphase_->createProxy(minAabb,
-                                                          maxAabb,
-                                                          type,
-                                                          cow.get(),
-                                                          cow->m_collisionFilterGroup,
-                                                          cow->m_collisionFilterMask,
-                                                          dispatcher_.get()));
+        // Add the active collision object to the broadphase
+        addCollisionObjectToBroadphase(cow, broadphase_, dispatcher_);
       }
     }
     else
     {
       // Update with request
-      updateCollisionObjectWithRequest(request_, *cow);
+      updateCollisionObjectWithRequest(request_, *cow, false);
+
+      // Get the active collision object
+      COWPtr &active_cow = link2castcow_[cow->getName()];
+
+      // Update with request
+      updateCollisionObjectWithRequest(request_, *active_cow, true);
 
       bool now_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&cow](const std::string& link) {
                            return link == cow->getName();
                          }) != req.link_names.end());
       if (now_active)
       {
-        // Create active collision object
-        COWPtr active_cow = makeCastCollisionObject(cow);
-
-        // Update with request
-        updateCollisionObjectWithRequest(request_, *active_cow);
-
         // Remove the static collision object from the broadphase
-        btBroadphaseProxy* bp = cow->getBroadphaseHandle();
-        if (bp)
-        {
-          // only clear the cached algorithms
-          broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(bp, dispatcher_.get());
-          broadphase_->destroyProxy(bp, dispatcher_.get());
-          cow->setBroadphaseHandle(0);
-        }
-
-        // Calculate broadphase aabb
-        btVector3 minAabb, maxAabb;
-        active_cow->getCollisionShape()->getAabb(active_cow->getWorldTransform(), minAabb, maxAabb);
-        btVector3 contactThreshold(active_cow->getContactProcessingThreshold(),
-                                   active_cow->getContactProcessingThreshold(),
-                                   active_cow->getContactProcessingThreshold());
-        minAabb -= contactThreshold;
-        maxAabb += contactThreshold;
+        removeCollisionObjectFromBroadphase(cow, broadphase_, dispatcher_);
 
         // Add the active collision object to the broadphase
-        int type = active_cow->getCollisionShape()->getShapeType();
-        active_cow->setBroadphaseHandle(broadphase_->createProxy(minAabb,
-                                                                 maxAabb,
-                                                                 type,
-                                                                 active_cow.get(),
-                                                                 active_cow->m_collisionFilterGroup,
-                                                                 active_cow->m_collisionFilterMask,
-                                                                 dispatcher_.get()));
-
-        // Add it to the active map
-        link2castcow_[active_cow->getName()] = active_cow;
+        addCollisionObjectToBroadphase(active_cow, broadphase_, dispatcher_);
       }
       else
       {
-        // Calculate the aabb
-        btVector3 minAabb, maxAabb;
-        cow->getCollisionShape()->getAabb(cow->getWorldTransform(), minAabb, maxAabb);
-        btVector3 contactThreshold(cow->getContactProcessingThreshold(),
-                                   cow->getContactProcessingThreshold(),
-                                   cow->getContactProcessingThreshold());
-        minAabb -= contactThreshold;
-        maxAabb += contactThreshold;
-
-        // Update the broadphase aabb
-        broadphase_->setAabb(cow->getBroadphaseHandle(), minAabb, maxAabb, dispatcher_.get());
+        updateBroadphaseAABB(cow, broadphase_, dispatcher_);
       }
     }
   }
@@ -502,40 +354,33 @@ void BulletCastBVHManager::addCollisionObject(const COWPtr& cow)
 {
   link2cow_[cow->getName()] = cow;
 
-  // calculate new AABB
-  btTransform trans = cow->getWorldTransform();
+  // Create cast collision object
+  COWPtr cast_cow = makeCastCollisionObject(cow);
 
-  btVector3 minAabb;
-  btVector3 maxAabb;
-  cow->getCollisionShape()->getAabb(trans, minAabb, maxAabb);
+  // Add it to the cast map
+  link2castcow_[cast_cow->getName()] = cast_cow;
 
-  // need to increase the aabb for contact thresholds
-  btVector3 contactThreshold(
-      cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold());
-  minAabb -= contactThreshold;
-  maxAabb += contactThreshold;
+  const COWPtr& selected_cow = (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter) ? cast_cow : cow;
 
-  int type = cow->getCollisionShape()->getShapeType();
-  cow->setBroadphaseHandle(broadphase_->createProxy(
-      minAabb, maxAabb, type, cow.get(), cow->m_collisionFilterGroup, cow->m_collisionFilterMask, dispatcher_.get()));
+  btVector3 aabb_min, aabb_max;
+  selected_cow->getAABB(aabb_min, aabb_max);
+  
+  int type = selected_cow->getCollisionShape()->getShapeType();
+  selected_cow->setBroadphaseHandle(broadphase_->createProxy(aabb_min, aabb_max, type, selected_cow.get(),
+                                                             selected_cow->m_collisionFilterGroup,
+                                                             selected_cow->m_collisionFilterMask, dispatcher_.get()));
 }
 
 void BulletCastBVHManager::contactTest(const COWPtr& cow, ContactDistanceData& collisions)
 {
-  btVector3 aabbMin, aabbMax;
-  cow->getCollisionShape()->getAabb(cow->getWorldTransform(), aabbMin, aabbMax);
-
-  // need to increase the aabb for contact thresholds
-  btVector3 contactThreshold1(
-      cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold(), cow->getContactProcessingThreshold());
-  aabbMin -= contactThreshold1;
-  aabbMax += contactThreshold1;
+  btVector3 aabb_min, aabb_max;
+  cow->getAABB(aabb_min, aabb_max);
 
   CastCollisionCollector cc(collisions, cow, cow->getContactProcessingThreshold());
 
   TesseractSingleContactCallback contactCB(cow.get(), dispatcher_.get(), dispatch_info_, cc);
 
-  broadphase_->aabbTest(aabbMin, aabbMax, contactCB);
+  broadphase_->aabbTest(aabb_min, aabb_max, contactCB);
 }
 }
 }
