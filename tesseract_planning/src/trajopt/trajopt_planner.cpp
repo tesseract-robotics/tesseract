@@ -30,6 +30,8 @@
 #include <trajopt/problem_description.hpp>
 #include <trajopt_utils/config.hpp>
 #include <trajopt_utils/logging.hpp>
+#include <trajopt_sco/optimizers.hpp>
+#include <trajopt_sco/sco_common.hpp>
 
 using namespace trajopt;
 
@@ -68,15 +70,70 @@ bool TrajoptPlanner::solve(PlannerResponse& response)
 
 bool TrajoptPlanner::solve(trajopt::TrajOptProbPtr prob, PlannerResponse& response)
 {
+  BasicTrustRegionSQPParameters params;
+  return solve(prob, response, params);
+}
+
+bool TrajoptPlanner::solve(trajopt::TrajOptProbPtr prob,
+                           PlannerResponse& response,
+                           BasicTrustRegionSQPParameters& params)
+{
+  std::vector<trajopt::Optimizer::Callback> callbacks;
+  return solve(prob, response, params, callbacks);
+}
+
+bool TrajoptPlanner::solve(trajopt::TrajOptProbPtr prob,
+                           PlannerResponse& response,
+                           BasicTrustRegionSQPParameters& params,
+                           trajopt::Optimizer::Callback& callback)
+{
+  std::vector<trajopt::Optimizer::Callback> callbacks;
+  callbacks.push_back(callback);
+  return solve(prob, response, params, callbacks);
+}
+
+bool TrajoptPlanner::solve(trajopt::TrajOptProbPtr prob,
+                           PlannerResponse& response,
+                           trajopt::Optimizer::Callback& callback)
+{
+  BasicTrustRegionSQPParameters params;
+  std::vector<trajopt::Optimizer::Callback> callbacks;
+  callbacks.push_back(callback);
+  return solve(prob, response, params, callbacks);
+}
+
+bool TrajoptPlanner::solve(trajopt::TrajOptProbPtr prob,
+                           PlannerResponse& response,
+                           std::vector<trajopt::Optimizer::Callback>& callbacks)
+{
+  BasicTrustRegionSQPParameters params;
+  return solve(prob, response, params, callbacks);
+}
+
+bool TrajoptPlanner::solve(trajopt::TrajOptProbPtr prob,
+                           PlannerResponse& response,
+                           BasicTrustRegionSQPParameters& params,
+                           std::vector<trajopt::Optimizer::Callback>& callbacks)
+{
+  // Create optimizer
   BasicTrustRegionSQP opt(prob);
+  opt.setParameters(params);
   opt.initialize(trajToDblVec(prob->GetInitTraj()));
+
+  // Add all callbacks
+  for (trajopt::Optimizer::Callback& callback : callbacks)
+  {
+    opt.addCallback(callback);
+  }
+
+  // Optimize
   ros::Time tStart = ros::Time::now();
   opt.optimize();
   ROS_INFO("planning time: %.3f", (ros::Time::now() - tStart).toSec());
 
+  // Check and report collisions
   std::vector<tesseract::ContactResultMap> collisions;
   ContinuousContactManagerBasePtr manager = prob->GetEnv()->getContinuousContactManager();
-
   collisions.clear();
   bool found = tesseract::continuousCollisionCheckTrajectory(
       *manager, *prob->GetEnv(), *prob->GetKin(), getTraj(opt.x(), prob->GetVars()), collisions);
@@ -90,6 +147,7 @@ bool TrajoptPlanner::solve(trajopt::TrajOptProbPtr prob, PlannerResponse& respon
     ROS_INFO("Final trajectory is collision free");
   }
 
+  // Send response
   response.trajectory = getTraj(opt.x(), prob->GetVars());
   response.status_code = opt.results().status;
   response.joint_names = prob->GetEnv()->getJointNames();

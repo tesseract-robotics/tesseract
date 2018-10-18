@@ -28,6 +28,7 @@
 
 #include <tesseract_planning/basic_planner.h>
 #include <trajopt/problem_description.hpp>
+#include <tesseract_ros/ros_basic_plotting.h>
 
 namespace tesseract
 {
@@ -52,6 +53,32 @@ public:
   bool solve(PlannerResponse& response) override;
 
   bool solve(trajopt::TrajOptProbPtr prob, PlannerResponse& response);
+
+  bool solve(trajopt::TrajOptProbPtr prob, PlannerResponse& response, trajopt::BasicTrustRegionSQPParameters& params);
+
+  bool solve(trajopt::TrajOptProbPtr prob,
+             PlannerResponse& response,
+             trajopt::BasicTrustRegionSQPParameters& params,
+             trajopt::Optimizer::Callback& callback);
+
+  bool solve(trajopt::TrajOptProbPtr prob, PlannerResponse& response, trajopt::Optimizer::Callback& callback);
+
+  bool solve(trajopt::TrajOptProbPtr prob,
+             PlannerResponse& response,
+             std::vector<trajopt::Optimizer::Callback>& callbacks);
+
+  /**
+   * @brief solve - Sets up optimizer and solves a SQP problem
+   * @param prob - trajopt problem to be solved
+   * @param response - the results of the optimization. Primary output is the optimized joint trajectory
+   * @param params - SQP parameters for the optimization. If not given, defaults will be used
+   * @param callbacks - Callbacks to be called on each iteration, e.g. plotting, write to file, etc.
+   * @return
+   */
+  bool solve(trajopt::TrajOptProbPtr prob,
+             PlannerResponse& response,
+             trajopt::BasicTrustRegionSQPParameters& params,
+             std::vector<trajopt::Optimizer::Callback>& callbacks);
 
   bool terminate() override;
 
