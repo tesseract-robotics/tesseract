@@ -50,6 +50,16 @@ inline ObjectPairKey getObjectPairKey(const std::string& obj1, const std::string
 }
 
 /**
+ * @brief This will check if a link is active provided a list. If the list is empty the link is considered active.
+ * @param active List of active link names
+ * @param name The name of link to check if it is active.
+ */
+inline bool isLinkActive(const std::vector<std::string>& active, const std::string& name)
+{
+  return active.empty() || (std::find(active.begin(), active.end(), name) != active.end());
+}
+
+/**
  * @brief Determine if contact is allowed between two objects.
  * @param name1 The name of the first object
  * @param name2 The name of the second object

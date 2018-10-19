@@ -179,15 +179,9 @@ inline void updateCollisionObjectWithRequest(const ContactRequest& req, COW& cow
   // For descrete checks we can check static to kinematic and kinematic to
   // kinematic
   cow.m_collisionFilterGroup = CollisionFilterGroups::KinematicFilter;
-  if (!req.link_names.empty())
+  if (!isLinkActive(req.link_names, cow.getName()))
   {
-    bool check = (std::find_if(req.link_names.begin(), req.link_names.end(), [&cow](const std::string& link) {
-                    return link == cow.getName();
-                  }) == req.link_names.end());
-    if (check)
-    {
-      cow.m_collisionFilterGroup = CollisionFilterGroups::StaticFilter;
-    }
+    cow.m_collisionFilterGroup = CollisionFilterGroups::StaticFilter;
   }
 
   if (cow.m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)

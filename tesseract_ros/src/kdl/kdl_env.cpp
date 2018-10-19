@@ -53,7 +53,7 @@
 #include <octomap/octomap.h>
 
 const std::string DEFAULT_DISCRETE_CONTACT_MANAGER_PLUGIN_PARAM = "tesseract_collision/BulletDiscreteBVHManager";
-const std::string DEFAULT_CONTINUOUS_CONTACT_MANAGER_PLUGIN_PARAM = "tesseract_collision/BulletCastSimpleManager";
+const std::string DEFAULT_CONTINUOUS_CONTACT_MANAGER_PLUGIN_PARAM = "tesseract_collision/BulletCastBVHManager";
 
 namespace tesseract
 {
@@ -468,8 +468,16 @@ void KDLEnv::attachBody(const AttachedBodyInfo& attached_body_info)
   discrete_manager_->enableCollisionObject(attached_body_info.object_name);
   continuous_manager_->enableCollisionObject(attached_body_info.object_name);
 
-  calculateTransforms(
-      current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
+  // update attached object's transform
+  calculateTransforms(current_state_->transforms,
+                      kdl_jnt_array_,
+                      kdl_tree_->getRootSegment(),
+                      Eigen::Isometry3d::Identity());
+
+  discrete_manager_->setCollisionObjectsTransform(attached_body_info.object_name,
+                                                  current_state_->transforms[attached_body_info.object_name]);
+  continuous_manager_->setCollisionObjectsTransform(attached_body_info.object_name,
+                                                    current_state_->transforms[attached_body_info.object_name]);
 
   // Update manipulators
   for (auto& manip : manipulators_)

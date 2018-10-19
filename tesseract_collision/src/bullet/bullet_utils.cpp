@@ -276,6 +276,9 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
   assert(shapes.size() == shape_poses.size());
   assert(shapes.size() == collision_object_types.size());
 
+  m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
+  m_collisionFilterMask = btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter;
+
   if (shapes.size() == 1 && m_shape_poses[0].matrix().isIdentity())
   {
     btCollisionShape* shape = createShapePrimitive(m_shapes[0], collision_object_types[0], this);
