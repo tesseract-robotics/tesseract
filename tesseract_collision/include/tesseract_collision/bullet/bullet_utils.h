@@ -631,6 +631,9 @@ struct TesseractBroadphaseBridgedManifoldResult : public btManifoldResult
 
   virtual void addContactPoint(const btVector3& normalOnBInWorld, const btVector3& pointInWorld, btScalar depth)
   {
+    if (result_callback_.collisions_.done || depth > result_callback_.contact_distance_)
+      return;
+
     bool isSwapped = m_manifoldPtr->getBody0() != m_body0Wrap->getCollisionObject();
     btVector3 pointA = pointInWorld + normalOnBInWorld * depth;
     btVector3 localA;
@@ -754,6 +757,9 @@ public:
 
   virtual bool processOverlap(btBroadphasePair& pair)
   {
+    if (results_callback_.collisions_.done)
+      return false;
+
     const CollisionObjectWrapper* cow0 = static_cast<const CollisionObjectWrapper*>(pair.m_pProxy0->m_clientObject);
     const CollisionObjectWrapper* cow1 = static_cast<const CollisionObjectWrapper*>(pair.m_pProxy1->m_clientObject);
 
