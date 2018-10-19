@@ -53,7 +53,7 @@
 #include <octomap/octomap.h>
 
 const std::string DEFAULT_DISCRETE_CONTACT_MANAGER_PLUGIN_PARAM = "tesseract_collision/BulletDiscreteBVHManager";
-const std::string DEFAULT_CONTINUOUS_CONTACT_MANAGER_PLUGIN_PARAM = "tesseract_collision/BulletCastSimpleManager";
+const std::string DEFAULT_CONTINUOUS_CONTACT_MANAGER_PLUGIN_PARAM = "tesseract_collision/BulletCastBVHManager";
 
 namespace tesseract
 {

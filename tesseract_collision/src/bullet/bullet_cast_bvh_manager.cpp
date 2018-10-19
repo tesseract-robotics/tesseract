@@ -174,7 +174,8 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
     link2castcow_[name]->setWorldTransform(tf);
 
     // Now update Broadphase AABB (See BulletWorld updateSingleAabb function)
-    updateBroadphaseAABB(cow, broadphase_, dispatcher_);
+    if (cow->getBroadphaseHandle())
+      updateBroadphaseAABB(cow, broadphase_, dispatcher_);
   }
 }
 
@@ -301,11 +302,8 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
       // Update with request
       updateCollisionObjectWithRequest(request_, *active_cow, true);
 
-      bool still_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&cow](const std::string& link) {
-                             return link == cow->getName();
-                           }) != req.link_names.end());
-
-      if (still_active)
+      // Check if the link is still active.
+      if (isLinkActive(req.link_names, cow->getName()))
       {
         // Update Collision Object Broadphase AABB
         updateBroadphaseAABB(active_cow, broadphase_, dispatcher_);
@@ -330,10 +328,8 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
       // Update with request
       updateCollisionObjectWithRequest(request_, *active_cow, true);
 
-      bool now_active = (std::find_if(req.link_names.begin(), req.link_names.end(), [&cow](const std::string& link) {
-                           return link == cow->getName();
-                         }) != req.link_names.end());
-      if (now_active)
+      // Check if link is now active
+      if (isLinkActive(req.link_names, cow->getName()))
       {
         // Remove the static collision object from the broadphase
         removeCollisionObjectFromBroadphase(cow, broadphase_, dispatcher_);

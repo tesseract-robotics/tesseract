@@ -145,6 +145,7 @@ public:
     clone_cow->m_collisionFilterGroup = m_collisionFilterGroup;
     clone_cow->m_collisionFilterMask = m_collisionFilterMask;
     clone_cow->m_enabled = m_enabled;
+    clone_cow->setBroadphaseHandle(0);
     return clone_cow;
   }
 
@@ -796,15 +797,10 @@ btCollisionShape* createShapePrimitive(const shapes::ShapeConstPtr& geom,
 inline void updateCollisionObjectWithRequest(const ContactRequest& req, COW& cow, bool continuous)
 {
   cow.m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
-  if (!req.link_names.empty())
+
+  if (!isLinkActive(req.link_names, cow.getName()))
   {
-    bool check = (std::find_if(req.link_names.begin(), req.link_names.end(), [&cow](const std::string& link) {
-                    return link == cow.getName();
-                  }) == req.link_names.end());
-    if (check)
-    {
-      cow.m_collisionFilterGroup = btBroadphaseProxy::StaticFilter;
-    }
+    cow.m_collisionFilterGroup = btBroadphaseProxy::StaticFilter;
   }
 
   if (cow.m_collisionFilterGroup == btBroadphaseProxy::StaticFilter)
