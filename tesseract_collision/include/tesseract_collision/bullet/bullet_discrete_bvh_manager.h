@@ -78,11 +78,19 @@ public:
 
   void setCollisionObjectsTransform(const TransformMap& transforms) override;
 
-  void contactTest(ContactResultMap& collisions) override;
+  void setActiveCollisionObjects(const std::vector<std::string>& names) override;
 
-  void setContactRequest(const ContactRequest& req) override;
+  const std::vector<std::string>& getActiveCollisionObjects() const override;
 
-  const ContactRequest& getContactRequest() const override;
+  void setContactDistanceThreshold(double contact_distance) override;
+
+  double getContactDistanceThreshold() const override;
+
+  void setIsContactAllowedFn(IsContactAllowedFn fn) override;
+
+  IsContactAllowedFn getIsContactAllowedFn() const override;
+
+  void contactTest(ContactResultMap& collisions, const ContactTestType& type) override;
 
   /**
    * @brief A a bullet collision object to the manager
@@ -97,7 +105,10 @@ public:
   const Link2Cow& getCollisionObjects() const;
 
 private:
-  ContactRequest request_;                            /**< @brief The active contact request message */
+  std::vector<std::string> active_;                   /**< @brief A list of the active collision objects */
+  double contact_distance_;                           /**< @brief The contact distance threshold */
+  IsContactAllowedFn fn_;                             /**< @brief The is allowed collision function */
+
   std::unique_ptr<btCollisionDispatcher> dispatcher_; /**< @brief The bullet collision dispatcher used for getting
                                                          object to object collison algorithm */
   btDispatcherInfo dispatch_info_;              /**< @brief The bullet collision dispatcher configuration information */
@@ -110,7 +121,7 @@ private:
    * @param cow The Collision object
    * @param collisions The collision results
    */
-  void contactTest(const COWPtr& cow, ContactDistanceData& collisions);
+  void contactTest(const COWPtr& cow, ContactTestData& collisions);
 };
 typedef std::shared_ptr<BulletDiscreteBVHManager> BulletDiscreteBVHManagerPtr;
 

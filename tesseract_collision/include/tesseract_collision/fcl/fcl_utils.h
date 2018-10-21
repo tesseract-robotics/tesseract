@@ -170,16 +170,16 @@ inline COWPtr createFCLCollisionObject(const std::string& name,
 }
 
 /**
- * @brief updateCollisionObjectsWithRequest
- * @param req
- * @param cow
+ * @brief Update collision objects filters
+ * @param active The active collision objects
+ * @param cow The collision object to update
  */
-inline void updateCollisionObjectWithRequest(const ContactRequest& req, COW& cow)
+inline void updateCollisionObjectFilters(const std::vector<std::string>& active, COW& cow)
 {
   // For descrete checks we can check static to kinematic and kinematic to
   // kinematic
   cow.m_collisionFilterGroup = CollisionFilterGroups::KinematicFilter;
-  if (!isLinkActive(req.link_names, cow.getName()))
+  if (!isLinkActive(active, cow.getName()))
   {
     cow.m_collisionFilterGroup = CollisionFilterGroups::StaticFilter;
   }

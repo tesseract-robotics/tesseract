@@ -78,11 +78,19 @@ public:
 
   void setCollisionObjectsTransform(const TransformMap& transforms) override;
 
-  void contactTest(ContactResultMap& collisions) override;
+  void setActiveCollisionObjects(const std::vector<std::string>& names) override;
 
-  void setContactRequest(const ContactRequest& req) override;
+  const std::vector<std::string>& getActiveCollisionObjects() const override;
 
-  const ContactRequest& getContactRequest() const override;
+  void setContactDistanceThreshold(double contact_distance) override;
+
+  double getContactDistanceThreshold() const override;
+
+  void setIsContactAllowedFn(IsContactAllowedFn fn) override;
+
+  IsContactAllowedFn getIsContactAllowedFn() const override;
+
+  void contactTest(ContactResultMap& collisions, const ContactTestType& type) override;
 
   /**
    * @brief Add a fcl collision object to the manager
@@ -99,7 +107,10 @@ public:
 private:
   std::unique_ptr<fcl::BroadPhaseCollisionManagerd> manager_; /**< @brief FCL Broad Phase Collision Manager */
   Link2COW link2cow_;      /**< @brief A map of all (static and active) collision objects being managed */
-  ContactRequest request_; /**< @brief Active request to be used for methods that don't require a request */
+
+  std::vector<std::string> active_;                   /**< @brief A list of the active collision objects */
+  double contact_distance_;                           /**< @brief The contact distance threshold */
+  IsContactAllowedFn fn_;                             /**< @brief The is allowed collision function */
 };
 typedef std::shared_ptr<FCLDiscreteBVHManager> FCLDiscreteBVHManagerPtr;
 }

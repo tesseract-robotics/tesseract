@@ -91,7 +91,7 @@ isContactAllowed(const std::string& name1, const std::string& name2, const IsCon
   return false;
 }
 
-inline ContactResult* processResult(ContactDistanceData& cdata,
+inline ContactResult* processResult(ContactTestData& cdata,
                                     ContactResult& contact,
                                     const std::pair<std::string, std::string>& key,
                                     bool found)
@@ -99,7 +99,7 @@ inline ContactResult* processResult(ContactDistanceData& cdata,
   if (!found)
   {
     ContactResultVector data;
-    if (cdata.req->type == ContactRequestType::FIRST)
+    if (cdata.type == ContactTestType::FIRST)
     {
       data.emplace_back(contact);
       cdata.done = true;
@@ -110,18 +110,18 @@ inline ContactResult* processResult(ContactDistanceData& cdata,
       data.emplace_back(contact);
     }
 
-    return &(cdata.res->insert(std::make_pair(key, data)).first->second.back());
+    return &(cdata.res.insert(std::make_pair(key, data)).first->second.back());
   }
   else
   {
-    assert(cdata.req->type != ContactRequestType::FIRST);
-    ContactResultVector& dr = cdata.res->at(key);
-    if (cdata.req->type == ContactRequestType::ALL)
+    assert(cdata.type != ContactTestType::FIRST);
+    ContactResultVector& dr = cdata.res[key];
+    if (cdata.type == ContactTestType::ALL)
     {
       dr.emplace_back(contact);
       return &(dr.back());
     }
-    else if (cdata.req->type == ContactRequestType::CLOSEST)
+    else if (cdata.type == ContactTestType::CLOSEST)
     {
       if (contact.distance < dr[0].distance)
       {
@@ -129,7 +129,7 @@ inline ContactResult* processResult(ContactDistanceData& cdata,
         return &(dr[0]);
       }
     }
-    //    else if (cdata.req->type == DistanceRequestType::LIMITED)
+    //    else if (cdata.cdata.condition == DistanceRequestType::LIMITED)
     //    {
     //      assert(dr.size() < cdata.req->max_contacts_per_body);
     //      dr.emplace_back(contact);

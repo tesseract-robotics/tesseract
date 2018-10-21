@@ -59,6 +59,8 @@ BulletCastBVHManager::BulletCastBVHManager()
                                   ~btCollisionDispatcher::CD_USE_RELATIVE_CONTACT_BREAKING_THRESHOLD);
 
   broadphase_.reset(new btDbvtBroadphase());
+
+  contact_distance_ = 0;
 }
 
 BulletCastBVHManager::~BulletCastBVHManager()
@@ -85,10 +87,14 @@ ContinuousContactManagerBasePtr BulletCastBVHManager::clone() const
 
     new_cow->setWorldTransform(cow.second->getWorldTransform());
 
-    new_cow->setContactProcessingThreshold(request_.contact_distance);
+    new_cow->setContactProcessingThreshold(contact_distance_);
     manager->addCollisionObject(new_cow);
   }
-  manager->setContactRequest(request_);
+
+  manager->setActiveCollisionObjects(active_);
+  manager->setContactDistanceThreshold(contact_distance_);
+  manager->setIsContactAllowedFn(fn_);
+
   return manager;
 }
 
@@ -266,24 +272,9 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const TransformMap& pose
   }
 }
 
-void BulletCastBVHManager::contactTest(ContactResultMap& collisions)
+void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
-  ContactDistanceData cdata(&request_, &collisions);
-
-  broadphase_->calculateOverlappingPairs(dispatcher_.get());
-
-  btOverlappingPairCache* pairCache = broadphase_->getOverlappingPairCache();
-
-  CastBroadphaseContactResultCallback cc(cdata, request_.contact_distance);
-
-  TesseractCollisionPairCallback collisionCallback(dispatch_info_, dispatcher_.get(), cc);
-
-  pairCache->processAllOverlappingPairs(&collisionCallback, dispatcher_.get());
-}
-
-void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
-{
-  request_ = req;
+  active_ = names;
 
   // Now need to update the broadphase with correct aabb
   for (auto& co : link2cow_)
@@ -293,22 +284,17 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
     // Need to check if a collision object is still active
     if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
     {
-      // Update with request
-      updateCollisionObjectWithRequest(request_, *cow, false);
+      // Update with active
+      updateCollisionObjectFilters(active_, *cow, false);
 
       // Get the active collision object
       COWPtr &active_cow = link2castcow_[cow->getName()];
 
-      // Update with request
-      updateCollisionObjectWithRequest(request_, *active_cow, true);
+      // Update with active
+      updateCollisionObjectFilters(active_, *active_cow, true);
 
       // Check if the link is still active.
-      if (isLinkActive(req.link_names, cow->getName()))
-      {
-        // Update Collision Object Broadphase AABB
-        updateBroadphaseAABB(active_cow, broadphase_, dispatcher_);
-      }
-      else
+      if (!isLinkActive(active_, cow->getName()))
       {
         // Remove the active collision object from the broadphase
         removeCollisionObjectFromBroadphase(active_cow, broadphase_, dispatcher_);
@@ -319,17 +305,17 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
     }
     else
     {
-      // Update with request
-      updateCollisionObjectWithRequest(request_, *cow, false);
+      // Update with active
+      updateCollisionObjectFilters(active_, *cow, false);
 
       // Get the active collision object
       COWPtr &active_cow = link2castcow_[cow->getName()];
 
-      // Update with request
-      updateCollisionObjectWithRequest(request_, *active_cow, true);
+      // Update with active
+      updateCollisionObjectFilters(active_, *active_cow, true);
 
       // Check if link is now active
-      if (isLinkActive(req.link_names, cow->getName()))
+      if (isLinkActive(active_, cow->getName()))
       {
         // Remove the static collision object from the broadphase
         removeCollisionObjectFromBroadphase(cow, broadphase_, dispatcher_);
@@ -337,15 +323,54 @@ void BulletCastBVHManager::setContactRequest(const ContactRequest& req)
         // Add the active collision object to the broadphase
         addCollisionObjectToBroadphase(active_cow, broadphase_, dispatcher_);
       }
-      else
-      {
-        updateBroadphaseAABB(cow, broadphase_, dispatcher_);
-      }
     }
   }
 }
 
-const ContactRequest& BulletCastBVHManager::getContactRequest() const { return request_; }
+const std::vector<std::string>& BulletCastBVHManager::getActiveCollisionObjects() const { return active_; }
+
+void BulletCastBVHManager::setContactDistanceThreshold(double contact_distance)
+{
+  contact_distance_ = contact_distance;
+
+  for (auto& co : link2cow_)
+  {
+    COWPtr& cow = co.second;
+    cow->setContactProcessingThreshold(contact_distance);
+    if (cow->getBroadphaseHandle())
+      updateBroadphaseAABB(cow, broadphase_, dispatcher_);
+  }
+
+  for (auto& co : link2castcow_)
+  {
+    COWPtr& cow = co.second;
+    cow->setContactProcessingThreshold(contact_distance);
+    if (cow->getBroadphaseHandle())
+      updateBroadphaseAABB(cow, broadphase_, dispatcher_);
+  }
+}
+
+double BulletCastBVHManager::getContactDistanceThreshold() const { return contact_distance_; }
+
+void BulletCastBVHManager::setIsContactAllowedFn(IsContactAllowedFn fn) { fn_ = fn; }
+
+IsContactAllowedFn BulletCastBVHManager::getIsContactAllowedFn() const { return fn_; }
+
+void BulletCastBVHManager::contactTest(ContactResultMap& collisions, const ContactTestType& type)
+{
+  ContactTestData cdata(active_, contact_distance_, fn_, type, collisions);
+
+  broadphase_->calculateOverlappingPairs(dispatcher_.get());
+
+  btOverlappingPairCache* pairCache = broadphase_->getOverlappingPairCache();
+
+  CastBroadphaseContactResultCallback cc(cdata, contact_distance_);
+
+  TesseractCollisionPairCallback collisionCallback(dispatch_info_, dispatcher_.get(), cc);
+
+  pairCache->processAllOverlappingPairs(&collisionCallback, dispatcher_.get());
+}
+
 void BulletCastBVHManager::addCollisionObject(const COWPtr& cow)
 {
   link2cow_[cow->getName()] = cow;
@@ -367,7 +392,7 @@ void BulletCastBVHManager::addCollisionObject(const COWPtr& cow)
                                                              selected_cow->m_collisionFilterMask, dispatcher_.get()));
 }
 
-void BulletCastBVHManager::contactTest(const COWPtr& cow, ContactDistanceData& collisions)
+void BulletCastBVHManager::contactTest(const COWPtr& cow, ContactTestData &collisions)
 {
   btVector3 aabb_min, aabb_max;
   cow->getAABB(aabb_min, aabb_max);

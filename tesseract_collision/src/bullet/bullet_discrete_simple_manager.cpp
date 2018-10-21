@@ -57,6 +57,8 @@ BulletDiscreteSimpleManager::BulletDiscreteSimpleManager()
 
   dispatcher_->setDispatcherFlags(dispatcher_->getDispatcherFlags() &
                                   ~btCollisionDispatcher::CD_USE_RELATIVE_CONTACT_BREAKING_THRESHOLD);
+
+  contact_distance_ = 0;
 }
 
 DiscreteContactManagerBasePtr BulletDiscreteSimpleManager::clone() const
@@ -72,11 +74,14 @@ DiscreteContactManagerBasePtr BulletDiscreteSimpleManager::clone() const
 
     new_cow->setWorldTransform(cow.second->getWorldTransform());
 
-    new_cow->setContactProcessingThreshold(request_.contact_distance);
+    new_cow->setContactProcessingThreshold(contact_distance_);
     manager->addCollisionObject(new_cow);
   }
 
-  manager->setContactRequest(request_);
+  manager->setActiveCollisionObjects(active_);
+  manager->setContactDistanceThreshold(contact_distance_);
+  manager->setIsContactAllowedFn(fn_);
+
   return manager;
 }
 
@@ -162,9 +167,45 @@ void BulletDiscreteSimpleManager::setCollisionObjectsTransform(const TransformMa
     setCollisionObjectsTransform(transform.first, transform.second);
 }
 
-void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions)
+void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
-  ContactDistanceData cdata(&request_, &collisions);
+  active_ = names;
+  cows_.clear();
+  cows_.reserve(link2cow_.size());
+
+  for (auto& co : link2cow_)
+  {
+    COWPtr& cow = co.second;
+
+    updateCollisionObjectFilters(active_, *cow, false);
+
+    // Update collision object vector
+    if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
+      cows_.insert(cows_.begin(), cow);
+    else
+      cows_.push_back(cow);
+  }
+}
+
+const std::vector<std::string>& BulletDiscreteSimpleManager::getActiveCollisionObjects() const { return active_; }
+
+void BulletDiscreteSimpleManager::setContactDistanceThreshold(double contact_distance)
+{
+  contact_distance_ = contact_distance;
+
+  for (auto& co : link2cow_)
+    co.second->setContactProcessingThreshold(contact_distance);
+}
+
+double BulletDiscreteSimpleManager::getContactDistanceThreshold() const { return contact_distance_; }
+
+void BulletDiscreteSimpleManager::setIsContactAllowedFn(IsContactAllowedFn fn) { fn_ = fn; }
+
+IsContactAllowedFn BulletDiscreteSimpleManager::getIsContactAllowedFn() const { return fn_; }
+
+void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, const ContactTestType& type)
+{
+  ContactTestData cdata(active_, contact_distance_, fn_, type, collisions);
 
   for (auto cow1_iter = cows_.begin(); cow1_iter != (cows_.end() - 1); cow1_iter++)
   {
@@ -195,7 +236,7 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions)
 
       if (aabb_check)
       {
-        bool needs_collision = needsCollisionCheck(*cow1, *cow2, request_.isContactAllowed, false);
+        bool needs_collision = needsCollisionCheck(*cow1, *cow2, fn_, false);
 
         if (needs_collision)
         {
@@ -223,25 +264,6 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions)
   }
 }
 
-void BulletDiscreteSimpleManager::setContactRequest(const ContactRequest& req)
-{
-  request_ = req;
-  cows_.clear();
-  cows_.reserve(link2cow_.size());
-
-  for (auto& element : link2cow_)
-  {
-    updateCollisionObjectWithRequest(request_, *element.second, false);
-
-    // Update collision object vector
-    if (element.second->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
-      cows_.insert(cows_.begin(), element.second);
-    else
-      cows_.push_back(element.second);
-  }
-}
-
-const ContactRequest& BulletDiscreteSimpleManager::getContactRequest() const { return request_; }
 void BulletDiscreteSimpleManager::addCollisionObject(const COWPtr& cow)
 {
   link2cow_[cow->getName()] = cow;

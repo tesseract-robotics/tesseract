@@ -45,11 +45,8 @@ void runTest(tesseract::ContinuousContactManagerBase& checker)
   //////////////////////////////////////
   // Test when object is inside another
   //////////////////////////////////////
-  tesseract::ContactRequest req;
-  req.link_names.push_back("moving_box_link");
-  req.contact_distance = 0.1;
-  req.type = tesseract::ContactRequestType::CLOSEST;
-  checker.setContactRequest(req);
+  checker.setActiveCollisionObjects({"moving_box_link"});
+  checker.setContactDistanceThreshold(0.1);
 
   // Set the collision object transforms
   checker.setCollisionObjectsTransform("static_box_link", Eigen::Isometry3d::Identity());
@@ -65,7 +62,7 @@ void runTest(tesseract::ContinuousContactManagerBase& checker)
 
   // Perform collision check
   tesseract::ContactResultMap result;
-  checker.contactTest(result);
+  checker.contactTest(result, tesseract::ContactTestType::CLOSEST);
 
   tesseract::ContactResultVector result_vector;
   tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);

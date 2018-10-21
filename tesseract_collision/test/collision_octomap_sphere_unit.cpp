@@ -58,12 +58,8 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, double tol)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  tesseract::ContactRequest req;
-  req.link_names.push_back("octomap_link");
-  req.link_names.push_back("sphere_link");
-  req.contact_distance = 0.1;
-  req.type = tesseract::ContactRequestType::CLOSEST;
-  checker.setContactRequest(req);
+  checker.setActiveCollisionObjects({"octomap_link", "sphere_link"});
+  checker.setContactDistanceThreshold(0.1);
 
   // Set the collision object transforms
   tesseract::TransformMap location;
@@ -78,7 +74,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, double tol)
   for (auto i = 0; i < 10; ++i)
   {
     result.clear();
-    checker.contactTest(result);
+    checker.contactTest(result, tesseract::ContactTestType::CLOSEST);
   }
   ros::WallTime end_time = ros::WallTime::now();
   ROS_INFO_STREAM("DT: " << (end_time - start_time).toSec());

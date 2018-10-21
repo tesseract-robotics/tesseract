@@ -32,13 +32,10 @@ ChainOmplInterface::ChainOmplInterface(tesseract::BasicEnvConstPtr environment, 
   ss_->setStateValidityChecker(std::bind(&ChainOmplInterface::isStateValid, this, std::placeholders::_1));
   contact_fn_ = std::bind(&ChainOmplInterface::isContactAllowed, this, std::placeholders::_1, std::placeholders::_2);
 
-  tesseract::ContactRequest req;
-  req.link_names = link_names_;
-  req.isContactAllowed = contact_fn_;
-  req.type = tesseract::ContactRequestTypes::FIRST;
-
   contact_manager_ = env_->getDiscreteContactManager();
-  contact_manager_->setContactRequest(req);
+  contact_manager_->setActiveCollisionObjects(link_names_);
+  contact_manager_->setContactDistanceThreshold(0);
+  contact_manager_->setIsContactAllowedFn(contact_fn_);
 
   // We need to set the planner and call setup before it can run
 }
@@ -92,7 +89,7 @@ bool ChainOmplInterface::isStateValid(const ompl::base::State* state) const
   contact_manager_->setCollisionObjectsTransform(env_state->transforms);
 
   tesseract::ContactResultMap contact_map;
-  contact_manager_->contactTest(contact_map);
+  contact_manager_->contactTest(contact_map, tesseract::ContactTestTypes::FIRST);
 
   return contact_map.empty();
 }

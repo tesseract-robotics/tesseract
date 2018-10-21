@@ -281,7 +281,7 @@ inline bool continuousCollisionCheckTrajectory(ContinuousContactManagerBase& man
     for (const auto& link_name : link_names)
       manager.setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
 
-    manager.contactTest(collisions);
+    manager.contactTest(collisions, ContactTestTypes::FIRST);
 
     if (collisions.size() > 0)
       found = true;

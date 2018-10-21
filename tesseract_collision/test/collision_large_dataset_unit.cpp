@@ -49,11 +49,8 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mes
   }
 
   // Check if they are in collision
-  tesseract::ContactRequest req;
-  req.link_names = link_names;
-  req.contact_distance = 0.1;
-  req.type = tesseract::ContactRequestType::ALL;
-  checker.setContactRequest(req);
+  checker.setActiveCollisionObjects(link_names);
+  checker.setContactDistanceThreshold(0.1);
   checker.setCollisionObjectsTransform(location);
 
   tesseract::ContactResultVector result_vector;
@@ -63,7 +60,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mes
   {
     tesseract::ContactResultMap result;
     result_vector.clear();
-    checker.contactTest(result);
+    checker.contactTest(result, tesseract::ContactTestType::ALL);
     tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
   }
   ros::WallTime end_time = ros::WallTime::now();

@@ -66,12 +66,8 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, double dist_tol, do
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  tesseract::ContactRequest req;
-  req.link_names.push_back("sphere_link");
-  req.link_names.push_back("sphere1_link");
-  req.contact_distance = 0.1;
-  req.type = tesseract::ContactRequestType::CLOSEST;
-  checker.setContactRequest(req);
+  checker.setActiveCollisionObjects({"sphere_link", "sphere1_link"});
+  checker.setContactDistanceThreshold(0.1);
 
   // Test when object is inside another
   tesseract::TransformMap location;
@@ -82,7 +78,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, double dist_tol, do
 
   // Perform collision check
   tesseract::ContactResultMap result;
-  checker.contactTest(result);
+  checker.contactTest(result, tesseract::ContactTestType::CLOSEST);
 
   tesseract::ContactResultVector result_vector;
   tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
@@ -95,7 +91,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, double dist_tol, do
   tesseract::ContactResultMap cloned_result;
   tesseract::DiscreteContactManagerBasePtr cloned_checker = checker.clone();
 
-  cloned_checker->contactTest(cloned_result);
+  cloned_checker->contactTest(cloned_result, tesseract::ContactTestType::CLOSEST);
 
   tesseract::ContactResultVector cloned_result_vector;
   tesseract::moveContactResultsMapToContactResultsVector(cloned_result, cloned_result_vector);
