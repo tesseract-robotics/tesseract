@@ -50,6 +50,7 @@ namespace tesseract_fcl
 FCLDiscreteBVHManager::FCLDiscreteBVHManager()
 {
   manager_ = std::unique_ptr<fcl::BroadPhaseCollisionManagerd>(new fcl::DynamicAABBTreeCollisionManagerd());
+  contact_distance_ = 0;
 }
 
 DiscreteContactManagerBasePtr FCLDiscreteBVHManager::clone() const
@@ -65,7 +66,10 @@ DiscreteContactManagerBasePtr FCLDiscreteBVHManager::clone() const
     manager->addCollisionObject(new_cow);
   }
 
-  manager->setContactRequest(request_);
+  manager->setActiveCollisionObjects(active_);
+  manager->setContactDistanceThreshold(contact_distance_);
+  manager->setIsContactAllowedFn(fn_);
+
   return manager;
 }
 
@@ -151,10 +155,35 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const TransformMap& tra
     setCollisionObjectsTransform(transform.first, transform.second);
 }
 
-void FCLDiscreteBVHManager::contactTest(ContactResultMap& collisions)
+void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
-  ContactDistanceData cdata(&request_, &collisions);
-  if (request_.contact_distance > 0)
+  active_ = names;
+
+  for (auto& co : link2cow_)
+  {
+    COWPtr& cow = co.second;
+
+    updateCollisionObjectFilters(active_, *cow);
+  }
+}
+
+const std::vector<std::string>& FCLDiscreteBVHManager::getActiveCollisionObjects() const { return active_; }
+
+void FCLDiscreteBVHManager::setContactDistanceThreshold(double contact_distance)
+{
+  contact_distance_ = contact_distance;
+}
+
+double FCLDiscreteBVHManager::getContactDistanceThreshold() const { return contact_distance_; }
+
+void FCLDiscreteBVHManager::setIsContactAllowedFn(IsContactAllowedFn fn) { fn_ = fn; }
+
+IsContactAllowedFn FCLDiscreteBVHManager::getIsContactAllowedFn() const { return fn_; }
+
+void FCLDiscreteBVHManager::contactTest(ContactResultMap& collisions, const ContactTestType& type)
+{
+  ContactTestData cdata(active_, contact_distance_, fn_, type, collisions);
+  if (contact_distance_ > 0)
   {
     manager_->distance(&cdata, &distanceCallback);
   }
@@ -164,20 +193,6 @@ void FCLDiscreteBVHManager::contactTest(ContactResultMap& collisions)
   }
 }
 
-void FCLDiscreteBVHManager::setContactRequest(const ContactRequest& req)
-{
-  request_ = req;
-
-  // Now need to update the broadphase with correct aabb
-  for (auto& co : link2cow_)
-  {
-    COWPtr& cow = co.second;
-
-    updateCollisionObjectWithRequest(request_, *cow);
-  }
-}
-
-const ContactRequest& FCLDiscreteBVHManager::getContactRequest() const { return request_; }
 void FCLDiscreteBVHManager::addCollisionObject(const COWPtr& cow)
 {
   link2cow_[cow->getName()] = cow;

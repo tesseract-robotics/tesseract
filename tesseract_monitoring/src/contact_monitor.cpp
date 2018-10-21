@@ -22,6 +22,7 @@ ros::Subscriber joint_states_sub;
 ros::Publisher contact_results_pub;
 ros::Publisher environment_pub;
 ros::ServiceServer modify_env_service;
+ContactTestType type;
 ContactResultMap contacts;
 tesseract_msgs::ContactResultVector contacts_msg;
 bool publish_environment;
@@ -37,7 +38,7 @@ void callbackJointState(const sensor_msgs::JointState::ConstPtr& msg)
   EnvStateConstPtr state = env->getState();
 
   manager->setCollisionObjectsTransform(state->transforms);
-  manager->contactTest(contacts);
+  manager->contactTest(contacts, type);
 
   if (publish_environment)
   {
@@ -65,9 +66,14 @@ bool callbackModifyTesseractEnv(tesseract_msgs::ModifyTesseractEnvRequest& reque
   response.success = processTesseractStateMsg(*env, request.state);
 
   // Create a new manager
-  ContactRequest req = manager->getContactRequest();
+  std::vector<std::string> active = manager->getActiveCollisionObjects();
+  double contact_distance = manager->getContactDistanceThreshold();
+  IsContactAllowedFn fn = manager->getIsContactAllowedFn();
+
   manager = env->getDiscreteContactManager();
-  manager->setContactRequest(req);
+  manager->setActiveCollisionObjects(active);
+  manager->setContactDistanceThreshold(contact_distance);
+  manager->setIsContactAllowedFn(fn);
 
   return true;
 }
@@ -125,30 +131,32 @@ int main(int argc, char** argv)
   }
 
   // Setup request information
-  ContactRequest req;
-  req.isContactAllowed = env->getIsContactAllowedFn();
-  pnh.param<double>("contact_distance", req.contact_distance, DEFAULT_CONTACT_DISTANCE);
+  std::vector<std::string> link_names;
+  double contact_distance;
 
-  req.link_names = env->getLinkNames();
+  pnh.param<double>("contact_distance", contact_distance, DEFAULT_CONTACT_DISTANCE);
+
+  link_names = env->getLinkNames();
   if (pnh.hasParam("monitor_links"))
-    pnh.getParam("monitor_links", req.link_names);
+    pnh.getParam("monitor_links", link_names);
 
-  if (req.link_names.empty())
-    req.link_names = env->getLinkNames();
+  if (link_names.empty())
+    link_names = env->getLinkNames();
 
-  int type = 2;
-  if (pnh.hasParam("request_type"))
-    pnh.getParam("request_type", type);
+  int contact_test_type = 2;
+  if (pnh.hasParam("contact_test_type"))
+    pnh.getParam("contact_test_type", contact_test_type);
 
-  if (type < 0 || type > 3)
+  if (contact_test_type < 0 || contact_test_type > 3)
   {
     ROS_WARN("Request type must be 0, 1, 2 or 3. Setting to 2(ALL)!");
-    type = 2;
+    contact_test_type = 2;
   }
+  type = static_cast<ContactTestType>(contact_test_type);
 
-  req.type = (tesseract::ContactRequestType)type;
   manager = env->getDiscreteContactManager();
-  manager->setContactRequest(req);
+  manager->setActiveCollisionObjects(link_names);
+  manager->setContactDistanceThreshold(contact_distance);
 
   joint_states_sub = nh.subscribe("joint_states", 1, &callbackJointState);
   contact_results_pub = pnh.advertise<tesseract_msgs::ContactResultVector>("contact_results", 1, true);

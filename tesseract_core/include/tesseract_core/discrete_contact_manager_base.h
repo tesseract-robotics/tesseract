@@ -114,22 +114,40 @@ public:
   virtual void setCollisionObjectsTransform(const TransformMap& transforms) = 0;
 
   /**
-   * @brief Set the active contact request information
-   * @param req ContactRequest information
+   * @brief Set which collision objects can move
+   * @param names A vector of collision object names
    */
-  virtual void setContactRequest(const ContactRequest& req) = 0;
+  virtual void setActiveCollisionObjects(const std::vector<std::string>& names) = 0;
 
   /**
-   * @brief Get the active contact request information
-   * @return Active contact request information
+   * @brief Get which collision objects can move
+   * @return A list of collision object names
    */
-  virtual const ContactRequest& getContactRequest() const = 0;
+  virtual const std::vector<std::string>& getActiveCollisionObjects() const = 0;
+
+  /**
+   * @brief Set the contact distance threshold for which collision should be considered.
+   * @param contact_distance The contact distance
+   */
+  virtual void setContactDistanceThreshold(double contact_distance) = 0;
+
+  /**
+   * @brief Get the contact distance threshold
+   * @return The contact distance
+   */
+  virtual double getContactDistanceThreshold() const = 0;
+
+  /** @brief Set the active function for determining if two links are allowed to be in collision */
+  virtual void setIsContactAllowedFn(IsContactAllowedFn fn) = 0;
+
+  /** @brief Get the active function for determining if two links are allowed to be in collision */
+  virtual IsContactAllowedFn getIsContactAllowedFn() const = 0;
 
   /**
    * @brief Perform a contact test for all objects based
    * @param collisions The Contact results data
    */
-  virtual void contactTest(ContactResultMap& collisions) = 0;
+  virtual void contactTest(ContactResultMap& collisions, const ContactTestType& type) = 0;
 };
 typedef std::shared_ptr<DiscreteContactManagerBase> DiscreteContactManagerBasePtr;
 typedef std::shared_ptr<const DiscreteContactManagerBase> DiscreteContactManagerBaseConstPtr;

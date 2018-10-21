@@ -12,7 +12,7 @@
   ALL = 2,     /**< Return all contacts for a pair of objects */
   LIMITED = 3  /**< Return limited set of contacts for a pair of objects */
   -->
-  <arg name="request_type" default="2"/>
+  <arg name="contact_test_type" default="2"/>
   <arg name="contact_distance"/>
   <arg name="debug" default="false"/>
 
@@ -34,7 +34,7 @@
     <param name="plugin" type="string" value="$(arg plugin)"/>
     <param name="contact_distance" value="$(arg contact_distance)"/>
     <param name="monitor_links" value="$(arg monitor_links)"/>
-    <param name="request_type" value="$(arg request_type)"/>
+    <param name="contact_test_type" value="$(arg contact_test_type)"/>
     <param name="publish_environment" value="$(arg debug)"/>
   </node>
 

@@ -210,7 +210,7 @@ CollisionGeometryPtr createShapePrimitive(const shapes::ShapeConstPtr& geom,
 
 bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data)
 {
-  ContactDistanceData* cdata = reinterpret_cast<ContactDistanceData*>(data);
+  ContactTestData* cdata = reinterpret_cast<ContactTestData*>(data);
 
   if (cdata->done)
     return true;
@@ -221,17 +221,17 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   bool needs_collision = cd1->m_enabled && cd2->m_enabled &&
                          (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&
                          (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&
-                         !isContactAllowed(cd1->getName(), cd2->getName(), cdata->req->isContactAllowed, false) &&
-                         (std::find(cdata->req->link_names.begin(), cdata->req->link_names.end(), cd1->getName()) !=
-                              cdata->req->link_names.end() ||
-                          std::find(cdata->req->link_names.begin(), cdata->req->link_names.end(), cd2->getName()) !=
-                              cdata->req->link_names.end());
+                         !isContactAllowed(cd1->getName(), cd2->getName(), cdata->fn, false) &&
+                         (std::find(cdata->active.begin(), cdata->active.end(), cd1->getName()) !=
+                              cdata->active.end() ||
+                          std::find(cdata->active.begin(), cdata->active.end(), cd2->getName()) !=
+                              cdata->active.end());
 
   if (!needs_collision)
     return false;
 
   size_t num_contacts = std::numeric_limits<size_t>::max();
-  if (cdata->req->type == ContactRequestType::FIRST)
+  if (cdata->type == ContactTestType::FIRST)
     num_contacts = 1;
 
   fcl::CollisionResultd col_result;
@@ -253,8 +253,8 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
       contact.normal = fcl_contact.normal;
 
       ObjectPairKey pc = getObjectPairKey(cd1->getName(), cd2->getName());
-      const auto& it = cdata->res->find(pc);
-      bool found = (it != cdata->res->end());
+      const auto& it = cdata->res.find(pc);
+      bool found = (it != cdata->res.end());
 
       processResult(*cdata, contact, pc, found);
     }
@@ -265,8 +265,8 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
 
 bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data, double& min_dist)
 {
-  ContactDistanceData* cdata = reinterpret_cast<ContactDistanceData*>(data);
-  min_dist = cdata->req->contact_distance;
+  ContactTestData* cdata = reinterpret_cast<ContactTestData*>(data);
+  min_dist = cdata->contact_distance;
 
   if (cdata->done)
     return true;
@@ -277,11 +277,11 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   bool needs_collision = cd1->m_enabled && cd2->m_enabled &&
                          (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&
                          (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&
-                         !isContactAllowed(cd1->getName(), cd2->getName(), cdata->req->isContactAllowed, false) &&
-                         (std::find(cdata->req->link_names.begin(), cdata->req->link_names.end(), cd1->getName()) !=
-                              cdata->req->link_names.end() ||
-                          std::find(cdata->req->link_names.begin(), cdata->req->link_names.end(), cd2->getName()) !=
-                              cdata->req->link_names.end());
+                         !isContactAllowed(cd1->getName(), cd2->getName(), cdata->fn, false) &&
+                         (std::find(cdata->active.begin(), cdata->active.end(), cd1->getName()) !=
+                              cdata->active.end() ||
+                          std::find(cdata->active.begin(), cdata->active.end(), cd2->getName()) !=
+                              cdata->active.end());
 
   if (!needs_collision)
     return false;
@@ -290,7 +290,7 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   fcl::DistanceRequestd fcl_request(true, true);
   double d = fcl::distance(o1, o2, fcl_request, fcl_result);
 
-  if (d < cdata->req->contact_distance)
+  if (d < cdata->contact_distance)
   {
     ContactResult contact;
     contact.link_names[0] = cd1->getName();
@@ -309,8 +309,8 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
     }
 
     ObjectPairKey pc = getObjectPairKey(cd1->getName(), cd2->getName());
-    const auto& it = cdata->res->find(pc);
-    bool found = (it != cdata->res->end());
+    const auto& it = cdata->res.find(pc);
+    bool found = (it != cdata->res.end());
 
     processResult(*cdata, contact, pc, found);
   }

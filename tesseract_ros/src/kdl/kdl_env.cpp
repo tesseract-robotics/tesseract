@@ -625,6 +625,7 @@ void KDLEnv::loadDiscreteContactManagerPlugin(const std::string& plugin)
     return;
   }
 
+  discrete_manager_->setIsContactAllowedFn(is_contact_allowed_fn_);
   if (initialized_)
   {
     for (const auto& link : urdf_model_->links_)
@@ -691,6 +692,7 @@ void KDLEnv::loadContinuousContactManagerPlugin(const std::string& plugin)
     return;
   }
 
+  continuous_manager_->setIsContactAllowedFn(is_contact_allowed_fn_);
   if (initialized_)
   {
     for (const auto& link : urdf_model_->links_)

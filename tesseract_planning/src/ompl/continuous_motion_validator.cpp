@@ -15,13 +15,10 @@ ContinuousMotionValidator::ContinuousMotionValidator(ompl::base::SpaceInformatio
   is_allowed_cb_ =
       std::bind(&ContinuousMotionValidator::isContactAllowed, this, std::placeholders::_1, std::placeholders::_2);
 
-  tesseract::ContactRequest req;
-  req.link_names = links_;
-  req.isContactAllowed = is_allowed_cb_;
-  req.type = tesseract::ContactRequestTypes::FIRST;
-
   contact_manager_ = env_->getContinuousContactManager();
-  contact_manager_->setContactRequest(req);
+  contact_manager_->setActiveCollisionObjects(links_);
+  contact_manager_->setContactDistanceThreshold(0);
+  contact_manager_->setIsContactAllowedFn(is_allowed_cb_);
 }
 
 bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1, const ompl::base::State* s2) const
@@ -84,7 +81,7 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
         link_name, state0->transforms[link_name], state1->transforms[link_name]);
 
   tesseract::ContactResultMap contact_map;
-  contact_manager_->contactTest(contact_map);
+  contact_manager_->contactTest(contact_map, tesseract::ContactTestTypes::FIRST);
 
   return contact_map.empty();
 }

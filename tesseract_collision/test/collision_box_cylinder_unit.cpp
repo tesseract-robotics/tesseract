@@ -62,12 +62,8 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  tesseract::ContactRequest req;
-  req.link_names.push_back("box_link");
-  req.link_names.push_back("cylinder_link");
-  req.contact_distance = 0.1;
-  req.type = tesseract::ContactRequestType::CLOSEST;
-  checker.setContactRequest(req);
+  checker.setActiveCollisionObjects({"box_link", "cylinder_link"});
+  checker.setContactDistanceThreshold(0.1);
 
   // Set the collision object transforms
   tesseract::TransformMap location;
@@ -78,7 +74,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
 
   // Perform collision check
   tesseract::ContactResultMap result;
-  checker.contactTest(result);
+  checker.contactTest(result, tesseract::ContactTestType::CLOSEST);
 
   tesseract::ContactResultVector result_vector;
   tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
@@ -107,7 +103,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
   result_vector.clear();
   checker.setCollisionObjectsTransform(location);
 
-  checker.contactTest(result);
+  checker.contactTest(result, tesseract::ContactTestType::CLOSEST);
   tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
 
   EXPECT_TRUE(result_vector.empty());
@@ -117,10 +113,9 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
   /////////////////////////////////////////////
   result.clear();
   result_vector.clear();
-  req.contact_distance = 0.251;
-  checker.setContactRequest(req);
 
-  checker.contactTest(result);
+  checker.setContactDistanceThreshold(0.251);
+  checker.contactTest(result, tesseract::ContactTestType::CLOSEST);
   tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
 
   EXPECT_TRUE(!result_vector.empty());

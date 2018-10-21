@@ -90,11 +90,19 @@ public:
 
   void setCollisionObjectsTransform(const TransformMap& pose1, const TransformMap& pose2) override;
 
-  void setContactRequest(const ContactRequest& req) override;
+  void setActiveCollisionObjects(const std::vector<std::string>& names) override;
 
-  const ContactRequest& getContactRequest() const override;
+  const std::vector<std::string>& getActiveCollisionObjects() const override;
 
-  void contactTest(ContactResultMap& collisions) override;
+  void setContactDistanceThreshold(double contact_distance) override;
+
+  double getContactDistanceThreshold() const override;
+
+  void setIsContactAllowedFn(IsContactAllowedFn fn) override;
+
+  IsContactAllowedFn getIsContactAllowedFn() const override;
+
+  void contactTest(ContactResultMap& collisions, const ContactTestType& type) override;
 
   /**
    * @brief A a bullet collision object to the manager
@@ -103,11 +111,14 @@ public:
   void addCollisionObject(const COWPtr& cow);
 
 private:
-  ContactRequest request_;                            /**< @brief The active contact request message */
+  std::vector<std::string> active_;                   /**< @brief A list of the active collision objects */
+  double contact_distance_;                           /**< @brief The contact distance threshold */
+  IsContactAllowedFn fn_;                             /**< @brief The is allowed collision function */
+
   std::unique_ptr<btCollisionDispatcher> dispatcher_; /**< @brief The bullet collision dispatcher used for getting
                                                          object to object collison algorithm */
-  btDispatcherInfo dispatch_info_;              /**< @brief The bullet collision dispatcher configuration information */
-  btDefaultCollisionConfiguration coll_config_; /**< @brief The bullet collision configuration */
+  btDispatcherInfo dispatch_info_;                    /**< @brief The bullet collision dispatcher configuration information */
+  btDefaultCollisionConfiguration coll_config_;       /**< @brief The bullet collision configuration */
   std::unique_ptr<btBroadphaseInterface> broadphase_; /**< @brief The bullet broadphase interface */
   Link2Cow link2cow_;                                 /**< @brief A map of collision objects being managed */
   Link2Cow link2castcow_;                             /**< @brief A map of cast collision objects being managed. */
@@ -117,7 +128,7 @@ private:
    * @param cow The Collision object
    * @param collisions The collision results
    */
-  void contactTest(const COWPtr& cow, ContactDistanceData& collisions);
+  void contactTest(const COWPtr& cow, ContactTestData& collisions);
 };
 typedef std::shared_ptr<BulletCastBVHManager> BulletCastBVHManagerPtr;
 

@@ -142,9 +142,9 @@ enum ContinouseCollisionType
 }
 typedef ContinouseCollisionTypes::ContinouseCollisionType ContinouseCollisionType;
 
-namespace ContactRequestTypes
+namespace ContactTestTypes
 {
-enum ContactRequestType
+enum ContactTestType
 {
   FIRST = 0,   /**< Return at first contact for any pair of objects */
   CLOSEST = 1, /**< Return the global minimum for a pair of objects */
@@ -152,18 +152,7 @@ enum ContactRequestType
   LIMITED = 3  /**< Return limited set of contacts for a pair of objects */
 };
 }
-typedef ContactRequestTypes::ContactRequestType ContactRequestType;
-
-/** @brief The ContactRequest struct */
-struct ContactRequest
-{
-  ContactRequestType type; /**< The type of request */
-  double contact_distance; /**< The maximum distance between two objects for which distance data should be calculated */
-  std::vector<std::string> link_names; /**< Name of the links to calculate distance data for. */
-  IsContactAllowedFn isContactAllowed; /**< The allowed collision matrix */
-
-  ContactRequest() : type(ContactRequestType::CLOSEST), contact_distance(0.0) {}
-};
+typedef ContactTestTypes::ContactTestType ContactTestType;
 
 struct ContactResult
 {
@@ -197,15 +186,28 @@ struct ContactResult
 typedef std::vector<ContactResult> ContactResultVector;
 typedef std::map<std::pair<std::string, std::string>, ContactResultVector> ContactResultMap;
 
-/// Destance query results information
-struct ContactDistanceData
+/// Contact test data and query results information
+struct ContactTestData
 {
-  ContactDistanceData(const ContactRequest* req, ContactResultMap* res) : req(req), res(res), done(false) {}
-  /// Distance query request information
-  const ContactRequest* req;
+  ContactTestData(const std::vector<std::string>& active,
+                  const double& contact_distance,
+                  const IsContactAllowedFn& fn,
+                  const ContactTestType& type,
+                  ContactResultMap& res) :
+    active(active),
+    contact_distance(contact_distance),
+    fn(fn),
+    type(type),
+    res(res),
+    done(false) {}
+
+  const std::vector<std::string>& active;
+  const double& contact_distance;
+  const IsContactAllowedFn& fn;
+  const ContactTestType& type;
 
   /// Destance query results information
-  ContactResultMap* res;
+  ContactResultMap& res;
 
   /// Indicate if search is finished
   bool done;
