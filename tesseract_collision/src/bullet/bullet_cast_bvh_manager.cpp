@@ -231,15 +231,39 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
         btCompoundShape* compound = static_cast<btCompoundShape*>(cow->getCollisionShape());
         for (int i = 0; i < compound->getNumChildShapes(); ++i)
         {
-          assert(!btBroadphaseProxy::isCompound(compound->getChildShape(i)->getShapeType()));
-          assert(dynamic_cast<CastHullShape*>(compound->getChildShape(i)) != nullptr);
-          const btTransform& local_tf = compound->getChildTransform(i);
+          if (btBroadphaseProxy::isConvex(compound->getChildShape(i)->getShapeType()))
+          {
+            assert(dynamic_cast<CastHullShape*>(compound->getChildShape(i)) != nullptr);
+            const btTransform& local_tf = compound->getChildTransform(i);
 
-          btTransform delta_tf = (tf1 * local_tf).inverseTimes(tf2 * local_tf);
-          static_cast<CastHullShape*>(compound->getChildShape(i))->updateCastTransform(delta_tf);
-          compound->updateChildTransform(i, local_tf, false); // This is required to update the BVH tree
+            btTransform delta_tf = (tf1 * local_tf).inverseTimes(tf2 * local_tf);
+            static_cast<CastHullShape*>(compound->getChildShape(i))->updateCastTransform(delta_tf);
+            compound->updateChildTransform(i, local_tf, false); // This is required to update the BVH tree
+          }
+          else if (btBroadphaseProxy::isCompound(compound->getChildShape(i)->getShapeType()))
+          {
+            assert(dynamic_cast<btCompoundShape*>(compound->getChildShape(i)) != nullptr);
+            btCompoundShape* second_compound = static_cast<btCompoundShape*>(compound->getChildShape(i));
+
+            for (int j = 0; j < second_compound->getNumChildShapes(); ++j)
+            {
+              assert(!btBroadphaseProxy::isCompound(second_compound->getChildShape(j)->getShapeType()));
+              assert(dynamic_cast<CastHullShape*>(second_compound->getChildShape(j)) != nullptr);
+              const btTransform& local_tf = second_compound->getChildTransform(j);
+
+              btTransform delta_tf = (tf1 * local_tf).inverseTimes(tf2 * local_tf);
+              static_cast<CastHullShape*>(second_compound->getChildShape(j))->updateCastTransform(delta_tf);
+              second_compound->updateChildTransform(j, local_tf, false); // This is required to update the BVH tree
+            }
+            second_compound->recalculateLocalAabb();
+          }
         }
         compound->recalculateLocalAabb();
+      }
+      else
+      {
+        throw std::runtime_error("I can only continuous collision check convex shapes and compound shapes made of convex "
+                                 "shapes");
       }
 
       // Now update Broadphase AABB (See BulletWorld updateSingleAabb function)
