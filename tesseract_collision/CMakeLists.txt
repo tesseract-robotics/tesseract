@@ -81,7 +81,7 @@ add_executable(create_convex_hull src/create_convex_hull.cpp)
 target_link_libraries(create_convex_hull ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES})
 
 # Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl
+install(TARGETS ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${PROJECT_NAME}_bullet_plugin ${PROJECT_NAME}_fcl_plugin create_convex_hull
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

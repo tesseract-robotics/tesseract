@@ -10,9 +10,11 @@ find_package(catkin REQUIRED COMPONENTS)
 #set(BUILD_PYBULLET_NUMPY OFF CACHE BOOL "Disable Bullet Python Numpy")
 #set(USE_DOUBLE_PRECISION ON CACHE BOOL "Enable Bullet Double Precision")
 
+file(MAKE_DIRECTORY "${CMAKE_INSTALL_PREFIX}/include/bullet")
 catkin_package(
-  INCLUDE_DIRS bullet3/src bullet3/Extras
+  INCLUDE_DIRS bullet3/src bullet3/Extras ${CMAKE_INSTALL_PREFIX}/include/bullet
   LIBRARIES BulletCollision BulletDynamics LinearMath ConvexDecomposition
+  DEPENDS libccd
 )
 
 add_subdirectory(bullet3)
