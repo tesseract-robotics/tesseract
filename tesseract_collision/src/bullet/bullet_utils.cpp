@@ -118,8 +118,7 @@ btCollisionShape* createShapePrimitive(const shapes::Mesh* geom,
       }
       case CollisionObjectType::UseShapeType:
       {
-        btCompoundShape* compound =
-            new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, geom->triangle_count);
+        btCompoundShape* compound = new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, geom->triangle_count);
         compound->setMargin(BULLET_MARGIN);  // margin: compound. seems to have no
                                              // effect when positive but has an
                                              // effect when negative
@@ -167,8 +166,7 @@ btCollisionShape* createShapePrimitive(const shapes::OcTree* geom,
          collision_object_type == CollisionObjectType::SDF ||
          collision_object_type == CollisionObjectType::MultiSphere);
 
-  btCompoundShape* subshape =
-      new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, geom->octree->size());
+  btCompoundShape* subshape = new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, geom->octree->size());
   double occupancy_threshold = geom->octree->getOccupancyThres();
 
   // convert the mesh to the assigned collision object type
@@ -288,8 +286,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
   }
   else
   {
-    btCompoundShape* compound =
-        new btCompoundShape(/*dynamicAABBtree=*/BULLET_COMPOUND_USE_DYNAMIC_AABB, m_shapes.size());
+    btCompoundShape* compound = new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, m_shapes.size());
     manage(compound);
     compound->setMargin(BULLET_MARGIN);  // margin: compound. seems to have no
                                          // effect when positive but has an
