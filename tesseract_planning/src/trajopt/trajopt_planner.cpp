@@ -65,55 +65,55 @@ bool TrajoptPlanner::solve(PlannerResponse& response)
   }
 
   TrajOptProbPtr prob = ConstructProblem(root, request_.env);
-  return solve(prob, response);
+  return solve(response, prob);
 }
 
-bool TrajoptPlanner::solve(trajopt::TrajOptProbPtr prob, PlannerResponse& response)
+bool TrajoptPlanner::solve(PlannerResponse& response, const trajopt::TrajOptProbPtr prob)
 {
   BasicTrustRegionSQPParameters params;
-  return solve(prob, response, params);
+  return solve(response, prob, params);
 }
 
-bool TrajoptPlanner::solve(trajopt::TrajOptProbPtr prob,
-                           PlannerResponse& response,
-                           BasicTrustRegionSQPParameters& params)
+bool TrajoptPlanner::solve(PlannerResponse& response,
+                           const trajopt::TrajOptProbPtr prob,
+                           const BasicTrustRegionSQPParameters& params)
 {
   std::vector<trajopt::Optimizer::Callback> callbacks;
-  return solve(prob, response, params, callbacks);
+  return solve(response, prob, params, callbacks);
 }
 
-bool TrajoptPlanner::solve(trajopt::TrajOptProbPtr prob,
-                           PlannerResponse& response,
-                           BasicTrustRegionSQPParameters& params,
-                           trajopt::Optimizer::Callback& callback)
+bool TrajoptPlanner::solve(PlannerResponse& response,
+                           const trajopt::TrajOptProbPtr prob,
+                           const BasicTrustRegionSQPParameters& params,
+                           const trajopt::Optimizer::Callback& callback)
 {
-  std::vector<trajopt::Optimizer::Callback> callbacks;
-  callbacks.push_back(callback);
-  return solve(prob, response, params, callbacks);
-}
-
-bool TrajoptPlanner::solve(trajopt::TrajOptProbPtr prob,
-                           PlannerResponse& response,
-                           trajopt::Optimizer::Callback& callback)
-{
-  BasicTrustRegionSQPParameters params;
   std::vector<trajopt::Optimizer::Callback> callbacks;
   callbacks.push_back(callback);
-  return solve(prob, response, params, callbacks);
+  return solve(response, prob, params, callbacks);
 }
 
-bool TrajoptPlanner::solve(trajopt::TrajOptProbPtr prob,
-                           PlannerResponse& response,
-                           std::vector<trajopt::Optimizer::Callback>& callbacks)
+bool TrajoptPlanner::solve(PlannerResponse& response,
+                           const trajopt::TrajOptProbPtr prob,
+                           const trajopt::Optimizer::Callback& callback)
 {
   BasicTrustRegionSQPParameters params;
-  return solve(prob, response, params, callbacks);
+  std::vector<trajopt::Optimizer::Callback> callbacks;
+  callbacks.push_back(callback);
+  return solve(response, prob, params, callbacks);
 }
 
-bool TrajoptPlanner::solve(trajopt::TrajOptProbPtr prob,
-                           PlannerResponse& response,
-                           BasicTrustRegionSQPParameters& params,
-                           std::vector<trajopt::Optimizer::Callback>& callbacks)
+bool TrajoptPlanner::solve(PlannerResponse& response,
+                           const trajopt::TrajOptProbPtr prob,
+                           const std::vector<trajopt::Optimizer::Callback>& callbacks)
+{
+  BasicTrustRegionSQPParameters params;
+  return solve(response, prob, params, callbacks);
+}
+
+bool TrajoptPlanner::solve(PlannerResponse& response,
+                           const trajopt::TrajOptProbPtr prob,
+                           const BasicTrustRegionSQPParameters& params,
+                           const std::vector<trajopt::Optimizer::Callback>& callbacks)
 {
   // Create optimizer
   BasicTrustRegionSQP opt(prob);
@@ -121,7 +121,7 @@ bool TrajoptPlanner::solve(trajopt::TrajOptProbPtr prob,
   opt.initialize(trajToDblVec(prob->GetInitTraj()));
 
   // Add all callbacks
-  for (trajopt::Optimizer::Callback& callback : callbacks)
+  for (const trajopt::Optimizer::Callback& callback : callbacks)
   {
     opt.addCallback(callback);
   }
