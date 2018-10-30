@@ -14,7 +14,6 @@ file(MAKE_DIRECTORY "${CMAKE_INSTALL_PREFIX}/include/bullet")
 catkin_package(
   INCLUDE_DIRS bullet3/src bullet3/Extras ${CMAKE_INSTALL_PREFIX}/include/bullet
   LIBRARIES BulletCollision BulletDynamics LinearMath ConvexDecomposition
-  DEPENDS libccd
 )
 
 add_subdirectory(bullet3)
