@@ -3,8 +3,6 @@ project(tesseract_collision)
 
 add_compile_options(-std=c++11 -Wall -Wextra)
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
-
 find_package(catkin REQUIRED COMPONENTS
   bullet3_ros
   roscpp
@@ -18,14 +16,18 @@ find_package(Eigen3 REQUIRED)
 find_package(Boost COMPONENTS system thread REQUIRED)
 find_package(octomap REQUIRED)
 find_package(PkgConfig REQUIRED)
+find_package(ccd REQUIRED)
 
 pkg_check_modules(LIBFCL REQUIRED fcl)
 find_library(LIBFCL_LIBRARIES_FULL ${LIBFCL_LIBRARIES} ${LIBFCL_LIBRARY_DIRS})
 set(LIBFCL_LIBRARIES "${LIBFCL_LIBRARIES_FULL}")
-list(APPEND LIBFCL_LIBRARIES ccd)
+list(APPEND LIBFCL_LIBRARIES ${CCD_LIBRARIES})
 
 catkin_package(
-  INCLUDE_DIRS include
+  INCLUDE_DIRS
+    include
+    ${CCD_INCLUDE_DIRS}
+    ${LIBFCL_INCLUDE_DIRS}
   LIBRARIES
     ${PROJECT_NAME}_bullet
     ${PROJECT_NAME}_fcl
@@ -93,6 +95,10 @@ install(DIRECTORY include/${PROJECT_NAME}/
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
  )
+
+install(FILES tesseract_collision_bullet_plugin_description.xml tesseract_collision_fcl_plugin_description.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 
 if (CATKIN_ENABLE_TESTING)
 

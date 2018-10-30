@@ -22,6 +22,8 @@ catkin_package(
     roscpp
     tesseract_ros
     trajopt
+  DEPENDS
+    ompl
 )
 
 include_directories(
