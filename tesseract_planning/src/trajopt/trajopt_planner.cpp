@@ -68,14 +68,14 @@ bool TrajoptPlanner::solve(PlannerResponse& response)
   return solve(response, prob);
 }
 
-bool TrajoptPlanner::solve(PlannerResponse& response, const trajopt::TrajOptProbPtr prob)
+bool TrajoptPlanner::solve(PlannerResponse& response, const trajopt::TrajOptProbPtr& prob)
 {
   BasicTrustRegionSQPParameters params;
   return solve(response, prob, params);
 }
 
 bool TrajoptPlanner::solve(PlannerResponse& response,
-                           const trajopt::TrajOptProbPtr prob,
+                           const trajopt::TrajOptProbPtr& prob,
                            const BasicTrustRegionSQPParameters& params)
 {
   std::vector<trajopt::Optimizer::Callback> callbacks;
@@ -83,7 +83,7 @@ bool TrajoptPlanner::solve(PlannerResponse& response,
 }
 
 bool TrajoptPlanner::solve(PlannerResponse& response,
-                           const trajopt::TrajOptProbPtr prob,
+                           const trajopt::TrajOptProbPtr& prob,
                            const BasicTrustRegionSQPParameters& params,
                            const trajopt::Optimizer::Callback& callback)
 {
@@ -93,7 +93,7 @@ bool TrajoptPlanner::solve(PlannerResponse& response,
 }
 
 bool TrajoptPlanner::solve(PlannerResponse& response,
-                           const trajopt::TrajOptProbPtr prob,
+                           const trajopt::TrajOptProbPtr& prob,
                            const trajopt::Optimizer::Callback& callback)
 {
   BasicTrustRegionSQPParameters params;
@@ -103,7 +103,7 @@ bool TrajoptPlanner::solve(PlannerResponse& response,
 }
 
 bool TrajoptPlanner::solve(PlannerResponse& response,
-                           const trajopt::TrajOptProbPtr prob,
+                           const trajopt::TrajOptProbPtr& prob,
                            const std::vector<trajopt::Optimizer::Callback>& callbacks)
 {
   BasicTrustRegionSQPParameters params;
@@ -111,7 +111,7 @@ bool TrajoptPlanner::solve(PlannerResponse& response,
 }
 
 bool TrajoptPlanner::solve(PlannerResponse& response,
-                           const trajopt::TrajOptProbPtr prob,
+                           const trajopt::TrajOptProbPtr& prob,
                            const BasicTrustRegionSQPParameters& params,
                            const std::vector<trajopt::Optimizer::Callback>& callbacks)
 {
