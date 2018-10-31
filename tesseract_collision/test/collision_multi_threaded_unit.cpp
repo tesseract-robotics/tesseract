@@ -134,11 +134,12 @@ TEST(TesseractCollisionMultiThreadedUnit, BulletDiscreteBVHCollisionMultiThreade
   runTest(checker);
 }
 
-TEST(TesseractCollisionMultiThreadedUnit, FCLDiscreteBVHCollisionMultiThreadedConvexHullUnit)
-{
-  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
-  runTest(checker, true);
-}
+// TODO: Levi, enable once FCL PR #338
+//TEST(TesseractCollisionMultiThreadedUnit, FCLDiscreteBVHCollisionMultiThreadedConvexHullUnit)
+//{
+//  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
+//  runTest(checker, true);
+//}
 
 TEST(TesseractCollisionMultiThreadedUnit, FCLDiscreteBVHCollisionMultiThreadedUnit)
 {
