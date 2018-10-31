@@ -255,12 +255,13 @@ TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxSphereUnit)
   runTest(checker);
 }
 
-TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxSphereConvexHullUnit)
-{
-  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
-  addCollisionObjects(checker, true);
-  runConvexTest(checker);
-}
+// TODO: Levi, enable once FCL PR #338
+//TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxSphereConvexHullUnit)
+//{
+//  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
+//  addCollisionObjects(checker, true);
+//  runConvexTest(checker);
+//}
 
 int main(int argc, char** argv)
 {
