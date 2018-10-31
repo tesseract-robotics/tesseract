@@ -27,6 +27,8 @@
 #define TESSERACT_PLANNING_TRAJOPT_PLANNER_H
 
 #include <tesseract_planning/basic_planner.h>
+#include <trajopt/problem_description.hpp>
+#include <tesseract_ros/ros_basic_plotting.h>
 
 namespace tesseract
 {
@@ -48,14 +50,88 @@ public:
     // Converge Status Codes
   }
 
-  bool solve(PlannerResponse& res) override;
+  /**
+   * @brief Sets up the opimizer and solves a SQP problem read from json with no callbacks and dafault parameterss
+   * @param response The results of the optimization. Primary output is the optimized joint trajectory
+   * @return true if optimization complete
+   */
+  bool solve(PlannerResponse& response) override;
+
+  /**
+   * @brief Sets up the optimizer and solves the SQP problem with no callbacks and default parameters
+   * @param response The results of the optimization. Primary output is the optimized joint trajectory
+   * @param prob Trajopt problem to be solved
+   * @return true if optimization complete
+   */
+  bool solve(PlannerResponse& response, const trajopt::TrajOptProbPtr& prob);
+
+  /**
+   * @brief Sets up the optimizer and solves the SQP problem with no callbacks and parameters passed in
+   * @param response The results of the optimization. Primary output is the optimized joint trajectory
+   * @param prob Trajopt problem to be solved
+   * @param params Optimization parameters to be used
+   * @return true if optimization complete
+   */
+  bool solve(PlannerResponse& response,
+             const trajopt::TrajOptProbPtr& prob,
+             const trajopt::BasicTrustRegionSQPParameters& params);
+
+  /**
+   * @brief Sets up the optimizer and solves the SQP problem with a single callback and parameters passed in
+   * @param response The results of the optimization. Primary output is the optimized joint trajectory
+   * @param prob Trajopt problem to be solved
+   * @param params Optimization parameters to be used
+   * @param callback A callback function to be called on each iteration of the optimization, e.g. plotting, write to
+   * file, etc.
+   * @return true if optimization complete
+   */
+  bool solve(PlannerResponse& response,
+             const trajopt::TrajOptProbPtr& prob,
+             const trajopt::BasicTrustRegionSQPParameters& params,
+             const trajopt::Optimizer::Callback& callback);
+
+  /**
+   * @brief Sets up the optimizer and solves the SQP problem with a single callback and default parameters
+   * @param response The results of the optimization. Primary output is the optimized joint trajectory
+   * @param prob Trajopt problem to be solved
+   * @param callback A callback function to be called on each iteration of the optimization, e.g. plotting, write to
+   * file, etc.
+   * @return true if optimization complete
+   */
+  bool solve(PlannerResponse& response,
+             const trajopt::TrajOptProbPtr& prob,
+             const trajopt::Optimizer::Callback& callback);
+
+  /**
+   * @brief Sets up the optimizer and solves the SQP problem with a vector of callbacks and default parameters
+   * @param response The results of the optimization. Primary output is the optimized joint trajectory
+   * @param prob Trajopt problem to be solved
+   * @param callbacks A callback function to be called on each iteration of the optimization, e.g. plotting, write to
+   * file, etc.
+   * @return true if optimization complete
+   */
+  bool solve(PlannerResponse& response,
+             const trajopt::TrajOptProbPtr& prob,
+             const std::vector<trajopt::Optimizer::Callback>& callbacks);
+
+  /**
+   * @brief Sets up optimizer and solves a SQP problem
+   * @param response The results of the optimization. Primary output is the optimized joint trajectory
+   * @param prob Trajopt problem to be solved
+   * @param params SQP parameters for the optimization. If not given, defaults will be used
+   * @param callbacks A callback function to be called on each iteration of the optimization, e.g. plotting, write to
+   * file, etc.
+   * @return true if optimization complete
+   */
+  bool solve(PlannerResponse& response,
+             const trajopt::TrajOptProbPtr& prob,
+             const trajopt::BasicTrustRegionSQPParameters& params,
+             const std::vector<trajopt::Optimizer::Callback>& callbacks);
 
   bool terminate() override;
 
   void clear() override;
-
-private:
 };
-}
-}
+}  // namespace tesseract_planning
+}  // namespace tesseract
 #endif  // TESSERACT_PLANNING_TRAJOPT_PLANNER_H

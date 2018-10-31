@@ -37,7 +37,7 @@ class BasicPlanner
 public:
   /** @brief Construct a basic planner */
   BasicPlanner() {}
-  virtual ~BasicPlanner();
+  virtual ~BasicPlanner() {}
 
   /** @brief Get the name of this planner */
   const std::string& getName() const { return name_; }
@@ -63,6 +63,6 @@ protected:
   PlannerRequest request_;        /**< @brief The planner request information */
   StatusCodeMap status_code_map_; /**< @brief A map of error codes to description */
 };
-}
-}
+}  // namespace tesseract_planning
+}  // namespace tesseract
 #endif  // TESSERACT_ROS_BASIC_PLANNER_H

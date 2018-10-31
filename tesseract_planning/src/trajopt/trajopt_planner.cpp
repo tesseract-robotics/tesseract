@@ -30,6 +30,8 @@
 #include <trajopt/problem_description.hpp>
 #include <trajopt_utils/config.hpp>
 #include <trajopt_utils/logging.hpp>
+#include <trajopt_sco/optimizers.hpp>
+#include <trajopt_sco/sco_common.hpp>
 
 using namespace trajopt;
 
@@ -37,7 +39,7 @@ namespace tesseract
 {
 namespace tesseract_planning
 {
-bool TrajoptPlanner::solve(PlannerResponse&)
+bool TrajoptPlanner::solve(PlannerResponse& response)
 {
   Json::Value root;
   Json::Reader reader;
@@ -46,7 +48,10 @@ bool TrajoptPlanner::solve(PlannerResponse&)
     bool parse_success = reader.parse(request_.config.c_str(), root);
     if (!parse_success)
     {
-      ROS_FATAL("Failed to load trajopt json file from ros parameter");
+      ROS_FATAL("Failed to pass valid json file in the request");
+      response.status_code = -2;
+      response.status_description = status_code_map_[-2];
+      return false;
     }
   }
   else
@@ -54,18 +59,81 @@ bool TrajoptPlanner::solve(PlannerResponse&)
     ROS_FATAL("Invalid config format: %s. Only json format is currently "
               "support for this planner.",
               request_.config_format.c_str());
+    response.status_code = -1;
+    response.status_description = status_code_map_[-1];
+    return false;
   }
 
   TrajOptProbPtr prob = ConstructProblem(root, request_.env);
+  return solve(response, prob);
+}
+
+bool TrajoptPlanner::solve(PlannerResponse& response, const trajopt::TrajOptProbPtr& prob)
+{
+  BasicTrustRegionSQPParameters params;
+  return solve(response, prob, params);
+}
+
+bool TrajoptPlanner::solve(PlannerResponse& response,
+                           const trajopt::TrajOptProbPtr& prob,
+                           const BasicTrustRegionSQPParameters& params)
+{
+  std::vector<trajopt::Optimizer::Callback> callbacks;
+  return solve(response, prob, params, callbacks);
+}
+
+bool TrajoptPlanner::solve(PlannerResponse& response,
+                           const trajopt::TrajOptProbPtr& prob,
+                           const BasicTrustRegionSQPParameters& params,
+                           const trajopt::Optimizer::Callback& callback)
+{
+  std::vector<trajopt::Optimizer::Callback> callbacks;
+  callbacks.push_back(callback);
+  return solve(response, prob, params, callbacks);
+}
+
+bool TrajoptPlanner::solve(PlannerResponse& response,
+                           const trajopt::TrajOptProbPtr& prob,
+                           const trajopt::Optimizer::Callback& callback)
+{
+  BasicTrustRegionSQPParameters params;
+  std::vector<trajopt::Optimizer::Callback> callbacks;
+  callbacks.push_back(callback);
+  return solve(response, prob, params, callbacks);
+}
+
+bool TrajoptPlanner::solve(PlannerResponse& response,
+                           const trajopt::TrajOptProbPtr& prob,
+                           const std::vector<trajopt::Optimizer::Callback>& callbacks)
+{
+  BasicTrustRegionSQPParameters params;
+  return solve(response, prob, params, callbacks);
+}
+
+bool TrajoptPlanner::solve(PlannerResponse& response,
+                           const trajopt::TrajOptProbPtr& prob,
+                           const BasicTrustRegionSQPParameters& params,
+                           const std::vector<trajopt::Optimizer::Callback>& callbacks)
+{
+  // Create optimizer
   BasicTrustRegionSQP opt(prob);
+  opt.setParameters(params);
   opt.initialize(trajToDblVec(prob->GetInitTraj()));
+
+  // Add all callbacks
+  for (const trajopt::Optimizer::Callback& callback : callbacks)
+  {
+    opt.addCallback(callback);
+  }
+
+  // Optimize
   ros::Time tStart = ros::Time::now();
   opt.optimize();
   ROS_INFO("planning time: %.3f", (ros::Time::now() - tStart).toSec());
 
+  // Check and report collisions
   std::vector<tesseract::ContactResultMap> collisions;
   ContinuousContactManagerBasePtr manager = prob->GetEnv()->getContinuousContactManager();
-
   collisions.clear();
   bool found = tesseract::continuousCollisionCheckTrajectory(
       *manager, *prob->GetEnv(), *prob->GetKin(), getTraj(opt.x(), prob->GetVars()), collisions);
@@ -79,10 +147,16 @@ bool TrajoptPlanner::solve(PlannerResponse&)
     ROS_INFO("Final trajectory is collision free");
   }
 
+  // Send response
+  response.trajectory = getTraj(opt.x(), prob->GetVars());
+  response.status_code = opt.results().status;
+  response.joint_names = prob->GetEnv()->getJointNames();
+  response.status_description = sco::statusToString(opt.results().status);
   return true;
 }
 
-bool terminate() { return false; }
-void clear() {}
-}
-}
+bool TrajoptPlanner::terminate() { return false; }
+void TrajoptPlanner::clear() { request_ = PlannerRequest(); }
+
+}  // namespace tesseract_planning
+}  // namespace tesseract
