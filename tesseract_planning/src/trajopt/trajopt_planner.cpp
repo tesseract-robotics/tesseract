@@ -134,6 +134,8 @@ bool TrajoptPlanner::solve(PlannerResponse& response,
   // Check and report collisions
   std::vector<tesseract::ContactResultMap> collisions;
   ContinuousContactManagerBasePtr manager = prob->GetEnv()->getContinuousContactManager();
+  manager->setActiveCollisionObjects(prob->GetKin()->getLinkNames());
+  manager->setContactDistanceThreshold(0);
   collisions.clear();
   bool found = tesseract::continuousCollisionCheckTrajectory(
       *manager, *prob->GetEnv(), *prob->GetKin(), getTraj(opt.x(), prob->GetVars()), collisions);
