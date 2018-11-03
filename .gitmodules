@@ -1,7 +1,7 @@
 [submodule "tesseract_ext/bullet3_ros/bullet3"]
 	path = tesseract_ext/bullet3_ros/bullet3
 	url = https://github.com/Levi-Armstrong/bullet3.git
-    branch = trajopt
+    branch = master
 [submodule "tesseract_ext/fcl_ros/fcl"]
 	path = tesseract_ext/fcl_ros/fcl
 	url = https://github.com/flexible-collision-library/fcl.git
