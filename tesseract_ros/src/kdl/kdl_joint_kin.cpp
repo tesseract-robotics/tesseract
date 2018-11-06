@@ -305,11 +305,11 @@ bool KDLJointKin::init(urdf::ModelInterfaceConstSharedPtr model,
 
     if (jnt.getType() != KDL::Joint::None)
       joint_to_qnr_[jnt.getName()] = tree_element.second.q_nr;
+    else
+      continue;
 
     if (joint_it == joint_names.end())
       continue;
-
-    assert(jnt.getType() != KDL::Joint::None);
 
     // Add affected link names to list
     std::vector<std::string>::const_iterator link_it = std::find(link_list_.begin(), link_list_.end(), seg.getName());
