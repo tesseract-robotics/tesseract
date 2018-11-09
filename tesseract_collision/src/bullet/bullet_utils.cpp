@@ -43,6 +43,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wall"
 #pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <BulletCollision/CollisionDispatch/btConvexConvexAlgorithm.h>
 #include <BulletCollision/CollisionShapes/btShapeHull.h>
 #include <BulletCollision/Gimpact/btGImpactShape.h>

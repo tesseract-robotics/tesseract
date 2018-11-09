@@ -46,6 +46,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wall"
 #pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <btBulletCollisionCommon.h>
 #pragma GCC diagnostic pop
 
