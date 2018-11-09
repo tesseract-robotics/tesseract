@@ -78,10 +78,18 @@ TesseractStateDisplay::TesseractStateDisplay() : Display(), update_state_(false)
       new rviz::RosTopicProperty("Tesseract State Topic",
                                  "display_tesseract_state",
                                  ros::message_traits::datatype<tesseract_msgs::TesseractState>(),
-                                 "The topic on which the tesseract_msgs::TesseractState messages are "
-                                 "received",
+                                 "The topic on which the tesseract_msgs::TesseractState messages are received",
                                  this,
                                  SLOT(changedTesseractStateTopic()),
+                                 this);
+
+  joint_state_topic_property_ =
+      new rviz::RosTopicProperty("Joint State Topic",
+                                 "joint_states",
+                                 ros::message_traits::datatype<sensor_msgs::JointState>(),
+                                 "The topic on which the sensor_msgs::JointState messages are received",
+                                 this,
+                                 SLOT(changedJointStateTopic()),
                                  this);
 
   // Planning scene category
@@ -321,7 +329,7 @@ void TesseractStateDisplay::changedTesseractStateTopic()
       tesseract_state_topic_property_->getStdString(), 10, &TesseractStateDisplay::newTesseractStateCallback, this);
 }
 
-void TesseractStateDisplay::newTesseractStateCallback(const tesseract_msgs::TesseractStateConstPtr state_msg)
+void TesseractStateDisplay::newTesseractStateCallback(const tesseract_msgs::TesseractStateConstPtr& state_msg)
 {
   if (!env_)
     return;
@@ -330,6 +338,23 @@ void TesseractStateDisplay::newTesseractStateCallback(const tesseract_msgs::Tess
 
   setLinkColor(state_msg->object_colors);
   setHighlightedLinks(state_msg->highlight_links);
+  update_state_ = true;
+}
+
+void TesseractStateDisplay::changedJointStateTopic()
+{
+  joint_state_subscriber_.shutdown();
+
+  joint_state_subscriber_ = nh_.subscribe(
+      joint_state_topic_property_->getStdString(), 10, &TesseractStateDisplay::newJointStateCallback, this);
+}
+
+void TesseractStateDisplay::newJointStateCallback(const sensor_msgs::JointStateConstPtr& joint_state_msg)
+{
+  if (!env_)
+    return;
+
+  tesseract_ros::processJointStateMsg(env_, *joint_state_msg);
   update_state_ = true;
 }
 
@@ -456,6 +481,7 @@ void TesseractStateDisplay::update(float wall_dt, float ros_dt)
   {
     loadURDFModel();
     changedTesseractStateTopic();
+    changedJointStateTopic();
   }
 
   calculateOffsetPosition();
