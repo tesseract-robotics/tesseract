@@ -42,6 +42,7 @@
 #include <std_msgs/Int32.h>
 #include <eigen_conversions/eigen_msg.h>
 #include <ros/console.h>
+#include <trajectory_msgs/JointTrajectory.h>
 
 namespace tesseract
 {
@@ -641,6 +642,118 @@ static inline void tesseractToTesseractStateMsg(tesseract_msgs::TesseractStatePt
   tesseractToTesseractStateMsg(*state_msg, env);
 }
 
+/**
+ * @brief Generate a JointTrajectory Message that contains all joints in the environment
+ * @param traj_msg The output JointTrajectory Message
+ * @param start_state The Environment start/current state
+ * @param joint_names The joint names corresponding to the trajectory
+ * @param traj The joint trajectory
+ */
+static inline void tesseractTrajectoryToJointTrajectoryMsg(trajectory_msgs::JointTrajectory& traj_msg,
+                                                           const tesseract::EnvState& start_state,
+                                                           const std::vector<std::string>& joint_names,
+                                                           const Eigen::Ref<const TrajArray>& traj)
+{
+  assert(joint_names.size() == static_cast<unsigned>(traj.cols()));
+
+  // Initialze the whole traject with the current state.
+  std::map<std::string, int> jn_to_index;
+  traj_msg.joint_names.resize(start_state.joints.size());
+  traj_msg.points.resize(traj.rows());
+  for (int i = 0; i < traj.rows(); ++i)
+  {
+    trajectory_msgs::JointTrajectoryPoint jtp;
+    jtp.positions.resize(start_state.joints.size());
+
+    int j = 0;
+    for (const auto& joint : start_state.joints)
+    {
+      if (i == 0)
+      {
+        traj_msg.joint_names[j] = joint.first;
+        jn_to_index[joint.first] = j;
+      }
+      jtp.positions[j] = joint.second;
+
+      ++j;
+    }
+    jtp.time_from_start = ros::Duration(i);
+    traj_msg.points[i] = jtp;
+  }
+
+  // Update only the joints which were provided.
+  for (int i = 0; i < traj.rows(); ++i)
+  {
+    for (int j = 0; j < traj.cols(); ++j)
+    {
+      traj_msg.points[i].positions[jn_to_index[joint_names[j]]] = traj(i, j);
+    }
+  }
+}
+
+/**
+ * @brief Generate a JointTrajectory Message that contains all joints in the environment
+ * @param traj_msg The output JointTrajectory Message
+ * @param start_state The Environment start/current state
+ * @param joint_names The joint names corresponding to the trajectory
+ * @param traj The joint trajectory
+ */
+static inline void tesseractTrajectoryToJointTrajectoryMsg(trajectory_msgs::JointTrajectoryPtr traj_msg,
+                                                           const tesseract::EnvState& start_state,
+                                                           const std::vector<std::string>& joint_names,
+                                                           const Eigen::Ref<const TrajArray>& traj)
+{
+  tesseractTrajectoryToJointTrajectoryMsg(*traj_msg, start_state, joint_names, traj);
+}
+
+/**
+ * @brief Generate a JointTrajectory Message that contains only trajectory joints
+ * @param traj_msg The output JointTrajectory Message
+ * @param joint_names The joint names corresponding to the trajectory
+ * @param traj The joint trajectory
+ */
+static inline void tesseractTrajectoryToJointTrajectoryMsg(trajectory_msgs::JointTrajectory& traj_msg,
+                                                           const std::vector<std::string>& joint_names,
+                                                           const Eigen::Ref<const TrajArray>& traj)
+{
+  assert(joint_names.size() == static_cast<unsigned>(traj.cols()));
+
+  // Initialze the whole traject with the current state.
+  std::map<std::string, int> jn_to_index;
+  traj_msg.joint_names.resize(joint_names.size());
+  traj_msg.points.resize(traj.rows());
+
+  for (int i = 0; i < traj.rows(); ++i)
+  {
+    trajectory_msgs::JointTrajectoryPoint jtp;
+    jtp.positions.resize(traj.cols());
+
+    for (int j = 0; j < traj.cols(); ++j)
+    {
+      if (i == 0)
+        traj_msg.joint_names[j] = joint_names[j];
+
+      jtp.positions[j] = traj(i, j);
+    }
+
+    jtp.time_from_start = ros::Duration(i);
+    traj_msg.points[i] = jtp;
+  }
+}
+
+/**
+ * @brief Generate a JointTrajectory Message that contains only trajectory joints
+ * @param traj_msg The output JointTrajectory Message
+ * @param joint_names The joint names corresponding to the trajectory
+ * @param traj The joint trajectory
+ */
+static inline void tesseractTrajectoryToJointTrajectoryMsg(trajectory_msgs::JointTrajectoryPtr traj_msg,
+                                                           const std::vector<std::string>& joint_names,
+                                                           const Eigen::Ref<const TrajArray>& traj)
+{
+  tesseractTrajectoryToJointTrajectoryMsg(*traj_msg, joint_names, traj);
+}
+
 static inline bool processAttachableObjectMsg(tesseract_ros::ROSBasicEnv& env,
                                               const tesseract_msgs::AttachableObject& ao_msg)
 {
@@ -697,6 +810,28 @@ static inline bool processAttachedBodyInfoMsg(tesseract_ros::ROSBasicEnvPtr env,
   return processAttachedBodyInfoMsg(*env, ab_msg);
 }
 
+static inline bool processJointStateMsg(tesseract_ros::ROSBasicEnv& env,
+                                        const sensor_msgs::JointState& joint_state_msg)
+{
+  if (!isMsgEmpty(joint_state_msg))
+  {
+    std::unordered_map<std::string, double> joints;
+    for (auto i = 0u; i < joint_state_msg.name.size(); ++i)
+    {
+      joints[joint_state_msg.name[i]] = joint_state_msg.position[i];
+    }
+    env.setState(joints);
+    return true;
+  }
+  return false;
+}
+
+static inline bool processJointStateMsg(tesseract_ros::ROSBasicEnvPtr env,
+                                        const sensor_msgs::JointState& joint_state_msg)
+{
+  return processJointStateMsg(*env, joint_state_msg);
+}
+
 static inline bool processTesseractStateMsg(tesseract_ros::ROSBasicEnv& env,
                                             const tesseract_msgs::TesseractState& state_msg)
 {
@@ -709,15 +844,7 @@ static inline bool processTesseractStateMsg(tesseract_ros::ROSBasicEnv& env,
     env.clearKnownObjectColors();
   }
 
-  if (!isMsgEmpty(state_msg.joint_state))
-  {
-    std::unordered_map<std::string, double> joints;
-    for (auto i = 0u; i < state_msg.joint_state.name.size(); ++i)
-    {
-      joints[state_msg.joint_state.name[i]] = state_msg.joint_state.position[i];
-    }
-    env.setState(joints);
-  }
+  processJointStateMsg(env, state_msg.joint_state);
 
   for (const auto& ao_msg : state_msg.attachable_objects)
   {
