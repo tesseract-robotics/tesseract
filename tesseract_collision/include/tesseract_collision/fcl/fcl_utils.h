@@ -72,6 +72,7 @@ enum CollisionFilterGroups
 class CollisionObjectWrapper
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   CollisionObjectWrapper(const std::string& name,
                          const int& type_id,
                          const std::vector<shapes::ShapeConstPtr>& shapes,
