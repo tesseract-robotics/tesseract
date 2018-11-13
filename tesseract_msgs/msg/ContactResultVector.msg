@@ -1,1 +1,1 @@
-ContactResult[] constacts
+ContactResult[] contacts

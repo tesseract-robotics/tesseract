@@ -32,7 +32,7 @@ void callbackJointState(const sensor_msgs::JointState::ConstPtr& msg)
 {
   boost::mutex::scoped_lock(modify_mutex);
   contacts.clear();
-  contacts_msg.constacts.clear();
+  contacts_msg.contacts.clear();
 
   env->setState(msg->name, msg->position);
   EnvStateConstPtr state = env->getState();
@@ -49,12 +49,12 @@ void callbackJointState(const sensor_msgs::JointState::ConstPtr& msg)
 
   ContactResultVector contacts_vector;
   tesseract::moveContactResultsMapToContactResultsVector(contacts, contacts_vector);
-  contacts_msg.constacts.reserve(contacts_vector.size());
+  contacts_msg.contacts.reserve(contacts_vector.size());
   for (const auto& contact : contacts_vector)
   {
     tesseract_msgs::ContactResult contact_msg;
     tesseractContactResultToContactResultMsg(contact_msg, contact, msg->header.stamp);
-    contacts_msg.constacts.push_back(contact_msg);
+    contacts_msg.contacts.push_back(contact_msg);
   }
   contact_results_pub.publish(contacts_msg);
 }
