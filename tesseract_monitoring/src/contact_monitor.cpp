@@ -5,6 +5,7 @@
 #include <tesseract_core/discrete_contact_manager_base.h>
 #include <tesseract_msgs/ContactResultVector.h>
 #include <tesseract_msgs/ModifyTesseractEnv.h>
+#include <tesseract_msgs/ComputeContactResultVector.h>
 #include <tesseract_ros/kdl/kdl_env.h>
 #include <tesseract_ros/ros_tesseract_utils.h>
 #include <urdf_parser/urdf_parser.h>
@@ -22,6 +23,7 @@ ros::Subscriber joint_states_sub;
 ros::Publisher contact_results_pub;
 ros::Publisher environment_pub;
 ros::ServiceServer modify_env_service;
+ros::ServiceServer compute_contact_results;
 ContactTestType type;
 ContactResultMap contacts;
 tesseract_msgs::ContactResultVector contacts_msg;
@@ -76,6 +78,34 @@ bool callbackModifyTesseractEnv(tesseract_msgs::ModifyTesseractEnvRequest& reque
   manager->setIsContactAllowedFn(fn);
 
   return true;
+}
+
+bool callbackComputeContactResultVector(tesseract_msgs::ComputeContactResultVectorRequest& request,
+		                                tesseract_msgs::ComputeContactResultVectorResponse& response)
+{
+
+	ContactResultMap contacts;
+
+	boost::mutex::scoped_lock(modify_mutex);
+
+	env->setState(request.joint_states.name, request.joint_states.position);
+	EnvStateConstPtr state = env->getState();
+
+	manager->setCollisionObjectsTransform(state->transforms);
+	manager->contactTest(contacts, type);
+
+	ContactResultVector contacts_vector;
+	tesseract::moveContactResultsMapToContactResultsVector(contacts, contacts_vector);
+	response.collision_result.contacts.reserve(contacts_vector.size());
+	for (const auto& contact : contacts_vector)
+	{
+	tesseract_msgs::ContactResult contact_msg;
+	tesseractContactResultToContactResultMsg(contact_msg, contact, request.joint_states.header.stamp);
+	response.collision_result.contacts.push_back(contact_msg);
+	}
+	response.success=true;
+
+	return true;
 }
 
 int main(int argc, char** argv)
@@ -166,6 +196,9 @@ int main(int argc, char** argv)
 
   if (publish_environment)
     environment_pub = pnh.advertise<tesseract_msgs::TesseractState>("tesseract", 100, false);
+
+  compute_contact_results = pnh.advertiseService<tesseract_msgs::ComputeContactResultVectorRequest, tesseract_msgs::ComputeContactResultVectorResponse>(
+		  "compute_contact_results", &callbackComputeContactResultVector);
 
   ROS_INFO("Contact Monitor Running!");
 
