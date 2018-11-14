@@ -1,0 +1,4 @@
+sensor_msgs/JointState joint_states
+---
+ContactResultVector collision_result
+bool success

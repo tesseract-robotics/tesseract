@@ -31,6 +31,7 @@ add_service_files(
   DIRECTORY srv
   FILES
     ModifyTesseractEnv.srv
+    ComputeContactResultVector.srv
 )
 
 generate_messages(
