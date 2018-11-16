@@ -71,12 +71,12 @@ bool TrajOptPlanner::solve(PlannerResponse& response)
 bool TrajOptPlanner::solve(PlannerResponse& response, const TrajOptPlannerConfig& config)
 {
   // Create optimizer
-  BasicTrustRegionSQP opt(config.prob);
+  sco::BasicTrustRegionSQP opt(config.prob);
   opt.setParameters(config.params);
   opt.initialize(trajToDblVec(config.prob->GetInitTraj()));
 
   // Add all callbacks
-  for (const trajopt::Optimizer::Callback& callback : config.callbacks)
+  for (const sco::Optimizer::Callback& callback : config.callbacks)
   {
     opt.addCallback(callback);
   }
