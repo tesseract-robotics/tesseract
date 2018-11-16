@@ -42,7 +42,7 @@ struct TrajOptPlannerConfig
   /** @brief Trajopt problem to be solved (Required) */
   trajopt::TrajOptProbPtr prob;
 
-  /** @brief Optimization parameters to be used (Required) */
+  /** @brief Optimization parameters to be used (Optional) */
   trajopt::BasicTrustRegionSQPParameters params;
 
   /** @brief Callback functions called on each iteration of the optimization (Optional) */
