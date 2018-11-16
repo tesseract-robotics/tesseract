@@ -43,10 +43,10 @@ struct TrajOptPlannerConfig
   trajopt::TrajOptProbPtr prob;
 
   /** @brief Optimization parameters to be used (Optional) */
-  trajopt::BasicTrustRegionSQPParameters params;
+  sco::BasicTrustRegionSQPParameters params;
 
   /** @brief Callback functions called on each iteration of the optimization (Optional) */
-  std::vector<trajopt::Optimizer::Callback> callbacks;
+  std::vector<sco::Optimizer::Callback> callbacks;
 };
 
 class TrajOptPlanner : public BasicPlanner
