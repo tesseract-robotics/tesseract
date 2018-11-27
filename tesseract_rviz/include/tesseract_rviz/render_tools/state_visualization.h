@@ -48,6 +48,8 @@ namespace tesseract_rviz
 class StateVisualization
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW  // Needed for AttachedBodyInfoMap
+
   StateVisualization(Ogre::SceneNode* root_node,
                      rviz::DisplayContext* context,
                      const std::string& name,
