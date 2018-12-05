@@ -22,6 +22,7 @@ DiscreteContactManagerBasePtr manager;
 ros::Subscriber joint_states_sub;
 ros::Publisher contact_results_pub;
 ros::Publisher environment_pub;
+ros::Subscriber environment_diff_sub;
 ros::ServiceServer modify_env_service;
 ros::ServiceServer compute_contact_results;
 ContactTestType type;
@@ -106,6 +107,30 @@ bool callbackComputeContactResultVector(tesseract_msgs::ComputeContactResultVect
 	response.success=true;
 
 	return true;
+}
+
+void callbackTesseractEnvDiff(const tesseract_msgs::TesseractStatePtr& state)
+{
+
+  if (!state->is_diff)
+	  return;
+
+  boost::mutex::scoped_lock(modify_mutex);
+  if (!processTesseractStateMsg(*env, *state))
+  {
+	  ROS_ERROR("Invalid TesseractState diff message");
+  }
+
+  // Create a new manager
+  std::vector<std::string> active = manager->getActiveCollisionObjects();
+  double contact_distance = manager->getContactDistanceThreshold();
+  IsContactAllowedFn fn = manager->getIsContactAllowedFn();
+
+  manager = env->getDiscreteContactManager();
+  manager->setActiveCollisionObjects(active);
+  manager->setContactDistanceThreshold(contact_distance);
+  manager->setIsContactAllowedFn(fn);
+
 }
 
 int main(int argc, char** argv)
@@ -199,6 +224,8 @@ int main(int argc, char** argv)
 
   compute_contact_results = pnh.advertiseService<tesseract_msgs::ComputeContactResultVectorRequest, tesseract_msgs::ComputeContactResultVectorResponse>(
 		  "compute_contact_results", &callbackComputeContactResultVector);
+
+  environment_diff_sub = pnh.subscribe("tesseract_diff", 100, &callbackTesseractEnvDiff);
 
   ROS_INFO("Contact Monitor Running!");
 
