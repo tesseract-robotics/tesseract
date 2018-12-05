@@ -71,41 +71,9 @@ public:
     // Set the Robot State so attached objects show up
     tesseract_ros::tesseractToTesseractStateMsg(msg.trajectory_start, *env_);
 
-    // Initialze the whole traject with the current state.
-    const EnvStateConstPtr& current_state = env_->getState();
-    std::map<std::string, int> jn_to_index;
+    // Set the joint trajectory message
+    tesseract_ros::tesseractTrajectoryToJointTrajectoryMsg(msg.joint_trajectory, *(env_->getState()), joint_names, traj);
 
-    msg.joint_trajectory.joint_names.resize(current_state->joints.size());
-    msg.joint_trajectory.points.resize(traj.rows());
-    for (int i = 0; i < traj.rows(); ++i)
-    {
-      trajectory_msgs::JointTrajectoryPoint jtp;
-      jtp.positions.resize(current_state->joints.size());
-
-      int j = 0;
-      for (const auto& joint : current_state->joints)
-      {
-        if (i == 0)
-        {
-          msg.joint_trajectory.joint_names[j] = joint.first;
-          jn_to_index[joint.first] = j;
-        }
-        jtp.positions[j] = joint.second;
-
-        ++j;
-      }
-      jtp.time_from_start = ros::Duration(i);
-      msg.joint_trajectory.points[i] = jtp;
-    }
-
-    // Update only the joints which were provided.
-    for (int i = 0; i < traj.rows(); ++i)
-    {
-      for (int j = 0; j < traj.cols(); ++j)
-      {
-        msg.joint_trajectory.points[i].positions[jn_to_index[joint_names[j]]] = traj(i, j);
-      }
-    }
     trajectory_pub_.publish(msg);
   }
 
@@ -287,7 +255,7 @@ private:
     double length = scale * std::abs((pt2 - pt1).norm());
     Eigen::Vector3d x, y, z, center;
     z = (pt2 - pt1).normalized();
-    center = pt1 - (length / 2.0) * z;
+    center = pt1 + (length / 2.0) * z;
     marker.pose.position.x = center(0);
     marker.pose.position.y = center(1);
     marker.pose.position.z = center(2);

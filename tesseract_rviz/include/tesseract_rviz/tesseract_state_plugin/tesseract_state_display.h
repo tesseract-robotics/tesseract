@@ -90,6 +90,7 @@ private Q_SLOTS:
   void changedURDFSceneAlpha();
   void changedAttachedBodyColor();
   void changedTesseractStateTopic();
+  void changedJointStateTopic();
   void changedEnableLinkHighlight();
   void changedEnableVisualVisible();
   void changedEnableCollisionVisible();
@@ -107,7 +108,8 @@ protected:
   void setLinkColor(Robot* robot, const std::string& link_name, const QColor& color);
   void unsetLinkColor(Robot* robot, const std::string& link_name);
 
-  void newTesseractStateCallback(const tesseract_msgs::TesseractStateConstPtr state);
+  void newTesseractStateCallback(const tesseract_msgs::TesseractStateConstPtr& state);
+  void newJointStateCallback(const sensor_msgs::JointStateConstPtr& joint_state);
 
   void setHighlightedLinks(const tesseract_msgs::TesseractState::_highlight_links_type& highlight_links);
   void setHighlightedLink(const std::string& link_name, const std_msgs::ColorRGBA& color);
@@ -122,6 +124,7 @@ protected:
   // render the robot
   ros::NodeHandle nh_;
   ros::Subscriber tesseract_state_subscriber_;
+  ros::Subscriber joint_state_subscriber_;
 
   tesseract::tesseract_ros::ROSBasicEnvPtr env_;
   StateVisualizationPtr state_;
@@ -132,6 +135,7 @@ protected:
   rviz::StringProperty* urdf_description_property_;
   rviz::StringProperty* root_link_name_property_;
   rviz::RosTopicProperty* tesseract_state_topic_property_;
+  rviz::RosTopicProperty* joint_state_topic_property_;
   rviz::FloatProperty* alpha_property_;
   rviz::ColorProperty* attached_body_color_property_;
   rviz::BoolProperty* enable_link_highlight_;

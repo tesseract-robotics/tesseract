@@ -44,15 +44,20 @@ using AlignedVector = std::vector<T, Eigen::aligned_allocator<T>>;
 template <typename Key, typename Value>
 using AlignedMap = std::map<Key, Value, std::less<Key>, Eigen::aligned_allocator<std::pair<const Key, Value>>>;
 
+template <typename Key, typename Value>
+using AlignedUnorderedMap = std::unordered_map<Key, Value, std::hash <Key>, std::equal_to<Key>, Eigen::aligned_allocator<std::pair<const Key, Value>>>;
+
 using VectorIsometry3d = AlignedVector<Eigen::Isometry3d>;
 using VectorVector4d = AlignedVector<Eigen::Vector4d>;
-using VectorVector3d = AlignedVector<Eigen::Vector3d>;
+using VectorVector3d = std::vector<Eigen::Vector3d>;
 using TransformMap = AlignedMap<std::string, Eigen::Isometry3d>;
 
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> TrajArray;
 
 struct AllowedCollisionMatrix
 {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   virtual ~AllowedCollisionMatrix() {}
   /**
    * @brief Disable collision between two collision objects
@@ -156,6 +161,8 @@ typedef ContactTestTypes::ContactTestType ContactTestType;
 
 struct ContactResult
 {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   double distance;
   int type_id[2];
   std::string link_names[2];
@@ -183,12 +190,14 @@ struct ContactResult
     cc_type = ContinouseCollisionType::CCType_None;
   }
 };
-typedef std::vector<ContactResult> ContactResultVector;
-typedef std::map<std::pair<std::string, std::string>, ContactResultVector> ContactResultMap;
+typedef AlignedVector<ContactResult> ContactResultVector;
+typedef AlignedMap<std::pair<std::string, std::string>, ContactResultVector> ContactResultMap;
 
 /// Contact test data and query results information
 struct ContactTestData
 {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   ContactTestData(const std::vector<std::string>& active,
                   const double& contact_distance,
                   const IsContactAllowedFn& fn,
@@ -228,6 +237,8 @@ static inline void moveContactResultsMapToContactResultsVector(ContactResultMap&
 /** @brief This holds a state of the environment */
 struct EnvState
 {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   std::unordered_map<std::string, double> joints;
   TransformMap transforms;
 };
@@ -237,6 +248,8 @@ typedef std::shared_ptr<const EnvState> EnvStateConstPtr;
 /**< @brief Information on how the object is attached to the environment */
 struct AttachedBodyInfo
 {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   AttachedBodyInfo() : transform(Eigen::Isometry3d::Identity()) {}
   std::string object_name;              /**< @brief The name of the AttachableObject being used */
   std::string parent_link_name;         /**< @brief The name of the link to attach the body */
@@ -248,6 +261,8 @@ struct AttachedBodyInfo
 /** @brief Contains visual geometry data */
 struct VisualObjectGeometry
 {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   std::vector<shapes::ShapeConstPtr> shapes; /**< @brief The shape */
   VectorIsometry3d shape_poses;              /**< @brief The pose of the shape */
   VectorVector4d shape_colors;               /**< @brief (Optional) The shape color (R, G, B, A) */
@@ -256,6 +271,8 @@ struct VisualObjectGeometry
 /** @brief Contains visual geometry data */
 struct CollisionObjectGeometry : public VisualObjectGeometry
 {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   CollisionObjectTypeVector
       collision_object_types; /**< @brief The collision object type. This is used by the collision libraries */
 };
@@ -263,6 +280,8 @@ struct CollisionObjectGeometry : public VisualObjectGeometry
 /** @brief Contains data about an attachable object */
 struct AttachableObject
 {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   std::string name;            /**< @brief The name of the attachable object (aka. link name and must be unique) */
   VisualObjectGeometry visual; /**< @brief The objects visual geometry */
   CollisionObjectGeometry collision; /**< @brief The objects collision geometry */
@@ -273,13 +292,15 @@ typedef std::shared_ptr<const AttachableObject> AttachableObjectConstPtr;
 /** @brief ObjectColorMap Stores Object color in a 4d vector as RGBA*/
 struct ObjectColor
 {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   VectorVector4d visual;
   VectorVector4d collision;
 };
-typedef std::unordered_map<std::string, ObjectColor> ObjectColorMap;
+typedef AlignedUnorderedMap<std::string, ObjectColor> ObjectColorMap;
 typedef std::shared_ptr<ObjectColorMap> ObjectColorMapPtr;
 typedef std::shared_ptr<const ObjectColorMap> ObjectColorMapConstPtr;
-typedef std::unordered_map<std::string, AttachedBodyInfo> AttachedBodyInfoMap;
+typedef AlignedUnorderedMap<std::string, AttachedBodyInfo> AttachedBodyInfoMap;
 typedef std::unordered_map<std::string, AttachableObjectConstPtr> AttachableObjectConstPtrMap;
 }
 

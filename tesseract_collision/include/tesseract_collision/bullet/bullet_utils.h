@@ -46,6 +46,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wall"
 #pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <btBulletCollisionCommon.h>
 #pragma GCC diagnostic pop
 
@@ -92,6 +93,7 @@ inline btTransform convertEigenToBt(const Eigen::Isometry3d& t)
 class CollisionObjectWrapper : public btCollisionObject
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   CollisionObjectWrapper(const std::string& name,
                          const int& type_id,
                          const std::vector<shapes::ShapeConstPtr>& shapes,

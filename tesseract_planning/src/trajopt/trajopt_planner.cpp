@@ -39,7 +39,7 @@ namespace tesseract
 {
 namespace tesseract_planning
 {
-bool TrajoptPlanner::solve(PlannerResponse& response)
+bool TrajOptPlanner::solve(PlannerResponse& response)
 {
   Json::Value root;
   Json::Reader reader;
@@ -68,60 +68,15 @@ bool TrajoptPlanner::solve(PlannerResponse& response)
   return solve(response, prob);
 }
 
-bool TrajoptPlanner::solve(PlannerResponse& response, const trajopt::TrajOptProbPtr& prob)
-{
-  BasicTrustRegionSQPParameters params;
-  return solve(response, prob, params);
-}
-
-bool TrajoptPlanner::solve(PlannerResponse& response,
-                           const trajopt::TrajOptProbPtr& prob,
-                           const BasicTrustRegionSQPParameters& params)
-{
-  std::vector<trajopt::Optimizer::Callback> callbacks;
-  return solve(response, prob, params, callbacks);
-}
-
-bool TrajoptPlanner::solve(PlannerResponse& response,
-                           const trajopt::TrajOptProbPtr& prob,
-                           const BasicTrustRegionSQPParameters& params,
-                           const trajopt::Optimizer::Callback& callback)
-{
-  std::vector<trajopt::Optimizer::Callback> callbacks;
-  callbacks.push_back(callback);
-  return solve(response, prob, params, callbacks);
-}
-
-bool TrajoptPlanner::solve(PlannerResponse& response,
-                           const trajopt::TrajOptProbPtr& prob,
-                           const trajopt::Optimizer::Callback& callback)
-{
-  BasicTrustRegionSQPParameters params;
-  std::vector<trajopt::Optimizer::Callback> callbacks;
-  callbacks.push_back(callback);
-  return solve(response, prob, params, callbacks);
-}
-
-bool TrajoptPlanner::solve(PlannerResponse& response,
-                           const trajopt::TrajOptProbPtr& prob,
-                           const std::vector<trajopt::Optimizer::Callback>& callbacks)
-{
-  BasicTrustRegionSQPParameters params;
-  return solve(response, prob, params, callbacks);
-}
-
-bool TrajoptPlanner::solve(PlannerResponse& response,
-                           const trajopt::TrajOptProbPtr& prob,
-                           const BasicTrustRegionSQPParameters& params,
-                           const std::vector<trajopt::Optimizer::Callback>& callbacks)
+bool TrajOptPlanner::solve(PlannerResponse& response, const TrajOptPlannerConfig& config)
 {
   // Create optimizer
-  BasicTrustRegionSQP opt(prob);
-  opt.setParameters(params);
-  opt.initialize(trajToDblVec(prob->GetInitTraj()));
+  sco::BasicTrustRegionSQP opt(config.prob);
+  opt.setParameters(config.params);
+  opt.initialize(trajToDblVec(config.prob->GetInitTraj()));
 
   // Add all callbacks
-  for (const trajopt::Optimizer::Callback& callback : callbacks)
+  for (const sco::Optimizer::Callback& callback : config.callbacks)
   {
     opt.addCallback(callback);
   }
@@ -133,12 +88,12 @@ bool TrajoptPlanner::solve(PlannerResponse& response,
 
   // Check and report collisions
   std::vector<tesseract::ContactResultMap> collisions;
-  ContinuousContactManagerBasePtr manager = prob->GetEnv()->getContinuousContactManager();
-  manager->setActiveCollisionObjects(prob->GetKin()->getLinkNames());
+  ContinuousContactManagerBasePtr manager = config.prob->GetEnv()->getContinuousContactManager();
+  manager->setActiveCollisionObjects(config.prob->GetKin()->getLinkNames());
   manager->setContactDistanceThreshold(0);
   collisions.clear();
   bool found = tesseract::continuousCollisionCheckTrajectory(
-      *manager, *prob->GetEnv(), *prob->GetKin(), getTraj(opt.x(), prob->GetVars()), collisions);
+      *manager, *config.prob->GetEnv(), *config.prob->GetKin(), getTraj(opt.x(), config.prob->GetVars()), collisions);
 
   if (found)
   {
@@ -150,15 +105,15 @@ bool TrajoptPlanner::solve(PlannerResponse& response,
   }
 
   // Send response
-  response.trajectory = getTraj(opt.x(), prob->GetVars());
+  response.trajectory = getTraj(opt.x(), config.prob->GetVars());
   response.status_code = opt.results().status;
-  response.joint_names = prob->GetEnv()->getJointNames();
+  response.joint_names = config.prob->GetKin()->getJointNames();
   response.status_description = sco::statusToString(opt.results().status);
   return true;
 }
 
-bool TrajoptPlanner::terminate() { return false; }
-void TrajoptPlanner::clear() { request_ = PlannerRequest(); }
+bool TrajOptPlanner::terminate() { return false; }
+void TrajOptPlanner::clear() { request_ = PlannerRequest(); }
 
 }  // namespace tesseract_planning
 }  // namespace tesseract
