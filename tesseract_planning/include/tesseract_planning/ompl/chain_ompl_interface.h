@@ -1,7 +1,11 @@
 #ifndef TESSERACT_PLANNING_CHAIN_OMPL_INTERFACE_H
 #define TESSERACT_PLANNING_CHAIN_OMPL_INTERFACE_H
 
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <ompl/geometric/SimpleSetup.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
 #include <tesseract_ros/kdl/kdl_env.h>
 
 namespace tesseract

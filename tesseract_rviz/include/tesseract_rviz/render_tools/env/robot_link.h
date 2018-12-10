@@ -30,6 +30,9 @@
 #ifndef TESSERACT_RVIZ_ROBOT_LINK_H
 #define TESSERACT_RVIZ_ROBOT_LINK_H
 
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
+
 #include <string>
 #include <map>
 
@@ -50,6 +53,7 @@
 #include <rviz/ogre_helpers/point_cloud.h>
 #include <rviz/selection/forwards.h>
 #include <Eigen/Eigen>
+TESSERACT_IGNORE_WARNINGS_POP
 
 namespace Ogre
 {
@@ -154,7 +158,7 @@ public:
   Ogre::SceneNode* getVisualNode() const { return visual_node_; }
   Ogre::SceneNode* getCollisionNode() const { return collision_node_; }
   Robot* getRobot() const { return robot_; }
-  // Remove link_property_ from its old parent and add to new_parent.  If new_parent==NULL then leav unparented.
+  // Remove link_property_ from its old parent and add to new_parent.  If new_parent==nullptr then leav unparented.
   void setParentProperty(rviz::Property* new_parent);
 
   // hide or show all sub properties (hide to make tree easier to see)

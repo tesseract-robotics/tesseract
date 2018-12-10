@@ -26,9 +26,15 @@
 #ifndef TESSERACT_ROS_BASIC_ENV_H
 #define TESSERACT_ROS_BASIC_ENV_H
 
-#include <tesseract_core/basic_env.h>
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
+#include <Eigen/Core>
 #include <urdf/model.h>
 #include <srdfdom/model.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include <tesseract_core/basic_env.h>
+
 
 namespace tesseract
 {

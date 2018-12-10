@@ -26,6 +26,8 @@
 #ifndef TESSERACT_CORE_BASIC_TYPES_H
 #define TESSERACT_CORE_BASIC_TYPES_H
 
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/StdVector>
@@ -35,6 +37,7 @@
 #include <memory>
 #include <functional>
 #include <map>
+TESSERACT_IGNORE_WARNINGS_POP
 
 namespace tesseract
 {
@@ -58,7 +61,8 @@ struct AllowedCollisionMatrix
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  virtual ~AllowedCollisionMatrix() {}
+  virtual ~AllowedCollisionMatrix() = default;
+
   /**
    * @brief Disable collision between two collision objects
    * @param obj1 Collision object name

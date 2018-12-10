@@ -1,5 +1,9 @@
-#include "tesseract_planning/ompl/continuous_motion_validator.h"
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <ompl/base/spaces/RealVectorStateSpace.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include "tesseract_planning/ompl/continuous_motion_validator.h"
 
 namespace tesseract
 {
@@ -69,6 +73,9 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
   const ompl::base::RealVectorStateSpace::StateType* start = s1->as<ompl::base::RealVectorStateSpace::StateType>();
   const ompl::base::RealVectorStateSpace::StateType* finish = s2->as<ompl::base::RealVectorStateSpace::StateType>();
 
+  //Need to get thread id
+  tesseract::ContinuousContactManagerBasePtr cm = contact_manager_->clone();
+
   const auto dof = si_->getStateDimension();
   Eigen::Map<Eigen::VectorXd> start_joints(start->values, dof);
   Eigen::Map<Eigen::VectorXd> finish_joints(finish->values, dof);
@@ -77,11 +84,10 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
   tesseract::EnvStatePtr state1 = env_->getState(joints_, finish_joints);
 
   for (const auto& link_name : links_)
-    contact_manager_->setCollisionObjectsTransform(
-        link_name, state0->transforms[link_name], state1->transforms[link_name]);
+    cm->setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
 
   tesseract::ContactResultMap contact_map;
-  contact_manager_->contactTest(contact_map, tesseract::ContactTestTypes::FIRST);
+  cm->contactTest(contact_map, tesseract::ContactTestTypes::FIRST);
 
   return contact_map.empty();
 }

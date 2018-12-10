@@ -43,9 +43,8 @@
 #ifndef TESSERACT_ROS_BULLET_ENV_H
 #define TESSERACT_ROS_BULLET_ENV_H
 
-#include <tesseract_core/discrete_contact_manager_base.h>
-#include <tesseract_core/continuous_contact_manager_base.h>
-#include <tesseract_ros/ros_basic_env.h>
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <kdl/tree.hpp>
 #include <kdl_parser/kdl_parser.hpp>
 #include <kdl/jntarray.hpp>
@@ -54,6 +53,11 @@
 #include <urdf/model.h>
 #include <srdfdom/model.h>
 #include <pluginlib/class_loader.hpp>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include <tesseract_core/discrete_contact_manager_base.h>
+#include <tesseract_core/continuous_contact_manager_base.h>
+#include <tesseract_ros/ros_basic_env.h>
 
 namespace tesseract
 {

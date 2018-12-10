@@ -25,9 +25,12 @@
  */
 #ifndef TESSERACT_CORE_BASIC_ENV_H
 #define TESSERACT_CORE_BASIC_ENV_H
-
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <string>
+TESSERACT_IGNORE_WARNINGS_POP
+
 #include <tesseract_core/basic_types.h>
 #include <tesseract_core/basic_kin.h>
 #include <tesseract_core/discrete_contact_manager_base.h>
@@ -40,7 +43,7 @@ class BasicEnv
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  virtual ~BasicEnv() {}
+  virtual ~BasicEnv() = default;
   /** @brief Give the environment a name */
   virtual void setName(const std::string& name) = 0;
 
@@ -270,7 +273,7 @@ inline bool continuousCollisionCheckTrajectory(ContinuousContactManagerBase& man
   const std::vector<std::string>& joint_names = kin.getJointNames();
   const std::vector<std::string>& link_names = kin.getLinkNames();
 
-  contacts.reserve(traj.rows() - 1);
+  contacts.reserve(static_cast<size_t>(traj.rows() - 1));
   for (int iStep = 0; iStep < traj.rows() - 1; ++iStep)
   {
     ContactResultMap collisions;

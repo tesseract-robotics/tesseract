@@ -39,9 +39,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "tesseract_collision/fcl/fcl_discrete_managers.h"
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <eigen_conversions/eigen_msg.h>
 #include <geometric_shapes/shape_operations.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include "tesseract_collision/fcl/fcl_discrete_managers.h"
 
 namespace tesseract
 {

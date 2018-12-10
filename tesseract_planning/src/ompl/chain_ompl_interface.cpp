@@ -1,5 +1,9 @@
-#include "tesseract_planning/ompl/chain_ompl_interface.h"
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <ompl/base/spaces/RealVectorStateSpace.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include "tesseract_planning/ompl/chain_ompl_interface.h"
 
 namespace tesseract
 {
@@ -16,7 +20,7 @@ ChainOmplInterface::ChainOmplInterface(tesseract::BasicEnvConstPtr environment, 
   link_names_ = manip->getLinkNames();
 
   const auto dof = manip->numJoints();
-  const auto limits = manip->getLimits();
+  const auto& limits = manip->getLimits();
 
   // Construct the OMPL state space for this manipulator
   ompl::base::RealVectorStateSpace* space = new ompl::base::RealVectorStateSpace();
@@ -86,10 +90,12 @@ bool ChainOmplInterface::isStateValid(const ompl::base::State* state) const
   Eigen::Map<Eigen::VectorXd> joint_angles(s->values, long(dof));
   tesseract::EnvStateConstPtr env_state = env_->getState(joint_names_, joint_angles);
 
-  contact_manager_->setCollisionObjectsTransform(env_state->transforms);
+  //Need to get thread id
+  tesseract::DiscreteContactManagerBasePtr cm = contact_manager_->clone();
+  cm->setCollisionObjectsTransform(env_state->transforms);
 
   tesseract::ContactResultMap contact_map;
-  contact_manager_->contactTest(contact_map, tesseract::ContactTestTypes::FIRST);
+  cm->contactTest(contact_map, tesseract::ContactTestTypes::FIRST);
 
   return contact_map.empty();
 }

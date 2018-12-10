@@ -34,7 +34,7 @@ namespace tesseract
 class BasicPlotting
 {
 public:
-  virtual ~BasicPlotting() {}
+  virtual ~BasicPlotting() = default;
   /**
    * @brief Plot a trajectory
    * @param traj

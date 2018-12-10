@@ -39,12 +39,15 @@
 #ifndef TESSERACT_RVIZ_TESSERACT_TRAJECTORY_DISPLAY_PLUGIN
 #define TESSERACT_RVIZ_TESSERACT_TRAJECTORY_DISPLAY_PLUGIN
 
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <rviz/display.h>
-
-#include <tesseract_rviz/render_tools/trajectory_visualization.h>
 #ifndef Q_MOC_RUN
 #include <ros/ros.h>
 #endif
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include <tesseract_rviz/render_tools/trajectory_visualization.h>
 
 namespace rviz
 {
@@ -61,18 +64,18 @@ class TesseractTrajectoryDisplay : public rviz::Display
 public:
   TesseractTrajectoryDisplay();
 
-  virtual ~TesseractTrajectoryDisplay();
+  ~TesseractTrajectoryDisplay() override;
 
   void loadEnv();
 
-  virtual void update(float wall_dt, float ros_dt);
-  virtual void reset();
+  void update(float wall_dt, float ros_dt) override;
+  void reset() override;
 
   // overrides from Display
-  virtual void onInitialize();
-  virtual void onEnable();
-  virtual void onDisable();
-  void setName(const QString& name);
+  void onInitialize() override;
+  void onEnable() override;
+  void onDisable() override;
+  void setName(const QString& name) override;
 
 private Q_SLOTS:
   /**

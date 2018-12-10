@@ -37,6 +37,9 @@
 #ifndef TESSERACT_RVIZ_TRAJECTORY_PANEL
 #define TESSERACT_RVIZ_TRAJECTORY_PANEL
 
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
+
 #ifndef Q_MOC_RUN
 #include <ros/ros.h>
 #endif
@@ -46,6 +49,7 @@
 #include <QSlider>
 #include <QLabel>
 #include <QPushButton>
+TESSERACT_IGNORE_WARNINGS_POP
 
 namespace tesseract_rviz
 {
@@ -54,11 +58,11 @@ class TrajectoryPanel : public rviz::Panel
   Q_OBJECT
 
 public:
-  TrajectoryPanel(QWidget* parent = 0);
+  TrajectoryPanel(QWidget* parent = nullptr);
 
-  virtual ~TrajectoryPanel();
+  ~TrajectoryPanel() override;
 
-  void onInitialize();
+  void onInitialize() override;
   void onEnable();
   void onDisable();
   void update(int way_point_count);

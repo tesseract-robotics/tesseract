@@ -25,8 +25,13 @@
  */
 #ifndef TESSERACT_PLANNING_BASIC_PLANNER_H
 #define TESSERACT_PLANNING_BASIC_PLANNER_H
-#include <tesseract_planning/basic_planner_types.h>
+
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include <tesseract_planning/basic_planner_types.h>
 
 namespace tesseract
 {

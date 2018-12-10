@@ -38,8 +38,8 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
-#include <tesseract_collision/fcl/fcl_utils.h>
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <geometric_shapes/shapes.h>
 #include <geometric_shapes/bodies.h>
 #include <fcl/geometry/bvh/BVH_model.h>
@@ -52,6 +52,9 @@
 #include <fcl/geometry/octree/octree.h>
 #include <boost/thread/mutex.hpp>
 #include <memory>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include <tesseract_collision/fcl/fcl_utils.h>
 
 namespace tesseract
 {
@@ -341,7 +344,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
   for (std::size_t j = 0; j < shapes_.size(); ++j)
   {
     CollisionGeometryPtr subshape = createShapePrimitive(shapes_[j], collision_object_types_[j]);
-    if (subshape != NULL)
+    if (subshape != nullptr)
     {
       collision_geometries_.push_back(subshape);
       CollisionObjectPtr co(new fcl::CollisionObjectd(subshape));

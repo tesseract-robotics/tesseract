@@ -26,12 +26,17 @@
 #ifndef TESSERACT_ROS_KDL_CHAIN_KIN_H
 #define TESSERACT_ROS_KDL_CHAIN_KIN_H
 
-#include "tesseract_ros/ros_basic_kin.h"
-#include "tesseract_ros/ros_basic_env.h"
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
+#include <ros/console.h>
 #include <kdl/tree.hpp>
 #include <kdl/chain.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <kdl/chainjnttojacsolver.hpp>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include "tesseract_ros/ros_basic_kin.h"
+#include "tesseract_ros/ros_basic_env.h"
 
 namespace tesseract
 {
@@ -82,11 +87,11 @@ public:
 
   const std::vector<std::string>& getLinkNames() const override;
 
-  const Eigen::MatrixX2d& getLimits() const;
+  const Eigen::MatrixX2d& getLimits() const override;
 
   urdf::ModelInterfaceConstSharedPtr getURDF() const override { return model_; }
   unsigned int numJoints() const override { return robot_chain_.getNrOfJoints(); }
-  const std::string& getBaseLinkName() const { return base_name_; }
+  const std::string& getBaseLinkName() const override { return base_name_; }
   const std::string& getName() const override { return name_; }
   void addAttachedLink(const std::string& link_name, const std::string& parent_link_name) override;
 

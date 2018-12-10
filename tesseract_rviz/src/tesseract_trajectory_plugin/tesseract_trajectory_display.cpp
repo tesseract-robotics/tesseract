@@ -37,10 +37,14 @@
    alone display
 */
 
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <rviz/properties/string_property.h>
+#include <urdf_parser/urdf_parser.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
 #include <tesseract_ros/kdl/kdl_env.h>
 #include <tesseract_rviz/tesseract_trajectory_plugin/tesseract_trajectory_display.h>
-#include <urdf_parser/urdf_parser.h>
 
 namespace tesseract_rviz
 {

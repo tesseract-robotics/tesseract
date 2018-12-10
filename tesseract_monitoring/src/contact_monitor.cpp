@@ -1,14 +1,18 @@
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <pluginlib/class_loader.hpp>
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 #include <srdfdom/model.h>
-#include <tesseract_core/discrete_contact_manager_base.h>
+#include <urdf_parser/urdf_parser.h>
 #include <tesseract_msgs/ContactResultVector.h>
 #include <tesseract_msgs/ModifyTesseractEnv.h>
 #include <tesseract_msgs/ComputeContactResultVector.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include <tesseract_core/discrete_contact_manager_base.h>
 #include <tesseract_ros/kdl/kdl_env.h>
 #include <tesseract_ros/ros_tesseract_utils.h>
-#include <urdf_parser/urdf_parser.h>
 
 using namespace tesseract;
 using namespace tesseract::tesseract_ros;
@@ -17,19 +21,19 @@ const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default RO
 
 const double DEFAULT_CONTACT_DISTANCE = 0.1;
 
-KDLEnvPtr env;
-DiscreteContactManagerBasePtr manager;
-ros::Subscriber joint_states_sub;
-ros::Publisher contact_results_pub;
-ros::Publisher environment_pub;
-ros::Subscriber environment_diff_sub;
-ros::ServiceServer modify_env_service;
-ros::ServiceServer compute_contact_results;
-ContactTestType type;
-ContactResultMap contacts;
-tesseract_msgs::ContactResultVector contacts_msg;
-bool publish_environment;
-boost::mutex modify_mutex;
+static KDLEnvPtr env;
+static DiscreteContactManagerBasePtr manager;
+static ros::Subscriber joint_states_sub;
+static ros::Publisher contact_results_pub;
+static ros::Publisher environment_pub;
+static ros::Subscriber environment_diff_sub;
+static ros::ServiceServer modify_env_service;
+static ros::ServiceServer compute_contact_results;
+static ContactTestType type;
+static ContactResultMap contacts;
+static tesseract_msgs::ContactResultVector contacts_msg;
+static bool publish_environment;
+static boost::mutex modify_mutex;
 
 void callbackJointState(const sensor_msgs::JointState::ConstPtr& msg)
 {

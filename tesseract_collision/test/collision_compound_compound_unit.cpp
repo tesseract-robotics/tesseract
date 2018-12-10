@@ -1,12 +1,16 @@
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
+#include <octomap/octomap.h>
+#include <ros/package.h>
+#include <gtest/gtest.h>
+#include <ros/ros.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
 #include "tesseract_collision/bullet/bullet_discrete_simple_manager.h"
 #include "tesseract_collision/bullet/bullet_discrete_bvh_manager.h"
 #include "tesseract_collision/bullet/bullet_cast_simple_manager.h"
 #include "tesseract_collision/bullet/bullet_cast_bvh_manager.h"
 #include "tesseract_collision/fcl/fcl_discrete_managers.h"
-#include <octomap/octomap.h>
-#include <ros/package.h>
-#include <gtest/gtest.h>
-#include <ros/ros.h>
 
 template <class T>
 void addCollisionObjects(T& checker)

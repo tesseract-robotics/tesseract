@@ -37,14 +37,19 @@
 #ifndef TESSERACT_MONITORING_CURRENT_STATE_H
 #define TESSERACT_MONITORING_CURRENT_STATE_H
 
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
-#include <tesseract_ros/ros_basic_env.h>
 #include <memory>
 #include <functional>
 #include <unordered_map>
+#include <map>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include <tesseract_ros/ros_basic_env.h>
 
 namespace tesseract
 {

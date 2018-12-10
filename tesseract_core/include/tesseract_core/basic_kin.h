@@ -26,12 +26,16 @@
 #ifndef TESSERACT_CORE_BASIC_KIN_H
 #define TESSERACT_CORE_BASIC_KIN_H
 
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <string>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <iostream>
 #include <memory>
+TESSERACT_IGNORE_WARNINGS_POP
+
 #include <tesseract_core/basic_types.h>
 
 namespace tesseract
@@ -47,7 +51,7 @@ class BasicKin
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  virtual ~BasicKin() {}
+  virtual ~BasicKin() = default;
   /**
    * @brief Calculates tool pose of robot chain
    * @param pose Transform of end-of-tip relative to root
@@ -209,9 +213,9 @@ public:
 
     // calculate the reciprocal of Singular-Values
     // damp inverse with lambda so that inverse doesn't oscillate near solution
-    size_t nSv = Sv.size();
+    long int nSv = Sv.size();
     Eigen::VectorXd inv_Sv(nSv);
-    for (size_t i = 0; i < nSv; ++i)
+    for (long int i = 0; i < nSv; ++i)
     {
       if (fabs(Sv(i)) > eps)
         inv_Sv(i) = 1 / Sv(i);
@@ -252,9 +256,9 @@ public:
 
     // calculate the reciprocal of Singular-Values
     // damp inverse with lambda so that inverse doesn't oscillate near solution
-    size_t nSv = Sv.size();
+    long int nSv = Sv.size();
     Eigen::VectorXd inv_Sv(nSv);
-    for (size_t i = 0; i < nSv; ++i)
+    for (long int i = 0; i < nSv; ++i)
     {
       if (fabs(Sv(i)) > eps)
         inv_Sv(i) = 1 / Sv(i);

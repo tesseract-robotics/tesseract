@@ -26,13 +26,15 @@
 #ifndef TESSERACT_COLLISION_CONTACT_CHECKER_COMMON_H
 #define TESSERACT_COLLISION_CONTACT_CHECKER_COMMON_H
 
-#include <tesseract_core/basic_types.h>
-#include <ros/console.h>
-
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <LinearMath/btConvexHullComputer.h>
 #include <cstdio>
 #include <Eigen/Geometry>
 #include <fstream>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include <tesseract_core/basic_types.h>
 
 namespace tesseract
 {
@@ -163,13 +165,13 @@ inline int createConvexHull(VectorVector3d& vertices,
 
   btConvexHullComputer conv;
   btAlignedObjectArray<btVector3> points;
-  points.reserve(input.size());
+  points.reserve(static_cast<int>(input.size()));
   for (const auto& v : input)
   {
-    points.push_back(btVector3(v[0], v[1], v[2]));
+    points.push_back(btVector3(static_cast<btScalar>(v[0]), static_cast<btScalar>(v[1]), static_cast<btScalar>(v[2])));
   }
 
-  btScalar val = conv.compute(&points[0].getX(), sizeof(btVector3), points.size(), shrink, shrinkClamp);
+  btScalar val = conv.compute(&points[0].getX(), sizeof(btVector3), points.size(), static_cast<btScalar>(shrink), static_cast<btScalar>(shrinkClamp));
   if (val < 0)
   {
     ROS_ERROR("Failed to create convex hull");
@@ -177,7 +179,7 @@ inline int createConvexHull(VectorVector3d& vertices,
   }
 
   int num_verts = conv.vertices.size();
-  vertices.reserve(num_verts);
+  vertices.reserve(static_cast<size_t>(num_verts));
   for (int i = 0; i < num_verts; i++)
   {
     btVector3& v = conv.vertices[i];
@@ -185,7 +187,7 @@ inline int createConvexHull(VectorVector3d& vertices,
   }
 
   int num_faces = conv.faces.size();
-  faces.reserve(3 * num_faces);
+  faces.reserve(static_cast<size_t>(3 * num_faces));
   for (int i = 0; i < num_faces; i++)
   {
     std::vector<int> face;
@@ -211,7 +213,7 @@ inline int createConvexHull(VectorVector3d& vertices,
       edge = edge->getNextEdgeOfFace();
       c = edge->getTargetVertex();
     }
-    faces.push_back(face.size());
+    faces.push_back(static_cast<int>(face.size()));
     faces.insert(faces.end(), face.begin(), face.end());
   }
 
@@ -283,11 +285,11 @@ inline bool writeSimplePlyFile(const std::string& path,
   }
 
   // Add faces
-  int idx = 0;
-  for (int i = 0; i < num_faces; ++i)
+  size_t idx = 0;
+  for (size_t i = 0; i < static_cast<size_t>(num_faces); ++i)
   {
-    int num_vert = faces[idx];
-    for (int j = 0; j < num_vert; ++j)
+    size_t num_vert = static_cast<size_t>(faces[idx]);
+    for (size_t j = 0; j < num_vert; ++j)
     {
       myfile << faces[idx] << " ";
       ++idx;

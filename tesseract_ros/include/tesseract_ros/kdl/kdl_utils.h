@@ -25,9 +25,13 @@
  */
 #ifndef TESSERACT_ROS_KDL_UTILS_H
 #define TESSERACT_ROS_KDL_UTILS_H
+
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <kdl/frames.hpp>
 #include <kdl/jntarray.hpp>
 #include <Eigen/Eigen>
+TESSERACT_IGNORE_WARNINGS_POP
 
 namespace tesseract
 {
@@ -43,11 +47,11 @@ inline void KDLToEigen(const KDL::Frame& frame, Eigen::Isometry3d& transform)
   transform.setIdentity();
 
   // translation
-  for (size_t i = 0; i < 3; ++i)
+  for (int i = 0; i < 3; ++i)
     transform(i, 3) = frame.p[i];
 
   // rotation matrix
-  for (size_t i = 0; i < 9; ++i)
+  for (int i = 0; i < 9; ++i)
     transform(i / 3, i % 3) = frame.M.data[i];
 }
 
@@ -60,10 +64,10 @@ inline void EigenToKDL(const Eigen::Isometry3d& transform, KDL::Frame& frame)
 {
   frame.Identity();
 
-  for (unsigned int i = 0; i < 3; ++i)
+  for (int i = 0; i < 3; ++i)
     frame.p[i] = transform(i, 3);
 
-  for (unsigned int i = 0; i < 9; ++i)
+  for (int i = 0; i < 9; ++i)
     frame.M.data[i] = transform(i / 3, i % 3);
 }
 
@@ -77,8 +81,8 @@ inline void KDLToEigen(const KDL::Jacobian& jacobian, Eigen::Ref<Eigen::MatrixXd
   assert(matrix.rows() == jacobian.rows());
   assert(matrix.cols() == jacobian.columns());
 
-  for (size_t i = 0; i < jacobian.rows(); ++i)
-    for (size_t j = 0; j < jacobian.columns(); ++j)
+  for (unsigned i = 0; i < jacobian.rows(); ++i)
+    for (unsigned j = 0; j < jacobian.columns(); ++j)
       matrix(i, j) = jacobian(i, j);
 }
 
@@ -93,9 +97,10 @@ inline void KDLToEigen(const KDL::Jacobian& jacobian, const std::vector<int>& q_
   assert(matrix.rows() == jacobian.rows());
   assert(static_cast<unsigned>(matrix.cols()) == q_nrs.size());
 
-  for (size_t i = 0; i < jacobian.rows(); ++i)
-    for (size_t j = 0; j < q_nrs.size(); ++j)
-      matrix(i, j) = jacobian(i, q_nrs[j]);
+  for (int i = 0; i < static_cast<int>(jacobian.rows()); ++i)
+    for (int j = 0; j < static_cast<int>(q_nrs.size()); ++j)
+      matrix(i, j) = jacobian(static_cast<unsigned>(i),
+                              static_cast<unsigned>(q_nrs[static_cast<size_t>(j)]));
 }
 
 /**

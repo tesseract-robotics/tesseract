@@ -26,7 +26,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <boost/filesystem.hpp>
 
 #include <OgreEntity.h>
@@ -48,9 +49,6 @@
 #include <urdf_model/link.h>
 #include <urdf_model/model.h>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <octomap/octomap.h>
 #include <octomap_msgs/Octomap.h>
 
@@ -67,12 +65,12 @@
 #include "rviz/properties/vector_property.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/visualization_manager.h"
-#pragma GCC diagnostic pop
+#include <geometric_shapes/mesh_operations.h>
+TESSERACT_IGNORE_WARNINGS_POP
 
 #include "tesseract_rviz/render_tools/env/robot.h"
 #include "tesseract_rviz/render_tools/env/robot_joint.h"
 #include "tesseract_rviz/render_tools/env/robot_link.h"
-#include <geometric_shapes/mesh_operations.h>
 #include <tesseract_core/basic_types.h>
 
 namespace fs = boost::filesystem;
@@ -83,13 +81,13 @@ class RobotLinkSelectionHandler : public rviz::SelectionHandler
 {
 public:
   RobotLinkSelectionHandler(RobotLink* link, rviz::DisplayContext* context);
-  virtual ~RobotLinkSelectionHandler();
+  ~RobotLinkSelectionHandler() override;
 
-  virtual void createProperties(const rviz::Picked& /*obj*/, rviz::Property* parent_property);
-  virtual void updateProperties();
+  void createProperties(const rviz::Picked& /*obj*/, rviz::Property* parent_property) override;
+  void updateProperties() override;
 
-  virtual void preRenderPass(uint32_t /*pass*/);
-  virtual void postRenderPass(uint32_t /*pass*/);
+  void preRenderPass(uint32_t /*pass*/) override;
+  void postRenderPass(uint32_t /*pass*/) override;
 
 private:
   RobotLink* link_;
@@ -165,20 +163,20 @@ RobotLink::RobotLink(Robot* robot,
   , context_(robot->getDisplayContext())
   , name_(link->name)
   , parent_joint_name_(parent_joint_name)
-  , visual_node_(NULL)
-  , collision_node_(NULL)
-  , trail_(NULL)
-  , axes_(NULL)
+  , visual_node_(nullptr)
+  , collision_node_(nullptr)
+  , trail_(nullptr)
+  , axes_(nullptr)
   , material_alpha_(1.0)
   , robot_alpha_(1.0)
   , only_render_depth_(false)
   , is_selectable_(true)
   , using_color_(false)
 {
-  link_property_ = new rviz::Property(link->name.c_str(), true, "", NULL, SLOT(updateVisibility()), this);
+  link_property_ = new rviz::Property(link->name.c_str(), true, "", nullptr, SLOT(updateVisibility()), this);
   link_property_->setIcon(rviz::loadPixmap("package://rviz/icons/classes/RobotLink.png"));
 
-  details_ = new rviz::Property("Details", QVariant(), "", NULL);
+  details_ = new rviz::Property("Details", QVariant(), "", nullptr);
 
   alpha_property_ = new rviz::FloatProperty(
       "Alpha", 1, "Amount of transparency to apply to this link.", link_property_, SLOT(updateAlpha()), this);
@@ -314,20 +312,20 @@ RobotLink::RobotLink(Robot* robot,
   , context_(robot->getDisplayContext())
   , name_(ao.name)
   , parent_joint_name_(parent_joint_name)
-  , visual_node_(NULL)
-  , collision_node_(NULL)
-  , trail_(NULL)
-  , axes_(NULL)
+  , visual_node_(nullptr)
+  , collision_node_(nullptr)
+  , trail_(nullptr)
+  , axes_(nullptr)
   , material_alpha_(1.0)
   , robot_alpha_(1.0)
   , only_render_depth_(false)
   , is_selectable_(true)
   , using_color_(false)
 {
-  link_property_ = new rviz::Property(ao.name.c_str(), true, "", NULL, SLOT(updateVisibility()), this);
+  link_property_ = new rviz::Property(ao.name.c_str(), true, "", nullptr, SLOT(updateVisibility()), this);
   link_property_->setIcon(rviz::loadPixmap("package://rviz/icons/classes/RobotLink.png"));
 
-  details_ = new rviz::Property("Details", QVariant(), "", NULL);
+  details_ = new rviz::Property("Details", QVariant(), "", nullptr);
 
   alpha_property_ = new rviz::FloatProperty(
       "Alpha", 1, "Amount of transparency to apply to this link.", link_property_, SLOT(updateAlpha()), this);
@@ -625,7 +623,7 @@ Ogre::MaterialPtr RobotLink::getMaterialForLink(const urdf::LinkConstSharedPtr& 
   if (visual->material->texture_filename.empty())
   {
     const urdf::Color& col = visual->material->color;
-    mat->getTechnique(0)->setAmbient(col.r * 0.5, col.g * 0.5, col.b * 0.5);
+    mat->getTechnique(0)->setAmbient(col.r * 0.5f, col.g * 0.5f, col.b * 0.5f);
     mat->getTechnique(0)->setDiffuse(col.r, col.g, col.b, col.a);
 
     material_alpha_ = col.a;
@@ -691,10 +689,11 @@ Ogre::MaterialPtr RobotLink::getMaterialForAttachedLink(const Eigen::Vector4d co
   bool has_texture_file = false;
   if (!has_texture_file)
   {
-    mat->getTechnique(0)->setAmbient(color(0) * 0.5, color(1) * 0.5, color(2) * 0.5);
-    mat->getTechnique(0)->setDiffuse(color(0), color(1), color(2), color(3));
+    Eigen::Vector4f c = color.cast<float>();
+    mat->getTechnique(0)->setAmbient(c(0) * 0.5f, c(1) * 0.5f, c(2) * 0.5f);
+    mat->getTechnique(0)->setDiffuse(c(0), c(1), c(2), c(3));
 
-    material_alpha_ = color(3);
+    material_alpha_ = c(3);
   }
   else
   {
@@ -765,10 +764,15 @@ bool RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
   Ogre::Quaternion offset_orientation(Ogre::Quaternion::IDENTITY);
 
   {
-    Ogre::Vector3 position(origin.position.x, origin.position.y, origin.position.z);
+    Ogre::Vector3 position(static_cast<float>(origin.position.x),
+                           static_cast<float>(origin.position.y),
+                           static_cast<float>(origin.position.z));
     Ogre::Quaternion orientation(Ogre::Quaternion::IDENTITY);
     orientation =
-        orientation * Ogre::Quaternion(origin.rotation.w, origin.rotation.x, origin.rotation.y, origin.rotation.z);
+        orientation * Ogre::Quaternion(static_cast<float>(origin.rotation.w),
+                                       static_cast<float>(origin.rotation.x),
+                                       static_cast<float>(origin.rotation.y),
+                                       static_cast<float>(origin.rotation.z));
 
     offset_position = position;
     offset_orientation = orientation;
@@ -780,8 +784,8 @@ bool RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
     {
       const urdf::Sphere& sphere = static_cast<const urdf::Sphere&>(geom);
       entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Sphere, scene_manager_);
-
-      scale = Ogre::Vector3(sphere.radius * 2, sphere.radius * 2, sphere.radius * 2);
+      float diameter = static_cast<float>(sphere.radius) * 2.0f;
+      scale = Ogre::Vector3(diameter, diameter, diameter);
       break;
     }
     case urdf::Geometry::BOX:
@@ -789,7 +793,9 @@ bool RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
       const urdf::Box& box = static_cast<const urdf::Box&>(geom);
       entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Cube, scene_manager_);
 
-      scale = Ogre::Vector3(box.dim.x, box.dim.y, box.dim.z);
+      scale = Ogre::Vector3(static_cast<float>(box.dim.x),
+                            static_cast<float>(box.dim.y),
+                            static_cast<float>(box.dim.z));
 
       break;
     }
@@ -802,7 +808,9 @@ bool RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
       offset_orientation = offset_orientation * rotX;
 
       entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Cylinder, scene_manager_);
-      scale = Ogre::Vector3(cylinder.radius * 2, cylinder.length, cylinder.radius * 2);
+      scale = Ogre::Vector3(static_cast<float>(cylinder.radius * 2),
+                            static_cast<float>(cylinder.length),
+                            static_cast<float>(cylinder.radius * 2));
       break;
     }
     case urdf::Geometry::MESH:
@@ -812,7 +820,9 @@ bool RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
       if (mesh.filename.empty())
         return false;
 
-      scale = Ogre::Vector3(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+      scale = Ogre::Vector3(static_cast<float>(mesh.scale.x),
+                            static_cast<float>(mesh.scale.y),
+                            static_cast<float>(mesh.scale.z));
 
       std::string model_name = mesh.filename;
 
@@ -932,8 +942,8 @@ bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
   Ogre::Quaternion offset_orientation(Ogre::Quaternion::IDENTITY);
 
   {
-    const Eigen::Vector3d& origin_position = origin.translation();
-    Eigen::Quaterniond origin_orientation(origin.rotation());
+    Eigen::Vector3f origin_position = origin.translation().cast<float>();
+    Eigen::Quaternionf origin_orientation(origin.rotation().cast<float>());
     Ogre::Vector3 position = Ogre::Vector3(origin_position.x(), origin_position.y(), origin_position.z());
     Ogre::Quaternion orientation = Ogre::Quaternion(
         origin_orientation.w(), origin_orientation.x(), origin_orientation.y(), origin_orientation.z());
@@ -948,7 +958,7 @@ bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
       case shapes::SPHERE:
       {
         entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Sphere, scene_manager_);
-        double d = 2.0 * static_cast<const shapes::Sphere&>(geom).radius;
+        float d = 2.0f * static_cast<float>(static_cast<const shapes::Sphere&>(geom).radius);
         scale = Ogre::Vector3(d, d, d);
         break;
       }
@@ -956,7 +966,9 @@ bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
       {
         entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Cube, scene_manager_);
         const double* sz = static_cast<const shapes::Box&>(geom).size;
-        scale = Ogre::Vector3(sz[0], sz[1], sz[2]);
+        scale = Ogre::Vector3(static_cast<float>(sz[0]),
+                              static_cast<float>(sz[1]),
+                              static_cast<float>(sz[2]));
         break;
       }
       case shapes::CYLINDER:
@@ -966,16 +978,16 @@ bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
         offset_orientation = offset_orientation * rotX;
 
         entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Cylinder, scene_manager_);
-        double d = 2.0 * static_cast<const shapes::Cylinder&>(geom).radius;
-        double z = static_cast<const shapes::Cylinder&>(geom).length;
+        float d = 2.0f * static_cast<float>(static_cast<const shapes::Cylinder&>(geom).radius);
+        float z = static_cast<float>(static_cast<const shapes::Cylinder&>(geom).length);
         scale = Ogre::Vector3(d, z, d);
         break;
       }
       case shapes::CONE:
       {
         entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Cone, scene_manager_);
-        double d = 2.0 * static_cast<const shapes::Cone&>(geom).radius;
-        double z = static_cast<const shapes::Cylinder&>(geom).length;
+        float d = 2.0f * static_cast<float>(static_cast<const shapes::Cone&>(geom).radius);
+        float z = static_cast<float>(static_cast<const shapes::Cone&>(geom).length);
         scale = Ogre::Vector3(d, d, z);
         break;
       }
@@ -1034,21 +1046,24 @@ bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
               unsigned int i3 = i * 3;
               if (mesh.triangle_normals && !mesh.vertex_normals)
               {
-                normal.x = mesh.triangle_normals[i3];
-                normal.y = mesh.triangle_normals[i3 + 1];
-                normal.z = mesh.triangle_normals[i3 + 2];
+                normal.x = static_cast<float>(mesh.triangle_normals[i3]);
+                normal.y = static_cast<float>(mesh.triangle_normals[i3 + 1]);
+                normal.z = static_cast<float>(mesh.triangle_normals[i3 + 2]);
               }
 
               std::vector<Ogre::Vector3> verticies(3);
               std::vector<Ogre::Vector3> normals(3);
-              for (int k = 0; k < 3; ++k)
+              for (size_t k = 0; k < 3; ++k)
               {
                 unsigned int vi = 3 * mesh.triangles[i3 + k];
-                verticies[k] = Ogre::Vector3(mesh.vertices[vi], mesh.vertices[vi + 1], mesh.vertices[vi + 2]);
+                verticies[k] = Ogre::Vector3(static_cast<float>(mesh.vertices[vi]),
+                                             static_cast<float>(mesh.vertices[vi + 1]),
+                                             static_cast<float>(mesh.vertices[vi + 2]));
                 if (mesh.vertex_normals)
                 {
-                  normals[k] =
-                      Ogre::Vector3(mesh.vertex_normals[vi], mesh.vertex_normals[vi + 1], mesh.vertex_normals[vi + 2]);
+                  normals[k] = Ogre::Vector3(static_cast<float>(mesh.vertex_normals[vi]),
+                                             static_cast<float>(mesh.vertex_normals[vi + 1]),
+                                             static_cast<float>(mesh.vertex_normals[vi + 2]));
                 }
                 else if (mesh.triangle_normals)
                 {
@@ -1208,13 +1223,13 @@ bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
     size_t pointCount = 0;
     {
       // traverse all leafs in the tree:
-      for (octomap::OcTree::iterator it = octree->begin(octree_depth), end = octree->end(); it != end; ++it)
+      for (octomap::OcTree::iterator it = octree->begin(static_cast<unsigned char>(octree_depth)), end = octree->end(); it != end; ++it)
       {
         bool display_voxel = false;
 
         // the left part evaluates to 1 for free voxels and 2 for occupied
         // voxels
-        if (((int)octree->isNodeOccupied(*it) + 1) & render_mode_mask)
+        if ((static_cast<unsigned>(octree->isNodeOccupied(*it)) + 1) & render_mode_mask)
         {
           // check if current voxel has neighbors on all sides -> no need to be
           // displayed
@@ -1223,11 +1238,11 @@ bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
           octomap::OcTreeKey key;
           octomap::OcTreeKey nKey = it.getKey();
 
-          for (key[2] = nKey[2] - 1; allNeighborsFound && key[2] <= nKey[2] + 1; ++key[2])
+          for (key[2] = static_cast<octomap::key_type>(nKey[2] - 1); allNeighborsFound && key[2] <= static_cast<octomap::key_type>(nKey[2] + 1); ++key[2])
           {
-            for (key[1] = nKey[1] - 1; allNeighborsFound && key[1] <= nKey[1] + 1; ++key[1])
+            for (key[1] = static_cast<octomap::key_type>(nKey[1] - 1); allNeighborsFound && key[1] <= static_cast<octomap::key_type>(nKey[1] + 1); ++key[1])
             {
-              for (key[0] = nKey[0] - 1; allNeighborsFound && key[0] <= nKey[0] + 1; ++key[0])
+              for (key[0] = static_cast<octomap::key_type>(nKey[0] - 1); allNeighborsFound && key[0] <= static_cast<octomap::key_type>(nKey[0] + 1); ++key[0])
               {
                 if (key != nKey)
                 {
@@ -1235,7 +1250,7 @@ bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
 
                   // the left part evaluates to 1 for free voxels and 2 for
                   // occupied voxels
-                  if (!(node && (((int)octree->isNodeOccupied(node)) + 1) & render_mode_mask))
+                  if (!(node && (static_cast<unsigned>(octree->isNodeOccupied(node)) + 1) & render_mode_mask))
                   {
                     // we do not have a neighbor => break!
                     allNeighborsFound = false;
@@ -1252,9 +1267,9 @@ bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
         {
           rviz::PointCloud::Point newPoint;
 
-          newPoint.position.x = it.getX();
-          newPoint.position.y = it.getY();
-          newPoint.position.z = it.getZ();
+          newPoint.position.x = static_cast<float>(it.getX());
+          newPoint.position.y = static_cast<float>(it.getY());
+          newPoint.position.z = static_cast<float>(it.getZ());
 
           float cell_probability;
 
@@ -1264,8 +1279,8 @@ bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
               setOctomapColor(newPoint.position.z, minZ, maxZ, color_factor, &newPoint);
               break;
             case OCTOMAP_PROBABLILTY_COLOR:
-              cell_probability = it->getOccupancy();
-              newPoint.setColor((1.0f - cell_probability), cell_probability, 0.0);
+              cell_probability = static_cast<float>(it->getOccupancy());
+              newPoint.setColor((1.0f - cell_probability), cell_probability, 0.0f);
               break;
             default:
               break;
@@ -1280,9 +1295,9 @@ bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
       }
     }
 
-    for (size_t i = 0; i < octree_depth; ++i)
+    for (unsigned i = 0; i < octree_depth; ++i)
     {
-      double size = octree->getNodeSize(i + 1);
+      float size = static_cast<float>(octree->getNodeSize(static_cast<unsigned>(i + 1)));
 
       std::stringstream sname;
       static int count = 0;
@@ -1293,7 +1308,7 @@ bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
       cloud->clear();
       cloud->setDimensions(size, size, size);
 
-      cloud->addPoints(&pointBuf[i].front(), pointBuf[i].size());
+      cloud->addPoints(&pointBuf[i].front(), static_cast<unsigned>(pointBuf[i].size()));
       pointBuf[i].clear();
 
       offset_node->attachObject(cloud);
@@ -1317,17 +1332,17 @@ void RobotLink::setOctomapColor(double z_pos,
                                 rviz::PointCloud::Point* point)
 {
   int i;
-  double m, n, f;
+  float m, n, f;
 
-  double s = 1.0;
-  double v = 1.0;
+  float s = 1.0f;
+  float v = 1.0f;
 
-  double h = (1.0 - std::min(std::max((z_pos - min_z) / (max_z - min_z), 0.0), 1.0)) * color_factor;
+  float h = static_cast<float>((1.0 - std::min(std::max((z_pos - min_z) / (max_z - min_z), 0.0), 1.0)) * color_factor);
 
-  h -= floor(h);
+  h -= static_cast<float>(floor(static_cast<double>(h)));
   h *= 6;
-  i = floor(h);
-  f = h - i;
+  i = static_cast<int>(floor(static_cast<double>(h)));
+  f = h - static_cast<float>(i);
   if (!(i & 1))
     f = 1 - f;  // if i is even
   m = v * (1 - s);
@@ -1355,7 +1370,7 @@ void RobotLink::setOctomapColor(double z_pos,
       point->setColor(v, m, n);
       break;
     default:
-      point->setColor(1, 0.5, 0.5);
+      point->setColor(1.0f, 0.5f, 0.5f);
       break;
   }
 }
@@ -1494,7 +1509,7 @@ void RobotLink::updateTrail()
     if (trail_)
     {
       scene_manager_->destroyRibbonTrail(trail_);
-      trail_ = NULL;
+      trail_ = nullptr;
     }
   }
 }
@@ -1508,7 +1523,7 @@ void RobotLink::updateAxes()
       static int count = 0;
       std::stringstream ss;
       ss << "Axes for link " << name_ << count++;
-      axes_ = new rviz::Axes(scene_manager_, robot_->getOtherNode(), 0.1, 0.01);
+      axes_ = new rviz::Axes(scene_manager_, robot_->getOtherNode(), 0.1f, 0.01f);
       axes_->getSceneNode()->setVisible(getEnabled());
 
       axes_->setPosition(position_property_->getVector());
@@ -1520,7 +1535,7 @@ void RobotLink::updateAxes()
     if (axes_)
     {
       delete axes_;
-      axes_ = NULL;
+      axes_ = nullptr;
     }
   }
 }

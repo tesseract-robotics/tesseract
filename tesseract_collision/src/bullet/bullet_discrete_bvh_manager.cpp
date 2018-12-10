@@ -83,7 +83,7 @@ DiscreteContactManagerBasePtr BulletDiscreteBVHManager::clone() const
 
     new_cow->setWorldTransform(cow.second->getWorldTransform());
 
-    new_cow->setContactProcessingThreshold(contact_distance_);
+    new_cow->setContactProcessingThreshold(static_cast<btScalar>(contact_distance_));
     manager->addCollisionObject(new_cow);
   }
 
@@ -204,7 +204,7 @@ void BulletDiscreteBVHManager::setContactDistanceThreshold(double contact_distan
   for (auto& co : link2cow_)
   {
     COWPtr& cow = co.second;
-    cow->setContactProcessingThreshold(contact_distance);
+    cow->setContactProcessingThreshold(static_cast<btScalar>(contact_distance));
     assert(cow->getBroadphaseHandle() != nullptr);
     updateBroadphaseAABB(cow, broadphase_, dispatcher_);
   }
@@ -245,7 +245,7 @@ void BulletDiscreteBVHManager::contactTest(const COWPtr& cow, ContactTestData &c
   btVector3 min_aabb, max_aabb;
   cow->getAABB(min_aabb, max_aabb);
 
-  DiscreteCollisionCollector cc(collisions, cow, cow->getContactProcessingThreshold());
+  DiscreteCollisionCollector cc(collisions, cow, static_cast<double>(cow->getContactProcessingThreshold()));
 
   TesseractSingleContactCallback contactCB(cow.get(), dispatcher_.get(), dispatch_info_, cc);
 

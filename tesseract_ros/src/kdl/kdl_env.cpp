@@ -40,17 +40,21 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include "tesseract_ros/kdl/kdl_env.h"
-#include "tesseract_ros/kdl/kdl_chain_kin.h"
-#include "tesseract_ros/kdl/kdl_joint_kin.h"
-#include "tesseract_ros/kdl/kdl_utils.h"
-#include "tesseract_ros/ros_tesseract_utils.h"
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <eigen_conversions/eigen_msg.h>
 #include <functional>
 #include <geometric_shapes/shape_operations.h>
 #include <iostream>
 #include <limits>
 #include <octomap/octomap.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include "tesseract_ros/kdl/kdl_env.h"
+#include "tesseract_ros/kdl/kdl_chain_kin.h"
+#include "tesseract_ros/kdl/kdl_joint_kin.h"
+#include "tesseract_ros/kdl/kdl_utils.h"
+#include "tesseract_ros/ros_tesseract_utils.h"
 
 const std::string DEFAULT_DISCRETE_CONTACT_MANAGER_PLUGIN_PARAM = "tesseract_collision/BulletDiscreteBVHManager";
 const std::string DEFAULT_CONTINUOUS_CONTACT_MANAGER_PLUGIN_PARAM = "tesseract_collision/BulletCastBVHManager";
@@ -99,7 +103,7 @@ bool KDLEnv::init(urdf::ModelInterfaceConstSharedPtr urdf_model, srdf::ModelCons
     current_state_ = EnvStatePtr(new EnvState());
     kdl_jnt_array_.resize(kdl_tree_->getNrOfJoints());
     joint_names_.resize(kdl_tree_->getNrOfJoints());
-    int j = 0;
+    size_t j = 0;
     for (const auto& seg : kdl_tree_->getSegments())
     {
       const KDL::Joint& jnt = seg.second.segment.getJoint();
@@ -272,7 +276,7 @@ EnvStatePtr KDLEnv::getState(const std::vector<std::string>& joint_names,
 Eigen::VectorXd KDLEnv::getCurrentJointValues() const
 {
   Eigen::VectorXd jv;
-  jv.resize(joint_names_.size());
+  jv.resize(static_cast<long int>(joint_names_.size()));
   for (auto j = 0u; j < joint_names_.size(); ++j)
   {
     jv(j) = current_state_->joints[joint_names_[j]];

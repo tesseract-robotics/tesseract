@@ -1,13 +1,20 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tesseract_monitoring)
 
-add_compile_options(-std=c++11 -Wall -Wextra)
+add_compile_options(
+  -std=c++11
+  -Wall
+  -Wextra
+  -Wsuggest-override
+  -Wconversion
+  -Wsign-conversion)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   tesseract_ros
   tesseract_collision
   tesseract_msgs
+  tesseract_core
   dynamic_reconfigure
 )
 
@@ -23,6 +30,7 @@ catkin_package(
     tesseract_ros
     tesseract_collision
     tesseract_msgs
+    tesseract_core
     dynamic_reconfigure
 #  DEPENDS system_lib
 )

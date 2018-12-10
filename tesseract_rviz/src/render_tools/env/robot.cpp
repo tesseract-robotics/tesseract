@@ -33,9 +33,8 @@
 #include <tesseract_core/basic_types.h>
 #include <tesseract_ros/ros_tesseract_utils.h>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
-#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <rviz/display_context.h>
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/enum_property.h>
@@ -44,7 +43,6 @@
 #include <rviz/ogre_helpers/axes.h>
 #include <rviz/ogre_helpers/object.h>
 #include <rviz/ogre_helpers/shape.h>
-#pragma GCC diagnostic pop
 
 #include <urdf_model/model.h>
 
@@ -57,6 +55,8 @@
 
 #include <ros/assert.h>
 #include <ros/console.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
 
 namespace tesseract_rviz
 {
@@ -342,8 +342,8 @@ void Robot::load(urdf::ModelInterfaceConstSharedPtr urdf,
   // Populate the list of active links
   tesseract::tesseract_ros::getActiveLinkNamesRecursive(active_links_, urdf->getRoot(), false);
 
-  // the root link is discovered below.  Set to NULL until found.
-  root_link_ = NULL;
+  // the root link is discovered below.  Set to nullptr until found.
+  root_link_ = nullptr;
 
   // Create properties for each link.
   // Properties are not added to display until changedLinkTreeStyle() is called
@@ -422,7 +422,7 @@ void Robot::unparentLinkProperties()
   M_NameToLink::iterator link_end = links_.end();
   for (; link_it != link_end; ++link_it)
   {
-    link_it->second->setParentProperty(NULL);
+    link_it->second->setParentProperty(nullptr);
   }
 
   // remove joint properties from their parents
@@ -430,7 +430,7 @@ void Robot::unparentLinkProperties()
   M_NameToJoint::iterator joint_end = joints_.end();
   for (; joint_it != joint_end; ++joint_it)
   {
-    joint_it->second->setParentProperty(NULL);
+    joint_it->second->setParentProperty(nullptr);
   }
 }
 
@@ -729,7 +729,7 @@ RobotLink* Robot::getLink(const std::string& name)
   if (it == links_.end())
   {
     ROS_WARN("Link [%s] does not exist", name.c_str());
-    return NULL;
+    return nullptr;
   }
 
   return it->second;
@@ -741,7 +741,7 @@ RobotJoint* Robot::getJoint(const std::string& name)
   if (it == joints_.end())
   {
     ROS_WARN("Joint [%s] does not exist", name.c_str());
-    return NULL;
+    return nullptr;
   }
 
   return it->second;

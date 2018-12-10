@@ -28,9 +28,13 @@
 #ifndef TESSERACT_COLLISION_DISCRETE_CONTACT_MANAGER_BASE_H
 #define TESSERACT_COLLISION_DISCRETE_CONTACT_MANAGER_BASE_H
 
-#include <tesseract_core/basic_types.h>
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <geometric_shapes/shapes.h>
 #include <memory>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include <tesseract_core/basic_types.h>
 
 namespace tesseract
 {
@@ -39,7 +43,7 @@ class DiscreteContactManagerBase
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  virtual ~DiscreteContactManagerBase() {}
+  virtual ~DiscreteContactManagerBase() = default;
   /**
    * @brief Clone the manager
    *

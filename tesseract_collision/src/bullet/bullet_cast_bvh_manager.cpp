@@ -87,7 +87,7 @@ ContinuousContactManagerBasePtr BulletCastBVHManager::clone() const
 
     new_cow->setWorldTransform(cow.second->getWorldTransform());
 
-    new_cow->setContactProcessingThreshold(contact_distance_);
+    new_cow->setContactProcessingThreshold(static_cast<btScalar>(contact_distance_));
     manager->addCollisionObject(new_cow);
   }
 
@@ -360,7 +360,7 @@ void BulletCastBVHManager::setContactDistanceThreshold(double contact_distance)
   for (auto& co : link2cow_)
   {
     COWPtr& cow = co.second;
-    cow->setContactProcessingThreshold(contact_distance);
+    cow->setContactProcessingThreshold(static_cast<btScalar>(contact_distance));
     if (cow->getBroadphaseHandle())
       updateBroadphaseAABB(cow, broadphase_, dispatcher_);
   }
@@ -368,7 +368,7 @@ void BulletCastBVHManager::setContactDistanceThreshold(double contact_distance)
   for (auto& co : link2castcow_)
   {
     COWPtr& cow = co.second;
-    cow->setContactProcessingThreshold(contact_distance);
+    cow->setContactProcessingThreshold(static_cast<btScalar>(contact_distance));
     if (cow->getBroadphaseHandle())
       updateBroadphaseAABB(cow, broadphase_, dispatcher_);
   }
@@ -421,7 +421,7 @@ void BulletCastBVHManager::contactTest(const COWPtr& cow, ContactTestData &colli
   btVector3 aabb_min, aabb_max;
   cow->getAABB(aabb_min, aabb_max);
 
-  CastCollisionCollector cc(collisions, cow, cow->getContactProcessingThreshold());
+  CastCollisionCollector cc(collisions, cow, static_cast<double>(cow->getContactProcessingThreshold()));
 
   TesseractSingleContactCallback contactCB(cow.get(), dispatcher_.get(), dispatch_info_, cc);
 
