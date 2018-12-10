@@ -34,8 +34,12 @@
 
 /* Author: Ioan Sucan */
 
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <OgreQuaternion.h>
 #include <OgreVector3.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
 #include <tesseract_rviz/render_tools/link_updater.h>
 
 bool tesseract_rviz::LinkUpdater::getLinkTransforms(const std::string& link_name,
@@ -51,8 +55,8 @@ bool tesseract_rviz::LinkUpdater::getLinkTransforms(const std::string& link_name
   }
 
   const Eigen::Isometry3d& transform = it->second;
-  const Eigen::Vector3d& robot_visual_position = transform.translation();
-  Eigen::Quaterniond robot_visual_orientation(transform.rotation());
+  Eigen::Vector3f robot_visual_position = transform.translation().cast<float>();
+  Eigen::Quaternionf robot_visual_orientation(transform.rotation().cast<float>());
   visual_position = Ogre::Vector3(robot_visual_position.x(), robot_visual_position.y(), robot_visual_position.z());
   visual_orientation = Ogre::Quaternion(robot_visual_orientation.w(),
                                         robot_visual_orientation.x(),

@@ -26,16 +26,9 @@
 #ifndef TESSERACT_ROS_UTILS_H
 #define TESSERACT_ROS_UTILS_H
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
-#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <octomap_msgs/conversions.h>
-#pragma GCC diagnostic pop
-
-#include <tesseract_msgs/TesseractState.h>
-#include <tesseract_msgs/ContactResultVector.h>
-#include <tesseract_ros/ros_basic_env.h>
-#include <tesseract_core/basic_types.h>
 #include <geometric_shapes/shape_messages.h>
 #include <geometric_shapes/shapes.h>
 #include <geometric_shapes/shape_operations.h>
@@ -43,6 +36,12 @@
 #include <eigen_conversions/eigen_msg.h>
 #include <ros/console.h>
 #include <trajectory_msgs/JointTrajectory.h>
+#include <tesseract_msgs/TesseractState.h>
+#include <tesseract_msgs/ContactResultVector.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include <tesseract_ros/ros_basic_env.h>
+#include <tesseract_core/basic_types.h>
 
 namespace tesseract
 {
@@ -234,10 +233,10 @@ static inline void attachableObjectToAttachableObjectMsg(tesseract_msgs::Attacha
       if (!ao.visual.shape_colors.empty())
       {
         std_msgs::ColorRGBA color;
-        color.r = ao.visual.shape_colors[i](0);
-        color.g = ao.visual.shape_colors[i](1);
-        color.b = ao.visual.shape_colors[i](2);
-        color.a = ao.visual.shape_colors[i](3);
+        color.r = static_cast<float>(ao.visual.shape_colors[i](0));
+        color.g = static_cast<float>(ao.visual.shape_colors[i](1));
+        color.b = static_cast<float>(ao.visual.shape_colors[i](2));
+        color.a = static_cast<float>(ao.visual.shape_colors[i](3));
         ao_msg.visual.mesh_colors.push_back(color);
       }
     }
@@ -255,10 +254,10 @@ static inline void attachableObjectToAttachableObjectMsg(tesseract_msgs::Attacha
       if (!ao.visual.shape_colors.empty())
       {
         std_msgs::ColorRGBA color;
-        color.r = ao.visual.shape_colors[i](0);
-        color.g = ao.visual.shape_colors[i](1);
-        color.b = ao.visual.shape_colors[i](2);
-        color.a = ao.visual.shape_colors[i](3);
+        color.r = static_cast<float>(ao.visual.shape_colors[i](0));
+        color.g = static_cast<float>(ao.visual.shape_colors[i](1));
+        color.b = static_cast<float>(ao.visual.shape_colors[i](2));
+        color.a = static_cast<float>(ao.visual.shape_colors[i](3));
         ao_msg.visual.octomap_colors.push_back(color);
       }
     }
@@ -275,10 +274,10 @@ static inline void attachableObjectToAttachableObjectMsg(tesseract_msgs::Attacha
       if (!ao.visual.shape_colors.empty())
       {
         std_msgs::ColorRGBA color;
-        color.r = ao.visual.shape_colors[i](0);
-        color.g = ao.visual.shape_colors[i](1);
-        color.b = ao.visual.shape_colors[i](2);
-        color.a = ao.visual.shape_colors[i](3);
+        color.r = static_cast<float>(ao.visual.shape_colors[i](0));
+        color.g = static_cast<float>(ao.visual.shape_colors[i](1));
+        color.b = static_cast<float>(ao.visual.shape_colors[i](2));
+        color.a = static_cast<float>(ao.visual.shape_colors[i](3));
         ao_msg.visual.plane_colors.push_back(color);
       }
     }
@@ -295,10 +294,10 @@ static inline void attachableObjectToAttachableObjectMsg(tesseract_msgs::Attacha
       if (!ao.visual.shape_colors.empty())
       {
         std_msgs::ColorRGBA color;
-        color.r = ao.visual.shape_colors[i](0);
-        color.g = ao.visual.shape_colors[i](1);
-        color.b = ao.visual.shape_colors[i](2);
-        color.a = ao.visual.shape_colors[i](3);
+        color.r = static_cast<float>(ao.visual.shape_colors[i](0));
+        color.g = static_cast<float>(ao.visual.shape_colors[i](1));
+        color.b = static_cast<float>(ao.visual.shape_colors[i](2));
+        color.a = static_cast<float>(ao.visual.shape_colors[i](3));
         ao_msg.visual.primitive_colors.push_back(color);
       }
     }
@@ -320,10 +319,10 @@ static inline void attachableObjectToAttachableObjectMsg(tesseract_msgs::Attacha
       if (!ao.collision.shape_colors.empty())
       {
         std_msgs::ColorRGBA color;
-        color.r = ao.collision.shape_colors[i](0);
-        color.g = ao.collision.shape_colors[i](1);
-        color.b = ao.collision.shape_colors[i](2);
-        color.a = ao.collision.shape_colors[i](3);
+        color.r = static_cast<float>(ao.collision.shape_colors[i](0));
+        color.g = static_cast<float>(ao.collision.shape_colors[i](1));
+        color.b = static_cast<float>(ao.collision.shape_colors[i](2));
+        color.a = static_cast<float>(ao.collision.shape_colors[i](3));
         ao_msg.collision.mesh_colors.push_back(color);
       }
 
@@ -345,10 +344,10 @@ static inline void attachableObjectToAttachableObjectMsg(tesseract_msgs::Attacha
       if (!ao.collision.shape_colors.empty())
       {
         std_msgs::ColorRGBA color;
-        color.r = ao.collision.shape_colors[i](0);
-        color.g = ao.collision.shape_colors[i](1);
-        color.b = ao.collision.shape_colors[i](2);
-        color.a = ao.collision.shape_colors[i](3);
+        color.r = static_cast<float>(ao.collision.shape_colors[i](0));
+        color.g = static_cast<float>(ao.collision.shape_colors[i](1));
+        color.b = static_cast<float>(ao.collision.shape_colors[i](2));
+        color.a = static_cast<float>(ao.collision.shape_colors[i](3));
         ao_msg.collision.octomap_colors.push_back(color);
       }
 
@@ -369,10 +368,10 @@ static inline void attachableObjectToAttachableObjectMsg(tesseract_msgs::Attacha
       if (!ao.collision.shape_colors.empty())
       {
         std_msgs::ColorRGBA color;
-        color.r = ao.collision.shape_colors[i](0);
-        color.g = ao.collision.shape_colors[i](1);
-        color.b = ao.collision.shape_colors[i](2);
-        color.a = ao.collision.shape_colors[i](3);
+        color.r = static_cast<float>(ao.collision.shape_colors[i](0));
+        color.g = static_cast<float>(ao.collision.shape_colors[i](1));
+        color.b = static_cast<float>(ao.collision.shape_colors[i](2));
+        color.a = static_cast<float>(ao.collision.shape_colors[i](3));
         ao_msg.collision.plane_colors.push_back(color);
       }
 
@@ -393,10 +392,10 @@ static inline void attachableObjectToAttachableObjectMsg(tesseract_msgs::Attacha
       if (!ao.collision.shape_colors.empty())
       {
         std_msgs::ColorRGBA color;
-        color.r = ao.collision.shape_colors[i](0);
-        color.g = ao.collision.shape_colors[i](1);
-        color.b = ao.collision.shape_colors[i](2);
-        color.a = ao.collision.shape_colors[i](3);
+        color.r = static_cast<float>(ao.collision.shape_colors[i](0));
+        color.g = static_cast<float>(ao.collision.shape_colors[i](1));
+        color.b = static_cast<float>(ao.collision.shape_colors[i](2));
+        color.a = static_cast<float>(ao.collision.shape_colors[i](3));
         ao_msg.collision.primitive_colors.push_back(color);
       }
 
@@ -659,7 +658,7 @@ static inline void tesseractTrajectoryToJointTrajectoryMsg(trajectory_msgs::Join
   // Initialze the whole traject with the current state.
   std::map<std::string, int> jn_to_index;
   traj_msg.joint_names.resize(start_state.joints.size());
-  traj_msg.points.resize(traj.rows());
+  traj_msg.points.resize(static_cast<size_t>(traj.rows()));
   for (int i = 0; i < traj.rows(); ++i)
   {
     trajectory_msgs::JointTrajectoryPoint jtp;
@@ -670,15 +669,15 @@ static inline void tesseractTrajectoryToJointTrajectoryMsg(trajectory_msgs::Join
     {
       if (i == 0)
       {
-        traj_msg.joint_names[j] = joint.first;
+        traj_msg.joint_names[static_cast<size_t>(j)] = joint.first;
         jn_to_index[joint.first] = j;
       }
-      jtp.positions[j] = joint.second;
+      jtp.positions[static_cast<size_t>(j)] = joint.second;
 
       ++j;
     }
     jtp.time_from_start = ros::Duration(i);
-    traj_msg.points[i] = jtp;
+    traj_msg.points[static_cast<size_t>(i)] = jtp;
   }
 
   // Update only the joints which were provided.
@@ -686,7 +685,7 @@ static inline void tesseractTrajectoryToJointTrajectoryMsg(trajectory_msgs::Join
   {
     for (int j = 0; j < traj.cols(); ++j)
     {
-      traj_msg.points[i].positions[jn_to_index[joint_names[j]]] = traj(i, j);
+      traj_msg.points[static_cast<size_t>(i)].positions[static_cast<size_t>(jn_to_index[joint_names[static_cast<size_t>(j)]])] = traj(i, j);
     }
   }
 }
@@ -721,23 +720,23 @@ static inline void tesseractTrajectoryToJointTrajectoryMsg(trajectory_msgs::Join
   // Initialze the whole traject with the current state.
   std::map<std::string, int> jn_to_index;
   traj_msg.joint_names.resize(joint_names.size());
-  traj_msg.points.resize(traj.rows());
+  traj_msg.points.resize(static_cast<size_t>(traj.rows()));
 
   for (int i = 0; i < traj.rows(); ++i)
   {
     trajectory_msgs::JointTrajectoryPoint jtp;
-    jtp.positions.resize(traj.cols());
+    jtp.positions.resize(static_cast<size_t>(traj.cols()));
 
     for (int j = 0; j < traj.cols(); ++j)
     {
       if (i == 0)
-        traj_msg.joint_names[j] = joint_names[j];
+        traj_msg.joint_names[static_cast<size_t>(j)] = joint_names[static_cast<size_t>(j)];
 
-      jtp.positions[j] = traj(i, j);
+      jtp.positions[static_cast<size_t>(j)] = traj(i, j);
     }
 
     jtp.time_from_start = ros::Duration(i);
-    traj_msg.points[i] = jtp;
+    traj_msg.points[static_cast<size_t>(i)] = jtp;
   }
 }
 
@@ -892,8 +891,8 @@ static inline void tesseractContactResultToContactResultMsg(tesseract_msgs::Cont
   contact_result_msg.cc_nearest_points[1].y = contact_result.cc_nearest_points[1][1];
   contact_result_msg.cc_nearest_points[1].z = contact_result.cc_nearest_points[1][2];
 
-  contact_result_msg.type_id[0] = contact_result.type_id[0];
-  contact_result_msg.type_id[1] = contact_result.type_id[1];
+  contact_result_msg.type_id[0] = static_cast<char>(contact_result.type_id[0]);
+  contact_result_msg.type_id[1] = static_cast<char>(contact_result.type_id[1]);
 
   if (contact_result.cc_type == ContinouseCollisionTypes::CCType_Time0)
     contact_result_msg.cc_type = 1;
@@ -939,7 +938,7 @@ static inline void getActiveLinkNamesRecursive(std::vector<std::string>& active_
 
 inline shapes::ShapePtr constructShape(const urdf::Geometry* geom)
 {
-  shapes::Shape* result = NULL;
+  shapes::Shape* result = nullptr;
   switch (geom->type)
   {
     case urdf::Geometry::SPHERE:
@@ -967,7 +966,7 @@ inline shapes::ShapePtr constructShape(const urdf::Geometry* geom)
     }
     break;
     default:
-      ROS_ERROR("Unknown geometry type: %d", (int)geom->type);
+      ROS_ERROR("Unknown geometry type: %d", static_cast<int>(geom->type));
       break;
   }
 

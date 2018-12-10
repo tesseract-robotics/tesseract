@@ -42,16 +42,19 @@
 #ifndef TESSERACT_COLLISION_FCL_UTILS_H
 #define TESSERACT_COLLISION_FCL_UTILS_H
 
-//#include <fcl/broadphase/broadphase_collision_manager.h>
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <fcl/broadphase/broadphase_dynamic_AABB_tree.h>
 #include <fcl/narrowphase/collision.h>
 #include <fcl/narrowphase/distance.h>
 #include <memory>
 #include <set>
-#include <tesseract_core/basic_types.h>
-#include <tesseract_collision/contact_checker_common.h>
 #include <geometric_shapes/mesh_operations.h>
 #include <ros/console.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include <tesseract_core/basic_types.h>
+#include <tesseract_collision/contact_checker_common.h>
 
 namespace tesseract
 {

@@ -30,11 +30,10 @@
 #ifndef TESSERACT_RVIZ_ROBOT_H_
 #define TESSERACT_RVIZ_ROBOT_H_
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
-#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <rviz/robot/link_updater.h>
-#pragma GCC diagnostic pop
+#include <urdf/model.h>  // can be replaced later by urdf_model/types.h
 
 #include <string>
 #include <map>
@@ -42,8 +41,8 @@
 #include <OgreVector3.h>
 #include <OgreQuaternion.h>
 #include <OgreAny.h>
+TESSERACT_IGNORE_WARNINGS_POP
 
-#include <urdf/model.h>  // can be replaced later by urdf_model/types.h
 
 namespace Ogre
 {

@@ -34,8 +34,12 @@
 
 /* Author: Yannick Jonetzko */
 
-#include "tesseract_rviz/render_tools/trajectory_panel.h"
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <QHBoxLayout>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include "tesseract_rviz/render_tools/trajectory_panel.h"
 
 namespace tesseract_rviz
 {
@@ -52,8 +56,8 @@ void TrajectoryPanel::onInitialize()
   slider_->setEnabled(false);
   connect(slider_, SIGNAL(valueChanged(int)), this, SLOT(sliderValueChanged(int)));
 
-  maximum_label_ = new QLabel(QString::number(slider_->maximum()));
-  minimum_label_ = new QLabel(QString::number(slider_->minimum()));
+  maximum_label_ = new QLabel(QString::number(slider_->maximum()), nullptr);
+  minimum_label_ = new QLabel(QString::number(slider_->minimum()), nullptr);
   minimum_label_->setFixedWidth(20);
 
   button_ = new QPushButton();
@@ -62,7 +66,7 @@ void TrajectoryPanel::onInitialize()
   connect(button_, SIGNAL(clicked()), this, SLOT(buttonClicked()));
 
   QHBoxLayout* layout = new QHBoxLayout;
-  layout->addWidget(new QLabel("Waypoint:"));
+  layout->addWidget(new QLabel("Waypoint:", nullptr));
   layout->addWidget(minimum_label_);
   layout->addWidget(slider_);
   layout->addWidget(maximum_label_);

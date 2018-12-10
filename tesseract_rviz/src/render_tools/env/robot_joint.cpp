@@ -31,12 +31,12 @@
 #include "tesseract_rviz/render_tools/env/robot.h"
 #include "tesseract_rviz/render_tools/env/robot_link.h"
 
-#include <OgreSceneNode.h>
 #include <tesseract_core/basic_types.h>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
-#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
+#include <OgreSceneNode.h>
+
 #include "rviz/load_resource.h"
 #include "rviz/ogre_helpers/arrow.h"
 #include "rviz/ogre_helpers/axes.h"
@@ -44,7 +44,7 @@
 #include "rviz/properties/quaternion_property.h"
 #include "rviz/properties/string_property.h"
 #include "rviz/properties/vector_property.h"
-#pragma GCC diagnostic pop
+TESSERACT_IGNORE_WARNINGS_POP
 
 namespace tesseract_rviz
 {
@@ -55,13 +55,13 @@ RobotJoint::RobotJoint(Robot* robot, const urdf::JointConstSharedPtr& joint)
   , child_link_name_(joint->child_link_name)
   , has_decendent_links_with_geometry_(true)
   , doing_set_checkbox_(false)
-  , axes_(NULL)
-  , axis_(NULL)
+  , axes_(nullptr)
+  , axis_(nullptr)
 {
-  joint_property_ = new rviz::Property(name_.c_str(), true, "", NULL, SLOT(updateChildVisibility()), this);
+  joint_property_ = new rviz::Property(name_.c_str(), true, "", nullptr, SLOT(updateChildVisibility()), this);
   joint_property_->setIcon(rviz::loadPixmap("package://rviz/icons/classes/RobotJoint.png"));
 
-  details_ = new rviz::Property("Details", QVariant(), "", NULL);
+  details_ = new rviz::Property("Details", QVariant(), "", nullptr);
 
   axes_property_ = new rviz::Property(
       "Show Axes", false, "Enable/disable showing the axes of this joint.", joint_property_, SLOT(updateAxes()), this);
@@ -104,11 +104,11 @@ RobotJoint::RobotJoint(Robot* robot, const urdf::JointConstSharedPtr& joint)
     // continuous joints have lower limit and upper limits of zero,
     // which means this isn't very useful but show it anyhow.
     lower_limit_property_ = new rviz::FloatProperty(
-        "Lower Limit", joint->limits->lower, "Lower limit of this joint.  (Not editable)", joint_property_);
+        "Lower Limit", static_cast<float>(joint->limits->lower), "Lower limit of this joint.  (Not editable)", joint_property_);
     lower_limit_property_->setReadOnly(true);
 
     upper_limit_property_ = new rviz::FloatProperty(
-        "Upper Limit", joint->limits->upper, "Upper limit of this joint.  (Not editable)", joint_property_);
+        "Upper Limit", static_cast<float>(joint->limits->upper), "Upper limit of this joint.  (Not editable)", joint_property_);
     upper_limit_property_->setReadOnly(true);
   }
 
@@ -122,7 +122,9 @@ RobotJoint::RobotJoint(Robot* robot, const urdf::JointConstSharedPtr& joint)
                                              this);
 
     axis_property_ = new rviz::VectorProperty("Joint Axis",
-                                              Ogre::Vector3(joint->axis.x, joint->axis.y, joint->axis.z),
+                                              Ogre::Vector3(static_cast<float>(joint->axis.x),
+                                                            static_cast<float>(joint->axis.y),
+                                                            static_cast<float>(joint->axis.z)),
                                               "Axis of this joint.  (Not editable)",
                                               joint_property_);
     axis_property_->setReadOnly(true);
@@ -132,8 +134,13 @@ RobotJoint::RobotJoint(Robot* robot, const urdf::JointConstSharedPtr& joint)
 
   const urdf::Vector3& pos = joint->parent_to_joint_origin_transform.position;
   const urdf::Rotation& rot = joint->parent_to_joint_origin_transform.rotation;
-  joint_origin_pos_ = Ogre::Vector3(pos.x, pos.y, pos.z);
-  joint_origin_rot_ = Ogre::Quaternion(rot.w, rot.x, rot.y, rot.z);
+  joint_origin_pos_ = Ogre::Vector3(static_cast<float>(pos.x),
+                                    static_cast<float>(pos.y),
+                                    static_cast<float>(pos.z));
+  joint_origin_rot_ = Ogre::Quaternion(static_cast<float>(rot.w),
+                                       static_cast<float>(rot.x),
+                                       static_cast<float>(rot.y),
+                                       static_cast<float>(rot.z));
 }
 
 RobotJoint::RobotJoint(Robot* robot, const std::string& name, const tesseract::AttachedBodyInfo& ab)
@@ -143,13 +150,13 @@ RobotJoint::RobotJoint(Robot* robot, const std::string& name, const tesseract::A
   , child_link_name_(ab.object_name)
   , has_decendent_links_with_geometry_(true)
   , doing_set_checkbox_(false)
-  , axes_(NULL)
-  , axis_(NULL)
+  , axes_(nullptr)
+  , axis_(nullptr)
 {
-  joint_property_ = new rviz::Property(name_.c_str(), true, "", NULL, SLOT(updateChildVisibility()), this);
+  joint_property_ = new rviz::Property(name_.c_str(), true, "", nullptr, SLOT(updateChildVisibility()), this);
   joint_property_->setIcon(rviz::loadPixmap("package://rviz/icons/classes/RobotJoint.png"));
 
-  details_ = new rviz::Property("Details", QVariant(), "", NULL);
+  details_ = new rviz::Property("Details", QVariant(), "", nullptr);
 
   axes_property_ = new rviz::Property(
       "Show Axes", false, "Enable/disable showing the axes of this joint.", joint_property_, SLOT(updateAxes()), this);
@@ -175,8 +182,8 @@ RobotJoint::RobotJoint(Robot* robot, const std::string& name, const tesseract::A
 
   joint_property_->collapse();
 
-  const Eigen::Vector3d& origin_position = ab.transform.translation();
-  Eigen::Quaterniond origin_orientation(ab.transform.rotation());
+  Eigen::Vector3f origin_position = ab.transform.translation().cast<float>();
+  Eigen::Quaternionf origin_orientation(ab.transform.rotation().cast<float>());
 
   joint_origin_pos_ = Ogre::Vector3(origin_position.x(), origin_position.y(), origin_position.z());
   joint_origin_rot_ =
@@ -249,11 +256,11 @@ RobotJoint* RobotJoint::getParentJoint()
 {
   RobotLink* parent_link = robot_->getLink(parent_link_name_);
   if (!parent_link)
-    return NULL;
+    return nullptr;
 
   const std::string& parent_joint_name = parent_link->getParentJointName();
   if (parent_joint_name.empty())
-    return NULL;
+    return nullptr;
 
   return robot_->getJoint(parent_joint_name);
 }
@@ -363,7 +370,7 @@ bool RobotJoint::getEnabled() const
   return joint_property_->getValue().toBool();
 }
 
-bool RobotJoint::styleIsTree() const { return details_->getParent() != NULL; }
+bool RobotJoint::styleIsTree() const { return details_->getParent() != nullptr; }
 void RobotJoint::updateChildVisibility()
 {
   if (doing_set_checkbox_)
@@ -407,7 +414,7 @@ void RobotJoint::updateAxes()
       static int count = 0;
       std::stringstream ss;
       ss << "Axes for joint " << name_ << count++;
-      axes_ = new rviz::Axes(robot_->getSceneManager(), robot_->getOtherNode(), 0.1, 0.01);
+      axes_ = new rviz::Axes(robot_->getSceneManager(), robot_->getOtherNode(), 0.1f, 0.01f);
       axes_->getSceneNode()->setVisible(getEnabled());
 
       axes_->setPosition(position_property_->getVector());
@@ -419,7 +426,7 @@ void RobotJoint::updateAxes()
     if (axes_)
     {
       delete axes_;
-      axes_ = NULL;
+      axes_ = nullptr;
     }
   }
 }
@@ -433,7 +440,7 @@ void RobotJoint::updateAxis()
       static int count = 0;
       std::stringstream ss;
       ss << "Axis for joint " << name_ << count++;
-      axis_ = new rviz::Arrow(robot_->getSceneManager(), robot_->getOtherNode(), 0.15, 0.05, 0.05, 0.08);
+      axis_ = new rviz::Arrow(robot_->getSceneManager(), robot_->getOtherNode(), 0.15f, 0.05f, 0.05f, 0.08f);
       axis_->getSceneNode()->setVisible(getEnabled());
 
       axis_->setPosition(position_property_->getVector());
@@ -441,7 +448,7 @@ void RobotJoint::updateAxis()
 
       // TODO(lucasw) store an Ogre::ColorValue and set it according to
       // joint type.
-      axis_->setColor(0.0, 0.8, 0.0, 1.0);
+      axis_->setColor(0.0f, 0.8f, 0.0f, 1.0f);
     }
   }
   else
@@ -449,7 +456,7 @@ void RobotJoint::updateAxis()
     if (axis_)
     {
       delete axis_;
-      axis_ = NULL;
+      axis_ = nullptr;
     }
   }
 }

@@ -37,15 +37,20 @@
 #ifndef TESSERACT_RVIZ_TRAJECTORY_VISUALIZATION
 #define TESSERACT_RVIZ_TRAJECTORY_VISUALIZATION
 
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <rviz/display.h>
 #include <rviz/panel_dock_widget.h>
 #include <boost/thread/mutex.hpp>
+TESSERACT_IGNORE_WARNINGS_POP
 
 #ifndef Q_MOC_RUN
-#include <tesseract_rviz/render_tools/state_visualization.h>
-#include <tesseract_rviz/render_tools/trajectory_panel.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <tesseract_msgs/Trajectory.h>
+TESSERACT_IGNORE_WARNINGS_POP
+#include <tesseract_rviz/render_tools/state_visualization.h>
+#include <tesseract_rviz/render_tools/trajectory_panel.h>
 #endif
 
 namespace rviz

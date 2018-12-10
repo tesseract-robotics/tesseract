@@ -23,13 +23,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "tesseract_ros/kdl/kdl_joint_kin.h"
-#include "tesseract_ros/kdl/kdl_utils.h"
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <eigen_conversions/eigen_kdl.h>
 #include <kdl/segment.hpp>
 #include <kdl_parser/kdl_parser.hpp>
 #include <ros/ros.h>
 #include <urdf/model.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include "tesseract_ros/kdl/kdl_joint_kin.h"
+#include "tesseract_ros/kdl/kdl_utils.h"
 
 namespace tesseract
 {
@@ -45,7 +49,7 @@ KDL::JntArray KDLJointKin::getKDLJntArray(const EnvState& state,
   assert(joint_names.size() == static_cast<unsigned>(joint_angles.size()));
 
   KDL::JntArray kdl_joints;
-  kdl_joints.resize(state.joints.size());
+  kdl_joints.resize(static_cast<unsigned>(state.joints.size()));
   for (const auto& jnt : state.joints)
     kdl_joints.data(joint_to_qnr_.at(jnt.first)) = jnt.second;
 
@@ -105,7 +109,7 @@ bool KDLJointKin::calcJacobianHelper(KDL::Jacobian& jacobian,
                                      const KDL::JntArray& kdl_joints,
                                      const std::string& link_name) const
 {
-  jacobian.resize(kdl_joints.data.size());
+  jacobian.resize(static_cast<unsigned>(kdl_joints.data.size()));
   if (jac_solver_->JntToJac(kdl_joints, jacobian, link_name) < 0)
   {
     ROS_ERROR("Failed to calculate jacobian");
@@ -225,7 +229,7 @@ bool KDLJointKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) cons
     if ((vec[i] < joint_limits_(i, 0)) || (vec(i) > joint_limits_(i, 1)))
     {
       ROS_WARN("Joint %s is out-of-range (%g < %g < %g)",
-               joint_list_[i].c_str(),
+               joint_list_[static_cast<size_t>(i)].c_str(),
                joint_limits_(i, 0),
                vec(i),
                joint_limits_(i, 1));
@@ -290,7 +294,7 @@ bool KDLJointKin::init(urdf::ModelInterfaceConstSharedPtr model,
   }
 
   joint_list_.resize(joint_names.size());
-  joint_limits_.resize(joint_names.size(), 2);
+  joint_limits_.resize(static_cast<long int>(joint_names.size()), 2);
   joint_qnr_.resize(joint_names.size());
 
   unsigned j = 0;
@@ -317,7 +321,7 @@ bool KDLJointKin::init(urdf::ModelInterfaceConstSharedPtr model,
       addChildrenRecursive(model_->getLink(seg.getName()));
 
     joint_list_[j] = jnt.getName();
-    joint_qnr_[j] = tree_element.second.q_nr;
+    joint_qnr_[j] = static_cast<int>(tree_element.second.q_nr);
 
     urdf::JointConstSharedPtr joint = model_->getJoint(jnt.getName());
     joint_limits_(j, 0) = joint->limits->lower;

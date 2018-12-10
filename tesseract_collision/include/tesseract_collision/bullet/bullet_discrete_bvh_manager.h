@@ -53,7 +53,7 @@ class BulletDiscreteBVHManager : public DiscreteContactManagerBase
 {
 public:
   BulletDiscreteBVHManager();
-  ~BulletDiscreteBVHManager();
+  ~BulletDiscreteBVHManager() override;
 
   DiscreteContactManagerBasePtr clone() const override;
 

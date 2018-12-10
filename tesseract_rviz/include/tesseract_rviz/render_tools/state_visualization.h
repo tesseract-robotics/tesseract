@@ -37,10 +37,14 @@
 #ifndef TESSERACT_RVIZ_STATE_VISUALIZATION
 #define TESSERACT_RVIZ_STATE_VISUALIZATION
 
-#include "tesseract_rviz/render_tools/env/robot.h"
-#include <tesseract_ros/ros_basic_env.h>
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <std_msgs/ColorRGBA.h>
 #include <memory>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include "tesseract_rviz/render_tools/env/robot.h"
+#include <tesseract_ros/ros_basic_env.h>
 
 namespace tesseract_rviz
 {

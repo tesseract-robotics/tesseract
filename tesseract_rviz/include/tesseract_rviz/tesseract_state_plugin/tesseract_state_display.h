@@ -37,13 +37,18 @@
 #ifndef TESSERACT_RVIZ_TESSERACT_STATE_DISPLAY_PLUGIN
 #define TESSERACT_RVIZ_TESSERACT_STATE_DISPLAY_PLUGIN
 
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <rviz/display.h>
+TESSERACT_IGNORE_WARNINGS_POP
 
 #ifndef Q_MOC_RUN
-#include "tesseract_rviz/render_tools/state_visualization.h"
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/TesseractState.h>
 #include <srdfdom/model.h>
 #include <ros/ros.h>
+TESSERACT_IGNORE_WARNINGS_POP
+#include "tesseract_rviz/render_tools/state_visualization.h"
 #endif
 
 namespace Ogre
@@ -71,10 +76,10 @@ class TesseractStateDisplay : public rviz::Display
 
 public:
   TesseractStateDisplay();
-  virtual ~TesseractStateDisplay();
+  ~TesseractStateDisplay() override;
 
-  virtual void update(float wall_dt, float ros_dt);
-  virtual void reset();
+  void update(float wall_dt, float ros_dt) override;
+  void reset() override;
 
   const tesseract::tesseract_ros::ROSBasicEnvConstPtr getEnv() const { return env_; }
   void setLinkColor(const std::string& link_name, const QColor& color);
@@ -116,10 +121,10 @@ protected:
   void unsetHighlightedLink(const std::string& link_name);
 
   // overrides from Display
-  virtual void onInitialize();
-  virtual void onEnable();
-  virtual void onDisable();
-  virtual void fixedFrameChanged();
+  void onInitialize() override;
+  void onEnable() override;
+  void onDisable() override;
+  void fixedFrameChanged() override;
 
   // render the robot
   ros::NodeHandle nh_;

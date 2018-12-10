@@ -34,14 +34,19 @@
 
 /* Author: Ioan Sucan */
 
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
+#include <ros/console.h>
 #include <geometric_shapes/solid_primitive_dims.h>
 #include <tesseract_msgs/TesseractState.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
 #include <tesseract_ros/ros_tesseract_utils.h>
 
 static const std::string ROBOT_DESCRIPTION = "robot_description";
 using namespace tesseract;
 
-ros::Publisher pub_env;
+static ros::Publisher pub_env;
 
 void sendSphere()
 {

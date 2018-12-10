@@ -37,17 +37,21 @@
 #ifndef TESSERACT_MONITORING_ENVIRONMENT_H
 #define TESSERACT_MONITORING_ENVIRONMENT_H
 
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <tf/tf.h>
 #include <tf/message_filter.h>
 #include <message_filters/subscriber.h>
-#include <tesseract_ros/ros_basic_env.h>
-#include <tesseract_monitoring/current_state_monitor.h>
-#include <tesseract_msgs/TesseractState.h>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <memory>
+#include <tesseract_msgs/TesseractState.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include <tesseract_ros/ros_basic_env.h>
+#include <tesseract_monitoring/current_state_monitor.h>
 
 class DynamicReconfigureImpl;
 

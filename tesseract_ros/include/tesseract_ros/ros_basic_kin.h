@@ -26,13 +26,17 @@
 #ifndef TESSERACT_ROS_BASIC_KIN_H
 #define TESSERACT_ROS_BASIC_KIN_H
 
-#include <tesseract_core/basic_kin.h>
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <string>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <iostream>
 #include <urdf/model.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include <tesseract_core/basic_kin.h>
 
 namespace tesseract
 {

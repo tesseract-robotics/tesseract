@@ -23,13 +23,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "tesseract_ros/kdl/kdl_chain_kin.h"
-#include "tesseract_ros/kdl/kdl_utils.h"
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <eigen_conversions/eigen_kdl.h>
 #include <kdl/segment.hpp>
 #include <kdl_parser/kdl_parser.hpp>
 #include <ros/ros.h>
 #include <urdf/model.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include "tesseract_ros/kdl/kdl_chain_kin.h"
+#include "tesseract_ros/kdl/kdl_utils.h"
 
 namespace tesseract
 {
@@ -106,7 +110,7 @@ bool KDLChainKin::calcJacobianHelper(KDL::Jacobian& jacobian,
   EigenToKDL(joint_angles, kdl_joints);
 
   // compute jacobian
-  jacobian.resize(joint_angles.size());
+  jacobian.resize(static_cast<unsigned>(joint_angles.size()));
   if (jac_solver_->JntToJac(kdl_joints, jacobian, segment_num) < 0)
   {
     ROS_ERROR("Failed to calculate jacobian");
@@ -218,7 +222,7 @@ bool KDLChainKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) cons
   if (vec.size() != robot_chain_.getNrOfJoints())
   {
     ROS_ERROR(
-        "Number of joint angles (%d) don't match robot_model (%d)", (int)vec.size(), robot_chain_.getNrOfJoints());
+        "Number of joint angles (%d) don't match robot_model (%d)", static_cast<int>(vec.size()), robot_chain_.getNrOfJoints());
     return false;
   }
 
@@ -227,7 +231,7 @@ bool KDLChainKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) cons
     if ((vec[i] < joint_limits_(i, 0)) || (vec(i) > joint_limits_(i, 1)))
     {
       ROS_WARN("Joint %s is out-of-range (%g < %g < %g)",
-               joint_list_[i].c_str(),
+               joint_list_[static_cast<size_t>(i)].c_str(),
                joint_limits_(i, 0),
                vec(i),
                joint_limits_(i, 1));
@@ -329,7 +333,7 @@ bool KDLChainKin::init(urdf::ModelInterfaceConstSharedPtr model,
     joint_limits_(j, 0) = joint->limits->lower;
     joint_limits_(j, 1) = joint->limits->upper;
     if (j > 0)
-      joint_too_segment[j - 1] = i;
+      joint_too_segment[j - 1] = static_cast<int>(i);
 
     // Need to set limits for continuous joints. TODO: This may not be required
     // by the optization library but may be nice to have
@@ -360,7 +364,7 @@ bool KDLChainKin::init(urdf::ModelInterfaceConstSharedPtr model,
       std::vector<std::string>::const_iterator it = std::find(joint_list_.begin(), joint_list_.end(), joint_name);
       if (it != joint_list_.end())
       {
-        int joint_index = it - joint_list_.begin();
+        unsigned joint_index = static_cast<unsigned>(it - joint_list_.begin());
         segment_index_[seg.getName()] = joint_too_segment[joint_index];
         found = true;
       }

@@ -26,11 +26,16 @@
 #ifndef TESSERACT_ROS_KDL_JOINT_KIN_H
 #define TESSERACT_ROS_KDL_JOINT_KIN_H
 
-#include "tesseract_ros/ros_basic_kin.h"
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
+#include <ros/console.h>
 #include <kdl/tree.hpp>
 #include <kdl/treefksolverpos_recursive.hpp>
 #include <kdl/treejnttojacsolver.hpp>
 #include <urdf/model.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include "tesseract_ros/ros_basic_kin.h"
 
 namespace tesseract
 {
@@ -84,8 +89,8 @@ public:
   const Eigen::MatrixX2d& getLimits() const override;
 
   urdf::ModelInterfaceConstSharedPtr getURDF() const override { return model_; }
-  unsigned int numJoints() const override { return joint_list_.size(); }
-  const std::string& getBaseLinkName() const { return model_->getRoot()->name; }
+  unsigned int numJoints() const override { return static_cast<unsigned>(joint_list_.size()); }
+  const std::string& getBaseLinkName() const override{ return model_->getRoot()->name; }
   const std::string& getName() const override { return name_; }
   void addAttachedLink(const std::string& link_name, const std::string& parent_link_name) override;
 

@@ -34,13 +34,8 @@
 
 /* Author: Dave Coleman */
 
-#include "tesseract_rviz/render_tools/trajectory_visualization.h"
-#include "tesseract_ros/ros_tesseract_utils.h"
-#include "tesseract_rviz/render_tools/env/robot.h"
-#include "tesseract_rviz/render_tools/env/robot_link.h"
-#include "tesseract_rviz/render_tools/link_updater.h"
-#include "tesseract_rviz/render_tools/state_visualization.h"
-
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/replace.hpp>
 
@@ -55,6 +50,14 @@
 #include <rviz/properties/ros_topic_property.h>
 #include <rviz/properties/string_property.h>
 #include <rviz/window_manager_interface.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include "tesseract_rviz/render_tools/trajectory_visualization.h"
+#include "tesseract_ros/ros_tesseract_utils.h"
+#include "tesseract_rviz/render_tools/env/robot.h"
+#include "tesseract_rviz/render_tools/env/robot_link.h"
+#include "tesseract_rviz/render_tools/link_updater.h"
+#include "tesseract_rviz/render_tools/state_visualization.h"
 
 namespace tesseract_rviz
 {
@@ -65,8 +68,8 @@ TrajectoryVisualization::TrajectoryVisualization(rviz::Property* widget, rviz::D
   , animating_path_(false)
   , drop_displaying_trajectory_(false)
   , current_state_(-1)
-  , trajectory_slider_panel_(NULL)
-  , trajectory_slider_dock_panel_(NULL)
+  , trajectory_slider_panel_(nullptr)
+  , trajectory_slider_dock_panel_(nullptr)
 {
   trajectory_topic_property_ =
       new rviz::RosTopicProperty("Trajectory Topic",
@@ -248,11 +251,11 @@ void TrajectoryVisualization::createTrajectoryTrail()
 
   int stepsize = trail_step_size_property_->getInt();
   // always include last trajectory point
-  std::size_t num_waypoints = t->joint_trajectory.points.size();
-  trajectory_trail_.resize((int)std::ceil((num_waypoints + stepsize - 1) / (float)stepsize));
+  int num_waypoints = static_cast<int>(t->joint_trajectory.points.size());
+  trajectory_trail_.resize(static_cast<size_t>(std::ceil(static_cast<float>(num_waypoints + stepsize - 1) / static_cast<float>(stepsize))));
   for (std::size_t i = 0; i < trajectory_trail_.size(); i++)
   {
-    int waypoint_i = std::min(i * stepsize, num_waypoints - 1);  // limit to last trajectory point
+    unsigned waypoint_i = static_cast<unsigned>(std::min(i * static_cast<size_t>(stepsize), static_cast<size_t>(num_waypoints - 1)));  // limit to last trajectory point
     tesseract_rviz::StateVisualizationPtr state(
         new tesseract_rviz::StateVisualization(scene_node_, context_, "Path Trail " + std::to_string(i), nullptr));
     state->load(env_->getURDF(), true, true, true, false);
@@ -270,7 +273,7 @@ void TrajectoryVisualization::createTrajectoryTrail()
     if (enable_default_color_property_->getBool())
       setColor(&state->getRobot(), default_color_property_->getColor());
 
-    state->setVisible(display_->isEnabled() && (!animating_path_ || waypoint_i <= current_state_));
+    state->setVisible(display_->isEnabled() && (!animating_path_ || waypoint_i <= static_cast<unsigned>(current_state_)));
     trajectory_trail_[i] = state;
   }
 }
@@ -454,7 +457,7 @@ void TrajectoryVisualization::update(float wall_dt, float /*ros_dt*/)
       displaying_trajectory_message_ = trajectory_message_to_display_;
       createTrajectoryTrail();
       if (trajectory_slider_panel_)
-        trajectory_slider_panel_->update(trajectory_message_to_display_->joint_trajectory.points.size());
+        trajectory_slider_panel_->update(static_cast<int>(trajectory_message_to_display_->joint_trajectory.points.size()));
     }
     else if (displaying_trajectory_message_)
     {
@@ -507,11 +510,11 @@ void TrajectoryVisualization::update(float wall_dt, float /*ros_dt*/)
     float tm = getStateDisplayTime();
     if (tm < 0.0)  // if we should use realtime
     {
-      ros::Duration d = displaying_trajectory_message_->joint_trajectory.points[current_state_ + 1].time_from_start;
+      ros::Duration d = displaying_trajectory_message_->joint_trajectory.points[static_cast<size_t>(current_state_) + 1].time_from_start;
       if (d.isZero())
         tm = 0;
       else
-        tm = (d - displaying_trajectory_message_->joint_trajectory.points[current_state_].time_from_start).toSec();
+        tm = static_cast<float>((d - displaying_trajectory_message_->joint_trajectory.points[static_cast<size_t>(current_state_)].time_from_start).toSec());
     }
 
     if (current_state_time_ > tm)
@@ -520,7 +523,7 @@ void TrajectoryVisualization::update(float wall_dt, float /*ros_dt*/)
         current_state_ = trajectory_slider_panel_->getSliderPosition();
       else
         ++current_state_;
-      int waypoint_count = displaying_trajectory_message_->joint_trajectory.points.size();
+      int waypoint_count = static_cast<int>(displaying_trajectory_message_->joint_trajectory.points.size());
       if (current_state_ < waypoint_count)
       {
         if (trajectory_slider_panel_)
@@ -530,7 +533,7 @@ void TrajectoryVisualization::update(float wall_dt, float /*ros_dt*/)
         for (unsigned j = 0; j < displaying_trajectory_message_->joint_trajectory.joint_names.size(); ++j)
         {
           joints[displaying_trajectory_message_->joint_trajectory.joint_names[j]] =
-              displaying_trajectory_message_->joint_trajectory.points[current_state_].positions[j];
+              displaying_trajectory_message_->joint_trajectory.points[static_cast<size_t>(current_state_)].positions[j];
         }
 
         display_path_->update(env_, env_->getState(joints));
@@ -637,7 +640,9 @@ void TrajectoryVisualization::unsetColor(Robot* robot)
 void TrajectoryVisualization::setColor(Robot* robot, const QColor& color)
 {
   for (auto& link : robot->getLinks())
-    robot->getLink(link.first)->setColor(color.redF(), color.greenF(), color.blueF());
+    robot->getLink(link.first)->setColor(static_cast<float>(color.redF()),
+                                         static_cast<float>(color.greenF()),
+                                         static_cast<float>(color.blueF()));
 }
 
 void TrajectoryVisualization::trajectorySliderPanelVisibilityChange(bool enable)

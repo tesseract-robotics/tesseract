@@ -1,8 +1,11 @@
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
+#include <gtest/gtest.h>
+#include <ros/ros.h>
+TESSERACT_IGNORE_WARNINGS_POP
 
 #include "tesseract_collision/bullet/bullet_cast_simple_manager.h"
 #include "tesseract_collision/bullet/bullet_cast_bvh_manager.h"
-#include <gtest/gtest.h>
-#include <ros/ros.h>
 
 void addCollisionObjects(tesseract::ContinuousContactManagerBase& checker)
 {

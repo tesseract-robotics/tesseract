@@ -37,11 +37,10 @@
 #ifndef TESSERACT_RVIZ_LINK_UPDATER
 #define TESSERACT_RVIZ_LINK_UPDATER
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
-#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <rviz/robot/link_updater.h>
-#pragma GCC diagnostic pop
+TESSERACT_IGNORE_WARNINGS_POP
 
 #include <tesseract_ros/ros_basic_env.h>
 
@@ -52,11 +51,11 @@ class LinkUpdater : public rviz::LinkUpdater
 {
 public:
   LinkUpdater(const tesseract::EnvStateConstPtr state) : state_(state) {}
-  virtual bool getLinkTransforms(const std::string& link_name,
-                                 Ogre::Vector3& visual_position,
-                                 Ogre::Quaternion& visual_orientation,
-                                 Ogre::Vector3& collision_position,
-                                 Ogre::Quaternion& collision_orientation) const;
+  bool getLinkTransforms(const std::string& link_name,
+                         Ogre::Vector3& visual_position,
+                         Ogre::Quaternion& visual_orientation,
+                         Ogre::Vector3& collision_position,
+                         Ogre::Quaternion& collision_orientation) const override;
 
 private:
   tesseract::EnvStateConstPtr state_;

@@ -34,9 +34,13 @@
 
 /* Author: Ioan Sucan */
 
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
+#include <QApplication>
+TESSERACT_IGNORE_WARNINGS_POP
+
 #include "tesseract_rviz/render_tools/state_visualization.h"
 #include "tesseract_rviz/render_tools/link_updater.h"
-#include <QApplication>
 #include <tesseract_ros/ros_tesseract_utils.h>
 
 namespace tesseract_rviz
@@ -79,14 +83,14 @@ void StateVisualization::setDefaultAttachedObjectColor(const std_msgs::ColorRGBA
 void StateVisualization::update(const tesseract::tesseract_ros::ROSBasicEnvConstPtr env,
                                 const tesseract::EnvStateConstPtr state)
 {
-  updateHelper(env, state, default_attached_object_color_, NULL);
+  updateHelper(env, state, default_attached_object_color_, nullptr);
 }
 
 void StateVisualization::update(const tesseract::tesseract_ros::ROSBasicEnvConstPtr env,
                                 const tesseract::EnvStateConstPtr state,
                                 const std_msgs::ColorRGBA& default_attached_object_color)
 {
-  updateHelper(env, state, default_attached_object_color, NULL);
+  updateHelper(env, state, default_attached_object_color, nullptr);
 }
 
 void StateVisualization::update(const tesseract::tesseract_ros::ROSBasicEnvConstPtr env,

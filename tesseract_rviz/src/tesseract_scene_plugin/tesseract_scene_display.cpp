@@ -90,7 +90,7 @@ TesseractSceneDisplay::TesseractSceneDisplay(bool listen_to_planning_scene, bool
                                    SLOT(changedPlanningSceneTopic()),
                                    this);
   else
-    planning_scene_topic_property_ = NULL;
+    planning_scene_topic_property_ = nullptr;
 
   // Planning scene category
   // -------------------------------------------------------------------------------------------
@@ -195,11 +195,11 @@ TesseractSceneDisplay::TesseractSceneDisplay(bool listen_to_planning_scene, bool
   }
   else
   {
-    robot_category_ = NULL;
-    scene_robot_visual_enabled_property_ = NULL;
-    scene_robot_collision_enabled_property_ = NULL;
-    robot_alpha_property_ = NULL;
-    attached_body_color_property_ = NULL;
+    robot_category_ = nullptr;
+    scene_robot_visual_enabled_property_ = nullptr;
+    scene_robot_collision_enabled_property_ = nullptr;
+    robot_alpha_property_ = nullptr;
+    attached_body_color_property_ = nullptr;
   }
 }
 

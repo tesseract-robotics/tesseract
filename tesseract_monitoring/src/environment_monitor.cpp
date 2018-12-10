@@ -34,14 +34,19 @@
 
 /* Author: Ioan Sucan */
 
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
+#include <ros/console.h>
 #include <dynamic_reconfigure/server.h>
 #include <memory>
 #include <srdfdom/model.h>
+#include <urdf_parser/urdf_parser.h>
 #include <tesseract_monitoring/EnvironmentMonitorDynamicReconfigureConfig.h>
-#include <tesseract_monitoring/environment_monitor.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
 #include <tesseract_ros/kdl/kdl_env.h>
 #include <tesseract_ros/ros_tesseract_utils.h>
-#include <urdf_parser/urdf_parser.h>
+#include <tesseract_monitoring/environment_monitor.h>
 
 class DynamicReconfigureImpl
 {
@@ -78,11 +83,11 @@ private:
     using namespace tesseract::tesseract_monitoring;
     EnvironmentMonitor::EnvironmentUpdateType event = EnvironmentMonitor::UPDATE_NONE;
     if (config.publish_geometry_updates)
-      event = (EnvironmentMonitor::EnvironmentUpdateType)((int)event | (int)EnvironmentMonitor::UPDATE_GEOMETRY);
+      event = static_cast<EnvironmentMonitor::EnvironmentUpdateType>(event | EnvironmentMonitor::UPDATE_GEOMETRY);
     if (config.publish_state_updates)
-      event = (EnvironmentMonitor::EnvironmentUpdateType)((int)event | (int)EnvironmentMonitor::UPDATE_STATE);
+      event = static_cast<EnvironmentMonitor::EnvironmentUpdateType>(event | EnvironmentMonitor::UPDATE_STATE);
     if (config.publish_transforms_updates)
-      event = (EnvironmentMonitor::EnvironmentUpdateType)((int)event | (int)EnvironmentMonitor::UPDATE_TRANSFORMS);
+      event = static_cast<EnvironmentMonitor::EnvironmentUpdateType>(event | EnvironmentMonitor::UPDATE_TRANSFORMS);
     if (config.publish_environment)
     {
       owner_->setEnvironmentPublishingFrequency(config.publish_environment_hz);
@@ -185,7 +190,7 @@ void EnvironmentMonitor::initialize(const urdf::ModelInterfaceConstSharedPtr& ur
         env_->loadContinuousContactManagerPlugin(continuous_plugin_name_);
       }
     }
-    catch (int& e)
+    catch (int& /*e*/)
     {
       ROS_ERROR_NAMED(LOGNAME, "Failed to load tesseract contact managers plugin");
       env_.reset();
@@ -334,7 +339,7 @@ void EnvironmentMonitor::triggerEnvironmentUpdateEvent(EnvironmentUpdateType upd
 
   for (std::size_t i = 0; i < update_callbacks_.size(); ++i)
     update_callbacks_[i](update_type);
-  new_environment_update_ = (EnvironmentUpdateType)((int)new_environment_update_ | (int)update_type);
+  new_environment_update_ = static_cast<EnvironmentUpdateType>(new_environment_update_ | update_type);
   new_environment_update_condition_.notify_all();
 }
 
@@ -422,7 +427,7 @@ bool EnvironmentMonitor::newEnvironmentMessage(const tesseract_msgs::TesseractSt
     {
       upd = UPDATE_NONE;
       if (!env_msg.attachable_objects.empty() || !env_msg.attached_bodies.empty())
-        upd = (EnvironmentUpdateType)((int)upd | (int)UPDATE_GEOMETRY);
+        upd = static_cast<EnvironmentUpdateType>(upd | UPDATE_GEOMETRY);
 
       //      if (!env.fixed_frame_transforms.empty())
       //        upd = (EnvironmentUpdateType)((int)upd |
@@ -430,7 +435,7 @@ bool EnvironmentMonitor::newEnvironmentMessage(const tesseract_msgs::TesseractSt
 
       if (!tesseract_ros::isMsgEmpty(env_msg.multi_dof_joint_state) ||
           !tesseract_ros::isMsgEmpty(env_msg.multi_dof_joint_state))
-        upd = (EnvironmentUpdateType)((int)upd | (int)UPDATE_STATE);
+        upd = static_cast<EnvironmentUpdateType>(upd | UPDATE_STATE);
     }
   }
   triggerEnvironmentUpdateEvent(upd);

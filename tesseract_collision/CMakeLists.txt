@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tesseract_collision)
 
-add_compile_options(-std=c++11 -Wall -Wextra)
+add_compile_options(
+  -std=c++11
+  -Wall
+  -Wextra
+  -Wsuggest-override
+  -Wconversion
+  -Wsign-conversion)
 
 find_package(catkin REQUIRED COMPONENTS
   bullet3_ros
@@ -28,6 +34,7 @@ catkin_package(
     include
     ${CCD_INCLUDE_DIRS}
     ${LIBFCL_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIRS}
   LIBRARIES
     ${PROJECT_NAME}_bullet
     ${PROJECT_NAME}_fcl

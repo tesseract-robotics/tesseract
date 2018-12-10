@@ -30,6 +30,8 @@
 #ifndef TESSERACT_RVIZ_ROBOT_JOINT_H
 #define TESSERACT_RVIZ_ROBOT_JOINT_H
 
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <string>
 #include <map>
 
@@ -47,6 +49,7 @@
 
 #include <rviz/ogre_helpers/object.h>
 #include <rviz/selection/forwards.h>
+TESSERACT_IGNORE_WARNINGS_POP
 
 namespace Ogre
 {
@@ -107,7 +110,7 @@ public:
   RobotJoint* getParentJoint();
   void hideSubProperties(bool hide);
 
-  // Remove joint_property_ from its old parent and add to new_parent.  If new_parent==NULL then leav unparented.
+  // Remove joint_property_ from its old parent and add to new_parent.  If new_parent==nullptr then leav unparented.
   void setParentProperty(rviz::Property* new_parent);
 
   Ogre::Vector3 getPosition();

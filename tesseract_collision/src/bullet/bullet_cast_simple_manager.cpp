@@ -73,7 +73,7 @@ ContinuousContactManagerBasePtr BulletCastSimpleManager::clone() const
 
     new_cow->setWorldTransform(cow.second->getWorldTransform());
 
-    new_cow->setContactProcessingThreshold(contact_distance_);
+    new_cow->setContactProcessingThreshold(static_cast<btScalar>(contact_distance_));
     manager->addCollisionObject(new_cow);
   }
 
@@ -307,10 +307,10 @@ void BulletCastSimpleManager::setContactDistanceThreshold(double contact_distanc
   contact_distance_ = contact_distance;
 
   for (auto& co : link2cow_)
-    co.second->setContactProcessingThreshold(contact_distance);
+    co.second->setContactProcessingThreshold(static_cast<btScalar>(contact_distance));
 
   for (auto& co : link2castcow_)
-    co.second->setContactProcessingThreshold(contact_distance);
+    co.second->setContactProcessingThreshold(static_cast<btScalar>(contact_distance));
 }
 
 double BulletCastSimpleManager::getContactDistanceThreshold() const { return contact_distance_; }
@@ -336,9 +336,9 @@ void BulletCastSimpleManager::contactTest(ContactResultMap& collisions, const Co
     btVector3 min_aabb[2], max_aabb[2];
     cow1->getAABB(min_aabb[0], max_aabb[0]);
 
-    btCollisionObjectWrapper obA(0, cow1->getCollisionShape(), cow1.get(), cow1->getWorldTransform(), -1, -1);
+    btCollisionObjectWrapper obA(nullptr, cow1->getCollisionShape(), cow1.get(), cow1->getWorldTransform(), -1, -1);
 
-    CastCollisionCollector cc(cdata, cow1, cow1->getContactProcessingThreshold());
+    CastCollisionCollector cc(cdata, cow1, static_cast<double>(cow1->getContactProcessingThreshold()));
     for (auto cow2_iter = cow1_iter + 1; cow2_iter != cows_.end(); cow2_iter++)
     {
       assert(!cdata.done);
@@ -356,9 +356,9 @@ void BulletCastSimpleManager::contactTest(ContactResultMap& collisions, const Co
 
         if (needs_collision)
         {
-          btCollisionObjectWrapper obB(0, cow2->getCollisionShape(), cow2.get(), cow2->getWorldTransform(), -1, -1);
+          btCollisionObjectWrapper obB(nullptr, cow2->getCollisionShape(), cow2.get(), cow2->getWorldTransform(), -1, -1);
 
-          btCollisionAlgorithm* algorithm = dispatcher_->findAlgorithm(&obA, &obB, 0, BT_CLOSEST_POINT_ALGORITHMS);
+          btCollisionAlgorithm* algorithm = dispatcher_->findAlgorithm(&obA, &obB, nullptr, BT_CLOSEST_POINT_ALGORITHMS);
           assert(algorithm != nullptr);
           if (algorithm)
           {

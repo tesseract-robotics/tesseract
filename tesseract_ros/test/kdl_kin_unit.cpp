@@ -1,11 +1,14 @@
-
-#include "tesseract_ros/kdl/kdl_chain_kin.h"
-#include "tesseract_ros/kdl/kdl_joint_kin.h"
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <ros/package.h>
 #include <gtest/gtest.h>
 #include <ros/ros.h>
 #include <fstream>
 #include <urdf_parser/urdf_parser.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include "tesseract_ros/kdl/kdl_chain_kin.h"
+#include "tesseract_ros/kdl/kdl_joint_kin.h"
 
 urdf::ModelInterfaceSharedPtr getURDFModel()
 {
@@ -91,7 +94,7 @@ void runJacobianTest(tesseract::tesseract_ros::ROSBasicKin& kin)
 
   Eigen::VectorXd njvals;
   double delta = 0.001;
-  for(int i = 0; i < (int)jvals.size(); ++i)
+  for(int i = 0; i < static_cast<int>(jvals.size()); ++i)
   {
     njvals = jvals;
     njvals[i] += delta;
@@ -125,7 +128,7 @@ void runJacobianTest(tesseract::tesseract_ros::ROSBasicKin& kin)
     //calcJacobian requires the link point to be in the base frame for which the jacobian is calculated.
     EXPECT_TRUE(kin.calcJacobian(jacobian, Eigen::Isometry3d::Identity(), jvals, "tool0", state, pose * link_point));
 
-    for(int i = 0; i < (int)jvals.size(); ++i)
+    for(int i = 0; i < static_cast<int>(jvals.size()); ++i)
     {
       njvals = jvals;
       njvals[i] += delta;
@@ -174,7 +177,7 @@ void runJacobianTest(tesseract::tesseract_ros::ROSBasicKin& kin)
     //calcJacobian requires the link point to be in the base frame for which the jacobian is calculated.
     EXPECT_TRUE(kin.calcJacobian(jacobian, change_base, jvals, "tool0", state, pose * link_point));
 
-    for(int i = 0; i < (int)jvals.size(); ++i)
+    for(int i = 0; i < static_cast<int>(jvals.size()); ++i)
     {
       njvals = jvals;
       njvals[i] += delta;

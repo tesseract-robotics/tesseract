@@ -33,13 +33,8 @@
  *********************************************************************/
 
 /* Author: Ioan Sucan */
-
-#include <tesseract_ros/kdl/kdl_env.h>
-#include <tesseract_ros/ros_tesseract_utils.h>
-#include <tesseract_rviz/render_tools/env/robot.h>
-#include <tesseract_rviz/render_tools/env/robot_link.h>
-#include <tesseract_rviz/tesseract_state_plugin/tesseract_state_display.h>
-
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <urdf_parser/urdf_parser.h>
 
 #include <eigen_conversions/eigen_msg.h>
@@ -57,6 +52,13 @@
 
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include <tesseract_ros/kdl/kdl_env.h>
+#include <tesseract_ros/ros_tesseract_utils.h>
+#include <tesseract_rviz/render_tools/env/robot.h>
+#include <tesseract_rviz/render_tools/env/robot_link.h>
+#include <tesseract_rviz/tesseract_state_plugin/tesseract_state_display.h>
 
 namespace tesseract_rviz
 {
@@ -285,9 +287,9 @@ void TesseractStateDisplay::changedAttachedBodyColor()
   {
     QColor color = attached_body_color_property_->getColor();
     std_msgs::ColorRGBA color_msg;
-    color_msg.r = color.redF();
-    color_msg.g = color.greenF();
-    color_msg.b = color.blueF();
+    color_msg.r = static_cast<float>(color.redF());
+    color_msg.g = static_cast<float>(color.greenF());
+    color_msg.b = static_cast<float>(color.blueF());
     color_msg.a = alpha_property_->getFloat();
     state_->setDefaultAttachedObjectColor(color_msg);
     update_state_ = true;
@@ -308,9 +310,9 @@ void TesseractStateDisplay::changedURDFSceneAlpha()
     state_->setAlpha(alpha_property_->getFloat());
     QColor color = attached_body_color_property_->getColor();
     std_msgs::ColorRGBA color_msg;
-    color_msg.r = color.redF();
-    color_msg.g = color.greenF();
-    color_msg.b = color.blueF();
+    color_msg.r = static_cast<float>(color.redF());
+    color_msg.g = static_cast<float>(color.greenF());
+    color_msg.b = static_cast<float>(color.blueF());
     color_msg.a = alpha_property_->getFloat();
     state_->setDefaultAttachedObjectColor(color_msg);
     update_state_ = true;
@@ -364,7 +366,9 @@ void TesseractStateDisplay::setLinkColor(const tesseract_msgs::TesseractState::_
        it != link_colors.end();
        ++it)
   {
-    setLinkColor(it->name, QColor(it->visual[0].r, it->visual[0].g, it->visual[0].b));
+    setLinkColor(it->name, QColor(static_cast<int>(it->visual[0].r * 255),
+                                  static_cast<int>(it->visual[0].g * 255),
+                                  static_cast<int>(it->visual[0].b * 255)));
   }
 }
 
@@ -384,7 +388,9 @@ void TesseractStateDisplay::setLinkColor(Robot* robot, const std::string& link_n
 
   // Check if link exists
   if (link)
-    link->setColor(color.redF(), color.greenF(), color.blueF());
+    link->setColor(static_cast<float>(color.redF()),
+                   static_cast<float>(color.greenF()),
+                   static_cast<float>(color.blueF()));
 }
 
 void TesseractStateDisplay::unsetLinkColor(Robot* robot, const std::string& link_name)

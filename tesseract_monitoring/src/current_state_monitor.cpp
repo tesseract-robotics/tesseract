@@ -34,7 +34,12 @@
 
 /* Author: Ioan Sucan */
 
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
+#include <ros/console.h>
 #include <limits>
+TESSERACT_IGNORE_WARNINGS_POP
+
 #include <tesseract_monitoring/current_state_monitor.h>
 
 namespace tesseract

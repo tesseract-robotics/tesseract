@@ -55,7 +55,7 @@ class BulletCastBVHManager : public ContinuousContactManagerBase
 {
 public:
   BulletCastBVHManager();
-  ~BulletCastBVHManager();
+  ~BulletCastBVHManager() override;
 
   ContinuousContactManagerBasePtr clone() const override;
 

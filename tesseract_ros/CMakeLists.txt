@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tesseract_ros)
 
-add_compile_options(-std=c++11 -Wall -Wextra)
+add_compile_options(
+  -std=c++11
+  -Wall
+  -Wextra
+  -Wsuggest-override
+  -Wconversion
+  -Wsign-conversion)
 
 find_package(catkin REQUIRED COMPONENTS
   tesseract_core
@@ -22,7 +28,9 @@ find_package(octomap REQUIRED)
 find_package(orocos_kdl REQUIRED)
 
 catkin_package(
-  INCLUDE_DIRS include
+  INCLUDE_DIRS
+    include
+    ${EIGEN3_INCLUDE_DIRS}
   LIBRARIES
     ${PROJECT_NAME}_kdl
     ${OCTOMAP_LIBRARIES}

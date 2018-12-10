@@ -23,9 +23,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <tesseract_core/macros.h>
+TESSERACT_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
-#include <tesseract_collision/contact_checker_common.h>
 #include <geometric_shapes/mesh_operations.h>
+TESSERACT_IGNORE_WARNINGS_POP
+
+#include <tesseract_collision/contact_checker_common.h>
 
 int main(int argc, char** argv)
 {
@@ -66,7 +70,7 @@ int main(int argc, char** argv)
   }
 
   file.seekg(0, std::ios::beg);
-  std::vector<char> buffer(size);
+  std::vector<char> buffer(static_cast<size_t>(size));
   if (!file.read(buffer.data(), size))
   {
     ROS_ERROR("Failed to read input file!");
@@ -74,7 +78,7 @@ int main(int argc, char** argv)
   }
 
   std::shared_ptr<shapes::Mesh> mesh;
-  mesh.reset(shapes::createMeshFromBinary(buffer.data(), size, Eigen::Vector3d(1.0, 1.0, 1.0), input));
+  mesh.reset(shapes::createMeshFromBinary(buffer.data(), static_cast<size_t>(size), Eigen::Vector3d(1.0, 1.0, 1.0), input));
   if (mesh == nullptr)
   {
     ROS_ERROR("Failed to create mesh from binary data!");
