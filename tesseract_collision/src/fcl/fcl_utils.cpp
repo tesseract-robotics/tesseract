@@ -109,15 +109,15 @@ CollisionGeometryPtr createShapePrimitive(const shapes::Mesh* geom, const Collis
         mesh_vertices.push_back(
             Eigen::Vector3d(geom->vertices[3 * i + 0], geom->vertices[3 * i + 1], geom->vertices[3 * i + 2]));
 
-      VectorVector3d convex_hull_vertices;
-      std::vector<int> convex_hull_faces;
-      int num_faces = createConvexHull(convex_hull_vertices, convex_hull_faces, mesh_vertices);
+      std::shared_ptr<VectorVector3d> convex_hull_vertices(new VectorVector3d());
+      std::shared_ptr<std::vector<int>> convex_hull_faces(new std::vector<int>());
+      int num_faces = createConvexHull(*convex_hull_vertices, *convex_hull_faces, mesh_vertices);
 
       if (num_faces < 0)
         return nullptr;
 
       return CollisionGeometryPtr(new fcl::Convexd(
-          convex_hull_vertices.size(), convex_hull_vertices.data(), num_faces, convex_hull_faces.data()));
+        convex_hull_vertices, num_faces, convex_hull_faces));
     }
     case CollisionObjectType::UseShapeType:
     {
