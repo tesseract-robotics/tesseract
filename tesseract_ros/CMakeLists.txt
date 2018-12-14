@@ -1,13 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tesseract_ros)
 
-add_compile_options(
-  -std=c++11
-  -Wall
-  -Wextra
-  -Wsuggest-override
-  -Wconversion
-  -Wsign-conversion)
+add_compile_options(-std=c++11 -Wall -Wextra)
 
 find_package(catkin REQUIRED COMPONENTS
   tesseract_core
@@ -67,8 +61,8 @@ add_library(${PROJECT_NAME}_kdl
   src/kdl/kdl_joint_kin.cpp
   src/kdl/kdl_env.cpp
 )
-
 target_link_libraries(${PROJECT_NAME}_kdl ${catkin_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${orocos_kdl_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_kdl PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
 # Mark executables and/or libraries for installation
 install(TARGETS ${PROJECT_NAME}_kdl
@@ -88,11 +82,9 @@ if (CATKIN_ENABLE_TESTING)
 
   find_package(rostest REQUIRED)
 
-  include_directories(
-      ${catkin_INCLUDE_DIRS}
-  )
+  include_directories(${catkin_INCLUDE_DIRS})
 
   catkin_add_gtest(${PROJECT_NAME}_kdl_kin_unit test/kdl_kin_unit.cpp)
   target_link_libraries(${PROJECT_NAME}_kdl_kin_unit ${PROJECT_NAME}_kdl ${catkin_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${orocos_kdl_LIBRARIES})
-
+  target_compile_options(${PROJECT_NAME}_kdl_kin_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 endif()

@@ -45,7 +45,9 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mes
         link_names.push_back("sphere_link_" + std::to_string(x) + std::to_string(y) + std::to_string(z));
 
         location[link_names.back()] = sphere_pose;
-        location[link_names.back()].translation() = Eigen::Vector3d(x * delta, y * delta, z * delta);
+        location[link_names.back()].translation() = Eigen::Vector3d(static_cast<double>(x) * delta,
+                                                                    static_cast<double>(y) * delta,
+                                                                    static_cast<double>(z) * delta);
         checker.addCollisionObject(link_names.back(), 0, obj3_shapes, obj3_poses, obj3_types);
       }
     }
@@ -71,7 +73,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mes
   {
     const int tn = omp_get_thread_num();
     ROS_DEBUG("Thread %i of %i", tn, omp_get_num_threads());
-    const tesseract::DiscreteContactManagerBasePtr& manager = contact_manager[tn];
+    const tesseract::DiscreteContactManagerBasePtr& manager = contact_manager[static_cast<size_t>(tn)];
     for (const auto& co : location)
     {
       if (tn == 0)
@@ -102,7 +104,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mes
 
     tesseract::ContactResultMap result;
     manager->contactTest(result, tesseract::ContactTestType::ALL);
-    tesseract::moveContactResultsMapToContactResultsVector(result, result_vector[tn]);
+    tesseract::moveContactResultsMapToContactResultsVector(result, result_vector[static_cast<size_t>(tn)]);
   }
   ros::WallTime end_time = ros::WallTime::now();
   ROS_INFO_STREAM("DT: " << (end_time - start_time).toSec());
