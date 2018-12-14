@@ -1,13 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tesseract_rviz)
 
-add_compile_options(
-  -std=c++11
-  -Wall
-  -Wextra
-  -Wsuggest-override
-  -Wconversion
-  -Wsign-conversion)
+add_compile_options(-std=c++11 -Wall -Wextra)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -87,8 +81,6 @@ catkin_package(
     QT
 )
 
-
-
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
@@ -125,6 +117,8 @@ target_link_libraries(${PROJECT_NAME}_render_tools
   ${Boost_LIBRARIES}
 )
 
+target_compile_options(${PROJECT_NAME}_render_tools PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+
 #add_library(${PROJECT_NAME}_scene_plugin_core
 #  src/tesseract_scene_plugin/tesseract_scene_display.cpp
 #  include/tesseract_rviz/tesseract_scene_plugin/tesseract_scene_display.h)
@@ -138,21 +132,26 @@ qt_wrap_cpp(${PROJECT_NAME}_state_plugin_core_cpp_MOCS include/tesseract_rviz/te
 
 add_library(${PROJECT_NAME}_state_plugin_core src/tesseract_state_plugin/tesseract_state_display.cpp ${${PROJECT_NAME}_state_plugin_core_cpp_MOCS})
 target_link_libraries(${PROJECT_NAME}_state_plugin_core ${PROJECT_NAME}_render_tools ${catkin_LIBRARIES} ${OGRE_LIBRARIES} ${QT_LIBRARIES} ${Boost_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_state_plugin_core PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
 add_library(${PROJECT_NAME}_state_plugin src/tesseract_state_plugin/plugin_init.cpp)
 target_link_libraries(${PROJECT_NAME}_state_plugin ${PROJECT_NAME}_state_plugin_core ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_state_plugin PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
 # Trajectory Display
 qt_wrap_cpp(${PROJECT_NAME}_trajectory_plugin_core_cpp_MOCS include/tesseract_rviz/tesseract_trajectory_plugin/tesseract_trajectory_display.h)
 
 add_library(${PROJECT_NAME}_trajectory_plugin_core src/tesseract_trajectory_plugin/tesseract_trajectory_display.cpp ${${PROJECT_NAME}_trajectory_plugin_core_cpp_MOCS})
 target_link_libraries(${PROJECT_NAME}_trajectory_plugin_core ${PROJECT_NAME}_render_tools ${PROJECT_NAME}_state_plugin_core ${catkin_LIBRARIES} ${OGRE_LIBRARIES} ${QT_LIBRARIES} ${Boost_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_trajectory_plugin_core PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
 add_library(${PROJECT_NAME}_trajectory_plugin src/tesseract_trajectory_plugin/plugin_init.cpp)
 target_link_libraries(${PROJECT_NAME}_trajectory_plugin ${PROJECT_NAME}_trajectory_plugin_core ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_trajectory_plugin PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
 add_executable(${PROJECT_NAME}_test src/test.cpp)
 target_link_libraries(${PROJECT_NAME}_test ${PROJECT_NAME}_trajectory_plugin_core ${catkin_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_test PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
 
 # Mark executables and/or libraries for installation
