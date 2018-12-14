@@ -1,23 +1,29 @@
-# This config file for Travis CI
+# 000000000000000000000000000000000000000
 sudo: required
 dist: trusty
 services:
   - docker
 cache: ccache
+language: cpp
+compiler: gcc
 notifications:
   email:
     recipients:
       - levi.armstrong@swri.org
+
 env:
   global:
-    - ROS_DISTRO=kinetic
-    - UPSTREAM_WORKSPACE=file
-    - ROSINSTALL_FILENAME=dependencies.rosinstall
-    - NOT_TEST_INSTALL=true
-  matrix:
-    - ROS_DISTRO=kinetic ROS_REPO=ros
-    - ROS_DISTRO=kinetic ROS_REPO=ros-shadow-fixed
-install:
-  - git clone https://github.com/ros-industrial/industrial_ci.git .industrial_ci
+    - TEST_BLACKLIST=bullet3_ros,fcl_ros,libccd_ros,tesseract_ext
+
+# Build all valid Ubuntu/ROS combinations available
+matrix:
+  include:
+  - name: "Clang Format"
+    env: ROS_DISTRO=kinetic DOCKER_IMAGE=ros:kinetic-perception TEST=clang-format
+  - name: "Xenial kinetic"
+    env: ROS_DISTRO=kinetic DOCKER_IMAGE=ros:kinetic-perception UPSTREAM_WORKSPACE=dependencies.rosinstall CATKIN_OPTIONS=catkin.options
+  - name: "Bionic Melodic"
+    env: ROS_DISTRO=melodic DOCKER_IMAGE=ros:melodic-perception UPSTREAM_WORKSPACE=dependencies.rosinstall CATKIN_OPTIONS=catkin.options
+
 script:
-  - .industrial_ci/travis.sh
+  - bash .travis.sh
