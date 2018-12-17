@@ -59,7 +59,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({"octomap1_link", "octomap2_link"});
+  checker.setActiveCollisionObjects({ "octomap1_link", "octomap2_link" });
   checker.setContactDistanceThreshold(0.25);
 
   // Set the collision object transforms
@@ -80,7 +80,6 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
   {
     EXPECT_NEAR(cr.distance, 0.20, 0.001);
   }
-
 }
 
 void runCastTest(tesseract::ContinuousContactManagerBase& checker)
@@ -88,7 +87,7 @@ void runCastTest(tesseract::ContinuousContactManagerBase& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({"octomap1_link"});
+  checker.setActiveCollisionObjects({ "octomap1_link" });
   checker.setContactDistanceThreshold(0.25);
 
   // Set the collision object transforms
@@ -111,7 +110,6 @@ void runCastTest(tesseract::ContinuousContactManagerBase& checker)
   {
     EXPECT_NEAR(cr.distance, 0.20, 0.001);
   }
-
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionCompoundCompoundUnit)

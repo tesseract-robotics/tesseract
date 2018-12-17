@@ -45,7 +45,6 @@ namespace tesseract
 {
 namespace tesseract_bullet
 {
-
 BulletCastBVHManager::BulletCastBVHManager()
 {
   dispatcher_.reset(new btCollisionDispatcher(&coll_config_));
@@ -238,7 +237,7 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
 
             btTransform delta_tf = (tf1 * local_tf).inverseTimes(tf2 * local_tf);
             static_cast<CastHullShape*>(compound->getChildShape(i))->updateCastTransform(delta_tf);
-            compound->updateChildTransform(i, local_tf, false); // This is required to update the BVH tree
+            compound->updateChildTransform(i, local_tf, false);  // This is required to update the BVH tree
           }
           else if (btBroadphaseProxy::isCompound(compound->getChildShape(i)->getShapeType()))
           {
@@ -253,7 +252,7 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
 
               btTransform delta_tf = (tf1 * local_tf).inverseTimes(tf2 * local_tf);
               static_cast<CastHullShape*>(second_compound->getChildShape(j))->updateCastTransform(delta_tf);
-              second_compound->updateChildTransform(j, local_tf, false); // This is required to update the BVH tree
+              second_compound->updateChildTransform(j, local_tf, false);  // This is required to update the BVH tree
             }
             second_compound->recalculateLocalAabb();
           }
@@ -262,8 +261,9 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
       }
       else
       {
-        throw std::runtime_error("I can only continuous collision check convex shapes and compound shapes made of convex "
-                                 "shapes");
+        throw std::runtime_error(
+            "I can only continuous collision check convex shapes and compound shapes made of convex "
+            "shapes");
       }
 
       // Now update Broadphase AABB (See BulletWorld updateSingleAabb function)
@@ -312,7 +312,7 @@ void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<std::stri
       updateCollisionObjectFilters(active_, *cow, false);
 
       // Get the active collision object
-      COWPtr &active_cow = link2castcow_[cow->getName()];
+      COWPtr& active_cow = link2castcow_[cow->getName()];
 
       // Update with active
       updateCollisionObjectFilters(active_, *active_cow, true);
@@ -333,7 +333,7 @@ void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<std::stri
       updateCollisionObjectFilters(active_, *cow, false);
 
       // Get the active collision object
-      COWPtr &active_cow = link2castcow_[cow->getName()];
+      COWPtr& active_cow = link2castcow_[cow->getName()];
 
       // Update with active
       updateCollisionObjectFilters(active_, *active_cow, true);
@@ -352,7 +352,6 @@ void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<std::stri
 }
 
 const std::vector<std::string>& BulletCastBVHManager::getActiveCollisionObjects() const { return active_; }
-
 void BulletCastBVHManager::setContactDistanceThreshold(double contact_distance)
 {
   contact_distance_ = contact_distance;
@@ -375,11 +374,8 @@ void BulletCastBVHManager::setContactDistanceThreshold(double contact_distance)
 }
 
 double BulletCastBVHManager::getContactDistanceThreshold() const { return contact_distance_; }
-
 void BulletCastBVHManager::setIsContactAllowedFn(IsContactAllowedFn fn) { fn_ = fn; }
-
 IsContactAllowedFn BulletCastBVHManager::getIsContactAllowedFn() const { return fn_; }
-
 void BulletCastBVHManager::contactTest(ContactResultMap& collisions, const ContactTestType& type)
 {
   ContactTestData cdata(active_, contact_distance_, fn_, type, collisions);
@@ -409,14 +405,18 @@ void BulletCastBVHManager::addCollisionObject(const COWPtr& cow)
 
   btVector3 aabb_min, aabb_max;
   selected_cow->getAABB(aabb_min, aabb_max);
-  
+
   int type = selected_cow->getCollisionShape()->getShapeType();
-  selected_cow->setBroadphaseHandle(broadphase_->createProxy(aabb_min, aabb_max, type, selected_cow.get(),
+  selected_cow->setBroadphaseHandle(broadphase_->createProxy(aabb_min,
+                                                             aabb_max,
+                                                             type,
+                                                             selected_cow.get(),
                                                              selected_cow->m_collisionFilterGroup,
-                                                             selected_cow->m_collisionFilterMask, dispatcher_.get()));
+                                                             selected_cow->m_collisionFilterMask,
+                                                             dispatcher_.get()));
 }
 
-void BulletCastBVHManager::contactTest(const COWPtr& cow, ContactTestData &collisions)
+void BulletCastBVHManager::contactTest(const COWPtr& cow, ContactTestData& collisions)
 {
   btVector3 aabb_min, aabb_max;
   cow->getAABB(aabb_min, aabb_max);

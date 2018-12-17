@@ -149,7 +149,8 @@ bool KDLJointKin::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
   assert(checkJoints(joint_angles));
   assert(std::find(link_list_.begin(), link_list_.end(), link_name) != link_list_.end());
 
-  bool attached_link = std::find(attached_link_list_.begin(), attached_link_list_.end(), link_name) != attached_link_list_.end() ;
+  bool attached_link =
+      std::find(attached_link_list_.begin(), attached_link_list_.end(), link_name) != attached_link_list_.end();
   std::string tree_link_name = (attached_link) ? attached_link_too_parent_link_.at(link_name) : link_name;
 
   KDL::JntArray kdl_joint_vals = getKDLJntArray(state, joint_list_, joint_angles);
@@ -187,7 +188,8 @@ bool KDLJointKin::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
   assert(checkJoints(joint_angles));
   assert(std::find(link_list_.begin(), link_list_.end(), link_name) != link_list_.end());
 
-  bool attached_link = std::find(attached_link_list_.begin(), attached_link_list_.end(), link_name) != attached_link_list_.end();
+  bool attached_link =
+      std::find(attached_link_list_.begin(), attached_link_list_.end(), link_name) != attached_link_list_.end();
   std::string tree_link_name = (attached_link) ? attached_link_too_parent_link_.at(link_name) : link_name;
 
   KDL::JntArray kdl_joint_vals = getKDLJntArray(state, joint_list_, joint_angles);

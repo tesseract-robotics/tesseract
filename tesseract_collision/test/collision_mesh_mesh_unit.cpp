@@ -69,7 +69,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
   ///////////////////////////////////////////////////////////////////
   // Test when object is in collision (Closest Feature Edge to Edge)
   ///////////////////////////////////////////////////////////////////
-  checker.setActiveCollisionObjects({"sphere_link", "sphere1_link"});
+  checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
   checker.setContactDistanceThreshold(0);
 
   // Test when object is inside another
@@ -122,8 +122,8 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
   EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], 0.76224, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[0][1], result_vector[0].nearest_points[1][1], 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
-  EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1,0,0)), 0.0);
-  EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1,0,0)))), 0.00001);
+  EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1, 0, 0)), 0.0);
+  EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1, 0, 0)))), 0.00001);
 
   /////////////////////////////////////////////////////////////////////////////
   // Test object inside the contact distance (Closest Feature Vertex to Vertex)
@@ -149,8 +149,8 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
   EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1], 0.75, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[0][0], result_vector[0].nearest_points[1][0], 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
-  EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(0,1,0)), 0.0);
-  EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(0,1,0)))), 0.00001);
+  EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(0, 1, 0)), 0.0);
+  EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(0, 1, 0)))), 0.00001);
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionMeshMeshUnit)

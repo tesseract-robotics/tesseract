@@ -221,8 +221,9 @@ bool KDLChainKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) cons
 {
   if (vec.size() != robot_chain_.getNrOfJoints())
   {
-    ROS_ERROR(
-        "Number of joint angles (%d) don't match robot_model (%d)", static_cast<int>(vec.size()), robot_chain_.getNrOfJoints());
+    ROS_ERROR("Number of joint angles (%d) don't match robot_model (%d)",
+              static_cast<int>(vec.size()),
+              robot_chain_.getNrOfJoints());
     return false;
   }
 

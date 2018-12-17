@@ -118,6 +118,5 @@ bool TrajOptPlanner::solve(PlannerResponse& response, const TrajOptPlannerConfig
 
 bool TrajOptPlanner::terminate() { return false; }
 void TrajOptPlanner::clear() { request_ = PlannerRequest(); }
-
 }  // namespace tesseract_planning
 }  // namespace tesseract

@@ -252,10 +252,12 @@ void TrajectoryVisualization::createTrajectoryTrail()
   int stepsize = trail_step_size_property_->getInt();
   // always include last trajectory point
   int num_waypoints = static_cast<int>(t->joint_trajectory.points.size());
-  trajectory_trail_.resize(static_cast<size_t>(std::ceil(static_cast<float>(num_waypoints + stepsize - 1) / static_cast<float>(stepsize))));
+  trajectory_trail_.resize(
+      static_cast<size_t>(std::ceil(static_cast<float>(num_waypoints + stepsize - 1) / static_cast<float>(stepsize))));
   for (std::size_t i = 0; i < trajectory_trail_.size(); i++)
   {
-    unsigned waypoint_i = static_cast<unsigned>(std::min(i * static_cast<size_t>(stepsize), static_cast<size_t>(num_waypoints - 1)));  // limit to last trajectory point
+    unsigned waypoint_i = static_cast<unsigned>(std::min(
+        i * static_cast<size_t>(stepsize), static_cast<size_t>(num_waypoints - 1)));  // limit to last trajectory point
     tesseract_rviz::StateVisualizationPtr state(
         new tesseract_rviz::StateVisualization(scene_node_, context_, "Path Trail " + std::to_string(i), nullptr));
     state->load(env_->getURDF(), true, true, true, false);
@@ -273,7 +275,8 @@ void TrajectoryVisualization::createTrajectoryTrail()
     if (enable_default_color_property_->getBool())
       setColor(&state->getRobot(), default_color_property_->getColor());
 
-    state->setVisible(display_->isEnabled() && (!animating_path_ || waypoint_i <= static_cast<unsigned>(current_state_)));
+    state->setVisible(display_->isEnabled() &&
+                      (!animating_path_ || waypoint_i <= static_cast<unsigned>(current_state_)));
     trajectory_trail_[i] = state;
   }
 }
@@ -457,7 +460,8 @@ void TrajectoryVisualization::update(float wall_dt, float /*ros_dt*/)
       displaying_trajectory_message_ = trajectory_message_to_display_;
       createTrajectoryTrail();
       if (trajectory_slider_panel_)
-        trajectory_slider_panel_->update(static_cast<int>(trajectory_message_to_display_->joint_trajectory.points.size()));
+        trajectory_slider_panel_->update(
+            static_cast<int>(trajectory_message_to_display_->joint_trajectory.points.size()));
     }
     else if (displaying_trajectory_message_)
     {
@@ -510,11 +514,16 @@ void TrajectoryVisualization::update(float wall_dt, float /*ros_dt*/)
     float tm = getStateDisplayTime();
     if (tm < 0.0)  // if we should use realtime
     {
-      ros::Duration d = displaying_trajectory_message_->joint_trajectory.points[static_cast<size_t>(current_state_) + 1].time_from_start;
+      ros::Duration d = displaying_trajectory_message_->joint_trajectory.points[static_cast<size_t>(current_state_) + 1]
+                            .time_from_start;
       if (d.isZero())
         tm = 0;
       else
-        tm = static_cast<float>((d - displaying_trajectory_message_->joint_trajectory.points[static_cast<size_t>(current_state_)].time_from_start).toSec());
+        tm = static_cast<float>(
+            (d -
+             displaying_trajectory_message_->joint_trajectory.points[static_cast<size_t>(current_state_)]
+                 .time_from_start)
+                .toSec());
     }
 
     if (current_state_time_ > tm)
@@ -640,9 +649,9 @@ void TrajectoryVisualization::unsetColor(Robot* robot)
 void TrajectoryVisualization::setColor(Robot* robot, const QColor& color)
 {
   for (auto& link : robot->getLinks())
-    robot->getLink(link.first)->setColor(static_cast<float>(color.redF()),
-                                         static_cast<float>(color.greenF()),
-                                         static_cast<float>(color.blueF()));
+    robot->getLink(link.first)
+        ->setColor(
+            static_cast<float>(color.redF()), static_cast<float>(color.greenF()), static_cast<float>(color.blueF()));
 }
 
 void TrajectoryVisualization::trajectorySliderPanelVisibilityChange(bool enable)

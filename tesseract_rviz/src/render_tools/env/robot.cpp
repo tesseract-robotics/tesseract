@@ -57,7 +57,6 @@ TESSERACT_IGNORE_WARNINGS_PUSH
 #include <ros/console.h>
 TESSERACT_IGNORE_WARNINGS_POP
 
-
 namespace tesseract_rviz
 {
 Robot::Robot(Ogre::SceneNode* root_node,

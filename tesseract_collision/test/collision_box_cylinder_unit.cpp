@@ -65,7 +65,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({"box_link", "cylinder_link"});
+  checker.setActiveCollisionObjects({ "box_link", "cylinder_link" });
   checker.setContactDistanceThreshold(0.1);
 
   // Set the collision object transforms
@@ -152,7 +152,7 @@ TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxCylinderUnit)
   runTest(checker);
 }
 
-//TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxCylinderUnit)
+// TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxCylinderUnit)
 //{
 // TODO: Currently this fails when using FCL. An issue has been created
 //       and they are currently addressing the issue.

@@ -42,7 +42,6 @@ struct TrajOptPlannerConfig
 {
   TrajOptPlannerConfig(trajopt::TrajOptProbPtr prob) : prob(prob) {}
   virtual ~TrajOptPlannerConfig() {}
-
   /** @brief Trajopt problem to be solved (Required) */
   trajopt::TrajOptProbPtr prob;
 

@@ -106,11 +106,11 @@ public:
 
 private:
   std::unique_ptr<fcl::BroadPhaseCollisionManagerd> manager_; /**< @brief FCL Broad Phase Collision Manager */
-  Link2COW link2cow_;      /**< @brief A map of all (static and active) collision objects being managed */
+  Link2COW link2cow_; /**< @brief A map of all (static and active) collision objects being managed */
 
-  std::vector<std::string> active_;                   /**< @brief A list of the active collision objects */
-  double contact_distance_;                           /**< @brief The contact distance threshold */
-  IsContactAllowedFn fn_;                             /**< @brief The is allowed collision function */
+  std::vector<std::string> active_; /**< @brief A list of the active collision objects */
+  double contact_distance_;         /**< @brief The contact distance threshold */
+  IsContactAllowedFn fn_;           /**< @brief The is allowed collision function */
 };
 typedef std::shared_ptr<FCLDiscreteBVHManager> FCLDiscreteBVHManagerPtr;
 }

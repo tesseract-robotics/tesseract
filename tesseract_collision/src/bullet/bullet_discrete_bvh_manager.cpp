@@ -45,7 +45,6 @@ namespace tesseract
 {
 namespace tesseract_bullet
 {
-
 BulletDiscreteBVHManager::BulletDiscreteBVHManager()
 {
   dispatcher_.reset(new btCollisionDispatcher(&coll_config_));
@@ -196,7 +195,6 @@ void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::
 }
 
 const std::vector<std::string>& BulletDiscreteBVHManager::getActiveCollisionObjects() const { return active_; }
-
 void BulletDiscreteBVHManager::setContactDistanceThreshold(double contact_distance)
 {
   contact_distance_ = contact_distance;
@@ -211,11 +209,8 @@ void BulletDiscreteBVHManager::setContactDistanceThreshold(double contact_distan
 }
 
 double BulletDiscreteBVHManager::getContactDistanceThreshold() const { return contact_distance_; }
-
 void BulletDiscreteBVHManager::setIsContactAllowedFn(IsContactAllowedFn fn) { fn_ = fn; }
-
 IsContactAllowedFn BulletDiscreteBVHManager::getIsContactAllowedFn() const { return fn_; }
-
 void BulletDiscreteBVHManager::contactTest(ContactResultMap& collisions, const ContactTestType& type)
 {
   ContactTestData cdata(active_, contact_distance_, fn_, type, collisions);
@@ -240,7 +235,7 @@ void BulletDiscreteBVHManager::addCollisionObject(const COWPtr& cow)
 }
 
 const Link2Cow& BulletDiscreteBVHManager::getCollisionObjects() const { return link2cow_; }
-void BulletDiscreteBVHManager::contactTest(const COWPtr& cow, ContactTestData &collisions)
+void BulletDiscreteBVHManager::contactTest(const COWPtr& cow, ContactTestData& collisions)
 {
   btVector3 min_aabb, max_aabb;
   cow->getAABB(min_aabb, max_aabb);

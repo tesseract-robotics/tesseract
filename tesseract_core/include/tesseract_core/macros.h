@@ -25,17 +25,15 @@
  */
 #ifndef TESSERACT_CORE_MACROS_H
 #define TESSERACT_CORE_MACROS_H
-#define TESSERACT_IGNORE_WARNINGS_PUSH \
-  _Pragma ("GCC diagnostic push") \
-  _Pragma ("GCC diagnostic ignored \"-Wall\"") \
-  _Pragma ("GCC diagnostic ignored \"-Wint-to-pointer-cast\"") \
-  _Pragma ("GCC diagnostic ignored \"-Wunused-parameter\"") \
-  _Pragma ("GCC diagnostic ignored \"-Wsuggest-override\"") \
-  _Pragma ("GCC diagnostic ignored \"-Wconversion\"") \
-  _Pragma ("GCC diagnostic ignored \"-Wfloat-conversion\"") \
-  _Pragma ("GCC diagnostic ignored \"-Wsign-conversion\"")
+#define TESSERACT_IGNORE_WARNINGS_PUSH                                                                                 \
+  _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wall\"")                                           \
+      _Pragma("GCC diagnostic ignored \"-Wint-to-pointer-cast\"")                                                      \
+          _Pragma("GCC diagnostic ignored \"-Wunused-parameter\"")                                                     \
+              _Pragma("GCC diagnostic ignored \"-Wsuggest-override\"")                                                 \
+                  _Pragma("GCC diagnostic ignored \"-Wconversion\"")                                                   \
+                      _Pragma("GCC diagnostic ignored \"-Wfloat-conversion\"")                                         \
+                          _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")
 
-#define TESSERACT_IGNORE_WARNINGS_POP \
-  _Pragma ("GCC diagnostic pop")
+#define TESSERACT_IGNORE_WARNINGS_POP _Pragma("GCC diagnostic pop")
 
 #endif  // TESSERACT_CORE_MACROS_H

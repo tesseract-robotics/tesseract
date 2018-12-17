@@ -90,7 +90,7 @@ public:
 
   urdf::ModelInterfaceConstSharedPtr getURDF() const override { return model_; }
   unsigned int numJoints() const override { return static_cast<unsigned>(joint_list_.size()); }
-  const std::string& getBaseLinkName() const override{ return model_->getRoot()->name; }
+  const std::string& getBaseLinkName() const override { return model_->getRoot()->name; }
   const std::string& getName() const override { return name_; }
   void addAttachedLink(const std::string& link_name, const std::string& parent_link_name) override;
 
@@ -138,13 +138,14 @@ private:
   std::string name_;                         /**< Name of the kinematic chain */
   std::vector<std::string> joint_list_;      /**< List of joint names */
   std::vector<int> joint_qnr_;               /**< The kdl segment number corrisponding to joint in joint_lists_ */
-  std::unordered_map<std::string, unsigned int> joint_to_qnr_; /**< The tree joint name to qnr */
-  std::vector<std::string> link_list_;                         /**< List of link names */
-  Eigen::MatrixX2d joint_limits_;                              /**< Joint limits */
-  std::unique_ptr<KDL::TreeFkSolverPos_recursive> fk_solver_;  /**< KDL Forward Kinematic Solver */
-  std::unique_ptr<KDL::TreeJntToJacSolver> jac_solver_;        /**< KDL Jacobian Solver */
-  std::vector<std::string> attached_link_list_;                /**< A list of attached link names */
-  std::unordered_map<std::string, std::string> attached_link_too_parent_link_; /**< A map from attached link name to parent link name */
+  std::unordered_map<std::string, unsigned int> joint_to_qnr_;                 /**< The tree joint name to qnr */
+  std::vector<std::string> link_list_;                                         /**< List of link names */
+  Eigen::MatrixX2d joint_limits_;                                              /**< Joint limits */
+  std::unique_ptr<KDL::TreeFkSolverPos_recursive> fk_solver_;                  /**< KDL Forward Kinematic Solver */
+  std::unique_ptr<KDL::TreeJntToJacSolver> jac_solver_;                        /**< KDL Jacobian Solver */
+  std::vector<std::string> attached_link_list_;                                /**< A list of attached link names */
+  std::unordered_map<std::string, std::string> attached_link_too_parent_link_; /**< A map from attached link name to
+                                                                                  parent link name */
 
   /** @brief calcFwdKin helper function */
   bool calcFwdKinHelper(Eigen::Isometry3d& pose,

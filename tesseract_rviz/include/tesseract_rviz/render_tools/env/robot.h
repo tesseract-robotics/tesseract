@@ -43,7 +43,6 @@ TESSERACT_IGNORE_WARNINGS_PUSH
 #include <OgreAny.h>
 TESSERACT_IGNORE_WARNINGS_POP
 
-
 namespace Ogre
 {
 class SceneManager;

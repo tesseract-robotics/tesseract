@@ -78,7 +78,8 @@ int main(int argc, char** argv)
   }
 
   std::shared_ptr<shapes::Mesh> mesh;
-  mesh.reset(shapes::createMeshFromBinary(buffer.data(), static_cast<size_t>(size), Eigen::Vector3d(1.0, 1.0, 1.0), input));
+  mesh.reset(
+      shapes::createMeshFromBinary(buffer.data(), static_cast<size_t>(size), Eigen::Vector3d(1.0, 1.0, 1.0), input));
   if (mesh == nullptr)
   {
     ROS_ERROR("Failed to create mesh from binary data!");

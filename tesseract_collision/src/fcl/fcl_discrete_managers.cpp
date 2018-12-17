@@ -172,18 +172,14 @@ void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::str
 }
 
 const std::vector<std::string>& FCLDiscreteBVHManager::getActiveCollisionObjects() const { return active_; }
-
 void FCLDiscreteBVHManager::setContactDistanceThreshold(double contact_distance)
 {
   contact_distance_ = contact_distance;
 }
 
 double FCLDiscreteBVHManager::getContactDistanceThreshold() const { return contact_distance_; }
-
 void FCLDiscreteBVHManager::setIsContactAllowedFn(IsContactAllowedFn fn) { fn_ = fn; }
-
 IsContactAllowedFn FCLDiscreteBVHManager::getIsContactAllowedFn() const { return fn_; }
-
 void FCLDiscreteBVHManager::contactTest(ContactResultMap& collisions, const ContactTestType& type)
 {
   ContactTestData cdata(active_, contact_distance_, fn_, type, collisions);

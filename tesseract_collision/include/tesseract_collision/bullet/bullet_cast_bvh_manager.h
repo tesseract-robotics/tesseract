@@ -49,7 +49,6 @@ namespace tesseract
 {
 namespace tesseract_bullet
 {
-
 /** @brief A BVH implementaiton of a tesseract contact manager */
 class BulletCastBVHManager : public ContinuousContactManagerBase
 {
@@ -111,14 +110,14 @@ public:
   void addCollisionObject(const COWPtr& cow);
 
 private:
-  std::vector<std::string> active_;                   /**< @brief A list of the active collision objects */
-  double contact_distance_;                           /**< @brief The contact distance threshold */
-  IsContactAllowedFn fn_;                             /**< @brief The is allowed collision function */
+  std::vector<std::string> active_; /**< @brief A list of the active collision objects */
+  double contact_distance_;         /**< @brief The contact distance threshold */
+  IsContactAllowedFn fn_;           /**< @brief The is allowed collision function */
 
   std::unique_ptr<btCollisionDispatcher> dispatcher_; /**< @brief The bullet collision dispatcher used for getting
                                                          object to object collison algorithm */
-  btDispatcherInfo dispatch_info_;                    /**< @brief The bullet collision dispatcher configuration information */
-  btDefaultCollisionConfiguration coll_config_;       /**< @brief The bullet collision configuration */
+  btDispatcherInfo dispatch_info_;              /**< @brief The bullet collision dispatcher configuration information */
+  btDefaultCollisionConfiguration coll_config_; /**< @brief The bullet collision configuration */
   std::unique_ptr<btBroadphaseInterface> broadphase_; /**< @brief The bullet broadphase interface */
   Link2Cow link2cow_;                                 /**< @brief A map of collision objects being managed */
   Link2Cow link2castcow_;                             /**< @brief A map of cast collision objects being managed. */
@@ -131,7 +130,6 @@ private:
   void contactTest(const COWPtr& cow, ContactTestData& collisions);
 };
 typedef std::shared_ptr<BulletCastBVHManager> BulletCastBVHManagerPtr;
-
 }
 }
 

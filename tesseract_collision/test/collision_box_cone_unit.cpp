@@ -65,7 +65,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({"box_link", "cone_link"});
+  checker.setActiveCollisionObjects({ "box_link", "cone_link" });
   checker.setContactDistanceThreshold(0.1);
 
   // Set the collision object transforms

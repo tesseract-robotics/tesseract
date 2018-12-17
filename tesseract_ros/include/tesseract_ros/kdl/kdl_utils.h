@@ -99,8 +99,7 @@ inline void KDLToEigen(const KDL::Jacobian& jacobian, const std::vector<int>& q_
 
   for (int i = 0; i < static_cast<int>(jacobian.rows()); ++i)
     for (int j = 0; j < static_cast<int>(q_nrs.size()); ++j)
-      matrix(i, j) = jacobian(static_cast<unsigned>(i),
-                              static_cast<unsigned>(q_nrs[static_cast<size_t>(j)]));
+      matrix(i, j) = jacobian(static_cast<unsigned>(i), static_cast<unsigned>(q_nrs[static_cast<size_t>(j)]));
 }
 
 /**

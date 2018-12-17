@@ -119,13 +119,15 @@ btCollisionShape* createShapePrimitive(const shapes::Mesh* geom,
 
         btConvexHullShape* subshape = new btConvexHullShape();
         for (const auto& v : vertices)
-          subshape->addPoint(btVector3(static_cast<btScalar>(v[0]), static_cast<btScalar>(v[1]), static_cast<btScalar>(v[2])));
+          subshape->addPoint(
+              btVector3(static_cast<btScalar>(v[0]), static_cast<btScalar>(v[1]), static_cast<btScalar>(v[2])));
 
         return subshape;
       }
       case CollisionObjectType::UseShapeType:
       {
-        btCompoundShape* compound = new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(geom->triangle_count));
+        btCompoundShape* compound =
+            new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(geom->triangle_count));
         compound->setMargin(BULLET_MARGIN);  // margin: compound. seems to have no
                                              // effect when positive but has an
                                              // effect when negative
@@ -157,7 +159,8 @@ btCollisionShape* createShapePrimitive(const shapes::Mesh* geom,
       }
       default:
       {
-        ROS_ERROR("This bullet shape type (%d) is not supported for geometry meshs", static_cast<int>(collision_object_type));
+        ROS_ERROR("This bullet shape type (%d) is not supported for geometry meshs",
+                  static_cast<int>(collision_object_type));
         return nullptr;
       }
     }
@@ -175,7 +178,8 @@ btCollisionShape* createShapePrimitive(const shapes::OcTree* geom,
          collision_object_type == CollisionObjectType::SDF ||
          collision_object_type == CollisionObjectType::MultiSphere);
 
-  btCompoundShape* subshape = new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(geom->octree->size()));
+  btCompoundShape* subshape =
+      new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(geom->octree->size()));
   double occupancy_threshold = geom->octree->getOccupancyThres();
 
   // convert the mesh to the assigned collision object type
@@ -183,16 +187,18 @@ btCollisionShape* createShapePrimitive(const shapes::OcTree* geom,
   {
     case CollisionObjectType::UseShapeType:
     {
-      for (auto it = geom->octree->begin(static_cast<unsigned char>(geom->octree->getTreeDepth())), end = geom->octree->end(); it != end; ++it)
+      for (auto it = geom->octree->begin(static_cast<unsigned char>(geom->octree->getTreeDepth())),
+                end = geom->octree->end();
+           it != end;
+           ++it)
       {
         if (it->getOccupancy() >= occupancy_threshold)
         {
           double size = it.getSize();
           btTransform geomTrans;
           geomTrans.setIdentity();
-          geomTrans.setOrigin(btVector3(static_cast<btScalar>(it.getX()),
-                                        static_cast<btScalar>(it.getY()),
-                                        static_cast<btScalar>(it.getZ())));
+          geomTrans.setOrigin(btVector3(
+              static_cast<btScalar>(it.getX()), static_cast<btScalar>(it.getY()), static_cast<btScalar>(it.getZ())));
           btScalar l = static_cast<btScalar>(size / 2);
           btBoxShape* childshape = new btBoxShape(btVector3(l, l, l));
           childshape->setMargin(BULLET_MARGIN);
@@ -205,17 +211,20 @@ btCollisionShape* createShapePrimitive(const shapes::OcTree* geom,
     }
     case CollisionObjectType::MultiSphere:
     {
-      for (auto it = geom->octree->begin(static_cast<unsigned char>(geom->octree->getTreeDepth())), end = geom->octree->end(); it != end; ++it)
+      for (auto it = geom->octree->begin(static_cast<unsigned char>(geom->octree->getTreeDepth())),
+                end = geom->octree->end();
+           it != end;
+           ++it)
       {
         if (it->getOccupancy() >= occupancy_threshold)
         {
           double size = it.getSize();
           btTransform geomTrans;
           geomTrans.setIdentity();
-          geomTrans.setOrigin(btVector3(static_cast<btScalar>(it.getX()),
-                                        static_cast<btScalar>(it.getY()),
-                                        static_cast<btScalar>(it.getZ())));
-          btSphereShape* childshape = new btSphereShape(static_cast<btScalar>(std::sqrt(2 * ((size / 2) * (size / 2)))));
+          geomTrans.setOrigin(btVector3(
+              static_cast<btScalar>(it.getX()), static_cast<btScalar>(it.getY()), static_cast<btScalar>(it.getZ())));
+          btSphereShape* childshape =
+              new btSphereShape(static_cast<btScalar>(std::sqrt(2 * ((size / 2) * (size / 2)))));
           childshape->setMargin(BULLET_MARGIN);
           cow->manage(childshape);
 
@@ -226,7 +235,8 @@ btCollisionShape* createShapePrimitive(const shapes::OcTree* geom,
     }
     default:
     {
-      ROS_ERROR("This bullet shape type (%d) is not supported for geometry octree", static_cast<int>(collision_object_type));
+      ROS_ERROR("This bullet shape type (%d) is not supported for geometry octree",
+                static_cast<int>(collision_object_type));
       return nullptr;
     }
   }
@@ -300,7 +310,8 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
   }
   else
   {
-    btCompoundShape* compound = new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(m_shapes.size()));
+    btCompoundShape* compound =
+        new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(m_shapes.size()));
     manage(compound);
     compound->setMargin(BULLET_MARGIN);  // margin: compound. seems to have no
                                          // effect when positive but has an

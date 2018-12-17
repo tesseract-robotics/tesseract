@@ -48,7 +48,11 @@ template <typename Key, typename Value>
 using AlignedMap = std::map<Key, Value, std::less<Key>, Eigen::aligned_allocator<std::pair<const Key, Value>>>;
 
 template <typename Key, typename Value>
-using AlignedUnorderedMap = std::unordered_map<Key, Value, std::hash <Key>, std::equal_to<Key>, Eigen::aligned_allocator<std::pair<const Key, Value>>>;
+using AlignedUnorderedMap = std::unordered_map<Key,
+                                               Value,
+                                               std::hash<Key>,
+                                               std::equal_to<Key>,
+                                               Eigen::aligned_allocator<std::pair<const Key, Value>>>;
 
 using VectorIsometry3d = AlignedVector<Eigen::Isometry3d>;
 using VectorVector4d = AlignedVector<Eigen::Vector4d>;
@@ -206,13 +210,10 @@ struct ContactTestData
                   const double& contact_distance,
                   const IsContactAllowedFn& fn,
                   const ContactTestType& type,
-                  ContactResultMap& res) :
-    active(active),
-    contact_distance(contact_distance),
-    fn(fn),
-    type(type),
-    res(res),
-    done(false) {}
+                  ContactResultMap& res)
+    : active(active), contact_distance(contact_distance), fn(fn), type(type), res(res), done(false)
+  {
+  }
 
   const std::vector<std::string>& active;
   const double& contact_distance;
