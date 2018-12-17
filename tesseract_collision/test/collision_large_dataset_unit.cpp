@@ -19,7 +19,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mes
 
   double delta = 0.55;
 
-  std::size_t t = 5; // Because of unit test runtime this was reduced from 10 to 5.
+  std::size_t t = 5;  // Because of unit test runtime this was reduced from 10 to 5.
   std::vector<std::string> link_names;
   tesseract::TransformMap location;
   for (std::size_t x = 0; x < t; ++x)
@@ -97,7 +97,7 @@ TEST(TesseractCollisionLargeDataSetUnit, BulletDiscreteBVHCollisionLargeDataSetU
 }
 
 // TODO: Levi, enable once FCL PR #338
-//TEST(TesseractCollisionLargeDataSetUnit, FCLDiscreteBVHCollisionLargeDataSetConvexHullUnit)
+// TEST(TesseractCollisionLargeDataSetUnit, FCLDiscreteBVHCollisionLargeDataSetConvexHullUnit)
 //{
 //  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
 //  runTest(checker, true);

@@ -45,7 +45,6 @@ namespace tesseract
 {
 namespace tesseract_bullet
 {
-
 BulletCastSimpleManager::BulletCastSimpleManager()
 {
   dispatcher_.reset(new btCollisionDispatcher(&coll_config_));
@@ -214,7 +213,7 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& na
 
             btTransform delta_tf = (tf1 * local_tf).inverseTimes(tf2 * local_tf);
             static_cast<CastHullShape*>(compound->getChildShape(i))->updateCastTransform(delta_tf);
-            compound->updateChildTransform(i, local_tf, false); // This is required to update the BVH tree
+            compound->updateChildTransform(i, local_tf, false);  // This is required to update the BVH tree
           }
           else if (btBroadphaseProxy::isCompound(compound->getChildShape(i)->getShapeType()))
           {
@@ -229,7 +228,7 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::string& na
 
               btTransform delta_tf = (tf1 * local_tf).inverseTimes(tf2 * local_tf);
               static_cast<CastHullShape*>(second_compound->getChildShape(j))->updateCastTransform(delta_tf);
-              second_compound->updateChildTransform(j, local_tf, false); // This is required to update the BVH tree
+              second_compound->updateChildTransform(j, local_tf, false);  // This is required to update the BVH tree
             }
             second_compound->recalculateLocalAabb();
           }
@@ -301,7 +300,6 @@ void BulletCastSimpleManager::setActiveCollisionObjects(const std::vector<std::s
 }
 
 const std::vector<std::string>& BulletCastSimpleManager::getActiveCollisionObjects() const { return active_; }
-
 void BulletCastSimpleManager::setContactDistanceThreshold(double contact_distance)
 {
   contact_distance_ = contact_distance;
@@ -314,11 +312,8 @@ void BulletCastSimpleManager::setContactDistanceThreshold(double contact_distanc
 }
 
 double BulletCastSimpleManager::getContactDistanceThreshold() const { return contact_distance_; }
-
 void BulletCastSimpleManager::setIsContactAllowedFn(IsContactAllowedFn fn) { fn_ = fn; }
-
 IsContactAllowedFn BulletCastSimpleManager::getIsContactAllowedFn() const { return fn_; }
-
 void BulletCastSimpleManager::contactTest(ContactResultMap& collisions, const ContactTestType& type)
 {
   ContactTestData cdata(active_, contact_distance_, fn_, type, collisions);
@@ -356,9 +351,11 @@ void BulletCastSimpleManager::contactTest(ContactResultMap& collisions, const Co
 
         if (needs_collision)
         {
-          btCollisionObjectWrapper obB(nullptr, cow2->getCollisionShape(), cow2.get(), cow2->getWorldTransform(), -1, -1);
+          btCollisionObjectWrapper obB(
+              nullptr, cow2->getCollisionShape(), cow2.get(), cow2->getWorldTransform(), -1, -1);
 
-          btCollisionAlgorithm* algorithm = dispatcher_->findAlgorithm(&obA, &obB, nullptr, BT_CLOSEST_POINT_ALGORITHMS);
+          btCollisionAlgorithm* algorithm =
+              dispatcher_->findAlgorithm(&obA, &obB, nullptr, BT_CLOSEST_POINT_ALGORITHMS);
           assert(algorithm != nullptr);
           if (algorithm)
           {
@@ -398,6 +395,5 @@ void BulletCastSimpleManager::addCollisionObject(const COWPtr& cow)
   else
     cows_.push_back(cow);
 }
-
 }
 }

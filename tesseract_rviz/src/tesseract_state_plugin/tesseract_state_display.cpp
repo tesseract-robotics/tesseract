@@ -366,9 +366,10 @@ void TesseractStateDisplay::setLinkColor(const tesseract_msgs::TesseractState::_
        it != link_colors.end();
        ++it)
   {
-    setLinkColor(it->name, QColor(static_cast<int>(it->visual[0].r * 255),
-                                  static_cast<int>(it->visual[0].g * 255),
-                                  static_cast<int>(it->visual[0].b * 255)));
+    setLinkColor(it->name,
+                 QColor(static_cast<int>(it->visual[0].r * 255),
+                        static_cast<int>(it->visual[0].g * 255),
+                        static_cast<int>(it->visual[0].b * 255)));
   }
 }
 
@@ -388,9 +389,8 @@ void TesseractStateDisplay::setLinkColor(Robot* robot, const std::string& link_n
 
   // Check if link exists
   if (link)
-    link->setColor(static_cast<float>(color.redF()),
-                   static_cast<float>(color.greenF()),
-                   static_cast<float>(color.blueF()));
+    link->setColor(
+        static_cast<float>(color.redF()), static_cast<float>(color.greenF()), static_cast<float>(color.blueF()));
 }
 
 void TesseractStateDisplay::unsetLinkColor(Robot* robot, const std::string& link_name)

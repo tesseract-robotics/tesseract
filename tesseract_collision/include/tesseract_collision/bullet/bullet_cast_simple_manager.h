@@ -49,7 +49,6 @@ namespace tesseract
 {
 namespace tesseract_bullet
 {
-
 /** @brief A simple implementaiton of a tesseract manager which does not use BHV */
 class BulletCastSimpleManager : public ContinuousContactManagerBase
 {
@@ -110,20 +109,19 @@ public:
   void addCollisionObject(const COWPtr& cow);
 
 private:
-  std::vector<std::string> active_;                   /**< @brief A list of the active collision objects */
-  double contact_distance_;                           /**< @brief The contact distance threshold */
-  IsContactAllowedFn fn_;                             /**< @brief The is allowed collision function */
+  std::vector<std::string> active_; /**< @brief A list of the active collision objects */
+  double contact_distance_;         /**< @brief The contact distance threshold */
+  IsContactAllowedFn fn_;           /**< @brief The is allowed collision function */
 
   std::unique_ptr<btCollisionDispatcher> dispatcher_; /**< @brief The bullet collision dispatcher used for getting
                                                          object to object collison algorithm */
   btDispatcherInfo dispatch_info_;              /**< @brief The bullet collision dispatcher configuration information */
   btDefaultCollisionConfiguration coll_config_; /**< @brief The bullet collision configuration */
-  Link2Cow link2cow_;        /**< @brief A map of collision objects being managed */
-  std::vector<COWPtr> cows_; /**< @brief A vector of collision objects (active followed by static) */
-  Link2Cow link2castcow_;    /**< @brief A map of cast collision objects being managed. */
+  Link2Cow link2cow_;                           /**< @brief A map of collision objects being managed */
+  std::vector<COWPtr> cows_;                    /**< @brief A vector of collision objects (active followed by static) */
+  Link2Cow link2castcow_;                       /**< @brief A map of cast collision objects being managed. */
 };
 typedef std::shared_ptr<BulletCastSimpleManager> BulletCastSimpleManagerPtr;
-
 }
 }
 

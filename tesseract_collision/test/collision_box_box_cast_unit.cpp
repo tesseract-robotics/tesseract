@@ -48,7 +48,7 @@ void runTest(tesseract::ContinuousContactManagerBase& checker)
   //////////////////////////////////////
   // Test when object is inside another
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({"moving_box_link"});
+  checker.setActiveCollisionObjects({ "moving_box_link" });
   checker.setContactDistanceThreshold(0.1);
 
   // Set the collision object transforms
@@ -76,20 +76,20 @@ void runTest(tesseract::ContinuousContactManagerBase& checker)
   EXPECT_TRUE(result_vector[0].cc_type == tesseract::ContinouseCollisionTypes::CCType_Between);
 
   EXPECT_NEAR(result_vector[0].nearest_points[0][0], -0.5, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[0][1],  0.5, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[0][2],  0.0, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[0][1], 0.5, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[0][2], 0.0, 0.001);
 
   EXPECT_NEAR(result_vector[0].nearest_points[1][0], -1.275, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[1][1], -0.625, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[1][2],    0.0, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[1][2], 0.0, 0.001);
 
   EXPECT_NEAR(result_vector[0].cc_nearest_points[0][0], -0.325, 0.001);
-  EXPECT_NEAR(result_vector[0].cc_nearest_points[0][1],  0.325, 0.001);
-  EXPECT_NEAR(result_vector[0].cc_nearest_points[0][2],    0.0, 0.001);
+  EXPECT_NEAR(result_vector[0].cc_nearest_points[0][1], 0.325, 0.001);
+  EXPECT_NEAR(result_vector[0].cc_nearest_points[0][2], 0.0, 0.001);
 
   EXPECT_NEAR(result_vector[0].cc_nearest_points[1][0], 2.525, 0.001);
   EXPECT_NEAR(result_vector[0].cc_nearest_points[1][1], 3.175, 0.001);
-  EXPECT_NEAR(result_vector[0].cc_nearest_points[1][2],   0.0, 0.001);
+  EXPECT_NEAR(result_vector[0].cc_nearest_points[1][2], 0.0, 0.001);
 }
 
 TEST(TesseractCollisionUnit, BulletCastSimpleCollisionBoxBoxUnit)

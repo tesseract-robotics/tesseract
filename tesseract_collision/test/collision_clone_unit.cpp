@@ -69,7 +69,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, double dist_tol, do
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({"sphere_link", "sphere1_link"});
+  checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
   checker.setContactDistanceThreshold(0.1);
 
   // Test when object is inside another
@@ -105,12 +105,24 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, double dist_tol, do
 
   EXPECT_TRUE(!result_vector.empty() && !cloned_result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, cloned_result_vector[0].distance, dist_tol);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], cloned_result_vector[0].nearest_points[cloned_idx[0]][0], nearest_tol);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], cloned_result_vector[0].nearest_points[cloned_idx[0]][1], nearest_tol);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][2], cloned_result_vector[0].nearest_points[cloned_idx[0]][2], nearest_tol);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], cloned_result_vector[0].nearest_points[cloned_idx[1]][0], nearest_tol);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1], cloned_result_vector[0].nearest_points[cloned_idx[1]][1], nearest_tol);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][2], cloned_result_vector[0].nearest_points[cloned_idx[1]][2], nearest_tol);
+  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0],
+              cloned_result_vector[0].nearest_points[cloned_idx[0]][0],
+              nearest_tol);
+  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1],
+              cloned_result_vector[0].nearest_points[cloned_idx[0]][1],
+              nearest_tol);
+  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][2],
+              cloned_result_vector[0].nearest_points[cloned_idx[0]][2],
+              nearest_tol);
+  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0],
+              cloned_result_vector[0].nearest_points[cloned_idx[1]][0],
+              nearest_tol);
+  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1],
+              cloned_result_vector[0].nearest_points[cloned_idx[1]][1],
+              nearest_tol);
+  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][2],
+              cloned_result_vector[0].nearest_points[cloned_idx[1]][2],
+              nearest_tol);
   EXPECT_NEAR(result_vector[0].normal[0] * idx[2], cloned_result_vector[0].normal[0] * cloned_idx[2], normal_tol);
   EXPECT_NEAR(result_vector[0].normal[1] * idx[2], cloned_result_vector[0].normal[1] * cloned_idx[2], normal_tol);
   EXPECT_NEAR(result_vector[0].normal[2] * idx[2], cloned_result_vector[0].normal[2] * cloned_idx[2], normal_tol);
@@ -134,7 +146,7 @@ TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionCloneUnit)
 {
   tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
   addCollisionObjects(checker);
-  runTest(checker, 0.001, 0.001, 0.005); // TODO: FCL requires a large tolerance because it using GJK currently
+  runTest(checker, 0.001, 0.001, 0.005);  // TODO: FCL requires a large tolerance because it using GJK currently
 }
 
 int main(int argc, char** argv)

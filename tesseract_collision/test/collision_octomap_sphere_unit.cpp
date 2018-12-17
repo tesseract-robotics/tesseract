@@ -62,7 +62,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, double tol)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({"octomap_link", "sphere_link"});
+  checker.setActiveCollisionObjects({ "octomap_link", "sphere_link" });
   checker.setContactDistanceThreshold(0.1);
 
   // Set the collision object transforms
@@ -122,11 +122,11 @@ TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionOctomapSphereUnit)
 {
   tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
   addCollisionObjects(checker);
-  runTest(checker, 0.16); // TODO: There appears to be an issue in fcl for octomap::OcTree.
+  runTest(checker, 0.16);  // TODO: There appears to be an issue in fcl for octomap::OcTree.
 }
 
 // TODO: Levi, enable once FCL PR #338
-//TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxSphereConvexHullUnit)
+// TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxSphereConvexHullUnit)
 //{
 //  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
 //  addCollisionObjects(checker, true);

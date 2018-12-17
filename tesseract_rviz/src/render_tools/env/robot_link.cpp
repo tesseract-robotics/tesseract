@@ -768,11 +768,10 @@ bool RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
                            static_cast<float>(origin.position.y),
                            static_cast<float>(origin.position.z));
     Ogre::Quaternion orientation(Ogre::Quaternion::IDENTITY);
-    orientation =
-        orientation * Ogre::Quaternion(static_cast<float>(origin.rotation.w),
-                                       static_cast<float>(origin.rotation.x),
-                                       static_cast<float>(origin.rotation.y),
-                                       static_cast<float>(origin.rotation.z));
+    orientation = orientation * Ogre::Quaternion(static_cast<float>(origin.rotation.w),
+                                                 static_cast<float>(origin.rotation.x),
+                                                 static_cast<float>(origin.rotation.y),
+                                                 static_cast<float>(origin.rotation.z));
 
     offset_position = position;
     offset_orientation = orientation;
@@ -793,9 +792,8 @@ bool RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
       const urdf::Box& box = static_cast<const urdf::Box&>(geom);
       entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Cube, scene_manager_);
 
-      scale = Ogre::Vector3(static_cast<float>(box.dim.x),
-                            static_cast<float>(box.dim.y),
-                            static_cast<float>(box.dim.z));
+      scale =
+          Ogre::Vector3(static_cast<float>(box.dim.x), static_cast<float>(box.dim.y), static_cast<float>(box.dim.z));
 
       break;
     }
@@ -820,9 +818,8 @@ bool RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
       if (mesh.filename.empty())
         return false;
 
-      scale = Ogre::Vector3(static_cast<float>(mesh.scale.x),
-                            static_cast<float>(mesh.scale.y),
-                            static_cast<float>(mesh.scale.z));
+      scale = Ogre::Vector3(
+          static_cast<float>(mesh.scale.x), static_cast<float>(mesh.scale.y), static_cast<float>(mesh.scale.z));
 
       std::string model_name = mesh.filename;
 
@@ -966,9 +963,7 @@ bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
       {
         entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Cube, scene_manager_);
         const double* sz = static_cast<const shapes::Box&>(geom).size;
-        scale = Ogre::Vector3(static_cast<float>(sz[0]),
-                              static_cast<float>(sz[1]),
-                              static_cast<float>(sz[2]));
+        scale = Ogre::Vector3(static_cast<float>(sz[0]), static_cast<float>(sz[1]), static_cast<float>(sz[2]));
         break;
       }
       case shapes::CYLINDER:
@@ -1223,7 +1218,9 @@ bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
     size_t pointCount = 0;
     {
       // traverse all leafs in the tree:
-      for (octomap::OcTree::iterator it = octree->begin(static_cast<unsigned char>(octree_depth)), end = octree->end(); it != end; ++it)
+      for (octomap::OcTree::iterator it = octree->begin(static_cast<unsigned char>(octree_depth)), end = octree->end();
+           it != end;
+           ++it)
       {
         bool display_voxel = false;
 
@@ -1238,11 +1235,17 @@ bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
           octomap::OcTreeKey key;
           octomap::OcTreeKey nKey = it.getKey();
 
-          for (key[2] = static_cast<octomap::key_type>(nKey[2] - 1); allNeighborsFound && key[2] <= static_cast<octomap::key_type>(nKey[2] + 1); ++key[2])
+          for (key[2] = static_cast<octomap::key_type>(nKey[2] - 1);
+               allNeighborsFound && key[2] <= static_cast<octomap::key_type>(nKey[2] + 1);
+               ++key[2])
           {
-            for (key[1] = static_cast<octomap::key_type>(nKey[1] - 1); allNeighborsFound && key[1] <= static_cast<octomap::key_type>(nKey[1] + 1); ++key[1])
+            for (key[1] = static_cast<octomap::key_type>(nKey[1] - 1);
+                 allNeighborsFound && key[1] <= static_cast<octomap::key_type>(nKey[1] + 1);
+                 ++key[1])
             {
-              for (key[0] = static_cast<octomap::key_type>(nKey[0] - 1); allNeighborsFound && key[0] <= static_cast<octomap::key_type>(nKey[0] + 1); ++key[0])
+              for (key[0] = static_cast<octomap::key_type>(nKey[0] - 1);
+                   allNeighborsFound && key[0] <= static_cast<octomap::key_type>(nKey[0] + 1);
+                   ++key[0])
               {
                 if (key != nKey)
                 {

@@ -47,7 +47,6 @@ namespace tesseract
 {
 namespace tesseract_bullet
 {
-
 /** @brief A BVH implementaiton of a bullet manager */
 class BulletDiscreteBVHManager : public DiscreteContactManagerBase
 {
@@ -105,9 +104,9 @@ public:
   const Link2Cow& getCollisionObjects() const;
 
 private:
-  std::vector<std::string> active_;                   /**< @brief A list of the active collision objects */
-  double contact_distance_;                           /**< @brief The contact distance threshold */
-  IsContactAllowedFn fn_;                             /**< @brief The is allowed collision function */
+  std::vector<std::string> active_; /**< @brief A list of the active collision objects */
+  double contact_distance_;         /**< @brief The contact distance threshold */
+  IsContactAllowedFn fn_;           /**< @brief The is allowed collision function */
 
   std::unique_ptr<btCollisionDispatcher> dispatcher_; /**< @brief The bullet collision dispatcher used for getting
                                                          object to object collison algorithm */
@@ -124,7 +123,6 @@ private:
   void contactTest(const COWPtr& cow, ContactTestData& collisions);
 };
 typedef std::shared_ptr<BulletDiscreteBVHManager> BulletDiscreteBVHManagerPtr;
-
 }
 }
 #endif  // TESSERACT_COLLISION_BULLET_DISCRETE_BVH_MANAGERS_H

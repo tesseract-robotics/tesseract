@@ -35,7 +35,6 @@ TESSERACT_IGNORE_WARNINGS_POP
 
 #include <tesseract_core/basic_env.h>
 
-
 namespace tesseract
 {
 namespace tesseract_ros

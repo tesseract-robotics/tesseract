@@ -685,7 +685,8 @@ static inline void tesseractTrajectoryToJointTrajectoryMsg(trajectory_msgs::Join
   {
     for (int j = 0; j < traj.cols(); ++j)
     {
-      traj_msg.points[static_cast<size_t>(i)].positions[static_cast<size_t>(jn_to_index[joint_names[static_cast<size_t>(j)]])] = traj(i, j);
+      traj_msg.points[static_cast<size_t>(i)]
+          .positions[static_cast<size_t>(jn_to_index[joint_names[static_cast<size_t>(j)]])] = traj(i, j);
     }
   }
 }
@@ -809,8 +810,7 @@ static inline bool processAttachedBodyInfoMsg(tesseract_ros::ROSBasicEnvPtr env,
   return processAttachedBodyInfoMsg(*env, ab_msg);
 }
 
-static inline bool processJointStateMsg(tesseract_ros::ROSBasicEnv& env,
-                                        const sensor_msgs::JointState& joint_state_msg)
+static inline bool processJointStateMsg(tesseract_ros::ROSBasicEnv& env, const sensor_msgs::JointState& joint_state_msg)
 {
   if (!isMsgEmpty(joint_state_msg))
   {

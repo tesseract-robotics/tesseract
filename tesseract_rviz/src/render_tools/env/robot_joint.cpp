@@ -103,12 +103,16 @@ RobotJoint::RobotJoint(Robot* robot, const urdf::JointConstSharedPtr& joint)
   {
     // continuous joints have lower limit and upper limits of zero,
     // which means this isn't very useful but show it anyhow.
-    lower_limit_property_ = new rviz::FloatProperty(
-        "Lower Limit", static_cast<float>(joint->limits->lower), "Lower limit of this joint.  (Not editable)", joint_property_);
+    lower_limit_property_ = new rviz::FloatProperty("Lower Limit",
+                                                    static_cast<float>(joint->limits->lower),
+                                                    "Lower limit of this joint.  (Not editable)",
+                                                    joint_property_);
     lower_limit_property_->setReadOnly(true);
 
-    upper_limit_property_ = new rviz::FloatProperty(
-        "Upper Limit", static_cast<float>(joint->limits->upper), "Upper limit of this joint.  (Not editable)", joint_property_);
+    upper_limit_property_ = new rviz::FloatProperty("Upper Limit",
+                                                    static_cast<float>(joint->limits->upper),
+                                                    "Upper limit of this joint.  (Not editable)",
+                                                    joint_property_);
     upper_limit_property_->setReadOnly(true);
   }
 
@@ -134,13 +138,9 @@ RobotJoint::RobotJoint(Robot* robot, const urdf::JointConstSharedPtr& joint)
 
   const urdf::Vector3& pos = joint->parent_to_joint_origin_transform.position;
   const urdf::Rotation& rot = joint->parent_to_joint_origin_transform.rotation;
-  joint_origin_pos_ = Ogre::Vector3(static_cast<float>(pos.x),
-                                    static_cast<float>(pos.y),
-                                    static_cast<float>(pos.z));
-  joint_origin_rot_ = Ogre::Quaternion(static_cast<float>(rot.w),
-                                       static_cast<float>(rot.x),
-                                       static_cast<float>(rot.y),
-                                       static_cast<float>(rot.z));
+  joint_origin_pos_ = Ogre::Vector3(static_cast<float>(pos.x), static_cast<float>(pos.y), static_cast<float>(pos.z));
+  joint_origin_rot_ = Ogre::Quaternion(
+      static_cast<float>(rot.w), static_cast<float>(rot.x), static_cast<float>(rot.y), static_cast<float>(rot.z));
 }
 
 RobotJoint::RobotJoint(Robot* robot, const std::string& name, const tesseract::AttachedBodyInfo& ab)

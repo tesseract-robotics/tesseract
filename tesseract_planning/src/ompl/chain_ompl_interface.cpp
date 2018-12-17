@@ -90,7 +90,7 @@ bool ChainOmplInterface::isStateValid(const ompl::base::State* state) const
   Eigen::Map<Eigen::VectorXd> joint_angles(s->values, long(dof));
   tesseract::EnvStateConstPtr env_state = env_->getState(joint_names_, joint_angles);
 
-  //Need to get thread id
+  // Need to get thread id
   tesseract::DiscreteContactManagerBasePtr cm = contact_manager_->clone();
   cm->setCollisionObjectsTransform(env_state->transforms);
 

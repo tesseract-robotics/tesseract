@@ -45,7 +45,6 @@ namespace tesseract
 {
 namespace tesseract_bullet
 {
-
 BulletDiscreteSimpleManager::BulletDiscreteSimpleManager()
 {
   dispatcher_.reset(new btCollisionDispatcher(&coll_config_));
@@ -188,7 +187,6 @@ void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::vector<st
 }
 
 const std::vector<std::string>& BulletDiscreteSimpleManager::getActiveCollisionObjects() const { return active_; }
-
 void BulletDiscreteSimpleManager::setContactDistanceThreshold(double contact_distance)
 {
   contact_distance_ = contact_distance;
@@ -198,11 +196,8 @@ void BulletDiscreteSimpleManager::setContactDistanceThreshold(double contact_dis
 }
 
 double BulletDiscreteSimpleManager::getContactDistanceThreshold() const { return contact_distance_; }
-
 void BulletDiscreteSimpleManager::setIsContactAllowedFn(IsContactAllowedFn fn) { fn_ = fn; }
-
 IsContactAllowedFn BulletDiscreteSimpleManager::getIsContactAllowedFn() const { return fn_; }
-
 void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, const ContactTestType& type)
 {
   ContactTestData cdata(active_, contact_distance_, fn_, type, collisions);
@@ -240,9 +235,11 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
 
         if (needs_collision)
         {
-          btCollisionObjectWrapper obB(nullptr, cow2->getCollisionShape(), cow2.get(), cow2->getWorldTransform(), -1, -1);
+          btCollisionObjectWrapper obB(
+              nullptr, cow2->getCollisionShape(), cow2.get(), cow2->getWorldTransform(), -1, -1);
 
-          btCollisionAlgorithm* algorithm = dispatcher_->findAlgorithm(&obA, &obB, nullptr, BT_CLOSEST_POINT_ALGORITHMS);
+          btCollisionAlgorithm* algorithm =
+              dispatcher_->findAlgorithm(&obA, &obB, nullptr, BT_CLOSEST_POINT_ALGORITHMS);
           assert(algorithm != nullptr);
           if (algorithm)
           {
@@ -275,6 +272,5 @@ void BulletDiscreteSimpleManager::addCollisionObject(const COWPtr& cow)
 }
 
 const Link2Cow& BulletDiscreteSimpleManager::getCollisionObjects() const { return link2cow_; }
-
 }
 }

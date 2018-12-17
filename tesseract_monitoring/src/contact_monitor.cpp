@@ -86,43 +86,41 @@ bool callbackModifyTesseractEnv(tesseract_msgs::ModifyTesseractEnvRequest& reque
 }
 
 bool callbackComputeContactResultVector(tesseract_msgs::ComputeContactResultVectorRequest& request,
-		                                tesseract_msgs::ComputeContactResultVectorResponse& response)
+                                        tesseract_msgs::ComputeContactResultVectorResponse& response)
 {
+  ContactResultMap contacts;
 
-	ContactResultMap contacts;
+  boost::mutex::scoped_lock(modify_mutex);
 
-	boost::mutex::scoped_lock(modify_mutex);
+  env->setState(request.joint_states.name, request.joint_states.position);
+  EnvStateConstPtr state = env->getState();
 
-	env->setState(request.joint_states.name, request.joint_states.position);
-	EnvStateConstPtr state = env->getState();
+  manager->setCollisionObjectsTransform(state->transforms);
+  manager->contactTest(contacts, type);
 
-	manager->setCollisionObjectsTransform(state->transforms);
-	manager->contactTest(contacts, type);
+  ContactResultVector contacts_vector;
+  tesseract::moveContactResultsMapToContactResultsVector(contacts, contacts_vector);
+  response.collision_result.contacts.reserve(contacts_vector.size());
+  for (const auto& contact : contacts_vector)
+  {
+    tesseract_msgs::ContactResult contact_msg;
+    tesseractContactResultToContactResultMsg(contact_msg, contact, request.joint_states.header.stamp);
+    response.collision_result.contacts.push_back(contact_msg);
+  }
+  response.success = true;
 
-	ContactResultVector contacts_vector;
-	tesseract::moveContactResultsMapToContactResultsVector(contacts, contacts_vector);
-	response.collision_result.contacts.reserve(contacts_vector.size());
-	for (const auto& contact : contacts_vector)
-	{
-	tesseract_msgs::ContactResult contact_msg;
-	tesseractContactResultToContactResultMsg(contact_msg, contact, request.joint_states.header.stamp);
-	response.collision_result.contacts.push_back(contact_msg);
-	}
-	response.success=true;
-
-	return true;
+  return true;
 }
 
 void callbackTesseractEnvDiff(const tesseract_msgs::TesseractStatePtr& state)
 {
-
   if (!state->is_diff)
-	  return;
+    return;
 
   boost::mutex::scoped_lock(modify_mutex);
   if (!processTesseractStateMsg(*env, *state))
   {
-	  ROS_ERROR("Invalid TesseractState diff message");
+    ROS_ERROR("Invalid TesseractState diff message");
   }
 
   // Create a new manager
@@ -134,7 +132,6 @@ void callbackTesseractEnvDiff(const tesseract_msgs::TesseractStatePtr& state)
   manager->setActiveCollisionObjects(active);
   manager->setContactDistanceThreshold(contact_distance);
   manager->setIsContactAllowedFn(fn);
-
 }
 
 int main(int argc, char** argv)
@@ -226,8 +223,9 @@ int main(int argc, char** argv)
   if (publish_environment)
     environment_pub = pnh.advertise<tesseract_msgs::TesseractState>("tesseract", 100, false);
 
-  compute_contact_results = pnh.advertiseService<tesseract_msgs::ComputeContactResultVectorRequest, tesseract_msgs::ComputeContactResultVectorResponse>(
-		  "compute_contact_results", &callbackComputeContactResultVector);
+  compute_contact_results = pnh.advertiseService<tesseract_msgs::ComputeContactResultVectorRequest,
+                                                 tesseract_msgs::ComputeContactResultVectorResponse>(
+      "compute_contact_results", &callbackComputeContactResultVector);
 
   environment_diff_sub = pnh.subscribe("tesseract_diff", 100, &callbackTesseractEnvDiff);
 

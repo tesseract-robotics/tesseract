@@ -116,8 +116,7 @@ CollisionGeometryPtr createShapePrimitive(const shapes::Mesh* geom, const Collis
       if (num_faces < 0)
         return nullptr;
 
-      return CollisionGeometryPtr(new fcl::Convexd(
-        convex_hull_vertices, num_faces, convex_hull_faces));
+      return CollisionGeometryPtr(new fcl::Convexd(convex_hull_vertices, num_faces, convex_hull_faces));
     }
     case CollisionObjectType::UseShapeType:
     {
@@ -221,14 +220,12 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   const CollisionObjectWrapper* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
   const CollisionObjectWrapper* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
 
-  bool needs_collision = cd1->m_enabled && cd2->m_enabled &&
-                         (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&
-                         (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&
-                         !isContactAllowed(cd1->getName(), cd2->getName(), cdata->fn, false) &&
-                         (std::find(cdata->active.begin(), cdata->active.end(), cd1->getName()) !=
-                              cdata->active.end() ||
-                          std::find(cdata->active.begin(), cdata->active.end(), cd2->getName()) !=
-                              cdata->active.end());
+  bool needs_collision =
+      cd1->m_enabled && cd2->m_enabled && (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&
+      (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&
+      !isContactAllowed(cd1->getName(), cd2->getName(), cdata->fn, false) &&
+      (std::find(cdata->active.begin(), cdata->active.end(), cd1->getName()) != cdata->active.end() ||
+       std::find(cdata->active.begin(), cdata->active.end(), cd2->getName()) != cdata->active.end());
 
   if (!needs_collision)
     return false;
@@ -277,14 +274,12 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   const CollisionObjectWrapper* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
   const CollisionObjectWrapper* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
 
-  bool needs_collision = cd1->m_enabled && cd2->m_enabled &&
-                         (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&
-                         (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&
-                         !isContactAllowed(cd1->getName(), cd2->getName(), cdata->fn, false) &&
-                         (std::find(cdata->active.begin(), cdata->active.end(), cd1->getName()) !=
-                              cdata->active.end() ||
-                          std::find(cdata->active.begin(), cdata->active.end(), cd2->getName()) !=
-                              cdata->active.end());
+  bool needs_collision =
+      cd1->m_enabled && cd2->m_enabled && (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&
+      (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&
+      !isContactAllowed(cd1->getName(), cd2->getName(), cdata->fn, false) &&
+      (std::find(cdata->active.begin(), cdata->active.end(), cd1->getName()) != cdata->active.end() ||
+       std::find(cdata->active.begin(), cdata->active.end(), cd2->getName()) != cdata->active.end());
 
   if (!needs_collision)
     return false;

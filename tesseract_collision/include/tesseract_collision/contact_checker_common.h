@@ -171,7 +171,11 @@ inline int createConvexHull(VectorVector3d& vertices,
     points.push_back(btVector3(static_cast<btScalar>(v[0]), static_cast<btScalar>(v[1]), static_cast<btScalar>(v[2])));
   }
 
-  btScalar val = conv.compute(&points[0].getX(), sizeof(btVector3), points.size(), static_cast<btScalar>(shrink), static_cast<btScalar>(shrinkClamp));
+  btScalar val = conv.compute(&points[0].getX(),
+                              sizeof(btVector3),
+                              points.size(),
+                              static_cast<btScalar>(shrink),
+                              static_cast<btScalar>(shrinkClamp));
   if (val < 0)
   {
     ROS_ERROR("Failed to create convex hull");

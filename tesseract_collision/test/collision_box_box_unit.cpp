@@ -73,7 +73,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
   //////////////////////////////////////
   // Test when object is inside another
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({"box_link", "second_box_link"});
+  checker.setActiveCollisionObjects({ "box_link", "second_box_link" });
   checker.setContactDistanceThreshold(0.1);
 
   // Set the collision object transforms
@@ -182,7 +182,7 @@ TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxBoxUnit)
 }
 
 // TODO: Levi, enable once FCL PR #338
-//TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxBoxConvexHullUnit)
+// TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxBoxConvexHullUnit)
 //{
 //  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
 //  addCollisionObjects(checker, true);

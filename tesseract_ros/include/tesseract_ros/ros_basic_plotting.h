@@ -77,7 +77,8 @@ public:
     tesseract_ros::tesseractToTesseractStateMsg(msg.trajectory_start, *env_);
 
     // Set the joint trajectory message
-    tesseract_ros::tesseractTrajectoryToJointTrajectoryMsg(msg.joint_trajectory, *(env_->getState()), joint_names, traj);
+    tesseract_ros::tesseractTrajectoryToJointTrajectoryMsg(
+        msg.joint_trajectory, *(env_->getState()), joint_names, traj);
 
     trajectory_pub_.publish(msg);
   }

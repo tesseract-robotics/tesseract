@@ -73,7 +73,7 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
   const ompl::base::RealVectorStateSpace::StateType* start = s1->as<ompl::base::RealVectorStateSpace::StateType>();
   const ompl::base::RealVectorStateSpace::StateType* finish = s2->as<ompl::base::RealVectorStateSpace::StateType>();
 
-  //Need to get thread id
+  // Need to get thread id
   tesseract::ContinuousContactManagerBasePtr cm = contact_manager_->clone();
 
   const auto dof = si_->getStateDimension();

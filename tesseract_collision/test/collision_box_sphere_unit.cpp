@@ -74,7 +74,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({"box_link", "sphere_link"});
+  checker.setActiveCollisionObjects({ "box_link", "sphere_link" });
   checker.setContactDistanceThreshold(0.1);
 
   // Set the collision object transforms
@@ -154,7 +154,7 @@ void runConvexTest(tesseract::DiscreteContactManagerBase& checker)
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({"box_link", "sphere_link"});
+  checker.setActiveCollisionObjects({ "box_link", "sphere_link" });
   checker.setContactDistanceThreshold(0.1);
 
   // Set the collision object transforms
@@ -182,8 +182,8 @@ void runConvexTest(tesseract::DiscreteContactManagerBase& checker)
 
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.5, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], -0.03776, 0.001);
-  EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1,0,0)), 0.0);
-  EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1,0,0)))), 0.00001);
+  EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1, 0, 0)), 0.0);
+  EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1, 0, 0)))), 0.00001);
 
   ////////////////////////////////////////////////
   // Test object is out side the contact distance
@@ -219,8 +219,8 @@ void runConvexTest(tesseract::DiscreteContactManagerBase& checker)
 
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.5, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], 0.76224, 0.001);
-  EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1,0,0)), 0.0);
-  EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1,0,0)))), 0.00001);
+  EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1, 0, 0)), 0.0);
+  EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1, 0, 0)))), 0.00001);
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionBoxSphereUnit)
@@ -259,7 +259,7 @@ TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxSphereUnit)
 }
 
 // TODO: Levi, enable once FCL PR #338
-//TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxSphereConvexHullUnit)
+// TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxSphereConvexHullUnit)
 //{
 //  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
 //  addCollisionObjects(checker, true);

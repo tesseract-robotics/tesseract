@@ -473,10 +473,8 @@ void KDLEnv::attachBody(const AttachedBodyInfo& attached_body_info)
   continuous_manager_->enableCollisionObject(attached_body_info.object_name);
 
   // update attached object's transform
-  calculateTransforms(current_state_->transforms,
-                      kdl_jnt_array_,
-                      kdl_tree_->getRootSegment(),
-                      Eigen::Isometry3d::Identity());
+  calculateTransforms(
+      current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
 
   discrete_manager_->setCollisionObjectsTransform(attached_body_info.object_name,
                                                   current_state_->transforms[attached_body_info.object_name]);
