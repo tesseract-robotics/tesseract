@@ -27,3 +27,6 @@ ObjectColor[] highlight_links
 # This is mostly important for handling the attached bodies (whether or not to clear the attached bodies
 # before updating it with this message)
 bool is_diff
+
+# Allowed collisions
+AllowedCollisionEntry[] allowed_collisions

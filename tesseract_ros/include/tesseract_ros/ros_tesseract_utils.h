@@ -617,6 +617,17 @@ static inline void tesseractToTesseractStateMsg(tesseract_msgs::TesseractState& 
   state_msg.urdf_name = env.getURDF()->getName();
   state_msg.is_diff = false;
 
+  for (const auto& entry : env.getAllowedCollisionMatrix()->getAllAllowedCollisions())
+  {
+    const auto& link_names = entry.first;
+    const auto& reason = entry.second;
+    tesseract_msgs::AllowedCollisionEntry collision_entry;
+    collision_entry.link_1 = link_names.first;
+    collision_entry.link_2 = link_names.second;
+    collision_entry.reason = reason;
+    state_msg.allowed_collisions.push_back(collision_entry);
+  }
+
   for (const auto& ao : env.getAttachableObjects())
   {
     tesseract_msgs::AttachableObject ao_msg;
@@ -841,6 +852,7 @@ static inline bool processTesseractStateMsg(tesseract_ros::ROSBasicEnv& env,
     env.clearAttachedBodies();
     env.clearAttachableObjects();
     env.clearKnownObjectColors();
+    env.getAllowedCollisionMatrixNonConst()->clearAllowedCollisions();
   }
 
   processJointStateMsg(env, state_msg.joint_state);
@@ -855,6 +867,12 @@ static inline bool processTesseractStateMsg(tesseract_ros::ROSBasicEnv& env,
   {
     if (!processAttachedBodyInfoMsg(env, ab_msg))
       success = false;
+  }
+
+  for (const auto& ce_msg : state_msg.allowed_collisions)
+  {
+    auto acm = env.getAllowedCollisionMatrixNonConst();
+    acm->addAllowedCollision(ce_msg.link_1, ce_msg.link_2, ce_msg.reason);
   }
 
   return success;
