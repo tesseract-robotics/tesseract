@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>tesseract_scene_graph</name>
+  <version>0.1.0</version>
+  <description>The tesseract_scene_graph package</description>
+  <maintainer email="Armstrong@todo.todo">Levi Armstrong</maintainer>
+  <license>Apache 2.0</license>
+  <author >Levi Armstrong</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>libccd_ros</depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+
+</package>
