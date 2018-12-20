@@ -84,7 +84,9 @@ if (CATKIN_ENABLE_TESTING)
 
   include_directories(${catkin_INCLUDE_DIRS})
 
-  catkin_add_gtest(${PROJECT_NAME}_kdl_kin_unit test/kdl_kin_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_kdl_kin_unit ${PROJECT_NAME}_kdl ${catkin_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${orocos_kdl_LIBRARIES})
-  target_compile_options(${PROJECT_NAME}_kdl_kin_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+  catkin_add_gtest(${PROJECT_NAME}_unit test/kdl_kin_unit.cpp
+                                        test/ros_tesseract_utils_unit.cpp
+                                        test/kdl_env_unit.cpp)
+  target_link_libraries(${PROJECT_NAME}_unit ${PROJECT_NAME}_kdl ${catkin_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${orocos_kdl_LIBRARIES})
+  target_compile_options(${PROJECT_NAME}_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 endif()
