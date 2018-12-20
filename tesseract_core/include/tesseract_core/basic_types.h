@@ -105,7 +105,8 @@ struct AllowedCollisionMatrix
   }
 
   /**
-   * @brief Clears the list of allowed collisions
+   * @brief Clears the list of allowed collisions, so that no collision will be
+   *        allowed.
    */
   void clearAllowedCollisions()
   {

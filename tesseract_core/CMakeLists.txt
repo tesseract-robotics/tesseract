@@ -40,3 +40,14 @@ install(DIRECTORY include/${PROJECT_NAME}/
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
 )
+
+if (CATKIN_ENABLE_TESTING)
+
+  find_package(rostest REQUIRED)
+
+  include_directories(${catkin_INCLUDE_DIRS})
+
+  catkin_add_gtest(${PROJECT_NAME}_unit test/tesseract_core_unit.cpp)
+  target_link_libraries(${PROJECT_NAME}_unit ${catkin_LIBRARIES})
+  target_compile_options(${PROJECT_NAME}_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+endif()
