@@ -10,18 +10,16 @@ TESSERACT_IGNORE_WARNINGS_POP
 #include "tesseract_ros/kdl/kdl_env.h"
 #include "tesseract_ros/ros_tesseract_utils.h"
 
-
 class TesseractKDLEnvUnit : public testing::Test
 {
-  protected:
-  void SetUp() override {
+protected:
+  void SetUp() override
+  {
     std::string path = ros::package::getPath("tesseract_ros");
     std::ifstream urdf_ifs(path + "/test/urdf/pppbot.urdf");
     std::ifstream srdf_ifs(path + "/test/srdf/pppbot.srdf");
-    std::string urdf_xml_string((std::istreambuf_iterator<char>(urdf_ifs)),
-                                (std::istreambuf_iterator<char>()));
-    std::string srdf_xml_string((std::istreambuf_iterator<char>(srdf_ifs)),
-                                (std::istreambuf_iterator<char>()));
+    std::string urdf_xml_string((std::istreambuf_iterator<char>(urdf_ifs)), (std::istreambuf_iterator<char>()));
+    std::string srdf_xml_string((std::istreambuf_iterator<char>(srdf_ifs)), (std::istreambuf_iterator<char>()));
 
     urdf_model = urdf::parseURDF(urdf_xml_string);
     srdf_model = srdf::ModelSharedPtr(new srdf::Model);
@@ -45,7 +43,7 @@ class TesseractKDLEnvUnit : public testing::Test
   {
     std::vector<std::string> jointNames = env->getJointNames();
     tesseract::TrajArray traj;
-    traj.resize(2,3);
+    traj.resize(2, 3);
     traj.setZero();
     unsigned int i = 0;
     for (const std::string& jn : jointNames)
@@ -58,8 +56,7 @@ class TesseractKDLEnvUnit : public testing::Test
     ccm = env->getContinuousContactManager();
     std::vector<tesseract::ContactResultMap> collisions;
     tesseract::BasicKinConstPtr kin = env->getManipulator("manipulator");
-    bool found = tesseract::continuousCollisionCheckTrajectory(
-          *ccm, *env, *kin, traj, collisions);
+    bool found = tesseract::continuousCollisionCheckTrajectory(*ccm, *env, *kin, traj, collisions);
     return found;
   }
 
@@ -119,4 +116,3 @@ TEST_F(TesseractKDLEnvUnit, TestACMWorks)
   acm->removeAllowedCollision("link3", "obstacle1");
   EXPECT_TRUE(continuousCollisionCheck(js1, js2));
 }
-

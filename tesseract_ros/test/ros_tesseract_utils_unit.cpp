@@ -12,20 +12,18 @@ TESSERACT_IGNORE_WARNINGS_POP
 #include <tesseract_ros/kdl/kdl_env.h>
 #include <tesseract_ros/ros_tesseract_utils.h>
 
-
 class TesseractROSUtilsUnit : public testing::Test
 {
-  protected:
-  void SetUp() override {
+protected:
+  void SetUp() override
+  {
     ros::Time::init();
 
     std::string path = ros::package::getPath("tesseract_ros");
     std::ifstream urdf_ifs(path + "/test/urdf/pppbot.urdf");
     std::ifstream srdf_ifs(path + "/test/srdf/pppbot.srdf");
-    std::string urdf_xml_string((std::istreambuf_iterator<char>(urdf_ifs)),
-                                (std::istreambuf_iterator<char>()));
-    std::string srdf_xml_string((std::istreambuf_iterator<char>(srdf_ifs)),
-                                (std::istreambuf_iterator<char>()));
+    std::string urdf_xml_string((std::istreambuf_iterator<char>(urdf_ifs)), (std::istreambuf_iterator<char>()));
+    std::string srdf_xml_string((std::istreambuf_iterator<char>(srdf_ifs)), (std::istreambuf_iterator<char>()));
 
     urdf_model = urdf::parseURDF(urdf_xml_string);
     srdf_model = srdf::ModelSharedPtr(new srdf::Model);
@@ -39,7 +37,6 @@ class TesseractROSUtilsUnit : public testing::Test
   srdf::ModelSharedPtr srdf_model;
   tesseract::tesseract_ros::KDLEnvPtr env;
 };
-
 
 // Tests that TesseractState messages correctly store joint state
 TEST_F(TesseractROSUtilsUnit, TestTesseractStateMsgJointState)
@@ -56,8 +53,7 @@ TEST_F(TesseractROSUtilsUnit, TestTesseractStateMsgJointState)
   ASSERT_TRUE(js1 == js2);
 
   tesseract_msgs::TesseractState tesseract_state_msg;
-  tesseract::tesseract_ros::tesseractToTesseractStateMsg(tesseract_state_msg,
-                                                         *(env.get()));
+  tesseract::tesseract_ros::tesseractToTesseractStateMsg(tesseract_state_msg, *env);
 
   // changing joint state before processing the TesseractState msg
   js1["p3"] = 0;
@@ -83,8 +79,7 @@ TEST_F(TesseractROSUtilsUnit, TestTesseractStateMsgAllowedCollisionMatrix)
   const size_t n_allowed = acm->getAllAllowedCollisions().size();
 
   tesseract_msgs::TesseractState tesseract_state_msg;
-  tesseract::tesseract_ros::tesseractToTesseractStateMsg(tesseract_state_msg,
-                                                         *(env.get()));
+  tesseract::tesseract_ros::tesseractToTesseractStateMsg(tesseract_state_msg, *env);
 
   // changing ACM before processing the TesseractState msg
   acm->clearAllowedCollisions();

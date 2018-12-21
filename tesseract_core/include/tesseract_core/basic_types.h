@@ -108,16 +108,12 @@ struct AllowedCollisionMatrix
    * @brief Clears the list of allowed collisions, so that no collision will be
    *        allowed.
    */
-  void clearAllowedCollisions()
-  {
-    lookup_table_.clear();
-  }
-
+  void clearAllowedCollisions() { lookup_table_.clear(); }
 private:
   typedef std::pair<const std::string, const std::string> LinkNamesPair;
   struct PairHash
   {
-    std::size_t operator() (const LinkNamesPair &pair) const
+    std::size_t operator()(const LinkNamesPair& pair) const
     {
       return std::hash<std::string>()(pair.first + pair.second);
     }
@@ -146,10 +142,7 @@ public:
    *         collision entries. The keys of the unordered map are a std::pair
    *         of the link names in the allowed collision pair.
    */
-  const AllowedCollisionEntries& getAllAllowedCollisions() const
-  {
-    return lookup_table_;
-  }
+  const AllowedCollisionEntries& getAllAllowedCollisions() const { return lookup_table_; }
 };
 typedef std::shared_ptr<AllowedCollisionMatrix> AllowedCollisionMatrixPtr;
 typedef std::shared_ptr<const AllowedCollisionMatrix> AllowedCollisionMatrixConstPtr;
