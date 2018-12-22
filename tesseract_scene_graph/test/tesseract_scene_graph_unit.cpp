@@ -67,7 +67,20 @@ int main(int argc, char** argv)
   addJoint(joint_4, g);
 
   // Save Graph
-  utils::saveDOT("/tmp/graph_acyclic_example.dot", g);
+  utils::saveDOT("/tmp/graph_acyclic_tree_example.dot", g);
+
+  // Test if the graph is Acyclic
+  std::cout << "Is Acyclic: " << utils::isAcyclic(g) << std::endl;
+
+  // Test if the graph is Tree
+  std::cout << "Is Tree: " << utils::isTree(g) << std::endl;
+
+  // Test for unused links
+  tesseract::LinkPtr link_6(new tesseract::Link("link_6"));
+  addLink(link_6, g);
+  std::cout << "Free Link, Is Tree: " << utils::isTree(g) << std::endl;
+  removeLink(link_6->getName(), g);
+  std::cout << "Free Link Removed, Is Tree: " << utils::isTree(g) << std::endl;
 
   tesseract::JointPtr joint_5(new tesseract::Joint("joint_5"));
   joint_5->parent_to_joint_origin_transform.translation()(1) = 1.25;
@@ -77,12 +90,34 @@ int main(int argc, char** argv)
   addJoint(joint_5, g);
 
   // Save Graph
-  utils::saveDOT("/tmp/graph_example.dot", g);
+  utils::saveDOT("/tmp/graph_acyclic_not_tree_example.dot", g);
+
+  // Test if the graph is Acyclic
+  std::cout << "Is Acyclic: " << utils::isAcyclic(g) << std::endl;
+
+  // Test if the graph is Tree
+  std::cout << "Is Tree: " << utils::isTree(g) << std::endl;
+
+  tesseract::JointPtr joint_6(new tesseract::Joint("joint_6"));
+  joint_6->parent_to_joint_origin_transform.translation()(1) = 1.25;
+  joint_6->parent_link_name = "link_5";
+  joint_6->child_link_name = "link_1";
+  joint_6->type = tesseract::JointType::CONTINUOUS;
+  addJoint(joint_6, g);
+
+  // Save Graph
+  utils::saveDOT("/tmp/graph_cyclic_not_tree_example.dot", g);
+
+  // Test if the graph is Acyclic
+  std::cout << "Is Acyclic: " << utils::isAcyclic(g) << std::endl;
+
+  // Test if the graph is Tree
+  std::cout << "Is Tree: " << utils::isTree(g) << std::endl;
 
   // Get Shortest Path
   auto path = utils::getShortestPath("link_1", "link_4", g);
 
-  std::cout << path;
+  std::cout << path << std::endl;
 
   std::cout << (getName(g).c_str()) << std::endl;
 }

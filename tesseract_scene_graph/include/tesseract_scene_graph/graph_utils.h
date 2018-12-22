@@ -93,6 +93,52 @@ static inline bool isAcyclic(const Graph& graph)
   return acyclic;
 }
 
+struct tree_detector : public boost::dfs_visitor<>
+{
+  tree_detector( bool& tree)
+    : tree_(tree) { }
+
+  template <class u, class g>
+  void discover_vertex(u vertex, g graph)
+  {
+    int num_in_edges = boost::in_degree(vertex, graph);
+
+    if (num_in_edges > 1)
+    {
+      tree_ = false;
+      return;
+    }
+
+    // Check if not vertex is unused.
+    if (num_in_edges == 0 && boost::out_degree(vertex, graph) == 0)
+    {
+      tree_ = false;
+      return;
+    }
+  }
+
+  template <class e, class g>
+  void back_edge(e, g&)
+  {
+    tree_ = false;
+  }
+protected:
+  bool& tree_;
+};
+
+/**
+ * @brief Determine if the graph is a tree
+ * @param graph The graph to check
+ * @return True if graph is tree otherwise false
+ */
+static inline bool isTree(const Graph& graph)
+{
+  bool tree = true;
+  tree_detector vis(tree);
+  boost::depth_first_search(graph, boost::visitor(vis));
+  return tree;
+}
+
 /**
  * @brief Saves Graph as Graph Description Language (DOT)
  * @param path The file path
