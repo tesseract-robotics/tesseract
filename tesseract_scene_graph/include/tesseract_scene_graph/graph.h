@@ -57,18 +57,18 @@ namespace graph
 /** @brief Defines the boost graph property. */
 typedef boost::property<boost::graph_name_t, std::string,
                         boost::property<boost::graph_root_t, std::string,
-                        boost::property<boost::graph_link_map_t, std::unordered_map<std::string, std::pair<LinkPtr, long unsigned>>,
-                        boost::property<boost::graph_joint_map_t, std::unordered_map<std::string, std::pair<JointPtr, boost::detail::edge_desc_impl<boost::bidirectional_tag, long unsigned>>>>>>> GraphProperty;
+                        boost::property<boost::graph_link_map_t, std::unordered_map<std::string, std::pair<LinkConstPtr, long unsigned>>,
+                        boost::property<boost::graph_joint_map_t, std::unordered_map<std::string, std::pair<JointConstPtr, boost::detail::edge_desc_impl<boost::bidirectional_tag, long unsigned>>>>>>> GraphProperty;
 
 /** @brief Defines the boost graph vertex property. */
-typedef boost::property<boost::vertex_link_t, LinkPtr> VertexProperty;
+typedef boost::property<boost::vertex_link_t, LinkConstPtr> VertexProperty;
 
 /**
  * @brief EdgeProperty
  *
  * The edge_weight represents the distance between the two links
  */
-typedef boost::property<boost::edge_joint_t, JointPtr,
+typedef boost::property<boost::edge_joint_t, JointConstPtr,
         boost::property<boost::edge_weight_t, double> > EdgeProperty;
 
 
@@ -152,24 +152,7 @@ static inline bool addLink(LinkPtr link, Graph& graph)
  * @param graph The graph
  * @return Return nullptr if link name does not exists, otherwise a pointer to the link
  */
-static inline LinkPtr getLink(const std::string& name, Graph& graph)
-{
-  auto& map = boost::get_property(graph, boost::graph_link_map);
-  auto found = map.find(name);
-
-  if (found == map.end())
-    return nullptr;
-
-  return found->second.first;
-}
-
-/**
- * @brief Get a link in the graph
- * @param name The name of the link
- * @param graph The graph
- * @return Return nullptr if link name does not exists, otherwise a pointer to the link
- */
-static inline LinkConstPtr getLinkConst(const std::string& name, const Graph& graph)
+static inline LinkConstPtr getLink(const std::string& name, Graph& graph)
 {
   auto& map = boost::get_property(graph, boost::graph_link_map);
   auto found = map.find(name);
@@ -196,6 +179,8 @@ static inline bool removeLink(const std::string& name, Graph& graph)
 
   boost::remove_vertex(found->second.second, graph);
   map.erase(name);
+
+  return true;
 }
 
 /**
@@ -230,24 +215,7 @@ static inline bool addJoint(JointPtr joint, Graph& graph)
  * @param graph The graph
  * @return Return nullptr if joint name does not exists, otherwise a pointer to the joint
  */
-static inline JointPtr getJoint(const std::string& name, Graph& graph)
-{
-  auto& map = boost::get_property(graph, boost::graph_joint_map);
-  auto found = map.find(name);
-
-  if (found == map.end())
-    return nullptr;
-
-  return found->second.first;
-}
-
-/**
- * @brief Get a joint in the graph
- * @param name The name of the joint
- * @param graph The graph
- * @return Return nullptr if joint name does not exists, otherwise a pointer to the joint
- */
-static inline JointConstPtr getJointConst(const std::string& name, const Graph& graph)
+static inline JointConstPtr getJoint(const std::string& name, Graph& graph)
 {
   auto& map = boost::get_property(graph, boost::graph_joint_map);
   auto found = map.find(name);
@@ -274,6 +242,8 @@ static inline bool removeJoint(const std::string& name, Graph& graph)
 
   boost::remove_edge(found->second.second, graph);
   map.erase(name);
+
+  return true;
 }
 
 static inline Vertex getVertex(const std::string& name, const Graph& graph)
