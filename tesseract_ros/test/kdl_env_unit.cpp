@@ -56,6 +56,7 @@ protected:
     ccm = env->getContinuousContactManager();
     std::vector<tesseract::ContactResultMap> collisions;
     tesseract::BasicKinConstPtr kin = env->getManipulator("manipulator");
+    ccm->setActiveCollisionObjects(kin->getLinkNames());
     bool found = tesseract::continuousCollisionCheckTrajectory(*ccm, *env, *kin, traj, collisions);
     return found;
   }
