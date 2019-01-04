@@ -86,33 +86,49 @@ TEST_F(TesseractKDLEnvUnit, TestACMWorks)
 
   // we allowed collision between link1 and link2, so we expect the collision
   // check to return False
-  acm->addAllowedCollision("link1", "link2", "test");
-  EXPECT_FALSE(discreteCollisionCheck());
+  acm->addAllowedCollision("link2", "link3", "test");
+  EXPECT_TRUE(acm->isCollisionAllowed("link2", "link3"));
+  EXPECT_TRUE(env->getIsContactAllowedFn()("link2", "link3"));
+  tesseract::DiscreteContactManagerBasePtr dcm;
+  dcm = env->getDiscreteContactManager();
+  EXPECT_TRUE(dcm->getIsContactAllowedFn()("link2", "link3"));
+  ASSERT_FALSE(discreteCollisionCheck());
 
-  acm->removeAllowedCollision("link1", "link2");
-  EXPECT_TRUE(discreteCollisionCheck());
+  acm->removeAllowedCollision("link2", "link3");
+  ASSERT_TRUE(discreteCollisionCheck());
 
   // js1 and js2 not in collision, but swept-volume is in collision
   js2 = js1;
-  js2["p2"] = 0.51;
-  // in fact, when p2 goes from 0 to 0.5, a collision happens along the way
+  js2["p2"] = 0.55;
+  // in fact, when p2 goes from 0 to 0.55, a collision happens along the way
   js4 = js1;
   js4["p2"] = 0.4;
 
   env->setState(js4);
   ASSERT_TRUE(discreteCollisionCheck());
-
-  // we expect the continuous collision check to find collisions
+  env->setState(js2);
+  ASSERT_FALSE(discreteCollisionCheck());
   env->setState(js1);
-  EXPECT_TRUE(continuousCollisionCheck(js1, js2));
+  ASSERT_FALSE(discreteCollisionCheck());
+
+  tesseract::ContinuousContactManagerBasePtr ccm;
+
+  ccm = env->getContinuousContactManager();
+  EXPECT_FALSE(ccm->getIsContactAllowedFn()("link2", "obstacle1"));
+  // we expect the continuous collision check to find collisions
+  ASSERT_TRUE(continuousCollisionCheck(js1, js2));
 
   acm->addAllowedCollision("link1", "obstacle1", "test");
   acm->addAllowedCollision("link2", "obstacle1", "test");
   acm->addAllowedCollision("link3", "obstacle1", "test");
-  EXPECT_FALSE(continuousCollisionCheck(js1, js2));
+  ccm = env->getContinuousContactManager();
+  EXPECT_TRUE(ccm->getIsContactAllowedFn()("link2", "obstacle1"));
+  ASSERT_FALSE(continuousCollisionCheck(js1, js2));
 
   acm->removeAllowedCollision("link1", "obstacle1");
   acm->removeAllowedCollision("link2", "obstacle1");
   acm->removeAllowedCollision("link3", "obstacle1");
-  EXPECT_TRUE(continuousCollisionCheck(js1, js2));
+  ccm = env->getContinuousContactManager();
+  EXPECT_FALSE(ccm->getIsContactAllowedFn()("link2", "obstacle1"));
+  ASSERT_TRUE(continuousCollisionCheck(js1, js2));
 }

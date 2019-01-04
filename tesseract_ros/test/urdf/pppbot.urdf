@@ -16,7 +16,7 @@
     <collision>
       <origin rpy="0 0 0" xyz=".05 .05 .05"/>
       <geometry>
-        <box size=".1 .1 .3"/>
+        <box size=".1 .1 .1"/>
       </geometry>
     </collision>
   </link>
@@ -95,7 +95,7 @@
     <child link="link2"/>
     <origin xyz=".1 0 0"/>
     <axis xyz="1 0 0"/>
-    <limit lower="-.01" upper=".51" effort="10" velocity="1.0"/>
+    <limit lower="-.01" upper=".55" effort="10" velocity="1.0"/>
   </joint>
   <joint name="p3" type="prismatic">
     <parent link="link2"/>
