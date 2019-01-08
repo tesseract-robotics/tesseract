@@ -164,6 +164,9 @@ bool KDLEnv::init(urdf::ModelInterfaceConstSharedPtr urdf_model, srdf::ModelCons
   loadDiscreteContactManagerPlugin(DEFAULT_DISCRETE_CONTACT_MANAGER_PLUGIN_PARAM);
   loadContinuousContactManagerPlugin(DEFAULT_CONTINUOUS_CONTACT_MANAGER_PLUGIN_PARAM);
 
+  discrete_manager_->setActiveCollisionObjects(active_link_names_);
+  continuous_manager_->setActiveCollisionObjects(active_link_names_);
+
   return initialized_;
 }
 
@@ -215,7 +218,17 @@ void KDLEnv::setState(const std::vector<std::string>& joint_names,
   calculateTransforms(
       current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
   discrete_manager_->setCollisionObjectsTransform(current_state_->transforms);
-  continuous_manager_->setCollisionObjectsTransform(current_state_->transforms);
+  for (const auto& tf : current_state_->transforms)
+  {
+    if (std::find(active_link_names_.begin(), active_link_names_.end(), tf.first) != active_link_names_.end())
+    {
+      continuous_manager_->setCollisionObjectsTransform(tf.first, tf.second, tf.second);
+    }
+    else
+    {
+      continuous_manager_->setCollisionObjectsTransform(tf.first, tf.second);
+    }
+  }
 }
 
 EnvStatePtr KDLEnv::getState(const std::unordered_map<std::string, double>& joints) const
@@ -481,6 +494,9 @@ void KDLEnv::attachBody(const AttachedBodyInfo& attached_body_info)
   continuous_manager_->setCollisionObjectsTransform(attached_body_info.object_name,
                                                     current_state_->transforms[attached_body_info.object_name]);
 
+  discrete_manager_->setActiveCollisionObjects(active_link_names_);
+  continuous_manager_->setActiveCollisionObjects(active_link_names_);
+
   // Update manipulators
   for (auto& manip : manipulators_)
   {
@@ -498,11 +514,13 @@ void KDLEnv::detachBody(const std::string& name)
   if (attached_bodies_.find(name) != attached_bodies_.end())
   {
     attached_bodies_.erase(name);
-    discrete_manager_->disableCollisionObject(name);
-    continuous_manager_->disableCollisionObject(name);
     link_names_.erase(std::remove(link_names_.begin(), link_names_.end(), name), link_names_.end());
     active_link_names_.erase(std::remove(active_link_names_.begin(), active_link_names_.end(), name),
                              active_link_names_.end());
+    discrete_manager_->setActiveCollisionObjects(active_link_names_);
+    continuous_manager_->setActiveCollisionObjects(active_link_names_);
+    discrete_manager_->disableCollisionObject(name);
+    continuous_manager_->disableCollisionObject(name);
     current_state_->transforms.erase(name);
 
     // Update manipulators
@@ -530,6 +548,8 @@ void KDLEnv::clearAttachedBodies()
     current_state_->transforms.erase(name);
   }
   attached_bodies_.clear();
+  discrete_manager_->setActiveCollisionObjects(active_link_names_);
+  continuous_manager_->setActiveCollisionObjects(active_link_names_);
 
   // Update manipulators
   for (auto& manip : manipulators_)
