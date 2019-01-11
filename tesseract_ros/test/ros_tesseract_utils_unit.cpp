@@ -91,3 +91,10 @@ TEST_F(TesseractROSUtilsUnit, TestTesseractStateMsgAllowedCollisionMatrix)
   EXPECT_TRUE(acm->isCollisionAllowed("link2", "link3"));
   EXPECT_EQ(acm->getAllAllowedCollisions().size(), n_allowed);
 }
+
+int main(int argc, char** argv)
+{
+  testing::InitGoogleTest(&argc, argv);
+
+  return RUN_ALL_TESTS();
+}
