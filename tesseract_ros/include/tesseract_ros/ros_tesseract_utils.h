@@ -946,10 +946,11 @@ static inline void getActiveLinkNamesRecursive(std::vector<std::string>& active_
   {
     for (std::size_t i = 0; i < urdf_link->child_links.size(); ++i)
     {
-      if ((urdf_link->parent_joint) && (urdf_link->parent_joint->type != urdf::Joint::FIXED))
-        getActiveLinkNamesRecursive(active_links, urdf_link->child_links[i], true);
+      const urdf::LinkConstSharedPtr child_link = urdf_link->child_links[i];
+      if ((child_link->parent_joint) && (child_link->parent_joint->type != urdf::Joint::FIXED))
+        getActiveLinkNamesRecursive(active_links, child_link, true);
       else
-        getActiveLinkNamesRecursive(active_links, urdf_link->child_links[i], active);
+        getActiveLinkNamesRecursive(active_links, child_link, active);
     }
   }
 }

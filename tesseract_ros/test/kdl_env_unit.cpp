@@ -157,7 +157,7 @@ TEST(TesseractROSUnit, KDLEnvActiveCollisionObjectUnit)
   urdf::ModelInterfaceSharedPtr urdf_model = urdf::parseURDF(urdf_xml_string);
   assert(urdf_model != nullptr);
 
-  std::string srdf_path = ros::package::getPath("tesseract_ros") + "/test/urdf/lbr_iiwa_14_r820.srdf";
+  std::string srdf_path = ros::package::getPath("tesseract_ros") + "/test/srdf/lbr_iiwa_14_r820.srdf";
   std::ifstream srdf_ifs(srdf_path);
   std::string srdf_xml_string((std::istreambuf_iterator<char>(srdf_ifs)), (std::istreambuf_iterator<char>()));
 

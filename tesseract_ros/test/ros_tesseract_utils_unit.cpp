@@ -12,16 +12,15 @@ TESSERACT_IGNORE_WARNINGS_POP
 #include <tesseract_ros/kdl/kdl_env.h>
 #include <tesseract_ros/ros_tesseract_utils.h>
 
-class TesseractROSUtilsUnit : public testing::Test
+class TesseractROSUtilsUnitBase
 {
 protected:
-  void SetUp() override
+  void SetUpRobot(std::string robot_name)
   {
     ros::Time::init();
-
     std::string path = ros::package::getPath("tesseract_ros");
-    std::ifstream urdf_ifs(path + "/test/urdf/pppbot.urdf");
-    std::ifstream srdf_ifs(path + "/test/srdf/pppbot.srdf");
+    std::ifstream urdf_ifs(path + "/test/urdf/" + robot_name + ".urdf");
+    std::ifstream srdf_ifs(path + "/test/srdf/" + robot_name + ".srdf");
     std::string urdf_xml_string((std::istreambuf_iterator<char>(urdf_ifs)), (std::istreambuf_iterator<char>()));
     std::string srdf_xml_string((std::istreambuf_iterator<char>(srdf_ifs)), (std::istreambuf_iterator<char>()));
 
@@ -36,6 +35,18 @@ protected:
   urdf::ModelInterfaceSharedPtr urdf_model;
   srdf::ModelSharedPtr srdf_model;
   tesseract::tesseract_ros::KDLEnvPtr env;
+};
+
+class TesseractROSUtilsUnitWithParam : public ::testing::TestWithParam<const char*>, public TesseractROSUtilsUnitBase
+{
+protected:
+  void SetUp() override { SetUpRobot(GetParam()); }
+};
+
+class TesseractROSUtilsUnit : public ::testing::Test, public TesseractROSUtilsUnitBase
+{
+protected:
+  void SetUp() override { SetUpRobot("pppbot"); }
 };
 
 // Tests that TesseractState messages correctly store joint state
@@ -91,6 +102,18 @@ TEST_F(TesseractROSUtilsUnit, TestTesseractStateMsgAllowedCollisionMatrix)
   EXPECT_TRUE(acm->isCollisionAllowed("link2", "link3"));
   EXPECT_EQ(acm->getAllAllowedCollisions().size(), n_allowed);
 }
+
+// Tests that TesseractState messages correctly store joint state
+TEST_P(TesseractROSUtilsUnitWithParam, TestGetActiveLinkNamesRecursive)
+{
+  std::unordered_map<std::string, std::vector<std::string>> expected_link_names;
+  expected_link_names["pppbot"] = { "link1", "link2", "link3" };
+  expected_link_names["lbr_iiwa_14_r820"] = { "link_1", "link_2", "link_3", "link_4",
+                                              "link_5", "link_6", "link_7", "tool0" };
+  EXPECT_EQ(env->getActiveLinkNames(), expected_link_names[GetParam()]);
+}
+
+INSTANTIATE_TEST_CASE_P(AllRobots, TesseractROSUtilsUnitWithParam, testing::ValuesIn({ "pppbot", "lbr_iiwa_14_r820" }));
 
 int main(int argc, char** argv)
 {
