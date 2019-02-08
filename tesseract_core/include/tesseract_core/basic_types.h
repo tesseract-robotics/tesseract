@@ -39,6 +39,8 @@ TESSERACT_IGNORE_WARNINGS_PUSH
 #include <map>
 TESSERACT_IGNORE_WARNINGS_POP
 
+#include "tesseract_collision/core/collision_shapes.h"
+
 namespace tesseract
 {
 template <typename T>
@@ -147,30 +149,6 @@ public:
 typedef std::shared_ptr<AllowedCollisionMatrix> AllowedCollisionMatrixPtr;
 typedef std::shared_ptr<const AllowedCollisionMatrix> AllowedCollisionMatrixConstPtr;
 
-/**
- * @brief Should return true if contact allowed, otherwise false.
- *
- * Also the order of strings should not matter, the function should handled by the function.
- */
-typedef std::function<bool(const std::string&, const std::string&)> IsContactAllowedFn;
-
-namespace CollisionObjectTypes
-{
-enum CollisionObjectType
-{
-  UseShapeType = 0, /**< @brief Infer the type from the type specified in the shapes::Shape class */
-
-  // These convert the meshes to custom collision objects
-  ConvexHull =
-      1, /**< @brief Use the mesh in shapes::Shape but make it a convex hulls collision object. (if not convex it will
-            be converted) */
-  MultiSphere = 2, /**< @brief Use the mesh and represent it by multiple spheres collision object */
-  SDF = 3          /**< @brief Use the mesh and rpresent it by a signed distance fields collision object */
-};
-}
-typedef CollisionObjectTypes::CollisionObjectType CollisionObjectType;
-typedef std::vector<CollisionObjectType> CollisionObjectTypeVector;
-
 namespace BodyTypes
 {
 enum BodyType
@@ -180,102 +158,6 @@ enum BodyType
 };
 }
 typedef BodyTypes::BodyType BodyType;
-
-namespace ContinouseCollisionTypes
-{
-enum ContinouseCollisionType
-{
-  CCType_None,
-  CCType_Time0,
-  CCType_Time1,
-  CCType_Between
-};
-}
-typedef ContinouseCollisionTypes::ContinouseCollisionType ContinouseCollisionType;
-
-namespace ContactTestTypes
-{
-enum ContactTestType
-{
-  FIRST = 0,   /**< Return at first contact for any pair of objects */
-  CLOSEST = 1, /**< Return the global minimum for a pair of objects */
-  ALL = 2,     /**< Return all contacts for a pair of objects */
-  LIMITED = 3  /**< Return limited set of contacts for a pair of objects */
-};
-}
-typedef ContactTestTypes::ContactTestType ContactTestType;
-
-struct ContactResult
-{
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-  double distance;
-  int type_id[2];
-  std::string link_names[2];
-  Eigen::Vector3d nearest_points[2];
-  Eigen::Vector3d normal;
-  Eigen::Vector3d cc_nearest_points[2];
-  double cc_time;
-  ContinouseCollisionType cc_type;
-
-  ContactResult() { clear(); }
-  /// Clear structure data
-  void clear()
-  {
-    distance = std::numeric_limits<double>::max();
-    nearest_points[0].setZero();
-    nearest_points[1].setZero();
-    link_names[0] = "";
-    link_names[1] = "";
-    type_id[0] = 0;
-    type_id[1] = 0;
-    normal.setZero();
-    cc_nearest_points[0].setZero();
-    cc_nearest_points[1].setZero();
-    cc_time = -1;
-    cc_type = ContinouseCollisionType::CCType_None;
-  }
-};
-typedef AlignedVector<ContactResult> ContactResultVector;
-typedef AlignedMap<std::pair<std::string, std::string>, ContactResultVector> ContactResultMap;
-
-/// Contact test data and query results information
-struct ContactTestData
-{
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-  ContactTestData(const std::vector<std::string>& active,
-                  const double& contact_distance,
-                  const IsContactAllowedFn& fn,
-                  const ContactTestType& type,
-                  ContactResultMap& res)
-    : active(active), contact_distance(contact_distance), fn(fn), type(type), res(res), done(false)
-  {
-  }
-
-  const std::vector<std::string>& active;
-  const double& contact_distance;
-  const IsContactAllowedFn& fn;
-  const ContactTestType& type;
-
-  /// Destance query results information
-  ContactResultMap& res;
-
-  /// Indicate if search is finished
-  bool done;
-};
-
-static inline void moveContactResultsMapToContactResultsVector(ContactResultMap& contact_map,
-                                                               ContactResultVector& contact_vector)
-{
-  std::size_t size = 0;
-  for (const auto& contact : contact_map)
-    size += contact.second.size();
-
-  contact_vector.reserve(size);
-  for (auto& contact : contact_map)
-    std::move(contact.second.begin(), contact.second.end(), std::back_inserter(contact_vector));
-}
 
 /** @brief This holds a state of the environment */
 struct EnvState
@@ -312,12 +194,13 @@ struct VisualObjectGeometry
 };
 
 /** @brief Contains visual geometry data */
-struct CollisionObjectGeometry : public VisualObjectGeometry
+struct CollisionObjectGeometry
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  CollisionObjectTypeVector
-      collision_object_types; /**< @brief The collision object type. This is used by the collision libraries */
+  std::vector<tesseract::CollisionShapeConstPtr> shapes; /**< @brief The collision shape */
+  VectorIsometry3d shape_poses;              /**< @brief The pose of the shape */
+  VectorVector4d shape_colors;               /**< @brief (Optional) The shape color (R, G, B, A) */
 };
 
 /** @brief Contains data about an attachable object */

@@ -33,8 +33,8 @@ TESSERACT_IGNORE_WARNINGS_POP
 
 #include <tesseract_core/basic_types.h>
 #include <tesseract_core/basic_kin.h>
-#include <tesseract_core/discrete_contact_manager_base.h>
-#include <tesseract_core/continuous_contact_manager_base.h>
+#include <tesseract_collision/core/discrete_contact_manager.h>
+#include <tesseract_collision/core/continuous_contact_manager.h>
 
 namespace tesseract
 {
@@ -240,10 +240,10 @@ public:
   virtual void setIsContactAllowedFn(IsContactAllowedFn fn) = 0;
 
   /** @brief Get a copy of the environments discrete contact manager */
-  virtual DiscreteContactManagerBasePtr getDiscreteContactManager() const = 0;
+  virtual DiscreteContactManagerPtr getDiscreteContactManager() const = 0;
 
   /** @brief Get a copy of the environments continuous contact manager */
-  virtual ContinuousContactManagerBasePtr getContinuousContactManager() const = 0;
+  virtual ContinuousContactManagerPtr getContinuousContactManager() const = 0;
 
 };  // class BasicEnvBase
 
@@ -262,7 +262,7 @@ typedef std::shared_ptr<const BasicEnv> BasicEnvConstPtr;
  * @param first_only Indicates if it should return on first contact
  * @return True if collision was found, otherwise false.
  */
-inline bool continuousCollisionCheckTrajectory(ContinuousContactManagerBase& manager,
+inline bool continuousCollisionCheckTrajectory(ContinuousContactManager& manager,
                                                const BasicEnv& env,
                                                const BasicKin& kin,
                                                const Eigen::Ref<const TrajArray>& traj,

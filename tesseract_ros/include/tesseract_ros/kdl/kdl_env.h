@@ -55,18 +55,18 @@ TESSERACT_IGNORE_WARNINGS_PUSH
 #include <pluginlib/class_loader.hpp>
 TESSERACT_IGNORE_WARNINGS_POP
 
-#include <tesseract_core/discrete_contact_manager_base.h>
-#include <tesseract_core/continuous_contact_manager_base.h>
+#include <tesseract_collision/core/discrete_contact_manager.h>
+#include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_ros/ros_basic_env.h>
 
 namespace tesseract
 {
 namespace tesseract_ros
 {
-typedef pluginlib::ClassLoader<DiscreteContactManagerBase> DiscreteContactManagerBasePluginLoader;
-typedef pluginlib::ClassLoader<ContinuousContactManagerBase> ContinuousContactManagerBasePluginLoader;
-typedef std::shared_ptr<DiscreteContactManagerBasePluginLoader> DiscreteContactManagerBasePluginLoaderPtr;
-typedef std::shared_ptr<ContinuousContactManagerBasePluginLoader> ContinuousContactManagerBasePluginLoaderPtr;
+typedef pluginlib::ClassLoader<DiscreteContactManager> DiscreteContactManagerPluginLoader;
+typedef pluginlib::ClassLoader<ContinuousContactManager> ContinuousContactManagerPluginLoader;
+typedef std::shared_ptr<DiscreteContactManagerPluginLoader> DiscreteContactManagerPluginLoaderPtr;
+typedef std::shared_ptr<ContinuousContactManagerPluginLoader> ContinuousContactManagerPluginLoaderPtr;
 
 class KDLEnv : public ROSBasicEnv
 {
@@ -79,13 +79,13 @@ public:
                                        this,
                                        std::placeholders::_1,
                                        std::placeholders::_2);
-    discrete_manager_loader_.reset(new DiscreteContactManagerBasePluginLoader("tesseract_core",
-                                                                              "tesseract::"
-                                                                              "DiscreteContactManagerBase"));
+    discrete_manager_loader_.reset(new DiscreteContactManagerPluginLoader("tesseract_ros",
+                                                                          "tesseract::"
+                                                                          "DiscreteContactManager"));
 
-    continuous_manager_loader_.reset(new ContinuousContactManagerBasePluginLoader("tesseract_core",
-                                                                                  "tesseract::"
-                                                                                  "ContinuousContactManagerBase"));
+    continuous_manager_loader_.reset(new ContinuousContactManagerPluginLoader("tesseract_ros",
+                                                                              "tesseract::"
+                                                                              "ContinuousContactManager"));
   }
 
   bool init(urdf::ModelInterfaceConstSharedPtr urdf_model) override;
@@ -152,8 +152,8 @@ public:
   AllowedCollisionMatrixPtr getAllowedCollisionMatrixNonConst() override { return allowed_collision_matrix_; }
   IsContactAllowedFn getIsContactAllowedFn() const override { return is_contact_allowed_fn_; }
   void setIsContactAllowedFn(IsContactAllowedFn fn) override { is_contact_allowed_fn_ = fn; }
-  DiscreteContactManagerBasePtr getDiscreteContactManager() const override { return discrete_manager_->clone(); }
-  ContinuousContactManagerBasePtr getContinuousContactManager() const override { return continuous_manager_->clone(); }
+  DiscreteContactManagerPtr getDiscreteContactManager() const override { return discrete_manager_->clone(); }
+  ContinuousContactManagerPtr getContinuousContactManager() const override { return continuous_manager_->clone(); }
   void loadDiscreteContactManagerPlugin(const std::string& plugin) override;
   void loadContinuousContactManagerPlugin(const std::string& plugin) override;
 
@@ -178,10 +178,10 @@ private:
       allowed_collision_matrix_; /**< The allowed collision matrix used during collision checking */
   IsContactAllowedFn
       is_contact_allowed_fn_; /**< The function used to determine if two objects are allowed in collision */
-  DiscreteContactManagerBasePluginLoaderPtr discrete_manager_loader_;     /**< The discrete contact manager loader */
-  ContinuousContactManagerBasePluginLoaderPtr continuous_manager_loader_; /**< The continuous contact manager loader */
-  DiscreteContactManagerBasePtr discrete_manager_;                        /**< The discrete contact manager object */
-  ContinuousContactManagerBasePtr continuous_manager_;                    /**< The continuous contact manager object */
+  DiscreteContactManagerPluginLoaderPtr discrete_manager_loader_;     /**< The discrete contact manager loader */
+  ContinuousContactManagerPluginLoaderPtr continuous_manager_loader_; /**< The continuous contact manager loader */
+  DiscreteContactManagerPtr discrete_manager_;                        /**< The discrete contact manager object */
+  ContinuousContactManagerPtr continuous_manager_;                    /**< The continuous contact manager object */
 
   bool defaultIsContactAllowedFn(const std::string& link_name1, const std::string& link_name2) const;
 

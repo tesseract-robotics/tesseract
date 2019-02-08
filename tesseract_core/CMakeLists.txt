@@ -9,10 +9,8 @@ add_compile_options(
   -Wsuggest-override
   -Wconversion
   -Wsign-conversion)
-#-Wunused -Wunreachable-code -Wno-write-strings -pedantic
-#-Wfloat-equal
 
-find_package(catkin REQUIRED geometric_shapes)
+find_package(catkin REQUIRED geometric_shapes tesseract_collision)
 
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
@@ -24,6 +22,7 @@ catkin_package(
   #LIBRARIES
   CATKIN_DEPENDS
     geometric_shapes
+    tesseract_collision
   DEPENDS
     EIGEN3
 )

@@ -35,7 +35,7 @@ private:
   }
 
   tesseract::BasicEnvConstPtr env_;
-  tesseract::ContinuousContactManagerBasePtr contact_manager_;
+  tesseract::ContinuousContactManagerPtr contact_manager_;
   tesseract::IsContactAllowedFn is_allowed_cb_;
   std::vector<std::string> links_;
   std::vector<std::string> joints_;

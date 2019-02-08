@@ -1,5 +1,5 @@
 /**
- * @file contact_checker_common.h
+ * @file common.h
  * @brief This is a collection of common methods
  *
  * @author Levi Armstrong
@@ -23,18 +23,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_COLLISION_CONTACT_CHECKER_COMMON_H
-#define TESSERACT_COLLISION_CONTACT_CHECKER_COMMON_H
+#ifndef TESSERACT_COLLISION_COMMON_H
+#define TESSERACT_COLLISION_COMMON_H
 
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_collision/core/macros.h>
+TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <LinearMath/btConvexHullComputer.h>
 #include <cstdio>
+#include <cctype>
 #include <Eigen/Geometry>
 #include <fstream>
-TESSERACT_IGNORE_WARNINGS_POP
+#include <iostream>
+#include <boost/algorithm/string.hpp>
+TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
-#include <tesseract_core/basic_types.h>
+#include <tesseract_collision/core/types.h>
+#include <tesseract_collision/core/common.h>
 
 namespace tesseract
 {
@@ -305,6 +309,165 @@ inline bool writeSimplePlyFile(const std::string& path,
   myfile.close();
   return true;
 }
+
+/**
+ * @brief Determine if a string is a number
+ * @param s The string to evaluate
+ * @return True if numeric, otherwise false.
+ */
+inline bool isNumeric(const std::string& s)
+{
+    if (s.empty())
+      return false;
+
+    if (s[0] == '-')
+      return std::find_if(s.begin() + 1, s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
+    else
+      return std::find_if(s.begin(), s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
 }
 
-#endif  // TESSERACT_COLLISION_CONTACT_CHECKER_COMMON_H
+/**
+ * @brief Loads a simple ply file given a path
+ * @param path The file path
+ * @param vertices A vector of vertices
+ * @param faces The first values indicates the number of vertices that define the face followed by the vertice index
+ * @param triangles_only Convert to only include triangles
+ * @return Number of faces, If returned 0 it failed to load.
+ */
+inline int loadSimplePlyFile(const std::string& path,
+                             VectorVector3d& vertices,
+                             std::vector<int>& faces,
+                             bool triangles_only = false)
+{
+  //  ply
+  //  format ascii 1.0           { ascii/binary, format version number }
+  //  comment made by Greg Turk  { comments keyword specified, like all lines }
+  //  comment this file is a cube
+  //  element vertex 8           { define "vertex" element, 8 of them in file }
+  //  property float x           { vertex contains float "x" coordinate }
+  //  property float y           { y coordinate is also a vertex property }
+  //  property float z           { z coordinate, too }
+  //  element face 6             { there are 6 "face" elements in the file }
+  //  property list uchar int vertex_index { "vertex_indices" is a list of ints }
+  //  end_header                 { delimits the end of the header }
+  //  0 0 0                      { start of vertex list }
+  //  0 0 1
+  //  0 1 1
+  //  0 1 0
+  //  1 0 0
+  //  1 0 1
+  //  1 1 1
+  //  1 1 0
+  //  4 0 1 2 3                  { start of face list }
+  //  4 7 6 5 4
+  //  4 0 4 5 1
+  //  4 1 5 6 2
+  //  4 2 6 7 3
+  //  4 3 7 4 0
+
+  vertices.clear();
+  faces.clear();
+
+  std::ifstream myfile;
+  myfile.open(path);
+  if (myfile.fail())
+  {
+    ROS_ERROR("Failed to open file: %s", path.c_str());
+    return false;
+  }
+  std::string str;
+  std::getline(myfile, str);
+  std::getline(myfile, str);
+  std::getline(myfile, str);
+  std::getline(myfile, str);
+  std::vector<std::string> tokens;
+  boost::split(tokens, str, boost::is_any_of(" "));
+  if (tokens.size() != 3 || !isNumeric(tokens.back()))
+  {
+    ROS_ERROR("Failed to parse file: %s", path.c_str());
+    return false;
+  }
+  size_t num_vertices = static_cast<size_t>(std::stoi(tokens.back()));
+
+  std::getline(myfile, str);
+  std::getline(myfile, str);
+  std::getline(myfile, str);
+  std::getline(myfile, str);
+
+  tokens.clear();
+  boost::split(tokens, str, boost::is_any_of(" "));
+  if (tokens.size() != 3 || !isNumeric(tokens.back()))
+  {
+    ROS_ERROR("Failed to parse file: %s", path.c_str());
+    return false;
+  }
+
+  size_t num_faces = static_cast<size_t>(std::stoi(tokens.back()));
+  std::getline(myfile, str);
+  std::getline(myfile, str);
+  if (str != "end_header")
+  {
+    ROS_ERROR("Failed to parse file: %s", path.c_str());
+    return false;
+  }
+
+  vertices.reserve(num_vertices);
+  for (size_t i = 0; i < num_vertices; ++i)
+  {
+    std::getline(myfile, str);
+    tokens.clear();
+    boost::split(tokens, str, boost::is_any_of(" "));
+    if (tokens.size() != 3)
+    {
+      ROS_ERROR("Failed to parse file: %s", path.c_str());
+      return false;
+    }
+
+    vertices.push_back(Eigen::Vector3d(std::stod(tokens[0]), std::stod(tokens[1]), std::stod(tokens[2])));
+  }
+
+  faces.reserve(num_faces * 3);
+  size_t copy_num_faces = num_faces; // Becuase num_faces can change within for loop
+  for (size_t i = 0; i < copy_num_faces; ++i)
+  {
+    std::getline(myfile, str);
+    tokens.clear();
+    boost::split(tokens, str, boost::is_any_of(" "));
+    if (tokens.size() < 3)
+    {
+      ROS_ERROR("Failed to parse file: %s", path.c_str());
+      return false;
+    }
+
+    int num_verts = static_cast<int>(tokens.size());
+    assert(num_verts >= 3);
+    if (triangles_only && num_verts > 3)
+    {
+      faces.push_back(3);
+      faces.push_back(std::stoi(tokens[0]));
+      faces.push_back(std::stoi(tokens[1]));
+      faces.push_back(std::stoi(tokens[2]));
+      for (size_t i = 3; i < tokens.size(); ++i)
+      {
+        num_faces += 1;
+        faces.push_back(3);
+        faces.push_back(std::stoi(tokens[0]));
+        faces.push_back(std::stoi(tokens[i - 1]));
+        faces.push_back(std::stoi(tokens[i]));
+      }
+    }
+    else
+    {
+      faces.push_back(static_cast<int>(tokens.size()));
+      for (const auto& t : tokens)
+        faces.push_back(std::stoi(t));
+    }
+  }
+
+  myfile.close();
+  return static_cast<int>(num_faces);
+}
+
+}
+
+#endif  // TESSERACT_COLLISION_COMMON_H

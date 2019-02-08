@@ -6,9 +6,6 @@ add_compile_options(-std=c++11 -Wall -Wextra)
 find_package(catkin REQUIRED COMPONENTS
   bullet3_ros
   roscpp
-  geometric_shapes
-  tesseract_core
-  eigen_conversions
   pluginlib
 )
 
@@ -30,6 +27,7 @@ catkin_package(
     ${LIBFCL_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIRS}
   LIBRARIES
+    ${PROJECT_NAME}_core
     ${PROJECT_NAME}_bullet
     ${PROJECT_NAME}_fcl
     ${OCTOMAP_LIBRARIES}
@@ -37,8 +35,6 @@ catkin_package(
   CATKIN_DEPENDS
     bullet3_ros
     roscpp
-    geometric_shapes
-    tesseract_core
     pluginlib
   DEPENDS
     EIGEN3
@@ -57,6 +53,13 @@ include_directories(
   SYSTEM ${OCTOMAP_INCLUDE_DIRS}
 )
 
+add_library(${PROJECT_NAME}_core
+  src/core/collision_shapes.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}_core ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_core PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+
 add_library(${PROJECT_NAME}_bullet
   src/bullet/bullet_cast_bvh_manager.cpp
   src/bullet/bullet_cast_simple_manager.cpp
@@ -65,31 +68,23 @@ add_library(${PROJECT_NAME}_bullet
   src/bullet/bullet_utils.cpp
 )
 
-target_link_libraries(${PROJECT_NAME}_bullet ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_bullet ${PROJECT_NAME}_core ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_bullet PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
-
-add_library(${PROJECT_NAME}_bullet_plugin src/bullet/bullet_plugin.cpp)
-target_link_libraries(${PROJECT_NAME}_bullet_plugin ${PROJECT_NAME}_bullet ${catkin_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_bullet_plugin PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
 add_library(${PROJECT_NAME}_fcl
   src/fcl/fcl_discrete_managers.cpp
   src/fcl/fcl_utils.cpp
 )
 
-target_link_libraries(${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_fcl ${PROJECT_NAME}_core ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_fcl PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
-add_library(${PROJECT_NAME}_fcl_plugin src/fcl/fcl_plugin.cpp)
-target_link_libraries(${PROJECT_NAME}_fcl_plugin ${PROJECT_NAME}_fcl ${catkin_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_fcl_plugin PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
-
-add_executable(create_convex_hull src/create_convex_hull.cpp)
-target_link_libraries(create_convex_hull ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES})
-target_compile_options(create_convex_hull PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+#add_executable(create_convex_hull src/create_convex_hull.cpp)
+#target_link_libraries(create_convex_hull ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES})
+#target_compile_options(create_convex_hull PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
 # Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${PROJECT_NAME}_bullet_plugin ${PROJECT_NAME}_fcl_plugin create_convex_hull
+install(TARGETS ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl #create_convex_hull
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -101,10 +96,6 @@ install(DIRECTORY include/${PROJECT_NAME}/
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
  )
-
-install(FILES tesseract_collision_bullet_plugin_description.xml tesseract_collision_fcl_plugin_description.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
 
 if (CATKIN_ENABLE_TESTING)
 
@@ -118,56 +109,60 @@ if (CATKIN_ENABLE_TESTING)
     message (STATUS "Not found OpenMP")
   endif()
 
+  add_definitions(-DDATA_DIR="${CMAKE_SOURCE_DIR}/test")
+
   include_directories(
       ${catkin_INCLUDE_DIRS}
   )
 
   catkin_add_gtest(${PROJECT_NAME}_box_sphere_unit test/collision_box_sphere_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_box_sphere_unit ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${GTEST_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME}_box_sphere_unit ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${GTEST_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
   target_compile_options(${PROJECT_NAME}_box_sphere_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+
   catkin_add_gtest(${PROJECT_NAME}_box_cylinder_unit test/collision_box_cylinder_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_box_cylinder_unit ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME}_box_cylinder_unit ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
+  target_compile_options(${PROJECT_NAME}_box_cylinder_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
   catkin_add_gtest(${PROJECT_NAME}_box_cone_unit test/collision_box_cone_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_box_cone_unit ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME}_box_cone_unit ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
   target_compile_options(${PROJECT_NAME}_box_cone_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
   catkin_add_gtest(${PROJECT_NAME}_box_box_unit test/collision_box_box_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_box_box_unit ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME}_box_box_unit ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
   target_compile_options(${PROJECT_NAME}_box_box_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
   catkin_add_gtest(${PROJECT_NAME}_large_dataset_unit test/collision_large_dataset_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_large_dataset_unit ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME}_large_dataset_unit ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
   target_compile_options(${PROJECT_NAME}_large_dataset_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
   catkin_add_gtest(${PROJECT_NAME}_sphere_sphere_unit test/collision_sphere_sphere_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_sphere_sphere_unit ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME}_sphere_sphere_unit ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
   target_compile_options(${PROJECT_NAME}_sphere_sphere_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
   catkin_add_gtest(${PROJECT_NAME}_mesh_mesh_unit test/collision_mesh_mesh_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_mesh_mesh_unit ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME}_mesh_mesh_unit ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
   target_compile_options(${PROJECT_NAME}_mesh_mesh_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
   catkin_add_gtest(${PROJECT_NAME}_multi_threaded_unit test/collision_multi_threaded_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_multi_threaded_unit ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME}_multi_threaded_unit ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
   target_compile_options(${PROJECT_NAME}_multi_threaded_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
   catkin_add_gtest(${PROJECT_NAME}_octomap_sphere_unit test/collision_octomap_sphere_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_octomap_sphere_unit ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME}_octomap_sphere_unit ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
   target_compile_options(${PROJECT_NAME}_octomap_sphere_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
   catkin_add_gtest(${PROJECT_NAME}_clone_unit test/collision_clone_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_clone_unit ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME}_clone_unit ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
   target_compile_options(${PROJECT_NAME}_clone_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
   catkin_add_gtest(${PROJECT_NAME}_box_box_cast_unit test/collision_box_box_cast_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_box_box_cast_unit ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME}_box_box_cast_unit ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
   target_compile_options(${PROJECT_NAME}_box_box_cast_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
   catkin_add_gtest(${PROJECT_NAME}_compound_compound_unit test/collision_compound_compound_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_compound_compound_unit ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME}_compound_compound_unit ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
   target_compile_options(${PROJECT_NAME}_compound_compound_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
 #  catkin_add_gtest(${PROJECT_NAME}_convex_concave_unit test/convex_concave_unit.cpp)
-#  target_link_libraries(${PROJECT_NAME}_convex_concave_unit ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
+#  target_link_libraries(${PROJECT_NAME}_convex_concave_unit ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
 endif()

@@ -10,7 +10,7 @@ TESSERACT_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/ComputeContactResultVector.h>
 TESSERACT_IGNORE_WARNINGS_POP
 
-#include <tesseract_core/discrete_contact_manager_base.h>
+#include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_ros/kdl/kdl_env.h>
 #include <tesseract_ros/ros_tesseract_utils.h>
 
@@ -22,7 +22,7 @@ const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default RO
 const double DEFAULT_CONTACT_DISTANCE = 0.1;
 
 static KDLEnvPtr env;
-static DiscreteContactManagerBasePtr manager;
+static DiscreteContactManagerPtr manager;
 static ros::Subscriber joint_states_sub;
 static ros::Publisher contact_results_pub;
 static ros::Publisher environment_pub;
@@ -55,7 +55,7 @@ void callbackJointState(const sensor_msgs::JointState::ConstPtr& msg)
   }
 
   ContactResultVector contacts_vector;
-  tesseract::moveContactResultsMapToContactResultsVector(contacts, contacts_vector);
+  tesseract::flattenResults(std::move(contacts), contacts_vector);
   contacts_msg.contacts.reserve(contacts_vector.size());
   for (const auto& contact : contacts_vector)
   {
@@ -99,7 +99,7 @@ bool callbackComputeContactResultVector(tesseract_msgs::ComputeContactResultVect
   manager->contactTest(contacts, type);
 
   ContactResultVector contacts_vector;
-  tesseract::moveContactResultsMapToContactResultsVector(contacts, contacts_vector);
+  tesseract::flattenResults(std::move(contacts), contacts_vector);
   response.collision_result.contacts.reserve(contacts_vector.size());
   for (const auto& contact : contacts_vector)
   {

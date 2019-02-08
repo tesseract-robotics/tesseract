@@ -15,10 +15,7 @@
   <build_depend>roscpp</build_depend>
   <build_export_depend>roscpp</build_export_depend>
   <exec_depend>roscpp</exec_depend>
-  <depend>geometric_shapes</depend>
-  <depend>eigen_conversions</depend>
   <depend>pluginlib</depend>
-  <depend>tesseract_core</depend>
   <depend>bullet3_ros</depend>
   <depend>fcl_ros</depend>
 
@@ -28,7 +25,5 @@
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->
-    <tesseract_core plugin="${prefix}/tesseract_collision_bullet_plugin_description.xml"/>
-    <tesseract_core plugin="${prefix}/tesseract_collision_fcl_plugin_description.xml"/>
   </export>
 </package>

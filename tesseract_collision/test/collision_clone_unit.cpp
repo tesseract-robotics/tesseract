@@ -1,70 +1,64 @@
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_collision/core/macros.h>
+TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <ros/ros.h>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include "tesseract_collision/bullet/bullet_discrete_simple_manager.h"
 #include "tesseract_collision/bullet/bullet_discrete_bvh_manager.h"
 #include "tesseract_collision/fcl/fcl_discrete_managers.h"
 
-void addCollisionObjects(tesseract::DiscreteContactManagerBase& checker)
+void addCollisionObjects(tesseract::DiscreteContactManager& checker)
 {
   ////////////////////////
   // Add sphere to checker
   ////////////////////////
-  shapes::ShapePtr sphere;
-  sphere.reset(new shapes::Sphere(0.25));
+  tesseract::CollisionShapePtr sphere;
+  sphere.reset(new tesseract::SphereCollisionShape(0.25));
 
   Eigen::Isometry3d sphere_pose;
   sphere_pose.setIdentity();
 
-  std::vector<shapes::ShapeConstPtr> obj1_shapes;
+  tesseract::CollisionShapesConst obj1_shapes;
   tesseract::VectorIsometry3d obj1_poses;
-  tesseract::CollisionObjectTypeVector obj1_types;
   obj1_shapes.push_back(sphere);
   obj1_poses.push_back(sphere_pose);
-  obj1_types.push_back(tesseract::CollisionObjectType::UseShapeType);
 
-  checker.addCollisionObject("sphere_link", 0, obj1_shapes, obj1_poses, obj1_types);
+  checker.addCollisionObject("sphere_link", 0, obj1_shapes, obj1_poses);
 
   /////////////////////////////////////////////
   // Add thin box to checker which is disabled
   /////////////////////////////////////////////
-  shapes::ShapePtr thin_box(new shapes::Box(0.1, 1, 1));
+  tesseract::CollisionShapePtr thin_box(new tesseract::BoxCollisionShape(0.1, 1, 1));
   Eigen::Isometry3d thin_box_pose;
   thin_box_pose.setIdentity();
 
-  std::vector<shapes::ShapeConstPtr> obj2_shapes;
+  tesseract::CollisionShapesConst obj2_shapes;
   tesseract::VectorIsometry3d obj2_poses;
-  tesseract::CollisionObjectTypeVector obj2_types;
   obj2_shapes.push_back(thin_box);
   obj2_poses.push_back(thin_box_pose);
-  obj2_types.push_back(tesseract::CollisionObjectType::UseShapeType);
 
-  checker.addCollisionObject("thin_box_link", 0, obj2_shapes, obj2_poses, obj2_types, false);
+  checker.addCollisionObject("thin_box_link", 0, obj2_shapes, obj2_poses, false);
 
   /////////////////////////////////////////////////////////////////
   // Add second sphere to checker. If use_convex_mesh = true
   // then this sphere will be added as a convex hull mesh.
   /////////////////////////////////////////////////////////////////
-  shapes::ShapePtr sphere1;
-  sphere1.reset(new shapes::Sphere(0.25));
+  tesseract::CollisionShapePtr sphere1;
+  sphere1.reset(new tesseract::SphereCollisionShape(0.25));
 
   Eigen::Isometry3d sphere1_pose;
   sphere1_pose.setIdentity();
 
-  std::vector<shapes::ShapeConstPtr> obj3_shapes;
+  tesseract::CollisionShapesConst obj3_shapes;
   tesseract::VectorIsometry3d obj3_poses;
-  tesseract::CollisionObjectTypeVector obj3_types;
   obj3_shapes.push_back(sphere1);
   obj3_poses.push_back(sphere1_pose);
-  obj3_types.push_back(tesseract::CollisionObjectType::UseShapeType);
 
-  checker.addCollisionObject("sphere1_link", 0, obj3_shapes, obj3_poses, obj3_types);
+  checker.addCollisionObject("sphere1_link", 0, obj3_shapes, obj3_poses);
 }
 
-void runTest(tesseract::DiscreteContactManagerBase& checker, double dist_tol, double nearest_tol, double normal_tol)
+void runTest(tesseract::DiscreteContactManager& checker, double dist_tol, double nearest_tol, double normal_tol)
 {
   //////////////////////////////////////
   // Test when object is in collision
@@ -84,7 +78,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, double dist_tol, do
   checker.contactTest(result, tesseract::ContactTestType::CLOSEST);
 
   tesseract::ContactResultVector result_vector;
-  tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
+  tesseract::flattenResults(std::move(result), result_vector);
 
   std::vector<int> idx = { 0, 1, 1 };
   if (result_vector[0].link_names[0] != "sphere_link")
@@ -92,12 +86,12 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, double dist_tol, do
 
   // Clone and perform collision check
   tesseract::ContactResultMap cloned_result;
-  tesseract::DiscreteContactManagerBasePtr cloned_checker = checker.clone();
+  tesseract::DiscreteContactManagerPtr cloned_checker = checker.clone();
 
   cloned_checker->contactTest(cloned_result, tesseract::ContactTestType::CLOSEST);
 
   tesseract::ContactResultVector cloned_result_vector;
-  tesseract::moveContactResultsMapToContactResultsVector(cloned_result, cloned_result_vector);
+  tesseract::flattenResults(std::move(cloned_result), cloned_result_vector);
 
   std::vector<int> cloned_idx = { 0, 1, 1 };
   if (cloned_result_vector[0].link_names[0] != "sphere_link")

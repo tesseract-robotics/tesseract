@@ -64,8 +64,16 @@ add_library(${PROJECT_NAME}_kdl
 target_link_libraries(${PROJECT_NAME}_kdl ${catkin_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${orocos_kdl_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_kdl PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
+add_library(tesseract_collision_bullet_plugin src/plugins/bullet_plugin.cpp)
+target_link_libraries(tesseract_collision_bullet_plugin ${catkin_LIBRARIES})
+target_compile_options(tesseract_collision_bullet_plugin PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+
+add_library(tesseract_collision_fcl_plugin src/plugins/fcl_plugin.cpp)
+target_link_libraries(tesseract_collision_fcl_plugin ${catkin_LIBRARIES})
+target_compile_options(tesseract_collision_fcl_plugin PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+
 # Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME}_kdl
+install(TARGETS ${PROJECT_NAME}_kdl tesseract_collision_bullet_plugin tesseract_collision_fcl_plugin
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -77,6 +85,10 @@ install(DIRECTORY include/${PROJECT_NAME}/
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
  )
+
+install(FILES tesseract_collision_bullet_plugin_description.xml tesseract_collision_fcl_plugin_description.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 
 if (CATKIN_ENABLE_TESTING)
 

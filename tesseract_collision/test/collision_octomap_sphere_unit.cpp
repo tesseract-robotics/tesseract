@@ -1,8 +1,8 @@
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_collision/core/macros.h>
+TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <octomap/octomap.h>
 #include <ros/package.h>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include "tesseract_collision/bullet/bullet_discrete_simple_manager.h"
 #include "tesseract_collision/bullet/bullet_discrete_bvh_manager.h"
@@ -10,54 +10,60 @@ TESSERACT_IGNORE_WARNINGS_POP
 #include <gtest/gtest.h>
 #include <ros/ros.h>
 
-void addCollisionObjects(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mesh = false)
+void addCollisionObjects(tesseract::DiscreteContactManager& checker, bool use_convex_mesh = false)
 {
   /////////////////////////////////////////////////////////////////
   // Add Octomap
   /////////////////////////////////////////////////////////////////
-  std::string path = ros::package::getPath("tesseract_collision") + "/test/blender_monkey.bt";
+  std::string path = std::string(DATA_DIR) + "/blender_monkey.bt";
   std::shared_ptr<octomap::OcTree> ot(new octomap::OcTree(path));
-  shapes::ShapePtr dense_octomap(new shapes::OcTree(ot));
+  tesseract::CollisionShapePtr dense_octomap(new tesseract::OctreeCollisionShape(ot, tesseract::OctreeCollisionShape::SubShapeType::BOX));
   Eigen::Isometry3d octomap_pose;
   octomap_pose.setIdentity();
 
-  std::vector<shapes::ShapeConstPtr> obj1_shapes;
+  tesseract::CollisionShapesConst obj1_shapes;
   tesseract::VectorIsometry3d obj1_poses;
-  tesseract::CollisionObjectTypeVector obj1_types;
   obj1_shapes.push_back(dense_octomap);
   obj1_poses.push_back(octomap_pose);
-  obj1_types.push_back(tesseract::CollisionObjectType::UseShapeType);
+//  obj1_types.push_back(tesseract::CollisionObjectType::UseShapeType);
 
-  checker.addCollisionObject("octomap_link", 0, obj1_shapes, obj1_poses, obj1_types);
+  checker.addCollisionObject("octomap_link", 0, obj1_shapes, obj1_poses);
 
   /////////////////////////////////////////////////////////////////
   // Add sphere to checker. If use_convex_mesh = true then this
   // sphere will be added as a convex hull mesh.
   /////////////////////////////////////////////////////////////////
-  shapes::ShapePtr sphere;
+  tesseract::CollisionShapePtr sphere;
+
   if (use_convex_mesh)
-    sphere.reset(shapes::createMeshFromResource("package://tesseract_collision/test/sphere_p25m.stl"));
+  {
+    tesseract::VectorVector3d mesh_vertices;
+    std::vector<int> mesh_faces;
+    EXPECT_GT(tesseract::loadSimplePlyFile(std::string(DATA_DIR) + "/sphere_p25m.ply", mesh_vertices, mesh_faces), 0);
+
+    // This is required because convex hull cannot have multiple faces on the same plane.
+    std::shared_ptr<tesseract::VectorVector3d> ch_verticies(new tesseract::VectorVector3d());
+    std::shared_ptr<std::vector<int>> ch_faces(new std::vector<int>());
+    int ch_num_faces = tesseract::createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
+    sphere.reset(new tesseract::ConvexMeshCollisionShape(ch_verticies, ch_faces, ch_num_faces));
+  }
   else
-    sphere.reset(new shapes::Sphere(0.25));
+  {
+    sphere.reset(new tesseract::SphereCollisionShape(0.25));
+  }
 
   Eigen::Isometry3d sphere_pose;
   sphere_pose.setIdentity();
 
-  std::vector<shapes::ShapeConstPtr> obj2_shapes;
+  tesseract::CollisionShapesConst obj2_shapes;
   tesseract::VectorIsometry3d obj2_poses;
-  tesseract::CollisionObjectTypeVector obj2_types;
   obj2_shapes.push_back(sphere);
   obj2_poses.push_back(sphere_pose);
 
-  if (use_convex_mesh)
-    obj2_types.push_back(tesseract::CollisionObjectType::ConvexHull);
-  else
-    obj2_types.push_back(tesseract::CollisionObjectType::UseShapeType);
-
-  checker.addCollisionObject("sphere_link", 0, obj2_shapes, obj2_poses, obj2_types);
+  checker.addCollisionObject("sphere_link", 0, obj2_shapes, obj2_poses);
 }
 
-void runTest(tesseract::DiscreteContactManagerBase& checker, double tol)
+void runTest(tesseract::DiscreteContactManager& checker, double tol)
 {
   //////////////////////////////////////
   // Test when object is in collision
@@ -84,7 +90,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, double tol)
   ROS_INFO_STREAM("DT: " << (end_time - start_time).toSec());
 
   tesseract::ContactResultVector result_vector;
-  tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
+  tesseract::flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.25, tol);

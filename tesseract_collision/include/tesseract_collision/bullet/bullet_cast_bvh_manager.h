@@ -40,7 +40,7 @@
  */
 
 #include <tesseract_collision/bullet/bullet_utils.h>
-#include <tesseract_core/continuous_contact_manager_base.h>
+#include <tesseract_collision/core/continuous_contact_manager.h>
 
 #ifndef TESSERACT_COLLISION_BULLET_CAST_BVH_MANAGERS_H
 #define TESSERACT_COLLISION_BULLET_CAST_BVH_MANAGERS_H
@@ -50,19 +50,18 @@ namespace tesseract
 namespace tesseract_bullet
 {
 /** @brief A BVH implementaiton of a tesseract contact manager */
-class BulletCastBVHManager : public ContinuousContactManagerBase
+class BulletCastBVHManager : public ContinuousContactManager
 {
 public:
   BulletCastBVHManager();
   ~BulletCastBVHManager() override;
 
-  ContinuousContactManagerBasePtr clone() const override;
+  ContinuousContactManagerPtr clone() const override;
 
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,
-                          const std::vector<shapes::ShapeConstPtr>& shapes,
+                          const CollisionShapesConst& shapes,
                           const VectorIsometry3d& shape_poses,
-                          const CollisionObjectTypeVector& collision_object_types,
                           bool enabled = true) override;
 
   bool hasCollisionObject(const std::string& name) const override;

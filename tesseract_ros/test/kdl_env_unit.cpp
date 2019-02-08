@@ -138,12 +138,12 @@ TEST_F(TesseractKDLEnvUnit, TestACMWorks)
 void runTest(const tesseract::tesseract_ros::ROSBasicEnvPtr& env)
 {
   // Test after clone if active list correct
-  tesseract::DiscreteContactManagerBasePtr discrete_manager = env->getDiscreteContactManager();
+  tesseract::DiscreteContactManagerPtr discrete_manager = env->getDiscreteContactManager();
   const std::vector<std::string>& e_active_list = env->getActiveLinkNames();
   const std::vector<std::string>& d_active_list = discrete_manager->getActiveCollisionObjects();
   EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), d_active_list.begin()));
 
-  tesseract::ContinuousContactManagerBasePtr cast_manager = env->getContinuousContactManager();
+  tesseract::ContinuousContactManagerPtr cast_manager = env->getContinuousContactManager();
   const std::vector<std::string>& c_active_list = cast_manager->getActiveCollisionObjects();
   EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), c_active_list.begin()));
 }

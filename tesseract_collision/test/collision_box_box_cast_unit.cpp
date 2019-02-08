@@ -1,49 +1,45 @@
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_collision/core/macros.h>
+TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <ros/ros.h>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include "tesseract_collision/bullet/bullet_cast_simple_manager.h"
 #include "tesseract_collision/bullet/bullet_cast_bvh_manager.h"
 
-void addCollisionObjects(tesseract::ContinuousContactManagerBase& checker)
+void addCollisionObjects(tesseract::ContinuousContactManager& checker)
 {
   ////////////////////////////
   // Add static box to checker
   ////////////////////////////
-  shapes::ShapePtr static_box(new shapes::Box(1, 1, 1));
+  tesseract::CollisionShapePtr static_box(new tesseract::BoxCollisionShape(1, 1, 1));
   Eigen::Isometry3d static_box_pose;
   static_box_pose.setIdentity();
 
-  std::vector<shapes::ShapeConstPtr> obj1_shapes;
+  tesseract::CollisionShapesConst obj1_shapes;
   tesseract::VectorIsometry3d obj1_poses;
-  tesseract::CollisionObjectTypeVector obj1_types;
   obj1_shapes.push_back(static_box);
   obj1_poses.push_back(static_box_pose);
-  obj1_types.push_back(tesseract::CollisionObjectType::UseShapeType);
 
-  checker.addCollisionObject("static_box_link", 0, obj1_shapes, obj1_poses, obj1_types);
+  checker.addCollisionObject("static_box_link", 0, obj1_shapes, obj1_poses);
 
   ////////////////////////////
   // Add static box to checker
   ////////////////////////////
-  shapes::ShapePtr moving_box(new shapes::Box(0.25, 0.25, 0.25));
+  tesseract::CollisionShapePtr moving_box(new tesseract::BoxCollisionShape(0.25, 0.25, 0.25));
   Eigen::Isometry3d moving_box_pose;
   moving_box_pose.setIdentity();
   moving_box_pose.translation() = Eigen::Vector3d(0.5, -0.5, 0);
 
-  std::vector<shapes::ShapeConstPtr> obj2_shapes;
+  tesseract::CollisionShapesConst obj2_shapes;
   tesseract::VectorIsometry3d obj2_poses;
-  tesseract::CollisionObjectTypeVector obj2_types;
   obj2_shapes.push_back(moving_box);
   obj2_poses.push_back(moving_box_pose);
-  obj2_types.push_back(tesseract::CollisionObjectType::UseShapeType);
 
-  checker.addCollisionObject("moving_box_link", 0, obj2_shapes, obj2_poses, obj2_types);
+  checker.addCollisionObject("moving_box_link", 0, obj2_shapes, obj2_poses);
 }
 
-void runTest(tesseract::ContinuousContactManagerBase& checker)
+void runTest(tesseract::ContinuousContactManager& checker)
 {
   //////////////////////////////////////
   // Test when object is inside another
@@ -68,7 +64,7 @@ void runTest(tesseract::ContinuousContactManagerBase& checker)
   checker.contactTest(result, tesseract::ContactTestType::CLOSEST);
 
   tesseract::ContactResultVector result_vector;
-  tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
+  tesseract::flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.2475, 0.001);

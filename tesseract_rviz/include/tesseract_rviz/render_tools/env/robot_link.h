@@ -53,6 +53,7 @@ TESSERACT_IGNORE_WARNINGS_PUSH
 #include <rviz/ogre_helpers/point_cloud.h>
 #include <rviz/selection/forwards.h>
 #include <Eigen/Eigen>
+#include <tesseract_collision/core/collision_shapes.h>
 TESSERACT_IGNORE_WARNINGS_POP
 
 namespace Ogre
@@ -213,6 +214,11 @@ private:
                                       const std::string material_name,
                                       bool isVisual);
   bool createEntityForGeometryElement(const shapes::Shape& geom,
+                                      Eigen::Isometry3d origin,
+                                      Eigen::Vector4d color,
+                                      bool isVisual);
+
+  bool createEntityForGeometryElement(const tesseract::CollisionShape& geom,
                                       Eigen::Isometry3d origin,
                                       Eigen::Vector4d color,
                                       bool isVisual);
