@@ -43,15 +43,15 @@
 #ifndef TESSERACT_COLLISION_BULLET_UTILS_H
 #define TESSERACT_COLLISION_BULLET_UTILS_H
 
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_collision/core/macros.h>
+TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <btBulletCollisionCommon.h>
-#include <geometric_shapes/mesh_operations.h>
 #include <ros/console.h>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
-#include <tesseract_core/basic_types.h>
-#include <tesseract_collision/contact_checker_common.h>
+#include <tesseract_collision/core/types.h>
+#include <tesseract_collision/core/common.h>
+#include <tesseract_collision/core/collision_shapes.h>
 
 namespace tesseract
 {
@@ -117,9 +117,8 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   CollisionObjectWrapper(const std::string& name,
                          const int& type_id,
-                         const std::vector<shapes::ShapeConstPtr>& shapes,
-                         const VectorIsometry3d& shape_poses,
-                         const CollisionObjectTypeVector& collision_object_types);
+                         const tesseract::CollisionShapesConst& shapes,
+                         const VectorIsometry3d& shape_poses);
 
   short int m_collisionFilterGroup;
   short int m_collisionFilterMask;
@@ -162,7 +161,7 @@ public:
   std::shared_ptr<CollisionObjectWrapper> clone()
   {
     std::shared_ptr<CollisionObjectWrapper> clone_cow(
-        new CollisionObjectWrapper(m_name, m_type_id, m_shapes, m_shape_poses, m_collision_object_types, m_data));
+        new CollisionObjectWrapper(m_name, m_type_id, m_shapes, m_shape_poses, m_data));
     clone_cow->setCollisionShape(getCollisionShape());
     clone_cow->setWorldTransform(getWorldTransform());
     clone_cow->m_collisionFilterGroup = m_collisionFilterGroup;
@@ -187,16 +186,14 @@ protected:
   /** @brief This is a special constructor used by the clone method */
   CollisionObjectWrapper(const std::string& name,
                          const int& type_id,
-                         const std::vector<shapes::ShapeConstPtr>& shapes,
+                         const CollisionShapesConst& shapes,
                          const VectorIsometry3d& shape_poses,
-                         const CollisionObjectTypeVector& collision_object_types,
                          const std::vector<std::shared_ptr<void>>& data);
 
-  std::string m_name;                                 /**< @brief The name of the collision object */
-  int m_type_id;                                      /**< @brief A user defined type id */
-  std::vector<shapes::ShapeConstPtr> m_shapes;        /**< @brief The shapes that define the collison object */
-  VectorIsometry3d m_shape_poses;                     /**< @brief The shpaes poses information */
-  CollisionObjectTypeVector m_collision_object_types; /**< @brief The shape collision object type to be used */
+  std::string m_name;             /**< @brief The name of the collision object */
+  int m_type_id;                  /**< @brief A user defined type id */
+  CollisionShapesConst m_shapes;  /**< @brief The shapes that define the collison object */
+  VectorIsometry3d m_shape_poses; /**< @brief The shpaes poses information */
 
   std::vector<std::shared_ptr<void>>
       m_data; /**< @brief This manages the collision shape pointer so they get destroyed */
@@ -795,8 +792,7 @@ public:
   }
 };
 
-btCollisionShape* createShapePrimitive(const shapes::ShapeConstPtr& geom,
-                                       const CollisionObjectType& collision_object_type,
+btCollisionShape* createShapePrimitive(const CollisionShapeConstPtr& geom,
                                        CollisionObjectWrapper* cow);
 
 /**
@@ -836,9 +832,8 @@ inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
 
 inline COWPtr createCollisionObject(const std::string& name,
                                     const int& type_id,
-                                    const std::vector<shapes::ShapeConstPtr>& shapes,
+                                    const tesseract::CollisionShapesConst& shapes,
                                     const VectorIsometry3d& shape_poses,
-                                    const CollisionObjectTypeVector& collision_object_types,
                                     bool enabled = true)
 {
   // dont add object that does not have geometry
@@ -848,7 +843,7 @@ inline COWPtr createCollisionObject(const std::string& name,
     return nullptr;
   }
 
-  COWPtr new_cow(new COW(name, type_id, shapes, shape_poses, collision_object_types));
+  COWPtr new_cow(new COW(name, type_id, shapes, shape_poses));
 
   new_cow->m_enabled = enabled;
   new_cow->setContactProcessingThreshold(BULLET_DEFAULT_CONTACT_DISTANCE);

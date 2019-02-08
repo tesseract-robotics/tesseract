@@ -92,7 +92,7 @@ bool TrajOptPlanner::solve(PlannerResponse& response, const TrajOptPlannerConfig
 
   // Check and report collisions
   std::vector<tesseract::ContactResultMap> collisions;
-  ContinuousContactManagerBasePtr manager = config.prob->GetEnv()->getContinuousContactManager();
+  ContinuousContactManagerPtr manager = config.prob->GetEnv()->getContinuousContactManager();
   manager->setActiveCollisionObjects(config.prob->GetKin()->getLinkNames());
   manager->setContactDistanceThreshold(0);
   collisions.clear();

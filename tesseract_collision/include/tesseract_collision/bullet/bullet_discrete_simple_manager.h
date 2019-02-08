@@ -42,24 +42,23 @@
 #define TESSERACT_COLLISION_BULLET_DISCRETE_SIMPLE_MANAGERS_H
 
 #include <tesseract_collision/bullet/bullet_utils.h>
-#include <tesseract_core/discrete_contact_manager_base.h>
+#include <tesseract_collision/core/discrete_contact_manager.h>
 namespace tesseract
 {
 namespace tesseract_bullet
 {
 /** @brief A simple implementaiton of a bullet manager which does not use BHV */
-class BulletDiscreteSimpleManager : public DiscreteContactManagerBase
+class BulletDiscreteSimpleManager : public DiscreteContactManager
 {
 public:
   BulletDiscreteSimpleManager();
 
-  DiscreteContactManagerBasePtr clone() const override;
+  DiscreteContactManagerPtr clone() const override;
 
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,
-                          const std::vector<shapes::ShapeConstPtr>& shapes,
+                          const CollisionShapesConst& shapes,
                           const VectorIsometry3d& shape_poses,
-                          const CollisionObjectTypeVector& collision_object_types,
                           bool enabled = true) override;
 
   bool hasCollisionObject(const std::string& name) const override;

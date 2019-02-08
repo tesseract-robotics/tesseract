@@ -11,11 +11,11 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
   tesseract::BulletContactChecker checker;
 
   // Add box to checker
-  shapes::ShapePtr box(new shapes::Box(1, 1, 1));
+  tesseract::CollisionShapePtr box(new shapes::Box(1, 1, 1));
   Eigen::Isometry3d box_pose;
   box_pose.setIdentity();
 
-  std::vector<shapes::ShapeConstPtr> obj1_shapes;
+  tesseract::CollisionShapesConst obj1_shapes;
   VectorIsometry3d obj1_poses;
   tesseract::CollisionObjectTypeVector obj1_types;
   obj1_shapes.push_back(box);
@@ -25,11 +25,11 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
   checker.addObject("box_link", 0, obj1_shapes, obj1_poses, obj1_types);
 
   // Add box to checker
-  shapes::ShapePtr thin_box(new shapes::Box(0.1, 1, 1));
+  tesseract::CollisionShapePtr thin_box(new shapes::Box(0.1, 1, 1));
   Eigen::Isometry3d thin_box_pose;
   thin_box_pose.setIdentity();
 
-  std::vector<shapes::ShapeConstPtr> obj2_shapes;
+  tesseract::CollisionShapesConst obj2_shapes;
   VectorIsometry3d obj2_poses;
   tesseract::CollisionObjectTypeVector obj2_types;
   obj2_shapes.push_back(thin_box);
@@ -39,11 +39,11 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
   checker.addObject("thin_box_link", 0, obj2_shapes, obj2_poses, obj2_types);
 
   // Add Meshed Sphere to checker
-  shapes::ShapePtr sphere(shapes::createMeshFromResource("package://tesseract_collision/test/sphere.stl"));
+  tesseract::CollisionShapePtr sphere(shapes::createMeshFromResource("package://tesseract_collision/test/sphere.stl"));
   Eigen::Isometry3d sphere_pose;
   sphere_pose.setIdentity();
 
-  std::vector<shapes::ShapeConstPtr> obj3_shapes;
+  tesseract::CollisionShapesConst obj3_shapes;
   VectorIsometry3d obj3_poses;
   tesseract::CollisionObjectTypeVector obj3_types;
   obj3_shapes.push_back(sphere);
@@ -69,7 +69,7 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
   checker.calcCollisionsDiscrete(req, location, result);
 
   tesseract::ContactResultVector result_vector;
-  tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
+  tesseract::flattenResults(result, result_vector);
 
   // This does fail need to create an issue on bullet
   EXPECT_LT(std::abs(result_vector[0].distance + 0.75), 0.0001);
@@ -81,7 +81,7 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
   result_vector.clear();
 
   checker.calcCollisionsDiscrete(req, location, result);
-  tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
+  tesseract::flattenResults(result, result_vector);
 
   EXPECT_TRUE(result_vector.empty());
 
@@ -91,7 +91,7 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
   req.contact_distance = 0.251;
 
   checker.calcCollisionsDiscrete(req, location, result);
-  tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
+  tesseract::flattenResults(result, result_vector);
 
   EXPECT_LT(std::abs(0.25 - result_vector[0].distance), 0.0001);
   EXPECT_TRUE(!result_vector.empty());
@@ -115,7 +115,7 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
   //  req.type = tesseract::ContactRequestType::SINGLE;
 
   //  checker.calcCollisionsContinuous(req, location, location2, result);
-  //  tesseract::moveContactResultsMapToContactResultsVector(result,
+  //  tesseract::flattenResults(result,
   //  result_vector);
   //  EXPECT_TRUE(!result_vector.empty());
 }

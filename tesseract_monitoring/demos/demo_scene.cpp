@@ -42,6 +42,7 @@ TESSERACT_IGNORE_WARNINGS_PUSH
 TESSERACT_IGNORE_WARNINGS_POP
 
 #include <tesseract_ros/ros_tesseract_utils.h>
+#include <tesseract_collision/core/collision_shapes.h>
 
 static const std::string ROBOT_DESCRIPTION = "robot_description";
 using namespace tesseract;
@@ -55,10 +56,9 @@ void sendSphere()
 
   // Add sphere
   AttachableObject obj;
-  std::shared_ptr<shapes::Sphere> sphere(new shapes::Sphere());
+  std::shared_ptr<shapes::Sphere> sphere(new shapes::Sphere(0.15));
+  tesseract::CollisionShapePtr c_sphere(new tesseract::SphereCollisionShape(0.15));
   Eigen::Isometry3d sphere_pose;
-
-  sphere->radius = 0.15;
 
   sphere_pose.setIdentity();
   sphere_pose.translation() = Eigen::Vector3d(0.5, 0, 0.55);
@@ -66,9 +66,8 @@ void sendSphere()
   obj.name = "sphere_attached";
   obj.visual.shapes.push_back(sphere);
   obj.visual.shape_poses.push_back(sphere_pose);
-  obj.collision.shapes.push_back(sphere);
+  obj.collision.shapes.push_back(c_sphere);
   obj.collision.shape_poses.push_back(sphere_pose);
-  obj.collision.collision_object_types.push_back(tesseract::CollisionObjectTypes::UseShapeType);
 
   tesseract_msgs::AttachableObject ao_msg;
   tesseract_ros::attachableObjectToAttachableObjectMsg(ao_msg, obj);

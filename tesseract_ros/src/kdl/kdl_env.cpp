@@ -410,14 +410,12 @@ void KDLEnv::addAttachableObject(const AttachableObjectConstPtr attachable_objec
                                         BodyTypes::ROBOT_ATTACHED,
                                         attachable_object->collision.shapes,
                                         attachable_object->collision.shape_poses,
-                                        attachable_object->collision.collision_object_types,
                                         false);
 
   continuous_manager_->addCollisionObject(attachable_object->name,
                                           BodyTypes::ROBOT_ATTACHED,
                                           attachable_object->collision.shapes,
                                           attachable_object->collision.shape_poses,
-                                          attachable_object->collision.collision_object_types,
                                           false);
 }
 
@@ -636,7 +634,7 @@ bool KDLEnv::defaultIsContactAllowedFn(const std::string& link_name1, const std:
 
 void KDLEnv::loadDiscreteContactManagerPlugin(const std::string& plugin)
 {
-  DiscreteContactManagerBasePtr temp = discrete_manager_loader_->createUniqueInstance(plugin);
+  DiscreteContactManagerPtr temp = discrete_manager_loader_->createUniqueInstance(plugin);
   if (temp != nullptr)
   {
     discrete_manager_ = temp;
@@ -658,30 +656,21 @@ void KDLEnv::loadDiscreteContactManagerPlugin(const std::string& plugin)
             link.second->collision_array.empty() ? std::vector<urdf::CollisionSharedPtr>(1, link.second->collision) :
                                                    link.second->collision_array;
 
-        std::vector<shapes::ShapeConstPtr> shapes;
+        CollisionShapesConst shapes;
         VectorIsometry3d shape_poses;
-        CollisionObjectTypeVector collision_object_types;
-
         for (std::size_t i = 0; i < col_array.size(); ++i)
         {
           if (col_array[i] && col_array[i]->geometry)
           {
-            shapes::ShapeConstPtr s = constructShape(col_array[i]->geometry.get());
+            CollisionShapeConstPtr s = constructShape(col_array[i]->geometry.get());
             if (s)
             {
               shapes.push_back(s);
               shape_poses.push_back(urdfPose2Eigen(col_array[i]->origin));
-
-              // TODO: Need to encode this in the srdf
-              if (s->type == shapes::MESH)
-                collision_object_types.push_back(CollisionObjectType::ConvexHull);
-              else
-                collision_object_types.push_back(CollisionObjectType::UseShapeType);
             }
           }
         }
-        discrete_manager_->addCollisionObject(
-            link.second->name, BodyType::ROBOT_LINK, shapes, shape_poses, collision_object_types, true);
+        discrete_manager_->addCollisionObject(link.second->name, BodyType::ROBOT_LINK, shapes, shape_poses, true);
       }
     }
 
@@ -692,7 +681,6 @@ void KDLEnv::loadDiscreteContactManagerPlugin(const std::string& plugin)
                                             BodyTypes::ROBOT_ATTACHED,
                                             ao.second->collision.shapes,
                                             ao.second->collision.shape_poses,
-                                            ao.second->collision.collision_object_types,
                                             false);
 
     // Enable the attached objects in the contact checker
@@ -703,7 +691,7 @@ void KDLEnv::loadDiscreteContactManagerPlugin(const std::string& plugin)
 
 void KDLEnv::loadContinuousContactManagerPlugin(const std::string& plugin)
 {
-  ContinuousContactManagerBasePtr temp = continuous_manager_loader_->createUniqueInstance(plugin);
+  ContinuousContactManagerPtr temp = continuous_manager_loader_->createUniqueInstance(plugin);
   if (temp != nullptr)
   {
     continuous_manager_ = temp;
@@ -725,31 +713,22 @@ void KDLEnv::loadContinuousContactManagerPlugin(const std::string& plugin)
             link.second->collision_array.empty() ? std::vector<urdf::CollisionSharedPtr>(1, link.second->collision) :
                                                    link.second->collision_array;
 
-        std::vector<shapes::ShapeConstPtr> shapes;
+        CollisionShapesConst shapes;
         VectorIsometry3d shape_poses;
-        CollisionObjectTypeVector collision_object_types;
-
         for (std::size_t i = 0; i < col_array.size(); ++i)
         {
           if (col_array[i] && col_array[i]->geometry)
           {
-            shapes::ShapeConstPtr s = constructShape(col_array[i]->geometry.get());
+            CollisionShapeConstPtr s = constructShape(col_array[i]->geometry.get());
             if (s)
             {
               shapes.push_back(s);
               shape_poses.push_back(urdfPose2Eigen(col_array[i]->origin));
-
-              // TODO: Need to encode this in the srdf
-              if (s->type == shapes::MESH)
-                collision_object_types.push_back(CollisionObjectType::ConvexHull);
-              else
-                collision_object_types.push_back(CollisionObjectType::UseShapeType);
             }
           }
         }
 
-        continuous_manager_->addCollisionObject(
-            link.second->name, BodyType::ROBOT_LINK, shapes, shape_poses, collision_object_types, true);
+        continuous_manager_->addCollisionObject(link.second->name, BodyType::ROBOT_LINK, shapes, shape_poses, true);
       }
     }
 
@@ -760,7 +739,6 @@ void KDLEnv::loadContinuousContactManagerPlugin(const std::string& plugin)
                                               BodyTypes::ROBOT_ATTACHED,
                                               ao.second->collision.shapes,
                                               ao.second->collision.shape_poses,
-                                              ao.second->collision.collision_object_types,
                                               false);
 
     // Enable the attached objects in the contact checker

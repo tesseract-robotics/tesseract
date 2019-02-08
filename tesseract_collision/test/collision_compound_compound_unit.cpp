@@ -1,10 +1,10 @@
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_collision/core/macros.h>
+TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <octomap/octomap.h>
 #include <ros/package.h>
 #include <gtest/gtest.h>
 #include <ros/ros.h>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include "tesseract_collision/bullet/bullet_discrete_simple_manager.h"
 #include "tesseract_collision/bullet/bullet_discrete_bvh_manager.h"
@@ -18,43 +18,39 @@ void addCollisionObjects(T& checker)
   /////////////////////////////////////////////////////////////////
   // Add Octomap
   /////////////////////////////////////////////////////////////////
-  std::string path = ros::package::getPath("tesseract_collision") + "/test/box_2m.bt";
+  std::string path = std::string(DATA_DIR) + "/box_2m.bt";
   std::shared_ptr<octomap::OcTree> ot(new octomap::OcTree(path));
-  shapes::ShapePtr dense_octomap(new shapes::OcTree(ot));
+  tesseract::CollisionShapePtr dense_octomap(new tesseract::OctreeCollisionShape(ot, tesseract::OctreeCollisionShape::BOX));
   Eigen::Isometry3d octomap_pose;
   octomap_pose.setIdentity();
   octomap_pose.translation() = Eigen::Vector3d(1.1, 0, 0);
 
-  std::vector<shapes::ShapeConstPtr> obj1_shapes;
+  tesseract::CollisionShapesConst obj1_shapes;
   tesseract::VectorIsometry3d obj1_poses;
-  tesseract::CollisionObjectTypeVector obj1_types;
   obj1_shapes.push_back(dense_octomap);
   obj1_poses.push_back(octomap_pose);
-  obj1_types.push_back(tesseract::CollisionObjectType::UseShapeType);
 
-  checker.addCollisionObject("octomap1_link", 0, obj1_shapes, obj1_poses, obj1_types);
+  checker.addCollisionObject("octomap1_link", 0, obj1_shapes, obj1_poses);
 
   /////////////////////////////////////////////////////////////////
   // Add sphere to checker. If use_convex_mesh = true then this
   // sphere will be added as a convex hull mesh.
   /////////////////////////////////////////////////////////////////
   std::shared_ptr<octomap::OcTree> ot_b(new octomap::OcTree(path));
-  shapes::ShapePtr dense_octomap_b(new shapes::OcTree(ot_b));
+  tesseract::CollisionShapePtr dense_octomap_b(new tesseract::OctreeCollisionShape(ot_b, tesseract::OctreeCollisionShape::BOX));
   Eigen::Isometry3d octomap_pose_b;
   octomap_pose_b.setIdentity();
   octomap_pose_b.translation() = Eigen::Vector3d(-1.1, 0, 0);
 
-  std::vector<shapes::ShapeConstPtr> obj2_shapes;
+  tesseract::CollisionShapesConst obj2_shapes;
   tesseract::VectorIsometry3d obj2_poses;
-  tesseract::CollisionObjectTypeVector obj2_types;
   obj2_shapes.push_back(dense_octomap_b);
   obj2_poses.push_back(octomap_pose_b);
-  obj2_types.push_back(tesseract::CollisionObjectType::UseShapeType);
 
-  checker.addCollisionObject("octomap2_link", 0, obj2_shapes, obj2_poses, obj2_types);
+  checker.addCollisionObject("octomap2_link", 0, obj2_shapes, obj2_poses);
 }
 
-void runTest(tesseract::DiscreteContactManagerBase& checker)
+void runTest(tesseract::DiscreteContactManager& checker)
 {
   //////////////////////////////////////
   // Test when object is in collision
@@ -73,7 +69,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
   checker.contactTest(result, tesseract::ContactTestType::ALL);
 
   tesseract::ContactResultVector result_vector;
-  tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
+  tesseract::flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   for (const auto& cr : result_vector)
@@ -82,7 +78,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker)
   }
 }
 
-void runCastTest(tesseract::ContinuousContactManagerBase& checker)
+void runCastTest(tesseract::ContinuousContactManager& checker)
 {
   //////////////////////////////////////
   // Test when object is in collision
@@ -103,7 +99,7 @@ void runCastTest(tesseract::ContinuousContactManagerBase& checker)
   checker.contactTest(result, tesseract::ContactTestType::ALL);
 
   tesseract::ContactResultVector result_vector;
-  tesseract::moveContactResultsMapToContactResultsVector(result, result_vector);
+  tesseract::flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   for (const auto& cr : result_vector)
@@ -115,50 +111,50 @@ void runCastTest(tesseract::ContinuousContactManagerBase& checker)
 TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionCompoundCompoundUnit)
 {
   tesseract::tesseract_bullet::BulletDiscreteSimpleManager checker;
-  addCollisionObjects<tesseract::DiscreteContactManagerBase>(checker);
+  addCollisionObjects<tesseract::DiscreteContactManager>(checker);
   runTest(checker);
 
-  tesseract::DiscreteContactManagerBasePtr cloned_checker = checker.clone();
+  tesseract::DiscreteContactManagerPtr cloned_checker = checker.clone();
   runTest(*cloned_checker);
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionCompoundCompoundUnit)
 {
   tesseract::tesseract_bullet::BulletDiscreteBVHManager checker;
-  addCollisionObjects<tesseract::DiscreteContactManagerBase>(checker);
+  addCollisionObjects<tesseract::DiscreteContactManager>(checker);
   runTest(checker);
 
-  tesseract::DiscreteContactManagerBasePtr cloned_checker = checker.clone();
+  tesseract::DiscreteContactManagerPtr cloned_checker = checker.clone();
   runTest(*cloned_checker);
 }
 
 TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionCompoundCompoundUnit)
 {
   tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
-  addCollisionObjects<tesseract::DiscreteContactManagerBase>(checker);
+  addCollisionObjects<tesseract::DiscreteContactManager>(checker);
   runTest(checker);
 
-  tesseract::DiscreteContactManagerBasePtr cloned_checker = checker.clone();
+  tesseract::DiscreteContactManagerPtr cloned_checker = checker.clone();
   runTest(*cloned_checker);
 }
 
 TEST(TesseractCollisionUnit, BulletContinuousSimpleCollisionCompoundCompoundUnit)
 {
   tesseract::tesseract_bullet::BulletCastSimpleManager checker;
-  addCollisionObjects<tesseract::ContinuousContactManagerBase>(checker);
+  addCollisionObjects<tesseract::ContinuousContactManager>(checker);
   runCastTest(checker);
 
-  tesseract::ContinuousContactManagerBasePtr cloned_checker = checker.clone();
+  tesseract::ContinuousContactManagerPtr cloned_checker = checker.clone();
   runCastTest(*cloned_checker);
 }
 
 TEST(TesseractCollisionUnit, BulletContinuousBVHCollisionCompoundCompoundUnit)
 {
   tesseract::tesseract_bullet::BulletCastBVHManager checker;
-  addCollisionObjects<tesseract::ContinuousContactManagerBase>(checker);
+  addCollisionObjects<tesseract::ContinuousContactManager>(checker);
   runCastTest(checker);
 
-  tesseract::ContinuousContactManagerBasePtr cloned_checker = checker.clone();
+  tesseract::ContinuousContactManagerPtr cloned_checker = checker.clone();
   runCastTest(*cloned_checker);
 }
 

@@ -32,16 +32,20 @@ TESSERACT_IGNORE_WARNINGS_PUSH
 #include <geometric_shapes/shape_messages.h>
 #include <geometric_shapes/shapes.h>
 #include <geometric_shapes/shape_operations.h>
+#include <geometric_shapes/solid_primitive_dims.h>
 #include <std_msgs/Int32.h>
 #include <eigen_conversions/eigen_msg.h>
 #include <ros/console.h>
 #include <trajectory_msgs/JointTrajectory.h>
 #include <tesseract_msgs/TesseractState.h>
 #include <tesseract_msgs/ContactResultVector.h>
+#include <tesseract_msgs/Mesh.h>
 TESSERACT_IGNORE_WARNINGS_POP
 
 #include <tesseract_ros/ros_basic_env.h>
 #include <tesseract_core/basic_types.h>
+#include <tesseract_collision/core/collision_shapes.h>
+#include <tesseract_collision/core/common.h>
 
 namespace tesseract
 {
@@ -159,16 +163,12 @@ static inline bool isIdentical(const AttachableObject& ao1, const AttachableObje
   if (ao1.name != ao2.name)
     return false;
 
-  // Check Collision
-  if (ao1.collision.collision_object_types.size() != ao2.collision.collision_object_types.size())
-    return false;
-
   if (ao1.collision.shapes.size() != ao2.collision.shapes.size())
     return false;
 
   for (unsigned i = 0; i < ao1.collision.shapes.size(); ++i)
   {
-    if (!isIdentical(*ao1.collision.shapes[i], *ao2.collision.shapes[i]))
+    if (!tesseract::CollisionShape::isIdentical(*ao1.collision.shapes[i], *ao2.collision.shapes[i]))
       return false;
   }
 
@@ -209,6 +209,91 @@ static inline bool isIdentical(const AttachableObject& ao1, const AttachableObje
   }
 
   return true;
+}
+
+/** \brief Construct the message that corresponds to the shape. Return false on failure. */
+inline bool constructMsgFromCollisionShape(const CollisionShape& shape, shape_msgs::SolidPrimitive& shape_msgs)
+{
+  if (shape.getType() == CollisionShapeType::SPHERE)
+  {
+    const SphereCollisionShape& sphere = static_cast<const SphereCollisionShape&>(shape);
+
+    shape_msgs.type = shape_msgs::SolidPrimitive::SPHERE;
+    shape_msgs.dimensions.resize(geometric_shapes::SolidPrimitiveDimCount<shape_msgs::SolidPrimitive::SPHERE>::value);
+    shape_msgs.dimensions[shape_msgs::SolidPrimitive::SPHERE_RADIUS] = sphere.getRadius();
+  }
+  else if (shape.getType() == CollisionShapeType::BOX)
+  {
+    const BoxCollisionShape& box = static_cast<const BoxCollisionShape&>(shape);
+
+    shape_msgs.type = shape_msgs::SolidPrimitive::BOX;
+    shape_msgs.dimensions.resize(geometric_shapes::SolidPrimitiveDimCount<shape_msgs::SolidPrimitive::BOX>::value);
+    shape_msgs.dimensions[shape_msgs::SolidPrimitive::BOX_X] = box.getX();
+    shape_msgs.dimensions[shape_msgs::SolidPrimitive::BOX_Y] = box.getY();
+    shape_msgs.dimensions[shape_msgs::SolidPrimitive::BOX_Z] = box.getZ();
+  }
+  else if (shape.getType() == CollisionShapeType::CYLINDER)
+  {
+    const CylinderCollisionShape& cylinder = static_cast<const CylinderCollisionShape&>(shape);
+
+    shape_msgs.type = shape_msgs::SolidPrimitive::CYLINDER;
+    shape_msgs.dimensions.resize(geometric_shapes::SolidPrimitiveDimCount<shape_msgs::SolidPrimitive::CYLINDER>::value);
+    shape_msgs.dimensions[shape_msgs::SolidPrimitive::CYLINDER_RADIUS] = cylinder.getRadius();
+    shape_msgs.dimensions[shape_msgs::SolidPrimitive::CYLINDER_HEIGHT] = cylinder.getLength();
+  }
+  else if (shape.getType() == CollisionShapeType::CONE)
+  {
+    const ConeCollisionShape& cone = static_cast<const ConeCollisionShape&>(shape);
+
+    shape_msgs.type = shape_msgs::SolidPrimitive::CONE;
+    shape_msgs.dimensions.resize(geometric_shapes::SolidPrimitiveDimCount<shape_msgs::SolidPrimitive::CONE>::value);
+    shape_msgs.dimensions[shape_msgs::SolidPrimitive::CONE_RADIUS] = cone.getRadius();
+    shape_msgs.dimensions[shape_msgs::SolidPrimitive::CONE_HEIGHT] = cone.getLength();
+  }
+  else
+  {
+    ROS_ERROR("Unable to construct primitive shape message for shape of type %d", (int)shape.getType());
+    return false;
+  }
+
+  return true;
+}
+
+inline CollisionShapePtr constructCollisionShapeFromMsg(const shape_msgs::SolidPrimitive& shape_msg)
+{
+  CollisionShapePtr shape = nullptr;
+  if (shape_msg.type == shape_msgs::SolidPrimitive::SPHERE)
+  {
+    if (shape_msg.dimensions.size() > shape_msgs::SolidPrimitive::SPHERE_RADIUS)
+      shape = SphereCollisionShapePtr(new SphereCollisionShape(shape_msg.dimensions[shape_msgs::SolidPrimitive::SPHERE_RADIUS]));
+  }
+  else if (shape_msg.type == shape_msgs::SolidPrimitive::BOX)
+  {
+    if (shape_msg.dimensions.size() > shape_msgs::SolidPrimitive::BOX_X &&
+        shape_msg.dimensions.size() > shape_msgs::SolidPrimitive::BOX_Y &&
+        shape_msg.dimensions.size() > shape_msgs::SolidPrimitive::BOX_Z)
+      shape = BoxCollisionShapePtr(new BoxCollisionShape(shape_msg.dimensions[shape_msgs::SolidPrimitive::BOX_X],
+                                   shape_msg.dimensions[shape_msgs::SolidPrimitive::BOX_Y],
+                                   shape_msg.dimensions[shape_msgs::SolidPrimitive::BOX_Z]));
+  }
+  else if (shape_msg.type == shape_msgs::SolidPrimitive::CYLINDER)
+  {
+    if (shape_msg.dimensions.size() > shape_msgs::SolidPrimitive::CYLINDER_RADIUS &&
+        shape_msg.dimensions.size() > shape_msgs::SolidPrimitive::CYLINDER_HEIGHT)
+      shape = CylinderCollisionShapePtr(new CylinderCollisionShape(shape_msg.dimensions[shape_msgs::SolidPrimitive::CYLINDER_RADIUS],
+                                                                   shape_msg.dimensions[shape_msgs::SolidPrimitive::CYLINDER_HEIGHT]));
+  }
+  else if (shape_msg.type == shape_msgs::SolidPrimitive::CONE)
+  {
+    if (shape_msg.dimensions.size() > shape_msgs::SolidPrimitive::CONE_RADIUS &&
+        shape_msg.dimensions.size() > shape_msgs::SolidPrimitive::CONE_HEIGHT)
+      shape = ConeCollisionShapePtr(new ConeCollisionShape(shape_msg.dimensions[shape_msgs::SolidPrimitive::CONE_RADIUS],
+                                                           shape_msg.dimensions[shape_msgs::SolidPrimitive::CONE_HEIGHT]));
+  }
+  if (shape == nullptr)
+    ROS_ERROR("Unable to construct shape corresponding to shape_msg of type %d", (int)shape_msg.type);
+
+  return shape;
 }
 
 static inline void attachableObjectToAttachableObjectMsg(tesseract_msgs::AttachableObject& ao_msg,
@@ -306,11 +391,25 @@ static inline void attachableObjectToAttachableObjectMsg(tesseract_msgs::Attacha
   // Collision Geometry
   for (auto i = 0u; i < ao.collision.shapes.size(); ++i)
   {
-    if (ao.collision.shapes[i]->type == shapes::MESH)
+    if (ao.collision.shapes[i]->getType() == CollisionShapeType::MESH)
     {
-      shapes::ShapeMsg shape_msg;
-      shapes::constructMsgFromShape(ao.collision.shapes[i].get(), shape_msg);
-      ao_msg.collision.meshes.push_back(boost::get<shape_msgs::Mesh>(shape_msg));
+      const MeshCollisionShape& mesh = static_cast<const MeshCollisionShape&>(*(ao.collision.shapes[i]));
+
+      tesseract_msgs::Mesh shape_msg;
+
+      const VectorVector3d& vertices = *(mesh.getVertices());
+      shape_msg.vertices.resize(vertices.size());
+      for (size_t i = 0; i < vertices.size(); ++i)
+      {
+        shape_msg.vertices[i].x = vertices[i](0);
+        shape_msg.vertices[i].y = vertices[i](1);
+        shape_msg.vertices[i].z = vertices[i](2);
+      }
+
+      const std::vector<int>& faces = *(mesh.getTriangles());
+      shape_msg.faces = std::vector<uint32_t>(faces.begin(), faces.end());
+
+      ao_msg.collision.meshes.push_back(shape_msg);
 
       geometry_msgs::Pose pose;
       tf::poseEigenToMsg(ao.collision.shape_poses[i], pose);
@@ -325,16 +424,53 @@ static inline void attachableObjectToAttachableObjectMsg(tesseract_msgs::Attacha
         color.a = static_cast<float>(ao.collision.shape_colors[i](3));
         ao_msg.collision.mesh_colors.push_back(color);
       }
-
-      std_msgs::Int32 cot;
-      cot.data = ao.collision.collision_object_types[i];
-      ao_msg.collision.mesh_collision_object_types.push_back(cot);
     }
-    else if (ao.collision.shapes[i]->type == shapes::OCTREE)
+    else if (ao.collision.shapes[i]->getType() == CollisionShapeType::CONVEX_MESH)
     {
+      tesseract_msgs::Mesh shape_msg;
+
+      ao_msg.collision.convex_meshes.push_back(shape_msg);
+
+      geometry_msgs::Pose pose;
+      tf::poseEigenToMsg(ao.collision.shape_poses[i], pose);
+      ao_msg.collision.convex_mesh_poses.push_back(pose);
+
+      if (!ao.collision.shape_colors.empty())
+      {
+        std_msgs::ColorRGBA color;
+        color.r = static_cast<float>(ao.collision.shape_colors[i](0));
+        color.g = static_cast<float>(ao.collision.shape_colors[i](1));
+        color.b = static_cast<float>(ao.collision.shape_colors[i](2));
+        color.a = static_cast<float>(ao.collision.shape_colors[i](3));
+        ao_msg.collision.convex_mesh_colors.push_back(color);
+      }
+    }
+    else if (ao.collision.shapes[i]->getType() == CollisionShapeType::SDF_MESH)
+    {
+      tesseract_msgs::Mesh shape_msg;
+
+      ao_msg.collision.sdf_meshes.push_back(shape_msg);
+
+      geometry_msgs::Pose pose;
+      tf::poseEigenToMsg(ao.collision.shape_poses[i], pose);
+      ao_msg.collision.sdf_mesh_poses.push_back(pose);
+
+      if (!ao.collision.shape_colors.empty())
+      {
+        std_msgs::ColorRGBA color;
+        color.r = static_cast<float>(ao.collision.shape_colors[i](0));
+        color.g = static_cast<float>(ao.collision.shape_colors[i](1));
+        color.b = static_cast<float>(ao.collision.shape_colors[i](2));
+        color.a = static_cast<float>(ao.collision.shape_colors[i](3));
+        ao_msg.collision.sdf_mesh_colors.push_back(color);
+      }
+    }
+    else if (ao.collision.shapes[i]->getType() == CollisionShapeType::OCTREE)
+    {
+      const OctreeCollisionShape& octree = static_cast<const OctreeCollisionShape&>(*(ao.collision.shapes[i]));
+
       octomap_msgs::Octomap octomap_msg;
-      const shapes::OcTree* o = static_cast<const shapes::OcTree*>(ao.collision.shapes[i].get());
-      octomap_msgs::fullMapToMsg(*o->octree, octomap_msg);
+      octomap_msgs::fullMapToMsg(*(octree.getOctree()), octomap_msg);
       ao_msg.collision.octomaps.push_back(octomap_msg);
 
       geometry_msgs::Pose pose;
@@ -350,16 +486,17 @@ static inline void attachableObjectToAttachableObjectMsg(tesseract_msgs::Attacha
         color.a = static_cast<float>(ao.collision.shape_colors[i](3));
         ao_msg.collision.octomap_colors.push_back(color);
       }
-
-      std_msgs::Int32 cot;
-      cot.data = ao.collision.collision_object_types[i];
-      ao_msg.collision.octomap_collision_object_types.push_back(cot);
     }
-    else if (ao.collision.shapes[i]->type == shapes::PLANE)
-    {
-      shapes::ShapeMsg shape_msg;
-      shapes::constructMsgFromShape(ao.collision.shapes[i].get(), shape_msg);
-      ao_msg.collision.planes.push_back(boost::get<shape_msgs::Plane>(shape_msg));
+    else if (ao.collision.shapes[i]->getType() == CollisionShapeType::PLANE)
+    {    
+      const PlaneCollisionShape& plane = static_cast<const PlaneCollisionShape&>(*ao.collision.shapes[i]);
+
+      shape_msgs::Plane shape_msg;
+      shape_msg.coef[0] = plane.getA();
+      shape_msg.coef[1] = plane.getB();
+      shape_msg.coef[2] = plane.getC();
+      shape_msg.coef[3] = plane.getD();
+      ao_msg.collision.planes.push_back(shape_msg);
 
       geometry_msgs::Pose pose;
       tf::poseEigenToMsg(ao.collision.shape_poses[i], pose);
@@ -374,16 +511,12 @@ static inline void attachableObjectToAttachableObjectMsg(tesseract_msgs::Attacha
         color.a = static_cast<float>(ao.collision.shape_colors[i](3));
         ao_msg.collision.plane_colors.push_back(color);
       }
-
-      std_msgs::Int32 cot;
-      cot.data = ao.collision.collision_object_types[i];
-      ao_msg.collision.plane_collision_object_types.push_back(cot);
     }
     else
     {
-      shapes::ShapeMsg shape_msg;
-      shapes::constructMsgFromShape(ao.collision.shapes[i].get(), shape_msg);
-      ao_msg.collision.primitives.push_back(boost::get<shape_msgs::SolidPrimitive>(shape_msg));
+      shape_msgs::SolidPrimitive shape_msg;
+      constructMsgFromCollisionShape(*(ao.collision.shapes[i]), shape_msg);
+      ao_msg.collision.primitives.push_back(shape_msg);
 
       geometry_msgs::Pose pose;
       tf::poseEigenToMsg(ao.collision.shape_poses[i], pose);
@@ -398,10 +531,6 @@ static inline void attachableObjectToAttachableObjectMsg(tesseract_msgs::Attacha
         color.a = static_cast<float>(ao.collision.shape_colors[i](3));
         ao_msg.collision.primitive_colors.push_back(color);
       }
-
-      std_msgs::Int32 cot;
-      cot.data = ao.collision.collision_object_types[i];
-      ao_msg.collision.primitive_collision_object_types.push_back(cot);
     }
   }
 }
@@ -487,7 +616,7 @@ static inline void attachableObjectMsgToAttachableObject(AttachableObject& ao,
   // Collision Geometry
   for (auto i = 0u; i < ao_msg.collision.primitives.size(); ++i)
   {
-    shapes::ShapePtr shape(shapes::constructShapeFromMsg(ao_msg.collision.primitives[i]));
+    CollisionShapePtr shape = constructCollisionShapeFromMsg(ao_msg.collision.primitives[i]);
     ao.collision.shapes.push_back(shape);
 
     Eigen::Isometry3d pose;
@@ -499,15 +628,18 @@ static inline void attachableObjectMsgToAttachableObject(AttachableObject& ao,
       const std_msgs::ColorRGBA& c = ao_msg.collision.primitive_colors[i];
       ao.collision.shape_colors.push_back(Eigen::Vector4d(c.r, c.g, c.b, c.a));
     }
-
-    ao.collision.collision_object_types.push_back(
-        (CollisionObjectType)ao_msg.collision.primitive_collision_object_types[i].data);
   }
 
   for (auto i = 0u; i < ao_msg.collision.meshes.size(); ++i)
-  {
-    shapes::ShapePtr shape(shapes::constructShapeFromMsg(ao_msg.collision.meshes[i]));
-    ao.collision.shapes.push_back(shape);
+  { 
+    std::shared_ptr<tesseract::VectorVector3d> vertices(new tesseract::VectorVector3d(ao_msg.collision.meshes[i].vertices.size()));
+    std::shared_ptr<std::vector<int>> faces(new std::vector<int>(ao_msg.collision.meshes[i].faces.begin(), ao_msg.collision.meshes[i].faces.end()));
+    for (unsigned int i = 0; i < ao_msg.collision.meshes[i].vertices.size(); ++i)
+      (*vertices)[i] = Eigen::Vector3d(ao_msg.collision.meshes[i].vertices[i].x,
+                                       ao_msg.collision.meshes[i].vertices[i].y,
+                                       ao_msg.collision.meshes[i].vertices[i].z);
+
+    ao.collision.shapes.push_back(MeshCollisionShapePtr(new MeshCollisionShape(vertices, faces)));
 
     Eigen::Isometry3d pose;
     tf::poseMsgToEigen(ao_msg.collision.mesh_poses[i], pose);
@@ -518,14 +650,60 @@ static inline void attachableObjectMsgToAttachableObject(AttachableObject& ao,
       const std_msgs::ColorRGBA& c = ao_msg.collision.mesh_colors[i];
       ao.collision.shape_colors.push_back(Eigen::Vector4d(c.r, c.g, c.b, c.a));
     }
+  }
 
-    ao.collision.collision_object_types.push_back(
-        (CollisionObjectType)ao_msg.collision.mesh_collision_object_types[i].data);
+  for (auto i = 0u; i < ao_msg.collision.convex_meshes.size(); ++i)
+  {
+    std::shared_ptr<tesseract::VectorVector3d> vertices(new tesseract::VectorVector3d(ao_msg.collision.convex_meshes[i].vertices.size()));
+    std::shared_ptr<std::vector<int>> faces(new std::vector<int>(ao_msg.collision.convex_meshes[i].faces.begin(), ao_msg.collision.convex_meshes[i].faces.end()));
+    for (unsigned int i = 0; i < ao_msg.collision.convex_meshes[i].vertices.size(); ++i)
+      (*vertices)[i] = Eigen::Vector3d(ao_msg.collision.convex_meshes[i].vertices[i].x,
+                                       ao_msg.collision.convex_meshes[i].vertices[i].y,
+                                       ao_msg.collision.convex_meshes[i].vertices[i].z);
+
+
+
+    ao.collision.shapes.push_back(ConvexMeshCollisionShapePtr(new ConvexMeshCollisionShape(vertices, faces)));
+
+    Eigen::Isometry3d pose;
+    tf::poseMsgToEigen(ao_msg.collision.convex_mesh_poses[i], pose);
+    ao.collision.shape_poses.push_back(pose);
+
+    if (!ao_msg.collision.convex_mesh_colors.empty())
+    {
+      const std_msgs::ColorRGBA& c = ao_msg.collision.convex_mesh_colors[i];
+      ao.collision.shape_colors.push_back(Eigen::Vector4d(c.r, c.g, c.b, c.a));
+    }
+  }
+
+  for (auto i = 0u; i < ao_msg.collision.sdf_meshes.size(); ++i)
+  {
+    std::shared_ptr<tesseract::VectorVector3d> vertices(new tesseract::VectorVector3d(ao_msg.collision.sdf_meshes[i].vertices.size()));
+    std::shared_ptr<std::vector<int>> faces(new std::vector<int>(ao_msg.collision.sdf_meshes[i].faces.begin(), ao_msg.collision.sdf_meshes[i].faces.end()));
+    for (unsigned int i = 0; i < ao_msg.collision.sdf_meshes[i].vertices.size(); ++i)
+      (*vertices)[i] = Eigen::Vector3d(ao_msg.collision.sdf_meshes[i].vertices[i].x,
+                                       ao_msg.collision.sdf_meshes[i].vertices[i].y,
+                                       ao_msg.collision.sdf_meshes[i].vertices[i].z);
+
+    ao.collision.shapes.push_back(SDFMeshCollisionShapePtr(new SDFMeshCollisionShape(vertices, faces)));
+
+    Eigen::Isometry3d pose;
+    tf::poseMsgToEigen(ao_msg.collision.sdf_mesh_poses[i], pose);
+    ao.collision.shape_poses.push_back(pose);
+
+    if (!ao_msg.collision.sdf_mesh_colors.empty())
+    {
+      const std_msgs::ColorRGBA& c = ao_msg.collision.sdf_mesh_colors[i];
+      ao.collision.shape_colors.push_back(Eigen::Vector4d(c.r, c.g, c.b, c.a));
+    }
   }
 
   for (auto i = 0u; i < ao_msg.collision.planes.size(); ++i)
   {
-    shapes::ShapePtr shape(shapes::constructShapeFromMsg(ao_msg.collision.planes[i]));
+    CollisionShapePtr shape(new PlaneCollisionShape(ao_msg.collision.planes[i].coef[0],
+                                                    ao_msg.collision.planes[i].coef[1],
+                                                    ao_msg.collision.planes[i].coef[2],
+                                                    ao_msg.collision.planes[i].coef[3]));
     ao.collision.shapes.push_back(shape);
 
     Eigen::Isometry3d pose;
@@ -537,16 +715,13 @@ static inline void attachableObjectMsgToAttachableObject(AttachableObject& ao,
       const std_msgs::ColorRGBA& c = ao_msg.collision.plane_colors[i];
       ao.collision.shape_colors.push_back(Eigen::Vector4d(c.r, c.g, c.b, c.a));
     }
-
-    ao.collision.collision_object_types.push_back(
-        (CollisionObjectType)ao_msg.collision.plane_collision_object_types[i].data);
   }
 
   for (auto i = 0u; i < ao_msg.collision.octomaps.size(); ++i)
   {
     std::shared_ptr<octomap::OcTree> om(
         static_cast<octomap::OcTree*>(octomap_msgs::msgToMap(ao_msg.collision.octomaps[i])));
-    shapes::ShapePtr shape(new shapes::OcTree(om));
+    CollisionShapePtr shape(new OctreeCollisionShape(om, OctreeCollisionShape::SubShapeType::BOX)); // TODO: Need to include SubShapeType in message
     ao.collision.shapes.push_back(shape);
 
     Eigen::Isometry3d pose;
@@ -558,9 +733,6 @@ static inline void attachableObjectMsgToAttachableObject(AttachableObject& ao,
       const std_msgs::ColorRGBA& c = ao_msg.collision.octomap_colors[i];
       ao.collision.shape_colors.push_back(Eigen::Vector4d(c.r, c.g, c.b, c.a));
     }
-
-    ao.collision.collision_object_types.push_back(
-        (CollisionObjectType)ao_msg.collision.octomap_collision_object_types[i].data);
   }
 }
 
@@ -957,23 +1129,23 @@ static inline void getActiveLinkNamesRecursive(std::vector<std::string>& active_
   }
 }
 
-inline shapes::ShapePtr constructShape(const urdf::Geometry* geom)
+inline CollisionShapePtr constructShape(const urdf::Geometry* geom)
 {
-  shapes::Shape* result = nullptr;
+  CollisionShape* result = nullptr;
   switch (geom->type)
   {
     case urdf::Geometry::SPHERE:
-      result = new shapes::Sphere(static_cast<const urdf::Sphere*>(geom)->radius);
+      result = new SphereCollisionShape(static_cast<const urdf::Sphere*>(geom)->radius);
       break;
     case urdf::Geometry::BOX:
     {
       urdf::Vector3 dim = static_cast<const urdf::Box*>(geom)->dim;
-      result = new shapes::Box(dim.x, dim.y, dim.z);
+      result = new BoxCollisionShape(dim.x, dim.y, dim.z);
     }
     break;
     case urdf::Geometry::CYLINDER:
-      result = new shapes::Cylinder(static_cast<const urdf::Cylinder*>(geom)->radius,
-                                    static_cast<const urdf::Cylinder*>(geom)->length);
+      result = new CylinderCollisionShape(static_cast<const urdf::Cylinder*>(geom)->radius,
+                                          static_cast<const urdf::Cylinder*>(geom)->length);
       break;
     case urdf::Geometry::MESH:
     {
@@ -982,7 +1154,17 @@ inline shapes::ShapePtr constructShape(const urdf::Geometry* geom)
       {
         Eigen::Vector3d scale(mesh->scale.x, mesh->scale.y, mesh->scale.z);
         shapes::Mesh* m = shapes::createMeshFromResource(mesh->filename, scale);
-        result = m;
+
+        tesseract::VectorVector3d mesh_vertices;
+        mesh_vertices.reserve(m->vertex_count);
+        for (unsigned int i = 0; i < m->vertex_count; ++i)
+          mesh_vertices.push_back(Eigen::Vector3d(m->vertices[3 * i + 0], m->vertices[3 * i + 1], m->vertices[3 * i + 2]));
+
+        std::shared_ptr<tesseract::VectorVector3d> ch_vertices(new tesseract::VectorVector3d());
+        std::shared_ptr<std::vector<int>> ch_faces(new std::vector<int>());
+        int num_faces = tesseract::createConvexHull(*ch_vertices, *ch_faces, mesh_vertices);
+
+        result = new ConvexMeshCollisionShape(ch_vertices, ch_faces, num_faces);
       }
     }
     break;
@@ -991,7 +1173,7 @@ inline shapes::ShapePtr constructShape(const urdf::Geometry* geom)
       break;
   }
 
-  return shapes::ShapePtr(result);
+  return CollisionShapePtr(result);
 }
 
 inline Eigen::Isometry3d urdfPose2Eigen(const urdf::Pose& pose)

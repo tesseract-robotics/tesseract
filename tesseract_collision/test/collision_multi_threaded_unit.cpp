@@ -1,21 +1,33 @@
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_collision/core/macros.h>
+TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <ros/ros.h>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include "tesseract_collision/bullet/bullet_discrete_simple_manager.h"
 #include "tesseract_collision/bullet/bullet_discrete_bvh_manager.h"
 #include "tesseract_collision/fcl/fcl_discrete_managers.h"
 
-void runTest(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mesh = false)
+void runTest(tesseract::DiscreteContactManager& checker, bool use_convex_mesh = false)
 {
   // Add Meshed Sphere to checker
-  shapes::ShapePtr sphere;
+  tesseract::CollisionShapePtr sphere;
   if (use_convex_mesh)
-    sphere.reset(shapes::createMeshFromResource("package://tesseract_collision/test/sphere_p25m.stl"));
+  {
+    tesseract::VectorVector3d mesh_vertices;
+    std::vector<int> mesh_faces;
+    EXPECT_GT(tesseract::loadSimplePlyFile(std::string(DATA_DIR) + "/sphere_p25m.ply", mesh_vertices, mesh_faces), 0);
+
+    // This is required because convex hull cannot have multiple faces on the same plane.
+    std::shared_ptr<tesseract::VectorVector3d> ch_verticies(new tesseract::VectorVector3d());
+    std::shared_ptr<std::vector<int>> ch_faces(new std::vector<int>());
+    int ch_num_faces = tesseract::createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
+    sphere.reset(new tesseract::ConvexMeshCollisionShape(ch_verticies, ch_faces, ch_num_faces));
+  }
   else
-    sphere.reset(new shapes::Sphere(0.25));
+  {
+    sphere.reset(new tesseract::SphereCollisionShape(0.25));
+  }
 
   double delta = 0.55;
 
@@ -28,26 +40,20 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mes
     {
       for (std::size_t z = 0; z < t; ++z)
       {
-        std::vector<shapes::ShapeConstPtr> obj3_shapes;
+        tesseract::CollisionShapesConst obj3_shapes;
         tesseract::VectorIsometry3d obj3_poses;
-        tesseract::CollisionObjectTypeVector obj3_types;
         Eigen::Isometry3d sphere_pose;
         sphere_pose.setIdentity();
 
-        obj3_shapes.push_back(shapes::ShapePtr(sphere->clone()));
+        obj3_shapes.push_back(tesseract::CollisionShapePtr(sphere->clone()));
         obj3_poses.push_back(sphere_pose);
-
-        if (use_convex_mesh)
-          obj3_types.push_back(tesseract::CollisionObjectType::ConvexHull);
-        else
-          obj3_types.push_back(tesseract::CollisionObjectType::UseShapeType);
 
         link_names.push_back("sphere_link_" + std::to_string(x) + std::to_string(y) + std::to_string(z));
 
         location[link_names.back()] = sphere_pose;
         location[link_names.back()].translation() = Eigen::Vector3d(
             static_cast<double>(x) * delta, static_cast<double>(y) * delta, static_cast<double>(z) * delta);
-        checker.addCollisionObject(link_names.back(), 0, obj3_shapes, obj3_poses, obj3_types);
+        checker.addCollisionObject(link_names.back(), 0, obj3_shapes, obj3_poses);
       }
     }
   }
@@ -59,7 +65,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mes
 
   unsigned num_threads = 4;
   std::vector<tesseract::ContactResultVector> result_vector(num_threads);
-  std::vector<tesseract::DiscreteContactManagerBasePtr> contact_manager(num_threads);
+  std::vector<tesseract::DiscreteContactManagerPtr> contact_manager(num_threads);
   contact_manager[0] = checker.clone();
   contact_manager[1] = checker.clone();
   contact_manager[2] = checker.clone();
@@ -72,7 +78,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mes
   {
     const int tn = omp_get_thread_num();
     ROS_DEBUG("Thread %i of %i", tn, omp_get_num_threads());
-    const tesseract::DiscreteContactManagerBasePtr& manager = contact_manager[static_cast<size_t>(tn)];
+    const tesseract::DiscreteContactManagerPtr& manager = contact_manager[static_cast<size_t>(tn)];
     for (const auto& co : location)
     {
       if (tn == 0)
@@ -103,7 +109,7 @@ void runTest(tesseract::DiscreteContactManagerBase& checker, bool use_convex_mes
 
     tesseract::ContactResultMap result;
     manager->contactTest(result, tesseract::ContactTestType::ALL);
-    tesseract::moveContactResultsMapToContactResultsVector(result, result_vector[static_cast<size_t>(tn)]);
+    tesseract::flattenResults(std::move(result), result_vector[static_cast<size_t>(tn)]);
   }
   ros::WallTime end_time = ros::WallTime::now();
   ROS_INFO_STREAM("DT: " << (end_time - start_time).toSec());

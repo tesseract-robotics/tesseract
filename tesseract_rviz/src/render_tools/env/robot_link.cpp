@@ -921,6 +921,8 @@ bool RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
   return false;
 }
 
+
+
 bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
                                                Eigen::Isometry3d origin,
                                                Eigen::Vector4d color,
@@ -1328,6 +1330,501 @@ bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
   return false;
 }
 
+bool RobotLink::createEntityForGeometryElement(const tesseract::CollisionShape& geom,
+                                               Eigen::Isometry3d origin,
+                                               Eigen::Vector4d color,
+                                               bool isVisual)
+{
+  Ogre::Entity* entity = nullptr;  // default in case nothing works.
+
+  static int count = 0;
+  std::stringstream ss;
+  ss << "Attached Link" << count++;
+  std::string entity_name = ss.str();
+
+  Ogre::Vector3 scale(Ogre::Vector3::UNIT_SCALE);
+
+  Ogre::Vector3 offset_position(Ogre::Vector3::ZERO);
+  Ogre::Quaternion offset_orientation(Ogre::Quaternion::IDENTITY);
+
+  {
+    Eigen::Vector3f origin_position = origin.translation().cast<float>();
+    Eigen::Quaternionf origin_orientation(origin.rotation().cast<float>());
+    Ogre::Vector3 position = Ogre::Vector3(origin_position.x(), origin_position.y(), origin_position.z());
+    Ogre::Quaternion orientation = Ogre::Quaternion(
+        origin_orientation.w(), origin_orientation.x(), origin_orientation.y(), origin_orientation.z());
+
+    offset_position = position;
+    offset_orientation = Ogre::Quaternion::IDENTITY * orientation;
+  }
+  if (geom.getType() != tesseract::CollisionShapeType::OCTREE)
+  {
+    switch (geom.getType())
+    {
+      case tesseract::CollisionShapeType::SPHERE:
+      {
+        entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Sphere, scene_manager_);
+        const tesseract::SphereCollisionShape& sphere = static_cast<const tesseract::SphereCollisionShape&>(geom);
+        float d = 2.0f * static_cast<float>(sphere.getRadius());
+        scale = Ogre::Vector3(d, d, d);
+        break;
+      }
+      case tesseract::CollisionShapeType::BOX:
+      {
+        entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Cube, scene_manager_);
+        const tesseract::BoxCollisionShape& box = static_cast<const tesseract::BoxCollisionShape&>(geom);
+        scale = Ogre::Vector3(static_cast<float>(box.getX()), static_cast<float>(box.getY()), static_cast<float>(box.getZ()));
+        break;
+      }
+      case tesseract::CollisionShapeType::CYLINDER:
+      {
+        Ogre::Quaternion rotX;
+        rotX.FromAngleAxis(Ogre::Degree(90), Ogre::Vector3::UNIT_X);
+        offset_orientation = offset_orientation * rotX;
+
+        entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Cylinder, scene_manager_);
+        const tesseract::CylinderCollisionShape& cylinder = static_cast<const tesseract::CylinderCollisionShape&>(geom);
+
+        float d = 2.0f * static_cast<float>(cylinder.getRadius());
+        float z = static_cast<float>(cylinder.getLength());
+        scale = Ogre::Vector3(d, z, d);
+        break;
+      }
+      case tesseract::CollisionShapeType::CONE:
+      {
+        entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Cone, scene_manager_);
+        const tesseract::ConeCollisionShape& cone = static_cast<const tesseract::ConeCollisionShape&>(geom);
+
+        float d = 2.0f * static_cast<float>(cone.getRadius());
+        float z = static_cast<float>(cone.getLength());
+        scale = Ogre::Vector3(d, d, z);
+        break;
+      }
+      case tesseract::CollisionShapeType::MESH:
+      {
+        bool use_resource = false;
+        if (use_resource)
+        {
+          //      const urdf::Mesh& mesh = static_cast<const urdf::Mesh&>(geom);
+
+          //      if ( mesh.filename.empty() )
+          //        return;
+
+          //      scale = Ogre::Vector3(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+
+          //      std::string model_name = mesh.filename;
+
+          //      try
+          //      {
+          //        rviz::loadMeshFromResource(model_name);
+          //        entity = scene_manager_->createEntity( ss.str(), model_name );
+          //      }
+          //      catch( Ogre::InvalidParametersException& e )
+          //      {
+          //        ROS_ERROR( "Could not convert mesh resource '%s' for link
+          //        '%s'. It might be an empty mesh: %s", model_name.c_str(),
+          //        link->name.c_str(), e.what() );
+          //      }
+          //      catch( Ogre::Exception& e )
+          //      {
+          //        ROS_ERROR( "Could not load model '%s' for link '%s': %s",
+          //        model_name.c_str(), link->name.c_str(), e.what() );
+          //      }
+        }
+        else
+        {
+          const tesseract::MeshCollisionShape& mesh = static_cast<const tesseract::MeshCollisionShape&>(geom);
+          const tesseract::VectorVector3d& vertices = *(mesh.getVertices());
+          const std::vector<int>& triangles = *(mesh.getTriangles());
+          if (mesh.getTriangleCount() > 0)
+          {
+            Ogre::ManualObject* object = new Ogre::ManualObject("the one and only");
+            object->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST);
+
+            unsigned int vertexCount = 0;
+            Ogre::Vector3 normal(0.0, 0.0, 0.0);
+            for (unsigned int i = 0; i < mesh.getTriangleCount(); ++i)
+            {
+              if (vertexCount >= 2004)
+              {
+                // Subdivide large meshes into submeshes with at most 2004
+                // vertices to prevent problems on some graphics cards.
+                object->end();
+                object->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST);
+                vertexCount = 0;
+              }
+
+              std::vector<Ogre::Vector3> v(3);
+              std::vector<Ogre::Vector3> normals(3);
+              assert(triangles[(4 * i)] == 3);
+              for (size_t k = 0; k < 3; ++k)
+              {
+                v[k] = Ogre::Vector3(static_cast<float>(vertices[triangles[(4 * i) + (k + 1)]](0)),
+                                     static_cast<float>(vertices[triangles[(4 * i) + (k + 1)]](1)),
+                                     static_cast<float>(vertices[triangles[(4 * i) + (k + 1)]](2)));
+              }
+
+
+              Ogre::Vector3 side1 = v[0] - v[1];
+              Ogre::Vector3 side2 = v[1] - v[2];
+              normal = side1.crossProduct(side2);
+              normal.normalise();
+
+              normals[0] = normal;
+              normals[1] = normal;
+              normals[2] = normal;
+
+              //            float u, v;
+              //            u = v = 0.0f;
+              object->position(v[0]);
+              object->normal(normals[0]);
+              //          calculateUV( verticies[0], u, v );
+              //          object->textureCoord( u, v );
+
+              object->position(v[1]);
+              object->normal(normals[1]);
+              //          calculateUV( verticies[1], u, v );
+              //          object->textureCoord( u, v );
+
+              object->position(v[2]);
+              object->normal(normals[2]);
+              //          calculateUV( verticies[2], u, v );
+              //          object->textureCoord( u, v );
+
+              object->triangle(vertexCount + 0, vertexCount + 1, vertexCount + 2);
+
+              vertexCount += 3;
+            }
+
+            object->end();
+
+            std::string mesh_name = entity_name + "mesh";
+            Ogre::MeshPtr ogre_mesh =
+                object->convertToMesh(mesh_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            ogre_mesh->buildEdgeList();
+
+            entity = scene_manager_->createEntity(entity_name, mesh_name);
+
+            delete object;
+          }
+        }
+        break;
+      }
+      case tesseract::CollisionShapeType::CONVEX_MESH:
+      {
+        bool use_resource = false;
+        if (use_resource)
+        {
+          //      const urdf::Mesh& mesh = static_cast<const urdf::Mesh&>(geom);
+
+          //      if ( mesh.filename.empty() )
+          //        return;
+
+          //      scale = Ogre::Vector3(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+
+          //      std::string model_name = mesh.filename;
+
+          //      try
+          //      {
+          //        rviz::loadMeshFromResource(model_name);
+          //        entity = scene_manager_->createEntity( ss.str(), model_name );
+          //      }
+          //      catch( Ogre::InvalidParametersException& e )
+          //      {
+          //        ROS_ERROR( "Could not convert mesh resource '%s' for link
+          //        '%s'. It might be an empty mesh: %s", model_name.c_str(),
+          //        link->name.c_str(), e.what() );
+          //      }
+          //      catch( Ogre::Exception& e )
+          //      {
+          //        ROS_ERROR( "Could not load model '%s' for link '%s': %s",
+          //        model_name.c_str(), link->name.c_str(), e.what() );
+          //      }
+        }
+        else
+        {
+          const tesseract::ConvexMeshCollisionShape& mesh = static_cast<const tesseract::ConvexMeshCollisionShape&>(geom);
+          const tesseract::VectorVector3d& vertices = *(mesh.getVertices());
+          const std::vector<int>& faces = *(mesh.getFaces());
+          if (mesh.getFaceCount() > 0)
+          {
+            Ogre::ManualObject* object = new Ogre::ManualObject("the one and only");
+            object->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST);
+
+            unsigned int vertexCount = 0;
+            Ogre::Vector3 normal(0.0, 0.0, 0.0);
+            for (unsigned int i = 0; i < mesh.getFaceCount(); ++i)
+            {
+              if (vertexCount >= 2004)
+              {
+                // Subdivide large meshes into submeshes with at most 2004
+                // vertices to prevent problems on some graphics cards.
+                object->end();
+                object->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST);
+                vertexCount = 0;
+              }
+
+              int num_verts = faces[(4 * i)];
+              assert(num_verts >= 3);
+              std::vector<Ogre::Vector3> v(num_verts);
+              std::vector<Ogre::Vector3> normals(num_verts);
+              for (size_t k = 0; k < num_verts; ++k)
+              {
+                  v[k] = Ogre::Vector3(static_cast<float>(vertices[faces[(4 * i) + (k + 1)]](0)),
+                                       static_cast<float>(vertices[faces[(4 * i) + (k + 1)]](1)),
+                                       static_cast<float>(vertices[faces[(4 * i) + (k + 1)]](2)));
+              }
+
+
+              Ogre::Vector3 side1 = v[0] - v[1];
+              Ogre::Vector3 side2 = v[1] - v[2];
+              normal = side1.crossProduct(side2);
+              normal.normalise();
+
+              for (size_t k = 0; k < num_verts; ++k)
+              {
+                normals[k] = normal;
+                object->position(v[k]);
+                object->normal(normals[k]);
+              }
+
+              object->triangle(vertexCount + 0, vertexCount + 1, vertexCount + 2);
+
+              if (num_verts > 3)
+                for (size_t k = 3; k < num_verts; ++k)
+                  object->triangle(vertexCount + 0, vertexCount + (k - 1), vertexCount + k);
+
+              vertexCount += num_verts;
+            }
+
+            object->end();
+
+            std::string mesh_name = entity_name + "mesh";
+            Ogre::MeshPtr ogre_mesh =
+                object->convertToMesh(mesh_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            ogre_mesh->buildEdgeList();
+
+            entity = scene_manager_->createEntity(entity_name, mesh_name);
+
+            delete object;
+          }
+        }
+        break;
+      }
+      default:
+        ROS_WARN("Unsupported geometry type for element: %d", geom.getType());
+        break;
+    }
+
+    if (entity)
+    {
+      Ogre::SceneNode* offset_node;
+      std::vector<Ogre::Entity*>* meshes;
+      if (isVisual)
+      {
+        offset_node = visual_node_->createChildSceneNode();
+        meshes = &visual_meshes_;
+      }
+      else
+      {
+        offset_node = collision_node_->createChildSceneNode();
+        meshes = &visual_meshes_;
+      }
+
+      offset_node->attachObject(entity);
+      offset_node->setScale(scale);
+      offset_node->setPosition(offset_position);
+      offset_node->setOrientation(offset_orientation);
+
+      default_material_ = getMaterialForAttachedLink(color);
+      for (uint32_t i = 0; i < entity->getNumSubEntities(); ++i)
+      {
+        std::stringstream ss;
+        ss << default_material_->getName() << count++ << "Robot";
+        std::string cloned_name = ss.str();
+
+        default_material_ = default_material_->clone(cloned_name);
+        default_material_name_ = default_material_->getName();
+
+        // Assign materials only if the submesh does not have one already
+
+        Ogre::SubEntity* sub = entity->getSubEntity(i);
+        const std::string& material_name = sub->getMaterialName();
+
+        if (material_name == "BaseWhite" || material_name == "BaseWhiteNoLighting")
+        {
+          sub->setMaterialName(default_material_name_);
+        }
+        else
+        {
+          // Need to clone here due to how selection works.  Once selection id
+          // is done per object and not per material,
+          // this can go away
+          std::stringstream ss;
+          ss << material_name << count++ << "Robot";
+          std::string cloned_name = ss.str();
+          sub->getMaterial()->clone(cloned_name);
+          sub->setMaterialName(cloned_name);
+        }
+
+        materials_[sub] = sub->getMaterial();
+      }
+
+      meshes->push_back(entity);
+      return true;
+    }
+  }
+  else
+  {
+    std::size_t max_octree_depth = 0;
+    double color_factor = 0.8;
+    OctreeVoxelRenderMode octree_voxel_rendering = OCTOMAP_OCCUPIED_VOXELS;
+    OctreeVoxelColorMode octree_color_mode = OCTOMAP_Z_AXIS_COLOR;
+    std::size_t octree_depth;
+    Ogre::SceneNode* offset_node;
+    std::vector<rviz::PointCloud*>* octree_objects;
+
+    const std::shared_ptr<const octomap::OcTree>& octree = static_cast<const tesseract::OctreeCollisionShape&>(geom).getOctree();
+
+    if (!max_octree_depth)
+      octree_depth = octree->getTreeDepth();
+    else
+      octree_depth = std::min(max_octree_depth, (std::size_t)octree->getTreeDepth());
+
+    if (isVisual)
+    {
+      offset_node = visual_node_->createChildSceneNode();
+      octree_objects = &visual_octrees_;
+    }
+    else
+    {
+      offset_node = collision_node_->createChildSceneNode();
+      octree_objects = &collision_octrees_;
+    }
+
+    std::vector<std::vector<rviz::PointCloud::Point>> pointBuf;
+    pointBuf.resize(octree_depth);
+
+    // get dimensions of octree
+    double minX, minY, minZ, maxX, maxY, maxZ;
+    octree->getMetricMin(minX, minY, minZ);
+    octree->getMetricMax(maxX, maxY, maxZ);
+
+    unsigned int render_mode_mask = static_cast<unsigned int>(octree_voxel_rendering);
+
+    size_t pointCount = 0;
+    {
+      // traverse all leafs in the tree:
+      for (octomap::OcTree::iterator it = octree->begin(static_cast<unsigned char>(octree_depth)), end = octree->end();
+           it != end;
+           ++it)
+      {
+        bool display_voxel = false;
+
+        // the left part evaluates to 1 for free voxels and 2 for occupied
+        // voxels
+        if ((static_cast<unsigned>(octree->isNodeOccupied(*it)) + 1) & render_mode_mask)
+        {
+          // check if current voxel has neighbors on all sides -> no need to be
+          // displayed
+          bool allNeighborsFound = true;
+
+          octomap::OcTreeKey key;
+          octomap::OcTreeKey nKey = it.getKey();
+
+          for (key[2] = static_cast<octomap::key_type>(nKey[2] - 1);
+               allNeighborsFound && key[2] <= static_cast<octomap::key_type>(nKey[2] + 1);
+               ++key[2])
+          {
+            for (key[1] = static_cast<octomap::key_type>(nKey[1] - 1);
+                 allNeighborsFound && key[1] <= static_cast<octomap::key_type>(nKey[1] + 1);
+                 ++key[1])
+            {
+              for (key[0] = static_cast<octomap::key_type>(nKey[0] - 1);
+                   allNeighborsFound && key[0] <= static_cast<octomap::key_type>(nKey[0] + 1);
+                   ++key[0])
+              {
+                if (key != nKey)
+                {
+                  octomap::OcTreeNode* node = octree->search(key);
+
+                  // the left part evaluates to 1 for free voxels and 2 for
+                  // occupied voxels
+                  if (!(node && (static_cast<unsigned>(octree->isNodeOccupied(node)) + 1) & render_mode_mask))
+                  {
+                    // we do not have a neighbor => break!
+                    allNeighborsFound = false;
+                  }
+                }
+              }
+            }
+          }
+
+          display_voxel |= !allNeighborsFound;
+        }
+
+        if (display_voxel)
+        {
+          rviz::PointCloud::Point newPoint;
+
+          newPoint.position.x = static_cast<float>(it.getX());
+          newPoint.position.y = static_cast<float>(it.getY());
+          newPoint.position.z = static_cast<float>(it.getZ());
+
+          float cell_probability;
+
+          switch (octree_color_mode)
+          {
+            case OCTOMAP_Z_AXIS_COLOR:
+              setOctomapColor(newPoint.position.z, minZ, maxZ, color_factor, &newPoint);
+              break;
+            case OCTOMAP_PROBABLILTY_COLOR:
+              cell_probability = static_cast<float>(it->getOccupancy());
+              newPoint.setColor((1.0f - cell_probability), cell_probability, 0.0f);
+              break;
+            default:
+              break;
+          }
+
+          // push to point vectors
+          unsigned int depth = it.getDepth();
+          pointBuf[depth - 1].push_back(newPoint);
+
+          ++pointCount;
+        }
+      }
+    }
+
+    for (unsigned i = 0; i < octree_depth; ++i)
+    {
+      float size = static_cast<float>(octree->getNodeSize(static_cast<unsigned>(i + 1)));
+
+      std::stringstream sname;
+      static int count = 0;
+      sname << "PointCloud Nr." << count++;
+      rviz::PointCloud* cloud = new rviz::PointCloud();
+      cloud->setName(sname.str());
+      cloud->setRenderMode(rviz::PointCloud::RM_BOXES);
+      cloud->clear();
+      cloud->setDimensions(size, size, size);
+
+      cloud->addPoints(&pointBuf[i].front(), static_cast<unsigned>(pointBuf[i].size()));
+      pointBuf[i].clear();
+
+      offset_node->attachObject(cloud);
+      octree_objects->push_back(cloud);
+    }
+
+    offset_node->setScale(scale);
+    offset_node->setPosition(offset_position);
+    offset_node->setOrientation(offset_orientation);
+
+    return true;
+  }
+
+  return false;
+}
+
 void RobotLink::setOctomapColor(double z_pos,
                                 double min_z,
                                 double max_z,
@@ -1446,7 +1943,7 @@ void RobotLink::createCollision(const tesseract::AttachableObject& ao)
 {
   for (unsigned i = 0; i < ao.collision.shapes.size(); ++i)
   {
-    const shapes::ShapeConstPtr& collision = ao.collision.shapes[i];
+    const tesseract::CollisionShapeConstPtr collision = ao.collision.shapes[i];
     if (collision)
     {
       if (ao.collision.shape_colors.empty())

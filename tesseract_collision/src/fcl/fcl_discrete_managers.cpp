@@ -39,11 +39,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_collision/core/macros.h>
+TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <eigen_conversions/eigen_msg.h>
-#include <geometric_shapes/shape_operations.h>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include "tesseract_collision/fcl/fcl_discrete_managers.h"
 
@@ -57,7 +56,7 @@ FCLDiscreteBVHManager::FCLDiscreteBVHManager()
   contact_distance_ = 0;
 }
 
-DiscreteContactManagerBasePtr FCLDiscreteBVHManager::clone() const
+DiscreteContactManagerPtr FCLDiscreteBVHManager::clone() const
 {
   FCLDiscreteBVHManagerPtr manager(new FCLDiscreteBVHManager());
 
@@ -79,12 +78,11 @@ DiscreteContactManagerBasePtr FCLDiscreteBVHManager::clone() const
 
 bool FCLDiscreteBVHManager::addCollisionObject(const std::string& name,
                                                const int& mask_id,
-                                               const std::vector<shapes::ShapeConstPtr>& shapes,
+                                               const CollisionShapesConst &shapes,
                                                const VectorIsometry3d& shape_poses,
-                                               const CollisionObjectTypeVector& collision_object_types,
                                                bool enabled)
 {
-  COWPtr new_cow = createFCLCollisionObject(name, mask_id, shapes, shape_poses, collision_object_types, enabled);
+  COWPtr new_cow = createFCLCollisionObject(name, mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
     addCollisionObject(new_cow);

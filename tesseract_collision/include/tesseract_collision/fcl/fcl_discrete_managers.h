@@ -42,7 +42,7 @@
 #ifndef TESSERACT_COLLISION_FCL_DISCRETE_MANAGERS_H
 #define TESSERACT_COLLISION_FCL_DISCRETE_MANAGERS_H
 
-#include <tesseract_core/discrete_contact_manager_base.h>
+#include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/fcl/fcl_utils.h>
 
 namespace tesseract
@@ -50,18 +50,17 @@ namespace tesseract
 namespace tesseract_fcl
 {
 /** @brief A FCL implementation of the discrete contact manager */
-class FCLDiscreteBVHManager : public DiscreteContactManagerBase
+class FCLDiscreteBVHManager : public DiscreteContactManager
 {
 public:
   FCLDiscreteBVHManager();
 
-  DiscreteContactManagerBasePtr clone() const override;
+  DiscreteContactManagerPtr clone() const override;
 
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,
-                          const std::vector<shapes::ShapeConstPtr>& shapes,
+                          const CollisionShapesConst& shapes,
                           const VectorIsometry3d& shape_poses,
-                          const CollisionObjectTypeVector& collision_object_types,
                           bool enabled = true) override;
 
   bool hasCollisionObject(const std::string& name) const override;

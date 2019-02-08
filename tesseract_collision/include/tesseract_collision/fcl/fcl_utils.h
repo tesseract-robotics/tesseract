@@ -42,19 +42,19 @@
 #ifndef TESSERACT_COLLISION_FCL_UTILS_H
 #define TESSERACT_COLLISION_FCL_UTILS_H
 
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_collision/core/macros.h>
+TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <fcl/broadphase/broadphase_dynamic_AABB_tree.h>
 #include <fcl/narrowphase/collision.h>
 #include <fcl/narrowphase/distance.h>
 #include <memory>
 #include <set>
-#include <geometric_shapes/mesh_operations.h>
 #include <ros/console.h>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
-#include <tesseract_core/basic_types.h>
-#include <tesseract_collision/contact_checker_common.h>
+#include <tesseract_collision/core/types.h>
+#include <tesseract_collision/core/common.h>
+#include <tesseract_collision/core/collision_shapes.h>
 
 namespace tesseract
 {
@@ -78,9 +78,8 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   CollisionObjectWrapper(const std::string& name,
                          const int& type_id,
-                         const std::vector<shapes::ShapeConstPtr>& shapes,
-                         const VectorIsometry3d& shape_poses,
-                         const CollisionObjectTypeVector& collision_object_types);
+                         const CollisionShapesConst& shapes,
+                         const VectorIsometry3d& shape_poses);
 
   short int m_collisionFilterGroup;
   short int m_collisionFilterMask;
@@ -117,7 +116,7 @@ public:
   std::shared_ptr<CollisionObjectWrapper> clone() const
   {
     std::shared_ptr<CollisionObjectWrapper> clone_cow(new CollisionObjectWrapper(
-        name_, type_id_, shapes_, shape_poses_, collision_object_types_, collision_geometries_, collision_objects_));
+        name_, type_id_, shapes_, shape_poses_, collision_geometries_, collision_objects_));
     clone_cow->m_collisionFilterGroup = m_collisionFilterGroup;
     clone_cow->m_collisionFilterMask = m_collisionFilterMask;
     clone_cow->m_enabled = m_enabled;
@@ -127,24 +126,21 @@ public:
 protected:
   CollisionObjectWrapper(const std::string& name,
                          const int& type_id,
-                         const std::vector<shapes::ShapeConstPtr>& shapes,
+                         const CollisionShapesConst& shapes,
                          const VectorIsometry3d& shape_poses,
-                         const CollisionObjectTypeVector& collision_object_types,
                          const std::vector<CollisionGeometryPtr>& collision_geometries,
                          const std::vector<CollisionObjectPtr>& collision_objects);
 
   std::string name_;             // name of the collision object
   int type_id_;                  // user defined type id
   Eigen::Isometry3d world_pose_; /**< @brief Collision Object World Transformation */
-  std::vector<shapes::ShapeConstPtr> shapes_;
+  CollisionShapesConst shapes_;
   VectorIsometry3d shape_poses_;
-  CollisionObjectTypeVector collision_object_types_;
   std::vector<CollisionGeometryPtr> collision_geometries_;
   std::vector<CollisionObjectPtr> collision_objects_;
 };
 
-CollisionGeometryPtr createShapePrimitive(const shapes::ShapeConstPtr& geom,
-                                          const CollisionObjectType& collision_object_type);
+CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom);
 
 typedef CollisionObjectWrapper COW;
 typedef std::shared_ptr<CollisionObjectWrapper> COWPtr;
@@ -154,9 +150,8 @@ typedef std::map<std::string, COWConstPtr> Link2ConstCOW;
 
 inline COWPtr createFCLCollisionObject(const std::string& name,
                                        const int& type_id,
-                                       const std::vector<shapes::ShapeConstPtr>& shapes,
+                                       const CollisionShapesConst& shapes,
                                        const VectorIsometry3d& shape_poses,
-                                       const CollisionObjectTypeVector& collision_object_types,
                                        bool enabled)
 {
   // dont add object that does not have geometry
@@ -166,7 +161,7 @@ inline COWPtr createFCLCollisionObject(const std::string& name,
     return nullptr;
   }
 
-  COWPtr new_cow(new COW(name, type_id, shapes, shape_poses, collision_object_types));
+  COWPtr new_cow(new COW(name, type_id, shapes, shape_poses));
 
   new_cow->m_enabled = enabled;
   ROS_DEBUG("Created collision object for link %s", new_cow->getName().c_str());

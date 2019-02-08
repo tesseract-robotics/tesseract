@@ -38,10 +38,8 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
-#include <geometric_shapes/shapes.h>
-#include <geometric_shapes/bodies.h>
+#include <tesseract_collision/core/macros.h>
+TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <fcl/geometry/bvh/BVH_model.h>
 #include <fcl/geometry/shape/box.h>
 #include <fcl/geometry/shape/cylinder.h>
@@ -52,7 +50,7 @@ TESSERACT_IGNORE_WARNINGS_PUSH
 #include <fcl/geometry/octree/octree.h>
 #include <boost/thread/mutex.hpp>
 #include <memory>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/fcl/fcl_utils.h>
 
@@ -60,151 +58,128 @@ namespace tesseract
 {
 namespace tesseract_fcl
 {
-CollisionGeometryPtr createShapePrimitive(const shapes::Plane* geom, const CollisionObjectType& collision_object_type)
+CollisionGeometryPtr createShapePrimitive(const tesseract::PlaneCollisionShapeConstPtr& geom)
 {
-  assert(collision_object_type == CollisionObjectType::UseShapeType);
-  return CollisionGeometryPtr(new fcl::Planed(geom->a, geom->b, geom->c, geom->d));
+  return CollisionGeometryPtr(new fcl::Planed(geom->getA(), geom->getB(), geom->getC(), geom->getD()));
 }
 
-CollisionGeometryPtr createShapePrimitive(const shapes::Box* geom, const CollisionObjectType& collision_object_type)
+CollisionGeometryPtr createShapePrimitive(const tesseract::BoxCollisionShapeConstPtr& geom)
 {
-  assert(collision_object_type == CollisionObjectType::UseShapeType);
-  const double* size = geom->size;
-  return CollisionGeometryPtr(new fcl::Boxd(size[0], size[1], size[2]));
+  return CollisionGeometryPtr(new fcl::Boxd(geom->getX(), geom->getY(), geom->getZ()));
 }
 
-CollisionGeometryPtr createShapePrimitive(const shapes::Sphere* geom, const CollisionObjectType& collision_object_type)
+CollisionGeometryPtr createShapePrimitive(const tesseract::SphereCollisionShapeConstPtr& geom)
 {
-  assert(collision_object_type == CollisionObjectType::UseShapeType);
-  return CollisionGeometryPtr(new fcl::Sphered(geom->radius));
+  return CollisionGeometryPtr(new fcl::Sphered(geom->getRadius()));
 }
 
-CollisionGeometryPtr createShapePrimitive(const shapes::Cylinder* geom,
-                                          const CollisionObjectType& collision_object_type)
+CollisionGeometryPtr createShapePrimitive(const tesseract::CylinderCollisionShapeConstPtr& geom)
 {
-  assert(collision_object_type == CollisionObjectType::UseShapeType);
-  return CollisionGeometryPtr(new fcl::Cylinderd(geom->radius, geom->length));
+  return CollisionGeometryPtr(new fcl::Cylinderd(geom->getRadius(), geom->getLength()));
 }
 
-CollisionGeometryPtr createShapePrimitive(const shapes::Cone* geom, const CollisionObjectType& collision_object_type)
+CollisionGeometryPtr createShapePrimitive(const tesseract::ConeCollisionShapeConstPtr& geom)
 {
-  assert(collision_object_type == CollisionObjectType::UseShapeType);
-  return CollisionGeometryPtr(new fcl::Coned(geom->radius, geom->length));
+  return CollisionGeometryPtr(new fcl::Coned(geom->getRadius(), geom->getLength()));
 }
 
-CollisionGeometryPtr createShapePrimitive(const shapes::Mesh* geom, const CollisionObjectType& collision_object_type)
+CollisionGeometryPtr createShapePrimitive(const tesseract::MeshCollisionShapeConstPtr& geom)
 {
-  assert(collision_object_type == CollisionObjectType::UseShapeType ||
-         collision_object_type == CollisionObjectType::ConvexHull || collision_object_type == CollisionObjectType::SDF);
+  int vertice_count = geom->getVerticeCount();
+  int triangle_count = geom->getTriangleCount();
+  const VectorVector3d& vertices = *(geom->getVertices());
+  const std::vector<int>& triangles = *(geom->getTriangles());
 
-  // convert the mesh to the assigned collision object type
-  switch (collision_object_type)
+  auto g = new fcl::BVHModel<fcl::OBBRSSd>();
+  if (vertice_count > 0 && triangle_count > 0)
   {
-    case CollisionObjectType::ConvexHull:
+    std::vector<fcl::Triangle> tri_indices(static_cast<size_t>(triangle_count));
+    for (int i = 0; i < triangle_count; ++i)
     {
-      VectorVector3d mesh_vertices;
-      mesh_vertices.reserve(geom->vertex_count);
-
-      for (unsigned int i = 0; i < geom->vertex_count; ++i)
-        mesh_vertices.push_back(
-            Eigen::Vector3d(geom->vertices[3 * i + 0], geom->vertices[3 * i + 1], geom->vertices[3 * i + 2]));
-
-      std::shared_ptr<VectorVector3d> convex_hull_vertices(new VectorVector3d());
-      std::shared_ptr<std::vector<int>> convex_hull_faces(new std::vector<int>());
-      int num_faces = createConvexHull(*convex_hull_vertices, *convex_hull_faces, mesh_vertices);
-
-      if (num_faces < 0)
-        return nullptr;
-
-      return CollisionGeometryPtr(new fcl::Convexd(convex_hull_vertices, num_faces, convex_hull_faces));
+      assert(triangles[static_cast<size_t>(4 * i)] == 3);
+      tri_indices[static_cast<size_t>(i)] = fcl::Triangle(triangles[static_cast<size_t>((4 * i) + 1)],
+                                                          triangles[static_cast<size_t>((4 * i) + 2)],
+                                                          triangles[static_cast<size_t>((4 * i) + 3)]);
     }
-    case CollisionObjectType::UseShapeType:
+
+    g->beginModel();
+    g->addSubModel(vertices, tri_indices);
+    g->endModel();
+
+    return CollisionGeometryPtr(g);
+  }
+
+  ROS_ERROR("The mesh is empty!");
+  return nullptr;
+}
+
+CollisionGeometryPtr createShapePrimitive(const tesseract::ConvexMeshCollisionShapeConstPtr& geom)
+{
+  int vertice_count = geom->getVerticeCount();
+  int face_count = geom->getFaceCount();
+
+  if (vertice_count > 0 && face_count > 0)
+    return CollisionGeometryPtr(new fcl::Convexd(geom->getVertices(), face_count, geom->getFaces()));
+
+  ROS_ERROR("The mesh is empty!");
+  return nullptr;
+}
+
+CollisionGeometryPtr createShapePrimitive(const tesseract::OctreeCollisionShapeConstPtr& geom)
+{
+  switch (geom->getSubShapeType())
+  {
+    case tesseract::OctreeCollisionShape::SubShapeType::BOX:
     {
-      auto g = new fcl::BVHModel<fcl::OBBRSSd>();
-      if (geom->vertex_count > 0 && geom->triangle_count > 0)
-      {
-        std::vector<fcl::Triangle> tri_indices(geom->triangle_count);
-        for (unsigned int i = 0; i < geom->triangle_count; ++i)
-          tri_indices[i] =
-              fcl::Triangle(geom->triangles[3 * i], geom->triangles[3 * i + 1], geom->triangles[3 * i + 2]);
-
-        std::vector<Eigen::Vector3d> points(geom->vertex_count);
-        for (unsigned int i = 0; i < geom->vertex_count; ++i)
-          points[i] = Eigen::Vector3d(geom->vertices[3 * i], geom->vertices[3 * i + 1], geom->vertices[3 * i + 2]);
-
-        g->beginModel();
-        g->addSubModel(points, tri_indices);
-        g->endModel();
-      }
-
-      return CollisionGeometryPtr(g);
+      return CollisionGeometryPtr(new fcl::OcTreed(geom->getOctree()));
     }
     default:
     {
-      ROS_ERROR("This fcl shape type (%d) is not supported for geometry meshes", (int)collision_object_type);
+      ROS_ERROR("This fcl octree sub shape type (%d) is not supported for geometry octree", static_cast<int>(geom->getSubShapeType()));
       return nullptr;
     }
   }
 }
 
-CollisionGeometryPtr createShapePrimitive(const shapes::OcTree* geom, const CollisionObjectType& collision_object_type)
+CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr &geom)
 {
-  assert(collision_object_type == CollisionObjectType::UseShapeType ||
-         collision_object_type == CollisionObjectType::ConvexHull ||
-         collision_object_type == CollisionObjectType::SDF ||
-         collision_object_type == CollisionObjectType::MultiSphere);
-
-  // convert the mesh to the assigned collision object type
-  switch (collision_object_type)
+  switch (geom->getType())
   {
-    case CollisionObjectType::UseShapeType:
+    case CollisionShapeType::PLANE:
     {
-      return CollisionGeometryPtr(new fcl::OcTreed(geom->octree));
+      return createShapePrimitive(std::static_pointer_cast<const tesseract::PlaneCollisionShape>(geom));
+    }
+    case CollisionShapeType::BOX:
+    {
+      return createShapePrimitive(std::static_pointer_cast<const tesseract::BoxCollisionShape>(geom));
+    }
+    case CollisionShapeType::SPHERE:
+    {
+      return createShapePrimitive(std::static_pointer_cast<const tesseract::SphereCollisionShape>(geom));
+    }
+    case CollisionShapeType::CYLINDER:
+    {
+      return createShapePrimitive(std::static_pointer_cast<const tesseract::CylinderCollisionShape>(geom));
+    }
+    case CollisionShapeType::CONE:
+    {
+      return createShapePrimitive(std::static_pointer_cast<const tesseract::ConeCollisionShape>(geom));
+    }
+    case CollisionShapeType::MESH:
+    {
+      return createShapePrimitive(std::static_pointer_cast<const tesseract::MeshCollisionShape>(geom));
+    }
+    case CollisionShapeType::CONVEX_MESH:
+    {
+      return createShapePrimitive(std::static_pointer_cast<const tesseract::MeshCollisionShape>(geom));
+    }
+    case CollisionShapeType::OCTREE:
+    {
+      return createShapePrimitive(std::static_pointer_cast<const tesseract::OctreeCollisionShape>(geom));
     }
     default:
     {
-      ROS_ERROR("This fcl shape type (%d) is not supported for geometry octree", (int)collision_object_type);
-      return nullptr;
-    }
-  }
-}
-
-CollisionGeometryPtr createShapePrimitive(const shapes::ShapeConstPtr& geom,
-                                          const CollisionObjectType& collision_object_type)
-{
-  switch (geom->type)
-  {
-    case shapes::PLANE:
-    {
-      return createShapePrimitive(static_cast<const shapes::Plane*>(geom.get()), collision_object_type);
-    }
-    case shapes::BOX:
-    {
-      return createShapePrimitive(static_cast<const shapes::Box*>(geom.get()), collision_object_type);
-    }
-    case shapes::SPHERE:
-    {
-      return createShapePrimitive(static_cast<const shapes::Sphere*>(geom.get()), collision_object_type);
-    }
-    case shapes::CYLINDER:
-    {
-      return createShapePrimitive(static_cast<const shapes::Cylinder*>(geom.get()), collision_object_type);
-    }
-    case shapes::CONE:
-    {
-      return createShapePrimitive(static_cast<const shapes::Cone*>(geom.get()), collision_object_type);
-    }
-    case shapes::MESH:
-    {
-      return createShapePrimitive(static_cast<const shapes::Mesh*>(geom.get()), collision_object_type);
-    }
-    case shapes::OCTREE:
-    {
-      return createShapePrimitive(static_cast<const shapes::OcTree*>(geom.get()), collision_object_type);
-    }
-    default:
-    {
-      ROS_ERROR("This geometric shape type (%d) is not supported using fcl yet", (int)geom->type);
+      ROS_ERROR("This geometric shape type (%d) is not supported using fcl yet", static_cast<int>(geom->getType()));
       return nullptr;
     }
   }
@@ -318,27 +293,23 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
 
 CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
                                                const int& type_id,
-                                               const std::vector<shapes::ShapeConstPtr>& shapes,
-                                               const VectorIsometry3d& shape_poses,
-                                               const CollisionObjectTypeVector& collision_object_types)
+                                               const CollisionShapesConst &shapes,
+                                               const VectorIsometry3d& shape_poses)
   : name_(name)
   , type_id_(type_id)
   , shapes_(shapes)
   , shape_poses_(shape_poses)
-  , collision_object_types_(collision_object_types)
 {
   assert(!shapes.empty());
   assert(!shape_poses.empty());
-  assert(!collision_object_types.empty());
   assert(!name.empty());
   assert(shapes.size() == shape_poses.size());
-  assert(shapes.size() == collision_object_types.size());
 
   collision_geometries_.reserve(shapes_.size());
   collision_objects_.reserve(shapes_.size());
   for (std::size_t j = 0; j < shapes_.size(); ++j)
   {
-    CollisionGeometryPtr subshape = createShapePrimitive(shapes_[j], collision_object_types_[j]);
+    CollisionGeometryPtr subshape = createShapePrimitive(shapes_[j]);
     if (subshape != nullptr)
     {
       collision_geometries_.push_back(subshape);
@@ -351,16 +322,14 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
 
 CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
                                                const int& type_id,
-                                               const std::vector<shapes::ShapeConstPtr>& shapes,
+                                               const CollisionShapesConst &shapes,
                                                const VectorIsometry3d& shape_poses,
-                                               const CollisionObjectTypeVector& collision_object_types,
                                                const std::vector<CollisionGeometryPtr>& collision_geometries,
                                                const std::vector<CollisionObjectPtr>& collision_objects)
   : name_(name)
   , type_id_(type_id)
   , shapes_(shapes)
   , shape_poses_(shape_poses)
-  , collision_object_types_(collision_object_types)
   , collision_geometries_(collision_geometries)
 {
   collision_objects_.reserve(collision_objects.size());

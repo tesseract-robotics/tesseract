@@ -59,7 +59,7 @@ BulletCastSimpleManager::BulletCastSimpleManager()
   contact_distance_ = 0;
 }
 
-ContinuousContactManagerBasePtr BulletCastSimpleManager::clone() const
+ContinuousContactManagerPtr BulletCastSimpleManager::clone() const
 {
   BulletCastSimpleManagerPtr manager(new BulletCastSimpleManager());
 
@@ -85,12 +85,11 @@ ContinuousContactManagerBasePtr BulletCastSimpleManager::clone() const
 
 bool BulletCastSimpleManager::addCollisionObject(const std::string& name,
                                                  const int& mask_id,
-                                                 const std::vector<shapes::ShapeConstPtr>& shapes,
+                                                 const CollisionShapesConst& shapes,
                                                  const VectorIsometry3d& shape_poses,
-                                                 const CollisionObjectTypeVector& collision_object_types,
                                                  bool enabled)
 {
-  COWPtr new_cow = createCollisionObject(name, mask_id, shapes, shape_poses, collision_object_types, enabled);
+  COWPtr new_cow = createCollisionObject(name, mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
     addCollisionObject(new_cow);

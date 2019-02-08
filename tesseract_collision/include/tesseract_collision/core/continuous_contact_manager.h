@@ -1,8 +1,8 @@
 /**
- * @file discrete_contact_manager_base.h
- * @brief This is the discrete contact manager base class
+ * @file continuous_contact_manager.h
+ * @brief This is the continuous contact manager base class
  *
- * It should be used to perform discrete contact checking.
+ * It should be used to perform continuous contact checking.
  *
  * @author Levi Armstrong
  * @date Dec 18, 2017
@@ -25,35 +25,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_COLLISION_DISCRETE_CONTACT_MANAGER_BASE_H
-#define TESSERACT_COLLISION_DISCRETE_CONTACT_MANAGER_BASE_H
+#ifndef TESSERACT_COLLISION_CONTINUOUS_CONTACT_MANAGER_H
+#define TESSERACT_COLLISION_CONTINUOUS_CONTACT_MANAGER_H
 
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
-#include <geometric_shapes/shapes.h>
+#include <tesseract_collision/core/macros.h>
+TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <memory>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
-#include <tesseract_core/basic_types.h>
+#include <tesseract_collision/core/types.h>
+#include <tesseract_collision/core/collision_shapes.h>
 
 namespace tesseract
 {
-class DiscreteContactManagerBase
+class ContinuousContactManager
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  virtual ~DiscreteContactManagerBase() = default;
+  virtual ~ContinuousContactManager() = default;
   /**
    * @brief Clone the manager
    *
    * This is to be used for multi threaded application. A user should
    * make a cone for each thread.
    */
-  virtual std::shared_ptr<DiscreteContactManagerBase> clone() const = 0;
+  virtual std::shared_ptr<ContinuousContactManager> clone() const = 0;
 
   /**
-   * @brief Add a object to the checker
+   * @brief Add a collision object to the checker
+   *
+   * All objects are added should initially be added as static objects. Use the
+   * setContactRequest method of defining which collision objects are moving.
+   *
    * @param name            The name of the object, must be unique.
    * @param mask_id         User defined id which gets stored in the results structure.
    * @param shapes          A vector of shapes that make up the collision object.
@@ -62,13 +66,13 @@ public:
    * used for all shapes.
    * @param collision_object_types A int identifying a conversion mode for the object. (ex. convert meshes to
    * convex_hulls)
+   * @param enabled         Indicate if the object is enabled for collision checking.
    * @return true if successfully added, otherwise false.
    */
   virtual bool addCollisionObject(const std::string& name,
                                   const int& mask_id,
-                                  const std::vector<shapes::ShapeConstPtr>& shapes,
+                                  const CollisionShapesConst& shapes,
                                   const VectorIsometry3d& shape_poses,
-                                  const CollisionObjectTypeVector& collision_object_types,
                                   bool enabled = true) = 0;
 
   /**
@@ -98,24 +102,63 @@ public:
   virtual bool disableCollisionObject(const std::string& name) = 0;
 
   /**
-   * @brief Set a single collision object's tansforms
+   * @brief Set a single static collision object's tansforms
    * @param name The name of the object
    * @param pose The tranformation in world
    */
   virtual void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) = 0;
 
   /**
-   * @brief Set a series of collision object's tranforms
+   * @brief Set a series of static collision object's tranforms
    * @param names The name of the object
    * @param poses The tranformation in world
    */
   virtual void setCollisionObjectsTransform(const std::vector<std::string>& names, const VectorIsometry3d& poses) = 0;
 
   /**
-   * @brief Set a series of collision object's tranforms
+   * @brief Set a series of static collision object's tranforms
    * @param transforms A transform map <name, pose>
    */
   virtual void setCollisionObjectsTransform(const TransformMap& transforms) = 0;
+
+  /**
+   * @brief Set a single cast(moving) collision object's tansforms
+   *
+   * This should only be used for moving objects. Use the base
+   * class methods for static objects.
+   *
+   * @param name The name of the object
+   * @param pose1 The start tranformation in world
+   * @param pose2 The end tranformation in world
+   */
+  virtual void setCollisionObjectsTransform(const std::string& name,
+                                            const Eigen::Isometry3d& pose1,
+                                            const Eigen::Isometry3d& pose2) = 0;
+
+  /**
+   * @brief Set a series of cast(moving) collision object's tranforms
+   *
+   * This should only be used for moving objects. Use the base
+   * class methods for static objects.
+   *
+   * @param names The name of the object
+   * @param pose1 The start tranformations in world
+   * @param pose2 The end tranformations in world
+   */
+  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                            const VectorIsometry3d& pose1,
+                                            const VectorIsometry3d& pose2) = 0;
+
+  /**
+   * @brief Set a series of cast(moving) collision object's tranforms
+   *
+   * This should only be used for moving objects. Use the base
+   * class methods for static objects.
+   *
+   * @param pose1 A start transform map <name, pose>
+   * @param pose2 A end transform map <name, pose>
+   */
+  virtual void setCollisionObjectsTransform(const TransformMap& pose1, const TransformMap& pose2) = 0;
 
   /**
    * @brief Set which collision objects can move
@@ -150,10 +193,12 @@ public:
   /**
    * @brief Perform a contact test for all objects based
    * @param collisions The Contact results data
+   * @param type The type of contact test
    */
   virtual void contactTest(ContactResultMap& collisions, const ContactTestType& type) = 0;
 };
-typedef std::shared_ptr<DiscreteContactManagerBase> DiscreteContactManagerBasePtr;
-typedef std::shared_ptr<const DiscreteContactManagerBase> DiscreteContactManagerBaseConstPtr;
+typedef std::shared_ptr<ContinuousContactManager> ContinuousContactManagerPtr;
+typedef std::shared_ptr<const ContinuousContactManager> ContinuousContactManagerConstPtr;
 }
-#endif  // TESSERACT_COLLISION_DISCRETE_CONTACT_MANAGER_BASE_H
+
+#endif  // TESSERACT_COLLISION_CONTINUOUS_CONTACT_MANAGER_H
