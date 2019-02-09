@@ -77,8 +77,8 @@ struct AllowedCollisionMatrix
                                    const std::string& link_name2,
                                    const std::string& reason)
   {
-    lookup_table_[link_name1 + link_name2] = reason;
-    lookup_table_[link_name2 + link_name1] = reason;
+    auto link_pair = makeOrderedLinkPair(link_name1, link_name2);
+    lookup_table_[link_pair] = reason;
   }
 
   /**
@@ -88,8 +88,8 @@ struct AllowedCollisionMatrix
    */
   virtual void removeAllowedCollision(const std::string& link_name1, const std::string& link_name2)
   {
-    lookup_table_.erase(link_name1 + link_name2);
-    lookup_table_.erase(link_name2 + link_name1);
+    auto link_pair = makeOrderedLinkPair(link_name1, link_name2);
+    lookup_table_.erase(link_pair);
   }
 
   /**
@@ -100,11 +100,49 @@ struct AllowedCollisionMatrix
    */
   virtual bool isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const
   {
-    return (lookup_table_.find(link_name1 + link_name2) != lookup_table_.end());
+    auto link_pair = makeOrderedLinkPair(link_name1, link_name2);
+    return (lookup_table_.find(link_pair) != lookup_table_.end());
   }
 
+  /**
+   * @brief Clears the list of allowed collisions, so that no collision will be
+   *        allowed.
+   */
+  void clearAllowedCollisions() { lookup_table_.clear(); }
 private:
-  std::unordered_map<std::string, std::string> lookup_table_;
+  typedef std::pair<const std::string, const std::string> LinkNamesPair;
+  struct PairHash
+  {
+    std::size_t operator()(const LinkNamesPair& pair) const
+    {
+      return std::hash<std::string>()(pair.first + pair.second);
+    }
+  };
+  typedef std::unordered_map<LinkNamesPair, std::string, PairHash> AllowedCollisionEntries;
+  AllowedCollisionEntries lookup_table_;
+
+  /**
+   * @brief Create a pair of strings, where the pair.first is always <= pair.second
+   * @param link_name1 First link name
+   * @param link_name2 Second link anme
+   * @return LinkNamesPair a lexicographically sorted pair of strings
+   */
+  static inline LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::string& link_name2)
+  {
+    if (link_name1 <= link_name2)
+      return std::make_pair(link_name1, link_name2);
+    else
+      return std::make_pair(link_name2, link_name1);
+  }
+
+public:
+  /**
+   * @brief Clears the list of allowed collisions
+   * @return AllowedCollisionEntries an unordered map containing all allowed
+   *         collision entries. The keys of the unordered map are a std::pair
+   *         of the link names in the allowed collision pair.
+   */
+  const AllowedCollisionEntries& getAllAllowedCollisions() const { return lookup_table_; }
 };
 typedef std::shared_ptr<AllowedCollisionMatrix> AllowedCollisionMatrixPtr;
 typedef std::shared_ptr<const AllowedCollisionMatrix> AllowedCollisionMatrixConstPtr;
