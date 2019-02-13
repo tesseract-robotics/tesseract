@@ -159,7 +159,7 @@ namespace tesseract_collision
         }
         default:
         {
-//          ROS_ERROR("This geometric shape type (%d) is not supported", static_cast<int>(shape1.getType()));
+          CONSOLE_BRIDGE_logError("This geometric shape type (%d) is not supported", static_cast<int>(shape1.getType()));
           return false;
         }
       }

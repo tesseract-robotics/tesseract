@@ -50,7 +50,6 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <boost/thread/mutex.hpp>
 #include <memory>
 #include <octomap/octomap.h>
-#include <ros/console.h>
 TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 namespace tesseract_collision
@@ -127,7 +126,7 @@ btCollisionShape* createShapePrimitive(const MeshCollisionShapeConstPtr& geom,
 
     return compound;
   }
-  ROS_ERROR("The mesh is empty!");
+  CONSOLE_BRIDGE_logError("The mesh is empty!");
   return nullptr;
 }
 
@@ -147,7 +146,7 @@ btCollisionShape* createShapePrimitive(const ConvexMeshCollisionShapeConstPtr& g
 
     return subshape;
   }
-  ROS_ERROR("The mesh is empty!");
+  CONSOLE_BRIDGE_logError("The mesh is empty!");
   return nullptr;
 }
 
@@ -232,7 +231,7 @@ btCollisionShape* createShapePrimitive(const OctreeCollisionShapeConstPtr& geom,
     }
     default:
     {
-      ROS_ERROR("This bullet shape type (%d) is not supported for geometry octree",
+      CONSOLE_BRIDGE_logError("This bullet shape type (%d) is not supported for geometry octree",
                 static_cast<int>(geom->getSubShapeType()));
       return nullptr;
     }
@@ -274,7 +273,7 @@ btCollisionShape* createShapePrimitive(const CollisionShapeConstPtr& geom,
     }
     default:
     {
-      ROS_ERROR("This geometric shape type (%d) is not supported using BULLET yet", static_cast<int>(geom->getType()));
+      CONSOLE_BRIDGE_logError("This geometric shape type (%d) is not supported using BULLET yet", static_cast<int>(geom->getType()));
       return nullptr;
     }
   }

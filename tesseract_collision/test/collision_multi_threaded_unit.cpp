@@ -1,7 +1,8 @@
 #include <tesseract_collision/core/macros.h>
 TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
-#include <ros/ros.h>
+#include <console_bridge/console.h>
+#include <chrono>
 TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include "tesseract_collision/bullet/bullet_discrete_simple_manager.h"
@@ -73,13 +74,13 @@ void runTest(tesseract_collision::DiscreteContactManager& checker, bool use_conv
   contact_manager[2] = checker.clone();
   contact_manager[3] = checker.clone();
 
-  ros::WallTime start_time = ros::WallTime::now();
+  auto start_time = std::chrono::high_resolution_clock::now();
 
 #pragma omp parallel for num_threads(num_threads) shared(location)
   for (unsigned i = 0; i < num_threads; ++i)
   {
     const int tn = omp_get_thread_num();
-    ROS_DEBUG("Thread %i of %i", tn, omp_get_num_threads());
+    CONSOLE_BRIDGE_logDebug("Thread %i of %i", tn, omp_get_num_threads());
     const DiscreteContactManagerPtr& manager = contact_manager[static_cast<size_t>(tn)];
     for (const auto& co : location)
     {
@@ -113,8 +114,9 @@ void runTest(tesseract_collision::DiscreteContactManager& checker, bool use_conv
     manager->contactTest(result, ContactTestType::ALL);
     flattenResults(std::move(result), result_vector[static_cast<size_t>(tn)]);
   }
-  ros::WallTime end_time = ros::WallTime::now();
-  ROS_INFO_STREAM("DT: " << (end_time - start_time).toSec());
+  auto end_time = std::chrono::high_resolution_clock::now();
+
+  CONSOLE_BRIDGE_logInform("DT: %f ms",  std::chrono::duration<double, std::milli>(end_time - start_time).count());
 
   for (unsigned i = 0; i < num_threads; ++i)
   {

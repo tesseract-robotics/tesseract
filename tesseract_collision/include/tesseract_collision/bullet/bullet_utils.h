@@ -46,7 +46,7 @@
 #include <tesseract_collision/core/macros.h>
 TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <btBulletCollisionCommon.h>
-#include <ros/console.h>
+#include <console_bridge/console.h>
 TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
@@ -839,7 +839,7 @@ inline COWPtr createCollisionObject(const std::string& name,
   // dont add object that does not have geometry
   if (shapes.empty() || shape_poses.empty() || (shapes.size() != shape_poses.size()))
   {
-    ROS_DEBUG("ignoring link %s", name.c_str());
+    CONSOLE_BRIDGE_logDebug("ignoring link %s", name.c_str());
     return nullptr;
   }
 
@@ -848,7 +848,7 @@ inline COWPtr createCollisionObject(const std::string& name,
   new_cow->m_enabled = enabled;
   new_cow->setContactProcessingThreshold(BULLET_DEFAULT_CONTACT_DISTANCE);
 
-  ROS_DEBUG("Created collision object for link %s", new_cow->getName().c_str());
+  CONSOLE_BRIDGE_logDebug("Created collision object for link %s", new_cow->getName().c_str());
   return new_cow;
 }
 
