@@ -3,14 +3,10 @@ project(tesseract_collision)
 
 add_compile_options(-std=c++11 -Wall -Wextra)
 
-find_package(catkin REQUIRED COMPONENTS
-  bullet3_ros
-  roscpp
-  pluginlib
-)
+find_package(catkin REQUIRED COMPONENTS bullet3_ros)
 
 find_package(Eigen3 REQUIRED)
-find_package(Boost COMPONENTS system thread REQUIRED)
+find_package(Boost COMPONENTS system thread program_options REQUIRED)
 find_package(octomap REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(ccd REQUIRED)
@@ -35,8 +31,6 @@ catkin_package(
     ${LIBFCL_LIBRARIES}
   CATKIN_DEPENDS
     bullet3_ros
-    roscpp
-    pluginlib
   DEPENDS
     EIGEN3
     Boost
@@ -55,10 +49,7 @@ include_directories(
   SYSTEM ${OCTOMAP_INCLUDE_DIRS}
 )
 
-add_library(${PROJECT_NAME}_core
-  src/core/collision_shapes.cpp
-)
-
+add_library(${PROJECT_NAME}_core src/core/collision_shapes.cpp)
 target_link_libraries(${PROJECT_NAME}_core ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${console_bridge_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_core PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
@@ -73,17 +64,13 @@ add_library(${PROJECT_NAME}_bullet
 target_link_libraries(${PROJECT_NAME}_bullet ${PROJECT_NAME}_core ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${console_bridge_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_bullet PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
-add_library(${PROJECT_NAME}_fcl
-  src/fcl/fcl_discrete_managers.cpp
-  src/fcl/fcl_utils.cpp
-)
-
+add_library(${PROJECT_NAME}_fcl src/fcl/fcl_discrete_managers.cpp src/fcl/fcl_utils.cpp)
 target_link_libraries(${PROJECT_NAME}_fcl ${PROJECT_NAME}_core ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_LIBRARIES} ${console_bridge_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_fcl PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
-#add_executable(create_convex_hull src/create_convex_hull.cpp)
-#target_link_libraries(create_convex_hull ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES})
-#target_compile_options(create_convex_hull PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+add_executable(create_convex_hull src/create_convex_hull.cpp)
+target_link_libraries(create_convex_hull ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${console_bridge_LIBRARIES})
+target_compile_options(create_convex_hull PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
 # Mark executables and/or libraries for installation
 install(TARGETS ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl #create_convex_hull
@@ -113,12 +100,10 @@ if (CATKIN_ENABLE_TESTING)
 
   add_definitions(-DDATA_DIR="${CMAKE_SOURCE_DIR}/test")
 
-  include_directories(
-      ${catkin_INCLUDE_DIRS}
-  )
+  include_directories(${catkin_INCLUDE_DIRS})
 
   catkin_add_gtest(${PROJECT_NAME}_box_sphere_unit test/collision_box_sphere_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_box_sphere_unit ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${GTEST_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS} ${console_bridge_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME}_box_sphere_unit ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS} ${console_bridge_LIBRARIES})
   target_compile_options(${PROJECT_NAME}_box_sphere_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
   catkin_add_gtest(${PROJECT_NAME}_box_cylinder_unit test/collision_box_cylinder_unit.cpp)

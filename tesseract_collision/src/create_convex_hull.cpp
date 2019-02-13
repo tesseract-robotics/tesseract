@@ -26,84 +26,90 @@
 #include <tesseract_collision/core/macros.h>
 TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
+#include <boost/program_options.hpp>
 TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/common.h>
 
+namespace
+{
+  const size_t ERROR_IN_COMMAND_LINE = 1;
+  const size_t SUCCESS = 0;
+  const size_t ERROR_UNHANDLED_EXCEPTION = 2;
+
+} // namespace
+
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "tesseract_create_convex_hull_node");
-  ros::NodeHandle pnh("~");
   std::string input;
   std::string output;
-  double shrink;
-  double clamp;
+  double shrink = -1.0;
+  double clamp = -1.0;
 
-  std::string help = "\nExample:\n"
-                     "  create_convex_hull _input:=/home/mesh.stl _output:=/home/mesh.ply\n\n"
-                     "Parameters:\n"
-                     "  input  (required): File path to mesh used to create a convex hull.\n"
-                     "  output (required): File path to save the generated convex hull as a ply.\n"
-                     "  shrink (optional): If positive, the convex hull is shrunken by that amount (each face is moved "
-                     "by 'shrink' length units towards the center along its normal).\n"
-                     "  clamp  (optional): If positive, 'shrink' is clamped to not exceed 'clamp * innerRadius', where "
-                     "'innerRadius' is the minimum distance of a face to the center of the convex hull.\n";
+  namespace po = boost::program_options;
+  po::options_description desc("Options");
+  desc.add_options()
+      ("help,h", "Print help messages")
+      ("input,i", po::value<std::string>(&input)->required(), "File path to mesh used to create a convex hull.")
+      ("output,o", po::value<std::string>(&output)->required(), "File path to save the generated convex hull as a ply.")
+      ("shrink,s", po::value<double>(&shrink), "If positive, the convex hull is shrunken by that amount (each face is moved by 'shrink' length units towards the center along its normal).")
+      ("clamp,c", po::value<double>(&clamp), "If positive, 'shrink' is clamped to not exceed 'clamp * innerRadius', where 'innerRadius' is the minimum distance of a face to the center of the convex hull.");
 
-  if (!pnh.hasParam("input") || !pnh.hasParam("output"))
+  po::variables_map vm;
+  try
   {
-    CONSOLE_BRIDGE_logError(help.c_str());
-    return -1;
-  }
+    po::store(po::parse_command_line(argc, argv, desc), vm); // can throw
 
-  pnh.getParam("input", input);
-  pnh.getParam("output", output);
-  pnh.param<double>("shrink", shrink, -1.0);
-  pnh.param<double>("clamp", clamp, -1.0);
+    /** --help option */
+    if ( vm.count("help")  )
+    {
+      std::cout << "Basic Command Line Parameter App" << std::endl
+                << desc << std::endl;
+      return SUCCESS;
+    }
+
+    po::notify(vm); // throws on error, so do after help in case
+                    // there are any problems
+  }
+  catch(po::error& e)
+  {
+    std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
+    std::cerr << desc << std::endl;
+    return ERROR_IN_COMMAND_LINE;
+  }
 
   std::ifstream file(input, std::ios::binary | std::ios::ate);
   std::streamsize size = file.tellg();
   if (size < 0)
   {
     CONSOLE_BRIDGE_logError("Failed to locate input file!");
-    return -1;
+    return ERROR_UNHANDLED_EXCEPTION;
   }
 
-  file.seekg(0, std::ios::beg);
-  std::vector<char> buffer(static_cast<size_t>(size));
-  if (!file.read(buffer.data(), size))
-  {
-    CONSOLE_BRIDGE_logError("Failed to read input file!");
-    return -1;
-  }
-
-  std::shared_ptr<shapes::Mesh> mesh;
-  mesh.reset(
-      shapes::createMeshFromBinary(buffer.data(), static_cast<size_t>(size), Eigen::Vector3d(1.0, 1.0, 1.0), input));
-  if (mesh == nullptr)
-  {
-    CONSOLE_BRIDGE_logError("Failed to create mesh from binary data!");
-    return -1;
-  }
-
-  tesseract::VectorVector3d mesh_vertices;
-  mesh_vertices.reserve(mesh->vertex_count);
-
-  for (unsigned int i = 0; i < mesh->vertex_count; ++i)
-    mesh_vertices.push_back(
-        Eigen::Vector3d(mesh->vertices[3 * i + 0], mesh->vertices[3 * i + 1], mesh->vertices[3 * i + 2]));
-
-  tesseract::VectorVector3d convex_hull_vertices;
-  std::vector<int> convex_hull_faces;
-  int num_faces = tesseract::createConvexHull(convex_hull_vertices, convex_hull_faces, mesh_vertices);
-
+  tesseract_collision::VectorVector3d mesh_vertices;
+  std::vector<int> mesh_faces;
+  int num_faces = tesseract_collision::loadSimplePlyFile(input, mesh_vertices, mesh_faces);
   if (num_faces < 0)
   {
-    CONSOLE_BRIDGE_logError("Failed to create convex hull!");
-    return -1;
+    CONSOLE_BRIDGE_logError("Failed to read mesh from file!");
+    return ERROR_UNHANDLED_EXCEPTION;
   }
 
-  if (!tesseract::writeSimplePlyFile(output, convex_hull_vertices, convex_hull_faces, num_faces))
-    return -1;
+  tesseract_collision::VectorVector3d ch_vertices;
+  std::vector<int> ch_faces;
+  int ch_num_faces = tesseract_collision::createConvexHull(ch_vertices, ch_faces, mesh_vertices);
+
+  if (ch_num_faces < 0)
+  {
+    CONSOLE_BRIDGE_logError("Failed to create convex hull!");
+    return ERROR_UNHANDLED_EXCEPTION;
+  }
+
+  if (!tesseract_collision::writeSimplePlyFile(output, ch_vertices, ch_faces, ch_num_faces))
+  {
+    CONSOLE_BRIDGE_logError("Failed to write convex hull to file!");
+    return ERROR_UNHANDLED_EXCEPTION;
+  }
 
   return 0;
 }
