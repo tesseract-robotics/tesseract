@@ -218,7 +218,7 @@ private:
                                       Eigen::Vector4d color,
                                       bool isVisual);
 
-  bool createEntityForGeometryElement(const tesseract::CollisionShape& geom,
+  bool createEntityForGeometryElement(const tesseract_collision::CollisionShape& geom,
                                       Eigen::Isometry3d origin,
                                       Eigen::Vector4d color,
                                       bool isVisual);

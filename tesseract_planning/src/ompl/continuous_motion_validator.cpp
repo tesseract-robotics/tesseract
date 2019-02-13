@@ -74,7 +74,7 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
   const ompl::base::RealVectorStateSpace::StateType* finish = s2->as<ompl::base::RealVectorStateSpace::StateType>();
 
   // Need to get thread id
-  tesseract::ContinuousContactManagerPtr cm = contact_manager_->clone();
+  tesseract_collision::ContinuousContactManagerPtr cm = contact_manager_->clone();
 
   const auto dof = si_->getStateDimension();
   Eigen::Map<Eigen::VectorXd> start_joints(start->values, dof);
@@ -86,8 +86,8 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
   for (const auto& link_name : links_)
     cm->setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
 
-  tesseract::ContactResultMap contact_map;
-  cm->contactTest(contact_map, tesseract::ContactTestTypes::FIRST);
+  tesseract_collision::ContactResultMap contact_map;
+  cm->contactTest(contact_map, tesseract_collision::ContactTestTypes::FIRST);
 
   return contact_map.empty();
 }

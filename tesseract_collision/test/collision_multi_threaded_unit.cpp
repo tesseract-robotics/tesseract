@@ -8,44 +8,46 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 #include "tesseract_collision/bullet/bullet_discrete_bvh_manager.h"
 #include "tesseract_collision/fcl/fcl_discrete_managers.h"
 
-void runTest(tesseract::DiscreteContactManager& checker, bool use_convex_mesh = false)
+using namespace tesseract_collision;
+
+void runTest(tesseract_collision::DiscreteContactManager& checker, bool use_convex_mesh = false)
 {
   // Add Meshed Sphere to checker
-  tesseract::CollisionShapePtr sphere;
+  tesseract_collision::CollisionShapePtr sphere;
   if (use_convex_mesh)
   {
-    tesseract::VectorVector3d mesh_vertices;
+    VectorVector3d mesh_vertices;
     std::vector<int> mesh_faces;
-    EXPECT_GT(tesseract::loadSimplePlyFile(std::string(DATA_DIR) + "/sphere_p25m.ply", mesh_vertices, mesh_faces), 0);
+    EXPECT_GT(loadSimplePlyFile(std::string(DATA_DIR) + "/sphere_p25m.ply", mesh_vertices, mesh_faces), 0);
 
     // This is required because convex hull cannot have multiple faces on the same plane.
-    std::shared_ptr<tesseract::VectorVector3d> ch_verticies(new tesseract::VectorVector3d());
+    std::shared_ptr<VectorVector3d> ch_verticies(new VectorVector3d());
     std::shared_ptr<std::vector<int>> ch_faces(new std::vector<int>());
-    int ch_num_faces = tesseract::createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
-    sphere.reset(new tesseract::ConvexMeshCollisionShape(ch_verticies, ch_faces, ch_num_faces));
+    int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
+    sphere.reset(new ConvexMeshCollisionShape(ch_verticies, ch_faces, ch_num_faces));
   }
   else
   {
-    sphere.reset(new tesseract::SphereCollisionShape(0.25));
+    sphere.reset(new SphereCollisionShape(0.25));
   }
 
   double delta = 0.55;
 
   std::size_t t = 10;
   std::vector<std::string> link_names;
-  tesseract::TransformMap location;
+  TransformMap location;
   for (std::size_t x = 0; x < t; ++x)
   {
     for (std::size_t y = 0; y < t; ++y)
     {
       for (std::size_t z = 0; z < t; ++z)
       {
-        tesseract::CollisionShapesConst obj3_shapes;
-        tesseract::VectorIsometry3d obj3_poses;
+        CollisionShapesConst obj3_shapes;
+        VectorIsometry3d obj3_poses;
         Eigen::Isometry3d sphere_pose;
         sphere_pose.setIdentity();
 
-        obj3_shapes.push_back(tesseract::CollisionShapePtr(sphere->clone()));
+        obj3_shapes.push_back(CollisionShapePtr(sphere->clone()));
         obj3_poses.push_back(sphere_pose);
 
         link_names.push_back("sphere_link_" + std::to_string(x) + std::to_string(y) + std::to_string(z));
@@ -64,8 +66,8 @@ void runTest(tesseract::DiscreteContactManager& checker, bool use_convex_mesh = 
   checker.setCollisionObjectsTransform(location);
 
   unsigned num_threads = 4;
-  std::vector<tesseract::ContactResultVector> result_vector(num_threads);
-  std::vector<tesseract::DiscreteContactManagerPtr> contact_manager(num_threads);
+  std::vector<ContactResultVector> result_vector(num_threads);
+  std::vector<DiscreteContactManagerPtr> contact_manager(num_threads);
   contact_manager[0] = checker.clone();
   contact_manager[1] = checker.clone();
   contact_manager[2] = checker.clone();
@@ -78,7 +80,7 @@ void runTest(tesseract::DiscreteContactManager& checker, bool use_convex_mesh = 
   {
     const int tn = omp_get_thread_num();
     ROS_DEBUG("Thread %i of %i", tn, omp_get_num_threads());
-    const tesseract::DiscreteContactManagerPtr& manager = contact_manager[static_cast<size_t>(tn)];
+    const DiscreteContactManagerPtr& manager = contact_manager[static_cast<size_t>(tn)];
     for (const auto& co : location)
     {
       if (tn == 0)
@@ -107,9 +109,9 @@ void runTest(tesseract::DiscreteContactManager& checker, bool use_convex_mesh = 
       }
     }
 
-    tesseract::ContactResultMap result;
-    manager->contactTest(result, tesseract::ContactTestType::ALL);
-    tesseract::flattenResults(std::move(result), result_vector[static_cast<size_t>(tn)]);
+    ContactResultMap result;
+    manager->contactTest(result, ContactTestType::ALL);
+    flattenResults(std::move(result), result_vector[static_cast<size_t>(tn)]);
   }
   ros::WallTime end_time = ros::WallTime::now();
   ROS_INFO_STREAM("DT: " << (end_time - start_time).toSec());
@@ -122,38 +124,38 @@ void runTest(tesseract::DiscreteContactManager& checker, bool use_convex_mesh = 
 
 TEST(TesseractCollisionMultiThreadedUnit, BulletDiscreteSimpleCollisionMultiThreadedConvexHullUnit)
 {
-  tesseract::tesseract_bullet::BulletDiscreteSimpleManager checker;
+  tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   runTest(checker, true);
 }
 
 TEST(TesseractCollisionMultiThreadedUnit, BulletDiscreteSimpleCollisionMultiThreadedUnit)
 {
-  tesseract::tesseract_bullet::BulletDiscreteSimpleManager checker;
+  tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   runTest(checker);
 }
 
 TEST(TesseractCollisionMultiThreadedUnit, BulletDiscreteBVHCollisionMultiThreadedConvexHullUnit)
 {
-  tesseract::tesseract_bullet::BulletDiscreteBVHManager checker;
+  tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   runTest(checker, true);
 }
 
 TEST(TesseractCollisionMultiThreadedUnit, BulletDiscreteBVHCollisionMultiThreadedUnit)
 {
-  tesseract::tesseract_bullet::BulletDiscreteBVHManager checker;
+  tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   runTest(checker);
 }
 
 // TODO: Levi, enable once FCL PR #338
 // TEST(TesseractCollisionMultiThreadedUnit, FCLDiscreteBVHCollisionMultiThreadedConvexHullUnit)
 //{
-//  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
+//  tesseract_collision_fcl::FCLDiscreteBVHManager checker;
 //  runTest(checker, true);
 //}
 
 TEST(TesseractCollisionMultiThreadedUnit, FCLDiscreteBVHCollisionMultiThreadedUnit)
 {
-  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
+  tesseract_collision_fcl::FCLDiscreteBVHManager checker;
   runTest(checker);
 }
 

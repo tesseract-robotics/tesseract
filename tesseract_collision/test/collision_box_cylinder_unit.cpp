@@ -8,17 +8,19 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 #include "tesseract_collision/bullet/bullet_discrete_bvh_manager.h"
 #include "tesseract_collision/fcl/fcl_discrete_managers.h"
 
-void addCollisionObjects(tesseract::DiscreteContactManager& checker)
+using namespace tesseract_collision;
+
+void addCollisionObjects(DiscreteContactManager& checker)
 {
   //////////////////////
   // Add box to checker
   //////////////////////
-  tesseract::CollisionShapePtr box(new tesseract::BoxCollisionShape(1, 1, 1));
+  CollisionShapePtr box(new BoxCollisionShape(1, 1, 1));
   Eigen::Isometry3d box_pose;
   box_pose.setIdentity();
 
-  tesseract::CollisionShapesConst obj1_shapes;
-  tesseract::VectorIsometry3d obj1_poses;
+  CollisionShapesConst obj1_shapes;
+  VectorIsometry3d obj1_poses;
   obj1_shapes.push_back(box);
   obj1_poses.push_back(box_pose);
 
@@ -27,12 +29,12 @@ void addCollisionObjects(tesseract::DiscreteContactManager& checker)
   /////////////////////////////////////////////
   // Add thin box to checker which is disabled
   /////////////////////////////////////////////
-  tesseract::CollisionShapePtr thin_box(new tesseract::BoxCollisionShape(0.1, 1, 1));
+  CollisionShapePtr thin_box(new BoxCollisionShape(0.1, 1, 1));
   Eigen::Isometry3d thin_box_pose;
   thin_box_pose.setIdentity();
 
-  tesseract::CollisionShapesConst obj2_shapes;
-  tesseract::VectorIsometry3d obj2_poses;
+  CollisionShapesConst obj2_shapes;
+  VectorIsometry3d obj2_poses;
   obj2_shapes.push_back(thin_box);
   obj2_poses.push_back(thin_box_pose);
 
@@ -42,19 +44,19 @@ void addCollisionObjects(tesseract::DiscreteContactManager& checker)
   // Add cylinder to checker. If use_convex_mesh = true then this
   // cylinder will be added as a convex hull mesh.
   /////////////////////////////////////////////////////////////////
-  tesseract::CollisionShapePtr cylinder(new tesseract::CylinderCollisionShape(0.25, 0.25));
+  CollisionShapePtr cylinder(new CylinderCollisionShape(0.25, 0.25));
   Eigen::Isometry3d cylinder_pose;
   cylinder_pose.setIdentity();
 
-  tesseract::CollisionShapesConst obj3_shapes;
-  tesseract::VectorIsometry3d obj3_poses;
+  CollisionShapesConst obj3_shapes;
+  VectorIsometry3d obj3_poses;
   obj3_shapes.push_back(cylinder);
   obj3_poses.push_back(cylinder_pose);
 
   checker.addCollisionObject("cylinder_link", 0, obj3_shapes, obj3_poses);
 }
 
-void runTest(tesseract::DiscreteContactManager& checker)
+void runTest(DiscreteContactManager& checker)
 {
   //////////////////////////////////////
   // Test when object is in collision
@@ -63,18 +65,18 @@ void runTest(tesseract::DiscreteContactManager& checker)
   checker.setContactDistanceThreshold(0.1);
 
   // Set the collision object transforms
-  tesseract::TransformMap location;
+  TransformMap location;
   location["box_link"] = Eigen::Isometry3d::Identity();
   location["cylinder_link"] = Eigen::Isometry3d::Identity();
   location["cylinder_link"].translation()(0) = 0.2;
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
-  tesseract::ContactResultMap result;
-  checker.contactTest(result, tesseract::ContactTestType::CLOSEST);
+  ContactResultMap result;
+  checker.contactTest(result, ContactTestType::CLOSEST);
 
-  tesseract::ContactResultVector result_vector;
-  tesseract::flattenResults(std::move(result), result_vector);
+  ContactResultVector result_vector;
+  flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.55, 0.0001);
@@ -100,8 +102,8 @@ void runTest(tesseract::DiscreteContactManager& checker)
   result_vector.clear();
   checker.setCollisionObjectsTransform(location);
 
-  checker.contactTest(result, tesseract::ContactTestType::CLOSEST);
-  tesseract::flattenResults(std::move(result), result_vector);
+  checker.contactTest(result, ContactTestType::CLOSEST);
+  flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(result_vector.empty());
 
@@ -112,8 +114,8 @@ void runTest(tesseract::DiscreteContactManager& checker)
   result_vector.clear();
 
   checker.setContactDistanceThreshold(0.251);
-  checker.contactTest(result, tesseract::ContactTestType::CLOSEST);
-  tesseract::flattenResults(std::move(result), result_vector);
+  checker.contactTest(result, ContactTestType::CLOSEST);
+  flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, 0.25, 0.001);
@@ -134,14 +136,14 @@ void runTest(tesseract::DiscreteContactManager& checker)
 
 TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionBoxCylinderUnit)
 {
-  tesseract::tesseract_bullet::BulletDiscreteSimpleManager checker;
+  tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxCylinderUnit)
 {
-  tesseract::tesseract_bullet::BulletDiscreteBVHManager checker;
+  tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }

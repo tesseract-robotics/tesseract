@@ -36,7 +36,7 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/types.h>
 #include <tesseract_collision/core/collision_shapes.h>
 
-namespace tesseract
+namespace tesseract_collision
 {
 class ContinuousContactManager
 {

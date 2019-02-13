@@ -8,17 +8,19 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 #include "tesseract_collision/bullet/bullet_discrete_bvh_manager.h"
 #include "tesseract_collision/fcl/fcl_discrete_managers.h"
 
-void addCollisionObjects(tesseract::DiscreteContactManager& checker, bool use_convex_mesh = false)
+using namespace tesseract_collision;
+
+void addCollisionObjects(DiscreteContactManager& checker, bool use_convex_mesh = false)
 {
   //////////////////////
   // Add box to checker
   //////////////////////
-  tesseract::CollisionShapePtr box(new tesseract::BoxCollisionShape(1, 1, 1));
+  CollisionShapePtr box(new BoxCollisionShape(1, 1, 1));
   Eigen::Isometry3d box_pose;
   box_pose.setIdentity();
 
-  tesseract::CollisionShapesConst obj1_shapes;
-  tesseract::VectorIsometry3d obj1_poses;
+  CollisionShapesConst obj1_shapes;
+  VectorIsometry3d obj1_poses;
   obj1_shapes.push_back(box);
   obj1_poses.push_back(box_pose);
 
@@ -27,12 +29,12 @@ void addCollisionObjects(tesseract::DiscreteContactManager& checker, bool use_co
   /////////////////////////////////////////////
   // Add thin box to checker which is disabled
   /////////////////////////////////////////////
-  tesseract::CollisionShapePtr thin_box(new tesseract::BoxCollisionShape(0.1, 1, 1));
+  CollisionShapePtr thin_box(new BoxCollisionShape(0.1, 1, 1));
   Eigen::Isometry3d thin_box_pose;
   thin_box_pose.setIdentity();
 
-  tesseract::CollisionShapesConst obj2_shapes;
-  tesseract::VectorIsometry3d obj2_poses;
+  CollisionShapesConst obj2_shapes;
+  VectorIsometry3d obj2_poses;
   obj2_shapes.push_back(thin_box);
   obj2_poses.push_back(thin_box_pose);
 
@@ -42,37 +44,37 @@ void addCollisionObjects(tesseract::DiscreteContactManager& checker, bool use_co
   // Add sphere to checker. If use_convex_mesh = true then this
   // sphere will be added as a convex hull mesh.
   /////////////////////////////////////////////////////////////////
-  tesseract::CollisionShapePtr sphere;
+  CollisionShapePtr sphere;
 
   if (use_convex_mesh)
   {
-    tesseract::VectorVector3d mesh_vertices;
+    VectorVector3d mesh_vertices;
     std::vector<int> mesh_faces;
-    EXPECT_GT(tesseract::loadSimplePlyFile(std::string(DATA_DIR) + "/sphere_p25m.ply", mesh_vertices, mesh_faces), 0);
+    EXPECT_GT(loadSimplePlyFile(std::string(DATA_DIR) + "/sphere_p25m.ply", mesh_vertices, mesh_faces), 0);
 
     // This is required because convex hull cannot have multiple faces on the same plane.
-    std::shared_ptr<tesseract::VectorVector3d> ch_verticies(new tesseract::VectorVector3d());
+    std::shared_ptr<VectorVector3d> ch_verticies(new VectorVector3d());
     std::shared_ptr<std::vector<int>> ch_faces(new std::vector<int>());
-    int ch_num_faces = tesseract::createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
-    sphere.reset(new tesseract::ConvexMeshCollisionShape(ch_verticies, ch_faces, ch_num_faces));
+    int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
+    sphere.reset(new ConvexMeshCollisionShape(ch_verticies, ch_faces, ch_num_faces));
   }
   else
   {
-    sphere.reset(new tesseract::SphereCollisionShape(0.25));
+    sphere.reset(new SphereCollisionShape(0.25));
   }
 
   Eigen::Isometry3d sphere_pose;
   sphere_pose.setIdentity();
 
-  tesseract::CollisionShapesConst obj3_shapes;
-  tesseract::VectorIsometry3d obj3_poses;
+  CollisionShapesConst obj3_shapes;
+  VectorIsometry3d obj3_poses;
   obj3_shapes.push_back(sphere);
   obj3_poses.push_back(sphere_pose);
 
   checker.addCollisionObject("sphere_link", 0, obj3_shapes, obj3_poses);
 }
 
-void runTest(tesseract::DiscreteContactManager& checker)
+void runTest(DiscreteContactManager& checker)
 {
   //////////////////////////////////////
   // Test when object is in collision
@@ -81,18 +83,18 @@ void runTest(tesseract::DiscreteContactManager& checker)
   checker.setContactDistanceThreshold(0.1);
 
   // Set the collision object transforms
-  tesseract::TransformMap location;
+  TransformMap location;
   location["box_link"] = Eigen::Isometry3d::Identity();
   location["sphere_link"] = Eigen::Isometry3d::Identity();
   location["sphere_link"].translation()(0) = 0.2;
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
-  tesseract::ContactResultMap result;
-  checker.contactTest(result, tesseract::ContactTestType::CLOSEST);
+  ContactResultMap result;
+  checker.contactTest(result, ContactTestType::CLOSEST);
 
-  tesseract::ContactResultVector result_vector;
-  tesseract::flattenResults(std::move(result), result_vector);
+  ContactResultVector result_vector;
+  flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.55, 0.001);
@@ -119,8 +121,8 @@ void runTest(tesseract::DiscreteContactManager& checker)
   result_vector.clear();
   checker.setCollisionObjectsTransform(location);
 
-  checker.contactTest(result, tesseract::ContactTestType::CLOSEST);
-  tesseract::flattenResults(std::move(result), result_vector);
+  checker.contactTest(result, ContactTestType::CLOSEST);
+  flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(result_vector.empty());
 
@@ -131,8 +133,8 @@ void runTest(tesseract::DiscreteContactManager& checker)
   result_vector.clear();
 
   checker.setContactDistanceThreshold(0.251);
-  checker.contactTest(result, tesseract::ContactTestType::CLOSEST);
-  tesseract::flattenResults(std::move(result), result_vector);
+  checker.contactTest(result, ContactTestType::CLOSEST);
+  flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, 0.25, 0.001);
@@ -152,7 +154,7 @@ void runTest(tesseract::DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].normal[2], idx[2] * 0.0, 0.001);
 }
 
-void runConvexTest(tesseract::DiscreteContactManager& checker)
+void runConvexTest(DiscreteContactManager& checker)
 {
   //////////////////////////////////////
   // Test when object is in collision
@@ -161,18 +163,18 @@ void runConvexTest(tesseract::DiscreteContactManager& checker)
   checker.setContactDistanceThreshold(0.1);
 
   // Set the collision object transforms
-  tesseract::TransformMap location;
+  TransformMap location;
   location["box_link"] = Eigen::Isometry3d::Identity();
   location["sphere_link"] = Eigen::Isometry3d::Identity();
   location["sphere_link"].translation()(0) = 0.2;
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
-  tesseract::ContactResultMap result;
-  checker.contactTest(result, tesseract::ContactTestType::CLOSEST);
+  ContactResultMap result;
+  checker.contactTest(result, ContactTestType::CLOSEST);
 
-  tesseract::ContactResultVector result_vector;
-  tesseract::flattenResults(std::move(result), result_vector);
+  ContactResultVector result_vector;
+  flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.53776, 0.001);
@@ -196,8 +198,8 @@ void runConvexTest(tesseract::DiscreteContactManager& checker)
   result_vector.clear();
   checker.setCollisionObjectsTransform(location);
 
-  checker.contactTest(result, tesseract::ContactTestType::CLOSEST);
-  tesseract::flattenResults(std::move(result), result_vector);
+  checker.contactTest(result, ContactTestType::CLOSEST);
+  flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(result_vector.empty());
 
@@ -208,8 +210,8 @@ void runConvexTest(tesseract::DiscreteContactManager& checker)
   result_vector.clear();
 
   checker.setContactDistanceThreshold(0.27);
-  checker.contactTest(result, tesseract::ContactTestType::CLOSEST);
-  tesseract::flattenResults(std::move(result), result_vector);
+  checker.contactTest(result, ContactTestType::CLOSEST);
+  flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, 0.26224, 0.001);
@@ -228,35 +230,35 @@ void runConvexTest(tesseract::DiscreteContactManager& checker)
 
 TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionBoxSphereUnit)
 {
-  tesseract::tesseract_bullet::BulletDiscreteSimpleManager checker;
+  tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionBoxSphereConvexHullUnit)
 {
-  tesseract::tesseract_bullet::BulletDiscreteSimpleManager checker;
+  tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker, true);
   runConvexTest(checker);
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxSphereUnit)
 {
-  tesseract::tesseract_bullet::BulletDiscreteBVHManager checker;
+  tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxSphereConvexHullUnit)
 {
-  tesseract::tesseract_bullet::BulletDiscreteBVHManager checker;
+  tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker, true);
   runConvexTest(checker);
 }
 
 TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxSphereUnit)
 {
-  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
+  tesseract_collision_fcl::FCLDiscreteBVHManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }

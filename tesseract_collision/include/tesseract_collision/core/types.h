@@ -38,7 +38,7 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <boost/bind.hpp>
 TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
-namespace tesseract
+namespace tesseract_collision
 {
 
   template <typename T>

@@ -25,7 +25,7 @@ static void addBox(tesseract::tesseract_ros::ROSBasicEnv& env)
   using namespace tesseract;
   tesseract::AttachableObjectPtr obj(new tesseract::AttachableObject());
   std::shared_ptr<shapes::Box> box(new shapes::Box(0.5, 0.001, 0.5));
-  tesseract::BoxCollisionShapePtr c_box(new tesseract::BoxCollisionShape(0.5, 0.001, 0.5));
+  tesseract_collision::BoxCollisionShapePtr c_box(new tesseract_collision::BoxCollisionShape(0.5, 0.001, 0.5));
 
   Eigen::Isometry3d box_pose;
   box_pose.setIdentity();

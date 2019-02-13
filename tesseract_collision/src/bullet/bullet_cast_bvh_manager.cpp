@@ -41,9 +41,9 @@
 
 #include "tesseract_collision/bullet/bullet_cast_bvh_manager.h"
 
-namespace tesseract
+namespace tesseract_collision
 {
-namespace tesseract_bullet
+namespace tesseract_collision_bullet
 {
 BulletCastBVHManager::BulletCastBVHManager()
 {

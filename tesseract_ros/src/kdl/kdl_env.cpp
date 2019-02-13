@@ -634,7 +634,7 @@ bool KDLEnv::defaultIsContactAllowedFn(const std::string& link_name1, const std:
 
 void KDLEnv::loadDiscreteContactManagerPlugin(const std::string& plugin)
 {
-  DiscreteContactManagerPtr temp = discrete_manager_loader_->createUniqueInstance(plugin);
+  tesseract_collision::DiscreteContactManagerPtr temp = discrete_manager_loader_->createUniqueInstance(plugin);
   if (temp != nullptr)
   {
     discrete_manager_ = temp;
@@ -656,13 +656,13 @@ void KDLEnv::loadDiscreteContactManagerPlugin(const std::string& plugin)
             link.second->collision_array.empty() ? std::vector<urdf::CollisionSharedPtr>(1, link.second->collision) :
                                                    link.second->collision_array;
 
-        CollisionShapesConst shapes;
+        tesseract_collision::CollisionShapesConst shapes;
         VectorIsometry3d shape_poses;
         for (std::size_t i = 0; i < col_array.size(); ++i)
         {
           if (col_array[i] && col_array[i]->geometry)
           {
-            CollisionShapeConstPtr s = constructShape(col_array[i]->geometry.get());
+            tesseract_collision::CollisionShapeConstPtr s = constructShape(col_array[i]->geometry.get());
             if (s)
             {
               shapes.push_back(s);
@@ -691,7 +691,7 @@ void KDLEnv::loadDiscreteContactManagerPlugin(const std::string& plugin)
 
 void KDLEnv::loadContinuousContactManagerPlugin(const std::string& plugin)
 {
-  ContinuousContactManagerPtr temp = continuous_manager_loader_->createUniqueInstance(plugin);
+  tesseract_collision::ContinuousContactManagerPtr temp = continuous_manager_loader_->createUniqueInstance(plugin);
   if (temp != nullptr)
   {
     continuous_manager_ = temp;
@@ -713,13 +713,13 @@ void KDLEnv::loadContinuousContactManagerPlugin(const std::string& plugin)
             link.second->collision_array.empty() ? std::vector<urdf::CollisionSharedPtr>(1, link.second->collision) :
                                                    link.second->collision_array;
 
-        CollisionShapesConst shapes;
+        tesseract_collision::CollisionShapesConst shapes;
         VectorIsometry3d shape_poses;
         for (std::size_t i = 0; i < col_array.size(); ++i)
         {
           if (col_array[i] && col_array[i]->geometry)
           {
-            CollisionShapeConstPtr s = constructShape(col_array[i]->geometry.get());
+            tesseract_collision::CollisionShapeConstPtr s = constructShape(col_array[i]->geometry.get());
             if (s)
             {
               shapes.push_back(s);

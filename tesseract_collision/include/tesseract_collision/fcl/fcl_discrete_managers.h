@@ -45,9 +45,9 @@
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/fcl/fcl_utils.h>
 
-namespace tesseract
+namespace tesseract_collision
 {
-namespace tesseract_fcl
+namespace tesseract_collision_fcl
 {
 /** @brief A FCL implementation of the discrete contact manager */
 class FCLDiscreteBVHManager : public DiscreteContactManager

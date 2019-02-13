@@ -57,7 +57,7 @@ void sendSphere()
   // Add sphere
   AttachableObject obj;
   std::shared_ptr<shapes::Sphere> sphere(new shapes::Sphere(0.15));
-  tesseract::CollisionShapePtr c_sphere(new tesseract::SphereCollisionShape(0.15));
+  tesseract_collision::CollisionShapePtr c_sphere(new tesseract_collision::SphereCollisionShape(0.15));
   Eigen::Isometry3d sphere_pose;
 
   sphere_pose.setIdentity();

@@ -234,16 +234,16 @@ public:
   virtual AllowedCollisionMatrixPtr getAllowedCollisionMatrixNonConst() = 0;
 
   /** @brief Get the active function for determining if two links are allowed to be in collision */
-  virtual IsContactAllowedFn getIsContactAllowedFn() const = 0;
+  virtual tesseract_collision::IsContactAllowedFn getIsContactAllowedFn() const = 0;
 
   /** @brief Set the active function for determining if two links are allowed to be in collision */
-  virtual void setIsContactAllowedFn(IsContactAllowedFn fn) = 0;
+  virtual void setIsContactAllowedFn(tesseract_collision::IsContactAllowedFn fn) = 0;
 
   /** @brief Get a copy of the environments discrete contact manager */
-  virtual DiscreteContactManagerPtr getDiscreteContactManager() const = 0;
+  virtual tesseract_collision::DiscreteContactManagerPtr getDiscreteContactManager() const = 0;
 
   /** @brief Get a copy of the environments continuous contact manager */
-  virtual ContinuousContactManagerPtr getContinuousContactManager() const = 0;
+  virtual tesseract_collision::ContinuousContactManagerPtr getContinuousContactManager() const = 0;
 
 };  // class BasicEnvBase
 
@@ -262,11 +262,11 @@ typedef std::shared_ptr<const BasicEnv> BasicEnvConstPtr;
  * @param first_only Indicates if it should return on first contact
  * @return True if collision was found, otherwise false.
  */
-inline bool continuousCollisionCheckTrajectory(ContinuousContactManager& manager,
+inline bool continuousCollisionCheckTrajectory(tesseract_collision::ContinuousContactManager& manager,
                                                const BasicEnv& env,
                                                const BasicKin& kin,
                                                const Eigen::Ref<const TrajArray>& traj,
-                                               std::vector<ContactResultMap>& contacts,
+                                               std::vector<tesseract_collision::ContactResultMap>& contacts,
                                                bool first_only = true)
 {
   bool found = false;
@@ -276,7 +276,7 @@ inline bool continuousCollisionCheckTrajectory(ContinuousContactManager& manager
   contacts.reserve(static_cast<size_t>(traj.rows() - 1));
   for (int iStep = 0; iStep < traj.rows() - 1; ++iStep)
   {
-    ContactResultMap collisions;
+    tesseract_collision::ContactResultMap collisions;
 
     EnvStatePtr state0 = env.getState(joint_names, traj.row(iStep));
     EnvStatePtr state1 = env.getState(joint_names, traj.row(iStep + 1));
@@ -284,7 +284,7 @@ inline bool continuousCollisionCheckTrajectory(ContinuousContactManager& manager
     for (const auto& link_name : link_names)
       manager.setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
 
-    manager.contactTest(collisions, ContactTestTypes::FIRST);
+    manager.contactTest(collisions, tesseract_collision::ContactTestTypes::FIRST);
 
     if (collisions.size() > 0)
       found = true;

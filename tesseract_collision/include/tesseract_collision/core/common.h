@@ -40,7 +40,7 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/types.h>
 #include <tesseract_collision/core/common.h>
 
-namespace tesseract
+namespace tesseract_collision
 {
 typedef std::pair<std::string, std::string> ObjectPairKey;
 

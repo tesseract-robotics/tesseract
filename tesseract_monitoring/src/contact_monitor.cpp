@@ -16,6 +16,7 @@ TESSERACT_IGNORE_WARNINGS_POP
 
 using namespace tesseract;
 using namespace tesseract::tesseract_ros;
+using namespace tesseract_collision;
 
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
 
@@ -55,7 +56,7 @@ void callbackJointState(const sensor_msgs::JointState::ConstPtr& msg)
   }
 
   ContactResultVector contacts_vector;
-  tesseract::flattenResults(std::move(contacts), contacts_vector);
+  tesseract_collision::flattenResults(std::move(contacts), contacts_vector);
   contacts_msg.contacts.reserve(contacts_vector.size());
   for (const auto& contact : contacts_vector)
   {
@@ -99,7 +100,7 @@ bool callbackComputeContactResultVector(tesseract_msgs::ComputeContactResultVect
   manager->contactTest(contacts, type);
 
   ContactResultVector contacts_vector;
-  tesseract::flattenResults(std::move(contacts), contacts_vector);
+  tesseract_collision::flattenResults(std::move(contacts), contacts_vector);
   response.collision_result.contacts.reserve(contacts_vector.size());
   for (const auto& contact : contacts_vector)
   {

@@ -43,8 +43,8 @@ private:
 private:
   ompl::geometric::SimpleSetupPtr ss_;
   tesseract::BasicEnvConstPtr env_;
-  tesseract::DiscreteContactManagerPtr contact_manager_;
-  tesseract::IsContactAllowedFn contact_fn_;
+  tesseract_collision::DiscreteContactManagerPtr contact_manager_;
+  tesseract_collision::IsContactAllowedFn contact_fn_;
   std::vector<std::string> joint_names_;
   std::vector<std::string> link_names_;
 };

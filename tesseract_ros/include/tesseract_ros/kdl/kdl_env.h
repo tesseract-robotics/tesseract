@@ -63,8 +63,8 @@ namespace tesseract
 {
 namespace tesseract_ros
 {
-typedef pluginlib::ClassLoader<DiscreteContactManager> DiscreteContactManagerPluginLoader;
-typedef pluginlib::ClassLoader<ContinuousContactManager> ContinuousContactManagerPluginLoader;
+typedef pluginlib::ClassLoader<tesseract_collision::DiscreteContactManager> DiscreteContactManagerPluginLoader;
+typedef pluginlib::ClassLoader<tesseract_collision::ContinuousContactManager> ContinuousContactManagerPluginLoader;
 typedef std::shared_ptr<DiscreteContactManagerPluginLoader> DiscreteContactManagerPluginLoaderPtr;
 typedef std::shared_ptr<ContinuousContactManagerPluginLoader> ContinuousContactManagerPluginLoaderPtr;
 
@@ -80,11 +80,11 @@ public:
                                        std::placeholders::_1,
                                        std::placeholders::_2);
     discrete_manager_loader_.reset(new DiscreteContactManagerPluginLoader("tesseract_ros",
-                                                                          "tesseract::"
+                                                                          "tesseract_collision::"
                                                                           "DiscreteContactManager"));
 
     continuous_manager_loader_.reset(new ContinuousContactManagerPluginLoader("tesseract_ros",
-                                                                              "tesseract::"
+                                                                              "tesseract_collision::"
                                                                               "ContinuousContactManager"));
   }
 
@@ -150,10 +150,10 @@ public:
   srdf::ModelConstSharedPtr getSRDF() const override { return srdf_model_; }
   AllowedCollisionMatrixConstPtr getAllowedCollisionMatrix() const override { return allowed_collision_matrix_; }
   AllowedCollisionMatrixPtr getAllowedCollisionMatrixNonConst() override { return allowed_collision_matrix_; }
-  IsContactAllowedFn getIsContactAllowedFn() const override { return is_contact_allowed_fn_; }
-  void setIsContactAllowedFn(IsContactAllowedFn fn) override { is_contact_allowed_fn_ = fn; }
-  DiscreteContactManagerPtr getDiscreteContactManager() const override { return discrete_manager_->clone(); }
-  ContinuousContactManagerPtr getContinuousContactManager() const override { return continuous_manager_->clone(); }
+  tesseract_collision::IsContactAllowedFn getIsContactAllowedFn() const override { return is_contact_allowed_fn_; }
+  void setIsContactAllowedFn(tesseract_collision::IsContactAllowedFn fn) override { is_contact_allowed_fn_ = fn; }
+  tesseract_collision::DiscreteContactManagerPtr getDiscreteContactManager() const override { return discrete_manager_->clone(); }
+  tesseract_collision::ContinuousContactManagerPtr getContinuousContactManager() const override { return continuous_manager_->clone(); }
   void loadDiscreteContactManagerPlugin(const std::string& plugin) override;
   void loadContinuousContactManagerPlugin(const std::string& plugin) override;
 
@@ -176,12 +176,11 @@ private:
   ObjectColorMapPtr object_colors_;                           /**< A map of objects to color */
   AllowedCollisionMatrixPtr
       allowed_collision_matrix_; /**< The allowed collision matrix used during collision checking */
-  IsContactAllowedFn
-      is_contact_allowed_fn_; /**< The function used to determine if two objects are allowed in collision */
-  DiscreteContactManagerPluginLoaderPtr discrete_manager_loader_;     /**< The discrete contact manager loader */
-  ContinuousContactManagerPluginLoaderPtr continuous_manager_loader_; /**< The continuous contact manager loader */
-  DiscreteContactManagerPtr discrete_manager_;                        /**< The discrete contact manager object */
-  ContinuousContactManagerPtr continuous_manager_;                    /**< The continuous contact manager object */
+  tesseract_collision::IsContactAllowedFn is_contact_allowed_fn_;       /**< The function used to determine if two objects are allowed in collision */
+  DiscreteContactManagerPluginLoaderPtr discrete_manager_loader_;       /**< The discrete contact manager loader */
+  ContinuousContactManagerPluginLoaderPtr continuous_manager_loader_;   /**< The continuous contact manager loader */
+  tesseract_collision::DiscreteContactManagerPtr discrete_manager_;     /**< The discrete contact manager object */
+  tesseract_collision::ContinuousContactManagerPtr continuous_manager_; /**< The continuous contact manager object */
 
   bool defaultIsContactAllowedFn(const std::string& link_name1, const std::string& link_name2) const;
 
