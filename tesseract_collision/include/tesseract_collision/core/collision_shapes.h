@@ -31,6 +31,7 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <memory>
 #include <octomap/octomap.h>
+#include <console_bridge/console.h>
 TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>

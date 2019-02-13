@@ -34,7 +34,9 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <boost/algorithm/string.hpp>
+#include <console_bridge/console.h>
 TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
@@ -84,14 +86,14 @@ isContactAllowed(const std::string& name1, const std::string& name2, const IsCon
   {
     if (verbose)
     {
-      ROS_DEBUG("Collision between '%s' and '%s' is allowed. No contacts are computed.", name1.c_str(), name2.c_str());
+      CONSOLE_BRIDGE_logDebug("Collision between '%s' and '%s' is allowed. No contacts are computed.", name1.c_str(), name2.c_str());
     }
     return true;
   }
 
   if (verbose)
   {
-    ROS_DEBUG("Actually checking collisions between %s and %s", name1.c_str(), name2.c_str());
+    CONSOLE_BRIDGE_logDebug("Actually checking collisions between %s and %s", name1.c_str(), name2.c_str());
   }
 
   return false;
@@ -182,7 +184,7 @@ inline int createConvexHull(VectorVector3d& vertices,
                               static_cast<btScalar>(shrinkClamp));
   if (val < 0)
   {
-    ROS_ERROR("Failed to create convex hull");
+    CONSOLE_BRIDGE_logError("Failed to create convex hull");
     return -1;
   }
 
@@ -270,7 +272,7 @@ inline bool writeSimplePlyFile(const std::string& path,
   myfile.open(path);
   if (myfile.fail())
   {
-    ROS_ERROR("Failed to open file: %s", path.c_str());
+    CONSOLE_BRIDGE_logError("Failed to open file: %s", path.c_str());
     return false;
   }
 
@@ -372,7 +374,7 @@ inline int loadSimplePlyFile(const std::string& path,
   myfile.open(path);
   if (myfile.fail())
   {
-    ROS_ERROR("Failed to open file: %s", path.c_str());
+    CONSOLE_BRIDGE_logError("Failed to open file: %s", path.c_str());
     return false;
   }
   std::string str;
@@ -384,7 +386,7 @@ inline int loadSimplePlyFile(const std::string& path,
   boost::split(tokens, str, boost::is_any_of(" "));
   if (tokens.size() != 3 || !isNumeric(tokens.back()))
   {
-    ROS_ERROR("Failed to parse file: %s", path.c_str());
+    CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
     return false;
   }
   size_t num_vertices = static_cast<size_t>(std::stoi(tokens.back()));
@@ -398,7 +400,7 @@ inline int loadSimplePlyFile(const std::string& path,
   boost::split(tokens, str, boost::is_any_of(" "));
   if (tokens.size() != 3 || !isNumeric(tokens.back()))
   {
-    ROS_ERROR("Failed to parse file: %s", path.c_str());
+    CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
     return false;
   }
 
@@ -407,7 +409,7 @@ inline int loadSimplePlyFile(const std::string& path,
   std::getline(myfile, str);
   if (str != "end_header")
   {
-    ROS_ERROR("Failed to parse file: %s", path.c_str());
+    CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
     return false;
   }
 
@@ -419,7 +421,7 @@ inline int loadSimplePlyFile(const std::string& path,
     boost::split(tokens, str, boost::is_any_of(" "));
     if (tokens.size() != 3)
     {
-      ROS_ERROR("Failed to parse file: %s", path.c_str());
+      CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
       return false;
     }
 
@@ -435,7 +437,7 @@ inline int loadSimplePlyFile(const std::string& path,
     boost::split(tokens, str, boost::is_any_of(" "));
     if (tokens.size() < 3)
     {
-      ROS_ERROR("Failed to parse file: %s", path.c_str());
+      CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
       return false;
     }
 

@@ -49,7 +49,6 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <fcl/narrowphase/distance.h>
 #include <memory>
 #include <set>
-#include <ros/console.h>
 TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
@@ -157,14 +156,14 @@ inline COWPtr createFCLCollisionObject(const std::string& name,
   // dont add object that does not have geometry
   if (shapes.empty() || shape_poses.empty() || (shapes.size() != shape_poses.size()))
   {
-    ROS_DEBUG("ignoring link %s", name.c_str());
+    CONSOLE_BRIDGE_logDebug("ignoring link %s", name.c_str());
     return nullptr;
   }
 
   COWPtr new_cow(new COW(name, type_id, shapes, shape_poses));
 
   new_cow->m_enabled = enabled;
-  ROS_DEBUG("Created collision object for link %s", new_cow->getName().c_str());
+  CONSOLE_BRIDGE_logDebug("Created collision object for link %s", new_cow->getName().c_str());
   return new_cow;
 }
 

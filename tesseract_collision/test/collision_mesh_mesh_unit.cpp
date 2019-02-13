@@ -1,7 +1,6 @@
 #include <tesseract_collision/core/macros.h>
 TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
-#include <ros/ros.h>
 TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include "tesseract_collision/bullet/bullet_discrete_simple_manager.h"

@@ -109,7 +109,7 @@ CollisionGeometryPtr createShapePrimitive(const MeshCollisionShapeConstPtr& geom
     return CollisionGeometryPtr(g);
   }
 
-  ROS_ERROR("The mesh is empty!");
+  CONSOLE_BRIDGE_logError("The mesh is empty!");
   return nullptr;
 }
 
@@ -121,7 +121,7 @@ CollisionGeometryPtr createShapePrimitive(const ConvexMeshCollisionShapeConstPtr
   if (vertice_count > 0 && face_count > 0)
     return CollisionGeometryPtr(new fcl::Convexd(geom->getVertices(), face_count, geom->getFaces()));
 
-  ROS_ERROR("The mesh is empty!");
+  CONSOLE_BRIDGE_logError("The mesh is empty!");
   return nullptr;
 }
 
@@ -135,7 +135,7 @@ CollisionGeometryPtr createShapePrimitive(const OctreeCollisionShapeConstPtr& ge
     }
     default:
     {
-      ROS_ERROR("This fcl octree sub shape type (%d) is not supported for geometry octree", static_cast<int>(geom->getSubShapeType()));
+      CONSOLE_BRIDGE_logError("This fcl octree sub shape type (%d) is not supported for geometry octree", static_cast<int>(geom->getSubShapeType()));
       return nullptr;
     }
   }
@@ -179,7 +179,7 @@ CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr &geom)
     }
     default:
     {
-      ROS_ERROR("This geometric shape type (%d) is not supported using fcl yet", static_cast<int>(geom->getType()));
+      CONSOLE_BRIDGE_logError("This geometric shape type (%d) is not supported using fcl yet", static_cast<int>(geom->getType()));
       return nullptr;
     }
   }
@@ -278,7 +278,7 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
     // TODO: There is an issue with FCL need to track down
     if (std::isnan(contact.nearest_points[0](0)))
     {
-      ROS_ERROR("Nearest Points are NAN's");
+      CONSOLE_BRIDGE_logError("Nearest Points are NAN's");
     }
 
     ObjectPairKey pc = getObjectPairKey(cd1->getName(), cd2->getName());

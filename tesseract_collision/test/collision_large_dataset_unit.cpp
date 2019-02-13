@@ -1,7 +1,8 @@
 #include <tesseract_collision/core/macros.h>
 TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
-#include <ros/ros.h>
+#include <console_bridge/console.h>
+#include <chrono>
 TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include "tesseract_collision/bullet/bullet_discrete_simple_manager.h"
@@ -68,7 +69,7 @@ void runTest(DiscreteContactManager& checker, bool use_convex_mesh = false)
 
   ContactResultVector result_vector;
 
-  ros::WallTime start_time = ros::WallTime::now();
+  auto start_time = std::chrono::high_resolution_clock::now();
   for (auto i = 0; i < 10; ++i)
   {
     ContactResultMap result;
@@ -76,8 +77,9 @@ void runTest(DiscreteContactManager& checker, bool use_convex_mesh = false)
     checker.contactTest(result, ContactTestType::ALL);
     flattenResults(std::move(result), result_vector);
   }
-  ros::WallTime end_time = ros::WallTime::now();
-  ROS_INFO_STREAM("DT: " << (end_time - start_time).toSec());
+  auto end_time = std::chrono::high_resolution_clock::now();
+
+  CONSOLE_BRIDGE_logInform("DT: %f ms",  std::chrono::duration<double, std::milli>(end_time - start_time).count());
 
   EXPECT_TRUE(result_vector.size() == 300);
 }

@@ -1,14 +1,14 @@
 #include <tesseract_collision/core/macros.h>
 TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <octomap/octomap.h>
-#include <ros/package.h>
+#include <console_bridge/console.h>
+#include <gtest/gtest.h>
+#include <chrono>
 TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include "tesseract_collision/bullet/bullet_discrete_simple_manager.h"
 #include "tesseract_collision/bullet/bullet_discrete_bvh_manager.h"
 #include "tesseract_collision/fcl/fcl_discrete_managers.h"
-#include <gtest/gtest.h>
-#include <ros/ros.h>
 
 using namespace tesseract_collision;
 
@@ -80,15 +80,16 @@ void runTest(DiscreteContactManager& checker, double tol)
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
-  ros::WallTime start_time = ros::WallTime::now();
+  auto start_time = std::chrono::high_resolution_clock::now();
   ContactResultMap result;
   for (auto i = 0; i < 10; ++i)
   {
     result.clear();
     checker.contactTest(result, ContactTestType::CLOSEST);
   }
-  ros::WallTime end_time = ros::WallTime::now();
-  ROS_INFO_STREAM("DT: " << (end_time - start_time).toSec());
+  auto end_time = std::chrono::high_resolution_clock::now();
+
+  CONSOLE_BRIDGE_logInform("DT: %f ms",  std::chrono::duration<double, std::milli>(end_time - start_time).count());
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);

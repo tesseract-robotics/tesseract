@@ -25,7 +25,7 @@
  */
 #include <tesseract_collision/core/macros.h>
 TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
-#include <ros/ros.h>
+#include <console_bridge/console.h>
 TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/common.h>
@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 
   if (!pnh.hasParam("input") || !pnh.hasParam("output"))
   {
-    ROS_ERROR(help.c_str());
+    CONSOLE_BRIDGE_logError(help.c_str());
     return -1;
   }
 
@@ -64,7 +64,7 @@ int main(int argc, char** argv)
   std::streamsize size = file.tellg();
   if (size < 0)
   {
-    ROS_ERROR("Failed to locate input file!");
+    CONSOLE_BRIDGE_logError("Failed to locate input file!");
     return -1;
   }
 
@@ -72,7 +72,7 @@ int main(int argc, char** argv)
   std::vector<char> buffer(static_cast<size_t>(size));
   if (!file.read(buffer.data(), size))
   {
-    ROS_ERROR("Failed to read input file!");
+    CONSOLE_BRIDGE_logError("Failed to read input file!");
     return -1;
   }
 
@@ -81,7 +81,7 @@ int main(int argc, char** argv)
       shapes::createMeshFromBinary(buffer.data(), static_cast<size_t>(size), Eigen::Vector3d(1.0, 1.0, 1.0), input));
   if (mesh == nullptr)
   {
-    ROS_ERROR("Failed to create mesh from binary data!");
+    CONSOLE_BRIDGE_logError("Failed to create mesh from binary data!");
     return -1;
   }
 
@@ -98,7 +98,7 @@ int main(int argc, char** argv)
 
   if (num_faces < 0)
   {
-    ROS_ERROR("Failed to create convex hull!");
+    CONSOLE_BRIDGE_logError("Failed to create convex hull!");
     return -1;
   }
 
