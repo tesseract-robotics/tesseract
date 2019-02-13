@@ -7,17 +7,19 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 #include "tesseract_collision/bullet/bullet_cast_simple_manager.h"
 #include "tesseract_collision/bullet/bullet_cast_bvh_manager.h"
 
-void addCollisionObjects(tesseract::ContinuousContactManager& checker)
+using namespace tesseract_collision;
+
+void addCollisionObjects(ContinuousContactManager& checker)
 {
   ////////////////////////////
   // Add static box to checker
   ////////////////////////////
-  tesseract::CollisionShapePtr static_box(new tesseract::BoxCollisionShape(1, 1, 1));
+  CollisionShapePtr static_box(new BoxCollisionShape(1, 1, 1));
   Eigen::Isometry3d static_box_pose;
   static_box_pose.setIdentity();
 
-  tesseract::CollisionShapesConst obj1_shapes;
-  tesseract::VectorIsometry3d obj1_poses;
+  CollisionShapesConst obj1_shapes;
+  VectorIsometry3d obj1_poses;
   obj1_shapes.push_back(static_box);
   obj1_poses.push_back(static_box_pose);
 
@@ -26,20 +28,20 @@ void addCollisionObjects(tesseract::ContinuousContactManager& checker)
   ////////////////////////////
   // Add static box to checker
   ////////////////////////////
-  tesseract::CollisionShapePtr moving_box(new tesseract::BoxCollisionShape(0.25, 0.25, 0.25));
+  CollisionShapePtr moving_box(new BoxCollisionShape(0.25, 0.25, 0.25));
   Eigen::Isometry3d moving_box_pose;
   moving_box_pose.setIdentity();
   moving_box_pose.translation() = Eigen::Vector3d(0.5, -0.5, 0);
 
-  tesseract::CollisionShapesConst obj2_shapes;
-  tesseract::VectorIsometry3d obj2_poses;
+  CollisionShapesConst obj2_shapes;
+  VectorIsometry3d obj2_poses;
   obj2_shapes.push_back(moving_box);
   obj2_poses.push_back(moving_box_pose);
 
   checker.addCollisionObject("moving_box_link", 0, obj2_shapes, obj2_poses);
 }
 
-void runTest(tesseract::ContinuousContactManager& checker)
+void runTest(ContinuousContactManager& checker)
 {
   //////////////////////////////////////
   // Test when object is inside another
@@ -60,16 +62,16 @@ void runTest(tesseract::ContinuousContactManager& checker)
   checker.setCollisionObjectsTransform("moving_box_link", start_pos, end_pos);
 
   // Perform collision check
-  tesseract::ContactResultMap result;
-  checker.contactTest(result, tesseract::ContactTestType::CLOSEST);
+  ContactResultMap result;
+  checker.contactTest(result, ContactTestType::CLOSEST);
 
-  tesseract::ContactResultVector result_vector;
-  tesseract::flattenResults(std::move(result), result_vector);
+  ContactResultVector result_vector;
+  flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.2475, 0.001);
   EXPECT_NEAR(result_vector[0].cc_time, 0.25, 0.001);
-  EXPECT_TRUE(result_vector[0].cc_type == tesseract::ContinouseCollisionTypes::CCType_Between);
+  EXPECT_TRUE(result_vector[0].cc_type == ContinouseCollisionTypes::CCType_Between);
 
   EXPECT_NEAR(result_vector[0].nearest_points[0][0], -0.5, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[0][1], 0.5, 0.001);
@@ -90,14 +92,14 @@ void runTest(tesseract::ContinuousContactManager& checker)
 
 TEST(TesseractCollisionUnit, BulletCastSimpleCollisionBoxBoxUnit)
 {
-  tesseract::tesseract_bullet::BulletCastSimpleManager checker;
+  tesseract_collision_bullet::BulletCastSimpleManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
 TEST(TesseractCollisionUnit, BulletCastBVHCollisionBoxBoxUnit)
 {
-  tesseract::tesseract_bullet::BulletCastBVHManager checker;
+  tesseract_collision_bullet::BulletCastBVHManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }

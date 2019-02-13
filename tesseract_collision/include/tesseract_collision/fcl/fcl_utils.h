@@ -56,9 +56,9 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/common.h>
 #include <tesseract_collision/core/collision_shapes.h>
 
-namespace tesseract
+namespace tesseract_collision
 {
-namespace tesseract_fcl
+namespace tesseract_collision_fcl
 {
 typedef std::shared_ptr<fcl::CollisionGeometryd> CollisionGeometryPtr;
 typedef std::shared_ptr<fcl::CollisionObjectd> CollisionObjectPtr;

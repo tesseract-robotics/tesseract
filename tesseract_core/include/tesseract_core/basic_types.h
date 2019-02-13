@@ -198,9 +198,9 @@ struct CollisionObjectGeometry
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  std::vector<tesseract::CollisionShapeConstPtr> shapes; /**< @brief The collision shape */
-  VectorIsometry3d shape_poses;              /**< @brief The pose of the shape */
-  VectorVector4d shape_colors;               /**< @brief (Optional) The shape color (R, G, B, A) */
+  tesseract_collision::CollisionShapesConst shapes; /**< @brief The collision shape */
+  VectorIsometry3d shape_poses;                     /**< @brief The pose of the shape */
+  VectorVector4d shape_colors;                      /**< @brief (Optional) The shape color (R, G, B, A) */
 };
 
 /** @brief Contains data about an attachable object */

@@ -43,9 +43,9 @@
 
 #include <tesseract_collision/bullet/bullet_utils.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
-namespace tesseract
+namespace tesseract_collision
 {
-namespace tesseract_bullet
+namespace tesseract_collision_bullet
 {
 /** @brief A BVH implementaiton of a bullet manager */
 class BulletDiscreteBVHManager : public DiscreteContactManager

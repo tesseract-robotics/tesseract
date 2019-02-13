@@ -91,11 +91,11 @@ bool ChainOmplInterface::isStateValid(const ompl::base::State* state) const
   tesseract::EnvStateConstPtr env_state = env_->getState(joint_names_, joint_angles);
 
   // Need to get thread id
-  tesseract::DiscreteContactManagerPtr cm = contact_manager_->clone();
+  tesseract_collision::DiscreteContactManagerPtr cm = contact_manager_->clone();
   cm->setCollisionObjectsTransform(env_state->transforms);
 
-  tesseract::ContactResultMap contact_map;
-  cm->contactTest(contact_map, tesseract::ContactTestTypes::FIRST);
+  tesseract_collision::ContactResultMap contact_map;
+  cm->contactTest(contact_map, tesseract_collision::ContactTestTypes::FIRST);
 
   return contact_map.empty();
 }

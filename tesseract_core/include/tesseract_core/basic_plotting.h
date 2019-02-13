@@ -49,7 +49,7 @@ public:
    * length).
    */
   virtual void plotContactResults(const std::vector<std::string>& link_names,
-                                  const ContactResultVector& dist_results,
+                                  const tesseract_collision::ContactResultVector& dist_results,
                                   const Eigen::Ref<const Eigen::VectorXd>& safety_distances) = 0;
 
   /**

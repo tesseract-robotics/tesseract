@@ -84,13 +84,13 @@ public:
   }
 
   void plotContactResults(const std::vector<std::string>& link_names,
-                          const ContactResultVector& dist_results,
+                          const tesseract_collision::ContactResultVector& dist_results,
                           const Eigen::Ref<const Eigen::VectorXd>& safety_distances) override
   {
     visualization_msgs::MarkerArray msg;
     for (unsigned i = 0; i < dist_results.size(); ++i)
     {
-      const ContactResult& dist = dist_results[i];
+      const tesseract_collision::ContactResult& dist = dist_results[i];
       const double& safety_distance = safety_distances[i];
 
       Eigen::Vector4d rgba;
@@ -118,7 +118,7 @@ public:
         ptB = dist.nearest_points[0];
       }
 
-      if (dist.cc_type == ContinouseCollisionType::CCType_Between)
+      if (dist.cc_type == tesseract_collision::ContinouseCollisionType::CCType_Between)
       {
         Eigen::Vector4d cc_rgba;
         cc_rgba << 0.0, 0.0, 0.0, 1.0;

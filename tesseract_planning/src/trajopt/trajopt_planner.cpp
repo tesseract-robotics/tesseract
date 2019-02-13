@@ -91,8 +91,8 @@ bool TrajOptPlanner::solve(PlannerResponse& response, const TrajOptPlannerConfig
   ROS_INFO("planning time: %.3f", (ros::Time::now() - tStart).toSec());
 
   // Check and report collisions
-  std::vector<tesseract::ContactResultMap> collisions;
-  ContinuousContactManagerPtr manager = config.prob->GetEnv()->getContinuousContactManager();
+  std::vector<tesseract_collision::ContactResultMap> collisions;
+  tesseract_collision::ContinuousContactManagerPtr manager = config.prob->GetEnv()->getContinuousContactManager();
   manager->setActiveCollisionObjects(config.prob->GetKin()->getLinkNames());
   manager->setContactDistanceThreshold(0);
   collisions.clear();

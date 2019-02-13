@@ -1330,7 +1330,7 @@ bool RobotLink::createEntityForGeometryElement(const shapes::Shape& geom,
   return false;
 }
 
-bool RobotLink::createEntityForGeometryElement(const tesseract::CollisionShape& geom,
+bool RobotLink::createEntityForGeometryElement(const tesseract_collision::CollisionShape& geom,
                                                Eigen::Isometry3d origin,
                                                Eigen::Vector4d color,
                                                bool isVisual)
@@ -1357,50 +1357,50 @@ bool RobotLink::createEntityForGeometryElement(const tesseract::CollisionShape& 
     offset_position = position;
     offset_orientation = Ogre::Quaternion::IDENTITY * orientation;
   }
-  if (geom.getType() != tesseract::CollisionShapeType::OCTREE)
+  if (geom.getType() != tesseract_collision::CollisionShapeType::OCTREE)
   {
     switch (geom.getType())
     {
-      case tesseract::CollisionShapeType::SPHERE:
+      case tesseract_collision::CollisionShapeType::SPHERE:
       {
         entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Sphere, scene_manager_);
-        const tesseract::SphereCollisionShape& sphere = static_cast<const tesseract::SphereCollisionShape&>(geom);
+        const tesseract_collision::SphereCollisionShape& sphere = static_cast<const tesseract_collision::SphereCollisionShape&>(geom);
         float d = 2.0f * static_cast<float>(sphere.getRadius());
         scale = Ogre::Vector3(d, d, d);
         break;
       }
-      case tesseract::CollisionShapeType::BOX:
+      case tesseract_collision::CollisionShapeType::BOX:
       {
         entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Cube, scene_manager_);
-        const tesseract::BoxCollisionShape& box = static_cast<const tesseract::BoxCollisionShape&>(geom);
+        const tesseract_collision::BoxCollisionShape& box = static_cast<const tesseract_collision::BoxCollisionShape&>(geom);
         scale = Ogre::Vector3(static_cast<float>(box.getX()), static_cast<float>(box.getY()), static_cast<float>(box.getZ()));
         break;
       }
-      case tesseract::CollisionShapeType::CYLINDER:
+      case tesseract_collision::CollisionShapeType::CYLINDER:
       {
         Ogre::Quaternion rotX;
         rotX.FromAngleAxis(Ogre::Degree(90), Ogre::Vector3::UNIT_X);
         offset_orientation = offset_orientation * rotX;
 
         entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Cylinder, scene_manager_);
-        const tesseract::CylinderCollisionShape& cylinder = static_cast<const tesseract::CylinderCollisionShape&>(geom);
+        const tesseract_collision::CylinderCollisionShape& cylinder = static_cast<const tesseract_collision::CylinderCollisionShape&>(geom);
 
         float d = 2.0f * static_cast<float>(cylinder.getRadius());
         float z = static_cast<float>(cylinder.getLength());
         scale = Ogre::Vector3(d, z, d);
         break;
       }
-      case tesseract::CollisionShapeType::CONE:
+      case tesseract_collision::CollisionShapeType::CONE:
       {
         entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Cone, scene_manager_);
-        const tesseract::ConeCollisionShape& cone = static_cast<const tesseract::ConeCollisionShape&>(geom);
+        const tesseract_collision::ConeCollisionShape& cone = static_cast<const tesseract_collision::ConeCollisionShape&>(geom);
 
         float d = 2.0f * static_cast<float>(cone.getRadius());
         float z = static_cast<float>(cone.getLength());
         scale = Ogre::Vector3(d, d, z);
         break;
       }
-      case tesseract::CollisionShapeType::MESH:
+      case tesseract_collision::CollisionShapeType::MESH:
       {
         bool use_resource = false;
         if (use_resource)
@@ -1433,8 +1433,8 @@ bool RobotLink::createEntityForGeometryElement(const tesseract::CollisionShape& 
         }
         else
         {
-          const tesseract::MeshCollisionShape& mesh = static_cast<const tesseract::MeshCollisionShape&>(geom);
-          const tesseract::VectorVector3d& vertices = *(mesh.getVertices());
+          const tesseract_collision::MeshCollisionShape& mesh = static_cast<const tesseract_collision::MeshCollisionShape&>(geom);
+          const tesseract_collision::VectorVector3d& vertices = *(mesh.getVertices());
           const std::vector<int>& triangles = *(mesh.getTriangles());
           if (mesh.getTriangleCount() > 0)
           {
@@ -1510,7 +1510,7 @@ bool RobotLink::createEntityForGeometryElement(const tesseract::CollisionShape& 
         }
         break;
       }
-      case tesseract::CollisionShapeType::CONVEX_MESH:
+      case tesseract_collision::CollisionShapeType::CONVEX_MESH:
       {
         bool use_resource = false;
         if (use_resource)
@@ -1543,8 +1543,8 @@ bool RobotLink::createEntityForGeometryElement(const tesseract::CollisionShape& 
         }
         else
         {
-          const tesseract::ConvexMeshCollisionShape& mesh = static_cast<const tesseract::ConvexMeshCollisionShape&>(geom);
-          const tesseract::VectorVector3d& vertices = *(mesh.getVertices());
+          const tesseract_collision::ConvexMeshCollisionShape& mesh = static_cast<const tesseract_collision::ConvexMeshCollisionShape&>(geom);
+          const tesseract_collision::VectorVector3d& vertices = *(mesh.getVertices());
           const std::vector<int>& faces = *(mesh.getFaces());
           if (mesh.getFaceCount() > 0)
           {
@@ -1684,7 +1684,7 @@ bool RobotLink::createEntityForGeometryElement(const tesseract::CollisionShape& 
     Ogre::SceneNode* offset_node;
     std::vector<rviz::PointCloud*>* octree_objects;
 
-    const std::shared_ptr<const octomap::OcTree>& octree = static_cast<const tesseract::OctreeCollisionShape&>(geom).getOctree();
+    const std::shared_ptr<const octomap::OcTree>& octree = static_cast<const tesseract_collision::OctreeCollisionShape&>(geom).getOctree();
 
     if (!max_octree_depth)
       octree_depth = octree->getTreeDepth();
@@ -1943,7 +1943,7 @@ void RobotLink::createCollision(const tesseract::AttachableObject& ao)
 {
   for (unsigned i = 0; i < ao.collision.shapes.size(); ++i)
   {
-    const tesseract::CollisionShapeConstPtr collision = ao.collision.shapes[i];
+    const tesseract_collision::CollisionShapeConstPtr collision = ao.collision.shapes[i];
     if (collision)
     {
       if (ao.collision.shape_colors.empty())

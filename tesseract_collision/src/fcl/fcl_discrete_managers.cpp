@@ -46,9 +46,9 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include "tesseract_collision/fcl/fcl_discrete_managers.h"
 
-namespace tesseract
+namespace tesseract_collision
 {
-namespace tesseract_fcl
+namespace tesseract_collision_fcl
 {
 FCLDiscreteBVHManager::FCLDiscreteBVHManager()
 {

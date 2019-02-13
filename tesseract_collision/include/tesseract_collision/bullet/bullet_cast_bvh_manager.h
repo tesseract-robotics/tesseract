@@ -45,9 +45,9 @@
 #ifndef TESSERACT_COLLISION_BULLET_CAST_BVH_MANAGERS_H
 #define TESSERACT_COLLISION_BULLET_CAST_BVH_MANAGERS_H
 
-namespace tesseract
+namespace tesseract_collision
 {
-namespace tesseract_bullet
+namespace tesseract_collision_bullet
 {
 /** @brief A BVH implementaiton of a tesseract contact manager */
 class BulletCastBVHManager : public ContinuousContactManager

@@ -35,7 +35,7 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
 
-namespace tesseract
+namespace tesseract_collision
 {
   enum CollisionShapeType
   {

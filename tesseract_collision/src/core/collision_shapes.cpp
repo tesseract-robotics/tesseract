@@ -26,7 +26,7 @@
 
 #include <tesseract_collision/core/collision_shapes.h>
 
-namespace tesseract
+namespace tesseract_collision
 {
   // Base Class for Tesseract Collision Shapes
 

@@ -53,9 +53,9 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/common.h>
 #include <tesseract_collision/core/collision_shapes.h>
 
-namespace tesseract
+namespace tesseract_collision
 {
-namespace tesseract_bullet
+namespace tesseract_collision_bullet
 {
 #define METERS
 
@@ -117,7 +117,7 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   CollisionObjectWrapper(const std::string& name,
                          const int& type_id,
-                         const tesseract::CollisionShapesConst& shapes,
+                         const CollisionShapesConst& shapes,
                          const VectorIsometry3d& shape_poses);
 
   short int m_collisionFilterGroup;
@@ -832,7 +832,7 @@ inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
 
 inline COWPtr createCollisionObject(const std::string& name,
                                     const int& type_id,
-                                    const tesseract::CollisionShapesConst& shapes,
+                                    const CollisionShapesConst& shapes,
                                     const VectorIsometry3d& shape_poses,
                                     bool enabled = true)
 {

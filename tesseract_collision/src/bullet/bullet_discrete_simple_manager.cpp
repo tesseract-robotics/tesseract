@@ -41,9 +41,9 @@
 
 #include "tesseract_collision/bullet/bullet_discrete_simple_manager.h"
 
-namespace tesseract
+namespace tesseract_collision
 {
-namespace tesseract_bullet
+namespace tesseract_collision_bullet
 {
 BulletDiscreteSimpleManager::BulletDiscreteSimpleManager()
 {
@@ -86,7 +86,7 @@ DiscreteContactManagerPtr BulletDiscreteSimpleManager::clone() const
 
 bool BulletDiscreteSimpleManager::addCollisionObject(const std::string& name,
                                                      const int& mask_id,
-                                                     const tesseract::CollisionShapesConst& shapes,
+                                                     const CollisionShapesConst& shapes,
                                                      const VectorIsometry3d& shape_poses,
                                                      bool enabled)
 {

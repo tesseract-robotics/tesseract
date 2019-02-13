@@ -7,9 +7,9 @@
 TESSERACT_IGNORE_WARNINGS_PUSH
 #include <btBulletCollisionCommon.h>
 TESSERACT_IGNORE_WARNINGS_POP
-namespace tesseract
+namespace tesseract_collision
 {
-namespace tesseract_bullet
+namespace tesseract_collision_bullet
 {
 
 class BulletCollisionObject : public CollisionObjectBase
