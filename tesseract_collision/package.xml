@@ -12,10 +12,6 @@
   <author>John Schulman</author>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>roscpp</build_depend>
-  <build_export_depend>roscpp</build_export_depend>
-  <exec_depend>roscpp</exec_depend>
-  <depend>pluginlib</depend>
   <depend>bullet3_ros</depend>
   <depend>fcl_ros</depend>
   <depend>libconsole-bridge-dev</depend>
