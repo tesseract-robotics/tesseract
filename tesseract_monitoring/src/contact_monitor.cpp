@@ -35,41 +35,65 @@ static tesseract_msgs::ContactResultVector contacts_msg;
 static bool publish_environment;
 static boost::mutex modify_mutex;
 
-void callbackJointState(const sensor_msgs::JointState::ConstPtr& msg)
+static boost::shared_ptr<sensor_msgs::JointState> current_joint_states;
+static boost::condition_variable current_joint_states_evt;
+
+void computeCollisionReportThread()
 {
-  boost::mutex::scoped_lock(modify_mutex);
-  contacts.clear();
-  contacts_msg.contacts.clear();
 
-  env->setState(msg->name, msg->position);
-  EnvStateConstPtr state = env->getState();
+	while (!ros::isShuttingDown())
+	{
+		boost::mutex::scoped_lock lock(modify_mutex);
+		if (!current_joint_states)
+		{
+			current_joint_states_evt.wait(lock);
+		}
 
-  manager->setCollisionObjectsTransform(state->transforms);
-  manager->contactTest(contacts, type);
+		if (!current_joint_states) continue;
+		boost::shared_ptr<sensor_msgs::JointState> msg = current_joint_states;
+		current_joint_states.reset();
 
-  if (publish_environment)
-  {
-    tesseract_msgs::TesseractState state_msg;
-    tesseract_ros::tesseractToTesseractStateMsg(state_msg, *env);
-    environment_pub.publish(state_msg);
-  }
+		contacts.clear();
+		contacts_msg.contacts.clear();
 
-  ContactResultVector contacts_vector;
-  tesseract::moveContactResultsMapToContactResultsVector(contacts, contacts_vector);
-  contacts_msg.contacts.reserve(contacts_vector.size());
-  for (const auto& contact : contacts_vector)
-  {
-    tesseract_msgs::ContactResult contact_msg;
-    tesseractContactResultToContactResultMsg(contact_msg, contact, msg->header.stamp);
-    contacts_msg.contacts.push_back(contact_msg);
-  }
-  contact_results_pub.publish(contacts_msg);
+		env->setState(msg->name, msg->position);
+		EnvStateConstPtr state = env->getState();
+
+		manager->setCollisionObjectsTransform(state->transforms);
+		manager->contactTest(contacts, type);
+
+		if (publish_environment)
+		{
+		tesseract_msgs::TesseractState state_msg;
+		tesseract_ros::tesseractToTesseractStateMsg(state_msg, *env);
+		environment_pub.publish(state_msg);
+		}
+
+		ContactResultVector contacts_vector;
+		tesseract::moveContactResultsMapToContactResultsVector(contacts, contacts_vector);
+		contacts_msg.contacts.reserve(contacts_vector.size());
+		for (const auto& contact : contacts_vector)
+		{
+		tesseract_msgs::ContactResult contact_msg;
+		tesseractContactResultToContactResultMsg(contact_msg, contact, msg->header.stamp);
+		contacts_msg.contacts.push_back(contact_msg);
+		}
+		contact_results_pub.publish(contacts_msg);
+	}
+
+}
+
+void callbackJointState(boost::shared_ptr<sensor_msgs::JointState> msg)
+{
+	boost::mutex::scoped_lock lock(modify_mutex);
+	current_joint_states=msg;
+	current_joint_states_evt.notify_all();
 }
 
 bool callbackModifyTesseractEnv(tesseract_msgs::ModifyTesseractEnvRequest& request,
                                 tesseract_msgs::ModifyTesseractEnvResponse& response)
 {
-  boost::mutex::scoped_lock(modify_mutex);
+  boost::mutex::scoped_lock lock(modify_mutex);
   response.success = processTesseractStateMsg(*env, request.state);
 
   // Create a new manager
@@ -90,7 +114,7 @@ bool callbackComputeContactResultVector(tesseract_msgs::ComputeContactResultVect
 {
   ContactResultMap contacts;
 
-  boost::mutex::scoped_lock(modify_mutex);
+  boost::mutex::scoped_lock lock(modify_mutex);
 
   env->setState(request.joint_states.name, request.joint_states.position);
   EnvStateConstPtr state = env->getState();
@@ -117,7 +141,7 @@ void callbackTesseractEnvDiff(const tesseract_msgs::TesseractStatePtr& state)
   if (!state->is_diff)
     return;
 
-  boost::mutex::scoped_lock(modify_mutex);
+  boost::mutex::scoped_lock lock(modify_mutex);
   if (!processTesseractStateMsg(*env, *state))
   {
     ROS_ERROR("Invalid TesseractState diff message");
@@ -229,9 +253,13 @@ int main(int argc, char** argv)
 
   environment_diff_sub = pnh.subscribe("tesseract_diff", 100, &callbackTesseractEnvDiff);
 
+  boost::thread t(&computeCollisionReportThread);
+
   ROS_INFO("Contact Monitor Running!");
 
   ros::spin();
+
+  current_joint_states_evt.notify_all();
 
   return 0;
 }
