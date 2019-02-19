@@ -20,7 +20,7 @@
   <depend>dynamic_reconfigure</depend>
   <depend>tf2_ros</depend>
   <depend>tf2_eigen</depend>
-
+  <depend>visualization_msgs</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
