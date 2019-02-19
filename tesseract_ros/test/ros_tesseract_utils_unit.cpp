@@ -103,6 +103,35 @@ TEST_F(TesseractROSUtilsUnit, TestTesseractStateMsgAllowedCollisionMatrix)
   EXPECT_EQ(acm->getAllAllowedCollisions().size(), n_allowed);
 }
 
+// Runs a rudimentary benchmark on the ACM performance
+TEST_F(TesseractROSUtilsUnit, TestTesseractBenchmarkAllowedCollisionMatrix)
+{
+  tesseract::AllowedCollisionMatrixPtr acm = env->getAllowedCollisionMatrixNonConst();
+
+  int numAC = 5000;
+  for (int ind; ind < numAC; ind++)
+  {
+    std::string link_a = "link_a" + std::to_string(ind);
+    std::string link_b = "link_b" + std::to_string(ind);
+    acm->addAllowedCollision(link_a, link_b, "adjacent");
+  }
+  // Variables declared volatile to hopefully avoid optimization
+  double start = ros::Time::now().toSec();
+  for (volatile int ind; ind < numAC; ind++)
+  {
+    std::string link_a = "link_a" + std::to_string(ind);
+    std::string link_b = "link_b" + std::to_string(ind);
+    volatile bool result = acm->isCollisionAllowed(link_a, link_b);
+  }
+  double avg_time = (ros::Time::now().toSec() - start) / static_cast<double>(numAC);
+
+  ROS_ERROR_STREAM("Avg time = " << avg_time);
+#ifdef NDEBUG
+  // Benchmarking Feb 2019 showed times ~1e-7s. This would be severe performance degradation
+  EXPECT_TRUE(avg_time < 1e-4);
+#endif
+}
+
 // Tests that TesseractState messages correctly store joint state
 TEST_P(TesseractROSUtilsUnitWithParam, TestGetActiveLinkNamesRecursive)
 {
