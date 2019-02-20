@@ -110,6 +110,7 @@ static const std::string LOGNAME = "environment_monitor";
 const std::string EnvironmentMonitor::DEFAULT_JOINT_STATES_TOPIC = "joint_states";
 const std::string EnvironmentMonitor::DEFAULT_ENVIRONMENT_TOPIC = "tesseract";
 const std::string EnvironmentMonitor::DEFAULT_ENVIRONMENT_SERVICE = "get_tesseract";
+const std::string EnvironmentMonitor::DEFAULT_SET_ENVIRONMENT_SERVICE = "set_tesseract";
 const std::string EnvironmentMonitor::MONITORED_ENVIRONMENT_TOPIC = "monitored_tesseract";
 
 EnvironmentMonitor::EnvironmentMonitor(const std::string& robot_description,
@@ -213,6 +214,8 @@ void EnvironmentMonitor::initialize(const urdf::ModelInterfaceConstSharedPtr& ur
                                             false);  // do not start the timer yet
 
   reconfigure_impl_ = new DynamicReconfigureImpl(this);
+
+  modify_environment_server_ = nh_.advertiseService(DEFAULT_SET_ENVIRONMENT_SERVICE, &EnvironmentMonitor::modifyEnvironmentCallback, this);
 }
 
 void EnvironmentMonitor::monitorDiffs(bool flag)
@@ -754,6 +757,13 @@ void EnvironmentMonitor::setEnvironmentPublishingFrequency(double hz)
   publish_environment_frequency_ = hz;
   ROS_DEBUG_NAMED(
       LOGNAME, "Maximum frquency for publishing an environment is now %lf Hz", publish_environment_frequency_);
+}
+
+bool EnvironmentMonitor::modifyEnvironmentCallback(tesseract_msgs::ModifyTesseractEnvRequest& req,
+                                                   tesseract_msgs::ModifyTesseractEnvResponse& res)
+{
+  res.success = newEnvironmentMessage(req.state);
+  return true;
 }
 }
 }

@@ -48,6 +48,7 @@ TESSERACT_IGNORE_WARNINGS_PUSH
 #include <boost/thread/recursive_mutex.hpp>
 #include <memory>
 #include <tesseract_msgs/TesseractState.h>
+#include <tesseract_msgs/ModifyTesseractEnv.h>
 TESSERACT_IGNORE_WARNINGS_POP
 
 #include <tesseract_ros/ros_basic_env.h>
@@ -93,6 +94,9 @@ public:
 
   /// The name of the service used by default for requesting full tesseract environment state
   static const std::string DEFAULT_ENVIRONMENT_SERVICE;  // "/get_tesseract"
+
+  /// The name of the service used by default for setting the full tesseract environment state
+  static const std::string DEFAULT_SET_ENVIRONMENT_SERVICE;  // "/set_tesseract"
 
   /// The name of the topic used by default for publishing the monitored tesseract environment (this is without "/" in
   /// the
@@ -283,6 +287,10 @@ protected:
   /** @brief Callback for a new attached body info msg*/
   void attachedBodyInfoCallback(const tesseract_msgs::AttachedBodyInfoConstPtr& ab_info_msg);
 
+  /** @brief Callback for modifying the environment via service request */
+  bool modifyEnvironmentCallback(tesseract_msgs::ModifyTesseractEnvRequest& req,
+                                 tesseract_msgs::ModifyTesseractEnvResponse& res);
+
   /// The name of this scene monitor
   std::string monitor_name_;
   std::string discrete_plugin_name_;
@@ -306,6 +314,9 @@ protected:
   EnvironmentUpdateType publish_update_types_;
   EnvironmentUpdateType new_environment_update_;
   boost::condition_variable_any new_environment_update_condition_;
+
+  // host a service for modifying the environment
+  ros::ServiceServer modify_environment_server_;
 
   // subscribe to various sources of data
   ros::Subscriber environment_subscriber_;
