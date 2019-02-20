@@ -808,8 +808,10 @@ static inline bool processAttachedBodyInfoMsg(tesseract_ros::ROSBasicEnv& env,
   }
   else if (ab_msg.operation == tesseract_msgs::AttachedBodyInfo::MOVE)
   {
-    ROS_ERROR("AttachedBody MOVE operation currently not implemented.");
-    return false;
+    env.detachBody(ab_msg.object_name);
+    AttachedBodyInfo ab_info;
+    tesseract_ros::attachedBodyInfoMsgToAttachedBodyInfo(ab_info, ab_msg);
+    env.attachBody(ab_info);
   }
 
   return true;
