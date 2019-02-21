@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>tesseract_core</name>
+  <name>tesseract_kinematics</name>
   <version>0.1.0</version>
-  <description>The tesseract_core package contains the core headers for environment</description>
+  <description>The tesseract_kinematics package contains kinematics related libraries.</description>
 
   <maintainer email="levi.armstrong@swri.org">Levi Armstrong</maintainer>
 
@@ -11,9 +11,14 @@
   <author >Levi Armstrong</author>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>tesseract_collision</depend>
-  <depend>tesseract_kinematics</depend>
-  <depend>geometric_shapes</depend>
+  <depend>liburdfdom-dev</depend>
+  <depend>liburdfdom-headers-dev</depend>
+  <depend>libconsole-bridge-dev</depend>
+  <depend>roscpp</depend>
+  <depend>kdl_parser</depend>
+
+  <test_depend>gtest</test_depend>
+  <test_depend>rostest</test_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

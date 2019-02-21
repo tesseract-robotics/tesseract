@@ -10,7 +10,7 @@ add_compile_options(
   -Wconversion
   -Wsign-conversion)
 
-find_package(catkin REQUIRED geometric_shapes tesseract_collision)
+find_package(catkin REQUIRED tesseract_collision tesseract_kinematics geometric_shapes)
 
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
@@ -21,8 +21,9 @@ catkin_package(
     ${EIGEN3_INCLUDE_DIRS}
   #LIBRARIES
   CATKIN_DEPENDS
-    geometric_shapes
     tesseract_collision
+    tesseract_kinematics
+    geometric_shapes
   DEPENDS
     EIGEN3
 )

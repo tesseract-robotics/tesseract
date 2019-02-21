@@ -51,8 +51,8 @@ TESSERACT_IGNORE_WARNINGS_PUSH
 TESSERACT_IGNORE_WARNINGS_POP
 
 #include "tesseract_ros/kdl/kdl_env.h"
-#include "tesseract_ros/kdl/kdl_chain_kin.h"
-#include "tesseract_ros/kdl/kdl_joint_kin.h"
+#include "tesseract_kinematics/kdl/kdl_fwd_kin_chain.h"
+#include "tesseract_kinematics/kdl/kdl_fwd_kin_tree.h"
 #include "tesseract_ros/kdl/kdl_utils.h"
 #include "tesseract_ros/ros_tesseract_utils.h"
 
@@ -338,7 +338,7 @@ bool KDLEnv::addManipulator(const std::string& base_link,
 {
   if (!hasManipulator(manipulator_name))
   {
-    KDLChainKinPtr manip(new KDLChainKin());
+    tesseract_kinematics::KDLFwdKinChainPtr manip(new tesseract_kinematics::KDLFwdKinChain());
     if (!manip->init(urdf_model_, base_link, tip_link, manipulator_name))
     {
       return false;
@@ -354,8 +354,8 @@ bool KDLEnv::addManipulator(const std::vector<std::string>& joint_names, const s
 {
   if (!hasManipulator(manipulator_name))
   {
-    KDLJointKinPtr manip(new KDLJointKin());
-    if (!manip->init(urdf_model_, joint_names, manipulator_name))
+    tesseract_kinematics::KDLFwdKinTreePtr manip(new tesseract_kinematics::KDLFwdKinTree());
+    if (!manip->init(urdf_model_, joint_names, current_state_->joints,  manipulator_name))
     {
       return false;
     }
@@ -371,7 +371,7 @@ bool KDLEnv::hasManipulator(const std::string& manipulator_name) const
   return manipulators_.find(manipulator_name) != manipulators_.end();
 }
 
-BasicKinConstPtr KDLEnv::getManipulator(const std::string& manipulator_name) const
+tesseract_kinematics::ForwardKinematicsConstPtr KDLEnv::getManipulator(const std::string& manipulator_name) const
 {
   auto it = manipulators_.find(manipulator_name);
   if (it != manipulators_.end())
@@ -495,16 +495,16 @@ void KDLEnv::attachBody(const AttachedBodyInfo& attached_body_info)
   discrete_manager_->setActiveCollisionObjects(active_link_names_);
   continuous_manager_->setActiveCollisionObjects(active_link_names_);
 
-  // Update manipulators
-  for (auto& manip : manipulators_)
-  {
-    const auto& manip_link_names = manip.second->getLinkNames();
-    if (std::find(manip_link_names.begin(), manip_link_names.end(), attached_body_info.parent_link_name) !=
-        manip_link_names.end())
-    {
-      manip.second->addAttachedLink(attached_body_info.object_name, attached_body_info.parent_link_name);
-    }
-  }
+//  // Update manipulators
+//  for (auto& manip : manipulators_)
+//  {
+//    const auto& manip_link_names = manip.second->getLinkNames();
+//    if (std::find(manip_link_names.begin(), manip_link_names.end(), attached_body_info.parent_link_name) !=
+//        manip_link_names.end())
+//    {
+//      manip.second->addAttachedLink(attached_body_info.object_name, attached_body_info.parent_link_name);
+//    }
+//  }
 }
 
 void KDLEnv::detachBody(const std::string& name)
@@ -521,15 +521,15 @@ void KDLEnv::detachBody(const std::string& name)
     continuous_manager_->disableCollisionObject(name);
     current_state_->transforms.erase(name);
 
-    // Update manipulators
-    for (auto& manip : manipulators_)
-    {
-      const auto& manip_link_names = manip.second->getLinkNames();
-      if (std::find(manip_link_names.begin(), manip_link_names.end(), name) != manip_link_names.end())
-      {
-        manip.second->removeAttachedLink(name);
-      }
-    }
+//    // Update manipulators
+//    for (auto& manip : manipulators_)
+//    {
+//      const auto& manip_link_names = manip.second->getLinkNames();
+//      if (std::find(manip_link_names.begin(), manip_link_names.end(), name) != manip_link_names.end())
+//      {
+//        manip.second->removeAttachedLink(name);
+//      }
+//    }
   }
 }
 
@@ -549,9 +549,9 @@ void KDLEnv::clearAttachedBodies()
   discrete_manager_->setActiveCollisionObjects(active_link_names_);
   continuous_manager_->setActiveCollisionObjects(active_link_names_);
 
-  // Update manipulators
-  for (auto& manip : manipulators_)
-    manip.second->clearAttachedLinks();
+//  // Update manipulators
+//  for (auto& manip : manipulators_)
+//    manip.second->clearAttachedLinks();
 }
 
 bool KDLEnv::setJointValuesHelper(KDL::JntArray& q, const std::string& joint_name, const double& joint_value) const

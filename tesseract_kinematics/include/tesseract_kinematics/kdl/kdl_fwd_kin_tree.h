@@ -1,6 +1,6 @@
 /**
- * @file kdl_joint_kin.h
- * @brief Tesseract ROS KDL joint kinematics implementation.
+ * @file kdl_kinematic_tree.h
+ * @brief Tesseract KDL kinematics tree implementation.
  *
  * @author Levi Armstrong
  * @date May 27, 2018
@@ -23,23 +23,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_ROS_KDL_JOINT_KIN_H
-#define TESSERACT_ROS_KDL_JOINT_KIN_H
+#ifndef TESSERACT_KINEMATICS_KDL_KINEMATIC_TREE_H
+#define TESSERACT_KINEMATICS_KDL_KINEMATIC_TREE_H
 
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
-#include <ros/console.h>
+#include <tesseract_kinematics/core/macros.h>
+TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 #include <kdl/tree.hpp>
 #include <kdl/treefksolverpos_recursive.hpp>
 #include <kdl/treejnttojacsolver.hpp>
-#include <urdf/model.h>
-TESSERACT_IGNORE_WARNINGS_POP
+#include <urdf_model/model.h>
+#include <unordered_map>
+#include <console_bridge/console.h>
+TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
 
-#include "tesseract_ros/ros_basic_kin.h"
+#include "tesseract_kinematics/core/forward_kinematics.h"
 
-namespace tesseract
-{
-namespace tesseract_ros
+namespace tesseract_kinematics
 {
 /**
  * @brief ROS kinematics functions.
@@ -47,38 +46,25 @@ namespace tesseract_ros
  * Typically, just wrappers around the equivalent KDL calls.
  *
  */
-class KDLJointKin : public ROSBasicKin
+class KDLFwdKinTree : public ForwardKinematics
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  KDLJointKin() : ROSBasicKin(), initialized_(false) {}
+  KDLFwdKinTree() : initialized_(false) {}
   bool calcFwdKin(Eigen::Isometry3d& pose,
-                  const Eigen::Isometry3d& change_base,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
 
   bool calcFwdKin(Eigen::Isometry3d& pose,
-                  const Eigen::Isometry3d& change_base,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                  const std::string& link_name,
-                  const EnvState& state) const override;
+                  const std::string& link_name) const override;
 
   bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                    const Eigen::Isometry3d& change_base,
                     const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
 
   bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                    const Eigen::Isometry3d& change_base,
                     const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                    const std::string& link_name,
-                    const EnvState& state) const override;
-
-  bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                    const Eigen::Isometry3d& change_base,
-                    const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                    const std::string& link_name,
-                    const EnvState& state,
-                    const Eigen::Ref<const Eigen::Vector3d>& link_point) const override;
+                    const std::string& link_name) const override;
 
   bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const override;
 
@@ -88,26 +74,23 @@ public:
 
   const Eigen::MatrixX2d& getLimits() const override;
 
-  urdf::ModelInterfaceConstSharedPtr getURDF() const override { return model_; }
+  std::shared_ptr<const urdf::ModelInterface> getURDF() const { return model_; }
   unsigned int numJoints() const override { return static_cast<unsigned>(joint_list_.size()); }
   const std::string& getBaseLinkName() const override { return model_->getRoot()->name; }
   const std::string& getName() const override { return name_; }
-  void addAttachedLink(const std::string& link_name, const std::string& parent_link_name) override;
-
-  void removeAttachedLink(const std::string& link_name) override;
-
-  void clearAttachedLinks() override;
 
   /**
    * @brief Initializes ROSKin
    * Creates KDL::Chain from urdf::Model, populates joint_list_, joint_limits_, and link_list_
    * @param model The urdf model
    * @param joint_names The list of active joints to be considered
+   * @param start_state The initial start state for the tree. This should inlclude all joints in the model
    * @param name The name of the kinematic chain
    * @return True if init() completes successfully
    */
-  bool init(urdf::ModelInterfaceConstSharedPtr model,
+  bool init(std::shared_ptr<const urdf::ModelInterface> model,
             const std::vector<std::string>& joint_names,
+            const std::unordered_map<std::string, double>& start_state,
             const std::string name);
 
   /**
@@ -118,7 +101,7 @@ public:
   {
     if (!initialized_)
     {
-      ROS_ERROR("Kinematics has not been initialized!");
+      CONSOLE_BRIDGE_logError("Kinematics has not been initialized!");
     }
 
     return initialized_;
@@ -129,46 +112,44 @@ public:
    * @param rhs Input ROSKin object to copy from
    * @return reference to this ROSKin object
    */
-  KDLJointKin& operator=(const KDLJointKin& rhs);
+  KDLFwdKinTree& operator=(const KDLFwdKinTree& rhs);
 
 private:
-  bool initialized_;                         /**< Identifies if the object has been initialized */
-  urdf::ModelInterfaceConstSharedPtr model_; /**< URDF MODEL */
-  KDL::Tree kdl_tree_;                       /**< KDL tree object */
-  std::string name_;                         /**< Name of the kinematic chain */
-  std::vector<std::string> joint_list_;      /**< List of joint names */
-  std::vector<int> joint_qnr_;               /**< The kdl segment number corrisponding to joint in joint_lists_ */
+  bool initialized_;                                   /**< Identifies if the object has been initialized */
+  std::shared_ptr<const urdf::ModelInterface> model_;  /**< URDF MODEL */
+  KDL::Tree kdl_tree_;                                 /**< KDL tree object */
+  std::string name_;                                   /**< Name of the kinematic chain */
+  std::vector<std::string> joint_list_;                /**< List of joint names */
+  KDL::JntArray start_state_;                          /**< Intial state of the tree. Should include all joints in the model. */
+  std::vector<int> joint_qnr_;                         /**< The kdl segment number corrisponding to joint in joint_lists_ */
   std::unordered_map<std::string, unsigned int> joint_to_qnr_;                 /**< The tree joint name to qnr */
   std::vector<std::string> link_list_;                                         /**< List of link names */
   Eigen::MatrixX2d joint_limits_;                                              /**< Joint limits */
   std::unique_ptr<KDL::TreeFkSolverPos_recursive> fk_solver_;                  /**< KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::TreeJntToJacSolver> jac_solver_;                        /**< KDL Jacobian Solver */
-  std::vector<std::string> attached_link_list_;                                /**< A list of attached link names */
-  std::unordered_map<std::string, std::string> attached_link_too_parent_link_; /**< A map from attached link name to
-                                                                                  parent link name */
+
+  /** @brief Set the start state for all joints in the tree. */
+  void setStartState(std::unordered_map<std::string, double> start_state);
+
+  /** @brief Get an updated kdl joint array */
+  KDL::JntArray getKDLJntArray(const std::vector<std::string>& joint_names,
+                               const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   /** @brief calcFwdKin helper function */
   bool calcFwdKinHelper(Eigen::Isometry3d& pose,
-                        const Eigen::Isometry3d& change_base,
                         const KDL::JntArray& kdl_joints,
                         const std::string& link_name) const;
 
   /** @brief calcJacobian helper function */
   bool calcJacobianHelper(KDL::Jacobian& jacobian,
-                          const Eigen::Isometry3d& change_base,
                           const KDL::JntArray& kdl_joints,
                           const std::string& link_name) const;
 
-  KDL::JntArray getKDLJntArray(const EnvState& state,
-                               const std::vector<std::string>& joint_names,
-                               const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
-
   void addChildrenRecursive(const urdf::LinkConstSharedPtr urdf_link);
 
-};  // class KDLChainKin
+};  // class KDLKinematicTree
 
-typedef std::shared_ptr<KDLJointKin> KDLJointKinPtr;
-typedef std::shared_ptr<const KDLJointKin> KDLJointKinConstPtr;
+typedef std::shared_ptr<KDLFwdKinTree> KDLFwdKinTreePtr;
+typedef std::shared_ptr<const KDLFwdKinTree> KDLFwdKinTreeConstPtr;
 }
-}
-#endif  // TESSERACT_ROS_KDL_JOINT_KIN_H
+#endif  // TESSERACT_KINEMATICS_KDL_KINEMATIC_TREE_H
