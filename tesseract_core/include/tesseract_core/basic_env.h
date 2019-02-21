@@ -32,7 +32,7 @@ TESSERACT_IGNORE_WARNINGS_PUSH
 TESSERACT_IGNORE_WARNINGS_POP
 
 #include <tesseract_core/basic_types.h>
-#include <tesseract_core/basic_kin.h>
+#include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
 
@@ -88,7 +88,7 @@ public:
    * @param manipulator_name Name of the manipulator
    * @return BasicKinPtr
    */
-  virtual BasicKinConstPtr getManipulator(const std::string& manipulator_name) const = 0;
+  virtual tesseract_kinematics::ForwardKinematicsConstPtr getManipulator(const std::string& manipulator_name) const = 0;
 
   /**
    * @brief A a manipulator as a kinematic chain
@@ -264,7 +264,7 @@ typedef std::shared_ptr<const BasicEnv> BasicEnvConstPtr;
  */
 inline bool continuousCollisionCheckTrajectory(tesseract_collision::ContinuousContactManager& manager,
                                                const BasicEnv& env,
-                                               const BasicKin& kin,
+                                               const tesseract_kinematics::ForwardKinematics& kin,
                                                const Eigen::Ref<const TrajArray>& traj,
                                                std::vector<tesseract_collision::ContactResultMap>& contacts,
                                                bool first_only = true)

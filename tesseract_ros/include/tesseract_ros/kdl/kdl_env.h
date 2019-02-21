@@ -120,7 +120,7 @@ public:
 
   bool hasManipulator(const std::string& manipulator_name) const override;
 
-  BasicKinConstPtr getManipulator(const std::string& manipulator_name) const override;
+  tesseract_kinematics::ForwardKinematicsConstPtr getManipulator(const std::string& manipulator_name) const override;
 
   bool addManipulator(const std::string& base_link,
                       const std::string& tip_link,
@@ -169,7 +169,7 @@ private:
   AttachedBodyInfoMap attached_bodies_;                        /**< A map of attached bodies */
   AttachableObjectConstPtrMap
       attachable_objects_; /**< A map of objects that can be attached/detached from environment */
-  std::unordered_map<std::string, BasicKinPtr> manipulators_; /**< A map of manipulator names to kinematics object */
+  std::unordered_map<std::string, tesseract_kinematics::ForwardKinematicsPtr> manipulators_; /**< A map of manipulator names to kinematics object */
   std::vector<std::string> link_names_;                       /**< A vector of link names */
   std::vector<std::string> joint_names_;                      /**< A vector of joint names */
   std::vector<std::string> active_link_names_;                /**< A vector of active link names */

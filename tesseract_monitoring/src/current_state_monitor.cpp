@@ -297,7 +297,7 @@ bool CurrentStateMonitor::waitForCompleteState(const std::string& manip, double 
   std::vector<std::string> missing_joints;
   if (!haveCompleteState(missing_joints))
   {
-    const BasicKinConstPtr jmg = env_->getManipulator(manip);
+    const tesseract_kinematics::ForwardKinematicsConstPtr jmg = env_->getManipulator(manip);
     if (jmg)
     {
       std::set<std::string> mj;
