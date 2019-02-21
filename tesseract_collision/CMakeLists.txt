@@ -29,6 +29,7 @@ catkin_package(
     ${PROJECT_NAME}_fcl
     ${OCTOMAP_LIBRARIES}
     ${LIBFCL_LIBRARIES}
+    ${console_bridge_LIBRARIES}
   CATKIN_DEPENDS
     bullet3_ros
   DEPENDS
