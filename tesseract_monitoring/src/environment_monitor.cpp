@@ -215,7 +215,8 @@ void EnvironmentMonitor::initialize(const urdf::ModelInterfaceConstSharedPtr& ur
 
   reconfigure_impl_ = new DynamicReconfigureImpl(this);
 
-  modify_environment_server_ = nh_.advertiseService(DEFAULT_SET_ENVIRONMENT_SERVICE, &EnvironmentMonitor::modifyEnvironmentCallback, this);
+  modify_environment_server_ =
+      nh_.advertiseService(DEFAULT_SET_ENVIRONMENT_SERVICE, &EnvironmentMonitor::modifyEnvironmentCallback, this);
 }
 
 void EnvironmentMonitor::monitorDiffs(bool flag)
