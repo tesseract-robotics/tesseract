@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>tesseract_scene_graph</name>
+  <version>0.1.0</version>
+  <description>The tesseract_scene_graph package</description>
+  <maintainer email="Armstrong@todo.todo">Levi Armstrong</maintainer>
+  <license>Apache 2.0</license>
+  <author >Levi Armstrong</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>tesseract_geometry</depend>
+  <depend>liburdfdom-dev</depend>
+  <depend>liburdfdom-headers-dev</depend>
+  <depend>libconsole-bridge-dev</depend>
+
+  <export>
+  </export>
+
+</package>
