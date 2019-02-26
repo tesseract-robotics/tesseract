@@ -12,8 +12,6 @@ add_compile_options(
 find_package(catkin REQUIRED)
 
 find_package(Eigen3 REQUIRED)
-find_package(urdfdom REQUIRED)
-find_package(urdfdom_headers REQUIRED)
 find_package(console_bridge REQUIRED)
 
 catkin_package(
@@ -21,29 +19,21 @@ catkin_package(
     include
     ${catkin_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIRS}
-    ${urdfdom_INCLUDE_DIRS}
-    ${urdfdom_headers_INCLUDE_DIRS}
     ${console_bridge_INCLUDE_DIRS}
   LIBRARIES
     ${catkin_LIBRARIES}
-    ${urdfdom_LIBRARIES}
-    ${urdfdom_headers_LIBRARIES}
     ${console_bridge_LIBRARIES}
 
   #CATKIN_DEPENDS
 
   DEPENDS
     EIGEN3
-    urdfdom
-    urdfdom_headers
     console_bridge
 )
 
 include_directories(
   include
   SYSTEM ${EIGEN3_INCLUDE_DIRS}
-  SYSTEM ${urdfdom_INCLUDE_DIRS}
-  SYSTEM ${urdfdom_headers_INCLUDE_DIRS}
   SYSTEM ${console_bridge_INCLUDE_DIRS}
 )
 
@@ -53,14 +43,3 @@ install(DIRECTORY include/${PROJECT_NAME}/
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
 )
-
-#if (CATKIN_ENABLE_TESTING)
-
-#  find_package(gtest REQUIRED)
-
-#  include_directories(${GTEST_INCLUDE_DIRS})
-
-#  add_executable(${PROJECT_NAME}_unit test/tesseract_scene_graph_unit.cpp)
-#  target_link_libraries(${PROJECT_NAME}_unit ${Boost_LIBRARIES}) #${GTEST_BOTH_LIBRARIES}
-
-#endif()

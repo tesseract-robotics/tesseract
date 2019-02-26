@@ -8,9 +8,6 @@
   <author >Levi Armstrong</author>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>liburdfdom-dev</depend>
-  <depend>liburdfdom-headers-dev</depend>
-  <depend>libconsole-bridge-dev</depend>
 
   <export>
   </export>
