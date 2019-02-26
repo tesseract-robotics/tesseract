@@ -37,10 +37,13 @@
 #ifndef TESSERACT_SCENE_GRAPH_JOINT_H
 #define TESSERACT_SCENE_GRAPH_JOINT_H
 
+#include <tesseract_scene_graph/macros.h>
+TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH
 #include <string>
 #include <vector>
 #include <memory>
 #include <Eigen/Eigen>
+TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
 {
