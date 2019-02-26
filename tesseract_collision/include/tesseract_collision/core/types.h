@@ -36,6 +36,7 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 #include <functional>
 #include <boost/bind.hpp>
+#include <tesseract_geometry/geometries.h>
 TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 namespace tesseract_collision
@@ -58,6 +59,10 @@ namespace tesseract_collision
   using VectorVector4d = AlignedVector<Eigen::Vector4d>;
   using VectorVector3d = std::vector<Eigen::Vector3d>;
   using TransformMap = AlignedMap<std::string, Eigen::Isometry3d>;
+
+  typedef std::vector<tesseract_geometry::GeometryConstPtr> CollisionShapesConst;
+  typedef tesseract_geometry::GeometryConstPtr CollisionShapeConstPtr;
+  typedef tesseract_geometry::GeometryPtr CollisionShapePtr;
 
   /**
    * @brief Should return true if contact allowed, otherwise false.

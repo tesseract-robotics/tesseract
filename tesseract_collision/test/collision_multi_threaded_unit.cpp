@@ -10,11 +10,12 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 #include "tesseract_collision/fcl/fcl_discrete_managers.h"
 
 using namespace tesseract_collision;
+using namespace tesseract_geometry;
 
 void runTest(tesseract_collision::DiscreteContactManager& checker, bool use_convex_mesh = false)
 {
   // Add Meshed Sphere to checker
-  tesseract_collision::CollisionShapePtr sphere;
+  CollisionShapePtr sphere;
   if (use_convex_mesh)
   {
     VectorVector3d mesh_vertices;
@@ -25,11 +26,11 @@ void runTest(tesseract_collision::DiscreteContactManager& checker, bool use_conv
     std::shared_ptr<VectorVector3d> ch_verticies(new VectorVector3d());
     std::shared_ptr<std::vector<int>> ch_faces(new std::vector<int>());
     int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
-    sphere.reset(new ConvexMeshCollisionShape(ch_verticies, ch_faces, ch_num_faces));
+    sphere.reset(new ConvexMesh(ch_verticies, ch_faces, ch_num_faces));
   }
   else
   {
-    sphere.reset(new SphereCollisionShape(0.25));
+    sphere.reset(new Sphere(0.25));
   }
 
   double delta = 0.55;

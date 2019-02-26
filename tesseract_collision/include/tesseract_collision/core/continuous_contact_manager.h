@@ -34,7 +34,6 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
-#include <tesseract_collision/core/collision_shapes.h>
 
 namespace tesseract_collision
 {

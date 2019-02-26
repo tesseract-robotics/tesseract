@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>tesseract_geometry</name>
+  <version>0.1.0</version>
+  <description>The tesseract_geometry package</description>
+  <maintainer email="Armstrong@todo.todo">Levi Armstrong</maintainer>
+  <license>Apache 2.0</license>
+  <author >Levi Armstrong</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>liburdfdom-dev</depend>
+  <depend>liburdfdom-headers-dev</depend>
+  <depend>libconsole-bridge-dev</depend>
+
+  <export>
+  </export>
+
+</package>

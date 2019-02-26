@@ -8,13 +8,14 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 #include "tesseract_collision/fcl/fcl_discrete_managers.h"
 
 using namespace tesseract_collision;
+using namespace tesseract_geometry;
 
 void addCollisionObjects(DiscreteContactManager& checker, bool use_convex_mesh = false)
 {
   //////////////////////
   // Add box to checker
   //////////////////////
-  CollisionShapePtr box(new BoxCollisionShape(1, 1, 1));
+  CollisionShapePtr box(new Box(1, 1, 1));
   Eigen::Isometry3d box_pose;
   box_pose.setIdentity();
 
@@ -28,7 +29,7 @@ void addCollisionObjects(DiscreteContactManager& checker, bool use_convex_mesh =
   /////////////////////////////////////////////
   // Add thin box to checker which is disabled
   /////////////////////////////////////////////
-  CollisionShapePtr thin_box(new BoxCollisionShape(0.1, 1, 1));
+  CollisionShapePtr thin_box(new Box(0.1, 1, 1));
   Eigen::Isometry3d thin_box_pose;
   thin_box_pose.setIdentity();
 
@@ -55,11 +56,11 @@ void addCollisionObjects(DiscreteContactManager& checker, bool use_convex_mesh =
     std::shared_ptr<VectorVector3d> ch_verticies(new VectorVector3d());
     std::shared_ptr<std::vector<int>> ch_faces(new std::vector<int>());
     int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
-    sphere.reset(new ConvexMeshCollisionShape(ch_verticies, ch_faces, ch_num_faces));
+    sphere.reset(new ConvexMesh(ch_verticies, ch_faces, ch_num_faces));
   }
   else
   {
-    sphere.reset(new SphereCollisionShape(0.25));
+    sphere.reset(new Sphere(0.25));
   }
 
   Eigen::Isometry3d sphere_pose;

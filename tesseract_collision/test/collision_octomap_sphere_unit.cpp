@@ -11,6 +11,7 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 #include "tesseract_collision/fcl/fcl_discrete_managers.h"
 
 using namespace tesseract_collision;
+using namespace tesseract_geometry;
 
 void addCollisionObjects(DiscreteContactManager& checker, bool use_convex_mesh = false)
 {
@@ -19,7 +20,7 @@ void addCollisionObjects(DiscreteContactManager& checker, bool use_convex_mesh =
   /////////////////////////////////////////////////////////////////
   std::string path = std::string(DATA_DIR) + "/blender_monkey.bt";
   std::shared_ptr<octomap::OcTree> ot(new octomap::OcTree(path));
-  CollisionShapePtr dense_octomap(new OctreeCollisionShape(ot, OctreeCollisionShape::SubShapeType::BOX));
+  CollisionShapePtr dense_octomap(new Octree(ot, Octree::SubType::BOX));
   Eigen::Isometry3d octomap_pose;
   octomap_pose.setIdentity();
 
@@ -46,11 +47,11 @@ void addCollisionObjects(DiscreteContactManager& checker, bool use_convex_mesh =
     std::shared_ptr<VectorVector3d> ch_verticies(new VectorVector3d());
     std::shared_ptr<std::vector<int>> ch_faces(new std::vector<int>());
     int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
-    sphere.reset(new ConvexMeshCollisionShape(ch_verticies, ch_faces, ch_num_faces));
+    sphere.reset(new ConvexMesh(ch_verticies, ch_faces, ch_num_faces));
   }
   else
   {
-    sphere.reset(new SphereCollisionShape(0.25));
+    sphere.reset(new Sphere(0.25));
   }
 
   Eigen::Isometry3d sphere_pose;

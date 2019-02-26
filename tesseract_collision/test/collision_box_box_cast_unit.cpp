@@ -7,13 +7,14 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 #include "tesseract_collision/bullet/bullet_cast_bvh_manager.h"
 
 using namespace tesseract_collision;
+using namespace tesseract_geometry;
 
 void addCollisionObjects(ContinuousContactManager& checker)
 {
   ////////////////////////////
   // Add static box to checker
   ////////////////////////////
-  CollisionShapePtr static_box(new BoxCollisionShape(1, 1, 1));
+  CollisionShapePtr static_box(new Box(1, 1, 1));
   Eigen::Isometry3d static_box_pose;
   static_box_pose.setIdentity();
 
@@ -27,7 +28,7 @@ void addCollisionObjects(ContinuousContactManager& checker)
   ////////////////////////////
   // Add static box to checker
   ////////////////////////////
-  CollisionShapePtr moving_box(new BoxCollisionShape(0.25, 0.25, 0.25));
+  CollisionShapePtr moving_box(new Box(0.25, 0.25, 0.25));
   Eigen::Isometry3d moving_box_pose;
   moving_box_pose.setIdentity();
   moving_box_pose.translation() = Eigen::Vector3d(0.5, -0.5, 0);

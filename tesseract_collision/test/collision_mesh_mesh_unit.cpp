@@ -8,20 +8,21 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 #include "tesseract_collision/fcl/fcl_discrete_managers.h"
 
 using namespace tesseract_collision;
+using namespace tesseract_geometry;
 
 void addCollisionObjects(DiscreteContactManager& checker)
 {
   ////////////////////////
   // Add sphere to checker
   ////////////////////////
-  MeshCollisionShapePtr sphere;
+  MeshPtr sphere;
 
   std::shared_ptr<VectorVector3d> vertices(new VectorVector3d());
   std::shared_ptr<std::vector<int>> faces(new std::vector<int>());
   int num_faces = loadSimplePlyFile(std::string(DATA_DIR) + "/sphere_p25m.ply", *vertices, *faces, true);
   EXPECT_GT(num_faces, 0);
 
-  sphere.reset(new MeshCollisionShape(vertices, faces));
+  sphere.reset(new Mesh(vertices, faces));
   EXPECT_TRUE(num_faces == sphere->getTriangleCount());
 
   Eigen::Isometry3d sphere_pose;
@@ -37,7 +38,7 @@ void addCollisionObjects(DiscreteContactManager& checker)
   /////////////////////////////////////////////
   // Add thin box to checker which is disabled
   /////////////////////////////////////////////
-  CollisionShapePtr thin_box(new BoxCollisionShape(0.1, 1, 1));
+  CollisionShapePtr thin_box(new Box(0.1, 1, 1));
   Eigen::Isometry3d thin_box_pose;
   thin_box_pose.setIdentity();
 
@@ -52,7 +53,7 @@ void addCollisionObjects(DiscreteContactManager& checker)
   // Add second sphere to checker. If use_convex_mesh = true
   // then this sphere will be added as a convex hull mesh.
   /////////////////////////////////////////////////////////////////
-  CollisionShapePtr sphere1(new MeshCollisionShape(vertices, faces));
+  CollisionShapePtr sphere1(new Mesh(vertices, faces));
   Eigen::Isometry3d sphere1_pose;
   sphere1_pose.setIdentity();
 
