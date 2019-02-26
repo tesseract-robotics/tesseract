@@ -1,6 +1,6 @@
 /**
- * @file basic_env.h
- * @brief Basic low-level environment with collision and distance functions.
+ * @file Environment.h
+ * @brief Tesseract Environment.
  *
  * @author Levi Armstrong
  * @date Dec 18, 2017
@@ -23,27 +23,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_CORE_BASIC_ENV_H
-#define TESSERACT_CORE_BASIC_ENV_H
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#ifndef TESSERACT_ENVIRONMENT_ENVIRONMENT_H
+#define TESSERACT_ENVIRONMENT_ENVIRONMENT_H
+#include <tesseract_environment/core/macros.h>
+TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <string>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
-#include <tesseract_core/basic_types.h>
+#include <tesseract_environment/core/types.h>
 #include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
 
-namespace tesseract
+namespace tesseract_environment
 {
-class BasicEnv
+class Environment
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  virtual ~BasicEnv() = default;
+  virtual ~Environment() = default;
   /** @brief Give the environment a name */
   virtual void setName(const std::string& name) = 0;
 
@@ -239,16 +239,32 @@ public:
   /** @brief Set the active function for determining if two links are allowed to be in collision */
   virtual void setIsContactAllowedFn(tesseract_collision::IsContactAllowedFn fn) = 0;
 
+  /**
+   * @brief Set the discrete contact manager
+   *
+   * This method should clear the contents of the manager and reload it with the objects
+   * in the environment.
+   */
+  virtual bool setDiscreteContactManager(tesseract_collision::DiscreteContactManagerConstPtr manager) = 0;
+
   /** @brief Get a copy of the environments discrete contact manager */
   virtual tesseract_collision::DiscreteContactManagerPtr getDiscreteContactManager() const = 0;
+
+  /**
+   * @brief Set the continuous contact manager
+   *
+   * This method should clear the contents of the manager and reload it with the objects
+   * in the environment.
+   */
+  virtual bool setContinuousContactManager(tesseract_collision::ContinuousContactManagerConstPtr manager) = 0;
 
   /** @brief Get a copy of the environments continuous contact manager */
   virtual tesseract_collision::ContinuousContactManagerPtr getContinuousContactManager() const = 0;
 
 };  // class BasicEnvBase
 
-typedef std::shared_ptr<BasicEnv> BasicEnvPtr;
-typedef std::shared_ptr<const BasicEnv> BasicEnvConstPtr;
+typedef std::shared_ptr<Environment> EnvironmentPtr;
+typedef std::shared_ptr<const Environment> EnvironmentConstPtr;
 
 /**
  * @brief continuousCollisionCheckTrajectory Should perform a continuous collision check over the trajectory
@@ -263,7 +279,7 @@ typedef std::shared_ptr<const BasicEnv> BasicEnvConstPtr;
  * @return True if collision was found, otherwise false.
  */
 inline bool continuousCollisionCheckTrajectory(tesseract_collision::ContinuousContactManager& manager,
-                                               const BasicEnv& env,
+                                               const tesseract_environment::Environment& env,
                                                const tesseract_kinematics::ForwardKinematics& kin,
                                                const Eigen::Ref<const TrajArray>& traj,
                                                std::vector<tesseract_collision::ContactResultMap>& contacts,
@@ -298,6 +314,6 @@ inline bool continuousCollisionCheckTrajectory(tesseract_collision::ContinuousCo
   return found;
 }
 
-}  // namespace tesseract
+}  // namespace tesseract_environment
 
-#endif  // TESSERACT_CORE_BASIC_ENV_H
+#endif  // TESSERACT_ENVIRONMENT_ENVIRONMENT_H

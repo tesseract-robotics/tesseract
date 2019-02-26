@@ -1,99 +1,67 @@
 /**
- * @file bullet_env.h
- * @brief Tesseract ROS Bullet environment implementation.
+ * @file kdl_env.h
+ * @brief Tesseract environment kdl implementation.
  *
- * @author John Schulman
  * @author Levi Armstrong
  * @date Dec 18, 2017
  * @version TODO
  * @bug No known bugs
  *
  * @copyright Copyright (c) 2017, Southwest Research Institute
- * @copyright Copyright (c) 2013, John Schulman
  *
  * @par License
- * Software License Agreement (BSD-2-Clause)
+ * Software License Agreement (Apache License)
  * @par
- * All rights reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
  * @par
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * @par
- *  * Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *  * Redistributions in binary form must reproduce the above
- *    copyright notice, this list of conditions and the following
- *    disclaimer in the documentation and/or other materials provided
- *    with the distribution.
- * @par
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-#ifndef TESSERACT_ROS_BULLET_ENV_H
-#define TESSERACT_ROS_BULLET_ENV_H
+#ifndef TESSERACT_ENVIRONMENT_KDL_ENV_H
+#define TESSERACT_ENVIRONMENT_KDL_ENV_H
 
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_environment/core/macros.h>
+TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <kdl/tree.hpp>
 #include <kdl_parser/kdl_parser.hpp>
 #include <kdl/jntarray.hpp>
 #include <sensor_msgs/JointState.h>
 #include <ros/publisher.h>
 #include <urdf/model.h>
-#include <srdfdom/model.h>
 #include <pluginlib/class_loader.hpp>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
-#include <tesseract_ros/ros_basic_env.h>
+#include <tesseract_environment/core/environment.h>
 
-namespace tesseract
+namespace tesseract_environment
 {
-namespace tesseract_ros
-{
-typedef pluginlib::ClassLoader<tesseract_collision::DiscreteContactManager> DiscreteContactManagerPluginLoader;
-typedef pluginlib::ClassLoader<tesseract_collision::ContinuousContactManager> ContinuousContactManagerPluginLoader;
-typedef std::shared_ptr<DiscreteContactManagerPluginLoader> DiscreteContactManagerPluginLoaderPtr;
-typedef std::shared_ptr<ContinuousContactManagerPluginLoader> ContinuousContactManagerPluginLoaderPtr;
 
-class KDLEnv : public ROSBasicEnv
+class KDLEnv : public Environment
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  KDLEnv() : ROSBasicEnv(), initialized_(false), allowed_collision_matrix_(new AllowedCollisionMatrix())
+  KDLEnv() : Environment(), initialized_(false), allowed_collision_matrix_(new AllowedCollisionMatrix())
   {
-    is_contact_allowed_fn_ = std::bind(&tesseract::tesseract_ros::KDLEnv::defaultIsContactAllowedFn,
+    is_contact_allowed_fn_ = std::bind(&tesseract_environment::KDLEnv::defaultIsContactAllowedFn,
                                        this,
                                        std::placeholders::_1,
                                        std::placeholders::_2);
-    discrete_manager_loader_.reset(new DiscreteContactManagerPluginLoader("tesseract_ros",
-                                                                          "tesseract_collision::"
-                                                                          "DiscreteContactManager"));
-
-    continuous_manager_loader_.reset(new ContinuousContactManagerPluginLoader("tesseract_ros",
-                                                                              "tesseract_collision::"
-                                                                              "ContinuousContactManager"));
   }
 
-  bool init(urdf::ModelInterfaceConstSharedPtr urdf_model) override;
-  bool init(urdf::ModelInterfaceConstSharedPtr urdf_model, srdf::ModelConstSharedPtr srdf_model) override;
+  bool init(urdf::ModelInterfaceConstSharedPtr urdf_model);
 
   void setName(const std::string& name) override { name_ = name; }
   const std::string& getName() const override { return name_; }
-  bool checkInitialized() const override { return initialized_; }
+  bool checkInitialized() const { return initialized_; }
   EnvStateConstPtr getState() const override { return current_state_; }
   void setState(const std::unordered_map<std::string, double>& joints) override;
   void setState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values) override;
@@ -146,22 +114,22 @@ public:
 
   void clearAttachedBodies() override;
 
-  urdf::ModelInterfaceConstSharedPtr getURDF() const override { return urdf_model_; }
-  srdf::ModelConstSharedPtr getSRDF() const override { return srdf_model_; }
+  urdf::ModelInterfaceConstSharedPtr getURDF() const { return urdf_model_; }
   AllowedCollisionMatrixConstPtr getAllowedCollisionMatrix() const override { return allowed_collision_matrix_; }
   AllowedCollisionMatrixPtr getAllowedCollisionMatrixNonConst() override { return allowed_collision_matrix_; }
   tesseract_collision::IsContactAllowedFn getIsContactAllowedFn() const override { return is_contact_allowed_fn_; }
   void setIsContactAllowedFn(tesseract_collision::IsContactAllowedFn fn) override { is_contact_allowed_fn_ = fn; }
+
+  bool setDiscreteContactManager(tesseract_collision::DiscreteContactManagerConstPtr manager) override;
   tesseract_collision::DiscreteContactManagerPtr getDiscreteContactManager() const override { return discrete_manager_->clone(); }
+
+  bool setContinuousContactManager(tesseract_collision::ContinuousContactManagerConstPtr manager) override;
   tesseract_collision::ContinuousContactManagerPtr getContinuousContactManager() const override { return continuous_manager_->clone(); }
-  void loadDiscreteContactManagerPlugin(const std::string& plugin) override;
-  void loadContinuousContactManagerPlugin(const std::string& plugin) override;
 
 private:
   bool initialized_;                                           /**< Identifies if the object has been initialized */
   std::string name_;                                           /**< Name of the environment (may be empty) */
   urdf::ModelInterfaceConstSharedPtr urdf_model_;              /**< URDF MODEL */
-  srdf::ModelConstSharedPtr srdf_model_;                       /**< SRDF MODEL */
   std::shared_ptr<const KDL::Tree> kdl_tree_;                  /**< KDL tree object */
   EnvStatePtr current_state_;                                  /**< Current state of the robot */
   std::unordered_map<std::string, unsigned int> joint_to_qnr_; /**< Map between joint name and kdl q index */
@@ -177,8 +145,6 @@ private:
   AllowedCollisionMatrixPtr
       allowed_collision_matrix_; /**< The allowed collision matrix used during collision checking */
   tesseract_collision::IsContactAllowedFn is_contact_allowed_fn_;       /**< The function used to determine if two objects are allowed in collision */
-  DiscreteContactManagerPluginLoaderPtr discrete_manager_loader_;       /**< The discrete contact manager loader */
-  ContinuousContactManagerPluginLoaderPtr continuous_manager_loader_;   /**< The continuous contact manager loader */
   tesseract_collision::DiscreteContactManagerPtr discrete_manager_;     /**< The discrete contact manager object */
   tesseract_collision::ContinuousContactManagerPtr continuous_manager_; /**< The continuous contact manager object */
 
@@ -201,6 +167,5 @@ private:
 typedef std::shared_ptr<KDLEnv> KDLEnvPtr;
 typedef std::shared_ptr<const KDLEnv> KDLEnvConstPtr;
 }
-}
 
-#endif  // TESSERACT_ROS_BULLET_ENV_H
+#endif  // TESSERACT_ENVIRONMENT_KDL_ENV_H

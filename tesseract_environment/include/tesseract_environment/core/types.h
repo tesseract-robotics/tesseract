@@ -1,6 +1,6 @@
 /**
- * @file basic_types.h
- * @brief The tesseract_core package types.
+ * @file types.h
+ * @brief The tesseract_environment package types.
  *
  * @author Levi Armstrong
  * @date April 15, 2018
@@ -23,11 +23,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_CORE_BASIC_TYPES_H
-#define TESSERACT_CORE_BASIC_TYPES_H
+#ifndef TESSERACT_ENVIRONMENT_TYPES_H
+#define TESSERACT_ENVIRONMENT_TYPES_H
 
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_environment/core/macros.h>
+TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/StdVector>
@@ -37,11 +37,11 @@ TESSERACT_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <functional>
 #include <map>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #include "tesseract_collision/core/collision_shapes.h"
 
-namespace tesseract
+namespace tesseract_environment
 {
 template <typename T>
 using AlignedVector = std::vector<T, Eigen::aligned_allocator<T>>;
@@ -230,4 +230,4 @@ typedef AlignedUnorderedMap<std::string, AttachedBodyInfo> AttachedBodyInfoMap;
 typedef std::unordered_map<std::string, AttachableObjectConstPtr> AttachableObjectConstPtrMap;
 }
 
-#endif  // TESSERACT_CORE_BASIC_TYPES_H
+#endif  // TESSERACT_ENVIRONMENT_TYPES_H
