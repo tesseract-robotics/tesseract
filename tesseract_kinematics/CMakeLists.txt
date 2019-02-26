@@ -27,6 +27,7 @@ catkin_package(
     ${urdfdom_INCLUDE_DIRS}
     ${urdfdom_headers_INCLUDE_DIRS}
     ${orocos_kdl_INCLUDE_DIRS}
+    ${console_bridge_INCLUDE_DIRS}
   LIBRARIES
     ${PROJECT_NAME}_kdl
     ${catkin_LIBRARIES}
@@ -45,6 +46,7 @@ catkin_package(
     urdfdom
     urdfdom_headers
     orocos_kdl
+    console_bridge
 )
 
 include_directories(
@@ -54,6 +56,7 @@ include_directories(
   SYSTEM ${urdfdom_INCLUDE_DIRS}
   SYSTEM ${urdfdom_headers_INCLUDE_DIRS}
   SYSTEM ${orocos_kdl_INCLUDE_DIRS}
+  SYSTEM ${console_bridge_INCLUDE_DIRS}
 )
 
 add_library(${PROJECT_NAME}_kdl
