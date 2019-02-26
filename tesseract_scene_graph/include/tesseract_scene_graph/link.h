@@ -37,11 +37,14 @@
 #ifndef TESSERACT_SCENE_GRAPH_LINK_H
 #define TESSERACT_SCENE_GRAPH_LINK_H
 
+#include <tesseract_scene_graph/macros.h>
+TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH
 #include <string>
 #include <vector>
 #include <map>
 #include <memory>
 #include <Eigen/Eigen>
+TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/joint.h>
 #include <tesseract_geometry/geometry.h>
@@ -152,25 +155,17 @@ public:
   /// inertial element
   InertialPtr inertial;
 
-  /// visual element
-  VisualPtr visual;
+  /// Visual Elements
+  std::vector<VisualPtr> visual;
 
-  /// collision element
-  CollisionPtr collision;
-
-  /// if more than one collision element is specified, all collision elements are placed in this array (the collision member points to the first element of the array)
-  std::vector<CollisionPtr> collision_array;
-
-  /// if more than one visual element is specified, all visual elements are placed in this array (the visual member points to the first element of the array)
-  std::vector<VisualPtr> visual_array;
+  /// Collision Elements
+  std::vector<CollisionPtr> collision;
 
   void clear()
   {
     this->inertial.reset();
-    this->visual.reset();
-    this->collision.reset();
-    this->collision_array.clear();
-    this->visual_array.clear();
+    this->collision.clear();
+    this->visual.clear();
   }
 
 private:
