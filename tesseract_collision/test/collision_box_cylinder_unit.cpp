@@ -8,13 +8,14 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 #include "tesseract_collision/fcl/fcl_discrete_managers.h"
 
 using namespace tesseract_collision;
+using namespace tesseract_geometry;
 
 void addCollisionObjects(DiscreteContactManager& checker)
 {
   //////////////////////
   // Add box to checker
   //////////////////////
-  CollisionShapePtr box(new BoxCollisionShape(1, 1, 1));
+  CollisionShapePtr box(new Box(1, 1, 1));
   Eigen::Isometry3d box_pose;
   box_pose.setIdentity();
 
@@ -28,7 +29,7 @@ void addCollisionObjects(DiscreteContactManager& checker)
   /////////////////////////////////////////////
   // Add thin box to checker which is disabled
   /////////////////////////////////////////////
-  CollisionShapePtr thin_box(new BoxCollisionShape(0.1, 1, 1));
+  CollisionShapePtr thin_box(new Box(0.1, 1, 1));
   Eigen::Isometry3d thin_box_pose;
   thin_box_pose.setIdentity();
 
@@ -43,7 +44,7 @@ void addCollisionObjects(DiscreteContactManager& checker)
   // Add cylinder to checker. If use_convex_mesh = true then this
   // cylinder will be added as a convex hull mesh.
   /////////////////////////////////////////////////////////////////
-  CollisionShapePtr cylinder(new CylinderCollisionShape(0.25, 0.25));
+  CollisionShapePtr cylinder(new Cylinder(0.25, 0.25));
   Eigen::Isometry3d cylinder_pose;
   cylinder_pose.setIdentity();
 

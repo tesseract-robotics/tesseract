@@ -11,6 +11,7 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 #include "tesseract_collision/fcl/fcl_discrete_managers.h"
 
 using namespace tesseract_collision;
+using namespace tesseract_geometry;
 
 template <class T>
 void addCollisionObjects(T& checker)
@@ -20,7 +21,7 @@ void addCollisionObjects(T& checker)
   /////////////////////////////////////////////////////////////////
   std::string path = std::string(DATA_DIR) + "/box_2m.bt";
   std::shared_ptr<octomap::OcTree> ot(new octomap::OcTree(path));
-  CollisionShapePtr dense_octomap(new OctreeCollisionShape(ot, OctreeCollisionShape::BOX));
+  CollisionShapePtr dense_octomap(new Octree(ot, Octree::BOX));
   Eigen::Isometry3d octomap_pose;
   octomap_pose.setIdentity();
   octomap_pose.translation() = Eigen::Vector3d(1.1, 0, 0);
@@ -37,7 +38,7 @@ void addCollisionObjects(T& checker)
   // sphere will be added as a convex hull mesh.
   /////////////////////////////////////////////////////////////////
   std::shared_ptr<octomap::OcTree> ot_b(new octomap::OcTree(path));
-  CollisionShapePtr dense_octomap_b(new OctreeCollisionShape(ot_b, OctreeCollisionShape::BOX));
+  CollisionShapePtr dense_octomap_b(new Octree(ot_b, Octree::BOX));
   Eigen::Isometry3d octomap_pose_b;
   octomap_pose_b.setIdentity();
   octomap_pose_b.translation() = Eigen::Vector3d(-1.1, 0, 0);

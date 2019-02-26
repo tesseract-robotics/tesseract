@@ -58,32 +58,32 @@ namespace tesseract_collision
 {
 namespace tesseract_collision_fcl
 {
-CollisionGeometryPtr createShapePrimitive(const PlaneCollisionShapeConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::PlaneConstPtr& geom)
 {
   return CollisionGeometryPtr(new fcl::Planed(geom->getA(), geom->getB(), geom->getC(), geom->getD()));
 }
 
-CollisionGeometryPtr createShapePrimitive(const BoxCollisionShapeConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::BoxConstPtr& geom)
 {
   return CollisionGeometryPtr(new fcl::Boxd(geom->getX(), geom->getY(), geom->getZ()));
 }
 
-CollisionGeometryPtr createShapePrimitive(const SphereCollisionShapeConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::SphereConstPtr& geom)
 {
   return CollisionGeometryPtr(new fcl::Sphered(geom->getRadius()));
 }
 
-CollisionGeometryPtr createShapePrimitive(const CylinderCollisionShapeConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::CylinderConstPtr& geom)
 {
   return CollisionGeometryPtr(new fcl::Cylinderd(geom->getRadius(), geom->getLength()));
 }
 
-CollisionGeometryPtr createShapePrimitive(const ConeCollisionShapeConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::ConeConstPtr& geom)
 {
   return CollisionGeometryPtr(new fcl::Coned(geom->getRadius(), geom->getLength()));
 }
 
-CollisionGeometryPtr createShapePrimitive(const MeshCollisionShapeConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::MeshConstPtr& geom)
 {
   int vertice_count = geom->getVerticeCount();
   int triangle_count = geom->getTriangleCount();
@@ -113,7 +113,7 @@ CollisionGeometryPtr createShapePrimitive(const MeshCollisionShapeConstPtr& geom
   return nullptr;
 }
 
-CollisionGeometryPtr createShapePrimitive(const ConvexMeshCollisionShapeConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::ConvexMeshConstPtr& geom)
 {
   int vertice_count = geom->getVerticeCount();
   int face_count = geom->getFaceCount();
@@ -125,17 +125,17 @@ CollisionGeometryPtr createShapePrimitive(const ConvexMeshCollisionShapeConstPtr
   return nullptr;
 }
 
-CollisionGeometryPtr createShapePrimitive(const OctreeCollisionShapeConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::OctreeConstPtr& geom)
 {
-  switch (geom->getSubShapeType())
+  switch (geom->getSubType())
   {
-    case OctreeCollisionShape::SubShapeType::BOX:
+    case tesseract_geometry::Octree::SubType::BOX:
     {
       return CollisionGeometryPtr(new fcl::OcTreed(geom->getOctree()));
     }
     default:
     {
-      CONSOLE_BRIDGE_logError("This fcl octree sub shape type (%d) is not supported for geometry octree", static_cast<int>(geom->getSubShapeType()));
+      CONSOLE_BRIDGE_logError("This fcl octree sub shape type (%d) is not supported for geometry octree", static_cast<int>(geom->getSubType()));
       return nullptr;
     }
   }
@@ -145,37 +145,37 @@ CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr &geom)
 {
   switch (geom->getType())
   {
-    case CollisionShapeType::PLANE:
+    case tesseract_geometry::GeometryType::PLANE:
     {
-      return createShapePrimitive(std::static_pointer_cast<const PlaneCollisionShape>(geom));
+      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Plane>(geom));
     }
-    case CollisionShapeType::BOX:
+    case tesseract_geometry::GeometryType::BOX:
     {
-      return createShapePrimitive(std::static_pointer_cast<const BoxCollisionShape>(geom));
+      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Box>(geom));
     }
-    case CollisionShapeType::SPHERE:
+    case tesseract_geometry::GeometryType::SPHERE:
     {
-      return createShapePrimitive(std::static_pointer_cast<const SphereCollisionShape>(geom));
+      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Sphere>(geom));
     }
-    case CollisionShapeType::CYLINDER:
+    case tesseract_geometry::GeometryType::CYLINDER:
     {
-      return createShapePrimitive(std::static_pointer_cast<const CylinderCollisionShape>(geom));
+      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Cylinder>(geom));
     }
-    case CollisionShapeType::CONE:
+    case tesseract_geometry::GeometryType::CONE:
     {
-      return createShapePrimitive(std::static_pointer_cast<const ConeCollisionShape>(geom));
+      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Cone>(geom));
     }
-    case CollisionShapeType::MESH:
+    case tesseract_geometry::GeometryType::MESH:
     {
-      return createShapePrimitive(std::static_pointer_cast<const MeshCollisionShape>(geom));
+      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Mesh>(geom));
     }
-    case CollisionShapeType::CONVEX_MESH:
+    case tesseract_geometry::GeometryType::CONVEX_MESH:
     {
-      return createShapePrimitive(std::static_pointer_cast<const MeshCollisionShape>(geom));
+      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::ConvexMesh>(geom));
     }
-    case CollisionShapeType::OCTREE:
+    case tesseract_geometry::GeometryType::OCTREE:
     {
-      return createShapePrimitive(std::static_pointer_cast<const OctreeCollisionShape>(geom));
+      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Octree>(geom));
     }
     default:
     {
