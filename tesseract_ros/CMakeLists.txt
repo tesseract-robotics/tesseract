@@ -56,10 +56,6 @@ include_directories(
   SYSTEM ${orocos_kdl_INCLUDE_DIRS}
 )
 
-add_library(${PROJECT_NAME}_kdl
-  src/kdl/kdl_env.cpp
-)
-
 add_library(tesseract_collision_bullet_plugin src/plugins/bullet_plugin.cpp)
 target_link_libraries(tesseract_collision_bullet_plugin ${catkin_LIBRARIES})
 target_compile_options(tesseract_collision_bullet_plugin PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
@@ -85,18 +81,3 @@ install(DIRECTORY include/${PROJECT_NAME}/
 install(FILES tesseract_collision_bullet_plugin_description.xml tesseract_collision_fcl_plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-
-if (CATKIN_ENABLE_TESTING)
-
-  find_package(rostest REQUIRED)
-
-  include_directories(${catkin_INCLUDE_DIRS})
-
-  catkin_add_gtest(${PROJECT_NAME}_kdl_env_unit test/kdl_env_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_kdl_env_unit ${PROJECT_NAME}_kdl ${catkin_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${orocos_kdl_LIBRARIES})
-  target_compile_options(${PROJECT_NAME}_kdl_env_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
-
-  catkin_add_gtest(${PROJECT_NAME}_utils_unit test/ros_tesseract_utils_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_utils_unit ${PROJECT_NAME}_kdl ${catkin_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${orocos_kdl_LIBRARIES})
-  target_compile_options(${PROJECT_NAME}_utils_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
-endif()

@@ -1,73 +1,50 @@
 /**
- * @file bullet_env.cpp
- * @brief Tesseract ROS Bullet environment implementation.
+ * @file kdl_env.cpp
+ * @brief Tesseract environment kdl implementation.
  *
- * @author John Schulman
  * @author Levi Armstrong
  * @date Dec 18, 2017
  * @version TODO
  * @bug No known bugs
  *
  * @copyright Copyright (c) 2017, Southwest Research Institute
- * @copyright Copyright (c) 2013, John Schulman
  *
  * @par License
- * Software License Agreement (BSD-2-Clause)
+ * Software License Agreement (Apache License)
  * @par
- * All rights reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
  * @par
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * @par
- *  * Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *  * Redistributions in binary form must reproduce the above
- *    copyright notice, this list of conditions and the following
- *    disclaimer in the documentation and/or other materials provided
- *    with the distribution.
- * @par
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_environment/core/macros.h>
+TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <eigen_conversions/eigen_msg.h>
 #include <functional>
 #include <geometric_shapes/shape_operations.h>
 #include <iostream>
 #include <limits>
 #include <octomap/octomap.h>
-TESSERACT_IGNORE_WARNINGS_POP
+#include <console_bridge/console.h>
+TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
-#include "tesseract_ros/kdl/kdl_env.h"
 #include "tesseract_kinematics/kdl/kdl_fwd_kin_chain.h"
 #include "tesseract_kinematics/kdl/kdl_fwd_kin_tree.h"
-#include "tesseract_ros/kdl/kdl_utils.h"
-#include "tesseract_ros/ros_tesseract_utils.h"
+#include "tesseract_environment/kdl/kdl_env.h"
+#include "tesseract_environment/kdl/kdl_utils.h"
 
-const std::string DEFAULT_DISCRETE_CONTACT_MANAGER_PLUGIN_PARAM = "tesseract_collision/BulletDiscreteBVHManager";
-const std::string DEFAULT_CONTINUOUS_CONTACT_MANAGER_PLUGIN_PARAM = "tesseract_collision/BulletCastBVHManager";
-
-namespace tesseract
-{
-namespace tesseract_ros
+namespace tesseract_environment
 {
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-bool KDLEnv::init(urdf::ModelInterfaceConstSharedPtr urdf_model) { return init(urdf_model, nullptr); }
-bool KDLEnv::init(urdf::ModelInterfaceConstSharedPtr urdf_model, srdf::ModelConstSharedPtr srdf_model)
+bool KDLEnv::init(urdf::ModelInterfaceConstSharedPtr urdf_model)
 {
   initialized_ = false;
   urdf_model_ = urdf_model;
@@ -75,20 +52,20 @@ bool KDLEnv::init(urdf::ModelInterfaceConstSharedPtr urdf_model, srdf::ModelCons
 
   if (urdf_model_ == nullptr)
   {
-    ROS_ERROR_STREAM("Null pointer to URDF Model");
+    CONSOLE_BRIDGE_logError("Null pointer to URDF Model");
     return initialized_;
   }
 
   if (!urdf_model_->getRoot())
   {
-    ROS_ERROR("Invalid URDF in ROSKDLEnv::init call");
+    CONSOLE_BRIDGE_logError("Invalid URDF in ROSKDLEnv::init call");
     return initialized_;
   }
 
   KDL::Tree* kdl_tree = new KDL::Tree();
   if (!kdl_parser::treeFromUrdfModel(*urdf_model_, *kdl_tree))
   {
-    ROS_ERROR("Failed to initialize KDL from URDF model");
+    CONSOLE_BRIDGE_logError("Failed to initialize KDL from URDF model");
     return initialized_;
   }
   kdl_tree_ = std::shared_ptr<KDL::Tree>(kdl_tree);
@@ -122,50 +99,43 @@ bool KDLEnv::init(urdf::ModelInterfaceConstSharedPtr urdf_model, srdf::ModelCons
         current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
   }
 
-  if (srdf_model != nullptr)
-  {
-    srdf_model_ = srdf_model;
-    for (const auto& group : srdf_model_->getGroups())
-    {
-      if (!group.chains_.empty())
-      {
-        assert(group.chains_.size() == 1);
-        addManipulator(group.chains_.front().first, group.chains_.front().second, group.name_);
-      }
+//  if (srdf_model != nullptr)
+//  {
+//    srdf_model_ = srdf_model;
+//    for (const auto& group : srdf_model_->getGroups())
+//    {
+//      if (!group.chains_.empty())
+//      {
+//        assert(group.chains_.size() == 1);
+//        addManipulator(group.chains_.front().first, group.chains_.front().second, group.name_);
+//      }
 
-      if (!group.joints_.empty())
-      {
-        addManipulator(group.joints_, group.name_);
-      }
+//      if (!group.joints_.empty())
+//      {
+//        addManipulator(group.joints_, group.name_);
+//      }
 
-      // TODO: Need to add other options
-      if (!group.links_.empty())
-      {
-        ROS_ERROR("Link groups are currently not supported!");
-      }
+//      // TODO: Need to add other options
+//      if (!group.links_.empty())
+//      {
+//        CONSOLE_BRIDGE_logError("Link groups are currently not supported!");
+//      }
 
-      if (!group.subgroups_.empty())
-      {
-        ROS_ERROR("Subgroups are currently not supported!");
-      }
-    }
+//      if (!group.subgroups_.empty())
+//      {
+//        CONSOLE_BRIDGE_logError("Subgroups are currently not supported!");
+//      }
+//    }
 
-    // Populate allowed collision matrix
-    for (const auto& pair : srdf_model_->getDisabledCollisionPairs())
-    {
-      allowed_collision_matrix_->addAllowedCollision(pair.link1_, pair.link2_, pair.reason_);
-    }
-  }
+//    // Populate allowed collision matrix
+//    for (const auto& pair : srdf_model_->getDisabledCollisionPairs())
+//    {
+//      allowed_collision_matrix_->addAllowedCollision(pair.link1_, pair.link2_, pair.reason_);
+//    }
+//  }
 
   // Now get the active link names
   getActiveLinkNamesRecursive(active_link_names_, urdf_model_->getRoot(), false);
-
-  // load the default contact checker plugin
-  loadDiscreteContactManagerPlugin(DEFAULT_DISCRETE_CONTACT_MANAGER_PLUGIN_PARAM);
-  loadContinuousContactManagerPlugin(DEFAULT_CONTINUOUS_CONTACT_MANAGER_PLUGIN_PARAM);
-
-  discrete_manager_->setActiveCollisionObjects(active_link_names_);
-  continuous_manager_->setActiveCollisionObjects(active_link_names_);
 
   return initialized_;
 }
@@ -400,7 +370,7 @@ void KDLEnv::addAttachableObject(const AttachableObjectConstPtr attachable_objec
   {
     discrete_manager_->removeCollisionObject(attachable_object->name);
     continuous_manager_->removeCollisionObject(attachable_object->name);
-    ROS_DEBUG("Replacing attachable object %s!", attachable_object->name.c_str());
+    CONSOLE_BRIDGE_logDebug("Replacing attachable object %s!", attachable_object->name.c_str());
   }
 
   attachable_objects_[attachable_object->name] = attachable_object;
@@ -443,7 +413,7 @@ const AttachedBodyInfo& KDLEnv::getAttachedBody(const std::string& name) const
 {
   const auto body = attached_bodies_.find(name);
   if (body == attached_bodies_.end())
-    ROS_ERROR("Tried to get attached body %s which does not exist!", name.c_str());
+    CONSOLE_BRIDGE_logError("Tried to get attached body %s which does not exist!", name.c_str());
 
   return body->second;
 }
@@ -455,20 +425,20 @@ void KDLEnv::attachBody(const AttachedBodyInfo& attached_body_info)
 
   if (body_info != attached_bodies_.end())
   {
-    ROS_DEBUG("Tried to attached object %s which is already attached!", attached_body_info.object_name.c_str());
+    CONSOLE_BRIDGE_logDebug("Tried to attached object %s which is already attached!", attached_body_info.object_name.c_str());
     return;
   }
 
   if (obj == attachable_objects_.end())
   {
-    ROS_DEBUG("Tried to attached object %s which does not exist!", attached_body_info.object_name.c_str());
+    CONSOLE_BRIDGE_logDebug("Tried to attached object %s which does not exist!", attached_body_info.object_name.c_str());
     return;
   }
 
   if (std::find(link_names_.begin(), link_names_.end(), attached_body_info.object_name) != link_names_.end())
   {
-    ROS_DEBUG("Tried to attached object %s with the same name as an existing link!",
-              attached_body_info.object_name.c_str());
+    CONSOLE_BRIDGE_logDebug("Tried to attached object %s with the same name as an existing link!",
+                            attached_body_info.object_name.c_str());
     return;
   }
 
@@ -564,7 +534,7 @@ bool KDLEnv::setJointValuesHelper(KDL::JntArray& q, const std::string& joint_nam
   }
   else
   {
-    ROS_ERROR("Tried to set joint name %s which does not exist!", joint_name.c_str());
+    CONSOLE_BRIDGE_logError("Tried to set joint name %s which does not exist!", joint_name.c_str());
     return false;
   }
 }
@@ -632,19 +602,15 @@ bool KDLEnv::defaultIsContactAllowedFn(const std::string& link_name1, const std:
   return false;
 }
 
-void KDLEnv::loadDiscreteContactManagerPlugin(const std::string& plugin)
+bool KDLEnv::setDiscreteContactManager(tesseract_collision::DiscreteContactManagerConstPtr manager)
 {
-  tesseract_collision::DiscreteContactManagerPtr temp = discrete_manager_loader_->createUniqueInstance(plugin);
-  if (temp != nullptr)
+  if (manager == nullptr)
   {
-    discrete_manager_ = temp;
-  }
-  else
-  {
-    ROS_ERROR("Failed to load tesseract contact checker plugin: %s.", plugin.c_str());
-    return;
+    CONSOLE_BRIDGE_logError("Provided manager is null.");
+    return false;
   }
 
+  discrete_manager_ = manager->clone(); // TODO add a clone Empty
   discrete_manager_->setIsContactAllowedFn(is_contact_allowed_fn_);
   if (initialized_)
   {
@@ -686,22 +652,22 @@ void KDLEnv::loadDiscreteContactManagerPlugin(const std::string& plugin)
     // Enable the attached objects in the contact checker
     for (const auto& ab : attached_bodies_)
       discrete_manager_->enableCollisionObject(ab.second.object_name);
+
+    discrete_manager_->setActiveCollisionObjects(active_link_names_);
   }
+
+  return true;
 }
 
-void KDLEnv::loadContinuousContactManagerPlugin(const std::string& plugin)
+bool KDLEnv::setContinuousContactManager(tesseract_collision::ContinuousContactManagerConstPtr manager)
 {
-  tesseract_collision::ContinuousContactManagerPtr temp = continuous_manager_loader_->createUniqueInstance(plugin);
-  if (temp != nullptr)
+  if (manager == nullptr)
   {
-    continuous_manager_ = temp;
-  }
-  else
-  {
-    ROS_ERROR("Failed to load tesseract continuous contact manager plugin: %s.", plugin.c_str());
-    return;
+    CONSOLE_BRIDGE_logError("Provided manager is null.");
+    return false;
   }
 
+  continuous_manager_ = manager->clone();
   continuous_manager_->setIsContactAllowedFn(is_contact_allowed_fn_);
   if (initialized_)
   {
@@ -744,7 +710,10 @@ void KDLEnv::loadContinuousContactManagerPlugin(const std::string& plugin)
     // Enable the attached objects in the contact checker
     for (const auto& ab : attached_bodies_)
       continuous_manager_->enableCollisionObject(ab.second.object_name);
+
+    continuous_manager_->setActiveCollisionObjects(active_link_names_);
   }
-}
+
+  return true;
 }
 }

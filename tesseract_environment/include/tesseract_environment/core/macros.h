@@ -1,6 +1,6 @@
 /**
  * @file macros.h
- * @brief The tesseract_core package macros.
+ * @brief The tesseract_environment package macros.
  *
  * @author Levi Armstrong
  * @date April 15, 2018
@@ -23,9 +23,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_CORE_MACROS_H
-#define TESSERACT_CORE_MACROS_H
-#define TESSERACT_IGNORE_WARNINGS_PUSH                                                                                 \
+#ifndef TESSERACT_ENVIRONMENT_MACROS_H
+#define TESSERACT_ENVIRONMENT_MACROS_H
+#define TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH                                                                                 \
   _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wall\"")                                           \
       _Pragma("GCC diagnostic ignored \"-Wint-to-pointer-cast\"")                                                      \
           _Pragma("GCC diagnostic ignored \"-Wunused-parameter\"")                                                     \
@@ -34,6 +34,6 @@
                       _Pragma("GCC diagnostic ignored \"-Wfloat-conversion\"")                                         \
                           _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")
 
-#define TESSERACT_IGNORE_WARNINGS_POP _Pragma("GCC diagnostic pop")
+#define TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP _Pragma("GCC diagnostic pop")
 
-#endif  // TESSERACT_CORE_MACROS_H
+#endif  // TESSERACT_ENVIRONMENT_MACROS_H
