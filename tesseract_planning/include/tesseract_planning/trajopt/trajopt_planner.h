@@ -67,6 +67,7 @@ public:
 
     // Converge Status Codes
   }
+//  virtual ~TrajOptPlanner(){}
 
   /**
    * @brief Sets up the opimizer and solves a SQP problem read from json with no callbacks and dafault parameterss

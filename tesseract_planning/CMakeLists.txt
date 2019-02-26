@@ -18,6 +18,7 @@ catkin_package(
   LIBRARIES
     ${PROJECT_NAME}_ompl
     ${PROJECT_NAME}_trajopt
+    ${PROJECT_NAME}_trajopt_freespace
   CATKIN_DEPENDS
     roscpp
     tesseract_ros
@@ -36,6 +37,11 @@ include_directories(
 add_library(${PROJECT_NAME}_trajopt src/trajopt/trajopt_planner.cpp)
 target_link_libraries(${PROJECT_NAME}_trajopt ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_trajopt PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+
+# Trajopt Freespace Planner
+add_library(${PROJECT_NAME}_trajopt_freespace src/trajopt/trajopt_freespace_planner.cpp)
+target_link_libraries(${PROJECT_NAME}_trajopt_freespace ${catkin_LIBRARIES} ${PROJECT_NAME}_trajopt)
+target_compile_options(${PROJECT_NAME}_trajopt_freespace PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
 # OMPL Planning Interface
 add_library(${PROJECT_NAME}_ompl
