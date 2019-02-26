@@ -12,6 +12,7 @@
   <depend>liburdfdom-dev</depend>
   <depend>liburdfdom-headers-dev</depend>
   <depend>libconsole-bridge-dev</depend>
+  <depend>assimp-dev</depend>
 
   <export>
   </export>
