@@ -1,10 +1,13 @@
+#include <tesseract_scene_graph/macros.h>
+TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
-#include <tesseract_scene_graph/graph.h>
-//#include <boost/graph/dijkstra_shortest_paths.hpp>
-//#include <boost/graph/graph_traits.hpp>
 //#include <boost/graph/filtered_graph.hpp>
 #include <iostream>
 #include <fstream>
+TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
+
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/parser/mesh_parser.h>
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
 {
@@ -125,6 +128,23 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
   EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_3") != path.second.end());
 
   std::cout << (g.getName().c_str()) << std::endl;
+}
+
+TEST(TesseractSceneGraphUnit, LoadMeshUnit)
+{
+  using namespace tesseract_scene_graph;
+
+  std::string mesh_file = std::string(DATA_DIR) + "/sphere_p25m.stl";
+  std::vector<tesseract_geometry::MeshPtr> meshes = createMeshFromPath(mesh_file);
+  EXPECT_TRUE(meshes.size() == 1);
+  EXPECT_TRUE(meshes[0]->getTriangleCount() == 80);
+  EXPECT_TRUE(meshes[0]->getVerticeCount() == 42);
+
+  mesh_file = std::string(DATA_DIR) + "/sphere_p25m.ply";
+  meshes = createMeshFromPath(mesh_file);
+  EXPECT_TRUE(meshes.size() == 1);
+  EXPECT_TRUE(meshes[0]->getTriangleCount() == 80);
+  EXPECT_TRUE(meshes[0]->getVerticeCount() == 42);
 }
 
 int main(int argc, char** argv)
