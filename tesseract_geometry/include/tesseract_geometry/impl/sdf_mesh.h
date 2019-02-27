@@ -56,12 +56,14 @@ namespace tesseract_geometry
         ++triangle_count_;
         int num_verts = *it;
         it = it + num_verts;
+        assert(num_verts == 3);
       }
     }
 
     SDFMesh(const std::shared_ptr<const VectorVector3d>& vertices, const std::shared_ptr<const std::vector<int>>& triangles, int triangle_count) : Geometry(GeometryType::SDF_MESH), vertices_(vertices), triangles_(triangles), triangle_count_(triangle_count)
     {
       vertice_count_ = static_cast<int>(vertices->size());
+      assert((triangle_count * 4) == triangles_->size());
     }
 
     ~SDFMesh() override = default;
