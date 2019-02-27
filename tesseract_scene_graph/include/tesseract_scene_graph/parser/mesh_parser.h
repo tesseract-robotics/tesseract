@@ -47,19 +47,24 @@ TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH
 
 #include <console_bridge/console.h>
 
-#include <tesseract_geometry/impl/mesh.h>
+#include <tesseract_geometry/types.h>
 
 TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
 {
+  /**
+   * The template type must have a constructor as follows
+   * Constructor(std::shared_ptr<tesseract_geometry::VectorVector3d> vertices, std::shared_ptr<std::vector<int>> faces, int face_count)
+   */
 
-  inline std::vector<tesseract_geometry::MeshPtr> extractMeshData(const aiScene* scene,
-                                                                  const aiNode* node,
-                                                                  const aiMatrix4x4& parent_transform,
-                                                                  const Eigen::Vector3d& scale)
+  template<class T>
+  inline std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
+                                                         const aiNode* node,
+                                                         const aiMatrix4x4& parent_transform,
+                                                         const Eigen::Vector3d& scale)
   {
-    std::vector<tesseract_geometry::MeshPtr> meshes;
+    std::vector<std::shared_ptr<T>> meshes;
 
     aiMatrix4x4 transform = parent_transform;
     transform *= node->mTransformation;
@@ -81,63 +86,64 @@ namespace tesseract_scene_graph
       for (unsigned int i = 0; i < a->mNumFaces; ++i)
       {
         assert(a->mFaces[i].mNumIndices >= 3);
-        if (a->mFaces[i].mNumIndices > 3)
-        {
-          triangle_count += 1;
-          triangles->push_back(3);
-          triangles->push_back(static_cast<int>(a->mFaces[i].mIndices[0]));
-          triangles->push_back(static_cast<int>(a->mFaces[i].mIndices[1]));
-          triangles->push_back(static_cast<int>(a->mFaces[i].mIndices[2]));
-          for (size_t k = 3; k < a->mFaces[i].mNumIndices; ++k)
-          {
-            triangle_count += 1;
-            triangles->push_back(3);
-            triangles->push_back(static_cast<int>(a->mFaces[i].mIndices[0]));
-            triangles->push_back(static_cast<int>(a->mFaces[i].mIndices[k - 1]));
-            triangles->push_back(static_cast<int>(a->mFaces[i].mIndices[k]));
-          }
-        }
-        else if (a->mFaces[i].mNumIndices == 3)
-        {
-          triangle_count += 1;
-          triangles->push_back(3);
-          triangles->push_back(static_cast<int>(a->mFaces[i].mIndices[0]));
-          triangles->push_back(static_cast<int>(a->mFaces[i].mIndices[1]));
-          triangles->push_back(static_cast<int>(a->mFaces[i].mIndices[2]));
-        }
+        triangle_count += 1;
+        triangles->push_back(static_cast<int>(a->mFaces[i].mNumIndices));
+        for (size_t k = 0; k < a->mFaces[i].mNumIndices; ++k)
+          triangles->push_back(static_cast<int>(a->mFaces[i].mIndices[k]));
       }
 
-      meshes.push_back(tesseract_geometry::MeshPtr(new tesseract_geometry::Mesh(vertices, triangles, triangle_count)));
+      meshes.push_back(std::shared_ptr<T>(new T(vertices, triangles, triangle_count)));
     }
 
     for (unsigned int n = 0; n < node->mNumChildren; ++n)
     {
-      std::vector<tesseract_geometry::MeshPtr> child_meshes = extractMeshData(scene, node->mChildren[n], transform, scale);
+      std::vector<std::shared_ptr<T>> child_meshes = extractMeshData<T>(scene, node->mChildren[n], transform, scale);
       meshes.insert(meshes.end(), child_meshes.begin(), child_meshes.end());
     }
     return meshes;
   }
 
-  inline std::vector<tesseract_geometry::MeshPtr> createMeshFromAsset(const aiScene* scene,
-                                                                      const Eigen::Vector3d& scale,
-                                                                      const std::string& path)
+  /**
+   * @brief Create list of meshes from the assimp scene
+   * @param scene The assimp scene
+   * @param scale Perform an axis scaling
+   * @param path The path to the mesh file that generated the scene
+   * @return A list of tesseract meshes
+   */
+  template<class T>
+  inline std::vector<std::shared_ptr<T>> createMeshFromAsset(const aiScene* scene,
+                                                             const Eigen::Vector3d& scale,
+                                                             const std::string& path)
   {
     if (!scene->HasMeshes())
     {
       CONSOLE_BRIDGE_logWarn("Assimp reports scene in %s has no meshes", path.c_str());
-      return std::vector<tesseract_geometry::MeshPtr>();
+      return std::vector<std::shared_ptr<T>>();
     }
-    std::vector<tesseract_geometry::MeshPtr> meshes = extractMeshData(scene, scene->mRootNode, aiMatrix4x4(), scale);
+    std::vector<std::shared_ptr<T>> meshes = extractMeshData<T>(scene, scene->mRootNode, aiMatrix4x4(), scale);
     if (meshes.empty())
     {
       CONSOLE_BRIDGE_logWarn("There are no meshes in the scene %s", path.c_str());
-      return std::vector<tesseract_geometry::MeshPtr>();
+      return std::vector<std::shared_ptr<T>>();
     }
 
     return meshes;
   }
 
-  inline std::vector<tesseract_geometry::MeshPtr> createMeshFromPath(const std::string& path,  Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1))
+  /**
+   * @brief Create a mesh using assimp from file path
+   * @param path The file path to the mesh
+   * @param scale Perform an axis scaling
+   * @param trianglulate If true the mesh will be trianglulated. This should be done for visual meshes.
+   *        In the case of collision meshes do not triangulate convex hull meshes.
+   * @param flatten If true all meshes will be condensed into a single mesh. This should only be used for visual meshes, do not flatten collision meshes.
+   * @return
+   */
+  template<class T>
+  inline std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& path,
+                                                            Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
+                                                            bool triangulate = false,
+                                                            bool flatten = false)
   {
     // Create an instance of the Importer class
     Assimp::Importer importer;
@@ -151,9 +157,14 @@ namespace tesseract_scene_graph
                                                             aiComponent_CAMERAS | aiComponent_MATERIALS);
 
     // And have it read the given file with some post-processing
-    const aiScene* scene = importer.ReadFile(path.c_str(), aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | aiProcess_RemoveComponent);
+    const aiScene* scene = nullptr;
+    if (triangulate)
+      scene = importer.ReadFile(path.c_str(), aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | aiProcess_RemoveComponent);
+    else
+      scene = importer.ReadFile(path.c_str(), aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | aiProcess_RemoveComponent);
+
     if (!scene)
-      return std::vector<tesseract_geometry::MeshPtr>();
+      return std::vector<std::shared_ptr<T>>();
 
     // Assimp enforces Y_UP convention by rotating models with different conventions.
     // However, that behaviour is confusing and doesn't match the ROS convention
@@ -162,11 +173,18 @@ namespace tesseract_scene_graph
     // Note that this is also what RViz does internally.
     scene->mRootNode->mTransformation = aiMatrix4x4();
 
-    // These post processing steps flatten the root node transformation into child nodes,
-    // so they must be delayed until after clearing the root node transform above.
-    importer.ApplyPostProcessing(aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
+    if (flatten)
+    {
+      // These post processing steps flatten the root node transformation into child nodes,
+      // so they must be delayed until after clearing the root node transform above.
+      importer.ApplyPostProcessing(aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
+    }
+    else
+    {
+      importer.ApplyPostProcessing(aiProcess_OptimizeGraph);
+    }
 
-    return createMeshFromAsset(scene, scale, path);
+    return createMeshFromAsset<T>(scene, scale, path);
   }
 
 }
