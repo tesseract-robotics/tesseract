@@ -8,6 +8,7 @@ TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/parser/mesh_parser.h>
+#include <tesseract_geometry/geometries.h>
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
 {
@@ -135,16 +136,48 @@ TEST(TesseractSceneGraphUnit, LoadMeshUnit)
   using namespace tesseract_scene_graph;
 
   std::string mesh_file = std::string(DATA_DIR) + "/sphere_p25m.stl";
-  std::vector<tesseract_geometry::MeshPtr> meshes = createMeshFromPath(mesh_file);
+  std::vector<tesseract_geometry::MeshPtr> meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file);
   EXPECT_TRUE(meshes.size() == 1);
   EXPECT_TRUE(meshes[0]->getTriangleCount() == 80);
   EXPECT_TRUE(meshes[0]->getVerticeCount() == 42);
 
   mesh_file = std::string(DATA_DIR) + "/sphere_p25m.ply";
-  meshes = createMeshFromPath(mesh_file);
+  meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file);
   EXPECT_TRUE(meshes.size() == 1);
   EXPECT_TRUE(meshes[0]->getTriangleCount() == 80);
   EXPECT_TRUE(meshes[0]->getVerticeCount() == 42);
+
+  mesh_file = std::string(DATA_DIR) + "/sphere_p25m.dae";
+  meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file);
+  EXPECT_TRUE(meshes.size() == 2);
+  EXPECT_TRUE(meshes[0]->getTriangleCount() == 80);
+  EXPECT_TRUE(meshes[0]->getVerticeCount() == 42);
+  EXPECT_TRUE(meshes[1]->getTriangleCount() == 80);
+  EXPECT_TRUE(meshes[1]->getVerticeCount() == 42);
+
+  mesh_file = std::string(DATA_DIR) + "/sphere_p25m.dae";
+  meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file, Eigen::Vector3d(1,1,1), false, true);
+  EXPECT_TRUE(meshes.size() == 1);
+  EXPECT_TRUE(meshes[0]->getTriangleCount() == 2*80);
+  EXPECT_TRUE(meshes[0]->getVerticeCount() == 2*42);
+
+  mesh_file = std::string(DATA_DIR) + "/box_2m.ply";
+  meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file, Eigen::Vector3d(1,1,1), true, true);
+  EXPECT_TRUE(meshes.size() == 1);
+  EXPECT_TRUE(meshes[0]->getTriangleCount() == 12);
+  EXPECT_TRUE(meshes[0]->getVerticeCount() == 8);
+
+  mesh_file = std::string(DATA_DIR) + "/box_2m.ply";
+  meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file, Eigen::Vector3d(1,1,1), true, true);
+  EXPECT_TRUE(meshes.size() == 1);
+  EXPECT_TRUE(meshes[0]->getTriangleCount() == 12);
+  EXPECT_TRUE(meshes[0]->getVerticeCount() == 8);
+
+  mesh_file = std::string(DATA_DIR) + "/box_2m.ply";
+  std::vector<tesseract_geometry::ConvexMeshPtr> convex_meshes = createMeshFromPath<tesseract_geometry::ConvexMesh>(mesh_file, Eigen::Vector3d(1,1,1), false, false);
+  EXPECT_TRUE(convex_meshes.size() == 1);
+  EXPECT_TRUE(convex_meshes[0]->getFaceCount() == 6);
+  EXPECT_TRUE(convex_meshes[0]->getVerticeCount() == 8);
 }
 
 int main(int argc, char** argv)
