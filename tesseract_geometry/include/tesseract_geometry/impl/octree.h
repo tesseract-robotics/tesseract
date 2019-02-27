@@ -33,7 +33,7 @@ TESSERACT_GEOMETRY_IGNORE_WARNINGS_PUSH
 #include <octomap/octomap.h>
 TESSERACT_GEOMETRY_IGNORE_WARNINGS_POP
 
-#include <tesseract_collision/core/types.h>
+#include <tesseract_geometry/geometry.h>
 
 namespace tesseract_geometry
 {
