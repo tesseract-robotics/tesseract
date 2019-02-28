@@ -11,6 +11,7 @@ TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/parser/mesh_parser.h>
 #include <tesseract_scene_graph/parser/urdf_parser.h>
+#include <tesseract_scene_graph/parser/kdl_parser.h>
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
 {
@@ -239,6 +240,37 @@ TEST(TesseractSceneGraphUnit, LoadURDFUnit)
   EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_a2") != path.second.end());
   EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_a3") != path.second.end());
   EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_a4") != path.second.end());
+}
+
+void printKDLTree(const KDL::SegmentMap::const_iterator & link, const std::string & prefix)
+{
+  std::cout << prefix << "- Segment " << GetTreeElementSegment(link->second).getName() <<
+    " has " << GetTreeElementChildren(link->second).size() << " children" << std::endl;
+  for (unsigned int i = 0; i < GetTreeElementChildren(link->second).size(); i++)
+    printKDLTree(GetTreeElementChildren(link->second)[i], prefix + "  ");
+}
+
+TEST(TesseractSceneGraphUnit, LoadKDLUnit)
+{
+  using namespace tesseract_scene_graph;
+
+  std::string urdf_file = std::string(DATA_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
+
+  ResourceLocatorFn locator = locateResource;
+  SceneGraphPtr g = parseURDF(urdf_file, locator);
+
+  KDL::Tree tree;
+  EXPECT_TRUE(parseSceneGraph(*g, tree));
+
+  // walk through tree
+  std::cout << " ======================================" << std::endl;
+  std::cout << " Tree has " << tree.getNrOfSegments() << " link(s) and a root link" << std::endl;
+  std::cout << " ======================================" << std::endl;
+  KDL::SegmentMap::const_iterator root = tree.getRootSegment();
+  printKDLTree(root, "");
+
+  EXPECT_TRUE(tree.getNrOfJoints() == 9);
+  EXPECT_TRUE(tree.getNrOfSegments() == 10);
 }
 
 int main(int argc, char** argv)
