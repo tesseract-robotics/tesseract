@@ -121,7 +121,7 @@ public:
     auto& map = get_property(static_cast<const Graph&>(*this), boost::graph_link_map);
     auto found = map.find(name);
 
-    if (found != map.end())
+    if (found == map.end())
       return false;
 
     boost::set_property(static_cast<Graph&>(*this), boost::graph_root, name);
@@ -381,7 +381,11 @@ public:
   //  return new_graph;
   //}
 
-private:
+  /**
+   * @brief Get the graph vertex by name
+   * @param name The vertex/link name
+   * @return Graph Vertex
+   */
   Vertex getVertex(const std::string& name) const
   {
     auto& map = boost::get_property(static_cast<const Graph&>(*this), boost::graph_link_map);
@@ -393,6 +397,11 @@ private:
     return found->second.second;
   }
 
+  /**
+   * @brief Get the graph edge by name
+   * @param name The edge/joint name
+   * @return Graph Edge
+   */
   Edge getEdge(const std::string& name) const
   {
     auto& map = boost::get_property(static_cast<const Graph&>(*this), boost::graph_joint_map);
@@ -403,6 +412,8 @@ private:
 
     return found->second.second;
   }
+
+private:
 
   struct cycle_detector : public boost::dfs_visitor<>
   {
