@@ -32,6 +32,7 @@ TESSERACT_GEOMETRY_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <octomap/octomap.h>
 #include <console_bridge/console.h>
+#include <unordered_map>
 TESSERACT_GEOMETRY_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
