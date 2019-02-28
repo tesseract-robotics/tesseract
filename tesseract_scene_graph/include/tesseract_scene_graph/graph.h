@@ -174,6 +174,22 @@ public:
   }
 
   /**
+   * @brief Get a vector links in the scene graph
+   * @return A vector of links
+   */
+  std::vector<LinkConstPtr> getLinks() const
+  {
+    std::vector<LinkConstPtr> links;
+    auto& map = boost::get_property(static_cast<const Graph&>(*this), boost::graph_link_map);
+
+    links.reserve(map.size());
+    for (const auto& link : map)
+      links.push_back(link.second.first);
+
+    return links;
+  }
+
+  /**
    * @brief Removes a link from the graph
    * @param name Name of the link to be removed
    * @return Return False if a link does not exists, otherwise true
@@ -250,6 +266,22 @@ public:
     map.erase(name);
 
     return true;
+  }
+
+  /**
+   * @brief Get a vector joints in the scene graph
+   * @return A vector of joints
+   */
+  std::vector<JointConstPtr> getJoints() const
+  {
+    std::vector<JointConstPtr> joints;
+    auto& map = boost::get_property(static_cast<const Graph&>(*this), boost::graph_joint_map);
+
+    joints.reserve(map.size());
+    for (const auto& joint : map)
+      joints.push_back(joint.second.first);
+
+    return joints;
   }
 
   /**
@@ -393,7 +425,7 @@ private:
     template <class u, class g>
     void discover_vertex(u vertex, g graph)
     {
-      int num_in_edges = boost::in_degree(vertex, graph);
+      int num_in_edges = static_cast<int>(boost::in_degree(vertex, graph));
 
       if (num_in_edges > 1)
       {

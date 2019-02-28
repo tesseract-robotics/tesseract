@@ -14,6 +14,8 @@
   <depend>libconsole-bridge-dev</depend>
   <depend>assimp-dev</depend>
 
+  <test_depend>roslib</test_depend>
+
   <export>
   </export>
 
