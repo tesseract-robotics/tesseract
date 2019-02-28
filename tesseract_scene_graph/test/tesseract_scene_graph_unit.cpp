@@ -4,11 +4,13 @@ TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH
 //#include <boost/graph/filtered_graph.hpp>
 #include <iostream>
 #include <fstream>
+#include <tesseract_geometry/geometries.h>
+#include <ros/package.h>
 TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/parser/mesh_parser.h>
-#include <tesseract_geometry/geometries.h>
+#include <tesseract_scene_graph/parser/urdf_parser.h>
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
 {
@@ -178,6 +180,65 @@ TEST(TesseractSceneGraphUnit, LoadMeshUnit)
   EXPECT_TRUE(convex_meshes.size() == 1);
   EXPECT_TRUE(convex_meshes[0]->getFaceCount() == 6);
   EXPECT_TRUE(convex_meshes[0]->getVerticeCount() == 8);
+}
+
+std::string locateResource(const std::string& url)
+{
+  std::string mod_url = url;
+  if (url.find("package://") == 0)
+  {
+    mod_url.erase(0, strlen("package://"));
+    size_t pos = mod_url.find("/");
+    if (pos == std::string::npos)
+    {
+      return std::string();
+    }
+
+    std::string package = mod_url.substr(0, pos);
+    mod_url.erase(0, pos);
+    std::string package_path = ros::package::getPath(package);
+
+    if (package_path.empty())
+    {
+      return std::string();
+    }
+
+    mod_url = package_path + mod_url; // "file://" + package_path + mod_url;
+  }
+
+  return mod_url;
+}
+
+TEST(TesseractSceneGraphUnit, LoadURDFUnit)
+{
+  using namespace tesseract_scene_graph;
+
+  std::string urdf_file = std::string(DATA_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
+
+  ResourceLocatorFn locator = locateResource;
+  SceneGraphPtr g = parseURDF(urdf_file, locator);
+
+  EXPECT_TRUE(g->getJoints().size() == 9);
+  EXPECT_TRUE(g->getLinks().size() == 10);
+  EXPECT_TRUE(g->isTree());
+  EXPECT_TRUE(g->isAcyclic());
+
+  // Save Graph
+  g->saveDOT("/tmp/tesseract_urdf_import.dot");
+
+  // Get Shortest Path
+  SceneGraph::Path path = g->getShortestPath("link_1", "link_4");
+
+  std::cout << path << std::endl;
+  EXPECT_TRUE(path.first.size() == 4);
+  EXPECT_TRUE(std::find(path.first.begin(), path.first.end(), "link_1") != path.first.end());
+  EXPECT_TRUE(std::find(path.first.begin(), path.first.end(), "link_2") != path.first.end());
+  EXPECT_TRUE(std::find(path.first.begin(), path.first.end(), "link_3") != path.first.end());
+  EXPECT_TRUE(std::find(path.first.begin(), path.first.end(), "link_4") != path.first.end());
+  EXPECT_TRUE(path.second.size() == 3);
+  EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_a2") != path.second.end());
+  EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_a3") != path.second.end());
+  EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_a4") != path.second.end());
 }
 
 int main(int argc, char** argv)

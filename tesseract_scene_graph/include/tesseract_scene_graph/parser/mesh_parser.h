@@ -85,11 +85,17 @@ namespace tesseract_scene_graph
 
       for (unsigned int i = 0; i < a->mNumFaces; ++i)
       {
-        assert(a->mFaces[i].mNumIndices >= 3);
-        triangle_count += 1;
-        triangles->push_back(static_cast<int>(a->mFaces[i].mNumIndices));
-        for (size_t k = 0; k < a->mFaces[i].mNumIndices; ++k)
-          triangles->push_back(static_cast<int>(a->mFaces[i].mIndices[k]));
+        if (a->mFaces[i].mNumIndices >= 3)
+        {
+          triangle_count += 1;
+          triangles->push_back(static_cast<int>(a->mFaces[i].mNumIndices));
+          for (size_t k = 0; k < a->mFaces[i].mNumIndices; ++k)
+            triangles->push_back(static_cast<int>(a->mFaces[i].mIndices[k]));
+        }
+        else
+        {
+          CONSOLE_BRIDGE_logError("Mesh had a face with less than three verticies");
+        }
       }
 
       meshes.push_back(std::shared_ptr<T>(new T(vertices, triangles, triangle_count)));

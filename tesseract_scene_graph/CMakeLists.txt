@@ -74,14 +74,14 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 if (CATKIN_ENABLE_TESTING)
 
-  find_package(rostest REQUIRED)
+  find_package(catkin REQUIRED COMPONENTS rostest roslib)
 
   add_definitions(-DDATA_DIR="${CMAKE_SOURCE_DIR}/test")
 
   include_directories(${catkin_INCLUDE_DIRS})
 
   catkin_add_gtest(${PROJECT_NAME}_unit test/tesseract_scene_graph_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_unit ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${ASSIMP_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME}_unit ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${ASSIMP_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES})
   target_compile_options(${PROJECT_NAME}_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
 endif()
