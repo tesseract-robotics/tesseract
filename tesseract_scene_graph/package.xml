@@ -5,6 +5,7 @@
   <description>The tesseract_scene_graph package</description>
   <maintainer email="Armstrong@todo.todo">Levi Armstrong</maintainer>
   <license>Apache 2.0</license>
+  <license>BSD</license>
   <author >Levi Armstrong</author>
 
   <buildtool_depend>catkin</buildtool_depend>
