@@ -269,8 +269,8 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)
   KDL::SegmentMap::const_iterator root = tree.getRootSegment();
   printKDLTree(root, "");
 
-  EXPECT_TRUE(tree.getNrOfJoints() == 9);
-  EXPECT_TRUE(tree.getNrOfSegments() == 10);
+  EXPECT_TRUE(tree.getNrOfJoints() == 7);
+  EXPECT_TRUE(tree.getNrOfSegments() == 9);
 }
 
 int main(int argc, char** argv)
