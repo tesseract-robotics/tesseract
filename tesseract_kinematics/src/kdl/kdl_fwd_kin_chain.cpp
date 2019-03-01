@@ -26,7 +26,7 @@
 #include <tesseract_kinematics/core/macros.h>
 TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 #include <kdl/segment.hpp>
-#include <kdl_parser/kdl_parser.hpp>
+#include <tesseract_scene_graph/parser/kdl_parser.h>
 TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
 
 #include "tesseract_kinematics/kdl/kdl_fwd_kin_chain.h"
@@ -174,39 +174,39 @@ const std::vector<std::string>& KDLFwdKinChain::getLinkNames() const
 
 const Eigen::MatrixX2d& KDLFwdKinChain::getLimits() const { return joint_limits_; }
 
-bool KDLFwdKinChain::init(std::shared_ptr<const urdf::ModelInterface> model,
+bool KDLFwdKinChain::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
                           const std::string& base_link,
                           const std::string& tip_link,
                           const std::string name)
 {
   initialized_ = false;
 
-  if (model == nullptr)
+  if (scene_graph == nullptr)
   {
-    CONSOLE_BRIDGE_logError("Null pointer to URDF Model");
+    CONSOLE_BRIDGE_logError("Null pointer to Scene Graph");
     return false;
   }
 
-  model_ = model;
+  scene_graph_ = scene_graph;
   base_name_ = base_link;
   tip_name_ = tip_link;
   name_ = name;
 
-  if (!model_->getRoot())
+  if (!scene_graph_->getLink(scene_graph_->getRoot()))
   {
-    CONSOLE_BRIDGE_logError("Invalid URDF in ROSKin::init call");
+    CONSOLE_BRIDGE_logError("The scene graph has an invalid root.");
     return false;
   }
 
-  if (!kdl_parser::treeFromUrdfModel(*model_, kdl_tree_))
+  if (!tesseract_scene_graph::parseSceneGraph(*scene_graph_, kdl_tree_))
   {
-    CONSOLE_BRIDGE_logError("Failed to initialize KDL from URDF model");
+    CONSOLE_BRIDGE_logError("Failed to parse KDL tree from Scene Graph");
     return false;
   }
 
   if (!kdl_tree_.getChain(base_name_, tip_name_, robot_chain_))
   {
-    CONSOLE_BRIDGE_logError("Failed to initialize KDL between URDF links: '%s' and '%s'", base_name_.c_str(), tip_name_.c_str());
+    CONSOLE_BRIDGE_logError("Failed to initialize KDL between links: '%s' and '%s'", base_name_.c_str(), tip_name_.c_str());
     return false;
   }
 
@@ -228,7 +228,7 @@ bool KDLFwdKinChain::init(std::shared_ptr<const urdf::ModelInterface> model,
       continue;
 
     joint_list_[j] = jnt.getName();
-    urdf::JointConstSharedPtr joint = model_->getJoint(jnt.getName());
+    const tesseract_scene_graph::JointConstPtr& joint = scene_graph_->getJoint(jnt.getName());
     joint_limits_(j, 0) = joint->limits->lower;
     joint_limits_(j, 1) = joint->limits->upper;
     if (j > 0)
@@ -236,7 +236,7 @@ bool KDLFwdKinChain::init(std::shared_ptr<const urdf::ModelInterface> model,
 
     // Need to set limits for continuous joints. TODO: This may not be required
     // by the optization library but may be nice to have
-    if (joint->type == urdf::Joint::CONTINUOUS &&
+    if (joint->type == tesseract_scene_graph::JointType::CONTINUOUS &&
         std::abs(joint_limits_(j, 0) - joint_limits_(j, 1)) <= static_cast<double>(std::numeric_limits<float>::epsilon()))
     {
       joint_limits_(j, 0) = -4 * M_PI;
@@ -249,17 +249,18 @@ bool KDLFwdKinChain::init(std::shared_ptr<const urdf::ModelInterface> model,
   {
     bool found = false;
     const KDL::Segment& seg = robot_chain_.getSegment(i);
-    urdf::LinkConstSharedPtr link_model = model_->getLink(seg.getName());
+    tesseract_scene_graph::LinkConstPtr link_model = scene_graph_->getLink(seg.getName());
     while (!found)
     {
       // Check if the link is the root
-      if (link_model->parent_joint == nullptr)
+      std::vector<tesseract_scene_graph::JointConstPtr> parent_joints = scene_graph_->getInboundJoints(link_model->getName());
+      if (parent_joints.empty())
       {
         segment_index_[seg.getName()] = 0;
         break;
       }
 
-      std::string joint_name = link_model->parent_joint->name;
+      std::string joint_name = parent_joints[0]->getName();
       std::vector<std::string>::const_iterator it = std::find(joint_list_.begin(), joint_list_.end(), joint_name);
       if (it != joint_list_.end())
       {
@@ -269,7 +270,7 @@ bool KDLFwdKinChain::init(std::shared_ptr<const urdf::ModelInterface> model,
       }
       else
       {
-        link_model = link_model->getParent();
+        link_model = scene_graph_->getSourceLink(joint_name);
       }
     }
   }
@@ -291,7 +292,7 @@ KDLFwdKinChain& KDLFwdKinChain::operator=(const KDLFwdKinChain& rhs)
   link_list_ = rhs.link_list_;
   fk_solver_.reset(new KDL::ChainFkSolverPos_recursive(robot_chain_));
   jac_solver_.reset(new KDL::ChainJntToJacSolver(robot_chain_));
-  model_ = rhs.model_;
+  scene_graph_ = rhs.scene_graph_;
   base_name_ = rhs.base_name_;
   tip_name_ = rhs.tip_name_;
   segment_index_ = rhs.segment_index_;

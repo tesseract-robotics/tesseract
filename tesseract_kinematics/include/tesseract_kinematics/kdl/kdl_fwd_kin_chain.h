@@ -33,8 +33,9 @@ TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <kdl/chainjnttojacsolver.hpp>
 #include <unordered_map>
-#include <urdf_model/model.h>
 #include <console_bridge/console.h>
+
+#include <tesseract_scene_graph/graph.h>
 TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/forward_kinematics.h>
@@ -75,27 +76,27 @@ public:
 
   const Eigen::MatrixX2d& getLimits() const override;
 
-  std::shared_ptr<const urdf::ModelInterface> getURDF() const { return model_; }
+  tesseract_scene_graph::SceneGraphConstPtr getSceneGraph() const { return scene_graph_; }
   unsigned int numJoints() const override { return robot_chain_.getNrOfJoints(); }
   const std::string& getBaseLinkName() const override { return base_name_; }
   const std::string& getName() const override { return name_; }
 
   /**
-   * @brief Initializes ROSKin
-   * Creates KDL::Chain from urdf::Model, populates joint_list_, joint_limits_, and link_list_
-   * @param model_ The urdf model
+   * @brief Initializes KDL Forward Kinematics
+   * Creates KDL::Chain from tesseract scene graph
+   * @param scene_graph The Tesseract Scene Graph
    * @param base_link The name of the base link for the kinematic chain
    * @param tip_link The name of the tip link for the kinematic chain
    * @param name The name of the kinematic chain
    * @return True if init() completes successfully
    */
-  bool init(std::shared_ptr<const urdf::ModelInterface> model,
+  bool init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
             const std::string& base_link,
             const std::string& tip_link,
             const std::string name);
 
   /**
-   * @brief Checks if BasicKin is initialized (init() has been run: urdf model loaded, etc.)
+   * @brief Checks if kinematics has been initialized
    * @return True if init() has completed successfully
    */
   bool checkInitialized() const
@@ -120,7 +121,7 @@ public:
 
 private:
   bool initialized_;                                           /**< Identifies if the object has been initialized */
-  std::shared_ptr<const urdf::ModelInterface> model_;                   /**< URDF MODEL */
+  tesseract_scene_graph::SceneGraphConstPtr scene_graph_;      /**< Tesseract Scene Graph */
   KDL::Chain robot_chain_;                                     /**< KDL Chain object */
   KDL::Tree kdl_tree_;                                         /**< KDL tree object */
   std::string base_name_;                                      /**< Link name of first link in the kinematic chain */

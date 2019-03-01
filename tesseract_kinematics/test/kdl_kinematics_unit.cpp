@@ -2,20 +2,47 @@
 TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <fstream>
-#include <urdf_parser/urdf_parser.h>
+#include <tesseract_scene_graph/parser/urdf_parser.h>
+#include <ros/package.h>
 TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
 
 #include "tesseract_kinematics/kdl/kdl_fwd_kin_chain.h"
 #include "tesseract_kinematics/kdl/kdl_fwd_kin_tree.h"
 #include "tesseract_kinematics/core/utils.h"
 
-urdf::ModelInterfaceSharedPtr getURDFModel()
+std::string locateResource(const std::string& url)
+{
+  std::string mod_url = url;
+  if (url.find("package://") == 0)
+  {
+    mod_url.erase(0, strlen("package://"));
+    size_t pos = mod_url.find("/");
+    if (pos == std::string::npos)
+    {
+      return std::string();
+    }
+
+    std::string package = mod_url.substr(0, pos);
+    mod_url.erase(0, pos);
+    std::string package_path = ros::package::getPath(package);
+
+    if (package_path.empty())
+    {
+      return std::string();
+    }
+
+    mod_url = package_path + mod_url; // "file://" + package_path + mod_url;
+  }
+
+  return mod_url;
+}
+
+tesseract_scene_graph::SceneGraphPtr getSceneGraph()
 {
   std::string path = std::string(DATA_DIR) + "/lbr_iiwa_14_r820.urdf";
-  std::ifstream ifs(path);
-  std::string urdf_xml_string((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
 
-  return urdf::parseURDF(urdf_xml_string);
+  tesseract_scene_graph::ResourceLocatorFn locator = locateResource;
+  return tesseract_scene_graph::parseURDF(path, locator);
 }
 
 void runFwdKinTest(tesseract_kinematics::ForwardKinematics& kin)
@@ -194,8 +221,8 @@ void runJacobianTest(tesseract_kinematics::ForwardKinematics& kin)
 TEST(TesseractROSUnit, KDLKinChainForwardKinematicUnit)
 {
   tesseract_kinematics::KDLFwdKinChain kin;
-  urdf::ModelInterfaceSharedPtr urdf_model = getURDFModel();
-  EXPECT_TRUE(kin.init(urdf_model, "base_link", "tool0", "manip"));
+  tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
+  EXPECT_TRUE(kin.init(scene_graph, "base_link", "tool0", "manip"));
 
   runFwdKinTest(kin);
 }
@@ -203,7 +230,7 @@ TEST(TesseractROSUnit, KDLKinChainForwardKinematicUnit)
 TEST(TesseractROSUnit, KDLKinTreeForwardKinematicUnit)
 {
   tesseract_kinematics::KDLFwdKinTree kin;
-  urdf::ModelInterfaceSharedPtr urdf_model = getURDFModel();
+  tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
   std::vector<std::string> joint_names = { "joint_a1", "joint_a2", "joint_a3", "joint_a4",
                                            "joint_a5", "joint_a6", "joint_a7" };
 
@@ -216,7 +243,7 @@ TEST(TesseractROSUnit, KDLKinTreeForwardKinematicUnit)
   start_state["joint_a6"] = 0;
   start_state["joint_a7"] = 0;
 
-  EXPECT_TRUE(kin.init(urdf_model, joint_names, start_state, "manip"));
+  EXPECT_TRUE(kin.init(scene_graph, joint_names, start_state, "manip"));
 
   runFwdKinTest(kin);
 }
@@ -224,8 +251,8 @@ TEST(TesseractROSUnit, KDLKinTreeForwardKinematicUnit)
 TEST(TesseractROSUnit, KDLKinChainJacobianUnit)
 {
   tesseract_kinematics::KDLFwdKinChain kin;
-  urdf::ModelInterfaceSharedPtr urdf_model = getURDFModel();
-  EXPECT_TRUE(kin.init(urdf_model, "base_link", "tool0", "manip"));
+  tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
+  EXPECT_TRUE(kin.init(scene_graph, "base_link", "tool0", "manip"));
 
   runJacobianTest(kin);
 }
@@ -233,7 +260,7 @@ TEST(TesseractROSUnit, KDLKinChainJacobianUnit)
 TEST(TesseractROSUnit, KDLKinTreeJacobianUnit)
 {
   tesseract_kinematics::KDLFwdKinTree kin;
-  urdf::ModelInterfaceSharedPtr urdf_model = getURDFModel();
+  tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
   std::vector<std::string> joint_names = { "joint_a1", "joint_a2", "joint_a3", "joint_a4",
                                            "joint_a5", "joint_a6", "joint_a7" };
 
@@ -246,7 +273,7 @@ TEST(TesseractROSUnit, KDLKinTreeJacobianUnit)
   start_state["joint_a6"] = 0;
   start_state["joint_a7"] = 0;
 
-  EXPECT_TRUE(kin.init(urdf_model, joint_names, start_state, "manip"));
+  EXPECT_TRUE(kin.init(scene_graph, joint_names, start_state, "manip"));
 
   runJacobianTest(kin);
 }

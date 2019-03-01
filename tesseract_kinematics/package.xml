@@ -11,14 +11,11 @@
   <author >Levi Armstrong</author>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>liburdfdom-dev</depend>
-  <depend>liburdfdom-headers-dev</depend>
+  <depend>tesseract_scene_graph</depend>
   <depend>libconsole-bridge-dev</depend>
-  <depend>roscpp</depend>
-  <depend>kdl_parser</depend>
 
+  <test_depend>roslib</test_depend>
   <test_depend>gtest</test_depend>
-  <test_depend>rostest</test_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

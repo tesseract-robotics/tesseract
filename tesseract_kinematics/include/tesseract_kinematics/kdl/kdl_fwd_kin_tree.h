@@ -31,9 +31,10 @@ TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 #include <kdl/tree.hpp>
 #include <kdl/treefksolverpos_recursive.hpp>
 #include <kdl/treejnttojacsolver.hpp>
-#include <urdf_model/model.h>
 #include <unordered_map>
 #include <console_bridge/console.h>
+
+#include <tesseract_scene_graph/graph.h>
 TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
 
 #include "tesseract_kinematics/core/forward_kinematics.h"
@@ -74,27 +75,27 @@ public:
 
   const Eigen::MatrixX2d& getLimits() const override;
 
-  std::shared_ptr<const urdf::ModelInterface> getURDF() const { return model_; }
+  tesseract_scene_graph::SceneGraphConstPtr getSceneGraph() const { return scene_graph_; }
   unsigned int numJoints() const override { return static_cast<unsigned>(joint_list_.size()); }
-  const std::string& getBaseLinkName() const override { return model_->getRoot()->name; }
+  const std::string& getBaseLinkName() const override { return scene_graph_->getRoot(); }
   const std::string& getName() const override { return name_; }
 
   /**
    * @brief Initializes ROSKin
-   * Creates KDL::Chain from urdf::Model, populates joint_list_, joint_limits_, and link_list_
-   * @param model The urdf model
+   * Creates KDL::Tree from Tesseract Scene Graph, populates joint_list_, joint_limits_, and link_list_
+   * @param scene_graph The tesseract scene graph
    * @param joint_names The list of active joints to be considered
    * @param start_state The initial start state for the tree. This should inlclude all joints in the model
    * @param name The name of the kinematic chain
    * @return True if init() completes successfully
    */
-  bool init(std::shared_ptr<const urdf::ModelInterface> model,
+  bool init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
             const std::vector<std::string>& joint_names,
             const std::unordered_map<std::string, double>& start_state,
             const std::string name);
 
   /**
-   * @brief Checks if BasicKin is initialized (init() has been run: urdf model loaded, etc.)
+   * @brief Checks if kinematics has been initialized
    * @return True if init() has completed successfully
    */
   bool checkInitialized() const
@@ -115,13 +116,13 @@ public:
   KDLFwdKinTree& operator=(const KDLFwdKinTree& rhs);
 
 private:
-  bool initialized_;                                   /**< Identifies if the object has been initialized */
-  std::shared_ptr<const urdf::ModelInterface> model_;  /**< URDF MODEL */
-  KDL::Tree kdl_tree_;                                 /**< KDL tree object */
-  std::string name_;                                   /**< Name of the kinematic chain */
-  std::vector<std::string> joint_list_;                /**< List of joint names */
-  KDL::JntArray start_state_;                          /**< Intial state of the tree. Should include all joints in the model. */
-  std::vector<int> joint_qnr_;                         /**< The kdl segment number corrisponding to joint in joint_lists_ */
+  bool initialized_;                                      /**< Identifies if the object has been initialized */
+  tesseract_scene_graph::SceneGraphConstPtr scene_graph_; /**< Tesseract Scene Graph */
+  KDL::Tree kdl_tree_;                                    /**< KDL tree object */
+  std::string name_;                                      /**< Name of the kinematic chain */
+  std::vector<std::string> joint_list_;                   /**< List of joint names */
+  KDL::JntArray start_state_;                             /**< Intial state of the tree. Should include all joints in the model. */
+  std::vector<int> joint_qnr_;                            /**< The kdl segment number corrisponding to joint in joint_lists_ */
   std::unordered_map<std::string, unsigned int> joint_to_qnr_;                 /**< The tree joint name to qnr */
   std::vector<std::string> link_list_;                                         /**< List of link names */
   Eigen::MatrixX2d joint_limits_;                                              /**< Joint limits */
@@ -144,8 +145,6 @@ private:
   bool calcJacobianHelper(KDL::Jacobian& jacobian,
                           const KDL::JntArray& kdl_joints,
                           const std::string& link_name) const;
-
-  void addChildrenRecursive(const urdf::LinkConstSharedPtr urdf_link);
 
 };  // class KDLKinematicTree
 
