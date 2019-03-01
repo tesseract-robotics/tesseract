@@ -89,7 +89,7 @@ inline KDL::Vector convert(const Eigen::Vector3d& vector)
  * @param joint Tesseract Joint
  * @return A KDL Joint
  */
-KDL::Joint convert(const JointConstPtr& joint)
+inline KDL::Joint convert(const JointConstPtr& joint)
 {
   KDL::Frame parent_joint = convert(joint->parent_to_joint_origin_transform);
   const std::string& name = joint->getName();
@@ -129,7 +129,7 @@ KDL::Joint convert(const JointConstPtr& joint)
  * @param inertial
  * @return
  */
-KDL::RigidBodyInertia convert(const InertialConstPtr& inertial)
+inline KDL::RigidBodyInertia convert(const InertialConstPtr& inertial)
 {
   KDL::Frame origin = convert(inertial->origin);
 
@@ -205,7 +205,7 @@ protected:
  * @param tree The KDL Tree to populate.
  * @return Returns Flase if error occured, otherwise true
  */
-bool parseSceneGraph(const SceneGraph& scene_graph, KDL::Tree& tree)
+inline bool parseSceneGraph(const SceneGraph& scene_graph, KDL::Tree& tree)
 {
   if (!scene_graph.isTree())
   {

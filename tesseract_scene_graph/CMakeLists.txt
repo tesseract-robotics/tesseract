@@ -54,7 +54,7 @@ catkin_package(
     urdfdom
     urdfdom_headers
     console_bridge
-    ASSIMP
+#    ASSIMP
 )
 
 include_directories(
@@ -78,7 +78,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 if (CATKIN_ENABLE_TESTING)
 
-  find_package(catkin REQUIRED COMPONENTS rostest roslib)
+  find_package(catkin REQUIRED COMPONENTS roslib)
 
   add_definitions(-DDATA_DIR="${CMAKE_SOURCE_DIR}/test")
 

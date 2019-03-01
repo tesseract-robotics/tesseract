@@ -284,6 +284,60 @@ public:
     return joints;
   }
 
+  LinkConstPtr getSourceLink(const std::string& joint_name) const
+  {
+    Edge e = getEdge(joint_name);
+    Vertex v = boost::source(e, *this);
+    return boost::get(boost::vertex_link, *this)[v];
+  }
+
+  LinkConstPtr getTargetLink(const std::string& joint_name) const
+  {
+    Edge e = getEdge(joint_name);
+    Vertex v = boost::target(e, *this);
+    return boost::get(boost::vertex_link, *this)[v];
+  }
+
+  std::vector<JointConstPtr> getInboundJoints(const std::string& link_name) const
+  {
+    std::vector<JointConstPtr> joints;
+    Vertex vertex = getVertex(link_name);
+
+    // Get incomming edges
+    int num_in_edges = static_cast<int>(boost::in_degree(vertex, *this));
+    if (num_in_edges == 0) // The root of the tree will have not incoming edges
+      return joints;
+
+    boost::graph_traits<Graph>::in_edge_iterator ei, ei_end;
+    for (boost::tie(ei, ei_end) = boost::in_edges(vertex, *this); ei != ei_end; ++ei)
+    {
+      SceneGraph::Edge e = *ei;
+      joints.push_back(boost::get(boost::edge_joint, *this)[e]);
+    }
+
+    return joints;
+  }
+
+  std::vector<JointConstPtr> getOutboundJoints(const std::string& link_name) const
+  {
+    std::vector<JointConstPtr> joints;
+    Vertex vertex = getVertex(link_name);
+
+    // Get incomming edges
+    int num_out_edges = static_cast<int>(boost::out_degree(vertex, *this));
+    if (num_out_edges == 0)
+      return joints;
+
+    boost::graph_traits<Graph>::out_edge_iterator eo, eo_end;
+    for (boost::tie(eo, eo_end) = boost::out_edges(vertex, *this); eo != eo_end; ++eo)
+    {
+      SceneGraph::Edge e = *eo;
+      joints.push_back(boost::get(boost::edge_joint, *this)[e]);
+    }
+
+    return joints;
+  }
+
   /**
    * @brief Determine if the graph contains cycles
    * @return True if graph is acyclic otherwise false
