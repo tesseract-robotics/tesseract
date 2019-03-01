@@ -36,8 +36,6 @@ TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 #include <memory>
 TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
 
-#include <tesseract_kinematics/core/types.h>
-
 namespace tesseract_kinematics
 {
 /** @brief Forward kinematics functions. */

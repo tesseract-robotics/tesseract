@@ -27,6 +27,8 @@
 TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 #include <kdl/segment.hpp>
 #include <kdl_parser/kdl_parser.hpp>
+
+#include <tesseract_scene_graph/parser/kdl_parser.h>
 TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
 
 #include "tesseract_kinematics/kdl/kdl_fwd_kin_tree.h"
@@ -184,39 +186,32 @@ const std::vector<std::string>& KDLFwdKinTree::getLinkNames() const
 }
 
 const Eigen::MatrixX2d& KDLFwdKinTree::getLimits() const { return joint_limits_; }
-void KDLFwdKinTree::addChildrenRecursive(const urdf::LinkConstSharedPtr urdf_link)
-{
-  // recursively build child links
-  link_list_.push_back(urdf_link->name);
-  for (std::size_t i = 0; i < urdf_link->child_links.size(); ++i)
-    addChildrenRecursive(urdf_link->child_links[i]);
-}
 
-bool KDLFwdKinTree::init(std::shared_ptr<const urdf::ModelInterface> model,
+bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
                          const std::vector<std::string>& joint_names,
                          const std::unordered_map<std::string, double>& start_state,
                          const std::string name)
 {
   initialized_ = false;
 
-  if (model == nullptr)
+  if (scene_graph == nullptr)
   {
-    CONSOLE_BRIDGE_logError("Null pointer to URDF Model");
+    CONSOLE_BRIDGE_logError("Null pointer to Tesseract Scene Graph");
     return false;
   }
 
-  model_ = model;
+  scene_graph_ = scene_graph;
   name_ = name;
 
-  if (!model_->getRoot())
+  if (!scene_graph_->getLink(scene_graph_->getRoot()))
   {
-    CONSOLE_BRIDGE_logError("Invalid URDF in ROSKin::init call");
+    CONSOLE_BRIDGE_logError("The scene graph has an invalid root.");
     return false;
   }
 
-  if (!kdl_parser::treeFromUrdfModel(*model_, kdl_tree_))
+  if (!tesseract_scene_graph::parseSceneGraph(*scene_graph_, kdl_tree_))
   {
-    CONSOLE_BRIDGE_logError("Failed to initialize KDL from URDF model");
+    CONSOLE_BRIDGE_logError("Failed to parse KDL tree from Scene Graph");
     return false;
   }
 
@@ -231,7 +226,11 @@ bool KDLFwdKinTree::init(std::shared_ptr<const urdf::ModelInterface> model,
   joint_qnr_.resize(joint_names.size());
 
   unsigned j = 0;
-  link_list_.push_back(kdl_tree_.getRootSegment()->second.segment.getName());
+  const std::vector<tesseract_scene_graph::LinkConstPtr> links = scene_graph_->getLinks();
+  link_list_.reserve(links.size());
+  for (const auto& link : links)
+    link_list_.push_back(link->getName());
+
   for (const auto& tree_element : kdl_tree_.getSegments())
   {
     const KDL::Segment& seg = tree_element.second.segment;
@@ -248,21 +247,16 @@ bool KDLFwdKinTree::init(std::shared_ptr<const urdf::ModelInterface> model,
 
     assert(jnt.getType() != KDL::Joint::None);
 
-    // Add affected link names to list
-    std::vector<std::string>::const_iterator link_it = std::find(link_list_.begin(), link_list_.end(), seg.getName());
-    if (link_it == link_list_.end())
-      addChildrenRecursive(model_->getLink(seg.getName()));
-
     joint_list_[j] = jnt.getName();
     joint_qnr_[j] = static_cast<int>(tree_element.second.q_nr);
 
-    urdf::JointConstSharedPtr joint = model_->getJoint(jnt.getName());
+    const tesseract_scene_graph::JointConstPtr& joint = scene_graph_->getJoint(jnt.getName());
     joint_limits_(j, 0) = joint->limits->lower;
     joint_limits_(j, 1) = joint->limits->upper;
 
     // Need to set limits for continuous joints. TODO: This may not be required
     // by the optization library but may be nice to have
-    if (joint->type == urdf::Joint::CONTINUOUS &&
+    if (joint->type == tesseract_scene_graph::JointType::CONTINUOUS &&
         std::abs(joint_limits_(j, 0) - joint_limits_(j, 1)) <= std::numeric_limits<float>::epsilon())
     {
       joint_limits_(j, 0) = -4 * M_PI;
@@ -291,7 +285,7 @@ KDLFwdKinTree& KDLFwdKinTree::operator=(const KDLFwdKinTree& rhs)
   link_list_ = rhs.link_list_;
   fk_solver_.reset(new KDL::TreeFkSolverPos_recursive(kdl_tree_));
   jac_solver_.reset(new KDL::TreeJntToJacSolver(kdl_tree_));
-  model_ = rhs.model_;
+  scene_graph_ = rhs.scene_graph_;
   start_state_ = rhs.start_state_;
   joint_qnr_ = rhs.joint_qnr_;
   joint_to_qnr_ = rhs.joint_to_qnr_;
