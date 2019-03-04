@@ -32,7 +32,6 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/types.h>
-#include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
 
@@ -77,98 +76,74 @@ public:
                                const Eigen::Ref<const Eigen::VectorXd>& joint_values) const = 0;
 
   /**
-   * @brief hasManipulator Check if a manipulator exist in the environment
-   * @param manipulator_name Name of the manipulator
-   * @return True if it exists otherwise false
+   * @brief Adds a link to the environment
+   * @param link The link to be added to the graph
+   * @return Return False if a link with the same name allready exists, otherwise true
    */
-  virtual bool hasManipulator(const std::string& manipulator_name) const = 0;
+  virtual bool addLink(tesseract_scene_graph::LinkPtr link) = 0;
 
   /**
-   * @brief getManipulatorKin Get a kinematic object for the provided manipulator name.
-   * @param manipulator_name Name of the manipulator
-   * @return BasicKinPtr
-   */
-  virtual tesseract_kinematics::ForwardKinematicsConstPtr getManipulator(const std::string& manipulator_name) const = 0;
-
-  /**
-   * @brief A a manipulator as a kinematic chain
-   * @param base_link The base link of the chain
-   * @param tip_link The tip link of the chain
-   * @param name The name of the manipulator. This must be unique.
-   * @return true if successfully created, otherwise false.
-   */
-  virtual bool addManipulator(const std::string& base_link,
-                              const std::string& tip_link,
-                              const std::string& manipulator_name) = 0;
-
-  /**
-   * @brief A a manipulator as a set of joints
-   * @param joint_names The list of joint names that make up the manipulator (used for non chains)
-   * @param name The name of the manipulator. This must be unique.
-   * @return true if successfully created, otherwise false.
-   */
-  virtual bool addManipulator(const std::vector<std::string>& joint_names, const std::string& manipulator_name) = 0;
-
-  /**
-   * @brief Add object so it may be attached/detached.
+   * @brief Removes a link from the environment
    *
-   * This object is not part of the environment until attached to a link.
+   *        Parent joint and all child components (links/joints) should be removed
    *
-   * @param attachable_object The object information
+   * @param name Name of the link to be removed
+   * @return Return False if a link does not exists, otherwise true
    */
-  virtual void addAttachableObject(const AttachableObjectConstPtr attachable_object) = 0;
+  virtual bool removeLink(const std::string& name) = 0;
 
   /**
-   * @brief Remove object from list of available objects to be attached
+   * @brief Move a link in the environment
    *
-   * This will not remove any bodies using the object.
+   *        This should delete the parent joint of the child link. All child links and joints follow.
    *
-   * @param name The name of the object to be removed
+   * @param joint The new joint.
+   * @return Return False if a link does not exists or has no parent joint, otherwise true
    */
-  virtual void removeAttachableObject(const std::string& name) = 0;
+  virtual bool moveLink(tesseract_scene_graph::JointPtr joint) = 0;
 
   /**
-   * @brief Get a map of available attachable objects
-   * @return A map of attachable objects
+   * @brief Get a link in the environment
+   * @param name The name of the link
+   * @return Return nullptr if link name does not exists, otherwise a pointer to the link
    */
-  virtual const AttachableObjectConstPtrMap& getAttachableObjects() const = 0;
-
-  /** @brief This will remove all attachable objects */
-  virtual void clearAttachableObjects() = 0;
+  virtual tesseract_scene_graph::LinkConstPtr getLink(const std::string& name) const = 0;
 
   /**
-   * @brief Get attached body
-   * @param name The name of the body
-   * @return AttachedBody
+   * @brief Adds joint to the
+   * @param joint The joint to be added
+   * @return Return False if parent or child link does not exists and if joint name already exists in the graph, otherwise true
    */
-  virtual const AttachedBodyInfo& getAttachedBody(const std::string& name) const = 0;
+  virtual bool addJoint(tesseract_scene_graph::JointPtr joint) = 0;
 
   /**
-   * @brief Get all attached bodies
-   * @return A map of attached bodies
+   * @brief Removes a joint from the environment
+   *
+   *        All child components (links/joints) should be removed
+   *
+   * @param name Name of the joint to be removed
+   * @return Return False if a joint does not exists, otherwise true
    */
-  virtual const AttachedBodyInfoMap& getAttachedBodies() const = 0;
+  virtual bool removeJoint(const std::string& name) = 0;
 
   /**
-   * @brief Attached an attachable object to the environment
-   * @param attached_body Information of attaching creating the attached body
+   * @brief Move a joint from one link to another
+   *
+   *        All child links & joints should follow
+   *
+   * @param joint_name The name of the joint to move
+   * @param new_parent_link The name of the link to move to.
+   * @return Return False if parent_link does not exists, otherwise true
    */
-  virtual void attachBody(const AttachedBodyInfo& attached_body_info) = 0;
+  virtual bool moveJoint(const std::string& joint_name, const std::string& parent_link) = 0;
+
 
   /**
-   * @brief Detach an attachable object from the environment
-   * @param name The name given to the Attached Body when attached
+   * @brief Get a joint in the environment
+   * @param name The name of the joint
+   * @return Return nullptr if joint name does not exists, otherwise a pointer to the joint
    */
-  virtual void detachBody(const std::string& name) = 0;
-
-  /** @brief This will detach all bodies */
-  virtual void clearAttachedBodies() = 0;
-
-  /** @brief Get a map of object names to colors */
-  virtual ObjectColorMapConstPtr getKnownObjectColors() const = 0;
-
-  /** @brief Clear all known object colors */
-  virtual void clearKnownObjectColors() = 0;
+  virtual tesseract_scene_graph::JointConstPtr getJoint(const std::string& name) const = 0;
 
   /**
    * @brief Get a vector of joint names in the environment
@@ -184,15 +159,6 @@ public:
    * @return A vector of joint values
    */
   virtual Eigen::VectorXd getCurrentJointValues() const = 0;
-
-  /**
-   * @brief Get the current state of the manipulator
-   *
-   * Order should be the same as BasicKin.getJointNames()
-   *
-   * @return A vector of joint values
-   */
-  virtual Eigen::VectorXd getCurrentJointValues(const std::string& manipulator_name) const = 0;
 
   /**
    * @brief Get the root link name
@@ -278,41 +244,41 @@ typedef std::shared_ptr<const Environment> EnvironmentConstPtr;
  * @param first_only Indicates if it should return on first contact
  * @return True if collision was found, otherwise false.
  */
-inline bool continuousCollisionCheckTrajectory(tesseract_collision::ContinuousContactManager& manager,
-                                               const tesseract_environment::Environment& env,
-                                               const tesseract_kinematics::ForwardKinematics& kin,
-                                               const Eigen::Ref<const TrajArray>& traj,
-                                               std::vector<tesseract_collision::ContactResultMap>& contacts,
-                                               bool first_only = true)
-{
-  bool found = false;
-  const std::vector<std::string>& joint_names = kin.getJointNames();
-  const std::vector<std::string>& link_names = kin.getLinkNames();
+//inline bool continuousCollisionCheckTrajectory(tesseract_collision::ContinuousContactManager& manager,
+//                                               const tesseract_environment::Environment& env,
+//                                               const tesseract_kinematics::ForwardKinematics& kin,
+//                                               const Eigen::Ref<const TrajArray>& traj,
+//                                               std::vector<tesseract_collision::ContactResultMap>& contacts,
+//                                               bool first_only = true)
+//{
+//  bool found = false;
+//  const std::vector<std::string>& joint_names = kin.getJointNames();
+//  const std::vector<std::string>& link_names = kin.getLinkNames();
 
-  contacts.reserve(static_cast<size_t>(traj.rows() - 1));
-  for (int iStep = 0; iStep < traj.rows() - 1; ++iStep)
-  {
-    tesseract_collision::ContactResultMap collisions;
+//  contacts.reserve(static_cast<size_t>(traj.rows() - 1));
+//  for (int iStep = 0; iStep < traj.rows() - 1; ++iStep)
+//  {
+//    tesseract_collision::ContactResultMap collisions;
 
-    EnvStatePtr state0 = env.getState(joint_names, traj.row(iStep));
-    EnvStatePtr state1 = env.getState(joint_names, traj.row(iStep + 1));
+//    EnvStatePtr state0 = env.getState(joint_names, traj.row(iStep));
+//    EnvStatePtr state1 = env.getState(joint_names, traj.row(iStep + 1));
 
-    for (const auto& link_name : link_names)
-      manager.setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
+//    for (const auto& link_name : link_names)
+//      manager.setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
 
-    manager.contactTest(collisions, tesseract_collision::ContactTestTypes::FIRST);
+//    manager.contactTest(collisions, tesseract_collision::ContactTestTypes::FIRST);
 
-    if (collisions.size() > 0)
-      found = true;
+//    if (collisions.size() > 0)
+//      found = true;
 
-    contacts.push_back(collisions);
+//    contacts.push_back(collisions);
 
-    if (found && first_only)
-      break;
-  }
+//    if (found && first_only)
+//      break;
+//  }
 
-  return found;
-}
+//  return found;
+//}
 
 }  // namespace tesseract_environment
 

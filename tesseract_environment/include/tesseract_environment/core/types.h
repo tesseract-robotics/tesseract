@@ -31,15 +31,12 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/StdVector>
-#include <geometric_shapes/shapes.h>
 #include <unordered_map>
 #include <vector>
 #include <memory>
 #include <functional>
 #include <map>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
-
-#include "tesseract_collision/core/collision_shapes.h"
 
 namespace tesseract_environment
 {
@@ -170,64 +167,64 @@ struct EnvState
 typedef std::shared_ptr<EnvState> EnvStatePtr;
 typedef std::shared_ptr<const EnvState> EnvStateConstPtr;
 
-/**< @brief Information on how the object is attached to the environment */
-struct AttachedBodyInfo
-{
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+///**< @brief Information on how the object is attached to the environment */
+//struct AttachedBodyInfo
+//{
+//  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  AttachedBodyInfo() : transform(Eigen::Isometry3d::Identity()) {}
-  std::string object_name;              /**< @brief The name of the AttachableObject being used */
-  std::string parent_link_name;         /**< @brief The name of the link to attach the body */
-  Eigen::Isometry3d transform;          /**< @brief The transform between parent link and object */
-  std::vector<std::string> touch_links; /**< @brief The names of links which the attached body is allowed to be in
-                                           contact with */
-};
+//  AttachedBodyInfo() : transform(Eigen::Isometry3d::Identity()) {}
+//  std::string object_name;              /**< @brief The name of the AttachableObject being used */
+//  std::string parent_link_name;         /**< @brief The name of the link to attach the body */
+//  Eigen::Isometry3d transform;          /**< @brief The transform between parent link and object */
+//  std::vector<std::string> touch_links; /**< @brief The names of links which the attached body is allowed to be in
+//                                           contact with */
+//};
 
-/** @brief Contains visual geometry data */
-struct VisualObjectGeometry
-{
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+///** @brief Contains visual geometry data */
+//struct VisualObjectGeometry
+//{
+//  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  std::vector<shapes::ShapeConstPtr> shapes; /**< @brief The shape */
-  VectorIsometry3d shape_poses;              /**< @brief The pose of the shape */
-  VectorVector4d shape_colors;               /**< @brief (Optional) The shape color (R, G, B, A) */
-};
+//  std::vector<shapes::ShapeConstPtr> shapes; /**< @brief The shape */
+//  VectorIsometry3d shape_poses;              /**< @brief The pose of the shape */
+//  VectorVector4d shape_colors;               /**< @brief (Optional) The shape color (R, G, B, A) */
+//};
 
-/** @brief Contains visual geometry data */
-struct CollisionObjectGeometry
-{
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+///** @brief Contains visual geometry data */
+//struct CollisionObjectGeometry
+//{
+//  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  tesseract_collision::CollisionShapesConst shapes; /**< @brief The collision shape */
-  VectorIsometry3d shape_poses;                     /**< @brief The pose of the shape */
-  VectorVector4d shape_colors;                      /**< @brief (Optional) The shape color (R, G, B, A) */
-};
+//  tesseract_collision::CollisionShapesConst shapes; /**< @brief The collision shape */
+//  VectorIsometry3d shape_poses;                     /**< @brief The pose of the shape */
+//  VectorVector4d shape_colors;                      /**< @brief (Optional) The shape color (R, G, B, A) */
+//};
 
-/** @brief Contains data about an attachable object */
-struct AttachableObject
-{
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+///** @brief Contains data about an attachable object */
+//struct AttachableObject
+//{
+//  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  std::string name;            /**< @brief The name of the attachable object (aka. link name and must be unique) */
-  VisualObjectGeometry visual; /**< @brief The objects visual geometry */
-  CollisionObjectGeometry collision; /**< @brief The objects collision geometry */
-};
-typedef std::shared_ptr<AttachableObject> AttachableObjectPtr;
-typedef std::shared_ptr<const AttachableObject> AttachableObjectConstPtr;
+//  std::string name;            /**< @brief The name of the attachable object (aka. link name and must be unique) */
+//  VisualObjectGeometry visual; /**< @brief The objects visual geometry */
+//  CollisionObjectGeometry collision; /**< @brief The objects collision geometry */
+//};
+//typedef std::shared_ptr<AttachableObject> AttachableObjectPtr;
+//typedef std::shared_ptr<const AttachableObject> AttachableObjectConstPtr;
 
-/** @brief ObjectColorMap Stores Object color in a 4d vector as RGBA*/
-struct ObjectColor
-{
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+///** @brief ObjectColorMap Stores Object color in a 4d vector as RGBA*/
+//struct ObjectColor
+//{
+//  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  VectorVector4d visual;
-  VectorVector4d collision;
-};
-typedef AlignedUnorderedMap<std::string, ObjectColor> ObjectColorMap;
-typedef std::shared_ptr<ObjectColorMap> ObjectColorMapPtr;
-typedef std::shared_ptr<const ObjectColorMap> ObjectColorMapConstPtr;
-typedef AlignedUnorderedMap<std::string, AttachedBodyInfo> AttachedBodyInfoMap;
-typedef std::unordered_map<std::string, AttachableObjectConstPtr> AttachableObjectConstPtrMap;
+//  VectorVector4d visual;
+//  VectorVector4d collision;
+//};
+//typedef AlignedUnorderedMap<std::string, ObjectColor> ObjectColorMap;
+//typedef std::shared_ptr<ObjectColorMap> ObjectColorMapPtr;
+//typedef std::shared_ptr<const ObjectColorMap> ObjectColorMapConstPtr;
+//typedef AlignedUnorderedMap<std::string, AttachedBodyInfo> AttachedBodyInfoMap;
+//typedef std::unordered_map<std::string, AttachableObjectConstPtr> AttachableObjectConstPtrMap;
 }
 
 #endif  // TESSERACT_ENVIRONMENT_TYPES_H

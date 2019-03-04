@@ -27,15 +27,13 @@
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <eigen_conversions/eigen_msg.h>
 #include <functional>
-#include <geometric_shapes/shape_operations.h>
 #include <iostream>
 #include <limits>
 #include <octomap/octomap.h>
 #include <console_bridge/console.h>
+#include <tesseract_scene_graph/parser/kdl_parser.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
-#include "tesseract_kinematics/kdl/kdl_fwd_kin_chain.h"
-#include "tesseract_kinematics/kdl/kdl_fwd_kin_tree.h"
 #include "tesseract_environment/kdl/kdl_env.h"
 #include "tesseract_environment/kdl/kdl_utils.h"
 
@@ -44,38 +42,38 @@ namespace tesseract_environment
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-bool KDLEnv::init(urdf::ModelInterfaceConstSharedPtr urdf_model)
+bool KDLEnv::init(tesseract_scene_graph::SceneGraphPtr scene_graph)
 {
   initialized_ = false;
-  urdf_model_ = urdf_model;
-  object_colors_ = ObjectColorMapPtr(new ObjectColorMap());
+  scene_graph_ = scene_graph;
 
-  if (urdf_model_ == nullptr)
+  if (scene_graph_ == nullptr)
   {
-    CONSOLE_BRIDGE_logError("Null pointer to URDF Model");
+    CONSOLE_BRIDGE_logError("Null pointer to Scene Graph");
     return initialized_;
   }
 
-  if (!urdf_model_->getRoot())
+  if (!scene_graph_->getLink(scene_graph_->getRoot()))
   {
-    CONSOLE_BRIDGE_logError("Invalid URDF in ROSKDLEnv::init call");
-    return initialized_;
+    CONSOLE_BRIDGE_logError("The scene graph has an invalid root.");
+    return false;
   }
 
-  KDL::Tree* kdl_tree = new KDL::Tree();
-  if (!kdl_parser::treeFromUrdfModel(*urdf_model_, *kdl_tree))
+  kdl_tree_.reset(new KDL::Tree());
+  if (!tesseract_scene_graph::parseSceneGraph(*scene_graph_, *kdl_tree_))
   {
-    CONSOLE_BRIDGE_logError("Failed to initialize KDL from URDF model");
-    return initialized_;
+    CONSOLE_BRIDGE_logError("Failed to parse KDL tree from Scene Graph");
+    return false;
   }
-  kdl_tree_ = std::shared_ptr<KDL::Tree>(kdl_tree);
+
   initialized_ = true;
 
   if (initialized_)
   {
-    link_names_.reserve(urdf_model->links_.size());
-    for (auto& link : urdf_model->links_)
-      link_names_.push_back(link.second->name);
+    std::vector<tesseract_scene_graph::LinkConstPtr> links = scene_graph_->getLinks();
+    link_names_.reserve(links.size());
+    for (const auto& link : links)
+      link_names_.push_back(link->getName());
 
     current_state_ = EnvStatePtr(new EnvState());
     kdl_jnt_array_.resize(kdl_tree_->getNrOfJoints());
@@ -99,43 +97,8 @@ bool KDLEnv::init(urdf::ModelInterfaceConstSharedPtr urdf_model)
         current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
   }
 
-//  if (srdf_model != nullptr)
-//  {
-//    srdf_model_ = srdf_model;
-//    for (const auto& group : srdf_model_->getGroups())
-//    {
-//      if (!group.chains_.empty())
-//      {
-//        assert(group.chains_.size() == 1);
-//        addManipulator(group.chains_.front().first, group.chains_.front().second, group.name_);
-//      }
-
-//      if (!group.joints_.empty())
-//      {
-//        addManipulator(group.joints_, group.name_);
-//      }
-
-//      // TODO: Need to add other options
-//      if (!group.links_.empty())
-//      {
-//        CONSOLE_BRIDGE_logError("Link groups are currently not supported!");
-//      }
-
-//      if (!group.subgroups_.empty())
-//      {
-//        CONSOLE_BRIDGE_logError("Subgroups are currently not supported!");
-//      }
-//    }
-
-//    // Populate allowed collision matrix
-//    for (const auto& pair : srdf_model_->getDisabledCollisionPairs())
-//    {
-//      allowed_collision_matrix_->addAllowedCollision(pair.link1_, pair.link2_, pair.reason_);
-//    }
-//  }
-
   // Now get the active link names
-  getActiveLinkNamesRecursive(active_link_names_, urdf_model_->getRoot(), false);
+  getActiveLinkNamesRecursive(active_link_names_, scene_graph_, scene_graph_->getRoot(), false);
 
   return initialized_;
 }
@@ -256,6 +219,57 @@ EnvStatePtr KDLEnv::getState(const std::vector<std::string>& joint_names,
   return state;
 }
 
+bool KDLEnv::addLink(tesseract_scene_graph::LinkPtr link)
+{
+  assert(false); // TODO Need to update collision environment
+  return scene_graph_->addLink(link);
+}
+
+bool KDLEnv::removeLink(const std::string& name)
+{
+  assert(false); // TODO Need to loop through and remove children
+  return scene_graph_->removeLink(name);
+}
+
+bool KDLEnv::moveLink(tesseract_scene_graph::JointPtr joint)
+{
+  assert(false); // TODO Need to update joint to kdl array
+  std::vector<tesseract_scene_graph::JointConstPtr> joints = scene_graph_->getInboundJoints(joint->child_link_name);
+  assert(joints.size() == 1);
+  if (!scene_graph_->removeJoint(joints[0]->getName()))
+    return false;
+
+  return scene_graph_->addJoint(joint);
+}
+
+tesseract_scene_graph::LinkConstPtr KDLEnv::getLink(const std::string& name) const
+{
+  return scene_graph_->getLink(name);
+}
+
+bool KDLEnv::addJoint(tesseract_scene_graph::JointPtr joint)
+{
+  assert(false); // TODO Need to update joint to kdl array
+  return scene_graph_->addJoint(joint);
+}
+
+bool KDLEnv::removeJoint(const std::string& name)
+{
+  assert(false); // TODO Need to loop through and remove children and update joint to kdl array
+  return scene_graph_->removeJoint(name);
+}
+
+bool KDLEnv::moveJoint(const std::string& joint_name, const std::string& parent_link)
+{
+  assert(false); // TODO Need to update joint to kdl array
+  return scene_graph_->moveJoint(joint_name, parent_link);
+}
+
+tesseract_scene_graph::JointConstPtr KDLEnv::getJoint(const std::string& name) const
+{
+  return scene_graph_->getJoint(name);
+}
+
 Eigen::VectorXd KDLEnv::getCurrentJointValues() const
 {
   Eigen::VectorXd jv;
@@ -265,25 +279,6 @@ Eigen::VectorXd KDLEnv::getCurrentJointValues() const
     jv(j) = current_state_->joints[joint_names_[j]];
   }
   return jv;
-}
-
-Eigen::VectorXd KDLEnv::getCurrentJointValues(const std::string& manipulator_name) const
-{
-  auto it = manipulators_.find(manipulator_name);
-  if (it != manipulators_.end())
-  {
-    const std::vector<std::string>& joint_names = it->second->getJointNames();
-    Eigen::VectorXd start_pos(joint_names.size());
-
-    for (auto j = 0u; j < joint_names.size(); ++j)
-    {
-      start_pos(j) = current_state_->joints[joint_names[j]];
-    }
-
-    return start_pos;
-  }
-
-  return Eigen::VectorXd();
 }
 
 VectorIsometry3d KDLEnv::getLinkTransforms() const
@@ -300,228 +295,6 @@ VectorIsometry3d KDLEnv::getLinkTransforms() const
 const Eigen::Isometry3d& KDLEnv::getLinkTransform(const std::string& link_name) const
 {
   return current_state_->transforms[link_name];
-}
-
-bool KDLEnv::addManipulator(const std::string& base_link,
-                            const std::string& tip_link,
-                            const std::string& manipulator_name)
-{
-  if (!hasManipulator(manipulator_name))
-  {
-    tesseract_kinematics::KDLFwdKinChainPtr manip(new tesseract_kinematics::KDLFwdKinChain());
-    if (!manip->init(urdf_model_, base_link, tip_link, manipulator_name))
-    {
-      return false;
-    }
-
-    manipulators_.insert(std::make_pair(manipulator_name, manip));
-    return true;
-  }
-  return false;
-}
-
-bool KDLEnv::addManipulator(const std::vector<std::string>& joint_names, const std::string& manipulator_name)
-{
-  if (!hasManipulator(manipulator_name))
-  {
-    tesseract_kinematics::KDLFwdKinTreePtr manip(new tesseract_kinematics::KDLFwdKinTree());
-    if (!manip->init(urdf_model_, joint_names, current_state_->joints,  manipulator_name))
-    {
-      return false;
-    }
-
-    manipulators_.insert(std::make_pair(manipulator_name, manip));
-    return true;
-  }
-  return false;
-}
-
-bool KDLEnv::hasManipulator(const std::string& manipulator_name) const
-{
-  return manipulators_.find(manipulator_name) != manipulators_.end();
-}
-
-tesseract_kinematics::ForwardKinematicsConstPtr KDLEnv::getManipulator(const std::string& manipulator_name) const
-{
-  auto it = manipulators_.find(manipulator_name);
-  if (it != manipulators_.end())
-    return it->second;
-
-  return nullptr;
-}
-
-std::string KDLEnv::getManipulatorName(const std::vector<std::string>& joint_names) const
-{
-  std::set<std::string> joint_names_set(joint_names.begin(), joint_names.end());
-  for (const auto& manip : manipulators_)
-  {
-    const std::vector<std::string>& tmp_joint_names = manip.second->getJointNames();
-    std::set<std::string> tmp_joint_names_set(tmp_joint_names.begin(), tmp_joint_names.end());
-    if (joint_names_set == tmp_joint_names_set)
-      return manip.first;
-  }
-  return "";
-}
-
-void KDLEnv::addAttachableObject(const AttachableObjectConstPtr attachable_object)
-{
-  const auto object = attachable_objects_.find(attachable_object->name);
-  if (object != attachable_objects_.end())
-  {
-    discrete_manager_->removeCollisionObject(attachable_object->name);
-    continuous_manager_->removeCollisionObject(attachable_object->name);
-    CONSOLE_BRIDGE_logDebug("Replacing attachable object %s!", attachable_object->name.c_str());
-  }
-
-  attachable_objects_[attachable_object->name] = attachable_object;
-
-  // Add the object to the contact checker
-  discrete_manager_->addCollisionObject(attachable_object->name,
-                                        BodyTypes::ROBOT_ATTACHED,
-                                        attachable_object->collision.shapes,
-                                        attachable_object->collision.shape_poses,
-                                        false);
-
-  continuous_manager_->addCollisionObject(attachable_object->name,
-                                          BodyTypes::ROBOT_ATTACHED,
-                                          attachable_object->collision.shapes,
-                                          attachable_object->collision.shape_poses,
-                                          false);
-}
-
-void KDLEnv::removeAttachableObject(const std::string& name)
-{
-  if (attachable_objects_.find(name) != attachable_objects_.end())
-  {
-    attachable_objects_.erase(name);
-    discrete_manager_->removeCollisionObject(name);
-    continuous_manager_->removeCollisionObject(name);
-  }
-}
-
-void KDLEnv::clearAttachableObjects()
-{
-  for (const auto& obj : attachable_objects_)
-  {
-    discrete_manager_->removeCollisionObject(obj.first);
-    continuous_manager_->removeCollisionObject(obj.first);
-  }
-  attachable_objects_.clear();
-}
-
-const AttachedBodyInfo& KDLEnv::getAttachedBody(const std::string& name) const
-{
-  const auto body = attached_bodies_.find(name);
-  if (body == attached_bodies_.end())
-    CONSOLE_BRIDGE_logError("Tried to get attached body %s which does not exist!", name.c_str());
-
-  return body->second;
-}
-
-void KDLEnv::attachBody(const AttachedBodyInfo& attached_body_info)
-{
-  const auto obj = attachable_objects_.find(attached_body_info.object_name);
-  const auto body_info = attached_bodies_.find(attached_body_info.object_name);
-
-  if (body_info != attached_bodies_.end())
-  {
-    CONSOLE_BRIDGE_logDebug("Tried to attached object %s which is already attached!", attached_body_info.object_name.c_str());
-    return;
-  }
-
-  if (obj == attachable_objects_.end())
-  {
-    CONSOLE_BRIDGE_logDebug("Tried to attached object %s which does not exist!", attached_body_info.object_name.c_str());
-    return;
-  }
-
-  if (std::find(link_names_.begin(), link_names_.end(), attached_body_info.object_name) != link_names_.end())
-  {
-    CONSOLE_BRIDGE_logDebug("Tried to attached object %s with the same name as an existing link!",
-                            attached_body_info.object_name.c_str());
-    return;
-  }
-
-  link_names_.push_back(attached_body_info.object_name);
-  if (std::find(active_link_names_.begin(), active_link_names_.end(), attached_body_info.parent_link_name) !=
-      active_link_names_.end())
-  {
-    active_link_names_.push_back(attached_body_info.object_name);
-  }
-
-  attached_bodies_.insert(std::make_pair(attached_body_info.object_name, attached_body_info));
-  discrete_manager_->enableCollisionObject(attached_body_info.object_name);
-  continuous_manager_->enableCollisionObject(attached_body_info.object_name);
-
-  // update attached object's transform
-  calculateTransforms(
-      current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
-
-  discrete_manager_->setCollisionObjectsTransform(attached_body_info.object_name,
-                                                  current_state_->transforms[attached_body_info.object_name]);
-  continuous_manager_->setCollisionObjectsTransform(attached_body_info.object_name,
-                                                    current_state_->transforms[attached_body_info.object_name]);
-
-  discrete_manager_->setActiveCollisionObjects(active_link_names_);
-  continuous_manager_->setActiveCollisionObjects(active_link_names_);
-
-//  // Update manipulators
-//  for (auto& manip : manipulators_)
-//  {
-//    const auto& manip_link_names = manip.second->getLinkNames();
-//    if (std::find(manip_link_names.begin(), manip_link_names.end(), attached_body_info.parent_link_name) !=
-//        manip_link_names.end())
-//    {
-//      manip.second->addAttachedLink(attached_body_info.object_name, attached_body_info.parent_link_name);
-//    }
-//  }
-}
-
-void KDLEnv::detachBody(const std::string& name)
-{
-  if (attached_bodies_.find(name) != attached_bodies_.end())
-  {
-    attached_bodies_.erase(name);
-    link_names_.erase(std::remove(link_names_.begin(), link_names_.end(), name), link_names_.end());
-    active_link_names_.erase(std::remove(active_link_names_.begin(), active_link_names_.end(), name),
-                             active_link_names_.end());
-    discrete_manager_->setActiveCollisionObjects(active_link_names_);
-    continuous_manager_->setActiveCollisionObjects(active_link_names_);
-    discrete_manager_->disableCollisionObject(name);
-    continuous_manager_->disableCollisionObject(name);
-    current_state_->transforms.erase(name);
-
-//    // Update manipulators
-//    for (auto& manip : manipulators_)
-//    {
-//      const auto& manip_link_names = manip.second->getLinkNames();
-//      if (std::find(manip_link_names.begin(), manip_link_names.end(), name) != manip_link_names.end())
-//      {
-//        manip.second->removeAttachedLink(name);
-//      }
-//    }
-  }
-}
-
-void KDLEnv::clearAttachedBodies()
-{
-  for (const auto& body : attached_bodies_)
-  {
-    std::string name = body.second.object_name;
-    discrete_manager_->disableCollisionObject(name);
-    continuous_manager_->disableCollisionObject(name);
-    link_names_.erase(std::remove(link_names_.begin(), link_names_.end(), name), link_names_.end());
-    active_link_names_.erase(std::remove(active_link_names_.begin(), active_link_names_.end(), name),
-                             active_link_names_.end());
-    current_state_->transforms.erase(name);
-  }
-  attached_bodies_.clear();
-  discrete_manager_->setActiveCollisionObjects(active_link_names_);
-  continuous_manager_->setActiveCollisionObjects(active_link_names_);
-
-//  // Update manipulators
-//  for (auto& manip : manipulators_)
-//    manip.second->clearAttachedLinks();
 }
 
 bool KDLEnv::setJointValuesHelper(KDL::JntArray& q, const std::string& joint_name, const double& joint_value) const
@@ -567,37 +340,12 @@ void KDLEnv::calculateTransforms(TransformMap& transforms,
                                  const Eigen::Isometry3d& parent_frame) const
 {
   calculateTransformsHelper(transforms, q_in, it, parent_frame);
-
-  // update attached objects location
-  for (const auto& attached : attached_bodies_)
-  {
-    transforms[attached.first] = transforms[attached.second.parent_link_name] * attached.second.transform;
-  }
 }
 
 bool KDLEnv::defaultIsContactAllowedFn(const std::string& link_name1, const std::string& link_name2) const
 {
   if (allowed_collision_matrix_ != nullptr && allowed_collision_matrix_->isCollisionAllowed(link_name1, link_name2))
     return true;
-
-  auto it1 = attached_bodies_.find(link_name1);
-  auto it2 = attached_bodies_.find(link_name2);
-  if (it1 == attached_bodies_.end() && it2 == attached_bodies_.end())
-  {
-    return false;
-  }
-  else if (it1 == attached_bodies_.end())
-  {
-    const std::vector<std::string>& tl = it2->second.touch_links;
-    if (std::find(tl.begin(), tl.end(), link_name1) != tl.end() || link_name1 == it2->second.parent_link_name)
-      return true;
-  }
-  else
-  {
-    const std::vector<std::string>& tl = it1->second.touch_links;
-    if (std::find(tl.begin(), tl.end(), link_name2) != tl.end() || link_name2 == it1->second.parent_link_name)
-      return true;
-  }
 
   return false;
 }
@@ -614,44 +362,20 @@ bool KDLEnv::setDiscreteContactManager(tesseract_collision::DiscreteContactManag
   discrete_manager_->setIsContactAllowedFn(is_contact_allowed_fn_);
   if (initialized_)
   {
-    for (const auto& link : urdf_model_->links_)
+    for (const auto& link : scene_graph_->getLinks())
     {
-      if (link.second->collision_array.size() > 0)
+      if (link->collision.size() > 0)
       {
-        const std::vector<urdf::CollisionSharedPtr>& col_array =
-            link.second->collision_array.empty() ? std::vector<urdf::CollisionSharedPtr>(1, link.second->collision) :
-                                                   link.second->collision_array;
-
         tesseract_collision::CollisionShapesConst shapes;
-        VectorIsometry3d shape_poses;
-        for (std::size_t i = 0; i < col_array.size(); ++i)
+        tesseract_collision::VectorIsometry3d shape_poses;
+        for (const auto& c : link->collision)
         {
-          if (col_array[i] && col_array[i]->geometry)
-          {
-            tesseract_collision::CollisionShapeConstPtr s = constructShape(col_array[i]->geometry.get());
-            if (s)
-            {
-              shapes.push_back(s);
-              shape_poses.push_back(urdfPose2Eigen(col_array[i]->origin));
-            }
-          }
+          shapes.push_back(c->geometry);
+          shape_poses.push_back(c->origin);
         }
-        discrete_manager_->addCollisionObject(link.second->name, BodyType::ROBOT_LINK, shapes, shape_poses, true);
+        discrete_manager_->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
       }
     }
-
-    // Add attachable collision object to the contact checker in a disabled
-    // state
-    for (const auto& ao : attachable_objects_)
-      discrete_manager_->addCollisionObject(ao.second->name,
-                                            BodyTypes::ROBOT_ATTACHED,
-                                            ao.second->collision.shapes,
-                                            ao.second->collision.shape_poses,
-                                            false);
-
-    // Enable the attached objects in the contact checker
-    for (const auto& ab : attached_bodies_)
-      discrete_manager_->enableCollisionObject(ab.second.object_name);
 
     discrete_manager_->setActiveCollisionObjects(active_link_names_);
   }
@@ -667,49 +391,25 @@ bool KDLEnv::setContinuousContactManager(tesseract_collision::ContinuousContactM
     return false;
   }
 
+
   continuous_manager_ = manager->clone();
   continuous_manager_->setIsContactAllowedFn(is_contact_allowed_fn_);
   if (initialized_)
   {
-    for (const auto& link : urdf_model_->links_)
+    for (const auto& link : scene_graph_->getLinks())
     {
-      if (link.second->collision_array.size() > 0)
+      if (link->collision.size() > 0)
       {
-        const std::vector<urdf::CollisionSharedPtr>& col_array =
-            link.second->collision_array.empty() ? std::vector<urdf::CollisionSharedPtr>(1, link.second->collision) :
-                                                   link.second->collision_array;
-
         tesseract_collision::CollisionShapesConst shapes;
-        VectorIsometry3d shape_poses;
-        for (std::size_t i = 0; i < col_array.size(); ++i)
+        tesseract_collision::VectorIsometry3d shape_poses;
+        for (const auto& c : link->collision)
         {
-          if (col_array[i] && col_array[i]->geometry)
-          {
-            tesseract_collision::CollisionShapeConstPtr s = constructShape(col_array[i]->geometry.get());
-            if (s)
-            {
-              shapes.push_back(s);
-              shape_poses.push_back(urdfPose2Eigen(col_array[i]->origin));
-            }
-          }
+          shapes.push_back(c->geometry);
+          shape_poses.push_back(c->origin);
         }
-
-        continuous_manager_->addCollisionObject(link.second->name, BodyType::ROBOT_LINK, shapes, shape_poses, true);
+        continuous_manager_->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
       }
     }
-
-    // Add attachable collision object to the contact checker in a disabled
-    // state
-    for (const auto& ao : attachable_objects_)
-      continuous_manager_->addCollisionObject(ao.second->name,
-                                              BodyTypes::ROBOT_ATTACHED,
-                                              ao.second->collision.shapes,
-                                              ao.second->collision.shape_poses,
-                                              false);
-
-    // Enable the attached objects in the contact checker
-    for (const auto& ab : attached_bodies_)
-      continuous_manager_->enableCollisionObject(ab.second.object_name);
 
     continuous_manager_->setActiveCollisionObjects(active_link_names_);
   }

@@ -31,14 +31,12 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <kdl/tree.hpp>
 #include <kdl_parser/kdl_parser.hpp>
 #include <kdl/jntarray.hpp>
-#include <sensor_msgs/JointState.h>
-#include <ros/publisher.h>
-#include <urdf/model.h>
-#include <pluginlib/class_loader.hpp>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
+#include <tesseract_scene_graph/graph.h>
+TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+
 #include <tesseract_environment/core/environment.h>
 
 namespace tesseract_environment
@@ -57,7 +55,7 @@ public:
                                        std::placeholders::_2);
   }
 
-  bool init(urdf::ModelInterfaceConstSharedPtr urdf_model);
+  bool init(tesseract_scene_graph::SceneGraphPtr scene_graph);
 
   void setName(const std::string& name) override { name_ = name; }
   const std::string& getName() const override { return name_; }
@@ -74,10 +72,24 @@ public:
   EnvStatePtr getState(const std::vector<std::string>& joint_names,
                        const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override;
 
+  bool addLink(tesseract_scene_graph::LinkPtr link) override;
+
+  bool removeLink(const std::string& name) override;
+
+  bool moveLink(tesseract_scene_graph::JointPtr joint) override;
+
+  tesseract_scene_graph::LinkConstPtr getLink(const std::string& name) const override;
+
+  bool addJoint(tesseract_scene_graph::JointPtr joint) override;
+
+  bool removeJoint(const std::string& name) override;
+
+  bool moveJoint(const std::string& joint_name, const std::string& parent_link) override;
+
+  tesseract_scene_graph::JointConstPtr getJoint(const std::string& name) const override;
+
   std::vector<std::string> getJointNames() const override { return joint_names_; }
   Eigen::VectorXd getCurrentJointValues() const override;
-
-  Eigen::VectorXd getCurrentJointValues(const std::string& manipulator_name) const override;
 
   const std::string& getRootLinkName() const override { return kdl_tree_->getRootSegment()->second.segment.getName(); }
   std::vector<std::string> getLinkNames() const override { return link_names_; }
@@ -86,35 +98,7 @@ public:
 
   const Eigen::Isometry3d& getLinkTransform(const std::string& link_name) const override;
 
-  bool hasManipulator(const std::string& manipulator_name) const override;
-
-  tesseract_kinematics::ForwardKinematicsConstPtr getManipulator(const std::string& manipulator_name) const override;
-
-  bool addManipulator(const std::string& base_link,
-                      const std::string& tip_link,
-                      const std::string& manipulator_name) override;
-
-  bool addManipulator(const std::vector<std::string>& joint_names, const std::string& manipulator_name) override;
-
-  ObjectColorMapConstPtr getKnownObjectColors() const override { return object_colors_; }
-  void clearKnownObjectColors() override { object_colors_->clear(); }
-  void addAttachableObject(const AttachableObjectConstPtr attachable_object) override;
-
-  void removeAttachableObject(const std::string& name) override;
-
-  const AttachableObjectConstPtrMap& getAttachableObjects() const override { return attachable_objects_; }
-  void clearAttachableObjects() override;
-
-  const AttachedBodyInfo& getAttachedBody(const std::string& name) const override;
-
-  const AttachedBodyInfoMap& getAttachedBodies() const override { return attached_bodies_; }
-  void attachBody(const AttachedBodyInfo& attached_body_info) override;
-
-  void detachBody(const std::string& name) override;
-
-  void clearAttachedBodies() override;
-
-  urdf::ModelInterfaceConstSharedPtr getURDF() const { return urdf_model_; }
+  tesseract_scene_graph::SceneGraphConstPtr getSceneGraph() const { return scene_graph_; }
   AllowedCollisionMatrixConstPtr getAllowedCollisionMatrix() const override { return allowed_collision_matrix_; }
   AllowedCollisionMatrixPtr getAllowedCollisionMatrixNonConst() override { return allowed_collision_matrix_; }
   tesseract_collision::IsContactAllowedFn getIsContactAllowedFn() const override { return is_contact_allowed_fn_; }
@@ -129,21 +113,15 @@ public:
 private:
   bool initialized_;                                           /**< Identifies if the object has been initialized */
   std::string name_;                                           /**< Name of the environment (may be empty) */
-  urdf::ModelInterfaceConstSharedPtr urdf_model_;              /**< URDF MODEL */
-  std::shared_ptr<const KDL::Tree> kdl_tree_;                  /**< KDL tree object */
+  tesseract_scene_graph::SceneGraphPtr scene_graph_;           /**< URDF MODEL */
+  std::shared_ptr<KDL::Tree> kdl_tree_;                        /**< KDL tree object */
   EnvStatePtr current_state_;                                  /**< Current state of the robot */
   std::unordered_map<std::string, unsigned int> joint_to_qnr_; /**< Map between joint name and kdl q index */
   KDL::JntArray kdl_jnt_array_;                                /**< The kdl joint array */
-  AttachedBodyInfoMap attached_bodies_;                        /**< A map of attached bodies */
-  AttachableObjectConstPtrMap
-      attachable_objects_; /**< A map of objects that can be attached/detached from environment */
-  std::unordered_map<std::string, tesseract_kinematics::ForwardKinematicsPtr> manipulators_; /**< A map of manipulator names to kinematics object */
-  std::vector<std::string> link_names_;                       /**< A vector of link names */
-  std::vector<std::string> joint_names_;                      /**< A vector of joint names */
-  std::vector<std::string> active_link_names_;                /**< A vector of active link names */
-  ObjectColorMapPtr object_colors_;                           /**< A map of objects to color */
-  AllowedCollisionMatrixPtr
-      allowed_collision_matrix_; /**< The allowed collision matrix used during collision checking */
+  std::vector<std::string> link_names_;                        /**< A vector of link names */
+  std::vector<std::string> joint_names_;                       /**< A vector of joint names */
+  std::vector<std::string> active_link_names_;                 /**< A vector of active link names */
+  AllowedCollisionMatrixPtr allowed_collision_matrix_;         /**< The allowed collision matrix used during collision checking */
   tesseract_collision::IsContactAllowedFn is_contact_allowed_fn_;       /**< The function used to determine if two objects are allowed in collision */
   tesseract_collision::DiscreteContactManagerPtr discrete_manager_;     /**< The discrete contact manager object */
   tesseract_collision::ContinuousContactManagerPtr continuous_manager_; /**< The continuous contact manager object */

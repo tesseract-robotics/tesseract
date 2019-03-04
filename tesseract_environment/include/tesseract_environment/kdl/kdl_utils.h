@@ -32,10 +32,12 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <kdl/jntarray.hpp>
 #include <Eigen/Eigen>
 #include <console_bridge/console.h>
+
+#include <tesseract_collision/core/common.h>
+#include <tesseract_scene_graph/graph.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
-#include <tesseract_collision/core/collision_shapes.h>
-#include <tesseract_collision/core/common.h>
+#include <tesseract_environment/core/utils.h>
 
 namespace tesseract_environment
 {
@@ -111,85 +113,60 @@ inline void KDLToEigen(const KDL::Jacobian& jacobian, const std::vector<int>& q_
  */
 inline void EigenToKDL(const Eigen::Ref<const Eigen::VectorXd>& vec, KDL::JntArray& joints) { joints.data = vec; }
 
-inline void getActiveLinkNamesRecursive(std::vector<std::string>& active_links,
-                                        const urdf::LinkConstSharedPtr urdf_link,
-                                        bool active)
-{
-  // recursively get all active links
-  if (active)
-  {
-    active_links.push_back(urdf_link->name);
-    for (std::size_t i = 0; i < urdf_link->child_links.size(); ++i)
-    {
-      getActiveLinkNamesRecursive(active_links, urdf_link->child_links[i], active);
-    }
-  }
-  else
-  {
-    for (std::size_t i = 0; i < urdf_link->child_links.size(); ++i)
-    {
-      if ((urdf_link->parent_joint) && (urdf_link->parent_joint->type != urdf::Joint::FIXED))
-        getActiveLinkNamesRecursive(active_links, urdf_link->child_links[i], true);
-      else
-        getActiveLinkNamesRecursive(active_links, urdf_link->child_links[i], active);
-    }
-  }
-}
+//inline tesseract_collision::CollisionShapePtr constructShape(const urdf::Geometry* geom)
+//{
+//  tesseract_collision::CollisionShape* result = nullptr;
+//  switch (geom->type)
+//  {
+//    case urdf::Geometry::SPHERE:
+//      result = new tesseract_collision::SphereCollisionShape(static_cast<const urdf::Sphere*>(geom)->radius);
+//      break;
+//    case urdf::Geometry::BOX:
+//    {
+//      urdf::Vector3 dim = static_cast<const urdf::Box*>(geom)->dim;
+//      result = new tesseract_collision::BoxCollisionShape(dim.x, dim.y, dim.z);
+//    }
+//    break;
+//    case urdf::Geometry::CYLINDER:
+//      result = new tesseract_collision::CylinderCollisionShape(static_cast<const urdf::Cylinder*>(geom)->radius,
+//                                                               static_cast<const urdf::Cylinder*>(geom)->length);
+//      break;
+//    case urdf::Geometry::MESH:
+//    {
+//      const urdf::Mesh* mesh = static_cast<const urdf::Mesh*>(geom);
+//      if (!mesh->filename.empty())
+//      {
+//        Eigen::Vector3d scale(mesh->scale.x, mesh->scale.y, mesh->scale.z);
+//        shapes::Mesh* m = shapes::createMeshFromResource(mesh->filename, scale);
 
-inline tesseract_collision::CollisionShapePtr constructShape(const urdf::Geometry* geom)
-{
-  tesseract_collision::CollisionShape* result = nullptr;
-  switch (geom->type)
-  {
-    case urdf::Geometry::SPHERE:
-      result = new tesseract_collision::SphereCollisionShape(static_cast<const urdf::Sphere*>(geom)->radius);
-      break;
-    case urdf::Geometry::BOX:
-    {
-      urdf::Vector3 dim = static_cast<const urdf::Box*>(geom)->dim;
-      result = new tesseract_collision::BoxCollisionShape(dim.x, dim.y, dim.z);
-    }
-    break;
-    case urdf::Geometry::CYLINDER:
-      result = new tesseract_collision::CylinderCollisionShape(static_cast<const urdf::Cylinder*>(geom)->radius,
-                                                               static_cast<const urdf::Cylinder*>(geom)->length);
-      break;
-    case urdf::Geometry::MESH:
-    {
-      const urdf::Mesh* mesh = static_cast<const urdf::Mesh*>(geom);
-      if (!mesh->filename.empty())
-      {
-        Eigen::Vector3d scale(mesh->scale.x, mesh->scale.y, mesh->scale.z);
-        shapes::Mesh* m = shapes::createMeshFromResource(mesh->filename, scale);
+//        tesseract_collision::VectorVector3d mesh_vertices;
+//        mesh_vertices.reserve(m->vertex_count);
+//        for (unsigned int i = 0; i < m->vertex_count; ++i)
+//          mesh_vertices.push_back(Eigen::Vector3d(m->vertices[3 * i + 0], m->vertices[3 * i + 1], m->vertices[3 * i + 2]));
 
-        tesseract_collision::VectorVector3d mesh_vertices;
-        mesh_vertices.reserve(m->vertex_count);
-        for (unsigned int i = 0; i < m->vertex_count; ++i)
-          mesh_vertices.push_back(Eigen::Vector3d(m->vertices[3 * i + 0], m->vertices[3 * i + 1], m->vertices[3 * i + 2]));
+//        std::shared_ptr<tesseract_collision::VectorVector3d> ch_vertices(new tesseract_collision::VectorVector3d());
+//        std::shared_ptr<std::vector<int>> ch_faces(new std::vector<int>());
+//        int num_faces = tesseract_collision::createConvexHull(*ch_vertices, *ch_faces, mesh_vertices);
 
-        std::shared_ptr<tesseract_collision::VectorVector3d> ch_vertices(new tesseract_collision::VectorVector3d());
-        std::shared_ptr<std::vector<int>> ch_faces(new std::vector<int>());
-        int num_faces = tesseract_collision::createConvexHull(*ch_vertices, *ch_faces, mesh_vertices);
+//        result = new tesseract_collision::ConvexMeshCollisionShape(ch_vertices, ch_faces, num_faces);
+//      }
+//    }
+//    break;
+//    default:
+//      CONSOLE_BRIDGE_logError("Unknown geometry type: %d", static_cast<int>(geom->type));
+//      break;
+//  }
 
-        result = new tesseract_collision::ConvexMeshCollisionShape(ch_vertices, ch_faces, num_faces);
-      }
-    }
-    break;
-    default:
-      CONSOLE_BRIDGE_logError("Unknown geometry type: %d", static_cast<int>(geom->type));
-      break;
-  }
+//  return tesseract_collision::CollisionShapePtr(result);
+//}
 
-  return tesseract_collision::CollisionShapePtr(result);
-}
-
-inline Eigen::Isometry3d urdfPose2Eigen(const urdf::Pose& pose)
-{
-  Eigen::Quaterniond q(pose.rotation.w, pose.rotation.x, pose.rotation.y, pose.rotation.z);
-  Eigen::Isometry3d result;
-  result.translation() = Eigen::Vector3d(pose.position.x, pose.position.y, pose.position.z);
-  result.linear() = q.toRotationMatrix();
-  return result;
-}
+//inline Eigen::Isometry3d urdfPose2Eigen(const urdf::Pose& pose)
+//{
+//  Eigen::Quaterniond q(pose.rotation.w, pose.rotation.x, pose.rotation.y, pose.rotation.z);
+//  Eigen::Isometry3d result;
+//  result.translation() = Eigen::Vector3d(pose.position.x, pose.position.y, pose.position.z);
+//  result.linear() = q.toRotationMatrix();
+//  return result;
+//}
 }
 #endif  // TESSERACT_ENVIRONMENT_KDL_UTILS_H
