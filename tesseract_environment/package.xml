@@ -13,12 +13,11 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>tesseract_collision</depend>
-  <depend>tesseract_kinematics</depend>
-  <depend>geometric_shapes</depend>
-  <depend>kdl_parser</depend>
+  <depend>tesseract_geometry</depend>
+  <depend>tesseract_scene_graph</depend>
 
   <test_depend>gtest</test_depend>
-  <test_depend>rostest</test_depend>
+  <test_depend>roslib</test_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
