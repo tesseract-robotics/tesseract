@@ -24,7 +24,6 @@ catkin_package(
     ${LIBFCL_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIRS}
   LIBRARIES
-    ${PROJECT_NAME}_core
     ${PROJECT_NAME}_bullet
     ${PROJECT_NAME}_fcl
     ${OCTOMAP_LIBRARIES}
