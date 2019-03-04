@@ -63,8 +63,8 @@ namespace tesseract_scene_graph
 /** @brief Defines the boost graph property. */
 typedef boost::property<boost::graph_name_t, std::string,
                         boost::property<boost::graph_root_t, std::string,
-                        boost::property<boost::graph_link_map_t, std::unordered_map<std::string, std::pair<LinkConstPtr, long unsigned>>,
-                        boost::property<boost::graph_joint_map_t, std::unordered_map<std::string, std::pair<JointConstPtr, boost::detail::edge_desc_impl<boost::bidirectional_tag, long unsigned>>>>>>> GraphProperty;
+                        boost::property<boost::graph_link_map_t, std::unordered_map<std::string, std::pair<LinkPtr, long unsigned>>,
+                        boost::property<boost::graph_joint_map_t, std::unordered_map<std::string, std::pair<JointPtr, boost::detail::edge_desc_impl<boost::bidirectional_tag, long unsigned>>>>>>> GraphProperty;
 
 /** @brief Defines the boost graph vertex property. */
 typedef boost::property<boost::vertex_link_t, LinkConstPtr> VertexProperty;
@@ -266,6 +266,28 @@ public:
     map.erase(name);
 
     return true;
+  }
+
+  /**
+   * @brief Move joint to new parent link
+   * @param name Name of the joint to move
+   * @param parent_link Name of parent link to move to
+   * @return Returns true if successfull, otherwise false.
+   */
+  bool moveJoint(const std::string& name, const std::string& parent_link)
+  {
+    auto& map = boost::get_property(static_cast<Graph&>(*this), boost::graph_joint_map);
+    auto found = map.find(name);
+
+    if (found == map.end())
+      return false;
+
+    JointPtr joint = found->second.first;
+    if (!removeJoint(name))
+      return false;
+
+    joint->parent_link_name = parent_link;
+    return addJoint(joint);
   }
 
   /**
