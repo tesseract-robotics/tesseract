@@ -58,6 +58,10 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
   joint_4->type = JointType::REVOLUTE;
   g.addJoint(joint_4);
 
+  std::vector<std::string> adjacent_links = g.getAdjacentLinkNames("link_3");
+  EXPECT_TRUE(adjacent_links.size() == 1);
+  EXPECT_TRUE(adjacent_links[0] == "link_4");
+
   // Save Graph
   g.saveDOT("/tmp/graph_acyclic_tree_example.dot");
 
