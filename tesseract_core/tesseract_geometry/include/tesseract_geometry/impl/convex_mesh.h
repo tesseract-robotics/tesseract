@@ -46,20 +46,21 @@ namespace tesseract_geometry
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    ConvexMesh(const std::shared_ptr<const VectorVector3d>& vertices, const std::shared_ptr<const std::vector<int>>& faces) : Geometry(GeometryType::CONVEX_MESH), vertices_(vertices), faces_(faces)
+    ConvexMesh(const std::shared_ptr<const VectorVector3d>& vertices, const std::shared_ptr<const Eigen::VectorXi>& faces) : Geometry(GeometryType::CONVEX_MESH), vertices_(vertices), faces_(faces)
     {
       vertice_count_ = static_cast<int>(vertices->size());
 
       face_count_ = 0;
-      for (auto it = faces_->begin(); it != faces_->end(); ++it)
+      for (int i = 0; i < faces_->size(); ++i)
       {
         ++face_count_;
-        int num_verts = *it;
-        it = it + num_verts;
+        int num_verts = (*faces_)(i);
+        i += num_verts;
       }
+
     }
 
-    ConvexMesh(const std::shared_ptr<const VectorVector3d>& vertices, const std::shared_ptr<const std::vector<int>>& faces, int face_count) : Geometry(GeometryType::CONVEX_MESH), vertices_(vertices), faces_(faces), face_count_(face_count)
+    ConvexMesh(const std::shared_ptr<const VectorVector3d>& vertices, const std::shared_ptr<const Eigen::VectorXi>& faces, int face_count) : Geometry(GeometryType::CONVEX_MESH), vertices_(vertices), faces_(faces), face_count_(face_count)
     {
       vertice_count_ = static_cast<int>(vertices->size());
     }
@@ -67,7 +68,7 @@ namespace tesseract_geometry
     ~ConvexMesh() override = default;
 
     const std::shared_ptr<const VectorVector3d>& getVertices() const { return vertices_; }
-    const std::shared_ptr<const std::vector<int>>& getFaces() const { return faces_; }
+    const std::shared_ptr<const Eigen::VectorXi>& getFaces() const { return faces_; }
 
     int getVerticeCount() const { return vertice_count_; }
     int getFaceCount() const { return face_count_; }
@@ -76,7 +77,7 @@ namespace tesseract_geometry
 
   private:
     std::shared_ptr<const VectorVector3d> vertices_;
-    std::shared_ptr<const std::vector<int>> faces_;
+    std::shared_ptr<const Eigen::VectorXi> faces_;
 
     int vertice_count_;
     int face_count_;

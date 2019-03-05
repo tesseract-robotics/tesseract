@@ -91,7 +91,7 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::MeshConstPtr& g
   int vertice_count = geom->getVerticeCount();
   int triangle_count = geom->getTriangleCount();
   const VectorVector3d& vertices = *(geom->getVertices());
-  const std::vector<int>& triangles = *(geom->getTriangles());
+  const Eigen::VectorXi& triangles = *(geom->getTriangles());
 
   if (vertice_count > 0 && triangle_count > 0)
   {
@@ -104,11 +104,11 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::MeshConstPtr& g
     for (int i = 0; i < triangle_count; ++i)
     {
       btVector3 v[3];
-      assert(triangles[static_cast<size_t>(4 * i)] == 3);
+      assert(triangles[4 * i] == 3);
       for (unsigned x = 0; x < 3; ++x)
       {
         // Note: triangles structure is number of vertices that represent the triangle followed by vertex indexes
-        const Eigen::Vector3d& vertice = vertices[static_cast<size_t>(triangles[(4 * static_cast<size_t>(i)) + (x + 1)])];
+        const Eigen::Vector3d& vertice = vertices[static_cast<size_t>(triangles[(4 * i) + (static_cast<int>(x) + 1)])];
         for (unsigned y = 0; y < 3; ++y)
           v[x][y] = static_cast<btScalar>(vertice[y]);
       }

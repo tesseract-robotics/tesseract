@@ -87,7 +87,7 @@ int main(int argc, char** argv)
   }
 
   tesseract_collision::VectorVector3d mesh_vertices;
-  std::vector<int> mesh_faces;
+  Eigen::VectorXi mesh_faces;
   int num_faces = tesseract_collision::loadSimplePlyFile(input, mesh_vertices, mesh_faces);
   if (num_faces < 0)
   {
@@ -96,7 +96,7 @@ int main(int argc, char** argv)
   }
 
   tesseract_collision::VectorVector3d ch_vertices;
-  std::vector<int> ch_faces;
+  Eigen::VectorXi ch_faces;
   int ch_num_faces = tesseract_collision::createConvexHull(ch_vertices, ch_faces, mesh_vertices);
 
   if (ch_num_faces < 0)

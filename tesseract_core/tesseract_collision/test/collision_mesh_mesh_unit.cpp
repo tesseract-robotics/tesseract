@@ -18,7 +18,7 @@ void addCollisionObjects(DiscreteContactManager& checker)
   MeshPtr sphere;
 
   std::shared_ptr<VectorVector3d> vertices(new VectorVector3d());
-  std::shared_ptr<std::vector<int>> faces(new std::vector<int>());
+  std::shared_ptr<Eigen::VectorXi> faces(new Eigen::VectorXi());
   int num_faces = loadSimplePlyFile(std::string(DATA_DIR) + "/sphere_p25m.ply", *vertices, *faces, true);
   EXPECT_GT(num_faces, 0);
 
