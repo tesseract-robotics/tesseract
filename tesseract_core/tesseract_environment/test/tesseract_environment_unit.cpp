@@ -1,14 +1,14 @@
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_environment/core/macros.h>
+TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
-#include <tesseract_core/basic_types.h>
+#include <tesseract_environment/core/types.h>
 
 /// Testing AllowedCollisionMatrix
-TEST(TesseractCoreUnit, TestAllowedCollisionMatrix)
+TEST(TesseractEnvironmentUnit, TestAllowedCollisionMatrix)
 {
-  tesseract::AllowedCollisionMatrix acm;
+  tesseract_environment::AllowedCollisionMatrix acm;
 
   acm.addAllowedCollision("link1", "link2", "test");
   // collision between link1 and link2 should be allowed
