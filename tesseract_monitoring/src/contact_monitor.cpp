@@ -40,54 +40,53 @@ static boost::condition_variable current_joint_states_evt;
 
 void computeCollisionReportThread()
 {
+  while (!ros::isShuttingDown())
+  {
+    boost::mutex::scoped_lock lock(modify_mutex);
+    if (!current_joint_states)
+    {
+      current_joint_states_evt.wait(lock);
+    }
 
-	while (!ros::isShuttingDown())
-	{
-		boost::mutex::scoped_lock lock(modify_mutex);
-		if (!current_joint_states)
-		{
-			current_joint_states_evt.wait(lock);
-		}
+    if (!current_joint_states)
+      continue;
+    boost::shared_ptr<sensor_msgs::JointState> msg = current_joint_states;
+    current_joint_states.reset();
 
-		if (!current_joint_states) continue;
-		boost::shared_ptr<sensor_msgs::JointState> msg = current_joint_states;
-		current_joint_states.reset();
+    contacts.clear();
+    contacts_msg.contacts.clear();
 
-		contacts.clear();
-		contacts_msg.contacts.clear();
+    env->setState(msg->name, msg->position);
+    EnvStateConstPtr state = env->getState();
 
-		env->setState(msg->name, msg->position);
-		EnvStateConstPtr state = env->getState();
+    manager->setCollisionObjectsTransform(state->transforms);
+    manager->contactTest(contacts, type);
 
-		manager->setCollisionObjectsTransform(state->transforms);
-		manager->contactTest(contacts, type);
+    if (publish_environment)
+    {
+      tesseract_msgs::TesseractState state_msg;
+      tesseract_ros::tesseractToTesseractStateMsg(state_msg, *env);
+      environment_pub.publish(state_msg);
+    }
 
-		if (publish_environment)
-		{
-		tesseract_msgs::TesseractState state_msg;
-		tesseract_ros::tesseractToTesseractStateMsg(state_msg, *env);
-		environment_pub.publish(state_msg);
-		}
-
-		ContactResultVector contacts_vector;
-		tesseract::moveContactResultsMapToContactResultsVector(contacts, contacts_vector);
-		contacts_msg.contacts.reserve(contacts_vector.size());
-		for (const auto& contact : contacts_vector)
-		{
-		tesseract_msgs::ContactResult contact_msg;
-		tesseractContactResultToContactResultMsg(contact_msg, contact, msg->header.stamp);
-		contacts_msg.contacts.push_back(contact_msg);
-		}
-		contact_results_pub.publish(contacts_msg);
-	}
-
+    ContactResultVector contacts_vector;
+    tesseract::moveContactResultsMapToContactResultsVector(contacts, contacts_vector);
+    contacts_msg.contacts.reserve(contacts_vector.size());
+    for (const auto& contact : contacts_vector)
+    {
+      tesseract_msgs::ContactResult contact_msg;
+      tesseractContactResultToContactResultMsg(contact_msg, contact, msg->header.stamp);
+      contacts_msg.contacts.push_back(contact_msg);
+    }
+    contact_results_pub.publish(contacts_msg);
+  }
 }
 
 void callbackJointState(boost::shared_ptr<sensor_msgs::JointState> msg)
 {
-	boost::mutex::scoped_lock lock(modify_mutex);
-	current_joint_states=msg;
-	current_joint_states_evt.notify_all();
+  boost::mutex::scoped_lock lock(modify_mutex);
+  current_joint_states = msg;
+  current_joint_states_evt.notify_all();
 }
 
 bool callbackModifyTesseractEnv(tesseract_msgs::ModifyTesseractEnvRequest& request,
