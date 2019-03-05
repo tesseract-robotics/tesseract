@@ -45,7 +45,7 @@ public:
     poses_.push_back(pose);
   }
 
-  virtual addMesh(const Eigen::Isometry3d& pose, const VectorVector3d& vertices, const std::vector<int>& faces) override
+  virtual addMesh(const Eigen::Isometry3d& pose, const VectorVector3d& vertices, const Eigen::VectorXi& faces) override
   {
     btCompoundShape* compound =
         new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(geom->triangle_count));
@@ -80,7 +80,7 @@ public:
     poses_.push_back(pose);
   }
 
-  virtual addConvexMesh(const Eigen::Isometry3d& pose, const VectorVector3d& vertices, const std::vector<int>& faces) override
+  virtual addConvexMesh(const Eigen::Isometry3d& pose, const VectorVector3d& vertices, const Eigen::VectorXi& faces) override
   {
     btConvexHullShape* shape = new btConvexHullShape();
     for (const auto& v : vertices)

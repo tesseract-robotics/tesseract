@@ -88,7 +88,7 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::MeshConstPtr
   int vertice_count = geom->getVerticeCount();
   int triangle_count = geom->getTriangleCount();
   const VectorVector3d& vertices = *(geom->getVertices());
-  const std::vector<int>& triangles = *(geom->getTriangles());
+  const Eigen::VectorXi& triangles = *(geom->getTriangles());
 
   auto g = new fcl::BVHModel<fcl::OBBRSSd>();
   if (vertice_count > 0 && triangle_count > 0)
@@ -96,10 +96,10 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::MeshConstPtr
     std::vector<fcl::Triangle> tri_indices(static_cast<size_t>(triangle_count));
     for (int i = 0; i < triangle_count; ++i)
     {
-      assert(triangles[static_cast<size_t>(4 * i)] == 3);
-      tri_indices[static_cast<size_t>(i)] = fcl::Triangle(triangles[static_cast<size_t>((4 * i) + 1)],
-                                                          triangles[static_cast<size_t>((4 * i) + 2)],
-                                                          triangles[static_cast<size_t>((4 * i) + 3)]);
+      assert(triangles[4 * i] == 3);
+      tri_indices[static_cast<size_t>(i)] = fcl::Triangle(static_cast<size_t>(triangles[(4 * i) + 1]),
+                                                          static_cast<size_t>(triangles[(4 * i) + 2]),
+                                                          static_cast<size_t>(triangles[(4 * i) + 3]));
     }
 
     g->beginModel();
@@ -119,7 +119,10 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::ConvexMeshCo
   int face_count = geom->getFaceCount();
 
   if (vertice_count > 0 && face_count > 0)
-    return CollisionGeometryPtr(new fcl::Convexd(geom->getVertices(), face_count, geom->getFaces()));
+  {
+    std::shared_ptr<std::vector<int>> faces(new std::vector<int>(geom->getFaces()->data(), geom->getFaces()->data() + geom->getFaces()->size()));
+    return CollisionGeometryPtr(new fcl::Convexd(geom->getVertices(), face_count, faces));
+  }
 
   CONSOLE_BRIDGE_logError("The mesh is empty!");
   return nullptr;

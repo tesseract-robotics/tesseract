@@ -161,13 +161,12 @@ inline ContactResult* processResult(ContactTestData& cdata,
  * @return The number of faces. If less than zero an error occured when trying to create the convex hull
  */
 inline int createConvexHull(VectorVector3d& vertices,
-                            std::vector<int>& faces,
+                            Eigen::VectorXi& faces,
                             const VectorVector3d& input,
                             double shrink = -1,
                             double shrinkClamp = -1)
 {
   vertices.clear();
-  faces.clear();
 
   btConvexHullComputer conv;
   btAlignedObjectArray<btVector3> points;
@@ -197,7 +196,8 @@ inline int createConvexHull(VectorVector3d& vertices,
   }
 
   int num_faces = conv.faces.size();
-  faces.reserve(static_cast<size_t>(3 * num_faces));
+  std::vector<int> local_faces;
+  local_faces.reserve(static_cast<size_t>(3 * num_faces));
   for (int i = 0; i < num_faces; i++)
   {
     std::vector<int> face;
@@ -223,9 +223,13 @@ inline int createConvexHull(VectorVector3d& vertices,
       edge = edge->getNextEdgeOfFace();
       c = edge->getTargetVertex();
     }
-    faces.push_back(static_cast<int>(face.size()));
-    faces.insert(faces.end(), face.begin(), face.end());
+    local_faces.push_back(static_cast<int>(face.size()));
+    local_faces.insert(local_faces.end(), face.begin(), face.end());
   }
+
+  faces.resize(static_cast<long>(local_faces.size()));
+  for (size_t i = 0; i < local_faces.size(); ++i)
+    faces[static_cast<long>(i)] = local_faces[i];
 
   return num_faces;
 }
@@ -240,7 +244,7 @@ inline int createConvexHull(VectorVector3d& vertices,
  */
 inline bool writeSimplePlyFile(const std::string& path,
                                const VectorVector3d& vertices,
-                               const std::vector<int>& faces,
+                               const Eigen::VectorXi& faces,
                                int num_faces)
 {
   //  ply
@@ -295,11 +299,11 @@ inline bool writeSimplePlyFile(const std::string& path,
   }
 
   // Add faces
-  size_t idx = 0;
-  for (size_t i = 0; i < static_cast<size_t>(num_faces); ++i)
+  long idx = 0;
+  for (long i = 0; i < num_faces; ++i)
   {
-    size_t num_vert = static_cast<size_t>(faces[idx]);
-    for (size_t j = 0; j < num_vert; ++j)
+    long num_vert = faces[idx];
+    for (long j = 0; j < num_vert; ++j)
     {
       myfile << faces[idx] << " ";
       ++idx;
@@ -338,7 +342,7 @@ inline bool isNumeric(const std::string& s)
  */
 inline int loadSimplePlyFile(const std::string& path,
                              VectorVector3d& vertices,
-                             std::vector<int>& faces,
+                             Eigen::VectorXi& faces,
                              bool triangles_only = false)
 {
   //  ply
@@ -368,7 +372,6 @@ inline int loadSimplePlyFile(const std::string& path,
   //  4 3 7 4 0
 
   vertices.clear();
-  faces.clear();
 
   std::ifstream myfile;
   myfile.open(path);
@@ -428,7 +431,8 @@ inline int loadSimplePlyFile(const std::string& path,
     vertices.push_back(Eigen::Vector3d(std::stod(tokens[0]), std::stod(tokens[1]), std::stod(tokens[2])));
   }
 
-  faces.reserve(num_faces * 3);
+  std::vector<int> local_faces;
+  local_faces.reserve(num_faces * 3);
   size_t copy_num_faces = num_faces; // Becuase num_faces can change within for loop
   for (size_t i = 0; i < copy_num_faces; ++i)
   {
@@ -445,26 +449,30 @@ inline int loadSimplePlyFile(const std::string& path,
     assert(num_verts >= 3);
     if (triangles_only && num_verts > 3)
     {
-      faces.push_back(3);
-      faces.push_back(std::stoi(tokens[0]));
-      faces.push_back(std::stoi(tokens[1]));
-      faces.push_back(std::stoi(tokens[2]));
+      local_faces.push_back(3);
+      local_faces.push_back(std::stoi(tokens[0]));
+      local_faces.push_back(std::stoi(tokens[1]));
+      local_faces.push_back(std::stoi(tokens[2]));
       for (size_t i = 3; i < tokens.size(); ++i)
       {
         num_faces += 1;
-        faces.push_back(3);
-        faces.push_back(std::stoi(tokens[0]));
-        faces.push_back(std::stoi(tokens[i - 1]));
-        faces.push_back(std::stoi(tokens[i]));
+        local_faces.push_back(3);
+        local_faces.push_back(std::stoi(tokens[0]));
+        local_faces.push_back(std::stoi(tokens[i - 1]));
+        local_faces.push_back(std::stoi(tokens[i]));
       }
     }
     else
     {
-      faces.push_back(static_cast<int>(tokens.size()));
+      local_faces.push_back(static_cast<int>(tokens.size()));
       for (const auto& t : tokens)
-        faces.push_back(std::stoi(t));
+        local_faces.push_back(std::stoi(t));
     }
   }
+
+  faces.resize(static_cast<long>(local_faces.size()));
+  for (size_t i = 0; i < local_faces.size(); ++i)
+    faces[static_cast<long>(i)] = local_faces[i];
 
   myfile.close();
   return static_cast<int>(num_faces);

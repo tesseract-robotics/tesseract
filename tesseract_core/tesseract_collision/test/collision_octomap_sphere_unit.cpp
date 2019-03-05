@@ -40,12 +40,12 @@ void addCollisionObjects(DiscreteContactManager& checker, bool use_convex_mesh =
   if (use_convex_mesh)
   {
     VectorVector3d mesh_vertices;
-    std::vector<int> mesh_faces;
+    Eigen::VectorXi mesh_faces;
     EXPECT_GT(loadSimplePlyFile(std::string(DATA_DIR) + "/sphere_p25m.ply", mesh_vertices, mesh_faces), 0);
 
     // This is required because convex hull cannot have multiple faces on the same plane.
     std::shared_ptr<VectorVector3d> ch_verticies(new VectorVector3d());
-    std::shared_ptr<std::vector<int>> ch_faces(new std::vector<int>());
+    std::shared_ptr<Eigen::VectorXi> ch_faces(new Eigen::VectorXi());
     int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
     sphere.reset(new ConvexMesh(ch_verticies, ch_faces, ch_num_faces));
   }

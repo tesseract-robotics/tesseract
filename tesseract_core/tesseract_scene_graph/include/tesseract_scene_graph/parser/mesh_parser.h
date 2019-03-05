@@ -71,8 +71,8 @@ namespace tesseract_scene_graph
     for (unsigned int j = 0; j < node->mNumMeshes; ++j)
     {
       std::shared_ptr<tesseract_geometry::VectorVector3d> vertices(new tesseract_geometry::VectorVector3d());
-      std::shared_ptr<std::vector<int>> triangles(new std::vector<int>());
-      int triangle_count = 0;
+      std::shared_ptr<Eigen::VectorXi> triangles(new Eigen::VectorXi());
+
 
       const aiMesh* a = scene->mMeshes[node->mMeshes[j]];
       for (unsigned int i = 0; i < a->mNumVertices; ++i)
@@ -83,20 +83,27 @@ namespace tesseract_scene_graph
                                             static_cast<double>(v.z) * scale(2)));
       }
 
+      long triangle_count = 0;
+      std::vector<int> local_triangles;
+      local_triangles.reserve(a->mNumFaces);
       for (unsigned int i = 0; i < a->mNumFaces; ++i)
       {
         if (a->mFaces[i].mNumIndices >= 3)
         {
           triangle_count += 1;
-          triangles->push_back(static_cast<int>(a->mFaces[i].mNumIndices));
+          local_triangles.push_back(static_cast<int>(a->mFaces[i].mNumIndices));
           for (size_t k = 0; k < a->mFaces[i].mNumIndices; ++k)
-            triangles->push_back(static_cast<int>(a->mFaces[i].mIndices[k]));
+            local_triangles.push_back(static_cast<int>(a->mFaces[i].mIndices[k]));
         }
         else
         {
           CONSOLE_BRIDGE_logError("Mesh had a face with less than three verticies");
         }
       }
+
+      triangles->resize(static_cast<long>(local_triangles.size()));
+      for (long i = 0; i < triangles->size(); ++i)
+        (*triangles)[i] = local_triangles[static_cast<size_t>(i)];
 
       meshes.push_back(std::shared_ptr<T>(new T(vertices, triangles, triangle_count)));
     }
