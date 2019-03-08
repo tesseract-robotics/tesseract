@@ -94,8 +94,8 @@ namespace tesseract_scene_graph
 
     JointCalibrationPtr c(new JointCalibration());
     c->reference_position = calibration->reference_position;
-    c->rising = *(calibration->rising);
-    c->falling = *(calibration->falling);
+    c->rising = (calibration->rising == nullptr) ? 0 : *(calibration->rising);
+    c->falling = (calibration->falling == nullptr) ? 0 : *(calibration->falling);
     return c;
   }
 
@@ -196,6 +196,7 @@ namespace tesseract_scene_graph
         else
           meshes = createMeshFromPath<tesseract_geometry::Mesh>(locator(ug.filename), Eigen::Vector3d(ug.scale.x, ug.scale.y, ug.scale.z), true, true);
 
+        assert(!meshes.empty());
         g.insert(g.end(), meshes.begin(), meshes.end());
         break;
       }
