@@ -394,6 +394,16 @@ public:
     return link_names;
   }
 
+  std::vector<std::string> getInvAdjacentLinkNames(const std::string& name) const
+  {
+    std::vector<std::string> link_names;
+    Vertex v = getVertex(name);
+    for (auto vd : boost::make_iterator_range(inv_adjacent_vertices(v, *this)))
+      link_names.push_back(boost::get(boost::vertex_link, *this)[vd]->getName());
+
+    return link_names;
+  }
+
   /**
    * @brief Saves Graph as Graph Description Language (DOT)
    * @param path The file path
