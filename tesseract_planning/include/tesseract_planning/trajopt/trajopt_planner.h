@@ -67,8 +67,7 @@ public:
 
     // Converge Status Codes
   }
-//  virtual ~TrajOptPlanner(){}
-
+  virtual ~TrajOptPlanner() {}
   /**
    * @brief Sets up the opimizer and solves a SQP problem read from json with no callbacks and dafault parameterss
    * @param response The results of the optimization. Primary output is the optimized joint trajectory

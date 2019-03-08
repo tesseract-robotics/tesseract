@@ -63,7 +63,7 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
 
   // Populate Basic Info
   pci.basic_info.n_steps = static_cast<int>(config.target_waypoints_.size());
-  pci.basic_info.manip = manipulator_;
+  pci.basic_info.manip = config.manipulator_;
   pci.basic_info.start_fixed = false;
   pci.basic_info.use_time = false;
 

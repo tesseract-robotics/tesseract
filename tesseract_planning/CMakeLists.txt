@@ -69,7 +69,7 @@ target_compile_options(${PROJECT_NAME}_ompl_test PRIVATE -Wsuggest-override -Wco
 ## Install ##
 #############
 
-install(TARGETS ${PROJECT_NAME}_ompl ${PROJECT_NAME}_trajopt
+install(TARGETS ${PROJECT_NAME}_ompl ${PROJECT_NAME}_trajopt ${PROJECT_NAME}_trajopt_freespace ${PROJECT_NAME}_trajopt_array
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
