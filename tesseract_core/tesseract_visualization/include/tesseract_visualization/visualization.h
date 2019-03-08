@@ -1,6 +1,6 @@
 /**
- * @file basic_plotting.h
- * @brief Basic low-level plotting functions.
+ * @file visualization.h
+ * @brief Visualization Class.
  *
  * @author Levi Armstrong
  * @date April 15, 2018
@@ -23,13 +23,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_CORE_BASIC_PLOTTER_H
-#define TESSERACT_CORE_BASIC_PLOTTER_H
+#ifndef TESSERACT_VISUALIZATION_VISUALIZATION_H
+#define TESSERACT_VISUALIZATION_VISUALIZATION_H
 
-#include <tesseract_core/basic_types.h>
+#include <tesseract_visualization/macros.h>
+TESSERACT_VISUALIZATION_IGNORE_WARNINGS_PUSH
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+TESSERACT_VISUALIZATION_IGNORE_WARNINGS_POP
+
+#include <tesseract_collision/core/types.h>
 
 namespace tesseract_visualization
 {
+
+typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> TrajArray;
+
 /** @brief The Vizualization class */
 class Visualization
 {
@@ -80,8 +89,8 @@ public:
   /** @brief Pause code and wait for enter key in terminal*/
   virtual void waitForInput() = 0;
 };
-typedef std::shared_ptr<BasicPlotting> BasicPlottingPtr;
-typedef std::shared_ptr<const BasicPlotting> BasicPlottingConstPtr;
+typedef std::shared_ptr<Visualization> VisualizationPtr;
+typedef std::shared_ptr<const Visualization> VisualizationConstPtr;
 }
 
-#endif  // TESSERACT_CORE_BASIC_PLOTTER_H
+#endif  // TESSERACT_VISUALIZATION_VISUALIZATION_H
