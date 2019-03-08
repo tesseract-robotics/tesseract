@@ -95,6 +95,19 @@ public:
             const std::string name);
 
   /**
+   * @brief Initializes ROSKin
+   * Creates KDL::Tree from Tesseract Scene Graph, populates joint_list_, joint_limits_, and link_list_
+   * Note: It will set the initial value for each joint to zero.
+   * @param scene_graph The tesseract scene graph
+   * @param joint_names The list of active joints to be considered
+   * @param name The name of the kinematic chain
+   * @return True if init() completes successfully
+   */
+  bool init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
+            const std::vector<std::string>& joint_names,
+            const std::string name);
+
+  /**
    * @brief Checks if kinematics has been initialized
    * @return True if init() has completed successfully
    */

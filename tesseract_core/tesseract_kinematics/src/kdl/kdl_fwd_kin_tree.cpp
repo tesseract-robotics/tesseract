@@ -192,6 +192,18 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
                          const std::unordered_map<std::string, double>& start_state,
                          const std::string name)
 {
+  if (init(scene_graph, joint_names, name))
+  {
+    setStartState(start_state);
+    return true;
+  }
+  return false;
+}
+
+bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
+                         const std::vector<std::string>& joint_names,
+                         const std::string name)
+{
   initialized_ = false;
 
   if (scene_graph == nullptr)
@@ -202,6 +214,8 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
 
   scene_graph_ = scene_graph;
   name_ = name;
+
+  std::unordered_map<std::string, double> start_state;
 
   if (!scene_graph_->getLink(scene_graph_->getRoot()))
   {
@@ -240,7 +254,10 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
         std::find(joint_names.begin(), joint_names.end(), jnt.getName());
 
     if (jnt.getType() != KDL::Joint::None)
+    {
       joint_to_qnr_[jnt.getName()] = tree_element.second.q_nr;
+      start_state[jnt.getName()] = 0;
+    }
 
     if (joint_it == joint_names.end())
       continue;
