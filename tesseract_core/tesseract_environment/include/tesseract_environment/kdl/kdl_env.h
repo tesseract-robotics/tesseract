@@ -47,15 +47,9 @@ class KDLEnv : public Environment
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  KDLEnv() : Environment(), initialized_(false), allowed_collision_matrix_(new AllowedCollisionMatrix())
-  {
-    is_contact_allowed_fn_ = std::bind(&tesseract_environment::KDLEnv::defaultIsContactAllowedFn,
-                                       this,
-                                       std::placeholders::_1,
-                                       std::placeholders::_2);
-  }
+  KDLEnv() : Environment(), initialized_(false) {}
 
-  bool init(tesseract_scene_graph::SceneGraphPtr scene_graph);
+  bool init(tesseract_scene_graph::SceneGraphPtr scene_graph) override;
 
   void setName(const std::string& name) override { name_ = name; }
   const std::string& getName() const override { return name_; }
@@ -98,11 +92,15 @@ public:
 
   const Eigen::Isometry3d& getLinkTransform(const std::string& link_name) const override;
 
-  tesseract_scene_graph::SceneGraphConstPtr getSceneGraph() const { return scene_graph_; }
-  AllowedCollisionMatrixConstPtr getAllowedCollisionMatrix() const override { return allowed_collision_matrix_; }
-  AllowedCollisionMatrixPtr getAllowedCollisionMatrixNonConst() override { return allowed_collision_matrix_; }
+  tesseract_scene_graph::SceneGraphConstPtr getSceneGraph() const override { return scene_graph_; }
+
   tesseract_collision::IsContactAllowedFn getIsContactAllowedFn() const override { return is_contact_allowed_fn_; }
-  void setIsContactAllowedFn(tesseract_collision::IsContactAllowedFn fn) override { is_contact_allowed_fn_ = fn; }
+  void setIsContactAllowedFn(tesseract_collision::IsContactAllowedFn fn) override
+  {
+    is_contact_allowed_fn_ = fn;
+    if (discrete_manager_ != nullptr) discrete_manager_->setIsContactAllowedFn(is_contact_allowed_fn_);
+    if (continuous_manager_ != nullptr) continuous_manager_->setIsContactAllowedFn(is_contact_allowed_fn_);
+  }
 
   bool setDiscreteContactManager(tesseract_collision::DiscreteContactManagerConstPtr manager) override;
   tesseract_collision::DiscreteContactManagerPtr getDiscreteContactManager() const override { return discrete_manager_->clone(); }
@@ -121,12 +119,9 @@ private:
   std::vector<std::string> link_names_;                        /**< A vector of link names */
   std::vector<std::string> joint_names_;                       /**< A vector of joint names */
   std::vector<std::string> active_link_names_;                 /**< A vector of active link names */
-  AllowedCollisionMatrixPtr allowed_collision_matrix_;         /**< The allowed collision matrix used during collision checking */
   tesseract_collision::IsContactAllowedFn is_contact_allowed_fn_;       /**< The function used to determine if two objects are allowed in collision */
   tesseract_collision::DiscreteContactManagerPtr discrete_manager_;     /**< The discrete contact manager object */
   tesseract_collision::ContinuousContactManagerPtr continuous_manager_; /**< The continuous contact manager object */
-
-  bool defaultIsContactAllowedFn(const std::string& link_name1, const std::string& link_name2) const;
 
   void calculateTransforms(TransformMap& transforms,
                            const KDL::JntArray& q_in,

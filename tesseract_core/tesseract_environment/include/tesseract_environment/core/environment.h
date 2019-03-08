@@ -34,6 +34,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/types.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
+#include <tesseract_scene_graph/graph.h>
 
 namespace tesseract_environment
 {
@@ -43,6 +44,11 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   virtual ~Environment() = default;
+
+  virtual bool init(tesseract_scene_graph::SceneGraphPtr scene_graph) = 0;
+
+  virtual tesseract_scene_graph::SceneGraphConstPtr getSceneGraph() const = 0;
+
   /** @brief Give the environment a name */
   virtual void setName(const std::string& name) = 0;
 
@@ -193,12 +199,6 @@ public:
    */
   virtual const Eigen::Isometry3d& getLinkTransform(const std::string& link_name) const = 0;
 
-  /** @brief Get the allowed collision matrix */
-  virtual AllowedCollisionMatrixConstPtr getAllowedCollisionMatrix() const = 0;
-
-  /** @brief Get the allowed collision matrix */
-  virtual AllowedCollisionMatrixPtr getAllowedCollisionMatrixNonConst() = 0;
-
   /** @brief Get the active function for determining if two links are allowed to be in collision */
   virtual tesseract_collision::IsContactAllowedFn getIsContactAllowedFn() const = 0;
 
@@ -231,54 +231,6 @@ public:
 
 typedef std::shared_ptr<Environment> EnvironmentPtr;
 typedef std::shared_ptr<const Environment> EnvironmentConstPtr;
-
-/**
- * @brief continuousCollisionCheckTrajectory Should perform a continuous collision check over the trajectory
- * and stop on first collision.
- * @param manager A continuous contact manager
- * @param env The environment
- * @param joint_names JointNames corresponding to the values in traj (must be in same order)
- * @param link_names Name of the links to calculate collision data for.
- * @param traj The joint values at each time step
- * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
- * @param first_only Indicates if it should return on first contact
- * @return True if collision was found, otherwise false.
- */
-//inline bool continuousCollisionCheckTrajectory(tesseract_collision::ContinuousContactManager& manager,
-//                                               const tesseract_environment::Environment& env,
-//                                               const tesseract_kinematics::ForwardKinematics& kin,
-//                                               const Eigen::Ref<const TrajArray>& traj,
-//                                               std::vector<tesseract_collision::ContactResultMap>& contacts,
-//                                               bool first_only = true)
-//{
-//  bool found = false;
-//  const std::vector<std::string>& joint_names = kin.getJointNames();
-//  const std::vector<std::string>& link_names = kin.getLinkNames();
-
-//  contacts.reserve(static_cast<size_t>(traj.rows() - 1));
-//  for (int iStep = 0; iStep < traj.rows() - 1; ++iStep)
-//  {
-//    tesseract_collision::ContactResultMap collisions;
-
-//    EnvStatePtr state0 = env.getState(joint_names, traj.row(iStep));
-//    EnvStatePtr state1 = env.getState(joint_names, traj.row(iStep + 1));
-
-//    for (const auto& link_name : link_names)
-//      manager.setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
-
-//    manager.contactTest(collisions, tesseract_collision::ContactTestTypes::FIRST);
-
-//    if (collisions.size() > 0)
-//      found = true;
-
-//    contacts.push_back(collisions);
-
-//    if (found && first_only)
-//      break;
-//  }
-
-//  return found;
-//}
 
 }  // namespace tesseract_environment
 
