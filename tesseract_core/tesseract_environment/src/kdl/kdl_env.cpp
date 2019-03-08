@@ -32,6 +32,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <octomap/octomap.h>
 #include <console_bridge/console.h>
 #include <tesseract_scene_graph/parser/kdl_parser.h>
+#include <tesseract_collision/core/common.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #include "tesseract_environment/kdl/kdl_env.h"
@@ -115,10 +116,10 @@ void KDLEnv::setState(const std::unordered_map<std::string, double>& joints)
     }
   }
 
-  calculateTransforms(
-      current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
-  discrete_manager_->setCollisionObjectsTransform(current_state_->transforms);
-  continuous_manager_->setCollisionObjectsTransform(current_state_->transforms);
+  calculateTransforms(current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
+
+  if (discrete_manager_ != nullptr) discrete_manager_->setCollisionObjectsTransform(current_state_->transforms);
+  if (continuous_manager_ != nullptr) continuous_manager_->setCollisionObjectsTransform(current_state_->transforms);
 }
 
 void KDLEnv::setState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values)
@@ -131,10 +132,10 @@ void KDLEnv::setState(const std::vector<std::string>& joint_names, const std::ve
     }
   }
 
-  calculateTransforms(
-      current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
-  discrete_manager_->setCollisionObjectsTransform(current_state_->transforms);
-  continuous_manager_->setCollisionObjectsTransform(current_state_->transforms);
+  calculateTransforms(current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
+
+  if (discrete_manager_ != nullptr) discrete_manager_->setCollisionObjectsTransform(current_state_->transforms);
+  if (continuous_manager_ != nullptr) continuous_manager_->setCollisionObjectsTransform(current_state_->transforms);
 }
 
 void KDLEnv::setState(const std::vector<std::string>& joint_names,
@@ -148,18 +149,21 @@ void KDLEnv::setState(const std::vector<std::string>& joint_names,
     }
   }
 
-  calculateTransforms(
-      current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
-  discrete_manager_->setCollisionObjectsTransform(current_state_->transforms);
-  for (const auto& tf : current_state_->transforms)
+  calculateTransforms(current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
+
+  if (discrete_manager_ != nullptr) discrete_manager_->setCollisionObjectsTransform(current_state_->transforms);
+  if (continuous_manager_ != nullptr)
   {
-    if (std::find(active_link_names_.begin(), active_link_names_.end(), tf.first) != active_link_names_.end())
+    for (const auto& tf : current_state_->transforms)
     {
-      continuous_manager_->setCollisionObjectsTransform(tf.first, tf.second, tf.second);
-    }
-    else
-    {
-      continuous_manager_->setCollisionObjectsTransform(tf.first, tf.second);
+      if (std::find(active_link_names_.begin(), active_link_names_.end(), tf.first) != active_link_names_.end())
+      {
+        continuous_manager_->setCollisionObjectsTransform(tf.first, tf.second, tf.second);
+      }
+      else
+      {
+        continuous_manager_->setCollisionObjectsTransform(tf.first, tf.second);
+      }
     }
   }
 }
@@ -342,14 +346,6 @@ void KDLEnv::calculateTransforms(TransformMap& transforms,
   calculateTransformsHelper(transforms, q_in, it, parent_frame);
 }
 
-bool KDLEnv::defaultIsContactAllowedFn(const std::string& link_name1, const std::string& link_name2) const
-{
-  if (allowed_collision_matrix_ != nullptr && allowed_collision_matrix_->isCollisionAllowed(link_name1, link_name2))
-    return true;
-
-  return false;
-}
-
 bool KDLEnv::setDiscreteContactManager(tesseract_collision::DiscreteContactManagerConstPtr manager)
 {
   if (manager == nullptr)
@@ -370,7 +366,19 @@ bool KDLEnv::setDiscreteContactManager(tesseract_collision::DiscreteContactManag
         tesseract_collision::VectorIsometry3d shape_poses;
         for (const auto& c : link->collision)
         {
-          shapes.push_back(c->geometry);
+          // Need to force convex hull TODO: Remove after URDF dom has been updated.
+          if (c->geometry->getType() == tesseract_geometry::MESH)
+          {
+            // This is required because convex hull cannot have multiple faces on the same plane.
+            std::shared_ptr<VectorVector3d> ch_verticies(new VectorVector3d());
+            std::shared_ptr<Eigen::VectorXi> ch_faces(new Eigen::VectorXi());
+            int ch_num_faces = tesseract_collision::createConvexHull(*ch_verticies, *ch_faces,*(std::static_pointer_cast<const tesseract_geometry::Mesh>(c->geometry)->getVertices()));
+            shapes.push_back(tesseract_geometry::ConvexMeshPtr(new tesseract_geometry::ConvexMesh(ch_verticies, ch_faces, ch_num_faces)));
+          }
+          else
+          {
+            shapes.push_back(c->geometry);
+          }
           shape_poses.push_back(c->origin);
         }
         discrete_manager_->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
@@ -404,7 +412,19 @@ bool KDLEnv::setContinuousContactManager(tesseract_collision::ContinuousContactM
         tesseract_collision::VectorIsometry3d shape_poses;
         for (const auto& c : link->collision)
         {
-          shapes.push_back(c->geometry);
+          // Need to force convex hull TODO: Remove after URDF dom has been updated.
+          if (c->geometry->getType() == tesseract_geometry::MESH)
+          {
+            // This is required because convex hull cannot have multiple faces on the same plane.
+            std::shared_ptr<VectorVector3d> ch_verticies(new VectorVector3d());
+            std::shared_ptr<Eigen::VectorXi> ch_faces(new Eigen::VectorXi());
+            int ch_num_faces = tesseract_collision::createConvexHull(*ch_verticies, *ch_faces,*(std::static_pointer_cast<const tesseract_geometry::Mesh>(c->geometry)->getVertices()));
+            shapes.push_back(tesseract_geometry::ConvexMeshPtr(new tesseract_geometry::ConvexMesh(ch_verticies, ch_faces, ch_num_faces)));
+          }
+          else
+          {
+            shapes.push_back(c->geometry);
+          }
           shape_poses.push_back(c->origin);
         }
         continuous_manager_->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
