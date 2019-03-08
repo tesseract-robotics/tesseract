@@ -31,7 +31,11 @@ TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <console_bridge/console.h>
+#include <tesseract_scene_graph/parser/srdf_parser.h>
+#include <tesseract_scene_graph/graph.h>
 TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
+
+#include <tesseract_kinematics/core/forward_kinematics.h>
 
 namespace tesseract_kinematics
 {
@@ -162,5 +166,67 @@ inline static bool dampedPInv(const Eigen::Ref<const Eigen::MatrixXd>& A,
   P = V * inv_Sv.asDiagonal() * U.transpose();
   return true;
 }
+
+/**
+ * @brief Create a kinematics map from the srdf model
+ * @param scene_graph Tesseract Scene Graph
+ * @param srdf_model Tesseract SRDF Model
+ * @return Kinematics map between group name and kinematics object
+ */
+template<class Chain_T, class Tree_T>
+ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::SceneGraphConstPtr& scene_graph,
+                                                 const tesseract_scene_graph::SRDFModel& srdf_model)
+{
+  ForwardKinematicsConstPtrMap manipulators;
+  for (const auto& group : srdf_model.getGroups())
+  {
+    if (!group.chains_.empty())
+    {
+      assert(group.chains_.size() == 1);
+      if (manipulators.find(group.name_) == manipulators.end())
+      {
+        std::shared_ptr<Chain_T> manip(new Chain_T());
+        if (!manip->init(scene_graph, group.chains_.front().first, group.chains_.front().second, group.name_))
+        {
+          CONSOLE_BRIDGE_logError("Failed to create kinematic chaing for manipulator %s!", group.name_);
+        }
+        else
+        {
+           manipulators.insert(std::make_pair(group.name_, manip));
+        }
+      }
+    }
+
+    if (!group.joints_.empty())
+    {
+      if (manipulators.find(group.name_) == manipulators.end())
+      {
+        std::shared_ptr<Tree_T> manip(new Tree_T());
+        if (!manip->init(scene_graph, group.joints_, group.name_))
+        {
+          CONSOLE_BRIDGE_logError("Failed to create kinematic chaing for manipulator %s!", group.name_);
+        }
+        else
+        {
+           manipulators.insert(std::make_pair(group.name_, manip));
+        }
+      }
+    }
+
+    // TODO: Need to add other options
+    if (!group.links_.empty())
+    {
+      CONSOLE_BRIDGE_logError("Link groups are currently not supported!");
+    }
+
+    if (!group.subgroups_.empty())
+    {
+      CONSOLE_BRIDGE_logError("Subgroups are currently not supported!");
+    }
+  }
+
+  return manipulators;
+}
+
 }
 #endif // TESSERACT_KINEMATICS_UTILS_H

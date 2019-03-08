@@ -34,6 +34,7 @@ TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <iostream>
 #include <memory>
+#include <unordered_map>
 TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
@@ -125,10 +126,12 @@ public:
   /** @brief Name of the maniputlator */
   virtual const std::string& getName() const = 0;
 
-};  // class BasicKin
+};
 
 typedef std::shared_ptr<ForwardKinematics> ForwardKinematicsPtr;
 typedef std::shared_ptr<const ForwardKinematics> ForwardKinematicsConstPtr;
+typedef std::unordered_map<std::string, tesseract_kinematics::ForwardKinematicsPtr> ForwardKinematicsPtrMap;
+typedef std::unordered_map<std::string, tesseract_kinematics::ForwardKinematicsConstPtr> ForwardKinematicsConstPtrMap;
 }  // namespace tesseract_kinematics
 
 #endif  // TESSERACT_KINEMATICS_FORWARD_KINEMATICS_H
