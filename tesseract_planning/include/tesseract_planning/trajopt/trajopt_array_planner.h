@@ -51,7 +51,6 @@ struct TrajOptArrayPlannerConfig
 
   TrajOptArrayPlannerConfig() {}
   virtual ~TrajOptArrayPlannerConfig() {}
-
   /** @brief Vector of target waypoints given as constraints to the optimization */
   std::vector<WaypointPtr> target_waypoints_;
 
@@ -114,7 +113,6 @@ public:
 
   // TODO: Not sure what to do here, but this is defined in the base as virtual
   bool solve(PlannerResponse& response) override { return false; };
-
   /**
    * @brief Sets up the TrajOpt problem then solves using TrajOptPlanner
    *

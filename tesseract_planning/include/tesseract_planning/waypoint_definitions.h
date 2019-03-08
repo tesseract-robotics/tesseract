@@ -46,27 +46,21 @@ class Waypoint
 public:
   Waypoint() {}
   virtual ~Waypoint() {}
-
   /** @brief Returns the type of waypoint so that it may be cast back to the derived type */
   WaypointType getType() const { return waypoint_type_; }
-
 protected:
   WaypointType waypoint_type_;
 };
-
 /** @brief Defines a joint position waypoint for use with Tesseract Planners*/
 class JointWaypoint : public Waypoint
 {
 public:
-  //TODO: constructor that takes joint position vector
+  // TODO: constructor that takes joint position vector
   JointWaypoint() { waypoint_type_ = JOINT_WAYPOINT; }
   virtual ~JointWaypoint() {}
-
   /** Stores the joint values associated with this waypoint (radians) */
   std::vector<double> joint_positions_;
-
 };
-
 /** @brief Defines a cartesian position waypoint for use with Tesseract Planners*/
 class CartesianWaypoint : public Waypoint
 {
@@ -75,7 +69,6 @@ public:
 
   CartesianWaypoint() { waypoint_type_ = CARTESIAN_WAYPOINT; }
   virtual ~CartesianWaypoint() {}
-
   Eigen::Isometry3d cartesian_position_;
 
   Eigen::Vector3d getPosition() { return cartesian_position_.translation(); }  // TODO
@@ -84,7 +77,6 @@ public:
     Eigen::Quaterniond q(cartesian_position_.rotation());
     return Eigen::Vector4d(q.x(), q.y(), q.z(), q.w());
   }
-
 };
 
 typedef std::shared_ptr<Waypoint> WaypointPtr;

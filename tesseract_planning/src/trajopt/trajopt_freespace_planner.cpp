@@ -63,7 +63,7 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
 
   // Populate Basic Info
   pci.basic_info.n_steps = config.num_steps_;
-  pci.basic_info.manip = manipulator_;
+  pci.basic_info.manip = config.manipulator_;
   pci.basic_info.start_fixed = false;
   pci.basic_info.use_time = false;
 

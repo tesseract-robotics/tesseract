@@ -53,15 +53,12 @@ struct TrajOptFreespacePlannerConfig
 
   TrajOptFreespacePlannerConfig() {}
   virtual ~TrajOptFreespacePlannerConfig() {}
-
   /** @brief Determines the constraint placed at the start of the trajectory */
   WaypointPtr start_waypoint_;
   /** @brief Determines the constraint placed at the end of the trajectory */
   WaypointPtr end_waypoint_;
-
   // TODO: These are waypoints the planner must hit in between
   std::vector<Waypoint> intermediate_waypoints;
-
   /** @brief The total number of timesteps used in the freespace motion. Default: 20 */
   int num_steps_ = 20;
 
@@ -118,7 +115,6 @@ public:
 
   // TODO: Not sure what to do here, but this is defined in the base as virtual
   bool solve(PlannerResponse& response) override { return false; };
-
   /**
    * @brief Sets up the TrajOpt problem then solves using TrajOptPlanner. It is intended to simplify setting up and
    * solving freespace motion problems.
@@ -133,7 +129,7 @@ public:
    * @param config Configures the freespace planner
    * @return true if optimization complete
    */
-  bool solve(PlannerResponse& response,  TrajOptFreespacePlannerConfig& config);
+  bool solve(PlannerResponse& response, TrajOptFreespacePlannerConfig& config);
 
   bool terminate() override;
 
