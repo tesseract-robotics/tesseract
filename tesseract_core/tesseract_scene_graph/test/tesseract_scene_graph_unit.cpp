@@ -11,6 +11,7 @@ TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/parser/mesh_parser.h>
 #include <tesseract_scene_graph/parser/urdf_parser.h>
+#include <tesseract_scene_graph/parser/srdf_parser.h>
 #include <tesseract_scene_graph/parser/kdl_parser.h>
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
@@ -61,6 +62,10 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
   std::vector<std::string> adjacent_links = g.getAdjacentLinkNames("link_3");
   EXPECT_TRUE(adjacent_links.size() == 1);
   EXPECT_TRUE(adjacent_links[0] == "link_4");
+
+  std::vector<std::string> inv_adjacent_links = g.getInvAdjacentLinkNames("link_3");
+  EXPECT_TRUE(inv_adjacent_links.size() == 1);
+  EXPECT_TRUE(inv_adjacent_links[0] == "link_2");
 
   // Save Graph
   g.saveDOT("/tmp/graph_acyclic_tree_example.dot");
@@ -244,6 +249,20 @@ TEST(TesseractSceneGraphUnit, LoadURDFUnit)
   EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_a2") != path.second.end());
   EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_a3") != path.second.end());
   EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_a4") != path.second.end());
+}
+
+TEST(TesseractSceneGraphUnit, LoadSRDFUnit)
+{
+  using namespace tesseract_scene_graph;
+
+  std::string urdf_file = std::string(DATA_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
+  std::string srdf_file = std::string(DATA_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
+
+  ResourceLocatorFn locator = locateResource;
+  SceneGraphPtr g = parseURDF(urdf_file, locator);
+
+  SRDFModel srdf;
+  EXPECT_TRUE(srdf.initFile(*g, srdf_file));
 }
 
 void printKDLTree(const KDL::SegmentMap::const_iterator & link, const std::string & prefix)

@@ -9,6 +9,8 @@ add_compile_options(
   -Wconversion
   -Wsign-conversion)
 
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
+
 find_package(catkin REQUIRED COMPONENTS tesseract_geometry)
 
 set(Boost_USE_STATIC_LIBS OFF)
@@ -21,6 +23,7 @@ find_package(urdfdom REQUIRED)
 find_package(urdfdom_headers REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(orocos_kdl REQUIRED)
+find_package(TinyXML REQUIRED)
 
 find_package(ASSIMP QUIET)
 if (NOT ASSIMP_FOUND)
@@ -39,6 +42,7 @@ catkin_package(
     ${urdfdom_headers_INCLUDE_DIRS}
     ${console_bridge_INCLUDE_DIRS}
     ${orocos_kdl_INCLUDE_DIRS}
+    ${TinyXML_INCLUDE_DIRS}
   LIBRARIES
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
@@ -47,6 +51,7 @@ catkin_package(
     ${console_bridge_LIBRARIES}
     ${ASSIMP_LIBRARIES}
     ${orocos_kdl_LIBRARIES}
+    ${TinyXML_LIBRARIES}
   CATKIN_DEPENDS
     tesseract_geometry
   DEPENDS
@@ -54,6 +59,7 @@ catkin_package(
     urdfdom
     urdfdom_headers
     console_bridge
+    TinyXML
 #    ASSIMP
 )
 
@@ -67,6 +73,7 @@ include_directories(
   SYSTEM ${console_bridge_INCLUDE_DIRS}
   SYSTEM ${ASSIMP_INCLUDE_DIRS}
   SYSTEM ${orocos_kdl_INCLUDE_DIRS}
+  SYSTEM ${TinyXML_INCLUDE_DIRS}
 )
 
 # Mark cpp header files for installation
@@ -75,6 +82,9 @@ install(DIRECTORY include/${PROJECT_NAME}/
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
 )
+
+install(DIRECTORY cmake
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake)
 
 if (CATKIN_ENABLE_TESTING)
 
@@ -85,7 +95,7 @@ if (CATKIN_ENABLE_TESTING)
   include_directories(${catkin_INCLUDE_DIRS})
 
   catkin_add_gtest(${PROJECT_NAME}_unit test/tesseract_scene_graph_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_unit ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${ASSIMP_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${orocos_kdl_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME}_unit ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${ASSIMP_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${orocos_kdl_LIBRARIES} ${TinyXML_LIBRARIES})
   target_compile_options(${PROJECT_NAME}_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
 endif()

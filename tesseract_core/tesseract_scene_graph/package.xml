@@ -14,6 +14,7 @@
   <depend>liburdfdom-headers-dev</depend>
   <depend>libconsole-bridge-dev</depend>
   <depend>assimp-dev</depend>
+  <depend>libtinyxml-dev</depend>
 
   <test_depend>roslib</test_depend>
 
