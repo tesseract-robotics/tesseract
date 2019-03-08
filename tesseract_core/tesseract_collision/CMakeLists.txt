@@ -30,6 +30,7 @@ catkin_package(
     ${LIBFCL_LIBRARIES}
     ${console_bridge_LIBRARIES}
   CATKIN_DEPENDS
+    tesseract_geometry
     bullet3_ros
   DEPENDS
     EIGEN3
