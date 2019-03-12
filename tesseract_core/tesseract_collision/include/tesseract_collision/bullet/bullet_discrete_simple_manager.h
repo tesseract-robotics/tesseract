@@ -53,7 +53,7 @@ class BulletDiscreteSimpleManager : public DiscreteContactManager
 public:
   BulletDiscreteSimpleManager();
 
-  DiscreteContactManagerPtr clone() const override;
+  DiscreteContactManagerPtr clone(bool empty = false) const override;
 
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,

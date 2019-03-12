@@ -69,9 +69,12 @@ BulletDiscreteBVHManager::~BulletDiscreteBVHManager()
     removeCollisionObjectFromBroadphase(co.second, broadphase_, dispatcher_);
 }
 
-DiscreteContactManagerPtr BulletDiscreteBVHManager::clone() const
+DiscreteContactManagerPtr BulletDiscreteBVHManager::clone(bool empty) const
 {
   BulletDiscreteBVHManagerPtr manager(new BulletDiscreteBVHManager());
+
+  if (empty)
+    return manager;
 
   for (const auto& cow : link2cow_)
   {
