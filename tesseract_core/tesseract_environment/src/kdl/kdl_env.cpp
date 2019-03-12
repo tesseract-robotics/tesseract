@@ -43,6 +43,63 @@ namespace tesseract_environment
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+void KDLEnv::createKDETree()
+{
+  initialized_ = false;
+
+  kdl_tree_.reset(new KDL::Tree());
+  if (!tesseract_scene_graph::parseSceneGraph(*scene_graph_, *kdl_tree_))
+  {
+    CONSOLE_BRIDGE_logError("Failed to parse KDL tree from Scene Graph");
+    return;
+  }
+
+  initialized_ = true;
+
+  if (initialized_)
+  {
+    std::vector<tesseract_scene_graph::LinkConstPtr> links = scene_graph_->getLinks();
+    link_names_.clear();
+    link_names_.reserve(links.size());
+    for (const auto& link : links)
+      link_names_.push_back(link->getName());
+
+    std::vector<tesseract_scene_graph::JointConstPtr> joints = scene_graph_->getJoints();
+    joint_names_.clear();
+    joint_names_.reserve(joints.size());
+    for (const auto& joint : joints)
+      joint_names_.push_back(joint->getName());
+
+    current_state_ = EnvStatePtr(new EnvState());
+    kdl_jnt_array_.resize(kdl_tree_->getNrOfJoints());
+    active_joint_names_.resize(kdl_tree_->getNrOfJoints());
+    size_t j = 0;
+    for (const auto& seg : kdl_tree_->getSegments())
+    {
+      const KDL::Joint& jnt = seg.second.segment.getJoint();
+
+      if (jnt.getType() == KDL::Joint::None)
+        continue;
+
+      active_joint_names_[j] = jnt.getName();
+      joint_to_qnr_.insert(std::make_pair(jnt.getName(), seg.second.q_nr));
+      kdl_jnt_array_(seg.second.q_nr) = 0.0;
+      current_state_->joints.insert(std::make_pair(jnt.getName(), 0.0));
+
+      j++;
+    }
+
+    calculateTransforms(current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
+  }
+
+  // Now get the active link names
+  active_link_names_.clear();
+  getActiveLinkNamesRecursive(active_link_names_, scene_graph_, scene_graph_->getRoot(), false);
+
+  if (discrete_manager_ != nullptr) discrete_manager_->setActiveCollisionObjects(active_link_names_);
+  if (continuous_manager_ != nullptr) continuous_manager_->setActiveCollisionObjects(active_link_names_);
+}
+
 bool KDLEnv::init(tesseract_scene_graph::SceneGraphPtr scene_graph)
 {
   initialized_ = false;
@@ -51,7 +108,7 @@ bool KDLEnv::init(tesseract_scene_graph::SceneGraphPtr scene_graph)
   if (scene_graph_ == nullptr)
   {
     CONSOLE_BRIDGE_logError("Null pointer to Scene Graph");
-    return initialized_;
+    return false;
   }
 
   if (!scene_graph_->getLink(scene_graph_->getRoot()))
@@ -60,46 +117,11 @@ bool KDLEnv::init(tesseract_scene_graph::SceneGraphPtr scene_graph)
     return false;
   }
 
-  kdl_tree_.reset(new KDL::Tree());
-  if (!tesseract_scene_graph::parseSceneGraph(*scene_graph_, *kdl_tree_))
-  {
-    CONSOLE_BRIDGE_logError("Failed to parse KDL tree from Scene Graph");
-    return false;
-  }
+  // This rebuilds the KDTre and updates link_names, joint_names, and active links
+  createKDETree();
 
-  initialized_ = true;
-
-  if (initialized_)
-  {
-    std::vector<tesseract_scene_graph::LinkConstPtr> links = scene_graph_->getLinks();
-    link_names_.reserve(links.size());
-    for (const auto& link : links)
-      link_names_.push_back(link->getName());
-
-    current_state_ = EnvStatePtr(new EnvState());
-    kdl_jnt_array_.resize(kdl_tree_->getNrOfJoints());
-    joint_names_.resize(kdl_tree_->getNrOfJoints());
-    size_t j = 0;
-    for (const auto& seg : kdl_tree_->getSegments())
-    {
-      const KDL::Joint& jnt = seg.second.segment.getJoint();
-
-      if (jnt.getType() == KDL::Joint::None)
-        continue;
-      joint_names_[j] = jnt.getName();
-      joint_to_qnr_.insert(std::make_pair(jnt.getName(), seg.second.q_nr));
-      kdl_jnt_array_(seg.second.q_nr) = 0.0;
-      current_state_->joints.insert(std::make_pair(jnt.getName(), 0.0));
-
-      j++;
-    }
-
-    calculateTransforms(
-        current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
-  }
-
-  // Now get the active link names
-  getActiveLinkNamesRecursive(active_link_names_, scene_graph_, scene_graph_->getRoot(), false);
+  if (discrete_manager_ != nullptr) setDiscreteContactManager(discrete_manager_);
+  if (continuous_manager_ != nullptr) setContinuousContactManager(continuous_manager_);
 
   return initialized_;
 }
@@ -225,25 +247,103 @@ EnvStatePtr KDLEnv::getState(const std::vector<std::string>& joint_names,
 
 bool KDLEnv::addLink(tesseract_scene_graph::LinkPtr link)
 {
-  assert(false); // TODO Need to update collision environment
-  return scene_graph_->addLink(link);
+  std::string joint_name = "joint_" + link->getName();
+  tesseract_scene_graph::JointPtr joint(new tesseract_scene_graph::Joint(joint_name));
+  joint->type = tesseract_scene_graph::JointType::FIXED;
+  joint->child_link_name = link->getName();
+  joint->parent_link_name = getRootLinkName();
+
+  return addLink(link, joint);
+}
+
+bool KDLEnv::addLink(tesseract_scene_graph::LinkPtr link, tesseract_scene_graph::JointPtr joint)
+{
+  if (scene_graph_->getLink(link->getName()) != nullptr)
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to add link (%s) with same name as an existing link.", link->getName().c_str());
+    return false;
+  }
+
+  if (scene_graph_->getJoint(joint->getName()) != nullptr)
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to add joint (%s) with same name as an existing joint.", joint->getName().c_str());
+    return false;
+  }
+
+  if (!scene_graph_->addLink(link))
+    return false;
+
+  if (!scene_graph_->addJoint(joint))
+    return false;
+
+  if (link->collision.size() > 0)
+  {
+    tesseract_collision::CollisionShapesConst shapes;
+    tesseract_collision::VectorIsometry3d shape_poses;
+    getCollisionObject(shapes, shape_poses, link);
+
+    if (discrete_manager_ != nullptr) discrete_manager_->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
+    if (continuous_manager_ != nullptr) continuous_manager_->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
+  }
+
+  // This rebuilds the KDTree and updates link_names, joint_names, and active links
+  createKDETree();
+
+  return initialized_;
 }
 
 bool KDLEnv::removeLink(const std::string& name)
 {
-  assert(false); // TODO Need to loop through and remove children
-  return scene_graph_->removeLink(name);
+  if (scene_graph_->getLink(name) == nullptr)
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to remove link (%s) that does not exist", name.c_str());
+    return false;
+  }
+  std::vector<tesseract_scene_graph::JointConstPtr> joints = scene_graph_->getInboundJoints(name);
+  assert(joints.size() <= 1);
+
+  // get child link names to remove
+  std::vector<std::string> child_link_names = scene_graph_->getChildLinkNames(name);
+
+//  if (joints.size() == 1)
+//    scene_graph_->removeJoint(joints[0]->getName());
+
+  scene_graph_->removeLink(name);
+  if (discrete_manager_ != nullptr) discrete_manager_->removeCollisionObject(name);
+  if (continuous_manager_ != nullptr) continuous_manager_->removeCollisionObject(name);
+
+  for (const auto& link_name : child_link_names)
+  {
+//    joints = scene_graph_->getInboundJoints(link_name);
+//    assert(joints.size() == 1);
+
+//    scene_graph_->removeJoint(joints[0]->getName());
+    scene_graph_->removeLink(link_name);
+
+    if (discrete_manager_ != nullptr) discrete_manager_->removeCollisionObject(link_name);
+    if (continuous_manager_ != nullptr) continuous_manager_->removeCollisionObject(link_name);
+  }
+
+  // This rebuilds the KDTree and updates link_names, joint_names, and active links
+  createKDETree();
+
+  return initialized_;
 }
 
 bool KDLEnv::moveLink(tesseract_scene_graph::JointPtr joint)
 {
-  assert(false); // TODO Need to update joint to kdl array
   std::vector<tesseract_scene_graph::JointConstPtr> joints = scene_graph_->getInboundJoints(joint->child_link_name);
   assert(joints.size() == 1);
   if (!scene_graph_->removeJoint(joints[0]->getName()))
     return false;
 
-  return scene_graph_->addJoint(joint);
+  if (!scene_graph_->addJoint(joint))
+    return false;
+
+  // This rebuilds the KDTree and updates link_names, joint_names, and active links
+  createKDETree();
+
+  return initialized_;
 }
 
 tesseract_scene_graph::LinkConstPtr KDLEnv::getLink(const std::string& name) const
@@ -253,20 +353,67 @@ tesseract_scene_graph::LinkConstPtr KDLEnv::getLink(const std::string& name) con
 
 bool KDLEnv::addJoint(tesseract_scene_graph::JointPtr joint)
 {
-  assert(false); // TODO Need to update joint to kdl array
-  return scene_graph_->addJoint(joint);
+  if (!scene_graph_->addJoint(joint))
+    return false;
+
+  // This rebuilds the KDTree and updates link_names, joint_names, and active links
+  createKDETree();
+
+  return initialized_;
 }
 
 bool KDLEnv::removeJoint(const std::string& name)
 {
-  assert(false); // TODO Need to loop through and remove children and update joint to kdl array
-  return scene_graph_->removeJoint(name);
+  if (scene_graph_->getJoint(name) == nullptr)
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to remove Joint (%s) that does not exist", name.c_str());
+    return false;
+  }
+
+  std::string target_link_name = scene_graph_->getTargetLink(name)->getName();
+
+  return removeLink(target_link_name);
+//  std::vector<tesseract_scene_graph::JointConstPtr> joints = scene_graph_->getInboundJoints(target_link_name);
+//  assert(joints.size() == 1);
+
+//  // get child link names to remove
+//  std::vector<std::string> child_link_names = scene_graph_->getChildLinkNames(name);
+
+//  scene_graph_->removeJoint(joints[0]->getName());
+//  scene_graph_->removeLink(target_link_name);
+//  if (discrete_manager_ != nullptr) discrete_manager_->removeCollisionObject(target_link_name);
+//  if (continuous_manager_ != nullptr) continuous_manager_->removeCollisionObject(target_link_name);
+
+//  for (const auto& link_name : child_link_names)
+//  {
+//    joints = scene_graph_->getInboundJoints(link_name);
+//    assert(joints.size() == 1);
+
+//    scene_graph_->removeJoint(joints[0]->getName());
+//    scene_graph_->removeLink(link_name);
+
+//    if (discrete_manager_ != nullptr) discrete_manager_->removeCollisionObject(link_name);
+//    if (continuous_manager_ != nullptr) continuous_manager_->removeCollisionObject(link_name);
+//  }
+
+//  // This rebuilds the KDTree and updates link_names, joint_names, and active links
+//  createKDETree();
+
+//  return initialized_;
 }
 
 bool KDLEnv::moveJoint(const std::string& joint_name, const std::string& parent_link)
 {
-  assert(false); // TODO Need to update joint to kdl array
-  return scene_graph_->moveJoint(joint_name, parent_link);
+  if (!scene_graph_->moveJoint(joint_name, parent_link))
+    return false;
+
+  if (!scene_graph_->moveJoint(joint_name, parent_link))
+    return true;
+
+  // This rebuilds the KDTree and updates link_names, joint_names, and active links
+  createKDETree();
+
+  return initialized_;
 }
 
 tesseract_scene_graph::JointConstPtr KDLEnv::getJoint(const std::string& name) const
@@ -277,10 +424,10 @@ tesseract_scene_graph::JointConstPtr KDLEnv::getJoint(const std::string& name) c
 Eigen::VectorXd KDLEnv::getCurrentJointValues() const
 {
   Eigen::VectorXd jv;
-  jv.resize(static_cast<long int>(joint_names_.size()));
-  for (auto j = 0u; j < joint_names_.size(); ++j)
+  jv.resize(static_cast<long int>(active_joint_names_.size()));
+  for (auto j = 0u; j < active_joint_names_.size(); ++j)
   {
-    jv(j) = current_state_->joints[joint_names_[j]];
+    jv(j) = current_state_->joints[active_joint_names_[j]];
   }
   return jv;
 }
@@ -346,6 +493,29 @@ void KDLEnv::calculateTransforms(TransformMap& transforms,
   calculateTransformsHelper(transforms, q_in, it, parent_frame);
 }
 
+void KDLEnv::getCollisionObject(tesseract_collision::CollisionShapesConst& shapes,
+                                tesseract_collision::VectorIsometry3d& shape_poses,
+                                const tesseract_scene_graph::LinkConstPtr& link)
+{
+  for (const auto& c : link->collision)
+  {
+    // Need to force convex hull TODO: Remove after URDF dom has been updated.
+    if (c->geometry->getType() == tesseract_geometry::MESH)
+    {
+      // This is required because convex hull cannot have multiple faces on the same plane.
+      std::shared_ptr<VectorVector3d> ch_verticies(new VectorVector3d());
+      std::shared_ptr<Eigen::VectorXi> ch_faces(new Eigen::VectorXi());
+      int ch_num_faces = tesseract_collision::createConvexHull(*ch_verticies, *ch_faces,*(std::static_pointer_cast<const tesseract_geometry::Mesh>(c->geometry)->getVertices()));
+      shapes.push_back(tesseract_geometry::ConvexMeshPtr(new tesseract_geometry::ConvexMesh(ch_verticies, ch_faces, ch_num_faces)));
+    }
+    else
+    {
+      shapes.push_back(c->geometry);
+    }
+    shape_poses.push_back(c->origin);
+  }
+}
+
 bool KDLEnv::setDiscreteContactManager(tesseract_collision::DiscreteContactManagerConstPtr manager)
 {
   if (manager == nullptr)
@@ -354,7 +524,7 @@ bool KDLEnv::setDiscreteContactManager(tesseract_collision::DiscreteContactManag
     return false;
   }
 
-  discrete_manager_ = manager->clone(); // TODO add a clone Empty
+  discrete_manager_ = manager->clone(true);
   discrete_manager_->setIsContactAllowedFn(is_contact_allowed_fn_);
   if (initialized_)
   {
@@ -364,23 +534,7 @@ bool KDLEnv::setDiscreteContactManager(tesseract_collision::DiscreteContactManag
       {
         tesseract_collision::CollisionShapesConst shapes;
         tesseract_collision::VectorIsometry3d shape_poses;
-        for (const auto& c : link->collision)
-        {
-          // Need to force convex hull TODO: Remove after URDF dom has been updated.
-          if (c->geometry->getType() == tesseract_geometry::MESH)
-          {
-            // This is required because convex hull cannot have multiple faces on the same plane.
-            std::shared_ptr<VectorVector3d> ch_verticies(new VectorVector3d());
-            std::shared_ptr<Eigen::VectorXi> ch_faces(new Eigen::VectorXi());
-            int ch_num_faces = tesseract_collision::createConvexHull(*ch_verticies, *ch_faces,*(std::static_pointer_cast<const tesseract_geometry::Mesh>(c->geometry)->getVertices()));
-            shapes.push_back(tesseract_geometry::ConvexMeshPtr(new tesseract_geometry::ConvexMesh(ch_verticies, ch_faces, ch_num_faces)));
-          }
-          else
-          {
-            shapes.push_back(c->geometry);
-          }
-          shape_poses.push_back(c->origin);
-        }
+        getCollisionObject(shapes, shape_poses, link);
         discrete_manager_->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
       }
     }
@@ -399,8 +553,7 @@ bool KDLEnv::setContinuousContactManager(tesseract_collision::ContinuousContactM
     return false;
   }
 
-
-  continuous_manager_ = manager->clone();
+  continuous_manager_ = manager->clone(true);
   continuous_manager_->setIsContactAllowedFn(is_contact_allowed_fn_);
   if (initialized_)
   {
@@ -410,23 +563,7 @@ bool KDLEnv::setContinuousContactManager(tesseract_collision::ContinuousContactM
       {
         tesseract_collision::CollisionShapesConst shapes;
         tesseract_collision::VectorIsometry3d shape_poses;
-        for (const auto& c : link->collision)
-        {
-          // Need to force convex hull TODO: Remove after URDF dom has been updated.
-          if (c->geometry->getType() == tesseract_geometry::MESH)
-          {
-            // This is required because convex hull cannot have multiple faces on the same plane.
-            std::shared_ptr<VectorVector3d> ch_verticies(new VectorVector3d());
-            std::shared_ptr<Eigen::VectorXi> ch_faces(new Eigen::VectorXi());
-            int ch_num_faces = tesseract_collision::createConvexHull(*ch_verticies, *ch_faces,*(std::static_pointer_cast<const tesseract_geometry::Mesh>(c->geometry)->getVertices()));
-            shapes.push_back(tesseract_geometry::ConvexMeshPtr(new tesseract_geometry::ConvexMesh(ch_verticies, ch_faces, ch_num_faces)));
-          }
-          else
-          {
-            shapes.push_back(c->geometry);
-          }
-          shape_poses.push_back(c->origin);
-        }
+        getCollisionObject(shapes, shape_poses, link);
         continuous_manager_->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
       }
     }

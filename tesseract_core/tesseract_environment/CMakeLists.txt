@@ -74,8 +74,8 @@ if (CATKIN_ENABLE_TESTING)
 
   add_definitions(-DDATA_DIR="${CMAKE_SOURCE_DIR}/test")
 
-  catkin_add_gtest(${PROJECT_NAME}_kdl_unit test/kdl_env_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_kdl_unit ${PROJECT_NAME}_kdl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${orocos_kdl_LIBRARIES})
-  target_compile_options(${PROJECT_NAME}_kdl_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+  catkin_add_gtest(${PROJECT_NAME}_unit test/tesseract_environment_unit.cpp)
+  target_link_libraries(${PROJECT_NAME}_unit ${PROJECT_NAME}_kdl ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${orocos_kdl_LIBRARIES})
+  target_compile_options(${PROJECT_NAME}_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
 endif()
