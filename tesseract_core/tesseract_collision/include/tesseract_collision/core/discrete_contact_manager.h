@@ -48,9 +48,11 @@ public:
    * @brief Clone the manager
    *
    * This is to be used for multi threaded application. A user should
-   * make a cone for each thread.
+   * make a clone for each thread.
+   *
+   * @param empty If true returns an instance of the derived class that is empty.
    */
-  virtual std::shared_ptr<DiscreteContactManager> clone() const = 0;
+  virtual std::shared_ptr<DiscreteContactManager> clone(bool empty = false) const = 0;
 
   /**
    * @brief Add a object to the checker

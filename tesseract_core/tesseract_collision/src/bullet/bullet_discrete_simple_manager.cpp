@@ -60,9 +60,12 @@ BulletDiscreteSimpleManager::BulletDiscreteSimpleManager()
   contact_distance_ = 0;
 }
 
-DiscreteContactManagerPtr BulletDiscreteSimpleManager::clone() const
+DiscreteContactManagerPtr BulletDiscreteSimpleManager::clone(bool empty) const
 {
   BulletDiscreteSimpleManagerPtr manager(new BulletDiscreteSimpleManager());
+
+  if (empty)
+    return manager;
 
   for (const auto& cow : link2cow_)
   {

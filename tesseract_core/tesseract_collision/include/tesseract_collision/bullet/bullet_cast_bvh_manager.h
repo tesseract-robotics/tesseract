@@ -56,7 +56,7 @@ public:
   BulletCastBVHManager();
   ~BulletCastBVHManager() override;
 
-  ContinuousContactManagerPtr clone() const override;
+  ContinuousContactManagerPtr clone(bool empty = false) const override;
 
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,
