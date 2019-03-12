@@ -14,6 +14,26 @@ TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/parser/srdf_parser.h>
 #include <tesseract_scene_graph/parser/kdl_parser.h>
 
+// getLinks and getJoint use an internal map so need to check against graph
+void checkSceneGraph(tesseract_scene_graph::SceneGraph& scene_graph)
+{
+  using namespace tesseract_scene_graph;
+
+  std::vector<LinkConstPtr> links = scene_graph.getLinks();
+  std::vector<LinkConstPtr> check_links;
+  SceneGraph::vertex_iterator i, iend;
+  for (boost::tie(i, iend) = boost::vertices(scene_graph); i != iend; ++i)
+    check_links.push_back(boost::get(boost::vertex_link, scene_graph)[*i]);
+
+  EXPECT_TRUE(links.size() == check_links.size());
+
+  for (const auto& l : links)
+  {
+    auto it = std::find_if(check_links.begin(), check_links.end(), [&](const LinkConstPtr& p) { return p.get() == l.get(); });
+    EXPECT_TRUE(it != check_links.end());
+  }
+}
+
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
 {
   using namespace tesseract_scene_graph;
@@ -67,6 +87,9 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
   EXPECT_TRUE(inv_adjacent_links.size() == 1);
   EXPECT_TRUE(inv_adjacent_links[0] == "link_2");
 
+  // Check Graph
+  checkSceneGraph(g);
+
   // Save Graph
   g.saveDOT("/tmp/graph_acyclic_tree_example.dot");
 
@@ -83,9 +106,16 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
   g.addLink(link_6);
   std::cout << "Free Link, Is Tree: " << g.isTree() << std::endl;
   EXPECT_FALSE(g.isTree());
+
+  // Check Graph
+  checkSceneGraph(g);
+
   g.removeLink(link_6->getName());
   std::cout << "Free Link Removed, Is Tree: " << g.isTree() << std::endl;
   EXPECT_TRUE(g.isTree());
+
+  // Check Graph
+  checkSceneGraph(g);
 
   JointPtr joint_5(new Joint("joint_5"));
   joint_5->parent_to_joint_origin_transform.translation()(1) = 1.25;
@@ -93,6 +123,9 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
   joint_5->child_link_name = "link_4";
   joint_5->type = JointType::CONTINUOUS;
   g.addJoint(joint_5);
+
+  // Check Graph
+  checkSceneGraph(g);
 
   // Save Graph
   g.saveDOT("/tmp/graph_acyclic_not_tree_example.dot");
@@ -111,6 +144,9 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
   joint_6->child_link_name = "link_1";
   joint_6->type = JointType::CONTINUOUS;
   g.addJoint(joint_6);
+
+  // Check Graph
+  checkSceneGraph(g);
 
   // Save Graph
   g.saveDOT("/tmp/graph_cyclic_not_tree_example.dot");
