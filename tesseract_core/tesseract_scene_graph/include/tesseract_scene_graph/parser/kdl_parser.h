@@ -227,7 +227,16 @@ inline bool parseSceneGraph(const SceneGraph& scene_graph, KDL::Tree& tree)
   }
 
   kdl_tree_builder builder(tree);
-  boost::depth_first_search(static_cast<const Graph&>(scene_graph), boost::visitor(builder));
+
+  std::map<SceneGraph::Vertex, size_t> index_map;
+  boost::associative_property_map<std::map<SceneGraph::Vertex, size_t>> prop_index_map(index_map);
+
+  int c = 0;
+  Graph::vertex_iterator i, iend;
+  for (boost::tie(i, iend) = boost::vertices(scene_graph); i != iend; ++i, ++c)
+    boost::put(prop_index_map, *i, c);
+
+  boost::depth_first_search(static_cast<const Graph&>(scene_graph), boost::visitor(builder).vertex_index_map(prop_index_map));
   return true;
 }
 
