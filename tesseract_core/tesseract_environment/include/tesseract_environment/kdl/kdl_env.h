@@ -68,6 +68,8 @@ public:
 
   bool addLink(tesseract_scene_graph::LinkPtr link) override;
 
+  bool addLink(tesseract_scene_graph::LinkPtr link, tesseract_scene_graph::JointPtr joint) override;
+
   bool removeLink(const std::string& name) override;
 
   bool moveLink(tesseract_scene_graph::JointPtr joint) override;
@@ -83,6 +85,7 @@ public:
   tesseract_scene_graph::JointConstPtr getJoint(const std::string& name) const override;
 
   std::vector<std::string> getJointNames() const override { return joint_names_; }
+  std::vector<std::string> getActiveJointNames() const override { return active_joint_names_; }
   Eigen::VectorXd getCurrentJointValues() const override;
 
   const std::string& getRootLinkName() const override { return kdl_tree_->getRootSegment()->second.segment.getName(); }
@@ -119,6 +122,7 @@ private:
   std::vector<std::string> link_names_;                        /**< A vector of link names */
   std::vector<std::string> joint_names_;                       /**< A vector of joint names */
   std::vector<std::string> active_link_names_;                 /**< A vector of active link names */
+  std::vector<std::string> active_joint_names_;                /**< A vector of active joint names */
   tesseract_collision::IsContactAllowedFn is_contact_allowed_fn_;       /**< The function used to determine if two objects are allowed in collision */
   tesseract_collision::DiscreteContactManagerPtr discrete_manager_;     /**< The discrete contact manager object */
   tesseract_collision::ContinuousContactManagerPtr continuous_manager_; /**< The continuous contact manager object */
@@ -135,7 +139,13 @@ private:
 
   bool setJointValuesHelper(KDL::JntArray& q, const std::string& joint_name, const double& joint_value) const;
 
-  std::string getManipulatorName(const std::vector<std::string>& joint_names) const;
+  void createKDETree();
+
+
+  void getCollisionObject(tesseract_collision::CollisionShapesConst& shapes,
+                          tesseract_collision::VectorIsometry3d& shape_poses,
+                          const tesseract_scene_graph::LinkConstPtr& link);
+
 };
 typedef std::shared_ptr<KDLEnv> KDLEnvPtr;
 typedef std::shared_ptr<const KDLEnv> KDLEnvConstPtr;

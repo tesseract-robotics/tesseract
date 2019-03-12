@@ -83,10 +83,21 @@ public:
 
   /**
    * @brief Adds a link to the environment
+   *
+   *        This method should attach the link to the root link with a fixed joint
+   *        with a joint name of joint_{link name}".
+   *
    * @param link The link to be added to the graph
    * @return Return False if a link with the same name allready exists, otherwise true
    */
   virtual bool addLink(tesseract_scene_graph::LinkPtr link) = 0;
+
+  /**
+   * @brief Adds a link to the environment
+   * @param link The link to be added to the graph
+   * @return Return False if a link with the same name allready exists, otherwise true
+   */
+  virtual bool addLink(tesseract_scene_graph::LinkPtr link, tesseract_scene_graph::JointPtr joint) = 0;
 
   /**
    * @brief Removes a link from the environment
@@ -158,9 +169,15 @@ public:
   virtual std::vector<std::string> getJointNames() const = 0;
 
   /**
+   * @brief Get a vector of active joint names in the environment
+   * @return A vector of active joint names
+   */
+  virtual std::vector<std::string> getActiveJointNames() const = 0;
+
+  /**
    * @brief Get the current state of the environment
    *
-   * Order should be the same as getJointNames()
+   * Order should be the same as getActiveJointNames()
    *
    * @return A vector of joint values
    */
