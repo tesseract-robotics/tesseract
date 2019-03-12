@@ -47,14 +47,10 @@ namespace boost {
     enum vertex_link_t { vertex_link };
     enum edge_joint_t { edge_joint };
     enum graph_root_t { graph_root };
-    enum graph_link_map_t { graph_link_map };
-    enum graph_joint_map_t { graph_joint_map };
 
     BOOST_INSTALL_PROPERTY(vertex, link);
     BOOST_INSTALL_PROPERTY(edge, joint);
     BOOST_INSTALL_PROPERTY(graph, root);
-    BOOST_INSTALL_PROPERTY(graph, link_map);
-    BOOST_INSTALL_PROPERTY(graph, joint_map);
 }
 
 namespace tesseract_scene_graph
@@ -62,23 +58,21 @@ namespace tesseract_scene_graph
 
 /** @brief Defines the boost graph property. */
 typedef boost::property<boost::graph_name_t, std::string,
-                        boost::property<boost::graph_root_t, std::string,
-                        boost::property<boost::graph_link_map_t, std::unordered_map<std::string, std::pair<LinkPtr, long unsigned>>,
-                        boost::property<boost::graph_joint_map_t, std::unordered_map<std::string, std::pair<JointPtr, boost::detail::edge_desc_impl<boost::bidirectional_tag, long unsigned>>>>>>> GraphProperty;
+                        boost::property<boost::graph_root_t, std::string>> GraphProperty;
 
 /** @brief Defines the boost graph vertex property. */
-typedef boost::property<boost::vertex_link_t, LinkConstPtr> VertexProperty;
+typedef boost::property<boost::vertex_link_t, LinkPtr> VertexProperty;
 
 /**
  * @brief EdgeProperty
  *
  * The edge_weight represents the distance between the two links
  */
-typedef boost::property<boost::edge_joint_t, JointConstPtr,
+typedef boost::property<boost::edge_joint_t, JointPtr,
         boost::property<boost::edge_weight_t, double> > EdgeProperty;
 
 
-typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS, VertexProperty, EdgeProperty, GraphProperty> Graph;
+typedef boost::adjacency_list<boost::listS, boost::listS, boost::bidirectionalS, VertexProperty, EdgeProperty, GraphProperty> Graph;
 class SceneGraph : public Graph
 {
 public:
@@ -118,10 +112,10 @@ public:
    */
   bool setRoot(const std::string& name)
   {
-    auto& map = get_property(static_cast<const Graph&>(*this), boost::graph_link_map);
-    auto found = map.find(name);
+//    auto& map = get_property(static_cast<const Graph&>(*this), boost::graph_link_map);
+    auto found = link_map_.find(name);
 
-    if (found == map.end())
+    if (found == link_map_.end())
       return false;
 
     boost::set_property(static_cast<Graph&>(*this), boost::graph_root, name);
@@ -145,15 +139,13 @@ public:
    */
   bool addLink(LinkPtr link)
   {
-    auto& map = boost::get_property(static_cast<Graph&>(*this), boost::graph_link_map);
-    auto found = map.find(link->getName());
-
-    if (found != map.end())
+    auto found = link_map_.find(link->getName());
+    if (found != link_map_.end())
       return false;
 
     VertexProperty info(link);
     Vertex v = boost::add_vertex(info, static_cast<Graph&>(*this));
-    map[link->getName()] = std::make_pair(link, v);
+    link_map_[link->getName()] = std::make_pair(link, v);
     return true;
   }
 
@@ -164,10 +156,8 @@ public:
    */
   LinkConstPtr getLink(const std::string& name) const
   {
-    auto& map = boost::get_property(static_cast<const Graph&>(*this), boost::graph_link_map);
-    auto found = map.find(name);
-
-    if (found == map.end())
+    auto found = link_map_.find(name);
+    if (found == link_map_.end())
       return nullptr;
 
     return found->second.first;
@@ -180,10 +170,8 @@ public:
   std::vector<LinkConstPtr> getLinks() const
   {
     std::vector<LinkConstPtr> links;
-    auto& map = boost::get_property(static_cast<const Graph&>(*this), boost::graph_link_map);
-
-    links.reserve(map.size());
-    for (const auto& link : map)
+    links.reserve(link_map_.size());
+    for (const auto& link : link_map_)
       links.push_back(link.second.first);
 
     return links;
@@ -191,19 +179,38 @@ public:
 
   /**
    * @brief Removes a link from the graph
+   *
+   * Note: this will remove all inbound and outbound edges
+   *
    * @param name Name of the link to be removed
    * @return Return False if a link does not exists, otherwise true
    */
   bool removeLink(const std::string& name)
   {
-    auto& map = boost::get_property(static_cast<Graph&>(*this), boost::graph_link_map);
-    auto found = map.find(name);
-
-    if (found == map.end())
+    auto found = link_map_.find(name);
+    if (found == link_map_.end())
+    {
+      CONSOLE_BRIDGE_logWarn("Tried to remove link (%s) from scene graph that does not exist.", name);
       return false;
+    }
 
+    // Needt to remove all inbound and outbound edges first
+    Vertex vertex = getVertex(name);
+    boost::clear_vertex(vertex, *this);
+
+    // rebuild joint_map
+    joint_map_.clear();
+    Graph::edge_iterator ei, ei_end;
+    for (boost::tie(ei, ei_end) = boost::edges(*this); ei != ei_end; ++ei)
+    {
+      Edge e = *ei;
+      JointPtr joint = boost::get(boost::edge_joint, *this)[e];
+      joint_map_[joint->getName()] = std::make_pair(joint, e);
+    }
+
+    // Now remove vertex
     boost::remove_vertex(found->second.second, static_cast<Graph&>(*this));
-    map.erase(name);
+    link_map_.erase(name);
 
     return true;
   }
@@ -215,20 +222,33 @@ public:
    */
   bool addJoint(JointPtr joint)
   {
-    auto& link_map = boost::get_property(static_cast<Graph&>(*this), boost::graph_link_map);
-    auto& joint_map = boost::get_property(static_cast<Graph&>(*this), boost::graph_joint_map);
-    auto parent = link_map.find(joint->parent_link_name);
-    auto child = link_map.find(joint->child_link_name);
-    auto found = joint_map.find(joint->getName());
+    auto parent = link_map_.find(joint->parent_link_name);
+    auto child = link_map_.find(joint->child_link_name);
+    auto found = joint_map_.find(joint->getName());
 
-    if ( (parent == link_map.end()) || (child == link_map.end()) || (found != joint_map.end()) )
+    if (parent == link_map_.end())
+    {
+      CONSOLE_BRIDGE_logWarn("Parent link (%s) does not exist in scene graph.", joint->parent_link_name);
       return false;
+    }
+
+    if (child == link_map_.end())
+    {
+      CONSOLE_BRIDGE_logWarn("Child link (%s) does not exist in scene graph.", joint->child_link_name);
+      return false;
+    }
+
+    if (found != joint_map_.end())
+    {
+      CONSOLE_BRIDGE_logWarn("Joint with name (%s) already exists in scene graph.", joint->getName());
+      return false;
+    }
 
     double d = joint->parent_to_joint_origin_transform.translation().norm();
     EdgeProperty info(joint, d);
     std::pair<Edge, bool> e = boost::add_edge(parent->second.second, child->second.second, info, static_cast<Graph&>(*this));
     assert(e.second == true);
-    joint_map[joint->getName()] = std::make_pair(joint, e.first);
+    joint_map_[joint->getName()] = std::make_pair(joint, e.first);
 
     return true;
   }
@@ -240,10 +260,8 @@ public:
    */
   JointConstPtr getJoint(const std::string& name) const
   {
-    auto& map = boost::get_property(static_cast<const Graph&>(*this), boost::graph_joint_map);
-    auto found = map.find(name);
-
-    if (found == map.end())
+    auto found = joint_map_.find(name);
+    if (found == joint_map_.end())
       return nullptr;
 
     return found->second.first;
@@ -256,14 +274,12 @@ public:
    */
   bool removeJoint(const std::string& name)
   {
-    auto& map = boost::get_property(static_cast<Graph&>(*this), boost::graph_joint_map);
-    auto found = map.find(name);
-
-    if (found == map.end())
+    auto found = joint_map_.find(name);
+    if (found == joint_map_.end())
       return false;
 
     boost::remove_edge(found->second.second, static_cast<Graph&>(*this));
-    map.erase(name);
+    joint_map_.erase(name);
 
     return true;
   }
@@ -276,11 +292,13 @@ public:
    */
   bool moveJoint(const std::string& name, const std::string& parent_link)
   {
-    auto& map = boost::get_property(static_cast<Graph&>(*this), boost::graph_joint_map);
-    auto found = map.find(name);
+    auto found = joint_map_.find(name);
 
-    if (found == map.end())
+    if (found == joint_map_.end())
+    {
+      CONSOLE_BRIDGE_logWarn("Tried to move Joint with name (%s) which does not exist in scene graph.", name);
       return false;
+    }
 
     JointPtr joint = found->second.first;
     if (!removeJoint(name))
@@ -297,10 +315,8 @@ public:
   std::vector<JointConstPtr> getJoints() const
   {
     std::vector<JointConstPtr> joints;
-    auto& map = boost::get_property(static_cast<const Graph&>(*this), boost::graph_joint_map);
-
-    joints.reserve(map.size());
-    for (const auto& joint : map)
+    joints.reserve(joint_map_.size());
+    for (const auto& joint : joint_map_)
       joints.push_back(joint.second.first);
 
     return joints;
@@ -366,9 +382,19 @@ public:
    */
   bool isAcyclic() const
   {
+    const Graph& graph = static_cast<const Graph&>(*this);
     bool acyclic = true;
+
+    std::map<Vertex, size_t> index_map;
+    boost::associative_property_map<std::map<Vertex, size_t>> prop_index_map(index_map);
+
+    int c = 0;
+    Graph::vertex_iterator i, iend;
+    for (boost::tie(i, iend) = boost::vertices(graph); i != iend; ++i, ++c)
+      boost::put(prop_index_map, *i, c);
+
     cycle_detector vis(acyclic);
-    boost::depth_first_search(static_cast<const Graph&>(*this), boost::visitor(vis));
+    boost::depth_first_search(static_cast<const Graph&>(*this), boost::visitor(vis).vertex_index_map(prop_index_map));
     return acyclic;
   }
 
@@ -378,9 +404,19 @@ public:
    */
   bool isTree() const
   {
+    const Graph& graph = static_cast<const Graph&>(*this);
     bool tree = true;
+
+    std::map<Vertex, size_t> index_map;
+    boost::associative_property_map<std::map<Vertex, size_t>> prop_index_map(index_map);
+
+    int c = 0;
+    Graph::vertex_iterator i, iend;
+    for (boost::tie(i, iend) = boost::vertices(graph); i != iend; ++i, ++c)
+      boost::put(prop_index_map, *i, c);
+
     tree_detector vis(tree);
-    boost::depth_first_search(static_cast<const Graph&>(*this), boost::visitor(vis));
+    boost::depth_first_search(static_cast<const Graph&>(*this), boost::visitor(vis).vertex_index_map(prop_index_map));
     return tree;
   }
 
@@ -404,11 +440,18 @@ public:
     return link_names;
   }
 
+  std::vector<std::string> getChildLinkNames(const std::string& name) const
+  {
+    std::vector<std::string> child_link_names;
+    getChildLinkNamesRecursive(child_link_names, name);
+    return child_link_names;
+  }
+
   /**
    * @brief Saves Graph as Graph Description Language (DOT)
    * @param path The file path
    */
-  void saveDOT(std::string path)
+  void saveDOT(std::string path) const
   {
     std::ofstream dot_file(path);
 
@@ -438,17 +481,37 @@ public:
   Path getShortestPath(const std::string& root, const std::string& tip)
   {
     const Graph& graph = static_cast<const Graph&>(*this);
-    std::vector<Vertex> p(boost::num_vertices(graph));
-    std::vector<double> d(boost::num_vertices(graph));
     Vertex s = getVertex(root);
-    dijkstra_shortest_paths(graph, s, boost::predecessor_map(&p[0]).distance_map(&d[0]));
+
+    std::map<Vertex, Vertex> predicessor_map;
+    boost::associative_property_map<std::map<Vertex, Vertex>> prop_predicessor_map(predicessor_map);
+
+    std::map<Vertex, double> distance_map;
+    boost::associative_property_map<std::map<Vertex, double>> prop_distance_map(distance_map);
+
+
+    std::map<Vertex, size_t> index_map;
+    boost::associative_property_map<std::map<Vertex, size_t>> prop_index_map(index_map);
+
+    int c = 0;
+    Graph::vertex_iterator i, iend;
+    for (boost::tie(i, iend) = boost::vertices(graph); i != iend; ++i, ++c)
+      boost::put(prop_index_map, *i, c);
+
+    std::map<Edge, double> weight_map;
+    boost::associative_property_map<std::map<Edge, double>> prop_weight_map(weight_map);
+    Graph::edge_iterator j, jend;
+    for (boost::tie(j, jend) = boost::edges(graph); j != jend; ++j)
+      boost::put(prop_weight_map, *j, boost::get(boost::edge_weight, graph)[*j]);
+
+    dijkstra_shortest_paths(graph, s, prop_predicessor_map, prop_distance_map, prop_weight_map, prop_index_map, std::less<double>(), boost::closed_plus<double>(),(std::numeric_limits<double>::max)(), 0, boost::default_dijkstra_visitor());
 
     std::vector<std::string> links;
     std::vector<std::string> joints;
     Vertex v = getVertex(tip); // We want to start at the destination and work our way back to the source
-    for(Vertex u = p[v]; // Start by setting 'u' to the destintaion node's predecessor
+    for(Vertex u = predicessor_map[v]; // Start by setting 'u' to the destintaion node's predecessor
         u != v; // Keep tracking the path until we get to the source
-        v = u, u = p[v]) // Set the current vertex to the current predecessor, and the predecessor to one level up
+        v = u, u = predicessor_map[v]) // Set the current vertex to the current predecessor, and the predecessor to one level up
     {
       links.push_back(boost::get(boost::vertex_link, graph)[v]->getName());
       joints.push_back(boost::get(boost::edge_joint, graph)[boost::edge(u, v, graph).first]->getName());
@@ -484,10 +547,8 @@ public:
    */
   Vertex getVertex(const std::string& name) const
   {
-    auto& map = boost::get_property(static_cast<const Graph&>(*this), boost::graph_link_map);
-    auto found = map.find(name);
-
-    if (found == map.end())
+    auto found = link_map_.find(name);
+    if (found == link_map_.end())
       return Vertex();
 
     return found->second.second;
@@ -500,16 +561,17 @@ public:
    */
   Edge getEdge(const std::string& name) const
   {
-    auto& map = boost::get_property(static_cast<const Graph&>(*this), boost::graph_joint_map);
-    auto found = map.find(name);
-
-    if (found == map.end())
+    auto found = joint_map_.find(name);
+    if (found == joint_map_.end())
       return Edge();
 
     return found->second.second;
   }
 
 private:
+
+  std::unordered_map<std::string, std::pair<LinkPtr, Vertex>> link_map_;
+  std::unordered_map<std::string, std::pair<JointPtr, Edge>> joint_map_;
 
   struct cycle_detector : public boost::dfs_visitor<>
   {
@@ -556,6 +618,15 @@ private:
   protected:
     bool& tree_;
   };
+
+  void getChildLinkNamesRecursive(std::vector<std::string>& child_links, const std::string& name) const
+  {
+    for (const auto& link_name : getAdjacentLinkNames(name))
+    {
+      child_links.push_back(link_name);
+      getChildLinkNamesRecursive(child_links, link_name);
+    }
+  }
 
 };
 typedef std::shared_ptr<SceneGraph> SceneGraphPtr;
