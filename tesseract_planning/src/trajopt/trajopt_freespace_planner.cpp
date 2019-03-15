@@ -74,7 +74,7 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
   auto start_type = config.start_waypoint_->getType();
   switch (start_type)
   {
-    case tesseract::tesseract_planning::JOINT_WAYPOINT:
+    case tesseract::tesseract_planning::WaypointType::JOINT_WAYPOINT:
     {
       JointWaypointPtr start_position = std::static_pointer_cast<JointWaypoint>(config.start_waypoint_);
       // Add initial joint position constraint
@@ -88,7 +88,7 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       pci.cnt_infos.push_back(jv);
       break;
     }
-    case tesseract::tesseract_planning::CARTESIAN_WAYPOINT:
+    case tesseract::tesseract_planning::WaypointType::CARTESIAN_WAYPOINT:
     {
       CartesianWaypointPtr start_pose = std::static_pointer_cast<CartesianWaypoint>(config.start_waypoint_);
       std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);
@@ -109,7 +109,7 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
   auto end_type = config.end_waypoint_->getType();
   switch (end_type)
   {
-    case tesseract::tesseract_planning::JOINT_WAYPOINT:
+    case tesseract::tesseract_planning::WaypointType::JOINT_WAYPOINT:
     {
       JointWaypointPtr end_position = std::static_pointer_cast<JointWaypoint>(config.end_waypoint_);
       // Add initial joint position constraint
@@ -122,7 +122,7 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       jv->term_type = TT_CNT;
       pci.cnt_infos.push_back(jv);
     }
-    case tesseract::tesseract_planning::CARTESIAN_WAYPOINT:
+    case tesseract::tesseract_planning::WaypointType::CARTESIAN_WAYPOINT:
     {
       CartesianWaypointPtr end_pose = std::static_pointer_cast<CartesianWaypoint>(config.end_waypoint_);
       std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);

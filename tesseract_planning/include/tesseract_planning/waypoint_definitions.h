@@ -34,7 +34,7 @@ namespace tesseract
 namespace tesseract_planning
 {
 /** @brief Used to specify the type of waypoint. Corresponds to a derived class of Waypoint*/
-enum WaypointType
+enum class WaypointType
 {
   JOINT_WAYPOINT = 0x1,      // 0000 0001
   CARTESIAN_WAYPOINT = 0x2,  // 0000 0010
@@ -49,6 +49,7 @@ public:
   /** @brief Returns the type of waypoint so that it may be cast back to the derived type */
   WaypointType getType() const { return waypoint_type_; }
 protected:
+  /** @brief Should be set by the derived class for casting Waypoint back to appropriate derived class type */
   WaypointType waypoint_type_;
 };
 /** @brief Defines a joint position waypoint for use with Tesseract Planners*/
@@ -56,22 +57,25 @@ class JointWaypoint : public Waypoint
 {
 public:
   // TODO: constructor that takes joint position vector
-  JointWaypoint() { waypoint_type_ = JOINT_WAYPOINT; }
+  JointWaypoint() { waypoint_type_ = WaypointType::JOINT_WAYPOINT; }
   virtual ~JointWaypoint() {}
-  /** Stores the joint values associated with this waypoint (radians) */
+  /** @brief Stores the joint values associated with this waypoint (radians) */
   std::vector<double> joint_positions_;
 };
-/** @brief Defines a cartesian position waypoint for use with Tesseract Planners*/
+/** @brief Defines a cartesian position waypoint for use with Tesseract Planners */
 class CartesianWaypoint : public Waypoint
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  CartesianWaypoint() { waypoint_type_ = CARTESIAN_WAYPOINT; }
+  CartesianWaypoint() { waypoint_type_ = WaypointType::CARTESIAN_WAYPOINT; }
   virtual ~CartesianWaypoint() {}
+  /** @brief Contains the position and orientation of this waypoint */
   Eigen::Isometry3d cartesian_position_;
 
-  Eigen::Vector3d getPosition() { return cartesian_position_.translation(); }  // TODO
+  /** @brief Convenience function that returns the xyz cartesian position contained in cartesian_position_ */
+  Eigen::Vector3d getPosition() { return cartesian_position_.translation(); }
+  /** @brief Convenience function that returns the xyzw rotation quarternion contained in cartesian_position_ */
   Eigen::Vector4d getOrientation()
   {
     Eigen::Quaterniond q(cartesian_position_.rotation());
@@ -80,8 +84,11 @@ public:
 };
 
 typedef std::shared_ptr<Waypoint> WaypointPtr;
+typedef std::shared_ptr<const Waypoint> WaypointConstPtr;
 typedef std::shared_ptr<JointWaypoint> JointWaypointPtr;
+typedef std::shared_ptr<const JointWaypoint> JointWaypointConstPtr;
 typedef std::shared_ptr<CartesianWaypoint> CartesianWaypointPtr;
+typedef std::shared_ptr<const CartesianWaypoint> CartesianWaypointConstPtr;
 }  // namespace tesseract_planning
 }  // namespace tesseract
 #endif

@@ -78,7 +78,7 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
     auto waypoint_type = config.target_waypoints_[ind]->getType();
     switch (waypoint_type)
     {
-      case tesseract::tesseract_planning::JOINT_WAYPOINT:
+      case tesseract::tesseract_planning::WaypointType::JOINT_WAYPOINT:
       {
         JointWaypointPtr joint_waypoint = std::static_pointer_cast<JointWaypoint>(config.target_waypoints_[ind]);
         // Add initial joint position constraint
@@ -92,7 +92,7 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
         pci.cnt_infos.push_back(jv);
         break;
       }
-      case tesseract::tesseract_planning::CARTESIAN_WAYPOINT:
+      case tesseract::tesseract_planning::WaypointType::CARTESIAN_WAYPOINT:
       {
         CartesianWaypointPtr cart_waypoint = std::static_pointer_cast<CartesianWaypoint>(config.target_waypoints_[ind]);
         std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);
