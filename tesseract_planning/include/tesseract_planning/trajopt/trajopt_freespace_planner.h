@@ -62,6 +62,11 @@ struct TrajOptFreespacePlannerConfig
   /** @brief The total number of timesteps used in the freespace motion. Default: 20 */
   int num_steps_ = 20;
 
+  /** @brief Selects the type of initialization used for freespace motion. If GIVEN_TRAJ, then the seed_trajectory_ must be set */
+  trajopt::InitInfo::Type init_type_ = trajopt::InitInfo::STATIONARY;
+  /** @brief The trajectory used as the optimization seed when init_type_ is set to GIVEN_TRAJ */
+  trajopt::TrajArray seed_trajectory_;
+
   /** @brief If true, collision checking will be enabled. Default: true*/
   bool collision_check_ = true;
   /** @brief If true, use continuous collision checking */
@@ -80,7 +85,7 @@ struct TrajOptFreespacePlannerConfig
   /** @brief Basic Kinematics object. ***REQUIRED*** */
   tesseract::BasicKinConstPtr kin_;
   /** @brief Basic Environment object. ***REQUIRED*** */
-  tesseract::tesseract_ros::ROSBasicEnvConstPtr env_;
+  tesseract::BasicEnvConstPtr env_;
   /** @brief This is the link used for the cartesian positions ***REQUIRED*** */
   std::string end_effector_;
   /** @brief Manipulator used for pathplanning ***REQUIRED*** */

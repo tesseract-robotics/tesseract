@@ -28,6 +28,7 @@
 
 #include <Eigen/Dense>
 #include <memory>
+#include <vector>
 
 namespace tesseract
 {
@@ -59,8 +60,8 @@ public:
   // TODO: constructor that takes joint position vector
   JointWaypoint() { waypoint_type_ = WaypointType::JOINT_WAYPOINT; }
   virtual ~JointWaypoint() {}
-  /** @brief Stores the joint values associated with this waypoint (radians) */
-  std::vector<double> joint_positions_;
+  /** Stores the joint values associated with this waypoint (radians) */
+  Eigen::VectorXd joint_positions_;
 };
 /** @brief Defines a cartesian position waypoint for use with Tesseract Planners */
 class CartesianWaypoint : public Waypoint
@@ -75,7 +76,11 @@ public:
 
   /** @brief Convenience function that returns the xyz cartesian position contained in cartesian_position_ */
   Eigen::Vector3d getPosition() { return cartesian_position_.translation(); }
-  /** @brief Convenience function that returns the wxyz rotation quarternion contained in cartesian_position_ */
+
+  /**
+   * @brief Convenience function that returns the wxyz rotation quarternion contained in cartesian_position
+   * @return Quaternion(w, x, y, z)
+   */
   Eigen::Vector4d getOrientation()
   {
     Eigen::Quaterniond q(cartesian_position_.rotation());
