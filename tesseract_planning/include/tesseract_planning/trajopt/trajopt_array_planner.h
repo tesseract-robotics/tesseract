@@ -78,7 +78,7 @@ struct TrajOptArrayPlannerConfig
   /** @brief Basic Kinematics object. ***REQUIRED*** */
   tesseract::BasicKinConstPtr kin_;
   /** @brief Basic Environment object. ***REQUIRED*** */
-  tesseract::tesseract_ros::ROSBasicEnvConstPtr env_;
+  tesseract::BasicEnvConstPtr env_;
   /** @brief This is the link used for the cartesian positions ***REQUIRED*** */
   std::string end_effector_;
   /** @brief Manipulator used for pathplanning ***REQUIRED*** */
