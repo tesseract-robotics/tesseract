@@ -75,11 +75,11 @@ public:
 
   /** @brief Convenience function that returns the xyz cartesian position contained in cartesian_position_ */
   Eigen::Vector3d getPosition() { return cartesian_position_.translation(); }
-  /** @brief Convenience function that returns the xyzw rotation quarternion contained in cartesian_position_ */
+  /** @brief Convenience function that returns the wxyz rotation quarternion contained in cartesian_position_ */
   Eigen::Vector4d getOrientation()
   {
     Eigen::Quaterniond q(cartesian_position_.rotation());
-    return Eigen::Vector4d(q.x(), q.y(), q.z(), q.w());
+    return Eigen::Vector4d(q.w(), q.x(), q.y(), q.z());
   }
 };
 
