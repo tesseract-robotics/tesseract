@@ -76,7 +76,6 @@ public:
 
   /** @brief Convenience function that returns the xyz cartesian position contained in cartesian_position_ */
   Eigen::Vector3d getPosition() { return cartesian_position_.translation(); }
-
   /**
    * @brief Convenience function that returns the wxyz rotation quarternion contained in cartesian_position
    * @return Quaternion(w, x, y, z)

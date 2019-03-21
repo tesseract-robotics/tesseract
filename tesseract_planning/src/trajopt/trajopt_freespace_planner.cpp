@@ -82,7 +82,9 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       // Add initial joint position constraint
       std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
       jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);
-      jv->targets = std::vector<double>(start_position->joint_positions_.data(), start_position->joint_positions_.data() + start_position->joint_positions_.size());
+      jv->targets =
+          std::vector<double>(start_position->joint_positions_.data(),
+                              start_position->joint_positions_.data() + start_position->joint_positions_.size());
       jv->first_step = 0;
       jv->last_step = 0;
       jv->name = "initial_joint_position";
@@ -117,7 +119,8 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       // Add initial joint position constraint
       std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
       jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);
-      jv->targets = std::vector<double>(end_position->joint_positions_.data(), end_position->joint_positions_.data() + end_position->joint_positions_.size());
+      jv->targets = std::vector<double>(end_position->joint_positions_.data(),
+                                        end_position->joint_positions_.data() + end_position->joint_positions_.size());
       jv->first_step = pci.basic_info.n_steps - 1;
       jv->last_step = pci.basic_info.n_steps - 1;
       jv->name = "target_joint_position";
@@ -201,10 +204,12 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
   if (config.plot_callback_)
   {
     // Currently plotting is only supported if the environment is ROSBasicEnv
-    tesseract::tesseract_ros::ROSBasicEnvConstPtr ros_env = std::dynamic_pointer_cast<const tesseract::tesseract_ros::ROSBasicEnv>(config.env_);
+    tesseract::tesseract_ros::ROSBasicEnvConstPtr ros_env =
+        std::dynamic_pointer_cast<const tesseract::tesseract_ros::ROSBasicEnv>(config.env_);
     if (ros_env != nullptr)
     {
-      tesseract::tesseract_ros::ROSBasicPlottingPtr plotter_ptr = std::make_shared<tesseract::tesseract_ros::ROSBasicPlotting>(ros_env);
+      tesseract::tesseract_ros::ROSBasicPlottingPtr plotter_ptr =
+          std::make_shared<tesseract::tesseract_ros::ROSBasicPlotting>(ros_env);
       config_planner.callbacks.push_back(PlotCallback(*prob, plotter_ptr));
     }
   }
