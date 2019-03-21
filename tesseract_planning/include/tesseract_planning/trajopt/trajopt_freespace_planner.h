@@ -62,7 +62,8 @@ struct TrajOptFreespacePlannerConfig
   /** @brief The total number of timesteps used in the freespace motion. Default: 20 */
   int num_steps_ = 20;
 
-  /** @brief Selects the type of initialization used for freespace motion. If GIVEN_TRAJ, then the seed_trajectory_ must be set */
+  /** @brief Selects the type of initialization used for freespace motion. If GIVEN_TRAJ, then the seed_trajectory_ must
+   * be set */
   trajopt::InitInfo::Type init_type_ = trajopt::InitInfo::STATIONARY;
   /** @brief The trajectory used as the optimization seed when init_type_ is set to GIVEN_TRAJ */
   trajopt::TrajArray seed_trajectory_;
