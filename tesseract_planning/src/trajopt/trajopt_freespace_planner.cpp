@@ -123,6 +123,7 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       jv->name = "target_joint_position";
       jv->term_type = TT_CNT;
       pci.cnt_infos.push_back(jv);
+      break;
     }
     case tesseract::tesseract_planning::WaypointType::CARTESIAN_WAYPOINT:
     {
@@ -137,6 +138,7 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       pose->pos_coeffs = Eigen::Vector3d(10, 10, 10);
       pose->rot_coeffs = Eigen::Vector3d(10, 10, 10);
       pci.cnt_infos.push_back(pose);
+      break;
     }
   }
 
