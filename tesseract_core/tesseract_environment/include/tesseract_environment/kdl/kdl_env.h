@@ -82,11 +82,16 @@ public:
 
   bool moveJoint(const std::string& joint_name, const std::string& parent_link) override;
 
+  bool enableCollision(const std::string& name) override;
+
+  bool disableCollision(const std::string& name) override;
+
   tesseract_scene_graph::JointConstPtr getJoint(const std::string& name) const override;
 
   std::vector<std::string> getJointNames() const override { return joint_names_; }
   std::vector<std::string> getActiveJointNames() const override { return active_joint_names_; }
   Eigen::VectorXd getCurrentJointValues() const override;
+  Eigen::VectorXd getCurrentJointValues(const std::vector<std::string>& joint_names) const override;
 
   const std::string& getRootLinkName() const override { return kdl_tree_->getRootSegment()->second.segment.getName(); }
   std::vector<std::string> getLinkNames() const override { return link_names_; }
