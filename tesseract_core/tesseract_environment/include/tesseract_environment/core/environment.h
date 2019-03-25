@@ -154,6 +154,17 @@ public:
    */
   virtual bool moveJoint(const std::string& joint_name, const std::string& parent_link) = 0;
 
+  /**
+   * @brief Enable collision checking for link
+   * @param name The link name
+   */
+  virtual bool enableCollision(const std::string& name) = 0;
+
+  /**
+   * @brief Disable collision checking for link
+   * @param name The link name
+   */
+  virtual bool disableCollision(const std::string& name) = 0;
 
   /**
    * @brief Get a joint in the environment
@@ -182,6 +193,15 @@ public:
    * @return A vector of joint values
    */
   virtual Eigen::VectorXd getCurrentJointValues() const = 0;
+
+  /**
+   * @brief Get the current joint values for a vector of joints
+   *
+   * Order should be the same as the input vector
+   *
+   * @return A vector of joint values
+   */
+  virtual Eigen::VectorXd getCurrentJointValues(const std::vector<std::string>& joint_names) const = 0;
 
   /**
    * @brief Get the root link name

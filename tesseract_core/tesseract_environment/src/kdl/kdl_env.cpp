@@ -303,10 +303,7 @@ bool KDLEnv::removeLink(const std::string& name)
   assert(joints.size() <= 1);
 
   // get child link names to remove
-  std::vector<std::string> child_link_names = scene_graph_->getChildLinkNames(name);
-
-//  if (joints.size() == 1)
-//    scene_graph_->removeJoint(joints[0]->getName());
+  std::vector<std::string> child_link_names = scene_graph_->getLinkChildrenNames(name);
 
   scene_graph_->removeLink(name);
   if (discrete_manager_ != nullptr) discrete_manager_->removeCollisionObject(name);
@@ -314,10 +311,6 @@ bool KDLEnv::removeLink(const std::string& name)
 
   for (const auto& link_name : child_link_names)
   {
-//    joints = scene_graph_->getInboundJoints(link_name);
-//    assert(joints.size() == 1);
-
-//    scene_graph_->removeJoint(joints[0]->getName());
     scene_graph_->removeLink(link_name);
 
     if (discrete_manager_ != nullptr) discrete_manager_->removeCollisionObject(link_name);
@@ -373,33 +366,6 @@ bool KDLEnv::removeJoint(const std::string& name)
   std::string target_link_name = scene_graph_->getTargetLink(name)->getName();
 
   return removeLink(target_link_name);
-//  std::vector<tesseract_scene_graph::JointConstPtr> joints = scene_graph_->getInboundJoints(target_link_name);
-//  assert(joints.size() == 1);
-
-//  // get child link names to remove
-//  std::vector<std::string> child_link_names = scene_graph_->getChildLinkNames(name);
-
-//  scene_graph_->removeJoint(joints[0]->getName());
-//  scene_graph_->removeLink(target_link_name);
-//  if (discrete_manager_ != nullptr) discrete_manager_->removeCollisionObject(target_link_name);
-//  if (continuous_manager_ != nullptr) continuous_manager_->removeCollisionObject(target_link_name);
-
-//  for (const auto& link_name : child_link_names)
-//  {
-//    joints = scene_graph_->getInboundJoints(link_name);
-//    assert(joints.size() == 1);
-
-//    scene_graph_->removeJoint(joints[0]->getName());
-//    scene_graph_->removeLink(link_name);
-
-//    if (discrete_manager_ != nullptr) discrete_manager_->removeCollisionObject(link_name);
-//    if (continuous_manager_ != nullptr) continuous_manager_->removeCollisionObject(link_name);
-//  }
-
-//  // This rebuilds the KDTree and updates link_names, joint_names, and active links
-//  createKDETree();
-
-//  return initialized_;
 }
 
 bool KDLEnv::moveJoint(const std::string& joint_name, const std::string& parent_link)
@@ -416,6 +382,40 @@ bool KDLEnv::moveJoint(const std::string& joint_name, const std::string& parent_
   return initialized_;
 }
 
+bool KDLEnv::enableCollision(const std::string& name)
+{
+  bool result = true;
+  if (discrete_manager_ != nullptr)
+  {
+    if(!discrete_manager_->enableCollisionObject(name))
+      result = false;
+  }
+
+  if (continuous_manager_ != nullptr)
+  {
+    if(!continuous_manager_->enableCollisionObject(name))
+      result = false;
+  }
+  return result;
+}
+
+bool KDLEnv::disableCollision(const std::string& name)
+{
+  bool result = true;
+  if (discrete_manager_ != nullptr)
+  {
+    if(!discrete_manager_->disableCollisionObject(name))
+      result = false;
+  }
+
+  if (continuous_manager_ != nullptr)
+  {
+    if(!continuous_manager_->disableCollisionObject(name))
+      result = false;
+  }
+  return result;
+}
+
 tesseract_scene_graph::JointConstPtr KDLEnv::getJoint(const std::string& name) const
 {
   return scene_graph_->getJoint(name);
@@ -428,6 +428,17 @@ Eigen::VectorXd KDLEnv::getCurrentJointValues() const
   for (auto j = 0u; j < active_joint_names_.size(); ++j)
   {
     jv(j) = current_state_->joints[active_joint_names_[j]];
+  }
+  return jv;
+}
+
+Eigen::VectorXd KDLEnv::getCurrentJointValues(const std::vector<std::string>& joint_names) const
+{
+  Eigen::VectorXd jv;
+  jv.resize(static_cast<long int>(joint_names.size()));
+  for (auto j = 0u; j < joint_names.size(); ++j)
+  {
+    jv(j) = current_state_->joints[joint_names[j]];
   }
   return jv;
 }

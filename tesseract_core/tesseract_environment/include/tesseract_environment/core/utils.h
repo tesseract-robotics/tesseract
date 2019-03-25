@@ -41,6 +41,7 @@ namespace tesseract_environment
    * @brief Get the active Link Names Recursively
    *
    *        This currently only works for graphs that are trees. Need to create a generic method using boost::visitor
+   *        TODO: Need to update using graph->getLinkChildren
    *
    * @param active_links
    * @param scene_graph
@@ -70,62 +71,102 @@ namespace tesseract_environment
     }
   }
 
-  /**  @brief Store a AdjacencyMap <LinkA, Pair<LinkB, Transfrom B to A> > */
-  typedef std::unordered_map<std::string, std::pair<std::string, Eigen::Isometry3d>> AdjacencyMap;
+  /**
+   * @brief The AdjacencyMapPair struct
+   */
+  struct AdjacencyMapPair
+  {
+    std::string link_name;
+    Eigen::Isometry3d transform;
+  };
+  typedef std::shared_ptr<AdjacencyMapPair> AdjacencyMapPairPtr;
+  typedef std::shared_ptr<const AdjacencyMapPair> AdjacencyMapPairConstPtr;
+
+  class AdjacencyMap
+  {
+  public:
+
+    /**
+     * @brief Create a adjacency map provided map_links and nearst parent in the active_links.
+     *
+     *        If a map_link does not have a parent in the list of active links it is not added the map
+     *        Note: This currently only support tree structures.
+     *        TODO: Need to update to use graph->getLinkChildren
+     *
+     * @param scene_graph
+     * @param active_links
+     * @param map_links
+     * @param state
+     */
+    AdjacencyMap(const tesseract_scene_graph::SceneGraphConstPtr& scene_graph,
+                 const std::vector<std::string>& active_links,
+                 const std::vector<std::string>& map_links,
+                 const TransformMap& state)
+    {
+      assert(scene_graph->isTree());
+      for (const auto& ml : map_links)
+      {
+
+        if (std::find(active_links.begin(), active_links.end(), ml) != active_links.end())
+        {
+          AdjacencyMapPairPtr pair = std::make_shared<AdjacencyMapPair>();
+          pair->link_name = ml;
+          pair->transform.setIdentity();
+          adjacency_map_[ml] = pair;
+          active_link_names_.push_back(ml);
+          continue;
+        }
+
+        std::vector<std::string> inv_adj_links = scene_graph->getInvAdjacentLinkNames(ml);
+        while (!inv_adj_links.empty())
+        {
+          assert(inv_adj_links.size() == 1);
+
+          const std::string& ial = inv_adj_links[0];
+          std::vector<std::string>::const_iterator it = std::find(active_links.begin(), active_links.end(), ial);
+          if (it != active_links.end())
+          {
+            AdjacencyMapPairPtr pair = std::make_shared<AdjacencyMapPair>();
+            pair->link_name = ial;
+            pair->transform = state.at(ial).inverse() * state.at(ml);
+            adjacency_map_[ml] = pair;
+            active_link_names_.push_back(ml);
+            break;
+          }
+
+          inv_adj_links = scene_graph->getInvAdjacentLinkNames(ial);
+        }
+      }
+    }
+
+    virtual ~AdjacencyMap() = default;
+
+    /**
+     * @brief This is a list of all active links associated with the constructor data.
+     * @return vector of link names
+     */
+    const std::vector<std::string>& getActiveLinkNames() const { return active_link_names_; }
+
+    /**
+     * @brief A a link mapping to the associated kinematics link name if it exists
+     * @param link_name Name of link
+     * @return If the link does not have a associated kinematics link it return nullptr, otherwise return the pair.
+     */
+    AdjacencyMapPairConstPtr getLinkMapping(const std::string& link_name) const
+    {
+      const auto& it = adjacency_map_.find(link_name);
+      if (it == adjacency_map_.end())
+        return nullptr;
+
+      return it->second;
+    }
+
+  private:
+    std::vector<std::string> active_link_names_;
+    std::unordered_map<std::string, AdjacencyMapPairConstPtr> adjacency_map_;
+  };
   typedef std::shared_ptr<AdjacencyMap> AdjacencyMapPtr;
   typedef std::shared_ptr<const AdjacencyMap> AdjacencyMapConstPtr;
-
-  /**
-   * @brief Create a adjacency map provided map_links and nearst parent in the active_links.
-   *
-   *        If a map_link does not have a parent in the list of active links it is not added the map
-   *        Note: This currently only support tree structures.
-   *
-   * @param scene_graph
-   * @param active_links
-   * @param map_links
-   * @param state
-   * @return
-   */
-  inline AdjacencyMapPtr getAdjacencyMap(const tesseract_scene_graph::SceneGraphConstPtr& scene_graph,
-                                         const std::vector<std::string>& active_links,
-                                         const std::vector<std::string>& map_links,
-                                         const TransformMap& state)
-  {
-     assert(scene_graph->isTree());
-     AdjacencyMapPtr adj_map(new AdjacencyMap());
-     AdjacencyMap& adjacency_map = *adj_map;
-     for (const auto& ml : map_links)
-     {
-
-       if (std::find(active_links.begin(), active_links.end(), ml) != active_links.end())
-       {
-         Eigen::Isometry3d tf;
-         tf.setIdentity();
-         adjacency_map[ml] = std::make_pair(ml, tf);
-         continue;
-       }
-
-       std::vector<std::string> inv_adj_links = scene_graph->getInvAdjacentLinkNames(ml);
-       while (!inv_adj_links.empty())
-       {
-         assert(inv_adj_links.size() == 1);
-
-         const std::string& ial = inv_adj_links[0];
-         std::vector<std::string>::const_iterator it = std::find(active_links.begin(), active_links.end(), ial);
-         if (it != active_links.end())
-         {
-           Eigen::Isometry3d tf = state.at(ial).inverse() * state.at(ml);
-           adjacency_map[ml] = std::make_pair(ial, tf);
-           break;
-         }
-
-         inv_adj_links = scene_graph->getInvAdjacentLinkNames(ial);
-       }
-     }
-
-    return adj_map;
-  }
 
   inline AllowedCollisionMatrixPtr getAllowedCollisionMatrix(const tesseract_scene_graph::SRDFModel& srdf_model)
   {
