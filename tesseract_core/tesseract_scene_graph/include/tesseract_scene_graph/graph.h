@@ -420,6 +420,11 @@ public:
     return tree;
   }
 
+  /**
+   * @brief Get a vector of adjacent link names provided a link name
+   * @param name Name of link
+   * @return A vector of adjacent link names
+   */
   std::vector<std::string> getAdjacentLinkNames(const std::string& name) const
   {
     std::vector<std::string> link_names;
@@ -430,6 +435,11 @@ public:
     return link_names;
   }
 
+  /**
+   * @brief Geta a vectpr pf inverse adjacent link names provided a link name
+   * @param name
+   * @return
+   */
   std::vector<std::string> getInvAdjacentLinkNames(const std::string& name) const
   {
     std::vector<std::string> link_names;
@@ -440,11 +450,28 @@ public:
     return link_names;
   }
 
-  std::vector<std::string> getChildLinkNames(const std::string& name) const
+  /**
+   * @brief Get all children for a given link name
+   * @param name Name of Link
+   * @return A vector of child link names
+   */
+  std::vector<std::string> getLinkChildrenNames(const std::string& name) const
   {
-    std::vector<std::string> child_link_names;
-    getChildLinkNamesRecursive(child_link_names, name);
-    return child_link_names;
+    Vertex v = getVertex(name);
+    return getLinkChildrenHelper(v);
+  }
+
+  /**
+   * @brief Get all children for a given link name
+   * @param name Name of Link
+   * @return A vector of child link names
+   */
+  std::vector<std::string> getJointChildrenNames(const std::string& name) const
+  {
+    const Graph& graph = static_cast<const Graph&>(*this);
+    Edge e = getEdge(name);
+    Vertex v = boost::target(e, graph);
+    return getLinkChildrenHelper(v);
   }
 
   /**
@@ -619,13 +646,42 @@ private:
     bool& tree_;
   };
 
-  void getChildLinkNamesRecursive(std::vector<std::string>& child_links, const std::string& name) const
+  struct children_detector : public boost::default_bfs_visitor
   {
-    for (const auto& link_name : getAdjacentLinkNames(name))
+    children_detector(std::vector<std::string>& children)
+      : children_(children) { }
+
+    template <class u, class g>
+    void discover_vertex(u vertex, g graph)
     {
-      child_links.push_back(link_name);
-      getChildLinkNamesRecursive(child_links, link_name);
+      children_.push_back(boost::get(boost::vertex_link, graph)[vertex]->getName());
+      return;
     }
+
+  protected:
+    std::vector<std::string>& children_;
+  };
+
+  std::vector<std::string> getLinkChildrenHelper(Vertex start_vertex) const
+  {
+    const Graph& graph = static_cast<const Graph&>(*this);
+    std::vector<std::string> child_link_names;
+
+    std::map<Vertex, size_t> index_map;
+    boost::associative_property_map<std::map<Vertex, size_t>> prop_index_map(index_map);
+
+    int c = 0;
+    Graph::vertex_iterator i, iend;
+    for (boost::tie(i, iend) = boost::vertices(graph); i != iend; ++i, ++c)
+      boost::put(prop_index_map, *i, c);
+
+    children_detector vis(child_link_names);
+    boost::breadth_first_search(graph, start_vertex, boost::visitor(vis).root_vertex(start_vertex).vertex_index_map(prop_index_map));
+
+    // This always includes the start vertex, so must remove
+    child_link_names.erase(child_link_names.begin());
+
+    return child_link_names;
   }
 
 };
