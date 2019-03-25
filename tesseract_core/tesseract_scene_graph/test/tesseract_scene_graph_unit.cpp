@@ -79,13 +79,29 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
   joint_4->type = JointType::REVOLUTE;
   g.addJoint(joint_4);
 
+  // Check getAdjacentLinkNames Method
   std::vector<std::string> adjacent_links = g.getAdjacentLinkNames("link_3");
   EXPECT_TRUE(adjacent_links.size() == 1);
   EXPECT_TRUE(adjacent_links[0] == "link_4");
 
+  // Check getInvAdjacentLinkNames Method
   std::vector<std::string> inv_adjacent_links = g.getInvAdjacentLinkNames("link_3");
   EXPECT_TRUE(inv_adjacent_links.size() == 1);
   EXPECT_TRUE(inv_adjacent_links[0] == "link_2");
+
+  // Check getChildLinkNames
+  std::vector<std::string> child_link_names = g.getLinkChildrenNames("link_5");
+  EXPECT_TRUE(child_link_names.empty());
+
+  child_link_names = g.getLinkChildrenNames("link_3");
+  EXPECT_TRUE(child_link_names.size() == 1);
+  EXPECT_TRUE(child_link_names[0] == "link_4");
+
+  child_link_names = g.getLinkChildrenNames("link_2");
+  EXPECT_TRUE(child_link_names.size() == 3);
+  EXPECT_TRUE(std::find(child_link_names.begin(), child_link_names.end(), "link_3") != child_link_names.end());
+  EXPECT_TRUE(std::find(child_link_names.begin(), child_link_names.end(), "link_4") != child_link_names.end());
+  EXPECT_TRUE(std::find(child_link_names.begin(), child_link_names.end(), "link_5") != child_link_names.end());
 
   // Check Graph
   checkSceneGraph(g);
