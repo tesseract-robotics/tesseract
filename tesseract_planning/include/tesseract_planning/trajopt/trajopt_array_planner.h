@@ -79,10 +79,12 @@ struct TrajOptArrayPlannerConfig
   tesseract::BasicKinConstPtr kin_;
   /** @brief Basic Environment object. ***REQUIRED*** */
   tesseract::BasicEnvConstPtr env_;
-  /** @brief This is the link used for the cartesian positions ***REQUIRED*** */
-  std::string end_effector_;
   /** @brief Manipulator used for pathplanning ***REQUIRED*** */
   std::string manipulator_;
+  /** @brief This is the tip link in the kinematics object used for the cartesian positions ***REQUIRED*** */
+  std::string link_;
+  /** @brief A transform applied to link_ used for the cartesian position */
+  Eigen::Isometry3d tcp_ = Eigen::Isometry3d::Identity();
 
   /** @brief Optimization parameters to be used (Optional) */
   sco::BasicTrustRegionSQPParameters params_;

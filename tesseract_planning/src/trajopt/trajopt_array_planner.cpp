@@ -100,7 +100,8 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
         std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);
         pose->term_type = TT_CNT;
         pose->name = "cartesian_position";
-        pose->link = config.end_effector_;
+        pose->link = config.link_;
+        pose->tcp = config.tcp_;
         pose->timestep = static_cast<int>(ind);
         pose->xyz = cart_waypoint->getPosition();
         pose->wxyz = cart_waypoint->getOrientation();

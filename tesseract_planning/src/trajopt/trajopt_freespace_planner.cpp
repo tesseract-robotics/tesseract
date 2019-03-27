@@ -98,7 +98,8 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);
       pose->term_type = TT_CNT;
       pose->name = "initial_cartesian_position";
-      pose->link = config.end_effector_;
+      pose->link = config.link_;
+      pose->tcp = config.tcp_;
       pose->timestep = 0;
       pose->xyz = start_pose->getPosition();
       pose->wxyz = start_pose->getOrientation();
@@ -134,7 +135,8 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);
       pose->term_type = TT_CNT;
       pose->name = "target_cartesian_position";
-      pose->link = config.end_effector_;
+      pose->link = config.link_;
+      pose->tcp = config.tcp_;
       pose->timestep = pci.basic_info.n_steps - 1;
       pose->xyz = end_pose->getPosition();
       pose->wxyz = end_pose->getOrientation();
