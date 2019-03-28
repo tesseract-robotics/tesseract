@@ -81,7 +81,11 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       JointWaypointPtr start_position = std::static_pointer_cast<JointWaypoint>(config.start_waypoint_);
       // Add initial joint position constraint
       std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
-      jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);
+      Eigen::VectorXd coeffs = start_position->coeffs_;
+      if (coeffs.size() != pci.kin->numJoints())
+        jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);  // Default value
+      else
+        jv->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
       jv->targets =
           std::vector<double>(start_position->joint_positions_.data(),
                               start_position->joint_positions_.data() + start_position->joint_positions_.size());
@@ -103,8 +107,17 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       pose->timestep = 0;
       pose->xyz = start_pose->getPosition();
       pose->wxyz = start_pose->getOrientation();
-      pose->pos_coeffs = Eigen::Vector3d(10, 10, 10);
-      pose->rot_coeffs = Eigen::Vector3d(10, 10, 10);
+      Eigen::VectorXd coeffs = start_pose->coeffs_;
+      if (coeffs.size() != 6)
+      {
+        pose->pos_coeffs = Eigen::Vector3d(10, 10, 10);
+        pose->rot_coeffs = Eigen::Vector3d(10, 10, 10);
+      }
+      else
+      {
+        pose->pos_coeffs = coeffs.head<3>();
+        pose->rot_coeffs = coeffs.tail<3>();
+      }
       pci.cnt_infos.push_back(pose);
       break;
     }
@@ -119,7 +132,11 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       JointWaypointPtr end_position = std::static_pointer_cast<JointWaypoint>(config.end_waypoint_);
       // Add initial joint position constraint
       std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
-      jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);
+      Eigen::VectorXd coeffs = end_position->coeffs_;
+      if (coeffs.size() != pci.kin->numJoints())
+        jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);  // Default value
+      else
+        jv->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
       jv->targets = std::vector<double>(end_position->joint_positions_.data(),
                                         end_position->joint_positions_.data() + end_position->joint_positions_.size());
       jv->first_step = pci.basic_info.n_steps - 1;
@@ -140,8 +157,17 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       pose->timestep = pci.basic_info.n_steps - 1;
       pose->xyz = end_pose->getPosition();
       pose->wxyz = end_pose->getOrientation();
-      pose->pos_coeffs = Eigen::Vector3d(10, 10, 10);
-      pose->rot_coeffs = Eigen::Vector3d(10, 10, 10);
+      Eigen::VectorXd coeffs = end_pose->coeffs_;
+      if (coeffs.size() != 6)
+      {
+        pose->pos_coeffs = Eigen::Vector3d(10, 10, 10);
+        pose->rot_coeffs = Eigen::Vector3d(10, 10, 10);
+      }
+      else
+      {
+        pose->pos_coeffs = coeffs.head<3>();
+        pose->rot_coeffs = coeffs.tail<3>();
+      }
       pci.cnt_infos.push_back(pose);
       break;
     }

@@ -49,6 +49,11 @@ public:
   virtual ~Waypoint() {}
   /** @brief Returns the type of waypoint so that it may be cast back to the derived type */
   WaypointType getType() const { return waypoint_type_; }
+  /** @brief Used to weight different terms in the waypoint. (Optional)
+   *
+   * For example: joint 1 vs joint 2 of the same waypoint or waypoint 1 vs waypoint 2
+   * Note: Each planner should define defaults for this when they are not set.*/
+  Eigen::VectorXd coeffs_;
 protected:
   /** @brief Should be set by the derived class for casting Waypoint back to appropriate derived class type */
   WaypointType waypoint_type_;
