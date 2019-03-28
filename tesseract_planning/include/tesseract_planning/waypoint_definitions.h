@@ -54,6 +54,10 @@ public:
    * For example: joint 1 vs joint 2 of the same waypoint or waypoint 1 vs waypoint 2
    * Note: Each planner should define defaults for this when they are not set.*/
   Eigen::VectorXd coeffs_;
+  /** @brief If false, this value is used as a guide rather than a rigid waypoint (Default=true)
+
+  Example: In Trajopt, is_critical=true => constraint, is_critical=false => cost*/
+  bool is_critical_ = true;
 protected:
   /** @brief Should be set by the derived class for casting Waypoint back to appropriate derived class type */
   WaypointType waypoint_type_;

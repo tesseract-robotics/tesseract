@@ -92,15 +92,15 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       jv->first_step = 0;
       jv->last_step = 0;
       jv->name = "initial_joint_position";
-      jv->term_type = TT_CNT;
-      pci.cnt_infos.push_back(jv);
+      jv->term_type = start_position->is_critical_ ? TT_CNT : TT_COST;
+      start_position->is_critical_ ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
       break;
     }
     case tesseract::tesseract_planning::WaypointType::CARTESIAN_WAYPOINT:
     {
       CartesianWaypointPtr start_pose = std::static_pointer_cast<CartesianWaypoint>(config.start_waypoint_);
       std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);
-      pose->term_type = TT_CNT;
+      pose->term_type = start_pose->is_critical_ ? TT_CNT : TT_COST;
       pose->name = "initial_cartesian_position";
       pose->link = config.link_;
       pose->tcp = config.tcp_;
@@ -118,7 +118,7 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
         pose->pos_coeffs = coeffs.head<3>();
         pose->rot_coeffs = coeffs.tail<3>();
       }
-      pci.cnt_infos.push_back(pose);
+      start_pose->is_critical_ ? pci.cnt_infos.push_back(pose) : pci.cost_infos.push_back(pose);
       break;
     }
   }
@@ -142,15 +142,15 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       jv->first_step = pci.basic_info.n_steps - 1;
       jv->last_step = pci.basic_info.n_steps - 1;
       jv->name = "target_joint_position";
-      jv->term_type = TT_CNT;
-      pci.cnt_infos.push_back(jv);
+      jv->term_type = end_position->is_critical_ ? TT_CNT : TT_COST;
+      end_position->is_critical_ ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
       break;
     }
     case tesseract::tesseract_planning::WaypointType::CARTESIAN_WAYPOINT:
     {
       CartesianWaypointPtr end_pose = std::static_pointer_cast<CartesianWaypoint>(config.end_waypoint_);
       std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);
-      pose->term_type = TT_CNT;
+      pose->term_type = end_pose->is_critical_ ? TT_CNT : TT_COST;
       pose->name = "target_cartesian_position";
       pose->link = config.link_;
       pose->tcp = config.tcp_;
@@ -168,7 +168,7 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
         pose->pos_coeffs = coeffs.head<3>();
         pose->rot_coeffs = coeffs.tail<3>();
       }
-      pci.cnt_infos.push_back(pose);
+      end_pose->is_critical_ ? pci.cnt_infos.push_back(pose) : pci.cost_infos.push_back(pose);
       break;
     }
   }
