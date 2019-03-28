@@ -37,8 +37,9 @@ namespace tesseract_planning
 /** @brief Used to specify the type of waypoint. Corresponds to a derived class of Waypoint*/
 enum class WaypointType
 {
-  JOINT_WAYPOINT = 0x1,      // 0000 0001
-  CARTESIAN_WAYPOINT = 0x2,  // 0000 0010
+  JOINT_WAYPOINT,
+  JOINT_TOLERANCED_WAYPOINT,
+  CARTESIAN_WAYPOINT,
 };
 // TODO: Doxygen
 /** @brief Defines a generic way of sending waypoints to a Tesseract Planner */
@@ -96,12 +97,34 @@ public:
   }
 };
 
+/** @brief Defines a joint toleranced position waypoint for use with Tesseract Planners*/
+class JointTolerancedWaypoint : public Waypoint
+{
+public:
+  // TODO: constructor that takes joint position vector
+  JointTolerancedWaypoint() { waypoint_type_ = WaypointType::JOINT_TOLERANCED_WAYPOINT; }
+  virtual ~JointTolerancedWaypoint() {}
+  /** @brief Stores the joint values associated with this waypoint (radians) */
+  Eigen::VectorXd joint_positions_;
+  /** @brief Amount over joint_positions_ that is allowed (positive radians).
+
+  The allowed range is joint_positions-lower_tolerance_ to joint_positions_+upper_tolerance*/
+  Eigen::VectorXd upper_tolerance_;
+  /** @brief Amount under joint_positions_ that is allowed (negative radians).
+
+  The allowed range is joint_positions-lower_tolerance_ to joint_positions_+upper_tolerance*/
+  Eigen::VectorXd lower_tolerance_;
+};
+
 typedef std::shared_ptr<Waypoint> WaypointPtr;
 typedef std::shared_ptr<const Waypoint> WaypointConstPtr;
 typedef std::shared_ptr<JointWaypoint> JointWaypointPtr;
 typedef std::shared_ptr<const JointWaypoint> JointWaypointConstPtr;
+typedef std::shared_ptr<JointTolerancedWaypoint> JointTolerancedWaypointPtr;
+typedef std::shared_ptr<const JointTolerancedWaypoint> JointTolerancedWaypointConstPtr;
 typedef std::shared_ptr<CartesianWaypoint> CartesianWaypointPtr;
 typedef std::shared_ptr<const CartesianWaypoint> CartesianWaypointConstPtr;
+
 }  // namespace tesseract_planning
 }  // namespace tesseract
 #endif
