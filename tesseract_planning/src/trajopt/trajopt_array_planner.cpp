@@ -97,6 +97,50 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
         joint_waypoint->is_critical_ ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
         break;
       }
+      case tesseract::tesseract_planning::WaypointType::JOINT_TOLERANCED_WAYPOINT:
+      {
+        // For a toleranced waypoint we add an inequality term and a smaller equality term. This acts as a "leaky" hinge
+        // to keep the problem numerically stable.
+        JointTolerancedWaypointPtr joint_waypoint =
+            std::static_pointer_cast<JointTolerancedWaypoint>(config.target_waypoints_[ind]);
+        std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
+        Eigen::VectorXd coeffs = joint_waypoint->coeffs_;
+        if (coeffs.size() != pci.kin->numJoints())
+          jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);  // Default value
+        else
+          jv->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
+        jv->targets =
+            std::vector<double>(joint_waypoint->joint_positions_.data(),
+                                joint_waypoint->joint_positions_.data() + joint_waypoint->joint_positions_.size());
+        jv->upper_tols =
+            std::vector<double>(joint_waypoint->upper_tolerance_.data(),
+                                joint_waypoint->upper_tolerance_.data() + joint_waypoint->upper_tolerance_.size());
+        jv->lower_tols =
+            std::vector<double>(joint_waypoint->lower_tolerance_.data(),
+                                joint_waypoint->lower_tolerance_.data() + joint_waypoint->lower_tolerance_.size());
+        jv->first_step = static_cast<int>(ind);
+        jv->last_step = static_cast<int>(ind);
+        jv->name = "joint_toleranced_position";
+        jv->term_type = joint_waypoint->is_critical_ ? TT_CNT : TT_COST;
+        joint_waypoint->is_critical_ ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
+
+        // Equality cost with coeffs much smaller than inequality
+        std::shared_ptr<JointPosTermInfo> jv_equal = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
+        std::vector<double> leaky_coeffs;
+        for (auto& ind : jv->coeffs)
+          leaky_coeffs.push_back(ind * 0.1);
+        jv_equal->coeffs = leaky_coeffs;
+        jv_equal->targets =
+            std::vector<double>(joint_waypoint->joint_positions_.data(),
+                                joint_waypoint->joint_positions_.data() + joint_waypoint->joint_positions_.size());
+        jv_equal->first_step = static_cast<int>(ind);
+        jv_equal->last_step = static_cast<int>(ind);
+        jv_equal->name = "joint_toleranced_position_leaky";
+        // If this was a CNT, then the inequality tolernce would not do anything
+        jv_equal->term_type = TT_COST;
+        pci.cost_infos.push_back(jv_equal);
+        break;
+      }
       case tesseract::tesseract_planning::WaypointType::CARTESIAN_WAYPOINT:
       {
         CartesianWaypointPtr cart_waypoint = std::static_pointer_cast<CartesianWaypoint>(config.target_waypoints_[ind]);
