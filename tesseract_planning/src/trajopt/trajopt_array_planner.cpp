@@ -81,9 +81,12 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
       case tesseract::tesseract_planning::WaypointType::JOINT_WAYPOINT:
       {
         JointWaypointPtr joint_waypoint = std::static_pointer_cast<JointWaypoint>(config.target_waypoints_[ind]);
-        // Add initial joint position constraint
         std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
-        jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);
+        Eigen::VectorXd coeffs = joint_waypoint->coeffs_;
+        if (coeffs.size() != pci.kin->numJoints())
+          jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);  // Default value
+        else
+          jv->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
         jv->targets =
             std::vector<double>(joint_waypoint->joint_positions_.data(),
                                 joint_waypoint->joint_positions_.data() + joint_waypoint->joint_positions_.size());
@@ -105,8 +108,17 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
         pose->timestep = static_cast<int>(ind);
         pose->xyz = cart_waypoint->getPosition();
         pose->wxyz = cart_waypoint->getOrientation();
-        pose->pos_coeffs = Eigen::Vector3d(10, 10, 10);
-        pose->rot_coeffs = Eigen::Vector3d(10, 10, 10);
+        Eigen::VectorXd coeffs = cart_waypoint->coeffs_;
+        if (coeffs.size() != 6)
+        {
+          pose->pos_coeffs = Eigen::Vector3d(10, 10, 10);
+          pose->rot_coeffs = Eigen::Vector3d(10, 10, 10);
+        }
+        else
+        {
+          pose->pos_coeffs = coeffs.head<3>();
+          pose->rot_coeffs = coeffs.tail<3>();
+        }
         pci.cnt_infos.push_back(pose);
         break;
       }
