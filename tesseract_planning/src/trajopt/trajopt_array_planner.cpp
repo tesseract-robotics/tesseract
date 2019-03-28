@@ -93,15 +93,15 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
         jv->first_step = static_cast<int>(ind);
         jv->last_step = static_cast<int>(ind);
         jv->name = "joint_position";
-        jv->term_type = TT_CNT;
-        pci.cnt_infos.push_back(jv);
+        jv->term_type = joint_waypoint->is_critical_ ? TT_CNT : TT_COST;
+        joint_waypoint->is_critical_ ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
         break;
       }
       case tesseract::tesseract_planning::WaypointType::CARTESIAN_WAYPOINT:
       {
         CartesianWaypointPtr cart_waypoint = std::static_pointer_cast<CartesianWaypoint>(config.target_waypoints_[ind]);
         std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);
-        pose->term_type = TT_CNT;
+        pose->term_type = cart_waypoint->is_critical_ ? TT_CNT : TT_COST;
         pose->name = "cartesian_position";
         pose->link = config.link_;
         pose->tcp = config.tcp_;
@@ -119,7 +119,7 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
           pose->pos_coeffs = coeffs.head<3>();
           pose->rot_coeffs = coeffs.tail<3>();
         }
-        pci.cnt_infos.push_back(pose);
+        cart_waypoint->is_critical_ ? pci.cnt_infos.push_back(pose) : pci.cost_infos.push_back(pose);
         break;
       }
     }
