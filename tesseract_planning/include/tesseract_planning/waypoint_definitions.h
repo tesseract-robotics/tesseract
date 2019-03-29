@@ -41,13 +41,11 @@ enum class WaypointType
   JOINT_TOLERANCED_WAYPOINT,
   CARTESIAN_WAYPOINT,
 };
-// TODO: Doxygen
 /** @brief Defines a generic way of sending waypoints to a Tesseract Planner */
 class Waypoint
 {
 public:
   Waypoint() {}
-  virtual ~Waypoint() {}
   /** @brief Returns the type of waypoint so that it may be cast back to the derived type */
   WaypointType getType() const { return waypoint_type_; }
   /** @brief Used to weight different terms in the waypoint. (Optional)
@@ -59,6 +57,7 @@ public:
 
   Example: In Trajopt, is_critical=true => constraint, is_critical=false => cost*/
   bool is_critical_ = true;
+
 protected:
   /** @brief Should be set by the derived class for casting Waypoint back to appropriate derived class type */
   WaypointType waypoint_type_;
@@ -69,8 +68,8 @@ class JointWaypoint : public Waypoint
 public:
   // TODO: constructor that takes joint position vector
   JointWaypoint() { waypoint_type_ = WaypointType::JOINT_WAYPOINT; }
-  virtual ~JointWaypoint() {}
-  /** Stores the joint values associated with this waypoint (radians) */
+  /** Stores the joint values associated with this waypoint (radians). Must be in the same order as the joints in the
+   * kinematics object*/
   Eigen::VectorXd joint_positions_;
 };
 /** @brief Defines a cartesian position waypoint for use with Tesseract Planners */
@@ -80,7 +79,6 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   CartesianWaypoint() { waypoint_type_ = WaypointType::CARTESIAN_WAYPOINT; }
-  virtual ~CartesianWaypoint() {}
   /** @brief Contains the position and orientation of this waypoint */
   Eigen::Isometry3d cartesian_position_;
 
@@ -103,7 +101,6 @@ class JointTolerancedWaypoint : public Waypoint
 public:
   // TODO: constructor that takes joint position vector
   JointTolerancedWaypoint() { waypoint_type_ = WaypointType::JOINT_TOLERANCED_WAYPOINT; }
-  virtual ~JointTolerancedWaypoint() {}
   /** @brief Stores the joint values associated with this waypoint (radians) */
   Eigen::VectorXd joint_positions_;
   /** @brief Amount over joint_positions_ that is allowed (positive radians).
