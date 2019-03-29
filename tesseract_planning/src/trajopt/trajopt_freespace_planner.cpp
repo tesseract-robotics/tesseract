@@ -301,6 +301,26 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
     jj->term_type = TT_COST;
     pci.cost_infos.push_back(jj);
   }
+  // Add configuration cost
+  if (config.configuration_->joint_positions_.size() > 0)
+  {
+    assert(config.configuration_->joint_positions_.size() == pci.kin->numJoints());
+    JointWaypointConstPtr joint_waypoint = config.configuration_;
+    std::shared_ptr<JointPosTermInfo> jp = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
+    Eigen::VectorXd coeffs = joint_waypoint->coeffs_;
+    if (coeffs.size() != pci.kin->numJoints())
+      jp->coeffs = std::vector<double>(pci.kin->numJoints(), 0.1);  // Default value
+    else
+      jp->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
+    jp->targets =
+        std::vector<double>(joint_waypoint->joint_positions_.data(),
+                            joint_waypoint->joint_positions_.data() + joint_waypoint->joint_positions_.size());
+    jp->first_step = 0;
+    jp->last_step = pci.basic_info.n_steps - 1;
+    jp->name = "configuration_cost";
+    jp->term_type = TT_COST;
+    pci.cost_infos.push_back(jp);
+  }
   trajopt::TrajOptProbPtr prob = ConstructProblem(pci);
 
   // -------- Solve the problem ------------
