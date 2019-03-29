@@ -1,0 +1,10 @@
+find_package(GTest REQUIRED)
+find_package(roslib REQUIRED)
+
+add_executable(${PROJECT_NAME}_unit tesseract_environment_unit.cpp)
+target_link_libraries(${PROJECT_NAME}_unit ${GTEST_BOTH_LIBRARIES} ${PROJECT_NAME}_kdl tesseract_collision_bullet tesseract_collision_fcl tesseract_geometry tesseract_scene_graph ${roslib_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${orocos_kdl_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+target_compile_features(${PROJECT_NAME}_unit INTERFACE cxx_std_11)
+target_compile_definitions(${PROJECT_NAME}_unit PRIVATE DATA_DIR="${CMAKE_SOURCE_DIR}/test")
+target_include_directories(${PROJECT_NAME}_unit PRIVATE ${GTEST_INCLUDE_DIRS} ${roslib_INCLUDE_DIRS})
+add_test(${PROJECT_NAME}_unit ${PROJECT_NAME}_unit)

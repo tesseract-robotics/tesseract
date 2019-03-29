@@ -16,9 +16,11 @@
   <depend>assimp-dev</depend>
   <depend>libtinyxml-dev</depend>
 
+  <test_depend>gtest</test_depend>
   <test_depend>roslib</test_depend>
 
   <export>
+    <build_type>cmake</build_type>
   </export>
 
 </package>
