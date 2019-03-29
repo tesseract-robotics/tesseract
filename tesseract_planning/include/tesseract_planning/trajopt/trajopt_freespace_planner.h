@@ -67,6 +67,12 @@ struct TrajOptFreespacePlannerConfig
   trajopt::InitInfo::Type init_type_ = trajopt::InitInfo::STATIONARY;
   /** @brief The trajectory used as the optimization seed when init_type_ is set to GIVEN_TRAJ */
   trajopt::TrajArray seed_trajectory_;
+  /** @brief This joint waypoint represents the desired configuration (Optional). This is not guaranteed, but a small equality cost
+   * is set to the joint position for all points to pull the optimization in that direction.
+   *
+   * An example use case is setting it to be at the center of the joint limits. This tends to pull the robot away from
+   * singularities */
+  JointWaypointConstPtr configuration_ = std::make_shared<JointWaypoint>();
 
   /** @brief If true, collision checking will be enabled. Default: true*/
   bool collision_check_ = true;
