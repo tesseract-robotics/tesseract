@@ -95,18 +95,25 @@ public:
   virtual bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const = 0;
 
   /**
-   * @brief Get list of joint names for robot
-   * @param names Output vector of joint names, copied from joint_list_ created in init()
-   * @return True if BasicKin has been successfully initialized
+   * @brief Get list of joint names for kinematic object
+   * @return A vector of joint names, joint_list_
    */
   virtual const std::vector<std::string>& getJointNames() const = 0;
 
   /**
-   * @brief Get list of all link names (with and without geometry) for robot
-   * @param names Output vector of names, copied from link_list_ created in init()
-   * @return True if BasicKin has been successfully initialized
+   * @brief Get list of all link names (with and without geometry) for kinematic object
+   * @return A vector of names, link_list_
    */
   virtual const std::vector<std::string>& getLinkNames() const = 0;
+
+  /**
+   * @brief Get list of active link names (with and without geometry) for kinematic object
+   *
+   * Note: This only includes links that are children of the active joints
+   *
+   * @return A vector of names, active_link_list_
+   */
+  virtual const std::vector<std::string>& getActiveLinkNames() const = 0;
 
   /**
    * @brief Getter for joint_limits_

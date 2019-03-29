@@ -218,7 +218,82 @@ void runJacobianTest(tesseract_kinematics::ForwardKinematics& kin)
   }
 }
 
-TEST(TesseractROSUnit, KDLKinChainForwardKinematicUnit)
+void runActiveLinkNamesTest(tesseract_kinematics::ForwardKinematics& kin, bool isKinTree)
+{
+  std::vector<std::string> link_names = kin.getActiveLinkNames();
+  EXPECT_TRUE(link_names.size() == 8);
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "base_link") == link_names.end());
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_1") != link_names.end());
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_2") != link_names.end());
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_3") != link_names.end());
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_4") != link_names.end());
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_5") != link_names.end());
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_6") != link_names.end());
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_7") != link_names.end());
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "tool0") != link_names.end());
+
+  if (!isKinTree)
+  {
+    link_names = kin.getLinkNames();
+    EXPECT_TRUE(link_names.size() == 9);
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "base_link") != link_names.end());
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_1") != link_names.end());
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_2") != link_names.end());
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_3") != link_names.end());
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_4") != link_names.end());
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_5") != link_names.end());
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_6") != link_names.end());
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_7") != link_names.end());
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "tool0") != link_names.end());
+  }
+  else
+  {
+    link_names = kin.getLinkNames();
+    EXPECT_TRUE(link_names.size() == 10);
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "base_link") != link_names.end());
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "base") != link_names.end());
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_1") != link_names.end());
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_2") != link_names.end());
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_3") != link_names.end());
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_4") != link_names.end());
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_5") != link_names.end());
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_6") != link_names.end());
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_7") != link_names.end());
+    EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "tool0") != link_names.end());
+  }
+}
+
+TEST(TesseractKinematicsUnit, KDLKinChainActiveLinkNamesUnit)
+{
+  tesseract_kinematics::KDLFwdKinChain kin;
+  tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
+  EXPECT_TRUE(kin.init(scene_graph, "base_link", "tool0", "manip"));
+
+  runActiveLinkNamesTest(kin, false);
+}
+
+TEST(TesseractKinematicsUnit, KDLKinTreeActiveLinkNamesUnit)
+{
+  tesseract_kinematics::KDLFwdKinTree kin;
+  tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
+  std::vector<std::string> joint_names = { "joint_a1", "joint_a2", "joint_a3", "joint_a4",
+                                           "joint_a5", "joint_a6", "joint_a7" };
+
+  std::unordered_map<std::string, double> start_state;
+  start_state["joint_a1"] = 0;
+  start_state["joint_a2"] = 0;
+  start_state["joint_a3"] = 0;
+  start_state["joint_a4"] = 0;
+  start_state["joint_a5"] = 0;
+  start_state["joint_a6"] = 0;
+  start_state["joint_a7"] = 0;
+
+  EXPECT_TRUE(kin.init(scene_graph, joint_names, start_state, "manip"));
+
+  runActiveLinkNamesTest(kin, true);
+}
+
+TEST(TesseractKinematicsUnit, KDLKinChainForwardKinematicUnit)
 {
   tesseract_kinematics::KDLFwdKinChain kin;
   tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
@@ -227,7 +302,7 @@ TEST(TesseractROSUnit, KDLKinChainForwardKinematicUnit)
   runFwdKinTest(kin);
 }
 
-TEST(TesseractROSUnit, KDLKinTreeForwardKinematicUnit)
+TEST(TesseractKinematicsUnit, KDLKinTreeForwardKinematicUnit)
 {
   tesseract_kinematics::KDLFwdKinTree kin;
   tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
@@ -248,7 +323,7 @@ TEST(TesseractROSUnit, KDLKinTreeForwardKinematicUnit)
   runFwdKinTest(kin);
 }
 
-TEST(TesseractROSUnit, KDLKinChainJacobianUnit)
+TEST(TesseractKinematicsUnit, KDLKinChainJacobianUnit)
 {
   tesseract_kinematics::KDLFwdKinChain kin;
   tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
@@ -257,7 +332,7 @@ TEST(TesseractROSUnit, KDLKinChainJacobianUnit)
   runJacobianTest(kin);
 }
 
-TEST(TesseractROSUnit, KDLKinTreeJacobianUnit)
+TEST(TesseractKinematicsUnit, KDLKinTreeJacobianUnit)
 {
   tesseract_kinematics::KDLFwdKinTree kin;
   tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();

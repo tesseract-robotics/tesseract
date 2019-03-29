@@ -73,6 +73,8 @@ public:
 
   const std::vector<std::string>& getLinkNames() const override;
 
+  const std::vector<std::string>& getActiveLinkNames() const override;
+
   const Eigen::MatrixX2d& getLimits() const override;
 
   tesseract_scene_graph::SceneGraphConstPtr getSceneGraph() const { return scene_graph_; }
@@ -129,18 +131,19 @@ public:
   KDLFwdKinTree& operator=(const KDLFwdKinTree& rhs);
 
 private:
-  bool initialized_;                                      /**< Identifies if the object has been initialized */
-  tesseract_scene_graph::SceneGraphConstPtr scene_graph_; /**< Tesseract Scene Graph */
-  KDL::Tree kdl_tree_;                                    /**< KDL tree object */
-  std::string name_;                                      /**< Name of the kinematic chain */
-  std::vector<std::string> joint_list_;                   /**< List of joint names */
-  KDL::JntArray start_state_;                             /**< Intial state of the tree. Should include all joints in the model. */
-  std::vector<int> joint_qnr_;                            /**< The kdl segment number corrisponding to joint in joint_lists_ */
-  std::unordered_map<std::string, unsigned int> joint_to_qnr_;                 /**< The tree joint name to qnr */
-  std::vector<std::string> link_list_;                                         /**< List of link names */
-  Eigen::MatrixX2d joint_limits_;                                              /**< Joint limits */
-  std::unique_ptr<KDL::TreeFkSolverPos_recursive> fk_solver_;                  /**< KDL Forward Kinematic Solver */
-  std::unique_ptr<KDL::TreeJntToJacSolver> jac_solver_;                        /**< KDL Jacobian Solver */
+  bool initialized_;                                            /**< Identifies if the object has been initialized */
+  tesseract_scene_graph::SceneGraphConstPtr scene_graph_;       /**< Tesseract Scene Graph */
+  KDL::Tree kdl_tree_;                                          /**< KDL tree object */
+  std::string name_;                                            /**< Name of the kinematic chain */
+  std::vector<std::string> joint_list_;                         /**< List of joint names */
+  KDL::JntArray start_state_;                                   /**< Intial state of the tree. Should include all joints in the model. */
+  std::vector<int> joint_qnr_;                                  /**< The kdl segment number corrisponding to joint in joint_lists_ */
+  std::unordered_map<std::string, unsigned int> joint_to_qnr_;  /**< The tree joint name to qnr */
+  std::vector<std::string> link_list_;                          /**< List of link names */
+  std::vector<std::string> active_link_list_;                   /**< List of link names that move with changes in joint values */
+  Eigen::MatrixX2d joint_limits_;                               /**< Joint limits */
+  std::unique_ptr<KDL::TreeFkSolverPos_recursive> fk_solver_;   /**< KDL Forward Kinematic Solver */
+  std::unique_ptr<KDL::TreeJntToJacSolver> jac_solver_;         /**< KDL Jacobian Solver */
 
   /** @brief Set the start state for all joints in the tree. */
   void setStartState(std::unordered_map<std::string, double> start_state);

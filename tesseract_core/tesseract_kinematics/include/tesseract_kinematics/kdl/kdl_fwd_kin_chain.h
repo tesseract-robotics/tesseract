@@ -74,6 +74,8 @@ public:
 
   const std::vector<std::string>& getLinkNames() const override;
 
+  const std::vector<std::string>& getActiveLinkNames() const override;
+
   const Eigen::MatrixX2d& getLimits() const override;
 
   tesseract_scene_graph::SceneGraphConstPtr getSceneGraph() const { return scene_graph_; }
@@ -129,6 +131,7 @@ private:
   std::string name_;                                           /**< Name of the kinematic chain */
   std::vector<std::string> joint_list_;                        /**< List of joint names */
   std::vector<std::string> link_list_;                         /**< List of link names */
+  std::vector<std::string> active_link_list_;                  /**< List of link names that move with changes in joint values */
   Eigen::MatrixX2d joint_limits_;                              /**< Joint limits */
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> fk_solver_; /**< KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::ChainJntToJacSolver> jac_solver_;       /**< KDL Jacobian Solver */
