@@ -185,6 +185,12 @@ const std::vector<std::string>& KDLFwdKinTree::getLinkNames() const
   return link_list_;
 }
 
+const std::vector<std::string>& KDLFwdKinTree::getActiveLinkNames() const
+{
+  assert(checkInitialized());
+  return active_link_list_;
+}
+
 const Eigen::MatrixX2d& KDLFwdKinTree::getLimits() const { return joint_limits_; }
 
 bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
@@ -245,6 +251,7 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
   for (const auto& link : links)
     link_list_.push_back(link->getName());
 
+  active_link_list_.clear();
   for (const auto& tree_element : kdl_tree_.getSegments())
   {
     const KDL::Segment& seg = tree_element.second.segment;
@@ -257,6 +264,8 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
     {
       joint_to_qnr_[jnt.getName()] = tree_element.second.q_nr;
       start_state[jnt.getName()] = 0;
+      std::vector<std::string> children = scene_graph->getJointChildrenNames(jnt.getName());
+      active_link_list_.insert(active_link_list_.end(), children.begin(), children.end());
     }
 
     if (joint_it == joint_names.end())
@@ -281,6 +290,9 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
     }
     ++j;
   }
+  // Need to remove duplicates link names
+  std::sort(active_link_list_.begin(), active_link_list_.end());
+  active_link_list_.erase(std::unique(active_link_list_.begin(), active_link_list_.end()), active_link_list_.end());
 
   assert(joint_names.size() == joint_list_.size());
 

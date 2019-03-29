@@ -172,6 +172,12 @@ const std::vector<std::string>& KDLFwdKinChain::getLinkNames() const
   return link_list_;
 }
 
+const std::vector<std::string>& KDLFwdKinChain::getActiveLinkNames() const
+{
+  assert(checkInitialized());
+  return active_link_list_;
+}
+
 const Eigen::MatrixX2d& KDLFwdKinChain::getLimits() const { return joint_limits_; }
 
 bool KDLFwdKinChain::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
@@ -218,14 +224,25 @@ bool KDLFwdKinChain::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
 
   segment_index_[base_name_] = 0;
   link_list_.push_back(base_name_);
+  active_link_list_.clear();
+  bool found = false;
   for (unsigned i = 0, j = 0; i < robot_chain_.getNrOfSegments(); ++i)
   {
     const KDL::Segment& seg = robot_chain_.getSegment(i);
     const KDL::Joint& jnt = seg.getJoint();
     link_list_.push_back(seg.getName());
 
+    if (found)
+      active_link_list_.push_back(seg.getName());
+
     if (jnt.getType() == KDL::Joint::None)
       continue;
+
+    if (!found)
+    {
+      found = true;
+      active_link_list_.push_back(seg.getName());
+    }
 
     joint_list_[j] = jnt.getName();
     const tesseract_scene_graph::JointConstPtr& joint = scene_graph_->getJoint(jnt.getName());
