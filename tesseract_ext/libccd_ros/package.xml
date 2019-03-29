@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>libccd_ros</name>
+  <name>libccd</name>
   <version>0.1.0</version>
   <description>The Libccd Catkin Package</description>
   <maintainer email="levi.armstrong@swri.org">Levi Armstrong</maintainer>

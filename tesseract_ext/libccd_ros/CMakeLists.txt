@@ -9,4 +9,4 @@ configure_file(${CMAKE_BINARY_DIR}/libccd/ccd-config.cmake ${CMAKE_BINARY_DIR}/c
 configure_file(${CMAKE_BINARY_DIR}/libccd/ccd-config-version.cmake ${CMAKE_BINARY_DIR}/ccd-config-version.cmake COPYONLY)
 configure_file(${CMAKE_BINARY_DIR}/libccd/ccd.pc ${CMAKE_BINARY_DIR}/ccd.pc COPYONLY)
 
-install(FILES package.xml DESTINATION share/libccd_ros)
+install(FILES package.xml DESTINATION share/libccd)
