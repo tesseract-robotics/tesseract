@@ -81,33 +81,89 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
       case tesseract::tesseract_planning::WaypointType::JOINT_WAYPOINT:
       {
         JointWaypointPtr joint_waypoint = std::static_pointer_cast<JointWaypoint>(config.target_waypoints_[ind]);
-        // Add initial joint position constraint
         std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
-        jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);
+        Eigen::VectorXd coeffs = joint_waypoint->coeffs_;
+        if (coeffs.size() != pci.kin->numJoints())
+          jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);  // Default value
+        else
+          jv->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
         jv->targets =
             std::vector<double>(joint_waypoint->joint_positions_.data(),
                                 joint_waypoint->joint_positions_.data() + joint_waypoint->joint_positions_.size());
         jv->first_step = static_cast<int>(ind);
         jv->last_step = static_cast<int>(ind);
         jv->name = "joint_position";
-        jv->term_type = TT_CNT;
-        pci.cnt_infos.push_back(jv);
+        jv->term_type = joint_waypoint->is_critical_ ? TT_CNT : TT_COST;
+        joint_waypoint->is_critical_ ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
+        break;
+      }
+      case tesseract::tesseract_planning::WaypointType::JOINT_TOLERANCED_WAYPOINT:
+      {
+        // For a toleranced waypoint we add an inequality term and a smaller equality term. This acts as a "leaky" hinge
+        // to keep the problem numerically stable.
+        JointTolerancedWaypointPtr joint_waypoint =
+            std::static_pointer_cast<JointTolerancedWaypoint>(config.target_waypoints_[ind]);
+        std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
+        Eigen::VectorXd coeffs = joint_waypoint->coeffs_;
+        if (coeffs.size() != pci.kin->numJoints())
+          jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);  // Default value
+        else
+          jv->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
+        jv->targets =
+            std::vector<double>(joint_waypoint->joint_positions_.data(),
+                                joint_waypoint->joint_positions_.data() + joint_waypoint->joint_positions_.size());
+        jv->upper_tols =
+            std::vector<double>(joint_waypoint->upper_tolerance_.data(),
+                                joint_waypoint->upper_tolerance_.data() + joint_waypoint->upper_tolerance_.size());
+        jv->lower_tols =
+            std::vector<double>(joint_waypoint->lower_tolerance_.data(),
+                                joint_waypoint->lower_tolerance_.data() + joint_waypoint->lower_tolerance_.size());
+        jv->first_step = static_cast<int>(ind);
+        jv->last_step = static_cast<int>(ind);
+        jv->name = "joint_toleranced_position";
+        jv->term_type = joint_waypoint->is_critical_ ? TT_CNT : TT_COST;
+        joint_waypoint->is_critical_ ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
+
+        // Equality cost with coeffs much smaller than inequality
+        std::shared_ptr<JointPosTermInfo> jv_equal = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
+        std::vector<double> leaky_coeffs;
+        for (auto& ind : jv->coeffs)
+          leaky_coeffs.push_back(ind * 0.1);
+        jv_equal->coeffs = leaky_coeffs;
+        jv_equal->targets =
+            std::vector<double>(joint_waypoint->joint_positions_.data(),
+                                joint_waypoint->joint_positions_.data() + joint_waypoint->joint_positions_.size());
+        jv_equal->first_step = static_cast<int>(ind);
+        jv_equal->last_step = static_cast<int>(ind);
+        jv_equal->name = "joint_toleranced_position_leaky";
+        // If this was a CNT, then the inequality tolernce would not do anything
+        jv_equal->term_type = TT_COST;
+        pci.cost_infos.push_back(jv_equal);
         break;
       }
       case tesseract::tesseract_planning::WaypointType::CARTESIAN_WAYPOINT:
       {
         CartesianWaypointPtr cart_waypoint = std::static_pointer_cast<CartesianWaypoint>(config.target_waypoints_[ind]);
         std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);
-        pose->term_type = TT_CNT;
+        pose->term_type = cart_waypoint->is_critical_ ? TT_CNT : TT_COST;
         pose->name = "cartesian_position";
         pose->link = config.link_;
         pose->tcp = config.tcp_;
         pose->timestep = static_cast<int>(ind);
         pose->xyz = cart_waypoint->getPosition();
         pose->wxyz = cart_waypoint->getOrientation();
-        pose->pos_coeffs = Eigen::Vector3d(10, 10, 10);
-        pose->rot_coeffs = Eigen::Vector3d(10, 10, 10);
-        pci.cnt_infos.push_back(pose);
+        Eigen::VectorXd coeffs = cart_waypoint->coeffs_;
+        if (coeffs.size() != 6)
+        {
+          pose->pos_coeffs = Eigen::Vector3d(10, 10, 10);
+          pose->rot_coeffs = Eigen::Vector3d(10, 10, 10);
+        }
+        else
+        {
+          pose->pos_coeffs = coeffs.head<3>();
+          pose->rot_coeffs = coeffs.tail<3>();
+        }
+        cart_waypoint->is_critical_ ? pci.cnt_infos.push_back(pose) : pci.cost_infos.push_back(pose);
         break;
       }
     }
@@ -159,6 +215,27 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
     jj->term_type = TT_COST;
     pci.cost_infos.push_back(jj);
   }
+  // Add configuration cost
+  if (config.configuration_->joint_positions_.size() > 0)
+  {
+    assert(config.configuration_->joint_positions_.size() == pci.kin->numJoints());
+    JointWaypointConstPtr joint_waypoint = config.configuration_;
+    std::shared_ptr<JointPosTermInfo> jp = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
+    Eigen::VectorXd coeffs = joint_waypoint->coeffs_;
+    if (coeffs.size() != pci.kin->numJoints())
+      jp->coeffs = std::vector<double>(pci.kin->numJoints(), 0.1);  // Default value
+    else
+      jp->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
+    jp->targets =
+        std::vector<double>(joint_waypoint->joint_positions_.data(),
+                            joint_waypoint->joint_positions_.data() + joint_waypoint->joint_positions_.size());
+    jp->first_step = 0;
+    jp->last_step = pci.basic_info.n_steps - 1;
+    jp->name = "configuration_cost";
+    jp->term_type = TT_COST;
+    pci.cost_infos.push_back(jp);
+  }
+
   trajopt::TrajOptProbPtr prob = ConstructProblem(pci);
 
   // -------- Solve the problem ------------

@@ -37,18 +37,27 @@ namespace tesseract_planning
 /** @brief Used to specify the type of waypoint. Corresponds to a derived class of Waypoint*/
 enum class WaypointType
 {
-  JOINT_WAYPOINT = 0x1,      // 0000 0001
-  CARTESIAN_WAYPOINT = 0x2,  // 0000 0010
+  JOINT_WAYPOINT,
+  JOINT_TOLERANCED_WAYPOINT,
+  CARTESIAN_WAYPOINT,
 };
-// TODO: Doxygen
 /** @brief Defines a generic way of sending waypoints to a Tesseract Planner */
 class Waypoint
 {
 public:
   Waypoint() {}
-  virtual ~Waypoint() {}
   /** @brief Returns the type of waypoint so that it may be cast back to the derived type */
   WaypointType getType() const { return waypoint_type_; }
+  /** @brief Used to weight different terms in the waypoint. (Optional)
+   *
+   * For example: joint 1 vs joint 2 of the same waypoint or waypoint 1 vs waypoint 2
+   * Note: Each planner should define defaults for this when they are not set.*/
+  Eigen::VectorXd coeffs_;
+  /** @brief If false, this value is used as a guide rather than a rigid waypoint (Default=true)
+
+  Example: In Trajopt, is_critical=true => constraint, is_critical=false => cost*/
+  bool is_critical_ = true;
+
 protected:
   /** @brief Should be set by the derived class for casting Waypoint back to appropriate derived class type */
   WaypointType waypoint_type_;
@@ -59,8 +68,8 @@ class JointWaypoint : public Waypoint
 public:
   // TODO: constructor that takes joint position vector
   JointWaypoint() { waypoint_type_ = WaypointType::JOINT_WAYPOINT; }
-  virtual ~JointWaypoint() {}
-  /** Stores the joint values associated with this waypoint (radians) */
+  /** Stores the joint values associated with this waypoint (radians). Must be in the same order as the joints in the
+   * kinematics object*/
   Eigen::VectorXd joint_positions_;
 };
 /** @brief Defines a cartesian position waypoint for use with Tesseract Planners */
@@ -70,7 +79,6 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   CartesianWaypoint() { waypoint_type_ = WaypointType::CARTESIAN_WAYPOINT; }
-  virtual ~CartesianWaypoint() {}
   /** @brief Contains the position and orientation of this waypoint */
   Eigen::Isometry3d cartesian_position_;
 
@@ -87,12 +95,33 @@ public:
   }
 };
 
+/** @brief Defines a joint toleranced position waypoint for use with Tesseract Planners*/
+class JointTolerancedWaypoint : public Waypoint
+{
+public:
+  // TODO: constructor that takes joint position vector
+  JointTolerancedWaypoint() { waypoint_type_ = WaypointType::JOINT_TOLERANCED_WAYPOINT; }
+  /** @brief Stores the joint values associated with this waypoint (radians) */
+  Eigen::VectorXd joint_positions_;
+  /** @brief Amount over joint_positions_ that is allowed (positive radians).
+
+  The allowed range is joint_positions-lower_tolerance_ to joint_positions_+upper_tolerance*/
+  Eigen::VectorXd upper_tolerance_;
+  /** @brief Amount under joint_positions_ that is allowed (negative radians).
+
+  The allowed range is joint_positions-lower_tolerance_ to joint_positions_+upper_tolerance*/
+  Eigen::VectorXd lower_tolerance_;
+};
+
 typedef std::shared_ptr<Waypoint> WaypointPtr;
 typedef std::shared_ptr<const Waypoint> WaypointConstPtr;
 typedef std::shared_ptr<JointWaypoint> JointWaypointPtr;
 typedef std::shared_ptr<const JointWaypoint> JointWaypointConstPtr;
+typedef std::shared_ptr<JointTolerancedWaypoint> JointTolerancedWaypointPtr;
+typedef std::shared_ptr<const JointTolerancedWaypoint> JointTolerancedWaypointConstPtr;
 typedef std::shared_ptr<CartesianWaypoint> CartesianWaypointPtr;
 typedef std::shared_ptr<const CartesianWaypoint> CartesianWaypointConstPtr;
+
 }  // namespace tesseract_planning
 }  // namespace tesseract
 #endif
