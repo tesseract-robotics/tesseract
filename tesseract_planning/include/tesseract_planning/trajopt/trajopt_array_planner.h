@@ -50,7 +50,6 @@ struct TrajOptArrayPlannerConfig
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   TrajOptArrayPlannerConfig() {}
-  virtual ~TrajOptArrayPlannerConfig() {}
   /** @brief Vector of target waypoints given as constraints to the optimization */
   std::vector<WaypointPtr> target_waypoints_;
 
@@ -59,8 +58,8 @@ struct TrajOptArrayPlannerConfig
   trajopt::InitInfo::Type init_type_ = trajopt::InitInfo::STATIONARY;
   /** @brief The trajectory used as the optimization seed when init_type_ is set to GIVEN_TRAJ */
   trajopt::TrajArray seed_trajectory_;
-  /** @brief This joint waypoint represents the desired configuration (Optional). This is not guaranteed, but a small equality cost
-   * is set to the joint position for all points to pull the optimization in that direction.
+  /** @brief This joint waypoint represents the desired configuration (Optional). This is not guaranteed, but a small
+   * equality cost is set to the joint position for all points to pull the optimization in that direction.
    *
    * An example use case is setting it to be at the center of the joint limits. This tends to pull the robot away from
    * singularities */
