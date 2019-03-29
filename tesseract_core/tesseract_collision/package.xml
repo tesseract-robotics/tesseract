@@ -11,15 +11,13 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <depend>tesseract_geometry</depend>
-  <depend>bullet3_ros</depend>
-  <depend>fcl_ros</depend>
+  <depend>bullet3</depend>
+  <depend>fcl</depend>
   <depend>libconsole-bridge-dev</depend>
 
   <test_depend>gtest</test_depend>
-  <test_depend>rostest</test_depend>
 
-  <!-- The export tag contains other, unspecified, tags -->
   <export>
-    <!-- Other tools can request additional information be placed here -->
+    <build_type>cmake</build_type>
   </export>
 </package>

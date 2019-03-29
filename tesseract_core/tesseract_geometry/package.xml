@@ -8,8 +8,11 @@
   <author >Levi Armstrong</author>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <depend>Eigen3</depend>
+  <depend>libconsole-bridge-dev</depend>
 
   <export>
+    <build_type>cmake</build_type>
   </export>
 
 </package>
