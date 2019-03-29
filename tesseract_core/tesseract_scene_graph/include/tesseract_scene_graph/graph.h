@@ -458,7 +458,11 @@ public:
   std::vector<std::string> getLinkChildrenNames(const std::string& name) const
   {
     Vertex v = getVertex(name);
-    return getLinkChildrenHelper(v);
+    std::vector<std::string> child_link_names = getLinkChildrenHelper(v);
+
+    // This always includes the start vertex, so must remove
+    child_link_names.erase(child_link_names.begin());
+    return child_link_names;
   }
 
   /**
@@ -662,6 +666,14 @@ private:
     std::vector<std::string>& children_;
   };
 
+  /**
+   * @brief Get the children of a vertex starting with start_vertex
+   *
+   * Note: This list will include the start vertex
+   *
+   * @param start_vertex The vertex to find childeren for.
+   * @return A list of child link names including the start vertex
+   */
   std::vector<std::string> getLinkChildrenHelper(Vertex start_vertex) const
   {
     const Graph& graph = static_cast<const Graph&>(*this);
@@ -677,9 +689,6 @@ private:
 
     children_detector vis(child_link_names);
     boost::breadth_first_search(graph, start_vertex, boost::visitor(vis).root_vertex(start_vertex).vertex_index_map(prop_index_map));
-
-    // This always includes the start vertex, so must remove
-    child_link_names.erase(child_link_names.begin());
 
     return child_link_names;
   }

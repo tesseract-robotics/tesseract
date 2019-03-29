@@ -89,7 +89,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
   EXPECT_TRUE(inv_adjacent_links.size() == 1);
   EXPECT_TRUE(inv_adjacent_links[0] == "link_2");
 
-  // Check getChildLinkNames
+  // Check getLinkChildrenNames
   std::vector<std::string> child_link_names = g.getLinkChildrenNames("link_5");
   EXPECT_TRUE(child_link_names.empty());
 
@@ -99,6 +99,22 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
 
   child_link_names = g.getLinkChildrenNames("link_2");
   EXPECT_TRUE(child_link_names.size() == 3);
+  EXPECT_TRUE(std::find(child_link_names.begin(), child_link_names.end(), "link_3") != child_link_names.end());
+  EXPECT_TRUE(std::find(child_link_names.begin(), child_link_names.end(), "link_4") != child_link_names.end());
+  EXPECT_TRUE(std::find(child_link_names.begin(), child_link_names.end(), "link_5") != child_link_names.end());
+
+  // Check getJointChildrenNames
+  child_link_names = g.getJointChildrenNames("joint_4");
+  EXPECT_TRUE(child_link_names.size() == 1);
+  EXPECT_TRUE(child_link_names[0] == "link_5");
+
+  child_link_names = g.getJointChildrenNames("joint_3");
+  EXPECT_TRUE(child_link_names.size() == 1);
+  EXPECT_TRUE(child_link_names[0] == "link_4");
+
+  child_link_names = g.getJointChildrenNames("joint_1");
+  EXPECT_TRUE(child_link_names.size() == 4);
+  EXPECT_TRUE(std::find(child_link_names.begin(), child_link_names.end(), "link_2") != child_link_names.end());
   EXPECT_TRUE(std::find(child_link_names.begin(), child_link_names.end(), "link_3") != child_link_names.end());
   EXPECT_TRUE(std::find(child_link_names.begin(), child_link_names.end(), "link_4") != child_link_names.end());
   EXPECT_TRUE(std::find(child_link_names.begin(), child_link_names.end(), "link_5") != child_link_names.end());
