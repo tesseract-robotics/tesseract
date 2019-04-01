@@ -1,3 +1,23 @@
+/**
+  These tests test the TrajOptArrayPlanner and the TrajOptFreespacePlanner. They primarily check that the correct types
+  of costs and constraints are added when the flags like smooth_velocity are specified. However they are not foolproof.
+  They only check that at least one term of the correct type is in the cost or constraint vector. If there should be
+  more than one, then it might not be caught. This could be improved in the future, but it is better than nothing.
+
+  Additional features that could be tested in the future
+  * Configuration costs added correctly
+  * Intermediate waypoints added correctly to freespace
+  * coeffs set correctly
+  * init info is set correctly
+  * Seed trajectory is set correctly
+  * callbacks are added correctly
+  * Number of steps are obeyed for freespace
+  * continuous collision checking flag set correctly
+
+  Last updated: April 1, 2019
+  Matthew Powelson
+*/
+
 #include <gtest/gtest.h>
 
 // These contain the definitions of the cost types
@@ -49,6 +69,16 @@ class TrajOptFreespacePlannerTest : public tesseract::tesseract_planning::TrajOp
 {
 public:
   trajopt::TrajOptProbPtr getProblem(const tesseract::tesseract_planning::TrajOptFreespacePlannerConfig& config)
+  {
+    return generateProblem(config);
+  }
+};
+
+/** @brief Test class created to get access to the problem for testing */
+class TrajOptArrayPlannerTest : public tesseract::tesseract_planning::TrajOptArrayPlanner
+{
+public:
+  trajopt::TrajOptProbPtr getProblem(const tesseract::tesseract_planning::TrajOptArrayPlannerConfig& config)
   {
     return generateProblem(config);
   }
@@ -329,6 +359,167 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4)
     EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::CostPtr, trajopt::JointPosEqCost>(prob->getCosts())));
     EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::CostPtr, trajopt::TrajOptCostFromErrFunc>(prob->getCosts())));
   }
+}
+
+// ---------------------------------------------------
+// ------------ Array Planner ------------------------
+// ---------------------------------------------------
+
+// This test checks that the boolean flags are adding the correct costs for smoothing, collision, and cartesian cnts are
+// added correctly
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0)
+{
+  // Set the parameters (Most are being left as defaults)
+  tesseract::tesseract_planning::TrajOptArrayPlannerConfig config;
+  // These are required
+  config.link_ = "tool0";
+  config.manipulator_ = "manipulator";
+  config.kin_ = env->getManipulator(config.manipulator_);
+  config.env_ = env;
+
+  // These specify the series of points to be optimized
+  for (int ind = 0; ind < NUM_STEPS; ind++)
+  {
+    tesseract::tesseract_planning::CartesianWaypointPtr waypoint =
+        std::make_shared<tesseract::tesseract_planning::CartesianWaypoint>();
+    waypoint->cartesian_position_.translation() = Eigen::Vector3d(-0.2 + ind * .02, 0.4, 0.8);
+    waypoint->cartesian_position_.linear() = Eigen::Quaterniond(0, 1.0, 0, 0).toRotationMatrix();
+    waypoint->is_critical_ = true;
+    config.target_waypoints_.push_back(waypoint);
+  }
+
+  // Create test planner used for testing problem creation
+  tesseract_tests::TrajOptArrayPlannerTest test_planner;
+
+  // Loop over all combinations of these 4. 0001, 0010, 0011, ... , 1111
+  for (uint8_t byte = 0; byte < 16; byte++)
+  {
+    bool t1 = static_cast<bool>(byte & 0x1);
+    bool t2 = static_cast<bool>(byte & 0x2);
+    bool t3 = static_cast<bool>(byte & 0x4);
+    bool t4 = static_cast<bool>(byte & 0x8);
+
+    config.smooth_velocities_ = t1;
+    config.smooth_accelerations_ = t2;
+    config.smooth_jerks_ = t3;
+    config.collision_check_ = t4;
+    trajopt::TrajOptProbPtr prob = test_planner.getProblem(config);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::CostPtr, trajopt::JointVelEqCost>(prob->getCosts())), t1);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::CostPtr, trajopt::JointAccEqCost>(prob->getCosts())), t2);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::CostPtr, trajopt::JointJerkEqCost>(prob->getCosts())), t3);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::CostPtr, trajopt::CollisionCost>(prob->getCosts())), t4);
+  }
+  trajopt::TrajOptProbPtr prob = test_planner.getProblem(config);
+  EXPECT_FALSE(
+      (tesseract_tests::vectorContainsType<sco::ConstraintPtr, trajopt::JointPosEqConstraint>(prob->getConstraints())));
+  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::ConstraintPtr, trajopt::TrajOptConstraintFromErrFunc>(
+      prob->getConstraints())));
+  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::CostPtr, trajopt::JointPosEqCost>(prob->getCosts())));
+  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::CostPtr, trajopt::TrajOptCostFromErrFunc>(prob->getCosts())));
+}
+
+// This test checks that the terms are being added correctly for cartesian costs
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner1)
+{
+  // Set the parameters (Most are being left as defaults)
+  tesseract::tesseract_planning::TrajOptArrayPlannerConfig config;
+  // These are required
+  config.link_ = "tool0";
+  config.manipulator_ = "manipulator";
+  config.kin_ = env->getManipulator(config.manipulator_);
+  config.env_ = env;
+
+  // These specify the series of points to be optimized
+  for (int ind = 0; ind < NUM_STEPS; ind++)
+  {
+    tesseract::tesseract_planning::CartesianWaypointPtr waypoint =
+        std::make_shared<tesseract::tesseract_planning::CartesianWaypoint>();
+    waypoint->cartesian_position_.translation() = Eigen::Vector3d(-0.2 + ind * .02, 0.4, 0.8);
+    waypoint->cartesian_position_.linear() = Eigen::Quaterniond(0, 1.0, 0, 0).toRotationMatrix();
+    waypoint->is_critical_ = false;
+    config.target_waypoints_.push_back(waypoint);
+  }
+
+  // Create test planner used for testing problem creation
+  tesseract_tests::TrajOptArrayPlannerTest test_planner;
+
+  trajopt::TrajOptProbPtr prob = test_planner.getProblem(config);
+  EXPECT_FALSE(
+      (tesseract_tests::vectorContainsType<sco::ConstraintPtr, trajopt::JointPosEqConstraint>(prob->getConstraints())));
+  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::ConstraintPtr, trajopt::TrajOptConstraintFromErrFunc>(
+      prob->getConstraints())));
+  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::CostPtr, trajopt::JointPosEqCost>(prob->getCosts())));
+  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::CostPtr, trajopt::TrajOptCostFromErrFunc>(prob->getCosts())));
+}
+
+// This test checks that the terms are being added correctly for joint cnts
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner2)
+{
+  // Set the parameters (Most are being left as defaults)
+  tesseract::tesseract_planning::TrajOptArrayPlannerConfig config;
+  // These are required
+  config.link_ = "tool0";
+  config.manipulator_ = "manipulator";
+  config.kin_ = env->getManipulator(config.manipulator_);
+  config.env_ = env;
+
+  // These specify the series of points to be optimized
+  for (int ind = 0; ind < NUM_STEPS; ind++)
+  {
+    tesseract::tesseract_planning::JointWaypointPtr waypoint =
+        std::make_shared<tesseract::tesseract_planning::JointWaypoint>();
+    Eigen::VectorXd joint_positions1(7);
+    joint_positions1 << 0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0;
+    waypoint->joint_positions_ = joint_positions1;
+    waypoint->is_critical_ = true;
+    config.target_waypoints_.push_back(waypoint);
+  }
+
+  // Create test planner used for testing problem creation
+  tesseract_tests::TrajOptArrayPlannerTest test_planner;
+
+  trajopt::TrajOptProbPtr prob = test_planner.getProblem(config);
+  EXPECT_TRUE(
+      (tesseract_tests::vectorContainsType<sco::ConstraintPtr, trajopt::JointPosEqConstraint>(prob->getConstraints())));
+  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::ConstraintPtr, trajopt::TrajOptConstraintFromErrFunc>(
+      prob->getConstraints())));
+  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::CostPtr, trajopt::JointPosEqCost>(prob->getCosts())));
+  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::CostPtr, trajopt::TrajOptCostFromErrFunc>(prob->getCosts())));
+}
+
+// This test checks that the terms are being added correctly for joint costs
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner3)
+{
+  // Set the parameters (Most are being left as defaults)
+  tesseract::tesseract_planning::TrajOptArrayPlannerConfig config;
+  // These are required
+  config.link_ = "tool0";
+  config.manipulator_ = "manipulator";
+  config.kin_ = env->getManipulator(config.manipulator_);
+  config.env_ = env;
+
+  // These specify the series of points to be optimized
+  for (int ind = 0; ind < NUM_STEPS; ind++)
+  {
+    tesseract::tesseract_planning::JointWaypointPtr waypoint =
+        std::make_shared<tesseract::tesseract_planning::JointWaypoint>();
+    Eigen::VectorXd joint_positions1(7);
+    joint_positions1 << 0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0;
+    waypoint->joint_positions_ = joint_positions1;
+    waypoint->is_critical_ = false;
+    config.target_waypoints_.push_back(waypoint);
+  }
+
+  // Create test planner used for testing problem creation
+  tesseract_tests::TrajOptArrayPlannerTest test_planner;
+
+  trajopt::TrajOptProbPtr prob = test_planner.getProblem(config);
+  EXPECT_FALSE(
+      (tesseract_tests::vectorContainsType<sco::ConstraintPtr, trajopt::JointPosEqConstraint>(prob->getConstraints())));
+  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::ConstraintPtr, trajopt::TrajOptConstraintFromErrFunc>(
+      prob->getConstraints())));
+  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::CostPtr, trajopt::JointPosEqCost>(prob->getCosts())));
+  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::CostPtr, trajopt::TrajOptCostFromErrFunc>(prob->getCosts())));
 }
 
 int main(int argc, char** argv)
