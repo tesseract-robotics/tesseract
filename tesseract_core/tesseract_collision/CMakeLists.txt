@@ -23,6 +23,19 @@ list(APPEND LIBFCL_LIBRARIES ${CCD_LIBRARIES})
 
 set(TESSERACT_COLLISION_PKGCONFIG_REQUIRES Eigen3 console_bridge Boost octomap PkgConfig ccd fcl Bullet tesseract_geometry)
 
+# Create interface for core
+add_library(${PROJECT_NAME}_core INTERFACE)
+target_link_libraries(${PROJECT_NAME}_core INTERFACE Eigen3::Eigen tesseract_geometry ${Boost_LIBRARIES} ${BULLET_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_core INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
+target_compile_features(${PROJECT_NAME}_core INTERFACE cxx_std_11)
+target_include_directories(${PROJECT_NAME}_core INTERFACE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
+    ${BULLET_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS})
+
+# Create target for Bullet implementation
 add_library(${PROJECT_NAME}_bullet SHARED
   src/bullet/bullet_cast_bvh_manager.cpp
   src/bullet/bullet_cast_simple_manager.cpp
@@ -30,8 +43,7 @@ add_library(${PROJECT_NAME}_bullet SHARED
   src/bullet/bullet_discrete_simple_manager.cpp
   src/bullet/bullet_utils.cpp
 )
-
-target_link_libraries(${PROJECT_NAME}_bullet tesseract_geometry Eigen3::Eigen ${BULLET_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${console_bridge_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_bullet PUBLIC tesseract_geometry Eigen3::Eigen console_bridge ${BULLET_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_bullet PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME}_bullet PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_bullet PUBLIC
@@ -41,11 +53,11 @@ target_include_directories(${PROJECT_NAME}_bullet SYSTEM PUBLIC
     ${BULLET_INCLUDE_DIRS}
     ${LIBFCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
-    ${OCTOMAP_INCLUDE_DIRS}
-    ${console_bridge_INCLUDE_DIRS})
+    ${OCTOMAP_INCLUDE_DIRS})
 
+# Create target for FCL implementation
 add_library(${PROJECT_NAME}_fcl SHARED src/fcl/fcl_discrete_managers.cpp src/fcl/fcl_utils.cpp)
-target_link_libraries(${PROJECT_NAME}_fcl tesseract_geometry Eigen3::Eigen ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_LIBRARIES} ${console_bridge_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_fcl PUBLIC tesseract_geometry Eigen3::Eigen console_bridge ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_fcl PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME}_fcl PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_fcl PUBLIC
@@ -55,11 +67,11 @@ target_include_directories(${PROJECT_NAME}_fcl SYSTEM PUBLIC
     ${BULLET_INCLUDE_DIRS}
     ${LIBFCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
-    ${OCTOMAP_INCLUDE_DIRS}
-    ${console_bridge_INCLUDE_DIRS})
+    ${OCTOMAP_INCLUDE_DIRS})
 
+# Create target for creating convex hull's from meshes
 add_executable(create_convex_hull src/create_convex_hull.cpp)
-target_link_libraries(create_convex_hull tesseract_geometry Eigen3::Eigen ${BULLET_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${console_bridge_LIBRARIES})
+target_link_libraries(create_convex_hull PUBLIC tesseract_geometry Eigen3::Eigen console_bridge ${BULLET_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES})
 target_compile_options(create_convex_hull PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(create_convex_hull PRIVATE cxx_std_11)
 target_include_directories(create_convex_hull PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
@@ -67,9 +79,9 @@ target_include_directories(create_convex_hull SYSTEM PUBLIC
     ${BULLET_INCLUDE_DIRS}
     ${LIBFCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
-    ${OCTOMAP_INCLUDE_DIRS}
-    ${console_bridge_INCLUDE_DIRS})
+    ${OCTOMAP_INCLUDE_DIRS})
 
+list (APPEND TESSERACT_COLLISION_LIBRARIES ${PROJECT_NAME}_core)
 list (APPEND TESSERACT_COLLISION_LIBRARIES ${PROJECT_NAME}_bullet)
 list (APPEND TESSERACT_COLLISION_LIBRARIES ${PROJECT_NAME}_fcl)
 
@@ -114,5 +126,9 @@ install(FILES "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc"
 option(ENABLE_TESTS "Enable tests" OFF)
 if (${ENABLE_TESTS})
   enable_testing()
+  add_custom_target(run_tests ALL
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -V)
+
   add_subdirectory(test)
 endif()

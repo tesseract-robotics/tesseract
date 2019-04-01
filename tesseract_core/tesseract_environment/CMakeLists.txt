@@ -17,17 +17,27 @@ find_package(tesseract_scene_graph REQUIRED)
 
 set(TESSERACT_ENVIRONMENT_PKGCONFIG_REQUIRES Eigen3 orocos_kdl console_bridge tesseract_collision tesseract_geometry tesseract_scene_graph)
 
+# Create interface for core
+add_library(${PROJECT_NAME}_core INTERFACE)
+target_link_libraries(${PROJECT_NAME}_core INTERFACE Eigen3::Eigen tesseract_collision_core tesseract_scene_graph tesseract_geometry)
+target_compile_options(${PROJECT_NAME}_core INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
+target_compile_features(${PROJECT_NAME}_core INTERFACE cxx_std_11)
+target_include_directories(${PROJECT_NAME}_core INTERFACE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+
 add_library(${PROJECT_NAME}_kdl SHARED src/kdl/kdl_env.cpp)
-target_link_libraries(${PROJECT_NAME}_kdl tesseract_geometry tesseract_collision_fcl tesseract_collision_bullet tesseract_scene_graph Eigen3::Eigen ${BULLET_LIBRARIES} ${orocos_kdl_LIBRARIES} ${console_bridge_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract_collision_fcl tesseract_collision_bullet tesseract_scene_graph Eigen3::Eigen orocos-kdl console_bridge ${BULLET_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_kdl PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME}_kdl PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_kdl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_kdl SYSTEM INTERFACE
-    ${orocos_kdl_INCLUDE_DIRS}
-    ${console_bridge_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME}_kdl SYSTEM PUBLIC
+    ${BULLET_INCLUDE_DIRS}
+    ${orocos_kdl_INCLUDE_DIRS}) # Orocos did not export target correctly
 
+list (APPEND TESSERACT_ENVIRONMENT_LIBRARIES ${PROJECT_NAME}_core)
 list (APPEND TESSERACT_ENVIRONMENT_LIBRARIES ${PROJECT_NAME}_kdl)
 
 install(TARGETS ${TESSERACT_ENVIRONMENT_LIBRARIES} EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
@@ -67,5 +77,9 @@ install(FILES "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc"
 option(ENABLE_TESTS "Enable tests" OFF)
 if (${ENABLE_TESTS})
   enable_testing()
+  add_custom_target(run_tests ALL
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -V)
+
   add_subdirectory(test)
 endif()
