@@ -5,7 +5,6 @@ TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH
 #include <iostream>
 #include <fstream>
 #include <tesseract_geometry/geometries.h>
-#include <ros/package.h>
 TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
@@ -215,19 +214,19 @@ TEST(TesseractSceneGraphUnit, LoadMeshUnit)
 {
   using namespace tesseract_scene_graph;
 
-  std::string mesh_file = std::string(DATA_DIR) + "/sphere_p25m.stl";
+  std::string mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.stl";
   std::vector<tesseract_geometry::MeshPtr> meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file);
   EXPECT_TRUE(meshes.size() == 1);
   EXPECT_TRUE(meshes[0]->getTriangleCount() == 80);
   EXPECT_TRUE(meshes[0]->getVerticeCount() == 42);
 
-  mesh_file = std::string(DATA_DIR) + "/sphere_p25m.ply";
+  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply";
   meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file);
   EXPECT_TRUE(meshes.size() == 1);
   EXPECT_TRUE(meshes[0]->getTriangleCount() == 80);
   EXPECT_TRUE(meshes[0]->getVerticeCount() == 42);
 
-  mesh_file = std::string(DATA_DIR) + "/sphere_p25m.dae";
+  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.dae";
   meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file);
   EXPECT_TRUE(meshes.size() == 2);
   EXPECT_TRUE(meshes[0]->getTriangleCount() == 80);
@@ -235,25 +234,25 @@ TEST(TesseractSceneGraphUnit, LoadMeshUnit)
   EXPECT_TRUE(meshes[1]->getTriangleCount() == 80);
   EXPECT_TRUE(meshes[1]->getVerticeCount() == 42);
 
-  mesh_file = std::string(DATA_DIR) + "/sphere_p25m.dae";
+  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.dae";
   meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file, Eigen::Vector3d(1,1,1), false, true);
   EXPECT_TRUE(meshes.size() == 1);
   EXPECT_TRUE(meshes[0]->getTriangleCount() == 2*80);
   EXPECT_TRUE(meshes[0]->getVerticeCount() == 2*42);
 
-  mesh_file = std::string(DATA_DIR) + "/box_2m.ply";
+  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
   meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file, Eigen::Vector3d(1,1,1), true, true);
   EXPECT_TRUE(meshes.size() == 1);
   EXPECT_TRUE(meshes[0]->getTriangleCount() == 12);
   EXPECT_TRUE(meshes[0]->getVerticeCount() == 8);
 
-  mesh_file = std::string(DATA_DIR) + "/box_2m.ply";
+  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
   meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file, Eigen::Vector3d(1,1,1), true, true);
   EXPECT_TRUE(meshes.size() == 1);
   EXPECT_TRUE(meshes[0]->getTriangleCount() == 12);
   EXPECT_TRUE(meshes[0]->getVerticeCount() == 8);
 
-  mesh_file = std::string(DATA_DIR) + "/box_2m.ply";
+  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
   std::vector<tesseract_geometry::ConvexMeshPtr> convex_meshes = createMeshFromPath<tesseract_geometry::ConvexMesh>(mesh_file, Eigen::Vector3d(1,1,1), false, false);
   EXPECT_TRUE(convex_meshes.size() == 1);
   EXPECT_TRUE(convex_meshes[0]->getFaceCount() == 6);
@@ -263,9 +262,9 @@ TEST(TesseractSceneGraphUnit, LoadMeshUnit)
 std::string locateResource(const std::string& url)
 {
   std::string mod_url = url;
-  if (url.find("package://") == 0)
+  if (url.find("package://tesseract_support") == 0)
   {
-    mod_url.erase(0, strlen("package://"));
+    mod_url.erase(0, strlen("package://tesseract_support"));
     size_t pos = mod_url.find("/");
     if (pos == std::string::npos)
     {
@@ -274,14 +273,14 @@ std::string locateResource(const std::string& url)
 
     std::string package = mod_url.substr(0, pos);
     mod_url.erase(0, pos);
-    std::string package_path = ros::package::getPath(package);
+    std::string package_path = std::string(TESSERACT_SUPPORT_DIR);
 
     if (package_path.empty())
     {
       return std::string();
     }
 
-    mod_url = package_path + mod_url; // "file://" + package_path + mod_url;
+    mod_url = package_path + mod_url;
   }
 
   return mod_url;
@@ -291,7 +290,7 @@ TEST(TesseractSceneGraphUnit, LoadURDFUnit)
 {
   using namespace tesseract_scene_graph;
 
-  std::string urdf_file = std::string(DATA_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
+  std::string urdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
   ResourceLocatorFn locator = locateResource;
   SceneGraphPtr g = parseURDF(urdf_file, locator);
@@ -323,8 +322,8 @@ TEST(TesseractSceneGraphUnit, LoadSRDFUnit)
 {
   using namespace tesseract_scene_graph;
 
-  std::string urdf_file = std::string(DATA_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
-  std::string srdf_file = std::string(DATA_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
+  std::string urdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
+  std::string srdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
 
   ResourceLocatorFn locator = locateResource;
   SceneGraphPtr g = parseURDF(urdf_file, locator);
@@ -345,7 +344,7 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)
 {
   using namespace tesseract_scene_graph;
 
-  std::string urdf_file = std::string(DATA_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
+  std::string urdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
   ResourceLocatorFn locator = locateResource;
   SceneGraphPtr g = parseURDF(urdf_file, locator);

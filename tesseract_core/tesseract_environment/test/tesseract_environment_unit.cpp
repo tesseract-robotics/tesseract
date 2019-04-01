@@ -1,6 +1,5 @@
 #include <tesseract_environment/core/macros.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
-#include <ros/package.h>
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <tesseract_scene_graph/parser/urdf_parser.h>
@@ -18,9 +17,9 @@ using namespace tesseract_environment;
 std::string locateResource(const std::string& url)
 {
   std::string mod_url = url;
-  if (url.find("package://") == 0)
+  if (url.find("package://tesseract_support") == 0)
   {
-    mod_url.erase(0, strlen("package://"));
+    mod_url.erase(0, strlen("package://tesseract_support"));
     size_t pos = mod_url.find("/");
     if (pos == std::string::npos)
     {
@@ -29,14 +28,14 @@ std::string locateResource(const std::string& url)
 
     std::string package = mod_url.substr(0, pos);
     mod_url.erase(0, pos);
-    std::string package_path = ros::package::getPath(package);
+    std::string package_path = std::string(TESSERACT_SUPPORT_DIR);
 
     if (package_path.empty())
     {
       return std::string();
     }
 
-    mod_url = package_path + mod_url; // "file://" + package_path + mod_url;
+    mod_url = package_path + mod_url;
   }
 
   return mod_url;
@@ -44,7 +43,7 @@ std::string locateResource(const std::string& url)
 
 SceneGraphPtr getSceneGraph()
 {
-  std::string path = std::string(DATA_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
+  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
   tesseract_scene_graph::ResourceLocatorFn locator = locateResource;
   return tesseract_scene_graph::parseURDF(path, locator);

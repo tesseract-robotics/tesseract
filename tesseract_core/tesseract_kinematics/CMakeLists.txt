@@ -16,20 +16,31 @@ find_package(tesseract_geometry REQUIRED) #This should not be need I think there
 
 set(TESSERACT_KINEMATICS_PKGCONFIG_REQUIRES Eigen3 console_bridge orocos_kdl tesseract_scene_graph)
 
+# Create interface for core
+add_library(${PROJECT_NAME}_core INTERFACE)
+target_link_libraries(${PROJECT_NAME}_core INTERFACE Eigen3::Eigen tesseract_scene_graph tesseract_geometry)
+target_compile_options(${PROJECT_NAME}_core INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
+target_compile_features(${PROJECT_NAME}_core INTERFACE cxx_std_11)
+target_include_directories(${PROJECT_NAME}_core INTERFACE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+
+# Add KDL implementation of tesseract_kinematics
 add_library(${PROJECT_NAME}_kdl SHARED
   src/kdl/kdl_fwd_kin_chain.cpp
   src/kdl/kdl_fwd_kin_tree.cpp
 )
-target_link_libraries(${PROJECT_NAME}_kdl tesseract_scene_graph tesseract_geometry Eigen3::Eigen ${orocos_kdl_LIBRARIES} ${console_bridge_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract_scene_graph tesseract_geometry Eigen3::Eigen orocos-kdl console_bridge)
 target_compile_options(${PROJECT_NAME}_kdl PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME}_kdl PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_kdl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_kdl SYSTEM PUBLIC
-    ${orocos_kdl_INCLUDE_DIRS}
-    ${console_bridge_INCLUDE_DIRS})
+    ${orocos_kdl_INCLUDE_DIRS}) # Orocos did not export target correctly
 
+
+list (APPEND TESSERACT_KINEMATICS_LIBRARIES ${PROJECT_NAME}_core)
 list (APPEND TESSERACT_KINEMATICS_LIBRARIES ${PROJECT_NAME}_kdl)
 
 # Mark executables and/or libraries for installation
@@ -37,7 +48,7 @@ install(TARGETS ${TESSERACT_KINEMATICS_LIBRARIES} EXPORT ${PROJECT_NAME}-targets
 install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake/${PROJECT_NAME})
 
 # Mark cpp header files for installation
-install(DIRECTORY include/${PROJECT_NAME}/
+install(DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
@@ -72,5 +83,9 @@ install(FILES "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc"
 option(ENABLE_TESTS "Enable tests" OFF)
 if (${ENABLE_TESTS})
   enable_testing()
+  add_custom_target(run_tests ALL
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -V)
+
   add_subdirectory(test)
 endif()

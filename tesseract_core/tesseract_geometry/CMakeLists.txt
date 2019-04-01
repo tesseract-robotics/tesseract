@@ -13,14 +13,12 @@ find_package(console_bridge REQUIRED)
 set(TESSERACT_GEOMETRY_PKGCONFIG_REQUIRES Eigen3 console_bridge)
 
 add_library(${PROJECT_NAME} INTERFACE)
-target_link_libraries(${PROJECT_NAME} INTERFACE Eigen3::Eigen ${console_bridge_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} INTERFACE Eigen3::Eigen console_bridge)
 target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_11)
 target_include_directories(${PROJECT_NAME} INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE
-    ${console_bridge_INCLUDE_DIRS})
 
 install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
 install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake/${PROJECT_NAME})

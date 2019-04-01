@@ -28,7 +28,7 @@ endif()
 set(TESSERACT_SCENE_GRAPH_PKGCONFIG_REQUIRES Eigen3 urdfdom urdfdom_headers orocos_kdl TinyXML ASSIMP console_bridge tesseract_geometry)
 
 add_library(${PROJECT_NAME} INTERFACE)
-target_link_libraries(${PROJECT_NAME} INTERFACE tesseract_geometry Eigen3::Eigen ${Boost_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${ASSIMP_LIBRARIES} ${orocos_kdl_LIBRARIES} ${TinyXML_LIBRARIES} ${console_bridge_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} INTERFACE tesseract_geometry Eigen3::Eigen orocos-kdl console_bridge ${Boost_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${ASSIMP_LIBRARIES} ${TinyXML_LIBRARIES})
 target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_definitions(${PROJECT_NAME} INTERFACE Boost_USE_STATIC_LIBS=OFF Boost_USE_MULTITHREADED=ON Boost_USE_STATIC_RUNTIME=OFF)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_11)
@@ -39,9 +39,8 @@ target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE
     ${Boost_INCLUDE_DIRS}
     ${urdfdom_INCLUDE_DIRS}
     ${urdfdom_headers_INCLUDE_DIRS}
-    ${orocos_kdl_INCLUDE_DIRS}
     ${TinyXML_INCLUDE_DIRS}
-    ${console_bridge_INCLUDE_DIRS})
+    ${orocos_kdl_INCLUDE_DIRS}) # Orocos did not export target correctly
 
 install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
 install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake/${PROJECT_NAME})
@@ -83,5 +82,9 @@ install(FILES "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc"
 option(ENABLE_TESTS "Enable tests" OFF)
 if (${ENABLE_TESTS})
   enable_testing()
+  add_custom_target(run_tests ALL
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -V)
+
   add_subdirectory(test)
 endif()
