@@ -58,6 +58,44 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
 
   // -------- Construct the problem ------------
   // -------------------------------------------
+  auto prob = generateProblem(config);
+
+  // -------- Solve the problem ------------
+  // ---------------------------------------
+  // Set the parameters in trajopt_planner
+  tesseract::tesseract_planning::TrajOptPlannerConfig config_planner(prob);
+  config_planner.params = config.params_;
+  config_planner.callbacks = config.callbacks_;
+
+  // Create Plot Callback
+  if (config.plot_callback_)
+  {
+    // Currently plotting is only supported if the environment is ROSBasicEnv
+    tesseract::tesseract_ros::ROSBasicEnvConstPtr ros_env =
+        std::dynamic_pointer_cast<const tesseract::tesseract_ros::ROSBasicEnv>(config.env_);
+    if (ros_env != nullptr)
+    {
+      tesseract::tesseract_ros::ROSBasicPlottingPtr plotter_ptr =
+          std::make_shared<tesseract::tesseract_ros::ROSBasicPlotting>(ros_env);
+      config_planner.callbacks.push_back(PlotCallback(*prob, plotter_ptr));
+    }
+  }
+
+  tesseract::tesseract_planning::TrajOptPlanner planner;
+  tesseract::tesseract_planning::PlannerResponse planning_response;
+
+  // Solve problem. Results are stored in the response
+  bool success = planner.solve(planning_response, config_planner);
+  response = planning_response;
+
+  return success;
+}
+
+bool TrajOptArrayPlanner::terminate() { return false; }
+void TrajOptArrayPlanner::clear() { request_ = PlannerRequest(); }
+
+trajopt::TrajOptProbPtr TrajOptArrayPlanner::generateProblem(const TrajOptArrayPlannerConfig& config)
+{
   ProblemConstructionInfo pci(config.env_);
   pci.kin = config.kin_;
 
@@ -237,39 +275,7 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
   }
 
   trajopt::TrajOptProbPtr prob = ConstructProblem(pci);
-
-  // -------- Solve the problem ------------
-  // ---------------------------------------
-  // Set the parameters in trajopt_planner
-  tesseract::tesseract_planning::TrajOptPlannerConfig config_planner(prob);
-  config_planner.params = config.params_;
-  config_planner.callbacks = config.callbacks_;
-
-  // Create Plot Callback
-  if (config.plot_callback_)
-  {
-    // Currently plotting is only supported if the environment is ROSBasicEnv
-    tesseract::tesseract_ros::ROSBasicEnvConstPtr ros_env =
-        std::dynamic_pointer_cast<const tesseract::tesseract_ros::ROSBasicEnv>(config.env_);
-    if (ros_env != nullptr)
-    {
-      tesseract::tesseract_ros::ROSBasicPlottingPtr plotter_ptr =
-          std::make_shared<tesseract::tesseract_ros::ROSBasicPlotting>(ros_env);
-      config_planner.callbacks.push_back(PlotCallback(*prob, plotter_ptr));
-    }
-  }
-
-  tesseract::tesseract_planning::TrajOptPlanner planner;
-  tesseract::tesseract_planning::PlannerResponse planning_response;
-
-  // Solve problem. Results are stored in the response
-  bool success = planner.solve(planning_response, config_planner);
-  response = planning_response;
-
-  return success;
+  return prob;
 }
-
-bool TrajOptArrayPlanner::terminate() { return false; }
-void TrajOptArrayPlanner::clear() { request_ = PlannerRequest(); }
 }  // namespace tesseract_planning
 }  // namespace tesseract

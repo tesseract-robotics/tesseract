@@ -147,6 +147,10 @@ public:
   bool terminate() override;
 
   void clear() override;
+
+protected:
+  /** @brief Generates the problem based on the config primarily for testing */
+  trajopt::TrajOptProbPtr generateProblem(const TrajOptFreespacePlannerConfig& config);
 };
 }  // namespace tesseract_planning
 }  // namespace tesseract
