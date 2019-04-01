@@ -65,6 +65,18 @@ add_dependencies(${PROJECT_NAME}_ompl_test ${${PROJECT_NAME}_EXPORTED_TARGETS} $
 target_link_libraries(${PROJECT_NAME}_ompl_test ${catkin_LIBRARIES} ${PROJECT_NAME}_ompl)
 target_compile_options(${PROJECT_NAME}_ompl_test PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
+if (CATKIN_ENABLE_TESTING)
+
+  include_directories(${catkin_INCLUDE_DIRS})
+
+  catkin_add_gtest(${PROJECT_NAME}_trajopt_unit test/trajopt_planners_tests.cpp)
+  target_link_libraries(${PROJECT_NAME}_trajopt_unit  ${PROJECT_NAME}_trajopt_freespace ${PROJECT_NAME}_trajopt_array ${catkin_LIBRARIES} )
+  target_compile_options(${PROJECT_NAME}_trajopt_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+
+
+endif()
+
+
 #############
 ## Install ##
 #############
