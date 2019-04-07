@@ -99,20 +99,27 @@ bool TrajOptPlanner::solve(PlannerResponse& response, const TrajOptPlannerConfig
   bool found = tesseract::continuousCollisionCheckTrajectory(
       *manager, *config.prob->GetEnv(), *config.prob->GetKin(), getTraj(opt.x(), config.prob->GetVars()), collisions);
 
-  if (found)
+  // Send response
+  response.trajectory = getTraj(opt.x(), config.prob->GetVars());
+  response.joint_names = config.prob->GetKin()->getJointNames();
+  if (opt.results().status == sco::OptStatus::OPT_PENALTY_ITERATION_LIMIT ||
+      opt.results().status == sco::OptStatus::OPT_FAILED || opt.results().status == sco::OptStatus::INVALID)
   {
-    ROS_INFO("Final trajectory is in collision");
+    response.status_code = -3;
+    response.status_description = status_code_map_[-3] + ": " + sco::statusToString(opt.results().status);
+  }
+  else if (found)
+  {
+    response.status_code = -4;
+    response.status_description = status_code_map_[-4];
   }
   else
   {
     ROS_INFO("Final trajectory is collision free");
+    response.status_code = 0;
+    response.status_description = status_code_map_[0] + ": " + sco::statusToString(opt.results().status);
   }
 
-  // Send response
-  response.trajectory = getTraj(opt.x(), config.prob->GetVars());
-  response.status_code = opt.results().status;
-  response.joint_names = config.prob->GetKin()->getJointNames();
-  response.status_description = sco::statusToString(opt.results().status);
   return true;
 }
 
