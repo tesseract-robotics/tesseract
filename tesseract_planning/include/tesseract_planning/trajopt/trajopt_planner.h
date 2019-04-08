@@ -60,14 +60,16 @@ public:
   {
     name_ = "TRAJOPT";
 
+    // Success Status Codes
+    status_code_map_[0] = "Found valid solution";
+
     // Error Status Codes
     status_code_map_[-1] = "Invalid config data format";
     status_code_map_[-2] = "Failed to parse config data";
-    status_code_map_[-3] = "";
-
-    // Converge Status Codes
+    status_code_map_[-3] = "Failed to find valid solution";
+    status_code_map_[-4] = "Found valid solution, but is in collision";
   }
-  virtual ~TrajOptPlanner() {}
+  ~TrajOptPlanner() override {}
   /**
    * @brief Sets up the opimizer and solves a SQP problem read from json with no callbacks and dafault parameterss
    * @param response The results of the optimization. Primary output is the optimized joint trajectory
