@@ -58,6 +58,8 @@ inline std::vector<WaypointPtr> interpolate(const Waypoint& start, const Waypoin
       {
         CartesianWaypointPtr new_waypoint = std::make_shared<tesseract::tesseract_planning::CartesianWaypoint>();
         new_waypoint->cartesian_position_ = eigen_pose;
+        new_waypoint->coeffs_ = start.coeffs_;
+        new_waypoint->is_critical_ = start.is_critical_;
         result.push_back(new_waypoint);
       }
 
