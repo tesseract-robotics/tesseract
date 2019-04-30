@@ -128,6 +128,9 @@ public:
 
   /**
    * @brief Adds joint to the
+   *
+   * TODO: This should be removed
+   *
    * @param joint The joint to be added
    * @return Return False if parent or child link does not exists and if joint name already exists in the graph, otherwise true
    */

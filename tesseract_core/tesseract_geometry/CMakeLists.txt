@@ -5,12 +5,14 @@ find_package(Eigen3 REQUIRED)
 find_package(console_bridge REQUIRED)
 
 add_library(${PROJECT_NAME} INTERFACE)
-target_link_libraries(${PROJECT_NAME} INTERFACE Eigen3::Eigen console_bridge)
+target_link_libraries(${PROJECT_NAME} INTERFACE console_bridge)
 target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_11)
 target_include_directories(${PROJECT_NAME} INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE
+    ${EIGEN3_INCLUDE_DIRS})
 
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
 

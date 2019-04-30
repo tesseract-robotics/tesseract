@@ -5,12 +5,14 @@ find_package(Eigen3 REQUIRED)
 find_package(tesseract_collision REQUIRED)
 
 add_library(${PROJECT_NAME} INTERFACE)
-target_link_libraries(${PROJECT_NAME} INTERFACE Eigen3::Eigen tesseract_collision_fcl tesseract_collision_bullet)
+target_link_libraries(${PROJECT_NAME} INTERFACE tesseract_collision_fcl tesseract_collision_bullet)
 target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_11)
 target_include_directories(${PROJECT_NAME} INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE
+    ${EIGEN3_INCLUDE_DIRS})
 
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
 
