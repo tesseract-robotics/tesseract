@@ -62,7 +62,8 @@ namespace tesseract_scene_graph
   inline std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
                                                          const aiNode* node,
                                                          const aiMatrix4x4& parent_transform,
-                                                         const Eigen::Vector3d& scale)
+                                                         const Eigen::Vector3d& scale,
+                                                         const std::string& path)
   {
     std::vector<std::shared_ptr<T>> meshes;
 
@@ -105,12 +106,12 @@ namespace tesseract_scene_graph
       for (long i = 0; i < triangles->size(); ++i)
         (*triangles)[i] = local_triangles[static_cast<size_t>(i)];
 
-      meshes.push_back(std::shared_ptr<T>(new T(vertices, triangles, triangle_count)));
+      meshes.push_back(std::shared_ptr<T>(new T(vertices, triangles, triangle_count, path)));
     }
 
     for (unsigned int n = 0; n < node->mNumChildren; ++n)
     {
-      std::vector<std::shared_ptr<T>> child_meshes = extractMeshData<T>(scene, node->mChildren[n], transform, scale);
+      std::vector<std::shared_ptr<T>> child_meshes = extractMeshData<T>(scene, node->mChildren[n], transform, scale, path);
       meshes.insert(meshes.end(), child_meshes.begin(), child_meshes.end());
     }
     return meshes;
@@ -133,7 +134,7 @@ namespace tesseract_scene_graph
       CONSOLE_BRIDGE_logWarn("Assimp reports scene in %s has no meshes", path.c_str());
       return std::vector<std::shared_ptr<T>>();
     }
-    std::vector<std::shared_ptr<T>> meshes = extractMeshData<T>(scene, scene->mRootNode, aiMatrix4x4(), scale);
+    std::vector<std::shared_ptr<T>> meshes = extractMeshData<T>(scene, scene->mRootNode, aiMatrix4x4(), scale, path);
     if (meshes.empty())
     {
       CONSOLE_BRIDGE_logWarn("There are no meshes in the scene %s", path.c_str());

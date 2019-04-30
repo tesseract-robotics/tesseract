@@ -46,7 +46,7 @@ namespace tesseract_geometry
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    Mesh(const std::shared_ptr<const VectorVector3d>& vertices, const std::shared_ptr<const Eigen::VectorXi>& triangles) : Geometry(GeometryType::MESH), vertices_(vertices), triangles_(triangles)
+    Mesh(const std::shared_ptr<const VectorVector3d>& vertices, const std::shared_ptr<const Eigen::VectorXi>& triangles, std::string file_path = "") : Geometry(GeometryType::MESH), vertices_(vertices), triangles_(triangles), file_path_(file_path)
     {
       vertice_count_ = static_cast<int>(vertices->size());
 
@@ -61,7 +61,7 @@ namespace tesseract_geometry
 
     }
 
-    Mesh(const std::shared_ptr<const VectorVector3d>& vertices, const std::shared_ptr<const Eigen::VectorXi>& triangles, int triangle_count) : Geometry(GeometryType::MESH), vertices_(vertices), triangles_(triangles), triangle_count_(triangle_count)
+    Mesh(const std::shared_ptr<const VectorVector3d>& vertices, const std::shared_ptr<const Eigen::VectorXi>& triangles, int triangle_count, std::string file_path = "") : Geometry(GeometryType::MESH), vertices_(vertices), triangles_(triangles), triangle_count_(triangle_count), file_path_(file_path)
     {
       vertice_count_ = static_cast<int>(vertices->size());
       assert((triangle_count * 4) == triangles_->size());
@@ -75,13 +75,23 @@ namespace tesseract_geometry
     int getVerticeCount() const { return vertice_count_; }
     int getTriangleCount() const { return triangle_count_; }
 
-    GeometryPtr clone() const override { return MeshPtr(new Mesh(vertices_, triangles_, triangle_count_)); }
+    /**
+     * @brief Get the path to file used to generate the mesh
+     *
+     * Note: If empty, assume it was manually generated.
+     *
+     * @return Absolute path to the mesh file
+     */
+    const std::string& getFilePath() const { return file_path_; }
+
+    GeometryPtr clone() const override { return MeshPtr(new Mesh(vertices_, triangles_, triangle_count_, file_path_)); }
 
   private:
     std::shared_ptr<const VectorVector3d> vertices_;
     std::shared_ptr<const Eigen::VectorXi> triangles_;
     int vertice_count_;
     int triangle_count_;
+    std::string file_path_;
   };
 }
 #endif
