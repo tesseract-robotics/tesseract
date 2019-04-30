@@ -2,7 +2,7 @@ find_package(GTest REQUIRED)
 find_package(tesseract_support REQUIRED)
 
 add_executable(${PROJECT_NAME}_kdl_unit kdl_kinematics_unit.cpp)
-target_link_libraries(${PROJECT_NAME}_kdl_unit ${GTEST_BOTH_LIBRARIES} ${PROJECT_NAME}_kdl tesseract_support tesseract_scene_graph tesseract_geometry Eigen3::Eigen console_bridge orocos-kdl ${roslib_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_kdl_unit ${GTEST_BOTH_LIBRARIES} ${PROJECT_NAME}_kdl tesseract_support tesseract_scene_graph)
 target_compile_options(${PROJECT_NAME}_kdl_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME}_kdl_unit PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_kdl_unit PRIVATE ${GTEST_INCLUDE_DIRS} ${orocos_kdl_INCLUDE_DIRS})

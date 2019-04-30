@@ -2,7 +2,7 @@ find_package(GTest REQUIRED)
 find_package(tesseract_support REQUIRED)
 
 add_executable(${PROJECT_NAME}_unit tesseract_environment_unit.cpp)
-target_link_libraries(${PROJECT_NAME}_unit ${GTEST_BOTH_LIBRARIES} ${PROJECT_NAME}_kdl tesseract_support tesseract_collision_bullet tesseract_collision_fcl tesseract_geometry tesseract_scene_graph orocos-kdl ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_unit ${GTEST_BOTH_LIBRARIES} ${PROJECT_NAME}_kdl tesseract_support tesseract_collision_bullet tesseract_collision_fcl tesseract_scene_graph)
 target_compile_options(${PROJECT_NAME}_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME}_unit INTERFACE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_unit PRIVATE ${GTEST_INCLUDE_DIRS} ${orocos_kdl_INCLUDE_DIRS})

@@ -1,11 +1,5 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(tesseract_collision)
-
-# define library version (update: apparently you can also do it in project()!)
-set(TESSERACT_COLLISION_VERSION_MAJOR 0 CACHE STRING "major version" FORCE)
-set(TESSERACT_COLLISION_VERSION_MINOR 1 CACHE STRING "minor version" FORCE)
-set(TESSERACT_COLLISION_VERSION_PATCH 0 CACHE STRING "patch version" FORCE)
-set(TESSERACT_COLLISION_VERSION ${TESSERACT_COLLISION_VERSION_MAJOR}.${TESSERACT_COLLISION_VERSION_MINOR}.${TESSERACT_COLLISION_VERSION_PATCH} CACHE STRING "version" FORCE)
+project(tesseract_collision VERSION 0.1.0 LANGUAGES CXX)
 
 find_package(Eigen3 REQUIRED)
 find_package(Boost COMPONENTS system thread program_options REQUIRED)
@@ -20,8 +14,6 @@ pkg_check_modules(LIBFCL REQUIRED fcl)
 find_library(LIBFCL_LIBRARIES_FULL ${LIBFCL_LIBRARIES} ${LIBFCL_LIBRARY_DIRS})
 set(LIBFCL_LIBRARIES "${LIBFCL_LIBRARIES_FULL}")
 list(APPEND LIBFCL_LIBRARIES ${CCD_LIBRARIES})
-
-set(TESSERACT_COLLISION_PKGCONFIG_REQUIRES Eigen3 console_bridge Boost octomap PkgConfig ccd fcl Bullet tesseract_geometry)
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core INTERFACE)
@@ -81,12 +73,12 @@ target_include_directories(create_convex_hull SYSTEM PUBLIC
     ${Boost_INCLUDE_DIRS}
     ${OCTOMAP_INCLUDE_DIRS})
 
-list (APPEND TESSERACT_COLLISION_LIBRARIES ${PROJECT_NAME}_core)
-list (APPEND TESSERACT_COLLISION_LIBRARIES ${PROJECT_NAME}_bullet)
-list (APPEND TESSERACT_COLLISION_LIBRARIES ${PROJECT_NAME}_fcl)
+list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_core)
+list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_bullet)
+list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_fcl)
 
 # Mark executables and/or libraries for installation
-install(TARGETS ${TESSERACT_COLLISION_LIBRARIES} EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
+install(TARGETS ${PACKAGE_LIBRARIES} EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
 install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake/${PROJECT_NAME})
 install(TARGETS create_convex_hull DESTINATION bin)
 
@@ -100,28 +92,21 @@ install(DIRECTORY include/${PROJECT_NAME}
 install(FILES package.xml DESTINATION share/${PROJECT_NAME})
 
 # Create cmake config files
-set(CMAKE_INSTALL_INCLUDEDIR include)
-set(CMAKE_INSTALL_LIBDIR lib)
-set(CMAKE_INSTALL_BINDIR bin)
-
 include(CMakePackageConfigHelpers)
-configure_package_config_file(cmake/${PROJECT_NAME}-config.cmake.in ${PROJECT_NAME}-config.cmake
-  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
-  PATH_VARS CMAKE_INSTALL_INCLUDEDIR CMAKE_INSTALL_LIBDIR
+configure_package_config_file(${CMAKE_CURRENT_LIST_DIR}/cmake/${PROJECT_NAME}-config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+  INSTALL_DESTINATION lib/cmake/${PROJECT_NAME}
   NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 
-write_basic_package_version_file(${PROJECT_NAME}-config-version.cmake
-  VERSION ${TESSERACT_COLLISION_VERSION} COMPATIBILITY ExactVersion)
+write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
+  VERSION ${PROJECT_VERSION} COMPATIBILITY ExactVersion)
 
 install(FILES
-  "${CMAKE_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
-  "${CMAKE_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+  DESTINATION lib/cmake/${PROJECT_NAME})
 
-set(TESSERACT_COLLISION_PKGCONFIG_DESCRIPTION "Libraries for performing collision checking")
-configure_file(cmake/${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
-install(FILES "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+export(EXPORT ${PROJECT_NAME}-targets FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake)
 
 option(ENABLE_TESTS "Enable tests" OFF)
 if (${ENABLE_TESTS})
