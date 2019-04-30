@@ -9,27 +9,29 @@ find_package(tesseract_scene_graph REQUIRED)
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core INTERFACE)
-target_link_libraries(${PROJECT_NAME}_core INTERFACE Eigen3::Eigen tesseract_scene_graph)
+target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract_scene_graph)
 target_compile_options(${PROJECT_NAME}_core INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME}_core INTERFACE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_core INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
+    ${EIGEN3_INCLUDE_DIRS})
 
 # Add KDL implementation of tesseract_kinematics
 add_library(${PROJECT_NAME}_kdl SHARED
   src/kdl/kdl_fwd_kin_chain.cpp
   src/kdl/kdl_fwd_kin_tree.cpp
 )
-target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract_scene_graph Eigen3::Eigen orocos-kdl console_bridge)
+target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract_scene_graph orocos-kdl console_bridge)
 target_compile_options(${PROJECT_NAME}_kdl PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME}_kdl PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_kdl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_kdl SYSTEM PUBLIC
+    ${EIGEN3_INCLUDE_DIRS}
     ${orocos_kdl_INCLUDE_DIRS}) # Orocos did not export target correctly
-
 
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_core)
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_kdl)

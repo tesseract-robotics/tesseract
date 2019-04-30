@@ -17,13 +17,14 @@ list(APPEND LIBFCL_LIBRARIES ${CCD_LIBRARIES})
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core INTERFACE)
-target_link_libraries(${PROJECT_NAME}_core INTERFACE Eigen3::Eigen tesseract_geometry ${Boost_LIBRARIES} ${BULLET_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract_geometry ${Boost_LIBRARIES} ${BULLET_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_core INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME}_core INTERFACE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_core INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
+    ${EIGEN3_INCLUDE_DIRS}
     ${BULLET_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS})
 
@@ -35,13 +36,14 @@ add_library(${PROJECT_NAME}_bullet SHARED
   src/bullet/bullet_discrete_simple_manager.cpp
   src/bullet/bullet_utils.cpp
 )
-target_link_libraries(${PROJECT_NAME}_bullet PUBLIC tesseract_geometry Eigen3::Eigen console_bridge ${BULLET_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_bullet PUBLIC tesseract_geometry console_bridge ${BULLET_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_bullet PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME}_bullet PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_bullet PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_bullet SYSTEM PUBLIC
+    ${EIGEN3_INCLUDE_DIRS}
     ${BULLET_INCLUDE_DIRS}
     ${LIBFCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
@@ -49,13 +51,14 @@ target_include_directories(${PROJECT_NAME}_bullet SYSTEM PUBLIC
 
 # Create target for FCL implementation
 add_library(${PROJECT_NAME}_fcl SHARED src/fcl/fcl_discrete_managers.cpp src/fcl/fcl_utils.cpp)
-target_link_libraries(${PROJECT_NAME}_fcl PUBLIC tesseract_geometry Eigen3::Eigen console_bridge ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_fcl PUBLIC tesseract_geometry console_bridge ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_fcl PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME}_fcl PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_fcl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_fcl SYSTEM PUBLIC
+    ${EIGEN3_INCLUDE_DIRS}
     ${BULLET_INCLUDE_DIRS}
     ${LIBFCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
@@ -63,11 +66,12 @@ target_include_directories(${PROJECT_NAME}_fcl SYSTEM PUBLIC
 
 # Create target for creating convex hull's from meshes
 add_executable(create_convex_hull src/create_convex_hull.cpp)
-target_link_libraries(create_convex_hull PUBLIC tesseract_geometry Eigen3::Eigen console_bridge ${BULLET_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES})
+target_link_libraries(create_convex_hull PUBLIC tesseract_geometry console_bridge ${BULLET_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES})
 target_compile_options(create_convex_hull PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(create_convex_hull PRIVATE cxx_std_11)
 target_include_directories(create_convex_hull PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 target_include_directories(create_convex_hull SYSTEM PUBLIC
+    ${EIGEN3_INCLUDE_DIRS}
     ${BULLET_INCLUDE_DIRS}
     ${LIBFCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
