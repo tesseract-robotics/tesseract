@@ -91,17 +91,16 @@ include_directories(
 qt_wrap_cpp(${PROJECT_NAME}_render_tools_cpp_MOCS
   include/tesseract_rviz/render_tools/trajectory_visualization.h
   include/tesseract_rviz/render_tools/trajectory_panel.h
-  include/tesseract_rviz/render_tools/env/robot.h
-  include/tesseract_rviz/render_tools/env/robot_link.h
-  include/tesseract_rviz/render_tools/env/robot_joint.h
+  include/tesseract_rviz/render_tools/env_visualization.h
+  include/tesseract_rviz/render_tools/env_link.h
+  include/tesseract_rviz/render_tools/env_joint.h
   )
 
 add_library(${PROJECT_NAME}_render_tools SHARED
-  src/render_tools/env/robot.cpp
-  src/render_tools/env/robot_joint.cpp
-  src/render_tools/env/robot_link.cpp
-  src/render_tools/state_visualization.cpp
-  src/render_tools/link_updater.cpp
+  src/render_tools/env_visualization.cpp
+  src/render_tools/env_joint.cpp
+  src/render_tools/env_link.cpp
+  src/render_tools/env_link_updater.cpp
   src/render_tools/trajectory_visualization.cpp
   src/render_tools/trajectory_panel.cpp
   ${${PROJECT_NAME}_render_tools_cpp_MOCS}
@@ -125,10 +124,10 @@ target_include_directories(${PROJECT_NAME}_render_tools PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_render_tools SYSTEM PUBLIC
-    SYSTEM ${catkin_INCLUDE_DIRS}
-    SYSTEM ${Boost_INCLUDE_DIRS}
-    SYSTEM ${QT_INCLUDE_DIR}
-    SYSTEM ${OGRE_INCLUDE_DIRS})
+    ${catkin_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${QT_INCLUDE_DIR}
+    ${OGRE_INCLUDE_DIRS})
 
 #add_library(${PROJECT_NAME}_scene_plugin_core
 #  src/tesseract_scene_plugin/tesseract_scene_display.cpp
@@ -157,10 +156,10 @@ target_include_directories(${PROJECT_NAME}_state_plugin_core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_state_plugin_core SYSTEM PUBLIC
-    SYSTEM ${catkin_INCLUDE_DIRS}
-    SYSTEM ${Boost_INCLUDE_DIRS}
-    SYSTEM ${QT_INCLUDE_DIR}
-    SYSTEM ${OGRE_INCLUDE_DIRS})
+    ${catkin_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${QT_INCLUDE_DIR}
+    ${OGRE_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_state_plugin SHARED src/tesseract_state_plugin/plugin_init.cpp)
 target_link_libraries(${PROJECT_NAME}_state_plugin PRIVATE ${PROJECT_NAME}_state_plugin_core ${catkin_LIBRARIES} ${Boost_LIBRARIES})
@@ -170,8 +169,8 @@ target_include_directories(${PROJECT_NAME}_state_plugin PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_state_plugin SYSTEM PRIVATE
-    SYSTEM ${catkin_INCLUDE_DIRS}
-    SYSTEM ${Boost_INCLUDE_DIRS})
+    ${catkin_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS})
 
 ## Trajectory Display
 qt_wrap_cpp(${PROJECT_NAME}_trajectory_plugin_core_cpp_MOCS include/tesseract_rviz/tesseract_trajectory_plugin/tesseract_trajectory_display.h)
@@ -193,10 +192,10 @@ target_include_directories(${PROJECT_NAME}_trajectory_plugin_core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_state_plugin SYSTEM PUBLIC
-    SYSTEM ${catkin_INCLUDE_DIRS}
-    SYSTEM ${Boost_INCLUDE_DIRS}
-    SYSTEM ${QT_INCLUDE_DIR}
-    SYSTEM ${OGRE_INCLUDE_DIRS})
+    ${catkin_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${QT_INCLUDE_DIR}
+    ${OGRE_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_trajectory_plugin SHARED src/tesseract_trajectory_plugin/plugin_init.cpp)
 target_link_libraries(${PROJECT_NAME}_trajectory_plugin PRIVATE
@@ -211,8 +210,8 @@ target_include_directories(${PROJECT_NAME}_trajectory_plugin PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_trajectory_plugin SYSTEM PRIVATE
-    SYSTEM ${catkin_INCLUDE_DIRS}
-    SYSTEM ${Boost_INCLUDE_DIRS})
+    ${catkin_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME}_test src/test.cpp)
 target_link_libraries(${PROJECT_NAME}_test PRIVATE ${PROJECT_NAME}_trajectory_plugin_core ${catkin_LIBRARIES})
@@ -222,7 +221,7 @@ target_include_directories(${PROJECT_NAME}_test PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_test SYSTEM PRIVATE
-    SYSTEM ${catkin_INCLUDE_DIRS})
+    ${catkin_INCLUDE_DIRS})
 
 
 # Mark executables and/or libraries for installation

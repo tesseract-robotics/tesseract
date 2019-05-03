@@ -27,9 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "tesseract_rviz/render_tools/env/robot.h"
-#include "tesseract_rviz/render_tools/env/robot_joint.h"
-#include "tesseract_rviz/render_tools/env/robot_link.h"
+#include "tesseract_rviz/render_tools/env_visualization.h"
+#include "tesseract_rviz/render_tools/env_joint.h"
+#include "tesseract_rviz/render_tools/env_link.h"
 
 #include <tesseract_environment/core/macros.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
@@ -55,7 +55,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 namespace tesseract_rviz
 {
-Robot::Robot(Ogre::SceneNode* root_node,
+EnvVisualization::EnvVisualization(Ogre::SceneNode* root_node,
              rviz::DisplayContext* context,
              const std::string& name,
              rviz::Property* parent_property)
@@ -65,7 +65,7 @@ Robot::Robot(Ogre::SceneNode* root_node,
   , collision_visible_(false)
   , context_(context)
   , doing_set_checkbox_(false)
-  , robot_loaded_(false)
+  , env_loaded_(false)
   , inChangedEnableAllLinks(false)
   , name_(name)
 {
@@ -104,7 +104,7 @@ Robot::Robot(Ogre::SceneNode* root_node,
       "All Links Enabled", true, "Turn all links on or off.", link_tree_, SLOT(changedEnableAllLinks()), this);
 }
 
-Robot::~Robot()
+EnvVisualization::~EnvVisualization()
 {
   clear();
 
@@ -114,7 +114,7 @@ Robot::~Robot()
   delete link_factory_;
 }
 
-void Robot::setLinkFactory(LinkFactory* link_factory)
+void EnvVisualization::setLinkFactory(LinkFactory* link_factory)
 {
   if (link_factory)
   {
@@ -123,7 +123,7 @@ void Robot::setLinkFactory(LinkFactory* link_factory)
   }
 }
 
-void Robot::setVisible(bool visible)
+void EnvVisualization::setVisible(bool visible)
 {
   visible_ = visible;
   if (visible)
@@ -140,33 +140,33 @@ void Robot::setVisible(bool visible)
   }
 }
 
-void Robot::setVisualVisible(bool visible)
+void EnvVisualization::setVisualVisible(bool visible)
 {
   visual_visible_ = visible;
   updateLinkVisibilities();
 }
 
-void Robot::setCollisionVisible(bool visible)
+void EnvVisualization::setCollisionVisible(bool visible)
 {
   collision_visible_ = visible;
   updateLinkVisibilities();
 }
 
-void Robot::updateLinkVisibilities()
+void EnvVisualization::updateLinkVisibilities()
 {
   M_NameToLink::iterator it = links_.begin();
   M_NameToLink::iterator end = links_.end();
   for (; it != end; ++it)
   {
-    RobotLink* link = it->second;
+    EnvLink* link = it->second;
     link->updateVisibility();
   }
 }
 
-bool Robot::isVisible() { return visible_; }
-bool Robot::isVisualVisible() { return visual_visible_; }
-bool Robot::isCollisionVisible() { return collision_visible_; }
-void Robot::setAlpha(float a)
+bool EnvVisualization::isVisible() { return visible_; }
+bool EnvVisualization::isVisualVisible() { return visual_visible_; }
+bool EnvVisualization::isCollisionVisible() { return collision_visible_; }
+void EnvVisualization::setAlpha(float a)
 {
   alpha_ = a;
 
@@ -174,13 +174,13 @@ void Robot::setAlpha(float a)
   M_NameToLink::iterator end = links_.end();
   for (; it != end; ++it)
   {
-    RobotLink* link = it->second;
+    EnvLink* link = it->second;
 
-    link->setRobotAlpha(alpha_);
+    link->setAlpha(alpha_);
   }
 }
 
-void Robot::clear()
+void EnvVisualization::clear()
 {
   // unparent all link and joint properties so they can be deleted in arbitrary
   // order without being delete by their parent propeties (which vary based on
@@ -191,7 +191,7 @@ void Robot::clear()
   M_NameToLink::iterator link_end = links_.end();
   for (; link_it != link_end; ++link_it)
   {
-    RobotLink* link = link_it->second;
+    EnvLink* link = link_it->second;
     delete link;
   }
 
@@ -199,7 +199,7 @@ void Robot::clear()
   M_NameToJoint::iterator joint_end = joints_.end();
   for (; joint_it != joint_end; ++joint_it)
   {
-    RobotJoint* joint = joint_it->second;
+    EnvJoint* joint = joint_it->second;
     delete joint;
   }
 
@@ -211,35 +211,33 @@ void Robot::clear()
   root_other_node_->removeAndDestroyAllChildren();
 }
 
-RobotLink* Robot::LinkFactory::createLink(Robot* robot,
-                                          const tesseract_scene_graph::LinkConstPtr& link,
-                                          bool visual,
-                                          bool collision)
+EnvLink* EnvVisualization::LinkFactory::createLink(EnvVisualization* robot,
+                                                  const tesseract_scene_graph::Link& link,
+                                                  bool visual,
+                                                  bool collision)
 {
-  return new RobotLink(robot, link, visual, collision);
+  return new EnvLink(robot, link, visual, collision);
 }
 
-RobotJoint* Robot::LinkFactory::createJoint(Robot* robot, const tesseract_scene_graph::JointConstPtr& joint)
+EnvJoint* EnvVisualization::LinkFactory::createJoint(EnvVisualization* robot, const tesseract_scene_graph::Joint& joint)
 {
-  return new RobotJoint(robot, joint);
+  return new EnvJoint(robot, joint);
 }
 
-void Robot::load(const tesseract_scene_graph::SceneGraphConstPtr& scene_graph,
+void EnvVisualization::load(const tesseract_scene_graph::SceneGraphConstPtr& scene_graph,
                  bool visual,
                  bool collision,
                  bool show_active,
                  bool show_static)
 {
-  scene_graph_ = scene_graph;
   link_tree_->hide();  // hide until loaded
-  robot_loaded_ = false;
+  env_loaded_ = false;
   load_visual_ = visual;
   load_collision_ = collision;
   load_active_ = show_active;
   load_static_ = show_static;
 
-  // clear out any data (properties, shapes, etc) from a previously loaded
-  // robot.
+  // clear out any data (properties, shapes, etc) from a previously loaded robot.
   clear();
 
   // Populate the list of active links
@@ -252,46 +250,24 @@ void Robot::load(const tesseract_scene_graph::SceneGraphConstPtr& scene_graph,
   // Properties are not added to display until changedLinkTreeStyle() is called
   // (below).
   {
-    std::vector<tesseract_scene_graph::LinkConstPtr> links = scene_graph_->getLinks();
+    std::vector<tesseract_scene_graph::LinkConstPtr> links = scene_graph->getLinks();
     for (const tesseract_scene_graph::LinkConstPtr& tlink : links)
-    {
-      bool show_geom = true;
-      bool is_active = std::find(active_links_.begin(), active_links_.end(), tlink->getName()) != active_links_.end();
-      if ((!load_active_ && is_active) || (!load_static_ && !is_active))
-        show_geom = false;
+      addLink(*tlink);
 
-      std::string parent_joint_name;
-
-      RobotLink* link = link_factory_->createLink(this, tlink, load_visual_ & show_geom, load_collision_ & show_geom);
-
-      if (tlink->getName() == scene_graph_->getRoot())
-      {
-        root_link_ = link;
-      }
-
-      links_[tlink->getName()] = link;
-
-      link->setRobotAlpha(alpha_);
-    }
+    root_link_ = links_[scene_graph->getRoot()];
   }
 
   // Create properties for each joint.
   // Properties are not added to display until changedLinkTreeStyle() is called
   // (below).
   {   
-    std::vector<tesseract_scene_graph::JointConstPtr> joints = scene_graph_->getJoints();
+    std::vector<tesseract_scene_graph::JointConstPtr> joints = scene_graph->getJoints();
     for (const tesseract_scene_graph::JointConstPtr& tjoint : joints)
-    {
-      RobotJoint* joint = link_factory_->createJoint(this, tjoint);
-
-      joints_[tjoint->getName()] = joint;
-
-      joint->setRobotAlpha(alpha_);
-    }
+      addJoint(*tjoint);
   }
 
-  // robot is now loaded
-  robot_loaded_ = true;
+  // environment is now loaded
+  env_loaded_ = true;
   link_tree_->show();
 
   // set the link tree style and add link/joint properties to rviz pane.
@@ -306,7 +282,101 @@ void Robot::load(const tesseract_scene_graph::SceneGraphConstPtr& scene_graph,
   setCollisionVisible(isCollisionVisible());
 }
 
-void Robot::unparentLinkProperties()
+bool EnvVisualization::addLink(const tesseract_scene_graph::Link& link)
+{
+  if (getLink(link.getName()) != nullptr)
+  {
+    ROS_WARN("Tried to add link (%s) with same name as an existing link.", link.getName().c_str());
+    return false;
+  }
+
+  bool show_geom = true;
+  bool is_active = std::find(active_links_.begin(), active_links_.end(), link.getName()) != active_links_.end();
+  if ((!load_active_ && is_active) || (!load_static_ && !is_active))
+    show_geom = false;
+
+  EnvLink* tlink = link_factory_->createLink(this, link, load_visual_ & show_geom, load_collision_ & show_geom);
+
+  links_[link.getName()] = tlink;
+
+  tlink->setAlpha(alpha_);
+
+  changedLinkTreeStyle();
+
+  return true;
+}
+
+bool EnvVisualization::removeLink(const std::string& name)
+{
+  auto it = links_.find(name);
+  if (it == links_.end())
+  {
+    ROS_WARN("Tried to remove link (%s) that does not exist", name.c_str());
+    return false;
+  }
+
+  EnvLink* link = it->second;
+  link->setParentProperty(nullptr);
+  delete link;
+  links_.erase(name);
+
+  changedLinkTreeStyle();
+
+  return true;
+}
+
+bool EnvVisualization::addJoint(const tesseract_scene_graph::Joint& joint)
+{
+  if (getJoint(joint.getName()) != nullptr)
+  {
+    ROS_WARN("Tried to add joint (%s) with same name as an existing joint.", joint.getName().c_str());
+    return false;
+  }
+
+  EnvJoint* tjoint = link_factory_->createJoint(this, joint);
+
+  joints_[joint.getName()] = tjoint;
+
+  tjoint->setAlpha(alpha_);
+
+  changedLinkTreeStyle();
+
+  return true;
+}
+
+bool EnvVisualization::removeJoint(const std::string& name)
+{
+  auto it = joints_.find(name);
+  if (it == joints_.end())
+  {
+    ROS_WARN("Tried to remove Joint (%s) that does not exist", name.c_str());
+    return false;
+  }
+
+  EnvJoint* joint = it->second;
+  joint->setParentProperty(nullptr);
+  delete joint;
+  joints_.erase(name);
+
+  return true;
+}
+
+bool EnvVisualization::moveJoint(const std::string& joint_name, const std::string& parent_link)
+{
+  auto it = joints_.find(joint_name);
+  if (it == joints_.end())
+  {
+    ROS_WARN("Tried to move Joint (%s) that does not exist", joint_name.c_str());
+    return false;
+  }
+
+  EnvJoint* joint = it->second;
+  joint->setParentLinkName(parent_link);
+
+  return true;
+}
+
+void EnvVisualization::unparentLinkProperties()
 {
   // remove link properties from their parents
   M_NameToLink::iterator link_it = links_.begin();
@@ -325,7 +395,7 @@ void Robot::unparentLinkProperties()
   }
 }
 
-void Robot::useDetailProperty(bool use_detail)
+void EnvVisualization::useDetailProperty(bool use_detail)
 {
   // remove sub properties and add them to detail
   M_NameToLink::iterator link_it = links_.begin();
@@ -344,7 +414,7 @@ void Robot::useDetailProperty(bool use_detail)
   }
 }
 
-void Robot::changedExpandTree()
+void EnvVisualization::changedExpandTree()
 {
   bool expand = expand_tree_->getBool();
 
@@ -369,7 +439,7 @@ void Robot::changedExpandTree()
   }
 }
 
-void Robot::changedHideSubProperties()
+void EnvVisualization::changedHideSubProperties()
 {
   bool hide = /* !show_details_->getBool(); */ false;
 
@@ -388,7 +458,7 @@ void Robot::changedHideSubProperties()
   }
 }
 
-void Robot::changedExpandLinkDetails()
+void EnvVisualization::changedExpandLinkDetails()
 {
   bool expand = expand_link_details_->getBool();
 
@@ -400,7 +470,7 @@ void Robot::changedExpandLinkDetails()
   }
 }
 
-void Robot::changedExpandJointDetails()
+void EnvVisualization::changedExpandJointDetails()
 {
   bool expand = expand_joint_details_->getBool();
 
@@ -412,7 +482,7 @@ void Robot::changedExpandJointDetails()
   }
 }
 
-void Robot::changedEnableAllLinks()
+void EnvVisualization::changedEnableAllLinks()
 {
   if (doing_set_checkbox_)
     return;
@@ -444,7 +514,7 @@ void Robot::changedEnableAllLinks()
   inChangedEnableAllLinks = false;
 }
 
-void Robot::setEnableAllLinksCheckbox(QVariant val)
+void EnvVisualization::setEnableAllLinksCheckbox(QVariant val)
 {
   // doing_set_checkbox_ prevents changedEnableAllLinks from turning all
   // links off when we modify the enable_all_links_ property.
@@ -453,7 +523,7 @@ void Robot::setEnableAllLinksCheckbox(QVariant val)
   doing_set_checkbox_ = false;
 }
 
-void Robot::initLinkTreeStyle()
+void EnvVisualization::initLinkTreeStyle()
 {
   style_name_map_.clear();
   style_name_map_[STYLE_LINK_LIST] = "Links in Alphabetic Order";
@@ -470,14 +540,14 @@ void Robot::initLinkTreeStyle()
   }
 }
 
-bool Robot::styleShowLink(LinkTreeStyle style)
+bool EnvVisualization::styleShowLink(LinkTreeStyle style)
 {
   return style == STYLE_LINK_LIST || style == STYLE_LINK_TREE || style == STYLE_JOINT_LINK_TREE;
 }
 
-bool Robot::styleShowJoint(LinkTreeStyle style) { return style == STYLE_JOINT_LIST || style == STYLE_JOINT_LINK_TREE; }
-bool Robot::styleIsTree(LinkTreeStyle style) { return style == STYLE_LINK_TREE || style == STYLE_JOINT_LINK_TREE; }
-void Robot::setLinkTreeStyle(LinkTreeStyle style)
+bool EnvVisualization::styleShowJoint(LinkTreeStyle style) { return style == STYLE_JOINT_LIST || style == STYLE_JOINT_LINK_TREE; }
+bool EnvVisualization::styleIsTree(LinkTreeStyle style) { return style == STYLE_LINK_TREE || style == STYLE_JOINT_LINK_TREE; }
+void EnvVisualization::setLinkTreeStyle(LinkTreeStyle style)
 {
   std::map<LinkTreeStyle, std::string>::const_iterator style_it = style_name_map_.find(style);
   if (style_it == style_name_map_.end())
@@ -486,10 +556,44 @@ void Robot::setLinkTreeStyle(LinkTreeStyle style)
     link_tree_style_->setValue(style_it->second.c_str());
 }
 
-// insert properties into link_tree_ according to style
-void Robot::changedLinkTreeStyle()
+EnvJoint* EnvVisualization::findParentJoint(EnvJoint* joint)
 {
-  if (!robot_loaded_)
+  const std::string& parent_link = joint->getParentLinkName();
+  for (auto& joint_pair : joints_)
+  {
+    if (parent_link == joint_pair.second->getChildLinkName())
+      return joint_pair.second;
+  }
+
+  return nullptr;
+}
+
+EnvJoint* EnvVisualization::findParentJoint(EnvLink* link)
+{
+  for (auto& joint_pair : joints_)
+  {
+    if (link->getName() == joint_pair.second->getChildLinkName())
+      return joint_pair.second;
+  }
+
+  return nullptr;
+}
+
+EnvJoint* EnvVisualization::findChildJoint(EnvLink* link)
+{
+  for (auto& joint_pair : joints_)
+  {
+    if (link->getName() == joint_pair.second->getParentLinkName())
+      return joint_pair.second;
+  }
+
+  return nullptr;
+}
+
+// insert properties into link_tree_ according to style
+void EnvVisualization::changedLinkTreeStyle()
+{
+  if (!env_loaded_)
     return;
 
   LinkTreeStyle style = LinkTreeStyle(link_tree_style_->getOptionInt());
@@ -505,7 +609,65 @@ void Robot::changedLinkTreeStyle()
       useDetailProperty(true);
       if (root_link_)
       {
-        addLinkToLinkTree(style, link_tree_, root_link_);
+        if (styleShowLink(style))
+        {
+          for (auto& link : links_)
+          {
+            link.second->setLinkPropertyDescription();
+            EnvJoint* parent_joint = findParentJoint(link.second);
+
+            if (parent_joint == nullptr)
+            {
+              link.second->setParentProperty(link_tree_);
+            }
+            else
+            {
+              if (styleShowJoint(style))
+              {
+                link.second->setParentProperty(parent_joint->getJointProperty());
+              }
+              else
+              {
+                auto it = links_.find(parent_joint->getParentLinkName());
+                if (it != links_.end())
+                  link.second->setParentProperty(it->second->getLinkProperty());
+                else
+                  link.second->setParentProperty(link_tree_);
+              }
+            }
+          }
+        }
+
+        if (styleShowJoint(style))
+        {
+          for (auto& joint_pair : joints_)
+          {
+            EnvJoint* joint = joint_pair.second;
+            joint->setJointPropertyDescription();
+
+            auto parent_it = links_.find(joint->getParentLinkName());
+
+            if (parent_it == links_.end())
+            {
+              joint->setParentProperty(link_tree_);
+            }
+            else
+            {
+              if (styleShowLink(style))
+              {
+                joint->setParentProperty(parent_it->second->getLinkProperty());
+              }
+              else
+              {
+                EnvJoint* parent_joint = findParentJoint(joint);
+                if (parent_joint != nullptr)
+                  joint->setParentProperty(parent_joint->getJointProperty());
+                else
+                  joint->setParentProperty(link_tree_);
+              }
+            }
+          }
+        }
       }
       break;
 
@@ -530,6 +692,7 @@ void Robot::changedLinkTreeStyle()
       for (; link_it != link_end; ++link_it)
       {
         link_it->second->setParentProperty(link_tree_);
+        link_it->second->setLinkPropertyDescription();
       }
       break;
   }
@@ -576,45 +739,7 @@ void Robot::changedLinkTreeStyle()
   calculateJointCheckboxes();
 }
 
-// recursive helper for setLinkTreeStyle() when style is *_TREE
-void Robot::addLinkToLinkTree(LinkTreeStyle style, rviz::Property* parent, RobotLink* link)
-{
-  if (styleShowLink(style))
-  {
-    link->setParentProperty(parent);
-    parent = link->getLinkProperty();
-  }
-
-  assert(!scene_graph_->isTree());
-  std::vector<std::string> child_link_names = scene_graph_->getLinkChildrenNames(link->getName());
-  for (const std::string& link_name : child_link_names)
-  {
-    RobotJoint* child_joint = getJoint(scene_graph_->getInboundJoints(link_name)[0]->getName());
-    if (child_joint)
-    {
-      addJointToLinkTree(style, parent, child_joint);
-    }
-  }
-}
-
-// recursive helper for setLinkTreeStyle() when style is *_TREE
-void Robot::addJointToLinkTree(LinkTreeStyle style, rviz::Property* parent, RobotJoint* joint)
-{
-  if (styleShowJoint(style))
-  {
-    joint->setParentProperty(parent);
-    parent = joint->getJointProperty();
-    joint->setJointPropertyDescription();
-  }
-
-  RobotLink* link = getLink(joint->getChildLinkName());
-  if (link)
-  {
-    addLinkToLinkTree(style, parent, link);
-  }
-}
-
-RobotLink* Robot::getLink(const std::string& name)
+EnvLink* EnvVisualization::getLink(const std::string& name)
 {
   M_NameToLink::iterator it = links_.find(name);
   if (it == links_.end())
@@ -626,7 +751,7 @@ RobotLink* Robot::getLink(const std::string& name)
   return it->second;
 }
 
-RobotJoint* Robot::getJoint(const std::string& name)
+EnvJoint* EnvVisualization::getJoint(const std::string& name)
 {
   M_NameToJoint::iterator it = joints_.find(name);
   if (it == joints_.end())
@@ -638,16 +763,16 @@ RobotJoint* Robot::getJoint(const std::string& name)
   return it->second;
 }
 
-void Robot::calculateJointCheckboxes()
+void EnvVisualization::calculateJointCheckboxes()
 {
-  if (inChangedEnableAllLinks || !robot_loaded_)
+  if (inChangedEnableAllLinks || !env_loaded_)
     return;
 
   int links_with_geom_checked = 0;
   int links_with_geom_unchecked = 0;
 
   // check root link
-  RobotLink* link = root_link_;
+  EnvLink* link = root_link_;
 
   if (!link)
   {
@@ -664,21 +789,18 @@ void Robot::calculateJointCheckboxes()
   int links_with_geom = links_with_geom_checked + links_with_geom_unchecked;
 
   // check all child links and joints recursively
-  assert(scene_graph_->isTree());
-  std::vector<std::string> child_link_names = scene_graph_->getLinkChildrenNames(link->getName());
-  for (const std::string& link_name : child_link_names)
+  EnvJoint* child_joint = findChildJoint(link);
+  while (child_joint != nullptr)
   {
-    RobotJoint* child_joint = getJoint(scene_graph_->getInboundJoints(link_name)[0]->getName());
-    if (child_joint)
-    {
-      int child_links_with_geom;
-      int child_links_with_geom_checked;
-      int child_links_with_geom_unchecked;
-      child_joint->calculateJointCheckboxesRecursive(
-          child_links_with_geom, child_links_with_geom_checked, child_links_with_geom_unchecked);
-      links_with_geom_checked += child_links_with_geom_checked;
-      links_with_geom_unchecked += child_links_with_geom_unchecked;
-    }
+    int child_links_with_geom;
+    int child_links_with_geom_checked;
+    int child_links_with_geom_unchecked;
+    child_joint->calculateJointCheckboxesRecursive(child_links_with_geom, child_links_with_geom_checked, child_links_with_geom_unchecked);
+    links_with_geom_checked += child_links_with_geom_checked;
+    links_with_geom_unchecked += child_links_with_geom_unchecked;
+
+    link = getLink(child_joint->getChildLinkName());
+    child_joint = findChildJoint(link);
   }
   links_with_geom = links_with_geom_checked + links_with_geom_unchecked;
 
@@ -692,13 +814,11 @@ void Robot::calculateJointCheckboxes()
   }
 }
 
-void Robot::update(const rviz::LinkUpdater& updater)
+void EnvVisualization::update(const rviz::LinkUpdater& updater)
 {
-  M_NameToLink::iterator link_it = links_.begin();
-  M_NameToLink::iterator link_end = links_.end();
-  for (; link_it != link_end; ++link_it)
+  for (auto& link_pair : links_)
   {
-    RobotLink* link = link_it->second;
+    EnvLink* link = link_pair.second;
 
     link->setToNormalMaterial();
 
@@ -745,43 +865,42 @@ void Robot::update(const rviz::LinkUpdater& updater)
         continue;
       }
       link->setTransforms(visual_position, visual_orientation, collision_position, collision_orientation);
-
-      assert(scene_graph_->isTree());
-      std::vector<std::string> child_link_names = scene_graph_->getLinkChildrenNames(link->getName());
-      for (const std::string& link_name : child_link_names)
-      {
-        RobotJoint* child_joint = getJoint(scene_graph_->getInboundJoints(link_name)[0]->getName());
-        if (child_joint)
-        {
-          child_joint->setTransforms(visual_position, visual_orientation);
-        }
-      }
     }
     else
     {
       link->setToErrorMaterial();
     }
   }
+
+  // Update joint transformations
+  for (auto& joint_pair : joints_)
+  {
+    EnvJoint* joint = joint_pair.second;
+
+    EnvLink* p_link = links_[joint->getParentLinkName()];
+    joint->setTransforms(p_link->getPosition(), p_link->getOrientation());
+  }
+
 }
 
-void Robot::setPosition(const Ogre::Vector3& position)
+void EnvVisualization::setPosition(const Ogre::Vector3& position)
 {
   root_visual_node_->setPosition(position);
   root_collision_node_->setPosition(position);
 }
 
-void Robot::setOrientation(const Ogre::Quaternion& orientation)
+void EnvVisualization::setOrientation(const Ogre::Quaternion& orientation)
 {
   root_visual_node_->setOrientation(orientation);
   root_collision_node_->setOrientation(orientation);
 }
 
-void Robot::setScale(const Ogre::Vector3& scale)
+void EnvVisualization::setScale(const Ogre::Vector3& scale)
 {
   root_visual_node_->setScale(scale);
   root_collision_node_->setScale(scale);
 }
 
-const Ogre::Vector3& Robot::getPosition() { return root_visual_node_->getPosition(); }
-const Ogre::Quaternion& Robot::getOrientation() { return root_visual_node_->getOrientation(); }
+const Ogre::Vector3& EnvVisualization::getPosition() { return root_visual_node_->getPosition(); }
+const Ogre::Quaternion& EnvVisualization::getOrientation() { return root_visual_node_->getOrientation(); }
 }  // namespace rviz

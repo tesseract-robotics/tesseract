@@ -118,11 +118,11 @@ void TesseractTrajectoryDisplay::loadEnv()
   else
   {
     tesseract_scene_graph::ResourceLocatorFn locator = locateResource;
-    tesseract_scene_graph::SceneGraphPtr g = tesseract_scene_graph::parseURDF(urdf_xml_string, locator);
+    tesseract_scene_graph::SceneGraphPtr g = tesseract_scene_graph::parseURDF(urdf::parseURDF(urdf_xml_string), locator);
     if (g != nullptr)
     {
       tesseract_scene_graph::SRDFModel srdf;
-      bool success = srdf.initFile(*g, srdf_xml_string);
+      bool success = srdf.initString(*g, srdf_xml_string);
       assert(success);
 
       tesseract_environment::KDLEnvPtr env = std::make_shared<tesseract_environment::KDLEnv>();

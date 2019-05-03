@@ -27,9 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "tesseract_rviz/render_tools/env/robot_joint.h"
-#include "tesseract_rviz/render_tools/env/robot.h"
-#include "tesseract_rviz/render_tools/env/robot_link.h"
+#include "tesseract_rviz/render_tools/env_joint.h"
+#include "tesseract_rviz/render_tools/env_visualization.h"
+#include "tesseract_rviz/render_tools/env_link.h"
 
 #include <tesseract_environment/core/macros.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
@@ -46,11 +46,11 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 namespace tesseract_rviz
 {
-RobotJoint::RobotJoint(Robot* robot, const tesseract_scene_graph::JointConstPtr& joint)
-  : robot_(robot)
-  , name_(joint->getName())
-  , parent_link_name_(joint->parent_link_name)
-  , child_link_name_(joint->child_link_name)
+EnvJoint::EnvJoint(EnvVisualization* env, const tesseract_scene_graph::Joint& joint)
+  : env_(env)
+  , name_(joint.getName())
+  , parent_link_name_(joint.parent_link_name)
+  , child_link_name_(joint.child_link_name)
   , has_decendent_links_with_geometry_(true)
   , doing_set_checkbox_(false)
   , axes_(nullptr)
@@ -78,37 +78,37 @@ RobotJoint::RobotJoint(Robot* robot, const tesseract_scene_graph::JointConstPtr&
   orientation_property_->setReadOnly(true);
 
   std::string type = "";
-  if (joint->type == tesseract_scene_graph::JointType::UNKNOWN)
+  if (joint.type == tesseract_scene_graph::JointType::UNKNOWN)
     type = "unknown";
-  else if (joint->type == tesseract_scene_graph::JointType::REVOLUTE)
+  else if (joint.type == tesseract_scene_graph::JointType::REVOLUTE)
     type = "revolute";
-  else if (joint->type == tesseract_scene_graph::JointType::CONTINUOUS)
+  else if (joint.type == tesseract_scene_graph::JointType::CONTINUOUS)
     type = "continuous";
-  else if (joint->type == tesseract_scene_graph::JointType::PRISMATIC)
+  else if (joint.type == tesseract_scene_graph::JointType::PRISMATIC)
     type = "prismatic";
-  else if (joint->type == tesseract_scene_graph::JointType::FLOATING)
+  else if (joint.type == tesseract_scene_graph::JointType::FLOATING)
     type = "floating";
-  else if (joint->type == tesseract_scene_graph::JointType::PLANAR)
+  else if (joint.type == tesseract_scene_graph::JointType::PLANAR)
     type = "planar";
-  else if (joint->type == tesseract_scene_graph::JointType::FIXED)
+  else if (joint.type == tesseract_scene_graph::JointType::FIXED)
     type = "fixed";
 
   type_property_ = new rviz::StringProperty(
       "Type", QString::fromStdString(type), "Type of this joint.  (Not editable)", joint_property_);
   type_property_->setReadOnly(true);
 
-  if (joint->limits)
+  if (joint.limits)
   {
     // continuous joints have lower limit and upper limits of zero,
     // which means this isn't very useful but show it anyhow.
     lower_limit_property_ = new rviz::FloatProperty("Lower Limit",
-                                                    static_cast<float>(joint->limits->lower),
+                                                    static_cast<float>(joint.limits->lower),
                                                     "Lower limit of this joint.  (Not editable)",
                                                     joint_property_);
     lower_limit_property_->setReadOnly(true);
 
     upper_limit_property_ = new rviz::FloatProperty("Upper Limit",
-                                                    static_cast<float>(joint->limits->upper),
+                                                    static_cast<float>(joint.limits->upper),
                                                     "Upper limit of this joint.  (Not editable)",
                                                     joint_property_);
     upper_limit_property_->setReadOnly(true);
@@ -124,9 +124,9 @@ RobotJoint::RobotJoint(Robot* robot, const tesseract_scene_graph::JointConstPtr&
                                              this);
 
     axis_property_ = new rviz::VectorProperty("Joint Axis",
-                                              Ogre::Vector3(static_cast<float>(joint->axis(0)),
-                                                            static_cast<float>(joint->axis(1)),
-                                                            static_cast<float>(joint->axis(2))),
+                                              Ogre::Vector3(static_cast<float>(joint.axis(0)),
+                                                            static_cast<float>(joint.axis(1)),
+                                                            static_cast<float>(joint.axis(2))),
                                               "Axis of this joint.  (Not editable)",
                                               joint_property_);
     axis_property_->setReadOnly(true);
@@ -134,14 +134,14 @@ RobotJoint::RobotJoint(Robot* robot, const tesseract_scene_graph::JointConstPtr&
 
   joint_property_->collapse();
 
-  const Eigen::Vector3d& pos = joint->parent_to_joint_origin_transform.translation();
-  Eigen::Quaterniond rot(joint->parent_to_joint_origin_transform.linear());
+  const Eigen::Vector3d& pos = joint.parent_to_joint_origin_transform.translation();
+  Eigen::Quaterniond rot(joint.parent_to_joint_origin_transform.linear());
   joint_origin_pos_ = Ogre::Vector3(static_cast<float>(pos(0)), static_cast<float>(pos(1)), static_cast<float>(pos(2)));
   joint_origin_rot_ = Ogre::Quaternion(
       static_cast<float>(rot.w()), static_cast<float>(rot.x()), static_cast<float>(rot.y()), static_cast<float>(rot.z()));
 }
 
-RobotJoint::~RobotJoint()
+EnvJoint::~EnvJoint()
 {
   delete axes_;
   if (axis_)
@@ -150,7 +150,7 @@ RobotJoint::~RobotJoint()
   delete joint_property_;
 }
 
-void RobotJoint::setJointPropertyDescription()
+void EnvJoint::setJointPropertyDescription()
 {
   int links_with_geom;
   int links_with_geom_checked;
@@ -193,7 +193,7 @@ void RobotJoint::setJointPropertyDescription()
   joint_property_->setDescription(desc.str().c_str());
 }
 
-void RobotJoint::setJointCheckbox(QVariant val)
+void EnvJoint::setJointCheckbox(QVariant val)
 {
   // setting doing_set_checkbox_ to true prevents updateChildVisibility() from
   // updating child link enables.
@@ -202,24 +202,14 @@ void RobotJoint::setJointCheckbox(QVariant val)
   doing_set_checkbox_ = false;
 }
 
-RobotJoint* RobotJoint::getParentJoint()
-{
-  assert(!robot_->getSceneGraph()->isTree());
-  const std::string& parent_joint_name = robot_->getSceneGraph()->getInboundJoints(parent_link_name_)[0]->getName();
-  if (parent_joint_name.empty())
-    return nullptr;
-
-  return robot_->getJoint(parent_joint_name);
-}
-
-void RobotJoint::calculateJointCheckboxesRecursive(int& links_with_geom,
-                                                   int& links_with_geom_checked,
-                                                   int& links_with_geom_unchecked)
+void EnvJoint::calculateJointCheckboxesRecursive(int& links_with_geom,
+                                                 int& links_with_geom_checked,
+                                                 int& links_with_geom_unchecked)
 {
   links_with_geom_checked = 0;
   links_with_geom_unchecked = 0;
 
-  RobotLink* link = robot_->getLink(child_link_name_);
+  EnvLink* link = env_->getLink(child_link_name_);
   if (link && link->hasGeometry())
   {
     bool checked = link->getLinkProperty()->getValue().toBool();
@@ -240,23 +230,20 @@ void RobotJoint::calculateJointCheckboxesRecursive(int& links_with_geom,
     }
   }
 
-  // Currently only support tree structure
-  assert(robot_->getSceneGraph()->isTree());
-  std::vector<std::string> child_link_names = robot_->getSceneGraph()->getLinkChildrenNames(child_link_name_);
-  for (const std::string& link_name : child_link_names)
+  EnvJoint* child_joint = env_->findChildJoint(link);
+  while (child_joint != nullptr)
   {
-    RobotJoint* child_joint = robot_->getJoint(robot_->getSceneGraph()->getInboundJoints(link_name)[0]->getName());
-    if (child_joint)
-    {
-      int child_links_with_geom;
-      int child_links_with_geom_checked;
-      int child_links_with_geom_unchecked;
-      child_joint->calculateJointCheckboxesRecursive(
-          child_links_with_geom, child_links_with_geom_checked, child_links_with_geom_unchecked);
-      links_with_geom_checked += child_links_with_geom_checked;
-      links_with_geom_unchecked += child_links_with_geom_unchecked;
-    }
+    int child_links_with_geom;
+    int child_links_with_geom_checked;
+    int child_links_with_geom_unchecked;
+    child_joint->calculateJointCheckboxesRecursive(child_links_with_geom, child_links_with_geom_checked, child_links_with_geom_unchecked);
+    links_with_geom_checked += child_links_with_geom_checked;
+    links_with_geom_unchecked += child_links_with_geom_unchecked;
+
+    link = env_->getLink(child_joint->getChildLinkName());
+    child_joint = env_->findChildJoint(link);
   }
+
   links_with_geom = links_with_geom_checked + links_with_geom_unchecked;
 
   if (styleIsTree())
@@ -272,15 +259,15 @@ void RobotJoint::calculateJointCheckboxesRecursive(int& links_with_geom,
   }
 }
 
-void RobotJoint::getChildLinkState(int& links_with_geom,
-                                   int& links_with_geom_checked,
-                                   int& links_with_geom_unchecked,
+void EnvJoint::getChildLinkState(int& links_with_geom,
+                                 int& links_with_geom_checked,
+                                 int& links_with_geom_unchecked,
                                    bool recursive) const
 {
   links_with_geom_checked = 0;
   links_with_geom_unchecked = 0;
 
-  RobotLink* link = robot_->getLink(child_link_name_);
+  EnvLink* link = env_->getLink(child_link_name_);
   if (link && link->hasGeometry())
   {
     bool checked = link->getLinkProperty()->getValue().toBool();
@@ -290,37 +277,34 @@ void RobotJoint::getChildLinkState(int& links_with_geom,
 
   if (recursive)
   {
-    // Currently only support tree structure
-    assert(!robot_->getSceneGraph()->isTree());
-    std::vector<std::string> child_link_names = robot_->getSceneGraph()->getLinkChildrenNames(child_link_name_);
-    for (const std::string& link_name : child_link_names)
+    EnvJoint* child_joint = env_->findChildJoint(link);
+    while (child_joint != nullptr)
     {
-      RobotJoint* child_joint = robot_->getJoint(robot_->getSceneGraph()->getInboundJoints(link_name)[0]->getName());
-      if (child_joint)
-      {
-        int child_links_with_geom;
-        int child_links_with_geom_checked;
-        int child_links_with_geom_unchecked;
-        child_joint->calculateJointCheckboxesRecursive(
-            child_links_with_geom, child_links_with_geom_checked, child_links_with_geom_unchecked);
-        links_with_geom_checked += child_links_with_geom_checked;
-        links_with_geom_unchecked += child_links_with_geom_unchecked;
-      }
+      int child_links_with_geom;
+      int child_links_with_geom_checked;
+      int child_links_with_geom_unchecked;
+      child_joint->calculateJointCheckboxesRecursive(child_links_with_geom, child_links_with_geom_checked, child_links_with_geom_unchecked);
+      links_with_geom_checked += child_links_with_geom_checked;
+      links_with_geom_unchecked += child_links_with_geom_unchecked;
+
+      link = env_->getLink(child_joint->getChildLinkName());
+      child_joint = env_->findChildJoint(link);
     }
   }
 
   links_with_geom = links_with_geom_checked + links_with_geom_unchecked;
 }
 
-bool RobotJoint::getEnabled() const
+bool EnvJoint::getEnabled() const
 {
   if (!hasDescendentLinksWithGeometry())
     return true;
   return joint_property_->getValue().toBool();
 }
 
-bool RobotJoint::styleIsTree() const { return details_->getParent() != nullptr; }
-void RobotJoint::updateChildVisibility()
+bool EnvJoint::styleIsTree() const { return details_->getParent() != nullptr; }
+
+void EnvJoint::updateChildVisibility()
 {
   if (doing_set_checkbox_)
     return;
@@ -330,7 +314,7 @@ void RobotJoint::updateChildVisibility()
 
   bool visible = getEnabled();
 
-  RobotLink* link = robot_->getLink(child_link_name_);
+  EnvLink* link = env_->getLink(child_link_name_);
   if (link)
   {
     if (link->hasGeometry())
@@ -340,22 +324,18 @@ void RobotJoint::updateChildVisibility()
 
     if (styleIsTree())
     {
-
-      assert(!robot_->getSceneGraph()->isTree());
-      std::vector<std::string> child_link_names = robot_->getSceneGraph()->getLinkChildrenNames(child_link_name_);
-      for (const std::string& link_name : child_link_names)
+      EnvJoint* child_joint = env_->findChildJoint(link);
+      while (child_joint != nullptr)
       {
-        RobotJoint* child_joint = robot_->getJoint(robot_->getSceneGraph()->getInboundJoints(link_name)[0]->getName());
-        if (child_joint)
-        {
-          child_joint->getJointProperty()->setValue(visible);
-        }
+        child_joint->getJointProperty()->setValue(visible);
+        link = env_->getLink(child_joint->getChildLinkName());
+        child_joint = env_->findChildJoint(link);
       }
     }
   }
 }
 
-void RobotJoint::updateAxes()
+void EnvJoint::updateAxes()
 {
   if (axes_property_->getValue().toBool())
   {
@@ -364,7 +344,7 @@ void RobotJoint::updateAxes()
       static int count = 0;
       std::stringstream ss;
       ss << "Axes for joint " << name_ << count++;
-      axes_ = new rviz::Axes(robot_->getSceneManager(), robot_->getOtherNode(), 0.1f, 0.01f);
+      axes_ = new rviz::Axes(env_->getSceneManager(), env_->getOtherNode(), 0.1f, 0.01f);
       axes_->getSceneNode()->setVisible(getEnabled());
 
       axes_->setPosition(position_property_->getVector());
@@ -381,7 +361,7 @@ void RobotJoint::updateAxes()
   }
 }
 
-void RobotJoint::updateAxis()
+void EnvJoint::updateAxis()
 {
   if (show_axis_property_->getValue().toBool())
   {
@@ -390,7 +370,7 @@ void RobotJoint::updateAxis()
       static int count = 0;
       std::stringstream ss;
       ss << "Axis for joint " << name_ << count++;
-      axis_ = new rviz::Arrow(robot_->getSceneManager(), robot_->getOtherNode(), 0.15f, 0.05f, 0.05f, 0.08f);
+      axis_ = new rviz::Arrow(env_->getSceneManager(), env_->getOtherNode(), 0.15f, 0.05f, 0.05f, 0.08f);
       axis_->getSceneNode()->setVisible(getEnabled());
 
       axis_->setPosition(position_property_->getVector());
@@ -411,7 +391,7 @@ void RobotJoint::updateAxis()
   }
 }
 
-void RobotJoint::setTransforms(const Ogre::Vector3& parent_link_position,
+void EnvJoint::setTransforms(const Ogre::Vector3& parent_link_position,
                                const Ogre::Quaternion& parent_link_orientation)
 {
   Ogre::Vector3 position = parent_link_position + parent_link_orientation * joint_origin_pos_;
@@ -433,7 +413,7 @@ void RobotJoint::setTransforms(const Ogre::Vector3& parent_link_position,
   }
 }
 
-void RobotJoint::hideSubProperties(bool hide)
+void EnvJoint::hideSubProperties(bool hide)
 {
   position_property_->setHidden(hide);
   orientation_property_->setHidden(hide);
@@ -442,9 +422,9 @@ void RobotJoint::hideSubProperties(bool hide)
   axis_property_->setHidden(hide);
 }
 
-Ogre::Vector3 RobotJoint::getPosition() { return position_property_->getVector(); }
-Ogre::Quaternion RobotJoint::getOrientation() { return orientation_property_->getQuaternion(); }
-void RobotJoint::setParentProperty(rviz::Property* new_parent)
+Ogre::Vector3 EnvJoint::getPosition() { return position_property_->getVector(); }
+Ogre::Quaternion EnvJoint::getOrientation() { return orientation_property_->getQuaternion(); }
+void EnvJoint::setParentProperty(rviz::Property* new_parent)
 {
   rviz::Property* old_parent = joint_property_->getParent();
   if (old_parent)
@@ -460,7 +440,7 @@ void RobotJoint::setParentProperty(rviz::Property* new_parent)
 // else (!use_detail)
 //    - all sub properties become children of joint_property_.
 //    details_ property does not have a parent.
-void RobotJoint::useDetailProperty(bool use_detail)
+void EnvJoint::useDetailProperty(bool use_detail)
 {
   rviz::Property* old_parent = details_->getParent();
   if (old_parent)
@@ -488,7 +468,7 @@ void RobotJoint::useDetailProperty(bool use_detail)
   }
 }
 
-void RobotJoint::expandDetails(bool expand)
+void EnvJoint::expandDetails(bool expand)
 {
   rviz::Property* parent = details_->getParent() ? details_ : joint_property_;
   if (expand)

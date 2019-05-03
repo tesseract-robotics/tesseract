@@ -55,10 +55,9 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #include "tesseract_rviz/render_tools/trajectory_visualization.h"
-#include "tesseract_rviz/render_tools/env/robot.h"
-#include "tesseract_rviz/render_tools/env/robot_link.h"
-#include "tesseract_rviz/render_tools/link_updater.h"
-#include "tesseract_rviz/render_tools/state_visualization.h"
+#include "tesseract_rviz/render_tools/env_visualization.h"
+#include "tesseract_rviz/render_tools/env_link.h"
+#include "tesseract_rviz/render_tools/env_link_updater.h"
 
 namespace tesseract_rviz
 {
@@ -162,7 +161,7 @@ void TrajectoryVisualization::onInitialize(Ogre::SceneNode* scene_node,
   update_nh_ = update_nh;
 
   // Load trajectory
-  display_path_.reset(new StateVisualization(scene_node_, context_, "Planned Path", widget_));
+  display_path_ = std::make_shared<EnvVisualization>(scene_node_, context_, "Planned Path", widget_);
   display_path_->setVisualVisible(display_path_visual_enabled_property_->getBool());
   display_path_->setCollisionVisible(display_path_collision_enabled_property_->getBool());
   display_path_->setVisible(false);
@@ -236,16 +235,15 @@ void TrajectoryVisualization::createTrajectoryTrail()
     return;
 
   // Add static trajectory geometry
-  trajectory_static_ = tesseract_rviz::StateVisualizationPtr(
-      new tesseract_rviz::StateVisualization(scene_node_, context_, "Trail Static", nullptr));
+  trajectory_static_ = std::make_shared<EnvVisualization>(scene_node_, context_, "Trail Static", nullptr);
   trajectory_static_->load(env_->getSceneGraph(), true, true, false, true);
+  trajectory_static_->update(EnvLinkUpdater(env_->getState()));
   trajectory_static_->setVisualVisible(display_path_visual_enabled_property_->getBool());
   trajectory_static_->setCollisionVisible(display_path_collision_enabled_property_->getBool());
   trajectory_static_->setAlpha(path_alpha_property_->getFloat());
-  trajectory_static_->update(env_, env_->getState());
 
   if (enable_default_color_property_->getBool())
-    setColor(&trajectory_static_->getRobot(), default_color_property_->getColor());
+    setColor(trajectory_static_, default_color_property_->getColor());
 
   trajectory_static_->setVisible(display_->isEnabled() && !animating_path_);
 
@@ -258,8 +256,7 @@ void TrajectoryVisualization::createTrajectoryTrail()
   {
     unsigned waypoint_i = static_cast<unsigned>(std::min(
         i * static_cast<size_t>(stepsize), static_cast<size_t>(num_waypoints - 1)));  // limit to last trajectory point
-    tesseract_rviz::StateVisualizationPtr state(
-        new tesseract_rviz::StateVisualization(scene_node_, context_, "Path Trail " + std::to_string(i), nullptr));
+    EnvVisualization::Ptr state = std::make_shared<EnvVisualization>(scene_node_, context_, "Path Trail " + std::to_string(i), nullptr);
     state->load(env_->getSceneGraph(), true, true, true, false);
     state->setVisualVisible(display_path_visual_enabled_property_->getBool());
     state->setCollisionVisible(display_path_collision_enabled_property_->getBool());
@@ -271,9 +268,9 @@ void TrajectoryVisualization::createTrajectoryTrail()
       joints[t->joint_trajectory.joint_names[j]] = t->joint_trajectory.points[waypoint_i].positions[j];
     }
 
-    state->update(env_, env_->getState(joints));
+    state->update(EnvLinkUpdater(env_->getState(joints)));
     if (enable_default_color_property_->getBool())
-      setColor(&state->getRobot(), default_color_property_->getColor());
+      setColor(state, default_color_property_->getColor());
 
     state->setVisible(display_->isEnabled() &&
                       (!animating_path_ || waypoint_i <= static_cast<unsigned>(current_state_)));
@@ -482,7 +479,7 @@ void TrajectoryVisualization::update(float wall_dt, float /*ros_dt*/)
                 displaying_trajectory_message_->joint_trajectory.points[waypoint].positions[j];
           }
 
-          display_path_->update(env_, env_->getState(joints));
+          display_path_->update(EnvLinkUpdater(env_->getState(joints)));
         }
         else
           animating_path_ = true;
@@ -502,7 +499,7 @@ void TrajectoryVisualization::update(float wall_dt, float /*ros_dt*/)
             displaying_trajectory_message_->joint_trajectory.points[0].positions[j];
       }
 
-      display_path_->update(env_, env_->getState(joints));
+      display_path_->update(EnvLinkUpdater(env_->getState(joints)));
       display_path_->setVisible(display_->isEnabled());
       if (trajectory_slider_panel_)
         trajectory_slider_panel_->setSliderPosition(0);
@@ -545,7 +542,7 @@ void TrajectoryVisualization::update(float wall_dt, float /*ros_dt*/)
               displaying_trajectory_message_->joint_trajectory.points[static_cast<size_t>(current_state_)].positions[j];
         }
 
-        display_path_->update(env_, env_->getState(joints));
+        display_path_->update(EnvLinkUpdater(env_->getState(joints)));
 
         if (trajectory_static_)
           trajectory_static_->setVisible(true);
@@ -629,27 +626,27 @@ void TrajectoryVisualization::incomingDisplayTrajectory(const tesseract_msgs::Tr
 void TrajectoryVisualization::changedColor()
 {
   if (enable_default_color_property_->getBool())
-    setColor(&(display_path_->getRobot()), default_color_property_->getColor());
+    setColor(display_path_, default_color_property_->getColor());
 }
 
 void TrajectoryVisualization::enabledColor()
 {
   if (enable_default_color_property_->getBool())
-    setColor(&(display_path_->getRobot()), default_color_property_->getColor());
+    setColor(display_path_, default_color_property_->getColor());
   else
-    unsetColor(&(display_path_->getRobot()));
+    unsetColor(display_path_);
 }
 
-void TrajectoryVisualization::unsetColor(Robot* robot)
+void TrajectoryVisualization::unsetColor(EnvVisualization::Ptr env)
 {
-  for (auto& link : robot->getLinks())
+  for (auto& link : env->getLinks())
     link.second->unsetColor();
 }
 
-void TrajectoryVisualization::setColor(Robot* robot, const QColor& color)
+void TrajectoryVisualization::setColor(EnvVisualization::Ptr env, const QColor& color)
 {
-  for (auto& link : robot->getLinks())
-    robot->getLink(link.first)
+  for (auto& link : env->getLinks())
+    env->getLink(link.first)
         ->setColor(
             static_cast<float>(color.redF()), static_cast<float>(color.greenF()), static_cast<float>(color.blueF()));
 }

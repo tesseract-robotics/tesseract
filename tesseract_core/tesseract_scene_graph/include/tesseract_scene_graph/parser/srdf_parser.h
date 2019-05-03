@@ -48,6 +48,7 @@ TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 #include <boost/algorithm/string/trim.hpp>
 #include <tesseract_scene_graph/graph.h>
+#include <fstream>
 TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
 
 /// Main namespace

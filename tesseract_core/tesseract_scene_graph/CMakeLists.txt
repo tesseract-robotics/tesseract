@@ -19,15 +19,15 @@ if (NOT ASSIMP_FOUND)
   pkg_check_modules(ASSIMP REQUIRED assimp)
 endif()
 
-add_library(${PROJECT_NAME} INTERFACE)
-target_link_libraries(${PROJECT_NAME} INTERFACE tesseract_geometry orocos-kdl console_bridge ${Boost_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${ASSIMP_LIBRARIES} ${TinyXML_LIBRARIES})
-target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_definitions(${PROJECT_NAME} INTERFACE Boost_USE_STATIC_LIBS=OFF Boost_USE_MULTITHREADED=ON Boost_USE_STATIC_RUNTIME=OFF)
-target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_11)
-target_include_directories(${PROJECT_NAME} INTERFACE
+add_library(${PROJECT_NAME} SHARED src/graph.cpp)
+target_link_libraries(${PROJECT_NAME} PUBLIC tesseract_geometry orocos-kdl console_bridge ${Boost_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${ASSIMP_LIBRARIES} ${TinyXML_LIBRARIES})
+target_compile_options(${PROJECT_NAME} PUBLIC -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
+target_compile_definitions(${PROJECT_NAME} PUBLIC Boost_USE_STATIC_LIBS=OFF Boost_USE_MULTITHREADED=ON Boost_USE_STATIC_RUNTIME=OFF)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
+target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}
     ${console_bridge_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}

@@ -58,8 +58,9 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/parser/urdf_parser.h>
 #include <tesseract_scene_graph/parser/srdf_parser.h>
 #include <tesseract_rosutils/utils.h>
-#include <tesseract_rviz/render_tools/env/robot.h>
-#include <tesseract_rviz/render_tools/env/robot_link.h>
+#include <tesseract_rviz/render_tools/env_visualization.h>
+#include <tesseract_rviz/render_tools/env_link.h>
+#include <tesseract_rviz/render_tools/env_link_updater.h>
 #include <tesseract_rviz/tesseract_state_plugin/tesseract_state_display.h>
 
 namespace tesseract_rviz
@@ -127,13 +128,6 @@ TesseractStateDisplay::TesseractStateDisplay() : Display(), update_state_(false)
   alpha_property_->setMin(0.0);
   alpha_property_->setMax(1.0);
 
-  attached_body_color_property_ = new rviz::ColorProperty("Attached Body Color",
-                                                          QColor(150, 50, 150),
-                                                          "The color for the attached bodies",
-                                                          this,
-                                                          SLOT(changedAttachedBodyColor()),
-                                                          this);
-
   enable_link_highlight_ = new rviz::BoolProperty("Show Highlights",
                                                   true,
                                                   "Specifies whether link highlighting is enabled",
@@ -169,15 +163,15 @@ TesseractStateDisplay::~TesseractStateDisplay() {}
 void TesseractStateDisplay::onInitialize()
 {
   Display::onInitialize();
-  state_.reset(new StateVisualization(scene_node_, context_, "Tesseract State", this));
+  visualization_ = std::make_shared<EnvVisualization>(scene_node_, context_, "Tesseract State", this);
   changedEnableVisualVisible();
   changedEnableCollisionVisible();
-  state_->setVisible(false);
+  visualization_->setVisible(false);
 }
 
 void TesseractStateDisplay::reset()
 {
-  state_->clear();
+  visualization_->clear();
   //  rdf_loader_.reset();
   Display::reset();
 
@@ -236,12 +230,12 @@ void TesseractStateDisplay::changedEnableLinkHighlight()
 
 void TesseractStateDisplay::changedEnableVisualVisible()
 {
-  state_->setVisualVisible(enable_visual_visible_->getBool());
+  visualization_->setVisualVisible(enable_visual_visible_->getBool());
 }
 
 void TesseractStateDisplay::changedEnableCollisionVisible()
 {
-  state_->setCollisionVisible(enable_collision_visible_->getBool());
+  visualization_->setCollisionVisible(enable_collision_visible_->getBool());
 }
 
 static bool operator!=(const std_msgs::ColorRGBA& a, const std_msgs::ColorRGBA& b)
@@ -314,9 +308,9 @@ void TesseractStateDisplay::changedURDFDescription()
 void TesseractStateDisplay::changedRootLinkName() {}
 void TesseractStateDisplay::changedURDFSceneAlpha()
 {
-  if (state_)
+  if (visualization_)
   {
-    state_->setAlpha(alpha_property_->getFloat());
+    visualization_->setAlpha(alpha_property_->getFloat());
     update_state_ = true;
   }
 }
@@ -325,7 +319,117 @@ bool TesseractStateDisplay::modifyEnvironmentCallback(tesseract_msgs::ModifyTess
                                                       tesseract_msgs::ModifyTesseractEnvResponse& res)
 {
   update_state_ = true;
-  res.success = tesseract_rosutils::processMsg(*env_, req.commands);
+  for (const auto& command : req.commands)
+  {
+    switch (command.command)
+    {
+      case tesseract_msgs::EnvironmentCommand::ADD:
+      {
+        tesseract_scene_graph::Link link = tesseract_rosutils::fromMsg(command.add_link);
+        tesseract_scene_graph::Joint joint = tesseract_rosutils::fromMsg(command.add_joint);
+        if (!visualization_->addLink(link) || !visualization_->addJoint(joint))
+          return false;
+
+        if (!env_->addLink(link, joint))
+          return false;
+
+        return true;
+      }
+      case tesseract_msgs::EnvironmentCommand::MOVE_LINK:
+      {
+        tesseract_scene_graph::Joint joint = tesseract_rosutils::fromMsg(command.move_link_joint);
+
+        std::vector<tesseract_scene_graph::JointConstPtr> joints = env_->getSceneGraph()->getInboundJoints(joint.child_link_name);
+        assert(joints.size() == 1);
+
+        if (!visualization_->removeJoint(joints[0]->getName()) || !visualization_->addJoint(joint))
+          return false;
+
+        if (!env_->moveLink(joint))
+          return false;
+
+        return true;
+      }
+      case tesseract_msgs::EnvironmentCommand::MOVE_JOINT:
+      {
+        if (!visualization_->moveJoint(command.move_joint_name, command.move_joint_parent_link))
+          return false;
+
+        if (!env_->moveJoint(command.move_joint_name, command.move_joint_parent_link))
+          return false;
+
+        return true;
+      }
+      case tesseract_msgs::EnvironmentCommand::UPDATE_LINK:
+      {
+        assert(false);
+      }
+      case tesseract_msgs::EnvironmentCommand::UPDATE_JOINT:
+      {
+        assert(false);
+      }
+      case tesseract_msgs::EnvironmentCommand::REMOVE_LINK:
+      {
+        if (env_->getLink(command.remove_link) == nullptr)
+        {
+          ROS_WARN("Tried to remove link (%s) that does not exist", command.remove_link.c_str());
+          return false;
+        }
+
+        std::vector<tesseract_scene_graph::JointConstPtr> joints = env_->getSceneGraph()->getInboundJoints(command.remove_link);
+        assert(joints.size() <= 1);
+
+        // get child link names to remove
+        std::vector<std::string> child_link_names = env_->getSceneGraph()->getLinkChildrenNames(command.remove_link);
+
+        if (!visualization_->removeLink(command.remove_link))
+          return false;
+
+        if (!visualization_->removeJoint(joints[0]->getName()))
+          return false;
+
+        for (const auto& link_name : child_link_names)
+        {
+          if (!visualization_->removeLink(link_name))
+            return false;
+
+          std::vector<tesseract_scene_graph::JointConstPtr> joints = env_->getSceneGraph()->getInboundJoints(link_name);
+          if (joints.size() == 1)
+          {
+            if (!visualization_->removeJoint(joints[0]->getName()))
+              return false;
+          }
+        }
+
+        if(!env_->removeLink(command.remove_link))
+          return false;
+
+        return true;
+      }
+      case tesseract_msgs::EnvironmentCommand::REMOVE_JOINT:
+      {
+        if (!visualization_->removeJoint(command.remove_joint))
+          return false;
+
+        if (!env_->removeJoint(command.remove_joint))
+          return false;
+
+        return true;
+      }
+      case tesseract_msgs::EnvironmentCommand::UPDATE_COLLISION:
+      {
+        assert(false);
+      }
+      case tesseract_msgs::EnvironmentCommand::UPDATE_ALLOWED_COLLISION:
+      {
+        assert(false);
+      }
+      case tesseract_msgs::EnvironmentCommand::UPDATE_JOINT_STATE:
+      {
+        assert(false);
+      }
+    }
+  }
   return true;
 }
 
@@ -424,7 +528,8 @@ void TesseractStateDisplay::loadURDFModel()
       if (success)
       {
         env_ = env;
-        state_->load(env_->getSceneGraph());
+        visualization_->clear();
+        visualization_->load(env_->getSceneGraph(), true, true, true, true);
         bool oldState = root_link_name_property_->blockSignals(true);
         root_link_name_property_->setStdString(env_->getRootLinkName());
         root_link_name_property_->blockSignals(oldState);
@@ -433,7 +538,7 @@ void TesseractStateDisplay::loadURDFModel()
 
         changedEnableVisualVisible();
         changedEnableCollisionVisible();
-        state_->setVisible(true);
+        visualization_->setVisible(true);
       }
       else
       {
@@ -462,8 +567,8 @@ void TesseractStateDisplay::onEnable()
 void TesseractStateDisplay::onDisable()
 {
   joint_state_subscriber_.shutdown();
-  if (state_)
-    state_->setVisible(false);
+  if (visualization_)
+    visualization_->setVisible(false);
   Display::onDisable();
 }
 
@@ -478,10 +583,10 @@ void TesseractStateDisplay::update(float wall_dt, float ros_dt)
   }
 
   calculateOffsetPosition();
-  if (state_ && update_state_ && env_)
+  if (visualization_ && update_state_ && env_)
   {
     update_state_ = false;
-    state_->update(env_, env_->getState());
+    visualization_->update(EnvLinkUpdater(env_->getState()));
   }
 }
 

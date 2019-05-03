@@ -215,8 +215,7 @@ namespace tesseract_scene_graph
   {
     if (material == nullptr) return nullptr;
 
-    MaterialPtr m(new Material());
-    m->name = material->name;
+    MaterialPtr m(new Material(material->name));
     m->color(0) = static_cast<double>(material->color.r);
     m->color(1) = static_cast<double>(material->color.g);
     m->color(2) = static_cast<double>(material->color.b);
@@ -285,6 +284,9 @@ namespace tesseract_scene_graph
 
   SceneGraphPtr parseURDF(const urdf::ModelInterfaceSharedPtr& urdf_model, ResourceLocatorFn locator)
   {
+    if (urdf_model == nullptr || locator == nullptr)
+        return nullptr;
+
     SceneGraphPtr g(new SceneGraph());
 
     // Populate Links
@@ -292,19 +294,19 @@ namespace tesseract_scene_graph
     urdf_model->getLinks(urdf_links);
     for (const auto& link : urdf_links)
     {
-      LinkPtr tlink(new Link(link->name));
-      tlink->inertial = convert(link->inertial);
+      Link tlink(link->name);
+      tlink.inertial = convert(link->inertial);
       if (link->visual_array.size() > 0)
       {
         for (const auto& v : link->visual_array)
-          tlink->visual.push_back(convert(v, locator));
+          tlink.visual.push_back(convert(v, locator));
       }
       if (link->collision_array.size() > 0)
       {
         for (const auto& c : link->collision_array)
         {
           std::vector<CollisionPtr> cv = convert(c, locator);
-          tlink->collision.insert(tlink->collision.end(), cv.begin(), cv.end());
+          tlink.collision.insert(tlink.collision.end(), cv.begin(), cv.end());
         }
       }
 
@@ -315,17 +317,17 @@ namespace tesseract_scene_graph
     for (const auto& jp : urdf_model->joints_)
     {
       const urdf::Joint& joint = *(jp.second);
-      JointPtr tjoint(new Joint(joint.name));
-      tjoint->type = convert(joint.type);
-      tjoint->axis = Eigen::Vector3d(joint.axis.x, joint.axis.y, joint.axis.z);
-      tjoint->child_link_name = joint.child_link_name;
-      tjoint->parent_link_name = joint.parent_link_name;
-      tjoint->parent_to_joint_origin_transform = urdfPose2Eigen(joint.parent_to_joint_origin_transform);
-      tjoint->dynamics = convert(joint.dynamics);
-      tjoint->limits = convert(joint.limits);
-      tjoint->safety = convert(joint.safety);
-      tjoint->calibration = convert(joint.calibration);
-      tjoint->mimic = convert(joint.mimic);
+      Joint tjoint(joint.name);
+      tjoint.type = convert(joint.type);
+      tjoint.axis = Eigen::Vector3d(joint.axis.x, joint.axis.y, joint.axis.z);
+      tjoint.child_link_name = joint.child_link_name;
+      tjoint.parent_link_name = joint.parent_link_name;
+      tjoint.parent_to_joint_origin_transform = urdfPose2Eigen(joint.parent_to_joint_origin_transform);
+      tjoint.dynamics = convert(joint.dynamics);
+      tjoint.limits = convert(joint.limits);
+      tjoint.safety = convert(joint.safety);
+      tjoint.calibration = convert(joint.calibration);
+      tjoint.mimic = convert(joint.mimic);
 
       g->addJoint(tjoint);
     }

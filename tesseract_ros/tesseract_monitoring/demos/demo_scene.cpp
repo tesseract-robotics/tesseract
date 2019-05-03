@@ -51,7 +51,7 @@ static const std::string ROBOT_DESCRIPTION = "robot_description";
 
 static ros::ServiceClient modify_env;
 
-void sendSphere()
+void addSphere(const std::string& name)
 {
   tesseract_msgs::ModifyTesseractEnv update_env;
 
@@ -60,12 +60,13 @@ void sendSphere()
   add_sphere_command.command = tesseract_msgs::EnvironmentCommand::ADD;
 
   // Create the link
-  add_sphere_command.add_link.name = "sphere_attached";
+  add_sphere_command.add_link.name = name;
 
   tesseract_msgs::VisualGeometry visual;
   visual.origin.position.x = 0.5;
   visual.origin.position.y = 0;
   visual.origin.position.z = 0.55;
+  visual.material.empty = true;
 
   visual.geometry.type = tesseract_msgs::Geometry::SPHERE;
   visual.geometry.sphere_radius = 0.15;
@@ -76,6 +77,7 @@ void sendSphere()
   collision.origin.position.x = 0.5;
   collision.origin.position.y = 0;
   collision.origin.position.z = 0.55;
+  collision.material.empty = true;
 
   collision.geometry.type = tesseract_msgs::Geometry::SPHERE;
   collision.geometry.sphere_radius = 0.15;
@@ -84,22 +86,42 @@ void sendSphere()
 
   // Create the Joint
   add_sphere_command.add_joint.type = tesseract_msgs::Joint::FIXED;
-  add_sphere_command.add_joint.name = "sphere_attached_joint";
+  add_sphere_command.add_joint.name = name + "_joint";
   add_sphere_command.add_joint.parent_link_name = "base_link";
-  add_sphere_command.add_joint.child_link_name = "sphere_attached";
+  add_sphere_command.add_joint.child_link_name = name;
 
   update_env.request.id = 0;
   update_env.request.commands.push_back(add_sphere_command);
 
   if (modify_env.call(update_env))
   {
-    ROS_INFO("Environment updated!");
+    ROS_INFO("Sphere added to Environment!");
   }
   else
   {
-    ROS_INFO("Failed to update environment");
+    ROS_INFO("Failed to add sphere to environment");
   }
+}
 
+void removeSphere(const std::string& name)
+{
+  tesseract_msgs::ModifyTesseractEnv update_env;
+
+  // Create remove command
+  tesseract_msgs::EnvironmentCommand command;
+  command.command = tesseract_msgs::EnvironmentCommand::REMOVE_LINK;
+  command.remove_link = name;
+
+  update_env.request.commands.push_back(command);
+
+  if (modify_env.call(update_env))
+  {
+    ROS_INFO("Removed sphere from environment!");
+  }
+  else
+  {
+    ROS_INFO("Failed to remove sphere from environment");
+  }
 }
 
 int main(int argc, char** argv)
@@ -112,7 +134,11 @@ int main(int argc, char** argv)
 
   modify_env = nh.serviceClient<tesseract_msgs::ModifyTesseractEnv>("modify_tesseract", 10);
 
-  sendSphere();
+  addSphere("sphere_attached");
+
+  sleep(10);
+
+  removeSphere("sphere_attached");
 
   ros::waitForShutdown();
 

@@ -76,45 +76,41 @@ class VectorProperty;
 class StringProperty;
 }
 
-namespace tesseract
-{
-class AttachedBodyInfo;
-}
-
 namespace tesseract_rviz
 {
-class Robot;
-class RobotLinkSelectionHandler;
-class RobotJoint;
+class EnvVisualization;
+class EnvLinkSelectionHandler;
+class EnvJoint;
 
 /**
  * \struct RobotJoint
  * \brief Contains any data we need from a joint in the robot.
  */
-class RobotJoint : public QObject
+class EnvJoint : public QObject
 {
   Q_OBJECT
 public:
-  RobotJoint(Robot* robot, const tesseract_scene_graph::JointConstPtr& joint);
-  virtual ~RobotJoint();
-
-  void setTransforms(const Ogre::Vector3& parent_link_position, const Ogre::Quaternion& parent_link_orientation);
+  EnvJoint(EnvVisualization* env, const tesseract_scene_graph::Joint& joint);
+  virtual ~EnvJoint();
 
   const std::string& getName() const { return name_; }
+
+  void setParentLinkName(const std::string& parent_link_name) { parent_link_name_ = parent_link_name; }
   const std::string& getParentLinkName() const { return parent_link_name_; }
+
   const std::string& getChildLinkName() const { return child_link_name_; }
   const rviz::Property* getJointProperty() const { return joint_property_; }
   rviz::Property* getJointProperty() { return joint_property_; }
-  RobotJoint* getParentJoint();
   void hideSubProperties(bool hide);
 
   // Remove joint_property_ from its old parent and add to new_parent.  If new_parent==nullptr then leav unparented.
   void setParentProperty(rviz::Property* new_parent);
 
+  void setTransforms(const Ogre::Vector3& parent_link_position, const Ogre::Quaternion& parent_link_orientation);
   Ogre::Vector3 getPosition();
   Ogre::Quaternion getOrientation();
 
-  void setRobotAlpha(float /*a*/) {}
+  void setAlpha(float /*a*/) {}
   bool hasDescendentLinksWithGeometry() const { return has_decendent_links_with_geometry_; }
   // place subproperties as children of details_ or joint_property_
   void useDetailProperty(bool use_detail);
@@ -156,7 +152,7 @@ private:
   void setJointCheckbox(QVariant val);
 
 protected:
-  Robot* robot_;
+  EnvVisualization* env_;
   std::string name_;  ///< Name of this joint
   std::string parent_link_name_;
   std::string child_link_name_;

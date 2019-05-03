@@ -38,11 +38,11 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
   using namespace tesseract_scene_graph;
   SceneGraph g;
 
-  LinkPtr link_1(new Link("link_1"));
-  LinkPtr link_2(new Link("link_2"));
-  LinkPtr link_3(new Link("link_3"));
-  LinkPtr link_4(new Link("link_4"));
-  LinkPtr link_5(new Link("link_5"));
+  Link link_1("link_1");
+  Link link_2("link_2");
+  Link link_3("link_3");
+  Link link_4("link_4");
+  Link link_5("link_5");
 
   g.addLink(link_1);
   g.addLink(link_2);
@@ -50,32 +50,32 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
   g.addLink(link_4);
   g.addLink(link_5);
 
-  JointPtr joint_1(new Joint("joint_1"));
-  joint_1->parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_1->parent_link_name = "link_1";
-  joint_1->child_link_name = "link_2";
-  joint_1->type = JointType::FIXED;
+  Joint joint_1("joint_1");
+  joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_1.parent_link_name = "link_1";
+  joint_1.child_link_name = "link_2";
+  joint_1.type = JointType::FIXED;
   g.addJoint(joint_1);
 
-  JointPtr joint_2(new Joint("joint_2"));
-  joint_2->parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_2->parent_link_name = "link_2";
-  joint_2->child_link_name = "link_3";
-  joint_2->type = JointType::PLANAR;
+  Joint joint_2("joint_2");
+  joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_2.parent_link_name = "link_2";
+  joint_2.child_link_name = "link_3";
+  joint_2.type = JointType::PLANAR;
   g.addJoint(joint_2);
 
-  JointPtr joint_3(new Joint("joint_3"));
-  joint_3->parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_3->parent_link_name = "link_3";
-  joint_3->child_link_name = "link_4";
-  joint_3->type = JointType::FLOATING;
+  Joint joint_3("joint_3");
+  joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_3.parent_link_name = "link_3";
+  joint_3.child_link_name = "link_4";
+  joint_3.type = JointType::FLOATING;
   g.addJoint(joint_3);
 
-  JointPtr joint_4(new Joint("joint_4"));
-  joint_4->parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_4->parent_link_name = "link_2";
-  joint_4->child_link_name = "link_5";
-  joint_4->type = JointType::REVOLUTE;
+  Joint joint_4("joint_4");
+  joint_4.parent_to_joint_origin_transform.translation()(1) = 1.25;
+  joint_4.parent_link_name = "link_2";
+  joint_4.child_link_name = "link_5";
+  joint_4.type = JointType::REVOLUTE;
   g.addJoint(joint_4);
 
   // Check getAdjacentLinkNames Method
@@ -133,7 +133,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
   EXPECT_TRUE(g.isTree());
 
   // Test for unused links
-  LinkPtr link_6(new Link("link_6"));
+  Link link_6("link_6");
   g.addLink(link_6);
   std::cout << "Free Link, Is Tree: " << g.isTree() << std::endl;
   EXPECT_FALSE(g.isTree());
@@ -141,18 +141,18 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
   // Check Graph
   checkSceneGraph(g);
 
-  g.removeLink(link_6->getName());
+  g.removeLink(link_6.getName());
   std::cout << "Free Link Removed, Is Tree: " << g.isTree() << std::endl;
   EXPECT_TRUE(g.isTree());
 
   // Check Graph
   checkSceneGraph(g);
 
-  JointPtr joint_5(new Joint("joint_5"));
-  joint_5->parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_5->parent_link_name = "link_5";
-  joint_5->child_link_name = "link_4";
-  joint_5->type = JointType::CONTINUOUS;
+  Joint joint_5("joint_5");
+  joint_5.parent_to_joint_origin_transform.translation()(1) = 1.25;
+  joint_5.parent_link_name = "link_5";
+  joint_5.child_link_name = "link_4";
+  joint_5.type = JointType::CONTINUOUS;
   g.addJoint(joint_5);
 
   // Check Graph
@@ -169,11 +169,11 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
   std::cout << "Is Tree: " << g.isTree() << std::endl;
   EXPECT_FALSE(g.isTree());
 
-  JointPtr joint_6(new Joint("joint_6"));
-  joint_6->parent_to_joint_origin_transform.translation()(1) = 1.25;
-  joint_6->parent_link_name = "link_5";
-  joint_6->child_link_name = "link_1";
-  joint_6->type = JointType::CONTINUOUS;
+  Joint joint_6("joint_6");
+  joint_6.parent_to_joint_origin_transform.translation()(1) = 1.25;
+  joint_6.parent_link_name = "link_5";
+  joint_6.child_link_name = "link_1";
+  joint_6.type = JointType::CONTINUOUS;
   g.addJoint(joint_6);
 
   // Check Graph

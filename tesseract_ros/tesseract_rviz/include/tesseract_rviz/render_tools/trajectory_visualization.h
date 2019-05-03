@@ -50,7 +50,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/Trajectory.h>
 #include <tesseract_environment/core/environment.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
-#include <tesseract_rviz/render_tools/state_visualization.h>
+#include <tesseract_rviz/render_tools/env_visualization.h>
 #include <tesseract_rviz/render_tools/trajectory_panel.h>
 #endif
 
@@ -71,7 +71,6 @@ class MovableText;
 
 namespace tesseract_rviz
 {
-class Robot;
 
 class TrajectoryVisualization : public QObject
 {
@@ -128,16 +127,16 @@ protected:
   void createTrajectoryTrail();
 
   // Handles actually drawing the robot along motion plans
-  StateVisualizationPtr display_path_;
+  EnvVisualization::Ptr display_path_;
 
   // Handle colouring of robot
-  void setColor(Robot* robot, const QColor& color);
-  void unsetColor(Robot* robot);
+  void setColor(EnvVisualization::Ptr env, const QColor& color);
+  void unsetColor(EnvVisualization::Ptr env);
 
   tesseract_msgs::TrajectoryPtr displaying_trajectory_message_;
   tesseract_msgs::TrajectoryPtr trajectory_message_to_display_;
-  std::vector<tesseract_rviz::StateVisualizationPtr> trajectory_trail_;
-  tesseract_rviz::StateVisualizationPtr trajectory_static_;
+  std::vector<EnvVisualization::Ptr> trajectory_trail_;
+  EnvVisualization::Ptr trajectory_static_;
 
   ros::Subscriber trajectory_topic_sub_;
   boost::mutex update_trajectory_message_;

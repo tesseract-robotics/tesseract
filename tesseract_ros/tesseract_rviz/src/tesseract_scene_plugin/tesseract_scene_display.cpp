@@ -36,8 +36,8 @@
 /* Author: Ioan Sucan */
 
 #include "tesseract_rviz/tesseract_scene_plugin/tesseract_scene_display.h"
-#include "tesseract_rviz/render_tools/env/robot.h"
-#include "tesseract_rviz/render_tools/env/robot_link.h"
+#include "tesseract_rviz/render_tools/env/env_visualization.h"
+#include "tesseract_rviz/render_tools/env/env_link.h"
 #include "tesseract_rviz/render_tools/octomap_render.h"
 #include "tesseract_rviz/render_tools/state_visualization.h"
 
