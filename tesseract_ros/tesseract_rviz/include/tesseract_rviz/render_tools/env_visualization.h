@@ -75,26 +75,28 @@ class TransformListener;
 
 namespace tesseract_rviz
 {
-class Robot;
-class RobotLink;
-class RobotJoint;
+class EnvVisualization;
+class EnvLink;
+class EnvJoint;
 
 /**
- * \class Robot
+ * \class EnvVisualization
  *
- * A helper class to draw a representation of a robot, as specified by a URDF.  Can display either the visual models of
- * the robot,
- * or the collision models.
+ * A helper class to draw a representation of a environment.  Can display either the visual models of
+ * the environment, or the collision models.
  */
-class Robot : public QObject
+class EnvVisualization : public QObject
 {
   Q_OBJECT
 public:
-  Robot(Ogre::SceneNode* root_node,
-        rviz::DisplayContext* context,
-        const std::string& name,
-        rviz::Property* parent_property);
-  virtual ~Robot();
+  using Ptr = std::shared_ptr<EnvVisualization>;
+  using ConstPtr = std::shared_ptr<const EnvVisualization>;
+
+  EnvVisualization(Ogre::SceneNode* root_node,
+                   rviz::DisplayContext* context,
+                   const std::string& name,
+                   rviz::Property* parent_property);
+  virtual ~EnvVisualization();
 
   /**
    * \brief Loads meshes/primitives from a robot description.  Calls clear() before loading.
@@ -115,9 +117,47 @@ public:
    */
   virtual void clear();
 
-  virtual void update(const rviz::LinkUpdater& updater);
+  /**
+   * @brief Adds a link to the visualization
+   * @param link The link to be added
+   * @return Return False if a link with the same name allready exists, otherwise true
+   */
+  virtual bool addLink(const tesseract_scene_graph::Link& link);
 
-  const tesseract_scene_graph::SceneGraphConstPtr& getSceneGraph() const { return scene_graph_; }
+  /**
+   * @brief Removes a link from the visualization
+   * @param name Name of the link to be removed
+   * @return Return False if a link does not exists, otherwise true
+   */
+  virtual bool removeLink(const std::string& name);
+
+  /**
+   * @brief Adds joint to the visualization
+   * @param joint The joint to be added
+   * @return Return False if parent or child link does not exists and if joint name already exists in the graph, otherwise true
+   */
+  virtual bool addJoint(const tesseract_scene_graph::Joint& joint);
+
+  /**
+   * @brief Removes a joint from the visualization
+   * @param name Name of the joint to be removed
+   * @return Return False if a joint does not exists, otherwise true
+   */
+  virtual bool removeJoint(const std::string& name);
+
+  /**
+   * @brief Move a joint from one link to another
+   *
+   *        All child links & joints should follow
+   *
+   * @param joint_name The name of the joint to move
+   * @param new_parent_link The name of the link to move to.
+   * @return Return False if parent_link does not exists, otherwise true
+   */
+  virtual bool moveJoint(const std::string& joint_name, const std::string& parent_link);
+
+
+  virtual void update(const rviz::LinkUpdater& updater);
 
   /**
    * \brief Set the robot as a whole to be visible or not
@@ -154,12 +194,12 @@ public:
 
   void setAlpha(float a);
   float getAlpha() { return alpha_; }
-  RobotLink* getRootLink() { return root_link_; }
-  RobotLink* getLink(const std::string& name);
-  RobotJoint* getJoint(const std::string& name);
+  EnvLink* getRootLink() { return root_link_; }
+  EnvLink* getLink(const std::string& name);
+  EnvJoint* getJoint(const std::string& name);
 
-  typedef std::map<std::string, RobotLink*> M_NameToLink;
-  typedef std::map<std::string, RobotJoint*> M_NameToJoint;
+  typedef std::map<std::string, EnvLink*> M_NameToLink;
+  typedef std::map<std::string, EnvJoint*> M_NameToJoint;
   const M_NameToLink& getLinks() const { return links_; }
   const M_NameToJoint& getJoints() const { return joints_; }
   const std::string& getName() { return name_; }
@@ -174,17 +214,21 @@ public:
   virtual const Ogre::Vector3& getPosition();
   virtual const Ogre::Quaternion& getOrientation();
 
+  EnvJoint* findParentJoint(EnvJoint* joint);
+  EnvJoint* findParentJoint(EnvLink* link);
+  EnvJoint* findChildJoint(EnvLink* link);
+
   /** subclass LinkFactory and call setLinkFactory() to use a subclass of RobotLink and/or RobotJoint. */
   class LinkFactory
   {
   public:
     virtual ~LinkFactory() {}
-    virtual RobotLink* createLink(Robot* robot,
-                                  const tesseract_scene_graph::LinkConstPtr& link,
-                                  bool visual,
-                                  bool collision);
+    virtual EnvLink* createLink(EnvVisualization* env,
+                                const tesseract_scene_graph::Link& link,
+                                bool visual,
+                                bool collision);
 
-    virtual RobotJoint* createJoint(Robot* robot, const tesseract_scene_graph::JointConstPtr& joint);
+    virtual EnvJoint* createJoint(EnvVisualization* robot, const tesseract_scene_graph::Joint& joint);
   };
 
   /** Call this before load() to subclass the RobotLink or RobotJoint class used in the link property.
@@ -235,8 +279,8 @@ protected:
   void useDetailProperty(bool use_detail);
 
   /** used by setLinkTreeStyle() to recursively build link & joint tree. */
-  void addLinkToLinkTree(LinkTreeStyle style, rviz::Property* parent, RobotLink* link);
-  void addJointToLinkTree(LinkTreeStyle style, rviz::Property* parent, RobotJoint* joint);
+  void addLinkToLinkTree(LinkTreeStyle style, rviz::Property* parent, EnvLink* link);
+  void addJointToLinkTree(LinkTreeStyle style, rviz::Property* parent, EnvJoint* joint);
 
   // set the value of the EnableAllLinks property without affecting child links/joints.
   void setEnableAllLinksCheckbox(QVariant val);
@@ -249,11 +293,9 @@ protected:
 
   Ogre::SceneManager* scene_manager_;
 
-  tesseract_scene_graph::SceneGraphConstPtr scene_graph_;
-
   M_NameToLink links_;    ///< Map of name to link info, stores all loaded links.
   M_NameToJoint joints_;  ///< Map of name to joint info, stores all loaded joints.
-  RobotLink* root_link_;
+  EnvLink* root_link_;
   std::vector<std::string> active_links_;  ///< This is a list of active links
   bool load_visual_;                       ///< Indicate if visual geometries should be loaded
   bool load_collision_;                    ///< Indicate if collision geometries should be loaded
@@ -280,7 +322,7 @@ protected:
   std::map<LinkTreeStyle, std::string> style_name_map_;
 
   bool doing_set_checkbox_;  // used only inside setEnableAllLinksCheckbox()
-  bool robot_loaded_;        // true after robot model is loaded.
+  bool env_loaded_;        // true after robot model is loaded.
 
   // true inside changedEnableAllLinks().  Prevents calculateJointCheckboxes()
   // from recalculating over and over.

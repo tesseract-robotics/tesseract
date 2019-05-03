@@ -52,18 +52,15 @@ TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
 namespace tesseract_scene_graph
 {
 
-class Link;
-typedef std::shared_ptr<Link> LinkPtr;
-typedef std::shared_ptr<const Link> LinkConstPtr;
-
-
 class Material
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  Material() { this->clear(); }
-  std::string name;
+  Material(const std::string& name) : name_(name) { this->clear(); }
+
+  const std::string& getName() const { return name_; }
+
   std::string texture_filename;
   Eigen::Vector4d color;
 
@@ -71,8 +68,9 @@ public:
   {
     color.setZero();
     texture_filename.clear();
-    name.clear();
   }
+private:
+  std::string name_;
 };
 typedef std::shared_ptr<Material> MaterialPtr;
 typedef std::shared_ptr<const Material> MaterialConstPtr;
@@ -170,8 +168,11 @@ public:
 
 private:
   const std::string name_;
-
 };
+
+typedef std::shared_ptr<Link> LinkPtr;
+typedef std::shared_ptr<const Link> LinkConstPtr;
+
 
 }
 

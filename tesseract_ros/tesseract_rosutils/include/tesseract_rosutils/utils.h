@@ -513,7 +513,7 @@ static inline bool toMsg(tesseract_msgs::Material& material_msg, const tesseract
     return true;
   }
 
-  material_msg.name = material->name;
+  material_msg.name = material->getName();
   material_msg.texture_filename = material->texture_filename;
   material_msg.color.r = material->color(0);
   material_msg.color.g = material->color(1);
@@ -530,8 +530,7 @@ static inline bool fromMsg(tesseract_scene_graph::MaterialPtr& material, const t
     return true;
   }
 
-  material = std::make_shared<tesseract_scene_graph::Material>();
-  material->name = material_msg.name;
+  material = std::make_shared<tesseract_scene_graph::Material>(material_msg.name);
   material->texture_filename = material_msg.texture_filename;
   material->color(0) = material_msg.color.r;
   material->color(1) = material_msg.color.g;
@@ -568,6 +567,8 @@ static inline bool fromMsg(tesseract_scene_graph::InertialPtr& inertial, const t
     inertial = nullptr;
     return true;
   }
+
+  inertial = std::make_shared<tesseract_scene_graph::Inertial>();
 
   tf::poseMsgToEigen(inertial_msg.origin, inertial->origin);
 
@@ -636,21 +637,21 @@ static inline bool toMsg(tesseract_msgs::Link& link_msg, const tesseract_scene_g
   return true;
 }
 
-static inline bool fromMsg(tesseract_scene_graph::LinkPtr& link, const tesseract_msgs::Link& link_msg)
+static inline tesseract_scene_graph::Link fromMsg(const tesseract_msgs::Link& link_msg)
 {
-  link = std::make_shared<tesseract_scene_graph::Link>(link_msg.name);
+  tesseract_scene_graph::Link link(link_msg.name);
 
-  fromMsg(link->inertial, link_msg.inertial);
+  fromMsg(link.inertial, link_msg.inertial);
 
-  link->collision.resize(link_msg.collision.size());
+  link.collision.resize(link_msg.collision.size());
   for (size_t i = 0; i < link_msg.collision.size(); ++i)
-    fromMsg(link->collision[i], link_msg.collision[i]);
+    fromMsg(link.collision[i], link_msg.collision[i]);
 
-  link->visual.resize(link_msg.visual.size());
+  link.visual.resize(link_msg.visual.size());
   for (size_t i = 0; i < link_msg.visual.size(); ++i)
-    fromMsg(link->visual[i], link_msg.visual[i]);
+    fromMsg(link.visual[i], link_msg.visual[i]);
 
-  return true;
+  return link;
 }
 
 static inline bool toMsg(tesseract_msgs::JointCalibration& joint_calibration_msg, const tesseract_scene_graph::JointCalibrationPtr& joint_calibration)
@@ -710,6 +711,8 @@ static inline bool fromMsg(tesseract_scene_graph::JointDynamicsPtr& joint_dynami
     joint_dynamics = nullptr;
     return true;
   }
+
+  joint_dynamics = std::make_shared<tesseract_scene_graph::JointDynamics>();
 
   joint_dynamics->damping = joint_dynamics_msg.damping;
 
@@ -842,25 +845,27 @@ static inline bool toMsg(tesseract_msgs::Joint& joint_msg, const tesseract_scene
   toMsg(joint_msg.mimic, joint.mimic);
 }
 
-static inline bool fromMsg(tesseract_scene_graph::JointPtr& joint, const tesseract_msgs::Joint& joint_msg)
+static inline tesseract_scene_graph::Joint fromMsg(const tesseract_msgs::Joint& joint_msg)
 {
-  joint = std::make_shared<tesseract_scene_graph::Joint>(joint_msg.name);
+  tesseract_scene_graph::Joint joint(joint_msg.name);
 
-  joint->type = static_cast<tesseract_scene_graph::JointType>(joint_msg.type);
+  joint.type = static_cast<tesseract_scene_graph::JointType>(joint_msg.type);
 
-  joint->axis[0] = joint_msg.axis[0];
-  joint->axis[1] = joint_msg.axis[1];
-  joint->axis[2] = joint_msg.axis[2];
+  joint.axis[0] = joint_msg.axis[0];
+  joint.axis[1] = joint_msg.axis[1];
+  joint.axis[2] = joint_msg.axis[2];
 
-  joint->child_link_name = joint_msg.child_link_name;
-  joint->parent_link_name = joint_msg.parent_link_name;
+  joint.child_link_name = joint_msg.child_link_name;
+  joint.parent_link_name = joint_msg.parent_link_name;
 
-  tf::poseMsgToEigen(joint_msg.parent_to_joint_origin_transform, joint->parent_to_joint_origin_transform);
-  fromMsg(joint->limits, joint_msg.limits);
-  fromMsg(joint->dynamics, joint_msg.dynamics);
-  fromMsg(joint->safety, joint_msg.safety);
-  fromMsg(joint->calibration, joint_msg.calibration);
-  fromMsg(joint->mimic, joint_msg.mimic);
+  tf::poseMsgToEigen(joint_msg.parent_to_joint_origin_transform, joint.parent_to_joint_origin_transform);
+  fromMsg(joint.limits, joint_msg.limits);
+  fromMsg(joint.dynamics, joint_msg.dynamics);
+  fromMsg(joint.safety, joint_msg.safety);
+  fromMsg(joint.calibration, joint_msg.calibration);
+  fromMsg(joint.mimic, joint_msg.mimic);
+
+  return joint;
 }
 
 static inline void toMsg(sensor_msgs::JointState& joint_state, const tesseract_environment::EnvState& state)
@@ -1128,16 +1133,13 @@ static inline bool processMsg(tesseract_environment::Environment& env, const std
     {
       case tesseract_msgs::EnvironmentCommand::ADD:
       {
-        tesseract_scene_graph::LinkPtr link;
-        tesseract_scene_graph::JointPtr joint;
-        tesseract_rosutils::fromMsg(link, command.add_link);
-        tesseract_rosutils::fromMsg(joint, command.add_joint);
+        tesseract_scene_graph::Link link = tesseract_rosutils::fromMsg(command.add_link);
+        tesseract_scene_graph::Joint joint = tesseract_rosutils::fromMsg(command.add_joint);
         return env.addLink(link, joint);
       }
       case tesseract_msgs::EnvironmentCommand::MOVE_LINK:
       {
-        tesseract_scene_graph::JointPtr joint;
-        tesseract_rosutils::fromMsg(joint, command.move_link_joint);
+        tesseract_scene_graph::Joint joint = tesseract_rosutils::fromMsg(command.move_link_joint);
         return env.moveLink(joint);
       }
       case tesseract_msgs::EnvironmentCommand::MOVE_JOINT:

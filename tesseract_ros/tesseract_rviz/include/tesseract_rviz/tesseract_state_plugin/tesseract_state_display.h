@@ -49,7 +49,8 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <ros/service_server.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
-#include "tesseract_rviz/render_tools/state_visualization.h"
+#include <tesseract_rviz/render_tools/env_visualization.h>
+#include <tesseract_environment/core/environment.h>
 #endif
 
 namespace Ogre
@@ -68,14 +69,16 @@ class ColorProperty;
 
 namespace tesseract_rviz
 {
-class StateVisualization;
-class Robot;
+class EnvVisualization;
 
 class TesseractStateDisplay : public rviz::Display
 {
   Q_OBJECT
 
 public:
+  using Ptr = std::shared_ptr<TesseractStateDisplay>;
+  using ConstPtr = std::shared_ptr<const TesseractStateDisplay>;
+
   TesseractStateDisplay();
   ~TesseractStateDisplay() override;
 
@@ -94,7 +97,6 @@ private Q_SLOTS:
   void changedURDFDescription();
   void changedRootLinkName();
   void changedURDFSceneAlpha();
-  void changedAttachedBodyColor();
   void changedJointStateTopic();
   void changedEnableLinkHighlight();
   void changedEnableVisualVisible();
@@ -136,7 +138,7 @@ protected:
   ros::ServiceServer modify_environment_server_;
 
   tesseract_environment::EnvironmentPtr env_;
-  StateVisualizationPtr state_;
+  EnvVisualization::Ptr visualization_;
   std::map<std::string, std_msgs::ColorRGBA> highlights_;
   bool update_state_;
   bool load_env_;  // for delayed initialization
@@ -146,14 +148,12 @@ protected:
   rviz::RosTopicProperty* tesseract_state_topic_property_;
   rviz::RosTopicProperty* joint_state_topic_property_;
   rviz::FloatProperty* alpha_property_;
-  rviz::ColorProperty* attached_body_color_property_;
   rviz::BoolProperty* enable_link_highlight_;
   rviz::BoolProperty* enable_visual_visible_;
   rviz::BoolProperty* enable_collision_visible_;
   rviz::BoolProperty* show_all_links_;
 };
-typedef std::shared_ptr<TesseractStateDisplay> TesseractStateDisplayPtr;
-typedef std::shared_ptr<const TesseractStateDisplay> TesseractStateDisplayConstPtr;
+
 
 }  // namespace tesseract_rviz
 

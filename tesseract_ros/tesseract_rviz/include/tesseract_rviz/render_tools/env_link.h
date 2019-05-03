@@ -86,10 +86,10 @@ class OcTree;
 
 namespace tesseract_rviz
 {
-class Robot;
-class RobotLinkSelectionHandler;
-class RobotJoint;
-typedef boost::shared_ptr<RobotLinkSelectionHandler> RobotLinkSelectionHandlerPtr;
+class EnvVisualization;
+class EnvLinkSelectionHandler;
+class EnvJoint;
+using EnvLinkSelectionHandlerPtr = std::shared_ptr<EnvLinkSelectionHandler>;
 
 enum OctreeVoxelRenderMode
 {
@@ -104,21 +104,21 @@ enum OctreeVoxelColorMode
 };
 
 /**
- * \struct RobotLink
- * \brief Contains any data we need from a link in the robot.
+ * \struct EnvLink
+ * \brief Contains any data we need from a link in the environment.
  */
-class RobotLink : public QObject
+class EnvLink : public QObject
 {
   Q_OBJECT
 public:
-  RobotLink(Robot* robot,
-            const tesseract_scene_graph::LinkConstPtr& link,
-            bool visual,
-            bool collision);
+  EnvLink(EnvVisualization* env,
+          const tesseract_scene_graph::Link& link,
+          bool visual,
+          bool collision);
 
-  virtual ~RobotLink();
+  virtual ~EnvLink();
 
-  virtual void setRobotAlpha(float a);
+  virtual void setAlpha(float a);
 
   virtual void setTransforms(const Ogre::Vector3& visual_position,
                              const Ogre::Quaternion& visual_orientation,
@@ -131,7 +131,7 @@ public:
   rviz::Property* getLinkProperty() const { return link_property_; }
   Ogre::SceneNode* getVisualNode() const { return visual_node_; }
   Ogre::SceneNode* getCollisionNode() const { return collision_node_; }
-  Robot* getRobot() const { return robot_; }
+  EnvVisualization* getEnvVisualization() const { return env_; }
   // Remove link_property_ from its old parent and add to new_parent.  If new_parent==nullptr then leav unparented.
   void setParentProperty(rviz::Property* new_parent);
 
@@ -166,6 +166,8 @@ public:
   // expand all sub properties
   void expandDetails(bool expand);
 
+  void setLinkPropertyDescription();
+
 public Q_SLOTS:
   /** @brief Update the visibility of the link elements: visual mesh, collision mesh, trail, and axes.
    *
@@ -182,28 +184,22 @@ private:
   void setRenderQueueGroup(Ogre::uint8 group);
   bool getEnabled() const;
 
-  bool createEntityForGeometryElement(const tesseract_scene_graph::LinkConstPtr& link,
+  bool createEntityForGeometryElement(const tesseract_scene_graph::Link& link,
                                       const tesseract_geometry::Geometry& geom,
                                       const Eigen::Isometry3d& origin,
                                       const std::string& material_name,
                                       bool isVisual);
 
-  bool createEntityForGeometryElement(const tesseract_geometry::Geometry& geom,
-                                      const Eigen::Isometry3d& origin,
-                                      const Eigen::Vector4d& color,
-                                      bool isVisual);
-
-  void createVisual(const tesseract_scene_graph::LinkConstPtr& link);
-  void createCollision(const tesseract_scene_graph::LinkConstPtr& link);
+  void createVisual(const tesseract_scene_graph::Link& link);
+  void createCollision(const tesseract_scene_graph::Link& link);
 
   void createSelection();
-  Ogre::MaterialPtr getMaterialForLink(const tesseract_scene_graph::LinkConstPtr& link, const std::string material_name = "");
-  Ogre::MaterialPtr getMaterialForAttachedLink(const Eigen::Vector4d& color);
+  Ogre::MaterialPtr getMaterialForLink(const tesseract_scene_graph::Link& link, const std::string material_name = "");
 
   void setOctomapColor(double z_pos, double min_z, double max_z, double color_factor, rviz::PointCloud::Point* point);
 
 protected:
-  Robot* robot_;
+  EnvVisualization* env_;
   Ogre::SceneManager* scene_manager_;
   rviz::DisplayContext* context_;
 
@@ -242,7 +238,7 @@ private:
 
   float material_alpha_;  ///< If material is not a texture, this saves the alpha value set in the URDF, otherwise is
                           /// 1.0.
-  float robot_alpha_;     ///< Alpha value from top-level robot alpha Property (set via setRobotAlpha()).
+  float alpha_;     ///< Alpha value from top-level robot alpha Property (set via setRobotAlpha()).
 
   bool only_render_depth_;
   bool is_selectable_;
@@ -250,12 +246,12 @@ private:
   // joint stuff
   std::string joint_name_;
 
-  RobotLinkSelectionHandlerPtr selection_handler_;
+  EnvLinkSelectionHandlerPtr selection_handler_;
 
   Ogre::MaterialPtr color_material_;
   bool using_color_;
 
-  friend class RobotLinkSelectionHandler;
+  friend class EnvLinkSelectionHandler;
 };
 
 }  // namespace tesseract_rviz

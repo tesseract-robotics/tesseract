@@ -90,14 +90,14 @@ public:
    * @param link The link to be added to the graph
    * @return Return False if a link with the same name allready exists, otherwise true
    */
-  virtual bool addLink(tesseract_scene_graph::LinkPtr link) = 0;
+  virtual bool addLink(tesseract_scene_graph::Link link) = 0;
 
   /**
    * @brief Adds a link to the environment
    * @param link The link to be added to the graph
    * @return Return False if a link with the same name allready exists, otherwise true
    */
-  virtual bool addLink(tesseract_scene_graph::LinkPtr link, tesseract_scene_graph::JointPtr joint) = 0;
+  virtual bool addLink(tesseract_scene_graph::Link link, tesseract_scene_graph::Joint joint) = 0;
 
   /**
    * @brief Removes a link from the environment
@@ -117,7 +117,7 @@ public:
    * @param joint The new joint.
    * @return Return False if a link does not exists or has no parent joint, otherwise true
    */
-  virtual bool moveLink(tesseract_scene_graph::JointPtr joint) = 0;
+  virtual bool moveLink(tesseract_scene_graph::Joint joint) = 0;
 
   /**
    * @brief Get a link in the environment
@@ -134,7 +134,7 @@ public:
    * @param joint The joint to be added
    * @return Return False if parent or child link does not exists and if joint name already exists in the graph, otherwise true
    */
-  virtual bool addJoint(tesseract_scene_graph::JointPtr joint) = 0;
+  virtual bool addJoint(tesseract_scene_graph::Joint joint) = 0;
 
   /**
    * @brief Removes a joint from the environment

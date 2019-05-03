@@ -66,17 +66,17 @@ public:
   EnvStatePtr getState(const std::vector<std::string>& joint_names,
                        const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override;
 
-  bool addLink(tesseract_scene_graph::LinkPtr link) override;
+  bool addLink(tesseract_scene_graph::Link link) override;
 
-  bool addLink(tesseract_scene_graph::LinkPtr link, tesseract_scene_graph::JointPtr joint) override;
+  bool addLink(tesseract_scene_graph::Link link, tesseract_scene_graph::Joint joint) override;
 
   bool removeLink(const std::string& name) override;
 
-  bool moveLink(tesseract_scene_graph::JointPtr joint) override;
+  bool moveLink(tesseract_scene_graph::Joint joint) override;
 
   tesseract_scene_graph::LinkConstPtr getLink(const std::string& name) const override;
 
-  bool addJoint(tesseract_scene_graph::JointPtr joint) override;
+  bool addJoint(tesseract_scene_graph::Joint joint) override;
 
   bool removeJoint(const std::string& name) override;
 
@@ -149,7 +149,7 @@ private:
 
   void getCollisionObject(tesseract_collision::CollisionShapesConst& shapes,
                           tesseract_collision::VectorIsometry3d& shape_poses,
-                          const tesseract_scene_graph::LinkConstPtr& link);
+                          const tesseract_scene_graph::Link& link);
 
 };
 typedef std::shared_ptr<KDLEnv> KDLEnvPtr;
