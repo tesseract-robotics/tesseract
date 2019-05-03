@@ -64,65 +64,65 @@ void runContactManagerCloneTest(const tesseract_environment::EnvironmentPtr& env
 
 void runAddandRemoveLinkTest(const tesseract_environment::EnvironmentPtr& env)
 {
-  LinkPtr link_1(new Link("link_n1"));
-  LinkPtr link_2(new Link("link_n2"));
+  Link link_1("link_n1");
+  Link link_2("link_n2");
 
-  JointPtr joint_1(new Joint("joint_n1"));
-  joint_1->parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_1->parent_link_name = "link_n1";
-  joint_1->child_link_name = "link_n2";
-  joint_1->type = JointType::FIXED;
+  Joint joint_1("joint_n1");
+  joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_1.parent_link_name = "link_n1";
+  joint_1.child_link_name = "link_n2";
+  joint_1.type = JointType::FIXED;
 
   env->addLink(link_1);
 
   std::vector<std::string> link_names = env->getLinkNames();
   std::vector<std::string> joint_names = env->getJointNames();
-  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_1->getName()) != link_names.end());
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), "joint_" + link_1->getName()) != joint_names.end());
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_1.getName()) != link_names.end());
+  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), "joint_" + link_1.getName()) != joint_names.end());
 
   env->addLink(link_2, joint_1);
   link_names = env->getLinkNames();
   joint_names = env->getJointNames();
-  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_2->getName()) != link_names.end());
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_1->getName()) != joint_names.end());
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_2.getName()) != link_names.end());
+  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_1.getName()) != joint_names.end());
 
   env->getSceneGraph()->saveDOT("/tmp/before_remove_link_unit.dot");
 
-  env->removeLink(link_1->getName());
+  env->removeLink(link_1.getName());
   link_names = env->getLinkNames();
   joint_names = env->getJointNames();
-  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_1->getName()) == link_names.end());
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), "joint_" + link_1->getName()) == joint_names.end());
-  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_2->getName()) == link_names.end());
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_1->getName()) == joint_names.end());
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_1.getName()) == link_names.end());
+  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), "joint_" + link_1.getName()) == joint_names.end());
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_2.getName()) == link_names.end());
+  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_1.getName()) == joint_names.end());
 
   env->getSceneGraph()->saveDOT("/tmp/after_remove_link_unit.dot");
 }
 
 void runMoveLinkandJointTest(const tesseract_environment::EnvironmentPtr& env)
 {
-  LinkPtr link_1(new Link("link_n1"));
-  LinkPtr link_2(new Link("link_n2"));
+  Link link_1("link_n1");
+  Link link_2("link_n2");
 
-  JointPtr joint_1(new Joint("joint_n1"));
-  joint_1->parent_link_name = env->getRootLinkName();
-  joint_1->child_link_name = "link_n1";
-  joint_1->type = JointType::FIXED;
+  Joint joint_1("joint_n1");
+  joint_1.parent_link_name = env->getRootLinkName();
+  joint_1.child_link_name = "link_n1";
+  joint_1.type = JointType::FIXED;
 
-  JointPtr joint_2(new Joint("joint_n2"));
-  joint_2->parent_to_joint_origin_transform.translation()(0) = 1.25;
-  joint_2->parent_link_name = "link_n1";
-  joint_2->child_link_name = "link_n2";
-  joint_2->type = JointType::FIXED;
+  Joint joint_2("joint_n2");
+  joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_2.parent_link_name = "link_n1";
+  joint_2.child_link_name = "link_n2";
+  joint_2.type = JointType::FIXED;
 
   env->addLink(link_1, joint_1);
   env->addLink(link_2, joint_2);
   std::vector<std::string> link_names = env->getLinkNames();
   std::vector<std::string> joint_names = env->getJointNames();
-  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_1->getName()) != link_names.end());
-  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_2->getName()) != link_names.end());
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_1->getName()) != joint_names.end());
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_2->getName()) != joint_names.end());
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_1.getName()) != link_names.end());
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_2.getName()) != link_names.end());
+  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_1.getName()) != joint_names.end());
+  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_2.getName()) != joint_names.end());
 
   env->getSceneGraph()->saveDOT("/tmp/before_move_joint_unit.dot");
 
@@ -130,10 +130,10 @@ void runMoveLinkandJointTest(const tesseract_environment::EnvironmentPtr& env)
   link_names = env->getLinkNames();
   joint_names = env->getJointNames();
   EXPECT_TRUE(env->getJoint("joint_n1")->parent_link_name == "tool0");
-  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_1->getName()) != link_names.end());
-  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_2->getName()) != link_names.end());
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_1->getName()) != joint_names.end());
-  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_2->getName()) != joint_names.end());
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_1.getName()) != link_names.end());
+  EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_2.getName()) != link_names.end());
+  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_1.getName()) != joint_names.end());
+  EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_2.getName()) != joint_names.end());
 
   env->getSceneGraph()->saveDOT("/tmp/after_move_joint_unit.dot");
 }
