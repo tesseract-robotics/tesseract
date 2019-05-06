@@ -26,17 +26,14 @@
 #ifndef TESSERACT_PLANNING_TRAJOPT_FREESPACE_PLANNER_H
 #define TESSERACT_PLANNING_TRAJOPT_FREESPACE_PLANNER_H
 
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_planning/core/macros.h>
+TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
 #include <trajopt/problem_description.hpp>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_PLANNING_IGNORE_WARNINGS_POP
 
-#include <tesseract_planning/basic_planner.h>
-#include <tesseract_ros/ros_basic_plotting.h>
-#include <tesseract_planning/waypoint_definitions.h>
+#include <tesseract_planning/core/planner.h>
+#include <tesseract_planning/core/waypoint.h>
 
-namespace tesseract
-{
 namespace tesseract_planning
 {
 /**
@@ -85,13 +82,11 @@ struct TrajOptFreespacePlannerConfig
   bool smooth_accelerations_ = true;
   /** @brief If true, a joint jerk cost with a target of 0 will be applied for all timesteps Default: false*/
   bool smooth_jerks_ = true;
-  /** @brief If true, add a callback to plot each iteration */
-  bool plot_callback_ = false;
 
-  /** @brief Basic Kinematics object. ***REQUIRED*** */
-  tesseract::BasicKinConstPtr kin_;
+  /** @brief Kinematic mapping object. ***REQUIRED*** */
+  tesseract_kinematics::ForwardKinematicsConstPtrMap kin_map_;
   /** @brief Basic Environment object. ***REQUIRED*** */
-  tesseract::BasicEnvConstPtr env_;
+  tesseract_environment::EnvironmentConstPtr env_;
   /** @brief Manipulator used for pathplanning ***REQUIRED*** */
   std::string manipulator_;
   /** @brief This is the link used for the cartesian positions ***REQUIRED*** */
@@ -149,5 +144,4 @@ public:
   void clear() override;
 };
 }  // namespace tesseract_planning
-}  // namespace tesseract
 #endif  // TESSERACT_PLANNING_TRAJOPT_PLANNER_H

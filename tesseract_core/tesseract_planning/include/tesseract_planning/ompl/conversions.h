@@ -1,19 +1,16 @@
-#ifndef TESSERACT_ROS_PLANNING_CONVERSIONS_H
-#define TESSERACT_ROS_PLANNING_CONVERSIONS_H
+#ifndef TESSERACT_PLANNING_OMPL_CONVERSIONS_H
+#define TESSERACT_PLANNING_OMPL_CONVERSIONS_H
 
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_planning/core/macros.h>
+TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
 #include <ompl/geometric/PathGeometric.h>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_PLANNING_IGNORE_WARNINGS_POP
 
-#include <tesseract_core/basic_env.h>
+#include <tesseract_environment/core/environment.h>
 
-namespace tesseract
-{
 namespace tesseract_planning
 {
-tesseract::TrajArray toTrajArray(const ompl::geometric::PathGeometric& path);
-}
+tesseract_environment::TrajArray toTrajArray(const ompl::geometric::PathGeometric& path);
 }
 
 #endif

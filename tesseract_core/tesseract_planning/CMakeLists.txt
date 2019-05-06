@@ -1,82 +1,105 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(tesseract_planning)
+project(tesseract_planning VERSION 0.1.0 LANGUAGES CXX)
 
 add_compile_options(-std=c++11 -Wall -Wextra)
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  tesseract_ros
-  trajopt
-)
-
 find_package(ompl REQUIRED)
+find_package(trajopt REQUIRED)
+find_package(tesseract_environment REQUIRED)
+find_package(tesseract_kinematics REQUIRED)
 
-catkin_package(
-  INCLUDE_DIRS
-    include
-    ${OMPL_INCLUDE_DIRS}
-  LIBRARIES
-    ${PROJECT_NAME}_ompl
-    ${PROJECT_NAME}_trajopt
-    ${PROJECT_NAME}_trajopt_freespace
-    ${PROJECT_NAME}_trajopt_array
-  CATKIN_DEPENDS
-    roscpp
-    tesseract_ros
-    trajopt
-  DEPENDS
-    ompl
-)
-
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-  SYSTEM ${OMPL_INCLUDE_DIRS}
-)
+# Create interface for core
+add_library(${PROJECT_NAME}_core INTERFACE)
+target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract_environment_core tesseract_kinematics_core)
+target_compile_options(${PROJECT_NAME}_core INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
+target_compile_features(${PROJECT_NAME}_core INTERFACE cxx_std_11)
+target_include_directories(${PROJECT_NAME}_core INTERFACE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
+    ${EIGEN3_INCLUDE_DIRS})
 
 # Trajopt Planner
-add_library(${PROJECT_NAME}_trajopt src/trajopt/trajopt_planner.cpp)
-target_link_libraries(${PROJECT_NAME}_trajopt ${catkin_LIBRARIES})
+add_library(${PROJECT_NAME}_trajopt SHARED src/trajopt/trajopt_planner.cpp)
+target_link_libraries(${PROJECT_NAME}_trajopt PUBLIC ${PROJECT_NAME}_core trajopt trajopt_utils trajopt_sco tesseract_visualization)
 target_compile_options(${PROJECT_NAME}_trajopt PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+target_compile_features(${PROJECT_NAME}_trajopt PRIVATE cxx_std_11)
+target_include_directories(${PROJECT_NAME}_trajopt PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
 
 # Trajopt Freespace Planner
-add_library(${PROJECT_NAME}_trajopt_freespace src/trajopt/trajopt_freespace_planner.cpp)
-target_link_libraries(${PROJECT_NAME}_trajopt_freespace ${catkin_LIBRARIES} ${PROJECT_NAME}_trajopt)
+add_library(${PROJECT_NAME}_trajopt_freespace SHARED src/trajopt/trajopt_freespace_planner.cpp)
+target_link_libraries(${PROJECT_NAME}_trajopt_freespace PUBLIC ${PROJECT_NAME}_trajopt)
 target_compile_options(${PROJECT_NAME}_trajopt_freespace PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+target_compile_features(${PROJECT_NAME}_trajopt_freespace PRIVATE cxx_std_11)
+target_include_directories(${PROJECT_NAME}_trajopt_freespace PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
 
 # Trajopt Array Planner
-add_library(${PROJECT_NAME}_trajopt_array src/trajopt/trajopt_array_planner.cpp)
-target_link_libraries(${PROJECT_NAME}_trajopt_array ${catkin_LIBRARIES} ${PROJECT_NAME}_trajopt)
+add_library(${PROJECT_NAME}_trajopt_array SHARED src/trajopt/trajopt_array_planner.cpp)
+target_link_libraries(${PROJECT_NAME}_trajopt_array PUBLIC ${PROJECT_NAME}_trajopt)
 target_compile_options(${PROJECT_NAME}_trajopt_array PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+target_compile_features(${PROJECT_NAME}_trajopt_array PRIVATE cxx_std_11)
+target_include_directories(${PROJECT_NAME}_trajopt_array PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
 
 # OMPL Planning Interface
-add_library(${PROJECT_NAME}_ompl
+add_library(${PROJECT_NAME}_ompl SHARED
   src/ompl/chain_ompl_interface.cpp
   src/ompl/conversions.cpp
   src/ompl/continuous_motion_validator.cpp
 )
-add_dependencies(${PROJECT_NAME}_ompl ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(${PROJECT_NAME}_ompl ${catkin_LIBRARIES} ${OMPL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_ompl PUBLIC ${PROJECT_NAME}_core ${OMPL_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_ompl PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+target_compile_features(${PROJECT_NAME}_ompl PRIVATE cxx_std_11)
+target_include_directories(${PROJECT_NAME}_ompl PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_ompl SYSTEM PUBLIC
+    ${OMPL_INCLUDE_DIRS})
 
 # OMPL Planning Test/Example Program
 add_executable(${PROJECT_NAME}_ompl_test src/ompl_planner_tests.cpp)
-add_dependencies(${PROJECT_NAME}_ompl_test ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(${PROJECT_NAME}_ompl_test ${catkin_LIBRARIES} ${PROJECT_NAME}_ompl)
+target_link_libraries(${PROJECT_NAME}_ompl_test PUBLIC ${PROJECT_NAME}_ompl)
 target_compile_options(${PROJECT_NAME}_ompl_test PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+target_include_directories(${PROJECT_NAME}_trajopt_array PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
 
-#############
-## Install ##
-#############
+list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_core)
+list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_trajopt)
+list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_trajopt_freespace)
+list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_trajopt_array)
+list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_ompl)
 
-install(TARGETS ${PROJECT_NAME}_ompl ${PROJECT_NAME}_trajopt ${PROJECT_NAME}_trajopt_freespace ${PROJECT_NAME}_trajopt_array
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+install(TARGETS ${PACKAGE_LIBRARIES} EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
+install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake/${PROJECT_NAME})
 
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+# Mark cpp header files for installation
+install(DIRECTORY include/${PROJECT_NAME}
+  DESTINATION include
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
 )
+
+install(FILES package.xml DESTINATION share/${PROJECT_NAME})
+
+# Create cmake config files
+include(CMakePackageConfigHelpers)
+configure_package_config_file(${CMAKE_CURRENT_LIST_DIR}/cmake/${PROJECT_NAME}-config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+  INSTALL_DESTINATION lib/cmake/${PROJECT_NAME}
+  NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+
+write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
+  VERSION ${PROJECT_VERSION} COMPATIBILITY ExactVersion)
+
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+  DESTINATION lib/cmake/${PROJECT_NAME})
+
+export(EXPORT ${PROJECT_NAME}-targets FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake)

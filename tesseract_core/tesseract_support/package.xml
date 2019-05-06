@@ -7,8 +7,6 @@
   <license>Apache 2.0</license>
   <author >Levi Armstrong</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
-
   <export>
     <build_type>cmake</build_type>
   </export>

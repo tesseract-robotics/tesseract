@@ -1,26 +1,25 @@
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_planning/core/macros.h>
+TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
 #include <ompl/base/spaces/RealVectorStateSpace.h>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_PLANNING_IGNORE_WARNINGS_POP
 
 #include "tesseract_planning/ompl/chain_ompl_interface.h"
 
-namespace tesseract
-{
 namespace tesseract_planning
 {
-ChainOmplInterface::ChainOmplInterface(tesseract::BasicEnvConstPtr environment, const std::string& manipulator_name)
-  : env_(std::move(environment))
+ChainOmplInterface::ChainOmplInterface(tesseract_environment::EnvironmentConstPtr env,
+                                       tesseract_kinematics::ForwardKinematicsConstPtr kin)
+  : env_(std::move(env)), kin_(std::move(kin))
 {
-  if (!env_->hasManipulator(manipulator_name))
-    throw std::invalid_argument("No such manipulator " + manipulator_name + " in Tesseract environment");
+  joint_names_ = kin_->getJointNames();
 
-  const auto& manip = env_->getManipulator(manipulator_name);
-  joint_names_ = manip->getJointNames();
-  link_names_ = manip->getLinkNames();
+  // kinematics objects does not know of every link affected by its motion so must compute adjacency map
+  // to determine all active links.
+  tesseract_environment::AdjacencyMap adj_map(env_->getSceneGraph(), kin_->getActiveLinkNames(), env_->getState()->transforms);
+  link_names_ = adj_map.getActiveLinkNames();
 
-  const auto dof = manip->numJoints();
-  const auto& limits = manip->getLimits();
+  const auto dof = kin_->numJoints();
+  const auto& limits = kin_->getLimits();
 
   // Construct the OMPL state space for this manipulator
   ompl::base::RealVectorStateSpace* space = new ompl::base::RealVectorStateSpace();
@@ -34,12 +33,10 @@ ChainOmplInterface::ChainOmplInterface(tesseract::BasicEnvConstPtr environment, 
 
   // Setup state checking functionality
   ss_->setStateValidityChecker(std::bind(&ChainOmplInterface::isStateValid, this, std::placeholders::_1));
-  contact_fn_ = std::bind(&ChainOmplInterface::isContactAllowed, this, std::placeholders::_1, std::placeholders::_2);
 
   contact_manager_ = env_->getDiscreteContactManager();
   contact_manager_->setActiveCollisionObjects(link_names_);
   contact_manager_->setContactDistanceThreshold(0);
-  contact_manager_->setIsContactAllowedFn(contact_fn_);
 
   // We need to set the planner and call setup before it can run
 }
@@ -88,7 +85,7 @@ bool ChainOmplInterface::isStateValid(const ompl::base::State* state) const
   const auto dof = joint_names_.size();
 
   Eigen::Map<Eigen::VectorXd> joint_angles(s->values, long(dof));
-  tesseract::EnvStateConstPtr env_state = env_->getState(joint_names_, joint_angles);
+  tesseract_environment::EnvStateConstPtr env_state = env_->getState(joint_names_, joint_angles);
 
   // Need to get thread id
   tesseract_collision::DiscreteContactManagerPtr cm = contact_manager_->clone();
@@ -98,11 +95,5 @@ bool ChainOmplInterface::isStateValid(const ompl::base::State* state) const
   cm->contactTest(contact_map, tesseract_collision::ContactTestTypes::FIRST);
 
   return contact_map.empty();
-}
-
-bool ChainOmplInterface::isContactAllowed(const std::string& a, const std::string& b) const
-{
-  return env_->getAllowedCollisionMatrix()->isCollisionAllowed(a, b);
-}
 }
 }

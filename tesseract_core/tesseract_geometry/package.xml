@@ -7,7 +7,6 @@
   <license>Apache 2.0</license>
   <author >Levi Armstrong</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
   <depend>Eigen3</depend>
   <depend>libconsole-bridge-dev</depend>
 

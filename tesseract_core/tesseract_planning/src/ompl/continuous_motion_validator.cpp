@@ -1,28 +1,28 @@
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_planning/core/macros.h>
+TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
 #include <ompl/base/spaces/RealVectorStateSpace.h>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_PLANNING_IGNORE_WARNINGS_POP
 
 #include "tesseract_planning/ompl/continuous_motion_validator.h"
 
-namespace tesseract
-{
 namespace tesseract_planning
 {
 ContinuousMotionValidator::ContinuousMotionValidator(ompl::base::SpaceInformationPtr space_info,
-                                                     tesseract::BasicEnvConstPtr env,
-                                                     const std::string& manipulator)
-  : MotionValidator(space_info), env_(std::move(env))
+                                                     tesseract_environment::EnvironmentConstPtr env,
+                                                     tesseract_kinematics::ForwardKinematicsConstPtr kin)
+  : MotionValidator(space_info), env_(std::move(env)), kin_(std::move(kin))
 {
-  joints_ = env_->getManipulator(manipulator)->getJointNames();
-  links_ = env_->getManipulator(manipulator)->getLinkNames();
-  is_allowed_cb_ =
-      std::bind(&ContinuousMotionValidator::isContactAllowed, this, std::placeholders::_1, std::placeholders::_2);
+  joints_ = kin_->getJointNames();
+
+  // kinematics objects does not know of every link affected by its motion so must compute adjacency map
+  // to determine all active links.
+  tesseract_environment::AdjacencyMap adj_map(env_->getSceneGraph(), kin_->getActiveLinkNames(), env_->getState()->transforms);
+  links_ = adj_map.getActiveLinkNames();
 
   contact_manager_ = env_->getContinuousContactManager();
   contact_manager_->setActiveCollisionObjects(links_);
   contact_manager_->setContactDistanceThreshold(0);
-  contact_manager_->setIsContactAllowedFn(is_allowed_cb_);
+
 }
 
 bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1, const ompl::base::State* s2) const
@@ -80,8 +80,8 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
   Eigen::Map<Eigen::VectorXd> start_joints(start->values, dof);
   Eigen::Map<Eigen::VectorXd> finish_joints(finish->values, dof);
 
-  tesseract::EnvStatePtr state0 = env_->getState(joints_, start_joints);
-  tesseract::EnvStatePtr state1 = env_->getState(joints_, finish_joints);
+  tesseract_environment::EnvStatePtr state0 = env_->getState(joints_, start_joints);
+  tesseract_environment::EnvStatePtr state1 = env_->getState(joints_, finish_joints);
 
   for (const auto& link_name : links_)
     cm->setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
@@ -90,6 +90,5 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
   cm->contactTest(contact_map, tesseract_collision::ContactTestTypes::FIRST);
 
   return contact_map.empty();
-}
 }
 }

@@ -1,6 +1,6 @@
 /**
- * @file basic_planner.h
- * @brief Basic low-level planner class.
+ * @file planner.h
+ * @brief Planner Interface Class.
  *
  * @author Levi Armstrong
  * @date April 18, 2018
@@ -23,18 +23,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PLANNING_BASIC_PLANNER_H
-#define TESSERACT_PLANNING_BASIC_PLANNER_H
+#ifndef TESSERACT_PLANNING_PLANNER_H
+#define TESSERACT_PLANNING_PLANNER_H
 
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_planning/core/macros.h>
+TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_PLANNING_IGNORE_WARNINGS_POP
 
-#include <tesseract_planning/basic_planner_types.h>
+#include <tesseract_planning/core/planner_types.h>
 
-namespace tesseract
-{
 namespace tesseract_planning
 {
 class BasicPlanner
@@ -68,5 +66,4 @@ protected:
   StatusCodeMap status_code_map_; /**< @brief A map of error codes to description */
 };
 }  // namespace tesseract_planning
-}  // namespace tesseract
-#endif  // TESSERACT_ROS_BASIC_PLANNER_H
+#endif  // TESSERACT_PLANNING_PLANNER_H

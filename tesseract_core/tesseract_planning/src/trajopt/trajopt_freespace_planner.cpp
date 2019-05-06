@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_planning/core/macros.h>
+TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
 #include <jsoncpp/json/json.h>
 #include <ros/console.h>
 #include <trajopt/plot_callback.hpp>
@@ -33,19 +33,13 @@ TESSERACT_IGNORE_WARNINGS_PUSH
 #include <trajopt_utils/logging.hpp>
 #include <trajopt_sco/optimizers.hpp>
 #include <trajopt_sco/sco_common.hpp>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_PLANNING_IGNORE_WARNINGS_POP
 
 #include <tesseract_planning/trajopt/trajopt_freespace_planner.h>
 #include <tesseract_planning/trajopt/trajopt_planner.h>
 
-// This is probably an issue
-#include <tesseract_ros/ros_basic_plotting.h>
-#include <trajopt/plot_callback.hpp>
-
 using namespace trajopt;
 
-namespace tesseract
-{
 namespace tesseract_planning
 {
 bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespacePlannerConfig& config)
@@ -53,13 +47,16 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
   // Check that parameters are valid
   if (config.env_ == nullptr)
     throw std::invalid_argument("In trajopt_freespace_planner: env_ is a required parameter and has not been set");
-  if (config.kin_ == nullptr)
-    throw std::invalid_argument("In trajopt_freespace_planner: kin_ is a required parameter and has not been set");
+  if (config.kin_map_.empty())
+    throw std::invalid_argument("In trajopt_freespace_planner: kin_map_ is a required parameter and has not been set");
 
   // -------- Construct the problem ------------
   // -------------------------------------------
-  ProblemConstructionInfo pci(config.env_);
-  pci.kin = config.kin_;
+  ProblemConstructionInfo pci(config.env_, config.kin_map_);
+  pci.kin = pci.getManipulator(config.manipulator_);
+
+  if (pci.kin == nullptr)
+    throw std::invalid_argument("In trajopt_array_planner: manipulator_ does not exist in kin_map_");
 
   // Populate Basic Info
   pci.basic_info.n_steps = config.num_steps_;
@@ -76,7 +73,7 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
   auto start_type = config.start_waypoint_->getType();
   switch (start_type)
   {
-    case tesseract::tesseract_planning::WaypointType::JOINT_WAYPOINT:
+    case tesseract_planning::WaypointType::JOINT_WAYPOINT:
     {
       JointWaypointPtr start_position = std::static_pointer_cast<JointWaypoint>(config.start_waypoint_);
       // Add initial joint position constraint
@@ -96,7 +93,7 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       start_position->is_critical_ ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
       break;
     }
-    case tesseract::tesseract_planning::WaypointType::JOINT_TOLERANCED_WAYPOINT:
+    case tesseract_planning::WaypointType::JOINT_TOLERANCED_WAYPOINT:
     {
       // For a toleranced waypoint we add an inequality term and a smaller equality term. This acts as a "leaky" hinge
       // to keep the problem numerically stable.
@@ -140,7 +137,7 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       pci.cost_infos.push_back(jv_equal);
       break;
     }
-    case tesseract::tesseract_planning::WaypointType::CARTESIAN_WAYPOINT:
+    case tesseract_planning::WaypointType::CARTESIAN_WAYPOINT:
     {
       CartesianWaypointPtr start_pose = std::static_pointer_cast<CartesianWaypoint>(config.start_waypoint_);
       std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);
@@ -171,7 +168,7 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
   auto end_type = config.end_waypoint_->getType();
   switch (end_type)
   {
-    case tesseract::tesseract_planning::WaypointType::JOINT_WAYPOINT:
+    case tesseract_planning::WaypointType::JOINT_WAYPOINT:
     {
       JointWaypointPtr end_position = std::static_pointer_cast<JointWaypoint>(config.end_waypoint_);
       // Add initial joint position constraint
@@ -190,7 +187,7 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       end_position->is_critical_ ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
       break;
     }
-    case tesseract::tesseract_planning::WaypointType::JOINT_TOLERANCED_WAYPOINT:
+    case tesseract_planning::WaypointType::JOINT_TOLERANCED_WAYPOINT:
     {
       // For a toleranced waypoint we add an inequality term and a smaller equality term. This acts as a "leaky" hinge
       // to keep the problem numerically stable.
@@ -232,7 +229,7 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       pci.cost_infos.push_back(jv_equal);
       break;
     }
-    case tesseract::tesseract_planning::WaypointType::CARTESIAN_WAYPOINT:
+    case tesseract_planning::WaypointType::CARTESIAN_WAYPOINT:
     {
       CartesianWaypointPtr end_pose = std::static_pointer_cast<CartesianWaypoint>(config.end_waypoint_);
       std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);
@@ -330,26 +327,12 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
   // -------- Solve the problem ------------
   // ---------------------------------------
   // Set the parameters in trajopt_planner
-  tesseract::tesseract_planning::TrajOptPlannerConfig config_planner(prob);
+  tesseract_planning::TrajOptPlannerConfig config_planner(prob);
   config_planner.params = config.params_;
   config_planner.callbacks = config.callbacks_;
 
-  // Create Plot Callback
-  if (config.plot_callback_)
-  {
-    // Currently plotting is only supported if the environment is ROSBasicEnv
-    tesseract::tesseract_ros::ROSBasicEnvConstPtr ros_env =
-        std::dynamic_pointer_cast<const tesseract::tesseract_ros::ROSBasicEnv>(config.env_);
-    if (ros_env != nullptr)
-    {
-      tesseract::tesseract_ros::ROSBasicPlottingPtr plotter_ptr =
-          std::make_shared<tesseract::tesseract_ros::ROSBasicPlotting>(ros_env);
-      config_planner.callbacks.push_back(PlotCallback(*prob, plotter_ptr));
-    }
-  }
-
-  tesseract::tesseract_planning::TrajOptPlanner planner;
-  tesseract::tesseract_planning::PlannerResponse planning_response;
+  tesseract_planning::TrajOptPlanner planner;
+  tesseract_planning::PlannerResponse planning_response;
 
   // Solve problem. Results are stored in the response
   bool success = planner.solve(planning_response, config_planner);
@@ -361,4 +344,3 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
 bool TrajOptFreespacePlanner::terminate() { return false; }
 void TrajOptFreespacePlanner::clear() { request_ = PlannerRequest(); }
 }  // namespace tesseract_planning
-}  // namespace tesseract
