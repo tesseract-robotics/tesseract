@@ -26,12 +26,13 @@
 #ifndef TESSERACT_PLANNING_WAYPOINT_DEFINITIONS_H
 #define TESSERACT_PLANNING_WAYPOINT_DEFINITIONS_H
 
+#include <tesseract_planning/core/macros.h>
+TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
 #include <Eigen/Dense>
 #include <memory>
 #include <vector>
+TESSERACT_PLANNING_IGNORE_WARNINGS_POP
 
-namespace tesseract
-{
 namespace tesseract_planning
 {
 /** @brief Used to specify the type of waypoint. Corresponds to a derived class of Waypoint*/
@@ -123,5 +124,4 @@ typedef std::shared_ptr<CartesianWaypoint> CartesianWaypointPtr;
 typedef std::shared_ptr<const CartesianWaypoint> CartesianWaypointConstPtr;
 
 }  // namespace tesseract_planning
-}  // namespace tesseract
 #endif

@@ -1,15 +1,14 @@
 #ifndef TESSERACT_PLANNING_CHAIN_OMPL_INTERFACE_H
 #define TESSERACT_PLANNING_CHAIN_OMPL_INTERFACE_H
 
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_planning/core/macros.h>
+TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
 #include <ompl/geometric/SimpleSetup.h>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_PLANNING_IGNORE_WARNINGS_POP
 
-#include <tesseract_ros/kdl/kdl_env.h>
+#include <tesseract_environment/core/environment.h>
+#include <tesseract_kinematics/core/forward_kinematics.h>
 
-namespace tesseract
-{
 namespace tesseract_planning
 {
 struct OmplPlanParameters
@@ -21,7 +20,8 @@ struct OmplPlanParameters
 class ChainOmplInterface
 {
 public:
-  ChainOmplInterface(tesseract::BasicEnvConstPtr environment, const std::string& manipulator_name);
+  ChainOmplInterface(tesseract_environment::EnvironmentConstPtr env,
+                     tesseract_kinematics::ForwardKinematicsConstPtr kin);
 
   boost::optional<ompl::geometric::PathGeometric> plan(ompl::base::PlannerPtr planner,
                                                        const std::vector<double>& from,
@@ -38,17 +38,14 @@ public:
 private:
   bool isStateValid(const ompl::base::State* state) const;
 
-  bool isContactAllowed(const std::string& a, const std::string& b) const;
-
 private:
   ompl::geometric::SimpleSetupPtr ss_;
-  tesseract::BasicEnvConstPtr env_;
+  tesseract_environment::EnvironmentConstPtr env_;
+  tesseract_kinematics::ForwardKinematicsConstPtr kin_;
   tesseract_collision::DiscreteContactManagerPtr contact_manager_;
-  tesseract_collision::IsContactAllowedFn contact_fn_;
   std::vector<std::string> joint_names_;
   std::vector<std::string> link_names_;
 };
-}
 }
 
 #endif

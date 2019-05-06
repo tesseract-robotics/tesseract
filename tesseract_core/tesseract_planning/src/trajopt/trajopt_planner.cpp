@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_planning/core/macros.h>
+TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
 #include <jsoncpp/json/json.h>
 #include <ros/console.h>
 #include <trajopt/plot_callback.hpp>
@@ -33,14 +33,13 @@ TESSERACT_IGNORE_WARNINGS_PUSH
 #include <trajopt_utils/logging.hpp>
 #include <trajopt_sco/optimizers.hpp>
 #include <trajopt_sco/sco_common.hpp>
-TESSERACT_IGNORE_WARNINGS_POP
+#include <tesseract_environment/core/utils.h>
+TESSERACT_PLANNING_IGNORE_WARNINGS_POP
 
 #include <tesseract_planning/trajopt/trajopt_planner.h>
 
 using namespace trajopt;
 
-namespace tesseract
-{
 namespace tesseract_planning
 {
 bool TrajOptPlanner::solve(PlannerResponse& response)
@@ -68,7 +67,7 @@ bool TrajOptPlanner::solve(PlannerResponse& response)
     return false;
   }
 
-  TrajOptProbPtr prob = ConstructProblem(root, request_.env);
+  TrajOptProbPtr prob = ConstructProblem(root, request_.env, request_.kin_map);
   return solve(response, prob);
 }
 
@@ -93,11 +92,14 @@ bool TrajOptPlanner::solve(PlannerResponse& response, const TrajOptPlannerConfig
   // Check and report collisions
   std::vector<tesseract_collision::ContactResultMap> collisions;
   tesseract_collision::ContinuousContactManagerPtr manager = config.prob->GetEnv()->getContinuousContactManager();
-  manager->setActiveCollisionObjects(config.prob->GetKin()->getLinkNames());
+  tesseract_environment::AdjacencyMapPtr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(config.prob->GetEnv()->getSceneGraph(),
+                                                                                                               config.prob->GetKin()->getActiveLinkNames(),
+                                                                                                               config.prob->GetEnv()->getState()->transforms);
+
+  manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   manager->setContactDistanceThreshold(0);
   collisions.clear();
-  bool found = tesseract::continuousCollisionCheckTrajectory(
-      *manager, *config.prob->GetEnv(), *config.prob->GetKin(), getTraj(opt.x(), config.prob->GetVars()), collisions);
+  bool found = checkTrajectory(*manager, *config.prob->GetEnv(), config.prob->GetKin()->getJointNames(), adjacency_map->getActiveLinkNames(), getTraj(opt.x(), config.prob->GetVars()), collisions);
 
   // Send response
   response.trajectory = getTraj(opt.x(), config.prob->GetVars());
@@ -126,4 +128,3 @@ bool TrajOptPlanner::solve(PlannerResponse& response, const TrajOptPlannerConfig
 bool TrajOptPlanner::terminate() { return false; }
 void TrajOptPlanner::clear() { request_ = PlannerRequest(); }
 }  // namespace tesseract_planning
-}  // namespace tesseract

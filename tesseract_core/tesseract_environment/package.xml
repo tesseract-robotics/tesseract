@@ -10,8 +10,6 @@
 
   <author >Levi Armstrong</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
-
   <depend>tesseract_collision</depend>
   <depend>tesseract_geometry</depend>
   <depend>tesseract_scene_graph</depend>

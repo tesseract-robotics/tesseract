@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_planning/core/macros.h>
+TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
 #include <jsoncpp/json/json.h>
 #include <ros/console.h>
 #include <trajopt/plot_callback.hpp>
@@ -33,19 +33,13 @@ TESSERACT_IGNORE_WARNINGS_PUSH
 #include <trajopt_utils/logging.hpp>
 #include <trajopt_sco/optimizers.hpp>
 #include <trajopt_sco/sco_common.hpp>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_PLANNING_IGNORE_WARNINGS_POP
 
 #include <tesseract_planning/trajopt/trajopt_array_planner.h>
 #include <tesseract_planning/trajopt/trajopt_planner.h>
 
-// This is probably an issue
-#include <tesseract_ros/ros_basic_plotting.h>
-#include <trajopt/plot_callback.hpp>
-
 using namespace trajopt;
 
-namespace tesseract
-{
 namespace tesseract_planning
 {
 bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPlannerConfig& config)
@@ -53,13 +47,16 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
   // Check that parameters are valid
   if (config.env_ == nullptr)
     throw std::invalid_argument("In trajopt_array_planner: env_ is a required parameter and has not been set");
-  if (config.kin_ == nullptr)
-    throw std::invalid_argument("In trajopt_array_planner: kin_ is a required parameter and has not been set");
+  if (config.kin_map_.empty())
+    throw std::invalid_argument("In trajopt_array_planner: kin_map_ is a required parameter and has not been set");
 
   // -------- Construct the problem ------------
   // -------------------------------------------
-  ProblemConstructionInfo pci(config.env_);
-  pci.kin = config.kin_;
+  ProblemConstructionInfo pci(config.env_, config.kin_map_);
+  pci.kin = pci.getManipulator(config.manipulator_);
+
+  if (pci.kin == nullptr)
+    throw std::invalid_argument("In trajopt_array_planner: manipulator_ does not exist in kin_map_");
 
   // Populate Basic Info
   pci.basic_info.n_steps = static_cast<int>(config.target_waypoints_.size());
@@ -78,7 +75,7 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
     auto waypoint_type = config.target_waypoints_[ind]->getType();
     switch (waypoint_type)
     {
-      case tesseract::tesseract_planning::WaypointType::JOINT_WAYPOINT:
+      case tesseract_planning::WaypointType::JOINT_WAYPOINT:
       {
         JointWaypointPtr joint_waypoint = std::static_pointer_cast<JointWaypoint>(config.target_waypoints_[ind]);
         std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
@@ -97,7 +94,7 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
         joint_waypoint->is_critical_ ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
         break;
       }
-      case tesseract::tesseract_planning::WaypointType::JOINT_TOLERANCED_WAYPOINT:
+      case tesseract_planning::WaypointType::JOINT_TOLERANCED_WAYPOINT:
       {
         // For a toleranced waypoint we add an inequality term and a smaller equality term. This acts as a "leaky" hinge
         // to keep the problem numerically stable.
@@ -141,7 +138,7 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
         pci.cost_infos.push_back(jv_equal);
         break;
       }
-      case tesseract::tesseract_planning::WaypointType::CARTESIAN_WAYPOINT:
+      case tesseract_planning::WaypointType::CARTESIAN_WAYPOINT:
       {
         CartesianWaypointPtr cart_waypoint = std::static_pointer_cast<CartesianWaypoint>(config.target_waypoints_[ind]);
         std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);
@@ -241,26 +238,12 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
   // -------- Solve the problem ------------
   // ---------------------------------------
   // Set the parameters in trajopt_planner
-  tesseract::tesseract_planning::TrajOptPlannerConfig config_planner(prob);
+  tesseract_planning::TrajOptPlannerConfig config_planner(prob);
   config_planner.params = config.params_;
   config_planner.callbacks = config.callbacks_;
 
-  // Create Plot Callback
-  if (config.plot_callback_)
-  {
-    // Currently plotting is only supported if the environment is ROSBasicEnv
-    tesseract::tesseract_ros::ROSBasicEnvConstPtr ros_env =
-        std::dynamic_pointer_cast<const tesseract::tesseract_ros::ROSBasicEnv>(config.env_);
-    if (ros_env != nullptr)
-    {
-      tesseract::tesseract_ros::ROSBasicPlottingPtr plotter_ptr =
-          std::make_shared<tesseract::tesseract_ros::ROSBasicPlotting>(ros_env);
-      config_planner.callbacks.push_back(PlotCallback(*prob, plotter_ptr));
-    }
-  }
-
-  tesseract::tesseract_planning::TrajOptPlanner planner;
-  tesseract::tesseract_planning::PlannerResponse planning_response;
+  tesseract_planning::TrajOptPlanner planner;
+  tesseract_planning::PlannerResponse planning_response;
 
   // Solve problem. Results are stored in the response
   bool success = planner.solve(planning_response, config_planner);
@@ -272,4 +255,3 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
 bool TrajOptArrayPlanner::terminate() { return false; }
 void TrajOptArrayPlanner::clear() { request_ = PlannerRequest(); }
 }  // namespace tesseract_planning
-}  // namespace tesseract

@@ -26,16 +26,13 @@
 #ifndef TESSERACT_PLANNING_TRAJOPT_PLANNER_H
 #define TESSERACT_PLANNING_TRAJOPT_PLANNER_H
 
-#include <tesseract_core/macros.h>
-TESSERACT_IGNORE_WARNINGS_PUSH
+#include <tesseract_planning/core/macros.h>
+TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
 #include <trajopt/problem_description.hpp>
-TESSERACT_IGNORE_WARNINGS_POP
+TESSERACT_PLANNING_IGNORE_WARNINGS_POP
 
-#include <tesseract_planning/basic_planner.h>
-#include <tesseract_ros/ros_basic_plotting.h>
+#include <tesseract_planning/core/planner.h>
 
-namespace tesseract
-{
 namespace tesseract_planning
 {
 struct TrajOptPlannerConfig
@@ -93,5 +90,4 @@ public:
   void clear() override;
 };
 }  // namespace tesseract_planning
-}  // namespace tesseract
 #endif  // TESSERACT_PLANNING_TRAJOPT_PLANNER_H
