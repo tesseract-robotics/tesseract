@@ -314,6 +314,8 @@ protected:
 
   tesseract_environment::EnvironmentPtr env_;
   tesseract_environment::EnvironmentConstPtr env_const_;
+  tesseract_environment::AllowedCollisionMatrixPtr acm_;
+  tesseract_collision::IsContactAllowedFn fn_;
   boost::shared_mutex scene_update_mutex_;  /// mutex for stored scene
   ros::Time last_update_time_;              /// Last time the state was updated
   ros::Time last_robot_motion_time_;        /// Last time the robot has moved

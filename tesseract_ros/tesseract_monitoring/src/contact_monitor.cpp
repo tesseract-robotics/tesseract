@@ -14,6 +14,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/parser/urdf_parser.h>
 #include <tesseract_scene_graph/parser/srdf_parser.h>
 #include <tesseract_environment/kdl/kdl_env.h>
+#include <tesseract_environment/core/utils.h>
 #include <tesseract_rosutils/utils.h>
 
 using namespace tesseract_environment;
@@ -209,6 +210,11 @@ int main(int argc, char** argv)
     ROS_ERROR("Failed to initialize environment.");
     return -1;
   }
+
+  // Set the allowed collision function
+  AllowedCollisionMatrixPtr acm = getAllowedCollisionMatrix(srdf);
+  tesseract_collision::IsContactAllowedFn fn = std::bind(&tesseract_environment::AllowedCollisionMatrix::isCollisionAllowed, acm, std::placeholders::_1, std::placeholders::_2);
+  env->setIsContactAllowedFn(fn);
 
   // Setup request information
   std::vector<std::string> link_names;

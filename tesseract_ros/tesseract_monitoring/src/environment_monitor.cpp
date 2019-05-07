@@ -45,6 +45,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/kdl/kdl_env.h>
+#include <tesseract_environment/core/utils.h>
 #include <tesseract_monitoring/environment_monitor.h>
 #include <tesseract_kinematics/core/utils.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
@@ -153,6 +154,11 @@ EnvironmentMonitor::EnvironmentMonitor(const std::string& robot_description,
   }
   srdf_model_ = srdf;
 
+  // Get the allowed collision function from srdf
+  acm_ = tesseract_environment::getAllowedCollisionMatrix(*srdf_model_);
+  if (acm_ != nullptr)
+    fn_ = std::bind(&tesseract_environment::AllowedCollisionMatrix::isCollisionAllowed, acm_, std::placeholders::_1, std::placeholders::_2);
+
   // Parse kinematics groups from srdf model
   kin_map_ = tesseract_kinematics::createKinematicsMap<tesseract_kinematics::KDLFwdKinChain, tesseract_kinematics::KDLFwdKinTree>(scene_graph_, *srdf_model_);
 
@@ -207,6 +213,9 @@ void EnvironmentMonitor::initialize()
   {
     env_ = std::make_shared<tesseract_environment::KDLEnv>();
     env_->init(scene_graph_);
+    if (fn_)
+      env_->setIsContactAllowedFn(fn_);
+
     env_const_ = env_;
     try
     {
