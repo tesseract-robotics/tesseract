@@ -22,7 +22,6 @@ ContinuousMotionValidator::ContinuousMotionValidator(ompl::base::SpaceInformatio
   contact_manager_ = env_->getContinuousContactManager();
   contact_manager_->setActiveCollisionObjects(links_);
   contact_manager_->setContactDistanceThreshold(0);
-
 }
 
 bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1, const ompl::base::State* s2) const
