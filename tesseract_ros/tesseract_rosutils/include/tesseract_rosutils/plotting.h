@@ -35,7 +35,7 @@ TESSERACT_VISUALIZATION_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/Trajectory.h>
 #include <tesseract_msgs/TesseractState.h>
 #include <Eigen/Geometry>
-TESSERACT_VISUALIZATION_WARNINGS_POP
+TESSERACT_VISUALIZATION_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/visualization.h>
 #include <tesseract_rosutils/utils.h>
@@ -48,7 +48,7 @@ namespace tesseract_rosutils
 class ROSPlotting : public tesseract_visualization::Visualization
 {
 public:
-  ROSPlotting(tesseract_environment::EnvironmentConstPtr env) : env_(env)
+  ROSPlotting(tesseract_environment::EnvironmentConstPtr env) : env_(std::move(env))
   {
     ros::NodeHandle nh;
 
@@ -62,12 +62,13 @@ public:
   void plotScene() const
   {
     tesseract_msgs::TesseractState msg;
-    tesseractToTesseractStateMsg(msg, *env_);
+
+    toMsg(msg, *env_);
 
     scene_pub_.publish(msg);
   }
 
-  void plotTrajectory(const std::vector<std::string>& joint_names, const Eigen::Ref<const TrajArray>& traj) override
+  void plotTrajectory(const std::vector<std::string>& joint_names, const Eigen::Ref<const tesseract_environment::TrajArray>& traj) override
   {
     tesseract_msgs::Trajectory msg;
 
@@ -75,11 +76,10 @@ public:
     msg.model_id = env_->getSceneGraph()->getName();
 
     // Set the Robot State so attached objects show up
-    tesseractToTesseractStateMsg(msg.trajectory_start, *env_);
+    toMsg(msg.trajectory_start, *env_);
 
     // Set the joint trajectory message
-    tesseract_ros::tesseractTrajectoryToJointTrajectoryMsg(
-        msg.joint_trajectory, *(env_->getState()), joint_names, traj);
+    toMsg(msg.joint_trajectory, *(env_->getState()), joint_names, traj);
 
     trajectory_pub_.publish(msg);
   }
@@ -208,7 +208,7 @@ private:
                                                double scale)
   {
     visualization_msgs::Marker marker;
-    marker.header.frame_id = env_->getURDF()->getRoot()->name;
+    marker.header.frame_id = env_->getSceneGraph()->getRoot();
     marker.header.stamp = ros::Time::now();
     marker.ns = "trajopt";
     marker.id = ++marker_counter_;
@@ -252,7 +252,7 @@ private:
                                                   double scale)
   {
     visualization_msgs::Marker marker;
-    marker.header.frame_id = env_->getURDF()->getRoot()->name;
+    marker.header.frame_id = env_->getSceneGraph()->getName();
     marker.header.stamp = ros::Time::now();
     marker.ns = "trajopt";
     marker.id = ++marker_counter_;
