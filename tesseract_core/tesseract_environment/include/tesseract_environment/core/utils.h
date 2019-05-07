@@ -97,7 +97,6 @@ namespace tesseract_environment
   inline bool checkTrajectory(tesseract_collision::ContinuousContactManager& manager,
                               const tesseract_environment::Environment& env,
                               const std::vector<std::string>& joint_names,
-                              const std::vector<std::string>& active_link_names,
                               const tesseract_environment::TrajArray& traj,
                               std::vector<tesseract_collision::ContactResultMap>& contacts,
                               bool first_only = true)
@@ -112,7 +111,7 @@ namespace tesseract_environment
       tesseract_environment::EnvStatePtr state0 = env.getState(joint_names, traj.row(iStep));
       tesseract_environment::EnvStatePtr state1 = env.getState(joint_names, traj.row(iStep + 1));
 
-      for (const auto& link_name : active_link_names)
+      for (const auto& link_name : manager.getActiveCollisionObjects())
         manager.setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
 
       manager.contactTest(collisions, tesseract_collision::ContactTestTypes::FIRST);
