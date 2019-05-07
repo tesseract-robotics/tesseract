@@ -886,7 +886,7 @@ static inline void toMsg(const sensor_msgs::JointStatePtr& joint_state, const te
 static inline void toMsg(tesseract_msgs::TesseractState& state_msg, const tesseract_environment::Environment& env)
 {
   state_msg.name = env.getName();
-  assert(false);
+  ROS_ERROR("Environment to TesseractState not fully implemented!");
 //  state_msg.id = env.getID();
 
   // TODO: Need to determine where this should go
