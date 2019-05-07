@@ -99,7 +99,7 @@ bool TrajOptPlanner::solve(PlannerResponse& response, const TrajOptPlannerConfig
   manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   manager->setContactDistanceThreshold(0);
   collisions.clear();
-  bool found = checkTrajectory(*manager, *config.prob->GetEnv(), config.prob->GetKin()->getJointNames(), adjacency_map->getActiveLinkNames(), getTraj(opt.x(), config.prob->GetVars()), collisions);
+  bool found = checkTrajectory(*manager, *config.prob->GetEnv(), config.prob->GetKin()->getJointNames(), getTraj(opt.x(), config.prob->GetVars()), collisions);
 
   // Send response
   response.trajectory = getTraj(opt.x(), config.prob->GetVars());

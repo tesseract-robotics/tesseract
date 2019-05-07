@@ -61,14 +61,6 @@ target_include_directories(${PROJECT_NAME}_ompl PUBLIC
 target_include_directories(${PROJECT_NAME}_ompl SYSTEM PUBLIC
     ${OMPL_INCLUDE_DIRS})
 
-# OMPL Planning Test/Example Program
-add_executable(${PROJECT_NAME}_ompl_test src/ompl_planner_tests.cpp)
-target_link_libraries(${PROJECT_NAME}_ompl_test PUBLIC ${PROJECT_NAME}_ompl)
-target_compile_options(${PROJECT_NAME}_ompl_test PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
-target_include_directories(${PROJECT_NAME}_trajopt_array PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_core)
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_trajopt)
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_trajopt_freespace)
@@ -103,3 +95,13 @@ install(FILES
   DESTINATION lib/cmake/${PROJECT_NAME})
 
 export(EXPORT ${PROJECT_NAME}-targets FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake)
+
+option(ENABLE_TESTS "Enable tests" OFF)
+if (${ENABLE_TESTS})
+  enable_testing()
+  add_custom_target(run_tests ALL
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -V)
+
+  add_subdirectory(test)
+endif()
