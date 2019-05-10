@@ -36,7 +36,7 @@ add_library(${PROJECT_NAME}_bullet SHARED
   src/bullet/bullet_discrete_simple_manager.cpp
   src/bullet/bullet_utils.cpp
 )
-target_link_libraries(${PROJECT_NAME}_bullet PUBLIC tesseract_geometry console_bridge ${BULLET_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_bullet PUBLIC ${PROJECT_NAME}_core tesseract_geometry console_bridge ${OCTOMAP_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_bullet PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME}_bullet PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_bullet PUBLIC
@@ -45,22 +45,21 @@ target_include_directories(${PROJECT_NAME}_bullet PUBLIC
 target_include_directories(${PROJECT_NAME}_bullet SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}
     ${BULLET_INCLUDE_DIRS}
-    ${LIBFCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
     ${OCTOMAP_INCLUDE_DIRS})
 
 # Create target for FCL implementation
 add_library(${PROJECT_NAME}_fcl SHARED src/fcl/fcl_discrete_managers.cpp src/fcl/fcl_utils.cpp)
-target_link_libraries(${PROJECT_NAME}_fcl PUBLIC tesseract_geometry console_bridge ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_fcl PUBLIC ${PROJECT_NAME}_core tesseract_geometry console_bridge ${OCTOMAP_LIBRARIES} ${LIBFCL_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_fcl PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME}_fcl PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_fcl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_fcl SYSTEM PUBLIC
+    ${LIBFCL_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIRS}
     ${BULLET_INCLUDE_DIRS}
-    ${LIBFCL_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
     ${OCTOMAP_INCLUDE_DIRS})
 

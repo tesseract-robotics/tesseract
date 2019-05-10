@@ -86,6 +86,17 @@ public:
 
   bool disableCollision(const std::string& name) override;
 
+  void addAllowedCollision(const std::string& link_name1,
+                           const std::string& link_name2,
+                           const std::string& reason) override;
+
+  void removeAllowedCollision(const std::string& link_name1,
+                              const std::string& link_name2) override;
+
+  void removeAllowedCollision(const std::string& link_name) override;
+
+  const tesseract_scene_graph::AllowedCollisionMatrixConstPtr& getAllowedCollisionMatrix() const override;
+
   tesseract_scene_graph::JointConstPtr getJoint(const std::string& name) const override;
 
   std::vector<std::string> getJointNames() const override { return joint_names_; }
@@ -102,19 +113,17 @@ public:
 
   tesseract_scene_graph::SceneGraphConstPtr getSceneGraph() const override { return scene_graph_; }
 
-  tesseract_collision::IsContactAllowedFn getIsContactAllowedFn() const override { return is_contact_allowed_fn_; }
-  void setIsContactAllowedFn(tesseract_collision::IsContactAllowedFn fn) override
-  {
-    is_contact_allowed_fn_ = fn;
-    if (discrete_manager_ != nullptr) discrete_manager_->setIsContactAllowedFn(is_contact_allowed_fn_);
-    if (continuous_manager_ != nullptr) continuous_manager_->setIsContactAllowedFn(is_contact_allowed_fn_);
-  }
+  bool setActiveDiscreteContactManager(const std::string& name) override;
 
-  bool setDiscreteContactManager(tesseract_collision::DiscreteContactManagerConstPtr manager) override;
   tesseract_collision::DiscreteContactManagerPtr getDiscreteContactManager() const override { return discrete_manager_->clone(); }
 
-  bool setContinuousContactManager(tesseract_collision::ContinuousContactManagerConstPtr manager) override;
+  tesseract_collision::DiscreteContactManagerPtr getDiscreteContactManager(const std::string& name) const override;
+
+  bool setActiveContinuousContactManager(const std::string& name) override;
+
   tesseract_collision::ContinuousContactManagerPtr getContinuousContactManager() const override { return continuous_manager_->clone(); }
+
+  tesseract_collision::ContinuousContactManagerPtr getContinuousContactManager(const std::string& name) const override;
 
 private:
   bool initialized_;                                           /**< Identifies if the object has been initialized */
@@ -131,6 +140,8 @@ private:
   tesseract_collision::IsContactAllowedFn is_contact_allowed_fn_;       /**< The function used to determine if two objects are allowed in collision */
   tesseract_collision::DiscreteContactManagerPtr discrete_manager_;     /**< The discrete contact manager object */
   tesseract_collision::ContinuousContactManagerPtr continuous_manager_; /**< The continuous contact manager object */
+  std::string discrete_manager_name_;
+  std::string continuous_manager_name_;
 
   void calculateTransforms(TransformMap& transforms,
                            const KDL::JntArray& q_in,
@@ -149,7 +160,11 @@ private:
 
   void getCollisionObject(tesseract_collision::CollisionShapesConst& shapes,
                           tesseract_collision::VectorIsometry3d& shape_poses,
-                          const tesseract_scene_graph::Link& link);
+                          const tesseract_scene_graph::Link& link) const;
+
+  tesseract_collision::DiscreteContactManagerPtr getDiscreteContactManagerHelper(const std::string& name) const;
+
+  tesseract_collision::ContinuousContactManagerPtr getContinuousContactManagerHelper(const std::string& name) const;
 
 };
 typedef std::shared_ptr<KDLEnv> KDLEnvPtr;

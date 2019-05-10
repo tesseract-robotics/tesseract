@@ -59,12 +59,9 @@ BulletCastSimpleManager::BulletCastSimpleManager()
   contact_distance_ = 0;
 }
 
-ContinuousContactManagerPtr BulletCastSimpleManager::clone(bool empty) const
+ContinuousContactManagerPtr BulletCastSimpleManager::clone() const
 {
   BulletCastSimpleManagerPtr manager(new BulletCastSimpleManager());
-
-  if (empty)
-    return manager;
 
   for (const auto& cow : link2cow_)
   {

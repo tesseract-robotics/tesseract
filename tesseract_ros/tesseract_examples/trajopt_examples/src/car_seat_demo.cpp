@@ -27,21 +27,32 @@
 TRAJOPT_IGNORE_WARNINGS_PUSH
 #include <jsoncpp/json/json.h>
 #include <ros/ros.h>
-#include <srdfdom/model.h>
-#include <urdf_parser/urdf_parser.h>
 TRAJOPT_IGNORE_WARNINGS_POP
 
-#include <tesseract_ros/kdl/kdl_chain_kin.h>
-#include <tesseract_ros/kdl/kdl_env.h>
-#include <tesseract_ros/ros_basic_plotting.h>
+#include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
+#include <tesseract_kinematics/kdl/kdl_fwd_kin_tree.h>
+#include <tesseract_kinematics/core/utils.h>
+#include <tesseract_environment/kdl/kdl_env.h>
+#include <tesseract_environment/core/utils.h>
+#include <tesseract_scene_graph/parser/srdf_parser.h>
+#include <tesseract_scene_graph/parser/urdf_parser.h>
+#include <tesseract_scene_graph/parser/mesh_parser.h>
+#include <tesseract_scene_graph/utils.h>
+#include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
+#include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_collision/core/common.h>
+#include <tesseract_rosutils/plotting.h>
 #include <trajopt/plot_callback.hpp>
 #include <trajopt/problem_description.hpp>
 #include <trajopt_utils/config.hpp>
 #include <trajopt_utils/logging.hpp>
+#include <memory>
 
 using namespace trajopt;
-using namespace tesseract;
+using namespace tesseract_environment;
+using namespace tesseract_kinematics;
+using namespace tesseract_scene_graph;
+using namespace tesseract_collision;
 
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
 const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic"; /**< Default ROS parameter for robot
@@ -49,11 +60,11 @@ const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic"; /**< Defa
 const std::string TRAJOPT_DESCRIPTION_PARAM =
     "trajopt_description"; /**< Default ROS parameter for trajopt description */
 
-static bool plotting_ = false;
+static bool plotting_ = true;
 static std::string method_ = "json";
-static urdf::ModelInterfaceSharedPtr urdf_model_; /**< URDF Model */
-static srdf::ModelSharedPtr srdf_model_;          /**< SRDF Model */
-static tesseract_ros::KDLEnvPtr env_;             /**< Trajopt Basic Environment */
+static KDLEnvPtr env_;  /**< Environment */
+static ForwardKinematicsConstPtrMap kin_map_; /**< Map of available kinematics */
+static ResourceLocatorFn locator_ = tesseract_rosutils::locateResource;
 
 std::unordered_map<std::string, std::unordered_map<std::string, double>> saved_positions_;
 
@@ -61,50 +72,33 @@ void addSeats()
 {
   for (int i = 0; i < 3; ++i)
   {
-    AttachableObjectPtr obj(new AttachableObject());
+    Link link_seat("seat_" + std::to_string(i + 1));
 
-    obj->name = "seat_" + std::to_string(i + 1);
-    std::shared_ptr<shapes::Mesh> visual_mesh(
-        shapes::createMeshFromResource("package://trajopt_examples/meshes/car_seat/visual/seat.dae"));
-    Eigen::Isometry3d seat_pose;
-    seat_pose.setIdentity();
+    VisualPtr visual = std::make_shared<Visual>();
+    visual->origin = Eigen::Isometry3d::Identity();
+    visual->origin.translation() = Eigen::Vector3d(0.5, 0, 0.55);
+    visual->geometry = createMeshFromPath<tesseract_geometry::Mesh>(locator_("package://trajopt_examples/meshes/car_seat/visual/seat.dae"), Eigen::Vector3d(1, 1, 1), true)[0];
+    link_seat.visual.push_back(visual);
 
-    obj->visual.shapes.push_back(visual_mesh);
-    obj->visual.shape_poses.push_back(seat_pose);
-
-    for (auto i = 1; i <= 10; ++i)
+    std::vector<tesseract_geometry::MeshPtr> meshes = createMeshFromPath<tesseract_geometry::Mesh>(locator_("package://trajopt_examples/meshes/car_seat/visual/seat.dae"));
+    for (auto& mesh : meshes)
     {
-      std::shared_ptr<shapes::Mesh> mesh(shapes::createMeshFromResource(
-          "package://trajopt_examples/meshes/car_seat/collision/seat_" + std::to_string(i) + ".stl"));
-
-      VectorVector3d mesh_vertices;
-      mesh_vertices.reserve(mesh->vertex_count);
-
-      for (unsigned int i = 0; i < mesh->vertex_count; ++i)
-        mesh_vertices.push_back(
-            Eigen::Vector3d(mesh->vertices[3 * i + 0], mesh->vertices[3 * i + 1], mesh->vertices[3 * i + 2]));
-
-      std::shared_ptr<VectorVector3d> ch_vertices(new VectorVector3d());
-      std::shared_ptr<std::vector<int>> ch_faces(new std::vector<int>());
-
-      int ch_num_faces = tesseract_collision::createConvexHull(*ch_vertices, *ch_faces, mesh_vertices);
-      tesseract_collision::ConvexMeshCollisionShapePtr collision_mesh(new tesseract_collision::ConvexMeshCollisionShape(ch_vertices, ch_faces, ch_num_faces));
-
-      obj->collision.shapes.push_back(collision_mesh);
-      obj->collision.shape_poses.push_back(seat_pose);
+      CollisionPtr collision = std::make_shared<Collision>();
+      collision->origin = visual->origin;
+      collision->geometry = makeConvexMesh(*mesh);
+      link_seat.collision.push_back(collision);
     }
 
-    env_->addAttachableObject(obj);
+    Joint joint_seat("joint_seat_" + std::to_string(i + 1));
+    joint_seat.parent_link_name = "base_link";
+    joint_seat.child_link_name = link_seat.getName();
+    joint_seat.type = JointType::FIXED;
+    joint_seat.parent_to_joint_origin_transform = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *
+                                                  Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitY()) *
+                                                  Eigen::AngleAxisd(3.14159, Eigen::Vector3d::UnitZ());
+    joint_seat.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0.5 + i, 2.15, 0.45);
 
-    AttachedBodyInfo attached_body;
-    attached_body.object_name = "seat_" + std::to_string(i + 1);
-    attached_body.parent_link_name = "world";
-    attached_body.transform = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *
-                              Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitY()) *
-                              Eigen::AngleAxisd(3.14159, Eigen::Vector3d::UnitZ());
-    attached_body.transform.translation() = Eigen::Vector3d(0.5 + i, 2.15, 0.45);
-
-    env_->attachBody(attached_body);
+    env_->addLink(link_seat, joint_seat);
   }
 }
 
@@ -211,7 +205,7 @@ std::unordered_map<std::string, std::unordered_map<std::string, double>> getPred
   return result;
 }
 
-std::vector<double> getPositionVector(const BasicKinConstPtr& kin, const std::unordered_map<std::string, double>& pos)
+std::vector<double> getPositionVector(const ForwardKinematicsConstPtr& kin, const std::unordered_map<std::string, double>& pos)
 {
   std::vector<double> result;
   for (const auto& joint_name : kin->getJointNames())
@@ -220,7 +214,7 @@ std::vector<double> getPositionVector(const BasicKinConstPtr& kin, const std::un
   return result;
 }
 
-Eigen::VectorXd getPositionVectorXd(const BasicKinConstPtr& kin, const std::unordered_map<std::string, double>& pos)
+Eigen::VectorXd getPositionVectorXd(const ForwardKinematicsConstPtr& kin, const std::unordered_map<std::string, double>& pos)
 {
   Eigen::VectorXd result;
   result.resize(kin->numJoints());
@@ -233,7 +227,7 @@ Eigen::VectorXd getPositionVectorXd(const BasicKinConstPtr& kin, const std::unor
 
 std::shared_ptr<ProblemConstructionInfo> cppMethod(const std::string& start, const std::string& finish)
 {
-  std::shared_ptr<ProblemConstructionInfo> pci(new ProblemConstructionInfo(env_));
+  std::shared_ptr<ProblemConstructionInfo> pci = std::make_shared<ProblemConstructionInfo>(env_, kin_map_);
 
   // Populate Basic Info
   pci->basic_info.n_steps = 50;
@@ -246,7 +240,7 @@ std::shared_ptr<ProblemConstructionInfo> cppMethod(const std::string& start, con
   pci->opt_info.min_trust_box_size = 1e-3;
 
   // Create Kinematic Object
-  pci->kin = pci->env->getManipulator(pci->basic_info.manip);
+  pci->kin = kin_map_[pci->basic_info.manip];
 
   // Populate Init Info
   Eigen::VectorXd start_pos = getPositionVectorXd(pci->kin, saved_positions_[start]);
@@ -318,19 +312,37 @@ int main(int argc, char** argv)
   std::string urdf_xml_string, srdf_xml_string;
   nh.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
   nh.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
-  urdf_model_ = urdf::parseURDF(urdf_xml_string);
 
-  srdf_model_ = srdf::ModelSharedPtr(new srdf::Model);
-  srdf_model_->initString(*urdf_model_, srdf_xml_string);
-  env_ = tesseract_ros::KDLEnvPtr(new tesseract_ros::KDLEnv);
-  assert(urdf_model_ != nullptr);
-  assert(env_ != nullptr);
 
-  bool success = env_->init(urdf_model_, srdf_model_);
+  SceneGraphPtr g = tesseract_scene_graph::parseURDF(urdf::parseURDF(urdf_xml_string), locator_);
+  assert(g != nullptr);
+
+  SRDFModel srdf;
+  bool success = srdf.initString(*g, srdf_xml_string);
   assert(success);
 
+  // Add allowed collision to the scene
+  processSRDFAllowedCollisions(*g, srdf);
+
+  // Create kinematics map from srdf
+  kin_map_ = tesseract_kinematics::createKinematicsMap<KDLFwdKinChain, KDLFwdKinTree>(g, srdf);
+
+  env_ = std::make_shared<tesseract_environment::KDLEnv>();
+  assert(env_ != nullptr);
+
+  success = env_->init(g);
+  assert(success);
+
+  // Register contact manager
+  env_->registerDiscreteContactManager("bullet", &tesseract_collision_bullet::BulletDiscreteBVHManager::create);
+  env_->registerContinuousContactManager("bullet", &tesseract_collision_bullet::BulletCastBVHManager::create);
+
+  // Set Active contact manager
+  env_->setActiveDiscreteContactManager("bullet");
+  env_->setActiveContinuousContactManager("bullet");
+
   // Create plotting tool
-  tesseract_ros::ROSBasicPlottingPtr plotter(new tesseract_ros::ROSBasicPlotting(env_));
+  tesseract_rosutils::ROSPlottingPtr plotter = std::make_shared<tesseract_rosutils::ROSPlotting>(env_);
 
   // Get ROS Parameters
   pnh.param("plotting", plotting_, plotting_);
@@ -379,13 +391,16 @@ int main(int argc, char** argv)
   // Plot the trajectory
   plotter->plotTrajectory(prob->GetKin()->getJointNames(), getTraj(pick1_opt.x(), prob->GetVars()));
 
-  std::vector<tesseract_collision::ContactResultMap> collisions;
-  tesseract_collision::ContinuousContactManagerPtr manager = prob->GetEnv()->getContinuousContactManager();
-  manager->setActiveCollisionObjects(prob->GetKin()->getLinkNames());
+  std::vector<ContactResultMap> collisions;
+  ContinuousContactManagerPtr manager = prob->GetEnv()->getContinuousContactManager();
+  AdjacencyMapPtr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
+                                                                                        prob->GetKin()->getActiveLinkNames(),
+                                                                                        prob->GetEnv()->getState()->transforms);
+
+  manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   manager->setContactDistanceThreshold(0);
 
-  bool found = tesseract::continuousCollisionCheckTrajectory(
-      *manager, *prob->GetEnv(), *prob->GetKin(), getTraj(pick1_opt.x(), prob->GetVars()), collisions);
+  bool found = checkTrajectory(*manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(pick1_opt.x(), prob->GetVars()), collisions);
 
   ROS_INFO((found) ? ("Pick seat #1 trajectory is in collision") : ("Pick seat #1 trajectory is collision free"));
 
@@ -394,14 +409,14 @@ int main(int argc, char** argv)
       env_->getState(prob->GetKin()->getJointNames(), getPositionVectorXd(prob->GetKin(), saved_positions_["Pick1"]));
 
   // Now we to detach seat_1 and attach it to the robot end_effector
-  AttachedBodyInfo attach_seat1;
-  attach_seat1.object_name = "seat_1";
-  attach_seat1.parent_link_name = "end_effector";
-  attach_seat1.transform = state->transforms["end_effector"].inverse() * state->transforms["seat_1"];
-  attach_seat1.touch_links = { "eff_link", "cell_logo", "fence", "link_b", "link_r", "link_t" };
+  Joint joint_seat("joint_seat_1");
+  joint_seat.parent_link_name = "end_effector";
+  joint_seat.child_link_name = "seat_1";
+  joint_seat.type = JointType::FIXED;
+  joint_seat.parent_to_joint_origin_transform = state->transforms["end_effector"].inverse() * state->transforms["seat_1"];
+//  TODO: attach_seat1.touch_links = { "eff_link", "cell_logo", "fence", "link_b", "link_r", "link_t" };
 
-  env_->detachBody(attach_seat1.object_name);
-  env_->attachBody(attach_seat1);
+  env_->moveLink(joint_seat);
 
   pci = cppMethod("Pick1", "Place1");
   prob = ConstructProblem(*pci);
@@ -420,9 +435,15 @@ int main(int argc, char** argv)
   // Plot the trajectory
   plotter->plotTrajectory(prob->GetKin()->getJointNames(), getTraj(place1_opt.x(), prob->GetVars()));
 
+  manager = prob->GetEnv()->getContinuousContactManager();
+  adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
+                                                                        prob->GetKin()->getActiveLinkNames(),
+                                                                        prob->GetEnv()->getState()->transforms);
+
+  manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
+  manager->setContactDistanceThreshold(0);
   collisions.clear();
-  found = tesseract::continuousCollisionCheckTrajectory(
-      *manager, *prob->GetEnv(), *prob->GetKin(), getTraj(place1_opt.x(), prob->GetVars()), collisions);
+  found = checkTrajectory(*manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(place1_opt.x(), prob->GetVars()), collisions);
 
   ROS_INFO((found) ? ("Place seat #1 trajectory is in collision") : ("Place seat #1 trajectory is collision free"));
 }

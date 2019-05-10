@@ -36,6 +36,10 @@ TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
 namespace tesseract_scene_graph
 {
 
+SceneGraph::SceneGraph() : Graph(), acm_(std::make_shared<AllowedCollisionMatrix>())
+{
+}
+
 void SceneGraph::setName(const std::string& name)
 {
   boost::set_property(static_cast<Graph&>(*this), boost::graph_name, name);
@@ -121,6 +125,9 @@ bool SceneGraph::removeLink(const std::string& name)
   // Now remove vertex
   boost::remove_vertex(found->second.second, static_cast<Graph&>(*this));
   link_map_.erase(name);
+
+  // Need to remove any reference to link in allowed collision matrix
+  removeAllowedCollision(name);
 
   return true;
 }
@@ -231,6 +238,33 @@ std::vector<JointConstPtr> SceneGraph::getJoints() const
     joints.push_back(joint.second.first);
 
   return joints;
+}
+
+void SceneGraph::addAllowedCollision(const std::string& link_name1,
+                                     const std::string& link_name2,
+                                     const std::string& reason)
+{
+  acm_->addAllowedCollision(link_name1, link_name2, reason);
+}
+
+void SceneGraph::removeAllowedCollision(const std::string& link_name1, const std::string& link_name2)
+{
+  acm_->removeAllowedCollision(link_name1, link_name2);
+}
+
+void SceneGraph::removeAllowedCollision(const std::string& link_name)
+{
+  acm_->removeAllowedCollision(link_name);
+}
+
+bool SceneGraph::isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const
+{
+  return acm_->isCollisionAllowed(link_name1, link_name2);
+}
+
+const AllowedCollisionMatrixConstPtr &SceneGraph::getAllowedCollisionMatrix() const
+{
+  return acm_;
 }
 
 LinkConstPtr SceneGraph::getSourceLink(const std::string& joint_name) const

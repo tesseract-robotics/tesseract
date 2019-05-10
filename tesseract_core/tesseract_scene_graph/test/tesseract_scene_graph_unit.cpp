@@ -363,6 +363,27 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)
   EXPECT_TRUE(tree.getNrOfSegments() == 9);
 }
 
+/// Testing AllowedCollisionMatrix
+TEST(TesseractSceneGraphUnit, TestAllowedCollisionMatrix)
+{
+  tesseract_scene_graph::AllowedCollisionMatrix acm;
+
+  acm.addAllowedCollision("link1", "link2", "test");
+  // collision between link1 and link2 should be allowed
+  EXPECT_TRUE(acm.isCollisionAllowed("link1", "link2"));
+  // but now between link2 and link3
+  EXPECT_FALSE(acm.isCollisionAllowed("link2", "link3"));
+
+  acm.removeAllowedCollision("link1", "link2");
+  // now collision link1 and link2 is not allowed anymore
+  EXPECT_FALSE(acm.isCollisionAllowed("link1", "link2"));
+
+  acm.addAllowedCollision("link3", "link3", "test");
+  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 1);
+  acm.clearAllowedCollisions();
+  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 0);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

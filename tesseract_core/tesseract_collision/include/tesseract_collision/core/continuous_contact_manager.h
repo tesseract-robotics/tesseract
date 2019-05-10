@@ -43,15 +43,14 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   virtual ~ContinuousContactManager() = default;
+
   /**
    * @brief Clone the manager
    *
    * This is to be used for multi threaded application. A user should
    * make a clone for each thread.
-   *
-   * @param empty If true returns an instance of the derived class that is empty.
    */
-  virtual std::shared_ptr<ContinuousContactManager> clone(bool empty = false) const = 0;
+  virtual std::shared_ptr<ContinuousContactManager> clone() const = 0;
 
   /**
    * @brief Add a collision object to the checker
@@ -200,6 +199,35 @@ public:
 };
 typedef std::shared_ptr<ContinuousContactManager> ContinuousContactManagerPtr;
 typedef std::shared_ptr<const ContinuousContactManager> ContinuousContactManagerConstPtr;
+
+class ContinuousContactManagerFactory
+{
+public:
+  using CreateMethod = std::function<ContinuousContactManagerPtr()>;
+  ContinuousContactManagerFactory() = default;
+
+  bool registar(const std::string name, CreateMethod create_function)
+  {
+    auto it = continuous_types.find(name);
+    if (it == continuous_types.end())
+    {
+      continuous_types[name] = create_function;
+      return true;
+    }
+    return false;
+  }
+  ContinuousContactManagerPtr create(const std::string& name) const
+  {
+    auto it = continuous_types.find(name);
+    if (it != continuous_types.end())
+      return it->second(); // call the createFunc
+
+    return nullptr;
+  }
+private:
+  std::unordered_map<std::string, CreateMethod> continuous_types;
+};
+
 }
 
 #endif  // TESSERACT_COLLISION_CONTINUOUS_CONTACT_MANAGER_H

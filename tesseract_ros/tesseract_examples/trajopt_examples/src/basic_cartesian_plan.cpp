@@ -42,6 +42,7 @@ TRAJOPT_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_scene_graph/parser/srdf_parser.h>
 #include <tesseract_scene_graph/parser/urdf_parser.h>
+#include <tesseract_scene_graph/utils.h>
 #include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_rosutils/plotting.h>
@@ -169,6 +170,9 @@ int main(int argc, char** argv)
   bool success = srdf.initString(*g, srdf_xml_string);
   assert(success);
 
+  // Add allowed collision to the scene
+  processSRDFAllowedCollisions(*g, srdf);
+
   // Create kinematics map from srdf
   kin_map_ = tesseract_kinematics::createKinematicsMap<KDLFwdKinChain, KDLFwdKinTree>(g, srdf);
 
@@ -178,14 +182,13 @@ int main(int argc, char** argv)
   success = env_->init(g);
   assert(success);
 
-  // Set contact monitors
-  env_->setDiscreteContactManager(std::make_shared<tesseract_collision_bullet::BulletDiscreteBVHManager>());
-  env_->setContinuousContactManager(std::make_shared<tesseract_collision_bullet::BulletCastBVHManager>());
+  // Register contact manager
+  env_->registerDiscreteContactManager("bullet", &tesseract_collision_bullet::BulletDiscreteBVHManager::create);
+  env_->registerContinuousContactManager("bullet", &tesseract_collision_bullet::BulletCastBVHManager::create);
 
-  // Set the allowed collision function
-  AllowedCollisionMatrixPtr acm = getAllowedCollisionMatrix(srdf);
-  IsContactAllowedFn fn = std::bind(&tesseract_environment::AllowedCollisionMatrix::isCollisionAllowed, acm, std::placeholders::_1, std::placeholders::_2);
-  env_->setIsContactAllowedFn(fn);
+  // Set Active contact manager
+  env_->setActiveDiscreteContactManager("bullet");
+  env_->setActiveContinuousContactManager("bullet");
 
   // Create octomap
   pcl::PointCloud<pcl::PointXYZ> full_cloud;
@@ -288,17 +291,12 @@ int main(int argc, char** argv)
   ROS_INFO("planning time: %.3f", (ros::Time::now() - tStart).toSec());
 
   if (plotting_)
-  {
     plotter->clear();
-  }
 
   collisions.clear();
   found = checkTrajectory(*manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()), collisions);
 
   ROS_INFO((found) ? ("Final trajectory is in collision") : ("Final trajectory is collision free"));
 
-  if (plotting_)
-  {
-    plotter->plotTrajectory(prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()));
-  }
+  plotter->plotTrajectory(prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()));
 }

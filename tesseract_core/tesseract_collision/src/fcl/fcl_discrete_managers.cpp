@@ -51,12 +51,9 @@ FCLDiscreteBVHManager::FCLDiscreteBVHManager()
   contact_distance_ = 0;
 }
 
-DiscreteContactManagerPtr FCLDiscreteBVHManager::clone(bool empty) const
+DiscreteContactManagerPtr FCLDiscreteBVHManager::clone() const
 {
   FCLDiscreteBVHManagerPtr manager(new FCLDiscreteBVHManager());
-
-  if (empty)
-    return manager;
 
   for (const auto& cow : link2cow_)
   {

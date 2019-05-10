@@ -73,12 +73,9 @@ BulletCastBVHManager::~BulletCastBVHManager()
     removeCollisionObjectFromBroadphase(co.second, broadphase_, dispatcher_);
 }
 
-ContinuousContactManagerPtr BulletCastBVHManager::clone(bool empty) const
+ContinuousContactManagerPtr BulletCastBVHManager::clone() const
 {
   BulletCastBVHManagerPtr manager(new BulletCastBVHManager());
-
-  if (empty)
-    return manager;
 
   for (const auto& cow : link2cow_)
   {

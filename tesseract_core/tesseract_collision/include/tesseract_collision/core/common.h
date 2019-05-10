@@ -234,6 +234,14 @@ inline int createConvexHull(VectorVector3d& vertices,
   return num_faces;
 }
 
+inline tesseract_geometry::ConvexMeshPtr makeConvexMesh(const tesseract_geometry::Mesh& mesh)
+{
+  std::shared_ptr<tesseract_collision::VectorVector3d> ch_vertices = std::make_shared<tesseract_collision::VectorVector3d>();
+  std::shared_ptr<Eigen::VectorXi> ch_faces = std::make_shared<Eigen::VectorXi>();
+  int ch_num_faces = tesseract_collision::createConvexHull(*ch_vertices, *ch_faces, *mesh.getVertices());
+  return std::make_shared<tesseract_geometry::ConvexMesh>(ch_vertices, ch_faces, ch_num_faces);
+}
+
 /**
  * @brief Write a simple ply file given vertices and faces
  * @param path The file path

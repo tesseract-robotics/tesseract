@@ -120,8 +120,10 @@ bool KDLEnv::init(tesseract_scene_graph::SceneGraphPtr scene_graph)
   // This rebuilds the KDTre and updates link_names, joint_names, and active links
   createKDETree();
 
-  if (discrete_manager_ != nullptr) setDiscreteContactManager(discrete_manager_);
-  if (continuous_manager_ != nullptr) setContinuousContactManager(continuous_manager_);
+  is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed, scene_graph_, std::placeholders::_1, std::placeholders::_2);
+
+  if (discrete_manager_ != nullptr) setActiveDiscreteContactManager(discrete_manager_name_);
+  if (continuous_manager_ != nullptr) setActiveContinuousContactManager(continuous_manager_name_);
 
   return initialized_;
 }
@@ -413,6 +415,29 @@ bool KDLEnv::disableCollision(const std::string& name)
   return result;
 }
 
+void KDLEnv::addAllowedCollision(const std::string& link_name1,
+                                 const std::string& link_name2,
+                                 const std::string& reason)
+{
+  scene_graph_->addAllowedCollision(link_name1, link_name2, reason);
+}
+
+void KDLEnv::removeAllowedCollision(const std::string& link_name1,
+                                    const std::string& link_name2)
+{
+  scene_graph_->removeAllowedCollision(link_name1, link_name2);
+}
+
+void KDLEnv::removeAllowedCollision(const std::string& link_name)
+{
+  scene_graph_->removeAllowedCollision(link_name);
+}
+
+const tesseract_scene_graph::AllowedCollisionMatrixConstPtr& KDLEnv::getAllowedCollisionMatrix() const
+{
+  return scene_graph_->getAllowedCollisionMatrix();
+}
+
 tesseract_scene_graph::JointConstPtr KDLEnv::getJoint(const std::string& name) const
 {
   return scene_graph_->getJoint(name);
@@ -503,7 +528,7 @@ void KDLEnv::calculateTransforms(TransformMap& transforms,
 
 void KDLEnv::getCollisionObject(tesseract_collision::CollisionShapesConst& shapes,
                                 tesseract_collision::VectorIsometry3d& shape_poses,
-                                const tesseract_scene_graph::Link& link)
+                                const tesseract_scene_graph::Link& link) const
 {
   for (const auto& c : link.collision)
   {
@@ -524,45 +549,66 @@ void KDLEnv::getCollisionObject(tesseract_collision::CollisionShapesConst& shape
   }
 }
 
-bool KDLEnv::setDiscreteContactManager(tesseract_collision::DiscreteContactManagerConstPtr manager)
+bool KDLEnv::setActiveDiscreteContactManager(const std::string& name)
 {
+  tesseract_collision::DiscreteContactManagerPtr manager = getDiscreteContactManagerHelper(name);
   if (manager == nullptr)
   {
-    CONSOLE_BRIDGE_logError("Provided manager is null.");
+    CONSOLE_BRIDGE_logError("Discrete manager with %s does not exist in factory!", name.c_str());
     return false;
   }
 
-  discrete_manager_ = manager->clone(true);
-  discrete_manager_->setIsContactAllowedFn(is_contact_allowed_fn_);
-  if (initialized_)
-  {
-    for (const auto& link : scene_graph_->getLinks())
-    {
-      if (link->collision.size() > 0)
-      {
-        tesseract_collision::CollisionShapesConst shapes;
-        tesseract_collision::VectorIsometry3d shape_poses;
-        getCollisionObject(shapes, shape_poses, *link);
-        discrete_manager_->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
-      }
-    }
-
-    discrete_manager_->setActiveCollisionObjects(active_link_names_);
-  }
-
+  discrete_manager_name_ = name;
+  discrete_manager_ = std::move(manager);
   return true;
 }
 
-bool KDLEnv::setContinuousContactManager(tesseract_collision::ContinuousContactManagerConstPtr manager)
+tesseract_collision::DiscreteContactManagerPtr KDLEnv::getDiscreteContactManager(const std::string& name) const
 {
+  tesseract_collision::DiscreteContactManagerPtr manager = getDiscreteContactManagerHelper(name);
   if (manager == nullptr)
   {
-    CONSOLE_BRIDGE_logError("Provided manager is null.");
+    CONSOLE_BRIDGE_logError("Discrete manager with %s does not exist in factory!", name.c_str());
+    return nullptr;
+  }
+
+  return manager;
+}
+
+bool KDLEnv::setActiveContinuousContactManager(const std::string& name)
+{
+  tesseract_collision::ContinuousContactManagerPtr manager = getContinuousContactManagerHelper(name);
+
+  if (manager == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("Continuous manager with %s does not exist in factory!", name.c_str());
     return false;
   }
 
-  continuous_manager_ = manager->clone(true);
-  continuous_manager_->setIsContactAllowedFn(is_contact_allowed_fn_);
+  continuous_manager_name_ = name;
+  continuous_manager_ = std::move(manager);
+  return true;
+}
+
+tesseract_collision::ContinuousContactManagerPtr KDLEnv::getContinuousContactManager(const std::string& name) const
+{
+  tesseract_collision::ContinuousContactManagerPtr manager = getContinuousContactManagerHelper(name);
+  if (manager == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("Continuous manager with %s does not exist in factory!", name.c_str());
+    return nullptr;
+  }
+
+  return manager;
+}
+
+tesseract_collision::DiscreteContactManagerPtr KDLEnv::getDiscreteContactManagerHelper(const std::string& name) const
+{
+  tesseract_collision::DiscreteContactManagerPtr manager = discrete_factory_.create(name);
+  if (manager == nullptr)
+    return nullptr;
+
+  manager->setIsContactAllowedFn(is_contact_allowed_fn_);
   if (initialized_)
   {
     for (const auto& link : scene_graph_->getLinks())
@@ -572,13 +618,40 @@ bool KDLEnv::setContinuousContactManager(tesseract_collision::ContinuousContactM
         tesseract_collision::CollisionShapesConst shapes;
         tesseract_collision::VectorIsometry3d shape_poses;
         getCollisionObject(shapes, shape_poses, *link);
-        continuous_manager_->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
+        manager->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
       }
     }
 
-    continuous_manager_->setActiveCollisionObjects(active_link_names_);
+    manager->setActiveCollisionObjects(active_link_names_);
   }
 
-  return true;
+  return manager;
+}
+
+tesseract_collision::ContinuousContactManagerPtr KDLEnv::getContinuousContactManagerHelper(const std::string& name) const
+{
+  tesseract_collision::ContinuousContactManagerPtr manager = continuous_factory_.create(name);
+
+  if (manager == nullptr)
+    return nullptr;
+
+  manager->setIsContactAllowedFn(is_contact_allowed_fn_);
+  if (initialized_)
+  {
+    for (const auto& link : scene_graph_->getLinks())
+    {
+      if (link->collision.size() > 0)
+      {
+        tesseract_collision::CollisionShapesConst shapes;
+        tesseract_collision::VectorIsometry3d shape_poses;
+        getCollisionObject(shapes, shape_poses, *link);
+        manager->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
+      }
+    }
+
+    manager->setActiveCollisionObjects(active_link_names_);
+  }
+
+  return manager;
 }
 }

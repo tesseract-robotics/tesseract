@@ -73,16 +73,6 @@ namespace tesseract_environment
     }
   }
 
-  inline AllowedCollisionMatrixPtr getAllowedCollisionMatrix(const tesseract_scene_graph::SRDFModel& srdf_model)
-  {
-    AllowedCollisionMatrixPtr allowed_collision_matrix(new AllowedCollisionMatrix());
-    for (const auto& pair : srdf_model.getDisabledCollisionPairs())
-    {
-      allowed_collision_matrix->addAllowedCollision(pair.link1_, pair.link2_, pair.reason_);
-    }
-    return allowed_collision_matrix;
-  }
-
   /**
    * @brief Should perform a continuous collision check over the trajectory and stop on first collision.
    * @param manager A continuous contact manager
