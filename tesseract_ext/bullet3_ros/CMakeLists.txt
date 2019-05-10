@@ -9,6 +9,7 @@ add_compile_options(-std=c++11 -w)
 
 set(BUILD_UNIT_TESTS OFF CACHE BOOL "Disable Bullet Unit Tests" FORCE)
 set(BUILD_SHARED_LIBS ON CACHE BOOL "Enable Bullet Shared Libs" FORCE)
+set(BULLET2_MULTITHREADING ON CACHE BOOL "Allows you to use bullet in multithreaded applicaiton" FORCE)
 
 add_subdirectory(bullet3)
 
