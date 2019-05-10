@@ -140,7 +140,7 @@ ProblemConstructionInfo cppMethod()
   pci.kin = kin_map_[pci.basic_info.manip];
 
   // Populate Init Info
-  EnvStateConstPtr current_state = pci.env->getState();
+  EnvStateConstPtr current_state = pci.env->getCurrentState();
   Eigen::VectorXd start_pos;
   start_pos.resize(pci.kin->numJoints());
   int cnt = 0;
@@ -293,7 +293,7 @@ int main(int argc, char** argv)
   ContinuousContactManagerPtr manager = prob->GetEnv()->getContinuousContactManager();
   AdjacencyMapPtr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
                                                                                         prob->GetKin()->getActiveLinkNames(),
-                                                                                        prob->GetEnv()->getState()->transforms);
+                                                                                        prob->GetEnv()->getCurrentState()->transforms);
 
   manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   manager->setContactDistanceThreshold(0);

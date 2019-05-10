@@ -53,7 +53,7 @@ void callbackJointState(const sensor_msgs::JointState::ConstPtr& msg)
   contacts_msg.contacts.clear();
 
   env->setState(msg->name, msg->position);
-  EnvStateConstPtr state = env->getState();
+  EnvStateConstPtr state = env->getCurrentState();
 
   manager->setCollisionObjectsTransform(state->transforms);
   manager->contactTest(contacts, type);
@@ -104,7 +104,7 @@ bool callbackComputeContactResultVector(tesseract_msgs::ComputeContactResultVect
   boost::mutex::scoped_lock(modify_mutex);
 
   env->setState(request.joint_states.name, request.joint_states.position);
-  EnvStateConstPtr state = env->getState();
+  EnvStateConstPtr state = env->getCurrentState();
 
   manager->setCollisionObjectsTransform(state->transforms);
   manager->contactTest(contacts, type);

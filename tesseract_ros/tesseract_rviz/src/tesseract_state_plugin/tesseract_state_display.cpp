@@ -360,14 +360,6 @@ bool TesseractStateDisplay::modifyEnvironmentCallback(tesseract_msgs::ModifyTess
 
         return true;
       }
-      case tesseract_msgs::EnvironmentCommand::UPDATE_LINK:
-      {
-        assert(false);
-      }
-      case tesseract_msgs::EnvironmentCommand::UPDATE_JOINT:
-      {
-        assert(false);
-      }
       case tesseract_msgs::EnvironmentCommand::REMOVE_LINK:
       {
         if (env_->getLink(command.remove_link) == nullptr)
@@ -416,17 +408,44 @@ bool TesseractStateDisplay::modifyEnvironmentCallback(tesseract_msgs::ModifyTess
 
         return true;
       }
-      case tesseract_msgs::EnvironmentCommand::UPDATE_COLLISION:
+      case tesseract_msgs::EnvironmentCommand::CHANGE_LINK_ORIGIN:
       {
         assert(false);
       }
-      case tesseract_msgs::EnvironmentCommand::UPDATE_ALLOWED_COLLISION:
+      case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_ORIGIN:
       {
         assert(false);
+      }
+      case tesseract_msgs::EnvironmentCommand::CHANGE_LINK_COLLISION_ENABLED:
+      {
+        if (command.change_link_collision_enabled_value)
+          return env_->enableCollision(command.change_link_collision_enabled_name);
+        else
+          return env_->disableCollision(command.change_link_collision_enabled_name);
+      }
+      case tesseract_msgs::EnvironmentCommand::CHANGE_LINK_VISIBILITY:
+      {
+  //        return env_->setLinkVisibility(command.change_link_visibility_name, command.change_link_visibility_value);
+        assert(false);
+      }
+      case tesseract_msgs::EnvironmentCommand::ADD_ALLOWED_COLLISION:
+      {
+        env_->addAllowedCollision(command.add_allowed_collision.link_1, command.add_allowed_collision.link_2, command.add_allowed_collision.reason);
+        return true;
+      }
+      case tesseract_msgs::EnvironmentCommand::REMOVE_ALLOWED_COLLISION:
+      {
+        env_->removeAllowedCollision(command.add_allowed_collision.link_1, command.add_allowed_collision.link_2);
+        return true;
+      }
+      case tesseract_msgs::EnvironmentCommand::REMOVE_ALLOWED_COLLISION_LINK:
+      {
+        env_->removeAllowedCollision(command.remove_allowed_collision_link);
+        return true;
       }
       case tesseract_msgs::EnvironmentCommand::UPDATE_JOINT_STATE:
       {
-        assert(false);
+        return tesseract_rosutils::processMsg(*env_, command.joint_state);
       }
     }
   }
@@ -586,7 +605,7 @@ void TesseractStateDisplay::update(float wall_dt, float ros_dt)
   if (visualization_ && update_state_ && env_)
   {
     update_state_ = false;
-    visualization_->update(EnvLinkUpdater(env_->getState()));
+    visualization_->update(EnvLinkUpdater(env_->getCurrentState()));
   }
 }
 

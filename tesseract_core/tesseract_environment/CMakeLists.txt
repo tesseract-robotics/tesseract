@@ -9,14 +9,14 @@ find_package(tesseract_collision REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 
 # Create interface for core
-add_library(${PROJECT_NAME}_core INTERFACE)
-target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract_collision_core tesseract_scene_graph)
-target_compile_options(${PROJECT_NAME}_core INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_core INTERFACE cxx_std_11)
-target_include_directories(${PROJECT_NAME}_core INTERFACE
+add_library(${PROJECT_NAME}_core SHARED src/core/environment.cpp)
+target_link_libraries(${PROJECT_NAME}_core PUBLIC tesseract_collision_core tesseract_scene_graph)
+target_compile_options(${PROJECT_NAME}_core PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
+target_compile_features(${PROJECT_NAME}_core PRIVATE cxx_std_11)
+target_include_directories(${PROJECT_NAME}_core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
+target_include_directories(${PROJECT_NAME}_core SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_kdl SHARED src/kdl/kdl_env.cpp)
