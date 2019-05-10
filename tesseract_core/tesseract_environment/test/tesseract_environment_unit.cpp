@@ -116,7 +116,7 @@ void runMoveLinkandJointTest(const tesseract_environment::EnvironmentPtr& env)
   joint_2.type = JointType::FIXED;
 
   env->addLink(link_1, joint_1);
-  EnvStatePtr state = env->getState();
+  EnvStateConstPtr state = env->getState();
   EXPECT_TRUE(state->transforms.find(link_1.getName()) != state->transforms.end());
 
   env->addLink(link_2, joint_2);
@@ -141,27 +141,6 @@ void runMoveLinkandJointTest(const tesseract_environment::EnvironmentPtr& env)
   env->getSceneGraph()->saveDOT("/tmp/after_move_joint_unit.dot");
 }
 
-/// Testing AllowedCollisionMatrix
-TEST(TesseractEnvironmentUnit, TestAllowedCollisionMatrix)
-{
-  tesseract_environment::AllowedCollisionMatrix acm;
-
-  acm.addAllowedCollision("link1", "link2", "test");
-  // collision between link1 and link2 should be allowed
-  EXPECT_TRUE(acm.isCollisionAllowed("link1", "link2"));
-  // but now between link2 and link3
-  EXPECT_FALSE(acm.isCollisionAllowed("link2", "link3"));
-
-  acm.removeAllowedCollision("link1", "link2");
-  // now collision link1 and link2 is not allowed anymore
-  EXPECT_FALSE(acm.isCollisionAllowed("link1", "link2"));
-
-  acm.addAllowedCollision("link3", "link3", "test");
-  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 1);
-  acm.clearAllowedCollisions();
-  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 0);
-}
-
 TEST(TesseractEnvironmentUnit, KDLEnvCloneContactManagerUnit)
 {
   tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
@@ -171,9 +150,15 @@ TEST(TesseractEnvironmentUnit, KDLEnvCloneContactManagerUnit)
   EXPECT_TRUE(env != nullptr);
 
   bool success = env->init(scene_graph);
-  env->setDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManagerPtr(new tesseract_collision_bullet::BulletDiscreteBVHManager()));
-  env->setContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManagerPtr(new tesseract_collision_bullet::BulletCastBVHManager()));
   EXPECT_TRUE(success);
+
+  // Register contact manager
+  EXPECT_TRUE(env->registerDiscreteContactManager("bullet", &tesseract_collision_bullet::BulletDiscreteBVHManager::create));
+  EXPECT_TRUE(env->registerContinuousContactManager("bullet", &tesseract_collision_bullet::BulletCastBVHManager::create));
+
+  // Set Active contact manager
+  EXPECT_TRUE(env->setActiveDiscreteContactManager("bullet"));
+  EXPECT_TRUE(env->setActiveContinuousContactManager("bullet"));
 
   runContactManagerCloneTest(env);
 }
@@ -187,9 +172,15 @@ TEST(TesseractEnvironmentUnit, KDLEnvAddandRemoveLink)
   EXPECT_TRUE(env != nullptr);
 
   bool success = env->init(scene_graph);
-  env->setDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManagerPtr(new tesseract_collision_bullet::BulletDiscreteBVHManager()));
-  env->setContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManagerPtr(new tesseract_collision_bullet::BulletCastBVHManager()));
   EXPECT_TRUE(success);
+
+  // Register contact manager
+  EXPECT_TRUE(env->registerDiscreteContactManager("bullet", &tesseract_collision_bullet::BulletDiscreteBVHManager::create));
+  EXPECT_TRUE(env->registerContinuousContactManager("bullet", &tesseract_collision_bullet::BulletCastBVHManager::create));
+
+  // Set Active contact manager
+  EXPECT_TRUE(env->setActiveDiscreteContactManager("bullet"));
+  EXPECT_TRUE(env->setActiveContinuousContactManager("bullet"));
 
   runAddandRemoveLinkTest(env);
 }
@@ -197,15 +188,21 @@ TEST(TesseractEnvironmentUnit, KDLEnvAddandRemoveLink)
 TEST(TesseractEnvironmentUnit, KDLEnvMoveLinkandJoint)
 {
   SceneGraphPtr scene_graph = getSceneGraph();
-  assert(scene_graph != nullptr);
+  EXPECT_TRUE(scene_graph != nullptr);
 
   KDLEnvPtr env(new KDLEnv());
-  assert(env != nullptr);
+  EXPECT_TRUE(env != nullptr);
 
   bool success = env->init(scene_graph);
-  env->setDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManagerPtr(new tesseract_collision_bullet::BulletDiscreteBVHManager()));
-  env->setContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManagerPtr(new tesseract_collision_bullet::BulletCastBVHManager()));
-  assert(success);
+  EXPECT_TRUE(success);
+
+  // Register contact manager
+  EXPECT_TRUE(env->registerDiscreteContactManager("bullet", &tesseract_collision_bullet::BulletDiscreteBVHManager::create));
+  EXPECT_TRUE(env->registerContinuousContactManager("bullet", &tesseract_collision_bullet::BulletCastBVHManager::create));
+
+  // Set Active contact manager
+  EXPECT_TRUE(env->setActiveDiscreteContactManager("bullet"));
+  EXPECT_TRUE(env->setActiveContinuousContactManager("bullet"));
 
   runMoveLinkandJointTest(env);
 }

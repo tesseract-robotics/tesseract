@@ -43,6 +43,8 @@ class Environment
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  Environment() = default;
+
   virtual ~Environment() = default;
 
   virtual bool init(tesseract_scene_graph::SceneGraphPtr scene_graph) = 0;
@@ -170,6 +172,35 @@ public:
   virtual bool disableCollision(const std::string& name) = 0;
 
   /**
+   * @brief Disable collision between two collision objects
+   * @param link_name1 Collision object name
+   * @param link_name2 Collision object name
+   * @param reason The reason for disabling collison
+   */
+  virtual void addAllowedCollision(const std::string& link_name1,
+                                   const std::string& link_name2,
+                                   const std::string& reason) = 0;
+
+  /**
+   * @brief Remove disabled collision pair from allowed collision matrix
+   * @param link_name1 Collision object name
+   * @param link_name2 Collision object name
+   */
+  virtual void removeAllowedCollision(const std::string& link_name1, const std::string& link_name2) = 0;
+
+  /**
+   * @brief Remove disabled collision for any pair with link_name from allowed collision matrix
+   * @param link_name Collision object name
+   */
+  virtual void removeAllowedCollision(const std::string& link_name) = 0;
+
+  /**
+   * @brief Get the allowed collision matrix
+   * @return AllowedCollisionMatrixConstPtr
+   */
+  virtual const tesseract_scene_graph::AllowedCollisionMatrixConstPtr& getAllowedCollisionMatrix() const = 0;
+
+  /**
    * @brief Get a joint in the environment
    * @param name The name of the joint
    * @return Return nullptr if joint name does not exists, otherwise a pointer to the joint
@@ -239,11 +270,31 @@ public:
    */
   virtual const Eigen::Isometry3d& getLinkTransform(const std::string& link_name) const = 0;
 
-  /** @brief Get the active function for determining if two links are allowed to be in collision */
-  virtual tesseract_collision::IsContactAllowedFn getIsContactAllowedFn() const = 0;
+  /**
+   * @brief Set the active discrete contact manager
+   * @param name The name used to registar the contact manager
+   * @return True of name exists in DiscreteContactManagerFactory
+   */
+  virtual bool setActiveDiscreteContactManager(const std::string& name) = 0;
 
-  /** @brief Set the active function for determining if two links are allowed to be in collision */
-  virtual void setIsContactAllowedFn(tesseract_collision::IsContactAllowedFn fn) = 0;
+  /** @brief Get a copy of the environments active discrete contact manager */
+  virtual tesseract_collision::DiscreteContactManagerPtr getDiscreteContactManager() const = 0;
+
+  /** @brief Get a copy of the environments available discrete contact manager by name */
+  virtual tesseract_collision::DiscreteContactManagerPtr getDiscreteContactManager(const std::string& name) const = 0;
+
+  /**
+   * @brief Set the active continuous contact manager
+   * @param name The name used to registar the contact manager
+   * @return True of name exists in ContinuousContactManagerFactory
+   */
+  virtual bool setActiveContinuousContactManager(const std::string& name) = 0;
+
+  /** @brief Get a copy of the environments active continuous contact manager */
+  virtual tesseract_collision::ContinuousContactManagerPtr getContinuousContactManager() const = 0;
+
+  /** @brief Get a copy of the environments available continuous contact manager by name */
+  virtual tesseract_collision::ContinuousContactManagerPtr getContinuousContactManager(const std::string& name) const = 0;
 
   /**
    * @brief Set the discrete contact manager
@@ -251,22 +302,27 @@ public:
    * This method should clear the contents of the manager and reload it with the objects
    * in the environment.
    */
-  virtual bool setDiscreteContactManager(tesseract_collision::DiscreteContactManagerConstPtr manager) = 0;
-
-  /** @brief Get a copy of the environments discrete contact manager */
-  virtual tesseract_collision::DiscreteContactManagerPtr getDiscreteContactManager() const = 0;
+  bool registerDiscreteContactManager(const std::string name,
+                                      tesseract_collision::DiscreteContactManagerFactory::CreateMethod create_function)
+  {
+    return discrete_factory_.registar(name, create_function);
+  }
 
   /**
-   * @brief Set the continuous contact manager
+   * @brief Set the discrete contact manager
    *
    * This method should clear the contents of the manager and reload it with the objects
    * in the environment.
    */
-  virtual bool setContinuousContactManager(tesseract_collision::ContinuousContactManagerConstPtr manager) = 0;
+  bool registerContinuousContactManager(const std::string name,
+                                        tesseract_collision::ContinuousContactManagerFactory::CreateMethod create_function)
+  {
+    return continuous_factory_.registar(name, create_function);
+  }
 
-  /** @brief Get a copy of the environments continuous contact manager */
-  virtual tesseract_collision::ContinuousContactManagerPtr getContinuousContactManager() const = 0;
-
+protected:
+  tesseract_collision::DiscreteContactManagerFactory discrete_factory_;
+  tesseract_collision::ContinuousContactManagerFactory continuous_factory_;
 };  // class BasicEnvBase
 
 typedef std::shared_ptr<Environment> EnvironmentPtr;

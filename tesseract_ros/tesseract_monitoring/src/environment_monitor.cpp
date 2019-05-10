@@ -39,8 +39,6 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <ros/console.h>
 #include <dynamic_reconfigure/server.h>
 #include <memory>
-#include <srdfdom/model.h>
-#include <urdf_parser/urdf_parser.h>
 #include <tesseract_monitoring/EnvironmentMonitorDynamicReconfigureConfig.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
@@ -50,6 +48,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/utils.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_tree.h>
+#include <tesseract_scene_graph/utils.h>
 
 class DynamicReconfigureImpl
 {
@@ -154,11 +153,6 @@ EnvironmentMonitor::EnvironmentMonitor(const std::string& robot_description,
   }
   srdf_model_ = srdf;
 
-  // Get the allowed collision function from srdf
-  acm_ = tesseract_environment::getAllowedCollisionMatrix(*srdf_model_);
-  if (acm_ != nullptr)
-    fn_ = std::bind(&tesseract_environment::AllowedCollisionMatrix::isCollisionAllowed, acm_, std::placeholders::_1, std::placeholders::_2);
-
   // Parse kinematics groups from srdf model
   kin_map_ = tesseract_kinematics::createKinematicsMap<tesseract_kinematics::KDLFwdKinChain, tesseract_kinematics::KDLFwdKinTree>(scene_graph_, *srdf_model_);
 
@@ -211,36 +205,39 @@ void EnvironmentMonitor::initialize()
 
   if (scene_graph_)
   {
+    // Add allowed collision to the scene
+    if (srdf_model_)
+      processSRDFAllowedCollisions(*scene_graph_, *srdf_model_);
+
     env_ = std::make_shared<tesseract_environment::KDLEnv>();
     env_->init(scene_graph_);
-    if (fn_)
-      env_->setIsContactAllowedFn(fn_);
-
     env_const_ = env_;
     try
     {
       if (!discrete_plugin_name_.empty() && !continuous_plugin_name_.empty())
       {
         discrete_manager_loader_.reset(new DiscreteContactManagerPluginLoader("tesseract_collision", "tesseract_collision::DiscreteContactManager"));
-        tesseract_collision::DiscreteContactManagerPtr discrete_temp = discrete_manager_loader_->createUniqueInstance(discrete_plugin_name_);
-        if (discrete_temp == nullptr)
+        if (discrete_manager_loader_->isClassAvailable(discrete_plugin_name_))
         {
           ROS_ERROR("Failed to load tesseract contact checker plugin: %s.", discrete_plugin_name_.c_str());
         }
         else
         {
-          env_->setDiscreteContactManager(discrete_temp);
+          auto fn = [&]() -> tesseract_collision::DiscreteContactManagerPtr { return discrete_manager_loader_->createUniqueInstance(discrete_plugin_name_); };
+          env_->registerDiscreteContactManager(discrete_plugin_name_, fn);
+          env_->setActiveDiscreteContactManager(discrete_plugin_name_);
         }
 
         continuous_manager_loader_.reset(new ContinuousContactManagerPluginLoader("tesseract_collision", "tesseract_collision::ContinuousContactManager"));
-        tesseract_collision::ContinuousContactManagerPtr continuous_temp = continuous_manager_loader_->createUniqueInstance(continuous_plugin_name_);
-        if (continuous_temp == nullptr)
+        if (continuous_manager_loader_->isClassAvailable(continuous_plugin_name_))
         {
           ROS_ERROR("Failed to load tesseract contact checker plugin: %s.", continuous_plugin_name_.c_str());
         }
         else
         {
-          env_->setContinuousContactManager(continuous_temp);
+          auto fn = [&]() -> tesseract_collision::ContinuousContactManagerPtr { return continuous_manager_loader_->createUniqueInstance(continuous_plugin_name_); };
+          env_->registerContinuousContactManager(continuous_plugin_name_, fn);
+          env_->setActiveContinuousContactManager(continuous_plugin_name_);
         }
       }
     }

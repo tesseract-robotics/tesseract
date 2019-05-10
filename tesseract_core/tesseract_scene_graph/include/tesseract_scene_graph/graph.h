@@ -39,6 +39,7 @@ TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/joint.h>
+#include <tesseract_scene_graph/allowed_collision_matrix.h>
 
 /* definition of basic boost::graph properties */
 namespace boost {
@@ -80,7 +81,6 @@ typedef boost::adjacency_list<boost::listS, boost::listS, boost::bidirectionalS,
 class SceneGraph : private boost::noncopyable, public Graph
 {
 public:
-
   /**
    * @brief Holds the shortest path information.
    *
@@ -90,6 +90,8 @@ public:
   typedef std::pair<std::vector<std::string>, std::vector<std::string>> Path;
   typedef SceneGraph::vertex_descriptor Vertex;
   typedef SceneGraph::edge_descriptor Edge;
+
+  SceneGraph();
 
   /**
    * @brief Sets the graph name
@@ -205,6 +207,45 @@ public:
    */
   std::vector<JointConstPtr> getJoints() const;
 
+  /**
+   * @brief Disable collision between two collision objects
+   * @param link_name1 Collision object name
+   * @param link_name2 Collision object name
+   * @param reason The reason for disabling collison
+   */
+  void addAllowedCollision(const std::string& link_name1,
+                           const std::string& link_name2,
+                           const std::string& reason);
+
+  /**
+   * @brief Remove disabled collision pair from allowed collision matrix
+   * @param link_name1 Collision object name
+   * @param link_name2 Collision object name
+   */
+  void removeAllowedCollision(const std::string& link_name1, const std::string& link_name2);
+
+  /**
+   * @brief Remove disabled collision for any pair with link_name from allowed collision matrix
+   * @param link_name Collision object name
+   */
+  void removeAllowedCollision(const std::string& link_name);
+
+  /**
+   * @brief Check if two links are allowed to be in collision
+   * @param link_name1 link name
+   * @param link_name2 link name
+   * @return True if the two links are allowed to be in collision, otherwise false
+   */
+  bool isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const;
+
+  /**
+   * @brief Get the allowed collision matrix
+   * @return AllowedCollisionMatrixConstPtr
+   */
+  const AllowedCollisionMatrixConstPtr& getAllowedCollisionMatrix() const;
+
+
+
   LinkConstPtr getSourceLink(const std::string& joint_name) const;
 
   LinkConstPtr getTargetLink(const std::string& joint_name) const;
@@ -286,6 +327,7 @@ private:
 
   std::unordered_map<std::string, std::pair<LinkPtr, Vertex>> link_map_;
   std::unordered_map<std::string, std::pair<JointPtr, Edge>> joint_map_;
+  AllowedCollisionMatrixPtr acm_;
 
   struct cycle_detector : public boost::dfs_visitor<>
   {

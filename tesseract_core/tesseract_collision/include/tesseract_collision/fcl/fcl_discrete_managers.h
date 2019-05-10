@@ -55,7 +55,9 @@ class FCLDiscreteBVHManager : public DiscreteContactManager
 public:
   FCLDiscreteBVHManager();
 
-  DiscreteContactManagerPtr clone(bool empty = false) const override;
+  static DiscreteContactManagerPtr create() { return std::make_shared<FCLDiscreteBVHManager>(); }
+
+  DiscreteContactManagerPtr clone() const override;
 
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,

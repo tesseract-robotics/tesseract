@@ -54,7 +54,9 @@ public:
   BulletDiscreteBVHManager();
   ~BulletDiscreteBVHManager() override;
 
-  DiscreteContactManagerPtr clone(bool empty = false) const override;
+  static DiscreteContactManagerPtr create() { return std::make_shared<BulletDiscreteBVHManager>(); }
+
+  DiscreteContactManagerPtr clone() const override;
 
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,

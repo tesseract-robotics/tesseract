@@ -11,6 +11,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/parser/urdf_parser.h>
 #include <tesseract_scene_graph/parser/srdf_parser.h>
 #include <tesseract_environment/kdl/kdl_env.h>
@@ -162,13 +163,14 @@ int main(int argc, char** argv)
   {
     discrete_manager_loader.reset(new DiscreteContactManagerPluginLoader("tesseract_collision", "tesseract_collision::DiscreteContactManager"));
     pnh.getParam("plugin", plugin);
-    DiscreteContactManagerPtr temp = discrete_manager_loader->createUniqueInstance(plugin);
-    if (temp == nullptr)
+    if (discrete_manager_loader->isClassAvailable(plugin))
     {
       ROS_ERROR("Failed to load tesseract contact checker plugin: %s.", plugin.c_str());
       return -1;
     }
-    env->setDiscreteContactManager(temp);
+    auto fn = [&]() -> DiscreteContactManagerPtr { return ::discrete_manager_loader->createUniqueInstance(plugin); };
+    env->registerDiscreteContactManager(plugin, fn);
+    env->setActiveDiscreteContactManager(plugin);
   }
 
   // Initial setup
@@ -204,17 +206,16 @@ int main(int argc, char** argv)
     return -1;
   }
 
+  // Add allowed collision to the scene
+  processSRDFAllowedCollisions(*scene_graph, srdf);
+
+  // Create environemnt from scene graph
   KDLEnvPtr env = std::make_shared<KDLEnv>();
   if (!env->init(g))
   {
     ROS_ERROR("Failed to initialize environment.");
     return -1;
   }
-
-  // Set the allowed collision function
-  AllowedCollisionMatrixPtr acm = getAllowedCollisionMatrix(srdf);
-  tesseract_collision::IsContactAllowedFn fn = std::bind(&tesseract_environment::AllowedCollisionMatrix::isCollisionAllowed, acm, std::placeholders::_1, std::placeholders::_2);
-  env->setIsContactAllowedFn(fn);
 
   // Setup request information
   std::vector<std::string> link_names;

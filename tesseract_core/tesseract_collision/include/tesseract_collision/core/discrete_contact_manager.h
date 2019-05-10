@@ -38,21 +38,21 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_POP
 
 namespace tesseract_collision
 {
+
 class DiscreteContactManager
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   virtual ~DiscreteContactManager() = default;
+
   /**
    * @brief Clone the manager
    *
    * This is to be used for multi threaded application. A user should
    * make a clone for each thread.
-   *
-   * @param empty If true returns an instance of the derived class that is empty.
    */
-  virtual std::shared_ptr<DiscreteContactManager> clone(bool empty = false) const = 0;
+  virtual std::shared_ptr<DiscreteContactManager> clone() const = 0;
 
   /**
    * @brief Add a object to the checker
@@ -156,5 +156,35 @@ public:
 };
 typedef std::shared_ptr<DiscreteContactManager> DiscreteContactManagerPtr;
 typedef std::shared_ptr<const DiscreteContactManager> DiscreteContactManagerConstPtr;
+
+class DiscreteContactManagerFactory
+{
+public:
+  using CreateMethod = std::function<DiscreteContactManagerPtr()>;
+  DiscreteContactManagerFactory() = default;
+
+  bool registar(const std::string name, CreateMethod create_function)
+  {
+    auto it = discrete_types.find(name);
+    if (it == discrete_types.end())
+    {
+      discrete_types[name] = create_function;
+      return true;
+    }
+    return false;
+  }
+
+  DiscreteContactManagerPtr create(const std::string& name) const
+  {
+    auto it = discrete_types.find(name);
+    if (it != discrete_types.end())
+      return it->second(); // call the createFunc
+
+    return nullptr;
+  }
+private:
+  std::unordered_map<std::string, CreateMethod> discrete_types;
+};
+
 }
 #endif  // TESSERACT_COLLISION_DISCRETE_CONTACT_MANAGER_H

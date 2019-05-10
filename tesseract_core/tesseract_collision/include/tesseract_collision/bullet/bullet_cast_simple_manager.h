@@ -55,7 +55,9 @@ class BulletCastSimpleManager : public ContinuousContactManager
 public:
   BulletCastSimpleManager();
 
-  ContinuousContactManagerPtr clone(bool empty = false) const override;
+  static ContinuousContactManagerPtr create() { return std::make_shared<BulletCastSimpleManager>(); }
+
+  ContinuousContactManagerPtr clone() const override;
 
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,

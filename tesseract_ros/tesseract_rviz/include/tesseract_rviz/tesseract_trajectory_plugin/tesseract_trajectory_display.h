@@ -48,6 +48,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #include <tesseract_rviz/render_tools/trajectory_visualization.h>
+#include <tesseract_environment/core/environment.h>
 
 namespace rviz
 {
