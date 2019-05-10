@@ -52,7 +52,7 @@ CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environmen
 CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::EnvironmentConstPtr &env, const tesseract_kinematics::ForwardKinematicsConstPtrMap& kinematics_map, ros::NodeHandle nh)
   : nh_(nh)
   , env_(env)
-  , state_(*env->getState())
+  , state_(*env->getCurrentState())
   , kin_map_(kinematics_map)
   , state_monitor_started_(false)
   , copy_dynamics_(false)

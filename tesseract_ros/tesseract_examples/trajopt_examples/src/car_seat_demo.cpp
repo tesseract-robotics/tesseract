@@ -395,7 +395,7 @@ int main(int argc, char** argv)
   ContinuousContactManagerPtr manager = prob->GetEnv()->getContinuousContactManager();
   AdjacencyMapPtr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
                                                                                         prob->GetKin()->getActiveLinkNames(),
-                                                                                        prob->GetEnv()->getState()->transforms);
+                                                                                        prob->GetEnv()->getCurrentState()->transforms);
 
   manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   manager->setContactDistanceThreshold(0);
@@ -438,7 +438,7 @@ int main(int argc, char** argv)
   manager = prob->GetEnv()->getContinuousContactManager();
   adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
                                                                         prob->GetKin()->getActiveLinkNames(),
-                                                                        prob->GetEnv()->getState()->transforms);
+                                                                        prob->GetEnv()->getCurrentState()->transforms);
 
   manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   manager->setContactDistanceThreshold(0);

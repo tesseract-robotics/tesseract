@@ -94,7 +94,7 @@ bool TrajOptPlanner::solve(PlannerResponse& response, const TrajOptPlannerConfig
   tesseract_collision::ContinuousContactManagerPtr manager = config.prob->GetEnv()->getContinuousContactManager();
   tesseract_environment::AdjacencyMapPtr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(config.prob->GetEnv()->getSceneGraph(),
                                                                                                                config.prob->GetKin()->getActiveLinkNames(),
-                                                                                                               config.prob->GetEnv()->getState()->transforms);
+                                                                                                               config.prob->GetEnv()->getCurrentState()->transforms);
 
   manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   manager->setContactDistanceThreshold(0);

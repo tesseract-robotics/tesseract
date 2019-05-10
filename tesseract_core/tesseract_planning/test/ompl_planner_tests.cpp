@@ -11,6 +11,7 @@
 #include <tesseract_environment/kdl/kdl_env.h>
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/parser/urdf_parser.h>
 #include <tesseract_scene_graph/parser/srdf_parser.h>
 #include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
@@ -106,18 +107,22 @@ TEST(TesseractPlanningUnit, OMPLPlannerUnit)
   SRDFModelPtr srdf_model = getSRDFModel(*scene_graph);
   EXPECT_TRUE(srdf_model != nullptr);
 
+  // Add allowed collision to the scene
+  processSRDFAllowedCollisions(*scene_graph, *srdf_model);
+
   // Step 2: Create a "tesseract" environment
   KDLEnvPtr env = std::make_shared<KDLEnv>();
   EXPECT_TRUE(env != nullptr);
 
-  bool success = env->init(scene_graph);
-  env->setDiscreteContactManager(std::make_shared<tesseract_collision_bullet::BulletDiscreteBVHManager>());
-  env->setContinuousContactManager(std::make_shared<tesseract_collision_bullet::BulletCastBVHManager>());
+  EXPECT_TRUE(env->init(scene_graph));
 
-  // Set the allowed collision function
-  AllowedCollisionMatrixPtr acm = getAllowedCollisionMatrix(*srdf_model);
-  tesseract_collision::IsContactAllowedFn fn = std::bind(&tesseract_environment::AllowedCollisionMatrix::isCollisionAllowed, acm, std::placeholders::_1, std::placeholders::_2);
-  env->setIsContactAllowedFn(fn);
+  // Register contact manager
+  env->registerDiscreteContactManager("bullet", &tesseract_collision_bullet::BulletDiscreteBVHManager::create);
+  env->registerContinuousContactManager("bullet", &tesseract_collision_bullet::BulletCastBVHManager::create);
+
+  // Set Active contact manager
+  env->setActiveDiscreteContactManager("bullet");
+  env->setActiveContinuousContactManager("bullet");
 
   addBox(*env);
 

@@ -2,13 +2,16 @@
 uint8 ADD=0
 uint8 MOVE_LINK=1
 uint8 MOVE_JOINT=2
-uint8 UPDATE_LINK=3
-uint8 UPDATE_JOINT=4
-uint8 REMOVE_LINK=5
-uint8 REMOVE_JOINT=6
-uint8 UPDATE_COLLISION=7
-uint8 UPDATE_ALLOWED_COLLISION=8
-uint8 UPDATE_JOINT_STATE=9
+uint8 REMOVE_LINK=3
+uint8 REMOVE_JOINT=4
+uint8 CHANGE_LINK_ORIGIN=5
+uint8 CHANGE_JOINT_ORIGIN=6
+uint8 CHANGE_LINK_COLLISION_ENABLED = 7
+uint8 CHANGE_LINK_VISIBILITY=8
+uint8 ADD_ALLOWED_COLLISION=9
+uint8 REMOVE_ALLOWED_COLLISION=10
+uint8 REMOVE_ALLOWED_COLLISION_LINK=11
+uint8 UPDATE_JOINT_STATE=12
 
 uint8 command
 
@@ -23,24 +26,36 @@ tesseract_msgs/Joint move_link_joint
 string move_joint_name
 string move_joint_parent_link
 
-# UPDATE_LINK
-tesseract_msgs/Link update_link
-
-# UPDATE_JOINT
-tesseract_msgs/Joint update_joint
-
 # REMOVE_LINK
 string remove_link
 
 # REMOVE_JOINT
 string remove_joint
 
-# UPDATE_COLLISION
-string update_collision_link
-bool enabled
+# CHANTE_LINK_ORIGIN
+string change_link_orgin_name
+geometry_msgs/Pose change_link_orgin_pose
 
-# UPDATE_ALLOWED_COLLISION
-tesseract_msgs/AllowedCollisionEntry[] allowed_collisions
+# CHANGE_JOINT_ORIGIN
+string change_joint_orgin_name
+geometry_msgs/Pose change_joint_orgin_pose
+
+# CHANGE_LINK_COLLISION_ENABLED
+string change_link_collision_enabled_name
+bool change_link_collision_enabled_value
+
+# CHANGE_LINK_VISIBILITY
+string change_link_visibility_name
+bool change_link_visibility_value
+
+# ADD_ALLOWED_COLLISION
+tesseract_msgs/AllowedCollisionEntry add_allowed_collision
+
+# REMOVE_ALLOWED_COLLISION
+tesseract_msgs/AllowedCollisionEntry remove_allowed_collision
+
+# REMOVE_ALLOWED_COLLISION_LINK
+string remove_allowed_collision_link
 
 # UPDATE_JOINT_STATE
 sensor_msgs/JointState joint_state

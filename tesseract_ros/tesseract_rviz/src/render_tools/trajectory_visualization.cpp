@@ -237,7 +237,7 @@ void TrajectoryVisualization::createTrajectoryTrail()
   // Add static trajectory geometry
   trajectory_static_ = std::make_shared<EnvVisualization>(scene_node_, context_, "Trail Static", nullptr);
   trajectory_static_->load(env_->getSceneGraph(), true, true, false, true);
-  trajectory_static_->update(EnvLinkUpdater(env_->getState()));
+  trajectory_static_->update(EnvLinkUpdater(env_->getCurrentState()));
   trajectory_static_->setVisualVisible(display_path_visual_enabled_property_->getBool());
   trajectory_static_->setCollisionVisible(display_path_collision_enabled_property_->getBool());
   trajectory_static_->setAlpha(path_alpha_property_->getFloat());

@@ -79,7 +79,7 @@ public:
     toMsg(msg.trajectory_start, *env_);
 
     // Set the joint trajectory message
-    toMsg(msg.joint_trajectory, *(env_->getState()), joint_names, traj);
+    toMsg(msg.joint_trajectory, *(env_->getCurrentState()), joint_names, traj);
 
     trajectory_pub_.publish(msg);
   }

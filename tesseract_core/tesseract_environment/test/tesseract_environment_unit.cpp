@@ -116,7 +116,7 @@ void runMoveLinkandJointTest(const tesseract_environment::EnvironmentPtr& env)
   joint_2.type = JointType::FIXED;
 
   env->addLink(link_1, joint_1);
-  EnvStateConstPtr state = env->getState();
+  EnvStateConstPtr state = env->getCurrentState();
   EXPECT_TRUE(state->transforms.find(link_1.getName()) != state->transforms.end());
 
   env->addLink(link_2, joint_2);

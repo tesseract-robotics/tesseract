@@ -902,7 +902,7 @@ static inline void toMsg(tesseract_msgs::TesseractState& state_msg, const tesser
 //    state_msg.allowed_collisions.push_back(collision_entry);
 //  }
 
-  tesseract_environment::EnvStateConstPtr state = env.getState();
+  tesseract_environment::EnvStateConstPtr state = env.getCurrentState();
   toMsg(state_msg.joint_state, *state);
 }
 
@@ -1106,17 +1106,7 @@ static inline bool processMsg(const tesseract_environment::EnvironmentPtr& env,
 static inline bool processMsg(tesseract_environment::Environment& env,
                               const tesseract_msgs::TesseractState& state_msg)
 {
-  bool success = true;
-
-  processMsg(env, state_msg.joint_state);
-
-//  for (const auto& ce_msg : state_msg.allowed_collisions)
-//  {
-//    auto acm = env.getAllowedCollisionMatrixNonConst();
-//    acm->addAllowedCollision(ce_msg.link_1, ce_msg.link_2, ce_msg.reason);
-//  }
-
-  return success;
+  return processMsg(env, state_msg.joint_state);
 }
 
 static inline bool processMsg(const tesseract_environment::EnvironmentPtr& env,
@@ -1146,14 +1136,6 @@ static inline bool processMsg(tesseract_environment::Environment& env, const std
       {
         return env.moveJoint(command.move_joint_name, command.move_joint_parent_link);
       }
-      case tesseract_msgs::EnvironmentCommand::UPDATE_LINK:
-      {
-        assert(false);
-      }
-      case tesseract_msgs::EnvironmentCommand::UPDATE_JOINT:
-      {
-        assert(false);
-      }
       case tesseract_msgs::EnvironmentCommand::REMOVE_LINK:
       {
         return env.removeLink(command.remove_link);
@@ -1162,13 +1144,40 @@ static inline bool processMsg(tesseract_environment::Environment& env, const std
       {
         return env.removeJoint(command.remove_joint);
       }
-      case tesseract_msgs::EnvironmentCommand::UPDATE_COLLISION:
+      case tesseract_msgs::EnvironmentCommand::CHANGE_LINK_ORIGIN:
       {
         assert(false);
       }
-      case tesseract_msgs::EnvironmentCommand::UPDATE_ALLOWED_COLLISION:
+      case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_ORIGIN:
       {
         assert(false);
+      }
+      case tesseract_msgs::EnvironmentCommand::CHANGE_LINK_COLLISION_ENABLED:
+      {
+        if (command.change_link_collision_enabled_value)
+          return env.enableCollision(command.change_link_collision_enabled_name);
+        else
+          return env.disableCollision(command.change_link_collision_enabled_name);
+      }
+      case tesseract_msgs::EnvironmentCommand::CHANGE_LINK_VISIBILITY:
+      {
+  //        return env.setLinkVisibility(command.change_link_visibility_name, command.change_link_visibility_value);
+        assert(false);
+      }
+      case tesseract_msgs::EnvironmentCommand::ADD_ALLOWED_COLLISION:
+      {
+        env.addAllowedCollision(command.add_allowed_collision.link_1, command.add_allowed_collision.link_2, command.add_allowed_collision.reason);
+        return true;
+      }
+      case tesseract_msgs::EnvironmentCommand::REMOVE_ALLOWED_COLLISION:
+      {
+        env.removeAllowedCollision(command.add_allowed_collision.link_1, command.add_allowed_collision.link_2);
+        return true;
+      }
+      case tesseract_msgs::EnvironmentCommand::REMOVE_ALLOWED_COLLISION_LINK:
+      {
+        env.removeAllowedCollision(command.remove_allowed_collision_link);
+        return true;
       }
       case tesseract_msgs::EnvironmentCommand::UPDATE_JOINT_STATE:
       {
