@@ -289,7 +289,7 @@ void EnvVisualization::load(const tesseract_scene_graph::SceneGraphConstPtr& sce
 
 bool EnvVisualization::addLink(const tesseract_scene_graph::Link& link)
 {
-  if (getLink(link.getName()) != nullptr)
+  if (links_.find(link.getName()) != links_.end())
   {
     ROS_WARN("Tried to add link (%s) with same name as an existing link.", link.getName().c_str());
     return false;
@@ -332,7 +332,7 @@ bool EnvVisualization::removeLink(const std::string& name)
 
 bool EnvVisualization::addJoint(const tesseract_scene_graph::Joint& joint)
 {
-  if (getJoint(joint.getName()) != nullptr)
+  if (joints_.find(joint.getName()) != joints_.end())
   {
     ROS_WARN("Tried to add joint (%s) with same name as an existing joint.", joint.getName().c_str());
     return false;
