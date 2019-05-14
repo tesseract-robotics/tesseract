@@ -135,8 +135,6 @@ protected:
 
   tesseract_msgs::TrajectoryPtr displaying_trajectory_message_;
   tesseract_msgs::TrajectoryPtr trajectory_message_to_display_;
-  std::vector<EnvVisualization::Ptr> trajectory_trail_;
-  EnvVisualization::Ptr trajectory_static_;
 
   ros::Subscriber trajectory_topic_sub_;
   boost::mutex update_trajectory_message_;
@@ -155,6 +153,8 @@ protected:
   ros::NodeHandle update_nh_;
   TrajectoryPanel* trajectory_slider_panel_;
   rviz::PanelDockWidget* trajectory_slider_dock_panel_;
+  int previous_display_mode_;
+  size_t num_trajectory_waypoints_;
 
   // Properties
   rviz::BoolProperty* display_path_visual_enabled_property_;

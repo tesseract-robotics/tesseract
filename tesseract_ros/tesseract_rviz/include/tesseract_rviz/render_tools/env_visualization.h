@@ -156,6 +156,29 @@ public:
    */
   virtual bool moveJoint(const std::string& joint_name, const std::string& parent_link);
 
+  /**
+   * @brief Disable collision between two collision objects
+   * @param link_name1 Collision object name
+   * @param link_name2 Collision object name
+   * @param reason The reason for disabling collison
+   */
+  virtual void addAllowedCollision(const std::string& link_name1,
+                                   const std::string& link_name2,
+                                   const std::string& reason);
+
+  /**
+   * @brief Remove disabled collision pair from allowed collision matrix
+   * @param link_name1 Collision object name
+   * @param link_name2 Collision object name
+   */
+  virtual void removeAllowedCollision(const std::string& link_name1, const std::string& link_name2);
+
+  /**
+   * @brief Remove disabled collision for any pair with link_name from allowed collision matrix
+   * @param link_name Collision object name
+   */
+  virtual void removeAllowedCollision(const std::string& link_name);
+
 
   virtual void update(const rviz::LinkUpdater& updater);
 
@@ -191,6 +214,8 @@ public:
    * To be visible this and isVisible() must both be true.
    */
   bool isCollisionVisible();
+
+  void setLinkCollisionEnabled(const std::string& name, bool enabled);
 
   void setAlpha(float a);
   float getAlpha() { return alpha_; }

@@ -7,6 +7,7 @@ TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <memory>
 #include <Eigen/Eigen>
+#include <unordered_map>
 TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
@@ -17,6 +18,17 @@ class AllowedCollisionMatrix
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  using LinkNamesPair = std::pair<const std::string, const std::string>;
+  struct PairHash
+  {
+    std::size_t operator()(const LinkNamesPair& pair) const
+    {
+      return std::hash<std::string>()(pair.first + pair.second);
+    }
+  };
+  using AllowedCollisionEntries = std::unordered_map<LinkNamesPair, std::string, PairHash>;
+
+  AllowedCollisionMatrix() = default;
   virtual ~AllowedCollisionMatrix() = default;
 
   /**
@@ -32,6 +44,14 @@ public:
     auto link_pair = makeOrderedLinkPair(link_name1, link_name2);
     lookup_table_[link_pair] = reason;
   }
+
+  /**
+   * @brief Get all of the entries in the allowed collision matrix
+   * @return AllowedCollisionEntries an unordered map containing all allowed
+   *         collision entries. The keys of the unordered map are a std::pair
+   *         of the link names in the allowed collision pair.
+   */
+  const AllowedCollisionEntries& getAllAllowedCollisions() const { return lookup_table_; }
 
   /**
    * @brief Remove disabled collision pair from allowed collision matrix
@@ -80,16 +100,9 @@ public:
    *        allowed.
    */
   void clearAllowedCollisions() { lookup_table_.clear(); }
+
 private:
-  typedef std::pair<const std::string, const std::string> LinkNamesPair;
-  struct PairHash
-  {
-    std::size_t operator()(const LinkNamesPair& pair) const
-    {
-      return std::hash<std::string>()(pair.first + pair.second);
-    }
-  };
-  typedef std::unordered_map<LinkNamesPair, std::string, PairHash> AllowedCollisionEntries;
+
   AllowedCollisionEntries lookup_table_;
 
   /**
@@ -105,15 +118,6 @@ private:
     else
       return std::make_pair(link_name2, link_name1);
   }
-
-public:
-  /**
-   * @brief Clears the list of allowed collisions
-   * @return AllowedCollisionEntries an unordered map containing all allowed
-   *         collision entries. The keys of the unordered map are a std::pair
-   *         of the link names in the allowed collision pair.
-   */
-  const AllowedCollisionEntries& getAllAllowedCollisions() const { return lookup_table_; }
 };
 typedef std::shared_ptr<AllowedCollisionMatrix> AllowedCollisionMatrixPtr;
 typedef std::shared_ptr<const AllowedCollisionMatrix> AllowedCollisionMatrixConstPtr;

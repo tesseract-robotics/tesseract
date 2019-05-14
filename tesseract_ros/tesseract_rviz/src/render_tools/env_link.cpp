@@ -61,8 +61,10 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include "rviz/properties/property.h"
 #include "rviz/properties/quaternion_property.h"
 #include "rviz/properties/vector_property.h"
+#include "rviz/properties/string_property.h"
 #include "rviz/selection/selection_manager.h"
 #include "rviz/visualization_manager.h"
+#include "rviz/ogre_helpers/point_cloud.h"
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #include "tesseract_rviz/render_tools/env_visualization.h"
@@ -74,7 +76,10 @@ namespace fs = boost::filesystem;
 namespace tesseract_rviz
 {
 static Ogre::NameGenerator link_name_generator("Tesseract_Link");
+static Ogre::NameGenerator clone_link_name_generator("Tesseract_Link_Clone");
 static Ogre::NameGenerator material_name_generator("Tesseract_Material");
+static Ogre::NameGenerator trail_name_generator("Tesseract_Trail");
+static Ogre::NameGenerator point_cloud_name_generator("Tesseract_PointCloud");
 
 class EnvLinkSelectionHandler : public rviz::SelectionHandler
 {
@@ -133,6 +138,16 @@ void EnvLinkSelectionHandler::preRenderPass(uint32_t /*pass*/)
     {
       link_->collision_node_->setVisible(false);
     }
+
+    if (link_->visual_trajectory_node_)
+    {
+      link_->visual_trajectory_node_->setVisible(false);
+    }
+    if (link_->collision_trajectory_node_)
+    {
+      link_->collision_trajectory_node_->setVisible(false);
+    }
+
     if (link_->trail_)
     {
       link_->trail_->setVisible(false);
@@ -201,16 +216,27 @@ EnvLink::EnvLink(EnvVisualization* env,
                                    link_property_);
   orientation_property_->setReadOnly(true);
 
+  collision_enabled_property_ = new rviz::StringProperty("Collision",
+                                                         "enabled",
+                                                         "Indicate if link is considered during collision checking.",
+                                                         link_property_);
+  collision_enabled_property_->setReadOnly(true);
+
+
+  allowed_collision_matrix_property_ = new rviz::Property("ACM", "", "Links allowed to be in collision with", collision_enabled_property_);
+
+  allowed_collision_matrix_property_->setReadOnly(true);
+
   link_property_->collapse();
 
   visual_node_ = env_->getVisualNode()->createChildSceneNode();
   collision_node_ = env_->getCollisionNode()->createChildSceneNode();
 
+  visual_trajectory_node_ = env_->getVisualNode()->createChildSceneNode();
+  collision_trajectory_node_ = env_->getCollisionNode()->createChildSceneNode();
+
   // create material for coloring links
-  std::stringstream ss;
-  static int count = 1;
-  ss << "robot link color material " << count++;
-  color_material_ = Ogre::MaterialManager::getSingleton().create(ss.str(), "rviz");
+  color_material_ = Ogre::MaterialManager::getSingleton().create(material_name_generator.generate(), "rviz");
   color_material_->setReceiveShadows(false);
   color_material_->getTechnique(0)->setLightingEnabled(true);
 
@@ -235,6 +261,8 @@ EnvLink::EnvLink(EnvVisualization* env,
   {
     link_property_->setIcon(rviz::loadPixmap("package://rviz/icons/classes/RobotLinkNoGeom.png"));
     alpha_property_->hide();
+    collision_enabled_property_->hide();
+    allowed_collision_matrix_property_->hide();
     link_property_->setValue(QVariant());
   }
 }
@@ -319,6 +347,16 @@ EnvLink::~EnvLink()
     scene_manager_->destroyEntity(collision_meshes_[i]);
   }
 
+  for (size_t i = 0; i < visual_trajectory_meshes_.size(); i++)
+  {
+    scene_manager_->destroyEntity(visual_trajectory_meshes_[i]);
+  }
+
+  for (size_t i = 0; i < collision_trajectory_meshes_.size(); i++)
+  {
+    scene_manager_->destroyEntity(collision_trajectory_meshes_[i]);
+  }
+
   for (size_t i = 0; i < visual_octrees_.size(); i++)
   {
     //    scene_manager_->destroyMovableObject( octree_objects_[ i ]); TODO:
@@ -337,6 +375,11 @@ EnvLink::~EnvLink()
 
   scene_manager_->destroySceneNode(visual_node_);
   scene_manager_->destroySceneNode(collision_node_);
+
+  scene_manager_->destroySceneNode(visual_trajectory_node_);
+  scene_manager_->destroySceneNode(collision_trajectory_node_);
+
+
 
   if (trail_)
   {
@@ -464,6 +507,16 @@ void EnvLink::updateVisibility()
   {
     collision_node_->setVisible(enabled && env_->isVisible() && env_->isCollisionVisible());
   }
+
+  if (visual_trajectory_node_)
+  {
+    visual_trajectory_node_->setVisible(enabled && env_->isVisible() && env_->isVisualVisible());
+  }
+  if (collision_trajectory_node_)
+  {
+    collision_trajectory_node_->setVisible(enabled && env_->isVisible() && env_->isCollisionVisible());
+  }
+
   if (trail_)
   {
     trail_->setVisible(enabled && env_->isVisible());
@@ -481,11 +534,7 @@ Ogre::MaterialPtr EnvLink::getMaterialForLink(const tesseract_scene_graph::Link&
     return Ogre::MaterialManager::getSingleton().getByName("RVIZ/ShadedRed");
   }
 
-  static int count = 0;
-  std::stringstream ss;
-  ss << "Robot Link Material" << count++;
-
-  Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(ss.str(), "rviz");
+  Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(material_name_generator.generate(), "rviz");
   mat->getTechnique(0)->setLightingEnabled(true);
 
   tesseract_scene_graph::VisualPtr visual = nullptr;
@@ -809,11 +858,8 @@ bool EnvLink::createEntityForGeometryElement(const tesseract_scene_graph::Link& 
       {
         float size = static_cast<float>(octree->getNodeSize(static_cast<unsigned>(i + 1)));
 
-        std::stringstream sname;
-        static int count = 0;
-        sname << "PointCloud Nr." << count++;
         rviz::PointCloud* cloud = new rviz::PointCloud();
-        cloud->setName(sname.str());
+        cloud->setName(point_cloud_name_generator.generate());
         cloud->setRenderMode(rviz::PointCloud::RM_BOXES);
         cloud->clear();
         cloud->setDimensions(size, size, size);
@@ -848,7 +894,7 @@ bool EnvLink::createEntityForGeometryElement(const tesseract_scene_graph::Link& 
     else
     {
       offset_node = collision_node_->createChildSceneNode();
-      meshes = &visual_meshes_;
+      meshes = &collision_meshes_;
     }
 
     offset_node->attachObject(entity);
@@ -893,6 +939,57 @@ bool EnvLink::createEntityForGeometryElement(const tesseract_scene_graph::Link& 
   }
 
   return false;
+}
+
+Ogre::SceneNode* EnvLink::clone(Ogre::SceneNode* scene_node, bool isVisual)
+{
+  Ogre::SceneNode* cloned_scene_node;
+  if (isVisual)
+    cloned_scene_node = visual_trajectory_node_->createChildSceneNode();
+  else
+    cloned_scene_node = collision_trajectory_node_->createChildSceneNode();
+
+  Ogre::SceneNode::ObjectIterator iter = scene_node->getAttachedObjectIterator();
+  while (iter.hasMoreElements())
+  {
+    Ogre::Entity* entity = static_cast<Ogre::Entity*>(iter.getNext())->clone(clone_link_name_generator.generate());
+
+    if (isVisual)
+      visual_trajectory_meshes_.push_back(entity);
+    else
+      collision_trajectory_meshes_.push_back(entity);
+
+    cloned_scene_node->attachObject(entity);
+  }
+  cloned_scene_node->setScale(scene_node->getScale());
+  cloned_scene_node->setPosition(scene_node->getPosition());
+  cloned_scene_node->setOrientation(scene_node->getOrientation());
+
+  Ogre::SceneNode::ChildNodeIterator nodei = scene_node->getChildIterator();
+  while (nodei.hasMoreElements())
+  {
+    Ogre::SceneNode* child_node = static_cast<Ogre::SceneNode*>(nodei.getNext());
+
+    Ogre::SceneNode* cloned_child_scene_node = cloned_scene_node->createChildSceneNode();
+
+    Ogre::SceneNode::ObjectIterator child_node_iter = child_node->getAttachedObjectIterator();
+    while (child_node_iter.hasMoreElements())
+    {
+      Ogre::Entity* entity = static_cast<Ogre::Entity*>(child_node_iter.getNext())->clone(clone_link_name_generator.generate());
+
+      if (isVisual)
+        visual_trajectory_meshes_.push_back(entity);
+      else
+        collision_trajectory_meshes_.push_back(entity);
+
+      cloned_child_scene_node->attachObject(entity);
+    }
+    cloned_child_scene_node->setScale(child_node->getScale());
+    cloned_child_scene_node->setPosition(child_node->getPosition());
+    cloned_child_scene_node->setOrientation(child_node->getOrientation());
+  }
+
+  return cloned_scene_node;
 }
 
 void EnvLink::setOctomapColor(double z_pos,
@@ -1004,10 +1101,7 @@ void EnvLink::updateTrail()
     {
       if (visual_node_)
       {
-        static int count = 0;
-        std::stringstream ss;
-        ss << "Trail for link " << name_ << count++;
-        trail_ = scene_manager_->createRibbonTrail(ss.str());
+        trail_ = scene_manager_->createRibbonTrail(trail_name_generator.generate());
         trail_->setMaxChainElements(100);
         trail_->setInitialWidth(0, 0.01f);
         trail_->setInitialColour(0, 0.0f, 0.5f, 0.5f);
@@ -1038,9 +1132,6 @@ void EnvLink::updateAxes()
   {
     if (!axes_)
     {
-      static int count = 0;
-      std::stringstream ss;
-      ss << "Axes for link " << name_ << count++;
       axes_ = new rviz::Axes(scene_manager_, env_->getOtherNode(), 0.1f, 0.01f);
       axes_->getSceneNode()->setVisible(getEnabled());
 
@@ -1083,6 +1174,127 @@ void EnvLink::setTransforms(const Ogre::Vector3& visual_position,
     axes_->setPosition(visual_position);
     axes_->setOrientation(visual_orientation);
   }
+}
+
+void EnvLink::setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory)
+{
+  clearTrajectory();
+
+  bool enabled = getEnabled();
+
+  int trajectory_size = trajectory.size();
+  int current_size = visual_trajectory_waypoint_nodes_.size();
+  if (trajectory_size > current_size)
+  {
+    for (int i = 0; i < trajectory_size; ++i)
+    {
+      Ogre::Vector3 position;
+      Ogre::Quaternion orientation;
+      toOgre(position, orientation, trajectory[i]);
+      if (i < current_size)
+      {
+        if (visual_node_ != nullptr)
+        {
+          visual_trajectory_waypoint_nodes_[i]->setPosition(position);
+          visual_trajectory_waypoint_nodes_[i]->setOrientation(orientation);
+          visual_trajectory_waypoint_nodes_[i]->setVisible(enabled && env_->isVisible() && env_->isVisualVisible());
+        }
+
+        if (collision_node_ != nullptr)
+        {
+          collision_trajectory_waypoint_nodes_[i]->setPosition(position);
+          collision_trajectory_waypoint_nodes_[i]->setOrientation(orientation);
+          collision_trajectory_waypoint_nodes_[i]->setVisible(enabled && env_->isVisible() && env_->isCollisionVisible());
+        }
+      }
+      else
+      {
+        if (visual_node_ != nullptr)
+        {
+          Ogre::SceneNode* new_visual_clone = clone(visual_node_, true);
+          new_visual_clone->setPosition(position);
+          new_visual_clone->setOrientation(orientation);
+          new_visual_clone->setVisible(enabled && env_->isVisible() && env_->isVisualVisible());
+          visual_trajectory_waypoint_nodes_.push_back(new_visual_clone);
+        }
+
+        if (collision_node_ != nullptr)
+        {
+          Ogre::SceneNode* new_collision_clone = clone(collision_node_, false);
+          new_collision_clone->setPosition(position);
+          new_collision_clone->setOrientation(orientation);
+          new_collision_clone->setVisible(enabled && env_->isVisible() && env_->isCollisionVisible());
+          collision_trajectory_waypoint_nodes_.push_back(new_collision_clone);
+        }
+      }
+    }
+  }
+  else if(current_size >= trajectory_size)
+  {
+    for (int i = 0; i < current_size; ++i)
+    {
+      if (i < trajectory_size)
+      {
+        Ogre::Vector3 position;
+        Ogre::Quaternion orientation;
+        toOgre(position, orientation, trajectory[i]);
+
+        if (visual_node_ != nullptr)
+        {
+          visual_trajectory_waypoint_nodes_[i]->setPosition(position);
+          visual_trajectory_waypoint_nodes_[i]->setOrientation(orientation);
+          visual_trajectory_waypoint_nodes_[i]->setVisible(enabled && env_->isVisible() && env_->isVisualVisible());
+        }
+
+        if (collision_node_ != nullptr)
+        {
+          collision_trajectory_waypoint_nodes_[i]->setPosition(position);
+          collision_trajectory_waypoint_nodes_[i]->setOrientation(orientation);
+          collision_trajectory_waypoint_nodes_[i]->setVisible(enabled && env_->isVisible() && env_->isCollisionVisible());
+        }
+      }
+      else
+      {
+        if (visual_node_ != nullptr)
+          visual_trajectory_waypoint_nodes_[i]->setVisible(false);
+
+        if (collision_node_ != nullptr)
+          collision_trajectory_waypoint_nodes_[i]->setVisible(false);
+      }
+    }
+  }
+}
+
+void EnvLink::clearTrajectory()
+{
+  bool enabled = getEnabled();
+
+  if (visual_node_)
+  {
+    visual_trajectory_node_->setVisible(false);
+    visual_trajectory_node_->setVisible(enabled && env_->isVisible() && env_->isVisualVisible(), false);
+  }
+
+  if (collision_node_)
+  {
+    collision_trajectory_node_->setVisible(false);
+    collision_trajectory_node_->setVisible(enabled && env_->isVisible() && env_->isCollisionVisible(), false);
+  }
+}
+
+// This is usefule when wanting to simulate the trajectory
+void EnvLink::showTrajectoryWaypointOnly(int waypoint)
+{
+  clearTrajectory();
+
+  bool enabled = getEnabled();
+
+  if (visual_node_ && (visual_trajectory_waypoint_nodes_.size() > waypoint))
+    visual_trajectory_waypoint_nodes_[waypoint]->setVisible(enabled && env_->isVisible() && env_->isVisualVisible());
+
+  if (collision_node_ && (collision_trajectory_waypoint_nodes_.size() > waypoint))
+    collision_trajectory_waypoint_nodes_[waypoint]->setVisible(enabled && env_->isVisible() && env_->isCollisionVisible());
+
 }
 
 void EnvLink::setToErrorMaterial()
@@ -1159,6 +1371,8 @@ void EnvLink::hideSubProperties(bool hide)
   trail_property_->setHidden(hide);
   axes_property_->setHidden(hide);
   alpha_property_->setHidden(hide);
+  collision_enabled_property_->setHidden(hide);
+  allowed_collision_matrix_property_->setHidden(hide);
 }
 
 Ogre::Vector3 EnvLink::getPosition() { return position_property_->getVector(); }
@@ -1171,6 +1385,34 @@ void EnvLink::setParentProperty(rviz::Property* new_parent)
 
   if (new_parent)
     new_parent->addChild(link_property_);
+}
+
+void EnvLink::setCollisionEnabled(bool enabled)
+{
+  if(enabled)
+    collision_enabled_property_->setString("enabled");
+  else
+    collision_enabled_property_->setString("disabled");
+}
+
+void EnvLink::addAllowedCollision(const std::string& link_name, const std::string& reason)
+{
+  acm_[link_name] = new rviz::StringProperty(QString::fromStdString(link_name), QString::fromStdString(reason), "Entry", allowed_collision_matrix_property_);
+}
+void EnvLink::removeAllowedCollision(const std::string& link_name)
+{
+  auto it = acm_.find(link_name);
+  if (it == acm_.end())
+    return;
+
+  allowed_collision_matrix_property_->takeChild(it->second);
+  delete it->second;
+  acm_.erase(link_name);
+
+}
+void EnvLink::clearAllowedCollisions()
+{
+  allowed_collision_matrix_property_->removeChildren();
 }
 
 // if use_detail:

@@ -45,39 +45,14 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <tesseract_environment/kdl/kdl_env.h>
 #include <tesseract_scene_graph/parser/urdf_parser.h>
 #include <tesseract_scene_graph/parser/srdf_parser.h>
+#include <tesseract_scene_graph/utils.h>
+#include <tesseract_rosutils/utils.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #include <tesseract_rviz/tesseract_trajectory_plugin/tesseract_trajectory_display.h>
 
 namespace tesseract_rviz
 {
-
-std::string locateResource(const std::string& url)
-{
-  std::string mod_url = url;
-  if (url.find("package://") == 0)
-  {
-    mod_url.erase(0, strlen("package://"));
-    size_t pos = mod_url.find("/");
-    if (pos == std::string::npos)
-    {
-      return std::string();
-    }
-
-    std::string package = mod_url.substr(0, pos);
-    mod_url.erase(0, pos);
-    std::string package_path = ros::package::getPath(package);
-
-    if (package_path.empty())
-    {
-      return std::string();
-    }
-
-    mod_url = package_path + mod_url;
-  }
-
-  return mod_url;
-}
 
 TesseractTrajectoryDisplay::TesseractTrajectoryDisplay() : Display(), load_env_(false)
 {
@@ -117,13 +92,16 @@ void TesseractTrajectoryDisplay::loadEnv()
   }
   else
   {
-    tesseract_scene_graph::ResourceLocatorFn locator = locateResource;
+    tesseract_scene_graph::ResourceLocatorFn locator = tesseract_rosutils::locateResource;
     tesseract_scene_graph::SceneGraphPtr g = tesseract_scene_graph::parseURDF(urdf::parseURDF(urdf_xml_string), locator);
     if (g != nullptr)
     {
       tesseract_scene_graph::SRDFModel srdf;
       bool success = srdf.initString(*g, srdf_xml_string);
       assert(success);
+
+      // Populated the allowed collision matrix
+      tesseract_scene_graph::processSRDFAllowedCollisions(*g, srdf);
 
       tesseract_environment::KDLEnvPtr env = std::make_shared<tesseract_environment::KDLEnv>();
       assert(env != nullptr);

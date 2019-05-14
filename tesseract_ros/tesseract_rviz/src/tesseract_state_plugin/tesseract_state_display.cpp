@@ -57,6 +57,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 #include <tesseract_environment/kdl/kdl_env.h>
 #include <tesseract_scene_graph/parser/urdf_parser.h>
 #include <tesseract_scene_graph/parser/srdf_parser.h>
+#include <tesseract_scene_graph/utils.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_rviz/render_tools/env_visualization.h>
 #include <tesseract_rviz/render_tools/env_link.h>
@@ -67,33 +68,6 @@ namespace tesseract_rviz
 {
 
 const std::string DEFAULT_MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract";
-
-std::string locateResource(const std::string& url)
-{
-  std::string mod_url = url;
-  if (url.find("package://") == 0)
-  {
-    mod_url.erase(0, strlen("package://"));
-    size_t pos = mod_url.find("/");
-    if (pos == std::string::npos)
-    {
-      return std::string();
-    }
-
-    std::string package = mod_url.substr(0, pos);
-    mod_url.erase(0, pos);
-    std::string package_path = ros::package::getPath(package);
-
-    if (package_path.empty())
-    {
-      return std::string();
-    }
-
-    mod_url = package_path + mod_url;
-  }
-
-  return mod_url;
-}
 
 // ******************************************************************************************
 // Base class contructor
@@ -418,28 +392,35 @@ bool TesseractStateDisplay::modifyEnvironmentCallback(tesseract_msgs::ModifyTess
       }
       case tesseract_msgs::EnvironmentCommand::CHANGE_LINK_COLLISION_ENABLED:
       {
-        if (command.change_link_collision_enabled_value)
-          return env_->enableCollision(command.change_link_collision_enabled_name);
-        else
-          return env_->disableCollision(command.change_link_collision_enabled_name);
+        visualization_->setLinkCollisionEnabled(command.change_link_collision_enabled_name, command.change_link_collision_enabled_value);
+
+        env_->setLinkCollisionEnabled(command.change_link_collision_enabled_name, command.change_link_collision_enabled_value);
+        return true;
       }
       case tesseract_msgs::EnvironmentCommand::CHANGE_LINK_VISIBILITY:
       {
-  //        return env_->setLinkVisibility(command.change_link_visibility_name, command.change_link_visibility_value);
-        assert(false);
+        // TODO:: Need to update visualization.
+        env_->setLinkVisibility(command.change_link_visibility_name, command.change_link_visibility_value);
+        return true;
       }
       case tesseract_msgs::EnvironmentCommand::ADD_ALLOWED_COLLISION:
       {
+        visualization_->addAllowedCollision(command.add_allowed_collision.link_1, command.add_allowed_collision.link_2, command.add_allowed_collision.reason);
+
         env_->addAllowedCollision(command.add_allowed_collision.link_1, command.add_allowed_collision.link_2, command.add_allowed_collision.reason);
         return true;
       }
       case tesseract_msgs::EnvironmentCommand::REMOVE_ALLOWED_COLLISION:
       {
+        visualization_->removeAllowedCollision(command.add_allowed_collision.link_1, command.add_allowed_collision.link_2);
+
         env_->removeAllowedCollision(command.add_allowed_collision.link_1, command.add_allowed_collision.link_2);
         return true;
       }
       case tesseract_msgs::EnvironmentCommand::REMOVE_ALLOWED_COLLISION_LINK:
       {
+        visualization_->removeAllowedCollision(command.remove_allowed_collision_link);
+
         env_->removeAllowedCollision(command.remove_allowed_collision_link);
         return true;
       }
@@ -530,13 +511,16 @@ void TesseractStateDisplay::loadURDFModel()
   }
   else
   {
-    tesseract_scene_graph::ResourceLocatorFn locator = locateResource;
+    tesseract_scene_graph::ResourceLocatorFn locator = tesseract_rosutils::locateResource;
     tesseract_scene_graph::SceneGraphPtr g = tesseract_scene_graph::parseURDF(urdf::parseURDF(urdf_xml_string), locator);
     if (g != nullptr)
     {
       tesseract_scene_graph::SRDFModel srdf;
       bool success = srdf.initString(*g, srdf_xml_string);
       assert(success);
+
+      // Populated the allowed collision matrix
+      tesseract_scene_graph::processSRDFAllowedCollisions(*g, srdf);
 
       tesseract_environment::KDLEnvPtr env = std::make_shared<tesseract_environment::KDLEnv>();
       assert(env != nullptr);
