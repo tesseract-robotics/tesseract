@@ -162,46 +162,46 @@ bool Environment::moveJoint(const std::string& joint_name, const std::string& pa
   return true;
 }
 
-bool Environment::enableCollision(const std::string& name)
+void Environment::setLinkCollisionEnabled(const std::string& name, bool enabled)
 {
-  bool result = true;
   if (discrete_manager_ != nullptr)
   {
-    if(!discrete_manager_->enableCollisionObject(name))
-      result = false;
+    if (enabled)
+      discrete_manager_->enableCollisionObject(name);
+    else
+      discrete_manager_->disableCollisionObject(name);
   }
 
   if (continuous_manager_ != nullptr)
   {
-    if(!continuous_manager_->enableCollisionObject(name))
-      result = false;
+    if(enabled)
+      continuous_manager_->enableCollisionObject(name);
+    else
+      continuous_manager_->disableCollisionObject(name);
   }
 
-  ++revision_;
-  commands_.push_back(std::make_shared<ChangeLinkCollisionEnabled>(name, true));
+  scene_graph_->setLinkCollisionEnabled(name, enabled);
 
-  return result;
+  ++revision_;
+  commands_.push_back(std::make_shared<ChangeLinkCollisionEnabled>(name, enabled));
 }
 
-bool Environment::disableCollision(const std::string& name)
+bool Environment::getLinkCollisionEnabled(const std::string& name) const
 {
-  bool result = true;
-  if (discrete_manager_ != nullptr)
-  {
-    if(!discrete_manager_->disableCollisionObject(name))
-      result = false;
-  }
+  return scene_graph_->getLinkCollisionEnabled(name);
+}
 
-  if (continuous_manager_ != nullptr)
-  {
-    if(!continuous_manager_->disableCollisionObject(name))
-      result = false;
-  }
+void Environment::setLinkVisibility(const std::string& name, bool visibility)
+{
+  scene_graph_->setLinkVisibility(name, visibility);
 
   ++revision_;
-  commands_.push_back(std::make_shared<ChangeLinkCollisionEnabled>(name, false));
+  commands_.push_back(std::make_shared<ChangeLinkVisibility>(name, visibility));
+}
 
-  return result;
+bool Environment::getLinkVisibility(const std::string& name) const
+{
+  return scene_graph_->getLinkVisibility(name);
 }
 
 void Environment::addAllowedCollision(const std::string& link_name1,
@@ -231,7 +231,7 @@ void Environment::removeAllowedCollision(const std::string& link_name)
   commands_.push_back(std::make_shared<RemoveAllowedCollisionLink>(link_name));
 }
 
-const tesseract_scene_graph::AllowedCollisionMatrixConstPtr& Environment::getAllowedCollisionMatrix() const
+tesseract_scene_graph::AllowedCollisionMatrixConstPtr Environment::getAllowedCollisionMatrix() const
 {
   return scene_graph_->getAllowedCollisionMatrix();
 }

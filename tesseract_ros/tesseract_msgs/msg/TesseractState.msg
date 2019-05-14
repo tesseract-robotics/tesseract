@@ -1,6 +1,6 @@
 # Environment Name
 string name
-uint64 id # This is used to notify subscribers if the state has changed.
+uint64 revision # This is the revision number so others know when it changes.
 
 # This message contains information about the state, i.e. the positions of its joints and links
 sensor_msgs/JointState joint_state

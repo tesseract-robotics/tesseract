@@ -138,19 +138,19 @@ void SceneGraph::setLinkVisibility(const std::string& name, bool visibility)
   param[getVertex(name)] = visibility;
 }
 
-bool SceneGraph::getLinkVisiblity(const std::string& name) const
+bool SceneGraph::getLinkVisibility(const std::string& name) const
 {
   boost::property_map<Graph, boost::vertex_link_visible_t>::const_type param = get(boost::vertex_link_visible, static_cast<const Graph&>(*this));
   return param[getVertex(name)];
 }
 
-void SceneGraph::setLinkCollisionVisibility(const std::string& name, bool visibility)
+void SceneGraph::setLinkCollisionEnabled(const std::string& name, bool enabled)
 {
   boost::property_map<Graph, boost::vertex_link_collision_enabled_t>::type param = get(boost::vertex_link_collision_enabled, static_cast<Graph&>(*this));
-  param[getVertex(name)] = visibility;
+  param[getVertex(name)] = enabled;
 }
 
-bool SceneGraph::getLinkCollisionVisibility(const std::string& name) const
+bool SceneGraph::getLinkCollisionEnabled(const std::string& name) const
 {
   boost::property_map<Graph, boost::vertex_link_collision_enabled_t>::const_type param = get(boost::vertex_link_collision_enabled, static_cast<const Graph&>(*this));
   return param[getVertex(name)];
@@ -262,7 +262,7 @@ bool SceneGraph::isCollisionAllowed(const std::string& link_name1, const std::st
   return acm_->isCollisionAllowed(link_name1, link_name2);
 }
 
-const AllowedCollisionMatrixConstPtr &SceneGraph::getAllowedCollisionMatrix() const
+AllowedCollisionMatrixConstPtr SceneGraph::getAllowedCollisionMatrix() const
 {
   return acm_;
 }

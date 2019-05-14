@@ -30,6 +30,7 @@
 #include "tesseract_rviz/render_tools/env_visualization.h"
 #include "tesseract_rviz/render_tools/env_joint.h"
 #include "tesseract_rviz/render_tools/env_link.h"
+#include "tesseract_scene_graph/allowed_collision_matrix.h"
 
 #include <tesseract_environment/core/macros.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
@@ -266,6 +267,10 @@ void EnvVisualization::load(const tesseract_scene_graph::SceneGraphConstPtr& sce
       addJoint(*tjoint);
   }
 
+  // Add allowed collision matrix
+  for (const auto& acm_pair : scene_graph->getAllowedCollisionMatrix()->getAllAllowedCollisions())
+    addAllowedCollision(acm_pair.first.first, acm_pair.first.second, acm_pair.second);
+
   // environment is now loaded
   env_loaded_ = true;
   link_tree_->show();
@@ -358,6 +363,8 @@ bool EnvVisualization::removeJoint(const std::string& name)
   delete joint;
   joints_.erase(name);
 
+  changedLinkTreeStyle();
+
   return true;
 }
 
@@ -373,7 +380,94 @@ bool EnvVisualization::moveJoint(const std::string& joint_name, const std::strin
   EnvJoint* joint = it->second;
   joint->setParentLinkName(parent_link);
 
+  changedLinkTreeStyle();
+
   return true;
+}
+
+void EnvVisualization::addAllowedCollision(const std::string& link_name1,
+                                           const std::string& link_name2,
+                                           const std::string& reason)
+{
+  auto it1 = links_.find(link_name1);
+  if (it1 == links_.end())
+  {
+    ROS_WARN("Tried to add allowed collision for Link (%s) that does not exist", link_name1.c_str());
+    return;
+  }
+
+  auto it2 = links_.find(link_name2);
+  if (it2 == links_.end())
+  {
+    ROS_WARN("Tried to add allowed collision for Link (%s) that does not exist", link_name2.c_str());
+    return;
+  }
+
+  EnvLink* link1 = it1->second;
+  link1->addAllowedCollision(link_name2, reason);
+
+  EnvLink* link2 = it2->second;
+  link2->addAllowedCollision(link_name1, reason);
+
+  changedLinkTreeStyle();
+}
+
+void EnvVisualization::removeAllowedCollision(const std::string& link_name1,
+                                              const std::string& link_name2)
+{
+  auto it1 = links_.find(link_name1);
+  if (it1 == links_.end())
+  {
+    ROS_WARN("Tried to remove allowed collision for Link (%s) that does not exist", link_name1.c_str());
+    return;
+  }
+
+  auto it2 = links_.find(link_name2);
+  if (it2 == links_.end())
+  {
+    ROS_WARN("Tried to remove allowed collision for Link (%s) that does not exist", link_name2.c_str());
+    return;
+  }
+
+  EnvLink* link1 = it1->second;
+  link1->removeAllowedCollision(link_name2);
+
+  EnvLink* link2 = it2->second;
+  link2->removeAllowedCollision(link_name1);
+
+  changedLinkTreeStyle();
+}
+
+
+void EnvVisualization::removeAllowedCollision(const std::string& link_name)
+{
+  auto it = links_.find(link_name);
+  if (it == links_.end())
+  {
+    ROS_WARN("Tried to remove all allowed collision for Link (%s) that does not exist", link_name.c_str());
+    return;
+  }
+
+  it->second->clearAllowedCollisions();
+
+  for (auto link_pair : links_)
+  {
+    EnvLink* link = link_pair.second;
+    link->removeAllowedCollision(link_name);
+  }
+}
+
+void EnvVisualization::setLinkCollisionEnabled(const std::string& name, bool enabled)
+{
+  auto it = links_.find(name);
+  if (it == links_.end())
+  {
+    ROS_WARN("Tried to change link (%s) collision enabled, which does not exist", name.c_str());
+    return;
+  }
+
+  EnvLink* link = it->second;
+  link->setCollisionEnabled(enabled);
 }
 
 void EnvVisualization::unparentLinkProperties()

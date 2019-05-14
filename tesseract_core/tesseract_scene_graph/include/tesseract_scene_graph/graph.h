@@ -158,19 +158,19 @@ public:
    * @brief Get a given links visibility setting
    * @return True if should be visible, otherwise false
    */
-  bool getLinkVisiblity(const std::string& name) const;
+  bool getLinkVisibility(const std::string& name) const;
 
   /**
    * @brief Set whether a link should be considered during collision checking
-   * @param visibility True if should be condisdered during collision checking, otherwise false
+   * @param enabled True if should be condisdered during collision checking, otherwise false
    */
-  void setLinkCollisionVisibility(const std::string& name, bool visibility);
+  void setLinkCollisionEnabled(const std::string& name, bool enabled);
 
   /**
    * @brief Get whether a link should be considered during collision checking
    * @return True if should be condisdered during collision checking, otherwise false
    */
-  bool getLinkCollisionVisibility(const std::string& name) const;
+  bool getLinkCollisionEnabled(const std::string& name) const;
 
   /**
    * @brief Adds joint to the graph
@@ -242,16 +242,43 @@ public:
    * @brief Get the allowed collision matrix
    * @return AllowedCollisionMatrixConstPtr
    */
-  const AllowedCollisionMatrixConstPtr& getAllowedCollisionMatrix() const;
+   AllowedCollisionMatrixConstPtr getAllowedCollisionMatrix() const;
 
 
-
+  /**
+   * @brief Get the source link (parent link) for a joint
+   * @param joint_name The name of the joint
+   * @return The source link
+   */
   LinkConstPtr getSourceLink(const std::string& joint_name) const;
 
+  /**
+   * @brief Get the target link (child link) for a joint
+   * @param joint_name The name of the joint
+   * @return The target link
+   */
   LinkConstPtr getTargetLink(const std::string& joint_name) const;
 
+  /**
+   * @brief Get inbound joints for a link
+   *
+   * The inbound joints are all joints that have the
+   * link identified as the parent link
+   *
+   * @param link_name The name of the link
+   * @return Vector of joints
+   */
   std::vector<JointConstPtr> getInboundJoints(const std::string& link_name) const;
 
+  /**
+   * @brief Get outbound joints for a link
+   *
+   * The outbound joints are all joins that have the
+   * link identified as the child link
+   *
+   * @param link_name The name of the link
+   * @return Vector of joints
+   */
   std::vector<JointConstPtr> getOutboundJoints(const std::string& link_name) const;
 
   /**

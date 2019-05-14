@@ -77,6 +77,7 @@ class Property;
 class BoolProperty;
 class QuaternionProperty;
 class VectorProperty;
+class StringProperty;
 }
 
 namespace octomap
@@ -125,6 +126,13 @@ public:
                              const Ogre::Vector3& collision_position,
                              const Ogre::Quaternion& collision_orientation);
 
+
+  virtual void setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory);
+  virtual void clearTrajectory();
+
+  // This is usefule when wanting to simulate the trajectory
+  virtual void showTrajectoryWaypointOnly(int waypoint);
+
   // access
   const std::string& getName() const { return name_; }
 
@@ -151,6 +159,11 @@ public:
 
   Ogre::Vector3 getPosition();
   Ogre::Quaternion getOrientation();
+
+  void setCollisionEnabled(bool enabled);
+  void addAllowedCollision(const std::string& link_name, const std::string& reason);
+  void removeAllowedCollision(const std::string& link_name);
+  void clearAllowedCollisions();
 
   bool hasGeometry() const;
 
@@ -198,6 +211,8 @@ private:
 
   void setOctomapColor(double z_pos, double min_z, double max_z, double color_factor, rviz::PointCloud::Point* point);
 
+  Ogre::SceneNode* clone(Ogre::SceneNode* scene_node, bool isVisual);
+
 protected:
   EnvVisualization* env_;
   Ogre::SceneManager* scene_manager_;
@@ -213,17 +228,26 @@ protected:
   rviz::Property* trail_property_;
   rviz::Property* axes_property_;
   rviz::FloatProperty* alpha_property_;
+  rviz::StringProperty* collision_enabled_property_;
+  rviz::Property* allowed_collision_matrix_property_;
 
 private:
   typedef std::map<Ogre::SubEntity*, Ogre::MaterialPtr> M_SubEntityToMaterial;
   M_SubEntityToMaterial materials_;
   Ogre::MaterialPtr default_material_;
   std::string default_material_name_;
+  std::map<std::string, rviz::StringProperty*> acm_;
 
   std::vector<Ogre::Entity*> visual_meshes_;     ///< The entities representing the visual mesh of this link (if they
                                                  /// exist)
   std::vector<Ogre::Entity*> collision_meshes_;  ///< The entities representing the collision mesh of this link (if they
                                                  /// exist)
+
+  std::vector<Ogre::Entity*> visual_trajectory_meshes_;     ///< The entities representing the visual mesh of this link (if they
+                                                 /// exist)
+  std::vector<Ogre::Entity*> collision_trajectory_meshes_;  ///< The entities representing the collision mesh of this link (if they
+                                                 /// exist)
+
 
   std::vector<rviz::PointCloud*> visual_octrees_;  ///< The object representing the visual of this link (if they exist)
   std::vector<rviz::PointCloud*> collision_octrees_;  ///< The object representing the visual of this link (if they
@@ -231,6 +255,10 @@ private:
 
   Ogre::SceneNode* visual_node_;     ///< The scene node the visual meshes are attached to
   Ogre::SceneNode* collision_node_;  ///< The scene node the collision meshes are attached to
+  Ogre::SceneNode* visual_trajectory_node_;
+  Ogre::SceneNode* collision_trajectory_node_;
+  std::vector<Ogre::SceneNode*> visual_trajectory_waypoint_nodes_;
+  std::vector<Ogre::SceneNode*> collision_trajectory_waypoint_nodes_;
 
   Ogre::RibbonTrail* trail_;
 
@@ -253,6 +281,17 @@ private:
 
   friend class EnvLinkSelectionHandler;
 };
+
+static inline void toOgre(Ogre::Vector3& position, Ogre::Quaternion& orientation, const Eigen::Isometry3d& transform)
+{
+  Eigen::Vector3f robot_visual_position = transform.translation().cast<float>();
+  Eigen::Quaternionf robot_visual_orientation(transform.rotation().cast<float>());
+  position = Ogre::Vector3(robot_visual_position.x(), robot_visual_position.y(), robot_visual_position.z());
+  orientation = Ogre::Quaternion(robot_visual_orientation.w(),
+                                 robot_visual_orientation.x(),
+                                 robot_visual_orientation.y(),
+                                 robot_visual_orientation.z());
+}
 
 }  // namespace tesseract_rviz
 

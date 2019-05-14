@@ -887,20 +887,7 @@ static inline void toMsg(tesseract_msgs::TesseractState& state_msg, const tesser
 {
   state_msg.name = env.getName();
   ROS_ERROR("Environment to TesseractState not fully implemented!");
-//  state_msg.id = env.getID();
-
-  // TODO: Need to determine where this should go
-
-//  for (const auto& entry : env.getAllowedCollisionMatrix()->getAllAllowedCollisions())
-//  {
-//    const auto& link_names = entry.first;
-//    const auto& reason = entry.second;
-//    tesseract_msgs::AllowedCollisionEntry collision_entry;
-//    collision_entry.link_1 = link_names.first;
-//    collision_entry.link_2 = link_names.second;
-//    collision_entry.reason = reason;
-//    state_msg.allowed_collisions.push_back(collision_entry);
-//  }
+  state_msg.revision = env.getRevision();
 
   tesseract_environment::EnvStateConstPtr state = env.getCurrentState();
   toMsg(state_msg.joint_state, *state);
@@ -1024,64 +1011,6 @@ static inline void toMsg(const trajectory_msgs::JointTrajectoryPtr& traj_msg,
   toMsg(*traj_msg, joint_names, traj);
 }
 
-//static inline bool processAttachableObjectMsg(tesseract_ros::ROSBasicEnv& env,
-//                                              const tesseract_msgs::AttachableObject& ao_msg)
-//{
-//  if (ao_msg.operation == tesseract_msgs::AttachableObject::REMOVE)
-//  {
-//    env.removeAttachableObject(ao_msg.name);
-//  }
-//  else if (ao_msg.operation == tesseract_msgs::AttachableObject::ADD)
-//  {
-//    AttachableObjectPtr ao(new AttachableObject());
-//    attachableObjectMsgToAttachableObject(ao, ao_msg);
-//    env.addAttachableObject(ao);
-//  }
-//  else
-//  {
-//    ROS_ERROR("AttachableObject, Unknown operation.");
-//    return false;
-//  }
-
-//  return true;
-//}
-
-//static inline bool processAttachableObjectMsg(tesseract_ros::ROSBasicEnvPtr env,
-//                                              const tesseract_msgs::AttachableObject& ao_msg)
-//{
-//  return processAttachableObjectMsg(*env, ao_msg);
-//}
-
-//static inline bool processAttachedBodyInfoMsg(tesseract_ros::ROSBasicEnv& env,
-//                                              const tesseract_msgs::AttachedBodyInfo& ab_msg)
-//{
-//  if (ab_msg.operation == tesseract_msgs::AttachedBodyInfo::REMOVE)
-//  {
-//    env.detachBody(ab_msg.object_name);
-//  }
-//  else if (ab_msg.operation == tesseract_msgs::AttachedBodyInfo::ADD)
-//  {
-//    AttachedBodyInfo ab_info;
-//    tesseract_ros::attachedBodyInfoMsgToAttachedBodyInfo(ab_info, ab_msg);
-//    env.attachBody(ab_info);
-//  }
-//  else if (ab_msg.operation == tesseract_msgs::AttachedBodyInfo::MOVE)
-//  {
-//    env.detachBody(ab_msg.object_name);
-//    AttachedBodyInfo ab_info;
-//    tesseract_ros::attachedBodyInfoMsgToAttachedBodyInfo(ab_info, ab_msg);
-//    env.attachBody(ab_info);
-//  }
-
-//  return true;
-//}
-
-//static inline bool processAttachedBodyInfoMsg(tesseract_ros::ROSBasicEnvPtr env,
-//                                              const tesseract_msgs::AttachedBodyInfo& ab_msg)
-//{
-//  return processAttachedBodyInfoMsg(*env, ab_msg);
-//}
-
 static inline bool processMsg(tesseract_environment::Environment& env, const sensor_msgs::JointState& joint_state_msg)
 {
   if (!isMsgEmpty(joint_state_msg))
@@ -1154,15 +1083,13 @@ static inline bool processMsg(tesseract_environment::Environment& env, const std
       }
       case tesseract_msgs::EnvironmentCommand::CHANGE_LINK_COLLISION_ENABLED:
       {
-        if (command.change_link_collision_enabled_value)
-          return env.enableCollision(command.change_link_collision_enabled_name);
-        else
-          return env.disableCollision(command.change_link_collision_enabled_name);
+        env.setLinkCollisionEnabled(command.change_link_collision_enabled_name, command.change_link_collision_enabled_value);
+        return true;
       }
       case tesseract_msgs::EnvironmentCommand::CHANGE_LINK_VISIBILITY:
       {
-  //        return env.setLinkVisibility(command.change_link_visibility_name, command.change_link_visibility_value);
-        assert(false);
+        env.setLinkVisibility(command.change_link_visibility_name, command.change_link_visibility_value);
+        return true;
       }
       case tesseract_msgs::EnvironmentCommand::ADD_ALLOWED_COLLISION:
       {

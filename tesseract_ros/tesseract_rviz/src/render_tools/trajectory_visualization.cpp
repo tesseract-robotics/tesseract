@@ -164,7 +164,9 @@ void TrajectoryVisualization::onInitialize(Ogre::SceneNode* scene_node,
   display_path_ = std::make_shared<EnvVisualization>(scene_node_, context_, "Planned Path", widget_);
   display_path_->setVisualVisible(display_path_visual_enabled_property_->getBool());
   display_path_->setCollisionVisible(display_path_collision_enabled_property_->getBool());
-  display_path_->setVisible(false);
+  display_path_->setVisible(true);
+
+  previous_display_mode_ = display_mode_property_->getOptionInt();
 
   rviz::WindowManagerInterface* window_context = context_->getWindowManager();
   if (window_context)
@@ -200,6 +202,7 @@ void TrajectoryVisualization::onEnvLoaded(tesseract_environment::EnvironmentPtr 
 
   // Load rviz environment
   display_path_->load(env_->getSceneGraph());
+  display_path_->update(EnvLinkUpdater(env_->getCurrentState()));
   enabledColor();  // force-refresh to account for saved display configuration
 }
 
@@ -212,55 +215,35 @@ void TrajectoryVisualization::reset()
 
   display_path_->setVisualVisible(display_path_visual_enabled_property_->getBool());
   display_path_->setCollisionVisible(display_path_collision_enabled_property_->getBool());
-  display_path_->setVisible(false);
 }
 
 void TrajectoryVisualization::clearTrajectoryTrail()
 {
-  trajectory_static_.reset();
-  trajectory_trail_.clear();
+  for (auto& link_pair : display_path_->getLinks())
+    link_pair.second->clearTrajectory();
 }
 
 void TrajectoryVisualization::createTrajectoryTrail()
 {
   clearTrajectoryTrail();
 
-  if (display_mode_property_->getOptionInt() != 2)
-    return;
-
   tesseract_msgs::TrajectoryPtr t = trajectory_message_to_display_;
   if (!t)
     t = displaying_trajectory_message_;
+
   if (!t)
     return;
-
-  // Add static trajectory geometry
-  trajectory_static_ = std::make_shared<EnvVisualization>(scene_node_, context_, "Trail Static", nullptr);
-  trajectory_static_->load(env_->getSceneGraph(), true, true, false, true);
-  trajectory_static_->update(EnvLinkUpdater(env_->getCurrentState()));
-  trajectory_static_->setVisualVisible(display_path_visual_enabled_property_->getBool());
-  trajectory_static_->setCollisionVisible(display_path_collision_enabled_property_->getBool());
-  trajectory_static_->setAlpha(path_alpha_property_->getFloat());
-
-  if (enable_default_color_property_->getBool())
-    setColor(trajectory_static_, default_color_property_->getColor());
-
-  trajectory_static_->setVisible(display_->isEnabled() && !animating_path_);
 
   int stepsize = trail_step_size_property_->getInt();
   // always include last trajectory point
   int num_waypoints = static_cast<int>(t->joint_trajectory.points.size());
-  trajectory_trail_.resize(
-      static_cast<size_t>(std::ceil(static_cast<float>(num_waypoints + stepsize - 1) / static_cast<float>(stepsize))));
-  for (std::size_t i = 0; i < trajectory_trail_.size(); i++)
+  num_trajectory_waypoints_ = static_cast<size_t>(std::ceil(static_cast<float>(num_waypoints + stepsize - 1) / static_cast<float>(stepsize)));
+  std::vector<tesseract_environment::EnvStatePtr> states_data;
+  states_data.reserve(num_trajectory_waypoints_);
+  for (std::size_t i = 0; i < num_trajectory_waypoints_; i++)
   {
     unsigned waypoint_i = static_cast<unsigned>(std::min(
         i * static_cast<size_t>(stepsize), static_cast<size_t>(num_waypoints - 1)));  // limit to last trajectory point
-    EnvVisualization::Ptr state = std::make_shared<EnvVisualization>(scene_node_, context_, "Path Trail " + std::to_string(i), nullptr);
-    state->load(env_->getSceneGraph(), true, true, true, false);
-    state->setVisualVisible(display_path_visual_enabled_property_->getBool());
-    state->setCollisionVisible(display_path_collision_enabled_property_->getBool());
-    state->setAlpha(path_alpha_property_->getFloat());
 
     std::unordered_map<std::string, double> joints;
     for (unsigned j = 0; j < t->joint_trajectory.joint_names.size(); ++j)
@@ -268,36 +251,37 @@ void TrajectoryVisualization::createTrajectoryTrail()
       joints[t->joint_trajectory.joint_names[j]] = t->joint_trajectory.points[waypoint_i].positions[j];
     }
 
-    state->update(EnvLinkUpdater(env_->getState(joints)));
-    if (enable_default_color_property_->getBool())
-      setColor(state, default_color_property_->getColor());
+    states_data.push_back(env_->getState(joints));
+  }
 
-    state->setVisible(display_->isEnabled() &&
-                      (!animating_path_ || waypoint_i <= static_cast<unsigned>(current_state_)));
-    trajectory_trail_[i] = state;
+  for (const auto& link_name : env_->getActiveLinkNames())
+  {
+    std::vector<Eigen::Isometry3d> link_trajectory;
+    link_trajectory.reserve(states_data.size());
+    for (auto& state : states_data)
+    {
+      link_trajectory.push_back(state->transforms[link_name]);
+    }
+    display_path_->getLink(link_name)->setTrajectory(link_trajectory);
   }
 }
 
 void TrajectoryVisualization::changedDisplayMode()
 {
-  if (display_mode_property_->getOptionInt() == 1)
+  if (display_mode_property_->getOptionInt() != 2)
   {
     if (display_->isEnabled() && displaying_trajectory_message_ && animating_path_)
-    {
-      display_path_->setVisible(true);
-    }
-    else
-    {
-      clearTrajectoryTrail();
-      display_path_->setVisible(false);
-    }
+      return;
+
+    clearTrajectoryTrail();
 
     if (trajectory_slider_panel_)
       trajectory_slider_panel_->pauseButton(false);
   }
-  else if (display_mode_property_->getOptionInt() == 2)
+  else
   {
-    createTrajectoryTrail();
+    if (trajectory_slider_panel_)
+      trajectory_slider_panel_->pauseButton(true);
   }
 }
 
@@ -306,18 +290,14 @@ void TrajectoryVisualization::changedTrailStepSize()
   if (display_mode_property_->getOptionInt() == 2)
   {
     createTrajectoryTrail();
+    if (trajectory_slider_panel_)
+      trajectory_slider_panel_->update(static_cast<int>(num_trajectory_waypoints_));
   }
 }
 
 void TrajectoryVisualization::changedPathAlpha()
 {
   display_path_->setAlpha(path_alpha_property_->getFloat());
-
-  if (trajectory_static_)
-    trajectory_static_->setAlpha(path_alpha_property_->getFloat());
-
-  for (std::size_t i = 0; i < trajectory_trail_.size(); ++i)
-    trajectory_trail_[i]->setAlpha(path_alpha_property_->getFloat());
 }
 
 void TrajectoryVisualization::changedTrajectoryTopic()
@@ -336,13 +316,6 @@ void TrajectoryVisualization::changedDisplayPathVisualEnabled()
   if (display_->isEnabled())
   {
     display_path_->setVisualVisible(display_path_visual_enabled_property_->getBool());
-    display_path_->setVisible(display_->isEnabled() && displaying_trajectory_message_ && animating_path_);
-
-    if (trajectory_static_)
-      trajectory_static_->setVisualVisible(display_path_visual_enabled_property_->getBool());
-
-    for (std::size_t i = 0; i < trajectory_trail_.size(); ++i)
-      trajectory_trail_[i]->setVisualVisible(display_path_visual_enabled_property_->getBool());
   }
 }
 
@@ -351,13 +324,6 @@ void TrajectoryVisualization::changedDisplayPathCollisionEnabled()
   if (display_->isEnabled())
   {
     display_path_->setCollisionVisible(display_path_collision_enabled_property_->getBool());
-    display_path_->setVisible(display_->isEnabled() && displaying_trajectory_message_ && animating_path_);
-
-    if (trajectory_static_)
-      trajectory_static_->setCollisionVisible(display_path_collision_enabled_property_->getBool());
-
-    for (std::size_t i = 0; i < trajectory_trail_.size(); ++i)
-      trajectory_trail_[i]->setCollisionVisible(display_path_collision_enabled_property_->getBool());
   }
 }
 
@@ -367,21 +333,7 @@ void TrajectoryVisualization::onEnable()
 
   display_path_->setVisualVisible(display_path_visual_enabled_property_->getBool());
   display_path_->setCollisionVisible(display_path_collision_enabled_property_->getBool());
-  display_path_->setVisible(displaying_trajectory_message_ && animating_path_);
-
-  if (trajectory_static_)
-  {
-    trajectory_static_->setVisualVisible(display_path_visual_enabled_property_->getBool());
-    trajectory_static_->setCollisionVisible(display_path_collision_enabled_property_->getBool());
-    trajectory_static_->setVisible(true);
-  }
-
-  for (std::size_t i = 0; i < trajectory_trail_.size(); ++i)
-  {
-    trajectory_trail_[i]->setVisualVisible(display_path_visual_enabled_property_->getBool());
-    trajectory_trail_[i]->setCollisionVisible(display_path_collision_enabled_property_->getBool());
-    trajectory_trail_[i]->setVisible(true);
-  }
+  display_path_->setVisible(true);
 
   changedTrajectoryTopic();  // load topic at startup if default used
 }
@@ -389,12 +341,6 @@ void TrajectoryVisualization::onEnable()
 void TrajectoryVisualization::onDisable()
 {
   display_path_->setVisible(false);
-
-  if (trajectory_static_)
-    trajectory_static_->setVisible(false);
-
-  for (std::size_t i = 0; i < trajectory_trail_.size(); ++i)
-    trajectory_trail_[i]->setVisible(false);
 
   displaying_trajectory_message_.reset();
   animating_path_ = false;
@@ -441,7 +387,6 @@ void TrajectoryVisualization::update(float wall_dt, float /*ros_dt*/)
   {
     animating_path_ = false;
     displaying_trajectory_message_.reset();
-    display_path_->setVisible(false);
     trajectory_slider_panel_->update(0);
     drop_displaying_trajectory_ = false;
   }
@@ -454,36 +399,47 @@ void TrajectoryVisualization::update(float wall_dt, float /*ros_dt*/)
     if (trajectory_message_to_display_ && !trajectory_message_to_display_->joint_trajectory.points.empty())
     {
       animating_path_ = true;
+
+      if (display_mode_property_->getOptionInt() == 2)
+        animating_path_ = false;
+
       displaying_trajectory_message_ = trajectory_message_to_display_;
       createTrajectoryTrail();
       if (trajectory_slider_panel_)
-        trajectory_slider_panel_->update(
-            static_cast<int>(trajectory_message_to_display_->joint_trajectory.points.size()));
+        trajectory_slider_panel_->update(static_cast<int>(num_trajectory_waypoints_));
     }
     else if (displaying_trajectory_message_)
     {
       if (display_mode_property_->getOptionInt() == 1)
-      {  // do loop? -> start over too
+      {
         animating_path_ = true;
       }
-      else if (trajectory_slider_panel_ && trajectory_slider_panel_->isVisible())
+      else if (display_mode_property_->getOptionInt() == 0)
       {
-        if (static_cast<unsigned>(trajectory_slider_panel_->getSliderPosition()) ==
-            displaying_trajectory_message_->joint_trajectory.points.size() - 1)
-        {  // show the last waypoint if the slider is enabled
-          std::size_t waypoint = displaying_trajectory_message_->joint_trajectory.points.size() - 1;
-          std::unordered_map<std::string, double> joints;
-          for (unsigned j = 0; j < displaying_trajectory_message_->joint_trajectory.joint_names.size(); ++j)
-          {
-            joints[displaying_trajectory_message_->joint_trajectory.joint_names[j]] =
-                displaying_trajectory_message_->joint_trajectory.points[waypoint].positions[j];
-          }
-
-          display_path_->update(EnvLinkUpdater(env_->getState(joints)));
+        if (previous_display_mode_ != display_mode_property_->getOptionInt())
+        {
+          animating_path_ = true;
         }
         else
-          animating_path_ = true;
+        {
+          if (static_cast<unsigned>(trajectory_slider_panel_->getSliderPosition()) == (num_trajectory_waypoints_ - 1))
+            animating_path_ = false;
+          else
+            animating_path_ = true;
+        }
       }
+      else
+      {
+        if (previous_display_mode_ != display_mode_property_->getOptionInt())
+        {
+          createTrajectoryTrail();
+          if (trajectory_slider_panel_)
+            trajectory_slider_panel_->update(static_cast<int>(num_trajectory_waypoints_));
+        }
+
+        animating_path_ = false;
+      }
+      previous_display_mode_ = display_mode_property_->getOptionInt();
     }
     trajectory_message_to_display_.reset();
 
@@ -492,15 +448,9 @@ void TrajectoryVisualization::update(float wall_dt, float /*ros_dt*/)
       current_state_ = -1;
       current_state_time_ = std::numeric_limits<float>::infinity();
 
-      std::unordered_map<std::string, double> joints;
-      for (unsigned j = 0; j < displaying_trajectory_message_->joint_trajectory.joint_names.size(); ++j)
-      {
-        joints[displaying_trajectory_message_->joint_trajectory.joint_names[j]] =
-            displaying_trajectory_message_->joint_trajectory.points[0].positions[j];
-      }
+      for (auto& link_pair : display_path_->getLinks())
+        link_pair.second->showTrajectoryWaypointOnly(0);
 
-      display_path_->update(EnvLinkUpdater(env_->getState(joints)));
-      display_path_->setVisible(display_->isEnabled());
       if (trajectory_slider_panel_)
         trajectory_slider_panel_->setSliderPosition(0);
     }
@@ -529,33 +479,19 @@ void TrajectoryVisualization::update(float wall_dt, float /*ros_dt*/)
         current_state_ = trajectory_slider_panel_->getSliderPosition();
       else
         ++current_state_;
-      int waypoint_count = static_cast<int>(displaying_trajectory_message_->joint_trajectory.points.size());
-      if (current_state_ < waypoint_count)
+
+      if (current_state_ < num_trajectory_waypoints_)
       {
         if (trajectory_slider_panel_)
           trajectory_slider_panel_->setSliderPosition(current_state_);
 
-        std::unordered_map<std::string, double> joints;
-        for (unsigned j = 0; j < displaying_trajectory_message_->joint_trajectory.joint_names.size(); ++j)
-        {
-          joints[displaying_trajectory_message_->joint_trajectory.joint_names[j]] =
-              displaying_trajectory_message_->joint_trajectory.points[static_cast<size_t>(current_state_)].positions[j];
-        }
+        for (auto& link_pair : display_path_->getLinks())
+          link_pair.second->showTrajectoryWaypointOnly(current_state_);
 
-        display_path_->update(EnvLinkUpdater(env_->getState(joints)));
-
-        if (trajectory_static_)
-          trajectory_static_->setVisible(true);
-
-        for (std::size_t i = 0; i < trajectory_trail_.size(); ++i)
-          trajectory_trail_[i]->setVisible(
-              std::min(waypoint_count - 1, static_cast<int>(i) * trail_step_size_property_->getInt()) <=
-              current_state_);
       }
       else
       {
         animating_path_ = false;  // animation finished
-        display_path_->setVisible(display_mode_property_->getOptionInt() != 2);
         if ((display_mode_property_->getOptionInt() != 1) && trajectory_slider_panel_)
           trajectory_slider_panel_->pauseButton(true);
       }

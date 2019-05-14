@@ -341,9 +341,6 @@ void EnvJoint::updateAxes()
   {
     if (!axes_)
     {
-      static int count = 0;
-      std::stringstream ss;
-      ss << "Axes for joint " << name_ << count++;
       axes_ = new rviz::Axes(env_->getSceneManager(), env_->getOtherNode(), 0.1f, 0.01f);
       axes_->getSceneNode()->setVisible(getEnabled());
 
@@ -367,9 +364,6 @@ void EnvJoint::updateAxis()
   {
     if (!axis_)
     {
-      static int count = 0;
-      std::stringstream ss;
-      ss << "Axis for joint " << name_ << count++;
       axis_ = new rviz::Arrow(env_->getSceneManager(), env_->getOtherNode(), 0.15f, 0.05f, 0.05f, 0.08f);
       axis_->getSceneNode()->setVisible(getEnabled());
 

@@ -191,16 +191,29 @@ public:
   virtual bool moveJoint(const std::string& joint_name, const std::string& parent_link);
 
   /**
-   * @brief Enable collision checking for link
-   * @param name The link name
+   * @brief Set whether a link should be considered during collision checking
+   * @param enabled True if should be condisdered during collision checking, otherwise false
    */
-  virtual bool enableCollision(const std::string& name);
+  virtual void setLinkCollisionEnabled(const std::string& name, bool enabled);
 
   /**
-   * @brief Disable collision checking for link
-   * @param name The link name
+   * @brief Get whether a link should be considered during collision checking
+   * @return True if should be condisdered during collision checking, otherwise false
    */
-  virtual bool disableCollision(const std::string& name);
+  virtual bool getLinkCollisionEnabled(const std::string& name) const;
+
+  /**
+  * @brief Set a links visibility
+  * @param name The name of the link
+  * @param visibility True if should be visible, otherwise false
+  */
+  virtual void setLinkVisibility(const std::string& name, bool visibility);
+
+  /**
+   * @brief Get a given links visibility setting
+   * @return True if should be visible, otherwise false
+   */
+  virtual bool getLinkVisibility(const std::string& name) const;
 
   /**
    * @brief Disable collision between two collision objects
@@ -229,7 +242,7 @@ public:
    * @brief Get the allowed collision matrix
    * @return AllowedCollisionMatrixConstPtr
    */
-  virtual const tesseract_scene_graph::AllowedCollisionMatrixConstPtr& getAllowedCollisionMatrix() const;
+  virtual tesseract_scene_graph::AllowedCollisionMatrixConstPtr getAllowedCollisionMatrix() const;
 
   /**
    * @brief Get a vector of joint names in the environment
