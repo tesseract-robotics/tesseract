@@ -49,7 +49,8 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <boost/thread/recursive_mutex.hpp>
 #include <memory>
 #include <tesseract_msgs/TesseractState.h>
-#include <tesseract_msgs/ModifyTesseractEnv.h>
+#include <tesseract_msgs/ModifyEnvironment.h>
+#include <tesseract_msgs/GetEnvironmentChanges.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/discrete_contact_manager.h>
@@ -102,18 +103,14 @@ public:
   /// The name of the topic used by default for receiving joint states
   static const std::string DEFAULT_JOINT_STATES_TOPIC;  // "/joint_states"
 
-  /// The name of the topic used by default for receiving full tesseract environments or diffs
-  static const std::string DEFAULT_ENVIRONMENT_TOPIC;  // "/tesseract"
-
   /// The name of the service used by default for requesting full tesseract environment state
-  static const std::string DEFAULT_ENVIRONMENT_SERVICE;  // "/get_tesseract"
+  static const std::string DEFAULT_GET_ENVIRONMENT_CHANGES_SERVICE;  // "/get_tesseract_changes"
 
   /// The name of the service used by default for setting the full tesseract environment state
-  static const std::string DEFAULT_SET_ENVIRONMENT_SERVICE;  // "/set_tesseract"
+  static const std::string DEFAULT_MODIFY_ENVIRONMENT_SERVICE;  // "/modify_tesseract"
 
   /// The name of the topic used by default for publishing the monitored tesseract environment (this is without "/" in
-  /// the
-  /// name, so the topic is prefixed by the node name)
+  /// the name, so the topic is prefixed by the node name)
   static const std::string MONITORED_ENVIRONMENT_TOPIC;  // "/monitored_tesseract"
 
   /** @brief Constructor
@@ -177,12 +174,6 @@ public:
   /** @brief Get the stored robot description
    *  @return An instance of the stored robot description*/
   const std::string& getURDFDescription() const { return robot_description_; }
-  /** \brief By default, the maintained planning scene does not reason about diffs. When the flag passed in is true, the
-     maintained
-      scene starts counting diffs. Future updates to the planning scene will be stored as diffs and can be retrieved as
-      such. Setting the flag to false restores the default behaviour. Maintaining diffs is automatically enabled when
-      publishing environment. */
-  void monitorDiffs(bool flag);
 
   /** \brief Start publishing the maintained environment. The first message set out is a complete environment.
       Diffs are sent afterwards on updates specified by the \e event bitmask. For UPDATE_ENVIRONMENT, the full
@@ -232,33 +223,15 @@ public:
       return 0.0;
   }
 
-  /** @brief Start the scene monitor
-   *  @param scene_topic The name of the planning scene topic
-   */
-  void startEnvironmentMonitor(const std::string& environment_topic = DEFAULT_ENVIRONMENT_TOPIC);
-
-  /** @brief Request planning scene state using a service call
-   *  @param service_name The name of the service to use for requesting the
-   *     planning scene.  This must be a service of type
-   *     moveit_msgs::GetPlanningScene and is usually called
-   *     "/get_planning_scene".
-   */
-  bool requestEnvironmentState(const std::string& service_name = DEFAULT_ENVIRONMENT_SERVICE);
-
-  /** @brief Stop the scene monitor*/
-  void stopEnvironmentMonitor();
-
   /** @brief Add a function to be called when an update to the scene is received */
   void addUpdateCallback(const boost::function<void(EnvironmentUpdateType)>& fn);
 
   /** @brief Clear the functions to be called when an update to the scene is received */
   void clearUpdateCallbacks();
 
-  /** @brief Get the topic names that the monitor is listening to */
-  void getMonitoredTopics(std::vector<std::string>& topics) const;
-
   /** \brief Return the time when the last update was made to the planning scene (by \e any monitor) */
   const ros::Time& getLastUpdateTime() const { return last_update_time_; }
+
   /** @brief This function is called every time there is a change to the planning scene */
   void triggerEnvironmentUpdateEvent(EnvironmentUpdateType update_type);
 
@@ -285,24 +258,13 @@ public:
 
   void clearOctomap();
 
-  // Called to update the planning scene with a new message.
-  bool newEnvironmentMessage(int id, const std::vector<tesseract_msgs::EnvironmentCommand> &commands);
+  void getMonitoredTopics(std::vector<std::string>& topics) const;
 
 protected:
   /** @brief Initialize the planning scene monitor
    *  @param scene The scene instance to fill with data (an instance is allocated if the one passed in is not allocated)
    */
   void initialize();
-
-//  /** @brief Callback for a new attachable object msg*/
-//  void attachableObjectCallback(const tesseract_msgs::AttachableObjectConstPtr& ao_msg);
-
-//  /** @brief Callback for a new attached body info msg*/
-//  void attachedBodyInfoCallback(const tesseract_msgs::AttachedBodyInfoConstPtr& ab_info_msg);
-
-  /** @brief Callback for modifying the environment via service request */
-  bool modifyEnvironmentCallback(tesseract_msgs::ModifyTesseractEnvRequest& req,
-                                 tesseract_msgs::ModifyTesseractEnvResponse& res);
 
   /// The name of this scene monitor
   std::string monitor_name_;
@@ -334,8 +296,8 @@ protected:
   // host a service for modifying the environment
   ros::ServiceServer modify_environment_server_;
 
-  // subscribe to various sources of data
-  ros::Subscriber environment_subscriber_;
+  // host a service for getting the environment changes
+  ros::ServiceServer get_environment_changes_server_;
 
   // include a current state monitor
   CurrentStateMonitorPtr current_state_monitor_;
@@ -360,6 +322,17 @@ private:
 
   // Callback for a new state msg
   void newStateCallback(const tesseract_msgs::TesseractStateConstPtr& env);
+
+  /** @brief Callback for modifying the environment via service request */
+  bool modifyEnvironmentCallback(tesseract_msgs::ModifyEnvironmentRequest& req,
+                                 tesseract_msgs::ModifyEnvironmentResponse& res);
+
+  /** @brief Callback for get the environment changes via service request */
+  bool getEnvironmentChangesCallback(tesseract_msgs::GetEnvironmentChangesRequest& req,
+                                     tesseract_msgs::GetEnvironmentChangesResponse& res);
+
+  // Called when new service request is called to modify the environment.
+  bool applyEnvironmentCommandsMessage(std::string id, int revision, const std::vector<tesseract_msgs::EnvironmentCommand> &commands);
 
   // Lock for state_update_pending_ and dt_state_update_
   boost::mutex state_pending_mutex_;

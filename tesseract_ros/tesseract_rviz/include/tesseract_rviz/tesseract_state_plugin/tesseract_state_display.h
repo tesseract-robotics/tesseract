@@ -44,7 +44,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #ifndef Q_MOC_RUN
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
-#include <tesseract_msgs/ModifyTesseractEnv.h>
+#include <tesseract_msgs/ModifyEnvironment.h>
 #include <srdfdom/model.h>
 #include <ros/ros.h>
 #include <ros/service_server.h>
@@ -117,8 +117,8 @@ protected:
   void newJointStateCallback(const sensor_msgs::JointStateConstPtr& joint_state);
 
   /** @brief Callback for modifying the environment via service request */
-  bool modifyEnvironmentCallback(tesseract_msgs::ModifyTesseractEnvRequest& req,
-                                 tesseract_msgs::ModifyTesseractEnvResponse& res);
+  bool modifyEnvironmentCallback(tesseract_msgs::ModifyEnvironmentRequest& req,
+                                 tesseract_msgs::ModifyEnvironmentResponse& res);
 
 //  void setHighlightedLinks(const tesseract_msgs::TesseractState::_highlight_links_type& highlight_links);
 //  void setHighlightedLink(const std::string& link_name, const std_msgs::ColorRGBA& color);

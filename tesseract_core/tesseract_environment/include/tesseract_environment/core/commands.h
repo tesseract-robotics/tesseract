@@ -158,7 +158,7 @@ public:
   ChangeLinkCollisionEnabled(const std::string& link_name, bool enabled) : Command(CommandType::CHANGE_LINK_COLLISION_ENABLED), link_name_(link_name), enabled_(std::move(enabled)) {}
 
   const std::string& getLinkName() const { return link_name_; }
-  bool getEnabled() { return enabled_; }
+  bool getEnabled() const { return enabled_; }
 
 private:
   std::string link_name_;
@@ -171,7 +171,7 @@ public:
   ChangeLinkVisibility(const std::string& link_name, bool enabled) : Command(CommandType::CHANGE_LINK_VISIBILITY), link_name_(link_name), enabled_(std::move(enabled)) {}
 
   const std::string& getLinkName() const { return link_name_; }
-  bool getEnabled() { return enabled_; }
+  bool getEnabled() const { return enabled_; }
 
 private:
   std::string link_name_;

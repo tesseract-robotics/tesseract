@@ -5,7 +5,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <ros/package.h>
 #include <sensor_msgs/JointState.h>
 #include <tesseract_msgs/ContactResultVector.h>
-#include <tesseract_msgs/ModifyTesseractEnv.h>
+#include <tesseract_msgs/ModifyEnvironment.h>
 #include <tesseract_msgs/ComputeContactResultVector.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
@@ -77,8 +77,8 @@ void callbackJointState(const sensor_msgs::JointState::ConstPtr& msg)
   contact_results_pub.publish(contacts_msg);
 }
 
-bool callbackModifyTesseractEnv(tesseract_msgs::ModifyTesseractEnvRequest& request,
-                                tesseract_msgs::ModifyTesseractEnvResponse& response)
+bool callbackModifyTesseractEnv(tesseract_msgs::ModifyEnvironmentRequest& request,
+                                tesseract_msgs::ModifyEnvironmentResponse& response)
 {
   boost::mutex::scoped_lock(modify_mutex);
   response.success = processMsg(*env, request.commands);
@@ -248,8 +248,8 @@ int main(int argc, char** argv)
   joint_states_sub = nh.subscribe("joint_states", 1, &callbackJointState);
   contact_results_pub = pnh.advertise<tesseract_msgs::ContactResultVector>("contact_results", 1, true);
   modify_env_service =
-      pnh.advertiseService<tesseract_msgs::ModifyTesseractEnvRequest, tesseract_msgs::ModifyTesseractEnvResponse>(
-          "modify_tesseract_env", &callbackModifyTesseractEnv);
+      pnh.advertiseService<tesseract_msgs::ModifyEnvironmentRequest, tesseract_msgs::ModifyEnvironmentResponse>(
+          "modify_environment", &callbackModifyTesseractEnv);
 
   if (publish_environment)
     environment_pub = pnh.advertise<tesseract_msgs::TesseractState>("tesseract", 100, false);

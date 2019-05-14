@@ -47,7 +47,8 @@ add_message_files(
 add_service_files(
   DIRECTORY srv
   FILES
-    ModifyTesseractEnv.srv
+    GetEnvironmentChanges.srv
+    ModifyEnvironment.srv
     ComputeContactResultVector.srv
 )
 

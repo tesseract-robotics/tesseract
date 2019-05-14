@@ -108,9 +108,8 @@ namespace tesseract_monitoring
 {
 static const std::string LOGNAME = "environment_monitor";
 const std::string EnvironmentMonitor::DEFAULT_JOINT_STATES_TOPIC = "joint_states";
-const std::string EnvironmentMonitor::DEFAULT_ENVIRONMENT_TOPIC = "tesseract";
-const std::string EnvironmentMonitor::DEFAULT_ENVIRONMENT_SERVICE = "get_tesseract";
-const std::string EnvironmentMonitor::DEFAULT_SET_ENVIRONMENT_SERVICE = "set_tesseract";
+const std::string EnvironmentMonitor::DEFAULT_GET_ENVIRONMENT_CHANGES_SERVICE = "get_tesseract_changes";
+const std::string EnvironmentMonitor::DEFAULT_MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract";
 const std::string EnvironmentMonitor::MONITORED_ENVIRONMENT_TOPIC = "monitored_tesseract";
 
 EnvironmentMonitor::EnvironmentMonitor(const std::string& robot_description,
@@ -178,7 +177,6 @@ EnvironmentMonitor::~EnvironmentMonitor()
 {
   stopPublishingEnvironment();
   stopStateMonitor();
-  stopEnvironmentMonitor();
 
   delete reconfigure_impl_;
   current_state_monitor_.reset();
@@ -216,6 +214,7 @@ void EnvironmentMonitor::initialize()
     {
       if (!discrete_plugin_name_.empty() && !continuous_plugin_name_.empty())
       {
+        // TODO: Should update to loop over all available plugins and register them to simplify switching between plugins.
         discrete_manager_loader_.reset(new DiscreteContactManagerPluginLoader("tesseract_collision", "tesseract_collision::DiscreteContactManager"));
         if (discrete_manager_loader_->isClassAvailable(discrete_plugin_name_))
         {
@@ -266,24 +265,10 @@ void EnvironmentMonitor::initialize()
   reconfigure_impl_ = new DynamicReconfigureImpl(this);
 
   modify_environment_server_ =
-      nh_.advertiseService(DEFAULT_SET_ENVIRONMENT_SERVICE, &EnvironmentMonitor::modifyEnvironmentCallback, this);
-}
+      nh_.advertiseService(DEFAULT_MODIFY_ENVIRONMENT_SERVICE, &EnvironmentMonitor::modifyEnvironmentCallback, this);
 
-void EnvironmentMonitor::monitorDiffs(bool flag)
-{
-  if (env_)
-  {
-    if (!flag)
-    {
-      if (publish_environment_)
-      {
-        ROS_WARN_NAMED(LOGNAME,
-                       "Diff monitoring was stopped while publishing environment diffs. "
-                       "Stopping environment diff publisher");
-        stopPublishingEnvironment();
-      }
-    }
-  }
+  get_environment_changes_server_ =
+      nh_.advertiseService(DEFAULT_GET_ENVIRONMENT_CHANGES_SERVICE, &EnvironmentMonitor::getEnvironmentChangesCallback, this);
 }
 
 void EnvironmentMonitor::stopPublishingEnvironment()
@@ -294,7 +279,7 @@ void EnvironmentMonitor::stopPublishingEnvironment()
     copy.swap(publish_environment_);
     new_environment_update_condition_.notify_all();
     copy->join();
-    monitorDiffs(false);
+    stopPublishingEnvironment();
     environment_publisher_.shutdown();
     ROS_INFO_NAMED(LOGNAME, "Stopped publishing maintained environment.");
   }
@@ -308,25 +293,23 @@ void EnvironmentMonitor::startPublishingEnvironment(EnvironmentUpdateType update
   {
     environment_publisher_ = nh_.advertise<tesseract_msgs::TesseractState>(environment_topic, 100, false);
     ROS_INFO_NAMED(LOGNAME, "Publishing maintained environment on '%s'", environment_topic.c_str());
-    monitorDiffs(true);
     publish_environment_.reset(new boost::thread(boost::bind(&EnvironmentMonitor::environmentPublishingThread, this)));
   }
 }
 
 void EnvironmentMonitor::environmentPublishingThread()
 {
-  ROS_DEBUG_NAMED(LOGNAME, "Started environment publishing thread ...");
+  ROS_DEBUG_NAMED(LOGNAME, "Started environment state publishing thread ...");
 
   // publish the full planning scene
   tesseract_msgs::TesseractState start_msg;
   tesseract_rosutils::toMsg(start_msg, *env_);
-//  tesseract_ros::tesseractToTesseractStateMsg(start_msg, *env_);
 
   environment_publisher_.publish(start_msg);
   ros::Duration(1.5).sleep();
   environment_publisher_.publish(start_msg);
 
-  ROS_DEBUG_NAMED(LOGNAME, "Published the full planning scene: '%s'", start_msg.name.c_str());
+  ROS_DEBUG_NAMED(LOGNAME, "Published the Tesseract Environment State for: '%s'", start_msg.id.c_str());
 
   do
   {
@@ -342,18 +325,7 @@ void EnvironmentMonitor::environmentPublishingThread()
       {
         if ((publish_update_types_ & new_environment_update_) || new_environment_update_ == UPDATE_ENVIRONMENT)
         {
-          if (new_environment_update_ == UPDATE_ENVIRONMENT)
-          {
-            is_full = true;
-            tesseract_rosutils::toMsg(msg, *env_);
-//            tesseract_ros::tesseractToTesseractStateMsg(msg, *env_);
-          }
-          else
-          {
-            tesseract_rosutils::toMsg(msg, *env_);
-//            tesseract_ros::tesseractToTesseractStateMsg(msg, *env_);
-//            msg.is_diff = true;
-          }
+          tesseract_rosutils::toMsg(msg, *env_);
 
           // also publish timestamp of this robot_state
           msg.joint_state.header.stamp = last_robot_motion_time_;
@@ -367,10 +339,6 @@ void EnvironmentMonitor::environmentPublishingThread()
     {
       rate.reset();
       environment_publisher_.publish(msg);
-      if (is_full)
-      {
-        ROS_DEBUG_NAMED(LOGNAME, "Published full environment: '%s'", msg.name.c_str());
-      }
       rate.sleep();
     }
   } while (publish_environment_);
@@ -385,8 +353,6 @@ void EnvironmentMonitor::getMonitoredTopics(std::vector<std::string>& topics) co
     if (!t.empty())
       topics.push_back(t);
   }
-  if (environment_subscriber_)
-    topics.push_back(environment_subscriber_.getTopic());
 }
 
 void EnvironmentMonitor::triggerEnvironmentUpdateEvent(EnvironmentUpdateType update_type)
@@ -398,50 +364,6 @@ void EnvironmentMonitor::triggerEnvironmentUpdateEvent(EnvironmentUpdateType upd
     update_callbacks_[i](update_type);
   new_environment_update_ = static_cast<EnvironmentUpdateType>(new_environment_update_ | update_type);
   new_environment_update_condition_.notify_all();
-}
-
-bool EnvironmentMonitor::requestEnvironmentState(const std::string& service_name)
-{
-  ROS_ERROR("tesseract environment request environment state is currently not "
-            "implemented, %s",
-            service_name.c_str());
-
-  //  // use global namespace for service
-  //  ros::ServiceClient client =
-  //  ros::NodeHandle().serviceClient<moveit_msgs::GetPlanningScene>(service_name);
-  //  moveit_msgs::GetPlanningScene srv;
-  //  srv.request.components.components =
-  //      srv.request.components.SCENE_SETTINGS |
-  //      srv.request.components.ROBOT_STATE |
-  //      srv.request.components.ROBOT_STATE_ATTACHED_OBJECTS |
-  //      srv.request.components.WORLD_OBJECT_NAMES |
-  //      srv.request.components.WORLD_OBJECT_GEOMETRY |
-  //      srv.request.components.OCTOMAP |
-  //      srv.request.components.TRANSFORMS |
-  //      srv.request.components.ALLOWED_COLLISION_MATRIX |
-  //      srv.request.components.LINK_PADDING_AND_SCALING |
-  //      srv.request.components.OBJECT_COLORS;
-
-  //  // Make sure client is connected to server
-  //  if (!client.exists())
-  //  {
-  //    ROS_DEBUG_STREAM_NAMED(LOGNAME, "Waiting for service `" << service_name
-  //    << "` to exist.");
-  //    client.waitForExistence(ros::Duration(5.0));
-  //  }
-
-  //  if (client.call(srv))
-  //  {
-  //    newEnvironmentMessage(srv.response.scene);
-  //  }
-  //  else
-  //  {
-  //    ROS_INFO_NAMED(LOGNAME, "Failed to call service %s, have you launched
-  //    move_group? at %s:%d", service_name.c_str(),
-  //                   __FILE__, __LINE__);
-  //    return false;
-  //  }
-  return true;
 }
 
 void EnvironmentMonitor::newStateCallback(const tesseract_msgs::TesseractStateConstPtr& env)
@@ -470,9 +392,9 @@ void EnvironmentMonitor::newStateCallback(const tesseract_msgs::TesseractStateCo
   triggerEnvironmentUpdateEvent(upd);
 }
 
-bool EnvironmentMonitor::newEnvironmentMessage(int id, const std::vector<tesseract_msgs::EnvironmentCommand>& commands)
+bool EnvironmentMonitor::applyEnvironmentCommandsMessage(std::string id, int revision, const std::vector<tesseract_msgs::EnvironmentCommand>& commands)
 {
-  if (!env_)
+  if (!env_ || id != env_->getName() || revision != env_->getRevision())
     return false;
 
   bool result;
@@ -481,15 +403,6 @@ bool EnvironmentMonitor::newEnvironmentMessage(int id, const std::vector<tessera
   std::string old_scene_name;
   {
     boost::unique_lock<boost::shared_mutex> ulock(scene_update_mutex_);
-
-//    last_update_time_ = ros::Time::now();
-//    last_robot_motion_time_ = env_msg.joint_state.header.stamp;
-//    ROS_DEBUG_STREAM_NAMED(LOGNAME,
-//                           "environment update " << fmod(last_update_time_.toSec(), 10.) << " robot stamp: "
-//                                                 << fmod(last_robot_motion_time_.toSec(), 10.));
-    old_scene_name = env_->getName();
-
-    //TODO: Need to check id against environment
     result = tesseract_rosutils::processMsg(*env_, commands);
   }
 
@@ -650,28 +563,6 @@ void EnvironmentMonitor::lockEnvironmentRead() { scene_update_mutex_.lock_shared
 void EnvironmentMonitor::unlockEnvironmentRead() { scene_update_mutex_.unlock_shared(); }
 void EnvironmentMonitor::lockEnvironmentWrite() { scene_update_mutex_.lock(); }
 void EnvironmentMonitor::unlockEnvironmentWrite() { scene_update_mutex_.unlock(); }
-void EnvironmentMonitor::startEnvironmentMonitor(const std::string& environment_topic)
-{
-  stopEnvironmentMonitor();
-
-  ROS_INFO_NAMED(LOGNAME, "Starting environment monitor");
-  // listen for environment updates; these messages include transforms, so no
-  // need for filters
-  if (!environment_topic.empty())
-  {
-    environment_subscriber_ =
-        root_nh_.subscribe(environment_topic, 100, &EnvironmentMonitor::newStateCallback, this);
-    ROS_INFO_NAMED(LOGNAME, "Listening to '%s'", root_nh_.resolveName(environment_topic).c_str());
-  }
-}
-
-void EnvironmentMonitor::stopEnvironmentMonitor()
-{
-  ROS_INFO_NAMED(LOGNAME, "Stopping environment monitor");
-
-  if (environment_subscriber_)
-    environment_subscriber_.shutdown();
-}
 
 void EnvironmentMonitor::startStateMonitor(const std::string& joint_states_topic)
 {
@@ -691,7 +582,9 @@ void EnvironmentMonitor::startStateMonitor(const std::string& joint_states_topic
     }
   }
   else
+  {
     ROS_ERROR_NAMED(LOGNAME, "Cannot monitor robot state because planning scene is not configured");
+  }
 }
 
 void EnvironmentMonitor::stopStateMonitor()
@@ -836,10 +729,40 @@ void EnvironmentMonitor::setEnvironmentPublishingFrequency(double hz)
       LOGNAME, "Maximum frquency for publishing an environment is now %lf Hz", publish_environment_frequency_);
 }
 
-bool EnvironmentMonitor::modifyEnvironmentCallback(tesseract_msgs::ModifyTesseractEnvRequest& req,
-                                                   tesseract_msgs::ModifyTesseractEnvResponse& res)
+bool EnvironmentMonitor::modifyEnvironmentCallback(tesseract_msgs::ModifyEnvironmentRequest &req,
+                                                   tesseract_msgs::ModifyEnvironmentResponse &res)
 {
-  res.success = newEnvironmentMessage(static_cast<int>(req.id), req.commands);
-  return true;
+  res.success = applyEnvironmentCommandsMessage(req.id, static_cast<int>(req.revision), req.commands);
+  return res.success;
 }
+
+
+bool EnvironmentMonitor::getEnvironmentChangesCallback(tesseract_msgs::GetEnvironmentChangesRequest& req,
+                                                       tesseract_msgs::GetEnvironmentChangesResponse& res)
+{
+  if (req.revision > env_->getRevision())
+  {
+    res.success = false;
+    return false;
+  }
+
+  res.id = env_->getName();
+  res.revision = env_->getRevision();
+  const tesseract_environment::Commands& commands = env_->getCommandHistory();
+  for (int i = (req.revision - 1); i < commands.size(); ++i)
+  {
+    tesseract_msgs::EnvironmentCommand command_msg;
+    if (!tesseract_rosutils::toMsg(command_msg, *(commands[i])))
+    {
+      res.success = false;
+      return false;
+    }
+
+    res.commands.push_back(command_msg);
+  }
+
+  res.success = true;
+  return res.success;
+}
+
 }
