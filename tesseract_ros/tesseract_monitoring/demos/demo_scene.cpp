@@ -39,8 +39,9 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <ros/console.h>
 #include <geometric_shapes/solid_primitive_dims.h>
 #include <tesseract_msgs/TesseractState.h>
-#include <tesseract_msgs/ModifyTesseractEnv.h>
+#include <tesseract_msgs/ModifyEnvironment.h>
 #include <tesseract_msgs/EnvironmentCommand.h>
+#include <tesseract_msgs/GetEnvironmentChanges.h>
 #include <ros/service.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
@@ -50,10 +51,11 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 static const std::string ROBOT_DESCRIPTION = "robot_description";
 
 static ros::ServiceClient modify_env;
+static ros::ServiceClient get_env_changes;
 
-void addSphere(const std::string& name)
+void addSphere(const std::string& name, const std::string id, int &revision)
 {
-  tesseract_msgs::ModifyTesseractEnv update_env;
+  tesseract_msgs::ModifyEnvironment update_env;
 
   // Create add command
   tesseract_msgs::EnvironmentCommand add_sphere_command;
@@ -90,12 +92,14 @@ void addSphere(const std::string& name)
   add_sphere_command.add_joint.parent_link_name = "base_link";
   add_sphere_command.add_joint.child_link_name = name;
 
-  update_env.request.id = 0;
+  update_env.request.id = id;
+  update_env.request.revision = revision;
   update_env.request.commands.push_back(add_sphere_command);
 
   if (modify_env.call(update_env))
   {
     ROS_INFO("Sphere added to Environment!");
+    revision = update_env.response.revision;
   }
   else
   {
@@ -103,20 +107,23 @@ void addSphere(const std::string& name)
   }
 }
 
-void removeSphere(const std::string& name)
+void removeSphere(const std::string& name, const std::string id, int &revision)
 {
-  tesseract_msgs::ModifyTesseractEnv update_env;
+  tesseract_msgs::ModifyEnvironment update_env;
 
   // Create remove command
   tesseract_msgs::EnvironmentCommand command;
   command.command = tesseract_msgs::EnvironmentCommand::REMOVE_LINK;
   command.remove_link = name;
 
+  update_env.request.id = id;
+  update_env.request.revision = revision;
   update_env.request.commands.push_back(command);
 
   if (modify_env.call(update_env))
   {
     ROS_INFO("Removed sphere from environment!");
+    revision = update_env.response.revision;
   }
   else
   {
@@ -132,13 +139,33 @@ int main(int argc, char** argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
-  modify_env = nh.serviceClient<tesseract_msgs::ModifyTesseractEnv>("modify_tesseract", 10);
+  modify_env = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract", 10);
+  get_env_changes = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes", 10);
 
-  addSphere("sphere_attached");
+  get_env_changes.waitForExistence();
+  // Get the current state of the environment
+  tesseract_msgs::GetEnvironmentChanges env_changes;
+  env_changes.request.revision = 0;
+  if (get_env_changes.call(env_changes))
+  {
+    ROS_INFO("Retrieve current environment changes!");
+  }
+  else
+  {
+    ROS_INFO("Failed retrieve current environment changes!");
+    return -1;
+  }
+
+  std::string id = env_changes.response.id;
+  int revision = env_changes.response.revision;
+
+  modify_env.waitForExistence();
+
+  addSphere("sphere_attached", id, revision);
 
   sleep(10);
 
-  removeSphere("sphere_attached");
+  removeSphere("sphere_attached", id, revision);
 
   ros::waitForShutdown();
 

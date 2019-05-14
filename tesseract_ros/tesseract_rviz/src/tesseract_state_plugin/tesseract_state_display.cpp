@@ -289,8 +289,8 @@ void TesseractStateDisplay::changedURDFSceneAlpha()
   }
 }
 
-bool TesseractStateDisplay::modifyEnvironmentCallback(tesseract_msgs::ModifyTesseractEnvRequest& req,
-                                                      tesseract_msgs::ModifyTesseractEnvResponse& res)
+bool TesseractStateDisplay::modifyEnvironmentCallback(tesseract_msgs::ModifyEnvironmentRequest &req,
+                                                      tesseract_msgs::ModifyEnvironmentResponse &res)
 {
   update_state_ = true;
   for (const auto& command : req.commands)

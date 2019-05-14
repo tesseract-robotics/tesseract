@@ -1,5 +1,0 @@
-uint64 id # The id from which these commands should be applied
-tesseract_msgs/EnvironmentCommand[] commands
----
-bool success
-uint64 id # New id to store for checking if environment has changed
