@@ -87,9 +87,9 @@ class OcTree;
 
 namespace tesseract_rviz
 {
-class EnvVisualization;
+class VisualizationWidget;
 class EnvLinkSelectionHandler;
-class EnvJoint;
+class JointWidget;
 using EnvLinkSelectionHandlerPtr = std::shared_ptr<EnvLinkSelectionHandler>;
 
 enum OctreeVoxelRenderMode
@@ -105,29 +105,42 @@ enum OctreeVoxelColorMode
 };
 
 /**
- * \struct EnvLink
- * \brief Contains any data we need from a link in the environment.
+ * @brief The EnvLink class
+ *
+ * A link has visualization of a link: Start, Trajectory and End. These can all be shown at once or individually.
  */
-class EnvLink : public QObject
+class LinkWidget : public QObject
 {
   Q_OBJECT
 public:
-  EnvLink(EnvVisualization* env,
+  LinkWidget(VisualizationWidget* env,
           const tesseract_scene_graph::Link& link,
           bool visual,
           bool collision);
 
-  virtual ~EnvLink();
+  virtual ~LinkWidget();
 
   virtual void setAlpha(float a);
 
-  virtual void setTransforms(const Ogre::Vector3& visual_position,
-                             const Ogre::Quaternion& visual_orientation,
-                             const Ogre::Vector3& collision_position,
-                             const Ogre::Quaternion& collision_orientation);
+  /**
+   * @brief Set the start visualization link transform
+   * @param transform
+   */
+  virtual void setStartTransform(const Eigen::Isometry3d& transform);
 
+  /**
+   * @brief Set the env visualization link transform
+   * @param transform
+   */
+  virtual void setEndTransform(const Eigen::Isometry3d& transform);
 
+  /**
+   * @brief Set trajectory for the link
+   * @param trajectory
+   */
   virtual void setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory);
+
+  /** @brief Hide trajectory */
   virtual void clearTrajectory();
 
   // This is usefule when wanting to simulate the trajectory
@@ -137,9 +150,9 @@ public:
   const std::string& getName() const { return name_; }
 
   rviz::Property* getLinkProperty() const { return link_property_; }
-  Ogre::SceneNode* getVisualNode() const { return visual_node_; }
-  Ogre::SceneNode* getCollisionNode() const { return collision_node_; }
-  EnvVisualization* getEnvVisualization() const { return env_; }
+  Ogre::SceneNode* getVisualNode() const { return visual_start_node_; }
+  Ogre::SceneNode* getCollisionNode() const { return collision_start_node_; }
+  VisualizationWidget* getEnvVisualization() const { return env_; }
   // Remove link_property_ from its old parent and add to new_parent.  If new_parent==nullptr then leav unparented.
   void setParentProperty(rviz::Property* new_parent);
 
@@ -211,10 +224,13 @@ private:
 
   void setOctomapColor(double z_pos, double min_z, double max_z, double color_factor, rviz::PointCloud::Point* point);
 
-  Ogre::SceneNode* clone(Ogre::SceneNode* scene_node, bool isVisual);
+  void clone(Ogre::SceneNode* scene_node,
+             Ogre::SceneNode *cloned_scene_node,
+             std::vector<Ogre::Entity *> &meshes,
+             std::vector<rviz::PointCloud *> &octrees);
 
 protected:
-  EnvVisualization* env_;
+  VisualizationWidget* env_;
   Ogre::SceneManager* scene_manager_;
   rviz::DisplayContext* context_;
 
@@ -238,9 +254,9 @@ private:
   std::string default_material_name_;
   std::map<std::string, rviz::StringProperty*> acm_;
 
-  std::vector<Ogre::Entity*> visual_meshes_;     ///< The entities representing the visual mesh of this link (if they
+  std::vector<Ogre::Entity*> visual_start_meshes_;     ///< The entities representing the visual mesh of this link (if they
                                                  /// exist)
-  std::vector<Ogre::Entity*> collision_meshes_;  ///< The entities representing the collision mesh of this link (if they
+  std::vector<Ogre::Entity*> collision_start_meshes_;  ///< The entities representing the collision mesh of this link (if they
                                                  /// exist)
 
   std::vector<Ogre::Entity*> visual_trajectory_meshes_;     ///< The entities representing the visual mesh of this link (if they
@@ -248,13 +264,36 @@ private:
   std::vector<Ogre::Entity*> collision_trajectory_meshes_;  ///< The entities representing the collision mesh of this link (if they
                                                  /// exist)
 
+  std::vector<Ogre::Entity*> visual_end_meshes_;     ///< The entities representing the visual mesh of this link (if they
+                                                 /// exist)
+  std::vector<Ogre::Entity*> collision_end_meshes_;  ///< The entities representing the collision mesh of this link (if they
+                                                 /// exist)
 
-  std::vector<rviz::PointCloud*> visual_octrees_;  ///< The object representing the visual of this link (if they exist)
-  std::vector<rviz::PointCloud*> collision_octrees_;  ///< The object representing the visual of this link (if they
+  struct OctreeDataContainer
+  {
+    rviz::PointCloud* point_cloud;
+    std::vector<rviz::PointCloud::Point> points;
+    float size;
+
+    rviz::PointCloud* clone();
+  };
+
+  std::vector<OctreeDataContainer> visual_start_octrees_;  ///< The object representing the visual of this link (if they exist)
+  std::vector<OctreeDataContainer> collision_start_octrees_;  ///< The object representing the visual of this link (if they
                                                       /// exist)
 
-  Ogre::SceneNode* visual_node_;     ///< The scene node the visual meshes are attached to
-  Ogre::SceneNode* collision_node_;  ///< The scene node the collision meshes are attached to
+  std::vector<rviz::PointCloud*> visual_trajectory_octrees_;  ///< The object representing the visual of this link (if they exist)
+  std::vector<rviz::PointCloud*> collision_trajectory_octrees_;  ///< The object representing the visual of this link (if they
+                                                      /// exist)
+
+  std::vector<rviz::PointCloud*> visual_end_octrees_;  ///< The object representing the visual of this link (if they exist)
+  std::vector<rviz::PointCloud*> collision_end_octrees_;  ///< The object representing the visual of this link (if they
+                                                      /// exist)
+
+  Ogre::SceneNode* visual_start_node_;     ///< The scene node the visual meshes are attached to
+  Ogre::SceneNode* collision_start_node_;  ///< The scene node the collision meshes are attached to
+  Ogre::SceneNode* visual_end_node_;     ///< The scene node the visual meshes are attached to
+  Ogre::SceneNode* collision_end_node_;  ///< The scene node the collision meshes are attached to
   Ogre::SceneNode* visual_trajectory_node_;
   Ogre::SceneNode* collision_trajectory_node_;
   std::vector<Ogre::SceneNode*> visual_trajectory_waypoint_nodes_;

@@ -89,25 +89,29 @@ include_directories(
 
 # Rviz Render Tools
 qt_wrap_cpp(${PROJECT_NAME}_render_tools_cpp_MOCS
-  include/tesseract_rviz/render_tools/trajectory_visualization.h
   include/tesseract_rviz/render_tools/trajectory_panel.h
-  include/tesseract_rviz/render_tools/env_visualization.h
-  include/tesseract_rviz/render_tools/env_link.h
-  include/tesseract_rviz/render_tools/env_joint.h
+  include/tesseract_rviz/render_tools/visualization_widget.h
+  include/tesseract_rviz/render_tools/link_widget.h
+  include/tesseract_rviz/render_tools/joint_widget.h
+  include/tesseract_rviz/render_tools/joint_state_monitor_widget.h
+  include/tesseract_rviz/render_tools/environment_widget.h
+  include/tesseract_rviz/render_tools/trajectory_monitor_widget.h
   )
 
 add_library(${PROJECT_NAME}_render_tools SHARED
-  src/render_tools/env_visualization.cpp
-  src/render_tools/env_joint.cpp
-  src/render_tools/env_link.cpp
-  src/render_tools/env_link_updater.cpp
-  src/render_tools/trajectory_visualization.cpp
+  src/render_tools/visualization_widget.cpp
+  src/render_tools/joint_widget.cpp
+  src/render_tools/link_widget.cpp
   src/render_tools/trajectory_panel.cpp
+  src/render_tools/joint_state_monitor_widget.cpp
+  src/render_tools/environment_widget.cpp
+  src/render_tools/trajectory_monitor_widget.cpp
   ${${PROJECT_NAME}_render_tools_cpp_MOCS}
 )
 
 target_link_libraries(${PROJECT_NAME}_render_tools PUBLIC
   tesseract_environment_core
+  tesseract_environment_kdl
   tesseract_collision_core
   tesseract_scene_graph
   tesseract_geometry

@@ -748,17 +748,10 @@ bool EnvironmentMonitor::getEnvironmentChangesCallback(tesseract_msgs::GetEnviro
 
   res.id = env_->getName();
   res.revision = env_->getRevision();
-  const tesseract_environment::Commands& commands = env_->getCommandHistory();
-  for (int i = (req.revision - 1); i < commands.size(); ++i)
+  if (!tesseract_rosutils::toMsg(res.commands, env_->getCommandHistory(), req.revision))
   {
-    tesseract_msgs::EnvironmentCommand command_msg;
-    if (!tesseract_rosutils::toMsg(command_msg, *(commands[i])))
-    {
-      res.success = false;
-      return false;
-    }
-
-    res.commands.push_back(command_msg);
+    res.success = false;
+    return false;
   }
 
   res.success = true;

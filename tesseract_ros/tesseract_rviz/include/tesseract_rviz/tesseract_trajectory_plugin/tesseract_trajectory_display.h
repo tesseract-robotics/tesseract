@@ -44,11 +44,15 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <rviz/display.h>
 #ifndef Q_MOC_RUN
 #include <ros/ros.h>
+#include <tesseract_environment/core/environment.h>
 #endif
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
-#include <tesseract_rviz/render_tools/trajectory_visualization.h>
-#include <tesseract_environment/core/environment.h>
+#include <tesseract_rviz/render_tools/visualization_widget.h>
+#include <tesseract_rviz/render_tools/joint_state_monitor_widget.h>
+#include <tesseract_rviz/render_tools/environment_widget.h>
+#include <tesseract_rviz/render_tools/trajectory_monitor_widget.h>
+
 
 namespace rviz
 {
@@ -71,32 +75,22 @@ public:
 
   void update(float wall_dt, float ros_dt) override;
   void reset() override;
+  void setName(const QString& name) override;
 
+protected:
   // overrides from Display
   void onInitialize() override;
   void onEnable() override;
   void onDisable() override;
-  void setName(const QString& name) override;
 
-private Q_SLOTS:
-  /**
-   * \brief Slot Event Functions
-   */
-  void changedURDFDescription();
-
-protected:
   // ROS Node Handle
   ros::NodeHandle nh_;
 
-  // The trajectory playback component
-  TrajectoryVisualizationPtr trajectory_visual_;
-
-  // Load environment
   tesseract_environment::EnvironmentPtr env_;
-  bool load_env_;  // for delayed robot initialization
-
-  // Properties
-  rviz::StringProperty* urdf_description_property_;
+  VisualizationWidget::Ptr visualization_;
+  JointStateMonitorWidget::Ptr state_monitor_;
+  EnvironmentWidget::Ptr environment_monitor_;
+  TrajectoryMonitorWidget::Ptr trajectory_monitor_;
 };
 
 }  // namespace tesseract_rviz

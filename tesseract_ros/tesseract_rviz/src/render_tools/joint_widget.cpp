@@ -27,9 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "tesseract_rviz/render_tools/env_joint.h"
-#include "tesseract_rviz/render_tools/env_visualization.h"
-#include "tesseract_rviz/render_tools/env_link.h"
+#include "tesseract_rviz/render_tools/joint_widget.h"
+#include "tesseract_rviz/render_tools/visualization_widget.h"
+#include "tesseract_rviz/render_tools/link_widget.h"
 
 #include <tesseract_environment/core/macros.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
@@ -46,7 +46,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 namespace tesseract_rviz
 {
-EnvJoint::EnvJoint(EnvVisualization* env, const tesseract_scene_graph::Joint& joint)
+JointWidget::JointWidget(VisualizationWidget* env, const tesseract_scene_graph::Joint& joint)
   : env_(env)
   , name_(joint.getName())
   , parent_link_name_(joint.parent_link_name)
@@ -141,7 +141,7 @@ EnvJoint::EnvJoint(EnvVisualization* env, const tesseract_scene_graph::Joint& jo
       static_cast<float>(rot.w()), static_cast<float>(rot.x()), static_cast<float>(rot.y()), static_cast<float>(rot.z()));
 }
 
-EnvJoint::~EnvJoint()
+JointWidget::~JointWidget()
 {
   delete axes_;
   if (axis_)
@@ -150,7 +150,7 @@ EnvJoint::~EnvJoint()
   delete joint_property_;
 }
 
-void EnvJoint::setJointPropertyDescription()
+void JointWidget::setJointPropertyDescription()
 {
   int links_with_geom;
   int links_with_geom_checked;
@@ -193,7 +193,7 @@ void EnvJoint::setJointPropertyDescription()
   joint_property_->setDescription(desc.str().c_str());
 }
 
-void EnvJoint::setJointCheckbox(QVariant val)
+void JointWidget::setJointCheckbox(QVariant val)
 {
   // setting doing_set_checkbox_ to true prevents updateChildVisibility() from
   // updating child link enables.
@@ -202,14 +202,14 @@ void EnvJoint::setJointCheckbox(QVariant val)
   doing_set_checkbox_ = false;
 }
 
-void EnvJoint::calculateJointCheckboxesRecursive(int& links_with_geom,
+void JointWidget::calculateJointCheckboxesRecursive(int& links_with_geom,
                                                  int& links_with_geom_checked,
                                                  int& links_with_geom_unchecked)
 {
   links_with_geom_checked = 0;
   links_with_geom_unchecked = 0;
 
-  EnvLink* link = env_->getLink(child_link_name_);
+  LinkWidget* link = env_->getLink(child_link_name_);
   if (link && link->hasGeometry())
   {
     bool checked = link->getLinkProperty()->getValue().toBool();
@@ -230,7 +230,7 @@ void EnvJoint::calculateJointCheckboxesRecursive(int& links_with_geom,
     }
   }
 
-  EnvJoint* child_joint = env_->findChildJoint(link);
+  JointWidget* child_joint = env_->findChildJoint(link);
   while (child_joint != nullptr)
   {
     int child_links_with_geom;
@@ -259,7 +259,7 @@ void EnvJoint::calculateJointCheckboxesRecursive(int& links_with_geom,
   }
 }
 
-void EnvJoint::getChildLinkState(int& links_with_geom,
+void JointWidget::getChildLinkState(int& links_with_geom,
                                  int& links_with_geom_checked,
                                  int& links_with_geom_unchecked,
                                    bool recursive) const
@@ -267,7 +267,7 @@ void EnvJoint::getChildLinkState(int& links_with_geom,
   links_with_geom_checked = 0;
   links_with_geom_unchecked = 0;
 
-  EnvLink* link = env_->getLink(child_link_name_);
+  LinkWidget* link = env_->getLink(child_link_name_);
   if (link && link->hasGeometry())
   {
     bool checked = link->getLinkProperty()->getValue().toBool();
@@ -277,7 +277,7 @@ void EnvJoint::getChildLinkState(int& links_with_geom,
 
   if (recursive)
   {
-    EnvJoint* child_joint = env_->findChildJoint(link);
+    JointWidget* child_joint = env_->findChildJoint(link);
     while (child_joint != nullptr)
     {
       int child_links_with_geom;
@@ -295,16 +295,16 @@ void EnvJoint::getChildLinkState(int& links_with_geom,
   links_with_geom = links_with_geom_checked + links_with_geom_unchecked;
 }
 
-bool EnvJoint::getEnabled() const
+bool JointWidget::getEnabled() const
 {
   if (!hasDescendentLinksWithGeometry())
     return true;
   return joint_property_->getValue().toBool();
 }
 
-bool EnvJoint::styleIsTree() const { return details_->getParent() != nullptr; }
+bool JointWidget::styleIsTree() const { return details_->getParent() != nullptr; }
 
-void EnvJoint::updateChildVisibility()
+void JointWidget::updateChildVisibility()
 {
   if (doing_set_checkbox_)
     return;
@@ -314,7 +314,7 @@ void EnvJoint::updateChildVisibility()
 
   bool visible = getEnabled();
 
-  EnvLink* link = env_->getLink(child_link_name_);
+  LinkWidget* link = env_->getLink(child_link_name_);
   if (link)
   {
     if (link->hasGeometry())
@@ -324,7 +324,7 @@ void EnvJoint::updateChildVisibility()
 
     if (styleIsTree())
     {
-      EnvJoint* child_joint = env_->findChildJoint(link);
+      JointWidget* child_joint = env_->findChildJoint(link);
       while (child_joint != nullptr)
       {
         child_joint->getJointProperty()->setValue(visible);
@@ -335,7 +335,7 @@ void EnvJoint::updateChildVisibility()
   }
 }
 
-void EnvJoint::updateAxes()
+void JointWidget::updateAxes()
 {
   if (axes_property_->getValue().toBool())
   {
@@ -358,7 +358,7 @@ void EnvJoint::updateAxes()
   }
 }
 
-void EnvJoint::updateAxis()
+void JointWidget::updateAxis()
 {
   if (show_axis_property_->getValue().toBool())
   {
@@ -385,7 +385,7 @@ void EnvJoint::updateAxis()
   }
 }
 
-void EnvJoint::setTransforms(const Ogre::Vector3& parent_link_position,
+void JointWidget::setTransforms(const Ogre::Vector3& parent_link_position,
                                const Ogre::Quaternion& parent_link_orientation)
 {
   Ogre::Vector3 position = parent_link_position + parent_link_orientation * joint_origin_pos_;
@@ -407,7 +407,7 @@ void EnvJoint::setTransforms(const Ogre::Vector3& parent_link_position,
   }
 }
 
-void EnvJoint::hideSubProperties(bool hide)
+void JointWidget::hideSubProperties(bool hide)
 {
   position_property_->setHidden(hide);
   orientation_property_->setHidden(hide);
@@ -416,9 +416,9 @@ void EnvJoint::hideSubProperties(bool hide)
   axis_property_->setHidden(hide);
 }
 
-Ogre::Vector3 EnvJoint::getPosition() { return position_property_->getVector(); }
-Ogre::Quaternion EnvJoint::getOrientation() { return orientation_property_->getQuaternion(); }
-void EnvJoint::setParentProperty(rviz::Property* new_parent)
+Ogre::Vector3 JointWidget::getPosition() { return position_property_->getVector(); }
+Ogre::Quaternion JointWidget::getOrientation() { return orientation_property_->getQuaternion(); }
+void JointWidget::setParentProperty(rviz::Property* new_parent)
 {
   rviz::Property* old_parent = joint_property_->getParent();
   if (old_parent)
@@ -434,7 +434,7 @@ void EnvJoint::setParentProperty(rviz::Property* new_parent)
 // else (!use_detail)
 //    - all sub properties become children of joint_property_.
 //    details_ property does not have a parent.
-void EnvJoint::useDetailProperty(bool use_detail)
+void JointWidget::useDetailProperty(bool use_detail)
 {
   rviz::Property* old_parent = details_->getParent();
   if (old_parent)
@@ -462,7 +462,7 @@ void EnvJoint::useDetailProperty(bool use_detail)
   }
 }
 
-void EnvJoint::expandDetails(bool expand)
+void JointWidget::expandDetails(bool expand)
 {
   rviz::Property* parent = details_->getParent() ? details_ : joint_property_;
   if (expand)

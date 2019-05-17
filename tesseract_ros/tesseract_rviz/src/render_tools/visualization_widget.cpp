@@ -27,9 +27,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "tesseract_rviz/render_tools/env_visualization.h"
-#include "tesseract_rviz/render_tools/env_joint.h"
-#include "tesseract_rviz/render_tools/env_link.h"
+#include "tesseract_rviz/render_tools/visualization_widget.h"
+#include "tesseract_rviz/render_tools/joint_widget.h"
+#include "tesseract_rviz/render_tools/link_widget.h"
 #include "tesseract_scene_graph/allowed_collision_matrix.h"
 
 #include <tesseract_environment/core/macros.h>
@@ -56,7 +56,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 namespace tesseract_rviz
 {
-EnvVisualization::EnvVisualization(Ogre::SceneNode* root_node,
+VisualizationWidget::VisualizationWidget(Ogre::SceneNode* root_node,
              rviz::DisplayContext* context,
              const std::string& name,
              rviz::Property* parent_property)
@@ -64,6 +64,9 @@ EnvVisualization::EnvVisualization(Ogre::SceneNode* root_node,
   , visible_(true)
   , visual_visible_(true)
   , collision_visible_(false)
+  , start_state_visible_(true)
+  , end_state_visible_(false)
+  , trajectory_visible_(false)
   , context_(context)
   , doing_set_checkbox_(false)
   , env_loaded_(false)
@@ -105,7 +108,7 @@ EnvVisualization::EnvVisualization(Ogre::SceneNode* root_node,
       "All Links Enabled", true, "Turn all links on or off.", link_tree_, SLOT(changedEnableAllLinks()), this);
 }
 
-EnvVisualization::~EnvVisualization()
+VisualizationWidget::~VisualizationWidget()
 {
   clear();
 
@@ -115,7 +118,7 @@ EnvVisualization::~EnvVisualization()
   delete link_factory_;
 }
 
-void EnvVisualization::setLinkFactory(LinkFactory* link_factory)
+void VisualizationWidget::setLinkFactory(LinkFactory* link_factory)
 {
   if (link_factory)
   {
@@ -124,7 +127,7 @@ void EnvVisualization::setLinkFactory(LinkFactory* link_factory)
   }
 }
 
-void EnvVisualization::setVisible(bool visible)
+void VisualizationWidget::setVisible(bool visible)
 {
   visible_ = visible;
   if (visible)
@@ -141,67 +144,70 @@ void EnvVisualization::setVisible(bool visible)
   }
 }
 
-void EnvVisualization::setVisualVisible(bool visible)
+void VisualizationWidget::setVisualVisible(bool visible)
 {
   visual_visible_ = visible;
   updateLinkVisibilities();
 }
 
-void EnvVisualization::setCollisionVisible(bool visible)
+void VisualizationWidget::setCollisionVisible(bool visible)
 {
   collision_visible_ = visible;
   updateLinkVisibilities();
 }
 
-void EnvVisualization::updateLinkVisibilities()
+void VisualizationWidget::setStartStateVisible(bool visible)
 {
-  M_NameToLink::iterator it = links_.begin();
-  M_NameToLink::iterator end = links_.end();
-  for (; it != end; ++it)
-  {
-    EnvLink* link = it->second;
-    link->updateVisibility();
-  }
+  start_state_visible_ = visible;
 }
 
-bool EnvVisualization::isVisible() { return visible_; }
-bool EnvVisualization::isVisualVisible() { return visual_visible_; }
-bool EnvVisualization::isCollisionVisible() { return collision_visible_; }
-void EnvVisualization::setAlpha(float a)
+void VisualizationWidget::setEndStateVisible(bool visible)
+{
+  end_state_visible_ = visible;
+}
+
+void VisualizationWidget::setTrajectoryVisible(bool visible)
+{
+  trajectory_visible_ = visible;
+}
+
+void VisualizationWidget::updateLinkVisibilities()
+{
+  for (auto& link : links_)
+    link.second->updateVisibility();
+}
+
+bool VisualizationWidget::isVisible() { return visible_; }
+bool VisualizationWidget::isVisualVisible() { return visual_visible_; }
+bool VisualizationWidget::isCollisionVisible() { return collision_visible_; }
+bool VisualizationWidget::isStartStateVisible() { return start_state_visible_; }
+bool VisualizationWidget::isEndStateVisible() { return end_state_visible_; }
+bool VisualizationWidget::isTrajectoryVisible() { return trajectory_visible_; }
+void VisualizationWidget::setAlpha(float a)
 {
   alpha_ = a;
 
-  M_NameToLink::iterator it = links_.begin();
-  M_NameToLink::iterator end = links_.end();
-  for (; it != end; ++it)
-  {
-    EnvLink* link = it->second;
-
-    link->setAlpha(alpha_);
-  }
+  for (auto& link : links_)
+    link.second->setAlpha(alpha_);
 }
 
-void EnvVisualization::clear()
+void VisualizationWidget::clear()
 {
   // unparent all link and joint properties so they can be deleted in arbitrary
   // order without being delete by their parent propeties (which vary based on
   // style)
   unparentLinkProperties();
 
-  M_NameToLink::iterator link_it = links_.begin();
-  M_NameToLink::iterator link_end = links_.end();
-  for (; link_it != link_end; ++link_it)
+  for (auto& link : links_)
   {
-    EnvLink* link = link_it->second;
-    delete link;
+    LinkWidget* l = link.second;
+    delete l;
   }
 
-  M_NameToJoint::iterator joint_it = joints_.begin();
-  M_NameToJoint::iterator joint_end = joints_.end();
-  for (; joint_it != joint_end; ++joint_it)
+  for (auto& joint : joints_)
   {
-    EnvJoint* joint = joint_it->second;
-    delete joint;
+    JointWidget* j = joint.second;
+    delete j;
   }
 
   links_.clear();
@@ -212,20 +218,20 @@ void EnvVisualization::clear()
   root_other_node_->removeAndDestroyAllChildren();
 }
 
-EnvLink* EnvVisualization::LinkFactory::createLink(EnvVisualization* robot,
+LinkWidget* VisualizationWidget::LinkFactory::createLink(VisualizationWidget* robot,
                                                   const tesseract_scene_graph::Link& link,
                                                   bool visual,
                                                   bool collision)
 {
-  return new EnvLink(robot, link, visual, collision);
+  return new LinkWidget(robot, link, visual, collision);
 }
 
-EnvJoint* EnvVisualization::LinkFactory::createJoint(EnvVisualization* robot, const tesseract_scene_graph::Joint& joint)
+JointWidget* VisualizationWidget::LinkFactory::createJoint(VisualizationWidget* robot, const tesseract_scene_graph::Joint& joint)
 {
-  return new EnvJoint(robot, joint);
+  return new JointWidget(robot, joint);
 }
 
-void EnvVisualization::load(const tesseract_scene_graph::SceneGraphConstPtr& scene_graph,
+void VisualizationWidget::load(const tesseract_scene_graph::SceneGraphConstPtr& scene_graph,
                  bool visual,
                  bool collision,
                  bool show_active,
@@ -287,7 +293,7 @@ void EnvVisualization::load(const tesseract_scene_graph::SceneGraphConstPtr& sce
   setCollisionVisible(isCollisionVisible());
 }
 
-bool EnvVisualization::addLink(const tesseract_scene_graph::Link& link)
+bool VisualizationWidget::addLink(const tesseract_scene_graph::Link& link)
 {
   if (links_.find(link.getName()) != links_.end())
   {
@@ -300,7 +306,7 @@ bool EnvVisualization::addLink(const tesseract_scene_graph::Link& link)
   if ((!load_active_ && is_active) || (!load_static_ && !is_active))
     show_geom = false;
 
-  EnvLink* tlink = link_factory_->createLink(this, link, load_visual_ & show_geom, load_collision_ & show_geom);
+  LinkWidget* tlink = link_factory_->createLink(this, link, load_visual_ & show_geom, load_collision_ & show_geom);
 
   links_[link.getName()] = tlink;
 
@@ -311,7 +317,7 @@ bool EnvVisualization::addLink(const tesseract_scene_graph::Link& link)
   return true;
 }
 
-bool EnvVisualization::removeLink(const std::string& name)
+bool VisualizationWidget::removeLink(const std::string& name)
 {
   auto it = links_.find(name);
   if (it == links_.end())
@@ -320,7 +326,7 @@ bool EnvVisualization::removeLink(const std::string& name)
     return false;
   }
 
-  EnvLink* link = it->second;
+  LinkWidget* link = it->second;
   link->setParentProperty(nullptr);
   delete link;
   links_.erase(name);
@@ -330,7 +336,7 @@ bool EnvVisualization::removeLink(const std::string& name)
   return true;
 }
 
-bool EnvVisualization::addJoint(const tesseract_scene_graph::Joint& joint)
+bool VisualizationWidget::addJoint(const tesseract_scene_graph::Joint& joint)
 {
   if (joints_.find(joint.getName()) != joints_.end())
   {
@@ -338,7 +344,7 @@ bool EnvVisualization::addJoint(const tesseract_scene_graph::Joint& joint)
     return false;
   }
 
-  EnvJoint* tjoint = link_factory_->createJoint(this, joint);
+  JointWidget* tjoint = link_factory_->createJoint(this, joint);
 
   joints_[joint.getName()] = tjoint;
 
@@ -349,7 +355,7 @@ bool EnvVisualization::addJoint(const tesseract_scene_graph::Joint& joint)
   return true;
 }
 
-bool EnvVisualization::removeJoint(const std::string& name)
+bool VisualizationWidget::removeJoint(const std::string& name)
 {
   auto it = joints_.find(name);
   if (it == joints_.end())
@@ -358,7 +364,7 @@ bool EnvVisualization::removeJoint(const std::string& name)
     return false;
   }
 
-  EnvJoint* joint = it->second;
+  JointWidget* joint = it->second;
   joint->setParentProperty(nullptr);
   delete joint;
   joints_.erase(name);
@@ -368,7 +374,7 @@ bool EnvVisualization::removeJoint(const std::string& name)
   return true;
 }
 
-bool EnvVisualization::moveJoint(const std::string& joint_name, const std::string& parent_link)
+bool VisualizationWidget::moveJoint(const std::string& joint_name, const std::string& parent_link)
 {
   auto it = joints_.find(joint_name);
   if (it == joints_.end())
@@ -377,7 +383,7 @@ bool EnvVisualization::moveJoint(const std::string& joint_name, const std::strin
     return false;
   }
 
-  EnvJoint* joint = it->second;
+  JointWidget* joint = it->second;
   joint->setParentLinkName(parent_link);
 
   changedLinkTreeStyle();
@@ -385,7 +391,7 @@ bool EnvVisualization::moveJoint(const std::string& joint_name, const std::strin
   return true;
 }
 
-void EnvVisualization::addAllowedCollision(const std::string& link_name1,
+void VisualizationWidget::addAllowedCollision(const std::string& link_name1,
                                            const std::string& link_name2,
                                            const std::string& reason)
 {
@@ -403,16 +409,16 @@ void EnvVisualization::addAllowedCollision(const std::string& link_name1,
     return;
   }
 
-  EnvLink* link1 = it1->second;
+  LinkWidget* link1 = it1->second;
   link1->addAllowedCollision(link_name2, reason);
 
-  EnvLink* link2 = it2->second;
+  LinkWidget* link2 = it2->second;
   link2->addAllowedCollision(link_name1, reason);
 
   changedLinkTreeStyle();
 }
 
-void EnvVisualization::removeAllowedCollision(const std::string& link_name1,
+void VisualizationWidget::removeAllowedCollision(const std::string& link_name1,
                                               const std::string& link_name2)
 {
   auto it1 = links_.find(link_name1);
@@ -429,17 +435,17 @@ void EnvVisualization::removeAllowedCollision(const std::string& link_name1,
     return;
   }
 
-  EnvLink* link1 = it1->second;
+  LinkWidget* link1 = it1->second;
   link1->removeAllowedCollision(link_name2);
 
-  EnvLink* link2 = it2->second;
+  LinkWidget* link2 = it2->second;
   link2->removeAllowedCollision(link_name1);
 
   changedLinkTreeStyle();
 }
 
 
-void EnvVisualization::removeAllowedCollision(const std::string& link_name)
+void VisualizationWidget::removeAllowedCollision(const std::string& link_name)
 {
   auto it = links_.find(link_name);
   if (it == links_.end())
@@ -452,12 +458,12 @@ void EnvVisualization::removeAllowedCollision(const std::string& link_name)
 
   for (auto link_pair : links_)
   {
-    EnvLink* link = link_pair.second;
+    LinkWidget* link = link_pair.second;
     link->removeAllowedCollision(link_name);
   }
 }
 
-void EnvVisualization::setLinkCollisionEnabled(const std::string& name, bool enabled)
+void VisualizationWidget::setLinkCollisionEnabled(const std::string& name, bool enabled)
 {
   auto it = links_.find(name);
   if (it == links_.end())
@@ -466,117 +472,81 @@ void EnvVisualization::setLinkCollisionEnabled(const std::string& name, bool ena
     return;
   }
 
-  EnvLink* link = it->second;
+  LinkWidget* link = it->second;
   link->setCollisionEnabled(enabled);
 }
 
-void EnvVisualization::unparentLinkProperties()
+void VisualizationWidget::unparentLinkProperties()
 {
   // remove link properties from their parents
-  M_NameToLink::iterator link_it = links_.begin();
-  M_NameToLink::iterator link_end = links_.end();
-  for (; link_it != link_end; ++link_it)
-  {
-    link_it->second->setParentProperty(nullptr);
-  }
+  for (auto& link : links_)
+    link.second->setParentProperty(nullptr);
 
   // remove joint properties from their parents
-  M_NameToJoint::iterator joint_it = joints_.begin();
-  M_NameToJoint::iterator joint_end = joints_.end();
-  for (; joint_it != joint_end; ++joint_it)
-  {
-    joint_it->second->setParentProperty(nullptr);
-  }
+  for (auto& joint : joints_)
+    joint.second->setParentProperty(nullptr);
 }
 
-void EnvVisualization::useDetailProperty(bool use_detail)
+void VisualizationWidget::useDetailProperty(bool use_detail)
 {
   // remove sub properties and add them to detail
-  M_NameToLink::iterator link_it = links_.begin();
-  M_NameToLink::iterator link_end = links_.end();
-  for (; link_it != link_end; ++link_it)
-  {
-    link_it->second->useDetailProperty(use_detail);
-  }
+  for (auto& link : links_)
+    link.second->useDetailProperty(use_detail);
 
   // remove joint properties from their parents
-  M_NameToJoint::iterator joint_it = joints_.begin();
-  M_NameToJoint::iterator joint_end = joints_.end();
-  for (; joint_it != joint_end; ++joint_it)
-  {
-    joint_it->second->useDetailProperty(use_detail);
-  }
+  for (auto& joint : joints_)
+    joint.second->useDetailProperty(use_detail);
 }
 
-void EnvVisualization::changedExpandTree()
+void VisualizationWidget::changedExpandTree()
 {
   bool expand = expand_tree_->getBool();
 
-  M_NameToLink::iterator link_it = links_.begin();
-  M_NameToLink::iterator link_end = links_.end();
-  for (; link_it != link_end; ++link_it)
+  for (auto& link : links_)
   {
     if (expand)
-      link_it->second->getLinkProperty()->expand();
+      link.second->getLinkProperty()->expand();
     else
-      link_it->second->getLinkProperty()->collapse();
+      link.second->getLinkProperty()->collapse();
   }
 
-  M_NameToJoint::iterator joint_it = joints_.begin();
-  M_NameToJoint::iterator joint_end = joints_.end();
-  for (; joint_it != joint_end; ++joint_it)
+  for (auto& joint : joints_)
   {
     if (expand)
-      joint_it->second->getJointProperty()->expand();
+      joint.second->getJointProperty()->expand();
     else
-      joint_it->second->getJointProperty()->collapse();
+      joint.second->getJointProperty()->collapse();
   }
 }
 
-void EnvVisualization::changedHideSubProperties()
+void VisualizationWidget::changedHideSubProperties()
 {
   bool hide = /* !show_details_->getBool(); */ false;
 
-  M_NameToLink::iterator link_it = links_.begin();
-  M_NameToLink::iterator link_end = links_.end();
-  for (; link_it != link_end; ++link_it)
-  {
-    link_it->second->hideSubProperties(hide);
-  }
+  for (auto& link : links_)
+    link.second->hideSubProperties(hide);
 
-  M_NameToJoint::iterator joint_it = joints_.begin();
-  M_NameToJoint::iterator joint_end = joints_.end();
-  for (; joint_it != joint_end; ++joint_it)
-  {
-    joint_it->second->hideSubProperties(hide);
-  }
+  for (auto& joint : joints_)
+    joint.second->hideSubProperties(hide);
 }
 
-void EnvVisualization::changedExpandLinkDetails()
+void VisualizationWidget::changedExpandLinkDetails()
 {
   bool expand = expand_link_details_->getBool();
 
-  M_NameToLink::iterator link_it = links_.begin();
-  M_NameToLink::iterator link_end = links_.end();
-  for (; link_it != link_end; ++link_it)
-  {
-    link_it->second->expandDetails(expand);
-  }
+  for (auto& link : links_)
+    link.second->expandDetails(expand);
 }
 
-void EnvVisualization::changedExpandJointDetails()
+void VisualizationWidget::changedExpandJointDetails()
 {
   bool expand = expand_joint_details_->getBool();
 
-  M_NameToJoint::iterator joint_it = joints_.begin();
-  M_NameToJoint::iterator joint_end = joints_.end();
-  for (; joint_it != joint_end; ++joint_it)
-  {
-    joint_it->second->expandDetails(expand);
-  }
+  for (auto& joint : joints_)
+    joint.second->expandDetails(expand);
 }
 
-void EnvVisualization::changedEnableAllLinks()
+void VisualizationWidget::changedEnableAllLinks()
 {
   if (doing_set_checkbox_)
     return;
@@ -585,30 +555,18 @@ void EnvVisualization::changedEnableAllLinks()
 
   inChangedEnableAllLinks = true;
 
-  M_NameToLink::iterator link_it = links_.begin();
-  M_NameToLink::iterator link_end = links_.end();
-  for (; link_it != link_end; ++link_it)
-  {
-    if (link_it->second->hasGeometry())
-    {
-      link_it->second->getLinkProperty()->setValue(enable);
-    }
-  }
+  for (auto& link : links_)
+    if (link.second->hasGeometry())
+      link.second->getLinkProperty()->setValue(enable);
 
-  M_NameToJoint::iterator joint_it = joints_.begin();
-  M_NameToJoint::iterator joint_end = joints_.end();
-  for (; joint_it != joint_end; ++joint_it)
-  {
-    if (joint_it->second->hasDescendentLinksWithGeometry())
-    {
-      joint_it->second->getJointProperty()->setValue(enable);
-    }
-  }
+  for (auto& joint : joints_)
+    if (joint.second->hasDescendentLinksWithGeometry())
+      joint.second->getJointProperty()->setValue(enable);
 
   inChangedEnableAllLinks = false;
 }
 
-void EnvVisualization::setEnableAllLinksCheckbox(QVariant val)
+void VisualizationWidget::setEnableAllLinksCheckbox(QVariant val)
 {
   // doing_set_checkbox_ prevents changedEnableAllLinks from turning all
   // links off when we modify the enable_all_links_ property.
@@ -617,7 +575,7 @@ void EnvVisualization::setEnableAllLinksCheckbox(QVariant val)
   doing_set_checkbox_ = false;
 }
 
-void EnvVisualization::initLinkTreeStyle()
+void VisualizationWidget::initLinkTreeStyle()
 {
   style_name_map_.clear();
   style_name_map_[STYLE_LINK_LIST] = "Links in Alphabetic Order";
@@ -634,14 +592,14 @@ void EnvVisualization::initLinkTreeStyle()
   }
 }
 
-bool EnvVisualization::styleShowLink(LinkTreeStyle style)
+bool VisualizationWidget::styleShowLink(LinkTreeStyle style)
 {
   return style == STYLE_LINK_LIST || style == STYLE_LINK_TREE || style == STYLE_JOINT_LINK_TREE;
 }
 
-bool EnvVisualization::styleShowJoint(LinkTreeStyle style) { return style == STYLE_JOINT_LIST || style == STYLE_JOINT_LINK_TREE; }
-bool EnvVisualization::styleIsTree(LinkTreeStyle style) { return style == STYLE_LINK_TREE || style == STYLE_JOINT_LINK_TREE; }
-void EnvVisualization::setLinkTreeStyle(LinkTreeStyle style)
+bool VisualizationWidget::styleShowJoint(LinkTreeStyle style) { return style == STYLE_JOINT_LIST || style == STYLE_JOINT_LINK_TREE; }
+bool VisualizationWidget::styleIsTree(LinkTreeStyle style) { return style == STYLE_LINK_TREE || style == STYLE_JOINT_LINK_TREE; }
+void VisualizationWidget::setLinkTreeStyle(LinkTreeStyle style)
 {
   std::map<LinkTreeStyle, std::string>::const_iterator style_it = style_name_map_.find(style);
   if (style_it == style_name_map_.end())
@@ -650,42 +608,36 @@ void EnvVisualization::setLinkTreeStyle(LinkTreeStyle style)
     link_tree_style_->setValue(style_it->second.c_str());
 }
 
-EnvJoint* EnvVisualization::findParentJoint(EnvJoint* joint)
+JointWidget* VisualizationWidget::findParentJoint(JointWidget* joint)
 {
   const std::string& parent_link = joint->getParentLinkName();
   for (auto& joint_pair : joints_)
-  {
     if (parent_link == joint_pair.second->getChildLinkName())
       return joint_pair.second;
-  }
 
   return nullptr;
 }
 
-EnvJoint* EnvVisualization::findParentJoint(EnvLink* link)
+JointWidget* VisualizationWidget::findParentJoint(LinkWidget* link)
 {
   for (auto& joint_pair : joints_)
-  {
     if (link->getName() == joint_pair.second->getChildLinkName())
       return joint_pair.second;
-  }
 
   return nullptr;
 }
 
-EnvJoint* EnvVisualization::findChildJoint(EnvLink* link)
+JointWidget* VisualizationWidget::findChildJoint(LinkWidget* link)
 {
   for (auto& joint_pair : joints_)
-  {
     if (link->getName() == joint_pair.second->getParentLinkName())
       return joint_pair.second;
-  }
 
   return nullptr;
 }
 
 // insert properties into link_tree_ according to style
-void EnvVisualization::changedLinkTreeStyle()
+void VisualizationWidget::changedLinkTreeStyle()
 {
   if (!env_loaded_)
     return;
@@ -708,7 +660,7 @@ void EnvVisualization::changedLinkTreeStyle()
           for (auto& link : links_)
           {
             link.second->setLinkPropertyDescription();
-            EnvJoint* parent_joint = findParentJoint(link.second);
+            JointWidget* parent_joint = findParentJoint(link.second);
 
             if (parent_joint == nullptr)
             {
@@ -736,7 +688,7 @@ void EnvVisualization::changedLinkTreeStyle()
         {
           for (auto& joint_pair : joints_)
           {
-            EnvJoint* joint = joint_pair.second;
+            JointWidget* joint = joint_pair.second;
             joint->setJointPropertyDescription();
 
             auto parent_it = links_.find(joint->getParentLinkName());
@@ -753,7 +705,7 @@ void EnvVisualization::changedLinkTreeStyle()
               }
               else
               {
-                EnvJoint* parent_joint = findParentJoint(joint);
+                JointWidget* parent_joint = findParentJoint(joint);
                 if (parent_joint != nullptr)
                   joint->setParentProperty(parent_joint->getJointProperty());
                 else
@@ -781,12 +733,10 @@ void EnvVisualization::changedLinkTreeStyle()
     case STYLE_LINK_LIST:
     default:
       useDetailProperty(false);
-      M_NameToLink::iterator link_it = links_.begin();
-      M_NameToLink::iterator link_end = links_.end();
-      for (; link_it != link_end; ++link_it)
+      for (auto& link : links_)
       {
-        link_it->second->setParentProperty(link_tree_);
-        link_it->second->setLinkPropertyDescription();
+        link.second->setParentProperty(link_tree_);
+        link.second->setLinkPropertyDescription();
       }
       break;
   }
@@ -833,7 +783,7 @@ void EnvVisualization::changedLinkTreeStyle()
   calculateJointCheckboxes();
 }
 
-EnvLink* EnvVisualization::getLink(const std::string& name)
+LinkWidget* VisualizationWidget::getLink(const std::string& name)
 {
   M_NameToLink::iterator it = links_.find(name);
   if (it == links_.end())
@@ -845,7 +795,7 @@ EnvLink* EnvVisualization::getLink(const std::string& name)
   return it->second;
 }
 
-EnvJoint* EnvVisualization::getJoint(const std::string& name)
+JointWidget* VisualizationWidget::getJoint(const std::string& name)
 {
   M_NameToJoint::iterator it = joints_.find(name);
   if (it == joints_.end())
@@ -857,7 +807,7 @@ EnvJoint* EnvVisualization::getJoint(const std::string& name)
   return it->second;
 }
 
-void EnvVisualization::calculateJointCheckboxes()
+void VisualizationWidget::calculateJointCheckboxes()
 {
   if (inChangedEnableAllLinks || !env_loaded_)
     return;
@@ -866,7 +816,7 @@ void EnvVisualization::calculateJointCheckboxes()
   int links_with_geom_unchecked = 0;
 
   // check root link
-  EnvLink* link = root_link_;
+  LinkWidget* link = root_link_;
 
   if (!link)
   {
@@ -883,7 +833,7 @@ void EnvVisualization::calculateJointCheckboxes()
   int links_with_geom = links_with_geom_checked + links_with_geom_unchecked;
 
   // check all child links and joints recursively
-  EnvJoint* child_joint = findChildJoint(link);
+  JointWidget* child_joint = findChildJoint(link);
   while (child_joint != nullptr)
   {
     int child_links_with_geom;
@@ -908,57 +858,54 @@ void EnvVisualization::calculateJointCheckboxes()
   }
 }
 
-void EnvVisualization::update(const rviz::LinkUpdater& updater)
+void VisualizationWidget::update(const TransformMap& transforms)
 {
   for (auto& link_pair : links_)
   {
-    EnvLink* link = link_pair.second;
+    LinkWidget* link = link_pair.second;
 
     link->setToNormalMaterial();
-
-    Ogre::Vector3 visual_position, collision_position;
-    Ogre::Quaternion visual_orientation, collision_orientation;
-    if (updater.getLinkTransforms(
-            link->getName(), visual_position, visual_orientation, collision_position, collision_orientation))
+    auto it = transforms.find(link->getName());
+    if (it != transforms.end())
     {
-      // Check if visual_orientation, visual_position, collision_orientation,
-      // and collision_position are NaN.
-      if (visual_orientation.isNaN())
-      {
-        ROS_ERROR_THROTTLE(1.0,
-                           "visual orientation of %s contains NaNs. "
-                           "Skipping render as long as the orientation is "
-                           "invalid.",
-                           link->getName().c_str());
-        continue;
-      }
-      if (visual_position.isNaN())
-      {
-        ROS_ERROR_THROTTLE(1.0,
-                           "visual position of %s contains NaNs. Skipping "
-                           "render as long as the position is invalid.",
-                           link->getName().c_str());
-        continue;
-      }
-      if (collision_orientation.isNaN())
-      {
-        ROS_ERROR_THROTTLE(1.0,
-                           "collision orientation of %s contains NaNs. "
-                           "Skipping render as long as the orientation is "
-                           "invalid.",
-                           link->getName().c_str());
-        continue;
-      }
-      if (collision_position.isNaN())
-      {
-        ROS_ERROR_THROTTLE(1.0,
-                           "collision position of %s contains NaNs. "
-                           "Skipping render as long as the position is "
-                           "invalid.",
-                           link->getName().c_str());
-        continue;
-      }
-      link->setTransforms(visual_position, visual_orientation, collision_position, collision_orientation);
+//      // Check if visual_orientation, visual_position, collision_orientation,
+//      // and collision_position are NaN.
+//      if (visual_orientation.isNaN())
+//      {
+//        ROS_ERROR_THROTTLE(1.0,
+//                           "visual orientation of %s contains NaNs. "
+//                           "Skipping render as long as the orientation is "
+//                           "invalid.",
+//                           link->getName().c_str());
+//        continue;
+//      }
+//      if (visual_position.isNaN())
+//      {
+//        ROS_ERROR_THROTTLE(1.0,
+//                           "visual position of %s contains NaNs. Skipping "
+//                           "render as long as the position is invalid.",
+//                           link->getName().c_str());
+//        continue;
+//      }
+//      if (collision_orientation.isNaN())
+//      {
+//        ROS_ERROR_THROTTLE(1.0,
+//                           "collision orientation of %s contains NaNs. "
+//                           "Skipping render as long as the orientation is "
+//                           "invalid.",
+//                           link->getName().c_str());
+//        continue;
+//      }
+//      if (collision_position.isNaN())
+//      {
+//        ROS_ERROR_THROTTLE(1.0,
+//                           "collision position of %s contains NaNs. "
+//                           "Skipping render as long as the position is "
+//                           "invalid.",
+//                           link->getName().c_str());
+//        continue;
+//      }
+      link->setStartTransform(it->second);
     }
     else
     {
@@ -969,32 +916,32 @@ void EnvVisualization::update(const rviz::LinkUpdater& updater)
   // Update joint transformations
   for (auto& joint_pair : joints_)
   {
-    EnvJoint* joint = joint_pair.second;
+    JointWidget* joint = joint_pair.second;
 
-    EnvLink* p_link = links_[joint->getParentLinkName()];
+    LinkWidget* p_link = links_[joint->getParentLinkName()];
     joint->setTransforms(p_link->getPosition(), p_link->getOrientation());
   }
 
 }
 
-void EnvVisualization::setPosition(const Ogre::Vector3& position)
+void VisualizationWidget::setPosition(const Ogre::Vector3& position)
 {
   root_visual_node_->setPosition(position);
   root_collision_node_->setPosition(position);
 }
 
-void EnvVisualization::setOrientation(const Ogre::Quaternion& orientation)
+void VisualizationWidget::setOrientation(const Ogre::Quaternion& orientation)
 {
   root_visual_node_->setOrientation(orientation);
   root_collision_node_->setOrientation(orientation);
 }
 
-void EnvVisualization::setScale(const Ogre::Vector3& scale)
+void VisualizationWidget::setScale(const Ogre::Vector3& scale)
 {
   root_visual_node_->setScale(scale);
   root_collision_node_->setScale(scale);
 }
 
-const Ogre::Vector3& EnvVisualization::getPosition() { return root_visual_node_->getPosition(); }
-const Ogre::Quaternion& EnvVisualization::getOrientation() { return root_visual_node_->getOrientation(); }
+const Ogre::Vector3& VisualizationWidget::getPosition() { return root_visual_node_->getPosition(); }
+const Ogre::Quaternion& VisualizationWidget::getOrientation() { return root_visual_node_->getOrientation(); }
 }  // namespace rviz
