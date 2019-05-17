@@ -26,17 +26,6 @@
 #ifndef TESSERACT_ENVIRONMENT_KDL_ENV_H
 #define TESSERACT_ENVIRONMENT_KDL_ENV_H
 
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
-#include <kdl/tree.hpp>
-#include <kdl_parser/kdl_parser.hpp>
-#include <kdl/jntarray.hpp>
-
-#include <tesseract_collision/core/discrete_contact_manager.h>
-#include <tesseract_collision/core/continuous_contact_manager.h>
-#include <tesseract_scene_graph/graph.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
-
 #include <tesseract_environment/core/environment.h>
 
 namespace tesseract_environment
@@ -50,45 +39,6 @@ public:
   KDLEnv() : Environment() {}
 
   bool init(tesseract_scene_graph::SceneGraphPtr scene_graph) override;
-
-  void setState(const std::unordered_map<std::string, double>& joints) override;
-  void setState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values) override;
-  void setState(const std::vector<std::string>& joint_names,
-                const Eigen::Ref<const Eigen::VectorXd>& joint_values) override;
-
-  EnvStatePtr getState(const std::unordered_map<std::string, double>& joints) const override;
-  EnvStatePtr getState(const std::vector<std::string>& joint_names,
-                       const std::vector<double>& joint_values) const override;
-  EnvStatePtr getState(const std::vector<std::string>& joint_names,
-                       const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override;
-
-  bool addLink(tesseract_scene_graph::Link link, tesseract_scene_graph::Joint joint) override;
-
-  bool removeLink(const std::string& name) override;
-
-  bool moveLink(tesseract_scene_graph::Joint joint) override;
-
-  bool moveJoint(const std::string& joint_name, const std::string& parent_link) override;
-
-private:
-  std::shared_ptr<KDL::Tree> kdl_tree_;                        /**< KDL tree object */
-  std::unordered_map<std::string, unsigned int> joint_to_qnr_; /**< Map between joint name and kdl q index */
-  KDL::JntArray kdl_jnt_array_;                                /**< The kdl joint array */
-
-
-  void calculateTransforms(TransformMap& transforms,
-                           const KDL::JntArray& q_in,
-                           const KDL::SegmentMap::const_iterator& it,
-                           const Eigen::Isometry3d& parent_frame) const;
-
-  void calculateTransformsHelper(TransformMap& transforms,
-                                 const KDL::JntArray& q_in,
-                                 const KDL::SegmentMap::const_iterator& it,
-                                 const Eigen::Isometry3d& parent_frame) const;
-
-  bool setJointValuesHelper(KDL::JntArray& q, const std::string& joint_name, const double& joint_value) const;
-
-  void createKDETree();
 
 };
 typedef std::shared_ptr<KDLEnv> KDLEnvPtr;
