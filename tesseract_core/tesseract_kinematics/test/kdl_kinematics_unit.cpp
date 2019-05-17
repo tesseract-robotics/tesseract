@@ -41,7 +41,7 @@ tesseract_scene_graph::SceneGraphPtr getSceneGraph()
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
   tesseract_scene_graph::ResourceLocatorFn locator = locateResource;
-  return tesseract_scene_graph::parseURDF(path, locator);
+  return tesseract_scene_graph::parseURDFFile(path, locator);
 }
 
 void runFwdKinTest(tesseract_kinematics::ForwardKinematics& kin)

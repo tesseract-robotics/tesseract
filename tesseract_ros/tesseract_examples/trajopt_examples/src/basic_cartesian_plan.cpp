@@ -46,6 +46,9 @@ TRAJOPT_IGNORE_WARNINGS_POP
 #include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_rosutils/plotting.h>
+#include <tesseract_rosutils/utils.h>
+#include <tesseract_msgs/ModifyEnvironment.h>
+#include <tesseract_msgs/GetEnvironmentChanges.h>
 #include <trajopt/plot_callback.hpp>
 #include <trajopt/problem_description.hpp>
 #include <trajopt_utils/config.hpp>
@@ -60,12 +63,16 @@ using namespace tesseract_collision;
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
 const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic"; /**< Default ROS parameter for robot description */
 const std::string TRAJOPT_DESCRIPTION_PARAM = "trajopt_description"; /**< Default ROS parameter for trajopt description */
+const std::string GET_ENVIRONMENT_CHANGES_SERVICE = "get_tesseract_changes_rviz";
+const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
 
 static bool plotting_ = true;
 static int steps_ = 5;
 static std::string method_ = "json";
 static KDLEnvPtr env_;  /**< Environment */
 static ForwardKinematicsConstPtrMap kin_map_; /**< Map of available kinematics */
+static ros::ServiceClient modify_env_rviz;
+static ros::ServiceClient get_env_changes_rviz;
 
 TrajOptProbPtr jsonMethod()
 {
@@ -157,29 +164,29 @@ int main(int argc, char** argv)
   ros::NodeHandle pnh("~");
   ros::NodeHandle nh;
 
+  // Get ROS Parameters
+  pnh.param("plotting", plotting_, plotting_);
+  pnh.param<std::string>("method", method_, method_);
+  pnh.param<int>("steps", steps_, steps_);
+
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;
   nh.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
   nh.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
 
   ResourceLocatorFn locator = tesseract_rosutils::locateResource;
-  SceneGraphPtr g = tesseract_scene_graph::parseURDF(urdf::parseURDF(urdf_xml_string), locator);
-  assert(g != nullptr);
-
-  SRDFModel srdf;
-  bool success = srdf.initString(*g, srdf_xml_string);
-  assert(success);
-
-  // Add allowed collision to the scene
-  processSRDFAllowedCollisions(*g, srdf);
+  std::pair<tesseract_scene_graph::SceneGraphPtr, tesseract_scene_graph::SRDFModelPtr> data;
+  data = createSceneGraphFromStrings(urdf_xml_string, srdf_xml_string, locator);
+  if (data.first == nullptr || data.second == nullptr)
+    return -1;
 
   // Create kinematics map from srdf
-  kin_map_ = tesseract_kinematics::createKinematicsMap<KDLFwdKinChain, KDLFwdKinTree>(g, srdf);
+  kin_map_ = tesseract_kinematics::createKinematicsMap<KDLFwdKinChain, KDLFwdKinTree>(data.first, *data.second);
 
   env_ = std::make_shared<tesseract_environment::KDLEnv>();
   assert(env_ != nullptr);
 
-  success = env_->init(g);
+  bool success = env_->init(data.first);
   assert(success);
 
   // Register contact manager
@@ -190,7 +197,32 @@ int main(int argc, char** argv)
   env_->setActiveDiscreteContactManager("bullet");
   env_->setActiveContinuousContactManager("bullet");
 
-  // Create octomap
+  // These are used to keep visualization updated
+  modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", 10);
+  get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", 10);
+
+  // Get the current state of the environment
+  get_env_changes_rviz.waitForExistence();
+  tesseract_msgs::GetEnvironmentChanges env_changes;
+  env_changes.request.revision = 0;
+  if (get_env_changes_rviz.call(env_changes))
+  {
+    ROS_INFO("Retrieve current environment changes!");
+  }
+  else
+  {
+    ROS_ERROR("Failed retrieve current environment changes!");
+    return -1;
+  }
+
+  // There should not be any changes but check
+  if(env_changes.response.revision != 0)
+  {
+    ROS_ERROR("The environment has changed externally!");
+    return -1;
+  }
+
+  // Create octomap and add it to the local environment
   pcl::PointCloud<pcl::PointXYZ> full_cloud;
   double delta = 0.05;
   int length = static_cast<int>(1 / delta);
@@ -231,13 +263,30 @@ int main(int argc, char** argv)
 
   env_->addLink(link_octomap, joint_octomap);
 
+  // Now update rviz environment
+  modify_env_rviz.waitForExistence();
+  tesseract_msgs::ModifyEnvironment update_env;
+  update_env.request.id = env_changes.response.id;
+  update_env.request.revision = env_changes.response.revision;
+  if (!tesseract_rosutils::toMsg(update_env.request.commands, env_->getCommandHistory(), update_env.request.revision))
+  {
+    ROS_ERROR("Failed to generate commands to update rviz environment!");
+    return -1;
+  }
+
+  if (modify_env_rviz.call(update_env))
+  {
+    ROS_INFO("RViz environment Updated!");
+  }
+  else
+  {
+    ROS_INFO("Failed to update rviz environment");
+    return -1;
+  }
+
   // Create plotting tool
   tesseract_rosutils::ROSPlottingPtr plotter = std::make_shared<tesseract_rosutils::ROSPlotting>(env_);
 
-  // Get ROS Parameters
-  pnh.param("plotting", plotting_, plotting_);
-  pnh.param<std::string>("method", method_, method_);
-  pnh.param<int>("steps", steps_, steps_);
 
   // Set the robot initial state
   std::unordered_map<std::string, double> ipos;
@@ -250,8 +299,6 @@ int main(int argc, char** argv)
   ipos["joint_a7"] = 0.0;
 
   env_->setState(ipos);
-
-  plotter->plotScene();
 
   // Set Log Level
   util::gLogLevel = util::LevelInfo;

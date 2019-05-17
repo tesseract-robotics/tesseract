@@ -25,8 +25,8 @@
     <rosparam command="load" file="$(find trajopt_examples)/config/kinematics.yaml"/>
   </group>
 
-  <node pkg="trajopt_examples" type="trajopt_examples_basic_cartesian_plan" name="trajopt_examples_basic_cartesian_plan">
+  <!--<node pkg="trajopt_examples" type="trajopt_examples_basic_cartesian_plan" name="trajopt_examples_basic_cartesian_plan">
     <param name="plotting" type="bool" value="$(arg plotting)"/>
-  </node>
+  </node>-->
 
 </launch>

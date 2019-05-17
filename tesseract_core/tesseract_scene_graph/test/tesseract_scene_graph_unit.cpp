@@ -8,6 +8,7 @@ TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH
 TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/parser/mesh_parser.h>
 #include <tesseract_scene_graph/parser/urdf_parser.h>
 #include <tesseract_scene_graph/parser/srdf_parser.h>
@@ -293,7 +294,7 @@ TEST(TesseractSceneGraphUnit, LoadURDFUnit)
   std::string urdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
   ResourceLocatorFn locator = locateResource;
-  SceneGraphPtr g = parseURDF(urdf_file, locator);
+  SceneGraphPtr g = parseURDFFile(urdf_file, locator);
 
   EXPECT_TRUE(g->getJoints().size() == 9);
   EXPECT_TRUE(g->getLinks().size() == 10);
@@ -326,10 +327,32 @@ TEST(TesseractSceneGraphUnit, LoadSRDFUnit)
   std::string srdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
 
   ResourceLocatorFn locator = locateResource;
-  SceneGraphPtr g = parseURDF(urdf_file, locator);
+  SceneGraphPtr g = parseURDFFile(urdf_file, locator);
 
   SRDFModel srdf;
   EXPECT_TRUE(srdf.initFile(*g, srdf_file));
+
+  processSRDFAllowedCollisions(*g, srdf);
+
+  AllowedCollisionMatrixConstPtr acm = g->getAllowedCollisionMatrix();
+  const AllowedCollisionMatrix::AllowedCollisionEntries& acm_entries = acm->getAllAllowedCollisions();
+
+
+//  acm.addAllowedCollision("link1", "link2", "test");
+//  // collision between link1 and link2 should be allowed
+//  EXPECT_TRUE(acm.isCollisionAllowed("link1", "link2"));
+//  // but now between link2 and link3
+//  EXPECT_FALSE(acm.isCollisionAllowed("link2", "link3"));
+
+//  acm.removeAllowedCollision("link1", "link2");
+//  // now collision link1 and link2 is not allowed anymore
+//  EXPECT_FALSE(acm.isCollisionAllowed("link1", "link2"));
+
+//  acm.addAllowedCollision("link3", "link3", "test");
+//  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 1);
+//  acm.clearAllowedCollisions();
+//  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 0);
+
 }
 
 void printKDLTree(const KDL::SegmentMap::const_iterator & link, const std::string & prefix)
@@ -347,7 +370,7 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)
   std::string urdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
   ResourceLocatorFn locator = locateResource;
-  SceneGraphPtr g = parseURDF(urdf_file, locator);
+  SceneGraphPtr g = parseURDFFile(urdf_file, locator);
 
   KDL::Tree tree;
   EXPECT_TRUE(parseSceneGraph(*g, tree));

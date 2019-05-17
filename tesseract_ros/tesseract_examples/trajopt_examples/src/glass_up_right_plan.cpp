@@ -184,23 +184,18 @@ int main(int argc, char** argv)
   nh.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
 
   ResourceLocatorFn locator = tesseract_rosutils::locateResource;
-  SceneGraphPtr g = tesseract_scene_graph::parseURDF(urdf::parseURDF(urdf_xml_string), locator);
-  assert(g != nullptr);
-
-  SRDFModel srdf;
-  bool success = srdf.initString(*g, srdf_xml_string);
-  assert(success);
-
-  // Add allowed collision to the scene
-  processSRDFAllowedCollisions(*g, srdf);
+  std::pair<tesseract_scene_graph::SceneGraphPtr, tesseract_scene_graph::SRDFModelPtr> data;
+  data = createSceneGraphFromStrings(urdf_xml_string, srdf_xml_string, locator);
+  if (data.first == nullptr || data.second == nullptr)
+    return -1;
 
   // Create kinematics map from srdf
-  kin_map_ = tesseract_kinematics::createKinematicsMap<KDLFwdKinChain, KDLFwdKinTree>(g, srdf);
+  kin_map_ = tesseract_kinematics::createKinematicsMap<KDLFwdKinChain, KDLFwdKinTree>(data.first, *data.second);
 
   env_ = std::make_shared<tesseract_environment::KDLEnv>();
   assert(env_ != nullptr);
 
-  success = env_->init(g);
+  bool success = env_->init(data.first);
   assert(success);
 
   // Register contact manager
@@ -254,7 +249,7 @@ int main(int argc, char** argv)
   ipos["joint_a7"] = 0.0;
   env_->setState(ipos);
 
-  plotter->plotScene();
+//  plotter->plotScene();
 
   // Set Log Level
   util::gLogLevel = util::LevelInfo;

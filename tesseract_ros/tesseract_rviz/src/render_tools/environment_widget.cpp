@@ -453,17 +453,11 @@ void EnvironmentWidget::loadEnvironment()
   else
   {
     tesseract_scene_graph::ResourceLocatorFn locator = tesseract_rosutils::locateResource;
-    tesseract_scene_graph::SceneGraphPtr g = tesseract_scene_graph::parseURDF(urdf::parseURDF(urdf_xml_string), locator);
-    if (g != nullptr)
+    std::pair<tesseract_scene_graph::SceneGraphPtr, tesseract_scene_graph::SRDFModelPtr> data;
+    data = tesseract_scene_graph::createSceneGraphFromStrings(urdf_xml_string, srdf_xml_string, locator);
+    if (data.first != nullptr && data.second != nullptr)
     {
-      tesseract_scene_graph::SRDFModel srdf;
-      bool success = srdf.initString(*g, srdf_xml_string);
-      assert(success);
-
-      // Populated the allowed collision matrix
-      tesseract_scene_graph::processSRDFAllowedCollisions(*g, srdf);
-
-      success = env_->init(g);
+      bool success = env_->init(data.first);
       assert(success);
 
       if (success)
