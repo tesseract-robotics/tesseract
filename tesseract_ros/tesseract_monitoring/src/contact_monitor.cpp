@@ -191,27 +191,13 @@ int main(int argc, char** argv)
   nh.getParam(robot_description + "_semantic", srdf_xml_string);
 
   ResourceLocatorFn locator = tesseract_rosutils::locateResource;
-  SceneGraphPtr g = parseURDF(urdf_xml_string, locator);
-  if (g != nullptr)
-  {
-    ROS_ERROR("Failed to parse URDF.");
+  std::pair<SceneGraphPtr, SRDFModelPtr> data = createSceneGraphFromStrings(urdf_xml_string, srdf_xml_string, locator);
+  if (data.first == nullptr || data.second == nullptr)
     return -1;
-  }
-
-  tesseract_scene_graph::SRDFModel srdf;
-  bool success = srdf.initFile(*g, srdf_xml_string);
-  if (!success)
-  {
-    ROS_ERROR("Failed to parse SRDF.");
-    return -1;
-  }
-
-  // Add allowed collision to the scene
-  processSRDFAllowedCollisions(*scene_graph, srdf);
 
   // Create environemnt from scene graph
   KDLEnvPtr env = std::make_shared<KDLEnv>();
-  if (!env->init(g))
+  if (!env->init(data.first))
   {
     ROS_ERROR("Failed to initialize environment.");
     return -1;

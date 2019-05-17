@@ -136,21 +136,13 @@ EnvironmentMonitor::EnvironmentMonitor(const std::string& robot_description,
   root_nh_.getParam(robot_description + "_semantic", srdf_xml_string);
 
   tesseract_scene_graph::ResourceLocatorFn locator = tesseract_rosutils::locateResource;
-  scene_graph_ = tesseract_scene_graph::parseURDF(urdf_xml_string, locator);
-  if (scene_graph_ != nullptr)
-  {
-    ROS_ERROR("Failed to parse URDF.");
+  std::pair<tesseract_scene_graph::SceneGraphPtr, tesseract_scene_graph::SRDFModelPtr> data;
+  data = tesseract_scene_graph::createSceneGraphFromStrings(urdf_xml_string, srdf_xml_string, locator);
+  if (data.first == nullptr || data.second == nullptr)
     return;
-  }
 
-  tesseract_scene_graph::SRDFModelPtr srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
-  bool success = srdf->initFile(*scene_graph_, srdf_xml_string);
-  if (!success)
-  {
-    ROS_ERROR("Failed to parse SRDF.");
-    return;
-  }
-  srdf_model_ = srdf;
+  scene_graph_ = data.first;
+  srdf_model_ = data.second;
 
   // Parse kinematics groups from srdf model
   kin_map_ = tesseract_kinematics::createKinematicsMap<tesseract_kinematics::KDLFwdKinChain, tesseract_kinematics::KDLFwdKinTree>(scene_graph_, *srdf_model_);
@@ -203,9 +195,7 @@ void EnvironmentMonitor::initialize()
 
   if (scene_graph_)
   {
-    // Add allowed collision to the scene
-    if (srdf_model_)
-      processSRDFAllowedCollisions(*scene_graph_, *srdf_model_);
+
 
     env_ = std::make_shared<tesseract_environment::KDLEnv>();
     env_->init(scene_graph_);

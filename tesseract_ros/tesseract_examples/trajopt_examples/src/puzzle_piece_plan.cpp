@@ -231,7 +231,7 @@ int main(int argc, char** argv)
   nh.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
 
   ResourceLocatorFn locator = tesseract_rosutils::locateResource;
-  SceneGraphPtr g = tesseract_scene_graph::parseURDF(urdf::parseURDF(urdf_xml_string), locator);
+  SceneGraphPtr g = tesseract_scene_graph::parseURDFString(urdf_xml_string, locator);
   assert(g != nullptr);
 
   SRDFModel srdf;
@@ -277,7 +277,7 @@ int main(int argc, char** argv)
   ipos["joint_aux2"] = 0.0;
   env_->setState(ipos);
 
-  plotter->plotScene();
+//  plotter->plotScene();
 
   // Set Log Level
   util::gLogLevel = util::LevelInfo;

@@ -58,23 +58,6 @@ std::string locateResource(const std::string& url)
   return mod_url;
 }
 
-SceneGraphPtr getSceneGraph()
-{
-std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
-
-tesseract_scene_graph::ResourceLocatorFn locator = locateResource;
-return tesseract_scene_graph::parseURDF(path, locator);
-}
-
-SRDFModelPtr getSRDFModel(const SceneGraph& scene_graph)
-{
-std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
-SRDFModelPtr srdf = std::make_shared<SRDFModel>();
-srdf->initFile(scene_graph, path);
-
-return srdf;
-}
-
 static void addBox(tesseract_environment::Environment& env)
 {
   Link link_1("box_attached");
@@ -101,20 +84,17 @@ static void addBox(tesseract_environment::Environment& env)
 TEST(TesseractPlanningUnit, OMPLPlannerUnit)
 {
   // Step 1: Load scene and srdf
-  SceneGraphPtr scene_graph = getSceneGraph();
-  EXPECT_TRUE(scene_graph != nullptr);
-
-  SRDFModelPtr srdf_model = getSRDFModel(*scene_graph);
-  EXPECT_TRUE(srdf_model != nullptr);
-
-  // Add allowed collision to the scene
-  processSRDFAllowedCollisions(*scene_graph, *srdf_model);
+  ResourceLocatorFn locator = locateResource;
+  std::string urdf_path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
+  std::string srdf_path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
+  std::pair<tesseract_scene_graph::SceneGraphPtr, tesseract_scene_graph::SRDFModelPtr> data = tesseract_scene_graph::createSceneGraphFromFiles(urdf_path, srdf_path, locator);
+  EXPECT_TRUE(data.first != nullptr && data.second != nullptr);
 
   // Step 2: Create a "tesseract" environment
   KDLEnvPtr env = std::make_shared<KDLEnv>();
   EXPECT_TRUE(env != nullptr);
 
-  EXPECT_TRUE(env->init(scene_graph));
+  EXPECT_TRUE(env->init(data.first));
 
   // Register contact manager
   env->registerDiscreteContactManager("bullet", &tesseract_collision_bullet::BulletDiscreteBVHManager::create);
@@ -127,7 +107,7 @@ TEST(TesseractPlanningUnit, OMPLPlannerUnit)
   addBox(*env);
 
   // Step 3: Get kinematics objects from the srdf model
-  ForwardKinematicsConstPtrMap kin_map = createKinematicsMap<KDLFwdKinChain, KDLFwdKinTree>(scene_graph, *srdf_model);
+  ForwardKinematicsConstPtrMap kin_map = createKinematicsMap<KDLFwdKinChain, KDLFwdKinTree>(data.first, *data.second);
 
   // A tesseract plotter makes generating and publishing visualization messages
   // easy
