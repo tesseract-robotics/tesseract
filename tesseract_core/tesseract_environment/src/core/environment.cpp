@@ -25,32 +25,45 @@
  */
 
 #include <tesseract_environment/core/environment.h>
-#include <console_bridge/console.h>
+#include <tesseract_environment/core/utils.h>
 #include <tesseract_collision/core/common.h>
 
 namespace tesseract_environment
 {
 
-bool Environment::init(tesseract_scene_graph::SceneGraphPtr scene_graph)
+void Environment::setState(const std::unordered_map<std::string, double>& joints)
 {
-  initialized_ = false;
-  scene_graph_ = std::move(scene_graph);
-  if (scene_graph_ == nullptr)
-  {
-    CONSOLE_BRIDGE_logError("Null pointer to Scene Graph");
-    return false;
-  }
+  state_solver_->setState(joints);
+  currentStateChanged();
+}
 
-  if (!scene_graph_->getLink(scene_graph_->getRoot()))
-  {
-    CONSOLE_BRIDGE_logError("The scene graph has an invalid root.");
-    return false;
-  }
+void Environment::setState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values)
+{
+  state_solver_->setState(joint_names, joint_values);
+  currentStateChanged();
+}
 
-  is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed, scene_graph_, std::placeholders::_1, std::placeholders::_2);
+void Environment::setState(const std::vector<std::string>& joint_names,
+                      const Eigen::Ref<const Eigen::VectorXd>& joint_values)
+{
+  state_solver_->setState(joint_names, joint_values);
+  currentStateChanged();
+}
 
-  initialized_ = true;
-  return initialized_;
+EnvStatePtr Environment::getState(const std::unordered_map<std::string, double>& joints) const
+{
+  return state_solver_->getState(joints);
+}
+
+EnvStatePtr Environment::getState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values) const
+{
+  return state_solver_->getState(joint_names, joint_values);
+}
+
+EnvStatePtr Environment::getState(const std::vector<std::string>& joint_names,
+                                  const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
+{
+  return state_solver_->getState(joint_names, joint_values);
 }
 
 bool Environment::addLink(tesseract_scene_graph::Link link)
@@ -97,6 +110,8 @@ bool Environment::addLink(tesseract_scene_graph::Link link, tesseract_scene_grap
   ++revision_;
   commands_.push_back(std::make_shared<AddCommand>(scene_graph_->getLink(link.getName()), scene_graph_->getJoint(joint.getName())));
 
+  environmentChanged();
+
   return true;
 }
 
@@ -107,6 +122,8 @@ bool Environment::removeLink(const std::string& name)
 
   ++revision_;
   commands_.push_back(std::make_shared<RemoveLinkCommand>(name));
+
+  environmentChanged();
 
   return true;
 }
@@ -123,6 +140,8 @@ bool Environment::moveLink(tesseract_scene_graph::Joint joint)
 
   ++revision_;
   commands_.push_back(std::make_shared<MoveLinkCommand>(scene_graph_->getJoint(joint.getName())));
+
+  environmentChanged();
 
   return true;
 }
@@ -148,6 +167,8 @@ bool Environment::removeJoint(const std::string& name)
   ++revision_;
   commands_.push_back(std::make_shared<RemoveJointCommand>(name));
 
+  environmentChanged();
+
   return true;
 }
 
@@ -158,6 +179,8 @@ bool Environment::moveJoint(const std::string& joint_name, const std::string& pa
 
   ++revision_;
   commands_.push_back(std::make_shared<MoveJointCommand>(joint_name, parent_link));
+
+  environmentChanged();
 
   return true;
 }
@@ -410,6 +433,7 @@ tesseract_collision::ContinuousContactManagerPtr Environment::getContinuousConta
 
 void Environment::currentStateChanged()
 {
+  current_state_ = std::make_shared<EnvState>(*(state_solver_->getCurrentState()));
   if (discrete_manager_ != nullptr) discrete_manager_->setCollisionObjectsTransform(current_state_->transforms);
   if (continuous_manager_ != nullptr)
   {
@@ -425,6 +449,41 @@ void Environment::currentStateChanged()
       }
     }
   }
+}
+
+void Environment::environmentChanged()
+{
+  // Update link names
+  std::vector<tesseract_scene_graph::LinkConstPtr> links = scene_graph_->getLinks();
+  link_names_.clear();
+  link_names_.reserve(links.size());
+  for (const auto& link : links)
+    link_names_.push_back(link->getName());
+
+  // Update joint names and active joint name
+  std::vector<tesseract_scene_graph::JointConstPtr> joints = scene_graph_->getJoints();
+  active_joint_names_.clear();
+  joint_names_.clear();
+  joint_names_.reserve(joints.size());
+  for (const auto& joint : joints)
+  {
+    joint_names_.push_back(joint->getName());
+
+    //UNKNOWN, REVOLUTE, CONTINUOUS, PRISMATIC, FLOATING, PLANAR, FIXED
+    if (joint->type == tesseract_scene_graph::JointType::REVOLUTE || joint->type == tesseract_scene_graph::JointType::PRISMATIC)
+      active_joint_names_.push_back(joint->getName());
+  }
+
+  // Update active link names
+  active_link_names_.clear();
+  getActiveLinkNamesRecursive(active_link_names_, scene_graph_, scene_graph_->getRoot(), false);
+
+  if (discrete_manager_ != nullptr) discrete_manager_->setActiveCollisionObjects(active_link_names_);
+  if (continuous_manager_ != nullptr) continuous_manager_->setActiveCollisionObjects(active_link_names_);
+
+  state_solver_->onEnvironmentChanged(commands_);
+
+  currentStateChanged();
 }
 
 bool Environment::removeLinkHelper(const std::string& name)

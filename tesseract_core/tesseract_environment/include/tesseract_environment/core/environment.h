@@ -29,6 +29,7 @@
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <string>
+#include <console_bridge/console.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/types.h>
@@ -36,9 +37,11 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_scene_graph/graph.h>
+#include <tesseract_environment/core/state_solver.h>
 
 namespace tesseract_environment
 {
+
 class Environment
 {
 public:
@@ -49,38 +52,14 @@ public:
   virtual ~Environment() = default;
 
   /**
-   * @brief Set the current state of the environment
+   * @brief Initialize the Environment
    *
-   * After updating the current state these function must call currentStateChanged() which
-   * will update the contact managers transforms
+   * Inherited class must call the protected create function
    *
+   * @param scene_graph
+   * @return
    */
-  virtual void setState(const std::unordered_map<std::string, double>& joints) = 0;
-  virtual void setState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values) = 0;
-  virtual void setState(const std::vector<std::string>& joint_names,
-                        const Eigen::Ref<const Eigen::VectorXd>& joint_values) = 0;
-
-  /**
-   * @brief Get the state of the environment for a given set or subset of joint values.
-   *
-   * This does not change the internal state of the environment.
-   *
-   * @param joints A map of joint names to joint values to change.
-   * @return A the state of the environment
-   */
-  virtual EnvStatePtr getState(const std::unordered_map<std::string, double>& joints) const = 0;
-  virtual EnvStatePtr getState(const std::vector<std::string>& joint_names,
-                               const std::vector<double>& joint_values) const = 0;
-  virtual EnvStatePtr getState(const std::vector<std::string>& joint_names,
-                               const Eigen::Ref<const Eigen::VectorXd>& joint_values) const = 0;
-
-  // TODO: Everything above this needs to move into its own class called StateSolver
-
-  // **************************************************************************
-  // Everything below here is managed by this class but the methods are virtual
-  // so they may be overriden but you must call the base class method or the
-  // class may not operate correctly.
-  // **************************************************************************
+  virtual bool init(tesseract_scene_graph::SceneGraphPtr scene_graph) = 0;
 
   /**
    * @brief Get the current revision number
@@ -88,19 +67,17 @@ public:
    */
   int getRevision() const { return revision_; }
 
+  /**
+   * @brief Get Environment command history post initialization
+   * @return List of commands
+   */
   const Commands& getCommandHistory() { return commands_; }
 
-  virtual bool checkInitialized() const { return initialized_; }
-
-  /** @brief Get the current state of the environment */
-  EnvStateConstPtr getCurrentState() const { return current_state_; }
-
   /**
-   * @brief init
-   * @param scene_graph
-   * @return
+   * @brief Check if environment has been initialized
+   * @return True if initialized otherwise false
    */
-  virtual bool init(tesseract_scene_graph::SceneGraphPtr scene_graph);
+  virtual bool checkInitialized() const { return initialized_; }
 
   /**
    * @brief Get the Scene Graph
@@ -116,6 +93,34 @@ public:
    * This may be empty, if so check urdf name
    */
   virtual const std::string& getName() const { return name_; }
+
+  /**
+   * @brief Set the current state of the environment
+   *
+   * After updating the current state these function must call currentStateChanged() which
+   * will update the contact managers transforms
+   *
+   */
+  virtual void setState(const std::unordered_map<std::string, double>& joints);
+  virtual void setState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values);
+  virtual void setState(const std::vector<std::string>& joint_names, const Eigen::Ref<const Eigen::VectorXd>& joint_values);
+
+  /**
+   * @brief Get the state of the environment for a given set or subset of joint values.
+   *
+   * This does not change the internal state of the environment.
+   *
+   * @param joints A map of joint names to joint values to change.
+   * @return A the state of the environment
+   */
+  virtual EnvStatePtr getState(const std::unordered_map<std::string, double>& joints) const;
+  virtual EnvStatePtr getState(const std::vector<std::string>& joint_names,
+                               const std::vector<double>& joint_values) const;
+  virtual EnvStatePtr getState(const std::vector<std::string>& joint_names,
+                               const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
+
+  /** @brief Get the current state of the environment */
+  virtual EnvStateConstPtr getCurrentState() const { return current_state_; }
 
   /**
    * @brief Adds a link to the environment
@@ -363,7 +368,8 @@ protected:
   int revision_;                                               /**< This increments when the scene graph is modified */
   Commands commands_;                                          /**< The history of commands applied to the environment after intialization */
   tesseract_scene_graph::SceneGraphPtr scene_graph_;           /**< Tesseract Scene Graph */
-  EnvStatePtr current_state_;                                  /**< Current state of the robot */
+  EnvStatePtr current_state_;                                  /**< Current state of the environment */
+  StateSolverPtr state_solver_;                                /**< Tesseract State Solver */
   std::vector<std::string> link_names_;                        /**< A vector of link names */
   std::vector<std::string> joint_names_;                       /**< A vector of joint names */
   std::vector<std::string> active_link_names_;                 /**< A vector of active link names */
@@ -378,6 +384,46 @@ protected:
 
   /** This will update the contact managers transforms */
   void currentStateChanged();
+
+  /** This will notify the state solver that the environment has changed */
+  void environmentChanged();
+
+  /**
+   * @brief Initialize the Environment
+   * @param scene_graph
+   * @param state_solver
+   * @return
+   */
+  template <typename S>
+  bool create(tesseract_scene_graph::SceneGraphPtr scene_graph)
+  {
+    initialized_ = false;
+    scene_graph_ = std::move(scene_graph);
+
+    if (scene_graph_ == nullptr)
+    {
+      CONSOLE_BRIDGE_logError("Null pointer to Scene Graph");
+      return false;
+    }
+
+    if (!scene_graph_->getLink(scene_graph_->getRoot()))
+    {
+      CONSOLE_BRIDGE_logError("The scene graph has an invalid root.");
+      return false;
+    }
+
+    state_solver_ = std::make_shared<S>();
+    if (!state_solver_->init(scene_graph_))
+    {
+      CONSOLE_BRIDGE_logError("The environment state solver failed to initialize");
+      return false;
+    }
+
+    is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed, scene_graph_, std::placeholders::_1, std::placeholders::_2);
+
+    initialized_ = true;
+    return initialized_;
+  }
 
 private:
 
