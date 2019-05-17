@@ -152,10 +152,10 @@ private:
   Eigen::Isometry3d origin_;
 };
 
-class ChangeLinkCollisionEnabled : public Command
+class ChangeLinkCollisionEnabledCommand : public Command
 {
 public:
-  ChangeLinkCollisionEnabled(const std::string& link_name, bool enabled) : Command(CommandType::CHANGE_LINK_COLLISION_ENABLED), link_name_(link_name), enabled_(std::move(enabled)) {}
+  ChangeLinkCollisionEnabledCommand(const std::string& link_name, bool enabled) : Command(CommandType::CHANGE_LINK_COLLISION_ENABLED), link_name_(link_name), enabled_(std::move(enabled)) {}
 
   const std::string& getLinkName() const { return link_name_; }
   bool getEnabled() const { return enabled_; }
@@ -165,10 +165,10 @@ private:
   bool enabled_;
 };
 
-class ChangeLinkVisibility : public Command
+class ChangeLinkVisibilityCommand : public Command
 {
 public:
-  ChangeLinkVisibility(const std::string& link_name, bool enabled) : Command(CommandType::CHANGE_LINK_VISIBILITY), link_name_(link_name), enabled_(std::move(enabled)) {}
+  ChangeLinkVisibilityCommand(const std::string& link_name, bool enabled) : Command(CommandType::CHANGE_LINK_VISIBILITY), link_name_(link_name), enabled_(std::move(enabled)) {}
 
   const std::string& getLinkName() const { return link_name_; }
   bool getEnabled() const { return enabled_; }
@@ -178,10 +178,10 @@ private:
   bool enabled_;
 };
 
-class AddAllowedCollision : public Command
+class AddAllowedCollisionCommand : public Command
 {
 public:
-  AddAllowedCollision(const std::string& link_name1, const std::string& link_name2, const std::string& reason) : Command(CommandType::ADD_ALLOWED_COLLISION), link_name1_(link_name1), link_name2_(link_name2), reason_(reason) {}
+  AddAllowedCollisionCommand(const std::string& link_name1, const std::string& link_name2, const std::string& reason) : Command(CommandType::ADD_ALLOWED_COLLISION), link_name1_(link_name1), link_name2_(link_name2), reason_(reason) {}
 
   const std::string& getLinkName1() const { return link_name1_; }
   const std::string& getLinkName2() const { return link_name2_; }
@@ -193,10 +193,10 @@ private:
   std::string reason_;
 };
 
-class RemoveAllowedCollision : public Command
+class RemoveAllowedCollisionCommand : public Command
 {
 public:
-  RemoveAllowedCollision(const std::string& link_name1, const std::string& link_name2) : Command(CommandType::REMOVE_ALLOWED_COLLISION), link_name1_(link_name1), link_name2_(link_name2) {}
+  RemoveAllowedCollisionCommand(const std::string& link_name1, const std::string& link_name2) : Command(CommandType::REMOVE_ALLOWED_COLLISION), link_name1_(link_name1), link_name2_(link_name2) {}
 
   const std::string& getLinkName1() const { return link_name1_; }
   const std::string& getLinkName2() const { return link_name2_; }
@@ -206,10 +206,10 @@ private:
   std::string link_name2_;
 };
 
-class RemoveAllowedCollisionLink : public Command
+class RemoveAllowedCollisionLinkCommand : public Command
 {
 public:
-  RemoveAllowedCollisionLink(const std::string& link_name) : Command(CommandType::REMOVE_ALLOWED_COLLISION_LINK), link_name_(link_name) {}
+  RemoveAllowedCollisionLinkCommand(const std::string& link_name) : Command(CommandType::REMOVE_ALLOWED_COLLISION_LINK), link_name_(link_name) {}
 
   const std::string& getLinkName() const { return link_name_; }
 

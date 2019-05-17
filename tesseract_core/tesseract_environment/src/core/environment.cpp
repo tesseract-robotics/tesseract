@@ -183,7 +183,7 @@ void Environment::setLinkCollisionEnabled(const std::string& name, bool enabled)
   scene_graph_->setLinkCollisionEnabled(name, enabled);
 
   ++revision_;
-  commands_.push_back(std::make_shared<ChangeLinkCollisionEnabled>(name, enabled));
+  commands_.push_back(std::make_shared<ChangeLinkCollisionEnabledCommand>(name, enabled));
 }
 
 bool Environment::getLinkCollisionEnabled(const std::string& name) const
@@ -196,7 +196,7 @@ void Environment::setLinkVisibility(const std::string& name, bool visibility)
   scene_graph_->setLinkVisibility(name, visibility);
 
   ++revision_;
-  commands_.push_back(std::make_shared<ChangeLinkVisibility>(name, visibility));
+  commands_.push_back(std::make_shared<ChangeLinkVisibilityCommand>(name, visibility));
 }
 
 bool Environment::getLinkVisibility(const std::string& name) const
@@ -211,7 +211,7 @@ void Environment::addAllowedCollision(const std::string& link_name1,
   scene_graph_->addAllowedCollision(link_name1, link_name2, reason);
 
   ++revision_;
-  commands_.push_back(std::make_shared<AddAllowedCollision>(link_name1, link_name2, reason));
+  commands_.push_back(std::make_shared<AddAllowedCollisionCommand>(link_name1, link_name2, reason));
 }
 
 void Environment::removeAllowedCollision(const std::string& link_name1,
@@ -220,7 +220,7 @@ void Environment::removeAllowedCollision(const std::string& link_name1,
   scene_graph_->removeAllowedCollision(link_name1, link_name2);
 
   ++revision_;
-  commands_.push_back(std::make_shared<RemoveAllowedCollision>(link_name1, link_name2));
+  commands_.push_back(std::make_shared<RemoveAllowedCollisionCommand>(link_name1, link_name2));
 }
 
 void Environment::removeAllowedCollision(const std::string& link_name)
@@ -228,7 +228,7 @@ void Environment::removeAllowedCollision(const std::string& link_name)
   scene_graph_->removeAllowedCollision(link_name);
 
   ++revision_;
-  commands_.push_back(std::make_shared<RemoveAllowedCollisionLink>(link_name));
+  commands_.push_back(std::make_shared<RemoveAllowedCollisionLinkCommand>(link_name));
 }
 
 tesseract_scene_graph::AllowedCollisionMatrixConstPtr Environment::getAllowedCollisionMatrix() const
