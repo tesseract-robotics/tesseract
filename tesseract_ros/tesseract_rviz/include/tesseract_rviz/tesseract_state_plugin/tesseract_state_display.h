@@ -44,32 +44,17 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #ifndef Q_MOC_RUN
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
-#include <tesseract_msgs/ModifyEnvironment.h>
-#include <srdfdom/model.h>
 #include <ros/ros.h>
-#include <ros/service_server.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
-#include <tesseract_rviz/render_tools/env_visualization.h>
 #include <tesseract_environment/core/environment.h>
 #endif
+TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
-namespace Ogre
-{
-class SceneNode;
-}
-
-namespace rviz
-{
-class StringProperty;
-class BoolProperty;
-class FloatProperty;
-class RosTopicProperty;
-class ColorProperty;
-}
+#include <tesseract_rviz/render_tools/visualization_widget.h>
+#include <tesseract_rviz/render_tools/joint_state_monitor_widget.h>
+#include <tesseract_rviz/render_tools/environment_widget.h>
 
 namespace tesseract_rviz
 {
-class EnvVisualization;
 
 class TesseractStateDisplay : public rviz::Display
 {
@@ -89,69 +74,19 @@ public:
   void setLinkColor(const std::string& link_name, const QColor& color);
   void unsetLinkColor(const std::string& link_name);
 
-private Q_SLOTS:
-
-  // ******************************************************************************************
-  // Slot Event Functions
-  // ******************************************************************************************
-  void changedURDFDescription();
-  void changedRootLinkName();
-  void changedURDFSceneAlpha();
-  void changedJointStateTopic();
-  void changedEnableLinkHighlight();
-  void changedEnableVisualVisible();
-  void changedEnableCollisionVisible();
-  void changedAllLinks();
-
 protected:
-  void loadURDFModel();
-
-  /**
-   * \brief Set the scene node's position, given the target frame and the planning frame
-   */
-  void calculateOffsetPosition();
-
-//  void setLinkColor(const tesseract_msgs::TesseractState::_object_colors_type& link_colors);
-//  void setLinkColor(Robot* robot, const std::string& link_name, const QColor& color);
-//  void unsetLinkColor(Robot* robot, const std::string& link_name);
-  void newJointStateCallback(const sensor_msgs::JointStateConstPtr& joint_state);
-
-  /** @brief Callback for modifying the environment via service request */
-  bool modifyEnvironmentCallback(tesseract_msgs::ModifyEnvironmentRequest& req,
-                                 tesseract_msgs::ModifyEnvironmentResponse& res);
-
-//  void setHighlightedLinks(const tesseract_msgs::TesseractState::_highlight_links_type& highlight_links);
-//  void setHighlightedLink(const std::string& link_name, const std_msgs::ColorRGBA& color);
-//  void unsetHighlightedLink(const std::string& link_name);
-
   // overrides from Display
   void onInitialize() override;
   void onEnable() override;
   void onDisable() override;
-  void fixedFrameChanged() override;
+//  void fixedFrameChanged() override;
 
-  // render the robot
   ros::NodeHandle nh_;
-  ros::Subscriber joint_state_subscriber_;
-
-  // host a service for modifying the environment
-  ros::ServiceServer modify_environment_server_;
 
   tesseract_environment::EnvironmentPtr env_;
-  EnvVisualization::Ptr visualization_;
-  std::map<std::string, std_msgs::ColorRGBA> highlights_;
-  bool update_state_;
-  bool load_env_;  // for delayed initialization
-
-  rviz::StringProperty* urdf_description_property_;
-  rviz::StringProperty* root_link_name_property_;
-  rviz::RosTopicProperty* tesseract_state_topic_property_;
-  rviz::RosTopicProperty* joint_state_topic_property_;
-  rviz::FloatProperty* alpha_property_;
-  rviz::BoolProperty* enable_link_highlight_;
-  rviz::BoolProperty* enable_visual_visible_;
-  rviz::BoolProperty* enable_collision_visible_;
-  rviz::BoolProperty* show_all_links_;
+  VisualizationWidget::Ptr visualization_;
+  JointStateMonitorWidget::Ptr state_monitor_;
+  EnvironmentWidget::Ptr environment_monitor_;
 };
 
 

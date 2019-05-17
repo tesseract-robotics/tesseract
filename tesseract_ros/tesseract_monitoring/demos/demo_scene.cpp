@@ -45,13 +45,13 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <ros/service.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
-//#include <tesseract_ros/ros_tesseract_utils.h>
-//#include <tesseract_collision/core/collision_shapes.h>
-
 static const std::string ROBOT_DESCRIPTION = "robot_description";
 
-static ros::ServiceClient modify_env;
-static ros::ServiceClient get_env_changes;
+static ros::ServiceClient modify_env_rviz;
+static ros::ServiceClient get_env_changes_rviz;
+
+static ros::ServiceClient modify_env_master;
+static ros::ServiceClient get_env_changes_master;
 
 void addSphere(const std::string& name, const std::string id, int &revision)
 {
@@ -96,7 +96,7 @@ void addSphere(const std::string& name, const std::string id, int &revision)
   update_env.request.revision = revision;
   update_env.request.commands.push_back(add_sphere_command);
 
-  if (modify_env.call(update_env))
+  if (modify_env_rviz.call(update_env))
   {
     ROS_INFO("Sphere added to Environment!");
     revision = update_env.response.revision;
@@ -120,7 +120,7 @@ void removeSphere(const std::string& name, const std::string id, int &revision)
   update_env.request.revision = revision;
   update_env.request.commands.push_back(command);
 
-  if (modify_env.call(update_env))
+  if (modify_env_rviz.call(update_env))
   {
     ROS_INFO("Removed sphere from environment!");
     revision = update_env.response.revision;
@@ -131,6 +131,66 @@ void removeSphere(const std::string& name, const std::string id, int &revision)
   }
 }
 
+bool updateRViz()
+{
+  get_env_changes_rviz.waitForExistence();
+  // Get the current state of the environment
+  tesseract_msgs::GetEnvironmentChanges env_changes;
+  env_changes.request.revision = 0;
+  if (get_env_changes_rviz.call(env_changes))
+  {
+    ROS_INFO("Retrieve current environment changes!");
+  }
+  else
+  {
+    ROS_INFO("Failed retrieve current environment changes!");
+    return false;
+  }
+
+  std::string id = env_changes.response.id;
+  int revision = env_changes.response.revision;
+
+  modify_env_rviz.waitForExistence();
+
+  addSphere("sphere_attached", id, revision);
+
+  sleep(10);
+
+  removeSphere("sphere_attached", id, revision);
+
+  return true;
+}
+
+bool updateMaster()
+{
+  get_env_changes_master.waitForExistence();
+  // Get the current state of the environment
+  tesseract_msgs::GetEnvironmentChanges env_changes;
+  env_changes.request.revision = 0;
+  if (get_env_changes_master.call(env_changes))
+  {
+    ROS_INFO("Retrieve current environment changes!");
+  }
+  else
+  {
+    ROS_INFO("Failed retrieve current environment changes!");
+    return false;
+  }
+
+  std::string id = env_changes.response.id;
+  int revision = env_changes.response.revision;
+
+  modify_env_master.waitForExistence();
+
+  addSphere("sphere_attached", id, revision);
+
+  sleep(10);
+
+  removeSphere("sphere_attached", id, revision);
+
+  return true;
+}
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "demo", ros::init_options::AnonymousName);
@@ -139,33 +199,19 @@ int main(int argc, char** argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
-  modify_env = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract", 10);
-  get_env_changes = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes", 10);
+  // These are used to keep visualization updated
+  modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", 10);
+  get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", 10);
 
-  get_env_changes.waitForExistence();
-  // Get the current state of the environment
-  tesseract_msgs::GetEnvironmentChanges env_changes;
-  env_changes.request.revision = 0;
-  if (get_env_changes.call(env_changes))
-  {
-    ROS_INFO("Retrieve current environment changes!");
-  }
-  else
-  {
-    ROS_INFO("Failed retrieve current environment changes!");
+  // These are used to keep master version of the environment updated
+  modify_env_master = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract", 10);
+  get_env_changes_master = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes", 10);
+
+  if (!updateRViz())
     return -1;
-  }
 
-  std::string id = env_changes.response.id;
-  int revision = env_changes.response.revision;
-
-  modify_env.waitForExistence();
-
-  addSphere("sphere_attached", id, revision);
-
-  sleep(10);
-
-  removeSphere("sphere_attached", id, revision);
+  if (!updateMaster())
+    return -1;
 
   ros::waitForShutdown();
 

@@ -52,31 +52,18 @@ public:
   {
     ros::NodeHandle nh;
 
-    scene_pub_ = nh.advertise<tesseract_msgs::TesseractState>("/trajopt/display_tesseract_state", 1, true);
     trajectory_pub_ = nh.advertise<tesseract_msgs::Trajectory>("/trajopt/display_tesseract_trajectory", 1, true);
     collisions_pub_ = nh.advertise<visualization_msgs::MarkerArray>("/trajopt/display_collisions", 1, true);
     arrows_pub_ = nh.advertise<visualization_msgs::MarkerArray>("/trajopt/display_arrows", 1, true);
     axes_pub_ = nh.advertise<visualization_msgs::MarkerArray>("/trajopt/display_axes", 1, true);
   }
 
-  void plotScene() const
-  {
-    tesseract_msgs::TesseractState msg;
-
-    toMsg(msg, *env_);
-
-    scene_pub_.publish(msg);
-  }
-
   void plotTrajectory(const std::vector<std::string>& joint_names, const Eigen::Ref<const tesseract_environment::TrajArray>& traj) override
   {
     tesseract_msgs::Trajectory msg;
 
-    // Set the model id
-    msg.model_id = env_->getSceneGraph()->getName();
-
-    // Set the Robot State so attached objects show up
-    toMsg(msg.trajectory_start, *env_);
+    // Set tesseract state information
+    toMsg(msg.tesseract_state, *env_);
 
     // Set the joint trajectory message
     toMsg(msg.joint_trajectory, *(env_->getCurrentState()), joint_names, traj);

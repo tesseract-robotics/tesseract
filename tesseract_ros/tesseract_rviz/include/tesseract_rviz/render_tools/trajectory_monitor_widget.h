@@ -34,8 +34,8 @@
 
 /* Author: Dave Coleman */
 
-#ifndef TESSERACT_RVIZ_TRAJECTORY_VISUALIZATION
-#define TESSERACT_RVIZ_TRAJECTORY_VISUALIZATION
+#ifndef TESSERACT_RVIZ_TRAJECTORY_MONITOR_WIDGET
+#define TESSERACT_RVIZ_TRAJECTORY_MONITOR_WIDGET
 
 #include <tesseract_environment/core/macros.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
@@ -50,7 +50,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/Trajectory.h>
 #include <tesseract_environment/core/environment.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
-#include <tesseract_rviz/render_tools/env_visualization.h>
+#include <tesseract_rviz/render_tools/visualization_widget.h>
 #include <tesseract_rviz/render_tools/trajectory_panel.h>
 #endif
 
@@ -72,29 +72,28 @@ class MovableText;
 namespace tesseract_rviz
 {
 
-class TrajectoryVisualization : public QObject
+class TrajectoryMonitorWidget : public QObject
 {
   Q_OBJECT
 
 public:
-  /**
-   * \brief Playback a trajectory from a planned path
-   * \param widget - either a rviz::Display or rviz::Property
-   * \param display - the rviz::Display from the parent
-   * \return true on success
-   */
-  TrajectoryVisualization(rviz::Property* widget, rviz::Display* display);
+  using Ptr = std::shared_ptr<TrajectoryMonitorWidget>;
+  using ConstPtr = std::shared_ptr<const TrajectoryMonitorWidget>;
 
-  virtual ~TrajectoryVisualization();
+  TrajectoryMonitorWidget(rviz::Property* widget, rviz::Display* display);
 
-  virtual void update(float wall_dt, float ros_dt);
-  virtual void reset();
+  virtual ~TrajectoryMonitorWidget();
 
-  void onInitialize(Ogre::SceneNode* scene_node, rviz::DisplayContext* context, ros::NodeHandle update_nh);
-  void onEnvLoaded(tesseract_environment::EnvironmentPtr env);
+  void onInitialize(VisualizationWidget::Ptr visualization,
+                    tesseract_environment::EnvironmentPtr env,
+                    rviz::DisplayContext* context,
+                    ros::NodeHandle update_nh);
+
   void onEnable();
   void onDisable();
-  void setName(const QString& name);
+  void onUpdate(float wall_dt);
+  void onReset();
+  void onNameChange(const QString& name);
 
   void dropTrajectory();
 
@@ -102,36 +101,24 @@ public Q_SLOTS:
   void interruptCurrentDisplay();
 
 private Q_SLOTS:
-
-  /**
-   * \brief Slot Event Functions
-   */
-  void changedDisplayPathVisualEnabled();
-  void changedDisplayPathCollisionEnabled();
-  void changedPathAlpha();
   void changedDisplayMode();
   void changedTrailStepSize();
   void changedTrajectoryTopic();
   void changedStateDisplayTime();
-  void changedColor();
-  void enabledColor();
   void trajectorySliderPanelVisibilityChange(bool enable);
 
 protected:
-  /**
-   * \brief ROS callback for an incoming path message
-   */
   void incomingDisplayTrajectory(const tesseract_msgs::Trajectory::ConstPtr& msg);
   float getStateDisplayTime();
   void clearTrajectoryTrail();
   void createTrajectoryTrail();
 
-  // Handles actually drawing the robot along motion plans
-  EnvVisualization::Ptr display_path_;
-
-  // Handle colouring of robot
-  void setColor(EnvVisualization::Ptr env, const QColor& color);
-  void unsetColor(EnvVisualization::Ptr env);
+  rviz::Property* widget_;
+  rviz::Display* display_;
+  rviz::DisplayContext* context_;
+  VisualizationWidget::Ptr visualization_;
+  tesseract_environment::EnvironmentPtr env_;
+  ros::NodeHandle nh_;
 
   tesseract_msgs::TrajectoryPtr displaying_trajectory_message_;
   tesseract_msgs::TrajectoryPtr trajectory_message_to_display_;
@@ -139,37 +126,24 @@ protected:
   ros::Subscriber trajectory_topic_sub_;
   boost::mutex update_trajectory_message_;
 
-  tesseract_environment::EnvironmentPtr env_;
-
   // Pointers from parent display taht we save
-  rviz::Property* widget_;
-  rviz::Display* display_;  // the parent display that this class populates
   bool animating_path_;
   bool drop_displaying_trajectory_;
   int current_state_;
-  float current_state_time_;
-  Ogre::SceneNode* scene_node_;
-  rviz::DisplayContext* context_;
-  ros::NodeHandle update_nh_;
+  float current_state_time_; 
   TrajectoryPanel* trajectory_slider_panel_;
   rviz::PanelDockWidget* trajectory_slider_dock_panel_;
   int previous_display_mode_;
   size_t num_trajectory_waypoints_;
 
   // Properties
-  rviz::BoolProperty* display_path_visual_enabled_property_;
-  rviz::BoolProperty* display_path_collision_enabled_property_;
   rviz::EditableEnumProperty* state_display_time_property_;
   rviz::RosTopicProperty* trajectory_topic_property_;
-  rviz::FloatProperty* path_alpha_property_;
   rviz::EnumProperty* display_mode_property_;
   rviz::BoolProperty* interrupt_display_property_;
-  rviz::ColorProperty* default_color_property_;
-  rviz::BoolProperty* enable_default_color_property_;
   rviz::IntProperty* trail_step_size_property_;
 };
-typedef std::shared_ptr<TrajectoryVisualization> TrajectoryVisualizationPtr;
-typedef std::shared_ptr<const TrajectoryVisualization> TrajectoryVisualizationConstPtr;
+
 }  // namespace tesseract_rviz
 
-#endif  // TESSERACT_RVIZ_TRAJECTORY_VISUALIZATION
+#endif

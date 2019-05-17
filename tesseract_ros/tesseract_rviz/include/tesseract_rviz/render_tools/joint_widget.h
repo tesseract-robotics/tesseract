@@ -78,20 +78,20 @@ class StringProperty;
 
 namespace tesseract_rviz
 {
-class EnvVisualization;
+class VisualizationWidget;
 class EnvLinkSelectionHandler;
-class EnvJoint;
+class JointWidget;
 
 /**
  * \struct RobotJoint
  * \brief Contains any data we need from a joint in the robot.
  */
-class EnvJoint : public QObject
+class JointWidget : public QObject
 {
   Q_OBJECT
 public:
-  EnvJoint(EnvVisualization* env, const tesseract_scene_graph::Joint& joint);
-  virtual ~EnvJoint();
+  JointWidget(VisualizationWidget* env, const tesseract_scene_graph::Joint& joint);
+  virtual ~JointWidget();
 
   const std::string& getName() const { return name_; }
 
@@ -152,7 +152,7 @@ private:
   void setJointCheckbox(QVariant val);
 
 protected:
-  EnvVisualization* env_;
+  VisualizationWidget* env_;
   std::string name_;  ///< Name of this joint
   std::string parent_link_name_;
   std::string child_link_name_;

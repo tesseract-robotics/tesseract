@@ -54,19 +54,12 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 namespace tesseract_rviz
 {
 
-TesseractTrajectoryDisplay::TesseractTrajectoryDisplay() : Display(), load_env_(false)
+TesseractTrajectoryDisplay::TesseractTrajectoryDisplay() : Display()
 {
-  // The robot description property is only needed when using the trajectory
-  // playback standalone (not within motion
-  // planning plugin)
-  urdf_description_property_ = new rviz::StringProperty("URDF Description",
-                                                        "robot_description",
-                                                        "The name of the ROS parameter where the URDF is loaded",
-                                                        this,
-                                                        SLOT(changedURDFDescription()),
-                                                        this);
-
-  trajectory_visual_.reset(new TrajectoryVisualization(this, this));
+  env_ = std::make_shared<tesseract_environment::KDLEnv>();
+  environment_monitor_ = std::make_shared<EnvironmentWidget>(this, this);
+  state_monitor_ = std::make_shared<JointStateMonitorWidget>(this, this);
+  trajectory_monitor_ = std::make_shared<TrajectoryMonitorWidget>(this, this);
 }
 
 TesseractTrajectoryDisplay::~TesseractTrajectoryDisplay() {}
@@ -74,102 +67,55 @@ void TesseractTrajectoryDisplay::onInitialize()
 {
   Display::onInitialize();
 
-  trajectory_visual_->onInitialize(scene_node_, context_, update_nh_);
-}
+  visualization_ = std::make_shared<VisualizationWidget>(scene_node_, context_, "Tesseract State", this);
 
-void TesseractTrajectoryDisplay::loadEnv()
-{
-  load_env_ = false;
-  // Initial setup
-  std::string urdf_xml_string, srdf_xml_string;
-  nh_.getParam(urdf_description_property_->getString().toStdString(), urdf_xml_string);
-  nh_.getParam(urdf_description_property_->getString().toStdString() + "_semantic", srdf_xml_string);
+  environment_monitor_->onInitialize(visualization_, env_, context_, nh_);
+  state_monitor_->onInitialize(visualization_, env_, context_, nh_);
+  trajectory_monitor_->onInitialize(visualization_, env_, context_, nh_);
 
-  // Load URDF model
-  if (urdf_xml_string.empty())
-  {
-    setStatus(rviz::StatusProperty::Error, "TesseractState", "No URDF model loaded");
-  }
-  else
-  {
-    tesseract_scene_graph::ResourceLocatorFn locator = tesseract_rosutils::locateResource;
-    tesseract_scene_graph::SceneGraphPtr g = tesseract_scene_graph::parseURDF(urdf::parseURDF(urdf_xml_string), locator);
-    if (g != nullptr)
-    {
-      tesseract_scene_graph::SRDFModel srdf;
-      bool success = srdf.initString(*g, srdf_xml_string);
-      assert(success);
-
-      // Populated the allowed collision matrix
-      tesseract_scene_graph::processSRDFAllowedCollisions(*g, srdf);
-
-      tesseract_environment::KDLEnvPtr env = std::make_shared<tesseract_environment::KDLEnv>();
-      assert(env != nullptr);
-
-      success = env->init(g);
-      assert(success);
-
-      if (success)
-      {
-        env_ = env;
-        trajectory_visual_->onEnvLoaded(env_);
-        trajectory_visual_->onEnable();
-
-        setStatus(rviz::StatusProperty::Ok, "TesseractState", "Tesseract Environment Loaded Successfully");
-      }
-      else
-      {
-        setStatus(rviz::StatusProperty::Error, "TesseractState", "Tesseract Environment Failed to Load");
-      }
-    }
-    else
-    {
-      setStatus(rviz::StatusProperty::Error, "TesseractState", "URDF file failed to parse");
-    }
-  }
+  visualization_->setVisible(false);
 }
 
 void TesseractTrajectoryDisplay::reset()
 {
+  visualization_->clear();
   Display::reset();
-  loadEnv();
-  trajectory_visual_->reset();
+
+  environment_monitor_->onReset();
+  state_monitor_->onReset();
+  trajectory_monitor_->onReset();
 }
 
 void TesseractTrajectoryDisplay::onEnable()
 {
   Display::onEnable();
-  load_env_ = true;  // allow loading of robot model in update()
+
+  environment_monitor_->onEnable();
+  state_monitor_->onEnable();
+  trajectory_monitor_->onEnable();
 }
 
 void TesseractTrajectoryDisplay::onDisable()
 {
+  environment_monitor_->onDisable();
+  state_monitor_->onDisable();
+  trajectory_monitor_->onDisable();
+
   Display::onDisable();
-  trajectory_visual_->onDisable();
 }
 
 void TesseractTrajectoryDisplay::update(float wall_dt, float ros_dt)
 {
   Display::update(wall_dt, ros_dt);
-
-  if (load_env_)
-    loadEnv();
-
-  trajectory_visual_->update(wall_dt, ros_dt);
+  environment_monitor_->onUpdate();
+  state_monitor_->onUpdate();
+  trajectory_monitor_->onUpdate(wall_dt);
 }
 
 void TesseractTrajectoryDisplay::setName(const QString& name)
 {
   BoolProperty::setName(name);
-  trajectory_visual_->setName(name);
-}
-
-void TesseractTrajectoryDisplay::changedURDFDescription()
-{
-  if (isEnabled())
-    reset();
-  else
-    loadEnv();
+  trajectory_monitor_->onNameChange(name);
 }
 
 }  // namespace tesseract_rviz
