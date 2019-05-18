@@ -132,7 +132,7 @@ void EnvironmentWidget::onUpdate()
 
 void EnvironmentWidget::onReset()
 {
-  loadEnvironment();
+  load_env_ = true;
 }
 
 void EnvironmentWidget::changedAllLinks()
@@ -202,8 +202,8 @@ static bool operator!=(const std_msgs::ColorRGBA& a, const std_msgs::ColorRGBA& 
 
 void EnvironmentWidget::changedURDFDescription()
 {
-//  if (isEnabled())
-//    reset();
+  if (display_->isEnabled())
+    onReset();
 }
 
 void EnvironmentWidget::changedRootLinkName() {}
@@ -447,6 +447,7 @@ void EnvironmentWidget::loadEnvironment()
   // Load URDF model
   if (urdf_xml_string.empty())
   {
+    load_env_ = true;
     // TODO:
 //    setStatus(rviz::StatusProperty::Error, "TesseractState", "No URDF model loaded");
   }

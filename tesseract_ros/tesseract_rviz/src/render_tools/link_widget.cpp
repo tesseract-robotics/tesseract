@@ -617,6 +617,11 @@ Ogre::MaterialPtr LinkWidget::getMaterialForLink(const tesseract_scene_graph::Li
     }
   }
 
+  if (visual == nullptr)
+  {
+    visual = link.visual[0];  // if link does not have material, use default one
+  }
+
   if (visual->material->texture_filename.empty())
   {
     const Eigen::Vector4d& col = visual->material->color;
