@@ -59,6 +59,7 @@ using namespace tesseract_environment;
 using namespace tesseract_kinematics;
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
+using namespace tesseract_rosutils;
 
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
 const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic"; /**< Default ROS parameter for robot description */
@@ -90,6 +91,100 @@ TrajOptProbPtr jsonMethod()
   }
 
   return ConstructProblem(root, env_, kin_map_);
+}
+
+bool checkRviz()
+{
+  // Get the current state of the environment
+  get_env_changes_rviz.waitForExistence();
+  tesseract_msgs::GetEnvironmentChanges env_changes;
+  env_changes.request.revision = 0;
+  if (get_env_changes_rviz.call(env_changes))
+  {
+    ROS_INFO("Retrieve current environment changes!");
+  }
+  else
+  {
+    ROS_ERROR("Failed retrieve current environment changes!");
+    return false;
+  }
+
+  // There should not be any changes but check
+  if(env_changes.response.revision != 0)
+  {
+    ROS_ERROR("The environment has changed externally!");
+    return false;
+  }
+  return true;
+}
+
+bool sendRvizChanges()
+{
+  modify_env_rviz.waitForExistence();
+  tesseract_msgs::ModifyEnvironment update_env;
+  update_env.request.id = env_->getName();
+  update_env.request.revision = env_->getRevision() - 1;
+  if (!toMsg(update_env.request.commands, env_->getCommandHistory(), update_env.request.revision))
+  {
+    ROS_ERROR("Failed to generate commands to update rviz environment!");
+    return false;
+  }
+
+  if (modify_env_rviz.call(update_env))
+  {
+    ROS_INFO("RViz environment Updated!");
+  }
+  else
+  {
+    ROS_INFO("Failed to update rviz environment");
+    return false;
+  }
+
+  return true;
+}
+
+bool addPointCloud()
+{
+  // Create octomap and add it to the local environment
+  pcl::PointCloud<pcl::PointXYZ> full_cloud;
+  double delta = 0.05;
+  int length = static_cast<int>(1 / delta);
+
+  for (int x = 0; x < length; ++x)
+    for (int y = 0; y < length; ++y)
+      for (int z = 0; z < length; ++z)
+        full_cloud.push_back(pcl::PointXYZ(-0.5f + static_cast<float>(x * delta),
+                                           -0.5f + static_cast<float>(y * delta),
+                                           -0.5f + static_cast<float>(z * delta)));
+
+  sensor_msgs::PointCloud2 pointcloud_msg;
+  pcl::toROSMsg(full_cloud, pointcloud_msg);
+
+  octomap::Pointcloud octomap_data;
+  octomap::pointCloud2ToOctomap(pointcloud_msg, octomap_data);
+  std::shared_ptr<octomap::OcTree> octree = std::make_shared<octomap::OcTree>(2 * delta);
+  octree->insertPointCloud(octomap_data, octomap::point3d(0, 0, 0));
+
+  // Add octomap to environment
+  Link link_octomap("octomap_attached");
+
+  VisualPtr visual = std::make_shared<Visual>();
+  visual->origin = Eigen::Isometry3d::Identity();
+  visual->origin.translation() = Eigen::Vector3d(1, 0, 0);
+  visual->geometry = std::make_shared<tesseract_geometry::Octree>(octree, tesseract_geometry::Octree::BOX);
+  link_octomap.visual.push_back(visual);
+
+  CollisionPtr collision = std::make_shared<Collision>();
+  collision->origin = visual->origin;
+  collision->geometry = visual->geometry;
+  link_octomap.collision.push_back(collision);
+
+  Joint joint_octomap("joint_octomap_attached");
+  joint_octomap.parent_link_name = "base_link";
+  joint_octomap.child_link_name = link_octomap.getName();
+  joint_octomap.type = JointType::FIXED;
+
+  return env_->addLink(link_octomap, joint_octomap);
 }
 
 TrajOptProbPtr cppMethod()
@@ -175,7 +270,7 @@ int main(int argc, char** argv)
   nh.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
 
   ResourceLocatorFn locator = tesseract_rosutils::locateResource;
-  std::pair<tesseract_scene_graph::SceneGraphPtr, tesseract_scene_graph::SRDFModelPtr> data;
+  std::pair<SceneGraphPtr, SRDFModelPtr> data;
   data = createSceneGraphFromStrings(urdf_xml_string, srdf_xml_string, locator);
   if (data.first == nullptr || data.second == nullptr)
     return -1;
@@ -201,91 +296,20 @@ int main(int argc, char** argv)
   modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", 10);
   get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", 10);
 
-  // Get the current state of the environment
-  get_env_changes_rviz.waitForExistence();
-  tesseract_msgs::GetEnvironmentChanges env_changes;
-  env_changes.request.revision = 0;
-  if (get_env_changes_rviz.call(env_changes))
-  {
-    ROS_INFO("Retrieve current environment changes!");
-  }
-  else
-  {
-    ROS_ERROR("Failed retrieve current environment changes!");
+  // Check RViz to make sure nothing has changed
+  if (!checkRviz())
     return -1;
-  }
-
-  // There should not be any changes but check
-  if(env_changes.response.revision != 0)
-  {
-    ROS_ERROR("The environment has changed externally!");
-    return -1;
-  }
 
   // Create octomap and add it to the local environment
-  pcl::PointCloud<pcl::PointXYZ> full_cloud;
-  double delta = 0.05;
-  int length = static_cast<int>(1 / delta);
-
-  for (int x = 0; x < length; ++x)
-    for (int y = 0; y < length; ++y)
-      for (int z = 0; z < length; ++z)
-        full_cloud.push_back(pcl::PointXYZ(-0.5f + static_cast<float>(x * delta),
-                                           -0.5f + static_cast<float>(y * delta),
-                                           -0.5f + static_cast<float>(z * delta)));
-
-  sensor_msgs::PointCloud2 pointcloud_msg;
-  pcl::toROSMsg(full_cloud, pointcloud_msg);
-
-  octomap::Pointcloud octomap_data;
-  octomap::pointCloud2ToOctomap(pointcloud_msg, octomap_data);
-  std::shared_ptr<octomap::OcTree> octree = std::make_shared<octomap::OcTree>(2 * delta);
-  octree->insertPointCloud(octomap_data, octomap::point3d(0, 0, 0));
-
-  // Add octomap to environment
-  Link link_octomap("octomap_attached");
-
-  VisualPtr visual = std::make_shared<Visual>();
-  visual->origin = Eigen::Isometry3d::Identity();
-  visual->origin.translation() = Eigen::Vector3d(1, 0, 0);
-  visual->geometry = std::make_shared<tesseract_geometry::Octree>(octree, tesseract_geometry::Octree::BOX);
-  link_octomap.visual.push_back(visual);
-
-  CollisionPtr collision = std::make_shared<Collision>();
-  collision->origin = visual->origin;
-  collision->geometry = visual->geometry;
-  link_octomap.collision.push_back(collision);
-
-  Joint joint_octomap("joint_octomap_attached");
-  joint_octomap.parent_link_name = "base_link";
-  joint_octomap.child_link_name = link_octomap.getName();
-  joint_octomap.type = JointType::FIXED;
-
-  env_->addLink(link_octomap, joint_octomap);
+  if (!addPointCloud())
+    return -1;
 
   // Now update rviz environment
-  modify_env_rviz.waitForExistence();
-  tesseract_msgs::ModifyEnvironment update_env;
-  update_env.request.id = env_changes.response.id;
-  update_env.request.revision = env_changes.response.revision;
-  if (!tesseract_rosutils::toMsg(update_env.request.commands, env_->getCommandHistory(), update_env.request.revision))
-  {
-    ROS_ERROR("Failed to generate commands to update rviz environment!");
+  if (!sendRvizChanges())
     return -1;
-  }
-
-  if (modify_env_rviz.call(update_env))
-  {
-    ROS_INFO("RViz environment Updated!");
-  }
-  else
-  {
-    ROS_INFO("Failed to update rviz environment");
-    return -1;
-  }
 
   // Create plotting tool
-  tesseract_rosutils::ROSPlottingPtr plotter = std::make_shared<tesseract_rosutils::ROSPlotting>(env_);
+  ROSPlottingPtr plotter = std::make_shared<ROSPlotting>(env_);
 
 
   // Set the robot initial state
