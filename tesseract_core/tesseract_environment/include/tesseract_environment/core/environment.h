@@ -86,13 +86,13 @@ public:
   virtual tesseract_scene_graph::SceneGraphConstPtr getSceneGraph() const { return scene_graph_; }
 
   /** @brief Give the environment a name */
-  virtual void setName(const std::string& name) { name_ = name; }
+  virtual void setName(const std::string& name) { scene_graph_->setName(name); }
 
   /** @brief Get the name of the environment
    *
    * This may be empty, if so check urdf name
    */
-  virtual const std::string& getName() const { return name_; }
+  virtual const std::string& getName() const { return scene_graph_->getName(); }
 
   /**
    * @brief Set the current state of the environment
@@ -364,7 +364,6 @@ public:
 
 protected:
   bool initialized_;                                           /**< Identifies if the object has been initialized */
-  std::string name_;                                           /**< Name of the environment (may be empty) */
   int revision_;                                               /**< This increments when the scene graph is modified */
   Commands commands_;                                          /**< The history of commands applied to the environment after intialization */
   tesseract_scene_graph::SceneGraphPtr scene_graph_;           /**< Tesseract Scene Graph */
@@ -422,6 +421,9 @@ protected:
     is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed, scene_graph_, std::placeholders::_1, std::placeholders::_2);
 
     initialized_ = true;
+
+    environmentChanged();
+
     return initialized_;
   }
 
