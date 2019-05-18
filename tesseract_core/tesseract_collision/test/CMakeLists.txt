@@ -15,7 +15,7 @@ macro(add_gtest test_name test_file)
   target_compile_features(${test_name} PRIVATE cxx_std_11)
   target_compile_definitions(${test_name} PRIVATE DATA_DIR="${CMAKE_SOURCE_DIR}/test")
   target_include_directories(${test_name} PRIVATE ${GTEST_INCLUDE_DIRS})
-  add_test(${test_name} ${test_name})
+  gtest_discover_tests(${test_name})
   add_dependencies(run_tests ${test_name})
 endmacro()
 

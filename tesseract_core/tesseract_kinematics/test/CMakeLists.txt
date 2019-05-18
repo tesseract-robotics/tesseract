@@ -6,5 +6,5 @@ target_link_libraries(${PROJECT_NAME}_kdl_unit ${GTEST_BOTH_LIBRARIES} ${PROJECT
 target_compile_options(${PROJECT_NAME}_kdl_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME}_kdl_unit PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_kdl_unit PRIVATE ${GTEST_INCLUDE_DIRS} ${orocos_kdl_INCLUDE_DIRS})
-add_test(${PROJECT_NAME}_kdl_unit ${PROJECT_NAME}_kdl_unit)
+gtest_discover_tests(${PROJECT_NAME}_kdl_unit)
 add_dependencies(run_tests ${PROJECT_NAME}_kdl_unit)
