@@ -364,6 +364,21 @@ static inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesserac
       for (size_t i = 0; i < faces.size(); ++i)
         geometry_msgs.mesh.faces[i] = faces[i];
 
+      geometry_msgs.mesh.file_path = mesh.getFilePath();
+      if (geometry_msgs.mesh.file_path.empty())
+      {
+        geometry_msgs.mesh.scale[0] = 1;
+        geometry_msgs.mesh.scale[1] = 1;
+        geometry_msgs.mesh.scale[2] = 1;
+      }
+      else
+      {
+        const Eigen::Vector3d& scale = mesh.getScale();
+        geometry_msgs.mesh.scale[0] = scale.x();
+        geometry_msgs.mesh.scale[1] = scale.y();
+        geometry_msgs.mesh.scale[2] = scale.z();
+      }
+
       break;
     }
     case tesseract_geometry::GeometryType::CONVEX_MESH:
@@ -386,6 +401,21 @@ static inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesserac
       for (size_t i = 0; i < faces.size(); ++i)
         geometry_msgs.mesh.faces[i] = faces[i];
 
+      geometry_msgs.mesh.file_path = mesh.getFilePath();
+      if (geometry_msgs.mesh.file_path.empty())
+      {
+        geometry_msgs.mesh.scale[0] = 1;
+        geometry_msgs.mesh.scale[1] = 1;
+        geometry_msgs.mesh.scale[2] = 1;
+      }
+      else
+      {
+        const Eigen::Vector3d& scale = mesh.getScale();
+        geometry_msgs.mesh.scale[0] = scale.x();
+        geometry_msgs.mesh.scale[1] = scale.y();
+        geometry_msgs.mesh.scale[2] = scale.z();
+      }
+
       break;
     }
     case tesseract_geometry::GeometryType::SDF_MESH:
@@ -407,6 +437,21 @@ static inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesserac
       geometry_msgs.mesh.faces.resize(faces.size());
       for (size_t i = 0; i < faces.size(); ++i)
         geometry_msgs.mesh.faces[i] = faces[i];
+
+      geometry_msgs.mesh.file_path = mesh.getFilePath();
+      if (geometry_msgs.mesh.file_path.empty())
+      {
+        geometry_msgs.mesh.scale[0] = 1;
+        geometry_msgs.mesh.scale[1] = 1;
+        geometry_msgs.mesh.scale[2] = 1;
+      }
+      else
+      {
+        const Eigen::Vector3d& scale = mesh.getScale();
+        geometry_msgs.mesh.scale[0] = scale.x();
+        geometry_msgs.mesh.scale[1] = scale.y();
+        geometry_msgs.mesh.scale[2] = scale.z();
+      }
 
       break;
     }
@@ -457,7 +502,7 @@ static inline bool fromMsg(tesseract_geometry::GeometryPtr& geometry, const tess
       (*faces)[i] = geometry_msg.mesh.faces[i];
 
     if (!geometry_msg.mesh.file_path.empty())
-      geometry = tesseract_geometry::MeshPtr(new tesseract_geometry::Mesh(vertices, faces, geometry_msg.mesh.file_path));
+      geometry = tesseract_geometry::MeshPtr(new tesseract_geometry::Mesh(vertices, faces, geometry_msg.mesh.file_path, Eigen::Vector3d(geometry_msg.mesh.scale[0],geometry_msg.mesh.scale[1],geometry_msg.mesh.scale[2])));
     else
       geometry = tesseract_geometry::MeshPtr(new tesseract_geometry::Mesh(vertices, faces));
   }
@@ -475,7 +520,7 @@ static inline bool fromMsg(tesseract_geometry::GeometryPtr& geometry, const tess
       (*faces)[i] = geometry_msg.mesh.faces[i];
 
     if (!geometry_msg.mesh.file_path.empty())
-      geometry = tesseract_geometry::ConvexMeshPtr(new tesseract_geometry::ConvexMesh(vertices, faces, geometry_msg.mesh.file_path));
+      geometry = tesseract_geometry::ConvexMeshPtr(new tesseract_geometry::ConvexMesh(vertices, faces, geometry_msg.mesh.file_path, Eigen::Vector3d(geometry_msg.mesh.scale[0],geometry_msg.mesh.scale[1],geometry_msg.mesh.scale[2])));
     else
       geometry = tesseract_geometry::ConvexMeshPtr(new tesseract_geometry::ConvexMesh(vertices, faces));
   }
@@ -493,7 +538,7 @@ static inline bool fromMsg(tesseract_geometry::GeometryPtr& geometry, const tess
       (*faces)[i] = geometry_msg.mesh.faces[i];
 
     if (!geometry_msg.mesh.file_path.empty())
-      geometry = tesseract_geometry::SDFMeshPtr(new tesseract_geometry::SDFMesh(vertices, faces, geometry_msg.mesh.file_path));
+      geometry = tesseract_geometry::SDFMeshPtr(new tesseract_geometry::SDFMesh(vertices, faces, geometry_msg.mesh.file_path, Eigen::Vector3d(geometry_msg.mesh.scale[0],geometry_msg.mesh.scale[1],geometry_msg.mesh.scale[2])));
     else
       geometry = tesseract_geometry::SDFMeshPtr(new tesseract_geometry::SDFMesh(vertices, faces));
   }
@@ -894,6 +939,119 @@ static inline void toMsg(sensor_msgs::JointState& joint_state, const tesseract_e
   }
 }
 
+static inline bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_environment::Command& command)
+{
+  switch (command.getType())
+  {
+    case tesseract_environment::CommandType::ADD:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::ADD;
+      const tesseract_environment::AddCommand& cmd = static_cast<const tesseract_environment::AddCommand&>(command);
+      tesseract_rosutils::toMsg(command_msg.add_link, *(cmd.getLink()));
+      tesseract_rosutils::toMsg(command_msg.add_joint, *(cmd.getJoint()));
+      return true;
+    }
+    case tesseract_environment::CommandType::MOVE_LINK:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::MOVE_LINK;
+      const tesseract_environment::MoveLinkCommand& cmd = static_cast<const tesseract_environment::MoveLinkCommand&>(command);
+      tesseract_rosutils::toMsg(command_msg.move_link_joint, *(cmd.getJoint()));
+      return true;
+    }
+    case tesseract_environment::CommandType::MOVE_JOINT:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::MOVE_JOINT;
+      const tesseract_environment::MoveJointCommand& cmd = static_cast<const tesseract_environment::MoveJointCommand&>(command);
+      command_msg.move_joint_name = cmd.getJointName();
+      command_msg.move_joint_parent_link = cmd.getParentLink();
+      return true;
+    }
+    case tesseract_environment::CommandType::REMOVE_LINK:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::REMOVE_LINK;
+      const tesseract_environment::RemoveLinkCommand& cmd = static_cast<const tesseract_environment::RemoveLinkCommand&>(command);
+
+      command_msg.remove_link = cmd.getLinkName();
+      return true;
+    }
+    case tesseract_environment::CommandType::REMOVE_JOINT:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::REMOVE_JOINT;
+      const tesseract_environment::RemoveJointCommand& cmd = static_cast<const tesseract_environment::RemoveJointCommand&>(command);
+      command_msg.remove_joint = cmd.getJointName();
+      return true;
+    }
+    case tesseract_environment::CommandType::CHANGE_LINK_ORIGIN:
+    {
+      assert(false);
+    }
+    case tesseract_environment::CommandType::CHANGE_JOINT_ORIGIN:
+    {
+      assert(false);
+    }
+    case tesseract_environment::CommandType::CHANGE_LINK_COLLISION_ENABLED:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::CHANGE_LINK_COLLISION_ENABLED;
+      const tesseract_environment::ChangeLinkCollisionEnabledCommand& cmd = static_cast<const tesseract_environment::ChangeLinkCollisionEnabledCommand&>(command);
+
+      command_msg.change_link_collision_enabled_name = cmd.getLinkName();
+      command_msg.change_link_collision_enabled_value = cmd.getEnabled();
+      return true;
+    }
+    case tesseract_environment::CommandType::CHANGE_LINK_VISIBILITY:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::CHANGE_LINK_VISIBILITY;
+      const tesseract_environment::ChangeLinkVisibilityCommand& cmd = static_cast<const tesseract_environment::ChangeLinkVisibilityCommand&>(command);
+
+      command_msg.change_link_visibility_name = cmd.getLinkName();
+      command_msg.change_link_visibility_value = cmd.getEnabled();
+      return true;
+    }
+    case tesseract_environment::CommandType::ADD_ALLOWED_COLLISION:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::ADD_ALLOWED_COLLISION;
+      const tesseract_environment::AddAllowedCollisionCommand& cmd = static_cast<const tesseract_environment::AddAllowedCollisionCommand&>(command);
+
+      command_msg.add_allowed_collision.link_1 = cmd.getLinkName1();
+      command_msg.add_allowed_collision.link_2 = cmd.getLinkName2();
+      command_msg.add_allowed_collision.reason = cmd.getReason();
+      return true;
+    }
+    case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::REMOVE_ALLOWED_COLLISION;
+      const tesseract_environment::RemoveAllowedCollisionCommand& cmd = static_cast<const tesseract_environment::RemoveAllowedCollisionCommand&>(command);
+
+      command_msg.add_allowed_collision.link_1 = cmd.getLinkName1();
+      command_msg.add_allowed_collision.link_2 = cmd.getLinkName2();
+      return true;
+    }
+    case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION_LINK:
+    {
+      command_msg.command = tesseract_msgs::EnvironmentCommand::REMOVE_ALLOWED_COLLISION_LINK;
+      const tesseract_environment::RemoveAllowedCollisionLinkCommand& cmd = static_cast<const tesseract_environment::RemoveAllowedCollisionLinkCommand&>(command);
+      command_msg.remove_allowed_collision_link = cmd.getLinkName();
+      return true;
+    }
+  }
+
+  return false;
+}
+
+static inline bool toMsg(std::vector<tesseract_msgs::EnvironmentCommand>& commands_msg, const tesseract_environment::Commands& commands, const int past_revision)
+{
+  for (int i = past_revision; i < commands.size(); ++i)
+  {
+    tesseract_msgs::EnvironmentCommand command_msg;
+    if (!tesseract_rosutils::toMsg(command_msg, *(commands[i])))
+      return false;
+
+    commands_msg.push_back(command_msg);
+  }
+
+  return true;
+}
+
 static inline void toMsg(const sensor_msgs::JointStatePtr& joint_state, const tesseract_environment::EnvState& state)
 {
   toMsg(*joint_state, state);
@@ -903,6 +1061,7 @@ static inline void toMsg(tesseract_msgs::TesseractState& state_msg, const tesser
 {
   state_msg.id = env.getName();
   state_msg.revision = env.getRevision();
+  toMsg(state_msg.commands, env.getCommandHistory(), 0);
 
   tesseract_environment::EnvStateConstPtr state = env.getCurrentState();
   toMsg(state_msg.joint_state, *state);
@@ -1041,24 +1200,6 @@ static inline bool processMsg(tesseract_environment::Environment& env, const sen
   return false;
 }
 
-static inline bool processMsg(const tesseract_environment::EnvironmentPtr& env,
-                              const sensor_msgs::JointState& joint_state_msg)
-{
-  return processMsg(*env, joint_state_msg);
-}
-
-static inline bool processMsg(tesseract_environment::Environment& env,
-                              const tesseract_msgs::TesseractState& state_msg)
-{
-  return processMsg(env, state_msg.joint_state);
-}
-
-static inline bool processMsg(const tesseract_environment::EnvironmentPtr& env,
-                              const tesseract_msgs::TesseractState& state_msg)
-{
-  return processMsg(*env, state_msg);
-}
-
 static inline bool processMsg(tesseract_environment::Environment& env, const std::vector<tesseract_msgs::EnvironmentCommand>& env_command_msg)
 {
   for (const auto& command : env_command_msg)
@@ -1131,118 +1272,31 @@ static inline bool processMsg(tesseract_environment::Environment& env, const std
   return false;
 }
 
-static inline bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_environment::Command& command)
+static inline bool processMsg(const tesseract_environment::EnvironmentPtr& env,
+                              const sensor_msgs::JointState& joint_state_msg)
 {
-  switch (command.getType())
-  {
-    case tesseract_environment::CommandType::ADD:
-    {
-      command_msg.command = tesseract_msgs::EnvironmentCommand::ADD;
-      const tesseract_environment::AddCommand& cmd = static_cast<const tesseract_environment::AddCommand&>(command);
-      tesseract_rosutils::toMsg(command_msg.add_link, *(cmd.getLink()));
-      tesseract_rosutils::toMsg(command_msg.add_joint, *(cmd.getJoint()));
-      return true;
-    }
-    case tesseract_environment::CommandType::MOVE_LINK:
-    {
-      command_msg.command = tesseract_msgs::EnvironmentCommand::MOVE_LINK;
-      const tesseract_environment::MoveLinkCommand& cmd = static_cast<const tesseract_environment::MoveLinkCommand&>(command);
-      tesseract_rosutils::toMsg(command_msg.move_link_joint, *(cmd.getJoint()));
-      return true;
-    }
-    case tesseract_environment::CommandType::MOVE_JOINT:
-    {
-      command_msg.command = tesseract_msgs::EnvironmentCommand::MOVE_JOINT;
-      const tesseract_environment::MoveJointCommand& cmd = static_cast<const tesseract_environment::MoveJointCommand&>(command);
-      command_msg.move_joint_name = cmd.getJointName();
-      command_msg.move_joint_parent_link = cmd.getParentLink();
-      return true;
-    }
-    case tesseract_environment::CommandType::REMOVE_LINK:
-    {
-      command_msg.command = tesseract_msgs::EnvironmentCommand::REMOVE_LINK;
-      const tesseract_environment::RemoveLinkCommand& cmd = static_cast<const tesseract_environment::RemoveLinkCommand&>(command);
-
-      command_msg.remove_link = cmd.getLinkName();
-      return true;
-    }
-    case tesseract_environment::CommandType::REMOVE_JOINT:
-    {
-      command_msg.command = tesseract_msgs::EnvironmentCommand::REMOVE_JOINT;
-      const tesseract_environment::RemoveJointCommand& cmd = static_cast<const tesseract_environment::RemoveJointCommand&>(command);
-      command_msg.remove_joint = cmd.getJointName();
-      return true;
-    }
-    case tesseract_environment::CommandType::CHANGE_LINK_ORIGIN:
-    {
-      assert(false);
-    }
-    case tesseract_environment::CommandType::CHANGE_JOINT_ORIGIN:
-    {
-      assert(false);
-    }
-    case tesseract_environment::CommandType::CHANGE_LINK_COLLISION_ENABLED:
-    {
-      command_msg.command = tesseract_msgs::EnvironmentCommand::CHANGE_LINK_COLLISION_ENABLED;
-      const tesseract_environment::ChangeLinkCollisionEnabledCommand& cmd = static_cast<const tesseract_environment::ChangeLinkCollisionEnabledCommand&>(command);
-
-      command_msg.change_link_collision_enabled_name = cmd.getLinkName();
-      command_msg.change_link_collision_enabled_value = cmd.getEnabled();
-      return true;
-    }
-    case tesseract_environment::CommandType::CHANGE_LINK_VISIBILITY:
-    {
-      command_msg.command = tesseract_msgs::EnvironmentCommand::CHANGE_LINK_VISIBILITY;
-      const tesseract_environment::ChangeLinkVisibilityCommand& cmd = static_cast<const tesseract_environment::ChangeLinkVisibilityCommand&>(command);
-
-      command_msg.change_link_visibility_name = cmd.getLinkName();
-      command_msg.change_link_visibility_value = cmd.getEnabled();
-      return true;
-    }
-    case tesseract_environment::CommandType::ADD_ALLOWED_COLLISION:
-    {
-      command_msg.command = tesseract_msgs::EnvironmentCommand::ADD_ALLOWED_COLLISION;
-      const tesseract_environment::AddAllowedCollisionCommand& cmd = static_cast<const tesseract_environment::AddAllowedCollisionCommand&>(command);
-
-      command_msg.add_allowed_collision.link_1 = cmd.getLinkName1();
-      command_msg.add_allowed_collision.link_2 = cmd.getLinkName2();
-      command_msg.add_allowed_collision.reason = cmd.getReason();
-      return true;
-    }
-    case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION:
-    {
-      command_msg.command = tesseract_msgs::EnvironmentCommand::REMOVE_ALLOWED_COLLISION;
-      const tesseract_environment::RemoveAllowedCollisionCommand& cmd = static_cast<const tesseract_environment::RemoveAllowedCollisionCommand&>(command);
-
-      command_msg.add_allowed_collision.link_1 = cmd.getLinkName1();
-      command_msg.add_allowed_collision.link_2 = cmd.getLinkName2();
-      return true;
-    }
-    case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION_LINK:
-    {
-      command_msg.command = tesseract_msgs::EnvironmentCommand::REMOVE_ALLOWED_COLLISION_LINK;
-      const tesseract_environment::RemoveAllowedCollisionLinkCommand& cmd = static_cast<const tesseract_environment::RemoveAllowedCollisionLinkCommand&>(command);
-      command_msg.remove_allowed_collision_link = cmd.getLinkName();
-      return true;
-    }
-  }
-
-  return false;
+  return processMsg(*env, joint_state_msg);
 }
 
-static inline bool toMsg(std::vector<tesseract_msgs::EnvironmentCommand>& commands_msg, const tesseract_environment::Commands& commands, const int start_revision)
+static inline bool processMsg(tesseract_environment::Environment& env,
+                              const tesseract_msgs::TesseractState& state_msg)
 {
-  int start_index = (start_revision == 0) ? start_revision : (start_revision - 1);
-  for (int i = start_index; i < commands.size(); ++i)
-  {
-    tesseract_msgs::EnvironmentCommand command_msg;
-    if (!tesseract_rosutils::toMsg(command_msg, *(commands[i])))
-      return false;
+  if (state_msg.id != env.getName() || env.getRevision() > state_msg.revision)
+    return false;
 
-    commands_msg.push_back(command_msg);
-  }
+  if (!processMsg(env, state_msg.commands))
+    return false;
+
+  if (!processMsg(env, state_msg.joint_state))
+    return false;
 
   return true;
+}
+
+static inline bool processMsg(const tesseract_environment::EnvironmentPtr& env,
+                              const tesseract_msgs::TesseractState& state_msg)
+{
+  return processMsg(*env, state_msg);
 }
 
 static inline void toMsg(tesseract_msgs::ContactResult& contact_result_msg,
