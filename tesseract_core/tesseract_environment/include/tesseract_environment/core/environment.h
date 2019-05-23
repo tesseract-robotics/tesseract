@@ -71,7 +71,7 @@ public:
    * @brief Get Environment command history post initialization
    * @return List of commands
    */
-  const Commands& getCommandHistory() { return commands_; }
+  const Commands& getCommandHistory() const { return commands_; }
 
   /**
    * @brief Check if environment has been initialized
@@ -397,7 +397,13 @@ protected:
   bool create(tesseract_scene_graph::SceneGraphPtr scene_graph)
   {
     initialized_ = false;
+    revision_ = 0;
     scene_graph_ = std::move(scene_graph);
+    commands_.clear();
+    link_names_.clear();
+    joint_names_.clear();
+    active_link_names_.clear();
+    active_joint_names_.clear();
 
     if (scene_graph_ == nullptr)
     {
