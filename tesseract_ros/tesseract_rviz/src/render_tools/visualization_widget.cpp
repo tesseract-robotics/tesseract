@@ -311,6 +311,7 @@ bool VisualizationWidget::addLink(const tesseract_scene_graph::Link& link)
   links_[link.getName()] = tlink;
 
   tlink->setAlpha(alpha_);
+  tlink->updateVisibility();
 
   changedLinkTreeStyle();
 

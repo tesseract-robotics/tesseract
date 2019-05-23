@@ -210,6 +210,10 @@ private:
   void setRenderQueueGroup(Ogre::uint8 group);
   bool getEnabled() const;
 
+  Ogre::Entity* createEntityForMeshData(const std::string& entity_name,
+                                        const std::shared_ptr<const tesseract_geometry::VectorVector3d>& mesh_vertices,
+                                        const std::shared_ptr<const Eigen::VectorXi>& mesh_faces);
+
   bool createEntityForGeometryElement(const tesseract_scene_graph::Link& link,
                                       const tesseract_geometry::Geometry& geom,
                                       const Eigen::Isometry3d& origin,
