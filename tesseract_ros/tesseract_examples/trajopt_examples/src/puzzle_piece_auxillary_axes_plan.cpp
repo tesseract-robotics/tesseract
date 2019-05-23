@@ -26,30 +26,103 @@
 #include <trajopt_utils/macros.h>
 TRAJOPT_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
-#include <srdfdom/model.h>
-#include <urdf_parser/urdf_parser.h>
 #include <fstream>
-#include <ros/package.h>
 TRAJOPT_IGNORE_WARNINGS_POP
 
-#include <tesseract_ros/kdl/kdl_env.h>
-#include <tesseract_ros/ros_basic_plotting.h>
+#include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
+#include <tesseract_kinematics/kdl/kdl_fwd_kin_tree.h>
+#include <tesseract_kinematics/core/utils.h>
+#include <tesseract_environment/kdl/kdl_env.h>
+#include <tesseract_environment/core/utils.h>
+#include <tesseract_scene_graph/parser/srdf_parser.h>
+#include <tesseract_scene_graph/parser/urdf_parser.h>
+#include <tesseract_scene_graph/utils.h>
+#include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
+#include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
+#include <tesseract_rosutils/plotting.h>
+#include <tesseract_rosutils/utils.h>
+#include <tesseract_msgs/ModifyEnvironment.h>
+#include <tesseract_msgs/GetEnvironmentChanges.h>
 #include <trajopt/plot_callback.hpp>
 #include <trajopt/problem_description.hpp>
 #include <trajopt_utils/config.hpp>
 #include <trajopt_utils/logging.hpp>
 
 using namespace trajopt;
-using namespace tesseract;
+using namespace tesseract_environment;
+using namespace tesseract_kinematics;
+using namespace tesseract_scene_graph;
+using namespace tesseract_collision;
+using namespace tesseract_rosutils;
 
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
-const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic"; /**< Default ROS parameter for robot
-                                                                          description */
+const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic"; /**< Default ROS parameter for robot description */
+const std::string TRAJOPT_DESCRIPTION_PARAM = "trajopt_description"; /**< Default ROS parameter for trajopt description */
+const std::string GET_ENVIRONMENT_CHANGES_SERVICE = "get_tesseract_changes_rviz";
+const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
 
-static bool plotting_ = false;
-static urdf::ModelInterfaceSharedPtr urdf_model_; /**< URDF Model */
-static srdf::ModelSharedPtr srdf_model_;          /**< SRDF Model */
-static tesseract_ros::KDLEnvPtr env_;             /**< Trajopt Basic Environment */
+static bool plotting_ = true;
+static int steps_ = 5;
+static std::string method_ = "json";
+static KDLEnvPtr env_;  /**< Environment */
+static ForwardKinematicsConstPtrMap kin_map_; /**< Map of available kinematics */
+static ros::ServiceClient modify_env_rviz;
+static ros::ServiceClient get_env_changes_rviz;
+
+bool checkRviz()
+{
+  // Get the current state of the environment
+  get_env_changes_rviz.waitForExistence();
+  tesseract_msgs::GetEnvironmentChanges env_changes;
+  env_changes.request.revision = 0;
+  if (get_env_changes_rviz.call(env_changes))
+  {
+    ROS_INFO("Retrieve current environment changes!");
+  }
+  else
+  {
+    ROS_ERROR("Failed retrieve current environment changes!");
+    return false;
+  }
+
+  // There should not be any changes but check
+  if(env_changes.response.revision != 0)
+  {
+    ROS_ERROR("The environment has changed externally!");
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Send RViz the latest number of commands
+ * @param n The past revision number
+ * @return True if successful otherwise false
+ */
+bool sendRvizChanges(int past_revision)
+{
+  modify_env_rviz.waitForExistence();
+  tesseract_msgs::ModifyEnvironment update_env;
+  update_env.request.id = env_->getName();
+  update_env.request.revision = past_revision;
+  if (!toMsg(update_env.request.commands, env_->getCommandHistory(), update_env.request.revision))
+  {
+    ROS_ERROR("Failed to generate commands to update rviz environment!");
+    return false;
+  }
+
+  if (modify_env_rviz.call(update_env))
+  {
+    ROS_INFO("RViz environment Updated!");
+  }
+  else
+  {
+    ROS_INFO("Failed to update rviz environment");
+    return false;
+  }
+
+  return true;
+}
 
 static VectorIsometry3d makePuzzleToolPoses()
 {
@@ -113,7 +186,7 @@ static VectorIsometry3d makePuzzleToolPoses()
 
 ProblemConstructionInfo cppMethod()
 {
-  ProblemConstructionInfo pci(env_);
+  ProblemConstructionInfo pci(env_, kin_map_);
 
   VectorIsometry3d tool_poses = makePuzzleToolPoses();
 
@@ -123,15 +196,15 @@ ProblemConstructionInfo cppMethod()
   pci.basic_info.start_fixed = false;
   pci.basic_info.use_time = false;
 
+  // Create Kinematic Object
+  pci.kin = kin_map_[pci.basic_info.manip];
+
   pci.opt_info.max_iter = 200;
   pci.opt_info.min_approx_improve = 1e-3;
   pci.opt_info.min_trust_box_size = 1e-3;
 
-  // Create Kinematic Object
-  pci.kin = pci.env->getManipulator(pci.basic_info.manip);
-
   // Populate Init Info
-  Eigen::VectorXd start_pos = pci.env->getCurrentJointValues(pci.kin->getName());
+  Eigen::VectorXd start_pos = pci.env->getCurrentJointValues(pci.kin->getJointNames());
 
   pci.init_info.type = InitInfo::GIVEN_TRAJ;
   pci.init_info.data = start_pos.transpose().replicate(pci.basic_info.n_steps, 1);
@@ -203,26 +276,47 @@ int main(int argc, char** argv)
   ros::NodeHandle pnh("~");
   ros::NodeHandle nh;
 
+  // Get ROS Parameters
+  pnh.param("plotting", plotting_, plotting_);
+
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;
   nh.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
   nh.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
 
-  urdf_model_ = urdf::parseURDF(urdf_xml_string);
-  srdf_model_ = srdf::ModelSharedPtr(new srdf::Model);
-  srdf_model_->initString(*urdf_model_, srdf_xml_string);
-  env_ = tesseract_ros::KDLEnvPtr(new tesseract_ros::KDLEnv);
-  assert(urdf_model_ != nullptr);
+  ResourceLocatorFn locator = tesseract_rosutils::locateResource;
+  std::pair<SceneGraphPtr, SRDFModelPtr> data;
+  data = createSceneGraphFromStrings(urdf_xml_string, srdf_xml_string, locator);
+  if (data.first == nullptr || data.second == nullptr)
+    return -1;
+
+  // Create kinematics map from srdf
+  kin_map_ = tesseract_kinematics::createKinematicsMap<KDLFwdKinChain, KDLFwdKinTree>(data.first, *data.second);
+
+  env_ = std::make_shared<tesseract_environment::KDLEnv>();
   assert(env_ != nullptr);
 
-  bool success = env_->init(urdf_model_, srdf_model_);
+  bool success = env_->init(data.first);
   assert(success);
 
-  // Create plotting tool
-  tesseract_ros::ROSBasicPlottingPtr plotter(new tesseract_ros::ROSBasicPlotting(env_));
+  // Register contact manager
+  env_->registerDiscreteContactManager("bullet", &tesseract_collision_bullet::BulletDiscreteBVHManager::create);
+  env_->registerContinuousContactManager("bullet", &tesseract_collision_bullet::BulletCastBVHManager::create);
 
-  // Get ROS Parameters
-  pnh.param("plotting", plotting_, plotting_);
+  // Set Active contact manager
+  env_->setActiveDiscreteContactManager("bullet");
+  env_->setActiveContinuousContactManager("bullet");
+
+  // Create plotting tool
+  ROSPlottingPtr plotter = std::make_shared<ROSPlotting>(env_);
+
+  // These are used to keep visualization updated
+  modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", 10);
+  get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", 10);
+
+  // Check RViz to make sure nothing has changed
+  if (!checkRviz())
+    return -1;
 
   // Set the robot initial state
   std::unordered_map<std::string, double> ipos;
@@ -237,7 +331,9 @@ int main(int argc, char** argv)
   ipos["joint_aux2"] = 0.0;
   env_->setState(ipos);
 
-  plotter->plotScene();
+  // Now update rviz environment
+  if (!sendRvizChanges(0))
+    return -1;
 
   // Set Log Level
   util::gLogLevel = util::LevelInfo;
@@ -249,22 +345,23 @@ int main(int argc, char** argv)
   // Solve Trajectory
   ROS_INFO("puzzle piece plan");
 
-  std::vector<tesseract_collision::ContactResultMap> collisions;
-  tesseract_collision::ContinuousContactManagerPtr manager = prob->GetEnv()->getContinuousContactManager();
-  manager->setActiveCollisionObjects(prob->GetKin()->getLinkNames());
-  manager->setContactDistanceThreshold(0);
+  std::vector<ContactResultMap> collisions;
+  ContinuousContactManagerPtr manager = prob->GetEnv()->getContinuousContactManager();
+  AdjacencyMapPtr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
+                                                                                        prob->GetKin()->getActiveLinkNames(),
+                                                                                        prob->GetEnv()->getCurrentState()->transforms);
 
-  bool found = tesseract::continuousCollisionCheckTrajectory(
-      *manager, *prob->GetEnv(), *prob->GetKin(), prob->GetInitTraj(), collisions);
+  manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
+  manager->setContactDistanceThreshold(0);
+  collisions.clear();
+  bool found = checkTrajectory(*manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), prob->GetInitTraj(), collisions);
 
   ROS_INFO((found) ? ("Initial trajectory is in collision") : ("Initial trajectory is collision free"));
 
   sco::BasicTrustRegionSQP opt(prob);
   opt.setParameters(pci.opt_info);
   if (plotting_)
-  {
     opt.addCallback(PlotCallback(*prob, plotter));
-  }
 
   opt.initialize(trajToDblVec(prob->GetInitTraj()));
   ros::Time tStart = ros::Time::now();
@@ -274,16 +371,12 @@ int main(int argc, char** argv)
            (ros::Time::now() - tStart).toSec());
 
   if (plotting_)
-  {
     plotter->clear();
-  }
-
-  // Plot the final trajectory
-  plotter->plotTrajectory(prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()));
 
   collisions.clear();
-  found = tesseract::continuousCollisionCheckTrajectory(
-      *manager, *prob->GetEnv(), *prob->GetKin(), prob->GetInitTraj(), collisions);
+  found = checkTrajectory(*manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()), collisions);
 
   ROS_INFO((found) ? ("Final trajectory is in collision") : ("Final trajectory is collision free"));
+
+  plotter->plotTrajectory(prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()));
 }

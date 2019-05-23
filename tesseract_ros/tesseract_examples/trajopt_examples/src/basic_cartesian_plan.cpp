@@ -118,12 +118,17 @@ bool checkRviz()
   return true;
 }
 
-bool sendRvizChanges()
+/**
+ * @brief Send RViz the latest number of commands
+ * @param n The past revision number
+ * @return True if successful otherwise false
+ */
+bool sendRvizChanges(int past_revision)
 {
   modify_env_rviz.waitForExistence();
   tesseract_msgs::ModifyEnvironment update_env;
   update_env.request.id = env_->getName();
-  update_env.request.revision = env_->getRevision() - 1;
+  update_env.request.revision = past_revision;
   if (!toMsg(update_env.request.commands, env_->getCommandHistory(), update_env.request.revision))
   {
     ROS_ERROR("Failed to generate commands to update rviz environment!");
@@ -305,7 +310,7 @@ int main(int argc, char** argv)
     return -1;
 
   // Now update rviz environment
-  if (!sendRvizChanges())
+  if (!sendRvizChanges(0))
     return -1;
 
   // Create plotting tool

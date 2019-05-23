@@ -1,13 +1,131 @@
-#include <tesseract_core/basic_types.h>
-#include <tesseract_ros/kdl/kdl_env.h>
-#include <tesseract_ros/ros_basic_plotting.h>
+/**
+ * @file glass_up_right_plan.cpp
+ * @brief Example using Trajopt for constrained free space planning
+ *
+ * @author Levi Armstrong
+ * @date Dec 18, 2017
+ * @version TODO
+ * @bug No known bugs
+ *
+ * @copyright Copyright (c) 2017, Southwest Research Institute
+ *
+ * @par License
+ * Software License Agreement (Apache License)
+ * @par
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * @par
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#include <trajopt_utils/macros.h>
+TRAJOPT_IGNORE_WARNINGS_PUSH
+#include <jsoncpp/json/json.h>
+#include <ros/ros.h>
+TRAJOPT_IGNORE_WARNINGS_POP
+
+#include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
+#include <tesseract_kinematics/kdl/kdl_fwd_kin_tree.h>
+#include <tesseract_kinematics/core/utils.h>
+#include <tesseract_environment/kdl/kdl_env.h>
+#include <tesseract_environment/core/utils.h>
+#include <tesseract_scene_graph/parser/srdf_parser.h>
+#include <tesseract_scene_graph/parser/urdf_parser.h>
+#include <tesseract_scene_graph/utils.h>
+#include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
+#include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_planning/trajopt/trajopt_planner.h>
-
-#include <urdf_parser/urdf_parser.h>
-
-#include <trajopt/file_write_callback.hpp>
+#include <tesseract_rosutils/plotting.h>
+#include <tesseract_rosutils/utils.h>
+#include <tesseract_msgs/ModifyEnvironment.h>
+#include <tesseract_msgs/GetEnvironmentChanges.h>
 #include <trajopt/plot_callback.hpp>
+#include <trajopt/file_write_callback.hpp>
+#include <trajopt/problem_description.hpp>
+#include <trajopt_utils/config.hpp>
 #include <trajopt_utils/logging.hpp>
+
+using namespace trajopt;
+using namespace tesseract_environment;
+using namespace tesseract_kinematics;
+using namespace tesseract_scene_graph;
+using namespace tesseract_collision;
+using namespace tesseract_rosutils;
+
+const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
+const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic"; /**< Default ROS parameter for robot
+                                                                          description */
+const std::string GET_ENVIRONMENT_CHANGES_SERVICE = "get_tesseract_changes_rviz";
+const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
+
+static bool plotting_ = true;
+static bool write_to_file_ = false;
+static int steps_ = 5;
+static std::string method_ = "json";
+static KDLEnvPtr env_;  /**< Environment */
+static ForwardKinematicsConstPtrMap kin_map_; /**< Map of available kinematics */
+static ros::ServiceClient modify_env_rviz;
+static ros::ServiceClient get_env_changes_rviz;
+
+bool checkRviz()
+{
+  // Get the current state of the environment
+  get_env_changes_rviz.waitForExistence();
+  tesseract_msgs::GetEnvironmentChanges env_changes;
+  env_changes.request.revision = 0;
+  if (get_env_changes_rviz.call(env_changes))
+  {
+    ROS_INFO("Retrieve current environment changes!");
+  }
+  else
+  {
+    ROS_ERROR("Failed retrieve current environment changes!");
+    return false;
+  }
+
+  // There should not be any changes but check
+  if(env_changes.response.revision != 0)
+  {
+    ROS_ERROR("The environment has changed externally!");
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Send RViz the latest number of commands
+ * @param n The past revision number
+ * @return True if successful otherwise false
+ */
+bool sendRvizChanges(int past_revision)
+{
+  modify_env_rviz.waitForExistence();
+  tesseract_msgs::ModifyEnvironment update_env;
+  update_env.request.id = env_->getName();
+  update_env.request.revision = past_revision;
+  if (!toMsg(update_env.request.commands, env_->getCommandHistory(), update_env.request.revision))
+  {
+    ROS_ERROR("Failed to generate commands to update rviz environment!");
+    return false;
+  }
+
+  if (modify_env_rviz.call(update_env))
+  {
+    ROS_INFO("RViz environment Updated!");
+  }
+  else
+  {
+    ROS_INFO("Failed to update rviz environment");
+    return false;
+  }
+
+  return true;
+}
 
 int main(int argc, char** argv)
 {
@@ -18,11 +136,11 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "pick_and_place_plan");
   ros::NodeHandle nh, pnh("~");
 
-  int steps_per_phase;
-  bool plotting_cb, file_write_cb;
-  pnh.param<int>("steps_per_phase", steps_per_phase, 10);
-  pnh.param<bool>("plotting", plotting_cb, false);
-  pnh.param<bool>("file_write_cb", file_write_cb, false);
+  // Get ROS Parameters
+  pnh.param("plotting", plotting_, plotting_);
+  pnh.param("write_to_file", write_to_file_, write_to_file_);
+  pnh.param<std::string>("method", method_, method_);
+  pnh.param<int>("steps", steps_, steps_);
 
   // Set Log Level
   util::gLogLevel = util::LevelInfo;
@@ -34,22 +152,47 @@ int main(int argc, char** argv)
   // Pull ROS params
   std::string urdf_xml_string, srdf_xml_string, box_parent_link;
   double box_side, box_x, box_y;
-  nh.getParam("robot_description", urdf_xml_string);
-  nh.getParam("robot_description_semantic", srdf_xml_string);
+  nh.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
+  nh.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
   nh.getParam("box_side", box_side);
   nh.getParam("box_x", box_x);
   nh.getParam("box_y", box_y);
   nh.getParam("box_parent_link", box_parent_link);
 
   // Initialize the environment
-  urdf::ModelInterfaceSharedPtr urdf_model = urdf::parseURDF(urdf_xml_string);
-  srdf::ModelSharedPtr srdf_model = srdf::ModelSharedPtr(new srdf::Model);
-  srdf_model->initString(*urdf_model, srdf_xml_string);
-  tesseract::tesseract_ros::KDLEnvPtr env(new tesseract::tesseract_ros::KDLEnv);
-  assert(urdf_model != nullptr);
-  assert(env != nullptr);
-  bool success = env->init(urdf_model, srdf_model);
+  ResourceLocatorFn locator = tesseract_rosutils::locateResource;
+  std::pair<tesseract_scene_graph::SceneGraphPtr, tesseract_scene_graph::SRDFModelPtr> data;
+  data = createSceneGraphFromStrings(urdf_xml_string, srdf_xml_string, locator);
+  if (data.first == nullptr || data.second == nullptr)
+    return -1;
+
+  // Create kinematics map from srdf
+  kin_map_ = tesseract_kinematics::createKinematicsMap<KDLFwdKinChain, KDLFwdKinTree>(data.first, *data.second);
+
+  env_ = std::make_shared<tesseract_environment::KDLEnv>();
+  assert(env_ != nullptr);
+
+  bool success = env_->init(data.first);
   assert(success);
+
+  // Register contact manager
+  env_->registerDiscreteContactManager("bullet", &tesseract_collision_bullet::BulletDiscreteBVHManager::create);
+  env_->registerContinuousContactManager("bullet", &tesseract_collision_bullet::BulletCastBVHManager::create);
+
+  // Set Active contact manager
+  env_->setActiveDiscreteContactManager("bullet");
+  env_->setActiveContinuousContactManager("bullet");
+
+  // Create plotting tool
+  tesseract_rosutils::ROSPlottingPtr plotter = std::make_shared<tesseract_rosutils::ROSPlotting>(env_);
+
+  // These are used to keep visualization updated
+  modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", 10);
+  get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", 10);
+
+  // Check RViz to make sure nothing has changed
+  if (!checkRviz())
+    return -1;
 
   // Set the initial state of the robot
   std::unordered_map<std::string, double> joint_states;
@@ -60,40 +203,33 @@ int main(int argc, char** argv)
   joint_states["iiwa_joint_5"] = 0.0;
   joint_states["iiwa_joint_6"] = 0.0;
   joint_states["iiwa_joint_7"] = 0.0;
-  env->setState(joint_states);
+  env_->setState(joint_states);
 
-  // Attach the simulated box
-  tesseract::AttachableObjectPtr obj(new tesseract::AttachableObject());
-  std::shared_ptr<shapes::Box> box(new shapes::Box());
-  Eigen::Isometry3d box_pose = Eigen::Isometry3d::Identity();
+  // Add simulated box to environment
+  Link link_box("box");
 
-  box->size[0] = box_side;
-  box->size[1] = box_side;
-  box->size[2] = box_side;
+  VisualPtr visual = std::make_shared<Visual>();
+  visual->origin = Eigen::Isometry3d::Identity();
+  visual->geometry = std::make_shared<tesseract_geometry::Box>(box_side, box_side, box_side);
+  link_box.visual.push_back(visual);
 
-  obj->name = "box";
-  obj->visual.shapes.push_back(box);
-  obj->visual.shape_poses.push_back(box_pose);
-  obj->collision.shapes.push_back(box);
-  obj->collision.shape_poses.push_back(box_pose);
-  obj->collision.collision_object_types.push_back(tesseract::CollisionObjectType::UseShapeType);
+  CollisionPtr collision = std::make_shared<Collision>();
+  collision->origin = visual->origin;
+  collision->geometry = visual->geometry;
+  link_box.collision.push_back(collision);
 
-  env->addAttachableObject(obj);
+  Joint joint_box("joint_box");
+  joint_box.parent_link_name = box_parent_link;
+  joint_box.child_link_name = link_box.getName();
+  joint_box.type = JointType::FIXED;
+  joint_box.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
+  joint_box.parent_to_joint_origin_transform.translation() += Eigen::Vector3d(box_x, box_y, box_side / 2.0);
 
-  // Move box to correct location
-  tesseract::AttachedBodyInfo attached_body;
-  Eigen::Isometry3d object_pose = Eigen::Isometry3d::Identity();
-  object_pose.translation() += Eigen::Vector3d(box_x, box_y, box_side / 2.0);
-  attached_body.object_name = "box";
-  attached_body.parent_link_name = box_parent_link;
-  attached_body.transform = object_pose;
+  env_->addLink(link_box, joint_box);
 
-  env->attachBody(attached_body);
-
-  // Send the initial trajectory for plotting
-  tesseract::tesseract_ros::ROSBasicPlotting plotter(env);
-  Eigen::RowVectorXd init_pos = env->getCurrentJointValues();
-  plotter.plotTrajectory(env->getJointNames(), init_pos.leftCols(env->getJointNames().size()));
+  // Now update rviz environment
+  if (!sendRvizChanges(0))
+    return -1;
 
   ////////////
   /// PICK ///
@@ -103,9 +239,9 @@ int main(int argc, char** argv)
   std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
   // Create the planner and the responses that will store the results
-  tesseract::tesseract_planning::TrajOptPlanner planner;
-  tesseract::tesseract_planning::PlannerResponse planning_response;
-  tesseract::tesseract_planning::PlannerResponse planning_response_place;
+  tesseract_planning::TrajOptPlanner planner;
+  tesseract_planning::PlannerResponse planning_response;
+  tesseract_planning::PlannerResponse planning_response_place;
 
   // Choose the manipulator and end effector link
   std::string manip = "Manipulator";
@@ -122,16 +258,17 @@ int main(int argc, char** argv)
   approach_pose.translation() += Eigen::Vector3d(0.0, 0.0, 0.15);
 
   // Create the problem construction info
-  trajopt::ProblemConstructionInfo pci(env);
+  trajopt::ProblemConstructionInfo pci(env_, kin_map_);
 
-  pci.kin = env->getManipulator(manip);
-
-  pci.basic_info.n_steps = steps_per_phase * 2;
+  pci.basic_info.n_steps = steps_ * 2;
   pci.basic_info.manip = manip;
   pci.basic_info.dt_lower_lim = 2;    // 1/most time
   pci.basic_info.dt_upper_lim = 100;  // 1/least time
   pci.basic_info.start_fixed = true;
   pci.basic_info.use_time = true;
+
+  // Create Kinematic Object
+  pci.kin = kin_map_[pci.basic_info.manip];
 
   pci.init_info.type = trajopt::InitInfo::STATIONARY;
   pci.init_info.dt = 0.5;
@@ -193,13 +330,13 @@ int main(int argc, char** argv)
         std::shared_ptr<trajopt::CartPoseTermInfo>(new trajopt::CartPoseTermInfo);
     pose_constraint->term_type = trajopt::TT_CNT;
     pose_constraint->link = end_effector;
-    pose_constraint->timestep = steps_per_phase;
+    pose_constraint->timestep = steps_;
     pose_constraint->xyz = approach_pose.translation();
 
     pose_constraint->wxyz = Eigen::Vector4d(rotation.w(), rotation.x(), rotation.y(), rotation.z());
     pose_constraint->pos_coeffs = Eigen::Vector3d(10.0, 10.0, 10.0);
     pose_constraint->rot_coeffs = Eigen::Vector3d(10.0, 10.0, 10.0);
-    pose_constraint->name = "pose_" + std::to_string(steps_per_phase);
+    pose_constraint->name = "pose_" + std::to_string(steps_);
     pci.cnt_infos.push_back(pose_constraint);
   }
 
@@ -211,13 +348,13 @@ int main(int argc, char** argv)
         std::shared_ptr<trajopt::CartPoseTermInfo>(new trajopt::CartPoseTermInfo);
     pose_constraint->term_type = trajopt::TT_CNT;
     pose_constraint->link = end_effector;
-    pose_constraint->timestep = 2 * steps_per_phase - 1;
+    pose_constraint->timestep = 2 * steps_ - 1;
     pose_constraint->xyz = final_pose.translation();
 
     pose_constraint->wxyz = Eigen::Vector4d(rotation.w(), rotation.x(), rotation.y(), rotation.z());
     pose_constraint->pos_coeffs = Eigen::Vector3d(10.0, 10.0, 10.0);
     pose_constraint->rot_coeffs = Eigen::Vector3d(10.0, 10.0, 10.0);
-    pose_constraint->name = "pose_" + std::to_string(2 * steps_per_phase - 1);
+    pose_constraint->name = "pose_" + std::to_string(2 * steps_ - 1);
     pci.cnt_infos.push_back(pose_constraint);
   }
 
@@ -236,19 +373,18 @@ int main(int argc, char** argv)
   trajopt::TrajOptProbPtr pick_prob = ConstructProblem(pci);
 
   // Set the optimization parameters (Most are being left as defaults)
-  tesseract::tesseract_planning::TrajOptPlannerConfig config(pick_prob);
+  tesseract_planning::TrajOptPlannerConfig config(pick_prob);
   config.params.max_iter = 100;
 
   // Create Plot Callback
-  if (plotting_cb)
+  if (plotting_)
   {
-    tesseract::tesseract_ros::ROSBasicPlottingPtr plotter_ptr(new tesseract::tesseract_ros::ROSBasicPlotting(env));
-    config.callbacks.push_back(PlotCallback(*pick_prob, plotter_ptr));
+    config.callbacks.push_back(PlotCallback(*pick_prob, plotter));
   }
 
   // Create file write callback discarding any of the file's current contents
   std::shared_ptr<std::ofstream> stream_ptr(new std::ofstream);
-  if (file_write_cb)
+  if (write_to_file_)
   {
     std::string path = ros::package::getPath("trajopt_examples") + "/file_output_pick.csv";
     stream_ptr->open(path, std::ofstream::out | std::ofstream::trunc);
@@ -258,11 +394,13 @@ int main(int argc, char** argv)
   // Solve problem. Results are stored in the response
   planner.solve(planning_response, config);
 
-  if (file_write_cb)
+  if (write_to_file_)
     stream_ptr->close();
 
   // Plot the resulting trajectory
-  plotter.plotTrajectory(env->getJointNames(), planning_response.trajectory.leftCols(env->getJointNames().size()));
+  if (plotting_)
+    plotter->plotTrajectory(pick_prob->GetKin()->getJointNames(), planning_response.trajectory.leftCols(pick_prob->GetKin()->getJointNames().size()));
+
   std::cout << planning_response.trajectory << '\n';
 
   /////////////
@@ -272,17 +410,25 @@ int main(int argc, char** argv)
   std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
   // Detach the simulated box from the world and attach to the end effector
-  env->detachBody("box");
-  attached_body.parent_link_name = end_effector;
-  attached_body.transform.translation() = Eigen::Vector3d(0, 0, box_side / 2.0);
-  attached_body.touch_links = { "iiwa_link_ee", end_effector };  // allow the box to contact the end effector
-  attached_body.touch_links = { "workcell_base",
-                                end_effector };  // allow the box to contact the table (since it's sitting on it)
 
-  env->attachBody(attached_body);
+  Joint joint_box2("joint_box2");
+  joint_box2.parent_link_name = end_effector;
+  joint_box2.child_link_name = link_box.getName();
+  joint_box2.type = JointType::FIXED;
+  joint_box2.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
+  joint_box2.parent_to_joint_origin_transform.translation() += Eigen::Vector3d(box_x, box_y, box_side / 2.0);
+
+  env_->moveLink(joint_box2);
+  env_->addAllowedCollision(link_box.getName(), "iiwa_link_ee", "Never");
+  env_->addAllowedCollision(link_box.getName(), end_effector, "Adjacent");
+  env_->addAllowedCollision(link_box.getName(), "workcell_base", "Allowed");
+
+  // Now update rviz environment
+  if (!sendRvizChanges(1))
+    return -1;
 
   // Set the current state to the last state of the pick trajectory
-  env->setState(env->getJointNames(), planning_response.trajectory.bottomRows(1).transpose());
+  env_->setState(pick_prob->GetKin()->getJointNames(), planning_response.trajectory.bottomRows(1).transpose());
 
   // Retreat to the approach pose
   Eigen::Isometry3d retreat_pose = approach_pose;
@@ -311,16 +457,17 @@ int main(int argc, char** argv)
   approach_pose.translation() += Eigen::Vector3d(0.0, -0.25, 0);
 
   // Create the problem construction info
-  trajopt::ProblemConstructionInfo pci_place(env);
+  trajopt::ProblemConstructionInfo pci_place(env_, kin_map_);
 
-  pci_place.kin = env->getManipulator(manip);
-
-  pci_place.basic_info.n_steps = steps_per_phase * 3;
+  pci_place.basic_info.n_steps = steps_ * 3;
   pci_place.basic_info.manip = manip;
   pci_place.basic_info.dt_lower_lim = 2;    // 1/most time
   pci_place.basic_info.dt_upper_lim = 100;  // 1/least time
   pci_place.basic_info.start_fixed = true;
   pci_place.basic_info.use_time = true;
+
+  // Create Kinematic Object
+  pci_place.kin = kin_map_[pci_place.basic_info.manip];
 
   pci_place.init_info.type = trajopt::InitInfo::STATIONARY;
   pci_place.init_info.dt = 0.5;
@@ -381,18 +528,18 @@ int main(int argc, char** argv)
         std::shared_ptr<trajopt::CartPoseTermInfo>(new trajopt::CartPoseTermInfo);
     pose_constraint->term_type = trajopt::TT_CNT;
     pose_constraint->link = end_effector;
-    pose_constraint->timestep = steps_per_phase - 1;
+    pose_constraint->timestep = steps_ - 1;
     pose_constraint->xyz = retreat_pose.translation();
 
     pose_constraint->wxyz = Eigen::Vector4d(rotation.w(), rotation.x(), rotation.y(), rotation.z());
     pose_constraint->pos_coeffs = Eigen::Vector3d(10.0, 10.0, 10.0);
     pose_constraint->rot_coeffs = Eigen::Vector3d(10.0, 10.0, 10.0);
-    pose_constraint->name = "pose_" + std::to_string(steps_per_phase - 1);
+    pose_constraint->name = "pose_" + std::to_string(steps_ - 1);
     pci_place.cnt_infos.push_back(pose_constraint);
   }
 
   // Add cartesian pose cnt at the final point
-  int steps = 3 * steps_per_phase - 2 * steps_per_phase;
+  int steps = 3 * steps_ - 2 * steps_;
   for (int index = 0; index < steps; index++)
   {
     Eigen::Quaterniond rotation(final_pose.linear());
@@ -400,14 +547,14 @@ int main(int argc, char** argv)
         std::shared_ptr<trajopt::CartPoseTermInfo>(new trajopt::CartPoseTermInfo);
     pose_constraint->term_type = trajopt::TT_CNT;
     pose_constraint->link = end_effector;
-    pose_constraint->timestep = 2 * steps_per_phase + index;
+    pose_constraint->timestep = 2 * steps_ + index;
     pose_constraint->xyz = approach_pose.translation();
     pose_constraint->xyz.y() = approach_pose.translation().y() + 0.25 / (steps - 1) * index;
 
     pose_constraint->wxyz = Eigen::Vector4d(rotation.w(), rotation.x(), rotation.y(), rotation.z());
     pose_constraint->pos_coeffs = Eigen::Vector3d(10.0, 10.0, 10.0);
     pose_constraint->rot_coeffs = Eigen::Vector3d(10.0, 10.0, 10.0);
-    pose_constraint->name = "pose_" + std::to_string(2 * steps_per_phase + index);
+    pose_constraint->name = "pose_" + std::to_string(2 * steps_ + index);
     pci_place.cnt_infos.push_back(pose_constraint);
   }
 
@@ -425,18 +572,18 @@ int main(int argc, char** argv)
   trajopt::TrajOptProbPtr place_prob = ConstructProblem(pci_place);
 
   // Set the optimization parameters
-  tesseract::tesseract_planning::TrajOptPlannerConfig config_place(place_prob);
+  tesseract_planning::TrajOptPlannerConfig config_place(place_prob);
   config_place.params.max_iter = 100;
 
   // Create Plot Callback
-  if (plotting_cb)
+  if (plotting_)
   {
-    tesseract::tesseract_ros::ROSBasicPlottingPtr plotter_ptr(new tesseract::tesseract_ros::ROSBasicPlotting(env));
-    config_place.callbacks.push_back(PlotCallback(*place_prob, plotter_ptr));
+    config_place.callbacks.push_back(PlotCallback(*place_prob, plotter));
   }
+
   // Create file write callback discarding any of the file's current contents
   std::shared_ptr<std::ofstream> stream_ptr_place(new std::ofstream);
-  if (file_write_cb)
+  if (write_to_file_)
   {
     std::string path = ros::package::getPath("pick_and_place") + "/file_output_place.csv";
     stream_ptr->open(path, std::ofstream::out | std::ofstream::trunc);
@@ -446,12 +593,13 @@ int main(int argc, char** argv)
   // Solve problem
   planner.solve(planning_response_place, config_place);
 
-  if (file_write_cb)
+  if (write_to_file_)
     stream_ptr_place->close();
 
-  // plot the trajectory in Rviz
-  plotter.plotTrajectory(env->getJointNames(),
-                         planning_response_place.trajectory.leftCols(env->getJointNames().size()));
+  // Plot the resulting trajectory
+  if (plotting_)
+    plotter->plotTrajectory(place_prob->GetKin()->getJointNames(), planning_response_place.trajectory.leftCols(place_prob->GetKin()->getJointNames().size()));
+
   std::cout << planning_response_place.trajectory << '\n';
 
   ROS_INFO("Done");

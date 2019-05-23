@@ -40,6 +40,9 @@ TRAJOPT_IGNORE_WARNINGS_POP
 #include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_rosutils/plotting.h>
+#include <tesseract_rosutils/utils.h>
+#include <tesseract_msgs/ModifyEnvironment.h>
+#include <tesseract_msgs/GetEnvironmentChanges.h>
 #include <trajopt/plot_callback.hpp>
 #include <trajopt/file_write_callback.hpp>
 #include <trajopt/problem_description.hpp>
@@ -51,13 +54,14 @@ using namespace tesseract_environment;
 using namespace tesseract_kinematics;
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
-
+using namespace tesseract_rosutils;
 
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
 const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic"; /**< Default ROS parameter for robot
                                                                           description */
-const std::string TRAJOPT_DESCRIPTION_PARAM =
-    "trajopt_description"; /**< Default ROS parameter for trajopt description */
+const std::string TRAJOPT_DESCRIPTION_PARAM = "trajopt_description"; /**< Default ROS parameter for trajopt description */
+const std::string GET_ENVIRONMENT_CHANGES_SERVICE = "get_tesseract_changes_rviz";
+const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
 
 static bool plotting_ = true;
 static bool write_to_file_ = false;
@@ -65,6 +69,8 @@ static int steps_ = 5;
 static std::string method_ = "json";
 static KDLEnvPtr env_;  /**< Environment */
 static ForwardKinematicsConstPtrMap kin_map_; /**< Map of available kinematics */
+static ros::ServiceClient modify_env_rviz;
+static ros::ServiceClient get_env_changes_rviz;
 
 TrajOptProbPtr jsonMethod()
 {
@@ -82,6 +88,61 @@ TrajOptProbPtr jsonMethod()
   }
 
   return ConstructProblem(root, env_, kin_map_);
+}
+
+bool checkRviz()
+{
+  // Get the current state of the environment
+  get_env_changes_rviz.waitForExistence();
+  tesseract_msgs::GetEnvironmentChanges env_changes;
+  env_changes.request.revision = 0;
+  if (get_env_changes_rviz.call(env_changes))
+  {
+    ROS_INFO("Retrieve current environment changes!");
+  }
+  else
+  {
+    ROS_ERROR("Failed retrieve current environment changes!");
+    return false;
+  }
+
+  // There should not be any changes but check
+  if(env_changes.response.revision != 0)
+  {
+    ROS_ERROR("The environment has changed externally!");
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Send RViz the latest number of commands
+ * @param n The past revision number
+ * @return True if successful otherwise false
+ */
+bool sendRvizChanges(int past_revision)
+{
+  modify_env_rviz.waitForExistence();
+  tesseract_msgs::ModifyEnvironment update_env;
+  update_env.request.id = env_->getName();
+  update_env.request.revision = past_revision;
+  if (!toMsg(update_env.request.commands, env_->getCommandHistory(), update_env.request.revision))
+  {
+    ROS_ERROR("Failed to generate commands to update rviz environment!");
+    return false;
+  }
+
+  if (modify_env_rviz.call(update_env))
+  {
+    ROS_INFO("RViz environment Updated!");
+  }
+  else
+  {
+    ROS_INFO("Failed to update rviz environment");
+    return false;
+  }
+
+  return true;
 }
 
 TrajOptProbPtr cppMethod()
@@ -178,6 +239,12 @@ int main(int argc, char** argv)
   ros::NodeHandle pnh("~");
   ros::NodeHandle nh;
 
+  // Get ROS Parameters
+  pnh.param("plotting", plotting_, plotting_);
+  pnh.param("write_to_file", write_to_file_, write_to_file_);
+  pnh.param<std::string>("method", method_, method_);
+  pnh.param<int>("steps", steps_, steps_);
+
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;
   nh.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
@@ -209,7 +276,13 @@ int main(int argc, char** argv)
   // Create plotting tool
   tesseract_rosutils::ROSPlottingPtr plotter = std::make_shared<tesseract_rosutils::ROSPlotting>(env_);
 
-  // Add sphere
+  // These are used to keep visualization updated
+  modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", 10);
+  get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", 10);
+
+  // Check RViz to make sure nothing has changed
+  if (!checkRviz())
+    return -1;
 
   // Add sphere to environment
   Link link_sphere("sphere_attached");
@@ -232,11 +305,9 @@ int main(int argc, char** argv)
 
   env_->addLink(link_sphere, joint_sphere);
 
-  // Get ROS Parameters
-  pnh.param("plotting", plotting_, plotting_);
-  pnh.param("write_to_file", write_to_file_, write_to_file_);
-  pnh.param<std::string>("method", method_, method_);
-  pnh.param<int>("steps", steps_, steps_);
+  // Now update rviz environment
+  if (!sendRvizChanges(0))
+    return -1;
 
   // Set the robot initial state
   std::unordered_map<std::string, double> ipos;
