@@ -73,6 +73,55 @@ inline static void jacobianChangeRefPoint(Eigen::Ref<Eigen::MatrixXd> jacobian, 
 }
 
 /**
+ * @brief Numerically calculate a jacobian. This is mainly used for testing
+ * @param jacobian (Return) The jacobian which gets filled out.
+ * @param kin          The kinematics object
+ * @param joint_values The joint values for which to calculate the jacobian
+ * @param link_name    The link_name for which the jacobian should be calculated
+ * @param link_point   The point on the link for which to calculate the jacobian
+ */
+inline static void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
+                                     const Eigen::Isometry3d& change_base,
+                                     const tesseract_kinematics::ForwardKinematics& kin,
+                                     const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                                     const std::string& link_name,
+                                     const Eigen::Ref<const Eigen::Vector3d>& link_point)
+{
+  Eigen::VectorXd njvals;
+  double delta = 0.001;
+  Eigen::Isometry3d pose;
+  kin.calcFwdKin(pose, joint_values, link_name);
+  pose = change_base * pose;
+
+  for (int i = 0; i < static_cast<int>(joint_values.size()); ++i)
+  {
+    njvals = joint_values;
+    njvals[i] += delta;
+    Eigen::Isometry3d updated_pose;
+    kin.calcFwdKin(updated_pose, njvals, link_name);
+    updated_pose = change_base * updated_pose;
+
+    Eigen::Vector3d temp = pose * link_point;
+    Eigen::Vector3d temp2 = updated_pose * link_point;
+    jacobian(0, i) = (temp2.x() - temp.x()) / delta;
+    jacobian(1, i) = (temp2.y() - temp.y()) / delta;
+    jacobian(2, i) = (temp2.z() - temp.z()) / delta;
+
+    Eigen::AngleAxisd r12(pose.rotation().transpose() * updated_pose.rotation());  // rotation from p1 -> p2
+    double theta = r12.angle();
+    theta = copysign(fmod(fabs(theta), 2.0 * M_PI), theta);
+    if (theta < -M_PI)
+      theta = theta + 2. * M_PI;
+    if (theta > M_PI)
+      theta = theta - 2. * M_PI;
+    Eigen::VectorXd omega = (pose.rotation() * r12.axis() * theta) / delta;
+    jacobian(3, i) = omega(0);
+    jacobian(4, i) = omega(1);
+    jacobian(5, i) = omega(2);
+  }
+}
+
+/**
  * @brief Solve equation Ax=b for x
  * Use this SVD to compute A+ (pseudoinverse of A). Weighting still TBD.
  * @param A Input matrix (represents Jacobian)

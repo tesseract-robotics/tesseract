@@ -75,7 +75,7 @@ void runJacobianTest(tesseract_kinematics::ForwardKinematics& kin)
   //////////////////////////////////////////////////////////////////
   // Test forward kinematics when tip link is the base of the chain
   //////////////////////////////////////////////////////////////////
-  Eigen::MatrixXd jacobian;
+  Eigen::MatrixXd jacobian, numerical_jacobian;
   Eigen::VectorXd jvals;
   jvals.resize(7);
 
@@ -93,84 +93,68 @@ void runJacobianTest(tesseract_kinematics::ForwardKinematics& kin)
   jacobian.resize(6, 7);
   EXPECT_TRUE(kin.calcJacobian(jacobian, jvals, "tool0"));
 
-  Eigen::Isometry3d pose;
-  kin.calcFwdKin(pose, jvals, "tool0");
+  Eigen::Vector3d link_point(0,0,0);
+  numerical_jacobian.resize(6, 7);
+  tesseract_kinematics::numericalJacobian(numerical_jacobian, Eigen::Isometry3d::Identity(), kin, jvals, "tool0", link_point);
 
-  Eigen::VectorXd njvals;
-  double delta = 0.001;
-  for (int i = 0; i < static_cast<int>(jvals.size()); ++i)
-  {
-    njvals = jvals;
-    njvals[i] += delta;
-    Eigen::Isometry3d updated_pose;
-    kin.calcFwdKin(updated_pose, njvals, "tool0");
-    double delta_x = (updated_pose.translation().x() - pose.translation().x()) / delta;
-    double delta_y = (updated_pose.translation().y() - pose.translation().y()) / delta;
-    double delta_z = (updated_pose.translation().z() - pose.translation().z()) / delta;
-    EXPECT_NEAR(delta_x, jacobian(0, i), 1e-3);
-    EXPECT_NEAR(delta_y, jacobian(1, i), 1e-3);
-    EXPECT_NEAR(delta_z, jacobian(2, i), 1e-3);
-    Eigen::AngleAxisd r12(pose.rotation().transpose() * updated_pose.rotation());  // rotation from p1 -> p2
-    double theta = r12.angle();
-    theta = copysign(fmod(fabs(theta), 2.0 * M_PI), theta);
-    if (theta < -M_PI)
-      theta = theta + 2. * M_PI;
-    if (theta > M_PI)
-      theta = theta - 2. * M_PI;
-    Eigen::VectorXd omega = (pose.rotation() * r12.axis() * theta) / delta;
-    EXPECT_NEAR(omega(0), jacobian(3, i), 1e-3);
-    EXPECT_NEAR(omega(1), jacobian(4, i), 1e-3);
-    EXPECT_NEAR(omega(2), jacobian(5, i), 1e-3);
-  }
+  for (int i = 0; i < 6; ++i)
+    for (int j = 0; j < 7; ++j)
+      EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-3);
 
   ///////////////////////////
   // Test Jacobian at Point
   ///////////////////////////
+  Eigen::Isometry3d pose;
+  kin.calcFwdKin(pose, jvals, "tool0");
   for (int k = 0; k < 3; ++k)
   {
-    Eigen::Vector3d link_point;
-    link_point.setZero();
+    Eigen::Vector3d link_point(0,0,0);
     link_point[k] = 1;
+
     // calcJacobian requires the link point to be in the base frame for which the jacobian is calculated.
     EXPECT_TRUE(kin.calcJacobian(jacobian, jvals, "tool0"));
     tesseract_kinematics::jacobianChangeRefPoint(jacobian, pose.linear() * link_point);
 
-    for (int i = 0; i < static_cast<int>(jvals.size()); ++i)
-    {
-      njvals = jvals;
-      njvals[i] += delta;
-      Eigen::Isometry3d updated_pose;
-      kin.calcFwdKin(updated_pose, njvals, "tool0");
-      Eigen::Vector3d temp = pose * link_point;
-      Eigen::Vector3d temp2 = updated_pose * link_point;
-      double delta_x = (temp2.x() - temp.x()) / delta;
-      double delta_y = (temp2.y() - temp.y()) / delta;
-      double delta_z = (temp2.z() - temp.z()) / delta;
-      EXPECT_NEAR(delta_x, jacobian(0, i), 1e-3);
-      EXPECT_NEAR(delta_y, jacobian(1, i), 1e-3);
-      EXPECT_NEAR(delta_z, jacobian(2, i), 1e-3);
-      Eigen::AngleAxisd r12(pose.rotation().transpose() * updated_pose.rotation());  // rotation from p1 -> p2
-      double theta = r12.angle();
-      theta = copysign(fmod(fabs(theta), 2.0 * M_PI), theta);
-      if (theta < -M_PI)
-        theta = theta + 2. * M_PI;
-      if (theta > M_PI)
-        theta = theta - 2. * M_PI;
-      Eigen::VectorXd omega = (pose.rotation() * r12.axis() * theta) / delta;
-      EXPECT_NEAR(omega(0), jacobian(3, i), 1e-3);
-      EXPECT_NEAR(omega(1), jacobian(4, i), 1e-3);
-      EXPECT_NEAR(omega(2), jacobian(5, i), 1e-3);
-    }
+    numerical_jacobian.resize(6, 7);
+    tesseract_kinematics::numericalJacobian(numerical_jacobian, Eigen::Isometry3d::Identity(), kin, jvals, "tool0", link_point);
+
+    for (int i = 0; i < 6; ++i)
+      for (int j = 0; j < 7; ++j)
+        EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-3);
+  }
+
+  ///////////////////////////////////////////
+  // Test Jacobian with change base
+  ///////////////////////////////////////////
+  for (int k = 0; k < 3; ++k)
+  {
+    link_point = Eigen::Vector3d(0, 0, 0);
+    Eigen::Isometry3d change_base;
+    change_base.setIdentity();
+    change_base(0, 0) = 0;
+    change_base(1, 0) = 1;
+    change_base(0, 1) = -1;
+    change_base(1, 1) = 0;
+    change_base.translation() = Eigen::Vector3d(0, 0, 0);
+    change_base.translation()[k] = 1;
+
+    EXPECT_TRUE(kin.calcJacobian(jacobian, jvals, "tool0"));
+    tesseract_kinematics::jacobianChangeBase(jacobian, change_base);
+
+    numerical_jacobian.resize(6, 7);
+    tesseract_kinematics::numericalJacobian(numerical_jacobian, change_base, kin, jvals, "tool0", link_point);
+
+    for (int i = 0; i < 6; ++i)
+      for (int j = 0; j < 7; ++j)
+        EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-3);
   }
 
   ///////////////////////////////////////////
   // Test Jacobian at point with change base
   ///////////////////////////////////////////
-
   for (int k = 0; k < 3; ++k)
   {
-    Eigen::Vector3d link_point;
-    link_point.setZero();
+    Eigen::Vector3d link_point(0,0,0);
     link_point[k] = 1;
 
     Eigen::Isometry3d change_base;
@@ -187,33 +171,12 @@ void runJacobianTest(tesseract_kinematics::ForwardKinematics& kin)
     tesseract_kinematics::jacobianChangeBase(jacobian, change_base);
     tesseract_kinematics::jacobianChangeRefPoint(jacobian, (change_base * pose).linear() * link_point);
 
-    for (int i = 0; i < static_cast<int>(jvals.size()); ++i)
-    {
-      njvals = jvals;
-      njvals[i] += delta;
-      Eigen::Isometry3d updated_pose;
-      kin.calcFwdKin(updated_pose, njvals, "tool0");
+    numerical_jacobian.resize(6, 7);
+    tesseract_kinematics::numericalJacobian(numerical_jacobian, change_base, kin, jvals, "tool0", link_point);
 
-      Eigen::Vector3d temp = change_base * pose * link_point;
-      Eigen::Vector3d temp2 = change_base * updated_pose * link_point;
-      double delta_x = (temp2.x() - temp.x()) / delta;
-      double delta_y = (temp2.y() - temp.y()) / delta;
-      double delta_z = (temp2.z() - temp.z()) / delta;
-      EXPECT_NEAR(delta_x, jacobian(0, i), 1e-3);
-      EXPECT_NEAR(delta_y, jacobian(1, i), 1e-3);
-      EXPECT_NEAR(delta_z, jacobian(2, i), 1e-3);
-      Eigen::AngleAxisd r12((change_base * pose).rotation().transpose() * (change_base * updated_pose).rotation());  // rotation from p1 -> p2
-      double theta = r12.angle();
-      theta = copysign(fmod(fabs(theta), 2.0 * M_PI), theta);
-      if (theta < -M_PI)
-        theta = theta + 2. * M_PI;
-      if (theta > M_PI)
-        theta = theta - 2. * M_PI;
-      Eigen::VectorXd omega = ((change_base * pose).rotation() * r12.axis() * theta) / delta;
-      EXPECT_NEAR(omega(0), jacobian(3, i), 1e-3);
-      EXPECT_NEAR(omega(1), jacobian(4, i), 1e-3);
-      EXPECT_NEAR(omega(2), jacobian(5, i), 1e-3);
-    }
+    for (int i = 0; i < 6; ++i)
+      for (int j = 0; j < 7; ++j)
+        EXPECT_NEAR(numerical_jacobian(i, j), jacobian(i, j), 1e-3);
   }
 }
 
