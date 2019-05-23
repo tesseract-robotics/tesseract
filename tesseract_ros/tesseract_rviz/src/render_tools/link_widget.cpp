@@ -693,11 +693,91 @@ rviz::PointCloud* createPointCloud(std::vector<rviz::PointCloud::Point>&& points
   return cloud;
 }
 
+Ogre::Entity* LinkWidget::createEntityForMeshData(const std::string& entity_name, const std::shared_ptr<const tesseract_geometry::VectorVector3d>& mesh_vertices, const std::shared_ptr<const Eigen::VectorXi>& mesh_faces)
+{
+  Ogre::ManualObject* object = new Ogre::ManualObject("the one and only");
+  object->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST);
+
+  unsigned int vertexCount = 0;
+  Ogre::Vector3 normal(0.0, 0.0, 0.0);
+
+  for (long t = 0; t < mesh_faces->size(); ++t)
+  {
+    if (vertexCount >= 2004)
+    {
+      // Subdivide large meshes into submeshes with at most 2004
+      // vertices to prevent problems on some graphics cards.
+      object->end();
+      object->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST);
+      vertexCount = 0;
+    }
+
+    size_t num_verts = (*mesh_faces)[t];
+    assert(num_verts >= 3);
+
+    std::vector<Ogre::Vector3> vertices(num_verts);
+    std::vector<Ogre::Vector3> normals(num_verts);
+    for (size_t k = 0; k < num_verts; ++k)
+    {
+      Eigen::Vector3d v = (*mesh_vertices)[((*mesh_faces)[++t])];
+      vertices[k] = Ogre::Vector3(static_cast<float>(v.x()),
+                                  static_cast<float>(v.y()),
+                                  static_cast<float>(v.z()));
+    }
+
+    Ogre::Vector3 side1 = vertices[0] - vertices[1];
+    Ogre::Vector3 side2 = vertices[1] - vertices[2];
+    normal = side1.crossProduct(side2);
+    normal.normalise();
+
+    for (size_t k = 0; k < num_verts; ++k)
+      normals[k] = normal;
+
+    for (size_t k = 2; k < num_verts; ++k)
+    {
+      if (k == 2)
+      {
+        object->position(vertices[0]);
+        object->normal(normals[0]);
+
+        object->position(vertices[1]);
+        object->normal(normals[1]);
+
+        object->position(vertices[2]);
+        object->normal(normals[2]);
+
+        object->triangle(vertexCount + 0, vertexCount + 1, vertexCount + 2);
+      }
+      else
+      {
+        object->position(vertices[k]);
+        object->normal(normals[k]);
+
+        object->triangle(vertexCount + 0, vertexCount + (k - 1), vertexCount + k);
+      }
+    }
+
+    vertexCount += num_verts;
+  }
+
+  object->end();
+
+  std::string mesh_name = entity_name + "mesh";
+  Ogre::MeshPtr ogre_mesh = object->convertToMesh(mesh_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+  ogre_mesh->buildEdgeList();
+
+  Ogre::Entity* entity = scene_manager_->createEntity(entity_name, mesh_name);
+
+  delete object;
+
+  return entity;
+}
+
 bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Link& link,
-                                             const tesseract_geometry::Geometry& geom,
-                                             const Eigen::Isometry3d& origin,
-                                             const std::string& material_name,
-                                             bool isVisual)
+                                                const tesseract_geometry::Geometry& geom,
+                                                const Eigen::Isometry3d& origin,
+                                                const std::string& material_name,
+                                                bool isVisual)
 {
   Ogre::Entity* entity = nullptr;  // default in case nothing works.
 
@@ -739,10 +819,7 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
     {
       const tesseract_geometry::Box& box = static_cast<const tesseract_geometry::Box&>(geom);
       entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Cube, scene_manager_);
-
-      scale =
-          Ogre::Vector3(static_cast<float>(box.getX()), static_cast<float>(box.getY()), static_cast<float>(box.getZ()));
-
+      scale = Ogre::Vector3(static_cast<float>(box.getX()), static_cast<float>(box.getY()), static_cast<float>(box.getZ()));
       break;
     }
     case tesseract_geometry::GeometryType::CYLINDER:
@@ -763,61 +840,70 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
     {
       const tesseract_geometry::Mesh& mesh = static_cast<const tesseract_geometry::Mesh&>(geom);
 
-      if (mesh.getFilePath().empty())
-        return false;
-
-//      scale = Ogre::Vector3(
-//          static_cast<float>(mesh.scale.x), static_cast<float>(mesh.scale.y), static_cast<float>(mesh.scale.z));
-
-      std::string model_name = "file://" + mesh.getFilePath();
-
-      try
+      if (!mesh.getFilePath().empty())
       {
-        rviz::loadMeshFromResource(model_name);
-        entity = scene_manager_->createEntity(entity_name, model_name);
+        std::string model_name = "file://" + mesh.getFilePath();
+
+        const Eigen::Vector3d& mesh_scale = mesh.getScale();
+        scale = Ogre::Vector3(static_cast<float>(mesh_scale.x()), static_cast<float>(mesh_scale.y()), static_cast<float>(mesh_scale.z()));
+
+        try
+        {
+          rviz::loadMeshFromResource(model_name);
+          entity = scene_manager_->createEntity(entity_name, model_name);
+        }
+        catch (Ogre::InvalidParametersException& e)
+        {
+          ROS_ERROR("Could not convert mesh resource '%s' for link '%s'. It might "
+                    "be an empty mesh: %s",
+                    model_name.c_str(),
+                    link.getName().c_str(),
+                    e.what());
+        }
+        catch (Ogre::Exception& e)
+        {
+          ROS_ERROR("Could not load model '%s' for link '%s': %s", model_name.c_str(), link.getName().c_str(), e.what());
+        }
       }
-      catch (Ogre::InvalidParametersException& e)
+      else
       {
-        ROS_ERROR("Could not convert mesh resource '%s' for link '%s'. It might "
-                  "be an empty mesh: %s",
-                  model_name.c_str(),
-                  link.getName().c_str(),
-                  e.what());
+        entity = createEntityForMeshData(entity_name, mesh.getVertices(), mesh.getTriangles());
       }
-      catch (Ogre::Exception& e)
-      {
-        ROS_ERROR("Could not load model '%s' for link '%s': %s", model_name.c_str(), link.getName().c_str(), e.what());
-      }
+
       break;
     }
     case tesseract_geometry::GeometryType::CONVEX_MESH:
     {
       const tesseract_geometry::ConvexMesh& mesh = static_cast<const tesseract_geometry::ConvexMesh&>(geom);
 
-      if (mesh.getFilePath().empty())
-        return false;
-
-  //      scale = Ogre::Vector3(
-  //          static_cast<float>(mesh.scale.x), static_cast<float>(mesh.scale.y), static_cast<float>(mesh.scale.z));
-
-      std::string model_name = "file://" + mesh.getFilePath();
-
-      try
+      if (!mesh.getFilePath().empty())
       {
-        rviz::loadMeshFromResource(model_name);
-        entity = scene_manager_->createEntity(entity_name, model_name);
+        std::string model_name = "file://" + mesh.getFilePath();
+
+        const Eigen::Vector3d& mesh_scale = mesh.getScale();
+        scale = Ogre::Vector3(static_cast<float>(mesh_scale.x()), static_cast<float>(mesh_scale.y()), static_cast<float>(mesh_scale.z()));
+
+        try
+        {
+          rviz::loadMeshFromResource(model_name);
+          entity = scene_manager_->createEntity(entity_name, model_name);
+        }
+        catch (Ogre::InvalidParametersException& e)
+        {
+          ROS_ERROR("Could not convert mesh resource '%s' for link '%s'. It might "
+                    "be an empty mesh: %s",
+                    model_name.c_str(),
+                    link.getName().c_str(),
+                    e.what());
+        }
+        catch (Ogre::Exception& e)
+        {
+          ROS_ERROR("Could not load model '%s' for link '%s': %s", model_name.c_str(), link.getName().c_str(), e.what());
+        }
       }
-      catch (Ogre::InvalidParametersException& e)
+      else
       {
-        ROS_ERROR("Could not convert mesh resource '%s' for link '%s'. It might "
-                  "be an empty mesh: %s",
-                  model_name.c_str(),
-                  link.getName().c_str(),
-                  e.what());
-      }
-      catch (Ogre::Exception& e)
-      {
-        ROS_ERROR("Could not load model '%s' for link '%s': %s", model_name.c_str(), link.getName().c_str(), e.what());
+        entity = createEntityForMeshData(entity_name, mesh.getVertices(), mesh.getFaces());
       }
       break;
     }
