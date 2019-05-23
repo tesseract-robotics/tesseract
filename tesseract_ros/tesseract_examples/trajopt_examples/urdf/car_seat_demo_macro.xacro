@@ -238,7 +238,70 @@
           <collision>
             <origin ryp="0 0 0" xyz="0 0 0"/>
             <geometry>
-              <mesh scale="0.9 0.9 0.9" filename="package://trajopt_examples/meshes/car_seat/collision/seat.stl"/>
+              <mesh scale="0.9 0.9 0.9" filename="package://trajopt_examples/meshes/car_seat/collision/seat_1.stl"/>
+            </geometry>
+            <material name="yellow"/>
+          </collision>
+          <collision>
+            <origin ryp="0 0 0" xyz="0 0 0"/>
+            <geometry>
+              <mesh scale="0.9 0.9 0.9" filename="package://trajopt_examples/meshes/car_seat/collision/seat_2.stl"/>
+            </geometry>
+            <material name="yellow"/>
+          </collision>
+          <collision>
+            <origin ryp="0 0 0" xyz="0 0 0"/>
+            <geometry>
+              <mesh scale="0.9 0.9 0.9" filename="package://trajopt_examples/meshes/car_seat/collision/seat_3.stl"/>
+            </geometry>
+            <material name="yellow"/>
+          </collision>
+          <collision>
+            <origin ryp="0 0 0" xyz="0 0 0"/>
+            <geometry>
+              <mesh scale="0.9 0.9 0.9" filename="package://trajopt_examples/meshes/car_seat/collision/seat_4.stl"/>
+            </geometry>
+            <material name="yellow"/>
+          </collision>
+          <collision>
+            <origin ryp="0 0 0" xyz="0 0 0"/>
+            <geometry>
+              <mesh scale="0.9 0.9 0.9" filename="package://trajopt_examples/meshes/car_seat/collision/seat_5.stl"/>
+            </geometry>
+            <material name="yellow"/>
+          </collision>
+          <collision>
+            <origin ryp="0 0 0" xyz="0 0 0"/>
+            <geometry>
+              <mesh scale="0.9 0.9 0.9" filename="package://trajopt_examples/meshes/car_seat/collision/seat_6.stl"/>
+            </geometry>
+            <material name="yellow"/>
+          </collision>
+          <collision>
+            <origin ryp="0 0 0" xyz="0 0 0"/>
+            <geometry>
+              <mesh scale="0.9 0.9 0.9" filename="package://trajopt_examples/meshes/car_seat/collision/seat_7.stl"/>
+            </geometry>
+            <material name="yellow"/>
+          </collision>
+          <collision>
+            <origin ryp="0 0 0" xyz="0 0 0"/>
+            <geometry>
+              <mesh scale="0.9 0.9 0.9" filename="package://trajopt_examples/meshes/car_seat/collision/seat_8.stl"/>
+            </geometry>
+            <material name="yellow"/>
+          </collision>
+          <collision>
+            <origin ryp="0 0 0" xyz="0 0 0"/>
+            <geometry>
+              <mesh scale="0.9 0.9 0.9" filename="package://trajopt_examples/meshes/car_seat/collision/seat_9.stl"/>
+            </geometry>
+            <material name="yellow"/>
+          </collision>
+          <collision>
+            <origin ryp="0 0 0" xyz="0 0 0"/>
+            <geometry>
+              <mesh scale="0.9 0.9 0.9" filename="package://trajopt_examples/meshes/car_seat/collision/seat_10.stl"/>
             </geometry>
             <material name="yellow"/>
           </collision>
@@ -304,7 +367,7 @@
           <parent link="tool0"/>
           <child link="end_effector"/>
         </joint>
-        <!--<joint name="${prefix}end_effector_seat" type="fixed">
+<!--        <joint name="${prefix}end_effector_seat" type="fixed">
           <origin rpy="0 0.29 1.57" xyz="0.14 -0.1 -0.46"/>
           <parent link="end_effector"/>
           <child link="seat"/>

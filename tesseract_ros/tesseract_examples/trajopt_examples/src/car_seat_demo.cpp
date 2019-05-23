@@ -42,6 +42,9 @@ TRAJOPT_IGNORE_WARNINGS_POP
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_collision/core/common.h>
 #include <tesseract_rosutils/plotting.h>
+#include <tesseract_rosutils/utils.h>
+#include <tesseract_msgs/ModifyEnvironment.h>
+#include <tesseract_msgs/GetEnvironmentChanges.h>
 #include <trajopt/plot_callback.hpp>
 #include <trajopt/problem_description.hpp>
 #include <trajopt_utils/config.hpp>
@@ -53,20 +56,75 @@ using namespace tesseract_environment;
 using namespace tesseract_kinematics;
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
+using namespace tesseract_rosutils;
 
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
 const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic"; /**< Default ROS parameter for robot
                                                                           description */
 const std::string TRAJOPT_DESCRIPTION_PARAM =
     "trajopt_description"; /**< Default ROS parameter for trajopt description */
+const std::string GET_ENVIRONMENT_CHANGES_SERVICE = "get_tesseract_changes_rviz";
+const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
 
 static bool plotting_ = true;
 static std::string method_ = "json";
 static KDLEnvPtr env_;  /**< Environment */
 static ForwardKinematicsConstPtrMap kin_map_; /**< Map of available kinematics */
 static ResourceLocatorFn locator_ = tesseract_rosutils::locateResource;
+static ros::ServiceClient modify_env_rviz;
+static ros::ServiceClient get_env_changes_rviz;
 
 std::unordered_map<std::string, std::unordered_map<std::string, double>> saved_positions_;
+
+bool checkRviz()
+{
+  // Get the current state of the environment
+  get_env_changes_rviz.waitForExistence();
+  tesseract_msgs::GetEnvironmentChanges env_changes;
+  env_changes.request.revision = 0;
+  if (get_env_changes_rviz.call(env_changes))
+  {
+    ROS_INFO("Retrieve current environment changes!");
+  }
+  else
+  {
+    ROS_ERROR("Failed retrieve current environment changes!");
+    return false;
+  }
+
+  // There should not be any changes but check
+  if(env_changes.response.revision != 0)
+  {
+    ROS_ERROR("The environment has changed externally!");
+    return false;
+  }
+  return true;
+}
+
+bool sendRvizChanges(int past_revision)
+{
+  modify_env_rviz.waitForExistence();
+  tesseract_msgs::ModifyEnvironment update_env;
+  update_env.request.id = env_->getName();
+  update_env.request.revision = past_revision;
+  if (!toMsg(update_env.request.commands, env_->getCommandHistory(), update_env.request.revision))
+  {
+    ROS_ERROR("Failed to generate commands to update rviz environment!");
+    return false;
+  }
+
+  if (modify_env_rviz.call(update_env))
+  {
+    ROS_INFO("RViz environment Updated!");
+  }
+  else
+  {
+    ROS_INFO("Failed to update rviz environment");
+    return false;
+  }
+
+  return true;
+}
 
 void addSeats()
 {
@@ -76,21 +134,23 @@ void addSeats()
 
     VisualPtr visual = std::make_shared<Visual>();
     visual->origin = Eigen::Isometry3d::Identity();
-    visual->origin.translation() = Eigen::Vector3d(0.5, 0, 0.55);
     visual->geometry = createMeshFromPath<tesseract_geometry::Mesh>(locator_("package://trajopt_examples/meshes/car_seat/visual/seat.dae"), Eigen::Vector3d(1, 1, 1), true)[0];
     link_seat.visual.push_back(visual);
 
-    std::vector<tesseract_geometry::MeshPtr> meshes = createMeshFromPath<tesseract_geometry::Mesh>(locator_("package://trajopt_examples/meshes/car_seat/visual/seat.dae"));
-    for (auto& mesh : meshes)
+    for (int m = 1; m <= 10; ++m)
     {
-      CollisionPtr collision = std::make_shared<Collision>();
-      collision->origin = visual->origin;
-      collision->geometry = makeConvexMesh(*mesh);
-      link_seat.collision.push_back(collision);
+      std::vector<tesseract_geometry::MeshPtr> meshes = createMeshFromPath<tesseract_geometry::Mesh>(locator_("package://trajopt_examples/meshes/car_seat/collision/seat_" + std::to_string(m) + ".stl"));
+      for (auto& mesh : meshes)
+      {
+        CollisionPtr collision = std::make_shared<Collision>();
+        collision->origin = visual->origin;
+        collision->geometry = makeConvexMesh(*mesh);
+        link_seat.collision.push_back(collision);
+      }
     }
 
     Joint joint_seat("joint_seat_" + std::to_string(i + 1));
-    joint_seat.parent_link_name = "base_link";
+    joint_seat.parent_link_name = "world";
     joint_seat.child_link_name = link_seat.getName();
     joint_seat.type = JointType::FIXED;
     joint_seat.parent_to_joint_origin_transform = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitX()) *
@@ -254,7 +314,7 @@ std::shared_ptr<ProblemConstructionInfo> cppMethod(const std::string& start, con
 
   // Populate Cost Info
   std::shared_ptr<JointVelTermInfo> joint_vel = std::shared_ptr<JointVelTermInfo>(new JointVelTermInfo);
-  joint_vel->coeffs = std::vector<double>(8, 5.0);
+  joint_vel->coeffs = std::vector<double>(8, 1.0);
   joint_vel->targets = std::vector<double>(8, 0.0);
   joint_vel->first_step = 0;
   joint_vel->last_step = pci->basic_info.n_steps - 1;
@@ -282,13 +342,13 @@ std::shared_ptr<ProblemConstructionInfo> cppMethod(const std::string& start, con
 
   std::shared_ptr<CollisionTermInfo> collision = std::shared_ptr<CollisionTermInfo>(new CollisionTermInfo);
   collision->name = "collision";
-  collision->term_type = TT_COST;
+  collision->term_type = TT_CNT;
   collision->continuous = true;
   collision->first_step = 0;
   collision->last_step = pci->basic_info.n_steps - 1;
   collision->gap = 1;
-  collision->info = createSafetyMarginDataVector(pci->basic_info.n_steps, 0.05, 40);
-  pci->cost_infos.push_back(collision);
+  collision->info = createSafetyMarginDataVector(pci->basic_info.n_steps, 0.001, 40);
+  pci->cnt_infos.push_back(collision);
 
   // Create place pose constraint
   std::shared_ptr<JointPosTermInfo> jpos(new JointPosTermInfo);
@@ -336,6 +396,10 @@ int main(int argc, char** argv)
   env_->setActiveDiscreteContactManager("bullet");
   env_->setActiveContinuousContactManager("bullet");
 
+  // These are used to keep visualization updated
+  modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", 10);
+  get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", 10);
+
   // Create plotting tool
   tesseract_rosutils::ROSPlottingPtr plotter = std::make_shared<tesseract_rosutils::ROSPlotting>(env_);
 
@@ -345,21 +409,25 @@ int main(int argc, char** argv)
   // Get predefined positions
   saved_positions_ = getPredefinedPosition();
 
+  // Check RViz to make sure nothing has changed
+  if (!checkRviz())
+    return -1;
+
   //  // Add the car as a detailed mesh
   //  addCar();
 
   // Put three seats on the conveyor
   addSeats();
 
+  // Now update rviz environment
+  if (!sendRvizChanges(0))
+    return -1;
+
   // Move to home position
   env_->setState(saved_positions_["Home"]);
 
-//  // Plot the scene
-//  plotter->plotScene();
-//  plotter->plotScene();
-
   // Set Log Level
-  util::gLogLevel = util::LevelInfo;
+  util::gLogLevel = util::LevelDebug;
 
   // Solve Trajectory
   ROS_INFO("Car Seat Demo Started");
@@ -409,9 +477,18 @@ int main(int argc, char** argv)
   joint_seat.child_link_name = "seat_1";
   joint_seat.type = JointType::FIXED;
   joint_seat.parent_to_joint_origin_transform = state->transforms["end_effector"].inverse() * state->transforms["seat_1"];
-//  TODO: attach_seat1.touch_links = { "eff_link", "cell_logo", "fence", "link_b", "link_r", "link_t" };
 
   env_->moveLink(joint_seat);
+  env_->addAllowedCollision("seat_1", "end_effector", "Adjacent");
+  env_->addAllowedCollision("seat_1", "cell_logo", "Never");
+  env_->addAllowedCollision("seat_1", "fence", "Never");
+  env_->addAllowedCollision("seat_1", "link_b", "Never");
+  env_->addAllowedCollision("seat_1", "link_r", "Never");
+  env_->addAllowedCollision("seat_1", "link_t", "Never");
+
+  // Now update rviz environment
+  if (!sendRvizChanges(3))
+    return -1;
 
   pci = cppMethod("Pick1", "Place1");
   prob = ConstructProblem(*pci);

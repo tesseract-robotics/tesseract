@@ -27,7 +27,6 @@
 TRAJOPT_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <fstream>
-#include <ros/package.h>
 TRAJOPT_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
