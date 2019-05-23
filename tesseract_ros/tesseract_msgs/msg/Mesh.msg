@@ -10,3 +10,6 @@ uint32[] faces
 
 # Optional, If created from file provide path
 string file_path
+
+# Optional, If file_path is provide provide the scale that was used
+float32[3] scale
