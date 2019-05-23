@@ -98,7 +98,7 @@ namespace tesseract_scene_graph
         }
         else
         {
-          CONSOLE_BRIDGE_logError("Mesh had a face with less than three verticies");
+          CONSOLE_BRIDGE_logDebug("Mesh had a face with less than three verticies");
         }
       }
 
@@ -106,7 +106,7 @@ namespace tesseract_scene_graph
       for (long i = 0; i < triangles->size(); ++i)
         (*triangles)[i] = local_triangles[static_cast<size_t>(i)];
 
-      meshes.push_back(std::shared_ptr<T>(new T(vertices, triangles, triangle_count, path)));
+      meshes.push_back(std::shared_ptr<T>(new T(vertices, triangles, triangle_count, path, scale)));
     }
 
     for (unsigned int n = 0; n < node->mNumChildren; ++n)
