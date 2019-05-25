@@ -148,6 +148,15 @@ void EnvLinkSelectionHandler::preRenderPass(uint32_t /*pass*/)
       link_->collision_trajectory_node_->setVisible(false);
     }
 
+    if (link_->visual_end_node_)
+    {
+      link_->visual_end_node_->setVisible(false);
+    }
+    if (link_->collision_end_node_)
+    {
+      link_->collision_end_node_->setVisible(false);
+    }
+
     if (link_->trail_)
     {
       link_->trail_->setVisible(false);
@@ -555,44 +564,48 @@ void LinkWidget::updateAlpha()
 
 void LinkWidget::updateVisibility()
 {
-  bool enabled = getEnabled();
+  bool enabled = getEnabled() && env_->isVisible();
 
   env_->calculateJointCheckboxes();
 
   if (visual_start_node_)
   {
-    visual_start_node_->setVisible(enabled && env_->isVisible() && env_->isVisualVisible() && env_->isStartStateVisible());
+    visual_start_node_->setVisible(enabled && env_->isVisualVisible() && env_->isStartStateVisible());
   }
   if (collision_start_node_)
   {
-    collision_start_node_->setVisible(enabled && env_->isVisible() && env_->isCollisionVisible() && env_->isStartStateVisible());
+    collision_start_node_->setVisible(enabled && env_->isCollisionVisible() && env_->isStartStateVisible());
   }
 
   if (visual_trajectory_node_)
   {
-    visual_trajectory_node_->setVisible(enabled && env_->isVisible() && env_->isVisualVisible() && env_->isTrajectoryVisible());
+    visual_trajectory_node_->setVisible(enabled && env_->isVisualVisible() && env_->isTrajectoryVisible(), false);
+    for (int i = 0; i < visual_trajectory_waypoint_visibility_.size(); ++i)
+      visual_trajectory_waypoint_nodes_[i]->setVisible(visual_trajectory_waypoint_visibility_[i] && enabled && env_->isVisualVisible() && env_->isTrajectoryVisible());
   }
   if (collision_trajectory_node_)
   {
-    collision_trajectory_node_->setVisible(enabled && env_->isVisible() && env_->isCollisionVisible() && env_->isTrajectoryVisible());
+    collision_trajectory_node_->setVisible(enabled && env_->isCollisionVisible() && env_->isTrajectoryVisible(), false);
+    for (int i = 0; i < collision_trajectory_waypoint_visibility_.size(); ++i)
+      collision_trajectory_waypoint_nodes_[i]->setVisible(collision_trajectory_waypoint_visibility_[i] && enabled && env_->isCollisionVisible() && env_->isTrajectoryVisible());
   }
 
   if (visual_end_node_)
   {
-    visual_end_node_->setVisible(enabled && env_->isVisible() && env_->isVisualVisible() && env_->isEndStateVisible());
+    visual_end_node_->setVisible(enabled && env_->isVisualVisible() && env_->isEndStateVisible());
   }
   if (collision_end_node_)
   {
-    collision_end_node_->setVisible(enabled && env_->isVisible() && env_->isCollisionVisible() && env_->isEndStateVisible());
+    collision_end_node_->setVisible(enabled && env_->isCollisionVisible() && env_->isEndStateVisible());
   }
 
   if (trail_)
   {
-    trail_->setVisible(enabled && env_->isVisible());
+    trail_->setVisible(enabled);
   }
   if (axes_)
   {
-    axes_->getSceneNode()->setVisible(enabled && env_->isVisible());
+    axes_->getSceneNode()->setVisible(enabled);
   }
 }
 
@@ -1247,6 +1260,12 @@ void LinkWidget::createCollision(const tesseract_scene_graph::Link& link)
 
   collision_start_node_->setVisible(getEnabled() && env_->isStartStateVisible());
 
+  Ogre::SceneNode* collision_trajectory_clone = collision_trajectory_node_->createChildSceneNode();
+  clone(collision_start_node_, collision_trajectory_clone, collision_trajectory_meshes_, collision_trajectory_octrees_);
+  collision_trajectory_clone->setVisible(getEnabled() && env_->isTrajectoryVisible());
+  collision_trajectory_waypoint_nodes_.push_back(collision_trajectory_clone);
+  collision_trajectory_waypoint_visibility_.push_back(getEnabled() && env_->isTrajectoryVisible());
+
   clone(collision_start_node_, collision_end_node_, collision_end_meshes_, collision_end_octrees_);
   collision_end_node_->setVisible(getEnabled() && env_->isEndStateVisible());
 }
@@ -1264,6 +1283,13 @@ void LinkWidget::createVisual(const tesseract_scene_graph::Link& link)
   }
 
   visual_start_node_->setVisible(getEnabled() && env_->isStartStateVisible());
+
+  Ogre::SceneNode* visual_trajectory_clone = visual_trajectory_node_->createChildSceneNode();
+  clone(visual_start_node_, visual_trajectory_clone, visual_trajectory_meshes_, visual_trajectory_octrees_);
+  visual_trajectory_clone->setVisible(getEnabled() && env_->isTrajectoryVisible());
+  visual_trajectory_waypoint_nodes_.push_back(visual_trajectory_clone);
+  visual_trajectory_waypoint_visibility_.push_back(getEnabled() && env_->isTrajectoryVisible());
+
   clone(visual_start_node_, visual_end_node_, visual_end_meshes_, visual_end_octrees_);
   visual_end_node_->setVisible(getEnabled() && env_->isEndStateVisible());
 }
@@ -1396,7 +1422,7 @@ void LinkWidget::setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory)
 {
   clearTrajectory();
 
-  bool enabled = getEnabled() && env_->isTrajectoryVisible();
+  bool enabled = getEnabled() && env_->isVisible() && env_->isTrajectoryVisible();
 
   int trajectory_size = trajectory.size();
   int current_size = visual_trajectory_waypoint_nodes_.size();
@@ -1413,14 +1439,16 @@ void LinkWidget::setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory)
         {
           visual_trajectory_waypoint_nodes_[i]->setPosition(position);
           visual_trajectory_waypoint_nodes_[i]->setOrientation(orientation);
-          visual_trajectory_waypoint_nodes_[i]->setVisible(enabled && env_->isVisible() && env_->isVisualVisible());
+          visual_trajectory_waypoint_nodes_[i]->setVisible(enabled && env_->isVisualVisible());
+          visual_trajectory_waypoint_visibility_[i] = (enabled);
         }
 
         if (collision_start_node_ != nullptr)
         {
           collision_trajectory_waypoint_nodes_[i]->setPosition(position);
           collision_trajectory_waypoint_nodes_[i]->setOrientation(orientation);
-          collision_trajectory_waypoint_nodes_[i]->setVisible(enabled && env_->isVisible() && env_->isCollisionVisible());
+          collision_trajectory_waypoint_nodes_[i]->setVisible(enabled && env_->isCollisionVisible());
+          collision_trajectory_waypoint_visibility_[i] = (enabled);
         }
       }
       else
@@ -1431,8 +1459,9 @@ void LinkWidget::setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory)
           clone(visual_start_node_, new_visual_clone, visual_trajectory_meshes_, visual_trajectory_octrees_);
           new_visual_clone->setPosition(position);
           new_visual_clone->setOrientation(orientation);
-          new_visual_clone->setVisible(enabled && env_->isVisible() && env_->isVisualVisible());
+          new_visual_clone->setVisible(enabled && env_->isVisualVisible());
           visual_trajectory_waypoint_nodes_.push_back(new_visual_clone);
+          visual_trajectory_waypoint_visibility_.push_back(enabled);
         }
 
         if (collision_start_node_ != nullptr)
@@ -1441,8 +1470,9 @@ void LinkWidget::setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory)
           clone(collision_start_node_, new_collision_clone, collision_trajectory_meshes_, collision_trajectory_octrees_);
           new_collision_clone->setPosition(position);
           new_collision_clone->setOrientation(orientation);
-          new_collision_clone->setVisible(enabled && env_->isVisible() && env_->isCollisionVisible());
+          new_collision_clone->setVisible(enabled && env_->isCollisionVisible());
           collision_trajectory_waypoint_nodes_.push_back(new_collision_clone);
+          collision_trajectory_waypoint_visibility_.push_back(enabled);
         }
       }
     }
@@ -1461,23 +1491,31 @@ void LinkWidget::setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory)
         {
           visual_trajectory_waypoint_nodes_[i]->setPosition(position);
           visual_trajectory_waypoint_nodes_[i]->setOrientation(orientation);
-          visual_trajectory_waypoint_nodes_[i]->setVisible(enabled && env_->isVisible() && env_->isVisualVisible());
+          visual_trajectory_waypoint_nodes_[i]->setVisible(enabled && env_->isVisualVisible());
+          visual_trajectory_waypoint_visibility_[i] = enabled;
         }
 
         if (collision_start_node_ != nullptr)
         {
           collision_trajectory_waypoint_nodes_[i]->setPosition(position);
           collision_trajectory_waypoint_nodes_[i]->setOrientation(orientation);
-          collision_trajectory_waypoint_nodes_[i]->setVisible(enabled && env_->isVisible() && env_->isCollisionVisible());
+          collision_trajectory_waypoint_nodes_[i]->setVisible(enabled && env_->isCollisionVisible());
+          collision_trajectory_waypoint_visibility_[i] = enabled;
         }
       }
       else
       {
         if (visual_start_node_ != nullptr)
+        {
           visual_trajectory_waypoint_nodes_[i]->setVisible(false);
+          visual_trajectory_waypoint_visibility_[i] = false;
+        }
 
         if (collision_start_node_ != nullptr)
+        {
           collision_trajectory_waypoint_nodes_[i]->setVisible(false);
+          collision_trajectory_waypoint_visibility_[i] = false;
+        }
       }
     }
   }
@@ -1485,18 +1523,22 @@ void LinkWidget::setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory)
 
 void LinkWidget::clearTrajectory()
 {
-  bool enabled = getEnabled() && env_->isTrajectoryVisible();
+  bool enabled = getEnabled() && env_->isVisible() && env_->isTrajectoryVisible();
 
   if (visual_start_node_)
   {
     visual_trajectory_node_->setVisible(false);
-    visual_trajectory_node_->setVisible(enabled && env_->isVisible() && env_->isVisualVisible(), false);
+    visual_trajectory_node_->setVisible(enabled && env_->isVisualVisible(), false);
+    for (int i = 0; i < visual_trajectory_waypoint_visibility_.size(); ++i)
+      visual_trajectory_waypoint_visibility_[i] = false;
   }
 
   if (collision_start_node_)
   {
     collision_trajectory_node_->setVisible(false);
-    collision_trajectory_node_->setVisible(enabled && env_->isVisible() && env_->isCollisionVisible(), false);
+    collision_trajectory_node_->setVisible(enabled && env_->isCollisionVisible(), false);
+    for (int i = 0; i < collision_trajectory_waypoint_visibility_.size(); ++i)
+      collision_trajectory_waypoint_visibility_[i] = false;
   }
 }
 
@@ -1505,13 +1547,19 @@ void LinkWidget::showTrajectoryWaypointOnly(int waypoint)
 {
   clearTrajectory();
 
-  bool enabled = getEnabled() && env_->isTrajectoryVisible();;
+  bool enabled = getEnabled() && env_->isVisible() && env_->isTrajectoryVisible();;
 
   if (visual_start_node_ && (visual_trajectory_waypoint_nodes_.size() > waypoint))
-    visual_trajectory_waypoint_nodes_[waypoint]->setVisible(enabled && env_->isVisible() && env_->isVisualVisible());
+  {
+    visual_trajectory_waypoint_nodes_[waypoint]->setVisible(enabled && env_->isVisualVisible());
+    visual_trajectory_waypoint_visibility_[waypoint] = enabled;
+  }
 
   if (collision_start_node_ && (collision_trajectory_waypoint_nodes_.size() > waypoint))
-    collision_trajectory_waypoint_nodes_[waypoint]->setVisible(enabled && env_->isVisible() && env_->isCollisionVisible());
+  {
+    collision_trajectory_waypoint_nodes_[waypoint]->setVisible(enabled && env_->isCollisionVisible());
+    collision_trajectory_waypoint_visibility_[waypoint] = enabled;
+  }
 
 }
 
