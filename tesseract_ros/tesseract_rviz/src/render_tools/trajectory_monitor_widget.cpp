@@ -219,6 +219,18 @@ void TrajectoryMonitorWidget::createTrajectoryTrail()
     states_data.push_back(env_->getState(joints));
   }
 
+  // If start state is not visible must set trajectory for all links for a single state so static
+  // objects will be visible
+  for (const auto& tf : states_data[0]->transforms)
+  {
+    LinkWidget* lw = visualization_->getLink(tf.first);
+    lw->clearTrajectory();
+
+    if (!visualization_->isStartStateVisible())
+      lw->setTrajectory({tf.second});
+  }
+
+  // Set Trajectory for active links
   for (const auto& link_name : env_->getActiveLinkNames())
   {
     std::vector<Eigen::Isometry3d> link_trajectory;
@@ -374,8 +386,8 @@ void TrajectoryMonitorWidget::onUpdate(float wall_dt)
       current_state_ = -1;
       current_state_time_ = std::numeric_limits<float>::infinity();
 
-      for (auto& link_pair : visualization_->getLinks())
-        link_pair.second->showTrajectoryWaypointOnly(0);
+      for (const auto& link_name : env_->getActiveLinkNames())
+        visualization_->getLink(link_name)->showTrajectoryWaypointOnly(0);
 
       if (trajectory_slider_panel_)
         trajectory_slider_panel_->setSliderPosition(0);
@@ -411,8 +423,8 @@ void TrajectoryMonitorWidget::onUpdate(float wall_dt)
         if (trajectory_slider_panel_)
           trajectory_slider_panel_->setSliderPosition(current_state_);
 
-        for (auto& link_pair : visualization_->getLinks())
-          link_pair.second->showTrajectoryWaypointOnly(current_state_);
+        for (const auto& link_name : env_->getActiveLinkNames())
+          visualization_->getLink(link_name)->showTrajectoryWaypointOnly(current_state_);
 
       }
       else

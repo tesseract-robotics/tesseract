@@ -301,7 +301,9 @@ private:
   Ogre::SceneNode* visual_trajectory_node_;
   Ogre::SceneNode* collision_trajectory_node_;
   std::vector<Ogre::SceneNode*> visual_trajectory_waypoint_nodes_;
+  std::vector<bool> visual_trajectory_waypoint_visibility_; // cache visibility state for toggling collision/visual visibility
   std::vector<Ogre::SceneNode*> collision_trajectory_waypoint_nodes_;
+  std::vector<bool> collision_trajectory_waypoint_visibility_; // cache visibility state for toggling collision/visual visibility
 
   Ogre::RibbonTrail* trail_;
 
