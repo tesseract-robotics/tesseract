@@ -42,9 +42,8 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <OgreQuaternion.h>
 #include <OgreAny.h>
 #include <OgreMaterial.h>
-#endif
-
 #include <tesseract_scene_graph/joint.h>
+#endif
 
 #include <rviz/ogre_helpers/object.h>
 #include <rviz/selection/forwards.h>

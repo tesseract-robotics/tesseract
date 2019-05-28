@@ -156,35 +156,5 @@ public:
 };
 typedef std::shared_ptr<DiscreteContactManager> DiscreteContactManagerPtr;
 typedef std::shared_ptr<const DiscreteContactManager> DiscreteContactManagerConstPtr;
-
-class DiscreteContactManagerFactory
-{
-public:
-  using CreateMethod = std::function<DiscreteContactManagerPtr()>;
-  DiscreteContactManagerFactory() = default;
-
-  bool registar(const std::string name, CreateMethod create_function)
-  {
-    auto it = discrete_types.find(name);
-    if (it == discrete_types.end())
-    {
-      discrete_types[name] = create_function;
-      return true;
-    }
-    return false;
-  }
-
-  DiscreteContactManagerPtr create(const std::string& name) const
-  {
-    auto it = discrete_types.find(name);
-    if (it != discrete_types.end())
-      return it->second(); // call the createFunc
-
-    return nullptr;
-  }
-private:
-  std::unordered_map<std::string, CreateMethod> discrete_types;
-};
-
 }
 #endif  // TESSERACT_COLLISION_DISCRETE_CONTACT_MANAGER_H

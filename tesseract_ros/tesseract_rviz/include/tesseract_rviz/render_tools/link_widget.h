@@ -44,15 +44,16 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <OgreAny.h>
 #include <OgreMaterial.h>
 #include <OgreSharedPtr.h>
-#endif
 
+#include <Eigen/Eigen>
+#include <tesseract_geometry/geometries.h>
+#include <tesseract_scene_graph/link.h>
+#endif
 
 #include <rviz/ogre_helpers/object.h>
 #include <rviz/ogre_helpers/point_cloud.h>
 #include <rviz/selection/forwards.h>
-#include <Eigen/Eigen>
-#include <tesseract_geometry/geometries.h>
-#include <tesseract_scene_graph/link.h>
+
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 namespace Ogre

@@ -12,9 +12,10 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <ros/service_server.h>
 #include <sensor_msgs/JointState.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
-#include <tesseract_rviz/render_tools/visualization_widget.h>
-#include <tesseract_environment/core/environment.h>
+#include <tesseract/tesseract.h>
 #endif
+
+#include <tesseract_rviz/render_tools/visualization_widget.h>
 
 namespace rviz
 {
@@ -38,7 +39,7 @@ public:
   virtual ~JointStateMonitorWidget();
 
   void onInitialize(VisualizationWidget::Ptr visualization,
-                    tesseract_environment::EnvironmentPtr env,
+                    tesseract::Tesseract::Ptr tesseract,
                     rviz::DisplayContext* context,
                     ros::NodeHandle update_nh);
 
@@ -54,7 +55,7 @@ protected:
   rviz::Property* widget_;
   rviz::Display* display_;
   VisualizationWidget::Ptr visualization_;
-  tesseract_environment::EnvironmentPtr env_;
+  tesseract::Tesseract::Ptr tesseract_;
   ros::NodeHandle nh_;
   ros::Subscriber joint_state_subscriber_;
   rviz::RosTopicProperty* joint_state_topic_property_;

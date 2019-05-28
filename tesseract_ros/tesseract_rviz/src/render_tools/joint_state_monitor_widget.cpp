@@ -14,8 +14,8 @@ namespace tesseract_rviz
 JointStateMonitorWidget::JointStateMonitorWidget(rviz::Property* widget, rviz::Display* display)
   : widget_(widget)
   , display_(display)
+  , tesseract_(nullptr)
   , update_required_(false)
-  , env_(nullptr)
   , visualization_(nullptr)
 {
   joint_state_topic_property_ =
@@ -35,12 +35,12 @@ JointStateMonitorWidget::~JointStateMonitorWidget()
 }
 
 void JointStateMonitorWidget::onInitialize(VisualizationWidget::Ptr visualization,
-                                tesseract_environment::EnvironmentPtr env,
+                                tesseract::Tesseract::Ptr tesseract,
                                 rviz::DisplayContext* context,
                                 ros::NodeHandle update_nh)
 {
   visualization_ = std::move(visualization);
-  env_ = std::move(env);
+  tesseract_ = std::move(tesseract);
   nh_ = update_nh;
 }
 
@@ -54,10 +54,10 @@ void JointStateMonitorWidget::changedJointStateTopic()
 
 void JointStateMonitorWidget::newJointStateCallback(const sensor_msgs::JointStateConstPtr& joint_state_msg)
 {
-  if (!env_)
+  if (!tesseract_->isInitialized())
     return;
 
-  tesseract_rosutils::processMsg(env_, *joint_state_msg);
+  tesseract_rosutils::processMsg(tesseract_->getEnvironment(), *joint_state_msg);
   update_required_ = true;
 }
 
@@ -73,10 +73,10 @@ void JointStateMonitorWidget::onDisable()
 
 void JointStateMonitorWidget::onUpdate()
 {
-  if (visualization_ && update_required_ && env_)
+  if (visualization_ && update_required_ && tesseract_->getEnvironment())
   {
     update_required_ = false;
-    visualization_->update(env_->getCurrentState()->transforms);
+    visualization_->update(tesseract_->getEnvironment()->getCurrentState()->transforms);
   }
 }
 

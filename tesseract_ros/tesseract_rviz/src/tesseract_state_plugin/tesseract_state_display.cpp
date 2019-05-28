@@ -46,7 +46,6 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <OgreSceneNode.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
-#include <tesseract_environment/kdl/kdl_env.h>
 #include <tesseract_rviz/tesseract_state_plugin/tesseract_state_display.h>
 
 namespace tesseract_rviz
@@ -54,7 +53,7 @@ namespace tesseract_rviz
 
 TesseractStateDisplay::TesseractStateDisplay() : Display()
 {
-  env_ = std::make_shared<tesseract_environment::KDLEnv>();
+  tesseract_ = std::make_shared<tesseract::Tesseract>();
   environment_monitor_ = std::make_shared<EnvironmentWidget>(this, this);
   state_monitor_ = std::make_shared<JointStateMonitorWidget>(this, this);
 }
@@ -66,8 +65,8 @@ void TesseractStateDisplay::onInitialize()
   Display::onInitialize();
   visualization_ = std::make_shared<VisualizationWidget>(scene_node_, context_, "Tesseract State", this);
 
-  environment_monitor_->onInitialize(visualization_, env_, context_, nh_);
-  state_monitor_->onInitialize(visualization_, env_, context_, nh_);
+  environment_monitor_->onInitialize(visualization_, tesseract_, context_, nh_);
+  state_monitor_->onInitialize(visualization_, tesseract_, context_, nh_);
 
   visualization_->setVisible(false);
 }

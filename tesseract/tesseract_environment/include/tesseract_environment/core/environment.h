@@ -35,7 +35,9 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/types.h>
 #include <tesseract_environment/core/commands.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
+#include <tesseract_collision/core/discrete_contact_manager_factory.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
+#include <tesseract_collision/core/continuous_contact_manager_factory.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_environment/core/state_solver.h>
 
@@ -83,7 +85,7 @@ public:
    * @brief Get the Scene Graph
    * @return SceneGraphConstPtr
    */
-  virtual tesseract_scene_graph::SceneGraphConstPtr getSceneGraph() const { return scene_graph_; }
+  virtual const tesseract_scene_graph::SceneGraphConstPtr& getSceneGraph() const { return scene_graph_const_; }
 
   /** @brief Give the environment a name */
   virtual void setName(const std::string& name) { scene_graph_->setName(name); }
@@ -363,16 +365,17 @@ public:
   }
 
 protected:
-  bool initialized_;                                           /**< Identifies if the object has been initialized */
-  int revision_;                                               /**< This increments when the scene graph is modified */
-  Commands commands_;                                          /**< The history of commands applied to the environment after intialization */
-  tesseract_scene_graph::SceneGraphPtr scene_graph_;           /**< Tesseract Scene Graph */
-  EnvStatePtr current_state_;                                  /**< Current state of the environment */
-  StateSolverPtr state_solver_;                                /**< Tesseract State Solver */
-  std::vector<std::string> link_names_;                        /**< A vector of link names */
-  std::vector<std::string> joint_names_;                       /**< A vector of joint names */
-  std::vector<std::string> active_link_names_;                 /**< A vector of active link names */
-  std::vector<std::string> active_joint_names_;                /**< A vector of active joint names */
+  bool initialized_;                                            /**< Identifies if the object has been initialized */
+  int revision_;                                                /**< This increments when the scene graph is modified */
+  Commands commands_;                                           /**< The history of commands applied to the environment after intialization */
+  tesseract_scene_graph::SceneGraphPtr scene_graph_;            /**< Tesseract Scene Graph */
+  tesseract_scene_graph::SceneGraphConstPtr scene_graph_const_; /**< Tesseract Scene Graph Const */
+  EnvStatePtr current_state_;                                   /**< Current state of the environment */
+  StateSolverPtr state_solver_;                                 /**< Tesseract State Solver */
+  std::vector<std::string> link_names_;                         /**< A vector of link names */
+  std::vector<std::string> joint_names_;                        /**< A vector of joint names */
+  std::vector<std::string> active_link_names_;                  /**< A vector of active link names */
+  std::vector<std::string> active_joint_names_;                 /**< A vector of active joint names */
   tesseract_collision::IsContactAllowedFn is_contact_allowed_fn_;       /**< The function used to determine if two objects are allowed in collision */
   tesseract_collision::DiscreteContactManagerPtr discrete_manager_;     /**< The discrete contact manager object */
   tesseract_collision::ContinuousContactManagerPtr continuous_manager_; /**< The continuous contact manager object */
@@ -399,6 +402,7 @@ protected:
     initialized_ = false;
     revision_ = 0;
     scene_graph_ = std::move(scene_graph);
+    scene_graph_const_ = scene_graph_;
     commands_.clear();
     link_names_.clear();
     joint_names_.clear();

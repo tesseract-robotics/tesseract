@@ -56,7 +56,7 @@ namespace tesseract_rviz
 
 TesseractTrajectoryDisplay::TesseractTrajectoryDisplay() : Display()
 {
-  env_ = std::make_shared<tesseract_environment::KDLEnv>();
+  tesseract_ = std::make_shared<tesseract::Tesseract>();
   environment_monitor_ = std::make_shared<EnvironmentWidget>(this, this);
   state_monitor_ = std::make_shared<JointStateMonitorWidget>(this, this);
   trajectory_monitor_ = std::make_shared<TrajectoryMonitorWidget>(this, this);
@@ -70,9 +70,9 @@ void TesseractTrajectoryDisplay::onInitialize()
   visualization_ = std::make_shared<VisualizationWidget>(scene_node_, context_, "Tesseract State", this);
   visualization_->setStartStateVisible(false);
 
-  environment_monitor_->onInitialize(visualization_, env_, context_, nh_);
-  state_monitor_->onInitialize(visualization_, env_, context_, nh_);
-  trajectory_monitor_->onInitialize(visualization_, env_, context_, nh_);
+  environment_monitor_->onInitialize(visualization_, tesseract_, context_, nh_);
+  state_monitor_->onInitialize(visualization_, tesseract_, context_, nh_);
+  trajectory_monitor_->onInitialize(visualization_, tesseract_, context_, nh_);
 
   visualization_->setVisible(false);
 }

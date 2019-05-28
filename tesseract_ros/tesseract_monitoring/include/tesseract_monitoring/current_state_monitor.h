@@ -49,6 +49,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <map>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
+#include <tesseract/tesseract.h>
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_kinematics/core/utils.h>
 

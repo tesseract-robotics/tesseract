@@ -12,10 +12,7 @@
   <build_export_depend>roscpp</build_export_depend>
   <exec_depend>roscpp</exec_depend>
   <depend>eigen</depend>
-  <depend>tesseract_collision</depend>
-  <depend>tesseract_environment</depend>
-  <depend>tesseract_kinematics</depend>
-  <depend>tesseract_scene_graph</depend>
+  <depend>tesseract</depend>
   <depend>tesseract_rosutils</depend>
   <depend>tesseract_msgs</depend>
   <depend>pluginlib</depend>

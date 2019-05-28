@@ -282,7 +282,7 @@ namespace tesseract_scene_graph
     return cv;
   }
 
-  SceneGraphPtr parseURDFModel(const urdf::ModelInterfaceSharedPtr& urdf_model, ResourceLocatorFn locator)
+  inline SceneGraphPtr parseURDFModel(const urdf::ModelInterfaceSharedPtr& urdf_model, ResourceLocatorFn locator)
   {
     if (urdf_model == nullptr || locator == nullptr)
         return nullptr;
@@ -338,12 +338,12 @@ namespace tesseract_scene_graph
     return g;
   }
 
-  SceneGraphPtr parseURDFString(const std::string& urdf_xml_string, ResourceLocatorFn locator)
+  inline SceneGraphPtr parseURDFString(const std::string& urdf_xml_string, ResourceLocatorFn locator)
   {
     return parseURDFModel(urdf::parseURDF(urdf_xml_string), locator);
   }
 
-  SceneGraphPtr parseURDFFile(const std::string& path, ResourceLocatorFn locator)
+  inline SceneGraphPtr parseURDFFile(const std::string& path, ResourceLocatorFn locator)
   {
     std::ifstream ifs(path);
     std::string urdf_xml_string((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
