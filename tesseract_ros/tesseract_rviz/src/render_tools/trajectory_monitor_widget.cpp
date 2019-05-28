@@ -219,14 +219,14 @@ void TrajectoryMonitorWidget::createTrajectoryTrail()
     states_data.push_back(tesseract_->getEnvironment()->getState(joints));
   }
 
-  // If start state is not visible must set trajectory for all links for a single state so static
+  // If current state is not visible must set trajectory for all links for a single state so static
   // objects will be visible
   for (const auto& tf : states_data[0]->transforms)
   {
     LinkWidget* lw = visualization_->getLink(tf.first);
     lw->clearTrajectory();
 
-    if (!visualization_->isStartStateVisible())
+    if (!visualization_->isCurrentStateVisible())
       lw->setTrajectory({tf.second});
   }
 

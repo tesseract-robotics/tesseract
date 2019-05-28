@@ -75,10 +75,8 @@ struct TrajOptArrayPlannerConfig
   /** @brief If true, a joint jerk cost with a target of 0 will be applied for all timesteps Default: false*/
   bool smooth_jerks_ = true;
 
-  /** @brief Kinematic mapping object. ***REQUIRED*** */
-  tesseract_kinematics::ForwardKinematicsConstPtrMap kin_map_;
-  /** @brief Basic Environment object. ***REQUIRED*** */
-  tesseract_environment::EnvironmentConstPtr env_;
+  /** @brief Tesseract object. ***REQUIRED*** */
+  tesseract::Tesseract::ConstPtr tesseract_;
   /** @brief Manipulator used for pathplanning ***REQUIRED*** */
   std::string manipulator_;
   /** @brief This is the tip link in the kinematics object used for the cartesian positions ***REQUIRED*** */

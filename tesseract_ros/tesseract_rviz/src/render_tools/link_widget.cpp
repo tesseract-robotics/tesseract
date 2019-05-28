@@ -238,6 +238,9 @@ LinkWidget::LinkWidget(VisualizationWidget* env,
 
   link_property_->collapse();
 
+  visual_current_node_ = env_->getVisualNode()->createChildSceneNode();
+  collision_current_node_ = env_->getCollisionNode()->createChildSceneNode();
+
   visual_start_node_ = env_->getVisualNode()->createChildSceneNode();
   collision_start_node_ = env_->getCollisionNode()->createChildSceneNode();
 
@@ -330,11 +333,11 @@ void LinkWidget::setLinkPropertyDescription()
   if (hasGeometry())
   {
     desc << "  Check/uncheck to show/hide this link in the display.";
-    if (visual_start_meshes_.empty())
+    if (visual_current_meshes_.empty())
     {
       desc << "  This link has collision geometry but no visible geometry.";
     }
-    else if (collision_start_meshes_.empty())
+    else if (collision_current_meshes_.empty())
     {
       desc << "  This link has visible geometry but no collision geometry.";
     }
@@ -349,6 +352,16 @@ void LinkWidget::setLinkPropertyDescription()
 
 LinkWidget::~LinkWidget()
 {
+  for (size_t i = 0; i < visual_current_meshes_.size(); i++)
+  {
+    scene_manager_->destroyEntity(visual_current_meshes_[i]);
+  }
+
+  for (size_t i = 0; i < collision_current_meshes_.size(); i++)
+  {
+    scene_manager_->destroyEntity(collision_current_meshes_[i]);
+  }
+
   for (size_t i = 0; i < visual_start_meshes_.size(); i++)
   {
     scene_manager_->destroyEntity(visual_start_meshes_[i]);
@@ -379,19 +392,31 @@ LinkWidget::~LinkWidget()
     scene_manager_->destroyEntity(collision_end_meshes_[i]);
   }
 
-  for (size_t i = 0; i < visual_start_octrees_.size(); i++)
+  for (size_t i = 0; i < visual_current_octrees_.size(); i++)
   {
     //    scene_manager_->destroyMovableObject( octree_objects_[ i ]); TODO:
     //    Need to create a MovableObjectFactory for this type.
-    delete visual_start_octrees_[i].point_cloud;
+    delete visual_current_octrees_[i].point_cloud;
+  }
+  visual_current_octrees_.clear();
+
+  for (size_t i = 0; i < collision_current_octrees_.size(); i++)
+  {
+    //    scene_manager_->destroyMovableObject( octree_objects_[ i ]); TODO:
+    //    Need to create a MovableObjectFactory for this type.
+    delete collision_current_octrees_[i].point_cloud;
+  }
+  collision_current_octrees_.clear();
+
+  for (size_t i = 0; i < visual_start_octrees_.size(); i++)
+  {
+    delete visual_start_octrees_[i];
   }
   visual_start_octrees_.clear();
 
   for (size_t i = 0; i < collision_start_octrees_.size(); i++)
   {
-    //    scene_manager_->destroyMovableObject( octree_objects_[ i ]); TODO:
-    //    Need to create a MovableObjectFactory for this type.
-    delete collision_start_octrees_[i].point_cloud;
+    delete collision_start_octrees_[i];
   }
   collision_start_octrees_.clear();
 
@@ -420,6 +445,8 @@ LinkWidget::~LinkWidget()
   }
   collision_end_octrees_.clear();
 
+  scene_manager_->destroySceneNode(visual_current_node_);
+  scene_manager_->destroySceneNode(collision_current_node_);
 
   scene_manager_->destroySceneNode(visual_start_node_);
   scene_manager_->destroySceneNode(collision_start_node_);
@@ -442,7 +469,7 @@ LinkWidget::~LinkWidget()
 
 bool LinkWidget::hasGeometry() const
 {
-  return visual_start_meshes_.size() + collision_start_meshes_.size() + visual_start_octrees_.size() + collision_start_octrees_.size() > 0;
+  return visual_current_meshes_.size() + collision_current_meshes_.size() + visual_current_octrees_.size() + collision_current_octrees_.size() > 0;
 }
 
 bool LinkWidget::getEnabled() const
@@ -460,7 +487,7 @@ void LinkWidget::setAlpha(float a)
 
 void LinkWidget::setRenderQueueGroup(Ogre::uint8 group)
 {
-  Ogre::SceneNode::ChildNodeIterator child_it = visual_start_node_->getChildIterator();
+  Ogre::SceneNode::ChildNodeIterator child_it = visual_current_node_->getChildIterator();
   while (child_it.hasMoreElements())
   {
     Ogre::SceneNode* child = dynamic_cast<Ogre::SceneNode*>(child_it.getNext());
@@ -531,14 +558,24 @@ void LinkWidget::updateAlpha()
     color_material_->setDepthWriteEnabled(true);
   }
 
-  for (auto& octree : visual_start_octrees_)
+  for (auto& octree : visual_current_octrees_)
   {
     octree.point_cloud->setAlpha(alpha_ * link_alpha);
   }
 
-  for (auto& octree : collision_start_octrees_)
+  for (auto& octree : collision_current_octrees_)
   {
     octree.point_cloud->setAlpha(alpha_ * link_alpha);
+  }
+
+  for (auto& octree : visual_start_octrees_)
+  {
+    octree->setAlpha(alpha_ * link_alpha);
+  }
+
+  for (auto& octree : collision_start_octrees_)
+  {
+    octree->setAlpha(alpha_ * link_alpha);
   }
 
   for (const auto& octree : visual_trajectory_octrees_)
@@ -567,6 +604,15 @@ void LinkWidget::updateVisibility()
   bool enabled = getEnabled() && env_->isVisible();
 
   env_->calculateJointCheckboxes();
+
+  if (visual_current_node_)
+  {
+    visual_current_node_->setVisible(enabled && env_->isVisualVisible() && env_->isCurrentStateVisible());
+  }
+  if (collision_current_node_)
+  {
+    collision_current_node_->setVisible(enabled && env_->isCollisionVisible() && env_->isCurrentStateVisible());
+  }
 
   if (visual_start_node_)
   {
@@ -939,13 +985,13 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
 
       if (isVisual)
       {
-        offset_node = visual_start_node_->createChildSceneNode();
-        octree_objects = &visual_start_octrees_;
+        offset_node = visual_current_node_->createChildSceneNode();
+        octree_objects = &visual_current_octrees_;
       }
       else
       {
-        offset_node = collision_start_node_->createChildSceneNode();
-        octree_objects = &collision_start_octrees_;
+        offset_node = collision_current_node_->createChildSceneNode();
+        octree_objects = &collision_current_octrees_;
       }
 
       std::vector<std::vector<rviz::PointCloud::Point>> pointBuf;
@@ -1071,13 +1117,13 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
     std::vector<Ogre::Entity*>* meshes;
     if (isVisual)
     {
-      offset_node = visual_start_node_->createChildSceneNode();
-      meshes = &visual_start_meshes_;
+      offset_node = visual_current_node_->createChildSceneNode();
+      meshes = &visual_current_meshes_;
     }
     else
     {
-      offset_node = collision_start_node_->createChildSceneNode();
-      meshes = &collision_start_meshes_;
+      offset_node = collision_current_node_->createChildSceneNode();
+      meshes = &collision_current_meshes_;
     }
 
     offset_node->attachObject(entity);
@@ -1142,9 +1188,9 @@ void LinkWidget::clone(Ogre::SceneNode* scene_node,
     }
     else
     {
-      auto it = std::find_if(visual_start_octrees_.begin(), visual_start_octrees_.end(), [movable](const OctreeDataContainer& m){return m.point_cloud == movable;});
-      if (it == visual_start_octrees_.end())
-        it = std::find_if(collision_start_octrees_.begin(), collision_start_octrees_.end(), [movable](const OctreeDataContainer& m){return m.point_cloud == movable;});
+      auto it = std::find_if(visual_current_octrees_.begin(), visual_current_octrees_.end(), [movable](const OctreeDataContainer& m){return m.point_cloud == movable;});
+      if (it == visual_current_octrees_.end())
+        it = std::find_if(collision_current_octrees_.begin(), collision_current_octrees_.end(), [movable](const OctreeDataContainer& m){return m.point_cloud == movable;});
 
       rviz::PointCloud* cloned_point_cloud = it->clone();
       cloned_scene_node->attachObject(cloned_point_cloud);
@@ -1175,9 +1221,9 @@ void LinkWidget::clone(Ogre::SceneNode* scene_node,
       }
       else
       {
-        auto it = std::find_if(visual_start_octrees_.begin(), visual_start_octrees_.end(), [movable](const OctreeDataContainer& m){return m.point_cloud == movable;});
-        if (it == visual_start_octrees_.end())
-          it = std::find_if(collision_start_octrees_.begin(), collision_start_octrees_.end(), [movable](const OctreeDataContainer& m){return m.point_cloud == movable;});
+        auto it = std::find_if(visual_current_octrees_.begin(), visual_current_octrees_.end(), [movable](const OctreeDataContainer& m){return m.point_cloud == movable;});
+        if (it == visual_current_octrees_.end())
+          it = std::find_if(collision_current_octrees_.begin(), collision_current_octrees_.end(), [movable](const OctreeDataContainer& m){return m.point_cloud == movable;});
 
         rviz::PointCloud* cloned_point_cloud = it->clone();
         cloned_child_scene_node->attachObject(cloned_point_cloud);
@@ -1258,15 +1304,18 @@ void LinkWidget::createCollision(const tesseract_scene_graph::Link& link)
     }
   }
 
+  collision_current_node_->setVisible(getEnabled() && env_->isCurrentStateVisible());
+
+  clone(collision_current_node_, collision_start_node_, collision_start_meshes_, collision_start_octrees_);
   collision_start_node_->setVisible(getEnabled() && env_->isStartStateVisible());
 
   Ogre::SceneNode* collision_trajectory_clone = collision_trajectory_node_->createChildSceneNode();
-  clone(collision_start_node_, collision_trajectory_clone, collision_trajectory_meshes_, collision_trajectory_octrees_);
+  clone(collision_current_node_, collision_trajectory_clone, collision_trajectory_meshes_, collision_trajectory_octrees_);
   collision_trajectory_clone->setVisible(getEnabled() && env_->isTrajectoryVisible());
   collision_trajectory_waypoint_nodes_.push_back(collision_trajectory_clone);
   collision_trajectory_waypoint_visibility_.push_back(getEnabled() && env_->isTrajectoryVisible());
 
-  clone(collision_start_node_, collision_end_node_, collision_end_meshes_, collision_end_octrees_);
+  clone(collision_current_node_, collision_end_node_, collision_end_meshes_, collision_end_octrees_);
   collision_end_node_->setVisible(getEnabled() && env_->isEndStateVisible());
 }
 
@@ -1282,36 +1331,39 @@ void LinkWidget::createVisual(const tesseract_scene_graph::Link& link)
     }
   }
 
+  visual_current_node_->setVisible(getEnabled() && env_->isCurrentStateVisible());
+
+  clone(visual_current_node_, visual_start_node_, visual_start_meshes_, visual_start_octrees_);
   visual_start_node_->setVisible(getEnabled() && env_->isStartStateVisible());
 
   Ogre::SceneNode* visual_trajectory_clone = visual_trajectory_node_->createChildSceneNode();
-  clone(visual_start_node_, visual_trajectory_clone, visual_trajectory_meshes_, visual_trajectory_octrees_);
+  clone(visual_current_node_, visual_trajectory_clone, visual_trajectory_meshes_, visual_trajectory_octrees_);
   visual_trajectory_clone->setVisible(getEnabled() && env_->isTrajectoryVisible());
   visual_trajectory_waypoint_nodes_.push_back(visual_trajectory_clone);
   visual_trajectory_waypoint_visibility_.push_back(getEnabled() && env_->isTrajectoryVisible());
 
-  clone(visual_start_node_, visual_end_node_, visual_end_meshes_, visual_end_octrees_);
+  clone(visual_current_node_, visual_end_node_, visual_end_meshes_, visual_end_octrees_);
   visual_end_node_->setVisible(getEnabled() && env_->isEndStateVisible());
 }
 
 void LinkWidget::createSelection()
 {
   selection_handler_.reset(new EnvLinkSelectionHandler(this, context_));
-  for (size_t i = 0; i < visual_start_meshes_.size(); i++)
+  for (size_t i = 0; i < visual_current_meshes_.size(); i++)
   {
-    selection_handler_->addTrackedObject(visual_start_meshes_[i]);
+    selection_handler_->addTrackedObject(visual_current_meshes_[i]);
   }
-  for (size_t i = 0; i < collision_start_meshes_.size(); i++)
+  for (size_t i = 0; i < collision_current_meshes_.size(); i++)
   {
-    selection_handler_->addTrackedObject(collision_start_meshes_[i]);
+    selection_handler_->addTrackedObject(collision_current_meshes_[i]);
   }
-  for (size_t i = 0; i < visual_start_octrees_.size(); i++)
+  for (size_t i = 0; i < visual_current_octrees_.size(); i++)
   {
-    selection_handler_->addTrackedObject(visual_start_octrees_[i].point_cloud);
+    selection_handler_->addTrackedObject(visual_current_octrees_[i].point_cloud);
   }
-  for (size_t i = 0; i < collision_start_octrees_.size(); i++)
+  for (size_t i = 0; i < collision_current_octrees_.size(); i++)
   {
-    selection_handler_->addTrackedObject(collision_start_octrees_[i].point_cloud);
+    selection_handler_->addTrackedObject(collision_current_octrees_[i].point_cloud);
   }
 }
 
@@ -1321,13 +1373,13 @@ void LinkWidget::updateTrail()
   {
     if (!trail_)
     {
-      if (visual_start_node_)
+      if (visual_current_node_)
       {
         trail_ = scene_manager_->createRibbonTrail(trail_name_generator.generate());
         trail_->setMaxChainElements(100);
         trail_->setInitialWidth(0, 0.01f);
         trail_->setInitialColour(0, 0.0f, 0.5f, 0.5f);
-        trail_->addNode(visual_start_node_);
+        trail_->addNode(visual_current_node_);
         trail_->setTrailLength(2.0f);
         trail_->setVisible(getEnabled());
         env_->getOtherNode()->attachObject(trail_);
@@ -1371,22 +1423,22 @@ void LinkWidget::updateAxes()
   }
 }
 
-void LinkWidget::setStartTransform(const Eigen::Isometry3d& transform)
+void LinkWidget::setCurrentTransform(const Eigen::Isometry3d& transform)
 {
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
   toOgre(position, orientation, transform);
 
-  if (visual_start_node_ != nullptr)
+  if (visual_current_node_ != nullptr)
   {
-    visual_start_node_->setPosition(position);
-    visual_start_node_->setOrientation(orientation);
+    visual_current_node_->setPosition(position);
+    visual_current_node_->setOrientation(orientation);
   }
 
-  if (collision_start_node_ != nullptr)
+  if (collision_current_node_ != nullptr)
   {
-    collision_start_node_->setPosition(position);
-    collision_start_node_->setOrientation(orientation);
+    collision_current_node_->setPosition(position);
+    collision_current_node_->setOrientation(orientation);
   }
 
   position_property_->setVector(position);
@@ -1399,19 +1451,38 @@ void LinkWidget::setStartTransform(const Eigen::Isometry3d& transform)
   }
 }
 
+void LinkWidget::setStartTransform(const Eigen::Isometry3d& transform)
+{
+  Ogre::Vector3 position;
+  Ogre::Quaternion orientation;
+  toOgre(position, orientation, transform);
+
+  if (visual_current_node_ != nullptr)
+  {
+    visual_start_node_->setPosition(position);
+    visual_start_node_->setOrientation(orientation);
+  }
+
+  if (collision_current_node_ != nullptr)
+  {
+    collision_start_node_->setPosition(position);
+    collision_start_node_->setOrientation(orientation);
+  }
+}
+
 void LinkWidget::setEndTransform(const Eigen::Isometry3d& transform)
 {
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
   toOgre(position, orientation, transform);
 
-  if (visual_start_node_ != nullptr)
+  if (visual_current_node_ != nullptr)
   {
     visual_end_node_->setPosition(position);
     visual_end_node_->setOrientation(orientation);
   }
 
-  if (collision_start_node_ != nullptr)
+  if (collision_current_node_ != nullptr)
   {
     collision_end_node_->setPosition(position);
     collision_end_node_->setOrientation(orientation);
@@ -1435,7 +1506,7 @@ void LinkWidget::setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory)
       toOgre(position, orientation, trajectory[i]);
       if (i < current_size)
       {
-        if (visual_start_node_ != nullptr)
+        if (visual_current_node_ != nullptr)
         {
           visual_trajectory_waypoint_nodes_[i]->setPosition(position);
           visual_trajectory_waypoint_nodes_[i]->setOrientation(orientation);
@@ -1443,7 +1514,7 @@ void LinkWidget::setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory)
           visual_trajectory_waypoint_visibility_[i] = (enabled);
         }
 
-        if (collision_start_node_ != nullptr)
+        if (collision_current_node_ != nullptr)
         {
           collision_trajectory_waypoint_nodes_[i]->setPosition(position);
           collision_trajectory_waypoint_nodes_[i]->setOrientation(orientation);
@@ -1453,10 +1524,10 @@ void LinkWidget::setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory)
       }
       else
       {
-        if (visual_start_node_ != nullptr)
+        if (visual_current_node_ != nullptr)
         {
           Ogre::SceneNode* new_visual_clone = visual_trajectory_node_->createChildSceneNode();
-          clone(visual_start_node_, new_visual_clone, visual_trajectory_meshes_, visual_trajectory_octrees_);
+          clone(visual_current_node_, new_visual_clone, visual_trajectory_meshes_, visual_trajectory_octrees_);
           new_visual_clone->setPosition(position);
           new_visual_clone->setOrientation(orientation);
           new_visual_clone->setVisible(enabled && env_->isVisualVisible());
@@ -1464,10 +1535,10 @@ void LinkWidget::setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory)
           visual_trajectory_waypoint_visibility_.push_back(enabled);
         }
 
-        if (collision_start_node_ != nullptr)
+        if (collision_current_node_ != nullptr)
         {
           Ogre::SceneNode* new_collision_clone = collision_trajectory_node_->createChildSceneNode();
-          clone(collision_start_node_, new_collision_clone, collision_trajectory_meshes_, collision_trajectory_octrees_);
+          clone(collision_current_node_, new_collision_clone, collision_trajectory_meshes_, collision_trajectory_octrees_);
           new_collision_clone->setPosition(position);
           new_collision_clone->setOrientation(orientation);
           new_collision_clone->setVisible(enabled && env_->isCollisionVisible());
@@ -1487,7 +1558,7 @@ void LinkWidget::setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory)
         Ogre::Quaternion orientation;
         toOgre(position, orientation, trajectory[i]);
 
-        if (visual_start_node_ != nullptr)
+        if (visual_current_node_ != nullptr)
         {
           visual_trajectory_waypoint_nodes_[i]->setPosition(position);
           visual_trajectory_waypoint_nodes_[i]->setOrientation(orientation);
@@ -1495,7 +1566,7 @@ void LinkWidget::setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory)
           visual_trajectory_waypoint_visibility_[i] = enabled;
         }
 
-        if (collision_start_node_ != nullptr)
+        if (collision_current_node_ != nullptr)
         {
           collision_trajectory_waypoint_nodes_[i]->setPosition(position);
           collision_trajectory_waypoint_nodes_[i]->setOrientation(orientation);
@@ -1505,13 +1576,13 @@ void LinkWidget::setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory)
       }
       else
       {
-        if (visual_start_node_ != nullptr)
+        if (visual_current_node_ != nullptr)
         {
           visual_trajectory_waypoint_nodes_[i]->setVisible(false);
           visual_trajectory_waypoint_visibility_[i] = false;
         }
 
-        if (collision_start_node_ != nullptr)
+        if (collision_current_node_ != nullptr)
         {
           collision_trajectory_waypoint_nodes_[i]->setVisible(false);
           collision_trajectory_waypoint_visibility_[i] = false;
@@ -1525,7 +1596,7 @@ void LinkWidget::clearTrajectory()
 {
   bool enabled = getEnabled() && env_->isVisible() && env_->isTrajectoryVisible();
 
-  if (visual_start_node_)
+  if (visual_current_node_)
   {
     visual_trajectory_node_->setVisible(false);
     visual_trajectory_node_->setVisible(enabled && env_->isVisualVisible(), false);
@@ -1533,7 +1604,7 @@ void LinkWidget::clearTrajectory()
       visual_trajectory_waypoint_visibility_[i] = false;
   }
 
-  if (collision_start_node_)
+  if (collision_current_node_)
   {
     collision_trajectory_node_->setVisible(false);
     collision_trajectory_node_->setVisible(enabled && env_->isCollisionVisible(), false);
@@ -1549,13 +1620,13 @@ void LinkWidget::showTrajectoryWaypointOnly(int waypoint)
 
   bool enabled = getEnabled() && env_->isVisible() && env_->isTrajectoryVisible();;
 
-  if (visual_start_node_ && (visual_trajectory_waypoint_nodes_.size() > waypoint))
+  if (visual_current_node_ && (visual_trajectory_waypoint_nodes_.size() > waypoint))
   {
     visual_trajectory_waypoint_nodes_[waypoint]->setVisible(enabled && env_->isVisualVisible());
     visual_trajectory_waypoint_visibility_[waypoint] = enabled;
   }
 
-  if (collision_start_node_ && (collision_trajectory_waypoint_nodes_.size() > waypoint))
+  if (collision_current_node_ && (collision_trajectory_waypoint_nodes_.size() > waypoint))
   {
     collision_trajectory_waypoint_nodes_[waypoint]->setVisible(enabled && env_->isCollisionVisible());
     collision_trajectory_waypoint_visibility_[waypoint] = enabled;
@@ -1565,13 +1636,13 @@ void LinkWidget::showTrajectoryWaypointOnly(int waypoint)
 
 void LinkWidget::setToErrorMaterial()
 {
-  for (size_t i = 0; i < visual_start_meshes_.size(); i++)
+  for (size_t i = 0; i < visual_current_meshes_.size(); i++)
   {
-    visual_start_meshes_[i]->setMaterialName("BaseWhiteNoLighting");
+    visual_current_meshes_[i]->setMaterialName("BaseWhiteNoLighting");
   }
-  for (size_t i = 0; i < collision_start_meshes_.size(); i++)
+  for (size_t i = 0; i < collision_current_meshes_.size(); i++)
   {
-    collision_start_meshes_[i]->setMaterialName("BaseWhiteNoLighting");
+    collision_current_meshes_[i]->setMaterialName("BaseWhiteNoLighting");
   }
 
   // Currently not handling color for octree_objects_
@@ -1581,13 +1652,13 @@ void LinkWidget::setToNormalMaterial()
 {
   if (using_color_)
   {
-    for (size_t i = 0; i < visual_start_meshes_.size(); i++)
+    for (size_t i = 0; i < visual_current_meshes_.size(); i++)
     {
-      visual_start_meshes_[i]->setMaterial(color_material_);
+      visual_current_meshes_[i]->setMaterial(color_material_);
     }
-    for (size_t i = 0; i < collision_start_meshes_.size(); i++)
+    for (size_t i = 0; i < collision_current_meshes_.size(); i++)
     {
-      collision_start_meshes_[i]->setMaterial(color_material_);
+      collision_current_meshes_[i]->setMaterial(color_material_);
     }
 
     // Currently not handling color for octree_objects_

@@ -67,7 +67,7 @@ bool TrajOptPlanner::solve(PlannerResponse& response)
     return false;
   }
 
-  TrajOptProbPtr prob = ConstructProblem(root, request_.env, request_.kin_map);
+  TrajOptProbPtr prob = ConstructProblem(root, request_.tesseract);
   return solve(response, prob);
 }
 

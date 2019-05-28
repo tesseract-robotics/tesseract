@@ -56,6 +56,7 @@ public:
   BulletCastBVHManager();
   ~BulletCastBVHManager() override;
 
+  static std::string name() { return "BulletCastBVHManager"; }
   static ContinuousContactManagerPtr create() { return std::make_shared<BulletCastBVHManager>(); }
 
   ContinuousContactManagerPtr clone() const override;

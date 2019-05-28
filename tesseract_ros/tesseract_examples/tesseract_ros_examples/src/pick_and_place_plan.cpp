@@ -230,7 +230,7 @@ int main(int argc, char** argv)
   approach_pose.translation() += Eigen::Vector3d(0.0, 0.0, 0.15);
 
   // Create the problem construction info
-  trajopt::ProblemConstructionInfo pci(tesseract_->getEnvironment(), tesseract_->getFwdKinematics());
+  trajopt::ProblemConstructionInfo pci(tesseract_);
 
   pci.basic_info.n_steps = steps_ * 2;
   pci.basic_info.manip = manip;
@@ -429,7 +429,7 @@ int main(int argc, char** argv)
   approach_pose.translation() += Eigen::Vector3d(0.0, -0.25, 0);
 
   // Create the problem construction info
-  trajopt::ProblemConstructionInfo pci_place(tesseract_->getEnvironment(), tesseract_->getFwdKinematics());
+  trajopt::ProblemConstructionInfo pci_place(tesseract_);
 
   pci_place.basic_info.n_steps = steps_ * 3;
   pci_place.basic_info.manip = manip;

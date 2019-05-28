@@ -64,7 +64,8 @@ VisualizationWidget::VisualizationWidget(Ogre::SceneNode* root_node,
   , visible_(true)
   , visual_visible_(true)
   , collision_visible_(false)
-  , start_state_visible_(true)
+  , current_state_visible_(true)
+  , start_state_visible_(false)
   , end_state_visible_(false)
   , trajectory_visible_(false)
   , context_(context)
@@ -156,6 +157,11 @@ void VisualizationWidget::setCollisionVisible(bool visible)
   updateLinkVisibilities();
 }
 
+void VisualizationWidget::setCurrentStateVisible(bool visible)
+{
+  current_state_visible_ = visible;
+}
+
 void VisualizationWidget::setStartStateVisible(bool visible)
 {
   start_state_visible_ = visible;
@@ -180,6 +186,7 @@ void VisualizationWidget::updateLinkVisibilities()
 bool VisualizationWidget::isVisible() { return visible_; }
 bool VisualizationWidget::isVisualVisible() { return visual_visible_; }
 bool VisualizationWidget::isCollisionVisible() { return collision_visible_; }
+bool VisualizationWidget::isCurrentStateVisible() { return current_state_visible_; }
 bool VisualizationWidget::isStartStateVisible() { return start_state_visible_; }
 bool VisualizationWidget::isEndStateVisible() { return end_state_visible_; }
 bool VisualizationWidget::isTrajectoryVisible() { return trajectory_visible_; }
