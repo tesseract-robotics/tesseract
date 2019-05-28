@@ -7,6 +7,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #ifndef Q_MOC_RUN
+
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <ros/service_server.h>
@@ -15,10 +16,11 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/GetEnvironmentChanges.h>
 #include <tesseract_msgs/TesseractState.h>
 #include <std_msgs/ColorRGBA.h>
+#include <tesseract/tesseract.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
-#include <tesseract_rviz/render_tools/visualization_widget.h>
-#include <tesseract_environment/core/environment.h>
+
 #endif
+#include <tesseract_rviz/render_tools/visualization_widget.h>
 
 namespace rviz
 {
@@ -44,7 +46,7 @@ public:
   virtual ~EnvironmentWidget();
 
   void onInitialize(VisualizationWidget::Ptr visualization,
-                    tesseract_environment::EnvironmentPtr env,
+                    tesseract::Tesseract::Ptr tesseract,
                     rviz::DisplayContext* context,
                     ros::NodeHandle update_nh);
 
@@ -69,13 +71,13 @@ protected:
   rviz::Property* widget_;
   rviz::Display* display_;
   VisualizationWidget::Ptr visualization_;
-  tesseract_environment::EnvironmentPtr env_;
+  tesseract::Tesseract::Ptr tesseract_;
   ros::NodeHandle nh_;
   ros::Subscriber tesseract_state_subscriber_; /**< @brief subscriber for getting environment updates */
   ros::ServiceServer modify_environment_server_; /**< @brief host a service for modifying the environment */
   ros::ServiceServer get_environment_changes_server_; /**< @brief host a service for getting the environment changes */
   bool update_required_;
-  bool load_env_;  // for delayed initialization
+  bool load_tesseract_;  // for delayed initialization
   std::map<std::string, std_msgs::ColorRGBA> highlights_;
 
   void loadEnvironment();

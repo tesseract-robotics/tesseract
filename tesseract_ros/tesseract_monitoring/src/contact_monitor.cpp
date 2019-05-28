@@ -10,6 +10,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/discrete_contact_manager.h>
+#include <tesseract/tesseract.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/parser/urdf_parser.h>
@@ -18,6 +19,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_rosutils/utils.h>
 
+using namespace tesseract;
 using namespace tesseract_environment;
 using namespace tesseract_rosutils;
 using namespace tesseract_collision;
@@ -30,7 +32,7 @@ const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default RO
 
 const double DEFAULT_CONTACT_DISTANCE = 0.1;
 
-static KDLEnvPtr env;
+static Tesseract::Ptr tess;
 static DiscreteContactManagerPtr manager;
 static ros::Subscriber joint_states_sub;
 static ros::Publisher contact_results_pub;
@@ -52,8 +54,8 @@ void callbackJointState(const sensor_msgs::JointState::ConstPtr& msg)
   contacts.clear();
   contacts_msg.contacts.clear();
 
-  env->setState(msg->name, msg->position);
-  EnvStateConstPtr state = env->getCurrentState();
+  tess->getEnvironment()->setState(msg->name, msg->position);
+  EnvStateConstPtr state = tess->getEnvironment()->getCurrentState();
 
   manager->setCollisionObjectsTransform(state->transforms);
   manager->contactTest(contacts, type);
@@ -61,7 +63,7 @@ void callbackJointState(const sensor_msgs::JointState::ConstPtr& msg)
   if (publish_environment)
   {
     tesseract_msgs::TesseractState state_msg;
-    toMsg(state_msg, *env);
+    toMsg(state_msg, *(tess->getEnvironment()));
     environment_pub.publish(state_msg);
   }
 
@@ -81,14 +83,14 @@ bool callbackModifyTesseractEnv(tesseract_msgs::ModifyEnvironmentRequest& reques
                                 tesseract_msgs::ModifyEnvironmentResponse& response)
 {
   boost::mutex::scoped_lock(modify_mutex);
-  response.success = processMsg(*env, request.commands);
+  response.success = processMsg(*(tess->getEnvironment()), request.commands);
 
   // Create a new manager
   std::vector<std::string> active = manager->getActiveCollisionObjects();
   double contact_distance = manager->getContactDistanceThreshold();
   IsContactAllowedFn fn = manager->getIsContactAllowedFn();
 
-  manager = env->getDiscreteContactManager();
+  manager = tess->getEnvironment()->getDiscreteContactManager();
   manager->setActiveCollisionObjects(active);
   manager->setContactDistanceThreshold(contact_distance);
   manager->setIsContactAllowedFn(fn);
@@ -103,8 +105,8 @@ bool callbackComputeContactResultVector(tesseract_msgs::ComputeContactResultVect
 
   boost::mutex::scoped_lock(modify_mutex);
 
-  env->setState(request.joint_states.name, request.joint_states.position);
-  EnvStateConstPtr state = env->getCurrentState();
+  tess->getEnvironment()->setState(request.joint_states.name, request.joint_states.position);
+  EnvStateConstPtr state = tess->getEnvironment()->getCurrentState();
 
   manager->setCollisionObjectsTransform(state->transforms);
   manager->contactTest(contacts, type);
@@ -129,7 +131,7 @@ void callbackTesseractEnvDiff(const tesseract_msgs::TesseractStatePtr& state)
 //    return;
 
   boost::mutex::scoped_lock(modify_mutex);
-  if (!processMsg(*env, *state))
+  if (!processMsg(*(tess->getEnvironment()), *state))
   {
     ROS_ERROR("Invalid TesseractState diff message");
   }
@@ -139,7 +141,7 @@ void callbackTesseractEnvDiff(const tesseract_msgs::TesseractStatePtr& state)
   double contact_distance = manager->getContactDistanceThreshold();
   IsContactAllowedFn fn = manager->getIsContactAllowedFn();
 
-  manager = env->getDiscreteContactManager();
+  manager = tess->getEnvironment()->getDiscreteContactManager();
   manager->setActiveCollisionObjects(active);
   manager->setContactDistanceThreshold(contact_distance);
   manager->setIsContactAllowedFn(fn);
@@ -150,28 +152,28 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "tesseract_contact_monitoring");
   ros::NodeHandle nh;
   ros::NodeHandle pnh("~");
+
+
   SceneGraphPtr scene_graph;
   SRDFModelPtr srdf_model;
   std::string robot_description;
   std::string plugin;
 
-  env.reset(new KDLEnv());
-
   pnh.param<std::string>("robot_description", robot_description, ROBOT_DESCRIPTION_PARAM);
   pnh.param<bool>("publish_environment", publish_environment, false);
-  if (pnh.hasParam("plugin"))
-  {
-    discrete_manager_loader.reset(new DiscreteContactManagerPluginLoader("tesseract_collision", "tesseract_collision::DiscreteContactManager"));
-    pnh.getParam("plugin", plugin);
-    if (discrete_manager_loader->isClassAvailable(plugin))
-    {
-      ROS_ERROR("Failed to load tesseract contact checker plugin: %s.", plugin.c_str());
-      return -1;
-    }
-    auto fn = [&]() -> DiscreteContactManagerPtr { return ::discrete_manager_loader->createUniqueInstance(plugin); };
-    env->registerDiscreteContactManager(plugin, fn);
-    env->setActiveDiscreteContactManager(plugin);
-  }
+//  if (pnh.hasParam("plugin"))
+//  {
+//    discrete_manager_loader.reset(new DiscreteContactManagerPluginLoader("tesseract_collision", "tesseract_collision::DiscreteContactManager"));
+//    pnh.getParam("plugin", plugin);
+//    if (discrete_manager_loader->isClassAvailable(plugin))
+//    {
+//      ROS_ERROR("Failed to load tesseract contact checker plugin: %s.", plugin.c_str());
+//      return -1;
+//    }
+//    auto fn = [&]() -> DiscreteContactManagerPtr { return ::discrete_manager_loader->createUniqueInstance(plugin); };
+//    env->registerDiscreteContactManager(plugin, fn);
+//    env->setActiveDiscreteContactManager(plugin);
+//  }
 
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;
@@ -191,13 +193,7 @@ int main(int argc, char** argv)
   nh.getParam(robot_description + "_semantic", srdf_xml_string);
 
   ResourceLocatorFn locator = tesseract_rosutils::locateResource;
-  std::pair<SceneGraphPtr, SRDFModelPtr> data = createSceneGraphFromStrings(urdf_xml_string, srdf_xml_string, locator);
-  if (data.first == nullptr || data.second == nullptr)
-    return -1;
-
-  // Create environemnt from scene graph
-  KDLEnvPtr env = std::make_shared<KDLEnv>();
-  if (!env->init(data.first))
+  if (tess->init(urdf_xml_string, srdf_xml_string, locator))
   {
     ROS_ERROR("Failed to initialize environment.");
     return -1;
@@ -209,12 +205,12 @@ int main(int argc, char** argv)
 
   pnh.param<double>("contact_distance", contact_distance, DEFAULT_CONTACT_DISTANCE);
 
-  link_names = env->getLinkNames();
+  link_names = tess->getEnvironment()->getLinkNames();
   if (pnh.hasParam("monitor_links"))
     pnh.getParam("monitor_links", link_names);
 
   if (link_names.empty())
-    link_names = env->getLinkNames();
+    link_names = tess->getEnvironment()->getLinkNames();
 
   int contact_test_type = 2;
   if (pnh.hasParam("contact_test_type"))
@@ -227,7 +223,7 @@ int main(int argc, char** argv)
   }
   type = static_cast<ContactTestType>(contact_test_type);
 
-  manager = env->getDiscreteContactManager();
+  manager = tess->getEnvironment()->getDiscreteContactManager();
   manager->setActiveCollisionObjects(link_names);
   manager->setContactDistanceThreshold(contact_distance);
 

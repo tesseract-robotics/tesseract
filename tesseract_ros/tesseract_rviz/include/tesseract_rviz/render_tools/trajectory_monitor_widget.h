@@ -48,11 +48,12 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <tesseract_msgs/Trajectory.h>
-#include <tesseract_environment/core/environment.h>
+#include <tesseract/tesseract.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+#endif
+
 #include <tesseract_rviz/render_tools/visualization_widget.h>
 #include <tesseract_rviz/render_tools/trajectory_panel.h>
-#endif
 
 namespace rviz
 {
@@ -85,7 +86,7 @@ public:
   virtual ~TrajectoryMonitorWidget();
 
   void onInitialize(VisualizationWidget::Ptr visualization,
-                    tesseract_environment::EnvironmentPtr env,
+                    tesseract::Tesseract::Ptr tesseract,
                     rviz::DisplayContext* context,
                     ros::NodeHandle update_nh);
 
@@ -117,7 +118,7 @@ protected:
   rviz::Display* display_;
   rviz::DisplayContext* context_;
   VisualizationWidget::Ptr visualization_;
-  tesseract_environment::EnvironmentPtr env_;
+  tesseract::Tesseract::Ptr tesseract_;
   ros::NodeHandle nh_;
 
   tesseract_msgs::TrajectoryPtr displaying_trajectory_message_;

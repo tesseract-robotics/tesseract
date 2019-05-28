@@ -1,11 +1,7 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_monitoring)
 
-find_package(tesseract_collision REQUIRED)
-find_package(tesseract_environment REQUIRED)
-find_package(tesseract_kinematics REQUIRED)
-find_package(tesseract_scene_graph REQUIRED)
-find_package(tesseract_geometry REQUIRED)
+find_package(tesseract REQUIRED)
 find_package(orocos_kdl REQUIRED)
 
 find_package(Eigen3 REQUIRED)
@@ -35,11 +31,7 @@ catkin_package(
     dynamic_reconfigure
   DEPENDS
     EIGEN3
-    tesseract_collision
-    tesseract_environment
-    tesseract_kinematics
-    tesseract_scene_graph
-    tesseract_geometry
+    tesseract
     orocos_kdl
 )
 
@@ -50,14 +42,14 @@ include_directories(
 
 # Tesseract ROS Nodes
 add_executable(${PROJECT_NAME}_contacts_node src/contact_monitor.cpp)
-target_link_libraries(${PROJECT_NAME}_contacts_node PRIVATE tesseract_environment_kdl tesseract_scene_graph ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_contacts_node PRIVATE tesseract ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_contacts_node PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME}_contacts_node PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_contacts_node PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 target_include_directories(${PROJECT_NAME}_contacts_node SYSTEM PUBLIC ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_environment SHARED src/environment_monitor.cpp src/current_state_monitor.cpp)
-target_link_libraries(${PROJECT_NAME}_environment PUBLIC tesseract_kinematics_core tesseract_kinematics_kdl tesseract_environment_kdl tesseract_collision_core ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_environment PUBLIC tesseract ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_environment PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME}_environment PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_environment PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")

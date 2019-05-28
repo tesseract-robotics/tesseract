@@ -128,8 +128,7 @@ public:
    *  @param tf A pointer to a tf::Transformer
    *  @param name A name identifying this planning scene monitor
    */
-  EnvironmentMonitor(const tesseract_scene_graph::SceneGraphPtr& scene_graph,
-                     const tesseract_scene_graph::SRDFModelConstPtr& srdf_model,
+  EnvironmentMonitor(tesseract::Tesseract::Ptr tesseract,
                      const std::string& name,
                      const std::string& discrete_plugin = "",
                      const std::string& continuous_plugin = "");
@@ -138,8 +137,8 @@ public:
 
   /** \brief Get the name of this monitor */
   const std::string& getName() const { return monitor_name_; }
-  const tesseract_scene_graph::SceneGraphConstPtr& getSceneGraph() const { return scene_graph_; }
-  const tesseract_scene_graph::SRDFModelConstPtr& getSRDF() const { return srdf_model_; }
+  const tesseract_scene_graph::SceneGraphConstPtr& getSceneGraph() const { return tesseract_->getEnvironment()->getSceneGraph(); }
+  const tesseract_scene_graph::SRDFModelConstPtr& getSRDF() const { return tesseract_->getSRDFModel(); }
   /** @brief <b>Avoid this function!</b>  Returns an @b
    *         unsafe pointer to the current planning scene.
    * @warning Most likely you do not want to call this function
@@ -154,11 +153,11 @@ public:
    * @see LockedPlanningSceneRO
    * @see LockedPlanningSceneRW.
    * @return A pointer to the current planning scene.*/
-  const tesseract_environment::EnvironmentPtr& getEnvironment() { return env_; }
+  const tesseract_environment::EnvironmentPtr& getEnvironment() { return tesseract_->getEnvironment(); }
   /*! @brief <b>Avoid this function!</b>  Returns an @b
    *         unsafe pointer to the current planning scene.
    * @copydetails PlanningSceneMonitor::getPlanningScene() */
-  const tesseract_environment::EnvironmentConstPtr& getEnvironment() const { return env_const_; }
+  const tesseract_environment::EnvironmentConstPtr& getEnvironment() const { return tesseract_->getEnvironmentConst(); }
   /** @brief Return true if the scene \e scene can be updated directly
       or indirectly by this monitor. This function will return true if
       the pointer of the scene is the same as the one maintained,
@@ -274,8 +273,7 @@ protected:
   DiscreteContactManagerPluginLoaderPtr discrete_manager_loader_;
   ContinuousContactManagerPluginLoaderPtr continuous_manager_loader_;
 
-  tesseract_environment::EnvironmentPtr env_;
-  tesseract_environment::EnvironmentConstPtr env_const_;
+  tesseract::Tesseract::Ptr tesseract_;
   boost::shared_mutex scene_update_mutex_;  /// mutex for stored scene
   ros::Time last_update_time_;              /// Last time the state was updated
   ros::Time last_robot_motion_time_;        /// Last time the robot has moved
@@ -358,10 +356,6 @@ private:
   /// Last time the state was updated from current_state_monitor_
   // Only access this from callback functions (and constructor)
   ros::WallTime last_robot_state_update_wall_time_;
-
-  tesseract_scene_graph::SceneGraphPtr scene_graph_;           /**< Scene Graph */
-  tesseract_scene_graph::SRDFModelConstPtr srdf_model_;        /**< SRDF MODEL */
-  tesseract_kinematics::ForwardKinematicsConstPtrMap kin_map_; /**< Forward Kinematics map */
 
   DynamicReconfigureImpl* reconfigure_impl_;
 };

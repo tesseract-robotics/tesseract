@@ -21,7 +21,7 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
 
 # Trajopt Planner
 add_library(${PROJECT_NAME}_trajopt SHARED src/trajopt/trajopt_planner.cpp)
-target_link_libraries(${PROJECT_NAME}_trajopt PUBLIC ${PROJECT_NAME}_core trajopt trajopt_utils trajopt_sco tesseract_visualization)
+target_link_libraries(${PROJECT_NAME}_trajopt PUBLIC ${PROJECT_NAME}_core trajopt trajopt_utils trajopt_sco)
 target_compile_options(${PROJECT_NAME}_trajopt PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME}_trajopt PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_trajopt PUBLIC

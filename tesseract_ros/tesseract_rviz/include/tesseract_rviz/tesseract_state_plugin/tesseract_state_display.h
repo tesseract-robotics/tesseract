@@ -45,9 +45,9 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 #ifndef Q_MOC_RUN
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
-#include <tesseract_environment/core/environment.h>
-#endif
+#include <tesseract/tesseract.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+#endif
 
 #include <tesseract_rviz/render_tools/visualization_widget.h>
 #include <tesseract_rviz/render_tools/joint_state_monitor_widget.h>
@@ -70,7 +70,6 @@ public:
   void update(float wall_dt, float ros_dt) override;
   void reset() override;
 
-  const tesseract_environment::EnvironmentConstPtr getEnv() const { return env_; }
   void setLinkColor(const std::string& link_name, const QColor& color);
   void unsetLinkColor(const std::string& link_name);
 
@@ -83,7 +82,7 @@ protected:
 
   ros::NodeHandle nh_;
 
-  tesseract_environment::EnvironmentPtr env_;
+  tesseract::Tesseract::Ptr tesseract_;
   VisualizationWidget::Ptr visualization_;
   JointStateMonitorWidget::Ptr state_monitor_;
   EnvironmentWidget::Ptr environment_monitor_;

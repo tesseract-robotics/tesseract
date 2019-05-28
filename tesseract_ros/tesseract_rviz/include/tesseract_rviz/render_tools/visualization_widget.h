@@ -37,16 +37,20 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <string>
 #include <map>
 
+#ifndef Q_MOC_RUN
 #include <OgreVector3.h>
 #include <OgreQuaternion.h>
 #include <OgreAny.h>
 #include "rviz/properties/property_tree_widget.h"
+#endif
 
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
+#ifndef Q_MOC_RUN
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/joint.h>
+#endif
 
 namespace Ogre
 {

@@ -136,22 +136,13 @@ EnvironmentMonitor::EnvironmentMonitor(const std::string& robot_description,
   root_nh_.getParam(robot_description + "_semantic", srdf_xml_string);
 
   tesseract_scene_graph::ResourceLocatorFn locator = tesseract_rosutils::locateResource;
-  std::pair<tesseract_scene_graph::SceneGraphPtr, tesseract_scene_graph::SRDFModelPtr> data;
-  data = tesseract_scene_graph::createSceneGraphFromStrings(urdf_xml_string, srdf_xml_string, locator);
-  if (data.first == nullptr || data.second == nullptr)
+  if (!tesseract_->init(urdf_xml_string, srdf_xml_string, locator))
     return;
-
-  scene_graph_ = data.first;
-  srdf_model_ = data.second;
-
-  // Parse kinematics groups from srdf model
-  kin_map_ = tesseract_kinematics::createKinematicsMap<tesseract_kinematics::KDLFwdKinChain, tesseract_kinematics::KDLFwdKinTree>(scene_graph_, *srdf_model_);
 
   initialize();
 }
 
-EnvironmentMonitor::EnvironmentMonitor(const tesseract_scene_graph::SceneGraphPtr& scene_graph,
-                                       const tesseract_scene_graph::SRDFModelConstPtr& srdf_model,
+EnvironmentMonitor::EnvironmentMonitor(tesseract::Tesseract::Ptr tesseract,
                                        const std::string& name,
                                        const std::string& discrete_plugin,
                                        const std::string& continuous_plugin)
@@ -159,8 +150,7 @@ EnvironmentMonitor::EnvironmentMonitor(const tesseract_scene_graph::SceneGraphPt
   , discrete_plugin_name_(discrete_plugin)
   , continuous_plugin_name_(continuous_plugin)
   , nh_("~")
-  , scene_graph_(scene_graph)
-  , srdf_model_(srdf_model)
+  , tesseract_(std::move(tesseract))
 {
   initialize();
 }
@@ -172,10 +162,7 @@ EnvironmentMonitor::~EnvironmentMonitor()
 
   delete reconfigure_impl_;
   current_state_monitor_.reset();
-  env_const_.reset();
-  env_.reset();
-  scene_graph_.reset();
-  srdf_model_.reset();
+  tesseract_.reset();
 }
 
 void EnvironmentMonitor::initialize()
@@ -185,21 +172,13 @@ void EnvironmentMonitor::initialize()
   if (monitor_name_.empty())
     monitor_name_ = "tesseract_monitor";
 
-  if (!scene_graph_)
+  if (!tesseract_->isInitialized())
   {
-    ROS_FATAL_NAMED(LOGNAME,
-                    "Tried to initalize environment monitor with "
-                    "nullptr to ModelInterfaceConstSharedPtr.");
+    ROS_FATAL_NAMED(LOGNAME, "Faild to initalize environment monitor");
     return;
   }
-
-  if (scene_graph_)
+  else
   {
-
-
-    env_ = std::make_shared<tesseract_environment::KDLEnv>();
-    env_->init(scene_graph_);
-    env_const_ = env_;
     try
     {
       if (!discrete_plugin_name_.empty() && !continuous_plugin_name_.empty())
@@ -213,8 +192,8 @@ void EnvironmentMonitor::initialize()
         else
         {
           auto fn = [&]() -> tesseract_collision::DiscreteContactManagerPtr { return discrete_manager_loader_->createUniqueInstance(discrete_plugin_name_); };
-          env_->registerDiscreteContactManager(discrete_plugin_name_, fn);
-          env_->setActiveDiscreteContactManager(discrete_plugin_name_);
+//          env_->registerDiscreteContactManager(discrete_plugin_name_, fn);
+//          env_->setActiveDiscreteContactManager(discrete_plugin_name_);
         }
 
         continuous_manager_loader_.reset(new ContinuousContactManagerPluginLoader("tesseract_collision", "tesseract_collision::ContinuousContactManager"));
@@ -225,16 +204,15 @@ void EnvironmentMonitor::initialize()
         else
         {
           auto fn = [&]() -> tesseract_collision::ContinuousContactManagerPtr { return continuous_manager_loader_->createUniqueInstance(continuous_plugin_name_); };
-          env_->registerContinuousContactManager(continuous_plugin_name_, fn);
-          env_->setActiveContinuousContactManager(continuous_plugin_name_);
+//          env_->registerContinuousContactManager(continuous_plugin_name_, fn);
+//          env_->setActiveContinuousContactManager(continuous_plugin_name_);
         }
       }
     }
     catch (int& /*e*/)
     {
       ROS_ERROR_NAMED(LOGNAME, "Failed to load tesseract contact managers plugin");
-      env_.reset();
-      env_const_ = env_;
+      tesseract_.reset();
     }
   }
 
@@ -279,7 +257,7 @@ void EnvironmentMonitor::startPublishingEnvironment(EnvironmentUpdateType update
                                                     const std::string& environment_topic)
 {
   publish_update_types_ = update_type;
-  if (!publish_environment_ && env_)
+  if (!publish_environment_ && tesseract_->isInitialized())
   {
     environment_publisher_ = nh_.advertise<tesseract_msgs::TesseractState>(environment_topic, 100, false);
     ROS_INFO_NAMED(LOGNAME, "Publishing maintained environment on '%s'", environment_topic.c_str());
@@ -293,7 +271,7 @@ void EnvironmentMonitor::environmentPublishingThread()
 
   // publish the full planning scene
   tesseract_msgs::TesseractState start_msg;
-  tesseract_rosutils::toMsg(start_msg, *env_);
+  tesseract_rosutils::toMsg(start_msg, *(tesseract_->getEnvironment()));
 
   environment_publisher_.publish(start_msg);
   ros::Duration(1.5).sleep();
@@ -305,7 +283,6 @@ void EnvironmentMonitor::environmentPublishingThread()
   {
     tesseract_msgs::TesseractState msg;
     bool publish_msg = false;
-    bool is_full = false;
     ros::Rate rate(publish_environment_frequency_);
     {
       boost::unique_lock<boost::shared_mutex> ulock(scene_update_mutex_);
@@ -315,7 +292,7 @@ void EnvironmentMonitor::environmentPublishingThread()
       {
         if ((publish_update_types_ & new_environment_update_) || new_environment_update_ == UPDATE_ENVIRONMENT)
         {
-          tesseract_rosutils::toMsg(msg, *env_);
+          tesseract_rosutils::toMsg(msg, *(tesseract_->getEnvironment()));
 
           // also publish timestamp of this robot_state
           msg.joint_state.header.stamp = last_robot_motion_time_;
@@ -358,7 +335,7 @@ void EnvironmentMonitor::triggerEnvironmentUpdateEvent(EnvironmentUpdateType upd
 
 void EnvironmentMonitor::newStateCallback(const tesseract_msgs::TesseractStateConstPtr& env)
 {
-  if (!env_)
+  if (!tesseract_->getEnvironment())
     return;
 
   EnvironmentUpdateType upd = UPDATE_ENVIRONMENT;
@@ -371,8 +348,8 @@ void EnvironmentMonitor::newStateCallback(const tesseract_msgs::TesseractStateCo
     ROS_DEBUG_STREAM_NAMED(LOGNAME,
                            "environment update " << fmod(last_update_time_.toSec(), 10.) << " robot stamp: "
                                                  << fmod(last_robot_motion_time_.toSec(), 10.));
-    old_scene_name = env_->getName();
-    tesseract_rosutils::processMsg(env_, *env);
+    old_scene_name = tesseract_->getEnvironment()->getName();
+    tesseract_rosutils::processMsg(tesseract_->getEnvironment(), *env);
   }
 
   upd = UPDATE_NONE;
@@ -384,7 +361,7 @@ void EnvironmentMonitor::newStateCallback(const tesseract_msgs::TesseractStateCo
 
 bool EnvironmentMonitor::applyEnvironmentCommandsMessage(std::string id, int revision, const std::vector<tesseract_msgs::EnvironmentCommand>& commands)
 {
-  if (!env_ || id != env_->getName() || revision != env_->getRevision())
+  if (!tesseract_->getEnvironment() || id != tesseract_->getEnvironment()->getName() || revision != tesseract_->getEnvironment()->getRevision())
     return false;
 
   bool result;
@@ -393,7 +370,7 @@ bool EnvironmentMonitor::applyEnvironmentCommandsMessage(std::string id, int rev
   std::string old_scene_name;
   {
     boost::unique_lock<boost::shared_mutex> ulock(scene_update_mutex_);
-    result = tesseract_rosutils::processMsg(*env_, commands);
+    result = tesseract_rosutils::processMsg(*(tesseract_->getEnvironment()), commands);
   }
 
   // if we have a diff, try to more accuratelly determine the update type
@@ -557,10 +534,10 @@ void EnvironmentMonitor::unlockEnvironmentWrite() { scene_update_mutex_.unlock()
 void EnvironmentMonitor::startStateMonitor(const std::string& joint_states_topic)
 {
   stopStateMonitor();
-  if (env_)
+  if (tesseract_->getEnvironment())
   {
     if (!current_state_monitor_)
-      current_state_monitor_.reset(new CurrentStateMonitor(env_, kin_map_, root_nh_));
+      current_state_monitor_.reset(new CurrentStateMonitor(tesseract_->getEnvironment(), tesseract_->getFwdKinematics(), root_nh_));
 
     current_state_monitor_->addUpdateCallback(boost::bind(&EnvironmentMonitor::onStateUpdate, this, _1));
     current_state_monitor_->startStateMonitor(joint_states_topic);
@@ -691,7 +668,7 @@ void EnvironmentMonitor::updateEnvironmentWithCurrentState()
 
       tesseract_environment::EnvState current_state;
       current_state_monitor_->setToCurrentState(current_state);
-      env_->setState(current_state.joints);
+      tesseract_->getEnvironment()->setState(current_state.joints);
     }
     triggerEnvironmentUpdateEvent(UPDATE_STATE);
   }
@@ -730,15 +707,15 @@ bool EnvironmentMonitor::modifyEnvironmentCallback(tesseract_msgs::ModifyEnviron
 bool EnvironmentMonitor::getEnvironmentChangesCallback(tesseract_msgs::GetEnvironmentChangesRequest& req,
                                                        tesseract_msgs::GetEnvironmentChangesResponse& res)
 {
-  if (req.revision > env_->getRevision())
+  if (req.revision > tesseract_->getEnvironment()->getRevision())
   {
     res.success = false;
     return false;
   }
 
-  res.id = env_->getName();
-  res.revision = env_->getRevision();
-  if (!tesseract_rosutils::toMsg(res.commands, env_->getCommandHistory(), req.revision))
+  res.id = tesseract_->getEnvironment()->getName();
+  res.revision = tesseract_->getEnvironment()->getRevision();
+  if (!tesseract_rosutils::toMsg(res.commands, tesseract_->getEnvironment()->getCommandHistory(), req.revision))
   {
     res.success = false;
     return false;

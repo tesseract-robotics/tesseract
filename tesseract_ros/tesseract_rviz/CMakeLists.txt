@@ -15,11 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED thread date_time system filesystem)
-find_package(tesseract_environment REQUIRED)
-find_package(tesseract_scene_graph REQUIRED) #should not be required
-find_package(tesseract_geometry REQUIRED) #should not be required
-find_package(orocos_kdl REQUIRED) #should not be required
-find_package(tesseract_collision REQUIRED)
+find_package(tesseract REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 # Ogre
@@ -72,10 +68,7 @@ catkin_package(
     Boost
     OGRE
     QT
-    tesseract_environment
-    tesseract_scene_graph
-    tesseract_geometry
-    tesseract_collision
+    tesseract
 )
 
 include_directories(
@@ -110,11 +103,7 @@ add_library(${PROJECT_NAME}_render_tools SHARED
 )
 
 target_link_libraries(${PROJECT_NAME}_render_tools PUBLIC
-  tesseract_environment_core
-  tesseract_environment_kdl
-  tesseract_collision_core
-  tesseract_scene_graph
-  tesseract_geometry
+  tesseract
   Eigen3::Eigen
   ${catkin_LIBRARIES}
   ${OGRE_LIBRARIES}
@@ -147,8 +136,6 @@ qt_wrap_cpp(${PROJECT_NAME}_state_plugin_core_cpp_MOCS include/tesseract_rviz/te
 add_library(${PROJECT_NAME}_state_plugin_core SHARED src/tesseract_state_plugin/tesseract_state_display.cpp ${${PROJECT_NAME}_state_plugin_core_cpp_MOCS})
 target_link_libraries(${PROJECT_NAME}_state_plugin_core PUBLIC
     ${PROJECT_NAME}_render_tools
-    tesseract_environment_core
-    tesseract_environment_kdl
     Eigen3::Eigen
     ${catkin_LIBRARIES}
     ${OGRE_LIBRARIES}
