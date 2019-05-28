@@ -153,12 +153,14 @@ TEST(TesseractEnvironmentUnit, KDLEnvCloneContactManagerUnit)
   EXPECT_TRUE(success);
 
   // Register contact manager
-  EXPECT_TRUE(env->registerDiscreteContactManager("bullet", &tesseract_collision_bullet::BulletDiscreteBVHManager::create));
-  EXPECT_TRUE(env->registerContinuousContactManager("bullet", &tesseract_collision_bullet::BulletCastBVHManager::create));
+  EXPECT_TRUE(env->registerDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name(),
+                                                  &tesseract_collision_bullet::BulletDiscreteBVHManager::create));
+  EXPECT_TRUE(env->registerContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name(),
+                                                    &tesseract_collision_bullet::BulletCastBVHManager::create));
 
   // Set Active contact manager
-  EXPECT_TRUE(env->setActiveDiscreteContactManager("bullet"));
-  EXPECT_TRUE(env->setActiveContinuousContactManager("bullet"));
+  EXPECT_TRUE(env->setActiveDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name()));
+  EXPECT_TRUE(env->setActiveContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name()));
 
   runContactManagerCloneTest(env);
 }
@@ -175,12 +177,14 @@ TEST(TesseractEnvironmentUnit, KDLEnvAddandRemoveLink)
   EXPECT_TRUE(success);
 
   // Register contact manager
-  EXPECT_TRUE(env->registerDiscreteContactManager("bullet", &tesseract_collision_bullet::BulletDiscreteBVHManager::create));
-  EXPECT_TRUE(env->registerContinuousContactManager("bullet", &tesseract_collision_bullet::BulletCastBVHManager::create));
+  EXPECT_TRUE(env->registerDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name(),
+                                                  &tesseract_collision_bullet::BulletDiscreteBVHManager::create));
+  EXPECT_TRUE(env->registerContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name(),
+                                                    &tesseract_collision_bullet::BulletCastBVHManager::create));
 
   // Set Active contact manager
-  EXPECT_TRUE(env->setActiveDiscreteContactManager("bullet"));
-  EXPECT_TRUE(env->setActiveContinuousContactManager("bullet"));
+  EXPECT_TRUE(env->setActiveDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name()));
+  EXPECT_TRUE(env->setActiveContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name()));
 
   runAddandRemoveLinkTest(env);
 }
@@ -197,12 +201,14 @@ TEST(TesseractEnvironmentUnit, KDLEnvMoveLinkandJoint)
   EXPECT_TRUE(success);
 
   // Register contact manager
-  EXPECT_TRUE(env->registerDiscreteContactManager("bullet", &tesseract_collision_bullet::BulletDiscreteBVHManager::create));
-  EXPECT_TRUE(env->registerContinuousContactManager("bullet", &tesseract_collision_bullet::BulletCastBVHManager::create));
+  EXPECT_TRUE(env->registerDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name(),
+                                                  &tesseract_collision_bullet::BulletDiscreteBVHManager::create));
+  EXPECT_TRUE(env->registerContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name(),
+                                                    &tesseract_collision_bullet::BulletCastBVHManager::create));
 
   // Set Active contact manager
-  EXPECT_TRUE(env->setActiveDiscreteContactManager("bullet"));
-  EXPECT_TRUE(env->setActiveContinuousContactManager("bullet"));
+  EXPECT_TRUE(env->setActiveDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name()));
+  EXPECT_TRUE(env->setActiveContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name()));
 
   runMoveLinkandJointTest(env);
 }

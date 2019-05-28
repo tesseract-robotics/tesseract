@@ -54,6 +54,7 @@ public:
   BulletDiscreteBVHManager();
   ~BulletDiscreteBVHManager() override;
 
+  static std::string name() { return "BulletDiscreteBVHManager"; }
   static DiscreteContactManagerPtr create() { return std::make_shared<BulletDiscreteBVHManager>(); }
 
   DiscreteContactManagerPtr clone() const override;

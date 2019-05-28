@@ -239,7 +239,7 @@ namespace tesseract
     return fwd_kin_map_;
   }
 
-  tesseract_kinematics::ForwardKinematicsConstPtr Tesseract::getFwdKinematics(const std::string& name)
+  tesseract_kinematics::ForwardKinematicsConstPtr Tesseract::getFwdKinematics(const std::string& name) const
   {
     auto it = fwd_kin_map_.find(name);
     if (it == fwd_kin_map_.end())
@@ -258,12 +258,14 @@ namespace tesseract
     using namespace tesseract_collision;
 
     // Register contact manager
-    environment_->registerDiscreteContactManager("bullet", &tesseract_collision_bullet::BulletDiscreteBVHManager::create);
-    environment_->registerContinuousContactManager("bullet", &tesseract_collision_bullet::BulletCastBVHManager::create);
+    environment_->registerDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name(),
+                                                 &tesseract_collision_bullet::BulletDiscreteBVHManager::create);
+    environment_->registerContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name(),
+                                                   &tesseract_collision_bullet::BulletCastBVHManager::create);
 
     // Set Active contact manager
-    environment_->setActiveDiscreteContactManager("bullet");
-    environment_->setActiveContinuousContactManager("bullet");
+    environment_->setActiveDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name());
+    environment_->setActiveContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name());
 
     return true;
   }

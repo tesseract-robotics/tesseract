@@ -55,6 +55,7 @@ class BulletCastSimpleManager : public ContinuousContactManager
 public:
   BulletCastSimpleManager();
 
+  static std::string name() { return "BulletCastSimpleManager"; }
   static ContinuousContactManagerPtr create() { return std::make_shared<BulletCastSimpleManager>(); }
 
   ContinuousContactManagerPtr clone() const override;

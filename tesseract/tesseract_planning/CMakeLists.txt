@@ -5,12 +5,11 @@ add_compile_options(-std=c++11 -Wall -Wextra)
 
 find_package(ompl REQUIRED)
 find_package(trajopt REQUIRED)
-find_package(tesseract_environment REQUIRED)
-find_package(tesseract_kinematics REQUIRED)
+find_package(tesseract REQUIRED)
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core INTERFACE)
-target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract_environment_core tesseract_kinematics_core)
+target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract)
 target_compile_options(${PROJECT_NAME}_core INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_features(${PROJECT_NAME}_core INTERFACE cxx_std_11)
 target_include_directories(${PROJECT_NAME}_core INTERFACE

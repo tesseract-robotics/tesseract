@@ -55,6 +55,7 @@ class FCLDiscreteBVHManager : public DiscreteContactManager
 public:
   FCLDiscreteBVHManager();
 
+  static std::string name() { return "FCLDiscreteBVHManager"; }
   static DiscreteContactManagerPtr create() { return std::make_shared<FCLDiscreteBVHManager>(); }
 
   DiscreteContactManagerPtr clone() const override;

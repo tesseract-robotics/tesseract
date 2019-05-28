@@ -68,7 +68,7 @@ void TesseractTrajectoryDisplay::onInitialize()
   Display::onInitialize();
 
   visualization_ = std::make_shared<VisualizationWidget>(scene_node_, context_, "Tesseract State", this);
-  visualization_->setStartStateVisible(false);
+  visualization_->setCurrentStateVisible(false);
 
   environment_monitor_->onInitialize(visualization_, tesseract_, context_, nh_);
   state_monitor_->onInitialize(visualization_, tesseract_, context_, nh_);

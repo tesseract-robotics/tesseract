@@ -81,7 +81,7 @@ TrajOptProbPtr jsonMethod()
     ROS_FATAL("Failed to load trajopt json file from ros parameter");
   }
 
-  return ConstructProblem(root, tesseract_->getEnvironment(), tesseract_->getFwdKinematics());
+  return ConstructProblem(root, tesseract_);
 }
 
 bool checkRviz()
@@ -185,7 +185,7 @@ bool addPointCloud()
 
 TrajOptProbPtr cppMethod()
 {
-  ProblemConstructionInfo pci(tesseract_->getEnvironment(), tesseract_->getFwdKinematics());
+  ProblemConstructionInfo pci(tesseract_);
 
   // Populate Basic Info
   pci.basic_info.n_steps = steps_;

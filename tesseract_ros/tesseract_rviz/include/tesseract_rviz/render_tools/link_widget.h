@@ -124,13 +124,19 @@ public:
   virtual void setAlpha(float a);
 
   /**
-   * @brief Set the start visualization link transform
+   * @brief Set the current state visualization link transform
+   * @param transform
+   */
+  virtual void setCurrentTransform(const Eigen::Isometry3d& transform);
+
+  /**
+   * @brief Set the start state visualization link transform
    * @param transform
    */
   virtual void setStartTransform(const Eigen::Isometry3d& transform);
 
   /**
-   * @brief Set the env visualization link transform
+   * @brief Set the end state visualization link transform
    * @param transform
    */
   virtual void setEndTransform(const Eigen::Isometry3d& transform);
@@ -259,6 +265,11 @@ private:
   std::string default_material_name_;
   std::map<std::string, rviz::StringProperty*> acm_;
 
+  std::vector<Ogre::Entity*> visual_current_meshes_;     ///< The entities representing the visual mesh of this link (if they
+                                                 /// exist)
+  std::vector<Ogre::Entity*> collision_current_meshes_;  ///< The entities representing the collision mesh of this link (if they
+                                                 /// exist)
+
   std::vector<Ogre::Entity*> visual_start_meshes_;     ///< The entities representing the visual mesh of this link (if they
                                                  /// exist)
   std::vector<Ogre::Entity*> collision_start_meshes_;  ///< The entities representing the collision mesh of this link (if they
@@ -283,8 +294,12 @@ private:
     rviz::PointCloud* clone();
   };
 
-  std::vector<OctreeDataContainer> visual_start_octrees_;  ///< The object representing the visual of this link (if they exist)
-  std::vector<OctreeDataContainer> collision_start_octrees_;  ///< The object representing the visual of this link (if they
+  std::vector<OctreeDataContainer> visual_current_octrees_;  ///< The object representing the visual of this link (if they exist)
+  std::vector<OctreeDataContainer> collision_current_octrees_;  ///< The object representing the visual of this link (if they
+                                                      /// exist)
+
+  std::vector<rviz::PointCloud*> visual_start_octrees_;  ///< The object representing the visual of this link (if they exist)
+  std::vector<rviz::PointCloud*> collision_start_octrees_;  ///< The object representing the visual of this link (if they
                                                       /// exist)
 
   std::vector<rviz::PointCloud*> visual_trajectory_octrees_;  ///< The object representing the visual of this link (if they exist)
@@ -295,10 +310,12 @@ private:
   std::vector<rviz::PointCloud*> collision_end_octrees_;  ///< The object representing the visual of this link (if they
                                                       /// exist)
 
-  Ogre::SceneNode* visual_start_node_;     ///< The scene node the visual meshes are attached to
-  Ogre::SceneNode* collision_start_node_;  ///< The scene node the collision meshes are attached to
-  Ogre::SceneNode* visual_end_node_;     ///< The scene node the visual meshes are attached to
-  Ogre::SceneNode* collision_end_node_;  ///< The scene node the collision meshes are attached to
+  Ogre::SceneNode* visual_current_node_;    ///< The scene node the visual meshes are attached to
+  Ogre::SceneNode* collision_current_node_; ///< The scene node the collision meshes are attached to
+  Ogre::SceneNode* visual_start_node_;      ///< The scene node the visual meshes are attached to
+  Ogre::SceneNode* collision_start_node_;   ///< The scene node the collision meshes are attached to
+  Ogre::SceneNode* visual_end_node_;        ///< The scene node the visual meshes are attached to
+  Ogre::SceneNode* collision_end_node_;     ///< The scene node the collision meshes are attached to
   Ogre::SceneNode* visual_trajectory_node_;
   Ogre::SceneNode* collision_trajectory_node_;
   std::vector<Ogre::SceneNode*> visual_trajectory_waypoint_nodes_;

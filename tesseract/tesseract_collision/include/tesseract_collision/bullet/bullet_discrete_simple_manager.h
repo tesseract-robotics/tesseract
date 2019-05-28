@@ -53,6 +53,7 @@ class BulletDiscreteSimpleManager : public DiscreteContactManager
 public:
   BulletDiscreteSimpleManager();
 
+  static std::string name() { return "BulletDiscreteSimpleManager"; }
   static DiscreteContactManagerPtr create() { return std::make_shared<BulletDiscreteSimpleManager>(); }
 
   DiscreteContactManagerPtr clone() const override;

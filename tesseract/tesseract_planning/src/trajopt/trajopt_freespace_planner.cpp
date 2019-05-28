@@ -45,14 +45,12 @@ namespace tesseract_planning
 bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespacePlannerConfig& config)
 {
   // Check that parameters are valid
-  if (config.env_ == nullptr)
+  if (config.tesseract_ == nullptr)
     throw std::invalid_argument("In trajopt_freespace_planner: env_ is a required parameter and has not been set");
-  if (config.kin_map_.empty())
-    throw std::invalid_argument("In trajopt_freespace_planner: kin_map_ is a required parameter and has not been set");
 
   // -------- Construct the problem ------------
   // -------------------------------------------
-  ProblemConstructionInfo pci(config.env_, config.kin_map_);
+  ProblemConstructionInfo pci(config.tesseract_);
   pci.kin = pci.getManipulator(config.manipulator_);
 
   if (pci.kin == nullptr)

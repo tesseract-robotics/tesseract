@@ -65,7 +65,7 @@ public:
   const tesseract_environment::EnvironmentConstPtr& getEnvironmentConst() const;
   const tesseract_scene_graph::SRDFModelConstPtr& getSRDFModel() const;
   const tesseract_kinematics::ForwardKinematicsConstPtrMap& getFwdKinematics();
-  tesseract_kinematics::ForwardKinematicsConstPtr getFwdKinematics(const std::string& name);
+  tesseract_kinematics::ForwardKinematicsConstPtr getFwdKinematics(const std::string& name) const;
 
   // TODO: Add inverse kinematics
 

@@ -112,7 +112,7 @@ static VectorIsometry3d makePuzzleToolPoses()
 
 ProblemConstructionInfo cppMethod()
 {
-  ProblemConstructionInfo pci(tesseract_->getEnvironment(), tesseract_->getFwdKinematics());
+  ProblemConstructionInfo pci(tesseract_);
 
   VectorIsometry3d tool_poses = makePuzzleToolPoses();
 

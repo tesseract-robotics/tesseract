@@ -26,8 +26,7 @@
 #ifndef TESSERACT_PLANNING_PLANNER_TYPES_H
 #define TESSERACT_PLANNING_PLANNER_TYPES_H
 
-#include <tesseract_environment/core/environment.h>
-#include <tesseract_kinematics/core/forward_kinematics.h>
+#include <tesseract/tesseract.h>
 
 namespace tesseract_planning
 {
@@ -37,9 +36,8 @@ typedef std::unordered_map<int, std::string> StatusCodeMap;
 struct PlannerRequest
 {
   std::string name;                                           /**< @brief The name of the planner to use */
-  tesseract_environment::EnvironmentConstPtr env;             /**< @brief The environment to use for planning */
+  tesseract::Tesseract::ConstPtr tesseract;                   /**< @brief Tesseract */
   tesseract_environment::EnvStateConstPtr start_state;        /**< @brief The start state to use for planning */
-  tesseract_kinematics::ForwardKinematicsConstPtrMap kin_map; /**< @brief A map of kinematics objects */
   std::string config;                                         /**< @brief The configuration to use (json file) */
   std::string config_format;                                  /**< @brief The file extension used to parse config */
 };

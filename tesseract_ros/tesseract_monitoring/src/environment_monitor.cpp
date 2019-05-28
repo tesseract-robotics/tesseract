@@ -181,32 +181,40 @@ void EnvironmentMonitor::initialize()
   {
     try
     {
-      if (!discrete_plugin_name_.empty() && !continuous_plugin_name_.empty())
+      discrete_manager_loader_.reset(new DiscreteContactManagerPluginLoader("tesseract_collision", "tesseract_collision::DiscreteContactManager"));
+      for (auto plugin : discrete_manager_loader_->getRegisteredLibraries())
       {
-        // TODO: Should update to loop over all available plugins and register them to simplify switching between plugins.
-        discrete_manager_loader_.reset(new DiscreteContactManagerPluginLoader("tesseract_collision", "tesseract_collision::DiscreteContactManager"));
-        if (discrete_manager_loader_->isClassAvailable(discrete_plugin_name_))
-        {
-          ROS_ERROR("Failed to load tesseract contact checker plugin: %s.", discrete_plugin_name_.c_str());
-        }
-        else
-        {
-          auto fn = [&]() -> tesseract_collision::DiscreteContactManagerPtr { return discrete_manager_loader_->createUniqueInstance(discrete_plugin_name_); };
-//          env_->registerDiscreteContactManager(discrete_plugin_name_, fn);
-//          env_->setActiveDiscreteContactManager(discrete_plugin_name_);
-        }
+        auto fn = [&]() -> tesseract_collision::DiscreteContactManagerPtr { return discrete_manager_loader_->createUniqueInstance(plugin); };
+        tesseract_->getEnvironment()->registerDiscreteContactManager(discrete_manager_loader_->getClassType(plugin), fn);
 
-        continuous_manager_loader_.reset(new ContinuousContactManagerPluginLoader("tesseract_collision", "tesseract_collision::ContinuousContactManager"));
-        if (continuous_manager_loader_->isClassAvailable(continuous_plugin_name_))
-        {
-          ROS_ERROR("Failed to load tesseract contact checker plugin: %s.", continuous_plugin_name_.c_str());
-        }
-        else
-        {
-          auto fn = [&]() -> tesseract_collision::ContinuousContactManagerPtr { return continuous_manager_loader_->createUniqueInstance(continuous_plugin_name_); };
-//          env_->registerContinuousContactManager(continuous_plugin_name_, fn);
-//          env_->setActiveContinuousContactManager(continuous_plugin_name_);
-        }
+        ROS_INFO("Discrete Contact Monitor Registered: %s", discrete_manager_loader_->getClassType(plugin).c_str());
+      }
+
+      if (discrete_manager_loader_->isClassAvailable(discrete_plugin_name_))
+      {
+        ROS_ERROR("Failed to set default tesseract contact checker plugin: %s.", discrete_plugin_name_.c_str());
+      }
+      else
+      {
+        tesseract_->getEnvironment()->setActiveDiscreteContactManager(discrete_manager_loader_->getClassType(discrete_plugin_name_));
+      }
+
+      continuous_manager_loader_.reset(new ContinuousContactManagerPluginLoader("tesseract_collision", "tesseract_collision::ContinuousContactManager"));
+      for (auto plugin : continuous_manager_loader_->getRegisteredLibraries())
+      {
+        auto fn = [&]() -> tesseract_collision::ContinuousContactManagerPtr { return continuous_manager_loader_->createUniqueInstance(plugin); };
+        tesseract_->getEnvironment()->registerContinuousContactManager(continuous_manager_loader_->getClassType(plugin), fn);
+
+        ROS_INFO("Continuous Contact Monitor Registered: %s", continuous_manager_loader_->getClassType(plugin).c_str());
+      }
+
+      if (continuous_manager_loader_->isClassAvailable(continuous_plugin_name_))
+      {
+        ROS_ERROR("Failed to set default tesseract contact checker plugin: %s.", continuous_plugin_name_.c_str());
+      }
+      else
+      {
+        tesseract_->getEnvironment()->setActiveContinuousContactManager(continuous_manager_loader_->getClassType(continuous_plugin_name_));
       }
     }
     catch (int& /*e*/)

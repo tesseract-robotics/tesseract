@@ -278,7 +278,7 @@ Eigen::VectorXd getPositionVectorXd(const ForwardKinematicsConstPtr& kin, const 
 
 std::shared_ptr<ProblemConstructionInfo> cppMethod(const std::string& start, const std::string& finish)
 {
-  std::shared_ptr<ProblemConstructionInfo> pci = std::make_shared<ProblemConstructionInfo>(tesseract_->getEnvironment(), tesseract_->getFwdKinematics());
+  std::shared_ptr<ProblemConstructionInfo> pci = std::make_shared<ProblemConstructionInfo>(tesseract_);
 
   // Populate Basic Info
   pci->basic_info.n_steps = 50;

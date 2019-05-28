@@ -211,6 +211,8 @@ public:
    */
   void setCollisionVisible(bool visible);
 
+  void setCurrentStateVisible(bool visible);
+
   void setStartStateVisible(bool visible);
 
   void setEndStateVisible(bool visible);
@@ -231,6 +233,8 @@ public:
    * To be visible this and isVisible() must both be true.
    */
   bool isCollisionVisible();
+
+  bool isCurrentStateVisible();
 
   bool isStartStateVisible();
 
@@ -359,6 +363,7 @@ protected:
   bool visible_;            ///< Should we show anything at all? (affects visual, collision, axes, and trails)
   bool visual_visible_;     ///< Should we show the visual representation?
   bool collision_visible_;  ///< Should we show the collision representation?
+  bool current_state_visible_;
   bool start_state_visible_;
   bool end_state_visible_;
   bool trajectory_visible_;
