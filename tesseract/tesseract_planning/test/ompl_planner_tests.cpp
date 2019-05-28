@@ -8,23 +8,14 @@
 //#include <ompl/geometric/planners/prm/SPARS.h>
 
 #include <ompl/base/spaces/RealVectorStateSpace.h>
-#include <tesseract_environment/kdl/kdl_env.h>
+#include <tesseract/tesseract.h>
 #include <tesseract_environment/core/utils.h>
-#include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/utils.h>
-#include <tesseract_scene_graph/parser/urdf_parser.h>
-#include <tesseract_scene_graph/parser/srdf_parser.h>
-#include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
-#include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_planning/ompl/continuous_motion_validator.h>
-#include <tesseract_geometry/geometries.h>
-#include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
-#include <tesseract_kinematics/kdl/kdl_fwd_kin_tree.h>
-#include <tesseract_kinematics/core/utils.h>
 
 #include <functional>
 #include <gtest/gtest.h>
 
+using namespace tesseract;
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
 using namespace tesseract_environment;
@@ -85,29 +76,13 @@ TEST(TesseractPlanningUnit, OMPLPlannerUnit)
 {
   // Step 1: Load scene and srdf
   ResourceLocatorFn locator = locateResource;
-  std::string urdf_path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
-  std::string srdf_path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
-  std::pair<tesseract_scene_graph::SceneGraphPtr, tesseract_scene_graph::SRDFModelPtr> data = tesseract_scene_graph::createSceneGraphFromFiles(urdf_path, srdf_path, locator);
-  EXPECT_TRUE(data.first != nullptr && data.second != nullptr);
+  Tesseract::Ptr tesseract = std::make_shared<Tesseract>();
+  boost::filesystem::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
+  boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
+  EXPECT_TRUE(tesseract->init(urdf_path, srdf_path, locator));
 
-  // Step 2: Create a "tesseract" environment
-  KDLEnvPtr env = std::make_shared<KDLEnv>();
-  EXPECT_TRUE(env != nullptr);
-
-  EXPECT_TRUE(env->init(data.first));
-
-  // Register contact manager
-  env->registerDiscreteContactManager("bullet", &tesseract_collision_bullet::BulletDiscreteBVHManager::create);
-  env->registerContinuousContactManager("bullet", &tesseract_collision_bullet::BulletCastBVHManager::create);
-
-  // Set Active contact manager
-  env->setActiveDiscreteContactManager("bullet");
-  env->setActiveContinuousContactManager("bullet");
-
-  addBox(*env);
-
-  // Step 3: Get kinematics objects from the srdf model
-  ForwardKinematicsConstPtrMap kin_map = createKinematicsMap<KDLFwdKinChain, KDLFwdKinTree>(data.first, *data.second);
+  // Step 2: Add box to environment
+  addBox(*(tesseract->getEnvironment()));
 
   // A tesseract plotter makes generating and publishing visualization messages
   // easy
@@ -115,9 +90,9 @@ TEST(TesseractPlanningUnit, OMPLPlannerUnit)
 //      std::make_shared<tesseract::tesseract_ros::ROSBasicPlotting>(env);
 
   // Step 4: Create a planning context for OMPL - this sets up the OMPL state environment for your given chain
-  tesseract_planning::ChainOmplInterface ompl_context(env, kin_map["manipulator"]);
+  tesseract_planning::ChainOmplInterface ompl_context(tesseract->getEnvironment(), tesseract->getFwdKinematics("manipulator"));
 
-  ompl::base::MotionValidatorPtr mv = std::make_shared<tesseract_planning::ContinuousMotionValidator>(ompl_context.spaceInformation(), env, kin_map["manipulator"]);
+  ompl::base::MotionValidatorPtr mv = std::make_shared<tesseract_planning::ContinuousMotionValidator>(ompl_context.spaceInformation(), tesseract->getEnvironment(), tesseract->getFwdKinematics("manipulator"));
   ompl_context.setMotionValidator(mv);
 
   // Step 5: Create an OMPL planner that we want to use
