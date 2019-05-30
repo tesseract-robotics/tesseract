@@ -89,6 +89,18 @@ bool KDLFwdKinTree::calcFwdKin(Eigen::Isometry3d& /*pose*/,
   return false;
 }
 
+bool KDLFwdKinTree::calcFwdKin(VectorIsometry3d& poses,
+                                const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
+{
+  assert(checkInitialized());
+  assert(checkJoints(joint_angles));
+  assert(false);
+
+  CONSOLE_BRIDGE_logError("This method call is not supported by KDLFwdKinTree, must pass link name.");
+
+  return false;
+}
+
 bool KDLFwdKinTree::calcFwdKin(Eigen::Isometry3d& pose,
                                const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                const std::string& link_name) const

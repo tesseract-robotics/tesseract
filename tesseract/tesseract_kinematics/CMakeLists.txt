@@ -22,6 +22,8 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
 add_library(${PROJECT_NAME}_kdl SHARED
   src/kdl/kdl_fwd_kin_chain.cpp
   src/kdl/kdl_fwd_kin_tree.cpp
+  src/kdl/kdl_inv_kin_chain_lma.cpp
+  src/kdl/kdl_inv_kin_chain_nr.cpp
 )
 target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract_scene_graph orocos-kdl console_bridge)
 target_compile_options(${PROJECT_NAME}_kdl PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)

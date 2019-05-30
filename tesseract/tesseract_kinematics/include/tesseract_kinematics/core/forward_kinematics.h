@@ -37,6 +37,8 @@ TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
 
+#include <tesseract_kinematics/core/types.h>
+
 namespace tesseract_kinematics
 {
 /** @brief Forward kinematics functions. */
@@ -53,6 +55,15 @@ public:
    * @return True if calculation successful, False if anything is wrong (including uninitialized BasicKin)
    */
   virtual bool calcFwdKin(Eigen::Isometry3d& pose,
+                          const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
+
+  /**
+   * @brief Calculates pose for all links of robot chain
+   * @param poses Transform of each link relative to root. Same order as getLinkNames()
+   * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
+   * @return True if calculation successful, False if anything is wrong (including uninitialized BasicKin)
+   */
+  virtual bool calcFwdKin(VectorIsometry3d& poses,
                           const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
 
   /**

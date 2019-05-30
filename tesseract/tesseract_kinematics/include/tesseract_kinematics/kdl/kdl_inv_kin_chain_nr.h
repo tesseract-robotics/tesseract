@@ -1,6 +1,6 @@
 /**
- * @file kdl_fwd_kin_chain.h
- * @brief Tesseract KDL forward kinematics chain implementation.
+ * @file kdl_fwd_kin_chain_nr.h
+ * @brief Tesseract KDL inverse kinematics chain Newton-Raphson implementation.
  *
  * @author Levi Armstrong
  * @date Dec 18, 2017
@@ -23,54 +23,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_KINEMATICS_KDL_FWD_KINEMATIC_CHAIN_H
-#define TESSERACT_KINEMATICS_KDL_FWD_KINEMATIC_CHAIN_H
-
+#ifndef TESSERACT_KINEMATICS_KDL_INV_KIN_CHAIN_NR_H
+#define TESSERACT_KINEMATICS_KDL_INV_KIN_CHAIN_NR_H
 #include <tesseract_kinematics/core/macros.h>
 TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 #include <kdl/tree.hpp>
 #include <kdl/chain.hpp>
+#include <kdl/chainiksolverpos_nr.hpp>
+#include <kdl/chainiksolvervel_pinv.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
-#include <kdl/chainjnttojacsolver.hpp>
 #include <unordered_map>
 #include <console_bridge/console.h>
 
 #include <tesseract_scene_graph/graph.h>
 TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
 
-#include <tesseract_kinematics/core/forward_kinematics.h>
+#include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_kinematics/kdl/kdl_utils.h>
 
 namespace tesseract_kinematics
 {
 /**
- * @brief KDL kinematic chain implementation.
- *
- * Typically, just wrappers around the equivalent KDL calls.
- *
+ * @brief KDL Inverse kinematic chain implementation.
  */
-class KDLFwdKinChain : public ForwardKinematics
+class KDLInvKinChainNR : public InverseKinematics
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  KDLFwdKinChain() : initialized_(false) {}
-  bool calcFwdKin(Eigen::Isometry3d& pose,
-                  const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
+  KDLInvKinChainNR() : initialized_(false) {}
 
-  bool calcFwdKin(VectorIsometry3d& poses,
-                  const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
+  bool calcInvKin(Eigen::VectorXd& solutions,
+                  const Eigen::Isometry3d& pose,
+                  const Eigen::Ref<const Eigen::VectorXd>& seed) const override;
 
-  bool calcFwdKin(Eigen::Isometry3d& pose,
-                  const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+  bool calcInvKin(Eigen::VectorXd& solutions,
+                  const Eigen::Isometry3d& pose,
+                  const Eigen::Ref<const Eigen::VectorXd>& seed,
                   const std::string& link_name) const override;
-
-  bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                    const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
-
-  bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                    const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                    const std::string& link_name) const override;
 
   bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const override;
 
@@ -123,7 +113,7 @@ public:
    * @param rhs Input ROSKin object to copy from
    * @return reference to this ROSKin object
    */
-  KDLFwdKinChain& operator=(const KDLFwdKinChain& rhs);
+  KDLInvKinChainNR& operator=(const KDLInvKinChainNR& rhs);
 
 private:
   bool initialized_;                                           /**< Identifies if the object has been initialized */
@@ -131,26 +121,18 @@ private:
   KDLChainData kdl_data_;                                      /**< KDL data parsed from Scene Graph */
   std::string name_;                                           /**< Name of the kinematic chain */
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> fk_solver_; /**< KDL Forward Kinematic Solver */
-  std::unique_ptr<KDL::ChainJntToJacSolver> jac_solver_;       /**< KDL Jacobian Solver */
+  std::unique_ptr<KDL::ChainIkSolverVel_pinv> ik_vel_solver_;  /**< KDL Inverse kinematic velocity solver */
+  std::unique_ptr<KDL::ChainIkSolverPos_NR> ik_solver_;        /**< KDL Inverse kinematic solver */
 
   /** @brief calcFwdKin helper function */
-  bool calcFwdKinHelper(Eigen::Isometry3d& pose,
-                        const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+  bool calcInvKinHelper(Eigen::VectorXd& solutions,
+                        const Eigen::Isometry3d& pose,
+                        const Eigen::Ref<const Eigen::VectorXd>& seed,
                         int segment_num = -1) const;
 
-  /** @brief calcFwdKin helper function */
-  bool calcFwdKinHelper(VectorIsometry3d& poses,
-                        const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                        int segment_num = -1) const;
+};
 
-  /** @brief calcJacobian helper function */
-  bool calcJacobianHelper(KDL::Jacobian& jacobian,
-                          const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                          int segment_num = -1) const;
-
-};  // class KDLKinematicChain
-
-typedef std::shared_ptr<KDLFwdKinChain> KDLFwdKinChainPtr;
-typedef std::shared_ptr<const KDLFwdKinChain> KDLFwdKinChainConstPtr;
+typedef std::shared_ptr<KDLInvKinChainNR> KDLInvKinChainNRPtr;
+typedef std::shared_ptr<const KDLInvKinChainNR> KDLInvKinChainNRConstPtr;
 }
-#endif  // TESSERACT_KDL_KINEMATIC_CHAIN_H
+#endif // TESSERACT_KINEMATICS_KDL_INV_KIN_CHAIN_NR_H
