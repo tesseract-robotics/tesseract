@@ -1,6 +1,6 @@
 /**
- * @file kdl_kinematic_tree.h
- * @brief Tesseract KDL kinematics tree implementation.
+ * @file kdl_fwd_kinematic_tree.h
+ * @brief Tesseract KDL forward kinematics tree implementation.
  *
  * @author Levi Armstrong
  * @date May 27, 2018
@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_KINEMATICS_KDL_KINEMATIC_TREE_H
-#define TESSERACT_KINEMATICS_KDL_KINEMATIC_TREE_H
+#ifndef TESSERACT_KINEMATICS_KDL_FWD_KINEMATIC_TREE_H
+#define TESSERACT_KINEMATICS_KDL_FWD_KINEMATIC_TREE_H
 
 #include <tesseract_kinematics/core/macros.h>
 TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
@@ -54,6 +54,9 @@ public:
 
   KDLFwdKinTree() : initialized_(false) {}
   bool calcFwdKin(Eigen::Isometry3d& pose,
+                  const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
+
+  bool calcFwdKin(VectorIsometry3d& poses,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
 
   bool calcFwdKin(Eigen::Isometry3d& pose,

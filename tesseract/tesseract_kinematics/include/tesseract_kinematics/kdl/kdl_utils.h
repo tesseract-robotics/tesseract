@@ -32,7 +32,9 @@ TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 #include <kdl/jntarray.hpp>
 #include <Eigen/Eigen>
 TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
-
+#include <tesseract_kinematics/core/types.h>
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/parser/kdl_parser.h>
 
 namespace tesseract_kinematics
 {
@@ -52,6 +54,20 @@ inline void KDLToEigen(const KDL::Frame& frame, Eigen::Isometry3d& transform)
   // rotation matrix
   for (int i = 0; i < 9; ++i)
     transform(i / 3, i % 3) = frame.M.data[i];
+}
+
+/**
+ * @brief Convert vector of KDL::Frame to vector Eigen::Isometry3d
+ * @param frames Input KDL Frames
+ * @param transforms Output Eigen transforms (Isometry3d)
+ */
+inline void KDLToEigen(const std::vector<KDL::Frame>& frames, VectorIsometry3d& transforms)
+{
+  transforms.resize(frames.size());
+  for (size_t i = 0; i < frames.size(); ++i)
+  {
+    KDLToEigen(frames[i], transforms[i]);
+  }
 }
 
 /**
@@ -107,5 +123,138 @@ inline void KDLToEigen(const KDL::Jacobian& jacobian, const std::vector<int>& q_
  * @param joints Output KDL joint array
  */
 inline void EigenToKDL(const Eigen::Ref<const Eigen::VectorXd>& vec, KDL::JntArray& joints) { joints.data = vec; }
+
+/**
+ * @brief Convert KDL::JntArray to Eigen::Vector
+ * @param joints Input KDL joint array
+ * @param vec Output Eigen vector
+ */
+inline void KDLToEigen(const KDL::JntArray& joints, Eigen::Ref<Eigen::VectorXd> vec) { vec = joints.data; }
+
+/**
+ * @brief The KDLChainData struct
+ *
+ * This contains common data extracted when parsing
+ * a kdl chain from the scene graph
+ */
+struct KDLChainData
+{
+  KDL::Chain robot_chain;                                     /**< KDL Chain object */
+  KDL::Tree kdl_tree;                                         /**< KDL tree object */
+  std::string base_name;                                      /**< Link name of first link in the kinematic chain */
+  std::string tip_name;                                       /**< Link name of last kink in the kinematic chain */
+  std::vector<std::string> joint_list;                        /**< List of joint names */
+  std::vector<std::string> link_list;                         /**< List of link names */
+  std::vector<std::string> active_link_list;                  /**< List of link names that move with changes in joint values */
+  Eigen::MatrixX2d joint_limits;                              /**< Joint limits */
+  std::map<std::string, int> segment_index;                   /**< A map from chain link name to kdl chain segment number */
+};
+
+/**
+ * @brief Parse KDL chain data from the scene graph
+ * @param results KDL Chain data
+ * @param scene_graph The Scene Graph
+ * @param base_name The base link name of chain
+ * @param tip_name The tip link name of chain
+ * @return True if successful otherwise false
+ */
+inline bool parseSceneGraph(KDLChainData& results,
+                            const tesseract_scene_graph::SceneGraph& scene_graph,
+                            const std::string& base_name,
+                            const std::string& tip_name)
+{
+  results.base_name = base_name;
+  results.tip_name = tip_name;
+
+  if (!tesseract_scene_graph::parseSceneGraph(scene_graph, results.kdl_tree))
+  {
+    CONSOLE_BRIDGE_logError("Failed to parse KDL tree from Scene Graph");
+    return false;
+  }
+
+  if (!results.kdl_tree.getChain(results.base_name, results.tip_name, results.robot_chain))
+  {
+    CONSOLE_BRIDGE_logError("Failed to initialize KDL between links: '%s' and '%s'", results.base_name.c_str(), results.tip_name.c_str());
+    return false;
+  }
+
+  results.joint_list.resize(results.robot_chain.getNrOfJoints());
+  results.joint_limits.resize(results.robot_chain.getNrOfJoints(), 2);
+  std::vector<int> joint_too_segment;
+  joint_too_segment.resize(results.robot_chain.getNrOfJoints());
+  joint_too_segment.back() = -1;
+
+  results.segment_index[results.base_name] = 0;
+  results.link_list.push_back(results.base_name);
+  results.active_link_list.clear();
+  bool found = false;
+  for (unsigned i = 0, j = 0; i < results.robot_chain.getNrOfSegments(); ++i)
+  {
+    const KDL::Segment& seg = results.robot_chain.getSegment(i);
+    const KDL::Joint& jnt = seg.getJoint();
+    results.link_list.push_back(seg.getName());
+
+    if (found)
+      results.active_link_list.push_back(seg.getName());
+
+    if (jnt.getType() == KDL::Joint::None)
+      continue;
+
+    if (!found)
+    {
+      found = true;
+      results.active_link_list.push_back(seg.getName());
+    }
+
+    results.joint_list[j] = jnt.getName();
+    const tesseract_scene_graph::JointConstPtr& joint = scene_graph.getJoint(jnt.getName());
+    results.joint_limits(j, 0) = joint->limits->lower;
+    results.joint_limits(j, 1) = joint->limits->upper;
+    if (j > 0)
+      joint_too_segment[j - 1] = static_cast<int>(i);
+
+    // Need to set limits for continuous joints. TODO: This may not be required
+    // by the optization library but may be nice to have
+    if (joint->type == tesseract_scene_graph::JointType::CONTINUOUS &&
+        std::abs(results.joint_limits(j, 0) - results.joint_limits(j, 1)) <= static_cast<double>(std::numeric_limits<float>::epsilon()))
+    {
+      results.joint_limits(j, 0) = -4 * M_PI;
+      results.joint_limits(j, 1) = +4 * M_PI;
+    }
+    ++j;
+  }
+
+  for (unsigned i = 0; i < results.robot_chain.getNrOfSegments(); ++i)
+  {
+    bool found = false;
+    const KDL::Segment& seg = results.robot_chain.getSegment(i);
+    tesseract_scene_graph::LinkConstPtr link_model = scene_graph.getLink(seg.getName());
+    while (!found)
+    {
+      // Check if the link is the root
+      std::vector<tesseract_scene_graph::JointConstPtr> parent_joints = scene_graph.getInboundJoints(link_model->getName());
+      if (parent_joints.empty())
+      {
+        results.segment_index[seg.getName()] = 0;
+        break;
+      }
+
+      std::string joint_name = parent_joints[0]->getName();
+      std::vector<std::string>::const_iterator it = std::find(results.joint_list.begin(), results.joint_list.end(), joint_name);
+      if (it != results.joint_list.end())
+      {
+        unsigned joint_index = static_cast<unsigned>(it - results.joint_list.begin());
+        results.segment_index[seg.getName()] = joint_too_segment[joint_index];
+        found = true;
+      }
+      else
+      {
+        link_model = scene_graph.getSourceLink(joint_name);
+      }
+    }
+  }
+
+  return true;
+}
 }
 #endif  // TESSERACT_KINEMATICS_KDL_UTILS_H

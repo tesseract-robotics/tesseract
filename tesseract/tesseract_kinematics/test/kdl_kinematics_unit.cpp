@@ -7,6 +7,8 @@ TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
 
 #include "tesseract_kinematics/kdl/kdl_fwd_kin_chain.h"
 #include "tesseract_kinematics/kdl/kdl_fwd_kin_tree.h"
+#include "tesseract_kinematics/kdl/kdl_inv_kin_chain_lma.h"
+#include "tesseract_kinematics/kdl/kdl_inv_kin_chain_nr.h"
 #include "tesseract_kinematics/core/utils.h"
 
 std::string locateResource(const std::string& url)
@@ -225,6 +227,42 @@ void runActiveLinkNamesTest(tesseract_kinematics::ForwardKinematics& kin, bool i
   }
 }
 
+void runInvKinTest(const tesseract_kinematics::InverseKinematics& inv_kin, const tesseract_kinematics::ForwardKinematics& fwd_kin)
+{
+  //////////////////////////////////////////////////////////////////
+  // Test inverse kinematics when tip link is the base of the chain
+  //////////////////////////////////////////////////////////////////
+  Eigen::Isometry3d pose;
+  pose.setIdentity();
+  pose.translation()[0] = 0;
+  pose.translation()[1] = 0;
+  pose.translation()[2] = 1.306;
+
+  Eigen::VectorXd seed;
+  seed.resize(7);
+  seed(0) = -0.785398;
+  seed(1) = 0.785398;
+  seed(2) = -0.785398;
+  seed(3) = 0.785398;
+  seed(4) = -0.785398;
+  seed(5) = 0.785398;
+  seed(6) = -0.785398;
+
+  ///////////////////////////
+  // Test Inverse kinematics
+  ///////////////////////////
+  Eigen::VectorXd solutions;
+  EXPECT_TRUE(inv_kin.calcInvKin(solutions, pose, seed));
+
+  Eigen::Isometry3d result;
+  EXPECT_TRUE(fwd_kin.calcFwdKin(result, solutions));
+  EXPECT_TRUE(pose.translation().isApprox(result.translation(), 1e-4));
+
+  Eigen::Quaterniond rot_pose(pose.rotation());
+  Eigen::Quaterniond rot_result(result.rotation());
+  EXPECT_TRUE(rot_pose.isApprox(rot_result, 1e-3));
+}
+
 TEST(TesseractKinematicsUnit, KDLKinChainActiveLinkNamesUnit)
 {
   tesseract_kinematics::KDLFwdKinChain kin;
@@ -313,6 +351,28 @@ TEST(TesseractKinematicsUnit, KDLKinTreeJacobianUnit)
   EXPECT_TRUE(kin.init(scene_graph, joint_names, start_state, "manip"));
 
   runJacobianTest(kin);
+}
+
+TEST(TesseractKinematicsUnit, KDLKinChainLMAInverseKinematicUnit)
+{
+  tesseract_kinematics::KDLInvKinChainLMA inv_kin;
+  tesseract_kinematics::KDLFwdKinChain fwd_kin;
+  tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
+  EXPECT_TRUE(inv_kin.init(scene_graph, "base_link", "tool0", "manip"));
+  EXPECT_TRUE(fwd_kin.init(scene_graph, "base_link", "tool0", "manip"));
+
+  runInvKinTest(inv_kin, fwd_kin);
+}
+
+TEST(TesseractKinematicsUnit, KDLKinChainNRInverseKinematicUnit)
+{
+  tesseract_kinematics::KDLInvKinChainNR inv_kin;
+  tesseract_kinematics::KDLFwdKinChain fwd_kin;
+  tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
+  EXPECT_TRUE(inv_kin.init(scene_graph, "base_link", "tool0", "manip"));
+  EXPECT_TRUE(fwd_kin.init(scene_graph, "base_link", "tool0", "manip"));
+
+  runInvKinTest(inv_kin, fwd_kin);
 }
 
 int main(int argc, char** argv)
