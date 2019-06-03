@@ -26,7 +26,7 @@
 #ifndef TESSERACT_PLANNING_TRAJOPT_ARRAY_PLANNER_H
 #define TESSERACT_PLANNING_TRAJOPT_ARRAY_PLANNER_H
 
-#include <tesseract_environment/core/macros.h>
+#include <tesseract_planning/core/macros.h>
 TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
 #include <trajopt/problem_description.hpp>
 TESSERACT_PLANNING_IGNORE_WARNINGS_POP
