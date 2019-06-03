@@ -127,7 +127,7 @@ ProblemConstructionInfo cppMethod()
   pci.opt_info.min_trust_box_size = 1e-3;
 
   // Create Kinematic Object
-  pci.kin = tesseract_->getFwdKinematics(pci.basic_info.manip);
+  pci.kin = pci.getManipulator(pci.basic_info.manip);
 
   // Populate Init Info
   EnvStateConstPtr current_state = pci.env->getCurrentState();

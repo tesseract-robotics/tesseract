@@ -54,7 +54,9 @@ class KDLFwdKinChain : public ForwardKinematics
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  KDLFwdKinChain() : initialized_(false) {}
+  KDLFwdKinChain() : initialized_(false), solver_name_("KDLFwdKinChain") {}
+  KDLFwdKinChain(const KDLFwdKinChain& kin);
+
   bool calcFwdKin(Eigen::Isometry3d& pose,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
 
@@ -86,10 +88,12 @@ public:
   unsigned int numJoints() const override { return kdl_data_.robot_chain.getNrOfJoints(); }
   const std::string& getBaseLinkName() const override { return kdl_data_.base_name; }
   const std::string& getName() const override { return name_; }
+  const std::string& getSolverName() const override { return solver_name_; }
+  ForwardKinematicsPtr clone() const override { std::make_shared<KDLFwdKinChain>(*this); }
 
   /**
-   * @brief Initializes KDL Forward Kinematics
-   * Creates KDL::Chain from tesseract scene graph
+   * @brief Initializes Forward Kinematics as chain
+   * Creates a forward kinematic chain object
    * @param scene_graph The Tesseract Scene Graph
    * @param base_link The name of the base link for the kinematic chain
    * @param tip_link The name of the tip link for the kinematic chain
@@ -130,6 +134,7 @@ private:
   tesseract_scene_graph::SceneGraphConstPtr scene_graph_;      /**< Tesseract Scene Graph */
   KDLChainData kdl_data_;                                      /**< KDL data parsed from Scene Graph */
   std::string name_;                                           /**< Name of the kinematic chain */
+  std::string solver_name_;                                    /**< Name of this solver */
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> fk_solver_; /**< KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::ChainJntToJacSolver> jac_solver_;       /**< KDL Jacobian Solver */
 

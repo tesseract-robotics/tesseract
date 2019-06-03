@@ -185,6 +185,7 @@ KDLInvKinChainNR& KDLInvKinChainNR::operator=(const KDLInvKinChainNR& rhs)
 {
   initialized_ = rhs.initialized_;
   name_ = rhs.name_;
+  solver_name_ = rhs.solver_name_;
   kdl_data_ = rhs.kdl_data_;
   fk_solver_.reset(new KDL::ChainFkSolverPos_recursive(kdl_data_.robot_chain));
   ik_vel_solver_.reset(new KDL::ChainIkSolverVel_pinv(kdl_data_.robot_chain));
@@ -193,4 +194,17 @@ KDLInvKinChainNR& KDLInvKinChainNR::operator=(const KDLInvKinChainNR& rhs)
 
   return *this;
 }
+
+KDLInvKinChainNR::KDLInvKinChainNR(const KDLInvKinChainNR& kin)
+{
+  initialized_ = kin.initialized_;
+  name_ = kin.name_;
+  solver_name_ = kin.solver_name_;
+  kdl_data_ = kin.kdl_data_;
+  fk_solver_.reset(new KDL::ChainFkSolverPos_recursive(kdl_data_.robot_chain));
+  ik_vel_solver_.reset(new KDL::ChainIkSolverVel_pinv(kdl_data_.robot_chain));
+  ik_solver_.reset(new KDL::ChainIkSolverPos_NR(kdl_data_.robot_chain, *fk_solver_, *ik_vel_solver_));
+  scene_graph_ = kin.scene_graph_;
+}
+
 }

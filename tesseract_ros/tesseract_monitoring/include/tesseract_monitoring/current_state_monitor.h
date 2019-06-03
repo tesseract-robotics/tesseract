@@ -51,7 +51,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
 #include <tesseract_environment/core/environment.h>
-#include <tesseract_kinematics/core/utils.h>
+#include <tesseract_kinematics/core/forward_kinematics_manager.h>
 
 namespace tesseract_monitoring
 {
@@ -67,14 +67,14 @@ public:
    * @param robot_model The current kinematic model to build on
    * @param tf A pointer to the tf transformer to use
    */
-  CurrentStateMonitor(const tesseract_environment::EnvironmentConstPtr &env, const tesseract_kinematics::ForwardKinematicsConstPtrMap& kinematics_map);
+  CurrentStateMonitor(const tesseract_environment::EnvironmentConstPtr &env, const tesseract_kinematics::ForwardKinematicsManagerConstPtr& kinematics_manager);
 
   /** @brief Constructor.
    *  @param robot_model The current kinematic model to build on
    *  @param tf A pointer to the tf transformer to use
    *  @param nh A ros::NodeHandle to pass node specific options
    */
-  CurrentStateMonitor(const tesseract_environment::EnvironmentConstPtr& env, const tesseract_kinematics::ForwardKinematicsConstPtrMap& kinematics_map, ros::NodeHandle nh);
+  CurrentStateMonitor(const tesseract_environment::EnvironmentConstPtr& env, const tesseract_kinematics::ForwardKinematicsManagerConstPtr& kinematics_manager, ros::NodeHandle nh);
 
   ~CurrentStateMonitor();
 
@@ -179,7 +179,7 @@ private:
   ros::NodeHandle nh_;
   tesseract_environment::EnvironmentConstPtr env_;
   tesseract_environment::EnvState state_;
-  tesseract_kinematics::ForwardKinematicsConstPtrMap kin_map_;
+  tesseract_kinematics::ForwardKinematicsManagerConstPtr kinematics_manager_;
   std::map<std::string, ros::Time> joint_time_;
   bool state_monitor_started_;
   bool copy_dynamics_;  // Copy velocity and effort from joint_state

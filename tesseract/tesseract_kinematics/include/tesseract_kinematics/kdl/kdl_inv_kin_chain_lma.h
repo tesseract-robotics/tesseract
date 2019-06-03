@@ -1,5 +1,5 @@
 /**
- * @file kdl_fwd_kin_chain_lma.h
+ * @file kdl_inv_kin_chain_lma.h
  * @brief Tesseract KDL Inverse kinematics chain Levenberg-Marquardt implementation.
  *
  * @author Levi Armstrong
@@ -49,7 +49,8 @@ class KDLInvKinChainLMA : public InverseKinematics
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  KDLInvKinChainLMA() : initialized_(false) {}
+  KDLInvKinChainLMA() : initialized_(false), solver_name_("KDLInvKinChainLMA") {}
+  KDLInvKinChainLMA(const KDLInvKinChainLMA& kin);
 
   bool calcInvKin(Eigen::VectorXd& solutions,
                   const Eigen::Isometry3d& pose,
@@ -74,10 +75,12 @@ public:
   unsigned int numJoints() const override { return kdl_data_.robot_chain.getNrOfJoints(); }
   const std::string& getBaseLinkName() const override { return kdl_data_.base_name; }
   const std::string& getName() const override { return name_; }
+  const std::string& getSolverName() const override { return solver_name_; }
+  InverseKinematicsPtr clone() const override { std::make_shared<KDLInvKinChainLMA>(*this); }
 
   /**
-   * @brief Initializes KDL Forward Kinematics
-   * Creates KDL::Chain from tesseract scene graph
+   * @brief Initializes Inverse Kinematics as chain
+   * Creates a inverse kinematic chain object
    * @param scene_graph The Tesseract Scene Graph
    * @param base_link The name of the base link for the kinematic chain
    * @param tip_link The name of the tip link for the kinematic chain
@@ -88,7 +91,6 @@ public:
             const std::string& base_link,
             const std::string& tip_link,
             const std::string name);
-
   /**
    * @brief Checks if kinematics has been initialized
    * @return True if init() has completed successfully
@@ -118,6 +120,7 @@ private:
   tesseract_scene_graph::SceneGraphConstPtr scene_graph_;      /**< Tesseract Scene Graph */
   KDLChainData kdl_data_;                                      /**< KDL data parsed from Scene Graph */
   std::string name_;                                           /**< Name of the kinematic chain */
+  std::string solver_name_;                                    /**< Name of this solver */
   std::unique_ptr<KDL::ChainIkSolverPos_LMA> ik_solver_;       /**< KDL Inverse kinematic solver */
 
   /** @brief calcFwdKin helper function */

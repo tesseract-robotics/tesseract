@@ -240,7 +240,7 @@ int main(int argc, char** argv)
   pci.basic_info.use_time = true;
 
   // Create Kinematic Object
-  pci.kin = tesseract_->getFwdKinematics(pci.basic_info.manip);
+  pci.kin = pci.getManipulator(pci.basic_info.manip);
 
   pci.init_info.type = trajopt::InitInfo::STATIONARY;
   pci.init_info.dt = 0.5;
@@ -439,7 +439,7 @@ int main(int argc, char** argv)
   pci_place.basic_info.use_time = true;
 
   // Create Kinematic Object
-  pci_place.kin = tesseract_->getFwdKinematics(pci_place.basic_info.manip);
+  pci_place.kin = pci_place.getManipulator(pci_place.basic_info.manip);
 
   pci_place.init_info.type = trajopt::InitInfo::STATIONARY;
   pci_place.init_info.dt = 0.5;

@@ -179,10 +179,21 @@ KDLInvKinChainLMA& KDLInvKinChainLMA::operator=(const KDLInvKinChainLMA& rhs)
 {
   initialized_ = rhs.initialized_;
   name_ = rhs.name_;
+  solver_name_ = rhs.solver_name_;
   kdl_data_ = rhs.kdl_data_;
   ik_solver_.reset(new KDL::ChainIkSolverPos_LMA(kdl_data_.robot_chain));
   scene_graph_ = rhs.scene_graph_;
 
   return *this;
+}
+
+KDLInvKinChainLMA::KDLInvKinChainLMA(const KDLInvKinChainLMA& kin)
+{
+  initialized_ = kin.initialized_;
+  name_ = kin.name_;
+  solver_name_ = kin.solver_name_;
+  kdl_data_ = kin.kdl_data_;
+  ik_solver_.reset(new KDL::ChainIkSolverPos_LMA(kdl_data_.robot_chain));
+  scene_graph_ = kin.scene_graph_;
 }
 }

@@ -37,6 +37,8 @@ TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
 
+#include <tesseract_kinematics/core/types.h>
+
 namespace tesseract_kinematics
 {
   /** @brief Inverse kinematics functions. */
@@ -116,6 +118,15 @@ namespace tesseract_kinematics
     /** @brief Name of the maniputlator */
     virtual const std::string& getName() const = 0;
 
+    /** @brief Get the name of the solver. Recommned using the name of the class. */
+    virtual const std::string& getSolverName() const = 0;
+
+    /** @brief Clone the forward kinematics object */
+    virtual std::shared_ptr<InverseKinematics> clone() const = 0;
+
   };
+
+  typedef std::shared_ptr<InverseKinematics> InverseKinematicsPtr;
+  typedef std::shared_ptr<const InverseKinematics> InverseKinematicsConstPtr;
 }
 #endif // TESSERACT_KINEMATICS_INVERSE_KINEMATICS_H
