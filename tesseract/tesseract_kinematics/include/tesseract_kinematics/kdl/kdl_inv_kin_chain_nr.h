@@ -51,7 +51,8 @@ class KDLInvKinChainNR : public InverseKinematics
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  KDLInvKinChainNR() : initialized_(false) {}
+  KDLInvKinChainNR() : initialized_(false), solver_name_("KDLInvKinChainNR") {}
+  KDLInvKinChainNR(const KDLInvKinChainNR& kin);
 
   bool calcInvKin(Eigen::VectorXd& solutions,
                   const Eigen::Isometry3d& pose,
@@ -76,6 +77,8 @@ public:
   unsigned int numJoints() const override { return kdl_data_.robot_chain.getNrOfJoints(); }
   const std::string& getBaseLinkName() const override { return kdl_data_.base_name; }
   const std::string& getName() const override { return name_; }
+  const std::string& getSolverName() const override { return solver_name_; }
+  InverseKinematicsPtr clone() const override { std::make_shared<KDLInvKinChainNR>(*this); }
 
   /**
    * @brief Initializes KDL Forward Kinematics
@@ -120,6 +123,7 @@ private:
   tesseract_scene_graph::SceneGraphConstPtr scene_graph_;      /**< Tesseract Scene Graph */
   KDLChainData kdl_data_;                                      /**< KDL data parsed from Scene Graph */
   std::string name_;                                           /**< Name of the kinematic chain */
+  std::string solver_name_;                                    /**< Name of this solver */
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> fk_solver_; /**< KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::ChainIkSolverVel_pinv> ik_vel_solver_;  /**< KDL Inverse kinematic velocity solver */
   std::unique_ptr<KDL::ChainIkSolverPos_NR> ik_solver_;        /**< KDL Inverse kinematic solver */

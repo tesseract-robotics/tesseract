@@ -188,7 +188,7 @@ ProblemConstructionInfo cppMethod()
   pci.basic_info.use_time = false;
 
   // Create Kinematic Object
-  pci.kin = tesseract_->getFwdKinematics(pci.basic_info.manip);
+  pci.kin = pci.getManipulator(pci.basic_info.manip);
 
   pci.opt_info.max_iter = 200;
   pci.opt_info.min_approx_improve = 1e-3;

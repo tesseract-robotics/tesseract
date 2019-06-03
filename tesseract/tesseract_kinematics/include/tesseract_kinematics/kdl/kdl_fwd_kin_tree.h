@@ -52,7 +52,9 @@ class KDLFwdKinTree : public ForwardKinematics
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  KDLFwdKinTree() : initialized_(false) {}
+  KDLFwdKinTree() : initialized_(false), solver_name_("KDLFwdKinTree") {}
+  KDLFwdKinTree(const KDLFwdKinTree& kin);
+
   bool calcFwdKin(Eigen::Isometry3d& pose,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
 
@@ -84,33 +86,22 @@ public:
   unsigned int numJoints() const override { return static_cast<unsigned>(joint_list_.size()); }
   const std::string& getBaseLinkName() const override { return scene_graph_->getRoot(); }
   const std::string& getName() const override { return name_; }
+  const std::string& getSolverName() const override { return solver_name_; }
+  ForwardKinematicsPtr clone() const override { std::make_shared<KDLFwdKinTree>(*this); }
 
   /**
-   * @brief Initializes ROSKin
-   * Creates KDL::Tree from Tesseract Scene Graph, populates joint_list_, joint_limits_, and link_list_
+   * @brief Initializes Forward Kinematics as tree
+   * Creates a forward kinematics tree object
    * @param scene_graph The tesseract scene graph
    * @param joint_names The list of active joints to be considered
-   * @param start_state The initial start state for the tree. This should inlclude all joints in the model
    * @param name The name of the kinematic chain
+   * @param start_state The initial start state for the tree. This should inlclude all joints in the scene graph
    * @return True if init() completes successfully
    */
   bool init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
             const std::vector<std::string>& joint_names,
-            const std::unordered_map<std::string, double>& start_state,
-            const std::string name);
-
-  /**
-   * @brief Initializes ROSKin
-   * Creates KDL::Tree from Tesseract Scene Graph, populates joint_list_, joint_limits_, and link_list_
-   * Note: It will set the initial value for each joint to zero.
-   * @param scene_graph The tesseract scene graph
-   * @param joint_names The list of active joints to be considered
-   * @param name The name of the kinematic chain
-   * @return True if init() completes successfully
-   */
-  bool init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
-            const std::vector<std::string>& joint_names,
-            const std::string name);
+            const std::string name,
+            std::unordered_map<std::string, double> start_state = std::unordered_map<std::string, double>());
 
   /**
    * @brief Checks if kinematics has been initialized
@@ -138,6 +129,7 @@ private:
   tesseract_scene_graph::SceneGraphConstPtr scene_graph_;       /**< Tesseract Scene Graph */
   KDL::Tree kdl_tree_;                                          /**< KDL tree object */
   std::string name_;                                            /**< Name of the kinematic chain */
+  std::string solver_name_;                                     /**< Name of this solver */
   std::vector<std::string> joint_list_;                         /**< List of joint names */
   KDL::JntArray start_state_;                                   /**< Intial state of the tree. Should include all joints in the model. */
   std::vector<int> joint_qnr_;                                  /**< The kdl segment number corrisponding to joint in joint_lists_ */

@@ -545,7 +545,7 @@ void EnvironmentMonitor::startStateMonitor(const std::string& joint_states_topic
   if (tesseract_->getEnvironment())
   {
     if (!current_state_monitor_)
-      current_state_monitor_.reset(new CurrentStateMonitor(tesseract_->getEnvironment(), tesseract_->getFwdKinematics(), root_nh_));
+      current_state_monitor_.reset(new CurrentStateMonitor(tesseract_->getEnvironment(), tesseract_->getFwdKinematicsManager(), root_nh_));
 
     current_state_monitor_->addUpdateCallback(boost::bind(&EnvironmentMonitor::onStateUpdate, this, _1));
     current_state_monitor_->startStateMonitor(joint_states_topic);

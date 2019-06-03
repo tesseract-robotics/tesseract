@@ -288,7 +288,7 @@ TEST(TesseractKinematicsUnit, KDLKinTreeActiveLinkNamesUnit)
   start_state["joint_a6"] = 0;
   start_state["joint_a7"] = 0;
 
-  EXPECT_TRUE(kin.init(scene_graph, joint_names, start_state, "manip"));
+  EXPECT_TRUE(kin.init(scene_graph, joint_names, "manip", start_state));
 
   runActiveLinkNamesTest(kin, true);
 }
@@ -318,7 +318,7 @@ TEST(TesseractKinematicsUnit, KDLKinTreeForwardKinematicUnit)
   start_state["joint_a6"] = 0;
   start_state["joint_a7"] = 0;
 
-  EXPECT_TRUE(kin.init(scene_graph, joint_names, start_state, "manip"));
+  EXPECT_TRUE(kin.init(scene_graph, joint_names, "manip", start_state));
 
   runFwdKinTest(kin);
 }
@@ -348,7 +348,7 @@ TEST(TesseractKinematicsUnit, KDLKinTreeJacobianUnit)
   start_state["joint_a6"] = 0;
   start_state["joint_a7"] = 0;
 
-  EXPECT_TRUE(kin.init(scene_graph, joint_names, start_state, "manip"));
+  EXPECT_TRUE(kin.init(scene_graph, joint_names, "manip", start_state));
 
   runJacobianTest(kin);
 }

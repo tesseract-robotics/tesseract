@@ -30,9 +30,10 @@
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_scene_graph/parser/srdf_parser.h>
 #include <tesseract_scene_graph/utils.h>
-#include <tesseract_kinematics/core/forward_kinematics.h>
+#include <boost/filesystem/path.hpp>
+#include <tesseract_kinematics/core/forward_kinematics_manager.h>
+#include <tesseract_kinematics/core/inverse_kinematics_manager.h>
 #include <memory>
-#include <boost/filesystem.hpp>
 
 namespace tesseract
 {
@@ -61,23 +62,31 @@ public:
   bool init(const boost::filesystem::path& urdf_path, tesseract_scene_graph::ResourceLocatorFn locator);
   bool init(const boost::filesystem::path& urdf_path, const boost::filesystem::path& srdf_path, tesseract_scene_graph::ResourceLocatorFn locator);
 
+  const tesseract_scene_graph::SRDFModelConstPtr& getSRDFModel() const;
+
   const tesseract_environment::EnvironmentPtr& getEnvironment();
   const tesseract_environment::EnvironmentConstPtr& getEnvironmentConst() const;
-  const tesseract_scene_graph::SRDFModelConstPtr& getSRDFModel() const;
-  const tesseract_kinematics::ForwardKinematicsConstPtrMap& getFwdKinematics();
-  tesseract_kinematics::ForwardKinematicsConstPtr getFwdKinematics(const std::string& name) const;
 
-  // TODO: Add inverse kinematics
+  const tesseract_kinematics::ForwardKinematicsManagerPtr& getFwdKinematicsManager();
+  const tesseract_kinematics::ForwardKinematicsManagerConstPtr& getFwdKinematicsManagerConst() const;
+
+  const tesseract_kinematics::InverseKinematicsManagerPtr& getInvKinematicsManager();
+  const tesseract_kinematics::InverseKinematicsManagerConstPtr& getInvKinematicsManagerConst() const;
 
 private:
   bool initialized_;
   tesseract_environment::EnvironmentPtr environment_;
   tesseract_environment::EnvironmentConstPtr environment_const_;
   tesseract_scene_graph::SRDFModelConstPtr srdf_model_;
-  tesseract_kinematics::ForwardKinematicsConstPtrMap fwd_kin_map_;
-//  const tesseract_kinematics::InverseKinematicsConstPtrMap inv_kin_map_;
+  tesseract_kinematics::ForwardKinematicsManagerPtr fwd_kin_manager_;
+  tesseract_kinematics::ForwardKinematicsManagerConstPtr fwd_kin_manager_const_;
+  tesseract_kinematics::InverseKinematicsManagerPtr inv_kin_manager_;
+  tesseract_kinematics::InverseKinematicsManagerConstPtr inv_kin_manager_const_;
+
 
   bool registerDefaultContactManagers();
+  bool registerDefaultInvKinSolvers();
+  bool registerDefaultFwdKinSolvers();
 
   void clear();
 };

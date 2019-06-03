@@ -207,20 +207,8 @@ const Eigen::MatrixX2d& KDLFwdKinTree::getLimits() const { return joint_limits_;
 
 bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
                          const std::vector<std::string>& joint_names,
-                         const std::unordered_map<std::string, double>& start_state,
-                         const std::string name)
-{
-  if (init(scene_graph, joint_names, name))
-  {
-    setStartState(start_state);
-    return true;
-  }
-  return false;
-}
-
-bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
-                         const std::vector<std::string>& joint_names,
-                         const std::string name)
+                         const std::string name,
+                         std::unordered_map<std::string, double> start_state)
 {
   initialized_ = false;
 
@@ -233,7 +221,7 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
   scene_graph_ = scene_graph;
   name_ = name;
 
-  std::unordered_map<std::string, double> start_state;
+  std::unordered_map<std::string, double> start_state_zeros;
 
   if (!scene_graph_->getLink(scene_graph_->getRoot()))
   {
@@ -275,7 +263,7 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
     if (jnt.getType() != KDL::Joint::None)
     {
       joint_to_qnr_[jnt.getName()] = tree_element.second.q_nr;
-      start_state[jnt.getName()] = 0;
+      start_state_zeros[jnt.getName()] = 0;
       std::vector<std::string> children = scene_graph->getJointChildrenNames(jnt.getName());
       active_link_list_.insert(active_link_list_.end(), children.begin(), children.end());
     }
@@ -311,7 +299,10 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
   fk_solver_.reset(new KDL::TreeFkSolverPos_recursive(kdl_tree_));
   jac_solver_.reset(new KDL::TreeJntToJacSolver(kdl_tree_));
 
-  setStartState(start_state);
+  if (start_state.empty())
+    setStartState(start_state_zeros);
+  else
+    setStartState(start_state);
 
   initialized_ = true;
   return initialized_;
@@ -320,6 +311,8 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
 KDLFwdKinTree& KDLFwdKinTree::operator=(const KDLFwdKinTree& rhs)
 {
   initialized_ = rhs.initialized_;
+  name_ = rhs.name_;
+  solver_name_ = rhs.solver_name_;
   kdl_tree_ = rhs.kdl_tree_;
   joint_limits_ = rhs.joint_limits_;
   joint_list_ = rhs.joint_list_;
@@ -333,4 +326,22 @@ KDLFwdKinTree& KDLFwdKinTree::operator=(const KDLFwdKinTree& rhs)
 
   return *this;
 }
+
+KDLFwdKinTree::KDLFwdKinTree(const KDLFwdKinTree& kin)
+{
+  initialized_ = kin.initialized_;
+  name_ = kin.name_;
+  solver_name_ = kin.solver_name_;
+  kdl_tree_ = kin.kdl_tree_;
+  joint_limits_ = kin.joint_limits_;
+  joint_list_ = kin.joint_list_;
+  link_list_ = kin.link_list_;
+  fk_solver_.reset(new KDL::TreeFkSolverPos_recursive(kdl_tree_));
+  jac_solver_.reset(new KDL::TreeJntToJacSolver(kdl_tree_));
+  scene_graph_ = kin.scene_graph_;
+  start_state_ = kin.start_state_;
+  joint_qnr_ = kin.joint_qnr_;
+  joint_to_qnr_ = kin.joint_to_qnr_;
+}
+
 }

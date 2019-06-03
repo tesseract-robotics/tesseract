@@ -38,6 +38,7 @@ TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/types.h>
+#include <tesseract_scene_graph/graph.h>
 
 namespace tesseract_kinematics
 {
@@ -48,6 +49,7 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   virtual ~ForwardKinematics() = default;
+
   /**
    * @brief Calculates tool pose of robot chain
    * @param pose Transform of end-of-tip relative to root
@@ -143,6 +145,12 @@ public:
 
   /** @brief Name of the maniputlator */
   virtual const std::string& getName() const = 0;
+
+  /** @brief Get the name of the solver. Recommned using the name of the class. */
+  virtual const std::string& getSolverName() const = 0;
+
+  /** @brief Clone the forward kinematics object */
+  virtual std::shared_ptr<ForwardKinematics> clone() const = 0;
 
 };
 

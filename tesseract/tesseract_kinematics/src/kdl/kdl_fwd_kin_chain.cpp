@@ -248,6 +248,7 @@ KDLFwdKinChain& KDLFwdKinChain::operator=(const KDLFwdKinChain& rhs)
 {
   initialized_ = rhs.initialized_;
   name_ = rhs.name_;
+  solver_name_ = rhs.solver_name_;
   kdl_data_ = rhs.kdl_data_;
   fk_solver_.reset(new KDL::ChainFkSolverPos_recursive(kdl_data_.robot_chain));
   jac_solver_.reset(new KDL::ChainJntToJacSolver(kdl_data_.robot_chain));
@@ -255,4 +256,16 @@ KDLFwdKinChain& KDLFwdKinChain::operator=(const KDLFwdKinChain& rhs)
 
   return *this;
 }
+
+KDLFwdKinChain::KDLFwdKinChain(const KDLFwdKinChain& kin)
+{
+  initialized_ = kin.initialized_;
+  name_ = kin.name_;
+  solver_name_ = kin.solver_name_;
+  kdl_data_ = kin.kdl_data_;
+  fk_solver_.reset(new KDL::ChainFkSolverPos_recursive(kdl_data_.robot_chain));
+  jac_solver_.reset(new KDL::ChainJntToJacSolver(kdl_data_.robot_chain));
+  scene_graph_ = kin.scene_graph_;
+}
+
 }

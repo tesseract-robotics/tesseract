@@ -44,16 +44,16 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 namespace tesseract_monitoring
 {
-CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::EnvironmentConstPtr& env, const tesseract_kinematics::ForwardKinematicsConstPtrMap& kinematics_map)
-  : CurrentStateMonitor(env, kinematics_map, ros::NodeHandle())
+CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::EnvironmentConstPtr& env, const tesseract_kinematics::ForwardKinematicsManagerConstPtr& kinematics_manager)
+  : CurrentStateMonitor(env, kinematics_manager, ros::NodeHandle())
 {
 }
 
-CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::EnvironmentConstPtr &env, const tesseract_kinematics::ForwardKinematicsConstPtrMap& kinematics_map, ros::NodeHandle nh)
+CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::EnvironmentConstPtr &env, const tesseract_kinematics::ForwardKinematicsManagerConstPtr& kinematics_manager, ros::NodeHandle nh)
   : nh_(nh)
   , env_(env)
   , state_(*env->getCurrentState())
-  , kin_map_(kinematics_map)
+  , kinematics_manager_(kinematics_manager)
   , state_monitor_started_(false)
   , copy_dynamics_(false)
   , error_(std::numeric_limits<double>::epsilon())
@@ -295,7 +295,7 @@ bool CurrentStateMonitor::waitForCompleteState(const std::string& manip, double 
   std::vector<std::string> missing_joints;
   if (!haveCompleteState(missing_joints))
   {
-    const tesseract_kinematics::ForwardKinematicsConstPtr& jmg = kin_map_.at(manip);
+    const tesseract_kinematics::ForwardKinematicsConstPtr& jmg = kinematics_manager_->getFwdKinematicSolver(manip);
     if (jmg)
     {
       std::set<std::string> mj;
