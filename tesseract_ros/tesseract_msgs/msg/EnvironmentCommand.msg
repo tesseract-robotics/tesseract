@@ -13,45 +13,46 @@ uint8 REMOVE_ALLOWED_COLLISION=10
 uint8 REMOVE_ALLOWED_COLLISION_LINK=11
 uint8 UPDATE_JOINT_STATE=12
 
+# Specifies the type of command. Dictates which of the fields below are used
 uint8 command
 
-# ADD
+# ADD - Adds a link and the associated joint to the environment
 tesseract_msgs/Link add_link
 tesseract_msgs/Joint add_joint
 
-# MOVE_LINK
+# MOVE_LINK - Changes the joint associated with the link
 tesseract_msgs/Joint move_link_joint
 
-# MOVE_JOINT
+# MOVE_JOINT - Changes the parent link associated with the joint
 string move_joint_name
 string move_joint_parent_link
 
-# REMOVE_LINK
+# REMOVE_LINK - Removes the link from the environment
 string remove_link
 
-# REMOVE_JOINT
+# REMOVE_JOINT - Removes the joint from the environment
 string remove_joint
 
-# CHANTE_LINK_ORIGIN
+# CHANGE_LINK_ORIGIN - Changes the origin of the link
 string change_link_orgin_name
 geometry_msgs/Pose change_link_orgin_pose
 
-# CHANGE_JOINT_ORIGIN
+# CHANGE_JOINT_ORIGIN - Changes the origin of the joint
 string change_joint_orgin_name
 geometry_msgs/Pose change_joint_orgin_pose
 
-# CHANGE_LINK_COLLISION_ENABLED
+# CHANGE_LINK_COLLISION_ENABLED - Enables/Disables collisions for the link
 string change_link_collision_enabled_name
 bool change_link_collision_enabled_value
 
-# CHANGE_LINK_VISIBILITY
+# CHANGE_LINK_VISIBILITY - Enables/Disables visibility for the link
 string change_link_visibility_name
 bool change_link_visibility_value
 
-# ADD_ALLOWED_COLLISION
+# ADD_ALLOWED_COLLISION - Adds an allowable collision to the allowable collision matrix
 tesseract_msgs/AllowedCollisionEntry add_allowed_collision
 
-# REMOVE_ALLOWED_COLLISION
+# REMOVE_ALLOWED_COLLISION - Removes an allowable collision from the allowable collision matrix
 tesseract_msgs/AllowedCollisionEntry remove_allowed_collision
 
 # REMOVE_ALLOWED_COLLISION_LINK
