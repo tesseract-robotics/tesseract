@@ -198,6 +198,17 @@ public:
   virtual bool moveJoint(const std::string& joint_name, const std::string& parent_link);
 
   /**
+   * @brief Changes the origin associated with the joint
+   *
+   * Note: This is the origin as in the "origin" tag in the URDF. This is the location of the
+   * joint in the frame of the parent link.
+   * @param joint_name Name of the joint to be updated
+   * @param new_origin New transform to be set as the origin
+   * @return
+   */
+  virtual bool changeJointOrigin(const std::string& joint_name, const Eigen::Isometry3d& new_origin);
+
+  /**
    * @brief Set whether a link should be considered during collision checking
    * @param enabled True if should be condisdered during collision checking, otherwise false
    */
