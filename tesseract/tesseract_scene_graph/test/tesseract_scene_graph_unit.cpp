@@ -407,6 +407,35 @@ TEST(TesseractSceneGraphUnit, TestAllowedCollisionMatrix)
   EXPECT_EQ(acm.getAllAllowedCollisions().size(), 0);
 }
 
+TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)
+{
+  using namespace tesseract_scene_graph;
+  SceneGraph g;
+
+  Link link_1("link_n1");
+  Link link_2("link_n2");
+
+  Joint joint_1("joint_n1");
+  joint_1.parent_link_name = "link_n1";
+  joint_1.child_link_name = "link_n2";
+  joint_1.type = JointType::FIXED;
+
+  g.addLink(link_1);
+  g.addLink(link_2);
+  g.addJoint(joint_1);
+
+  Eigen::Isometry3d new_origin = Eigen::Isometry3d::Identity();
+  new_origin.translation()(0) += 1.234;
+  g.changeJointOrigin("joint_n1", new_origin);
+
+  // Check that the transform got updated and the edge was recalculated.
+  EXPECT_TRUE(g.getJoint("joint_n1")->parent_to_joint_origin_transform.isApprox(new_origin));
+  tesseract_scene_graph::SceneGraph::edge_descriptor e = g.getEdge("joint_n1");
+  double d = boost::get(boost::edge_weight_t(), g)[e];
+  EXPECT_EQ(d, g.getJoint("joint_n1")->parent_to_joint_origin_transform.translation().norm());
+}
+
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

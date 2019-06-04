@@ -141,6 +141,31 @@ void runMoveLinkandJointTest(const tesseract_environment::EnvironmentPtr& env)
   env->getSceneGraph()->saveDOT("/tmp/after_move_joint_unit.dot");
 }
 
+void runChangeJointOriginTest(const tesseract_environment::EnvironmentPtr& env)
+{
+  Link link_1("link_n1");
+
+  Joint joint_1("joint_n1");
+  joint_1.parent_link_name = env->getRootLinkName();
+  joint_1.child_link_name = "link_n1";
+  joint_1.type = JointType::FIXED;
+
+  env->addLink(link_1, joint_1);
+  EnvStateConstPtr state = env->getCurrentState();
+  ASSERT_TRUE(state->transforms.find(link_1.getName()) != state->transforms.end());
+
+  env->getSceneGraph()->saveDOT("/tmp/before_change_joint_origin_unit.dot");
+
+  Eigen::Isometry3d new_origin = Eigen::Isometry3d::Identity();
+  new_origin.translation()(0) += 1.234;
+  env->changeJointOrigin("joint_n1", new_origin);
+
+  // Check that the origin got updated
+  EXPECT_TRUE(env->getJoint("joint_n1")->parent_to_joint_origin_transform.isApprox(new_origin));
+
+  env->getSceneGraph()->saveDOT("/tmp/after_change_joint_origin_unit.dot");
+}
+
 TEST(TesseractEnvironmentUnit, KDLEnvCloneContactManagerUnit)
 {
   tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
@@ -211,6 +236,30 @@ TEST(TesseractEnvironmentUnit, KDLEnvMoveLinkandJoint)
   EXPECT_TRUE(env->setActiveContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name()));
 
   runMoveLinkandJointTest(env);
+}
+
+TEST(TesseractEnvironmentUnit, KDLEnvChangeJointOrigin)
+{
+  SceneGraphPtr scene_graph = getSceneGraph();
+  EXPECT_TRUE(scene_graph != nullptr);
+
+  KDLEnvPtr env(new KDLEnv());
+  EXPECT_TRUE(env != nullptr);
+
+  bool success = env->init(scene_graph);
+  EXPECT_TRUE(success);
+
+  // Register contact manager
+  EXPECT_TRUE(env->registerDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name(),
+                                                  &tesseract_collision_bullet::BulletDiscreteBVHManager::create));
+  EXPECT_TRUE(env->registerContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name(),
+                                                    &tesseract_collision_bullet::BulletCastBVHManager::create));
+
+  // Set Active contact manager
+  EXPECT_TRUE(env->setActiveDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name()));
+  EXPECT_TRUE(env->setActiveContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name()));
+
+  runChangeJointOriginTest(env);
 }
 
 int main(int argc, char** argv)
