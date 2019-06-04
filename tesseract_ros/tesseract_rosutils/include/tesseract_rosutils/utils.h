@@ -987,7 +987,11 @@ static inline bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const 
     }
     case tesseract_environment::CommandType::CHANGE_JOINT_ORIGIN:
     {
-      assert(false);
+      command_msg.command = tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_ORIGIN;
+      const tesseract_environment::ChangeJointOriginCommand& cmd = static_cast<const tesseract_environment::ChangeJointOriginCommand&>(command);
+      command_msg.change_joint_orgin_name = cmd.getJointName();
+      tf::poseEigenToMsg(cmd.getOrigin(), command_msg.change_joint_orgin_pose);
+      return true;
     }
     case tesseract_environment::CommandType::CHANGE_LINK_COLLISION_ENABLED:
     {
@@ -1235,7 +1239,9 @@ static inline bool processMsg(tesseract_environment::Environment& env, const std
       }
       case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_ORIGIN:
       {
-        assert(false);
+        Eigen::Isometry3d pose;
+        tf::poseMsgToEigen(command.change_joint_orgin_pose, pose);
+        return env.changeJointOrigin(command.change_joint_orgin_name, pose);
       }
       case tesseract_msgs::EnvironmentCommand::CHANGE_LINK_COLLISION_ENABLED:
       {

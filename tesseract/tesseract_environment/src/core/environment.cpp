@@ -185,6 +185,19 @@ bool Environment::moveJoint(const std::string& joint_name, const std::string& pa
   return true;
 }
 
+bool Environment::changeJointOrigin(const std::string& joint_name, const Eigen::Isometry3d& new_origin)
+{
+  if (!scene_graph_->changeJointOrigin(joint_name, new_origin))
+    return false;
+
+  ++revision_;
+  commands_.push_back(std::make_shared<ChangeJointOriginCommand>(joint_name, new_origin));
+
+  environmentChanged();
+
+  return true;
+}
+
 void Environment::setLinkCollisionEnabled(const std::string& name, bool enabled)
 {
   if (discrete_manager_ != nullptr)

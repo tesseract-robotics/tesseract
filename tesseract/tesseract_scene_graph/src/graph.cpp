@@ -240,6 +240,28 @@ std::vector<JointConstPtr> SceneGraph::getJoints() const
   return joints;
 }
 
+bool SceneGraph::changeJointOrigin(const std::string& name, const Eigen::Isometry3d& new_origin)
+{
+  auto found = joint_map_.find(name);
+
+  if (found == joint_map_.end())
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint origin with name (%s) which does not exist in scene graph.", name.c_str());
+    return false;
+  }
+
+  // Update transform associated with the joint
+  JointPtr joint = found->second.first;
+  joint->parent_to_joint_origin_transform = new_origin;
+
+  // Update the edge value associated with the joint
+  Edge e = getEdge(name);
+  double d = joint->parent_to_joint_origin_transform.translation().norm();
+  boost::put(boost::edge_weight_t(), *this, e, d);
+
+  return true;
+}
+
 void SceneGraph::addAllowedCollision(const std::string& link_name1,
                                      const std::string& link_name2,
                                      const std::string& reason)
