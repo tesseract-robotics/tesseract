@@ -157,8 +157,16 @@ public:
   const std::string& getName() const { return name_; }
 
   rviz::Property* getLinkProperty() const { return link_property_; }
-  Ogre::SceneNode* getVisualNode() const { return visual_start_node_; }
-  Ogre::SceneNode* getCollisionNode() const { return collision_start_node_; }
+
+  Ogre::SceneNode* getCurrentVisualNode() const { return visual_current_node_; }
+  Ogre::SceneNode* getCurrentCollisionNode() const { return collision_current_node_; }
+
+  Ogre::SceneNode* getStartVisualNode() const { return visual_start_node_; }
+  Ogre::SceneNode* getStartCollisionNode() const { return collision_start_node_; }
+
+  Ogre::SceneNode* getEndVisualNode() const { return visual_end_node_; }
+  Ogre::SceneNode* getEndCollisionNode() const { return collision_end_node_; }
+
   VisualizationWidget* getEnvVisualization() const { return env_; }
   // Remove link_property_ from its old parent and add to new_parent.  If new_parent==nullptr then leav unparented.
   void setParentProperty(rviz::Property* new_parent);

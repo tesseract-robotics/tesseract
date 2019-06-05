@@ -39,13 +39,7 @@
 
 #include <tesseract_environment/core/macros.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
-#include <rviz/properties/string_property.h>
 #include <ros/package.h>
-
-#include <tesseract_environment/kdl/kdl_env.h>
-#include <tesseract_scene_graph/parser/urdf_parser.h>
-#include <tesseract_scene_graph/parser/srdf_parser.h>
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_rosutils/utils.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
