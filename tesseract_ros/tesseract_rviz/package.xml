@@ -20,5 +20,6 @@
   <export>
     <rviz plugin="${prefix}/tesseract_rviz_state_plugin_description.xml"/>
     <rviz plugin="${prefix}/tesseract_rviz_trajectory_plugin_description.xml"/>
+    <rviz plugin="${prefix}/tesseract_rviz_manipulation_plugin_description.xml"/>
   </export>
 </package>

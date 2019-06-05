@@ -53,25 +53,16 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 #include <tesseract_rviz/render_tools/environment_widget.h>
 #include <tesseract_rviz/render_tools/trajectory_monitor_widget.h>
 
-
-namespace rviz
-{
-class StringProperty;
-}
-
 namespace tesseract_rviz
 {
 class TesseractTrajectoryDisplay : public rviz::Display
 {
   Q_OBJECT
-  // friend class TrajectoryVisualization; // allow the visualization class to access the display
 
 public:
   TesseractTrajectoryDisplay();
 
   ~TesseractTrajectoryDisplay() override;
-
-  void loadEnv();
 
   void update(float wall_dt, float ros_dt) override;
   void reset() override;
