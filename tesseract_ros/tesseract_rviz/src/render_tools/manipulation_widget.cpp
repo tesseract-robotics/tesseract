@@ -181,28 +181,17 @@ void ManipulationWidget::onNameChange(const QString& name)
 void ManipulationWidget::changedManipulator()
 {
   LinkWidget* link = visualization_->getLink("tool0");
+  root_interactive_node_->setPosition(link->getPosition());
+  root_interactive_node_->setOrientation(link->getOrientation());
+
   interactive_marker_ = boost::make_shared<InteractiveMarker>("Test", "Move Robot", root_interactive_node_, context_);
-
-  InteractiveMarkerControl::Ptr control = interactive_marker_->createInteractiveControl("Test", "Move Rotate 3D",
-                                                                                        InteractiveMode::MOVE_ROTATE_3D, OrientationMode::INHERIT,
-                                                                                        true, link->getOrientation());
-  makeSphere(*control, 0.35f);
-
-  InteractiveMarkerControl::Ptr control1 = interactive_marker_->createInteractiveControl("Test1", "Move Axis",
-                                                                                         InteractiveMode::MOVE_AXIS, OrientationMode::INHERIT,
-                                                                                         true, link->getOrientation());
-  makeArrow(*control1, 0.5);
-  makeArrow(*control1, -0.5);
-
-  InteractiveMarkerControl::Ptr control2 = interactive_marker_->createInteractiveControl("Test2", "Rotate Axis",
-                                                                                         InteractiveMode::ROTATE_AXIS, OrientationMode::INHERIT,
-                                                                                         true, link->getOrientation());
-  makeDisc(*control2, 0.5);
-
+  make6Dof(*interactive_marker_);
 
   interactive_marker_->setShowAxes(false);
-  interactive_marker_->setShowVisualAids(true);
-  interactive_marker_->setPose(link->getPosition(), link->getOrientation(), "Test");
+  interactive_marker_->setShowVisualAids(false);
+  interactive_marker_->setShowDescription(false);
+
+//  interactive_marker_->setPose(link->getPosition(), link->getOrientation(), "Test");
 
   connect(interactive_marker_.get(),
           SIGNAL(userFeedback(visualization_msgs::InteractiveMarkerFeedback&)),

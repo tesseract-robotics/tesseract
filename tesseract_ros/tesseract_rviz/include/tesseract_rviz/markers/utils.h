@@ -50,6 +50,7 @@ namespace tesseract_rviz
 class MarkerBase;
 class ArrowMarker;
 class InteractiveMarkerControl;
+class InteractiveMarker;
 
 enum class MarkerType
 {
@@ -94,8 +95,11 @@ void makeDisc(InteractiveMarkerControl& control, float width = 0.3f);
 /** @brief Get the default orientation */
 Ogre::ColourValue getDefaultColor(const Ogre::Quaternion &quat);
 
-///// create a control which shows the description of the interactive marker
-//visualization_msgs::InteractiveMarkerControl makeTitle( const visualization_msgs::InteractiveMarker &msg );
+/** @brief create a control which shows the description of the interactive marker */
+void makeTitle(InteractiveMarkerControl& control, const std::string& text);
+
+/** @brief Make a 6 dof interactive marker */
+void make6Dof(InteractiveMarker& interactive_marker);
 
 
 }

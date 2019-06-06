@@ -31,6 +31,8 @@
 #include <tesseract_rviz/markers/shape_marker.h>
 #include <tesseract_rviz/markers/arrow_marker.h>
 #include <tesseract_rviz/markers/triangle_list_marker.h>
+#include <tesseract_rviz/markers/text_view_facing_marker.h>
+#include <tesseract_rviz/interactive_marker/interactive_marker.h>
 #include <tesseract_rviz/interactive_marker/interactive_marker_control.h>
 
 #include <rviz/display_context.h>
@@ -40,46 +42,6 @@
 
 namespace tesseract_rviz
 {
-
-MarkerBase* createMarker(const std::string &ns,
-                         const int id,
-                         MarkerType marker_type,
-                         rviz::DisplayContext* context,
-                         Ogre::SceneNode* parent_node)
-{
-  switch (marker_type)
-  {
-  case MarkerType::CUBE:
-  case MarkerType::CYLINDER:
-  case MarkerType::SPHERE:
-    return new ShapeMarker(ns, id, marker_type, context, parent_node);
-  case MarkerType::ARROW:
-    return new ArrowMarker(ns, id, context, parent_node);
-
-//  case MarkerType::LINE_STRIP:
-//     return new rviz::LineStripMarker(owner, context, parent_node);
-
-//  case MarkerType::LINE_LIST:
-//     return new rviz::LineListMarker(owner, context, parent_node);
-
-//  case MarkerType::SPHERE_LIST:
-//  case MarkerType::CUBE_LIST:
-//  case MarkerType::POINTS:
-//     return new rviz::PointsMarker(owner, context, parent_node);
-
-//  case MarkerType::TEXT_VIEW_FACING:
-//     return new rviz::TextViewFacingMarker(owner, context, parent_node);
-
-//  case MarkerType::MESH_RESOURCE:
-//     return new rviz::MeshResourceMarker(owner, context, parent_node);
-
-//  case MarkerType::TRIANGLE_LIST:
-//     return new rviz::TriangleListMarker(owner, context, parent_node);
-
-  default:
-     return nullptr;
-  }
-}
 
 void makeSphere(InteractiveMarkerControl &control, float radius)
 {
@@ -100,7 +62,7 @@ void makeArrow(InteractiveMarkerControl &control, float pos )
   float dist = fabs(pos);
   float dir = pos > 0 ? 1 : -1;
 
-  float inner = 0.5f * dist;
+  float inner = dist;
   float outer = inner + 0.4f;
 
   Ogre::Vector3 point1, point2;
@@ -114,6 +76,24 @@ void makeArrow(InteractiveMarkerControl &control, float pos )
 
   ArrowMarker::Ptr marker = boost::make_shared<ArrowMarker>(control.getName(), 0, point1, point2, scale, control.getDisplayContext(), control.getMarkerSceneNode());
   marker->setColor(default_color.r, default_color.g, default_color.b, default_color.a);
+  marker->setOrientation(control.getControlOrientation());
+  control.addMarker(marker);
+}
+
+void makeTitle(InteractiveMarkerControl& control, const std::string& text)
+{
+  Ogre::ColourValue default_color(1, 1, 1, 1);
+  Ogre::Vector3 scale;
+  scale.x = control.getSize() * 0.15f;
+  scale.y = control.getSize() * 0.15f;
+  scale.z = control.getSize() * 0.15f;
+  Ogre::Vector3 pos = control.getMarkerSceneNode()->getPosition();
+  pos.z+= scale.z * 1.4f;
+
+  TextViewFacingMarker::Ptr marker = boost::make_shared<TextViewFacingMarker>(control.getName(), 0, text, control.getDisplayContext(), control.getMarkerSceneNode());
+  marker->setColor(default_color.r, default_color.g, default_color.b, default_color.a);
+  marker->setScale(scale);
+  marker->setPosition(pos);
   control.addMarker(marker);
 }
 
@@ -246,8 +226,9 @@ void makeDisc(InteractiveMarkerControl &control, float width )
       break;
   }
 
-  TriangleListMarker::Ptr disc = boost::make_shared<TriangleListMarker>(control.getName(), 0, control.getDisplayContext(), control.getMarkerSceneNode(), default_color, points, colors);
-  control.addMarker(disc);
+  TriangleListMarker::Ptr marker = boost::make_shared<TriangleListMarker>(control.getName(), 0, control.getDisplayContext(), control.getMarkerSceneNode(), default_color, points, colors);
+  marker->setOrientation(control.getControlOrientation());
+  control.addMarker(marker);
 }
 
 //void makeViewFacingButton( const visualization_msgs::InteractiveMarker &msg,
@@ -276,6 +257,49 @@ void makeDisc(InteractiveMarkerControl &control, float width )
 //  control.markers.push_back( marker );
 //}
 
+void make6Dof(InteractiveMarker& interactive_marker)
+{
+  InteractiveMarkerControl::Ptr control = interactive_marker.createInteractiveControl("move_rotate_3d", "Move Rotate 3D",
+                                                                                      InteractiveMode::MOVE_ROTATE_3D, OrientationMode::INHERIT,
+                                                                                      true, Ogre::Quaternion(1, 0, 0, 0));
+  makeSphere(*control, 0.5f);
+
+
+  InteractiveMarkerControl::Ptr control1 = interactive_marker.createInteractiveControl("move_x", "Move along X Axis",
+                                                                                       InteractiveMode::MOVE_AXIS, OrientationMode::INHERIT,
+                                                                                       true, Ogre::Quaternion(1, 1, 0, 0));
+  makeArrow(*control1, 0.5);
+  makeArrow(*control1, -0.5);
+
+  InteractiveMarkerControl::Ptr control4 = interactive_marker.createInteractiveControl("rotate_x", "Rotate around X Axis",
+                                                                                       InteractiveMode::ROTATE_AXIS, OrientationMode::INHERIT,
+                                                                                       true, Ogre::Quaternion(1, 1, 0, 0));
+  makeDisc(*control4, 0.3f);
+
+
+  InteractiveMarkerControl::Ptr control2 = interactive_marker.createInteractiveControl("move_y", "Move along Y Axis",
+                                                                                       InteractiveMode::MOVE_AXIS, OrientationMode::INHERIT,
+                                                                                       true, Ogre::Quaternion(1, 0, 0, 1));
+  makeArrow(*control2, 0.5);
+  makeArrow(*control2, -0.5);
+
+  InteractiveMarkerControl::Ptr control5 = interactive_marker.createInteractiveControl("rotate_y", "Rotate around Y Axis",
+                                                                                       InteractiveMode::ROTATE_AXIS, OrientationMode::INHERIT,
+                                                                                       true, Ogre::Quaternion(1, 0, 0, 1));
+  makeDisc(*control5, 0.3f);
+
+  InteractiveMarkerControl::Ptr control3 = interactive_marker.createInteractiveControl("move_z", "Move along Z Axis",
+                                                                                       InteractiveMode::MOVE_AXIS, OrientationMode::INHERIT,
+                                                                                       true, Ogre::Quaternion(1, 0, 1, 0));
+  makeArrow(*control3, 0.5);
+  makeArrow(*control3, -0.5);
+
+  InteractiveMarkerControl::Ptr control6 = interactive_marker.createInteractiveControl("rotate_z", "Rotate around Z Axis",
+                                                                                       InteractiveMode::ROTATE_AXIS, OrientationMode::INHERIT,
+                                                                                       true, Ogre::Quaternion(1, 0, 1, 0));
+  makeDisc(*control6, 0.3f);
+}
+
 Ogre::ColourValue getDefaultColor(const Ogre::Quaternion &quat)
 {
   Ogre::Vector3 bt_x_axis = quat * Ogre::Vector3(1,0,0);
@@ -298,30 +322,4 @@ Ogre::ColourValue getDefaultColor(const Ogre::Quaternion &quat)
   return color;
 }
 
-
-//visualization_msgs::InteractiveMarkerControl makeTitle( const visualization_msgs::InteractiveMarker &msg )
-//{
-//  visualization_msgs::Marker marker;
-
-//  marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-//  marker.scale.x = msg.scale * 0.15;
-//  marker.scale.y = msg.scale * 0.15;
-//  marker.scale.z = msg.scale * 0.15;
-//  marker.color.r = 1.0;
-//  marker.color.g = 1.0;
-//  marker.color.b = 1.0;
-//  marker.color.a = 1.0;
-//  marker.pose.position.z = msg.scale * 1.4;
-//  marker.text = msg.description;
-
-//  visualization_msgs::InteractiveMarkerControl control;
-//  control.interaction_mode = visualization_msgs::InteractiveMarkerControl::NONE;
-//  control.orientation_mode = visualization_msgs::InteractiveMarkerControl::VIEW_FACING;
-//  control.always_visible = true;
-//  control.markers.push_back( marker );
-
-//  autoComplete( msg, control );
-
-//  return control;
-//}
 }

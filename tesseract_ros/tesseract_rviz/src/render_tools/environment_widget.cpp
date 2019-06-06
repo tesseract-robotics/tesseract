@@ -29,6 +29,7 @@ EnvironmentWidget::EnvironmentWidget(rviz::Property* widget, rviz::Display* disp
   , update_required_(false)
   , tesseract_(nullptr)
   , visualization_(nullptr)
+  , load_tesseract_(false)
 {
   urdf_description_property_ =
       new rviz::StringProperty("URDF Description",

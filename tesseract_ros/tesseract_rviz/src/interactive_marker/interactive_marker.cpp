@@ -51,6 +51,7 @@
 
 #include <tesseract_rviz/interactive_marker/integer_action.h>
 #include <tesseract_rviz/interactive_marker/interactive_marker.h>
+#include <tesseract_rviz/markers/utils.h>
 
 namespace tesseract_rviz
 {
@@ -72,8 +73,11 @@ InteractiveMarker::InteractiveMarker(const std::string& name,
 , description_(description)
 , scale_(scale)
 , frame_locked_(false)
+, position_(scene_node->getPosition())
+, orientation_(scene_node->getOrientation())
 {
   reference_node_ = scene_node->createChildSceneNode();
+
   axes_ = new rviz::Axes( context->getSceneManager(), reference_node_, 1, 0.05f );
 
   axes_->setPosition(position_);
@@ -84,6 +88,17 @@ InteractiveMarker::InteractiveMarker(const std::string& name,
   //  has_menu_ = message.menu_entries.size() > 0;
 
   updateReferencePose();
+
+  description_control_ = boost::make_shared<InteractiveMarkerControl>(name_,
+                                                                      description_,
+                                                                      context_,
+                                                                      reference_node_,
+                                                                      this,
+                                                                      InteractiveMode::NONE,
+                                                                      OrientationMode::VIEW_FACING,
+                                                                      true,
+                                                                      Ogre::Quaternion());
+  makeTitle(*description_control_, description_);
 
   //create menu
   menu_entries_.clear();

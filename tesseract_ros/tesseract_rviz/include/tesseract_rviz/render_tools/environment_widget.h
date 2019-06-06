@@ -66,8 +66,6 @@ private Q_SLOTS:
   void changedAllLinks();
 
 protected:
-
-
   rviz::Property* widget_;
   rviz::Display* display_;
   VisualizationWidget::Ptr visualization_;
