@@ -26,13 +26,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef TESSERACT_RVIZ_MARKERS_ARROW_MARKER_H
-#define TESSERACT_RVIZ_MARKERS_ARROW_MARKER_H
+#ifndef TESSERACT_RVIZ_MARKERS_TEXT_VIEW_FACING_MARKER_H
+#define TESSERACT_RVIZ_MARKERS_TEXT_VIEW_FACING_MARKER_H
 
-#ifndef Q_MOC_RUN
 #include <tesseract_rviz/markers/marker_base.h>
-#include <OgreVector3.h>
-#endif
 
 namespace Ogre
 {
@@ -41,33 +38,29 @@ class SceneNode;
 
 namespace rviz
 {
-class Arrow;
-class DisplayContext;
+class MovableText;
 }
 
 namespace tesseract_rviz
 {
 
-class ArrowMarker: public MarkerBase
+class TextViewFacingMarker : public MarkerBase
 {
 public:
-  using Ptr = boost::shared_ptr<ArrowMarker>;
-  using ConstPtr = boost::shared_ptr<const ArrowMarker>;
+  using Ptr = boost::shared_ptr<TextViewFacingMarker>;
+  using ConstPtr = boost::shared_ptr<const TextViewFacingMarker>;
 
-  ArrowMarker(const std::string &ns,
-              const int id,
-              rviz::DisplayContext* context,
-              Ogre::SceneNode* parent_node);
+  TextViewFacingMarker(const std::string &ns,
+                       const int id,
+                       const std::string &caption,
+                       rviz::DisplayContext* context,
+                       Ogre::SceneNode* parent_node);
 
-  ArrowMarker(const std::string &ns,
-              const int id,
-              Ogre::Vector3 point1,
-              Ogre::Vector3 point2,
-              Ogre::Vector3 scale,
-              rviz::DisplayContext* context,
-              Ogre::SceneNode* parent_node );
+  ~TextViewFacingMarker() override;
 
-  ~ArrowMarker() override;
+  void setText(const std::string& text);
+
+  void setOrientation( const Ogre::Quaternion& /*orientation*/ ) override {}
 
   void setScale(Ogre::Vector3 scale) override;
   Ogre::Vector3 getScale() const override;
@@ -77,12 +70,9 @@ public:
   std::set<Ogre::MaterialPtr> getMaterials() override;
 
 protected:
-  virtual void setDefaultProportions();
+  rviz::MovableText* text_;
 
-  rviz::Arrow *arrow_;
-  Ogre::SceneNode *child_scene_node_;
-  Ogre::Vector3 scale_;
 };
 
 }
-#endif // TESSERACT_RVIZ_MARKERS_ARROW_MARKER_H
+#endif // TESSERACT_RVIZ_MARKERS_TEXT_VIEW_FACING_MARKER_H

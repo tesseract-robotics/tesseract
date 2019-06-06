@@ -112,6 +112,7 @@ add_library(${PROJECT_NAME}_render_tools SHARED
   src/markers/utils.cpp
   src/markers/arrow_marker.cpp
   src/markers/triangle_list_marker.cpp
+  src/markers/text_view_facing_marker.cpp
   ${${PROJECT_NAME}_render_tools_cpp_MOCS}
 )
 
