@@ -55,140 +55,35 @@
 namespace tesseract_rviz
 {
 
-InteractiveMarker::InteractiveMarker( Ogre::SceneNode* scene_node, rviz::DisplayContext* context ) :
+InteractiveMarker::InteractiveMarker(const std::string& name,
+                                     const std::string& description,
+                                     Ogre::SceneNode* scene_node,
+                                     rviz::DisplayContext* context,
+                                     const float scale) :
   context_(context)
 , pose_changed_(false)
 , time_since_last_feedback_(0)
 , dragging_(false)
 , pose_update_requested_(false)
-, heart_beat_t_(0)
 , show_visual_aids_(false)
+, show_axes_(false)
+, show_description_(false)
+, name_(name)
+, description_(description)
+, scale_(scale)
+, frame_locked_(false)
 {
   reference_node_ = scene_node->createChildSceneNode();
-  axes_ = new rviz::Axes( context->getSceneManager(), reference_node_, 1, 0.05 );
-}
+  axes_ = new rviz::Axes( context->getSceneManager(), reference_node_, 1, 0.05f );
 
-InteractiveMarker::~InteractiveMarker()
-{
-  delete axes_;
-  context_->getSceneManager()->destroySceneNode( reference_node_ );
-}
-
- InteractiveMarkerControl::Ptr InteractiveMarker::createInteractiveControl(const std::string& name, const std::string& description)
- {
-   auto search_iter = controls_.find(name);
-
-   // If message->name in map,
-   if( search_iter != controls_.end() )
-   {
-     // Use existing control
-     return search_iter->second;
-   }
-   else
-   {
-     // Else make new control
-     auto control = boost::make_shared<InteractiveMarkerControl>(name, description, context_, reference_node_, this );
-     controls_[ name ] = control;
-     return control;
-   }
- }
-
-bool InteractiveMarker::init(const std::string& name,
-                             const std::string& description,
-                             float scale)
-{
-  boost::recursive_mutex::scoped_lock lock(mutex_);
-
-  // copy values
-  name_ = name;
-  description_ = description;
-  controls_.clear();
-  scale_ = scale;
-
-
-//  reference_frame_ = message.header.frame_id;
-//  reference_time_ = message.header.stamp;
-//  frame_locked_ = (message.header.stamp == ros::Time(0));
-
-//  position_ = Ogre::Vector3(
-//      message.pose.position.x,
-//      message.pose.position.y,
-//      message.pose.position.z );
-
-//  normalizeQuaternion(message.pose.orientation, orientation_);
-
-  pose_changed_ =false;
-  time_since_last_feedback_ = 0;
-
-  // setup axes
   axes_->setPosition(position_);
   axes_->setOrientation(orientation_);
-  axes_->set( scale_, scale_*0.05 );
+  axes_->set( scale_, scale_ * 0.05f );
+  setShowAxes(show_axes_);
 
-//  has_menu_ = message.menu_entries.size() > 0;
+  //  has_menu_ = message.menu_entries.size() > 0;
 
   updateReferencePose();
-
-//  // Instead of just erasing all the old controls and making new ones
-//  // here, we want to preserve as much as possible from the old ones,
-//  // so that we don't lose the drag action in progress if a control is
-//  // being dragged when this update comes in.
-//  //
-//  // Controls are stored in a map from control name to control
-//  // pointer, so we loop over the incoming control messages looking
-//  // for names we already know about.  When we find them, we just call
-//  // the control's processMessage() function to update it.  When we
-//  // don't find them, we create a new Control.  We also keep track of
-//  // which control names we used to have but which are not present in
-//  // the incoming message, which we use to delete the unwanted
-//  // controls.
-
-//  // Make set of old-names called old-names-to-delete.
-//  std::set<std::string> old_names_to_delete;
-//  for(auto ci = controls_.begin(); ci != controls_.end(); ci++ )
-//  {
-//    old_names_to_delete.insert( (*ci).first );
-//  }
-
-//  // Loop over new array:
-//  for ( unsigned i = 0; i < interactive_controls.size(); i++ )
-//  {
-//    const InteractiveMarkerControl& control = *(interactive_controls[i]);
-//    auto search_iter = controls_.find( control.getName() );
-
-//    // If message->name in map,
-//    if( search_iter != controls_.end() )
-//    {
-//      // Use existing control
-//      control = (*search_iter).second;
-//    }
-//    else
-//    {
-//      // Else make new control
-//      control = boost::make_shared<InteractiveMarkerControl>( context_, reference_node_, this );
-//      controls_[ control_message.name ] = control;
-//    }
-//    // Update the control with the message data
-//    control->processMessage( control_message );
-//    control->setShowVisualAids( show_visual_aids_ );
-
-//    // Remove message->name from old-names-to-delete
-//    old_names_to_delete.erase( control_message.name );
-//  }
-
-//  // Loop over old-names-to-delete
-//  std::set<std::string>::iterator si;
-//  for( si = old_names_to_delete.begin(); si != old_names_to_delete.end(); si++ )
-//  {
-//    // Remove Control object from map for name-to-delete
-//    controls_.erase( *si );
-//  }
-
-//  description_control_ =
-//    boost::make_shared<InteractiveMarkerControl>( context_,
-//                                                  reference_node_, this );
-
-//  description_control_->processMessage( interactive_markers::makeTitle( message ));
 
   //create menu
   menu_entries_.clear();
@@ -236,9 +131,45 @@ bool InteractiveMarker::init(const std::string& name,
   {
     Q_EMIT statusUpdate( rviz::StatusProperty::Ok, name_, "Position is fixed." );
   }
-  return true;
 }
 
+InteractiveMarker::~InteractiveMarker()
+{
+  delete axes_;
+  context_->getSceneManager()->destroySceneNode( reference_node_ );
+}
+
+ InteractiveMarkerControl::Ptr InteractiveMarker::createInteractiveControl(const std::string& name,
+                                                                           const std::string& description,
+                                                                           const InteractiveMode interactive_mode,
+                                                                           const OrientationMode orientation_mode,
+                                                                           const bool always_visible,
+                                                                           const Ogre::Quaternion& orientation)
+ {
+   auto search_iter = controls_.find(name);
+
+   // If message->name in map,
+   if( search_iter != controls_.end() )
+   {
+     // Use existing control
+     return search_iter->second;
+   }
+   else
+   {
+     // Else make new control
+     auto control = boost::make_shared<InteractiveMarkerControl>(name,
+                                                                 description,
+                                                                 context_,
+                                                                 reference_node_,
+                                                                 this,
+                                                                 interactive_mode,
+                                                                 orientation_mode,
+                                                                 always_visible,
+                                                                 orientation);
+     controls_[ name ] = control;
+     return control;
+   }
+ }
 
 //void InteractiveMarker::processMessage( const visualization_msgs::InteractiveMarkerPose& message )
 //{
@@ -458,67 +389,85 @@ QString InteractiveMarker::makeMenuString( const std::string &entry )
   return menu_entry;
 }
 
+void InteractiveMarker::setVisible( bool visible )
+{
+
+  reference_node_->setVisible(visible);
+
+  if (!show_description_ && visible)
+    setShowDescription(false);
+
+  if (!show_axes_ && visible)
+    setShowAxes(false);
+
+  if (!show_visual_aids_ && visible)
+    setShowVisualAids(false);
+
+//  if (!show_menu_ && visible)
+
+}
+
 
 void InteractiveMarker::updateReferencePose()
 {
-  boost::recursive_mutex::scoped_lock lock(mutex_);
-  Ogre::Vector3 reference_position;
-  Ogre::Quaternion reference_orientation;
+//  boost::recursive_mutex::scoped_lock lock(mutex_);
+//  Ogre::Vector3 reference_position;
+//  Ogre::Quaternion reference_orientation;
 
-  // if we're frame-locked, we need to find out what the most recent transformation time
-  // actually is so we send back correct feedback
-  if ( frame_locked_ )
-  {
-    std::string fixed_frame = context_->getFrameManager()->getFixedFrame();
-    if ( reference_frame_ == fixed_frame )
-    {
-      // if the two frames are identical, we don't need to do anything.
-      // This should be ros::Time::now(), but then the computer running
-      // RViz has to be time-synced with the server
-      reference_time_ = ros::Time();
-    }
-    else
-    {
-      std::string error;
-      // TODO(wjwwood): remove this and use tf2 interface instead
-#ifndef _WIN32
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
+//  // if we're frame-locked, we need to find out what the most recent transformation time
+//  // actually is so we send back correct feedback
+//  if ( frame_locked_ )
+//  {
+//    std::string fixed_frame = context_->getFrameManager()->getFixedFrame();
+//    if ( reference_frame_ == fixed_frame )
+//    {
+//      // if the two frames are identical, we don't need to do anything.
+//      // This should be ros::Time::now(), but then the computer running
+//      // RViz has to be time-synced with the server
+//      reference_time_ = ros::Time();
+//    }
+//    else
+//    {
+//      std::string error;
+//      // TODO(wjwwood): remove this and use tf2 interface instead
+//#ifndef _WIN32
+//# pragma GCC diagnostic push
+//# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+//#endif
 
-      int retval = context_->getFrameManager()->getTFClient()->getLatestCommonTime(
-          reference_frame_, fixed_frame, reference_time_, &error );
+//      int retval = context_->getFrameManager()->getTFClient()->getLatestCommonTime(
+//          reference_frame_, fixed_frame, reference_time_, &error );
 
-#ifndef _WIN32
-# pragma GCC diagnostic pop
-#endif
-      if ( retval != tf::NO_ERROR )
-      {
-        std::ostringstream s;
-        s <<"Error getting time of latest transform between " << reference_frame_
-            << " and " << fixed_frame << ": " << error << " (error code: " << retval << ")";
-        Q_EMIT statusUpdate( rviz::StatusProperty::Error, name_, s.str() );
-        reference_node_->setVisible( false );
-        return;
-      }
-    }
-  }
+//#ifndef _WIN32
+//# pragma GCC diagnostic pop
+//#endif
+//      if ( retval != tf::NO_ERROR )
+//      {
+//        std::ostringstream s;
+//        s <<"Error getting time of latest transform between " << reference_frame_
+//            << " and " << fixed_frame << ": " << error << " (error code: " << retval << ")";
+//        Q_EMIT statusUpdate( rviz::StatusProperty::Error, name_, s.str() );
+//        reference_node_->setVisible( false );
+//        return;
+//      }
+//    }
+//  }
 
-  if (!context_->getFrameManager()->getTransform( reference_frame_, ros::Time(),
-      reference_position, reference_orientation ))
-  {
-    std::string error;
-    context_->getFrameManager()->transformHasProblems(reference_frame_, ros::Time(), error);
-    Q_EMIT statusUpdate( rviz::StatusProperty::Error, name_, error);
-    reference_node_->setVisible( false );
-    return;
-  }
+//  if (!context_->getFrameManager()->getTransform( reference_frame_, ros::Time(),
+//      reference_position, reference_orientation ))
+//  {
+//    std::string error;
+//    context_->getFrameManager()->transformHasProblems(reference_frame_, ros::Time(), error);
+//    Q_EMIT statusUpdate( rviz::StatusProperty::Error, name_, error);
+//    reference_node_->setVisible( false );
+//    return;
+//  }
 
-  reference_node_->setPosition( reference_position );
-  reference_node_->setOrientation( reference_orientation );
-  reference_node_->setVisible( true, false );
+//  reference_node_->setPosition( reference_position );
+//  reference_node_->setOrientation( reference_orientation );
+//  reference_node_->setVisible( true, false );
 
-  context_->queueRender();
+//  context_->queueRender();
 }
 
 
@@ -610,12 +559,14 @@ void InteractiveMarker::setShowDescription( bool show )
   {
     description_control_->setVisible( show );
   }
+  show_description_ = show;
 }
 
 void InteractiveMarker::setShowAxes( bool show )
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
   axes_->getSceneNode()->setVisible( show );
+  show_axes_ = show;
 }
 
 void InteractiveMarker::setShowVisualAids( bool show )

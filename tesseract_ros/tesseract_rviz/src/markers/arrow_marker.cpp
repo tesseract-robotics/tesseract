@@ -84,12 +84,12 @@ ArrowMarker::ArrowMarker( const std::string &ns,
   Ogre::Vector3 direction = point2 - point1;
   float distance = direction.length();
 
-  float head_length_proportion = 0.23; // Seems to be a good value based on default in arrow.h of shaft:head ratio of 1:0.3
+  float head_length_proportion = 0.23f; // Seems to be a good value based on default in arrow.h of shaft:head ratio of 1:0.3
   float head_length = head_length_proportion*distance;
-  if ( scale.z != 0.0 )
+  if ( scale.z != 0.0f )
   {
     float length = scale.z;
-    head_length = std::max<double>(0.0, std::min<double>(length, distance)); // clamp
+    head_length = std::max<float>(0.0, std::min<float>(length, distance)); // clamp
   }
   float shaft_length = distance - head_length;
 

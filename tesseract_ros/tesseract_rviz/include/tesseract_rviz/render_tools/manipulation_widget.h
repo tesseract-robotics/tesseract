@@ -53,6 +53,11 @@ class RosTopicProperty;
 class EnumProperty;
 }
 
+namespace Ogre
+{
+class SceneNode;
+}
+
 namespace tesseract_rviz
 {
 
@@ -74,9 +79,10 @@ public:
 
   virtual ~ManipulationWidget();
 
-  void onInitialize(VisualizationWidget::Ptr visualization,
-                    tesseract::Tesseract::Ptr tesseract,
+  void onInitialize(Ogre::SceneNode* root_node,
                     rviz::DisplayContext* context,
+                    VisualizationWidget::Ptr visualization,
+                    tesseract::Tesseract::Ptr tesseract,
                     ros::NodeHandle update_nh,
                     ManipulatorState state);
 
@@ -94,6 +100,7 @@ private Q_SLOTS:
 //  void trajectorySliderPanelVisibilityChange(bool enable);
 
 protected:
+  Ogre::SceneNode* root_interactive_node_;
   rviz::Property* widget_;
   rviz::Display* display_;
   rviz::DisplayContext* context_;
@@ -102,8 +109,6 @@ protected:
   ros::NodeHandle nh_;
   ManipulatorState state_;
   InteractiveMarker::Ptr interactive_marker_;
-//  std::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
-//  interactive_markers::MenuHandler menu_handler_;
   std::vector<std::string> manipulators_;
 
   ros::Publisher joint_state_pub_;

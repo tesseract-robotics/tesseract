@@ -70,7 +70,11 @@ InteractiveMarkerControl::InteractiveMarkerControl(const std::string& name,
                                                    const std::string& description,
                                                    rviz::DisplayContext* context,
                                                    Ogre::SceneNode *reference_node,
-                                                   InteractiveMarker *parent )
+                                                   InteractiveMarker *parent,
+                                                   const InteractiveMode interactive_mode,
+                                                   const OrientationMode orientation_mode,
+                                                   const bool always_visible,
+                                                   const Ogre::Quaternion& orientation)
 : mouse_dragging_(false)
 , drag_viewport_( nullptr )
 , context_( context )
@@ -87,132 +91,13 @@ InteractiveMarkerControl::InteractiveMarkerControl(const std::string& name,
 , name_(name)
 , description_(QString::fromStdString(description))
 , show_visual_aids_(false)
+, interaction_mode_(interactive_mode)
+, always_visible_(always_visible)
+, orientation_mode_(orientation_mode)
+, control_orientation_(orientation)
 //, line_(new Line(context->getSceneManager(),control_frame_node_))
 {
 //  line_->setVisible(false);
-}
-
-//void InteractiveMarkerControl::makeMarkers( const visualization_msgs::InteractiveMarkerControl& message )
-//{
-//  for (unsigned i = 0; i < message.markers.size(); i++)
-//  {
-//    // create a marker with the given type
-//    MarkerBasePtr marker(createMarker(message.markers[i].type, 0, context_, markers_node_));
-//    if (!marker) {
-//      ROS_ERROR( "Unknown marker type: %d", message.markers[i].type );
-//    }
-
-//    PointsMarkerPtr points_marker = boost::dynamic_pointer_cast<PointsMarker>(marker);
-//    if (points_marker) {
-//      points_markers_.push_back( points_marker );
-//    }
-
-//    visualization_msgs::MarkerPtr marker_msg( new visualization_msgs::Marker(message.markers[ i ]) );
-
-//    if ( marker_msg->header.frame_id.empty() )
-//    {
-//      // Put Marker into fixed frame, so the constructor does not apply any tf transform.
-//      // This effectively discards any tf information in the Marker and interprets its pose
-//      // as relative to the Interactive Marker.
-//      marker_msg->header.frame_id = context_->getFrameManager()->getFixedFrame();
-//      marker->setMessage( marker_msg );
-//    }
-//    else
-//    {
-//      marker->setMessage( marker_msg );
-//      // The marker will set its position relative to the fixed frame,
-//      // but we have attached it our own scene node, so we will have to
-//      // correct for that.
-//      marker->setPosition( markers_node_->convertWorldToLocalPosition( marker->getPosition() ) );
-//      marker->setOrientation( markers_node_->convertWorldToLocalOrientation( marker->getOrientation() ) );
-//    }
-//    marker->setInteractiveObject( shared_from_this() );
-
-//    addHighlightPass(marker->getMaterials());
-
-//    markers_.push_back(marker);
-//  }
-//}
-
-void InteractiveMarkerControl::makeMarkers()
-{
-  // create a marker with the given type
-  if (interaction_mode_ == InteractiveMode::MOVE_3D || interaction_mode_ == InteractiveMode::ROTATE_3D || interaction_mode_ == InteractiveMode::MOVE_ROTATE_3D)
-  {
-    MarkerBase::Ptr marker(createMarker(name_, 1, MarkerType::SPHERE, context_, markers_node_));
-    if (!marker)
-    {
-      ROS_ERROR("Failed to create marker type!");
-    }
-
-    marker->setInteractiveObject( shared_from_this() );
-
-    addHighlightPass(marker->getMaterials());
-
-    markers_.push_back(marker);
-  }
-  else if (interaction_mode_ == InteractiveMode::MOVE_AXIS)
-  {
-    MarkerBase::Ptr marker(createMarker(name_, 1, MarkerType::ARROW, context_, markers_node_));
-    if (!marker)
-    {
-      ROS_ERROR("Failed to create marker type!");
-    }
-
-    marker->setInteractiveObject( shared_from_this() );
-
-    addHighlightPass(marker->getMaterials());
-
-    markers_.push_back(marker);
-  }
-
-//  PointsMarkerPtr points_marker = boost::dynamic_pointer_cast<PointsMarker>(marker);
-//  if (points_marker) {
-//    points_markers_.push_back( points_marker );
-//  }
-
-//  visualization_msgs::MarkerPtr marker_msg( new visualization_msgs::Marker(message.markers[ i ]) );
-
-//  if ( marker_msg->header.frame_id.empty() )
-//  {
-//    // Put Marker into fixed frame, so the constructor does not apply any tf transform.
-//    // This effectively discards any tf information in the Marker and interprets its pose
-//    // as relative to the Interactive Marker.
-//    marker_msg->header.frame_id = context_->getFrameManager()->getFixedFrame();
-//    marker->setMessage( marker_msg );
-//  }
-//  else
-//  {
-//    marker->setMessage( marker_msg );
-//    // The marker will set its position relative to the fixed frame,
-//    // but we have attached it our own scene node, so we will have to
-//    // correct for that.
-//    marker->setPosition( markers_node_->convertWorldToLocalPosition( marker->getPosition() ) );
-//    marker->setOrientation( markers_node_->convertWorldToLocalOrientation( marker->getOrientation() ) );
-//  }
-
-}
-InteractiveMarkerControl::~InteractiveMarkerControl()
-{
-  context_->getSceneManager()->destroySceneNode(control_frame_node_);
-  context_->getSceneManager()->destroySceneNode(markers_node_);
-
-  if( view_facing_ )
-  {
-    context_->getSceneManager()->removeListener(this);
-  }
-}
-
-void InteractiveMarkerControl::init(InteractiveMode interactive_mode,
-                                    OrientationMode orientation_mode,
-                                    bool always_visible,
-                                    const Ogre::Quaternion& orientation)
-{
-  interaction_mode_ = interactive_mode;
-  always_visible_ = always_visible;
-  orientation_mode_ = orientation_mode;
-
-  control_orientation_ = orientation;
   control_orientation_.normalise();
 
   bool new_view_facingness = (orientation_mode == OrientationMode::VIEW_FACING);
@@ -231,12 +116,6 @@ void InteractiveMarkerControl::init(InteractiveMode interactive_mode,
 
 //  independent_marker_orientation_ = message.independent_marker_orientation;
 
-  // highlight_passes_ have raw pointers into the markers_, so must
-  // clear them at the same time.
-  highlight_passes_.clear();
-  markers_.clear();
-//  points_markers_.clear();
-
   // Initially, the pose of this marker's node and the interactive
   // marker are identical, but that may change.
   control_frame_node_->setPosition(parent_->getPosition());
@@ -252,9 +131,6 @@ void InteractiveMarkerControl::init(InteractiveMode interactive_mode,
     control_frame_node_->setOrientation( Ogre::Quaternion::IDENTITY );
     markers_node_->setOrientation( Ogre::Quaternion::IDENTITY );
   }
-
-//  makeMarkers( message );
-  makeMarkers();
 
   status_msg_ = description_+" ";
 
@@ -323,6 +199,33 @@ void InteractiveMarkerControl::init(InteractiveMode interactive_mode,
 
   enableInteraction(context_->getSelectionManager()->getInteractionEnabled());
 }
+
+InteractiveMarkerControl::~InteractiveMarkerControl()
+{
+  context_->getSceneManager()->destroySceneNode(control_frame_node_);
+  context_->getSceneManager()->destroySceneNode(markers_node_);
+
+  if( view_facing_ )
+  {
+    context_->getSceneManager()->removeListener(this);
+  }
+}
+
+Ogre::SceneNode* InteractiveMarkerControl::getMarkerSceneNode()
+{
+  return markers_node_;
+}
+
+void InteractiveMarkerControl::addMarker(MarkerBase::Ptr marker)
+{
+  marker->setInteractiveObject( shared_from_this() );
+
+  addHighlightPass(marker->getMaterials());
+
+  markers_.push_back(marker);
+}
+
+float InteractiveMarkerControl::getSize() { return parent_->getSize(); }
 
 // This is an Ogre::SceneManager::Listener function, and is configured
 // to be called only if this is a VIEW_FACING control.
@@ -516,8 +419,8 @@ Ogre::Ray InteractiveMarkerControl::getMouseRayInReferenceFrame( const rviz::Vie
   float width = event.viewport->getActualWidth() - 1;
   float height = event.viewport->getActualHeight() - 1;
 
-  Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay( (x + .5) / width,
-                                                                             (y + .5) / height );
+  Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay( (x + 0.5f) / width,
+                                                                             (y + 0.5f) / height );
 
   // convert ray into reference frame
   mouse_ray.setOrigin( reference_node_->convertWorldToLocalPosition( mouse_ray.getOrigin() ) );
@@ -693,8 +596,8 @@ void InteractiveMarkerControl::worldToScreen( const Ogre::Vector3& pos_rel_refer
   double half_width = viewport->getActualWidth() / 2.0;
   double half_height = viewport->getActualHeight() / 2.0;
 
-  screen_pos.x = half_width + (half_width * homogeneous_screen_position.x) - .5;
-  screen_pos.y = half_height + (half_height * -homogeneous_screen_position.y) - .5;
+  screen_pos.x = half_width + (half_width * homogeneous_screen_position.x) - 0.5f;
+  screen_pos.y = half_height + (half_height * -homogeneous_screen_position.y) - 0.5f;
 }
 
 /** Find the closest point on target_ray to mouse_ray.
@@ -1369,8 +1272,8 @@ void InteractiveMarkerControl::beginMouseMovement( rviz::ViewportMouseEvent& eve
                               intersection_2d,
                               ray_t ))
     {
-      mouse_z_scale_ = (intersection_3d_10 - intersection_3d).length() / 10.0;
-      if (mouse_z_scale_ < std::numeric_limits<float>::min() * 100.0)
+      mouse_z_scale_ = (intersection_3d_10 - intersection_3d).length() / 10.0f;
+      if (mouse_z_scale_ < std::numeric_limits<float>::min() * 100.0f)
         mouse_z_scale_ = DEFAULT_MOUSE_Z_SCALE;
     }
   }

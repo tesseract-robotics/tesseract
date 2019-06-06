@@ -36,6 +36,10 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <tesseract_rosutils/utils.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
+#include <tesseract_rviz/markers/shape_marker.h>
+#include <tesseract_rviz/markers/arrow_marker.h>
+#include <tesseract_rviz/markers/utils.h>
+
 #include "tesseract_rviz/render_tools/manipulation_widget.h"
 #include "tesseract_rviz/render_tools/visualization_widget.h"
 #include "tesseract_rviz/render_tools/link_widget.h"
@@ -47,10 +51,12 @@ ManipulationWidget::ManipulationWidget(rviz::Property* widget, rviz::Display* di
   , display_(display)
   , visualization_(nullptr)
   , tesseract_(nullptr)
+  , root_interactive_node_(nullptr)
   , state_(ManipulatorState::START)
 //  , trajectory_slider_panel_(nullptr)
 //  , trajectory_slider_dock_panel_(nullptr)
 {
+
   joint_state_topic_property_ =
       new rviz::RosTopicProperty("Manipulation Topic",
                                  "/tesseract/manipulation_joint_states",
@@ -66,13 +72,17 @@ ManipulationWidget::ManipulationWidget(rviz::Property* widget, rviz::Display* di
 
 ManipulationWidget::~ManipulationWidget()
 {
+  if (root_interactive_node_)
+    context_->getSceneManager()->destroySceneNode(root_interactive_node_->getName());
+
 //  if (trajectory_slider_dock_panel_)
 //    delete trajectory_slider_dock_panel_;
 }
 
-void ManipulationWidget::onInitialize(VisualizationWidget::Ptr visualization,
-                                      tesseract::Tesseract::Ptr tesseract,
+void ManipulationWidget::onInitialize(Ogre::SceneNode* root_node,
                                       rviz::DisplayContext* context,
+                                      VisualizationWidget::Ptr visualization,
+                                      tesseract::Tesseract::Ptr tesseract,
                                       ros::NodeHandle update_nh,
                                       ManipulatorState state)
 {
@@ -83,6 +93,7 @@ void ManipulationWidget::onInitialize(VisualizationWidget::Ptr visualization,
   nh_ = update_nh;
   state_ = state;
 
+  root_interactive_node_ = root_node->createChildSceneNode();
   if (tesseract_->isInitialized())
   {
     int cnt = 0;
@@ -97,13 +108,11 @@ void ManipulationWidget::onInitialize(VisualizationWidget::Ptr visualization,
   {
     joint_state_topic_property_->setName("Manipulation Start State Topic");
     joint_state_topic_property_->setValue("/tesseract/manipulation_start_state");
-//    server_ = std::make_shared<interactive_markers::InteractiveMarkerServer>("start_state_controls", "", false);
   }
   else
   {
     joint_state_topic_property_->setName("Manipulation End State Topic");
     joint_state_topic_property_->setValue("/tesseract/manipulation_end_state");
-//    server_ = std::make_shared<interactive_markers::InteractiveMarkerServer>("end_state_controls", "", false);
   }
 
   changedJointStateTopic();
@@ -132,6 +141,11 @@ void ManipulationWidget::onEnable()
     visualization_->setEndStateVisible(true);
 
   changedJointStateTopic();  // load topic at startup if default used
+
+  if (root_interactive_node_ && interactive_marker_)
+  {
+    interactive_marker_->setVisible(true);
+  }
 }
 
 void ManipulationWidget::onDisable()
@@ -141,6 +155,10 @@ void ManipulationWidget::onDisable()
   else
     visualization_->setEndStateVisible(false);
 
+  if (root_interactive_node_ && interactive_marker_)
+  {
+    interactive_marker_->setVisible(false);
+  }
 
 //  if (trajectory_slider_panel_)
 //    trajectory_slider_panel_->onDisable();
@@ -163,17 +181,24 @@ void ManipulationWidget::onNameChange(const QString& name)
 void ManipulationWidget::changedManipulator()
 {
   LinkWidget* link = visualization_->getLink("tool0");
-  interactive_marker_ = boost::make_shared<InteractiveMarker>(visualization_->getOtherNode(), context_);
-  interactive_marker_->init("Test", "Move Robot");
+  interactive_marker_ = boost::make_shared<InteractiveMarker>("Test", "Move Robot", root_interactive_node_, context_);
 
-  InteractiveMarkerControl::Ptr control = interactive_marker_->createInteractiveControl("Test", "Move Rotate 3D");
-  control->init(InteractiveMode::MOVE_ROTATE_3D, OrientationMode::INHERIT, true, link->getOrientation());
+  InteractiveMarkerControl::Ptr control = interactive_marker_->createInteractiveControl("Test", "Move Rotate 3D",
+                                                                                        InteractiveMode::MOVE_ROTATE_3D, OrientationMode::INHERIT,
+                                                                                        true, link->getOrientation());
+  makeSphere(*control, 0.35f);
 
-  InteractiveMarkerControl::Ptr control1 = interactive_marker_->createInteractiveControl("Test1", "Move Axis");
-  control1->init(InteractiveMode::MOVE_AXIS, OrientationMode::INHERIT, true, link->getOrientation());
+  InteractiveMarkerControl::Ptr control1 = interactive_marker_->createInteractiveControl("Test1", "Move Axis",
+                                                                                         InteractiveMode::MOVE_AXIS, OrientationMode::INHERIT,
+                                                                                         true, link->getOrientation());
+  makeArrow(*control1, 0.5);
+  makeArrow(*control1, -0.5);
 
-  InteractiveMarkerControl::Ptr control2 = interactive_marker_->createInteractiveControl("Test2", "Move Axis");
-  control2->init(InteractiveMode::MOVE_ROTATE_3D, OrientationMode::INHERIT, true, link->getOrientation());
+  InteractiveMarkerControl::Ptr control2 = interactive_marker_->createInteractiveControl("Test2", "Rotate Axis",
+                                                                                         InteractiveMode::ROTATE_AXIS, OrientationMode::INHERIT,
+                                                                                         true, link->getOrientation());
+  makeDisc(*control2, 0.5);
+
 
   interactive_marker_->setShowAxes(false);
   interactive_marker_->setShowVisualAids(true);
@@ -183,10 +208,6 @@ void ManipulationWidget::changedManipulator()
           SIGNAL(userFeedback(visualization_msgs::InteractiveMarkerFeedback&)),
           this,
           SLOT(markerFeedback(visualization_msgs::InteractiveMarkerFeedback&)));
-
-
-
-  //  interactive_marker_->update(wall_dt);
 
 
 //  if (display_mode_property_->getOptionInt() != 2)
