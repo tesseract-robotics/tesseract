@@ -37,6 +37,8 @@
 #include <OgreVector3.h>
 #include <OgreQuaternion.h>
 #include <OgreSceneManager.h>
+
+#include <tesseract_rviz/markers/marker_base.h>
 #endif
 
 #include <QCursor>
@@ -109,22 +111,25 @@ public:
                            const std::string& description,
                            rviz::DisplayContext* context,
                            Ogre::SceneNode *reference_node,
-                           InteractiveMarker *parent );
+                           InteractiveMarker *parent,
+                           const InteractiveMode interactive_mode,
+                           const OrientationMode orientation_mode,
+                           const bool always_visible,
+                           const Ogre::Quaternion& orientation);
 
   virtual ~InteractiveMarkerControl();
 
   /**
-   * @brief init
-   * @param interactive_mode
-   * @param orientation_mode
-   * @param always_visible
-   * @param orientation Used when creating the marker based on the interaction mode
+   * @brief Get marker scene node for control to create markers for.
+   * @return Marker Scene Node
    */
-  void init(InteractiveMode interactive_mode,
-            OrientationMode orientation_mode,
-            bool always_visible,
-            const Ogre::Quaternion& orientation);
+  Ogre::SceneNode* getMarkerSceneNode();
 
+  /**
+   * @brief Add marker to the controller
+   * @param marker to add to the controller
+   */
+  void addMarker(MarkerBase::Ptr marker);
 
   // called when interactive mode is globally switched on/off
   virtual void enableInteraction(bool enable);
@@ -207,6 +212,24 @@ public:
    * @return the orientation_mode for this control
    */
   OrientationMode getOrientationMode() { return orientation_mode_; }
+
+  /**
+   * @brief Get the control Orientation
+   * @return Orientation
+   */
+  Ogre::Quaternion getControlOrientation() { return control_orientation_; }
+
+  /**
+   * @brief Get the display context
+   * @return Display context
+   */
+  rviz::DisplayContext* getDisplayContext() { return context_; }
+
+  /**
+   * @brief Get the size of the ineractive control
+   * @return Size/Scale
+   */
+  float getSize();
 
   /**
    * @brief If true, will show some geometric helpers while dragging
@@ -337,10 +360,6 @@ protected:
   Ogre::Vector3 closestPointOnLineToPoint( const Ogre::Vector3& line_start,
                                            const Ogre::Vector3& line_dir,
                                            const Ogre::Vector3& test_point );
-
-  /** @brief Create marker objects from the message and add them to the internal marker arrays. */
-//  void makeMarkers( const visualization_msgs::InteractiveMarkerControl &message );
-  void makeMarkers();
 
   void stopDragging( bool force = false );
 

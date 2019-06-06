@@ -69,14 +69,15 @@ public:
   using Ptr = boost::shared_ptr<InteractiveMarker>;
   using ConstPtr = boost::shared_ptr<const InteractiveMarker>;
 
-  InteractiveMarker( Ogre::SceneNode* scene_node, rviz::DisplayContext* context );
+  InteractiveMarker(const std::string& name, const std::string& description, Ogre::SceneNode* scene_node, rviz::DisplayContext* context, const float scale = 1);
   virtual ~InteractiveMarker();
 
-  InteractiveMarkerControl::Ptr createInteractiveControl(const std::string& name, const std::string& description);
-
-  bool init(const std::string& name,
-            const std::string& description,
-            float scale = 1);
+  InteractiveMarkerControl::Ptr createInteractiveControl(const std::string& name,
+                                                         const std::string& description,
+                                                         const InteractiveMode interactive_mode,
+                                                         const OrientationMode orientation_mode,
+                                                         const bool always_visible,
+                                                         const Ogre::Quaternion& orientation);
 
   // called every frame update
   void update(float wall_dt);
@@ -100,6 +101,12 @@ public:
   float getSize() { return scale_; }
   const std::string &getReferenceFrame() { return reference_frame_; }
   const std::string& getName() { return name_; }
+
+  /**
+   * @brief Set visibility
+   * @param visible
+   */
+  void setVisible( bool visible );
 
   // show name above marker
   void setShowDescription( bool show );
@@ -220,8 +227,6 @@ protected:
   // which control has popped up the menu
   std::string last_control_name_;
 
-  double heart_beat_t_;
-
   // visual aids
 
   rviz::Axes *axes_;
@@ -239,6 +244,8 @@ protected:
   Ogre::Vector3 three_d_point_for_menu_;
 
   bool show_visual_aids_;
+  bool show_axes_;
+  bool show_description_;
 };
 
 

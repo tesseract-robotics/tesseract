@@ -35,6 +35,9 @@
 namespace Ogre
 {
 class SceneNode;
+class Quaternion;
+class Vector3;
+class ColourValue;
 }
 
 namespace rviz
@@ -45,6 +48,8 @@ class DisplayContext;
 namespace tesseract_rviz
 {
 class MarkerBase;
+class ArrowMarker;
+class InteractiveMarkerControl;
 
 enum class MarkerType
 {
@@ -62,51 +67,23 @@ enum class MarkerType
   TRIANGLE_LIST=11
 };
 
-/** Create a marker of given type as declared in visualization_messages::Marker */
-MarkerBase* createMarker(const std::string &ns,
-                         const int id,
-                         MarkerType marker_type,
-                         rviz::DisplayContext *context,
-                         Ogre::SceneNode *parent_node);
+/** @brief Make a sphere
+ *  @param control  the interactive marker control that this will go into
+ *  @param radius   The radius of the sphere
+ */
+void makeSphere(InteractiveMarkerControl &control, float radius);
 
-///** @brief fill in default values & insert default controls when none are specified.
-// *
-// * This also calls uniqueifyControlNames().
-// * @param msg      interactive marker to be completed */
-//void autoComplete( visualization_msgs::InteractiveMarker &msg, bool enable_autocomplete_transparency = true );
+/** @brief make a default-style arrow marker based on the properties of the given interactive marker
+ *  @param control  the interactive marker control that this will go into
+ *  @param pos          how far from the center should the arrow be, and on which side
+ */
+void makeArrow(InteractiveMarkerControl &control, float pos );
 
-///// @brief fill in default values & insert default controls when none are specified
-///// @param msg      interactive marker which contains the control
-///// @param control  the control to be completed
-//void autoComplete( const visualization_msgs::InteractiveMarker &msg,
-//    visualization_msgs::InteractiveMarkerControl &control, bool enable_autocomplete_transparency = true );
-
-///** @brief Make sure all the control names are unique within the given msg.
-// *
-// * Appends _u0 _u1 etc to repeated names (not including the first of each).
-// * This is called by autoComplete( visualization_msgs::InteractiveMarker &msg ). */
-//void uniqueifyControlNames( visualization_msgs::InteractiveMarker& msg );
-
-///// make a quaternion with a fixed local x axis.
-///// The rotation around that axis will be chosen automatically.
-///// @param x,y,z    the designated x axis
-//geometry_msgs::Quaternion makeQuaternion( float x, float y, float z );
-
-
-///// --- marker helpers ---
-
-///// @brief make a default-style arrow marker based on the properties of the given interactive marker
-///// @param msg      the interactive marker that this will go into
-///// @param control  the control where to insert the arrow marker
-///// @param pos      how far from the center should the arrow be, and on which side
-//void makeArrow( const visualization_msgs::InteractiveMarker &msg,
-//    visualization_msgs::InteractiveMarkerControl &control, float pos );
-
-///// @brief make a default-style disc marker (e.g for rotating) based on the properties of the given interactive marker
-///// @param msg      the interactive marker that this will go into
-///// @param width    width of the disc, relative to its inner radius
-//void makeDisc( const visualization_msgs::InteractiveMarker &msg,
-//    visualization_msgs::InteractiveMarkerControl &control, float width = 0.3 );
+/** @brief make a default-style disc marker (e.g for rotating) based on the properties of the given interactive marker
+ *  @param control  the interactive marker control that this will go into
+ *  @param width    width of the disc, relative to its inner radius
+ */
+void makeDisc(InteractiveMarkerControl& control, float width = 0.3f);
 
 ///// @brief make a box which shows the given text and is view facing
 ///// @param msg      the interactive marker that this will go into
@@ -114,8 +91,8 @@ MarkerBase* createMarker(const std::string &ns,
 //void makeViewFacingButton( const visualization_msgs::InteractiveMarker &msg,
 //    visualization_msgs::InteractiveMarkerControl &control, std::string text );
 
-///// assign an RGB value to the given marker based on the given orientation
-//void assignDefaultColor(visualization_msgs::Marker &marker, const geometry_msgs::Quaternion &quat );
+/** @brief Get the default orientation */
+Ogre::ColourValue getDefaultColor(const Ogre::Quaternion &quat);
 
 ///// create a control which shows the description of the interactive marker
 //visualization_msgs::InteractiveMarkerControl makeTitle( const visualization_msgs::InteractiveMarker &msg );

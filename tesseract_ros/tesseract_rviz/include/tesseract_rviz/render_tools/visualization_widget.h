@@ -61,7 +61,6 @@ class Vector3;
 class Quaternion;
 class Any;
 class RibbonTrail;
-class SceneNode;
 }
 
 namespace rviz
