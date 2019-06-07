@@ -17,6 +17,7 @@
   <depend>tesseract_msgs</depend>
   <depend>pluginlib</depend>
   <depend>dynamic_reconfigure</depend>
+  <depend>tf2_ros</depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

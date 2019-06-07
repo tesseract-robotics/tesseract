@@ -47,6 +47,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <functional>
 #include <unordered_map>
 #include <map>
+#include <tf2_ros/transform_broadcaster.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
@@ -123,9 +124,6 @@ public:
    *  @return Returns the current state */
   tesseract_environment::EnvStatePtr getCurrentState() const;
 
-  /** @brief Set the state \e upd to the current state maintained by this class. */
-  void setToCurrentState(tesseract_environment::EnvState& upd) const;
-
   /** @brief Get the time stamp for the current state */
   ros::Time getCurrentStateTime() const;
 
@@ -178,7 +176,8 @@ private:
 
   ros::NodeHandle nh_;
   tesseract_environment::EnvironmentConstPtr env_;
-  tesseract_environment::EnvState state_;
+  tesseract_environment::EnvState env_state_;
+  int last_environment_revision_;
   tesseract_kinematics::ForwardKinematicsManagerConstPtr kinematics_manager_;
   std::map<std::string, ros::Time> joint_time_;
   bool state_monitor_started_;
@@ -186,6 +185,7 @@ private:
   ros::Time monitor_start_time_;
   double error_;
   ros::Subscriber joint_state_subscriber_;
+  tf2_ros::TransformBroadcaster tf_broadcaster_;
   ros::Time current_state_time_;
   ros::Time last_tf_update_;
 
