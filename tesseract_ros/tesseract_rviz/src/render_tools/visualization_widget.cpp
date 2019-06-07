@@ -399,6 +399,25 @@ bool VisualizationWidget::moveJoint(const std::string& joint_name, const std::st
   return true;
 }
 
+bool VisualizationWidget::changeJointOrigin(const std::string &name, const Eigen::Isometry3d &new_origin)
+{
+  auto found = joints_.find(name);
+
+  if (found == joints_.end())
+  {
+    ROS_WARN("Tried to change origin of Joint (%s) that does not exist", name.c_str());
+    return false;
+  }
+
+  // Update transform associated with the joint
+  JointWidget* joint = found->second;
+  Ogre::Vector3 pos;
+  Ogre::Quaternion quat;
+  toOgre(pos, quat, new_origin);
+  joint->setTransforms(pos, quat);
+  return true;
+}
+
 void VisualizationWidget::addAllowedCollision(const std::string& link_name1,
                                            const std::string& link_name2,
                                            const std::string& reason)
