@@ -166,6 +166,13 @@ public:
    */
   virtual bool moveJoint(const std::string& joint_name, const std::string& parent_link);
 
+  /** @brief Changes the "origin" transform of the joint
+   * @param name Name of the joint to be changed
+   * @param new_origin The new transform associated with the joint
+   * @return
+   */
+  bool changeJointOrigin(const std::string& name, const Eigen::Isometry3d& new_origin);
+
   /**
    * @brief Disable collision between two collision objects
    * @param link_name1 Collision object name
