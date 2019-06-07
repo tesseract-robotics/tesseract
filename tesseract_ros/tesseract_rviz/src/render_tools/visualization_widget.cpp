@@ -913,7 +913,7 @@ void VisualizationWidget::update(const TransformMap& transforms)
 //                           link->getName().c_str());
 //        continue;
 //      }
-      link->setStartTransform(it->second);
+      link->setCurrentTransform(it->second);
     }
     else
     {

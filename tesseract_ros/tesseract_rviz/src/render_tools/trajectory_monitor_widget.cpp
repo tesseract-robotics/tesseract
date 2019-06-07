@@ -70,6 +70,7 @@ TrajectoryMonitorWidget::TrajectoryMonitorWidget(rviz::Property* widget, rviz::D
   , current_state_(-1)
   , trajectory_slider_panel_(nullptr)
   , trajectory_slider_dock_panel_(nullptr)
+  , cached_visible_(false)
 {
   trajectory_topic_property_ =
       new rviz::RosTopicProperty("Trajectory Topic",
@@ -154,12 +155,13 @@ void TrajectoryMonitorWidget::onInitialize(VisualizationWidget::Ptr visualizatio
 
 void TrajectoryMonitorWidget::onEnable()
 {
-  visualization_->setTrajectoryVisible(true);
+  visualization_->setTrajectoryVisible(cached_visible_);
   changedTrajectoryTopic();  // load topic at startup if default used
 }
 
 void TrajectoryMonitorWidget::onDisable()
 {
+  cached_visible_ = visualization_->isTrajectoryVisible();
   visualization_->setTrajectoryVisible(false);
   displaying_trajectory_message_.reset();
   animating_path_ = false;
@@ -447,6 +449,9 @@ void TrajectoryMonitorWidget::incomingDisplayTrajectory(const tesseract_msgs::Tr
     ROS_ERROR_STREAM_NAMED("trajectory_visualization", "No environment");
     return;
   }
+
+  if (visualization_ && !visualization_->isTrajectoryVisible())
+    visualization_->setTrajectoryVisible(true);
 
   if (!msg->tesseract_state.id.empty() && msg->tesseract_state.id != tesseract_->getEnvironment()->getName())
     ROS_WARN("Received a trajectory to display for model '%s' but model '%s' "
