@@ -56,6 +56,7 @@ TesseractStateDisplay::TesseractStateDisplay() : Display()
   tesseract_ = std::make_shared<tesseract::Tesseract>();
   environment_monitor_ = std::make_shared<EnvironmentWidget>(this, this);
   state_monitor_ = std::make_shared<JointStateMonitorWidget>(this, this);
+
 }
 
 TesseractStateDisplay::~TesseractStateDisplay(){}
