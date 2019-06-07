@@ -8,12 +8,17 @@ find_package(tesseract_collision REQUIRED)
 find_package(tesseract_environment REQUIRED)
 find_package(tesseract_kinematics REQUIRED)
 
+list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
 
 # Create target
 add_library(${PROJECT_NAME} SHARED src/tesseract.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract_scene_graph tesseract_collision_bullet tesseract_environment_kdl tesseract_kinematics_kdl console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_11)
+if(CXX_FEATURE_FOUND EQUAL "-1")
+    set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED YES)
+else()
+    target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
+endif()
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")

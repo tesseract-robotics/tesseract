@@ -8,11 +8,17 @@ find_package(console_bridge REQUIRED)
 find_package(tesseract_collision REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 
+list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
+
 # Create interface for core
 add_library(${PROJECT_NAME}_core SHARED src/core/environment.cpp)
 target_link_libraries(${PROJECT_NAME}_core PUBLIC tesseract_collision_core tesseract_scene_graph)
 target_compile_options(${PROJECT_NAME}_core PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_core PRIVATE cxx_std_11)
+if(CXX_FEATURE_FOUND EQUAL "-1")
+    set_target_properties(${PROJECT_NAME}_core PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED YES)
+else()
+    target_compile_features(${PROJECT_NAME}_core PUBLIC cxx_std_11)
+endif()
 target_include_directories(${PROJECT_NAME}_core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -22,7 +28,11 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM PUBLIC
 add_library(${PROJECT_NAME}_kdl SHARED src/kdl/kdl_env.cpp src/kdl/kdl_state_solver.cpp)
 target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract_collision_fcl tesseract_collision_bullet tesseract_scene_graph orocos-kdl console_bridge ${BULLET_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_kdl PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_kdl PRIVATE cxx_std_11)
+if(CXX_FEATURE_FOUND EQUAL "-1")
+    set_target_properties(${PROJECT_NAME}_kdl PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED YES)
+else()
+    target_compile_features(${PROJECT_NAME}_kdl PUBLIC cxx_std_11)
+endif()
 target_include_directories(${PROJECT_NAME}_kdl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")

@@ -7,11 +7,17 @@ find_package(orocos_kdl REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 
+list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
+
 # Create interface for core
 add_library(${PROJECT_NAME}_core INTERFACE)
 target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract_scene_graph)
 target_compile_options(${PROJECT_NAME}_core INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_core INTERFACE cxx_std_11)
+if(CXX_FEATURE_FOUND EQUAL "-1")
+    set_target_properties(${PROJECT_NAME}_core PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED YES)
+else()
+    target_compile_features(${PROJECT_NAME}_core INTERFACE cxx_std_11)
+endif()
 target_include_directories(${PROJECT_NAME}_core INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -27,7 +33,11 @@ add_library(${PROJECT_NAME}_kdl SHARED
 )
 target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract_scene_graph orocos-kdl console_bridge)
 target_compile_options(${PROJECT_NAME}_kdl PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(${PROJECT_NAME}_kdl PRIVATE cxx_std_11)
+if(CXX_FEATURE_FOUND EQUAL "-1")
+    set_target_properties(${PROJECT_NAME}_kdl PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED YES)
+else()
+    target_compile_features(${PROJECT_NAME}_kdl PUBLIC cxx_std_11)
+endif()
 target_include_directories(${PROJECT_NAME}_kdl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
