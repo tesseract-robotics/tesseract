@@ -41,6 +41,8 @@ TESSERACT_VISUALIZATION_IGNORE_WARNINGS_POP
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_environment/core/environment.h>
 
+#include <ros/ros.h>
+
 
 namespace tesseract_rosutils
 {

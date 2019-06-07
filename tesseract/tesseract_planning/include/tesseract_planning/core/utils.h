@@ -35,7 +35,7 @@ TESSERACT_PLANNING_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_environment/core/types.h>
 #include <tesseract_kinematics/core/forward_kinematics.h>
-#include <tesseract_planning/waypoint_definitions.h>
+#include <tesseract_planning/core/waypoint.h>
 
 namespace tesseract_planning
 {
@@ -84,7 +84,7 @@ inline std::vector<WaypointPtr> interpolate(const Waypoint& start, const Waypoin
       result.reserve(eigen_poses.size());
       for (auto& eigen_pose : eigen_poses)
       {
-        CartesianWaypointPtr new_waypoint = std::make_shared<tesseract::tesseract_planning::CartesianWaypoint>();
+        CartesianWaypointPtr new_waypoint = std::make_shared<tesseract_planning::CartesianWaypoint>();
         new_waypoint->cartesian_position_ = eigen_pose;
         new_waypoint->coeffs_ = start.coeffs_;
         new_waypoint->is_critical_ = start.is_critical_;
