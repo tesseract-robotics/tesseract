@@ -120,6 +120,7 @@ protected:
   VisualizationWidget::Ptr visualization_;
   tesseract::Tesseract::Ptr tesseract_;
   ros::NodeHandle nh_;
+  bool cached_visible_; /**< @brief This caches if the trajectory was visible for enable and disble calls */
 
   tesseract_msgs::TrajectoryPtr displaying_trajectory_message_;
   tesseract_msgs::TrajectoryPtr trajectory_message_to_display_;
