@@ -184,12 +184,12 @@ void ManipulationWidget::changedManipulator()
   root_interactive_node_->setPosition(link->getPosition());
   root_interactive_node_->setOrientation(link->getOrientation());
 
-  interactive_marker_ = boost::make_shared<InteractiveMarker>("Test", "Move Robot", root_interactive_node_, context_);
+  interactive_marker_ = boost::make_shared<InteractiveMarker>("Test", "Move Robot", root_interactive_node_, context_, 0.5);
   make6Dof(*interactive_marker_);
 
   interactive_marker_->setShowAxes(false);
   interactive_marker_->setShowVisualAids(false);
-  interactive_marker_->setShowDescription(false);
+  interactive_marker_->setShowDescription(true);
 
 //  interactive_marker_->setPose(link->getPosition(), link->getOrientation(), "Test");
 

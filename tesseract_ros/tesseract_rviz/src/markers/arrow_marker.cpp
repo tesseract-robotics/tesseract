@@ -50,7 +50,7 @@ ArrowMarker::ArrowMarker( const std::string &ns,
                           Ogre::SceneNode* parent_node)
   : MarkerBase(ns, id, context, parent_node)
   , arrow_( nullptr )
-  , scale_(Ogre::Vector3(1,1,1))
+  , location_(Ogre::Vector3(0,0,0))
 {
   child_scene_node_ = scene_node_->createChildSceneNode();
 
@@ -63,18 +63,17 @@ ArrowMarker::ArrowMarker( const std::string &ns,
   arrow_->setOrientation( orient );
 }
 
-ArrowMarker::ArrowMarker( const std::string &ns,
+ArrowMarker::ArrowMarker(const std::string &ns,
                           const int id,
                           Ogre::Vector3 point1,
                           Ogre::Vector3 point2,
-                          Ogre::Vector3 scale,
                           rviz::DisplayContext* context,
                           Ogre::SceneNode* parent_node)
   : MarkerBase(ns, id, context, parent_node)
   , arrow_( nullptr )
-  , scale_(scale)
 {
   child_scene_node_ = scene_node_->createChildSceneNode();
+  location_ = point1;
 
   arrow_ = new rviz::Arrow(context_->getSceneManager(), child_scene_node_);
   setDefaultProportions();
@@ -84,16 +83,12 @@ ArrowMarker::ArrowMarker( const std::string &ns,
   Ogre::Vector3 direction = point2 - point1;
   float distance = direction.length();
 
-  float head_length_proportion = 0.23f; // Seems to be a good value based on default in arrow.h of shaft:head ratio of 1:0.3
-  float head_length = head_length_proportion*distance;
-  if ( scale.z != 0.0f )
-  {
-    float length = scale.z;
-    head_length = std::max<float>(0.0, std::min<float>(length, distance)); // clamp
-  }
+  float head_length = distance * 0.23f;
+  float shaft_diameter = distance * 0.35f;
+  float head_diameter = distance * 0.55f;
   float shaft_length = distance - head_length;
 
-  arrow_->set(shaft_length, scale.x, head_length, scale.y);
+  arrow_->set(shaft_length, shaft_diameter, head_length, head_diameter);
 
   direction.normalise();
 
@@ -112,18 +107,18 @@ ArrowMarker::~ArrowMarker()
 
 void ArrowMarker::setDefaultProportions()
 {
-  arrow_->set(0.77, 1.0, 0.23, 2.0);
+  arrow_->set(0.77f, 1.0f, 0.23f, 2.0f);
 }
 
 void ArrowMarker::setScale(Ogre::Vector3 scale)
 {
-  scale_ = scale_;
-  arrow_->setScale(scale);
+  arrow_->getSceneNode()->setScale(scale);
+  arrow_->setPosition(scale.x * location_);
 }
 
 Ogre::Vector3 ArrowMarker::getScale() const
 {
-  return scale_;
+  return arrow_->getSceneNode()->getScale();
 }
 
 void ArrowMarker::setColor( float r, float g, float b, float a )

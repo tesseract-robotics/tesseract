@@ -47,7 +47,7 @@ void makeSphere(InteractiveMarkerControl &control, float radius)
 {
   ShapeMarker::Ptr marker = boost::make_shared<ShapeMarker>(control.getName(), 0, MarkerType::SPHERE, control.getDisplayContext(), control.getMarkerSceneNode());
   marker->setScale(Ogre::Vector3(control.getSize() * radius, control.getSize() * radius, control.getSize() * radius));
-  marker->setColor(0.0f, 1.0f, 0.0f, 0.5f);
+  marker->setColor(1.0f, 1.0f, 0.0f, 0.5f);
   control.addMarker(marker);
 }
 
@@ -66,33 +66,32 @@ void makeArrow(InteractiveMarkerControl &control, float pos )
   float outer = inner + 0.4f;
 
   Ogre::Vector3 point1, point2;
-  point1.x = dir * control.getSize() * inner;
+  point1.x = dir * inner;
   point1.y = 0;
   point1.z = 0;
 
-  point2.x = dir * control.getSize() * outer;
+  point2.x = dir * outer;
   point2.y = 0;
   point2.z = 0;
 
-  ArrowMarker::Ptr marker = boost::make_shared<ArrowMarker>(control.getName(), 0, point1, point2, scale, control.getDisplayContext(), control.getMarkerSceneNode());
+  ArrowMarker::Ptr marker = boost::make_shared<ArrowMarker>(control.getName(), 0, point1, point2, control.getDisplayContext(), control.getMarkerSceneNode());
   marker->setColor(default_color.r, default_color.g, default_color.b, default_color.a);
   marker->setOrientation(control.getControlOrientation());
+  float scale1 = control.getSize();
+  marker->setScale(Ogre::Vector3(scale1, scale1, scale1));
   control.addMarker(marker);
 }
 
 void makeTitle(InteractiveMarkerControl& control, const std::string& text)
 {
   Ogre::ColourValue default_color(1, 1, 1, 1);
-  Ogre::Vector3 scale;
-  scale.x = control.getSize() * 0.15f;
-  scale.y = control.getSize() * 0.15f;
-  scale.z = control.getSize() * 0.15f;
   Ogre::Vector3 pos = control.getMarkerSceneNode()->getPosition();
-  pos.z+= scale.z * 1.4f;
+  pos.z+= 0.15f * 1.4f;
 
   TextViewFacingMarker::Ptr marker = boost::make_shared<TextViewFacingMarker>(control.getName(), 0, text, control.getDisplayContext(), control.getMarkerSceneNode());
   marker->setColor(default_color.r, default_color.g, default_color.b, default_color.a);
-  marker->setScale(scale);
+  float scale = control.getSize();
+  marker->setScale(Ogre::Vector3(scale, scale, scale));
   marker->setPosition(pos);
   control.addMarker(marker);
 }
@@ -111,12 +110,13 @@ void makeDisc(InteractiveMarkerControl &control, float width )
   for ( size_t i = 0; i < steps; i++ )
   {
     float a = static_cast<float>(double(i)/double(steps) * M_PI * 2.0);
+    v1.x = 0;
+    v1.y = (0.5f * std::cos(a));
+    v1.z = (0.5f * std::sin(a));
 
-    v1.y = control.getSize() * (0.5f * std::cos(a));
-    v1.z = control.getSize() * (0.5f * std::sin(a));
-
-    v2.y = control.getSize() * ((1+width) * v1.y);
-    v2.z = control.getSize() * ((1+width) * v1.z);
+    v2.x = 0;
+    v2.y = ((1+width) * v1.y);
+    v2.z = ((1+width) * v1.z);
 
     circle1.push_back( v1 );
     circle2.push_back( v2 );
@@ -228,6 +228,8 @@ void makeDisc(InteractiveMarkerControl &control, float width )
 
   TriangleListMarker::Ptr marker = boost::make_shared<TriangleListMarker>(control.getName(), 0, control.getDisplayContext(), control.getMarkerSceneNode(), default_color, points, colors);
   marker->setOrientation(control.getControlOrientation());
+  float scale = control.getSize();
+  marker->setScale(Ogre::Vector3(scale, scale, scale));
   control.addMarker(marker);
 }
 
