@@ -12,6 +12,8 @@ find_package(Eigen3 REQUIRED)
 find_package(tesseract_collision REQUIRED)
 find_package(tesseract_geometry REQUIRED) # This should not be required, must be doing something wrong when creating targets
 
+list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
+
 catkin_package(
   INCLUDE_DIRS
     ${EIGEN3_INCLUDE_DIRS}
@@ -27,18 +29,27 @@ catkin_package(
 )
 
 add_library(tesseract_collision_bullet_plugin src/plugins/bullet_plugin.cpp)
-target_link_libraries(tesseract_collision_bullet_plugin PRIVATE tesseract_collision_core tesseract_collision_bullet Eigen3::Eigen ${catkin_LIBRARIES})
+target_link_libraries(tesseract_collision_bullet_plugin PRIVATE tesseract_collision_core tesseract_collision_bullet ${catkin_LIBRARIES})
 target_compile_options(tesseract_collision_bullet_plugin PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(tesseract_collision_bullet_plugin PRIVATE cxx_std_11)
+if(CXX_FEATURE_FOUND EQUAL "-1")
+    set_target_properties(tesseract_collision_bullet_plugin PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED YES)
+else()
+    target_compile_features(tesseract_collision_bullet_plugin PRIVATE cxx_std_11)
+endif()
 target_include_directories(tesseract_collision_bullet_plugin SYSTEM PRIVATE
+    ${EIGEN3_INCLUDE_DIRS}
     ${catkin_INCLUDE_DIRS})
 
 
 add_library(tesseract_collision_fcl_plugin src/plugins/fcl_plugin.cpp)
 target_link_libraries(tesseract_collision_fcl_plugin PRIVATE tesseract_collision_core tesseract_collision_fcl ${catkin_LIBRARIES})
 target_compile_options(tesseract_collision_fcl_plugin PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_features(tesseract_collision_bullet_plugin PRIVATE cxx_std_11)
-target_include_directories(tesseract_collision_bullet_plugin SYSTEM PRIVATE
+if(CXX_FEATURE_FOUND EQUAL "-1")
+    set_target_properties(tesseract_collision_fcl_plugin PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED YES)
+else()
+    target_compile_features(tesseract_collision_fcl_plugin PRIVATE cxx_std_11)
+endif()
+target_include_directories(tesseract_collision_fcl_plugin SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})
 
 # Mark executables and/or libraries for installation
