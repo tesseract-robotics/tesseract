@@ -38,6 +38,8 @@
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <ros/console.h>
 #include <limits>
+#include <geometry_msgs/TransformStamped.h>
+#include <tf2_eigen/tf2_eigen.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #include <tesseract_monitoring/current_state_monitor.h>
@@ -52,7 +54,8 @@ CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environmen
 CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::EnvironmentConstPtr &env, const tesseract_kinematics::ForwardKinematicsManagerConstPtr& kinematics_manager, ros::NodeHandle nh)
   : nh_(nh)
   , env_(env)
-  , state_(*env->getCurrentState())
+  , env_state_(*env->getCurrentState())
+  , last_environment_revision_(env_->getRevision())
   , kinematics_manager_(kinematics_manager)
   , state_monitor_started_(false)
   , copy_dynamics_(false)
@@ -64,7 +67,7 @@ CurrentStateMonitor::~CurrentStateMonitor() { stopStateMonitor(); }
 tesseract_environment::EnvStatePtr CurrentStateMonitor::getCurrentState() const
 {
   boost::mutex::scoped_lock slock(state_update_lock_);
-  return std::make_shared<tesseract_environment::EnvState>(state_);
+  return std::make_shared<tesseract_environment::EnvState>(env_state_);
 }
 
 ros::Time CurrentStateMonitor::getCurrentStateTime() const
@@ -76,20 +79,14 @@ ros::Time CurrentStateMonitor::getCurrentStateTime() const
 std::pair<tesseract_environment::EnvStatePtr, ros::Time> CurrentStateMonitor::getCurrentStateAndTime() const
 {
   boost::mutex::scoped_lock slock(state_update_lock_);
-  return std::make_pair(std::make_shared<tesseract_environment::EnvState>(state_), current_state_time_);
+  return std::make_pair(std::make_shared<tesseract_environment::EnvState>(env_state_), current_state_time_);
 }
 
 std::unordered_map<std::string, double> CurrentStateMonitor::getCurrentStateValues() const
 {
   std::map<std::string, double> m;
   boost::mutex::scoped_lock slock(state_update_lock_);
-  return state_.joints;
-}
-
-void CurrentStateMonitor::setToCurrentState(tesseract_environment::EnvState& upd) const
-{
-  boost::mutex::scoped_lock slock(state_update_lock_);
-  upd = state_;
+  return env_state_.joints;
 }
 
 void CurrentStateMonitor::addUpdateCallback(const JointStateUpdateCallback& fn)
@@ -163,8 +160,7 @@ bool CurrentStateMonitor::haveCompleteState() const
 {
   bool result = true;
   boost::mutex::scoped_lock slock(state_update_lock_);
-  const std::unordered_map<std::string, double>& joints = state_.joints;
-  for (const auto& joint : joints)
+  for (const auto& joint : env_state_.joints)
     if (joint_time_.find(joint.first) == joint_time_.end())
     {
       if (!isPassiveOrMimicDOF(joint.first))
@@ -180,8 +176,7 @@ bool CurrentStateMonitor::haveCompleteState(std::vector<std::string>& missing_st
 {
   bool result = true;
   boost::mutex::scoped_lock slock(state_update_lock_);
-  const std::unordered_map<std::string, double>& joints = state_.joints;
-  for (const auto& joint : joints)
+  for (const auto& joint : env_state_.joints)
     if (joint_time_.find(joint.first) == joint_time_.end())
       if (!isPassiveOrMimicDOF(joint.first))
       {
@@ -197,8 +192,7 @@ bool CurrentStateMonitor::haveCompleteState(const ros::Duration& age) const
   ros::Time now = ros::Time::now();
   ros::Time old = now - age;
   boost::mutex::scoped_lock slock(state_update_lock_);
-  const std::unordered_map<std::string, double>& joints = state_.joints;
-  for (const auto& joint : joints)
+  for (const auto& joint : env_state_.joints)
   {
     if (isPassiveOrMimicDOF(joint.first))
       continue;
@@ -228,8 +222,7 @@ bool CurrentStateMonitor::haveCompleteState(const ros::Duration& age, std::vecto
   ros::Time old = now - age;
   boost::mutex::scoped_lock slock(state_update_lock_);
 
-  const std::unordered_map<std::string, double>& joints = state_.joints;
-  for (const auto& joint : joints)
+  for (const auto& joint : env_state_.joints)
   {
     if (isPassiveOrMimicDOF(joint.first))
       continue;
@@ -328,18 +321,43 @@ void CurrentStateMonitor::jointStateCallback(const sensor_msgs::JointStateConstP
     boost::mutex::scoped_lock slock(state_update_lock_);
     // read the received values, and update their time stamps
     current_state_time_ = joint_state->header.stamp;
+    if (last_environment_revision_ != env_->getRevision())
+    {
+      env_state_ = tesseract_environment::EnvState(*env_->getCurrentState());
+      last_environment_revision_ = env_->getRevision();
+    }
+
     for (unsigned i = 0; i < joint_state->name.size(); ++i)
     {
-      if (state_.joints.find(joint_state->name[i]) != state_.joints.end())
+      if (env_state_.joints.find(joint_state->name[i]) != env_state_.joints.end())
       {
-        double diff = state_.joints[joint_state->name[i]] - joint_state->position[i];
+        double diff = env_state_.joints[joint_state->name[i]] - joint_state->position[i];
         if (std::fabs(diff) > std::numeric_limits<double>::epsilon())
         {
-          state_.joints[joint_state->name[i]] = joint_state->position[i];
+          env_state_.joints[joint_state->name[i]] = joint_state->position[i];
           update = true;
         }
       }
     }
+
+    if (update)
+      env_state_ = tesseract_environment::EnvState(*(env_->getState(env_state_.joints)));
+
+    std::string base_link = env_->getRootLinkName();
+    std::vector<geometry_msgs::TransformStamped> transforms;
+    transforms.reserve(env_state_.joints.size());
+    for (const auto& pose : env_state_.transforms)
+    {
+      if (pose.first != base_link)
+      {
+        geometry_msgs::TransformStamped tf = tf2::eigenToTransform(pose.second);
+        tf.header.stamp = current_state_time_;
+        tf.header.frame_id = base_link;
+        tf.child_frame_id = pose.first;
+        transforms.push_back(tf);
+      }
+    }
+    tf_broadcaster_.sendTransform(transforms);
   }
 
   // callbacks, if needed

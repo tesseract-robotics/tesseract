@@ -682,9 +682,7 @@ void EnvironmentMonitor::updateEnvironmentWithCurrentState()
       last_update_time_ = last_robot_motion_time_ = current_state_monitor_->getCurrentStateTime();
       ROS_DEBUG_STREAM_NAMED(LOGNAME, "robot state update " << fmod(last_robot_motion_time_.toSec(), 10.));
 
-      tesseract_environment::EnvState current_state;
-      current_state_monitor_->setToCurrentState(current_state);
-      tesseract_->getEnvironment()->setState(current_state.joints);
+      tesseract_->getEnvironment()->setState(current_state_monitor_->getCurrentState()->joints);
     }
     triggerEnvironmentUpdateEvent(UPDATE_STATE);
   }
