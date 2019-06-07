@@ -59,7 +59,6 @@ TriangleListMarker::TriangleListMarker(const std::string &ns,
                                        const std::vector<Ogre::ColourValue>& colors)
 : MarkerBase(ns, id, context, parent_node)
 , manual_object_(nullptr)
-, scale_(Ogre::Vector3(1,1,1))
 , has_vertex_colors_(false)
 , has_face_colors_(false)
 , any_vertex_has_alpha_(false)
@@ -158,13 +157,12 @@ TriangleListMarker::~TriangleListMarker()
 
 void TriangleListMarker::setScale(Ogre::Vector3 scale)
 {
-  scale_ = scale;
-  scene_node_->setScale(scale_);
+  scene_node_->setScale(scale);
 }
 
 Ogre::Vector3 TriangleListMarker::getScale() const
 {
-  return scale_;
+  return scene_node_->getScale();
 }
 
 void TriangleListMarker::setColor( float r, float g, float b, float a )

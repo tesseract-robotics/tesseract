@@ -63,7 +63,6 @@ public:
               const int id,
               Ogre::Vector3 point1,
               Ogre::Vector3 point2,
-              Ogre::Vector3 scale,
               rviz::DisplayContext* context,
               Ogre::SceneNode* parent_node );
 
@@ -81,7 +80,7 @@ protected:
 
   rviz::Arrow *arrow_;
   Ogre::SceneNode *child_scene_node_;
-  Ogre::Vector3 scale_;
+  Ogre::Vector3 location_;
 };
 
 }

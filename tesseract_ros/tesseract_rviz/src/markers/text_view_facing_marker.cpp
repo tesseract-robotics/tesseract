@@ -53,6 +53,7 @@ TextViewFacingMarker::TextViewFacingMarker(const std::string &ns,
 {
   text_ = new rviz::MovableText(caption);
   text_->setTextAlignment(rviz::MovableText::H_CENTER, rviz::MovableText::V_CENTER);
+  text_->setCharacterHeight(0.15f);
   scene_node_->attachObject(text_);
 
   handler_.reset( new MarkerSelectionHandler(this, MarkerID(ns, id), context_ ));
@@ -67,7 +68,6 @@ TextViewFacingMarker::~TextViewFacingMarker()
 void TextViewFacingMarker::setScale(Ogre::Vector3 scale)
 {
   scene_node_->setScale(scale);
-  text_->setCharacterHeight(scale.z);
 }
 
 Ogre::Vector3 TextViewFacingMarker::getScale() const

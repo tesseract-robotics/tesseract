@@ -75,7 +75,6 @@ public:
   std::set<Ogre::MaterialPtr> getMaterials() override;
 
 protected:
-  Ogre::Vector3 scale_;
   bool has_vertex_colors_;
   bool has_face_colors_;
   bool any_vertex_has_alpha_;
