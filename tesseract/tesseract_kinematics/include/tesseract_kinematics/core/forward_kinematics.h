@@ -143,6 +143,9 @@ public:
   /** @brief getter for the robot base link name */
   virtual const std::string& getBaseLinkName() const = 0;
 
+  /** @brief Get the tip link name */
+  virtual const std::string& getTipLinkName() const = 0;
+
   /** @brief Name of the maniputlator */
   virtual const std::string& getName() const = 0;
 
