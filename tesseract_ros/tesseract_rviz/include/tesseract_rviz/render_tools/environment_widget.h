@@ -41,7 +41,7 @@ public:
   using Ptr = std::shared_ptr<EnvironmentWidget>;
   using ConstPtr = std::shared_ptr<const EnvironmentWidget>;
 
-  EnvironmentWidget(rviz::Property* widget, rviz::Display* display);
+  EnvironmentWidget(rviz::Property* widget, rviz::Display* display, const std::string& widget_ns = std::string());
 
   virtual ~EnvironmentWidget();
 
@@ -55,8 +55,12 @@ public:
   void onUpdate();
   void onReset();
 
+  /** @brief Returns the ID of this EnvironmentWidget instance which is associated with the default namespace */
+  int getId() const { return environment_widget_id_; }
+
 private Q_SLOTS:
   void changedURDFDescription();
+  void changedEnvironmentNamespace();
   void changedRootLinkName();
   void changedTesseractStateTopic();
   void changedURDFSceneAlpha();
@@ -102,6 +106,7 @@ protected:
   bool applyEnvironmentCommands(const std::vector<tesseract_msgs::EnvironmentCommand> &commands);
 
   rviz::StringProperty* urdf_description_property_;
+  rviz::StringProperty* environment_namespace_property_;
   rviz::RosTopicProperty* tesseract_state_topic_property_;
   rviz::StringProperty* root_link_name_property_;
   rviz::FloatProperty* alpha_property_;
@@ -109,6 +114,14 @@ protected:
   rviz::BoolProperty* enable_visual_visible_;
   rviz::BoolProperty* enable_collision_visible_;
   rviz::BoolProperty* show_all_links_;
+
+private:
+    /** @brief Keeps track of how many EnvironmentWidgets have been created for the default namespace */
+    static int environment_widget_counter_;
+    /** @brief Keeps track of which EnvironmentWidget this is */
+    int environment_widget_id_;
+
+    std::string widget_ns_;
 };
 }  // namespace tesseract_rviz
 #endif // TESSERACT_RVIZ_ENVIRONMENT_MONITORING_H
