@@ -512,10 +512,7 @@ void InteractiveMarker::update(float wall_dt)
     }
     else if ( time_since_last_feedback_ > 0.25 )
     {
-      //send keep-alive so we don't use control over the marker
-      visualization_msgs::InteractiveMarkerFeedback feedback;
-      feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::KEEP_ALIVE;
-      publishFeedback( feedback );
+      publishFeedback();
     }
   }
 }
@@ -523,10 +520,7 @@ void InteractiveMarker::update(float wall_dt)
 void InteractiveMarker::publishPose()
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
-  visualization_msgs::InteractiveMarkerFeedback feedback;
-  feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE;
-  feedback.control_name = last_control_name_;
-  publishFeedback( feedback );
+  publishFeedback();
   pose_changed_ = false;
 }
 
@@ -634,18 +628,7 @@ bool InteractiveMarker::handle3DCursorEvent(rviz::ViewportMouseEvent& event, con
     Ogre::Vector3 point_rel_world = cursor_pos;
     bool got_3D_point = true;
 
-    visualization_msgs::InteractiveMarkerFeedback feedback;
-    feedback.control_name = control_name;
-    feedback.marker_name = name_;
-
-    // make sure we've published a last pose update
-    feedback.event_type = ((uint8_t)visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE);
-    publishFeedback( feedback, got_3D_point, point_rel_world );
-
-    feedback.event_type = (event.type == QEvent::MouseButtonPress ?
-                           (uint8_t)visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN :
-                           (uint8_t)visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP);
-    publishFeedback( feedback, got_3D_point, point_rel_world );
+    publishFeedback(got_3D_point, point_rel_world);
   }
 
   if( !dragging_ && menu_.get() )
@@ -682,18 +665,7 @@ bool InteractiveMarker::handleMouseEvent(rviz::ViewportMouseEvent& event, const 
     bool got_3D_point =
       context_->getSelectionManager()->get3DPoint( event.viewport, event.x, event.y, point_rel_world );
 
-    visualization_msgs::InteractiveMarkerFeedback feedback;
-    feedback.control_name = control_name;
-    feedback.marker_name = name_;
-
-    // make sure we've published a last pose update
-    feedback.event_type = ((uint8_t)visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE);
-    publishFeedback( feedback, got_3D_point, point_rel_world );
-
-    feedback.event_type = (event.type == QEvent::MouseButtonPress ?
-                           (uint8_t)visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN :
-                           (uint8_t)visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP);
-    publishFeedback( feedback, got_3D_point, point_rel_world );
+    publishFeedback(got_3D_point, point_rel_world);
   }
 
   if( !dragging_ && menu_.get() )
@@ -768,65 +740,37 @@ void InteractiveMarker::handleMenuSelect( int menu_item_id )
   }
 }
 
-void InteractiveMarker::publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback,
-                                        bool mouse_point_valid,
-                                        const Ogre::Vector3& mouse_point_rel_world )
+void InteractiveMarker::publishFeedback(bool mouse_point_valid, const Ogre::Vector3& mouse_point_rel_world )
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
-
-  feedback.marker_name = name_;
+  Eigen::Isometry3d transform;
+  Eigen::Vector3d mouse_point;
+  std::string frame_name;
 
   if ( frame_locked_ )
   {
-    // frame-locked IMs will return their pose in the same coordinate frame
-    // as they were set up with (the "reference frame").
-    // The transformation's timestamp will be the one used for placing
-    // the reference frame into the fixed frame
-    feedback.header.frame_id = reference_frame_;
-    feedback.header.stamp = reference_time_;
-    feedback.pose.position.x = position_.x;
-    feedback.pose.position.y = position_.y;
-    feedback.pose.position.z = position_.z;
-    feedback.pose.orientation.x = orientation_.x;
-    feedback.pose.orientation.y = orientation_.y;
-    feedback.pose.orientation.z = orientation_.z;
-    feedback.pose.orientation.w = orientation_.w;
+    frame_name = reference_frame_;
+    toEigen(transform, position_, orientation_);
 
-    feedback.mouse_point_valid = mouse_point_valid;
     if( mouse_point_valid )
     {
       Ogre::Vector3 mouse_rel_reference = reference_node_->convertWorldToLocalPosition( mouse_point_rel_world );
-      feedback.mouse_point.x = mouse_rel_reference.x;
-      feedback.mouse_point.y = mouse_rel_reference.y;
-      feedback.mouse_point.z = mouse_rel_reference.z;
+      mouse_point = Eigen::Vector3d(mouse_rel_reference.x, mouse_rel_reference.y, mouse_rel_reference.z);
     }
   }
   else
   {
-    // Timestamped IMs will return feedback in RViz's fixed frame
-    feedback.header.frame_id = context_->getFixedFrame().toStdString();
-    // This should be ros::Time::now(), but then the computer running
-    // RViz has to be time-synced with the server
-    feedback.header.stamp = ros::Time();
+    frame_name = context_->getFixedFrame().toStdString();
 
     Ogre::Vector3 world_position = reference_node_->convertLocalToWorldPosition( position_ );
     Ogre::Quaternion world_orientation = reference_node_->convertLocalToWorldOrientation( orientation_ );
 
-    feedback.pose.position.x = world_position.x;
-    feedback.pose.position.y = world_position.y;
-    feedback.pose.position.z = world_position.z;
-    feedback.pose.orientation.x = world_orientation.x;
-    feedback.pose.orientation.y = world_orientation.y;
-    feedback.pose.orientation.z = world_orientation.z;
-    feedback.pose.orientation.w = world_orientation.w;
+    toEigen(transform, world_position, world_orientation);
 
-    feedback.mouse_point_valid = mouse_point_valid;
-    feedback.mouse_point.x = mouse_point_rel_world.x;
-    feedback.mouse_point.y = mouse_point_rel_world.y;
-    feedback.mouse_point.z = mouse_point_rel_world.z;
+    mouse_point = Eigen::Vector3d(mouse_point_rel_world.x, mouse_point_rel_world.y, mouse_point_rel_world.z);
   }
 
-  Q_EMIT userFeedback( feedback );
+  Q_EMIT userFeedback(frame_name, transform, mouse_point, mouse_point_valid);
 
   time_since_last_feedback_ = 0;
 }

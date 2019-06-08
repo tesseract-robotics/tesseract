@@ -53,6 +53,8 @@ ManipulationWidget::ManipulationWidget(rviz::Property* widget, rviz::Display* di
   , tesseract_(nullptr)
   , root_interactive_node_(nullptr)
   , state_(ManipulatorState::START)
+  , env_revision_(0)
+  , env_state_(nullptr)
 //  , trajectory_slider_panel_(nullptr)
 //  , trajectory_slider_dock_panel_(nullptr)
 {
@@ -102,6 +104,8 @@ void ManipulationWidget::onInitialize(Ogre::SceneNode* root_node,
       manipulator_property_->addOptionStd(manip, cnt);
       ++cnt;
     }
+    env_revision_ = tesseract_->getEnvironmentConst()->getRevision();
+    env_state_ = std::make_shared<tesseract_environment::EnvState>(*(tesseract_->getEnvironmentConst()->getCurrentState()));
   }
 
   if (state_ == ManipulatorState::START)
@@ -116,6 +120,7 @@ void ManipulationWidget::onInitialize(Ogre::SceneNode* root_node,
   }
 
   changedJointStateTopic();
+  changedManipulator();
 
 
 //  rviz::WindowManagerInterface* window_context = context_->getWindowManager();
@@ -180,25 +185,33 @@ void ManipulationWidget::onNameChange(const QString& name)
 
 void ManipulationWidget::changedManipulator()
 {
-  LinkWidget* link = visualization_->getLink("tool0");
-  root_interactive_node_->setPosition(link->getPosition());
-  root_interactive_node_->setOrientation(link->getOrientation());
+  if (tesseract_->isInitialized())
+  {
+    std::string manipulator = manipulator_property_->getStdString();
+    inv_kin_ = tesseract_->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator);
+    if (inv_kin_ == nullptr)
+      return;
 
-  interactive_marker_ = boost::make_shared<InteractiveMarker>("Test", "Move Robot", root_interactive_node_, context_, 0.5);
-  make6Dof(*interactive_marker_);
+    std::vector<std::string> joint_names = inv_kin_->getJointNames();
+    inv_seed_ = tesseract_->getEnvironmentConst()->getCurrentJointValues(inv_kin_->getJointNames());
+    LinkWidget* link = visualization_->getLink(inv_kin_->getTipLinkName());
 
-  interactive_marker_->setShowAxes(false);
-  interactive_marker_->setShowVisualAids(false);
-  interactive_marker_->setShowDescription(true);
+    root_interactive_node_->setPosition(link->getPosition());
+    root_interactive_node_->setOrientation(link->getOrientation());
 
-//  interactive_marker_->setPose(link->getPosition(), link->getOrientation(), "Test");
+    interactive_marker_ = boost::make_shared<InteractiveMarker>("Test", "Move Robot", root_interactive_node_, context_, 0.5);
+    make6Dof(*interactive_marker_);
 
-  connect(interactive_marker_.get(),
-          SIGNAL(userFeedback(visualization_msgs::InteractiveMarkerFeedback&)),
-          this,
-          SLOT(markerFeedback(visualization_msgs::InteractiveMarkerFeedback&)));
+    interactive_marker_->setShowAxes(false);
+    interactive_marker_->setShowVisualAids(false);
+    interactive_marker_->setShowDescription(true);
 
+    connect(interactive_marker_.get(),
+            SIGNAL(userFeedback(std::string, Eigen::Isometry3d, Eigen::Vector3d, bool)),
+            this,
+            SLOT(markerFeedback(std::string, Eigen::Isometry3d, Eigen::Vector3d, bool)));
 
+}
 //  if (display_mode_property_->getOptionInt() != 2)
 //  {
 //    if (display_->isEnabled() && displaying_trajectory_message_ && animating_path_)
@@ -226,11 +239,48 @@ void ManipulationWidget::changedJointStateTopic()
   }
 }
 
-void ManipulationWidget::markerFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback)
+void ManipulationWidget::markerFeedback(std::string reference_frame, Eigen::Isometry3d transform, Eigen::Vector3d mouse_point, bool mouse_point_valid)
 {
-  static int a = 0;
-  ++a;
-  ROS_ERROR_STREAM ("" << a);
+  if (inv_kin_ && env_state_)
+  {
+    const Eigen::Isometry3d& ref = env_state_->transforms[reference_frame];
+    const Eigen::Isometry3d& base = env_state_->transforms[inv_kin_->getBaseLinkName()];
+
+    Eigen::Isometry3d local_tf = base.inverse() * ref * transform;
+    Eigen::VectorXd solutions;
+    if (inv_kin_->calcInvKin(solutions, local_tf, inv_seed_))
+    {
+      inv_seed_ = solutions.head(inv_kin_->numJoints());
+      tesseract_environment::EnvStatePtr env_state = tesseract_->getEnvironmentConst()->getState(inv_kin_->getJointNames(), inv_seed_);
+      if (state_ == ManipulatorState::START)
+      {
+        for (auto& link_pair : visualization_->getLinks())
+        {
+          LinkWidget* link = link_pair.second;
+          auto it = env_state->transforms.find(link->getName());
+          if (it != env_state->transforms.end())
+          {
+            link->setStartTransform(it->second);
+          }
+        }
+      }
+      else
+      {
+        for (auto& link_pair : visualization_->getLinks())
+        {
+          LinkWidget* link = link_pair.second;
+          auto it = env_state->transforms.find(link->getName());
+          if (it != env_state->transforms.end())
+          {
+            link->setEndTransform(it->second);
+          }
+        }
+      }
+      sensor_msgs::JointState joint_state;
+      tesseract_rosutils::toMsg(joint_state, *env_state);
+      joint_state_pub_.publish(joint_state);
+    }
+  }
 }
 
 void ManipulationWidget::onUpdate(float wall_dt)
@@ -240,6 +290,39 @@ void ManipulationWidget::onUpdate(float wall_dt)
 
   if (tesseract_->isInitialized())
   {
+    if (env_revision_ != tesseract_->getEnvironmentConst()->getRevision() || !env_state_)
+    {
+      env_revision_ = tesseract_->getEnvironmentConst()->getRevision();
+      env_state_ = std::make_shared<tesseract_environment::EnvState>(*(tesseract_->getEnvironmentConst()->getCurrentState()));
+      if (state_ == ManipulatorState::START)
+      {
+        for (auto& link_pair : visualization_->getLinks())
+        {
+          LinkWidget* link = link_pair.second;
+          auto it = env_state_->transforms.find(link->getName());
+          if (it != env_state_->transforms.end())
+          {
+            link->setStartTransform(it->second);
+          }
+        }
+      }
+      else
+      {
+        for (auto& link_pair : visualization_->getLinks())
+        {
+          LinkWidget* link = link_pair.second;
+          auto it = env_state_->transforms.find(link->getName());
+          if (it != env_state_->transforms.end())
+          {
+            link->setEndTransform(it->second);
+          }
+        }
+      }
+    }
+
+    if (!inv_kin_)
+      changedManipulator();
+
     std::string current_manipulator = manipulator_property_->getStdString();
     std::vector<std::string> manipulators = tesseract_->getInvKinematicsManagerConst()->getAvailableInvKinematicsManipulators();
 

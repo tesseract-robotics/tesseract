@@ -101,12 +101,6 @@ public:
   using Ptr = boost::shared_ptr<InteractiveMarkerControl>;
   using ConstPtr = boost::shared_ptr<const InteractiveMarkerControl>;
 
-  /** @brief Constructor.
-   *
-   * Just creates Ogre::SceneNodes and sets some defaults.  To actually make it look like a
-   * visualization_msgs::InteractiveMarkerControl message specifies,
-   * call processMessage().
-   */
   InteractiveMarkerControl(const std::string& name,
                            const std::string& description,
                            rviz::DisplayContext* context,
