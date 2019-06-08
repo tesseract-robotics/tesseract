@@ -39,6 +39,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <tesseract/tesseract.h>
 #include <sensor_msgs/JointState.h>
 #include <boost/thread/mutex.hpp>
+#include <tesseract_kinematics/core/inverse_kinematics.h>
 //#include <interactive_markers/interactive_marker_server.h>
 //#include <interactive_markers/menu_handler.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
@@ -96,7 +97,7 @@ public:
 private Q_SLOTS:
   void changedManipulator();
   void changedJointStateTopic();
-  void markerFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback);
+  void markerFeedback(std::string reference_frame, Eigen::Isometry3d transform, Eigen::Vector3d mouse_point, bool mouse_point_valid);
 //  void trajectorySliderPanelVisibilityChange(bool enable);
 
 protected:
@@ -110,6 +111,10 @@ protected:
   ManipulatorState state_;
   InteractiveMarker::Ptr interactive_marker_;
   std::vector<std::string> manipulators_;
+  tesseract_kinematics::InverseKinematicsPtr inv_kin_;
+  Eigen::VectorXd inv_seed_;
+  int env_revision_;
+  tesseract_environment::EnvStatePtr env_state_;
 
   ros::Publisher joint_state_pub_;
 

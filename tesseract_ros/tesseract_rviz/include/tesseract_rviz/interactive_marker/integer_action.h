@@ -42,7 +42,7 @@ class IntegerAction: public QAction
 Q_OBJECT
 public:
   IntegerAction(const QString& text, QObject* parent, int id );
-  int id_; // The menu id number from the visualization_msgs/MenuEntry
+  int id_; // The menu id number
 
 Q_SIGNALS:
   void triggered( int id ); // emitted when action is triggered, sends id passed in.

@@ -34,12 +34,12 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/thread.hpp>
+#include <Eigen/Geometry>
 
 #include <OgreVector3.h>
 #include <OgreQuaternion.h>
 
 #include <tesseract_rviz/interactive_marker/interactive_marker_control.h>
-#include <visualization_msgs/InteractiveMarkerFeedback.h>
 #endif
 
 #include "rviz/selection/forwards.h"
@@ -142,10 +142,8 @@ public:
    */
   void showMenu( rviz::ViewportMouseEvent& event, const std::string &control_name, const Ogre::Vector3 &three_d_point, bool valid_point );
 
-  // fill in current marker pose & name, publish
-  void publishFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback,
-                       bool mouse_point_valid = false,
-                       const Ogre::Vector3& mouse_point_rel_world = Ogre::Vector3(0,0,0) );
+  // Emit pose pose information
+  void publishFeedback(bool mouse_point_valid = false, const Ogre::Vector3& mouse_point_rel_world = Ogre::Vector3(0,0,0) );
 
   bool hasMenu() { return has_menu_; }
 
@@ -154,7 +152,7 @@ public:
 
 Q_SIGNALS:
 
-void userFeedback(visualization_msgs::InteractiveMarkerFeedback &feedback);
+void userFeedback(std::string reference_frame, Eigen::Isometry3d transform, Eigen::Vector3d mouse_point, bool mouse_point_valid);
 void statusUpdate( rviz::StatusProperty::Level level, const std::string& name, const std::string& text );
 
 protected Q_SLOTS:
@@ -248,6 +246,11 @@ protected:
   bool show_description_;
 };
 
+static inline void toEigen(Eigen::Isometry3d& transform, Ogre::Vector3& position, Ogre::Quaternion& orientation)
+{
+  transform.linear() = Eigen::Quaterniond(orientation.w, orientation.x, orientation.y, orientation.z).matrix();
+  transform.translation() = Eigen::Vector3d(position.x, position.y, position.z);
+}
 
 }
 #endif // TESSERACT_RVIZ_INTERACTIVE_MARKER_H
