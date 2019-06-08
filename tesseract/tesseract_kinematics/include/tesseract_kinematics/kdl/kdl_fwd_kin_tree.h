@@ -85,9 +85,10 @@ public:
   tesseract_scene_graph::SceneGraphConstPtr getSceneGraph() const { return scene_graph_; }
   unsigned int numJoints() const override { return static_cast<unsigned>(joint_list_.size()); }
   const std::string& getBaseLinkName() const override { return scene_graph_->getRoot(); }
+  const std::string& getTipLinkName() const override { return link_list_.back(); } //TODO: Should make this be provided
   const std::string& getName() const override { return name_; }
   const std::string& getSolverName() const override { return solver_name_; }
-  ForwardKinematicsPtr clone() const override { std::make_shared<KDLFwdKinTree>(*this); }
+  ForwardKinematicsPtr clone() const override { return std::make_shared<KDLFwdKinTree>(*this); }
 
   /**
    * @brief Initializes Forward Kinematics as tree

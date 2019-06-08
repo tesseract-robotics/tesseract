@@ -74,9 +74,10 @@ public:
   tesseract_scene_graph::SceneGraphConstPtr getSceneGraph() const { return scene_graph_; }
   unsigned int numJoints() const override { return kdl_data_.robot_chain.getNrOfJoints(); }
   const std::string& getBaseLinkName() const override { return kdl_data_.base_name; }
+  const std::string& getTipLinkName() const override { return kdl_data_.tip_name; }
   const std::string& getName() const override { return name_; }
   const std::string& getSolverName() const override { return solver_name_; }
-  InverseKinematicsPtr clone() const override { std::make_shared<KDLInvKinChainLMA>(*this); }
+  InverseKinematicsPtr clone() const override { return std::make_shared<KDLInvKinChainLMA>(*this); }
 
   /**
    * @brief Initializes Inverse Kinematics as chain
@@ -104,9 +105,6 @@ public:
 
     return initialized_;
   }
-
-  /** @brief Get the tip link name */
-  const std::string& getTipLinkName() const { return kdl_data_.tip_name; }
 
   /**
    * @brief Assigns values from another ROSKin to this
