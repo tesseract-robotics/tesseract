@@ -387,8 +387,8 @@ bool EnvironmentWidget::applyEnvironmentCommands(const std::vector<tesseract_msg
       case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_ORIGIN:
       {
         Eigen::Isometry3d pose;
-        tf::poseMsgToEigen(command.change_joint_orgin_pose, pose);
-        tesseract_->getEnvironment()->changeJointOrigin(command.change_joint_orgin_name, pose);
+        tf::poseMsgToEigen(command.change_joint_origin_pose, pose);
+        tesseract_->getEnvironment()->changeJointOrigin(command.change_joint_origin_name, pose);
         break;
       }
       case tesseract_msgs::EnvironmentCommand::CHANGE_LINK_COLLISION_ENABLED:

@@ -34,12 +34,12 @@ string remove_link
 string remove_joint
 
 # CHANGE_LINK_ORIGIN - Changes the origin of the link
-string change_link_orgin_name
-geometry_msgs/Pose change_link_orgin_pose
+string change_link_origin_name
+geometry_msgs/Pose change_link_origin_pose
 
 # CHANGE_JOINT_ORIGIN - Changes the origin of the joint
-string change_joint_orgin_name
-geometry_msgs/Pose change_joint_orgin_pose
+string change_joint_origin_name
+geometry_msgs/Pose change_joint_origin_pose
 
 # CHANGE_LINK_COLLISION_ENABLED - Enables/Disables collisions for the link
 string change_link_collision_enabled_name
