@@ -72,17 +72,24 @@ TrajectoryMonitorWidget::TrajectoryMonitorWidget(rviz::Property* widget, rviz::D
   , trajectory_slider_dock_panel_(nullptr)
   , cached_visible_(false)
 {
+  main_property_ = new rviz::Property("Trajectory Monitor",
+                                      "",
+                                      "Monitor a joint state topic and update the visualization",
+                                      widget_,
+                                      nullptr,
+                                      this);
+
   trajectory_topic_property_ =
-      new rviz::RosTopicProperty("Trajectory Topic",
+      new rviz::RosTopicProperty("Topic",
                                  "/tesseract/display_tesseract_trajectory",
                                  ros::message_traits::datatype<tesseract_msgs::Trajectory>(),
                                  "The topic on which the tesseract_msgs::Trajectory messages are received",
-                                 widget_,
+                                 main_property_,
                                  SLOT(changedTrajectoryTopic()),
                                  this);
 
   display_mode_property_ = new rviz::EnumProperty(
-      "Display Mode", "Loop", "How to display the trajectoy.", widget_, SLOT(changedDisplayMode()), this);
+      "Display Mode", "Loop", "How to display the trajectoy.", main_property_, SLOT(changedDisplayMode()), this);
   display_mode_property_->addOptionStd("Single", 0);
   display_mode_property_->addOptionStd("Loop", 1);
   display_mode_property_->addOptionStd("Trail", 2);
@@ -91,7 +98,7 @@ TrajectoryMonitorWidget::TrajectoryMonitorWidget(rviz::Property* widget, rviz::D
                                                                 "0.05 s",
                                                                 "The amount of wall-time to wait in between displaying "
                                                                 "states along a received trajectory path",
-                                                                widget_,
+                                                                main_property_,
                                                                 SLOT(changedStateDisplayTime()),
                                                                 this);
   state_display_time_property_->addOptionStd("REALTIME");
@@ -103,7 +110,7 @@ TrajectoryMonitorWidget::TrajectoryMonitorWidget(rviz::Property* widget, rviz::D
                                                     1,
                                                     "Specifies the step size of the samples "
                                                     "shown in the trajectory trail.",
-                                                    widget_,
+                                                    main_property_,
                                                     SLOT(changedTrailStepSize()),
                                                     this);
   trail_step_size_property_->setMin(1);
@@ -112,7 +119,7 @@ TrajectoryMonitorWidget::TrajectoryMonitorWidget(rviz::Property* widget, rviz::D
                                                        false,
                                                        "Immediately show newly planned trajectory, "
                                                        "interrupting the currently displayed one.",
-                                                       widget_);
+                                                       main_property_);
 }
 
 TrajectoryMonitorWidget::~TrajectoryMonitorWidget()

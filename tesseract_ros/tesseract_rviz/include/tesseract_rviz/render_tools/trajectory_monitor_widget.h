@@ -139,6 +139,7 @@ protected:
   size_t num_trajectory_waypoints_;
 
   // Properties
+  rviz::Property* main_property_;
   rviz::EditableEnumProperty* state_display_time_property_;
   rviz::RosTopicProperty* trajectory_topic_property_;
   rviz::EnumProperty* display_mode_property_;

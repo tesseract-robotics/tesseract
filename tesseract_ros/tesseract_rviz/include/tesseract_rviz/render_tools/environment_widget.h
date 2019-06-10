@@ -105,6 +105,7 @@ protected:
   /** @brief Apply a list of commands to the environment. This used by both services and topics for updating environment visualization */
   bool applyEnvironmentCommands(const std::vector<tesseract_msgs::EnvironmentCommand> &commands);
 
+  rviz::Property* main_property_;
   rviz::StringProperty* urdf_description_property_;
   rviz::StringProperty* environment_namespace_property_;
   rviz::RosTopicProperty* tesseract_state_topic_property_;

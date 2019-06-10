@@ -14,16 +14,24 @@ namespace tesseract_rviz
 JointStateMonitorWidget::JointStateMonitorWidget(rviz::Property* widget, rviz::Display* display)
   : widget_(widget)
   , display_(display)
+  , visualization_(nullptr)
   , tesseract_(nullptr)
   , update_required_(false)
-  , visualization_(nullptr)
 {
+
+  main_property_ = new rviz::Property("Joint State Monitor",
+                                      "",
+                                      "Monitor a joint state topic and update the visualization",
+                                      widget_,
+                                      nullptr,
+                                      this);
+
   joint_state_topic_property_ =
-      new rviz::RosTopicProperty("Joint State Topic",
+      new rviz::RosTopicProperty("Topic",
                                  "joint_states",
                                  ros::message_traits::datatype<sensor_msgs::JointState>(),
                                  "The topic on which the sensor_msgs::JointState messages are received",
-                                 widget_,
+                                 main_property_,
                                  SLOT(changedJointStateTopic()),
                                  this);
 

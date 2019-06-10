@@ -67,7 +67,12 @@ TextViewFacingMarker::~TextViewFacingMarker()
 
 void TextViewFacingMarker::setScale(Ogre::Vector3 scale)
 {
+  Ogre::Vector3 pos = getPosition();
+  pos.x*=scale.x;
+  pos.y*=scale.y;
+  pos.z*=scale.z;
   scene_node_->setScale(scale);
+  setPosition(pos);
 }
 
 Ogre::Vector3 TextViewFacingMarker::getScale() const
@@ -75,9 +80,9 @@ Ogre::Vector3 TextViewFacingMarker::getScale() const
   return scene_node_->getScale();
 }
 
-void TextViewFacingMarker::setColor( float r, float g, float b, float a )
+void TextViewFacingMarker::setColor(Ogre::ColourValue color)
 {
-  text_->setColor(Ogre::ColourValue(r, g, b, a));
+  text_->setColor(color);
 }
 
 void TextViewFacingMarker::setText(const std::string& text)

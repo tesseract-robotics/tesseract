@@ -29,6 +29,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <boost/algorithm/string/replace.hpp>
 
 #include <rviz/display_context.h>
+#include <rviz/properties/property.h>
 #include <rviz/properties/enum_property.h>
 #include <rviz/properties/ros_topic_property.h>
 #include <rviz/window_manager_interface.h>
@@ -58,18 +59,24 @@ ManipulationWidget::ManipulationWidget(rviz::Property* widget, rviz::Display* di
 //  , trajectory_slider_panel_(nullptr)
 //  , trajectory_slider_dock_panel_(nullptr)
 {
+  main_property_ = new rviz::Property("Manipulation",
+                                      "",
+                                      "Tool for manipulating kinematics objects",
+                                      widget_,
+                                      nullptr,
+                                      this);
 
   joint_state_topic_property_ =
-      new rviz::RosTopicProperty("Manipulation Topic",
+      new rviz::RosTopicProperty("Topic",
                                  "/tesseract/manipulation_joint_states",
                                  ros::message_traits::datatype<sensor_msgs::JointState>(),
                                  "The topic on which the sensor_msgs::JointState messages are published",
-                                 widget_,
+                                 main_property_,
                                  SLOT(changedJointStateTopic()),
                                  this);
 
   manipulator_property_ = new rviz::EnumProperty(
-      "Manipulator", "", "The manipulator to move around.", widget_, SLOT(changedManipulator()), this);
+      "Manipulator", "", "The manipulator to move around.", main_property_, SLOT(changedManipulator()), this);
 }
 
 ManipulationWidget::~ManipulationWidget()
@@ -110,12 +117,12 @@ void ManipulationWidget::onInitialize(Ogre::SceneNode* root_node,
 
   if (state_ == ManipulatorState::START)
   {
-    joint_state_topic_property_->setName("Manipulation Start State Topic");
+    main_property_->setName("Manipulate Start State");
     joint_state_topic_property_->setValue("/tesseract/manipulation_start_state");
   }
   else
   {
-    joint_state_topic_property_->setName("Manipulation End State Topic");
+    main_property_->setName("Manipulate End State");
     joint_state_topic_property_->setValue("/tesseract/manipulation_end_state");
   }
 
@@ -165,6 +172,8 @@ void ManipulationWidget::onDisable()
     interactive_marker_->setVisible(false);
   }
 
+  env_state_ = nullptr;
+
 //  if (trajectory_slider_panel_)
 //    trajectory_slider_panel_->onDisable();
 }
@@ -196,12 +205,10 @@ void ManipulationWidget::changedManipulator()
     inv_seed_ = tesseract_->getEnvironmentConst()->getCurrentJointValues(inv_kin_->getJointNames());
     LinkWidget* link = visualization_->getLink(inv_kin_->getTipLinkName());
 
-    root_interactive_node_->setPosition(link->getPosition());
-    root_interactive_node_->setOrientation(link->getOrientation());
-
-    interactive_marker_ = boost::make_shared<InteractiveMarker>("Test", "Move Robot", root_interactive_node_, context_, 0.5);
+    interactive_marker_ = boost::make_shared<InteractiveMarker>("Test", "Move Robot", tesseract_->getEnvironmentConst()->getRootLinkName(), root_interactive_node_, context_, true, 0.3);
     make6Dof(*interactive_marker_);
 
+    interactive_marker_->setPose(link->getPosition(), link->getOrientation(), "");
     interactive_marker_->setShowAxes(false);
     interactive_marker_->setShowVisualAids(false);
     interactive_marker_->setShowDescription(true);
@@ -317,6 +324,11 @@ void ManipulationWidget::onUpdate(float wall_dt)
             link->setEndTransform(it->second);
           }
         }
+      }
+      if (inv_kin_)
+      {
+        LinkWidget* link = visualization_->getLink(inv_kin_->getTipLinkName());
+        interactive_marker_->setPose(link->getPosition(), link->getOrientation(), "");
       }
     }
 
