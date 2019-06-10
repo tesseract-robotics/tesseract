@@ -58,8 +58,10 @@ namespace tesseract_rviz
 
 InteractiveMarker::InteractiveMarker(const std::string& name,
                                      const std::string& description,
+                                     const std::string& reference_frame,
                                      Ogre::SceneNode* scene_node,
                                      rviz::DisplayContext* context,
+                                     const bool reference_frame_locked,
                                      const float scale) :
   context_(context)
 , pose_changed_(false)
@@ -72,11 +74,12 @@ InteractiveMarker::InteractiveMarker(const std::string& name,
 , name_(name)
 , description_(description)
 , scale_(scale)
-, frame_locked_(false)
+, reference_frame_(reference_frame)
+, reference_frame_locked_(reference_frame_locked)
 , position_(scene_node->getPosition())
 , orientation_(scene_node->getOrientation())
+, reference_node_(scene_node->createChildSceneNode())
 {
-  reference_node_ = scene_node->createChildSceneNode();
 
   axes_ = new rviz::Axes( context->getSceneManager(), reference_node_, 1, 0.05f );
 
@@ -136,7 +139,7 @@ InteractiveMarker::InteractiveMarker(const std::string& name,
     populateMenu( menu_.get(), top_level_menu_ids_ );
   }
 
-  if ( frame_locked_ )
+  if ( reference_frame_locked_ )
   {
     std::ostringstream s;
     s << "Locked to frame " << reference_frame_;
@@ -490,7 +493,7 @@ void InteractiveMarker::update(float wall_dt)
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
   time_since_last_feedback_ += wall_dt;
-  if ( frame_locked_ )
+  if ( reference_frame_locked_ )
   {
     updateReferencePose();
   }
@@ -747,7 +750,7 @@ void InteractiveMarker::publishFeedback(bool mouse_point_valid, const Ogre::Vect
   Eigen::Vector3d mouse_point;
   std::string frame_name;
 
-  if ( frame_locked_ )
+  if ( reference_frame_locked_ )
   {
     frame_name = reference_frame_;
     toEigen(transform, position_, orientation_);
@@ -767,7 +770,10 @@ void InteractiveMarker::publishFeedback(bool mouse_point_valid, const Ogre::Vect
 
     toEigen(transform, world_position, world_orientation);
 
-    mouse_point = Eigen::Vector3d(mouse_point_rel_world.x, mouse_point_rel_world.y, mouse_point_rel_world.z);
+    if( mouse_point_valid )
+    {
+      mouse_point = Eigen::Vector3d(mouse_point_rel_world.x, mouse_point_rel_world.y, mouse_point_rel_world.z);
+    }
   }
 
   Q_EMIT userFeedback(frame_name, transform, mouse_point, mouse_point_valid);

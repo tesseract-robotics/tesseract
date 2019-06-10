@@ -71,7 +71,7 @@ public:
   void setScale(Ogre::Vector3 scale) override;
   Ogre::Vector3 getScale() const override;
 
-  void setColor( float r, float g, float b, float a ) override;
+  void setColor(Ogre::ColourValue color) override;
 
   std::set<Ogre::MaterialPtr> getMaterials() override;
 

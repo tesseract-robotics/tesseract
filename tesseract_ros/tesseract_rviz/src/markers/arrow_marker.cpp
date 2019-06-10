@@ -121,9 +121,9 @@ Ogre::Vector3 ArrowMarker::getScale() const
   return arrow_->getSceneNode()->getScale();
 }
 
-void ArrowMarker::setColor( float r, float g, float b, float a )
+void ArrowMarker::setColor(Ogre::ColourValue color)
 {
-  arrow_->setColor(r, g, b, a);
+  arrow_->setColor(color.r, color.g, color.b, color.a);
 }
 
 std::set<Ogre::MaterialPtr> ArrowMarker::getMaterials()

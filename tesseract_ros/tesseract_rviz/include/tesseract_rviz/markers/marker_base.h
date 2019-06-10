@@ -84,7 +84,7 @@ public:
   virtual void setScale(Ogre::Vector3 scale) = 0;
   virtual Ogre::Vector3 getScale() const = 0;
 
-  virtual void setColor( float r, float g, float b, float a ) = 0;
+  virtual void setColor(Ogre::ColourValue color) = 0;
 
   virtual std::set<Ogre::MaterialPtr> getMaterials() { return std::set<Ogre::MaterialPtr>(); }
 

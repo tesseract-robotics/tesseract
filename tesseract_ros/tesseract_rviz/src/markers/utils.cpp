@@ -47,7 +47,7 @@ void makeSphere(InteractiveMarkerControl &control, float radius)
 {
   ShapeMarker::Ptr marker = boost::make_shared<ShapeMarker>(control.getName(), 0, MarkerType::SPHERE, control.getDisplayContext(), control.getMarkerSceneNode());
   marker->setScale(Ogre::Vector3(control.getSize() * radius, control.getSize() * radius, control.getSize() * radius));
-  marker->setColor(1.0f, 1.0f, 0.0f, 0.5f);
+  marker->setColor(Ogre::ColourValue(1.0f, 1.0f, 0.0f, 0.5f));
   control.addMarker(marker);
 }
 
@@ -75,7 +75,7 @@ void makeArrow(InteractiveMarkerControl &control, float pos )
   point2.z = 0;
 
   ArrowMarker::Ptr marker = boost::make_shared<ArrowMarker>(control.getName(), 0, point1, point2, control.getDisplayContext(), control.getMarkerSceneNode());
-  marker->setColor(default_color.r, default_color.g, default_color.b, default_color.a);
+  marker->setColor(default_color);
   marker->setOrientation(control.getControlOrientation());
   float scale1 = control.getSize();
   marker->setScale(Ogre::Vector3(scale1, scale1, scale1));
@@ -85,14 +85,10 @@ void makeArrow(InteractiveMarkerControl &control, float pos )
 void makeTitle(InteractiveMarkerControl& control, const std::string& text)
 {
   Ogre::ColourValue default_color(1, 1, 1, 1);
-  Ogre::Vector3 pos = control.getMarkerSceneNode()->getPosition();
-  pos.z+= 0.15f * 1.4f;
-
   TextViewFacingMarker::Ptr marker = boost::make_shared<TextViewFacingMarker>(control.getName(), 0, text, control.getDisplayContext(), control.getMarkerSceneNode());
-  marker->setColor(default_color.r, default_color.g, default_color.b, default_color.a);
+  marker->setColor(default_color);
   float scale = control.getSize();
   marker->setScale(Ogre::Vector3(scale, scale, scale));
-  marker->setPosition(pos);
   control.addMarker(marker);
 }
 

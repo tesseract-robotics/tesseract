@@ -42,11 +42,18 @@ EnvironmentWidget::EnvironmentWidget(rviz::Property* widget, rviz::Display* disp
     widget_ns_ = widget_ns;
   }
 
+  main_property_ = new rviz::Property("Environment",
+                                      "",
+                                      "Tesseract Environment",
+                                      widget_,
+                                      nullptr,
+                                      this);
+
   urdf_description_property_ =
       new rviz::StringProperty("URDF Description",
                                "robot_description",
                                "The name of the ROS parameter where the URDF for the robot is loaded",
-                               widget_,
+                               main_property_,
                                SLOT(changedURDFDescription()),
                                this);
 
@@ -54,7 +61,7 @@ EnvironmentWidget::EnvironmentWidget(rviz::Property* widget, rviz::Display* disp
       new rviz::StringProperty("Interface Namespace",
                                QString::fromUtf8(widget_ns_.c_str()),
                                "The namespace used for the service interface associated with the environment",
-                               widget_,
+                               main_property_,
                                SLOT(changedEnvironmentNamespace()),
                                this);
 
@@ -63,29 +70,29 @@ EnvironmentWidget::EnvironmentWidget(rviz::Property* widget, rviz::Display* disp
                                    "display_tesseract_state",
                                    ros::message_traits::datatype<tesseract_msgs::TesseractState>(),
                                    "The topic on which the tesseract_msgs::TesseractState messages are received",
-                                   widget_,
+                                   main_property_,
                                    SLOT(changedTesseractStateTopic()),
                                    this);
 
   root_link_name_property_ = new rviz::StringProperty(
-      "Root Link", "", "Shows the name of the root link for the urdf", widget_, SLOT(changedRootLinkName()), this);
+      "Root Link", "", "Shows the name of the root link for the urdf", main_property_, SLOT(changedRootLinkName()), this);
   root_link_name_property_->setReadOnly(true);
 
   alpha_property_ = new rviz::FloatProperty(
-      "Alpha", 1.0f, "Specifies the alpha for the links with geometry", widget_, SLOT(changedURDFSceneAlpha()), this);
+      "Alpha", 1.0f, "Specifies the alpha for the links with geometry", main_property_, SLOT(changedURDFSceneAlpha()), this);
   alpha_property_->setMin(0.0);
   alpha_property_->setMax(1.0);
 
   enable_link_highlight_ = new rviz::BoolProperty("Show Highlights",
                                                   true,
                                                   "Specifies whether link highlighting is enabled",
-                                                  widget_,
+                                                  main_property_,
                                                   SLOT(changedEnableLinkHighlight()),
                                                   this);
   enable_visual_visible_ = new rviz::BoolProperty("Show Visual",
                                                   true,
                                                   "Whether to display the visual representation of the environment.",
-                                                  widget_,
+                                                  main_property_,
                                                   SLOT(changedEnableVisualVisible()),
                                                   this);
 
@@ -93,12 +100,12 @@ EnvironmentWidget::EnvironmentWidget(rviz::Property* widget, rviz::Display* disp
                                                      false,
                                                      "Whether to display the collision "
                                                      "representation of the environment.",
-                                                     widget_,
+                                                     main_property_,
                                                      SLOT(changedEnableCollisionVisible()),
                                                      this);
 
   show_all_links_ = new rviz::BoolProperty(
-      "Show All Links", true, "Toggle all links visibility on or off.", widget_, SLOT(changedAllLinks()), this);
+      "Show All Links", true, "Toggle all links visibility on or off.", main_property_, SLOT(changedAllLinks()), this);
 
 
  }

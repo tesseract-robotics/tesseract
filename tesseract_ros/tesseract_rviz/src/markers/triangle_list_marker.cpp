@@ -140,7 +140,7 @@ TriangleListMarker::TriangleListMarker(const std::string &ns,
 
   manual_object_->end();
 
-  setColor(color.r, color.g, color.b, color.a);
+  setColor(color);
 
   handler_->addTrackedObject( manual_object_ );
 }
@@ -165,7 +165,7 @@ Ogre::Vector3 TriangleListMarker::getScale() const
   return scene_node_->getScale();
 }
 
-void TriangleListMarker::setColor( float r, float g, float b, float a )
+void TriangleListMarker::setColor(Ogre::ColourValue color)
 {
   if (has_vertex_colors_ || has_face_colors_)
   {
@@ -174,11 +174,11 @@ void TriangleListMarker::setColor( float r, float g, float b, float a )
   else
   {
     material_->getTechnique(0)->setLightingEnabled(true);
-    material_->getTechnique(0)->setAmbient( r/2,g/2,b/2 );
-    material_->getTechnique(0)->setDiffuse( r,g,b,a );
+    material_->getTechnique(0)->setAmbient( color.r/2, color.g/2, color.b/2 );
+    material_->getTechnique(0)->setDiffuse(color);
   }
 
-  if( (!has_vertex_colors_ && a < 0.9998f) || (has_vertex_colors_ && any_vertex_has_alpha_))
+  if( (!has_vertex_colors_ && color.a < 0.9998f) || (has_vertex_colors_ && any_vertex_has_alpha_))
   {
     material_->getTechnique(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
     material_->getTechnique(0)->setDepthWriteEnabled( false );

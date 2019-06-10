@@ -50,6 +50,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 namespace rviz
 {
+class Property;
 class RosTopicProperty;
 class EnumProperty;
 }
@@ -122,6 +123,7 @@ protected:
 //  rviz::PanelDockWidget* trajectory_slider_dock_panel_;
 
   // Properties
+  rviz::Property* main_property_;
   rviz::EnumProperty* manipulator_property_;
   rviz::RosTopicProperty* joint_state_topic_property_;
 };

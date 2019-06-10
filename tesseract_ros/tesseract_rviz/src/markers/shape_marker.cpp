@@ -83,9 +83,9 @@ Ogre::Vector3 ShapeMarker::getScale() const
   return scale_;
 }
 
-void ShapeMarker::setColor( float r, float g, float b, float a )
+void ShapeMarker::setColor(Ogre::ColourValue color)
 {
-  shape_->setColor(r, g, b, a);
+  shape_->setColor(color.r, color.g, color.b, color.a);
 }
 
 std::set<Ogre::MaterialPtr> ShapeMarker::getMaterials()

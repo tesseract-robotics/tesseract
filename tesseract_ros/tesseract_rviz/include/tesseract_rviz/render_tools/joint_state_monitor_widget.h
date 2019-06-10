@@ -58,8 +58,10 @@ protected:
   tesseract::Tesseract::Ptr tesseract_;
   ros::NodeHandle nh_;
   ros::Subscriber joint_state_subscriber_;
-  rviz::RosTopicProperty* joint_state_topic_property_;
   bool update_required_;
+
+  rviz::Property* main_property_;
+  rviz::RosTopicProperty* joint_state_topic_property_;
 
   void newJointStateCallback(const sensor_msgs::JointStateConstPtr& joint_state);
 };
