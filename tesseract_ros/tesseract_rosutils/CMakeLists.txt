@@ -22,6 +22,7 @@ catkin_package(
     tesseract_msgs
     roscpp
     eigen_conversions
+    roslib
   DEPENDS
     EIGEN3
     tesseract_scene_graph
