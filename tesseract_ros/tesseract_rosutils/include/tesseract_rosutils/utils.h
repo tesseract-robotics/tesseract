@@ -87,6 +87,15 @@ static inline std::string locateResource(const std::string& url)
 
     mod_url = package_path + mod_url;
   }
+  else if (url.find("file://") == 0)
+  {
+    mod_url.erase(0, strlen("file://"));
+    size_t pos = mod_url.find("/");
+    if (pos == std::string::npos)
+    {
+      return std::string();
+    }
+  }
 
   return mod_url;
 }
