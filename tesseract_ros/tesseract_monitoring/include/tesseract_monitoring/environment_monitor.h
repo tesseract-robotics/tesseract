@@ -51,6 +51,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/TesseractState.h>
 #include <tesseract_msgs/ModifyEnvironment.h>
 #include <tesseract_msgs/GetEnvironmentChanges.h>
+#include <tesseract_msgs/SaveSceneGraph.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/discrete_contact_manager.h>
@@ -108,6 +109,9 @@ public:
 
   /// The name of the service used by default for setting the full tesseract environment state
   static const std::string DEFAULT_MODIFY_ENVIRONMENT_SERVICE;  // "/modify_tesseract"
+
+  /// The name of the service used by default for saving the scene graph as a DOT
+  static const std::string DEFAULT_SAVE_SCENE_GRAPH_SERVICE;   //"/save_scene_graph"
 
   /// The name of the topic used by default for publishing the monitored tesseract environment (this is without "/" in
   /// the name, so the topic is prefixed by the node name)
@@ -297,6 +301,9 @@ protected:
   // host a service for getting the environment changes
   ros::ServiceServer get_environment_changes_server_;
 
+  // host a service for saving the scene graph to a DOT file
+  ros::ServiceServer save_scene_graph_server_;
+
   // include a current state monitor
   CurrentStateMonitorPtr current_state_monitor_;
 
@@ -328,6 +335,10 @@ private:
   /** @brief Callback for get the environment changes via service request */
   bool getEnvironmentChangesCallback(tesseract_msgs::GetEnvironmentChangesRequest& req,
                                      tesseract_msgs::GetEnvironmentChangesResponse& res);
+
+  /** @brief Callback to save the scene graph to a DOT via a service request */
+  bool saveSceneGraphCallback(tesseract_msgs::SaveSceneGraphRequest& req,
+                              tesseract_msgs::SaveSceneGraphResponse& res);
 
   // Called when new service request is called to modify the environment.
   bool applyEnvironmentCommandsMessage(std::string id, int revision, const std::vector<tesseract_msgs::EnvironmentCommand> &commands);
