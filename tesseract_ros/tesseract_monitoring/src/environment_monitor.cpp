@@ -714,6 +714,7 @@ bool EnvironmentMonitor::modifyEnvironmentCallback(tesseract_msgs::ModifyEnviron
                                                    tesseract_msgs::ModifyEnvironmentResponse &res)
 {
   res.success = applyEnvironmentCommandsMessage(req.id, static_cast<int>(req.revision), req.commands);
+  res.revision = tesseract_->getEnvironmentConst()->getRevision();
   return res.success;
 }
 

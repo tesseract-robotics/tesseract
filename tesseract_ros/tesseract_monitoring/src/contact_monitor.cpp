@@ -84,6 +84,7 @@ bool callbackModifyTesseractEnv(tesseract_msgs::ModifyEnvironmentRequest& reques
 {
   boost::mutex::scoped_lock(modify_mutex);
   response.success = processMsg(*(tess->getEnvironment()), request.commands);
+  response.revision = tess->getEnvironmentConst()->getRevision();
 
   // Create a new manager
   std::vector<std::string> active = manager->getActiveCollisionObjects();
