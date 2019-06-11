@@ -436,8 +436,8 @@ void SceneGraph::saveDOT(std::string path) const
     Vertex v = boost::target(e, graph);
     JointConstPtr joint = boost::get(boost::edge_joint, graph)[e];
 
-    dot_file << boost::get(boost::vertex_link, graph)[u]->getName()
-             << " -> " << boost::get(boost::vertex_link, graph)[v]->getName()
+    dot_file << '"' << boost::get(boost::vertex_link, graph)[u]->getName() << '"'
+             << " -> " << '"' << boost::get(boost::vertex_link, graph)[v]->getName() << '"'
              << "[label=\"" << joint->getName() << "\n(" << joint->type << ")\", color=\"black\"]";
 
   }
