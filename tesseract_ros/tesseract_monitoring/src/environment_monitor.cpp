@@ -110,6 +110,7 @@ static const std::string LOGNAME = "environment_monitor";
 const std::string EnvironmentMonitor::DEFAULT_JOINT_STATES_TOPIC = "joint_states";
 const std::string EnvironmentMonitor::DEFAULT_GET_ENVIRONMENT_CHANGES_SERVICE = "get_tesseract_changes";
 const std::string EnvironmentMonitor::DEFAULT_MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract";
+const std::string EnvironmentMonitor::DEFAULT_SAVE_SCENE_GRAPH_SERVICE = "save_scene_graph";
 const std::string EnvironmentMonitor::MONITORED_ENVIRONMENT_TOPIC = "monitored_tesseract";
 
 EnvironmentMonitor::EnvironmentMonitor(const std::string& robot_description,
@@ -253,6 +254,9 @@ void EnvironmentMonitor::initialize()
 
   get_environment_changes_server_ =
       nh_.advertiseService(DEFAULT_GET_ENVIRONMENT_CHANGES_SERVICE, &EnvironmentMonitor::getEnvironmentChangesCallback, this);
+
+  save_scene_graph_server_ =
+      nh_.advertiseService(DEFAULT_SAVE_SCENE_GRAPH_SERVICE, &EnvironmentMonitor::saveSceneGraphCallback, this);
 }
 
 void EnvironmentMonitor::stopPublishingEnvironment()
@@ -482,6 +486,18 @@ bool EnvironmentMonitor::applyEnvironmentCommandsMessage(std::string id, int rev
 //    triggerEnvironmentUpdateEvent(UPDATE_GEOMETRY);
 //  }
 //}
+
+bool EnvironmentMonitor::saveSceneGraphCallback(tesseract_msgs::SaveSceneGraphRequest& req,
+                                                tesseract_msgs::SaveSceneGraphResponse& res)
+{
+  auto env = tesseract_->getEnvironment();
+  res.success = !(env == nullptr);
+  env->getSceneGraph()->saveDOT(req.filepath);
+  res.id = env->getName();
+  res.revision = env->getRevision();
+
+  return true;
+}
 
 bool EnvironmentMonitor::waitForCurrentState(const ros::Time& t, double wait_time)
 {

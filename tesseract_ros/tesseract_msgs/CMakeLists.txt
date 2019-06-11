@@ -47,9 +47,10 @@ add_message_files(
 add_service_files(
   DIRECTORY srv
   FILES
+    ComputeContactResultVector.srv
     GetEnvironmentChanges.srv
     ModifyEnvironment.srv
-    ComputeContactResultVector.srv
+    SaveSceneGraph.srv
 )
 
 generate_messages(
