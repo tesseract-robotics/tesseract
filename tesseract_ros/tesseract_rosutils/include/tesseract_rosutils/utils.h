@@ -1215,6 +1215,7 @@ static inline bool processMsg(tesseract_environment::Environment& env, const sen
 
 static inline bool processMsg(tesseract_environment::Environment& env, const std::vector<tesseract_msgs::EnvironmentCommand>& env_command_msg)
 {
+  bool success = true;
   for (const auto& command : env_command_msg)
   {
     switch (command.command)
@@ -1223,68 +1224,81 @@ static inline bool processMsg(tesseract_environment::Environment& env, const std
       {
         tesseract_scene_graph::Link link = tesseract_rosutils::fromMsg(command.add_link);
         tesseract_scene_graph::Joint joint = tesseract_rosutils::fromMsg(command.add_joint);
-        return env.addLink(link, joint);
+        success &= env.addLink(link, joint);
+        break;
       }
       case tesseract_msgs::EnvironmentCommand::MOVE_LINK:
       {
         tesseract_scene_graph::Joint joint = tesseract_rosutils::fromMsg(command.move_link_joint);
-        return env.moveLink(joint);
+        success &= env.moveLink(joint);
+        break;
       }
       case tesseract_msgs::EnvironmentCommand::MOVE_JOINT:
       {
-        return env.moveJoint(command.move_joint_name, command.move_joint_parent_link);
+        success &= env.moveJoint(command.move_joint_name, command.move_joint_parent_link);
+        break;
       }
       case tesseract_msgs::EnvironmentCommand::REMOVE_LINK:
       {
-        return env.removeLink(command.remove_link);
+        success &= env.removeLink(command.remove_link);
+        break;
       }
       case tesseract_msgs::EnvironmentCommand::REMOVE_JOINT:
       {
-        return env.removeJoint(command.remove_joint);
+        success &= env.removeJoint(command.remove_joint);
+        break;
       }
       case tesseract_msgs::EnvironmentCommand::CHANGE_LINK_ORIGIN:
       {
         assert(false);
+        break;
       }
       case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_ORIGIN:
       {
         Eigen::Isometry3d pose;
         tf::poseMsgToEigen(command.change_joint_origin_pose, pose);
-        return env.changeJointOrigin(command.change_joint_origin_name, pose);
+        success &= env.changeJointOrigin(command.change_joint_origin_name, pose);
+        break;
       }
       case tesseract_msgs::EnvironmentCommand::CHANGE_LINK_COLLISION_ENABLED:
       {
         env.setLinkCollisionEnabled(command.change_link_collision_enabled_name, command.change_link_collision_enabled_value);
-        return true;
+        success &= true;
+        break;
       }
       case tesseract_msgs::EnvironmentCommand::CHANGE_LINK_VISIBILITY:
       {
         env.setLinkVisibility(command.change_link_visibility_name, command.change_link_visibility_value);
-        return true;
+        success &= true;
+        break;
       }
       case tesseract_msgs::EnvironmentCommand::ADD_ALLOWED_COLLISION:
       {
         env.addAllowedCollision(command.add_allowed_collision.link_1, command.add_allowed_collision.link_2, command.add_allowed_collision.reason);
-        return true;
+        success &= true;
+        break;
       }
       case tesseract_msgs::EnvironmentCommand::REMOVE_ALLOWED_COLLISION:
       {
         env.removeAllowedCollision(command.add_allowed_collision.link_1, command.add_allowed_collision.link_2);
-        return true;
+        success &= true;
+        break;
       }
       case tesseract_msgs::EnvironmentCommand::REMOVE_ALLOWED_COLLISION_LINK:
       {
         env.removeAllowedCollision(command.remove_allowed_collision_link);
-        return true;
+        success &= true;
+        break;
       }
       case tesseract_msgs::EnvironmentCommand::UPDATE_JOINT_STATE:
       {
-        return processMsg(env, command.joint_state);
+        success &= processMsg(env, command.joint_state);
+        break;
       }
     }
   }
 
-  return false;
+  return success;
 }
 
 static inline bool processMsg(const tesseract_environment::EnvironmentPtr& env,
