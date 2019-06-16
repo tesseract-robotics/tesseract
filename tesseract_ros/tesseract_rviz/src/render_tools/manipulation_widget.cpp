@@ -32,13 +32,12 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <rviz/properties/property.h>
 #include <rviz/properties/enum_property.h>
 #include <rviz/properties/ros_topic_property.h>
+#include <rviz/properties/float_property.h>
 #include <rviz/window_manager_interface.h>
 
 #include <tesseract_rosutils/utils.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
-#include <tesseract_rviz/markers/shape_marker.h>
-#include <tesseract_rviz/markers/arrow_marker.h>
 #include <tesseract_rviz/markers/utils.h>
 
 #include "tesseract_rviz/render_tools/manipulation_widget.h"
@@ -59,12 +58,14 @@ ManipulationWidget::ManipulationWidget(rviz::Property* widget, rviz::Display* di
 //  , trajectory_slider_panel_(nullptr)
 //  , trajectory_slider_dock_panel_(nullptr)
 {
-  main_property_ = new rviz::Property("Manipulation",
+  main_property_ = new ButtonProperty("Manipulation",
                                       "",
                                       "Tool for manipulating kinematics objects",
                                       widget_,
-                                      nullptr,
+                                      SLOT(clickedResetToCurrentState()),
                                       this);
+
+  main_property_->setCaptions("Reset");
 
   joint_state_topic_property_ =
       new rviz::RosTopicProperty("Topic",
@@ -77,6 +78,10 @@ ManipulationWidget::ManipulationWidget(rviz::Property* widget, rviz::Display* di
 
   manipulator_property_ = new rviz::EnumProperty(
       "Manipulator", "", "The manipulator to move around.", main_property_, SLOT(changedManipulator()), this);
+
+  marker_scale_property_ = new rviz::FloatProperty("Marker Scale", 0.5, "Change the scale of the interactive marker", main_property_, SLOT(changedMarkerScale()), this);
+  marker_scale_property_->setMin(0.001f);
+
 }
 
 ManipulationWidget::~ManipulationWidget()
@@ -113,6 +118,7 @@ void ManipulationWidget::onInitialize(Ogre::SceneNode* root_node,
     }
     env_revision_ = tesseract_->getEnvironmentConst()->getRevision();
     env_state_ = std::make_shared<tesseract_environment::EnvState>(*(tesseract_->getEnvironmentConst()->getCurrentState()));
+    joints_ = env_state_->joints;
   }
 
   if (state_ == ManipulatorState::START)
@@ -128,6 +134,7 @@ void ManipulationWidget::onInitialize(Ogre::SceneNode* root_node,
 
   changedJointStateTopic();
   changedManipulator();
+
 
 
 //  rviz::WindowManagerInterface* window_context = context_->getWindowManager();
@@ -190,7 +197,10 @@ void ManipulationWidget::onNameChange(const QString& name)
 //    trajectory_slider_dock_panel_->setWindowTitle(name + " - Slider");
 }
 
-
+void ManipulationWidget::clickedResetToCurrentState()
+{
+  env_state_ = nullptr;
+}
 
 void ManipulationWidget::changedManipulator()
 {
@@ -202,13 +212,25 @@ void ManipulationWidget::changedManipulator()
       return;
 
     std::vector<std::string> joint_names = inv_kin_->getJointNames();
-    inv_seed_ = tesseract_->getEnvironmentConst()->getCurrentJointValues(inv_kin_->getJointNames());
+    inv_seed_.resize(inv_kin_->numJoints());
+    int i = 0;
+    for (auto& j : joint_names)
+      inv_seed_[i++] = joints_[j];
+
+    // Need to update state information (transforms) because manipulator changes and
+    env_state_ = tesseract_->getEnvironmentConst()->getState(joints_);
+
     LinkWidget* link = visualization_->getLink(inv_kin_->getTipLinkName());
 
-    interactive_marker_ = boost::make_shared<InteractiveMarker>("Test", "Move Robot", tesseract_->getEnvironmentConst()->getRootLinkName(), root_interactive_node_, context_, true, 0.3);
+    interactive_marker_ = boost::make_shared<InteractiveMarker>("Test", "Move Robot", tesseract_->getEnvironmentConst()->getRootLinkName(), root_interactive_node_, context_, true, marker_scale_property_->getFloat());
     make6Dof(*interactive_marker_);
 
-    interactive_marker_->setPose(link->getPosition(), link->getOrientation(), "");
+    // Need to modify linkWidget to have a axis for each state even if it does not have visualization
+    if (state_ == ManipulatorState::START)
+      interactive_marker_->setPose(link->getStartVisualNode()->getPosition(), link->getStartVisualNode()->getOrientation(), "");
+    else
+      interactive_marker_->setPose(link->getEndVisualNode()->getPosition(), link->getEndVisualNode()->getOrientation(), "");
+
     interactive_marker_->setShowAxes(false);
     interactive_marker_->setShowVisualAids(false);
     interactive_marker_->setShowDescription(true);
@@ -236,6 +258,12 @@ void ManipulationWidget::changedManipulator()
 //  }
 }
 
+void ManipulationWidget::changedMarkerScale()
+{
+  if (interactive_marker_)
+    interactive_marker_->setSize(marker_scale_property_->getFloat());
+}
+
 
 void ManipulationWidget::changedJointStateTopic()
 {
@@ -258,7 +286,11 @@ void ManipulationWidget::markerFeedback(std::string reference_frame, Eigen::Isom
     if (inv_kin_->calcInvKin(solutions, local_tf, inv_seed_))
     {
       inv_seed_ = solutions.head(inv_kin_->numJoints());
-      tesseract_environment::EnvStatePtr env_state = tesseract_->getEnvironmentConst()->getState(inv_kin_->getJointNames(), inv_seed_);
+      int i = 0;
+      for (auto j : inv_kin_->getJointNames())
+        joints_[j] = inv_seed_[i++];
+
+      tesseract_environment::EnvStatePtr env_state = tesseract_->getEnvironmentConst()->getState(joints_);
       if (state_ == ManipulatorState::START)
       {
         for (auto& link_pair : visualization_->getLinks())
@@ -301,6 +333,7 @@ void ManipulationWidget::onUpdate(float wall_dt)
     {
       env_revision_ = tesseract_->getEnvironmentConst()->getRevision();
       env_state_ = std::make_shared<tesseract_environment::EnvState>(*(tesseract_->getEnvironmentConst()->getCurrentState()));
+      joints_ = env_state_->joints;
       if (state_ == ManipulatorState::START)
       {
         for (auto& link_pair : visualization_->getLinks())

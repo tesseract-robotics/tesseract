@@ -40,11 +40,10 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <sensor_msgs/JointState.h>
 #include <boost/thread/mutex.hpp>
 #include <tesseract_kinematics/core/inverse_kinematics.h>
-//#include <interactive_markers/interactive_marker_server.h>
-//#include <interactive_markers/menu_handler.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 #endif
 
+#include <tesseract_rviz/property/button_property.h>
 #include <tesseract_rviz/render_tools/visualization_widget.h>
 #include <tesseract_rviz/interactive_marker/interactive_marker.h>
 
@@ -53,6 +52,7 @@ namespace rviz
 class Property;
 class RosTopicProperty;
 class EnumProperty;
+class FloatProperty;
 }
 
 namespace Ogre
@@ -98,6 +98,8 @@ public:
 private Q_SLOTS:
   void changedManipulator();
   void changedJointStateTopic();
+  void changedMarkerScale();
+  void clickedResetToCurrentState();
   void markerFeedback(std::string reference_frame, Eigen::Isometry3d transform, Eigen::Vector3d mouse_point, bool mouse_point_valid);
 //  void trajectorySliderPanelVisibilityChange(bool enable);
 
@@ -115,6 +117,7 @@ protected:
   tesseract_kinematics::InverseKinematicsPtr inv_kin_;
   Eigen::VectorXd inv_seed_;
   int env_revision_;
+  std::unordered_map<std::string, double> joints_;
   tesseract_environment::EnvStatePtr env_state_;
 
   ros::Publisher joint_state_pub_;
@@ -123,9 +126,10 @@ protected:
 //  rviz::PanelDockWidget* trajectory_slider_dock_panel_;
 
   // Properties
-  rviz::Property* main_property_;
+  ButtonProperty* main_property_;
   rviz::EnumProperty* manipulator_property_;
   rviz::RosTopicProperty* joint_state_topic_property_;
+  rviz::FloatProperty* marker_scale_property_;
 };
 }
 

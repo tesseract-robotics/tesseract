@@ -94,6 +94,7 @@ qt_wrap_cpp(${PROJECT_NAME}_render_tools_cpp_MOCS
   include/tesseract_rviz/render_tools/manipulation_widget.h
   include/tesseract_rviz/interactive_marker/integer_action.h
   include/tesseract_rviz/interactive_marker/interactive_marker.h
+  include/tesseract_rviz/property/button_property.h
   )
 
 add_library(${PROJECT_NAME}_render_tools SHARED
@@ -110,11 +111,14 @@ add_library(${PROJECT_NAME}_render_tools SHARED
   src/interactive_marker/interactive_marker_control.cpp
   src/markers/marker_base.cpp
   src/markers/marker_selection_handler.cpp
-  src/markers/shape_marker.cpp
   src/markers/utils.cpp
   src/markers/arrow_marker.cpp
+  src/markers/sphere_marker.cpp
+  src/markers/cube_marker.cpp
+  src/markers/cylinder_marker.cpp
   src/markers/triangle_list_marker.cpp
   src/markers/text_view_facing_marker.cpp
+  src/property/button_property.cpp
   ${${PROJECT_NAME}_render_tools_cpp_MOCS}
 )
 

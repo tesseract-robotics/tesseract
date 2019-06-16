@@ -52,22 +52,6 @@ class ArrowMarker;
 class InteractiveMarkerControl;
 class InteractiveMarker;
 
-enum class MarkerType
-{
-  ARROW=0,
-  CUBE=1,
-  SPHERE=2,
-  CYLINDER=3,
-  LINE_STRIP=4,
-  LINE_LIST=5,
-  CUBE_LIST=6,
-  SPHERE_LIST=7,
-  POINTS=8,
-  TEXT_VIEW_FACING=9,
-  MESH_RESOURCE=10,
-  TRIANGLE_LIST=11
-};
-
 /** @brief Make a sphere
  *  @param control  the interactive marker control that this will go into
  *  @param radius   The radius of the sphere

@@ -28,7 +28,7 @@
  */
 
 #include <tesseract_rviz/markers/utils.h>
-#include <tesseract_rviz/markers/shape_marker.h>
+#include <tesseract_rviz/markers/sphere_marker.h>
 #include <tesseract_rviz/markers/arrow_marker.h>
 #include <tesseract_rviz/markers/triangle_list_marker.h>
 #include <tesseract_rviz/markers/text_view_facing_marker.h>
@@ -45,8 +45,8 @@ namespace tesseract_rviz
 
 void makeSphere(InteractiveMarkerControl &control, float radius)
 {
-  ShapeMarker::Ptr marker = boost::make_shared<ShapeMarker>(control.getName(), 0, MarkerType::SPHERE, control.getDisplayContext(), control.getMarkerSceneNode());
-  marker->setScale(Ogre::Vector3(control.getSize() * radius, control.getSize() * radius, control.getSize() * radius));
+  SphereMarker::Ptr marker = boost::make_shared<SphereMarker>(control.getName(), 0, control.getDisplayContext(), control.getMarkerSceneNode(), radius);
+  marker->setScale(Ogre::Vector3(control.getSize(), control.getSize(), control.getSize()));
   marker->setColor(Ogre::ColourValue(1.0f, 1.0f, 0.0f, 0.5f));
   control.addMarker(marker);
 }
