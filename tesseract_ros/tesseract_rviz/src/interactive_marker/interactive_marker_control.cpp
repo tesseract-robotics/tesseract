@@ -211,6 +211,13 @@ InteractiveMarkerControl::~InteractiveMarkerControl()
   }
 }
 
+void InteractiveMarkerControl::updateSize()
+{
+  float scale = parent_->getSize();
+  for (auto& marker : markers_)
+    marker->setScale(Ogre::Vector3(scale, scale, scale));
+}
+
 Ogre::SceneNode* InteractiveMarkerControl::getMarkerSceneNode()
 {
   return markers_node_;

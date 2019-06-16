@@ -104,6 +104,7 @@ public:
   const Ogre::Vector3& getPosition() { return position_; }
   const Ogre::Quaternion& getOrientation() { return orientation_; }
 
+  void setSize(float scale);
   float getSize() { return scale_; }
   const std::string &getReferenceFrame() { return reference_frame_; }
   const std::string& getName() { return name_; }

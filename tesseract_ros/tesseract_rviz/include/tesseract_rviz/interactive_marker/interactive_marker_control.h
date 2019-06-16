@@ -226,6 +226,11 @@ public:
   float getSize();
 
   /**
+   * @brief This is called when the parent size is changed.
+   */
+  void updateSize();
+
+  /**
    * @brief If true, will show some geometric helpers while dragging
    */
   void setShowVisualAids( bool show ) { show_visual_aids_ = show; }

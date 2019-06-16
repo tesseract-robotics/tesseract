@@ -564,6 +564,13 @@ void InteractiveMarker::setPose( Ogre::Vector3 position, Ogre::Quaternion orient
   }
 }
 
+void InteractiveMarker::setSize(float scale)
+{
+  scale_ = scale;
+  for (auto& control : controls_)
+    control.second->updateSize();
+}
+
 void InteractiveMarker::setShowDescription( bool show )
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
