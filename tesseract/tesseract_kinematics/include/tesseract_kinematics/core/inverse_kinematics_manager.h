@@ -52,6 +52,15 @@ public:
   }
 
   /**
+   * @brief Removes a registered inverse kinematics factory
+   * @param name The name of the factory to remove
+   */
+  void removeInvKinematicsFactory(const std::string& name)
+  {
+    inv_kin_factories_.erase(name);
+  }
+
+  /**
    * @brief Get a list of all available inverse kinematics solvers
    * @return Vector of names
    */
@@ -115,6 +124,16 @@ public:
       inv_kin_manipulators_default_[solver->getName()] = solver;
 
     return true;
+  }
+
+  /**
+   * @brief Remove a inverse kinematic solver for a given manipulator
+   * @param manipulator The name of the manipulator
+   * @param name The name of the solver
+   */
+  void removeFwdKinematicSolver(const std::string& manipulator, const std::string& name)
+  {
+    inv_kin_manipulators_.erase(std::make_pair(manipulator, name));
   }
 
   /**
