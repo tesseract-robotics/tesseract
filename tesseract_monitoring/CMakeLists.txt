@@ -52,6 +52,10 @@ add_executable(${PROJECT_NAME}_environment_node src/environment_monitor_node.cpp
 target_link_libraries(${PROJECT_NAME}_environment_node ${PROJECT_NAME}_environment ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_environment_node PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
+add_executable(robot_communication_monitor_node src/robot_comm_monitor_node.cpp)
+target_link_libraries(robot_communication_monitor_node ${PROJECT_NAME}_environment  ${catkin_LIBRARIES})
+target_compile_options(robot_communication_monitor_node PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+
 # Mark executables and/or libraries for installation
 install(TARGETS ${PROJECT_NAME}_environment ${PROJECT_NAME}_contacts_node ${PROJECT_NAME}_environment_node demo_scene
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
