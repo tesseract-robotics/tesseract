@@ -18,6 +18,8 @@ catkin_package(
   LIBRARIES
     ${PROJECT_NAME}_ompl
     ${PROJECT_NAME}_trajopt
+    ${PROJECT_NAME}_trajopt_freespace
+    ${PROJECT_NAME}_trajopt_array
   CATKIN_DEPENDS
     roscpp
     tesseract_ros
@@ -36,6 +38,16 @@ include_directories(
 add_library(${PROJECT_NAME}_trajopt src/trajopt/trajopt_planner.cpp)
 target_link_libraries(${PROJECT_NAME}_trajopt ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_trajopt PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+
+# Trajopt Freespace Planner
+add_library(${PROJECT_NAME}_trajopt_freespace src/trajopt/trajopt_freespace_planner.cpp)
+target_link_libraries(${PROJECT_NAME}_trajopt_freespace ${catkin_LIBRARIES} ${PROJECT_NAME}_trajopt)
+target_compile_options(${PROJECT_NAME}_trajopt_freespace PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+
+# Trajopt Array Planner
+add_library(${PROJECT_NAME}_trajopt_array src/trajopt/trajopt_array_planner.cpp)
+target_link_libraries(${PROJECT_NAME}_trajopt_array ${catkin_LIBRARIES} ${PROJECT_NAME}_trajopt)
+target_compile_options(${PROJECT_NAME}_trajopt_array PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 
 # OMPL Planning Interface
 add_library(${PROJECT_NAME}_ompl
@@ -57,7 +69,7 @@ target_compile_options(${PROJECT_NAME}_ompl_test PRIVATE -Wsuggest-override -Wco
 ## Install ##
 #############
 
-install(TARGETS ${PROJECT_NAME}_ompl ${PROJECT_NAME}_trajopt
+install(TARGETS ${PROJECT_NAME}_ompl ${PROJECT_NAME}_trajopt ${PROJECT_NAME}_trajopt_freespace ${PROJECT_NAME}_trajopt_array
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
