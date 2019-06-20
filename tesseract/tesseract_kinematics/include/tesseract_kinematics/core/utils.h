@@ -277,5 +277,15 @@ ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::Sc
   return manipulators;
 }
 
+inline static bool isWithinLimits(const Eigen::VectorXd& joint_values,
+                                  const Eigen::MatrixX2d& limits)
+{
+  for (int i = 0; i < limits.rows(); ++i)
+    if ((joint_values[i] < limits(i, 0)) || (joint_values[i] > limits(i, 1)))
+      return false;
+
+  return true;
+}
+
 }
 #endif // TESSERACT_KINEMATICS_UTILS_H
