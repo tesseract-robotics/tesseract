@@ -52,6 +52,7 @@
 #include <tesseract_rviz/interactive_marker/integer_action.h>
 #include <tesseract_rviz/interactive_marker/interactive_marker.h>
 #include <tesseract_rviz/markers/utils.h>
+#include <tesseract_rviz/conversions.h>
 
 namespace tesseract_rviz
 {
@@ -63,7 +64,8 @@ InteractiveMarker::InteractiveMarker(const std::string& name,
                                      rviz::DisplayContext* context,
                                      const bool reference_frame_locked,
                                      const float scale) :
-  context_(context)
+  visible_(true)
+, context_(context)
 , pose_changed_(false)
 , time_since_last_feedback_(0)
 , dragging_(false)
@@ -409,17 +411,15 @@ QString InteractiveMarker::makeMenuString( const std::string &entry )
 
 void InteractiveMarker::setVisible( bool visible )
 {
+  visible_ = visible;
+  reference_node_->setVisible(visible_);
 
-  reference_node_->setVisible(visible);
+  for (auto& control_pair : controls_)
+    control_pair.second->setVisible(visible_);
 
-  if (!show_description_ && visible)
-    setShowDescription(false);
-
-  if (!show_axes_ && visible)
-    setShowAxes(false);
-
-  if (!show_visual_aids_ && visible)
-    setShowVisualAids(false);
+  updateDescriptionVisibility();
+  updateAxesVisibility();
+  updateVisualAidsVisibility();
 
 //  if (!show_menu_ && visible)
 
@@ -573,29 +573,44 @@ void InteractiveMarker::setSize(float scale)
 
 void InteractiveMarker::setShowDescription( bool show )
 {
-  boost::recursive_mutex::scoped_lock lock(mutex_);
-  if ( description_control_.get() )
-  {
-    description_control_->setVisible( show );
-  }
   show_description_ = show;
+  updateDescriptionVisibility();
 }
 
 void InteractiveMarker::setShowAxes( bool show )
 {
-  boost::recursive_mutex::scoped_lock lock(mutex_);
-  axes_->getSceneNode()->setVisible( show );
   show_axes_ = show;
+  updateAxesVisibility();
 }
 
 void InteractiveMarker::setShowVisualAids( bool show )
 {
+  show_visual_aids_ = show;
+  updateVisualAidsVisibility();
+}
+
+void InteractiveMarker::updateDescriptionVisibility()
+{
+  boost::recursive_mutex::scoped_lock lock(mutex_);
+  if ( description_control_.get() )
+  {
+    description_control_->setVisible(visible_ && show_description_);
+  }
+}
+
+void InteractiveMarker::updateAxesVisibility()
+{
+  boost::recursive_mutex::scoped_lock lock(mutex_);
+  axes_->getSceneNode()->setVisible(visible_ && show_axes_);
+}
+
+void InteractiveMarker::updateVisualAidsVisibility()
+{
   boost::recursive_mutex::scoped_lock lock(mutex_);
   for (auto it = controls_.begin(); it != controls_.end(); it++ )
   {
-    (*it).second->setShowVisualAids( show );
+    (*it).second->setShowVisualAids(visible_ && show_visual_aids_);
   }
-  show_visual_aids_ = show;
 }
 
 void InteractiveMarker::translate( Ogre::Vector3 delta_position, const std::string &control_name )

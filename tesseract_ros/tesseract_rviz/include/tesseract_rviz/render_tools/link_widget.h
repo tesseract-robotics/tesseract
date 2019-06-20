@@ -353,17 +353,6 @@ private:
   friend class EnvLinkSelectionHandler;
 };
 
-static inline void toOgre(Ogre::Vector3& position, Ogre::Quaternion& orientation, const Eigen::Isometry3d& transform)
-{
-  Eigen::Vector3f robot_visual_position = transform.translation().cast<float>();
-  Eigen::Quaternionf robot_visual_orientation(transform.rotation().cast<float>());
-  position = Ogre::Vector3(robot_visual_position.x(), robot_visual_position.y(), robot_visual_position.z());
-  orientation = Ogre::Quaternion(robot_visual_orientation.w(),
-                                 robot_visual_orientation.x(),
-                                 robot_visual_orientation.y(),
-                                 robot_visual_orientation.z());
-}
-
 }  // namespace tesseract_rviz
 
 #endif  // TESSSERACT_RVIZ_ROBOT_LINK_H

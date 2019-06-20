@@ -70,6 +70,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 #include "tesseract_rviz/render_tools/visualization_widget.h"
 #include "tesseract_rviz/render_tools/joint_widget.h"
 #include "tesseract_rviz/render_tools/link_widget.h"
+#include <tesseract_rviz/conversions.h>
 
 namespace fs = boost::filesystem;
 

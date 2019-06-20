@@ -44,6 +44,8 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include "rviz/properties/vector_property.h"
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
+#include <tesseract_rviz/conversions.h>
+
 namespace tesseract_rviz
 {
 JointWidget::JointWidget(VisualizationWidget* env, const tesseract_scene_graph::Joint& joint)
