@@ -53,6 +53,8 @@ class Property;
 class RosTopicProperty;
 class EnumProperty;
 class FloatProperty;
+class BoolProperty;
+class StringProperty;
 }
 
 namespace Ogre
@@ -98,9 +100,13 @@ public:
 private Q_SLOTS:
   void changedManipulator();
   void changedJointStateTopic();
-  void changedMarkerScale();
+  void changedCartesianMarkerScale();
+  void changedCartesianManipulationEnabled();
+  void changedJointMarkerScale();
+  void changedJointManipulationEnabled();
   void clickedResetToCurrentState();
   void markerFeedback(std::string reference_frame, Eigen::Isometry3d transform, Eigen::Vector3d mouse_point, bool mouse_point_valid);
+  void jointMarkerFeedback(std::string joint_name, std::string reference_frame, Eigen::Isometry3d transform, Eigen::Vector3d mouse_point, bool mouse_point_valid);
 //  void trajectorySliderPanelVisibilityChange(bool enable);
 
 protected:
@@ -113,6 +119,7 @@ protected:
   ros::NodeHandle nh_;
   ManipulatorState state_;
   InteractiveMarker::Ptr interactive_marker_;
+  std::map<std::string, InteractiveMarker::Ptr> joint_interactive_markers_;
   std::vector<std::string> manipulators_;
   tesseract_kinematics::InverseKinematicsPtr inv_kin_;
   Eigen::VectorXd inv_seed_;
@@ -129,7 +136,11 @@ protected:
   ButtonProperty* main_property_;
   rviz::EnumProperty* manipulator_property_;
   rviz::RosTopicProperty* joint_state_topic_property_;
-  rviz::FloatProperty* marker_scale_property_;
+  rviz::BoolProperty* cartesian_manipulation_property_;
+  rviz::BoolProperty* joint_manipulation_property_;
+  rviz::FloatProperty* cartesian_marker_scale_property_;
+  rviz::FloatProperty* joint_marker_scale_property_;
+  rviz::Property* joint_values_property_;
 };
 }
 

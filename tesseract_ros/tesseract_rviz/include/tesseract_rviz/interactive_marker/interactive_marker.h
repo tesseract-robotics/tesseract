@@ -181,6 +181,16 @@ protected:
   // current level.
   void populateMenu( QMenu* menu, std::vector<uint32_t>& ids );
 
+  // Update the visibility based on visible and show_description variable
+  void updateDescriptionVisibility();
+
+  // Update the visibility based on visible and show_axis variable
+  void updateAxesVisibility();
+
+  // Update the visibility based on visible and show_visual_aids variable
+  void updateVisualAidsVisibility();
+
+  bool visible_;
   rviz::DisplayContext* context_;
 
   // pose of parent coordinate frame
@@ -251,12 +261,6 @@ protected:
   bool show_axes_;
   bool show_description_;
 };
-
-static inline void toEigen(Eigen::Isometry3d& transform, Ogre::Vector3& position, Ogre::Quaternion& orientation)
-{
-  transform.linear() = Eigen::Quaterniond(orientation.w, orientation.x, orientation.y, orientation.z).matrix();
-  transform.translation() = Eigen::Vector3d(position.x, position.y, position.z);
-}
 
 }
 #endif // TESSERACT_RVIZ_INTERACTIVE_MARKER_H

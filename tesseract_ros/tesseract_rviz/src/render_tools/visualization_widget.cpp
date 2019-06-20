@@ -54,6 +54,8 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <ros/console.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
+#include <tesseract_rviz/conversions.h>
+
 namespace tesseract_rviz
 {
 VisualizationWidget::VisualizationWidget(Ogre::SceneNode* root_node,
