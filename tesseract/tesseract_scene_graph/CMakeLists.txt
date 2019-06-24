@@ -26,7 +26,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC tesseract_geometry orocos-kdl conso
 target_compile_options(${PROJECT_NAME} PUBLIC -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_definitions(${PROJECT_NAME} PUBLIC Boost_USE_STATIC_LIBS=OFF Boost_USE_MULTITHREADED=ON Boost_USE_STATIC_RUNTIME=OFF)
 if(CXX_FEATURE_FOUND EQUAL "-1")
-    set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED YES)
+    target_compile_options(${PROJECT_NAME} PUBLIC -std=c++11)
 else()
     target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
 endif()
