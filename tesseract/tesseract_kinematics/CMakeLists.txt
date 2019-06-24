@@ -34,7 +34,7 @@ add_library(${PROJECT_NAME}_kdl SHARED
 target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract_scene_graph orocos-kdl console_bridge)
 target_compile_options(${PROJECT_NAME}_kdl PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
-    set_target_properties(${PROJECT_NAME}_kdl PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED YES)
+    target_compile_options(${PROJECT_NAME}_kdl PUBLIC -std=c++11)
 else()
     target_compile_features(${PROJECT_NAME}_kdl PUBLIC cxx_std_11)
 endif()
