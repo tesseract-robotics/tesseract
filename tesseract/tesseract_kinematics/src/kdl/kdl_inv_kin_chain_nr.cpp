@@ -57,19 +57,25 @@ bool KDLInvKinChainNR::calcInvKinHelper(Eigen::VectorXd& solutions,
   {
     if (status == KDL::ChainIkSolverPos_NR::E_DEGRADED)
     {
-      CONSOLE_BRIDGE_logDebug("KDL LMA Failed to calculate IK, solution converged to <eps in maxiter, but solution is degraded in quality (e.g. pseudo-inverse in iksolver is singular)");
+      CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK, solution converged to <eps in maxiter, but solution is degraded in quality (e.g. pseudo-inverse in iksolver is singular)");
     }
     else if (status == KDL::ChainIkSolverPos_NR::E_IKSOLVER_FAILED)
     {
-      CONSOLE_BRIDGE_logDebug("KDL LMA Failed to calculate IK, velocity solver failed");
+      CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK, velocity solver failed");
     }
     else if (status == KDL::ChainIkSolverPos_NR::E_NO_CONVERGE)
     {
-      CONSOLE_BRIDGE_logDebug("KDL LMA Failed to calculate IK, no solution found");
+      CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK, no solution found");
     }
+#ifndef KDL_LESS_1_4_0
     else if (status == KDL::ChainIkSolverPos_NR::E_MAX_ITERATIONS_EXCEEDED)
     {
-      CONSOLE_BRIDGE_logDebug("KDL LMA Failed to calculate IK, max iteration exceeded");
+      CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK, max iteration exceeded");
+    }
+#endif
+    else
+    {
+      CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK");
     }
     return false;
   }
