@@ -67,12 +67,19 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
   if (config.init_type_ == trajopt::InitInfo::GIVEN_TRAJ)
     pci.init_info.data = config.seed_trajectory_;
 
+  // Initial cost/constraint start and end step
+  // If the start or end is a fixed joint pose this will be modified
+  // so cost and constraints are not added to fixed joint poses
+  int start_step = 0;
+  int end_step = pci.basic_info.n_steps - 1;
+
   // Set initial point
   auto start_type = config.start_waypoint_->getType();
   switch (start_type)
   {
     case tesseract_planning::WaypointType::JOINT_WAYPOINT:
     {
+      start_step+=1;
       JointWaypointPtr start_position = std::static_pointer_cast<JointWaypoint>(config.start_waypoint_);
       // Add initial joint position constraint
       std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
@@ -112,8 +119,8 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       jv->lower_tols =
           std::vector<double>(start_position->lower_tolerance_.data(),
                               start_position->lower_tolerance_.data() + start_position->lower_tolerance_.size());
-      jv->first_step = pci.basic_info.n_steps - 1;
-      jv->last_step = pci.basic_info.n_steps - 1;
+      jv->first_step = 0;
+      jv->last_step = 0;
       jv->name = "initial_joint_toleranced_position";
       jv->term_type = start_position->is_critical_ ? TT_CNT : TT_COST;
       start_position->is_critical_ ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
@@ -127,8 +134,8 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
       jv_equal->targets =
           std::vector<double>(start_position->joint_positions_.data(),
                               start_position->joint_positions_.data() + start_position->joint_positions_.size());
-      jv_equal->first_step = pci.basic_info.n_steps - 1;
-      jv_equal->last_step = pci.basic_info.n_steps - 1;
+      jv_equal->first_step = 0;
+      jv_equal->last_step = 0;
       jv_equal->name = "initial_joint_toleranced_position_leaky";
       // If this was a CNT, then the inequality tolernce would not do anything
       jv_equal->term_type = TT_COST;
@@ -168,6 +175,7 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
   {
     case tesseract_planning::WaypointType::JOINT_WAYPOINT:
     {
+      end_step-=1;
       JointWaypointPtr end_position = std::static_pointer_cast<JointWaypoint>(config.end_waypoint_);
       // Add initial joint position constraint
       std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
@@ -261,8 +269,8 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
     collision->name = "collision_cost";
     collision->term_type = TT_COST;
     collision->continuous = config.collision_continuous_;
-    collision->first_step = 0;
-    collision->last_step = pci.basic_info.n_steps - 1;
+    collision->first_step = start_step;
+    collision->last_step = end_step;
     collision->gap = 1;
     collision->info = createSafetyMarginDataVector(pci.basic_info.n_steps, config.collision_safety_margin_, 20);
     pci.cost_infos.push_back(collision);
@@ -314,8 +322,8 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response, TrajOptFreespaceP
     jp->targets =
         std::vector<double>(joint_waypoint->joint_positions_.data(),
                             joint_waypoint->joint_positions_.data() + joint_waypoint->joint_positions_.size());
-    jp->first_step = 0;
-    jp->last_step = pci.basic_info.n_steps - 1;
+    jp->first_step = start_step;
+    jp->last_step = end_step;
     jp->name = "configuration_cost";
     jp->term_type = TT_COST;
     pci.cost_infos.push_back(jp);
