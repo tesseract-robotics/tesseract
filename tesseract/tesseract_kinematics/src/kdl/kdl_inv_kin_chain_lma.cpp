@@ -55,6 +55,7 @@ bool KDLInvKinChainLMA::calcInvKinHelper(Eigen::VectorXd& solutions,
   int status = ik_solver_->CartToJnt(kdl_seed, kdl_pose, kdl_solution);
   if (status < 0)
   {
+#ifndef KDL_LESS_1_4_0
     if (status == KDL::ChainIkSolverPos_LMA::E_GRADIENT_JOINTS_TOO_SMALL)
     {
       CONSOLE_BRIDGE_logDebug("KDL LMA Failed to calculate IK, gradient joints are tool small");
@@ -67,6 +68,9 @@ bool KDLInvKinChainLMA::calcInvKinHelper(Eigen::VectorXd& solutions,
     {
       CONSOLE_BRIDGE_logDebug("KDL LMA Failed to calculate IK, max iteration exceeded");
     }
+#else
+    CONSOLE_BRIDGE_logDebug("KDL LMA Failed to calculate IK");
+#endif
     return false;
   }
 

@@ -61,6 +61,7 @@ bool KDLFwdKinChain::calcFwdKinHelper(VectorIsometry3d& poses,
                                       const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                       int segment_num) const
 {
+#ifndef KDL_LESS_1_4_0
   KDL::JntArray kdl_joints;
   EigenToKDL(joint_angles, kdl_joints);
 
@@ -75,6 +76,9 @@ bool KDLFwdKinChain::calcFwdKinHelper(VectorIsometry3d& poses,
   KDLToEigen(kdl_pose, poses);
 
   return true;
+#else
+  return false;
+#endif
 }
 
 bool KDLFwdKinChain::calcFwdKin(VectorIsometry3d& poses,
