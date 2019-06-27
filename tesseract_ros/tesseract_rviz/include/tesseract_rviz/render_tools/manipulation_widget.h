@@ -100,15 +100,18 @@ public:
 
 Q_SIGNALS:
   void availableManipulatorsChanged(QStringList manipulators);
+  void availableTCPLinksChanged(QStringList tcp_links);
 
 public Q_SLOT:
   void enableCartesianManipulation(bool enabled);
   void enableJointManipulation(bool enabled);
   void resetToCurrentState();
   bool changeManipulator(QString manipulator);
+  bool changeTCP(QString tcp_link);
 
 private Q_SLOTS:
   void changedManipulator();
+  void changedTCP();
   void changedJointStateTopic();
   void changedCartesianMarkerScale();
   void changedCartesianManipulationEnabled();
@@ -136,9 +139,11 @@ protected:
   int env_revision_;
   std::unordered_map<std::string, double> joints_;
   tesseract_environment::EnvStatePtr env_state_;
+  Eigen::Isometry3d tcp_;
 
   ros::Publisher joint_state_pub_;
   QStringList available_manipulators_;
+  QStringList available_tcp_links_;
 
 //  TrajectoryPanel* trajectory_slider_panel_;
 //  rviz::PanelDockWidget* trajectory_slider_dock_panel_;
@@ -152,6 +157,7 @@ protected:
   rviz::BoolProperty* joint_manipulation_property_;
   rviz::FloatProperty* cartesian_marker_scale_property_;
   rviz::FloatProperty* joint_marker_scale_property_;
+  rviz::EnumProperty* tcp_property_;
   rviz::Property* joint_values_property_;
 };
 }

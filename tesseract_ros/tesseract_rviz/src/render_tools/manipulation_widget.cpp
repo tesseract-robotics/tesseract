@@ -62,6 +62,7 @@ ManipulationWidget::ManipulationWidget(rviz::Property* widget, rviz::Display* di
   , env_revision_(0)
   , env_state_(nullptr)
   , enabled_(false)
+  , tcp_(Eigen::Isometry3d::Identity())
 //  , trajectory_slider_panel_(nullptr)
 //  , trajectory_slider_dock_panel_(nullptr)
 {
@@ -85,6 +86,9 @@ ManipulationWidget::ManipulationWidget(rviz::Property* widget, rviz::Display* di
 
   manipulator_property_ = new rviz::EnumProperty(
       "Manipulator", "", "The manipulator to move around.", main_property_, SLOT(changedManipulator()), this);
+
+  tcp_property_ = new rviz::EnumProperty(
+      "TCP Link", "", "The tool center point link", main_property_, SLOT(changedTCP()), this);
 
   cartesian_manipulation_property_ = new rviz::BoolProperty("Cartesian Manipulation",
                                                             true,
@@ -235,6 +239,7 @@ void ManipulationWidget::onReset()
   // Clear manipulators
   manipulator_property_->clearOptions();
   available_manipulators_.clear();
+  available_tcp_links_.clear();
 }
 
 void ManipulationWidget::onNameChange(const QString& name)
@@ -298,12 +303,38 @@ bool ManipulationWidget::changeManipulator(QString manipulator)
     // Need to update state information (transforms) because manipulator changes and
     env_state_ = tesseract_->getEnvironmentConst()->getState(joints_);
 
+    // Get available TCP's
+    QString current_tcp = tcp_property_->getString();
+    std::vector<std::string> tcp_links = tesseract_->getEnvironmentConst()->getSceneGraph()->getLinkChildrenNames(inv_kin_->getTipLinkName());
+    tcp_links.push_back(inv_kin_->getTipLinkName());
+
+    available_tcp_links_.clear();
+    tcp_property_->clearOptions();
+    for (const auto& tcp_link : tcp_links)
+    {
+      available_tcp_links_.push_back(QString::fromStdString(tcp_link));
+      tcp_property_->addOptionStd(tcp_link);
+    }
+
+    if (current_tcp.isEmpty() || !available_tcp_links_.contains(current_tcp))
+    {
+      tcp_property_->setStdString(inv_kin_->getTipLinkName());
+      tcp_ = Eigen::Isometry3d::Identity();
+    }
+    else
+    {
+      tcp_property_->setString(current_tcp);
+      tcp_ = env_state_->transforms[inv_kin_->getTipLinkName()].inverse() * env_state_->transforms[current_tcp.toStdString()];
+    }
+
+    Q_EMIT availableTCPLinksChanged(available_tcp_links_);
+
     // Add 6 DOF interactive marker at the end of the manipulator
     interactive_marker_ = boost::make_shared<InteractiveMarker>("6DOF", "Move Robot", tesseract_->getEnvironmentConst()->getRootLinkName(), root_interactive_node_, context_, true, cartesian_marker_scale_property_->getFloat());
     make6Dof(*interactive_marker_);
 
 
-    Eigen::Isometry3d pose = env_state_->transforms[inv_kin_->getTipLinkName()];
+    Eigen::Isometry3d pose = env_state_->transforms[inv_kin_->getTipLinkName()] * tcp_;
     Ogre::Vector3 position;
     Ogre::Quaternion orientation;
     toOgre(position, orientation, pose);
@@ -382,6 +413,36 @@ bool ManipulationWidget::changeManipulator(QString manipulator)
   return false;
 }
 
+bool ManipulationWidget::changeTCP(QString tcp_link)
+{
+  bool success = false;
+  if (!env_state_ || tcp_link.isEmpty() || !available_tcp_links_.contains(tcp_link))
+  {
+    if (inv_kin_)
+      tcp_property_->setStdString(inv_kin_->getTipLinkName());
+
+    tcp_ = Eigen::Isometry3d::Identity();
+    success = false;
+  }
+  else
+  {
+    tcp_property_->setString(tcp_link);
+    tcp_ = env_state_->transforms[inv_kin_->getTipLinkName()].inverse() * env_state_->transforms[tcp_link.toStdString()];
+    success = true;
+  }
+
+  if (inv_kin_ && env_state_ && interactive_marker_)
+  {
+    Eigen::Isometry3d pose = env_state_->transforms[inv_kin_->getTipLinkName()] * tcp_;
+    Ogre::Vector3 position;
+    Ogre::Quaternion orientation;
+    toOgre(position, orientation, pose);
+    interactive_marker_->setPose(position, orientation, "");
+  }
+
+  return success;
+}
+
 void ManipulationWidget::clickedResetToCurrentState()
 {
   resetToCurrentState();
@@ -406,6 +467,11 @@ void ManipulationWidget::changedManipulator()
 //    if (trajectory_slider_panel_)
 //      trajectory_slider_panel_->pauseButton(true);
 //  }
+}
+
+void ManipulationWidget::changedTCP()
+{
+  changeTCP(tcp_property_->getString());
 }
 
 void ManipulationWidget::changedCartesianMarkerScale()
@@ -446,7 +512,7 @@ void ManipulationWidget::markerFeedback(std::string reference_frame, Eigen::Isom
     const Eigen::Isometry3d& ref = env_state_->transforms[reference_frame];
     const Eigen::Isometry3d& base = env_state_->transforms[inv_kin_->getBaseLinkName()];
 
-    Eigen::Isometry3d local_tf = base.inverse() * ref * transform;
+    Eigen::Isometry3d local_tf = (base.inverse() * ref * transform) * tcp_.inverse();
     Eigen::VectorXd solutions;
     if (inv_kin_->calcInvKin(solutions, local_tf, inv_seed_))
     {
@@ -638,7 +704,7 @@ void ManipulationWidget::jointMarkerFeedback(std::string joint_name,
     }
   }
 
-  Eigen::Isometry3d pose = env_state_->transforms[inv_kin_->getTipLinkName()];
+  Eigen::Isometry3d pose = env_state_->transforms[inv_kin_->getTipLinkName()] * tcp_;
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
   toOgre(position, orientation, pose);
@@ -696,7 +762,7 @@ void ManipulationWidget::onUpdate(float wall_dt)
           ++i;
         }
 
-        Eigen::Isometry3d pose = env_state_->transforms[inv_kin_->getTipLinkName()];
+        Eigen::Isometry3d pose = env_state_->transforms[inv_kin_->getTipLinkName()] * tcp_;
         Ogre::Vector3 position;
         Ogre::Quaternion orientation;
         toOgre(position, orientation, pose);
