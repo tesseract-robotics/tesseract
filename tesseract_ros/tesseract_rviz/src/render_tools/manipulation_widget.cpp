@@ -61,6 +61,7 @@ ManipulationWidget::ManipulationWidget(rviz::Property* widget, rviz::Display* di
   , state_(ManipulatorState::START)
   , env_revision_(0)
   , env_state_(nullptr)
+  , enabled_(false)
 //  , trajectory_slider_panel_(nullptr)
 //  , trajectory_slider_dock_panel_(nullptr)
 {
@@ -137,7 +138,8 @@ void ManipulationWidget::onInitialize(Ogre::SceneNode* root_node,
                                       VisualizationWidget::Ptr visualization,
                                       tesseract::Tesseract::Ptr tesseract,
                                       ros::NodeHandle update_nh,
-                                      ManipulatorState state)
+                                      ManipulatorState state,
+                                      QString joint_state_topic)
 {
   // Save pointers for later use
   visualization_ = std::move(visualization);
@@ -150,29 +152,28 @@ void ManipulationWidget::onInitialize(Ogre::SceneNode* root_node,
   if (tesseract_->isInitialized())
   {
     int cnt = 0;
+    available_manipulators_.clear();
     for (const auto& manip : tesseract_->getInvKinematicsManagerConst()->getAvailableInvKinematicsManipulators())
     {
+      available_manipulators_.push_back(QString::fromStdString(manip));
       manipulator_property_->addOptionStd(manip, cnt);
       ++cnt;
     }
+
     env_revision_ = tesseract_->getEnvironmentConst()->getRevision();
     env_state_ = std::make_shared<tesseract_environment::EnvState>(*(tesseract_->getEnvironmentConst()->getCurrentState()));
     joints_ = env_state_->joints;
   }
 
+  joint_state_topic_property_->setValue(joint_state_topic);
   if (state_ == ManipulatorState::START)
-  {
     main_property_->setName("Manipulate Start State");
-    joint_state_topic_property_->setValue("/tesseract/manipulation_start_state");
-  }
   else
-  {
     main_property_->setName("Manipulate End State");
-    joint_state_topic_property_->setValue("/tesseract/manipulation_end_state");
-  }
 
   changedJointStateTopic();
   changedManipulator();
+  Q_EMIT availableManipulatorsChanged(available_manipulators_);
 
 
 
@@ -193,34 +194,37 @@ void ManipulationWidget::onInitialize(Ogre::SceneNode* root_node,
 
 void ManipulationWidget::onEnable()
 {
+  enabled_ = true;
   if (state_ == ManipulatorState::START)
-    visualization_->setStartStateVisible(true);
+    visualization_->setStartStateVisible(enabled_);
   else
-    visualization_->setEndStateVisible(true);
+    visualization_->setEndStateVisible(enabled_);
 
   changedJointStateTopic();  // load topic at startup if default used
+  Q_EMIT availableManipulatorsChanged(available_manipulators_);
 
   if (root_interactive_node_ && interactive_marker_)
-    interactive_marker_->setVisible(cartesian_manipulation_property_->getBool());
+    interactive_marker_->setVisible(enabled_ && cartesian_manipulation_property_->getBool());
 
   for (auto& joint_marker : joint_interactive_markers_)
-    joint_marker.second->setVisible(joint_manipulation_property_->getBool());
+    joint_marker.second->setVisible(enabled_ && joint_manipulation_property_->getBool());
+
+  env_state_ = nullptr;
 }
 
 void ManipulationWidget::onDisable()
 {
+  enabled_ = false;
   if (state_ == ManipulatorState::START)
-    visualization_->setStartStateVisible(false);
+    visualization_->setStartStateVisible(enabled_);
   else
-    visualization_->setEndStateVisible(false);
+    visualization_->setEndStateVisible(enabled_);
 
   if (root_interactive_node_ && interactive_marker_)
-    interactive_marker_->setVisible(false);
+    interactive_marker_->setVisible(enabled_);
 
   for (auto& joint_marker : joint_interactive_markers_)
-    joint_marker.second->setVisible(false);
-
-  env_state_ = nullptr;
+    joint_marker.second->setVisible(enabled_);
 
 //  if (trajectory_slider_panel_)
 //    trajectory_slider_panel_->onDisable();
@@ -230,6 +234,7 @@ void ManipulationWidget::onReset()
 {
   // Clear manipulators
   manipulator_property_->clearOptions();
+  available_manipulators_.clear();
 }
 
 void ManipulationWidget::onNameChange(const QString& name)
@@ -238,19 +243,34 @@ void ManipulationWidget::onNameChange(const QString& name)
 //    trajectory_slider_dock_panel_->setWindowTitle(name + " - Slider");
 }
 
-void ManipulationWidget::clickedResetToCurrentState()
+void ManipulationWidget::enableCartesianManipulation(bool enabled)
+{
+  interactive_marker_->setVisible(enabled_ && enabled);
+  cartesian_manipulation_property_->setBool(enabled);
+}
+
+void ManipulationWidget::enableJointManipulation(bool enabled)
+{
+  for (auto& joint_marker : joint_interactive_markers_)
+    joint_marker.second->setVisible(enabled_ && enabled);
+
+  joint_manipulation_property_->setBool(enabled);
+}
+
+void ManipulationWidget::resetToCurrentState()
 {
   env_state_ = nullptr;
 }
 
-void ManipulationWidget::changedManipulator()
+bool ManipulationWidget::changeManipulator(QString manipulator)
 {
   if (tesseract_->isInitialized())
   {
-    std::string manipulator = manipulator_property_->getStdString();
-    inv_kin_ = tesseract_->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator);
+    inv_kin_ = tesseract_->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator.toStdString());
     if (inv_kin_ == nullptr)
-      return;
+      return false;
+
+    manipulator_property_->setString(manipulator);
 
     const auto& scene_graph = tesseract_->getEnvironmentConst()->getSceneGraph();
     std::vector<std::string> joint_names = inv_kin_->getJointNames();
@@ -291,7 +311,8 @@ void ManipulationWidget::changedManipulator()
 
     interactive_marker_->setShowAxes(false);
     interactive_marker_->setShowVisualAids(false);
-    interactive_marker_->setShowDescription(true);
+    interactive_marker_->setShowDescription(false);
+    interactive_marker_->setVisible(enabled_ && cartesian_manipulation_property_->getBool());
 
     connect(interactive_marker_.get(),
             SIGNAL(userFeedback(std::string, Eigen::Isometry3d, Eigen::Vector3d, bool)),
@@ -306,7 +327,7 @@ void ManipulationWidget::changedManipulator()
       std::string disc = "Move joint: " + joint_name;
       InteractiveMarker::Ptr interactive_marker = boost::make_shared<InteractiveMarker>(name, disc, tesseract_->getEnvironmentConst()->getRootLinkName(), root_interactive_node_, context_, true, joint_marker_scale_property_->getFloat());
       const auto& joint = scene_graph->getJoint(joint_name);
-      LinkWidget* child_link = visualization_->getLink(joint->child_link_name);
+
       switch (joint->type)
       {
         case tesseract_scene_graph::JointType::PRISMATIC:
@@ -338,10 +359,15 @@ void ManipulationWidget::changedManipulator()
           assert(false);
       }
 
-      interactive_marker->setPose(child_link->getPosition(), child_link->getOrientation(), "");
+      Eigen::Isometry3d pose = env_state_->transforms[joint->child_link_name];
+      Ogre::Vector3 position;
+      Ogre::Quaternion orientation;
+      toOgre(position, orientation, pose);
+      interactive_marker->setPose(position, orientation, "");
       interactive_marker->setShowAxes(false);
       interactive_marker->setShowVisualAids(false);
-      interactive_marker->setShowDescription(true);
+      interactive_marker->setShowDescription(false);
+      interactive_marker->setVisible(enabled_ && joint_manipulation_property_->getBool());
 
       auto fn = std::bind(&tesseract_rviz::ManipulationWidget::jointMarkerFeedback, this, joint_name, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 
@@ -350,8 +376,21 @@ void ManipulationWidget::changedManipulator()
               this,
               fn);
     }
+    return true;
+  }
 
+  return false;
 }
+
+void ManipulationWidget::clickedResetToCurrentState()
+{
+  resetToCurrentState();
+}
+
+void ManipulationWidget::changedManipulator()
+{
+  changeManipulator(manipulator_property_->getString());
+
 //  if (display_mode_property_->getOptionInt() != 2)
 //  {
 //    if (display_->isEnabled() && displaying_trajectory_message_ && animating_path_)
@@ -377,7 +416,7 @@ void ManipulationWidget::changedCartesianMarkerScale()
 
 void ManipulationWidget::changedCartesianManipulationEnabled()
 {
-  interactive_marker_->setVisible(cartesian_manipulation_property_->getBool());
+  enableCartesianManipulation(cartesian_manipulation_property_->getBool());
 }
 
 void ManipulationWidget::changedJointMarkerScale()
@@ -388,10 +427,8 @@ void ManipulationWidget::changedJointMarkerScale()
 
 void ManipulationWidget::changedJointManipulationEnabled()
 {
-  for (auto& joint_marker : joint_interactive_markers_)
-    joint_marker.second->setVisible(joint_manipulation_property_->getBool());
+  enableJointManipulation(joint_manipulation_property_->getBool());
 }
-
 
 void ManipulationWidget::changedJointStateTopic()
 {
@@ -659,18 +696,18 @@ void ManipulationWidget::onUpdate(float wall_dt)
           ++i;
         }
 
-        LinkWidget* link = visualization_->getLink(inv_kin_->getTipLinkName());
-        interactive_marker_->setPose(link->getPosition(), link->getOrientation(), "");
+        Eigen::Isometry3d pose = env_state_->transforms[inv_kin_->getTipLinkName()];
+        Ogre::Vector3 position;
+        Ogre::Quaternion orientation;
+        toOgre(position, orientation, pose);
+        interactive_marker_->setPose(position, orientation, "");
 
         const auto& scene_graph = tesseract_->getEnvironmentConst()->getSceneGraph();
         for (auto& joint_marker : joint_interactive_markers_)
         {
           const auto& joint = scene_graph->getJoint(joint_marker.first);
-          LinkWidget* child_link = visualization_->getLink(joint->child_link_name);
 
-          Eigen::Isometry3d pose;
-          toEigen(pose, child_link->getPosition(), child_link->getOrientation());
-
+          Eigen::Isometry3d pose = env_state_->transforms[joint->child_link_name];
           Ogre::Vector3 position;
           Ogre::Quaternion orientation;
           toOgre(position, orientation, pose);
@@ -690,8 +727,10 @@ void ManipulationWidget::onUpdate(float wall_dt)
     {
       int cnt = 0;
       manipulator_property_->clearOptions();
+      available_manipulators_.clear();
       for (const auto& manip : tesseract_->getInvKinematicsManagerConst()->getAvailableInvKinematicsManipulators())
       {
+        available_manipulators_.push_back(QString::fromStdString(manip));
         manipulator_property_->addOptionStd(manip, cnt);
         ++cnt;
       }
@@ -703,6 +742,8 @@ void ManipulationWidget::onUpdate(float wall_dt)
         manipulator_property_->setStringStd(current_manipulator);
 
       manipulators_ = manipulators;
+
+      Q_EMIT availableManipulatorsChanged(available_manipulators_);
     }
   }
 

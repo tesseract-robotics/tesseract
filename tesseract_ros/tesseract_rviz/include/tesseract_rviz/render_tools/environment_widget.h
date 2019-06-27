@@ -48,7 +48,9 @@ public:
   void onInitialize(VisualizationWidget::Ptr visualization,
                     tesseract::Tesseract::Ptr tesseract,
                     rviz::DisplayContext* context,
-                    ros::NodeHandle update_nh);
+                    ros::NodeHandle update_nh,
+                    bool update_state,
+                    QString tesseract_state_topic = "");
 
   void onEnable();
   void onDisable();
@@ -79,6 +81,7 @@ protected:
   ros::ServiceServer modify_environment_server_; /**< @brief host a service for modifying the environment */
   ros::ServiceServer get_environment_changes_server_; /**< @brief host a service for getting the environment changes */
   bool update_required_;
+  bool update_state_; /**< @brief Update visualization current state from environment message */
   bool load_tesseract_;  // for delayed initialization
   std::map<std::string, std_msgs::ColorRGBA> highlights_;
 

@@ -65,8 +65,11 @@ void JointStateMonitorWidget::newJointStateCallback(const sensor_msgs::JointStat
   if (!tesseract_->isInitialized())
     return;
 
-  tesseract_rosutils::processMsg(tesseract_->getEnvironment(), *joint_state_msg);
-  update_required_ = true;
+  if (isUpdateRequired(*joint_state_msg))
+  {
+    tesseract_rosutils::processMsg(tesseract_->getEnvironment(), *joint_state_msg);
+    update_required_ = true;
+  }
 }
 
 void JointStateMonitorWidget::onEnable()
@@ -91,6 +94,16 @@ void JointStateMonitorWidget::onUpdate()
 void JointStateMonitorWidget::onReset()
 {
   changedJointStateTopic();
+}
+
+bool JointStateMonitorWidget::isUpdateRequired(const sensor_msgs::JointState& joint_state)
+{
+  std::unordered_map<std::string, double> joints = tesseract_->getEnvironment()->getCurrentState()->joints;
+  for (auto i = 0u; i < joint_state.name.size(); ++i)
+    if(std::abs(joints[joint_state.name[i]] - joint_state.position[i]) > 1e-5)
+      return true;
+
+  return false;
 }
 
 }  // namespace tesseract_rviz

@@ -29,6 +29,7 @@ EnvironmentWidget::EnvironmentWidget(rviz::Property* widget, rviz::Display* disp
   , visualization_(nullptr)
   , tesseract_(nullptr)
   , update_required_(false)
+  , update_state_(true)
   , load_tesseract_(false)
 {
   environment_widget_counter_++;
@@ -117,11 +118,16 @@ EnvironmentWidget::~EnvironmentWidget()
 void EnvironmentWidget::onInitialize(VisualizationWidget::Ptr visualization,
                                      tesseract::Tesseract::Ptr tesseract,
                                      rviz::DisplayContext* context,
-                                     ros::NodeHandle update_nh)
+                                     ros::NodeHandle update_nh,
+                                     bool update_state,
+                                     QString tesseract_state_topic)
 {
   visualization_ = std::move(visualization);
   tesseract_ = std::move(tesseract);
   nh_ = update_nh;
+  update_state_ = update_state;
+
+  tesseract_state_topic_property_->setString(tesseract_state_topic);
 
   modify_environment_server_ =
       nh_.advertiseService(widget_ns_ + DEFAULT_MODIFY_ENVIRONMENT_SERVICE, &EnvironmentWidget::modifyEnvironmentCallback, this);
@@ -131,6 +137,7 @@ void EnvironmentWidget::onInitialize(VisualizationWidget::Ptr visualization,
 
   changedEnableVisualVisible();
   changedEnableCollisionVisible();
+  changedTesseractStateTopic();
 }
 
 void EnvironmentWidget::onEnable()
@@ -494,8 +501,9 @@ void EnvironmentWidget::newTesseractStateCallback(const tesseract_msgs::Tesserac
   if (!tesseract_->getEnvironment() || state_msg->id != tesseract_->getEnvironment()->getName() || tesseract_->getEnvironment()->getRevision() > state_msg->revision)
     return;
 
-  if (tesseract_rosutils::processMsg(tesseract_->getEnvironment(), state_msg->joint_state))
-    update_required_ = true;
+  if (update_state_)
+    if (tesseract_rosutils::processMsg(tesseract_->getEnvironment(), state_msg->joint_state))
+      update_required_ = true;
 
   if (state_msg->revision > tesseract_->getEnvironment()->getRevision())
   {
@@ -503,7 +511,8 @@ void EnvironmentWidget::newTesseractStateCallback(const tesseract_msgs::Tesserac
     for (int i = (tesseract_->getEnvironment()->getRevision() - 1); i < state_msg->revision; ++i)
       commands.push_back(state_msg->commands[i]);
 
-    applyEnvironmentCommands(commands);
+    if (!commands.empty())
+      applyEnvironmentCommands(commands);
   }
 
 //  setLinkColor(state_msg->object_colors);

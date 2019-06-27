@@ -51,8 +51,8 @@ void TesseractManipulationDisplay::onInitialize()
   visualization_->setCurrentStateVisible(false);
   visualization_->setStartStateVisible(true);
 
-  environment_monitor_->onInitialize(visualization_, tesseract_, context_, nh_);
-  manipulation_->onInitialize(scene_node_, context_, visualization_, tesseract_, nh_, ManipulationWidget::ManipulatorState::START);
+  environment_monitor_->onInitialize(visualization_, tesseract_, context_, nh_, true);
+  manipulation_->onInitialize(scene_node_, context_, visualization_, tesseract_, nh_, ManipulationWidget::ManipulatorState::START, "/tesseract/manipulation_start_state");
 
   visualization_->setVisible(false);
 }

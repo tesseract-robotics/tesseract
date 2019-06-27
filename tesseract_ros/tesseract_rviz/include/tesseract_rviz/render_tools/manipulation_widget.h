@@ -88,7 +88,8 @@ public:
                     VisualizationWidget::Ptr visualization,
                     tesseract::Tesseract::Ptr tesseract,
                     ros::NodeHandle update_nh,
-                    ManipulatorState state);
+                    ManipulatorState state,
+                    QString joint_state_topic);
 
   void onEnable();
   void onDisable();
@@ -96,6 +97,15 @@ public:
   void onReset();
 
   void onNameChange(const QString& name);
+
+Q_SIGNALS:
+  void availableManipulatorsChanged(QStringList manipulators);
+
+public Q_SLOT:
+  void enableCartesianManipulation(bool enabled);
+  void enableJointManipulation(bool enabled);
+  void resetToCurrentState();
+  bool changeManipulator(QString manipulator);
 
 private Q_SLOTS:
   void changedManipulator();
@@ -128,11 +138,13 @@ protected:
   tesseract_environment::EnvStatePtr env_state_;
 
   ros::Publisher joint_state_pub_;
+  QStringList available_manipulators_;
 
 //  TrajectoryPanel* trajectory_slider_panel_;
 //  rviz::PanelDockWidget* trajectory_slider_dock_panel_;
 
   // Properties
+  bool enabled_;
   ButtonProperty* main_property_;
   rviz::EnumProperty* manipulator_property_;
   rviz::RosTopicProperty* joint_state_topic_property_;
