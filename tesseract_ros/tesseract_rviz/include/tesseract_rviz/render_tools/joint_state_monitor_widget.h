@@ -64,6 +64,8 @@ protected:
   rviz::RosTopicProperty* joint_state_topic_property_;
 
   void newJointStateCallback(const sensor_msgs::JointStateConstPtr& joint_state);
+
+  bool isUpdateRequired(const sensor_msgs::JointState& joint_state);
 };
 }  // namespace tesseract_rviz
 #endif // TESSERACT_RVIZ_STATE_MONITORING_H

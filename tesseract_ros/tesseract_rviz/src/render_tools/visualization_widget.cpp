@@ -162,21 +162,25 @@ void VisualizationWidget::setCollisionVisible(bool visible)
 void VisualizationWidget::setCurrentStateVisible(bool visible)
 {
   current_state_visible_ = visible;
+  updateLinkVisibilities();
 }
 
 void VisualizationWidget::setStartStateVisible(bool visible)
 {
   start_state_visible_ = visible;
+  updateLinkVisibilities();
 }
 
 void VisualizationWidget::setEndStateVisible(bool visible)
 {
   end_state_visible_ = visible;
+  updateLinkVisibilities();
 }
 
 void VisualizationWidget::setTrajectoryVisible(bool visible)
 {
   trajectory_visible_ = visible;
+  updateLinkVisibilities();
 }
 
 void VisualizationWidget::updateLinkVisibilities()
