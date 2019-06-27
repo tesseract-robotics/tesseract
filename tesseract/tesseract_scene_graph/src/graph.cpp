@@ -486,15 +486,17 @@ SceneGraph::Path SceneGraph::getShortestPath(const std::string& root, const std:
   std::reverse(links.begin(), links.end());
   std::reverse(joints.begin(), joints.end());
 
-#ifdef NDEBUG
-  std::cout << "distances and parents:" << std::endl;
+#ifndef NDEBUG
+  CONSOLE_BRIDGE_logDebug("distances and parents:");
   Graph::vertex_iterator vi, vend;
-  for (boost::tie(vi, vend) = boost::vertices(g); vi != vend; ++vi)
+  for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
   {
-    std::cout << "distance(" << boost::get(boost::vertex_link, g)[*vi]->getName() << ") = " << d[*vi] << ", ";
-    std::cout << "parent(" << boost::get(boost::vertex_link, g)[*vi]->getName() << ") = " << boost::get(boost::vertex_link, g)[p[*vi]]->getName() << std::endl;
+    CONSOLE_BRIDGE_logDebug("distance(%s) = %d, parent(%s) = %s",
+                            boost::get(boost::vertex_link, graph)[*vi]->getName().c_str(),
+                            distance_map[*vi],
+                            boost::get(boost::vertex_link, graph)[*vi]->getName().c_str(),
+                            boost::get(boost::vertex_link, graph)[predicessor_map[*vi]]->getName().c_str());
   }
-  std::cout << std::endl;
 #endif
   return Path(links, joints);
 }
