@@ -42,6 +42,7 @@ add_message_files(
     TesseractState.msg
     Trajectory.msg
     VisualGeometry.msg
+    TransformMap.msg
 )
 
 add_service_files(
@@ -49,6 +50,7 @@ add_service_files(
   FILES
     ComputeContactResultVector.srv
     GetEnvironmentChanges.srv
+    GetEnvironmentInformation.srv
     ModifyEnvironment.srv
     SaveSceneGraph.srv
 )

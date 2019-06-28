@@ -51,6 +51,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/TesseractState.h>
 #include <tesseract_msgs/ModifyEnvironment.h>
 #include <tesseract_msgs/GetEnvironmentChanges.h>
+#include <tesseract_msgs/GetEnvironmentInformation.h>
 #include <tesseract_msgs/SaveSceneGraph.h>
 TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
 
@@ -104,8 +105,11 @@ public:
   /// The name of the topic used by default for receiving joint states
   static const std::string DEFAULT_JOINT_STATES_TOPIC;  // "/joint_states"
 
-  /// The name of the service used by default for requesting full tesseract environment state
+  /// The name of the service used by default for requesting tesseract environment change history
   static const std::string DEFAULT_GET_ENVIRONMENT_CHANGES_SERVICE;  // "/get_tesseract_changes"
+
+  /// The name of the service used by default for requesting tesseract environment information
+  static const std::string DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE;  // "/get_tesseract_information"
 
   /// The name of the service used by default for setting the full tesseract environment state
   static const std::string DEFAULT_MODIFY_ENVIRONMENT_SERVICE;  // "/modify_tesseract"
@@ -301,6 +305,9 @@ protected:
   // host a service for getting the environment changes
   ros::ServiceServer get_environment_changes_server_;
 
+  // host a service for getting the environment information
+  ros::ServiceServer get_environment_information_server_;
+
   // host a service for saving the scene graph to a DOT file
   ros::ServiceServer save_scene_graph_server_;
 
@@ -335,6 +342,10 @@ private:
   /** @brief Callback for get the environment changes via service request */
   bool getEnvironmentChangesCallback(tesseract_msgs::GetEnvironmentChangesRequest& req,
                                      tesseract_msgs::GetEnvironmentChangesResponse& res);
+
+  /** @brief Callback for get the environment information via service request */
+  bool getEnvironmentInformationCallback(tesseract_msgs::GetEnvironmentInformationRequest& req,
+                                         tesseract_msgs::GetEnvironmentInformationResponse& res);
 
   /** @brief Callback to save the scene graph to a DOT via a service request */
   bool saveSceneGraphCallback(tesseract_msgs::SaveSceneGraphRequest& req,
