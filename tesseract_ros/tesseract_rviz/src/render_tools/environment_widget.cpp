@@ -498,17 +498,18 @@ void EnvironmentWidget::newTesseractStateCallback(const tesseract_msgs::Tesserac
   if (!tesseract_->getEnvironment())
     return;
 
-  if (!tesseract_->getEnvironment() || state_msg->id != tesseract_->getEnvironment()->getName() || tesseract_->getEnvironment()->getRevision() > state_msg->revision)
+  int current_version = tesseract_->getEnvironment()->getRevision();
+  if (!tesseract_->getEnvironment() || state_msg->id != tesseract_->getEnvironment()->getName() || current_version > state_msg->revision)
     return;
 
   if (update_state_)
     if (tesseract_rosutils::processMsg(tesseract_->getEnvironment(), state_msg->joint_state))
       update_required_ = true;
 
-  if (state_msg->revision > tesseract_->getEnvironment()->getRevision())
+  if (state_msg->revision > current_version)
   {
-    std::vector<tesseract_msgs::EnvironmentCommand> commands;
-    for (int i = (tesseract_->getEnvironment()->getRevision() - 1); i < state_msg->revision; ++i)
+    std::vector<tesseract_msgs::EnvironmentCommand> commands; 
+    for (int i = (current_version == 0 ? 0 : current_version - 1); i < state_msg->revision; ++i)
       commands.push_back(state_msg->commands[i]);
 
     if (!commands.empty())
