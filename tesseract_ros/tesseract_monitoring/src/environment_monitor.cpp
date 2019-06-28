@@ -109,6 +109,7 @@ namespace tesseract_monitoring
 static const std::string LOGNAME = "environment_monitor";
 const std::string EnvironmentMonitor::DEFAULT_JOINT_STATES_TOPIC = "joint_states";
 const std::string EnvironmentMonitor::DEFAULT_GET_ENVIRONMENT_CHANGES_SERVICE = "get_tesseract_changes";
+const std::string EnvironmentMonitor::DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE = "get_tesseract_information";
 const std::string EnvironmentMonitor::DEFAULT_MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract";
 const std::string EnvironmentMonitor::DEFAULT_SAVE_SCENE_GRAPH_SERVICE = "save_scene_graph";
 const std::string EnvironmentMonitor::MONITORED_ENVIRONMENT_TOPIC = "monitored_tesseract";
@@ -254,6 +255,9 @@ void EnvironmentMonitor::initialize()
 
   get_environment_changes_server_ =
       nh_.advertiseService(DEFAULT_GET_ENVIRONMENT_CHANGES_SERVICE, &EnvironmentMonitor::getEnvironmentChangesCallback, this);
+
+  get_environment_information_server_ =
+      nh_.advertiseService(DEFAULT_GET_ENVIRONMENT_INFORMATION_SERVICE, &EnvironmentMonitor::getEnvironmentInformationCallback, this);
 
   save_scene_graph_server_ =
       nh_.advertiseService(DEFAULT_SAVE_SCENE_GRAPH_SERVICE, &EnvironmentMonitor::saveSceneGraphCallback, this);
@@ -754,6 +758,96 @@ bool EnvironmentMonitor::getEnvironmentChangesCallback(tesseract_msgs::GetEnviro
 
   res.success = true;
   return res.success;
+}
+
+bool EnvironmentMonitor::getEnvironmentInformationCallback(tesseract_msgs::GetEnvironmentInformationRequest& req,
+                                                           tesseract_msgs::GetEnvironmentInformationResponse& res)
+{
+  res.id = tesseract_->getEnvironment()->getName();
+  res.revision = tesseract_->getEnvironment()->getRevision();
+
+  if (req.flags & tesseract_msgs::GetEnvironmentInformationRequest::COMMAND_HISTORY)
+  {
+    if (!tesseract_rosutils::toMsg(res.command_history, tesseract_->getEnvironment()->getCommandHistory(), 0))
+    {
+      res.success = false;
+      return false;
+    }
+  }
+
+  if (req.flags & tesseract_msgs::GetEnvironmentInformationRequest::LINK_LIST)
+  {
+    for (const auto& link : tesseract_->getEnvironmentConst()->getSceneGraph()->getLinks())
+    {
+      tesseract_msgs::Link msg;
+      if(!tesseract_rosutils::toMsg(msg, *link))
+      {
+        res.success = false;
+        return false;
+      }
+      res.links.push_back(msg);
+    }
+  }
+
+  if (req.flags & tesseract_msgs::GetEnvironmentInformationRequest::JOINT_LIST)
+  {
+    for (const auto& joint : tesseract_->getEnvironmentConst()->getSceneGraph()->getJoints())
+    {
+      tesseract_msgs::Joint msg;
+      if(!tesseract_rosutils::toMsg(msg, *joint))
+      {
+        res.success = false;
+        return false;
+      }
+      res.joints.push_back(msg);
+    }
+  }
+
+  if (req.flags & tesseract_msgs::GetEnvironmentInformationRequest::LINK_NAMES)
+  {
+    for (const auto& link : tesseract_->getEnvironmentConst()->getLinkNames())
+    {
+      res.link_names.push_back(link);
+    }
+  }
+
+  if (req.flags & tesseract_msgs::GetEnvironmentInformationRequest::JOINT_NAMES)
+  {
+    for (const auto& joint : tesseract_->getEnvironmentConst()->getJointNames())
+    {
+      res.joint_names.push_back(joint);
+    }
+  }
+
+  if (req.flags & tesseract_msgs::GetEnvironmentInformationRequest::ACTIVE_LINK_NAMES)
+  {
+    for (const auto& link : tesseract_->getEnvironmentConst()->getActiveLinkNames())
+    {
+      res.active_link_names.push_back(link);
+    }
+  }
+
+  if (req.flags & tesseract_msgs::GetEnvironmentInformationRequest::ACTIVE_JOINT_NAMES)
+  {
+    for (const auto& joint : tesseract_->getEnvironmentConst()->getActiveJointNames())
+    {
+      res.active_joint_names.push_back(joint);
+    }
+  }
+
+  if (req.flags & tesseract_msgs::GetEnvironmentInformationRequest::LINK_TRANSFORMS)
+  {
+    for (const auto& link_pair : tesseract_->getEnvironmentConst()->getCurrentState()->transforms)
+    {
+      res.link_transforms.names.push_back(link_pair.first);
+      geometry_msgs::Pose pose;
+      tf::poseEigenToMsg(link_pair.second, pose);
+      res.link_transforms.transforms.push_back(pose);
+    }
+  }
+
+  res.success = true;
+  return true;
 }
 
 }
