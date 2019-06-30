@@ -26,14 +26,14 @@
 #ifndef TESSERACT_RVIZ_TESSERACT_MANIPULATION_DISPLAY_H
 #define TESSERACT_RVIZ_TESSERACT_MANIPULATION_DISPLAY_H
 
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <rviz/display.h>
 #ifndef Q_MOC_RUN
 #include <ros/ros.h>
 #include <tesseract/tesseract.h>
 #endif
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_rviz/render_tools/visualization_widget.h>
 #include <tesseract_rviz/render_tools/environment_widget.h>

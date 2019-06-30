@@ -37,8 +37,8 @@
 #ifndef TESSERACT_SCENE_GRAPH_MESH_PARSER_H
 #define TESSERACT_SCENE_GRAPH_MESH_PARSER_H
 
-#include <tesseract_scene_graph/macros.h>
-TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fstream>
 
 #include <assimp/scene.h>
@@ -47,9 +47,9 @@ TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH
 
 #include <console_bridge/console.h>
 
-#include <tesseract_geometry/types.h>
+#include <tesseract_common/types.h>
 
-TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
 {
@@ -71,7 +71,7 @@ namespace tesseract_scene_graph
     transform *= node->mTransformation;
     for (unsigned int j = 0; j < node->mNumMeshes; ++j)
     {
-      std::shared_ptr<tesseract_geometry::VectorVector3d> vertices(new tesseract_geometry::VectorVector3d());
+      std::shared_ptr<tesseract_common::VectorVector3d> vertices(new tesseract_common::VectorVector3d());
       std::shared_ptr<Eigen::VectorXi> triangles(new Eigen::VectorXi());
 
 

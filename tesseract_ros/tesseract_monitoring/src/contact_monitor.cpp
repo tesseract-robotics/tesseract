@@ -1,5 +1,5 @@
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <pluginlib/class_loader.hpp>
 #include <ros/ros.h>
 #include <ros/package.h>
@@ -7,7 +7,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/ContactResultVector.h>
 #include <tesseract_msgs/ModifyEnvironment.h>
 #include <tesseract_msgs/ComputeContactResultVector.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract/tesseract.h>

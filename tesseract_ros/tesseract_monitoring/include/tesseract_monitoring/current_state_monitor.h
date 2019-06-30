@@ -37,8 +37,8 @@
 #ifndef TESSERACT_MONITORING_CURRENT_STATE_H
 #define TESSERACT_MONITORING_CURRENT_STATE_H
 
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 #include <boost/thread/mutex.hpp>
@@ -48,7 +48,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 #include <map>
 #include <tf2_ros/transform_broadcaster.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
 #include <tesseract_environment/core/environment.h>

@@ -1,7 +1,7 @@
-#include <tesseract_planning/core/macros.h>
-TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/spaces/RealVectorStateSpace.h>
-TESSERACT_PLANNING_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include "tesseract_planning/ompl/continuous_motion_validator.h"
 

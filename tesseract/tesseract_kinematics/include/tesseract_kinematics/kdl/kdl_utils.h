@@ -26,13 +26,13 @@
 #ifndef TESSERACT_KINEMATICS_KDL_UTILS_H
 #define TESSERACT_KINEMATICS_KDL_UTILS_H
 
-#include <tesseract_kinematics/core/macros.h>
-TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/frames.hpp>
 #include <kdl/jntarray.hpp>
 #include <Eigen/Eigen>
-TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
-#include <tesseract_kinematics/core/types.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#include <tesseract_common/types.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/parser/kdl_parser.h>
 
@@ -61,7 +61,7 @@ inline void KDLToEigen(const KDL::Frame& frame, Eigen::Isometry3d& transform)
  * @param frames Input KDL Frames
  * @param transforms Output Eigen transforms (Isometry3d)
  */
-inline void KDLToEigen(const std::vector<KDL::Frame>& frames, VectorIsometry3d& transforms)
+inline void KDLToEigen(const std::vector<KDL::Frame>& frames, tesseract_common::VectorIsometry3d& transforms)
 {
   transforms.resize(frames.size());
   for (size_t i = 0; i < frames.size(); ++i)

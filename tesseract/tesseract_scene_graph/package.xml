@@ -9,6 +9,7 @@
   <author >Levi Armstrong</author>
 
   <depend>tesseract_geometry</depend>
+  <depend>tesseract_common</depend>
   <depend>liburdfdom-dev</depend>
   <depend>liburdfdom-headers-dev</depend>
   <depend>libconsole-bridge-dev</depend>

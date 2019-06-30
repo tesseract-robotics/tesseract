@@ -1,10 +1,10 @@
-#include <tesseract_collision/core/macros.h>
-TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <octomap/octomap.h>
 #include <console_bridge/console.h>
 #include <gtest/gtest.h>
 #include <chrono>
-TESSERACT_COLLISION_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include "tesseract_collision/bullet/bullet_discrete_simple_manager.h"
 #include "tesseract_collision/bullet/bullet_discrete_bvh_manager.h"

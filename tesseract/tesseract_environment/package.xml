@@ -13,6 +13,7 @@
   <depend>tesseract_collision</depend>
   <depend>tesseract_geometry</depend>
   <depend>tesseract_scene_graph</depend>
+  <depend>tesseract_common</depend>
   <depend>liborocos-kdl-dev</depend>
 
   <test_depend>gtest</test_depend>

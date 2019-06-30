@@ -23,11 +23,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <trajopt_utils/macros.h>
-TRAJOPT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <jsoncpp/json/json.h>
 #include <ros/ros.h>
-TRAJOPT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
 #include <tesseract_environment/core/utils.h>
@@ -165,7 +165,7 @@ TrajOptProbPtr cppMethod()
   end_pos << 0.4, 0.2762, 0.0, -1.3348, 0.0, 1.4959, 0.0;
 
   pci.init_info.type = InitInfo::GIVEN_TRAJ;
-  pci.init_info.data = TrajArray(steps_, pci.kin->numJoints());
+  pci.init_info.data = tesseract_common::TrajArray(steps_, pci.kin->numJoints());
   for (unsigned idof = 0; idof < pci.kin->numJoints(); ++idof)
   {
     pci.init_info.data.col(idof) = Eigen::VectorXd::LinSpaced(steps_, start_pos[idof], end_pos[idof]);
@@ -342,7 +342,7 @@ int main(int argc, char** argv)
   ROS_ERROR("planning time: %.3f", (ros::Time::now() - tStart).toSec());
 
   double d = 0;
-  TrajArray traj = getTraj(opt.x(), prob->GetVars());
+  tesseract_common::TrajArray traj = getTraj(opt.x(), prob->GetVars());
   for (unsigned i = 1; i < traj.rows(); ++i)
   {
     for (unsigned j = 0; j < traj.cols(); ++j)

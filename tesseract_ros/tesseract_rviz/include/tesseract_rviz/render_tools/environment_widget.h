@@ -1,14 +1,14 @@
 #ifndef TESSERACT_RVIZ_ENVIRONMENT_MONITORING_H
 #define TESSERACT_RVIZ_ENVIRONMENT_MONITORING_H
 
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <rviz/display.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #ifndef Q_MOC_RUN
 
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <ros/service_server.h>
 #include <ros/subscriber.h>
@@ -17,7 +17,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/TesseractState.h>
 #include <std_msgs/ColorRGBA.h>
 #include <tesseract/tesseract.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #endif
 #include <tesseract_rviz/render_tools/visualization_widget.h>

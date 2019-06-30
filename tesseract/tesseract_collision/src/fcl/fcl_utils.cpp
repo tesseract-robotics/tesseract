@@ -38,8 +38,8 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include <tesseract_collision/core/macros.h>
-TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fcl/geometry/bvh/BVH_model.h>
 #include <fcl/geometry/shape/box.h>
 #include <fcl/geometry/shape/cylinder.h>
@@ -50,7 +50,7 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <fcl/geometry/octree/octree.h>
 #include <boost/thread/mutex.hpp>
 #include <memory>
-TESSERACT_COLLISION_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/fcl/fcl_utils.h>
 
@@ -87,7 +87,7 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::MeshConstPtr
 {
   int vertice_count = geom->getVerticeCount();
   int triangle_count = geom->getTriangleCount();
-  const VectorVector3d& vertices = *(geom->getVertices());
+  const tesseract_common::VectorVector3d& vertices = *(geom->getVertices());
   const Eigen::VectorXi& triangles = *(geom->getTriangles());
 
   auto g = new fcl::BVHModel<fcl::OBBRSSd>();
@@ -297,7 +297,7 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
 CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
                                                const int& type_id,
                                                const CollisionShapesConst &shapes,
-                                               const VectorIsometry3d& shape_poses)
+                                               const tesseract_common::VectorIsometry3d& shape_poses)
   : name_(name)
   , type_id_(type_id)
   , shapes_(shapes)
@@ -326,7 +326,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
 CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
                                                const int& type_id,
                                                const CollisionShapesConst &shapes,
-                                               const VectorIsometry3d& shape_poses,
+                                               const tesseract_common::VectorIsometry3d& shape_poses,
                                                const std::vector<CollisionGeometryPtr>& collision_geometries,
                                                const std::vector<CollisionObjectPtr>& collision_objects)
   : name_(name)

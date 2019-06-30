@@ -100,7 +100,7 @@ ContinuousContactManagerPtr BulletCastBVHManager::clone() const
 bool BulletCastBVHManager::addCollisionObject(const std::string& name,
                                               const int& mask_id,
                                               const CollisionShapesConst &shapes,
-                                              const VectorIsometry3d& shape_poses,
+                                              const tesseract_common::VectorIsometry3d& shape_poses,
                                               bool enabled)
 {
   COWPtr new_cow = createCollisionObject(name, mask_id, shapes, shape_poses, enabled);
@@ -184,14 +184,14 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
 }
 
 void BulletCastBVHManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                                        const VectorIsometry3d& poses)
+                                                        const tesseract_common::VectorIsometry3d& poses)
 {
   assert(names.size() == poses.size());
   for (auto i = 0u; i < names.size(); ++i)
     setCollisionObjectsTransform(names[i], poses[i]);
 }
 
-void BulletCastBVHManager::setCollisionObjectsTransform(const TransformMap& transforms)
+void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms)
 {
   for (const auto& transform : transforms)
     setCollisionObjectsTransform(transform.first, transform.second);
@@ -272,8 +272,8 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
 }
 
 void BulletCastBVHManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                                        const VectorIsometry3d& pose1,
-                                                        const VectorIsometry3d& pose2)
+                                                        const tesseract_common::VectorIsometry3d& pose1,
+                                                        const tesseract_common::VectorIsometry3d& pose2)
 {
   assert(names.size() == pose1.size());
   assert(names.size() == pose2.size());
@@ -281,7 +281,7 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::vector<std::s
     setCollisionObjectsTransform(names[i], pose1[i], pose2[i]);
 }
 
-void BulletCastBVHManager::setCollisionObjectsTransform(const TransformMap& pose1, const TransformMap& pose2)
+void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract_common::TransformMap& pose1, const tesseract_common::TransformMap& pose2)
 {
   assert(pose1.size() == pose2.size());
   auto it1 = pose1.begin();

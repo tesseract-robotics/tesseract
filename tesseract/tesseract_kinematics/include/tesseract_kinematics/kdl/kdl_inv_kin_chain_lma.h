@@ -25,8 +25,8 @@
  */
 #ifndef TESSERACT_KINEMATICS_KDL_INV_KIN_CHAIN_LMA_H
 #define TESSERACT_KINEMATICS_KDL_INV_KIN_CHAIN_LMA_H
-#include <tesseract_kinematics/core/macros.h>
-TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/tree.hpp>
 #include <kdl/chain.hpp>
 #include <kdl/chainiksolverpos_lma.hpp>
@@ -34,7 +34,7 @@ TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 
 #include <tesseract_scene_graph/graph.h>
-TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_kinematics/kdl/kdl_utils.h>

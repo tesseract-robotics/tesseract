@@ -37,11 +37,11 @@
    alone display
 */
 
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/package.h>
 #include <tesseract_rosutils/utils.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_rviz/tesseract_trajectory_plugin/tesseract_trajectory_display.h>
 

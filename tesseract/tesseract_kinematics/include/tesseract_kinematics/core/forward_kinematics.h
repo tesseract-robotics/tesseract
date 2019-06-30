@@ -26,8 +26,8 @@
 #ifndef TESSERACT_KINEMATICS_FORWARD_KINEMATICS_H
 #define TESSERACT_KINEMATICS_FORWARD_KINEMATICS_H
 
-#include <tesseract_kinematics/core/macros.h>
-TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <string>
 #include <Eigen/Core>
@@ -35,9 +35,9 @@ TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 #include <iostream>
 #include <memory>
 #include <unordered_map>
-TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_kinematics/core/types.h>
+#include <tesseract_common/types.h>
 #include <tesseract_scene_graph/graph.h>
 
 namespace tesseract_kinematics
@@ -65,7 +65,7 @@ public:
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
    * @return True if calculation successful, False if anything is wrong (including uninitialized BasicKin)
    */
-  virtual bool calcFwdKin(VectorIsometry3d& poses,
+  virtual bool calcFwdKin(tesseract_common::VectorIsometry3d& poses,
                           const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
 
   /**

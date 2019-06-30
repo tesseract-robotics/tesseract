@@ -30,8 +30,8 @@
 #ifndef TESSERACT_RVIZ_ROBOT_H_
 #define TESSERACT_RVIZ_ROBOT_H_
 
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <rviz/robot/link_updater.h>
 
 #include <string>
@@ -44,7 +44,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include "rviz/properties/property_tree_widget.h"
 #endif
 
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #ifndef Q_MOC_RUN
 #include <tesseract_scene_graph/graph.h>

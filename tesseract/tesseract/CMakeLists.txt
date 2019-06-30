@@ -7,6 +7,7 @@ find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_collision REQUIRED)
 find_package(tesseract_environment REQUIRED)
 find_package(tesseract_kinematics REQUIRED)
+find_package(tesseract_common REQUIRED)
 
 list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
 
@@ -23,7 +24,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-    ${Boost_INCLUDE_DIRS})
+    ${Boost_INCLUDE_DIRS}
+    $<TARGET_PROPERTY:tesseract::tesseract_common,INTERFACE_INCLUDE_DIRECTORIES>) #tesseract::tesseract_common Due to bug in catkin, there is an open PR
 
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
 

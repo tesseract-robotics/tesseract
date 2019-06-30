@@ -23,11 +23,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <trajopt_utils/macros.h>
-TRAJOPT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <fstream>
-TRAJOPT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
 #include <tesseract_environment/core/utils.h>
@@ -115,9 +115,9 @@ bool sendRvizChanges(int past_revision)
   return true;
 }
 
-static VectorIsometry3d makePuzzleToolPoses()
+static tesseract_common::VectorIsometry3d makePuzzleToolPoses()
 {
-  VectorIsometry3d path;  // results
+  tesseract_common::VectorIsometry3d path;  // results
   std::ifstream indata;   // input file
 
   // You could load your parts from anywhere, but we are transporting them with
@@ -179,7 +179,7 @@ ProblemConstructionInfo cppMethod()
 {
   ProblemConstructionInfo pci(tesseract_);
 
-  VectorIsometry3d tool_poses = makePuzzleToolPoses();
+  tesseract_common::VectorIsometry3d tool_poses = makePuzzleToolPoses();
 
   // Populate Basic Info
   pci.basic_info.n_steps = static_cast<int>(tool_poses.size());

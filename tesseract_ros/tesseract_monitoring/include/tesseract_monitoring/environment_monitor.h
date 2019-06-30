@@ -37,8 +37,8 @@
 #ifndef TESSERACT_MONITORING_ENVIRONMENT_H
 #define TESSERACT_MONITORING_ENVIRONMENT_H
 
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <pluginlib/class_loader.hpp>
 #include <ros/ros.h>
 #include <tf/tf.h>
@@ -53,7 +53,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/GetEnvironmentChanges.h>
 #include <tesseract_msgs/GetEnvironmentInformation.h>
 #include <tesseract_msgs/SaveSceneGraph.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>

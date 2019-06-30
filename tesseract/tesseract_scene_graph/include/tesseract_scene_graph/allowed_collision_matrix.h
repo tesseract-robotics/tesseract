@@ -1,14 +1,14 @@
 #ifndef TESSERACT_SCENE_GRAPH_ALLOWED_COLLISION_MATRIX_H
 #define TESSERACT_SCENE_GRAPH_ALLOWED_COLLISION_MATRIX_H
 
-#include <tesseract_scene_graph/macros.h>
-TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <string>
 #include <vector>
 #include <memory>
 #include <Eigen/Eigen>
 #include <unordered_map>
-TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
 {

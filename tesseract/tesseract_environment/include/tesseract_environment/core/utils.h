@@ -25,15 +25,15 @@
  */
 #ifndef TESSERACT_ENVIRONMENT_UTILS_H
 #define TESSERACT_ENVIRONMENT_UTILS_H
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/parser/srdf_parser.h>
 #include <utility>
 #include <unordered_map>
 #include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_environment/core/environment.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/types.h>
 
@@ -87,7 +87,7 @@ namespace tesseract_environment
   inline bool checkTrajectory(tesseract_collision::ContinuousContactManager& manager,
                               const tesseract_environment::Environment& env,
                               const std::vector<std::string>& joint_names,
-                              const tesseract_environment::TrajArray& traj,
+                              const tesseract_common::TrajArray& traj,
                               std::vector<tesseract_collision::ContactResultMap>& contacts,
                               bool first_only = true)
   {

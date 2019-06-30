@@ -26,11 +26,11 @@
 #ifndef TESSERACT_PLANNING_UTILS_H
 #define TESSERACT_PLANNING_UTILS_H
 
-#include <tesseract_planning/core/macros.h>
-TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <memory>
-TESSERACT_PLANNING_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_environment/core/types.h>
@@ -39,7 +39,7 @@ TESSERACT_PLANNING_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-inline tesseract_environment::VectorIsometry3d interpolate(const Eigen::Isometry3d& start, const Eigen::Isometry3d& stop, int steps)
+inline tesseract_common::VectorIsometry3d interpolate(const Eigen::Isometry3d& start, const Eigen::Isometry3d& stop, int steps)
 {
   // Required position change
   Eigen::Vector3d delta_translation = (stop.translation() - start.translation());
@@ -55,7 +55,7 @@ inline tesseract_environment::VectorIsometry3d interpolate(const Eigen::Isometry
   Eigen::Quaterniond stop_q(stop.rotation());
   double slerp_ratio = 1.0 / steps;
 
-  tesseract_environment::VectorIsometry3d result;
+  tesseract_common::VectorIsometry3d result;
   Eigen::Vector3d trans;
   Eigen::Quaterniond q;
   Eigen::Isometry3d pose;
@@ -78,7 +78,7 @@ inline std::vector<WaypointPtr> interpolate(const Waypoint& start, const Waypoin
     {
       const CartesianWaypoint& w1 = static_cast<const CartesianWaypoint&>(start);
       const CartesianWaypoint& w2 = static_cast<const CartesianWaypoint&>(stop);
-      tesseract_environment::VectorIsometry3d eigen_poses = interpolate(w1.cartesian_position_, w2.cartesian_position_, steps);
+      tesseract_common::VectorIsometry3d eigen_poses = interpolate(w1.cartesian_position_, w2.cartesian_position_, steps);
 
       std::vector<WaypointPtr> result;
       result.reserve(eigen_poses.size());

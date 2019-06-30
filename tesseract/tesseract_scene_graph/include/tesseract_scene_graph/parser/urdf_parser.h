@@ -26,8 +26,8 @@
 #ifndef TESSERACT_SCENE_GRAPH_URDF_PARSER_H
 #define TESSERACT_SCENE_GRAPH_URDF_PARSER_H
 
-#include <tesseract_scene_graph/macros.h>
-TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fstream>
 #include <urdf_parser/urdf_parser.h>
 #include <tesseract_geometry/geometries.h>
@@ -36,7 +36,7 @@ TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 
-TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/parser/mesh_parser.h>

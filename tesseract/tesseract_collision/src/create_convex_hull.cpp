@@ -23,11 +23,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_collision/core/macros.h>
-TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 #include <boost/program_options.hpp>
-TESSERACT_COLLISION_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/common.h>
 
@@ -86,7 +86,7 @@ int main(int argc, char** argv)
     return ERROR_UNHANDLED_EXCEPTION;
   }
 
-  tesseract_collision::VectorVector3d mesh_vertices;
+  tesseract_common::VectorVector3d mesh_vertices;
   Eigen::VectorXi mesh_faces;
   int num_faces = tesseract_collision::loadSimplePlyFile(input, mesh_vertices, mesh_faces);
   if (num_faces < 0)
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
     return ERROR_UNHANDLED_EXCEPTION;
   }
 
-  tesseract_collision::VectorVector3d ch_vertices;
+  tesseract_common::VectorVector3d ch_vertices;
   Eigen::VectorXi ch_faces;
   int ch_num_faces = tesseract_collision::createConvexHull(ch_vertices, ch_faces, mesh_vertices);
 

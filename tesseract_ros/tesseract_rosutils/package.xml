@@ -17,6 +17,7 @@
   <depend>tesseract_scene_graph</depend>
   <depend>tesseract_geometry</depend>
   <depend>tesseract_visualization</depend>
+  <depend>tesseract_common</depend>
 
   <export>
   </export>

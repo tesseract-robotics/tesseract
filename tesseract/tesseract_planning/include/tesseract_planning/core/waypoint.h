@@ -26,12 +26,12 @@
 #ifndef TESSERACT_PLANNING_WAYPOINT_DEFINITIONS_H
 #define TESSERACT_PLANNING_WAYPOINT_DEFINITIONS_H
 
-#include <tesseract_planning/core/macros.h>
-TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Dense>
 #include <memory>
 #include <vector>
-TESSERACT_PLANNING_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {

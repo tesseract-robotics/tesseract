@@ -11,6 +11,7 @@ find_package(console_bridge REQUIRED)
 find_package(orocos_kdl REQUIRED)
 find_package(TinyXML REQUIRED)
 find_package(tesseract_geometry REQUIRED)
+find_package(tesseract_common REQUIRED)
 
 list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
 
@@ -40,7 +41,8 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
     ${urdfdom_INCLUDE_DIRS}
     ${urdfdom_headers_INCLUDE_DIRS}
     ${TinyXML_INCLUDE_DIRS}
-    ${orocos_kdl_INCLUDE_DIRS}) # Orocos did not export target correctly
+    ${orocos_kdl_INCLUDE_DIRS} # Orocos did not export target correctly
+    $<TARGET_PROPERTY:tesseract::tesseract_common,INTERFACE_INCLUDE_DIRECTORIES>) #tesseract::tesseract_common Due to bug in catkin, there is an open PR
 
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
 

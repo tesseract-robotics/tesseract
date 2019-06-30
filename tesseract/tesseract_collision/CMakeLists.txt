@@ -8,6 +8,7 @@ find_package(PkgConfig REQUIRED)
 find_package(ccd REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_geometry REQUIRED)
+find_package(tesseract_common REQUIRED)
 find_package(Bullet REQUIRED)
 
 list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
@@ -32,7 +33,8 @@ target_include_directories(${PROJECT_NAME}_core INTERFACE
 target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
     ${EIGEN3_INCLUDE_DIRS}
     ${BULLET_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS})
+    ${Boost_INCLUDE_DIRS}
+    $<TARGET_PROPERTY:tesseract::tesseract_common,INTERFACE_INCLUDE_DIRECTORIES>) #tesseract::tesseract_common Due to bug in catkin, there is an open PR
 
 # Create target for Bullet implementation
 add_library(${PROJECT_NAME}_bullet SHARED

@@ -43,11 +43,11 @@
 #ifndef TESSERACT_COLLISION_BULLET_UTILS_H
 #define TESSERACT_COLLISION_BULLET_UTILS_H
 
-#include <tesseract_collision/core/macros.h>
-TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <btBulletCollisionCommon.h>
 #include <console_bridge/console.h>
-TESSERACT_COLLISION_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
 #include <tesseract_collision/core/common.h>
@@ -117,7 +117,7 @@ public:
   CollisionObjectWrapper(const std::string& name,
                          const int& type_id,
                          const CollisionShapesConst& shapes,
-                         const VectorIsometry3d& shape_poses);
+                         const tesseract_common::VectorIsometry3d& shape_poses);
 
   short int m_collisionFilterGroup;
   short int m_collisionFilterMask;
@@ -186,13 +186,13 @@ protected:
   CollisionObjectWrapper(const std::string& name,
                          const int& type_id,
                          const CollisionShapesConst& shapes,
-                         const VectorIsometry3d& shape_poses,
+                         const tesseract_common::VectorIsometry3d& shape_poses,
                          const std::vector<std::shared_ptr<void>>& data);
 
   std::string m_name;             /**< @brief The name of the collision object */
   int m_type_id;                  /**< @brief A user defined type id */
   CollisionShapesConst m_shapes;  /**< @brief The shapes that define the collison object */
-  VectorIsometry3d m_shape_poses; /**< @brief The shpaes poses information */
+  tesseract_common::VectorIsometry3d m_shape_poses; /**< @brief The shpaes poses information */
 
   std::vector<std::shared_ptr<void>>
       m_data; /**< @brief This manages the collision shape pointer so they get destroyed */
@@ -832,7 +832,7 @@ inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
 inline COWPtr createCollisionObject(const std::string& name,
                                     const int& type_id,
                                     const CollisionShapesConst& shapes,
-                                    const VectorIsometry3d& shape_poses,
+                                    const tesseract_common::VectorIsometry3d& shape_poses,
                                     bool enabled = true)
 {
   // dont add object that does not have geometry

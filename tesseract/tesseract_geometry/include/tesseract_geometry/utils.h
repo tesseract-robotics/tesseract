@@ -26,10 +26,10 @@
 #ifndef TESSERACT_GEOMETRY_UTILS_H
 #define TESSERACT_GEOMETRY_UTILS_H
 
-#include <tesseract_geometry/macros.h>
-TESSERACT_GEOMETRY_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
-TESSERACT_GEOMETRY_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometries.h>
 

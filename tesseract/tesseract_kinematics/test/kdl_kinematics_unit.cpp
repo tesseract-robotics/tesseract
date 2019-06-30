@@ -1,9 +1,9 @@
-#include <tesseract_kinematics/core/macros.h>
-TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <fstream>
 #include <tesseract_scene_graph/parser/urdf_parser.h>
-TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include "tesseract_kinematics/kdl/kdl_fwd_kin_chain.h"
 #include "tesseract_kinematics/kdl/kdl_fwd_kin_tree.h"

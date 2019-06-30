@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_planning/core/macros.h>
-TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <jsoncpp/json/json.h>
 #include <ros/console.h>
 #include <trajopt/plot_callback.hpp>
@@ -34,7 +34,7 @@ TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
 #include <trajopt_sco/optimizers.hpp>
 #include <trajopt_sco/sco_common.hpp>
 #include <tesseract_environment/core/utils.h>
-TESSERACT_PLANNING_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_planning/trajopt/trajopt_planner.h>
 

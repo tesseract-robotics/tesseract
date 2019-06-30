@@ -10,7 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Eigen3 REQUIRED)
 find_package(tesseract_collision REQUIRED)
-find_package(tesseract_geometry REQUIRED) # This should not be required, must be doing something wrong when creating targets
 
 list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
 

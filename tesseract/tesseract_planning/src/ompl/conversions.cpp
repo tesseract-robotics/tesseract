@@ -1,16 +1,16 @@
-#include <tesseract_planning/core/macros.h>
-TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/spaces/RealVectorStateSpace.h>
-TESSERACT_PLANNING_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include "tesseract_planning/ompl/conversions.h"
 
-tesseract_environment::TrajArray tesseract_planning::toTrajArray(const ompl::geometric::PathGeometric& path)
+tesseract_common::TrajArray tesseract_planning::toTrajArray(const ompl::geometric::PathGeometric& path)
 {
   const long n_points = static_cast<long>(path.getStateCount());
   const long dof = static_cast<long>(path.getSpaceInformation()->getStateDimension());
 
-  tesseract_environment::TrajArray result(n_points, dof);
+  tesseract_common::TrajArray result(n_points, dof);
   for (long i = 0; i < n_points; ++i)
   {
     const auto& state = path.getState(static_cast<unsigned>(i))->as<ompl::base::RealVectorStateSpace::StateType>();

@@ -37,8 +37,8 @@
 #ifndef TESSERACT_RVIZ_TRAJECTORY_PANEL
 #define TESSERACT_RVIZ_TRAJECTORY_PANEL
 
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 
 #ifndef Q_MOC_RUN
 #include <ros/ros.h>
@@ -49,7 +49,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <QSlider>
 #include <QLabel>
 #include <QPushButton>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_rviz
 {

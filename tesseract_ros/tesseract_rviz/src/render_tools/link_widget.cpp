@@ -26,8 +26,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/filesystem.hpp>
 
 #include <OgreEntity.h>
@@ -65,7 +65,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include "rviz/selection/selection_manager.h"
 #include "rviz/visualization_manager.h"
 #include "rviz/ogre_helpers/point_cloud.h"
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include "tesseract_rviz/render_tools/visualization_widget.h"
 #include "tesseract_rviz/render_tools/joint_widget.h"
@@ -753,7 +753,7 @@ rviz::PointCloud* createPointCloud(std::vector<rviz::PointCloud::Point>&& points
   return cloud;
 }
 
-Ogre::Entity* LinkWidget::createEntityForMeshData(const std::string& entity_name, const std::shared_ptr<const tesseract_geometry::VectorVector3d>& mesh_vertices, const std::shared_ptr<const Eigen::VectorXi>& mesh_faces)
+Ogre::Entity* LinkWidget::createEntityForMeshData(const std::string& entity_name, const std::shared_ptr<const tesseract_common::VectorVector3d>& mesh_vertices, const std::shared_ptr<const Eigen::VectorXi>& mesh_faces)
 {
   Ogre::ManualObject* object = new Ogre::ManualObject("the one and only");
   object->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST);
