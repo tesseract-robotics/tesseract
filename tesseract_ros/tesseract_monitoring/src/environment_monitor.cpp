@@ -34,13 +34,13 @@
 
 /* Author: Ioan Sucan */
 
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/console.h>
 #include <dynamic_reconfigure/server.h>
 #include <memory>
 #include <tesseract_monitoring/EnvironmentMonitorDynamicReconfigureConfig.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/kdl/kdl_env.h>
 #include <tesseract_environment/core/utils.h>

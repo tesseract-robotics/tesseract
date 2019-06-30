@@ -1,11 +1,11 @@
 #ifndef TESSERACT_ROS_PLANNING_CONTINUOUS_MOTION_VALIDATOR_H
 #define TESSERACT_ROS_PLANNING_CONTINUOUS_MOTION_VALIDATOR_H
 
-#include <tesseract_planning/core/macros.h>
-TESSERACT_PLANNING_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/DiscreteMotionValidator.h>
 #include <ompl/base/MotionValidator.h>
-TESSERACT_PLANNING_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_kinematics/core/forward_kinematics.h>

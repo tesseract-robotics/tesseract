@@ -26,8 +26,8 @@
 #ifndef TESSERACT_SCENE_GRAPH_GRAPH_H
 #define TESSERACT_SCENE_GRAPH_GRAPH_H
 
-#include <tesseract_scene_graph/macros.h>
-TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/graph/adjacency_list.hpp> // for customizable graphs
 #include <boost/graph/directed_graph.hpp> // A subclass to provide reasonable arguments to adjacency_list for a typical directed graph
 #include <boost/graph/properties.hpp>
@@ -35,7 +35,7 @@ TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH
 #include <boost/graph/breadth_first_search.hpp>
 #include <string>
 #include <unordered_map>
-TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/joint.h>

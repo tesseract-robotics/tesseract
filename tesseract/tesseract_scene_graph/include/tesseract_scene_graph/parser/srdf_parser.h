@@ -37,8 +37,8 @@
 #ifndef TESSERACT_SCENE_SRDF_PARSER_H
 #define TESSERACT_SCENE_SRDF_PARSER_H
 
-#include <tesseract_scene_graph/macros.h>
-TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <map>
 #include <string>
 #include <vector>
@@ -49,7 +49,7 @@ TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH
 #include <boost/algorithm/string/trim.hpp>
 #include <tesseract_scene_graph/graph.h>
 #include <fstream>
-TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 /// Main namespace
 namespace tesseract_scene_graph

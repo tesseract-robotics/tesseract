@@ -23,11 +23,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 #include <tesseract_scene_graph/parser/kdl_parser.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include "tesseract_environment/kdl/kdl_state_solver.h"
 #include "tesseract_environment/kdl/kdl_utils.h"
@@ -182,7 +182,7 @@ bool KDLStateSolver::setJointValuesHelper(KDL::JntArray& q, const std::string& j
   }
 }
 
-void KDLStateSolver::calculateTransformsHelper(TransformMap& transforms,
+void KDLStateSolver::calculateTransformsHelper(tesseract_common::TransformMap& transforms,
                                                const KDL::JntArray& q_in,
                                                const KDL::SegmentMap::const_iterator& it,
                                                const Eigen::Isometry3d& parent_frame) const
@@ -204,7 +204,7 @@ void KDLStateSolver::calculateTransformsHelper(TransformMap& transforms,
   }
 }
 
-void KDLStateSolver::calculateTransforms(TransformMap& transforms,
+void KDLStateSolver::calculateTransforms(tesseract_common::TransformMap& transforms,
                                          const KDL::JntArray& q_in,
                                          const KDL::SegmentMap::const_iterator& it,
                                          const Eigen::Isometry3d& parent_frame) const

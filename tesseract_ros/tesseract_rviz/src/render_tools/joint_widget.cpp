@@ -31,8 +31,8 @@
 #include "tesseract_rviz/render_tools/visualization_widget.h"
 #include "tesseract_rviz/render_tools/link_widget.h"
 
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <OgreSceneNode.h>
 
 #include "rviz/load_resource.h"
@@ -42,7 +42,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include "rviz/properties/quaternion_property.h"
 #include "rviz/properties/string_property.h"
 #include "rviz/properties/vector_property.h"
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_rviz/conversions.h>
 

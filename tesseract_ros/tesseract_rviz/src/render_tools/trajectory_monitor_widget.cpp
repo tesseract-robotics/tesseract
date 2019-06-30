@@ -34,8 +34,8 @@
 
 /* Author: Dave Coleman */
 
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/replace.hpp>
 
@@ -52,7 +52,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <rviz/window_manager_interface.h>
 
 #include <tesseract_rosutils/utils.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include "tesseract_rviz/render_tools/trajectory_monitor_widget.h"
 #include "tesseract_rviz/render_tools/visualization_widget.h"

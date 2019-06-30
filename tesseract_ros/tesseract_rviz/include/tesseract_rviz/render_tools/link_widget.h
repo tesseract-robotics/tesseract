@@ -30,8 +30,8 @@
 #ifndef TESSERACT_RVIZ_ROBOT_LINK_H
 #define TESSERACT_RVIZ_ROBOT_LINK_H
 
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 
 #include <string>
 #include <map>
@@ -54,7 +54,7 @@ TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
 #include <rviz/ogre_helpers/point_cloud.h>
 #include <rviz/selection/forwards.h>
 
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace Ogre
 {
@@ -226,7 +226,7 @@ private:
   bool getEnabled() const;
 
   Ogre::Entity* createEntityForMeshData(const std::string& entity_name,
-                                        const std::shared_ptr<const tesseract_geometry::VectorVector3d>& mesh_vertices,
+                                        const std::shared_ptr<const tesseract_common::VectorVector3d>& mesh_vertices,
                                         const std::shared_ptr<const Eigen::VectorXi>& mesh_faces);
 
   bool createEntityForGeometryElement(const tesseract_scene_graph::Link& link,

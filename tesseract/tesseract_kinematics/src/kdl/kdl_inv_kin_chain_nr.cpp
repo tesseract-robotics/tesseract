@@ -23,12 +23,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_kinematics/core/macros.h>
-TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/segment.hpp>
 #include <tesseract_scene_graph/parser/kdl_parser.h>
 #include <memory>
-TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_nr.h>
 #include <tesseract_kinematics/kdl/kdl_utils.h>

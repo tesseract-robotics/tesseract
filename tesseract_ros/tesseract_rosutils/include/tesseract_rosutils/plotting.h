@@ -26,8 +26,8 @@
 #ifndef TESSERACT_ROSUTILS_PLOTTING_H
 #define TESSERACT_ROSUTILS_PLOTTING_H
 
-#include <tesseract_visualization/macros.h>
-TESSERACT_VISUALIZATION_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/console.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -35,7 +35,7 @@ TESSERACT_VISUALIZATION_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/Trajectory.h>
 #include <tesseract_msgs/TesseractState.h>
 #include <Eigen/Geometry>
-TESSERACT_VISUALIZATION_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/visualization.h>
 #include <tesseract_rosutils/utils.h>
@@ -60,7 +60,7 @@ public:
     axes_pub_ = nh.advertise<visualization_msgs::MarkerArray>("/trajopt/display_axes", 1, true);
   }
 
-  void plotTrajectory(const std::vector<std::string>& joint_names, const Eigen::Ref<const tesseract_environment::TrajArray>& traj) override
+  void plotTrajectory(const std::vector<std::string>& joint_names, const Eigen::Ref<const tesseract_common::TrajArray>& traj) override
   {
     tesseract_msgs::Trajectory msg;
 

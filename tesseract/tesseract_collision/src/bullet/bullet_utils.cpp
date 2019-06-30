@@ -43,14 +43,14 @@
 
 #include "tesseract_collision/bullet/bullet_utils.h"
 
-TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <BulletCollision/CollisionDispatch/btConvexConvexAlgorithm.h>
 #include <BulletCollision/CollisionShapes/btShapeHull.h>
 #include <BulletCollision/Gimpact/btGImpactShape.h>
 #include <boost/thread/mutex.hpp>
 #include <memory>
 #include <octomap/octomap.h>
-TESSERACT_COLLISION_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_collision
 {
@@ -90,7 +90,7 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::MeshConstPtr& g
 
   int vertice_count = geom->getVerticeCount();
   int triangle_count = geom->getTriangleCount();
-  const VectorVector3d& vertices = *(geom->getVertices());
+  const tesseract_common::VectorVector3d& vertices = *(geom->getVertices());
   const Eigen::VectorXi& triangles = *(geom->getTriangles());
 
   if (vertice_count > 0 && triangle_count > 0)
@@ -135,7 +135,7 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::ConvexMeshConst
 
   int vertice_count = geom->getVerticeCount();
   int triangle_count = geom->getFaceCount();
-  const VectorVector3d& vertices = *(geom->getVertices());
+  const tesseract_common::VectorVector3d& vertices = *(geom->getVertices());
 
   if (vertice_count > 0 && triangle_count > 0)
   {
@@ -282,7 +282,7 @@ btCollisionShape* createShapePrimitive(const CollisionShapeConstPtr& geom,
 CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
                                                const int& type_id,
                                                const CollisionShapesConst& shapes,
-                                               const VectorIsometry3d& shape_poses)
+                                               const tesseract_common::VectorIsometry3d& shape_poses)
   : m_name(name)
   , m_type_id(type_id)
   , m_shapes(shapes)
@@ -334,7 +334,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
 CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
                                                const int& type_id,
                                                const CollisionShapesConst& shapes,
-                                               const VectorIsometry3d& shape_poses,
+                                               const tesseract_common::VectorIsometry3d& shape_poses,
                                                const std::vector<std::shared_ptr<void>>& data)
   : m_name(name)
   , m_type_id(type_id)

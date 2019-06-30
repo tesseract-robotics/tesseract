@@ -28,10 +28,10 @@
 #ifndef TESSERACT_COLLISION_CONTINUOUS_CONTACT_MANAGER_H
 #define TESSERACT_COLLISION_CONTINUOUS_CONTACT_MANAGER_H
 
-#include <tesseract_collision/core/macros.h>
-TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-TESSERACT_COLLISION_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
 
@@ -72,7 +72,7 @@ public:
   virtual bool addCollisionObject(const std::string& name,
                                   const int& mask_id,
                                   const CollisionShapesConst& shapes,
-                                  const VectorIsometry3d& shape_poses,
+                                  const tesseract_common::VectorIsometry3d& shape_poses,
                                   bool enabled = true) = 0;
 
   /**
@@ -113,13 +113,13 @@ public:
    * @param names The name of the object
    * @param poses The tranformation in world
    */
-  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names, const VectorIsometry3d& poses) = 0;
+  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names, const tesseract_common::VectorIsometry3d& poses) = 0;
 
   /**
    * @brief Set a series of static collision object's tranforms
    * @param transforms A transform map <name, pose>
    */
-  virtual void setCollisionObjectsTransform(const TransformMap& transforms) = 0;
+  virtual void setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms) = 0;
 
   /**
    * @brief Set a single cast(moving) collision object's tansforms
@@ -146,8 +146,8 @@ public:
    * @param pose2 The end tranformations in world
    */
   virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                            const VectorIsometry3d& pose1,
-                                            const VectorIsometry3d& pose2) = 0;
+                                            const tesseract_common::VectorIsometry3d& pose1,
+                                            const tesseract_common::VectorIsometry3d& pose2) = 0;
 
   /**
    * @brief Set a series of cast(moving) collision object's tranforms
@@ -158,7 +158,7 @@ public:
    * @param pose1 A start transform map <name, pose>
    * @param pose2 A end transform map <name, pose>
    */
-  virtual void setCollisionObjectsTransform(const TransformMap& pose1, const TransformMap& pose2) = 0;
+  virtual void setCollisionObjectsTransform(const tesseract_common::TransformMap& pose1, const tesseract_common::TransformMap& pose2) = 0;
 
   /**
    * @brief Set which collision objects can move

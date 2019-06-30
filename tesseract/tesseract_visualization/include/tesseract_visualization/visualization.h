@@ -26,18 +26,17 @@
 #ifndef TESSERACT_VISUALIZATION_VISUALIZATION_H
 #define TESSERACT_VISUALIZATION_VISUALIZATION_H
 
-#include <tesseract_visualization/macros.h>
-TESSERACT_VISUALIZATION_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-TESSERACT_VISUALIZATION_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/types.h>
 #include <tesseract_collision/core/types.h>
 
 namespace tesseract_visualization
 {
-
-typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> TrajArray;
 
 /** @brief The Vizualization class */
 class Visualization
@@ -48,7 +47,7 @@ public:
    * @brief Plot a trajectory
    * @param traj
    */
-  virtual void plotTrajectory(const std::vector<std::string>& joint_names, const Eigen::Ref<const TrajArray>& traj) = 0;
+  virtual void plotTrajectory(const std::vector<std::string>& joint_names, const Eigen::Ref<const tesseract_common::TrajArray>& traj) = 0;
 
   /**
    * @brief Plot the collision results data

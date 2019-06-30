@@ -26,8 +26,8 @@
 #ifndef TESSERACT_KINEMATICS_INVERSE_KINEMATICS_H
 #define TESSERACT_KINEMATICS_INVERSE_KINEMATICS_H
 
-#include <tesseract_kinematics/core/macros.h>
-TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <string>
 #include <Eigen/Core>
@@ -35,9 +35,9 @@ TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 #include <iostream>
 #include <memory>
 #include <unordered_map>
-TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_kinematics/core/types.h>
+#include <tesseract_common/types.h>
 
 namespace tesseract_kinematics
 {

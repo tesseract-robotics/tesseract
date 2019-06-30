@@ -23,7 +23,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract/tesseract.h>
+
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_environment/kdl/kdl_env.h>
@@ -32,6 +34,9 @@
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_lma_factory.h>
 #include <tesseract_kinematics/core/utils.h>
 #include <tesseract_scene_graph/parser/urdf_parser.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract/tesseract.h>
 
 namespace tesseract
 {

@@ -26,15 +26,15 @@
 #ifndef TESSERACT_ENVIRONMENT_STATE_SOLVER_H
 #define TESSERACT_ENVIRONMENT_STATE_SOLVER_H
 
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <string>
 #include <memory>
 #include <unordered_map>
 #include <Eigen/Geometry>
 #include <Eigen/Core>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_environment/core/types.h>

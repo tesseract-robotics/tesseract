@@ -8,6 +8,7 @@
   <author>Levi Armstrong</author>
 
   <depend>tesseract_geometry</depend>
+  <depend>tesseract_common</depend>
   <depend>bullet3</depend>
   <depend>fcl</depend>
   <depend>libconsole-bridge-dev</depend>

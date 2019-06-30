@@ -26,14 +26,14 @@
 #ifndef TESSERACT_GEOMETRY_SDF_MESH_H
 #define TESSERACT_GEOMETRY_SDF_MESH_H
 
-#include <tesseract_geometry/macros.h>
-TESSERACT_GEOMETRY_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <memory>
-TESSERACT_GEOMETRY_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometry.h>
-#include <tesseract_geometry/types.h>
+#include <tesseract_common/types.h>
 
 namespace tesseract_geometry
 {
@@ -46,7 +46,7 @@ namespace tesseract_geometry
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    SDFMesh(const std::shared_ptr<const VectorVector3d>& vertices, const std::shared_ptr<const Eigen::VectorXi>& triangles, std::string file_path = "", Eigen::Vector3d scale = Eigen::Vector3d(1,1,1)) : Geometry(GeometryType::SDF_MESH), vertices_(vertices), triangles_(triangles), file_path_(file_path), scale_(scale)
+    SDFMesh(const std::shared_ptr<const tesseract_common::VectorVector3d>& vertices, const std::shared_ptr<const Eigen::VectorXi>& triangles, std::string file_path = "", Eigen::Vector3d scale = Eigen::Vector3d(1,1,1)) : Geometry(GeometryType::SDF_MESH), vertices_(vertices), triangles_(triangles), file_path_(file_path), scale_(scale)
     {
       vertice_count_ = static_cast<int>(vertices->size());
 
@@ -60,7 +60,7 @@ namespace tesseract_geometry
       }
     }
 
-    SDFMesh(const std::shared_ptr<const VectorVector3d>& vertices, const std::shared_ptr<const Eigen::VectorXi>& triangles, int triangle_count, std::string file_path = "", Eigen::Vector3d scale = Eigen::Vector3d(1,1,1)) : Geometry(GeometryType::SDF_MESH), vertices_(vertices), triangles_(triangles), triangle_count_(triangle_count), file_path_(file_path), scale_(scale)
+    SDFMesh(const std::shared_ptr<const tesseract_common::VectorVector3d>& vertices, const std::shared_ptr<const Eigen::VectorXi>& triangles, int triangle_count, std::string file_path = "", Eigen::Vector3d scale = Eigen::Vector3d(1,1,1)) : Geometry(GeometryType::SDF_MESH), vertices_(vertices), triangles_(triangles), triangle_count_(triangle_count), file_path_(file_path), scale_(scale)
     {
       vertice_count_ = static_cast<int>(vertices->size());
       assert((triangle_count * 4) == triangles_->size());
@@ -68,7 +68,7 @@ namespace tesseract_geometry
 
     ~SDFMesh() override = default;
 
-    const std::shared_ptr<const VectorVector3d>& getVertices() const { return vertices_; }
+    const std::shared_ptr<const tesseract_common::VectorVector3d>& getVertices() const { return vertices_; }
     const std::shared_ptr<const Eigen::VectorXi>& getTriangles() const { return triangles_; }
 
     int getVerticeCount() const { return vertice_count_; }
@@ -93,7 +93,7 @@ namespace tesseract_geometry
     GeometryPtr clone() const override { return SDFMeshPtr(new SDFMesh(vertices_, triangles_, triangle_count_, file_path_, scale_)); }
 
     private:
-      std::shared_ptr<const VectorVector3d> vertices_;
+      std::shared_ptr<const tesseract_common::VectorVector3d> vertices_;
       std::shared_ptr<const Eigen::VectorXi> triangles_;
 
       int vertice_count_;

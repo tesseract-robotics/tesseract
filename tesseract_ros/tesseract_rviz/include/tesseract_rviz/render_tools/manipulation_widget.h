@@ -26,21 +26,21 @@
 #ifndef TESSERACT_RVIZ_MANIPULATION_WIDGET_H
 #define TESSERACT_RVIZ_MANIPULATION_WIDGET_H
 
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <rviz/display.h>
 #include <rviz/panel_dock_widget.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #ifndef Q_MOC_RUN
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <tesseract_msgs/Trajectory.h>
 #include <tesseract/tesseract.h>
 #include <sensor_msgs/JointState.h>
 #include <boost/thread/mutex.hpp>
 #include <tesseract_kinematics/core/inverse_kinematics.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #endif
 
 #include <tesseract_rviz/property/button_property.h>

@@ -100,7 +100,7 @@ bool Environment::addLink(tesseract_scene_graph::Link link, tesseract_scene_grap
   if (link.collision.size() > 0)
   {
     tesseract_collision::CollisionShapesConst shapes;
-    tesseract_collision::VectorIsometry3d shape_poses;
+    tesseract_common::VectorIsometry3d shape_poses;
     getCollisionObject(shapes, shape_poses, link);
 
     if (discrete_manager_ != nullptr) discrete_manager_->addCollisionObject(link.getName(), 0, shapes, shape_poses, true);
@@ -299,9 +299,9 @@ Eigen::VectorXd Environment::getCurrentJointValues(const std::vector<std::string
   return jv;
 }
 
-VectorIsometry3d Environment::getLinkTransforms() const
+tesseract_common::VectorIsometry3d Environment::getLinkTransforms() const
 {
-  VectorIsometry3d link_tfs;
+  tesseract_common::VectorIsometry3d link_tfs;
   link_tfs.resize(link_names_.size());
   for (const auto& link_name : link_names_)
   {
@@ -316,7 +316,7 @@ const Eigen::Isometry3d& Environment::getLinkTransform(const std::string& link_n
 }
 
 void Environment::getCollisionObject(tesseract_collision::CollisionShapesConst& shapes,
-                                     tesseract_collision::VectorIsometry3d& shape_poses,
+                                     tesseract_common::VectorIsometry3d& shape_poses,
                                      const tesseract_scene_graph::Link& link) const
 {
   for (const auto& c : link.collision)
@@ -325,7 +325,7 @@ void Environment::getCollisionObject(tesseract_collision::CollisionShapesConst& 
     if (c->geometry->getType() == tesseract_geometry::MESH)
     {
       // This is required because convex hull cannot have multiple faces on the same plane.
-      std::shared_ptr<VectorVector3d> ch_verticies(new VectorVector3d());
+      std::shared_ptr<tesseract_common::VectorVector3d> ch_verticies(new tesseract_common::VectorVector3d());
       std::shared_ptr<Eigen::VectorXi> ch_faces(new Eigen::VectorXi());
       int ch_num_faces = tesseract_collision::createConvexHull(*ch_verticies, *ch_faces,*(std::static_pointer_cast<const tesseract_geometry::Mesh>(c->geometry)->getVertices()));
       shapes.push_back(tesseract_geometry::ConvexMeshPtr(new tesseract_geometry::ConvexMesh(ch_verticies, ch_faces, ch_num_faces)));
@@ -405,7 +405,7 @@ tesseract_collision::DiscreteContactManagerPtr Environment::getDiscreteContactMa
       if (link->collision.size() > 0)
       {
         tesseract_collision::CollisionShapesConst shapes;
-        tesseract_collision::VectorIsometry3d shape_poses;
+        tesseract_common::VectorIsometry3d shape_poses;
         getCollisionObject(shapes, shape_poses, *link);
         manager->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
       }
@@ -432,7 +432,7 @@ tesseract_collision::ContinuousContactManagerPtr Environment::getContinuousConta
       if (link->collision.size() > 0)
       {
         tesseract_collision::CollisionShapesConst shapes;
-        tesseract_collision::VectorIsometry3d shape_poses;
+        tesseract_common::VectorIsometry3d shape_poses;
         getCollisionObject(shapes, shape_poses, *link);
         manager->addCollisionObject(link->getName(), 0, shapes, shape_poses, true);
       }

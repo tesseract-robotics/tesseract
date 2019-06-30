@@ -26,8 +26,8 @@
 #ifndef TESSERACT_KINEMATICS_KDL_FWD_KINEMATIC_CHAIN_H
 #define TESSERACT_KINEMATICS_KDL_FWD_KINEMATIC_CHAIN_H
 
-#include <tesseract_kinematics/core/macros.h>
-TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/tree.hpp>
 #include <kdl/chain.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
@@ -36,7 +36,7 @@ TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 
 #include <tesseract_scene_graph/graph.h>
-TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_kinematics/kdl/kdl_utils.h>
@@ -60,7 +60,7 @@ public:
   bool calcFwdKin(Eigen::Isometry3d& pose,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
 
-  bool calcFwdKin(VectorIsometry3d& poses,
+  bool calcFwdKin(tesseract_common::VectorIsometry3d& poses,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
 
   bool calcFwdKin(Eigen::Isometry3d& pose,
@@ -142,7 +142,7 @@ private:
                         int segment_num = -1) const;
 
   /** @brief calcFwdKin helper function */
-  bool calcFwdKinHelper(VectorIsometry3d& poses,
+  bool calcFwdKinHelper(tesseract_common::VectorIsometry3d& poses,
                         const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                         int segment_num = -1) const;
 

@@ -26,8 +26,8 @@
 #ifndef TESSERACT_KINEMATICS_KDL_FWD_KINEMATIC_TREE_H
 #define TESSERACT_KINEMATICS_KDL_FWD_KINEMATIC_TREE_H
 
-#include <tesseract_kinematics/core/macros.h>
-TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/tree.hpp>
 #include <kdl/treefksolverpos_recursive.hpp>
 #include <kdl/treejnttojacsolver.hpp>
@@ -35,7 +35,7 @@ TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 
 #include <tesseract_scene_graph/graph.h>
-TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include "tesseract_kinematics/core/forward_kinematics.h"
 
@@ -58,7 +58,7 @@ public:
   bool calcFwdKin(Eigen::Isometry3d& pose,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
 
-  bool calcFwdKin(VectorIsometry3d& poses,
+  bool calcFwdKin(tesseract_common::VectorIsometry3d& poses,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
 
   bool calcFwdKin(Eigen::Isometry3d& pose,

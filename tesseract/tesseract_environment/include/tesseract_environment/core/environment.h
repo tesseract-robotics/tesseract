@@ -25,12 +25,12 @@
  */
 #ifndef TESSERACT_ENVIRONMENT_ENVIRONMENT_H
 #define TESSERACT_ENVIRONMENT_ENVIRONMENT_H
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <string>
 #include <console_bridge/console.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/types.h>
 #include <tesseract_environment/core/commands.h>
@@ -317,7 +317,7 @@ public:
    *
    * @return Get a vector of transforms for all links in the environment.
    */
-  virtual VectorIsometry3d getLinkTransforms() const;
+  virtual tesseract_common::VectorIsometry3d getLinkTransforms() const;
 
   /**
    * @brief Get the transform corresponding to the link.
@@ -453,7 +453,7 @@ private:
   bool removeLinkHelper(const std::string& name);
 
   void getCollisionObject(tesseract_collision::CollisionShapesConst& shapes,
-                          tesseract_collision::VectorIsometry3d& shape_poses,
+                          tesseract_common::VectorIsometry3d& shape_poses,
                           const tesseract_scene_graph::Link& link) const;
 
   tesseract_collision::DiscreteContactManagerPtr getDiscreteContactManagerHelper(const std::string& name) const;

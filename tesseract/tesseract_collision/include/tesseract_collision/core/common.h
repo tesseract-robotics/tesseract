@@ -26,8 +26,8 @@
 #ifndef TESSERACT_COLLISION_COMMON_H
 #define TESSERACT_COLLISION_COMMON_H
 
-#include <tesseract_collision/core/macros.h>
-TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <LinearMath/btConvexHullComputer.h>
 #include <cstdio>
 #include <cctype>
@@ -37,7 +37,7 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <iomanip>
 #include <boost/algorithm/string.hpp>
 #include <console_bridge/console.h>
-TESSERACT_COLLISION_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
 #include <tesseract_collision/core/common.h>
@@ -160,9 +160,9 @@ inline ContactResult* processResult(ContactTestData& cdata,
  *                "innerRadius" is the minimum distance of a face to the center of the convex hull.
  * @return The number of faces. If less than zero an error occured when trying to create the convex hull
  */
-inline int createConvexHull(VectorVector3d& vertices,
+inline int createConvexHull(tesseract_common::VectorVector3d& vertices,
                             Eigen::VectorXi& faces,
-                            const VectorVector3d& input,
+                            const tesseract_common::VectorVector3d& input,
                             double shrink = -1,
                             double shrinkClamp = -1)
 {
@@ -236,7 +236,7 @@ inline int createConvexHull(VectorVector3d& vertices,
 
 inline tesseract_geometry::ConvexMeshPtr makeConvexMesh(const tesseract_geometry::Mesh& mesh)
 {
-  std::shared_ptr<tesseract_collision::VectorVector3d> ch_vertices = std::make_shared<tesseract_collision::VectorVector3d>();
+  std::shared_ptr<tesseract_common::VectorVector3d> ch_vertices = std::make_shared<tesseract_common::VectorVector3d>();
   std::shared_ptr<Eigen::VectorXi> ch_faces = std::make_shared<Eigen::VectorXi>();
   int ch_num_faces = tesseract_collision::createConvexHull(*ch_vertices, *ch_faces, *mesh.getVertices());
   return std::make_shared<tesseract_geometry::ConvexMesh>(ch_vertices, ch_faces, ch_num_faces);
@@ -251,7 +251,7 @@ inline tesseract_geometry::ConvexMeshPtr makeConvexMesh(const tesseract_geometry
  * @return False if failed to write file, otherwise true
  */
 inline bool writeSimplePlyFile(const std::string& path,
-                               const VectorVector3d& vertices,
+                               const tesseract_common::VectorVector3d& vertices,
                                const Eigen::VectorXi& faces,
                                int num_faces)
 {
@@ -349,7 +349,7 @@ inline bool isNumeric(const std::string& s)
  * @return Number of faces, If returned 0 it failed to load.
  */
 inline int loadSimplePlyFile(const std::string& path,
-                             VectorVector3d& vertices,
+                             tesseract_common::VectorVector3d& vertices,
                              Eigen::VectorXi& faces,
                              bool triangles_only = false)
 {

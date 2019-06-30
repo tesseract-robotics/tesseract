@@ -64,7 +64,7 @@ public:
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,
                           const CollisionShapesConst& shapes,
-                          const VectorIsometry3d& shape_poses,
+                          const tesseract_common::VectorIsometry3d& shape_poses,
                           bool enabled = true) override;
 
   bool hasCollisionObject(const std::string& name) const override;
@@ -77,19 +77,19 @@ public:
 
   void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override;
 
-  void setCollisionObjectsTransform(const std::vector<std::string>& names, const VectorIsometry3d& poses) override;
+  void setCollisionObjectsTransform(const std::vector<std::string>& names, const tesseract_common::VectorIsometry3d& poses) override;
 
-  void setCollisionObjectsTransform(const TransformMap& transforms) override;
+  void setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms) override;
 
   void setCollisionObjectsTransform(const std::string& name,
                                     const Eigen::Isometry3d& pose1,
                                     const Eigen::Isometry3d& pose2) override;
 
   void setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                    const VectorIsometry3d& pose1,
-                                    const VectorIsometry3d& pose2) override;
+                                    const tesseract_common::VectorIsometry3d& pose1,
+                                    const tesseract_common::VectorIsometry3d& pose2) override;
 
-  void setCollisionObjectsTransform(const TransformMap& pose1, const TransformMap& pose2) override;
+  void setCollisionObjectsTransform(const tesseract_common::TransformMap& pose1, const tesseract_common::TransformMap& pose2) override;
 
   void setActiveCollisionObjects(const std::vector<std::string>& names) override;
 

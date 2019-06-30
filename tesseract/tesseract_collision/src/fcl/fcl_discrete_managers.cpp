@@ -74,7 +74,7 @@ DiscreteContactManagerPtr FCLDiscreteBVHManager::clone() const
 bool FCLDiscreteBVHManager::addCollisionObject(const std::string& name,
                                                const int& mask_id,
                                                const CollisionShapesConst &shapes,
-                                               const VectorIsometry3d& shape_poses,
+                                               const tesseract_common::VectorIsometry3d& shape_poses,
                                                bool enabled)
 {
   COWPtr new_cow = createFCLCollisionObject(name, mask_id, shapes, shape_poses, enabled);
@@ -139,14 +139,14 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const std::string& name
 }
 
 void FCLDiscreteBVHManager::setCollisionObjectsTransform(const std::vector<std::string>& names,
-                                                         const VectorIsometry3d& poses)
+                                                         const tesseract_common::VectorIsometry3d& poses)
 {
   assert(names.size() == poses.size());
   for (auto i = 0u; i < names.size(); ++i)
     setCollisionObjectsTransform(names[i], poses[i]);
 }
 
-void FCLDiscreteBVHManager::setCollisionObjectsTransform(const TransformMap& transforms)
+void FCLDiscreteBVHManager::setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms)
 {
   for (const auto& transform : transforms)
     setCollisionObjectsTransform(transform.first, transform.second);

@@ -26,12 +26,12 @@
 #ifndef TESSERACT_GEOMETRY_OCTREE_H
 #define TESSERACT_GEOMETRY_OCTREE_H
 
-#include <tesseract_geometry/macros.h>
-TESSERACT_GEOMETRY_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <memory>
 #include <octomap/octomap.h>
-TESSERACT_GEOMETRY_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometry.h>
 

@@ -27,6 +27,8 @@
 #ifndef TESSERACT_TESSERACT_H
 #define TESSERACT_TESSERACT_H
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_scene_graph/parser/srdf_parser.h>
 #include <tesseract_scene_graph/utils.h>
@@ -34,6 +36,7 @@
 #include <tesseract_kinematics/core/forward_kinematics_manager.h>
 #include <tesseract_kinematics/core/inverse_kinematics_manager.h>
 #include <memory>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract
 {

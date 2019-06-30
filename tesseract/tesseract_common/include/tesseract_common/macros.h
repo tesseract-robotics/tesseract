@@ -1,6 +1,6 @@
 /**
  * @file macros.h
- * @brief Tesseracts Scene Graph Macros
+ * @brief Common Tesseract Macros
  *
  * @author Levi Armstrong
  * @date January 18, 2018
@@ -23,10 +23,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_SCENE_GRAPH_MACROS_H
-#define TESSERACT_SCENE_GRAPH_MACROS_H
+#ifndef TESSERACT_COMMON_MACROS_H
+#define TESSERACT_COMMON_MACROS_H
 
-#define TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_PUSH                                                                                 \
+#define TESSERACT_COMMON_IGNORE_WARNINGS_PUSH                                                                          \
   _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wall\"")                                           \
       _Pragma("GCC diagnostic ignored \"-Wint-to-pointer-cast\"")                                                      \
           _Pragma("GCC diagnostic ignored \"-Wunused-parameter\"")                                                     \
@@ -35,7 +35,7 @@
                       _Pragma("GCC diagnostic ignored \"-Wfloat-conversion\"")                                         \
                           _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")
 
-#define TESSERACT_SCENE_GRAPH_IGNORE_WARNINGS_POP _Pragma("GCC diagnostic pop")
+#define TESSERACT_COMMON_IGNORE_WARNINGS_POP _Pragma("GCC diagnostic pop")
 
 
-#endif // TESSERACT_SCENE_GRAPH_MACROS_H
+#endif // TESSERACT_COMMON_MACROS_H

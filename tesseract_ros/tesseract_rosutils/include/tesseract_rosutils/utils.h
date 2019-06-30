@@ -26,8 +26,8 @@
 #ifndef TESSERACT_ROS_UTILS_H
 #define TESSERACT_ROS_UTILS_H
 
-#include <tesseract_collision/core/macros.h>
-TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <octomap_msgs/conversions.h>
 #include <std_msgs/Int32.h>
 #include <eigen_conversions/eigen_msg.h>
@@ -55,7 +55,7 @@ TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
 #include <tesseract_environment/core/environment.h>
 
 #include <Eigen/Geometry>
-TESSERACT_COLLISION_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_geometry/geometries.h>
@@ -359,7 +359,7 @@ static inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesserac
 
       geometry_msgs.type = tesseract_msgs::Geometry::MESH;
 
-      const tesseract_geometry::VectorVector3d& vertices = *(mesh.getVertices());
+      const tesseract_common::VectorVector3d& vertices = *(mesh.getVertices());
       geometry_msgs.mesh.vertices.resize(vertices.size());
       for (size_t i = 0; i < vertices.size(); ++i)
       {
@@ -396,7 +396,7 @@ static inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesserac
 
       geometry_msgs.type = tesseract_msgs::Geometry::CONVEX_MESH;
 
-      const tesseract_geometry::VectorVector3d& vertices = *(mesh.getVertices());
+      const tesseract_common::VectorVector3d& vertices = *(mesh.getVertices());
       geometry_msgs.mesh.vertices.resize(vertices.size());
       for (size_t i = 0; i < vertices.size(); ++i)
       {
@@ -433,7 +433,7 @@ static inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesserac
 
       geometry_msgs.type = tesseract_msgs::Geometry::SDF_MESH;
 
-      const tesseract_geometry::VectorVector3d& vertices = *(mesh.getVertices());
+      const tesseract_common::VectorVector3d& vertices = *(mesh.getVertices());
       geometry_msgs.mesh.vertices.resize(vertices.size());
       for (size_t i = 0; i < vertices.size(); ++i)
       {
@@ -499,7 +499,7 @@ static inline bool fromMsg(tesseract_geometry::GeometryPtr& geometry, const tess
   }
   else if (geometry_msg.type == tesseract_msgs::Geometry::MESH)
   {
-    std::shared_ptr<tesseract_geometry::VectorVector3d> vertices(new tesseract_geometry::VectorVector3d(geometry_msg.mesh.vertices.size()));
+    std::shared_ptr<tesseract_common::VectorVector3d> vertices(new tesseract_common::VectorVector3d(geometry_msg.mesh.vertices.size()));
     std::shared_ptr<Eigen::VectorXi> faces(new Eigen::VectorXi(geometry_msg.mesh.faces.size()));
 
     for (unsigned int i = 0; i < geometry_msg.mesh.vertices.size(); ++i)
@@ -517,7 +517,7 @@ static inline bool fromMsg(tesseract_geometry::GeometryPtr& geometry, const tess
   }
   else if (geometry_msg.type == tesseract_msgs::Geometry::CONVEX_MESH)
   {
-    std::shared_ptr<tesseract_geometry::VectorVector3d> vertices(new tesseract_geometry::VectorVector3d(geometry_msg.mesh.vertices.size()));
+    std::shared_ptr<tesseract_common::VectorVector3d> vertices(new tesseract_common::VectorVector3d(geometry_msg.mesh.vertices.size()));
     std::shared_ptr<Eigen::VectorXi> faces(new Eigen::VectorXi(geometry_msg.mesh.faces.size()));
 
     for (unsigned int i = 0; i < geometry_msg.mesh.vertices.size(); ++i)
@@ -535,7 +535,7 @@ static inline bool fromMsg(tesseract_geometry::GeometryPtr& geometry, const tess
   }
   else if (geometry_msg.type == tesseract_msgs::Geometry::SDF_MESH)
   {
-    std::shared_ptr<tesseract_geometry::VectorVector3d> vertices(new tesseract_geometry::VectorVector3d(geometry_msg.mesh.vertices.size()));
+    std::shared_ptr<tesseract_common::VectorVector3d> vertices(new tesseract_common::VectorVector3d(geometry_msg.mesh.vertices.size()));
     std::shared_ptr<Eigen::VectorXi> faces(new Eigen::VectorXi(geometry_msg.mesh.faces.size()));
 
     for (unsigned int i = 0; i < geometry_msg.mesh.vertices.size(); ++i)
@@ -1095,7 +1095,7 @@ static inline void toMsg(const tesseract_msgs::TesseractStatePtr& state_msg, con
 static inline void toMsg(trajectory_msgs::JointTrajectory& traj_msg,
                          const tesseract_environment::EnvState& start_state,
                          const std::vector<std::string>& joint_names,
-                         const Eigen::Ref<const tesseract_environment::TrajArray>& traj)
+                         const Eigen::Ref<const tesseract_common::TrajArray>& traj)
 {
   assert(joint_names.size() == static_cast<unsigned>(traj.cols()));
 
@@ -1145,7 +1145,7 @@ static inline void toMsg(trajectory_msgs::JointTrajectory& traj_msg,
 static inline void toMsg(const trajectory_msgs::JointTrajectoryPtr& traj_msg,
                          const tesseract_environment::EnvState& start_state,
                          const std::vector<std::string>& joint_names,
-                         const Eigen::Ref<const tesseract_environment::TrajArray>& traj)
+                         const Eigen::Ref<const tesseract_common::TrajArray>& traj)
 {
   toMsg(*traj_msg, start_state, joint_names, traj);
 }
@@ -1158,7 +1158,7 @@ static inline void toMsg(const trajectory_msgs::JointTrajectoryPtr& traj_msg,
  */
 static inline void toMsg(trajectory_msgs::JointTrajectory& traj_msg,
                          const std::vector<std::string>& joint_names,
-                         const Eigen::Ref<const tesseract_environment::TrajArray>& traj)
+                         const Eigen::Ref<const tesseract_common::TrajArray>& traj)
 {
   assert(joint_names.size() == static_cast<unsigned>(traj.cols()));
 
@@ -1193,7 +1193,7 @@ static inline void toMsg(trajectory_msgs::JointTrajectory& traj_msg,
  */
 static inline void toMsg(const trajectory_msgs::JointTrajectoryPtr& traj_msg,
                          const std::vector<std::string>& joint_names,
-                         const Eigen::Ref<const tesseract_environment::TrajArray>& traj)
+                         const Eigen::Ref<const tesseract_common::TrajArray>& traj)
 {
   toMsg(*traj_msg, joint_names, traj);
 }

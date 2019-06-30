@@ -1,11 +1,11 @@
-#include <tesseract_environment/core/macros.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <rviz/display_context.h>
 #include <rviz/properties/ros_topic_property.h>
 #include <rviz/window_manager_interface.h>
 
 #include <tesseract_rosutils/utils.h>
-TESSERACT_ENVIRONMENT_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_rviz/render_tools/joint_state_monitor_widget.h>
 

@@ -10,6 +10,7 @@
 
   <depend>tesseract_environment</depend>
   <depend>tesseract_kinematics</depend>
+  <depend>tesseract_common</depend>
   <depend>trajopt</depend>
   <depend>ompl</depend>
 

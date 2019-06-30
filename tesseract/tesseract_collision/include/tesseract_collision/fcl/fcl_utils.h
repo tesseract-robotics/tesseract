@@ -42,14 +42,14 @@
 #ifndef TESSERACT_COLLISION_FCL_UTILS_H
 #define TESSERACT_COLLISION_FCL_UTILS_H
 
-#include <tesseract_collision/core/macros.h>
-TESSERACT_COLLISION_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fcl/broadphase/broadphase_dynamic_AABB_tree.h>
 #include <fcl/narrowphase/collision.h>
 #include <fcl/narrowphase/distance.h>
 #include <memory>
 #include <set>
-TESSERACT_COLLISION_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
 #include <tesseract_collision/core/common.h>
@@ -77,7 +77,7 @@ public:
   CollisionObjectWrapper(const std::string& name,
                          const int& type_id,
                          const CollisionShapesConst& shapes,
-                         const VectorIsometry3d& shape_poses);
+                         const tesseract_common::VectorIsometry3d& shape_poses);
 
   short int m_collisionFilterGroup;
   short int m_collisionFilterMask;
@@ -125,7 +125,7 @@ protected:
   CollisionObjectWrapper(const std::string& name,
                          const int& type_id,
                          const CollisionShapesConst& shapes,
-                         const VectorIsometry3d& shape_poses,
+                         const tesseract_common::VectorIsometry3d& shape_poses,
                          const std::vector<CollisionGeometryPtr>& collision_geometries,
                          const std::vector<CollisionObjectPtr>& collision_objects);
 
@@ -133,7 +133,7 @@ protected:
   int type_id_;                  // user defined type id
   Eigen::Isometry3d world_pose_; /**< @brief Collision Object World Transformation */
   CollisionShapesConst shapes_;
-  VectorIsometry3d shape_poses_;
+  tesseract_common::VectorIsometry3d shape_poses_;
   std::vector<CollisionGeometryPtr> collision_geometries_;
   std::vector<CollisionObjectPtr> collision_objects_;
 };
@@ -149,7 +149,7 @@ typedef std::map<std::string, COWConstPtr> Link2ConstCOW;
 inline COWPtr createFCLCollisionObject(const std::string& name,
                                        const int& type_id,
                                        const CollisionShapesConst& shapes,
-                                       const VectorIsometry3d& shape_poses,
+                                       const tesseract_common::VectorIsometry3d& shape_poses,
                                        bool enabled)
 {
   // dont add object that does not have geometry

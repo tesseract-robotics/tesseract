@@ -23,11 +23,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_kinematics/core/macros.h>
-TESSERACT_KINEMATICS_IGNORE_WARNINGS_PUSH
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/segment.hpp>
 #include <tesseract_scene_graph/parser/kdl_parser.h>
-TESSERACT_KINEMATICS_IGNORE_WARNINGS_POP
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
 #include <tesseract_kinematics/kdl/kdl_utils.h>
@@ -57,7 +57,7 @@ bool KDLFwdKinChain::calcFwdKinHelper(Eigen::Isometry3d& pose,
   return true;
 }
 
-bool KDLFwdKinChain::calcFwdKinHelper(VectorIsometry3d& poses,
+bool KDLFwdKinChain::calcFwdKinHelper(tesseract_common::VectorIsometry3d& poses,
                                       const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                       int segment_num) const
 {
@@ -81,7 +81,7 @@ bool KDLFwdKinChain::calcFwdKinHelper(VectorIsometry3d& poses,
 #endif
 }
 
-bool KDLFwdKinChain::calcFwdKin(VectorIsometry3d& poses,
+bool KDLFwdKinChain::calcFwdKin(tesseract_common::VectorIsometry3d& poses,
                                 const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(checkInitialized());
