@@ -10,7 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_kinematics/core/forward_kinematics.h>
 
-namespace tesseract_planning
+namespace tesseract_planners
 {
 class ContinuousMotionValidator : public ompl::base::MotionValidator
 {

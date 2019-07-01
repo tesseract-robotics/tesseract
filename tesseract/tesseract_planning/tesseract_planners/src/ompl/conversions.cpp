@@ -3,9 +3,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include "tesseract_planning/ompl/conversions.h"
+#include "tesseract_planners/ompl/conversions.h"
 
-tesseract_common::TrajArray tesseract_planning::toTrajArray(const ompl::geometric::PathGeometric& path)
+tesseract_common::TrajArray tesseract_planners::toTrajArray(const ompl::geometric::PathGeometric& path)
 {
   const long n_points = static_cast<long>(path.getStateCount());
   const long dof = static_cast<long>(path.getSpaceInformation()->getStateDimension());

@@ -35,12 +35,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <trajopt_sco/sco_common.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_planning/trajopt/trajopt_array_planner.h>
-#include <tesseract_planning/trajopt/trajopt_planner.h>
+#include <tesseract_planners/trajopt/trajopt_array_planner.h>
+#include <tesseract_planners/trajopt/trajopt_planner.h>
 
 using namespace trajopt;
 
-namespace tesseract_planning
+namespace tesseract_planners
 {
 bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPlannerConfig& config)
 {
@@ -73,7 +73,7 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
     auto waypoint_type = config.target_waypoints_[ind]->getType();
     switch (waypoint_type)
     {
-      case tesseract_planning::WaypointType::JOINT_WAYPOINT:
+      case tesseract_planners::WaypointType::JOINT_WAYPOINT:
       {
         JointWaypointPtr joint_waypoint = std::static_pointer_cast<JointWaypoint>(config.target_waypoints_[ind]);
         std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
@@ -92,7 +92,7 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
         joint_waypoint->is_critical_ ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
         break;
       }
-      case tesseract_planning::WaypointType::JOINT_TOLERANCED_WAYPOINT:
+      case tesseract_planners::WaypointType::JOINT_TOLERANCED_WAYPOINT:
       {
         // For a toleranced waypoint we add an inequality term and a smaller equality term. This acts as a "leaky" hinge
         // to keep the problem numerically stable.
@@ -136,7 +136,7 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
         pci.cost_infos.push_back(jv_equal);
         break;
       }
-      case tesseract_planning::WaypointType::CARTESIAN_WAYPOINT:
+      case tesseract_planners::WaypointType::CARTESIAN_WAYPOINT:
       {
         CartesianWaypointPtr cart_waypoint = std::static_pointer_cast<CartesianWaypoint>(config.target_waypoints_[ind]);
         std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);
@@ -236,12 +236,12 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
   // -------- Solve the problem ------------
   // ---------------------------------------
   // Set the parameters in trajopt_planner
-  tesseract_planning::TrajOptPlannerConfig config_planner(prob);
+  tesseract_planners::TrajOptPlannerConfig config_planner(prob);
   config_planner.params = config.params_;
   config_planner.callbacks = config.callbacks_;
 
-  tesseract_planning::TrajOptPlanner planner;
-  tesseract_planning::PlannerResponse planning_response;
+  tesseract_planners::TrajOptPlanner planner;
+  tesseract_planners::PlannerResponse planning_response;
 
   // Solve problem. Results are stored in the response
   bool success = planner.solve(planning_response, config_planner);
@@ -252,4 +252,4 @@ bool TrajOptArrayPlanner::solve(PlannerResponse& response, const TrajOptArrayPla
 
 bool TrajOptArrayPlanner::terminate() { return false; }
 void TrajOptArrayPlanner::clear() { request_ = PlannerRequest(); }
-}  // namespace tesseract_planning
+}  // namespace tesseract_planners

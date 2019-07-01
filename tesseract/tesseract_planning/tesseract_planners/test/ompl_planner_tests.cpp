@@ -1,5 +1,5 @@
-#include <tesseract_planning/ompl/chain_ompl_interface.h>
-#include <tesseract_planning/ompl/conversions.h>
+#include <tesseract_planners/ompl/chain_ompl_interface.h>
+#include <tesseract_planners/ompl/conversions.h>
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
 //#include <ompl/geometric/planners/prm/PRM.h>    // These are other options for
 // planners
@@ -10,7 +10,7 @@
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <tesseract/tesseract.h>
 #include <tesseract_environment/core/utils.h>
-#include <tesseract_planning/ompl/continuous_motion_validator.h>
+#include <tesseract_planners/ompl/continuous_motion_validator.h>
 
 #include <functional>
 #include <gtest/gtest.h>
@@ -90,16 +90,16 @@ TEST(TesseractPlanningUnit, OMPLPlannerUnit)
 //      std::make_shared<tesseract::tesseract_ros::ROSBasicPlotting>(env);
 
   // Step 4: Create a planning context for OMPL - this sets up the OMPL state environment for your given chain
-  tesseract_planning::ChainOmplInterface ompl_context(tesseract->getEnvironment(), tesseract->getFwdKinematics("manipulator"));
+  tesseract_planners::ChainOmplInterface ompl_context(tesseract->getEnvironment(), tesseract->getFwdKinematics("manipulator"));
 
-  ompl::base::MotionValidatorPtr mv = std::make_shared<tesseract_planning::ContinuousMotionValidator>(ompl_context.spaceInformation(), tesseract->getEnvironment(), tesseract->getFwdKinematics("manipulator"));
+  ompl::base::MotionValidatorPtr mv = std::make_shared<tesseract_planners::ContinuousMotionValidator>(ompl_context.spaceInformation(), tesseract->getEnvironment(), tesseract->getFwdKinematics("manipulator"));
   ompl_context.setMotionValidator(mv);
 
   // Step 5: Create an OMPL planner that we want to use
   ompl::base::PlannerPtr planner = std::make_shared<ompl::geometric::RRTConnect>(ompl_context.spaceInformation());
 
   // Step 6: Create a start and terminal state for the robot to move between
-  tesseract_planning::OmplPlanParameters params;
+  tesseract_planners::OmplPlanParameters params;
   std::vector<double> start = { -1.2, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
   std::vector<double> goal = { 1.2, 0.2762, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
 
@@ -114,7 +114,7 @@ TEST(TesseractPlanningUnit, OMPLPlannerUnit)
 //  {
 //    const ompl::geometric::PathGeometric& path = *maybe_path;
 //    const auto& names = env->getManipulator("manipulator")->getJointNames();
-//    plotter->plotTrajectory(names, tesseract::tesseract_planning::toTrajArray(path));
+//    plotter->plotTrajectory(names, tesseract::tesseract_planners::toTrajArray(path));
 //  }
 //  else
 //  {

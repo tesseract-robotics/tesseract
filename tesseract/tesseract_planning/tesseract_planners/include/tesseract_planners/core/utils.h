@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PLANNING_UTILS_H
-#define TESSERACT_PLANNING_UTILS_H
+#ifndef TESSERACT_PLANNERS_UTILS_H
+#define TESSERACT_PLANNERS_UTILS_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -35,9 +35,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_environment/core/types.h>
 #include <tesseract_kinematics/core/forward_kinematics.h>
-#include <tesseract_planning/core/waypoint.h>
+#include <tesseract_planners/core/waypoint.h>
 
-namespace tesseract_planning
+namespace tesseract_planners
 {
 inline tesseract_common::VectorIsometry3d interpolate(const Eigen::Isometry3d& start, const Eigen::Isometry3d& stop, int steps)
 {
@@ -84,7 +84,7 @@ inline std::vector<WaypointPtr> interpolate(const Waypoint& start, const Waypoin
       result.reserve(eigen_poses.size());
       for (auto& eigen_pose : eigen_poses)
       {
-        CartesianWaypointPtr new_waypoint = std::make_shared<tesseract_planning::CartesianWaypoint>();
+        CartesianWaypointPtr new_waypoint = std::make_shared<tesseract_planners::CartesianWaypoint>();
         new_waypoint->cartesian_position_ = eigen_pose;
         new_waypoint->coeffs_ = start.coeffs_;
         new_waypoint->is_critical_ = start.is_critical_;

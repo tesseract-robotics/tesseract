@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PLANNING_WAYPOINT_DEFINITIONS_H
-#define TESSERACT_PLANNING_WAYPOINT_DEFINITIONS_H
+#ifndef TESSERACT_PLANNERS_WAYPOINT_DEFINITIONS_H
+#define TESSERACT_PLANNERS_WAYPOINT_DEFINITIONS_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_planning
+namespace tesseract_planners
 {
 /** @brief Used to specify the type of waypoint. Corresponds to a derived class of Waypoint*/
 enum class WaypointType
@@ -123,5 +123,5 @@ typedef std::shared_ptr<const JointTolerancedWaypoint> JointTolerancedWaypointCo
 typedef std::shared_ptr<CartesianWaypoint> CartesianWaypointPtr;
 typedef std::shared_ptr<const CartesianWaypoint> CartesianWaypointConstPtr;
 
-}  // namespace tesseract_planning
+}  // namespace tesseract_planners
 #endif

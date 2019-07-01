@@ -23,18 +23,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PLANNING_TRAJOPT_FREESPACE_PLANNER_H
-#define TESSERACT_PLANNING_TRAJOPT_FREESPACE_PLANNER_H
+#ifndef TESSERACT_PLANNERS_TRAJOPT_FREESPACE_PLANNER_H
+#define TESSERACT_PLANNERS_TRAJOPT_FREESPACE_PLANNER_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <trajopt/problem_description.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_planning/core/planner.h>
-#include <tesseract_planning/core/waypoint.h>
+#include <tesseract_planners/core/planner.h>
+#include <tesseract_planners/core/waypoint.h>
 
-namespace tesseract_planning
+namespace tesseract_planners
 {
 /**
  * @brief Config to setup freespace planner. Specify the start and end position. Freespace motion can be defined between
@@ -141,5 +141,5 @@ public:
 
   void clear() override;
 };
-}  // namespace tesseract_planning
+}  // namespace tesseract_planners
 #endif  // TESSERACT_PLANNING_TRAJOPT_PLANNER_H

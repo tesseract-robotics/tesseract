@@ -1,5 +1,5 @@
-#ifndef TESSERACT_PLANNING_CHAIN_OMPL_INTERFACE_H
-#define TESSERACT_PLANNING_CHAIN_OMPL_INTERFACE_H
+#ifndef TESSERACT_PLANNERS_CHAIN_OMPL_INTERFACE_H
+#define TESSERACT_PLANNERS_CHAIN_OMPL_INTERFACE_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -9,7 +9,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_kinematics/core/forward_kinematics.h>
 
-namespace tesseract_planning
+namespace tesseract_planners
 {
 struct OmplPlanParameters
 {
