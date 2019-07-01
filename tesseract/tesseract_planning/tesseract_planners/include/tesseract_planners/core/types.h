@@ -23,12 +23,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PLANNING_PLANNER_TYPES_H
-#define TESSERACT_PLANNING_PLANNER_TYPES_H
+#ifndef TESSERACT_PLANNERS_PLANNER_TYPES_H
+#define TESSERACT_PLANNERS_PLANNER_TYPES_H
 
 #include <tesseract/tesseract.h>
 
-namespace tesseract_planning
+namespace tesseract_planners
 {
 /** @brief Negative status code should be related to errors and positive should be used for status of covergenace */
 typedef std::unordered_map<int, std::string> StatusCodeMap;

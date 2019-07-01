@@ -3,9 +3,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include "tesseract_planning/ompl/continuous_motion_validator.h"
+#include "tesseract_planners/ompl/continuous_motion_validator.h"
 
-namespace tesseract_planning
+namespace tesseract_planners
 {
 ContinuousMotionValidator::ContinuousMotionValidator(ompl::base::SpaceInformationPtr space_info,
                                                      tesseract_environment::EnvironmentConstPtr env,

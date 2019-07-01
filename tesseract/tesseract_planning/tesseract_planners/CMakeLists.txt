@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(tesseract_planning VERSION 0.1.0 LANGUAGES CXX)
+project(tesseract_planners VERSION 0.1.0 LANGUAGES CXX)
 
 add_compile_options(-std=c++11 -Wall -Wextra)
 

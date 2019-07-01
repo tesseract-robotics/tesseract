@@ -3,9 +3,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include "tesseract_planning/ompl/chain_ompl_interface.h"
+#include "tesseract_planners/ompl/chain_ompl_interface.h"
 
-namespace tesseract_planning
+namespace tesseract_planners
 {
 ChainOmplInterface::ChainOmplInterface(tesseract_environment::EnvironmentConstPtr env,
                                        tesseract_kinematics::ForwardKinematicsConstPtr kin)

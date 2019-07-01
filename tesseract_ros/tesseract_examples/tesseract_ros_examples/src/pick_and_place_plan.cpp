@@ -30,7 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
-#include <tesseract_planning/trajopt/trajopt_planner.h>
+#include <tesseract_planners/trajopt/trajopt_planner.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_msgs/ModifyEnvironment.h>
@@ -211,9 +211,9 @@ int main(int argc, char** argv)
   std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
   // Create the planner and the responses that will store the results
-  tesseract_planning::TrajOptPlanner planner;
-  tesseract_planning::PlannerResponse planning_response;
-  tesseract_planning::PlannerResponse planning_response_place;
+  tesseract_planners::TrajOptPlanner planner;
+  tesseract_planners::PlannerResponse planning_response;
+  tesseract_planners::PlannerResponse planning_response_place;
 
   // Choose the manipulator and end effector link
   std::string manip = "Manipulator";
@@ -345,7 +345,7 @@ int main(int argc, char** argv)
   trajopt::TrajOptProbPtr pick_prob = ConstructProblem(pci);
 
   // Set the optimization parameters (Most are being left as defaults)
-  tesseract_planning::TrajOptPlannerConfig config(pick_prob);
+  tesseract_planners::TrajOptPlannerConfig config(pick_prob);
   config.params.max_iter = 100;
 
   // Create Plot Callback
@@ -544,7 +544,7 @@ int main(int argc, char** argv)
   trajopt::TrajOptProbPtr place_prob = ConstructProblem(pci_place);
 
   // Set the optimization parameters
-  tesseract_planning::TrajOptPlannerConfig config_place(place_prob);
+  tesseract_planners::TrajOptPlannerConfig config_place(place_prob);
   config_place.params.max_iter = 100;
 
   // Create Plot Callback

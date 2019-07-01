@@ -1,5 +1,5 @@
-#ifndef TESSERACT_PLANNING_OMPL_CONVERSIONS_H
-#define TESSERACT_PLANNING_OMPL_CONVERSIONS_H
+#ifndef TESSERACT_PLANNERS_OMPL_CONVERSIONS_H
+#define TESSERACT_PLANNERS_OMPL_CONVERSIONS_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -8,7 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>
 
-namespace tesseract_planning
+namespace tesseract_planners
 {
 tesseract_common::TrajArray toTrajArray(const ompl::geometric::PathGeometric& path);
 }

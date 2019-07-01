@@ -23,17 +23,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PLANNING_PLANNER_H
-#define TESSERACT_PLANNING_PLANNER_H
+#ifndef TESSERACT_PLANNERS_PLANNER_H
+#define TESSERACT_PLANNERS_PLANNER_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_planning/core/types.h>
+#include <tesseract_planners/core/types.h>
 
-namespace tesseract_planning
+namespace tesseract_planners
 {
 class BasicPlanner
 {
@@ -65,5 +65,5 @@ protected:
   PlannerRequest request_;        /**< @brief The planner request information */
   StatusCodeMap status_code_map_; /**< @brief A map of error codes to description */
 };
-}  // namespace tesseract_planning
+}  // namespace tesseract_planners
 #endif  // TESSERACT_PLANNING_PLANNER_H
