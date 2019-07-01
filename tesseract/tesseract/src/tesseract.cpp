@@ -285,6 +285,8 @@ namespace tesseract
 
   bool Tesseract::registerDefaultFwdKinSolvers()
   {
+    bool success = true;
+
     fwd_kin_manager_ = std::make_shared<tesseract_kinematics::ForwardKinematicsManager>();
     fwd_kin_manager_const_ = fwd_kin_manager_;
 
@@ -305,28 +307,32 @@ namespace tesseract
           if (!fwd_kin_manager_->addFwdKinematicSolver(solver))
           {
             CONSOLE_BRIDGE_logError("Failed to add inverse kinematic chain solver %s for manipulator %s to manager!", solver->getSolverName().c_str(), group.name_.c_str());
+            success = false;
           }
         }
         else
         {
           CONSOLE_BRIDGE_logError("Failed to create inverse kinematic chain solver %s for manipulator %s!", solver->getSolverName().c_str(), group.name_.c_str());
+          success = false;
         }
       }
 
       if (!group.joints_.empty())
       {
-        assert(group.chains_.size() == 1);
+        assert(group.joints_.size() == 1);
         tesseract_kinematics::ForwardKinematicsPtr solver = tree_factory->create(environment_->getSceneGraph(), group.joints_, group.name_);
         if (solver != nullptr)
         {
           if (!fwd_kin_manager_->addFwdKinematicSolver(solver))
           {
             CONSOLE_BRIDGE_logError("Failed to add inverse kinematic tree solver %s for manipulator %s to manager!", solver->getSolverName().c_str(), group.name_.c_str());
+            success = false;
           }
         }
         else
         {
           CONSOLE_BRIDGE_logError("Failed to create inverse kinematic tree solver %s for manipulator %s!", solver->getSolverName().c_str(), group.name_.c_str());
+          success = false;
         }
       }
 
@@ -334,17 +340,23 @@ namespace tesseract
       if (!group.links_.empty())
       {
         CONSOLE_BRIDGE_logError("Link groups are currently not supported!");
+        success = false;
       }
 
       if (!group.subgroups_.empty())
       {
         CONSOLE_BRIDGE_logError("Subgroups are currently not supported!");
+        success = false;
       }
     }
+
+    return success;
   }
 
   bool Tesseract::registerDefaultInvKinSolvers()
   {
+    bool success = true;
+
     inv_kin_manager_ = std::make_shared<tesseract_kinematics::InverseKinematicsManager>();
     inv_kin_manager_const_ = inv_kin_manager_;
 
@@ -362,30 +374,37 @@ namespace tesseract
           if (!inv_kin_manager_->addInvKinematicSolver(solver))
           {
             CONSOLE_BRIDGE_logError("Failed to add inverse kinematic chain solver %s for manipulator %s to manager!", solver->getSolverName().c_str(), group.name_.c_str());
+            success = false;
           }
         }
         else
         {
           CONSOLE_BRIDGE_logError("Failed to create inverse kinematic chain solver %s for manipulator %s!", solver->getSolverName().c_str(), group.name_.c_str());
+          success = false;
         }
       }
 
       if (!group.joints_.empty())
       {
         CONSOLE_BRIDGE_logError("Joint groups are currently not supported!");
+        success = false;
       }
 
       // TODO: Need to add other options
       if (!group.links_.empty())
       {
         CONSOLE_BRIDGE_logError("Link groups are currently not supported!");
+        success = false;
       }
 
       if (!group.subgroups_.empty())
       {
         CONSOLE_BRIDGE_logError("Subgroups are currently not supported!");
+        success = false;
       }
     }
+
+    return success;
   }
 
   void Tesseract::clear()
