@@ -123,7 +123,7 @@ add_library(${PROJECT_NAME}_render_tools SHARED
 )
 
 target_link_libraries(${PROJECT_NAME}_render_tools PUBLIC
-  tesseract
+  tesseract::tesseract
   ${catkin_LIBRARIES}
   ${OGRE_LIBRARIES}
   ${QT_LIBRARIES}
@@ -202,7 +202,7 @@ add_library(${PROJECT_NAME}_trajectory_plugin_core SHARED src/tesseract_trajecto
 target_link_libraries(${PROJECT_NAME}_trajectory_plugin_core PUBLIC
     ${PROJECT_NAME}_render_tools
     ${PROJECT_NAME}_state_plugin_core
-    tesseract
+    tesseract::tesseract
     ${catkin_LIBRARIES}
     ${OGRE_LIBRARIES}
     ${QT_LIBRARIES}
@@ -226,7 +226,7 @@ target_include_directories(${PROJECT_NAME}_trajectory_plugin_core SYSTEM PUBLIC
 add_library(${PROJECT_NAME}_trajectory_plugin SHARED src/tesseract_trajectory_plugin/plugin_init.cpp)
 target_link_libraries(${PROJECT_NAME}_trajectory_plugin PRIVATE
     ${PROJECT_NAME}_trajectory_plugin_core
-    tesseract
+    tesseract::tesseract
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_trajectory_plugin PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
@@ -249,7 +249,7 @@ qt_wrap_cpp(${PROJECT_NAME}_manipulation_plugin_core_cpp_MOCS include/tesseract_
 add_library(${PROJECT_NAME}_manipulation_plugin_core SHARED src/tesseract_manipulation_plugin/tesseract_manipulation_display.cpp ${${PROJECT_NAME}_manipulation_plugin_core_cpp_MOCS})
 target_link_libraries(${PROJECT_NAME}_manipulation_plugin_core PUBLIC
     ${PROJECT_NAME}_render_tools
-    tesseract
+    tesseract::tesseract
     ${catkin_LIBRARIES}
     ${OGRE_LIBRARIES}
     ${QT_LIBRARIES}
@@ -273,7 +273,7 @@ target_include_directories(${PROJECT_NAME}_manipulation_plugin_core SYSTEM PUBLI
 add_library(${PROJECT_NAME}_manipulation_plugin SHARED src/tesseract_manipulation_plugin/plugin_init.cpp)
 target_link_libraries(${PROJECT_NAME}_manipulation_plugin PRIVATE
     ${PROJECT_NAME}_manipulation_plugin_core
-    tesseract
+    tesseract::tesseract
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_manipulation_plugin PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)

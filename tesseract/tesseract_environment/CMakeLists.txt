@@ -13,7 +13,7 @@ list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core SHARED src/core/environment.cpp)
-target_link_libraries(${PROJECT_NAME}_core PUBLIC tesseract_collision_core tesseract_scene_graph)
+target_link_libraries(${PROJECT_NAME}_core PUBLIC tesseract::tesseract_collision_core tesseract::tesseract_scene_graph)
 target_compile_options(${PROJECT_NAME}_core PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_core PUBLIC -std=c++11)
@@ -28,7 +28,7 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM PUBLIC
     $<TARGET_PROPERTY:tesseract::tesseract_common,INTERFACE_INCLUDE_DIRECTORIES>) #tesseract::tesseract_common Due to bug in catkin, there is an open PR
 
 add_library(${PROJECT_NAME}_kdl SHARED src/kdl/kdl_env.cpp src/kdl/kdl_state_solver.cpp)
-target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract_collision_fcl tesseract_collision_bullet tesseract_scene_graph orocos-kdl console_bridge ${BULLET_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_collision_fcl tesseract::tesseract_collision_bullet tesseract::tesseract_scene_graph orocos-kdl console_bridge ${BULLET_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_kdl PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_kdl PUBLIC -std=c++11)
@@ -47,7 +47,7 @@ list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_core)
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_kdl)
 
 install(TARGETS ${PACKAGE_LIBRARIES} EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
-install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake/${PROJECT_NAME})
+install(EXPORT ${PROJECT_NAME}-targets NAMESPACE tesseract:: DESTINATION lib/cmake/${PROJECT_NAME})
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
