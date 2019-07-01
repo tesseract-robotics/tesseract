@@ -17,7 +17,7 @@ void addCollisionObjects(DiscreteContactManager& checker)
   ////////////////////////
   MeshPtr sphere;
 
-  std::shared_ptr<VectorVector3d> vertices(new VectorVector3d());
+  std::shared_ptr<tesseract_common::VectorVector3d> vertices(new tesseract_common::VectorVector3d());
   std::shared_ptr<Eigen::VectorXi> faces(new Eigen::VectorXi());
   int num_faces = loadSimplePlyFile(std::string(DATA_DIR) + "/sphere_p25m.ply", *vertices, *faces, true);
   EXPECT_GT(num_faces, 0);
@@ -29,7 +29,7 @@ void addCollisionObjects(DiscreteContactManager& checker)
   sphere_pose.setIdentity();
 
   CollisionShapesConst obj1_shapes;
-  VectorIsometry3d obj1_poses;
+  tesseract_common::VectorIsometry3d obj1_poses;
   obj1_shapes.push_back(sphere);
   obj1_poses.push_back(sphere_pose);
 
@@ -43,7 +43,7 @@ void addCollisionObjects(DiscreteContactManager& checker)
   thin_box_pose.setIdentity();
 
   CollisionShapesConst obj2_shapes;
-  VectorIsometry3d obj2_poses;
+  tesseract_common::VectorIsometry3d obj2_poses;
   obj2_shapes.push_back(thin_box);
   obj2_poses.push_back(thin_box_pose);
 
@@ -58,7 +58,7 @@ void addCollisionObjects(DiscreteContactManager& checker)
   sphere1_pose.setIdentity();
 
   CollisionShapesConst obj3_shapes;
-  VectorIsometry3d obj3_poses;
+  tesseract_common::VectorIsometry3d obj3_poses;
   obj3_shapes.push_back(sphere1);
   obj3_poses.push_back(sphere1_pose);
 
@@ -74,7 +74,7 @@ void runTest(DiscreteContactManager& checker)
   checker.setContactDistanceThreshold(0);
 
   // Test when object is inside another
-  TransformMap location;
+  tesseract_common::TransformMap location;
   location["sphere_link"] = Eigen::Isometry3d::Identity();
   location["sphere1_link"] = Eigen::Isometry3d::Identity();
   location["sphere1_link"].translation()(0) = 0.2;

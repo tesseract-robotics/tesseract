@@ -20,7 +20,7 @@ void addCollisionObjects(DiscreteContactManager& checker, bool use_convex_mesh =
   box_pose.setIdentity();
 
   CollisionShapesConst obj1_shapes;
-  VectorIsometry3d obj1_poses;
+  tesseract_common::VectorIsometry3d obj1_poses;
   obj1_shapes.push_back(box);
   obj1_poses.push_back(box_pose);
 
@@ -34,7 +34,7 @@ void addCollisionObjects(DiscreteContactManager& checker, bool use_convex_mesh =
   thin_box_pose.setIdentity();
 
   CollisionShapesConst obj2_shapes;
-  VectorIsometry3d obj2_poses;
+  tesseract_common::VectorIsometry3d obj2_poses;
   obj2_shapes.push_back(thin_box);
   obj2_poses.push_back(thin_box_pose);
 
@@ -48,12 +48,12 @@ void addCollisionObjects(DiscreteContactManager& checker, bool use_convex_mesh =
 
   if (use_convex_mesh)
   {
-    VectorVector3d mesh_vertices;
+    tesseract_common::VectorVector3d mesh_vertices;
     Eigen::VectorXi mesh_faces;
     EXPECT_GT(loadSimplePlyFile(std::string(DATA_DIR) + "/sphere_p25m.ply", mesh_vertices, mesh_faces), 0);
 
     // This is required because convex hull cannot have multiple faces on the same plane.
-    std::shared_ptr<VectorVector3d> ch_verticies(new VectorVector3d());
+    std::shared_ptr<tesseract_common::VectorVector3d> ch_verticies(new tesseract_common::VectorVector3d());
     std::shared_ptr<Eigen::VectorXi> ch_faces(new Eigen::VectorXi());
     int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
     sphere.reset(new ConvexMesh(ch_verticies, ch_faces, ch_num_faces));
@@ -67,7 +67,7 @@ void addCollisionObjects(DiscreteContactManager& checker, bool use_convex_mesh =
   sphere_pose.setIdentity();
 
   CollisionShapesConst obj3_shapes;
-  VectorIsometry3d obj3_poses;
+  tesseract_common::VectorIsometry3d obj3_poses;
   obj3_shapes.push_back(sphere);
   obj3_poses.push_back(sphere_pose);
 
@@ -83,7 +83,7 @@ void runTest(DiscreteContactManager& checker)
   checker.setContactDistanceThreshold(0.1);
 
   // Set the collision object transforms
-  TransformMap location;
+  tesseract_common::TransformMap location;
   location["box_link"] = Eigen::Isometry3d::Identity();
   location["sphere_link"] = Eigen::Isometry3d::Identity();
   location["sphere_link"].translation()(0) = 0.2;
@@ -163,7 +163,7 @@ void runConvexTest(DiscreteContactManager& checker)
   checker.setContactDistanceThreshold(0.1);
 
   // Set the collision object transforms
-  TransformMap location;
+  tesseract_common::TransformMap location;
   location["box_link"] = Eigen::Isometry3d::Identity();
   location["sphere_link"] = Eigen::Isometry3d::Identity();
   location["sphere_link"].translation()(0) = 0.2;

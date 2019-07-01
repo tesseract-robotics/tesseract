@@ -19,7 +19,7 @@ void addCollisionObjects(ContinuousContactManager& checker)
   static_box_pose.setIdentity();
 
   CollisionShapesConst obj1_shapes;
-  VectorIsometry3d obj1_poses;
+  tesseract_common::VectorIsometry3d obj1_poses;
   obj1_shapes.push_back(static_box);
   obj1_poses.push_back(static_box_pose);
 
@@ -34,7 +34,7 @@ void addCollisionObjects(ContinuousContactManager& checker)
   moving_box_pose.translation() = Eigen::Vector3d(0.5, -0.5, 0);
 
   CollisionShapesConst obj2_shapes;
-  VectorIsometry3d obj2_poses;
+  tesseract_common::VectorIsometry3d obj2_poses;
   obj2_shapes.push_back(moving_box);
   obj2_poses.push_back(moving_box_pose);
 

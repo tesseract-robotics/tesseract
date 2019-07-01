@@ -9,7 +9,7 @@ if(CXX_FEATURE_FOUND EQUAL "-1")
 else()
     target_compile_features(${PROJECT_NAME}_unit PRIVATE cxx_std_11)
 endif()
-target_include_directories(${PROJECT_NAME}_unit PRIVATE ${GTEST_INCLUDE_DIRS}
+target_include_directories(${PROJECT_NAME}_unit PRIVATE ${GTEST_INCLUDE_DIRS})
 if(${CMAKE_VERSION} VERSION_LESS "3.10.0")
     gtest_add_tests(${PROJECT_NAME}_unit "" AUTO)
 else()

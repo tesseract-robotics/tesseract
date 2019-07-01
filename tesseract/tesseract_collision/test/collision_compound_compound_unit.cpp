@@ -27,7 +27,7 @@ void addCollisionObjects(T& checker)
   octomap_pose.translation() = Eigen::Vector3d(1.1, 0, 0);
 
   CollisionShapesConst obj1_shapes;
-  VectorIsometry3d obj1_poses;
+  tesseract_common::VectorIsometry3d obj1_poses;
   obj1_shapes.push_back(dense_octomap);
   obj1_poses.push_back(octomap_pose);
 
@@ -44,7 +44,7 @@ void addCollisionObjects(T& checker)
   octomap_pose_b.translation() = Eigen::Vector3d(-1.1, 0, 0);
 
   CollisionShapesConst obj2_shapes;
-  VectorIsometry3d obj2_poses;
+  tesseract_common::VectorIsometry3d obj2_poses;
   obj2_shapes.push_back(dense_octomap_b);
   obj2_poses.push_back(octomap_pose_b);
 
@@ -60,7 +60,7 @@ void runTest(DiscreteContactManager& checker)
   checker.setContactDistanceThreshold(0.25);
 
   // Set the collision object transforms
-  TransformMap location;
+  tesseract_common::TransformMap location;
   location["octomap1_link"] = Eigen::Isometry3d::Identity();
   location["octomap2_link"] = Eigen::Isometry3d::Identity();
   checker.setCollisionObjectsTransform(location);

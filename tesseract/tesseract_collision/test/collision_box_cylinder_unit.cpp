@@ -20,7 +20,7 @@ void addCollisionObjects(DiscreteContactManager& checker)
   box_pose.setIdentity();
 
   CollisionShapesConst obj1_shapes;
-  VectorIsometry3d obj1_poses;
+  tesseract_common::VectorIsometry3d obj1_poses;
   obj1_shapes.push_back(box);
   obj1_poses.push_back(box_pose);
 
@@ -34,7 +34,7 @@ void addCollisionObjects(DiscreteContactManager& checker)
   thin_box_pose.setIdentity();
 
   CollisionShapesConst obj2_shapes;
-  VectorIsometry3d obj2_poses;
+  tesseract_common::VectorIsometry3d obj2_poses;
   obj2_shapes.push_back(thin_box);
   obj2_poses.push_back(thin_box_pose);
 
@@ -49,7 +49,7 @@ void addCollisionObjects(DiscreteContactManager& checker)
   cylinder_pose.setIdentity();
 
   CollisionShapesConst obj3_shapes;
-  VectorIsometry3d obj3_poses;
+  tesseract_common::VectorIsometry3d obj3_poses;
   obj3_shapes.push_back(cylinder);
   obj3_poses.push_back(cylinder_pose);
 
@@ -65,7 +65,7 @@ void runTest(DiscreteContactManager& checker)
   checker.setContactDistanceThreshold(0.1);
 
   // Set the collision object transforms
-  TransformMap location;
+  tesseract_common::TransformMap location;
   location["box_link"] = Eigen::Isometry3d::Identity();
   location["cylinder_link"] = Eigen::Isometry3d::Identity();
   location["cylinder_link"].translation()(0) = 0.2;

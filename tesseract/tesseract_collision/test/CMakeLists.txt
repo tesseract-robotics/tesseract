@@ -10,7 +10,7 @@ find_package(GTest REQUIRED)
 
 macro(add_gtest test_name test_file)
   add_executable(${test_name} ${test_file})
-  target_link_libraries(${test_name} ${GTEST_BOTH_LIBRARIES} ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl tesseract_geometry console_bridge ${BULLET_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_INCLUDE_DIRS})
+  target_link_libraries(${test_name} ${GTEST_BOTH_LIBRARIES} ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl tesseract::tesseract_geometry console_bridge ${BULLET_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${${LIBFCL_LIBRARIES}})
   target_compile_options(${test_name} PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
   if(CXX_FEATURE_FOUND EQUAL "-1")
       target_compile_options(${test_name} PUBLIC -std=c++11)

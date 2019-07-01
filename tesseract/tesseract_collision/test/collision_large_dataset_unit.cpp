@@ -19,12 +19,12 @@ void runTest(DiscreteContactManager& checker, bool use_convex_mesh = false)
 
   if (use_convex_mesh)
   {
-    VectorVector3d mesh_vertices;
+    tesseract_common::VectorVector3d mesh_vertices;
     Eigen::VectorXi mesh_faces;
     EXPECT_GT(loadSimplePlyFile(std::string(DATA_DIR) + "/sphere_p25m.ply", mesh_vertices, mesh_faces), 0);
 
     // This is required because convex hull cannot have multiple faces on the same plane.
-    std::shared_ptr<VectorVector3d> ch_verticies(new VectorVector3d());
+    std::shared_ptr<tesseract_common::VectorVector3d> ch_verticies(new tesseract_common::VectorVector3d());
     std::shared_ptr<Eigen::VectorXi> ch_faces(new Eigen::VectorXi());
     int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
     sphere.reset(new ConvexMesh(ch_verticies, ch_faces, ch_num_faces));
@@ -38,7 +38,7 @@ void runTest(DiscreteContactManager& checker, bool use_convex_mesh = false)
 
   std::size_t t = 5;  // Because of unit test runtime this was reduced from 10 to 5.
   std::vector<std::string> link_names;
-  TransformMap location;
+  tesseract_common::TransformMap location;
   for (std::size_t x = 0; x < t; ++x)
   {
     for (std::size_t y = 0; y < t; ++y)
@@ -46,7 +46,7 @@ void runTest(DiscreteContactManager& checker, bool use_convex_mesh = false)
       for (std::size_t z = 0; z < t; ++z)
       {
         CollisionShapesConst obj3_shapes;
-        VectorIsometry3d obj3_poses;
+        tesseract_common::VectorIsometry3d obj3_poses;
         Eigen::Isometry3d sphere_pose;
         sphere_pose.setIdentity();
 
