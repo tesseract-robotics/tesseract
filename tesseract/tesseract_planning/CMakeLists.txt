@@ -11,7 +11,7 @@ list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core INTERFACE)
-target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract)
+target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract::tesseract)
 target_compile_options(${PROJECT_NAME}_core INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_core INTERFACE -std=c++11)
@@ -26,7 +26,7 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
 
 # Trajopt Planner
 add_library(${PROJECT_NAME}_trajopt SHARED src/trajopt/trajopt_planner.cpp)
-target_link_libraries(${PROJECT_NAME}_trajopt PUBLIC ${PROJECT_NAME}_core trajopt trajopt_utils trajopt_sco)
+target_link_libraries(${PROJECT_NAME}_trajopt PUBLIC ${PROJECT_NAME}_core trajopt::trajopt trajopt::trajopt_utils trajopt::trajopt_sco)
 target_compile_options(${PROJECT_NAME}_trajopt PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_trajopt PUBLIC -std=c++11)
@@ -89,7 +89,7 @@ list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_trajopt_array)
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_ompl)
 
 install(TARGETS ${PACKAGE_LIBRARIES} EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
-install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake/${PROJECT_NAME})
+install(EXPORT ${PROJECT_NAME}-targets NAMESPACE tesseract:: DESTINATION lib/cmake/${PROJECT_NAME})
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}

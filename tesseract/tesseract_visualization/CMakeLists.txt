@@ -8,7 +8,7 @@ find_package(tesseract_common REQUIRED)
 list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
 
 add_library(${PROJECT_NAME} INTERFACE)
-target_link_libraries(${PROJECT_NAME} INTERFACE tesseract_collision_fcl tesseract_collision_bullet)
+target_link_libraries(${PROJECT_NAME} INTERFACE tesseract::tesseract_collision_fcl tesseract::tesseract_collision_bullet)
 target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME} INTERFACE -std=c++11)
@@ -25,7 +25,7 @@ target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
 
 install(TARGETS ${PACKAGE_LIBRARIES} EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
-install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake/${PROJECT_NAME})
+install(EXPORT ${PROJECT_NAME}-targets NAMESPACE tesseract:: DESTINATION lib/cmake/${PROJECT_NAME})
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}

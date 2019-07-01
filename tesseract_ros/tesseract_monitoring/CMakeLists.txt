@@ -46,7 +46,7 @@ include_directories(
 
 # Tesseract ROS Nodes
 add_executable(${PROJECT_NAME}_contacts_node src/contact_monitor.cpp)
-target_link_libraries(${PROJECT_NAME}_contacts_node PRIVATE tesseract ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_contacts_node PRIVATE tesseract::tesseract ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_contacts_node PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_contacts_node PRIVATE -std=c++11)
@@ -57,7 +57,7 @@ target_include_directories(${PROJECT_NAME}_contacts_node PUBLIC "$<BUILD_INTERFA
 target_include_directories(${PROJECT_NAME}_contacts_node SYSTEM PUBLIC ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_environment SHARED src/environment_monitor.cpp src/current_state_monitor.cpp)
-target_link_libraries(${PROJECT_NAME}_environment PUBLIC tesseract ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_environment PUBLIC tesseract::tesseract ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_environment PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_environment PUBLIC -std=c++11)
