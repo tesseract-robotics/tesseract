@@ -1,0 +1,38 @@
+#include <console_bridge/console.h>
+#include <tesseract_geometry/geometries.h>
+#include <tesseract_scene_graph/parser/mesh_parser.h>
+#include <iostream>
+
+using namespace tesseract_geometry;
+
+int main(int /*argc*/, char** /*argv*/)
+{
+  // Primitive Shapes
+  auto box = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
+  auto cone = std::make_shared<tesseract_geometry::Cone>(1, 1);
+  auto cylinder = std::make_shared<tesseract_geometry::Cylinder>(1, 1);
+  auto plane = std::make_shared<tesseract_geometry::Plane>(1, 1, 1, 1);
+  auto sphere = std::make_shared<tesseract_geometry::Sphere>(1);
+
+  // Manually create mesh
+  std::shared_ptr<const tesseract_common::VectorVector3d> mesh_vertices = std::make_shared<const tesseract_common::VectorVector3d>();
+  std::shared_ptr<const Eigen::VectorXi> mesh_faces = std::make_shared<const Eigen::VectorXi>();
+  // Next fill out vertices and triangles
+  auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
+
+  // Manually create mesh
+  std::shared_ptr<const tesseract_common::VectorVector3d> sdf_vertices = std::make_shared<const tesseract_common::VectorVector3d>();
+  std::shared_ptr<const Eigen::VectorXi> sdf_faces = std::make_shared<const Eigen::VectorXi>();
+  // Next fill out vertices and triangles
+  auto sdf_mesh = std::make_shared<tesseract_geometry::SDFMesh>(sdf_vertices, sdf_faces);
+
+  // Manually create convex mesh
+  std::shared_ptr<const tesseract_common::VectorVector3d> convex_vertices = std::make_shared<const tesseract_common::VectorVector3d>();
+  std::shared_ptr<const Eigen::VectorXi> convex_faces = std::make_shared<const Eigen::VectorXi>();
+  // Next fill out vertices and triangles
+  auto convex_mesh = std::make_shared<tesseract_geometry::ConvexMesh>(convex_vertices, convex_faces);
+
+  std::shared_ptr<const octomap::OcTree> octree;
+  // Next populate octree
+  auto octree_t = std::make_shared<tesseract_geometry::Octree>(octree, tesseract_geometry::Octree::SubType::BOX);
+}
