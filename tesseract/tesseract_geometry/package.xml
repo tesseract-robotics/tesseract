@@ -10,6 +10,7 @@
   <depend>Eigen3</depend>
   <depend>libconsole-bridge-dev</depend>
   <depend>tesseract_common</depend>
+  <depend>octomap</depend>
 
   <export>
     <build_type>cmake</build_type>
