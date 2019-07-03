@@ -36,7 +36,7 @@ public:
   void startTimer()
   {
     timer = FanucCommError::nh.createTimer(
-        ros::Duration(error_timer), &FanucCommError::timerCallback, this);
+          ros::Duration(error_timer), &FanucCommError::timerCallback, this);
   }
 
   void subscriberCallback(const sensor_msgs::JointStateConstPtr& joint_state)
@@ -61,7 +61,7 @@ public:
       fanuc_comm_error.data = false;
     }
 
-    count = 0; // re-initialize error check
+    count = 0;                             // re-initialize error check
     chatter_pub.publish(fanuc_comm_error); // publish error status
 
     // ROS_INFO("FANUC COM ERROR= %s \n", fanuc_comm_error.data ? "true" :
@@ -76,9 +76,9 @@ private:
 
   std_msgs::Bool fanuc_comm_error; // fanuc_comm_error msg
 
-  int count = 0; // subscriber count
+  int count = 0;       // subscriber count
   int error_timer = 3; // check for connection (Fanuc Comm Error) every 3
-                       // seconds
+  // seconds
 };
 
 int main(int argc, char** argv)
