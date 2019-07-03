@@ -23,11 +23,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_KINEMATICS_FORWARD_KINEMATICS_MANAGER_H
-#define TESSERACT_KINEMATICS_FORWARD_KINEMATICS_MANAGER_H
+#ifndef TESSERACT_FORWARD_KINEMATICS_MANAGER_H
+#define TESSERACT_FORWARD_KINEMATICS_MANAGER_H
 #include <tesseract_kinematics/core/forward_kinematics_factory.h>
 
-namespace tesseract_kinematics
+namespace tesseract
 {
 class ForwardKinematicsManager
 {
@@ -204,4 +204,4 @@ private:
 typedef std::shared_ptr<ForwardKinematicsManager> ForwardKinematicsManagerPtr;
 typedef std::shared_ptr<const ForwardKinematicsManager> ForwardKinematicsManagerConstPtr;
 }
-#endif // TESSERACT_KINEMATICS_FORWARD_KINEMATICS_MANAGER_H
+#endif // TESSERACT_FORWARD_KINEMATICS_MANAGER_H

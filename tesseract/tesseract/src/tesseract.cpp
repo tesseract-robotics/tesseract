@@ -245,22 +245,22 @@ namespace tesseract
     return srdf_model_;
   }
 
-  const tesseract_kinematics::ForwardKinematicsManagerPtr& Tesseract::getFwdKinematicsManager()
+  const ForwardKinematicsManagerPtr& Tesseract::getFwdKinematicsManager()
   {
     return fwd_kin_manager_;
   }
 
-  const tesseract_kinematics::ForwardKinematicsManagerConstPtr& Tesseract::getFwdKinematicsManagerConst() const
+  const ForwardKinematicsManagerConstPtr& Tesseract::getFwdKinematicsManagerConst() const
   {
     return fwd_kin_manager_const_;
   }
 
-  const tesseract_kinematics::InverseKinematicsManagerPtr& Tesseract::getInvKinematicsManager()
+  const InverseKinematicsManagerPtr& Tesseract::getInvKinematicsManager()
   {
     return inv_kin_manager_;
   }
 
-  const tesseract_kinematics::InverseKinematicsManagerConstPtr& Tesseract::getInvKinematicsManagerConst() const
+  const InverseKinematicsManagerConstPtr& Tesseract::getInvKinematicsManagerConst() const
   {
     return inv_kin_manager_const_;
   }
@@ -287,7 +287,7 @@ namespace tesseract
   {
     bool success = true;
 
-    fwd_kin_manager_ = std::make_shared<tesseract_kinematics::ForwardKinematicsManager>();
+    fwd_kin_manager_ = std::make_shared<ForwardKinematicsManager>();
     fwd_kin_manager_const_ = fwd_kin_manager_;
 
     auto chain_factory = std::make_shared<tesseract_kinematics::KDLFwdKinChainFactory>();
@@ -357,7 +357,7 @@ namespace tesseract
   {
     bool success = true;
 
-    inv_kin_manager_ = std::make_shared<tesseract_kinematics::InverseKinematicsManager>();
+    inv_kin_manager_ = std::make_shared<InverseKinematicsManager>();
     inv_kin_manager_const_ = inv_kin_manager_;
 
     auto factory = std::make_shared<tesseract_kinematics::KDLInvKinChainLMAFactory>();
