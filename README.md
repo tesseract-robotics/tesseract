@@ -1,15 +1,30 @@
-# tesseract
-The new planning framework (Tesseract) was designed to be lightweight, limiting the number of dependencies, mainly to only used standard library, eigen, boost, orocos and very few external ROS packages. It currently contains seven packaged described below:
+# Tesseract
 
-* **tesseract_core** – This package contains only the interface header files and data type structures to be used. This is the only package that does not depend on ROS for the sole purpose to facilitate integration outside of ROS, with little changes, which can sometimes be required.
-* **tesseract_ros** – This package is the ROS implementation of the interface identified in the tesseract_core package. It currently leverages orocos libraries for data storage of both the environment and kinematics.
-* **tesseract_collision** – This package contains the ROS implementation of a Bullet collision library. It includes both continuous and discrete collision checking for convex-convex and convex-concave shapes.
-* **tesseract_msgs** – This package contains the ROS message types used by Tesseract.
-* **tesseract_rviz** – This package contains the ROS visualization plugins for Rviz to visualize both the environment state and trajectories.
+The planning framework (Tesseract) was designed to be lightweight, limiting the number of dependencies, mainly only using standard library like, eigen, boost, orocos and to the packages below. The core packages are ROS agnostic and have full python support.
+
+## Tesseract Core Packages
+
+* **tesseract** – This is the main class that manages the major component Environment, Forward Kinematics, Inverse Kinematics and loading from various data.
+* **tesseract_collision** – This package contains privides a common interface for collision checking prividing several implementation of a Bullet collision library and FCL collision library. It includes both continuous and discrete collision checking for convex-convex, convex-concave and concave-concave shapes.
+* **tesseract_common** – This package contains common functionality needed by the majority of the packages.
+* **tesseract_environment** – This package contains the Tesseract Environment which provides functionality to add,remove,move and modify links and joint. It also manages adding object to the contact managers and provides the ability.
+* **tesseract_geometry** – This package contains geometry types used by Tesseract including primitive shapes, mesh, convex hull mesh, octomap and signed distance field.
+* **tesseract_kinematics** –  This package contains a common interface for Forward and Inverse kinematics for Chain, Tree's and Graphs including implementation using KDL and OPW Kinematics.
+* **tesseract_planners** – This package contains a common interface for Planners and includes implementation for OMPL, TrajOpt and Descartes.
+* **tesseract_scene_graph** – This package contains the scene graph which is the data structure used to manage the connectivity of objects in the environment. It inherits from boost graph and provides addition functionality for adding,removing and modifying Links and Joints along with search implementation.
+* **tesseract_support** – This package contains support data used for unit tests and examples throughout Tesseract.
+* **tesseract_visualization** – This package contains visualization utilities and libraries.
+
+## Tesseract ROS Packages
+
+* **tesseract_examples** – This package contains examples using tesseract and tesseract_ros for motion planning and collision checking.
+* **tesseract_plugins** – This contains plugins for collision and kinematics which are automatically loaded by the monitors.
+* **tesseract_rosutils** – This package contains the utilities like converting from ROS message types to native Tesseract types and the reverse.
+* **tesseract_msgs** – This package contains the ROS message types used by Tesseract ROS.
+* **tesseract_rviz** – This package contains the ROS visualization plugins for Rviz to visualize Tesseract. All of the features have been composed in libraries to enable to the ability to create custom displays quickly.
 * **tesseract_monitoring** – This package contains different types of environment monitors. It currently contains a contact monitor and environment monitor. The contact monitor will monitor the active environment state and publish contact information. This is useful if the robot is being controlled outside of ROS, but you want to make sure it does not collide with objects in the environment. The second is the environment monitor, which is the main environment which facilitates requests to add, remove, disable and enable collision objects, while publishing its current state to keep other ROS nodes updated with the latest environment.
-* **tesseract_planning** – This package contains the planners available to be used with the tesseract environment. It currently contains OMPL and TrajOpt.
 
-*WARNING: These packages are under heavy development and are subject to change.*
+.. Warning:: These packages are under heavy development and are subject to change.
 
 ## Clone Repository
 
