@@ -1,6 +1,5 @@
 #include <console_bridge/console.h>
 #include <tesseract_geometry/geometries.h>
-#include <tesseract_scene_graph/parser/mesh_parser.h>
 #include <iostream>
 
 using namespace tesseract_geometry;

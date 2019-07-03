@@ -23,11 +23,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_KINEMATICS_INVERSE_KINEMATICS_MANAGER_H
-#define TESSERACT_KINEMATICS_INVERSE_KINEMATICS_MANAGER_H
+#ifndef TESSERACT_INVERSE_KINEMATICS_MANAGER_H
+#define TESSERACT_INVERSE_KINEMATICS_MANAGER_H
 #include <tesseract_kinematics/core/inverse_kinematics_factory.h>
 
-namespace tesseract_kinematics
+namespace tesseract
 {
 class InverseKinematicsManager
 {
@@ -204,4 +204,4 @@ private:
 typedef std::shared_ptr<InverseKinematicsManager> InverseKinematicsManagerPtr;
 typedef std::shared_ptr<const InverseKinematicsManager> InverseKinematicsManagerConstPtr;
 }
-#endif // TESSERACT_KINEMATICS_INVERSE_KINEMATICS_MANAGER_H
+#endif // TESSERACT_INVERSE_KINEMATICS_MANAGER_H

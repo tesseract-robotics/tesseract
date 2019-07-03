@@ -33,8 +33,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_scene_graph/parser/srdf_parser.h>
 #include <tesseract_scene_graph/utils.h>
 #include <boost/filesystem/path.hpp>
-#include <tesseract_kinematics/core/forward_kinematics_manager.h>
-#include <tesseract_kinematics/core/inverse_kinematics_manager.h>
+#include <tesseract/forward_kinematics_manager.h>
+#include <tesseract/inverse_kinematics_manager.h>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -70,21 +70,21 @@ public:
   const tesseract_environment::EnvironmentPtr& getEnvironment();
   const tesseract_environment::EnvironmentConstPtr& getEnvironmentConst() const;
 
-  const tesseract_kinematics::ForwardKinematicsManagerPtr& getFwdKinematicsManager();
-  const tesseract_kinematics::ForwardKinematicsManagerConstPtr& getFwdKinematicsManagerConst() const;
+  const ForwardKinematicsManagerPtr& getFwdKinematicsManager();
+  const ForwardKinematicsManagerConstPtr& getFwdKinematicsManagerConst() const;
 
-  const tesseract_kinematics::InverseKinematicsManagerPtr& getInvKinematicsManager();
-  const tesseract_kinematics::InverseKinematicsManagerConstPtr& getInvKinematicsManagerConst() const;
+  const InverseKinematicsManagerPtr& getInvKinematicsManager();
+  const InverseKinematicsManagerConstPtr& getInvKinematicsManagerConst() const;
 
 private:
   bool initialized_;
   tesseract_environment::EnvironmentPtr environment_;
   tesseract_environment::EnvironmentConstPtr environment_const_;
   tesseract_scene_graph::SRDFModelConstPtr srdf_model_;
-  tesseract_kinematics::ForwardKinematicsManagerPtr fwd_kin_manager_;
-  tesseract_kinematics::ForwardKinematicsManagerConstPtr fwd_kin_manager_const_;
-  tesseract_kinematics::InverseKinematicsManagerPtr inv_kin_manager_;
-  tesseract_kinematics::InverseKinematicsManagerConstPtr inv_kin_manager_const_;
+  ForwardKinematicsManagerPtr fwd_kin_manager_;
+  ForwardKinematicsManagerConstPtr fwd_kin_manager_const_;
+  InverseKinematicsManagerPtr inv_kin_manager_;
+  InverseKinematicsManagerConstPtr inv_kin_manager_const_;
 
 
   bool registerDefaultContactManagers();
