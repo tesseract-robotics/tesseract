@@ -131,6 +131,9 @@ install(FILES
 
 export(EXPORT ${PROJECT_NAME}-targets FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake)
 
+# ADD Examples
+add_subdirectory(examples)
+
 if (ENABLE_TESTS)
   enable_testing()
   add_custom_target(run_tests ALL
