@@ -75,7 +75,6 @@ private:
 
   int count = 0;        // subscriber count
   int error_timer = 3;  // check for connection (Fanuc Comm Error) every 3 seconds
-
 };
 
 int main(int argc, char** argv)
@@ -88,7 +87,6 @@ int main(int argc, char** argv)
 
   while (ros::ok())
   {
-
     FCE.startTimer();
     ros::spin();
 
