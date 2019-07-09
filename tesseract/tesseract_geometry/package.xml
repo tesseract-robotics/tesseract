@@ -12,6 +12,9 @@
   <depend>tesseract_common</depend>
   <depend>octomap</depend>
 
+  <test_depend>gtest</test_depend>
+  <test_depend>tesseract_support</test_depend>
+
   <export>
     <build_type>cmake</build_type>
   </export>
