@@ -91,15 +91,23 @@ bool TrajOptPlanner::solve(PlannerResponse& response, const TrajOptPlannerConfig
 
   // Check and report collisions
   std::vector<tesseract_collision::ContactResultMap> collisions;
-  tesseract_collision::ContinuousContactManagerPtr manager = config.prob->GetEnv()->getContinuousContactManager();
+  tesseract_collision::ContinuousContactManagerPtr continuous_manager = config.prob->GetEnv()->getContinuousContactManager();
   tesseract_environment::AdjacencyMapPtr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(config.prob->GetEnv()->getSceneGraph(),
                                                                                                                config.prob->GetKin()->getActiveLinkNames(),
                                                                                                                config.prob->GetEnv()->getCurrentState()->transforms);
 
-  manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
-  manager->setContactDistanceThreshold(0);
+  continuous_manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
+  continuous_manager->setContactDistanceThreshold(0);
   collisions.clear();
-  bool found = checkTrajectory(*manager, *config.prob->GetEnv(), config.prob->GetKin()->getJointNames(), getTraj(opt.x(), config.prob->GetVars()), collisions);
+  bool found = checkTrajectory(*continuous_manager, *config.prob->GetEnv(), config.prob->GetKin()->getJointNames(), getTraj(opt.x(), config.prob->GetVars()), collisions);
+
+  // Do a discrete check until continuous collision checking is updated to do dynamic-dynamic checking
+  tesseract_collision::DiscreteContactManagerPtr discrete_manager = config.prob->GetEnv()->getDiscreteContactManager();
+  discrete_manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
+  discrete_manager->setContactDistanceThreshold(0);
+  collisions.clear();
+
+  found = found || checkTrajectory(*discrete_manager, *config.prob->GetEnv(), config.prob->GetKin()->getJointNames(), getTraj(opt.x(), config.prob->GetVars()), collisions);
 
   // Send response
   response.trajectory = getTraj(opt.x(), config.prob->GetVars());
@@ -122,7 +130,7 @@ bool TrajOptPlanner::solve(PlannerResponse& response, const TrajOptPlannerConfig
     response.status_description = status_code_map_[0] + ": " + sco::statusToString(opt.results().status);
   }
 
-  return true;
+  return (response.status_code >= 0);
 }
 
 bool TrajOptPlanner::terminate() { return false; }

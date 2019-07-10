@@ -78,7 +78,6 @@ namespace tesseract_environment
    * @param manager A continuous contact manager
    * @param env The environment
    * @param joint_names JointNames corresponding to the values in traj (must be in same order)
-   * @param link_names Name of the links to calculate collision data for.
    * @param traj The joint values at each time step
    * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
    * @param first_only Indicates if it should return on first contact
@@ -107,9 +106,10 @@ namespace tesseract_environment
       manager.contactTest(collisions, tesseract_collision::ContactTestTypes::FIRST);
 
       if (collisions.size() > 0)
+      {
         found = true;
-
-      contacts.push_back(collisions);
+        contacts.push_back(collisions);
+      }
 
       if (found && first_only)
         break;
@@ -117,5 +117,48 @@ namespace tesseract_environment
 
     return found;
   }
-}
+
+  /**
+   * @brief Should perform a discrete collision check over the trajectory and stop on first collision.
+   * @param manager A continuous contact manager
+   * @param env The environment
+   * @param joint_names JointNames corresponding to the values in traj (must be in same order)
+   * @param traj The joint values at each time step
+   * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
+   * @param first_only Indicates if it should return on first contact
+   * @return True if collision was found, otherwise false.
+   */
+  inline bool checkTrajectory(tesseract_collision::DiscreteContactManager& manager,
+                              const tesseract_environment::Environment& env,
+                              const std::vector<std::string>& joint_names,
+                              const tesseract_common::TrajArray& traj,
+                              std::vector<tesseract_collision::ContactResultMap>& contacts,
+                              bool first_only = true)
+  {
+    bool found = false;
+
+    contacts.reserve(static_cast<size_t>(traj.rows()));
+    for (int iStep = 0; iStep < traj.rows(); ++iStep)
+    {
+      tesseract_collision::ContactResultMap collisions;
+
+      tesseract_environment::EnvStatePtr state0 = env.getState(joint_names, traj.row(iStep));
+
+      for (const auto& link_name : manager.getActiveCollisionObjects())
+        manager.setCollisionObjectsTransform(link_name, state0->transforms[link_name]);
+
+      manager.contactTest(collisions, tesseract_collision::ContactTestTypes::FIRST);
+
+      if (collisions.size() > 0)
+      {
+        found = true;
+        contacts.push_back(collisions);
+      }
+      if (found && first_only)
+        break;
+    }
+
+    return found;
+  }
+  }    // namespace tesseract_environment
 #endif // TESSERACT_ENVIRONMENT_UTILS_H
