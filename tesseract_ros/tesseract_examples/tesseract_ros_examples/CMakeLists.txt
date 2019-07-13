@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(trajopt REQUIRED)
 find_package(tesseract REQUIRED)
-find_package(tesseract_planners REQUIRED)
+find_package(tesseract_motion_planners REQUIRED)
 find_package(PCL REQUIRED COMPONENTS core features filters io segmentation surface)
 
 list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
@@ -21,7 +21,7 @@ list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
 catkin_package()
 
 add_executable(${PROJECT_NAME}_basic_cartesian_plan src/basic_cartesian_plan.cpp)
-target_link_libraries(${PROJECT_NAME}_basic_cartesian_plan tesseract::tesseract tesseract::tesseract_planners_trajopt ${PCL_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_basic_cartesian_plan tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${PCL_LIBRARIES} ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_basic_cartesian_plan PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_basic_cartesian_plan PRIVATE -std=c++11)
@@ -36,7 +36,7 @@ target_include_directories(${PROJECT_NAME}_basic_cartesian_plan SYSTEM PUBLIC
     ${PCL_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME}_glass_up_right_plan src/glass_up_right_plan.cpp)
-target_link_libraries(${PROJECT_NAME}_glass_up_right_plan tesseract::tesseract tesseract::tesseract_planners_trajopt ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_glass_up_right_plan tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_glass_up_right_plan PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_glass_up_right_plan PRIVATE -std=c++11)
@@ -50,7 +50,7 @@ target_include_directories(${PROJECT_NAME}_glass_up_right_plan SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME}_puzzle_piece_plan src/puzzle_piece_plan.cpp)
-target_link_libraries(${PROJECT_NAME}_puzzle_piece_plan tesseract::tesseract tesseract::tesseract_planners_trajopt ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_puzzle_piece_plan tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_puzzle_piece_plan PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_puzzle_piece_plan PRIVATE -std=c++11)
@@ -64,7 +64,7 @@ target_include_directories(${PROJECT_NAME}_puzzle_piece_plan SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME}_car_seat_demo src/car_seat_demo.cpp)
-target_link_libraries(${PROJECT_NAME}_car_seat_demo tesseract::tesseract tesseract::tesseract_planners_trajopt ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_car_seat_demo tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_car_seat_demo PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_car_seat_demo PRIVATE -std=c++11)
@@ -78,7 +78,7 @@ target_include_directories(${PROJECT_NAME}_car_seat_demo SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan src/puzzle_piece_auxillary_axes_plan.cpp)
-target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan tesseract::tesseract tesseract::tesseract_planners_trajopt ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan PRIVATE -std=c++11)
@@ -92,7 +92,7 @@ target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan SYST
     ${catkin_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME}_pick_and_place_plan src/pick_and_place_plan.cpp)
-target_link_libraries(${PROJECT_NAME}_pick_and_place_plan tesseract::tesseract tesseract::tesseract_planners_trajopt ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_pick_and_place_plan tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_pick_and_place_plan PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_pick_and_place_plan PRIVATE -std=c++11)

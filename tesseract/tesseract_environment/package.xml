@@ -15,6 +15,7 @@
   <depend>tesseract_scene_graph</depend>
   <depend>tesseract_common</depend>
   <depend>liborocos-kdl-dev</depend>
+  <depend>console_bridge</depend>
 
   <test_depend>gtest</test_depend>
   <test_depend>tesseract_support</test_depend>

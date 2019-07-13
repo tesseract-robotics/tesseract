@@ -18,6 +18,7 @@
   <depend>tesseract_geometry</depend>
   <depend>tesseract_visualization</depend>
   <depend>tesseract_common</depend>
+  <depend>tesseract_process_planners</depend>
 
   <export>
   </export>
