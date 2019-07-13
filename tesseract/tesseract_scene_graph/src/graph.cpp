@@ -80,7 +80,7 @@ bool SceneGraph::addLink(Link link)
   return true;
 }
 
-LinkConstPtr SceneGraph::getLink(const std::string& name) const
+Link::ConstPtr SceneGraph::getLink(const std::string& name) const
 {
   auto found = link_map_.find(name);
   if (found == link_map_.end())
@@ -89,9 +89,9 @@ LinkConstPtr SceneGraph::getLink(const std::string& name) const
   return found->second.first;
 }
 
-std::vector<LinkConstPtr> SceneGraph::getLinks() const
+std::vector<Link::ConstPtr> SceneGraph::getLinks() const
 {
-  std::vector<LinkConstPtr> links;
+  std::vector<Link::ConstPtr> links;
   links.reserve(link_map_.size());
   for (const auto& link : link_map_)
     links.push_back(link.second.first);
@@ -118,7 +118,7 @@ bool SceneGraph::removeLink(const std::string& name)
   for (boost::tie(ei, ei_end) = boost::edges(*this); ei != ei_end; ++ei)
   {
     Edge e = *ei;
-    JointPtr joint = boost::get(boost::edge_joint, *this)[e];
+    Joint::Ptr joint = boost::get(boost::edge_joint, *this)[e];
     joint_map_[joint->getName()] = std::make_pair(joint, e);
   }
 
@@ -191,7 +191,7 @@ bool SceneGraph::addJoint(tesseract_scene_graph::Joint joint)
   return true;
 }
 
-JointConstPtr SceneGraph::getJoint(const std::string& name) const
+Joint::ConstPtr SceneGraph::getJoint(const std::string& name) const
 {
   auto found = joint_map_.find(name);
   if (found == joint_map_.end())
@@ -222,7 +222,7 @@ bool SceneGraph::moveJoint(const std::string& name, const std::string& parent_li
     return false;
   }
 
-  JointPtr joint = found->second.first;
+  Joint::Ptr joint = found->second.first;
   if (!removeJoint(name))
     return false;
 
@@ -230,9 +230,9 @@ bool SceneGraph::moveJoint(const std::string& name, const std::string& parent_li
   return addJoint(*joint);
 }
 
-std::vector<JointConstPtr> SceneGraph::getJoints() const
+std::vector<Joint::ConstPtr> SceneGraph::getJoints() const
 {
-  std::vector<JointConstPtr> joints;
+  std::vector<Joint::ConstPtr> joints;
   joints.reserve(joint_map_.size());
   for (const auto& joint : joint_map_)
     joints.push_back(joint.second.first);
@@ -251,7 +251,7 @@ bool SceneGraph::changeJointOrigin(const std::string& name, const Eigen::Isometr
   }
 
   // Update transform associated with the joint
-  JointPtr joint = found->second.first;
+  Joint::Ptr joint = found->second.first;
   joint->parent_to_joint_origin_transform = new_origin;
 
   // Update the edge value associated with the joint
@@ -284,28 +284,28 @@ bool SceneGraph::isCollisionAllowed(const std::string& link_name1, const std::st
   return acm_->isCollisionAllowed(link_name1, link_name2);
 }
 
-AllowedCollisionMatrixConstPtr SceneGraph::getAllowedCollisionMatrix() const
+AllowedCollisionMatrix::ConstPtr SceneGraph::getAllowedCollisionMatrix() const
 {
   return acm_;
 }
 
-LinkConstPtr SceneGraph::getSourceLink(const std::string& joint_name) const
+Link::ConstPtr SceneGraph::getSourceLink(const std::string& joint_name) const
 {
   Edge e = getEdge(joint_name);
   Vertex v = boost::source(e, *this);
   return boost::get(boost::vertex_link, *this)[v];
 }
 
-LinkConstPtr SceneGraph::getTargetLink(const std::string& joint_name) const
+Link::ConstPtr SceneGraph::getTargetLink(const std::string& joint_name) const
 {
   Edge e = getEdge(joint_name);
   Vertex v = boost::target(e, *this);
   return boost::get(boost::vertex_link, *this)[v];
 }
 
-std::vector<JointConstPtr> SceneGraph::getInboundJoints(const std::string& link_name) const
+std::vector<Joint::ConstPtr> SceneGraph::getInboundJoints(const std::string& link_name) const
 {
-  std::vector<JointConstPtr> joints;
+  std::vector<Joint::ConstPtr> joints;
   Vertex vertex = getVertex(link_name);
 
   // Get incomming edges
@@ -323,9 +323,9 @@ std::vector<JointConstPtr> SceneGraph::getInboundJoints(const std::string& link_
   return joints;
 }
 
-std::vector<JointConstPtr> SceneGraph::getOutboundJoints(const std::string& link_name) const
+std::vector<Joint::ConstPtr> SceneGraph::getOutboundJoints(const std::string& link_name) const
 {
-  std::vector<JointConstPtr> joints;
+  std::vector<Joint::ConstPtr> joints;
   Vertex vertex = getVertex(link_name);
 
   // Get incomming edges
@@ -434,7 +434,7 @@ void SceneGraph::saveDOT(std::string path) const
     Edge e = *ei;
     Vertex u = boost::source(e, graph);
     Vertex v = boost::target(e, graph);
-    JointConstPtr joint = boost::get(boost::edge_joint, graph)[e];
+    Joint::ConstPtr joint = boost::get(boost::edge_joint, graph)[e];
 
     dot_file << '"' << boost::get(boost::vertex_link, graph)[u]->getName() << '"'
              << " -> " << '"' << boost::get(boost::vertex_link, graph)[v]->getName() << '"'

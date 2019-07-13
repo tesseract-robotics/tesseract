@@ -69,13 +69,13 @@ BulletDiscreteBVHManager::~BulletDiscreteBVHManager()
     removeCollisionObjectFromBroadphase(co.second, broadphase_, dispatcher_);
 }
 
-DiscreteContactManagerPtr BulletDiscreteBVHManager::clone() const
+DiscreteContactManager::Ptr BulletDiscreteBVHManager::clone() const
 {
-  BulletDiscreteBVHManagerPtr manager(new BulletDiscreteBVHManager());
+  BulletDiscreteBVHManager::Ptr manager(new BulletDiscreteBVHManager());
 
   for (const auto& cow : link2cow_)
   {
-    COWPtr new_cow = cow.second->clone();
+    COW::Ptr new_cow = cow.second->clone();
 
     assert(new_cow->getCollisionShape());
     assert(new_cow->getCollisionShape()->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE);
@@ -99,7 +99,7 @@ bool BulletDiscreteBVHManager::addCollisionObject(const std::string& name,
                                                   const tesseract_common::VectorIsometry3d& shape_poses,
                                                   bool enabled)
 {
-  COWPtr new_cow = createCollisionObject(name, mask_id, shapes, shape_poses, enabled);
+  COW::Ptr new_cow = createCollisionObject(name, mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
     addCollisionObject(new_cow);
@@ -158,7 +158,7 @@ void BulletDiscreteBVHManager::setCollisionObjectsTransform(const std::string& n
   auto it = link2cow_.find(name);
   if (it != link2cow_.end())
   {
-    COWPtr& cow = it->second;
+    COW::Ptr& cow = it->second;
     cow->setWorldTransform(convertEigenToBt(pose));
 
     // Update Collision Object Broadphase AABB
@@ -187,7 +187,7 @@ void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::
   // Now need to update the broadphase with correct aabb
   for (auto& co : link2cow_)
   {
-    COWPtr& cow = co.second;
+    COW::Ptr& cow = co.second;
 
     updateCollisionObjectFilters(active_, *cow, false);
   }
@@ -200,7 +200,7 @@ void BulletDiscreteBVHManager::setContactDistanceThreshold(double contact_distan
 
   for (auto& co : link2cow_)
   {
-    COWPtr& cow = co.second;
+    COW::Ptr& cow = co.second;
     cow->setContactProcessingThreshold(static_cast<btScalar>(contact_distance));
     assert(cow->getBroadphaseHandle() != nullptr);
     updateBroadphaseAABB(cow, broadphase_, dispatcher_);
@@ -225,7 +225,7 @@ void BulletDiscreteBVHManager::contactTest(ContactResultMap& collisions, const C
   pairCache->processAllOverlappingPairs(&collisionCallback, dispatcher_.get());
 }
 
-void BulletDiscreteBVHManager::addCollisionObject(const COWPtr& cow)
+void BulletDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
 {
   link2cow_[cow->getName()] = cow;
 
@@ -234,7 +234,7 @@ void BulletDiscreteBVHManager::addCollisionObject(const COWPtr& cow)
 }
 
 const Link2Cow& BulletDiscreteBVHManager::getCollisionObjects() const { return link2cow_; }
-void BulletDiscreteBVHManager::contactTest(const COWPtr& cow, ContactTestData& collisions)
+void BulletDiscreteBVHManager::contactTest(const COW::Ptr& cow, ContactTestData& collisions)
 {
   btVector3 min_aabb, max_aabb;
   cow->getAABB(min_aabb, max_aabb);

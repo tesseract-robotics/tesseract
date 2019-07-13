@@ -89,7 +89,7 @@ inline KDL::Vector convert(const Eigen::Vector3d& vector)
  * @param joint Tesseract Joint
  * @return A KDL Joint
  */
-inline KDL::Joint convert(const JointConstPtr& joint)
+inline KDL::Joint convert(const Joint::ConstPtr& joint)
 {
   KDL::Frame parent_joint = convert(joint->parent_to_joint_origin_transform);
   const std::string& name = joint->getName();
@@ -129,7 +129,7 @@ inline KDL::Joint convert(const JointConstPtr& joint)
  * @param inertial
  * @return
  */
-inline KDL::RigidBodyInertia convert(const InertialConstPtr& inertial)
+inline KDL::RigidBodyInertia convert(const Inertial::ConstPtr& inertial)
 {
   KDL::Frame origin = convert(inertial->origin);
 
@@ -169,7 +169,7 @@ struct kdl_tree_builder : public boost::dfs_visitor<>
   template <class u, class g>
   void discover_vertex(u vertex, g graph)
   {
-    const LinkConstPtr& link = boost::get(boost::vertex_link, graph)[vertex];
+    const Link::ConstPtr& link = boost::get(boost::vertex_link, graph)[vertex];
 
     // constructs the optional inertia
     KDL::RigidBodyInertia inert(0);
@@ -184,7 +184,7 @@ struct kdl_tree_builder : public boost::dfs_visitor<>
     boost::graph_traits<Graph>::in_edge_iterator ei, ei_end;
     boost::tie(ei, ei_end) = boost::in_edges(vertex, graph);
     SceneGraph::Edge e = *ei;
-    const JointConstPtr& parent_joint = boost::get(boost::edge_joint, graph)[e];
+    const Joint::ConstPtr& parent_joint = boost::get(boost::edge_joint, graph)[e];
     KDL::Joint kdl_jnt = convert(parent_joint);
 
     // construct the kdl segment
@@ -214,7 +214,7 @@ inline bool parseSceneGraph(const SceneGraph& scene_graph, KDL::Tree& tree)
   }
 
   std::string root_name = scene_graph.getRoot();
-  LinkConstPtr root_link = scene_graph.getLink(root_name);
+  Link::ConstPtr root_link = scene_graph.getLink(root_name);
 
   tree = KDL::Tree(root_name);
 

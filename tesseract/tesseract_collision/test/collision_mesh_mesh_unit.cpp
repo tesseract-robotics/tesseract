@@ -15,7 +15,7 @@ void addCollisionObjects(DiscreteContactManager& checker)
   ////////////////////////
   // Add sphere to checker
   ////////////////////////
-  MeshPtr sphere;
+  Mesh::Ptr sphere;
 
   std::shared_ptr<tesseract_common::VectorVector3d> vertices(new tesseract_common::VectorVector3d());
   std::shared_ptr<Eigen::VectorXi> faces(new Eigen::VectorXi());

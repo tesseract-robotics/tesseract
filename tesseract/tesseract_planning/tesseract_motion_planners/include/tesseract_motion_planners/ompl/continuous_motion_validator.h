@@ -16,8 +16,8 @@ class ContinuousMotionValidator : public ompl::base::MotionValidator
 {
 public:
   ContinuousMotionValidator(ompl::base::SpaceInformationPtr space_info,
-                            tesseract_environment::EnvironmentConstPtr env,
-                            tesseract_kinematics::ForwardKinematicsConstPtr kin);
+                            tesseract_environment::Environment::ConstPtr env,
+                            tesseract_kinematics::ForwardKinematics::ConstPtr kin);
 
   bool checkMotion(const ompl::base::State* s1, const ompl::base::State* s2) const override;
 
@@ -28,9 +28,9 @@ public:
 private:
   bool continuousCollisionCheck(const ompl::base::State* s1, const ompl::base::State* s2) const;
 
-  tesseract_environment::EnvironmentConstPtr env_;
-  tesseract_kinematics::ForwardKinematicsConstPtr kin_;
-  tesseract_collision::ContinuousContactManagerPtr contact_manager_;
+  tesseract_environment::Environment::ConstPtr env_;
+  tesseract_kinematics::ForwardKinematics::ConstPtr kin_;
+  tesseract_collision::ContinuousContactManager::Ptr contact_manager_;
   std::vector<std::string> links_;
   std::vector<std::string> joints_;
 };

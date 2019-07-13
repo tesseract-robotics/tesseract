@@ -47,6 +47,9 @@ namespace tesseract_kinematics
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    using Ptr = std::shared_ptr<InverseKinematics>;
+    using ConstPtr = std::shared_ptr<const InverseKinematics>;
+
     virtual ~InverseKinematics() = default;
 
     /**
@@ -129,7 +132,5 @@ namespace tesseract_kinematics
 
   };
 
-  typedef std::shared_ptr<InverseKinematics> InverseKinematicsPtr;
-  typedef std::shared_ptr<const InverseKinematics> InverseKinematicsConstPtr;
 }
 #endif // TESSERACT_KINEMATICS_INVERSE_KINEMATICS_H

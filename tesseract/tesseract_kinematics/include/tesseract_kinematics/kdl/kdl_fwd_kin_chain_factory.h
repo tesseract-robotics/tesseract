@@ -40,7 +40,7 @@ public:
 
   ForwardKinematicsFactoryType getType() const override { return ForwardKinematicsFactoryType::CHAIN; }
 
-  ForwardKinematicsPtr create(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
+  ForwardKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
                               const std::string& base_link,
                               const std::string& tip_link,
                               const std::string name) const override

@@ -205,7 +205,7 @@ const std::vector<std::string>& KDLFwdKinTree::getActiveLinkNames() const
 
 const Eigen::MatrixX2d& KDLFwdKinTree::getLimits() const { return joint_limits_; }
 
-bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
+bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
                          const std::vector<std::string>& joint_names,
                          const std::string name,
                          std::unordered_map<std::string, double> start_state)
@@ -246,7 +246,7 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
   joint_qnr_.resize(joint_names.size());
 
   unsigned j = 0;
-  const std::vector<tesseract_scene_graph::LinkConstPtr> links = scene_graph_->getLinks();
+  const std::vector<tesseract_scene_graph::Link::ConstPtr> links = scene_graph_->getLinks();
   link_list_.reserve(links.size());
   for (const auto& link : links)
     link_list_.push_back(link->getName());
@@ -276,7 +276,7 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
     joint_list_[j] = jnt.getName();
     joint_qnr_[j] = static_cast<int>(tree_element.second.q_nr);
 
-    const tesseract_scene_graph::JointConstPtr& joint = scene_graph_->getJoint(jnt.getName());
+    const tesseract_scene_graph::Joint::ConstPtr& joint = scene_graph_->getJoint(jnt.getName());
     joint_limits_(j, 0) = joint->limits->lower;
     joint_limits_(j, 1) = joint->limits->upper;
 

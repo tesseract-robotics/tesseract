@@ -52,7 +52,7 @@ public:
    * @brief Given a tool path generate process specific plan
    * @param tool_path Process tool path
    */
-  virtual void setToolPath(const std::vector<std::vector<tesseract_motion_planners::WaypointPtr>>& tool_path) = 0;
+  virtual void setToolPath(const std::vector<std::vector<tesseract_motion_planners::Waypoint::Ptr>>& tool_path) = 0;
 
   /**
    * @brief Get process definintion for the set tool path

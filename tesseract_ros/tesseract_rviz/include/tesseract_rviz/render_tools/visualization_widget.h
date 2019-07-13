@@ -116,7 +116,7 @@ public:
    * @param collision Whether or not to load the collision representation
    * @param only_active Whether to only show active links (Used when visualizing trajectory)
    */
-  virtual void load(const tesseract_scene_graph::SceneGraphConstPtr& scene_graph,
+  virtual void load(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
                     bool visual = true,
                     bool collision = true,
                     bool show_active = true,

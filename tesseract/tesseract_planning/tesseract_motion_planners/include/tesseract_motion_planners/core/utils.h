@@ -71,7 +71,7 @@ inline tesseract_common::VectorIsometry3d interpolate(const Eigen::Isometry3d& s
   return result;
 }
 
-inline std::vector<WaypointPtr> interpolate(const Waypoint& start, const Waypoint& stop, int steps)
+inline std::vector<Waypoint::Ptr> interpolate(const Waypoint& start, const Waypoint& stop, int steps)
 {
   switch (start.getType())
   {
@@ -81,11 +81,11 @@ inline std::vector<WaypointPtr> interpolate(const Waypoint& start, const Waypoin
       const CartesianWaypoint& w2 = static_cast<const CartesianWaypoint&>(stop);
       tesseract_common::VectorIsometry3d eigen_poses = interpolate(w1.cartesian_position_, w2.cartesian_position_, steps);
 
-      std::vector<WaypointPtr> result;
+      std::vector<Waypoint::Ptr> result;
       result.reserve(eigen_poses.size());
       for (auto& eigen_pose : eigen_poses)
       {
-        CartesianWaypointPtr new_waypoint = std::make_shared<tesseract_motion_planners::CartesianWaypoint>();
+        CartesianWaypoint::Ptr new_waypoint = std::make_shared<tesseract_motion_planners::CartesianWaypoint>();
         new_waypoint->cartesian_position_ = eigen_pose;
         new_waypoint->coeffs_ = start.coeffs_;
         new_waypoint->is_critical_ = start.is_critical_;
@@ -97,7 +97,7 @@ inline std::vector<WaypointPtr> interpolate(const Waypoint& start, const Waypoin
     default:
     {
       CONSOLE_BRIDGE_logError("Interpolator for Waypoint type %d is currently not support!", start.getType());
-      return std::vector<WaypointPtr>();
+      return std::vector<Waypoint::Ptr>();
     }
   }
 }

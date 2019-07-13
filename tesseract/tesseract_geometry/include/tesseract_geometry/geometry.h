@@ -36,20 +36,17 @@ namespace tesseract_geometry
 {
   enum GeometryType {SPHERE, CYLINDER, CONE, BOX, PLANE, MESH, CONVEX_MESH, SDF_MESH, OCTREE};
 
-  class Geometry;
-  typedef std::shared_ptr<Geometry> GeometryPtr;
-  typedef std::shared_ptr<const Geometry> GeometryConstPtr;
-  typedef std::vector<GeometryPtr> Geometrys;
-  typedef std::vector<GeometryConstPtr> GeometrysConst;
-
   class Geometry
   {
   public:
+    using Ptr = std::shared_ptr<Geometry>;
+    using ConstPtr = std::shared_ptr<const Geometry>;
+
     explicit Geometry(GeometryType type) : type_(type) {}
     virtual ~Geometry() = default;
 
     /** \brief Create a copy of this shape */
-    virtual GeometryPtr clone() const = 0;
+    virtual Geometry::Ptr clone() const = 0;
 
     GeometryType getType() const { return type_; }
 
@@ -57,6 +54,9 @@ namespace tesseract_geometry
     /** \brief The type of the shape */
     GeometryType type_;
   };
+
+  using Geometrys = std::vector<Geometry::Ptr>;
+  using GeometrysConst = std::vector<Geometry::ConstPtr>;
 }
 
 #endif // TESSERACT_GEOMETRY_GEOMETRY_H

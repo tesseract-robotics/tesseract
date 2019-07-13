@@ -97,8 +97,8 @@ bool TrajOptMotionPlanner::solve(PlannerResponse& response)
 
   // Check and report collisions
   std::vector<tesseract_collision::ContactResultMap> collisions;
-  tesseract_collision::ContinuousContactManagerPtr continuous_manager = config_->prob->GetEnv()->getContinuousContactManager();
-  tesseract_environment::AdjacencyMapPtr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
+  tesseract_collision::ContinuousContactManager::Ptr continuous_manager = config_->prob->GetEnv()->getContinuousContactManager();
+  tesseract_environment::AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
       config_->prob->GetEnv()->getSceneGraph(),
       config_->prob->GetKin()->getActiveLinkNames(),
       config_->prob->GetEnv()->getCurrentState()->transforms);
@@ -111,7 +111,7 @@ bool TrajOptMotionPlanner::solve(PlannerResponse& response)
                                getTraj(opt.x(), config_->prob->GetVars()), collisions);
 
   // Do a discrete check until continuous collision checking is updated to do dynamic-dynamic checking
-  tesseract_collision::DiscreteContactManagerPtr discrete_manager = config_->prob->GetEnv()->getDiscreteContactManager();
+  tesseract_collision::DiscreteContactManager::Ptr discrete_manager = config_->prob->GetEnv()->getDiscreteContactManager();
   discrete_manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   discrete_manager->setContactDistanceThreshold(0);
   collisions.clear();

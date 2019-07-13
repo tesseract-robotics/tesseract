@@ -187,7 +187,7 @@ void EnvironmentMonitor::initialize()
       discrete_manager_loader_.reset(new DiscreteContactManagerPluginLoader("tesseract_collision", "tesseract_collision::DiscreteContactManager"));
       for (auto plugin : discrete_manager_loader_->getDeclaredClasses())
       {
-        auto fn = [&]() -> tesseract_collision::DiscreteContactManagerPtr { return discrete_manager_loader_->createUniqueInstance(plugin); };
+        auto fn = [&]() -> tesseract_collision::DiscreteContactManager::Ptr { return discrete_manager_loader_->createUniqueInstance(plugin); };
         tesseract_->getEnvironment()->registerDiscreteContactManager(discrete_manager_loader_->getClassType(plugin), fn);
 
         ROS_INFO("Discrete Contact Monitor Registered: %s", discrete_manager_loader_->getClassType(plugin).c_str());
@@ -209,7 +209,7 @@ void EnvironmentMonitor::initialize()
       continuous_manager_loader_.reset(new ContinuousContactManagerPluginLoader("tesseract_collision", "tesseract_collision::ContinuousContactManager"));
       for (auto plugin : continuous_manager_loader_->getDeclaredClasses())
       {
-        auto fn = [&]() -> tesseract_collision::ContinuousContactManagerPtr { return continuous_manager_loader_->createUniqueInstance(plugin); };
+        auto fn = [&]() -> tesseract_collision::ContinuousContactManager::Ptr { return continuous_manager_loader_->createUniqueInstance(plugin); };
         tesseract_->getEnvironment()->registerContinuousContactManager(continuous_manager_loader_->getClassType(plugin), fn);
 
         ROS_INFO("Continuous Contact Monitor Registered: %s", continuous_manager_loader_->getClassType(plugin).c_str());

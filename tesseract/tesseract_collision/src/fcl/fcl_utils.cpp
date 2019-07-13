@@ -58,32 +58,32 @@ namespace tesseract_collision
 {
 namespace tesseract_collision_fcl
 {
-CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::PlaneConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Plane::ConstPtr& geom)
 {
   return CollisionGeometryPtr(new fcl::Planed(geom->getA(), geom->getB(), geom->getC(), geom->getD()));
 }
 
-CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::BoxConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Box::ConstPtr& geom)
 {
   return CollisionGeometryPtr(new fcl::Boxd(geom->getX(), geom->getY(), geom->getZ()));
 }
 
-CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::SphereConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Sphere::ConstPtr& geom)
 {
   return CollisionGeometryPtr(new fcl::Sphered(geom->getRadius()));
 }
 
-CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::CylinderConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Cylinder::ConstPtr& geom)
 {
   return CollisionGeometryPtr(new fcl::Cylinderd(geom->getRadius(), geom->getLength()));
 }
 
-CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::ConeConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Cone::ConstPtr& geom)
 {
   return CollisionGeometryPtr(new fcl::Coned(geom->getRadius(), geom->getLength()));
 }
 
-CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::MeshConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr& geom)
 {
   int vertice_count = geom->getVerticeCount();
   int triangle_count = geom->getTriangleCount();
@@ -113,7 +113,7 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::MeshConstPtr
   return nullptr;
 }
 
-CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::ConvexMeshConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::ConvexMesh::ConstPtr& geom)
 {
   int vertice_count = geom->getVerticeCount();
   int face_count = geom->getFaceCount();
@@ -128,7 +128,7 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::ConvexMeshCo
   return nullptr;
 }
 
-CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::OctreeConstPtr& geom)
+CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Octree::ConstPtr& geom)
 {
   switch (geom->getSubType())
   {

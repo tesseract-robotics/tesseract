@@ -49,7 +49,7 @@ int main(int /*argc*/, char** /*argv*/)
   std::string urdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
   ResourceLocatorFn locator = locateResource;
-  SceneGraphPtr g = parseURDFFile(urdf_file, locator);
+  SceneGraph::Ptr g = parseURDFFile(urdf_file, locator);
 
   CONSOLE_BRIDGE_logInform(std::to_string(g->getJoints().size()).c_str());
   CONSOLE_BRIDGE_logInform(std::to_string(g->getLinks().size()).c_str());

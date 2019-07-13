@@ -35,20 +35,21 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
-  class Cone;
-  typedef std::shared_ptr<Cone> ConePtr;
-  typedef std::shared_ptr<const Cone> ConeConstPtr;
 
   class Cone : public Geometry
   {
   public:
+
+    using Ptr = std::shared_ptr<Cone>;
+    using ConstPtr = std::shared_ptr<const Cone>;
+
     Cone(double r, double l) : Geometry(GeometryType::CONE), r_(r), l_(l) {}
     ~Cone() override = default;
 
     double getRadius() const { return r_; }
     double getLength() const { return l_; }
 
-    GeometryPtr clone() const override { return ConePtr(new Cone(r_, l_)); }
+    Geometry::Ptr clone() const override { return Cone::Ptr(new Cone(r_, l_)); }
 
   private:
     double r_;

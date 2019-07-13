@@ -31,13 +31,13 @@
 namespace tesseract_motion_planners
 {
 /** @brief Negative status code should be related to errors and positive should be used for status of covergenace */
-typedef std::unordered_map<int, std::string> StatusCodeMap;
+using StatusCodeMap = std::unordered_map<int, std::string>;
 
 struct PlannerRequest
 {
   std::string name;                                           /**< @brief The name of the planner to use */
   tesseract::Tesseract::ConstPtr tesseract;                   /**< @brief Tesseract */
-  tesseract_environment::EnvStateConstPtr start_state;        /**< @brief The start state to use for planning */
+  tesseract_environment::EnvState::ConstPtr start_state;        /**< @brief The start state to use for planning */
   std::string config;                                         /**< @brief The configuration to use (json file) */
   std::string config_format;                                  /**< @brief The file extension used to parse config */
 };

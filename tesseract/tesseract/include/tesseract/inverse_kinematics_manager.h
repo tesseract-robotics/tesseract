@@ -32,6 +32,9 @@ namespace tesseract
 class InverseKinematicsManager
 {
 public:
+  using Ptr = std::shared_ptr<InverseKinematicsManager>;
+  using ConstPtr = std::shared_ptr<const InverseKinematicsManager>;
+
   InverseKinematicsManager() = default;
   virtual ~InverseKinematicsManager() = default;
 
@@ -40,7 +43,7 @@ public:
    * @param factory The factory to register
    * @return False if factory already exists, otherwise true.
    */
-  bool registerInvKinematicsFactory(tesseract_kinematics::InverseKinematicsFactoryPtr factory)
+  bool registerInvKinematicsFactory(tesseract_kinematics::InverseKinematicsFactory::Ptr factory)
   {
     std::string name = factory->getName();
     if(inv_kin_factories_.find(name) == inv_kin_factories_.end())
@@ -95,7 +98,7 @@ public:
    * @param name The name of the solver
    * @return If not found it returns a nullptr, otherwise a new instance of the solver.
    */
-  tesseract_kinematics::InverseKinematicsFactoryConstPtr getInvKinematicFactory(const std::string& name) const
+  tesseract_kinematics::InverseKinematicsFactory::ConstPtr getInvKinematicFactory(const std::string& name) const
   {
     auto it = inv_kin_factories_.find(name);
     if(it != inv_kin_factories_.end())
@@ -110,7 +113,7 @@ public:
    * @param solver The solver
    * @return
    */
-  bool addInvKinematicSolver(tesseract_kinematics::InverseKinematicsConstPtr solver)
+  bool addInvKinematicSolver(tesseract_kinematics::InverseKinematics::ConstPtr solver)
   {
     auto it = inv_kin_manipulators_.find(std::make_pair(solver->getName(), solver->getSolverName()));
     if(it != inv_kin_manipulators_.end())
@@ -173,7 +176,7 @@ public:
    * @param name The name of the solver
    * @return If not found returns a nullptr, otherwise a instance of the solver.
    */
-  tesseract_kinematics::InverseKinematicsPtr getInvKinematicSolver(const std::string& manipulator, const std::string& name) const
+  tesseract_kinematics::InverseKinematics::Ptr getInvKinematicSolver(const std::string& manipulator, const std::string& name) const
   {
     auto it = inv_kin_manipulators_.find(std::make_pair(manipulator, name));
     if(it != inv_kin_manipulators_.end())
@@ -187,7 +190,7 @@ public:
    * @param manipulator The name of the manipulator
    * @return If not found returns a nullptr, otherwise a instance of the solver.
    */
-  tesseract_kinematics::InverseKinematicsPtr getInvKinematicSolver(const std::string& manipulator) const
+  tesseract_kinematics::InverseKinematics::Ptr getInvKinematicSolver(const std::string& manipulator) const
   {
     auto it = inv_kin_manipulators_default_.find(manipulator);
     if(it != inv_kin_manipulators_default_.end())
@@ -197,11 +200,9 @@ public:
   }
 
 private:
-  std::unordered_map<std::string, tesseract_kinematics::InverseKinematicsFactoryConstPtr> inv_kin_factories_;
-  std::map<std::pair<std::string, std::string>, tesseract_kinematics::InverseKinematicsConstPtr> inv_kin_manipulators_;
-  std::unordered_map<std::string, tesseract_kinematics::InverseKinematicsConstPtr> inv_kin_manipulators_default_;
+  std::unordered_map<std::string, tesseract_kinematics::InverseKinematicsFactory::ConstPtr> inv_kin_factories_;
+  std::map<std::pair<std::string, std::string>, tesseract_kinematics::InverseKinematics::ConstPtr> inv_kin_manipulators_;
+  std::unordered_map<std::string, tesseract_kinematics::InverseKinematics::ConstPtr> inv_kin_manipulators_default_;
 };
-typedef std::shared_ptr<InverseKinematicsManager> InverseKinematicsManagerPtr;
-typedef std::shared_ptr<const InverseKinematicsManager> InverseKinematicsManagerConstPtr;
 }
 #endif // TESSERACT_INVERSE_KINEMATICS_MANAGER_H

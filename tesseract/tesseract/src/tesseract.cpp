@@ -50,7 +50,7 @@ namespace tesseract
     return initialized_;
   }
 
-  bool Tesseract::init(tesseract_scene_graph::SceneGraphPtr scene_graph)
+  bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
   {
     clear();
 
@@ -71,7 +71,7 @@ namespace tesseract
     return true;
   }
 
-  bool Tesseract::init(tesseract_scene_graph::SceneGraphPtr scene_graph, tesseract_scene_graph::SRDFModelConstPtr srdf_model)
+  bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph, tesseract_scene_graph::SRDFModel::ConstPtr srdf_model)
   {
     clear();
 
@@ -99,7 +99,7 @@ namespace tesseract
     clear();
 
     // Parse urdf string into Scene Graph
-    tesseract_scene_graph::SceneGraphPtr scene_graph = tesseract_scene_graph::parseURDFString(urdf_string, locator);
+    tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_scene_graph::parseURDFString(urdf_string, locator);
     if (scene_graph == nullptr)
     {
       CONSOLE_BRIDGE_logError("Failed to parse URDF.");
@@ -127,7 +127,7 @@ namespace tesseract
     clear();
 
     // Parse urdf string into Scene Graph
-    tesseract_scene_graph::SceneGraphPtr scene_graph = tesseract_scene_graph::parseURDFString(urdf_string, locator);
+    tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_scene_graph::parseURDFString(urdf_string, locator);
     if (scene_graph == nullptr)
     {
       CONSOLE_BRIDGE_logError("Failed to parse URDF.");
@@ -135,7 +135,7 @@ namespace tesseract
     }
 
     // Parse srdf string into SRDF Model
-    tesseract_scene_graph::SRDFModelPtr srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
+    tesseract_scene_graph::SRDFModel::Ptr srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
     if (!srdf->initString(*scene_graph, srdf_string))
     {
       CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
@@ -167,7 +167,7 @@ namespace tesseract
     clear();
 
     // Parse urdf file into Scene Graph
-    tesseract_scene_graph::SceneGraphPtr scene_graph = tesseract_scene_graph::parseURDFFile(urdf_path.string(), locator);
+    tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_scene_graph::parseURDFFile(urdf_path.string(), locator);
     if (scene_graph == nullptr)
     {
       CONSOLE_BRIDGE_logError("Failed to parse URDF.");
@@ -195,7 +195,7 @@ namespace tesseract
     clear();
 
     // Parse urdf file into Scene Graph
-    tesseract_scene_graph::SceneGraphPtr scene_graph = tesseract_scene_graph::parseURDFFile(urdf_path.string(), locator);
+    tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_scene_graph::parseURDFFile(urdf_path.string(), locator);
     if (scene_graph == nullptr)
     {
       CONSOLE_BRIDGE_logError("Failed to parse URDF.");
@@ -203,7 +203,7 @@ namespace tesseract
     }
 
     // Parse srdf file into SRDF Model
-    tesseract_scene_graph::SRDFModelPtr srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
+    tesseract_scene_graph::SRDFModel::Ptr srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
     if (!srdf->initFile(*scene_graph, srdf_path.string()))
     {
       CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
@@ -230,37 +230,37 @@ namespace tesseract
     return true;
   }
 
-  const tesseract_environment::EnvironmentPtr& Tesseract::getEnvironment()
+  const tesseract_environment::Environment::Ptr& Tesseract::getEnvironment()
   {
     return environment_;
   }
 
-  const tesseract_environment::EnvironmentConstPtr& Tesseract::getEnvironmentConst() const
+  const tesseract_environment::Environment::ConstPtr& Tesseract::getEnvironmentConst() const
   {
     return environment_const_;
   }
 
-  const tesseract_scene_graph::SRDFModelConstPtr& Tesseract::getSRDFModel() const
+  const tesseract_scene_graph::SRDFModel::ConstPtr& Tesseract::getSRDFModel() const
   {
     return srdf_model_;
   }
 
-  const ForwardKinematicsManagerPtr& Tesseract::getFwdKinematicsManager()
+  const ForwardKinematicsManager::Ptr& Tesseract::getFwdKinematicsManager()
   {
     return fwd_kin_manager_;
   }
 
-  const ForwardKinematicsManagerConstPtr& Tesseract::getFwdKinematicsManagerConst() const
+  const ForwardKinematicsManager::ConstPtr& Tesseract::getFwdKinematicsManagerConst() const
   {
     return fwd_kin_manager_const_;
   }
 
-  const InverseKinematicsManagerPtr& Tesseract::getInvKinematicsManager()
+  const InverseKinematicsManager::Ptr& Tesseract::getInvKinematicsManager()
   {
     return inv_kin_manager_;
   }
 
-  const InverseKinematicsManagerConstPtr& Tesseract::getInvKinematicsManagerConst() const
+  const InverseKinematicsManager::ConstPtr& Tesseract::getInvKinematicsManagerConst() const
   {
     return inv_kin_manager_const_;
   }
@@ -301,7 +301,7 @@ namespace tesseract
       if (!group.chains_.empty())
       {
         assert(group.chains_.size() == 1);
-        tesseract_kinematics::ForwardKinematicsPtr solver = chain_factory->create(environment_->getSceneGraph(), group.chains_.front().first, group.chains_.front().second, group.name_);
+        tesseract_kinematics::ForwardKinematics::Ptr solver = chain_factory->create(environment_->getSceneGraph(), group.chains_.front().first, group.chains_.front().second, group.name_);
         if (solver != nullptr)
         {
           if (!fwd_kin_manager_->addFwdKinematicSolver(solver))
@@ -320,7 +320,7 @@ namespace tesseract
       if (!group.joints_.empty())
       {
         assert(group.joints_.size() == 1);
-        tesseract_kinematics::ForwardKinematicsPtr solver = tree_factory->create(environment_->getSceneGraph(), group.joints_, group.name_);
+        tesseract_kinematics::ForwardKinematics::Ptr solver = tree_factory->create(environment_->getSceneGraph(), group.joints_, group.name_);
         if (solver != nullptr)
         {
           if (!fwd_kin_manager_->addFwdKinematicSolver(solver))
@@ -368,7 +368,7 @@ namespace tesseract
       if (!group.chains_.empty())
       {
         assert(group.chains_.size() == 1);
-        tesseract_kinematics::InverseKinematicsPtr solver = factory->create(environment_->getSceneGraph(), group.chains_.front().first, group.chains_.front().second, group.name_);
+        tesseract_kinematics::InverseKinematics::Ptr solver = factory->create(environment_->getSceneGraph(), group.chains_.front().first, group.chains_.front().second, group.name_);
         if (solver != nullptr)
         {
           if (!inv_kin_manager_->addInvKinematicSolver(solver))

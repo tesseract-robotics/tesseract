@@ -60,24 +60,24 @@ namespace tesseract_scene_graph
 {
 
 /** @brief Defines the boost graph property. */
-typedef boost::property<boost::graph_name_t, std::string,
-                        boost::property<boost::graph_root_t, std::string>> GraphProperty;
+using GraphProperty = boost::property<boost::graph_name_t, std::string,
+                      boost::property<boost::graph_root_t, std::string>>;
 
 /** @brief Defines the boost graph vertex property. */
-typedef boost::property<boost::vertex_link_t, LinkPtr,
-        boost::property<boost::vertex_link_visible_t, bool,
-        boost::property<boost::vertex_link_collision_enabled_t, bool>>> VertexProperty;
+using VertexProperty = boost::property<boost::vertex_link_t, Link::Ptr,
+                       boost::property<boost::vertex_link_visible_t, bool,
+                       boost::property<boost::vertex_link_collision_enabled_t, bool>>>;
 
 /**
  * @brief EdgeProperty
  *
  * The edge_weight represents the distance between the two links
  */
-typedef boost::property<boost::edge_joint_t, JointPtr,
-        boost::property<boost::edge_weight_t, double> > EdgeProperty;
+using EdgeProperty = boost::property<boost::edge_joint_t, Joint::Ptr,
+                     boost::property<boost::edge_weight_t, double> >;
 
 
-typedef boost::adjacency_list<boost::listS, boost::listS, boost::bidirectionalS, VertexProperty, EdgeProperty, GraphProperty> Graph;
+using Graph = boost::adjacency_list<boost::listS, boost::listS, boost::bidirectionalS, VertexProperty, EdgeProperty, GraphProperty>;
 class SceneGraph : private boost::noncopyable, public Graph
 {
 public:
@@ -87,9 +87,12 @@ public:
    * The first vector is a list of links along the shortest path
    * The second vector is a list of joints along the shortest path
    */
-  typedef std::pair<std::vector<std::string>, std::vector<std::string>> Path;
-  typedef SceneGraph::vertex_descriptor Vertex;
-  typedef SceneGraph::edge_descriptor Edge;
+  using Path = std::pair<std::vector<std::string>, std::vector<std::string>>;
+  using Vertex = SceneGraph::vertex_descriptor;
+  using Edge = SceneGraph::edge_descriptor;
+
+  using Ptr = std::shared_ptr<SceneGraph>;
+  using ConstPtr = std::shared_ptr<const SceneGraph>;
 
   SceneGraph();
 
@@ -130,13 +133,13 @@ public:
    * @param name The name of the link
    * @return Return nullptr if link name does not exists, otherwise a pointer to the link
    */
-  LinkConstPtr getLink(const std::string& name) const;
+  Link::ConstPtr getLink(const std::string& name) const;
 
   /**
    * @brief Get a vector links in the scene graph
    * @return A vector of links
    */
-  std::vector<LinkConstPtr> getLinks() const;
+  std::vector<Link::ConstPtr> getLinks() const;
 
   /**
    * @brief Removes a link from the graph
@@ -184,7 +187,7 @@ public:
    * @param name The name of the joint
    * @return Return nullptr if joint name does not exists, otherwise a pointer to the joint
    */
-  JointConstPtr getJoint(const std::string& name) const;
+  Joint::ConstPtr getJoint(const std::string& name) const;
 
   /**
    * @brief Removes a joint from the graph
@@ -205,7 +208,7 @@ public:
    * @brief Get a vector joints in the scene graph
    * @return A vector of joints
    */
-  std::vector<JointConstPtr> getJoints() const;
+  std::vector<Joint::ConstPtr> getJoints() const;
 
   /** @brief Changes the "origin" transform of the joint and recomputes the associated edge
    * @param name Name of the joint to be changed
@@ -249,7 +252,7 @@ public:
    * @brief Get the allowed collision matrix
    * @return AllowedCollisionMatrixConstPtr
    */
-   AllowedCollisionMatrixConstPtr getAllowedCollisionMatrix() const;
+   AllowedCollisionMatrix::ConstPtr getAllowedCollisionMatrix() const;
 
 
   /**
@@ -257,14 +260,14 @@ public:
    * @param joint_name The name of the joint
    * @return The source link
    */
-  LinkConstPtr getSourceLink(const std::string& joint_name) const;
+  Link::ConstPtr getSourceLink(const std::string& joint_name) const;
 
   /**
    * @brief Get the target link (child link) for a joint
    * @param joint_name The name of the joint
    * @return The target link
    */
-  LinkConstPtr getTargetLink(const std::string& joint_name) const;
+  Link::ConstPtr getTargetLink(const std::string& joint_name) const;
 
   /**
    * @brief Get inbound joints for a link
@@ -275,7 +278,7 @@ public:
    * @param link_name The name of the link
    * @return Vector of joints
    */
-  std::vector<JointConstPtr> getInboundJoints(const std::string& link_name) const;
+  std::vector<Joint::ConstPtr> getInboundJoints(const std::string& link_name) const;
 
   /**
    * @brief Get outbound joints for a link
@@ -286,7 +289,7 @@ public:
    * @param link_name The name of the link
    * @return Vector of joints
    */
-  std::vector<JointConstPtr> getOutboundJoints(const std::string& link_name) const;
+  std::vector<Joint::ConstPtr> getOutboundJoints(const std::string& link_name) const;
 
   /**
    * @brief Determine if the graph contains cycles
@@ -359,9 +362,9 @@ public:
 
 private:
 
-  std::unordered_map<std::string, std::pair<LinkPtr, Vertex>> link_map_;
-  std::unordered_map<std::string, std::pair<JointPtr, Edge>> joint_map_;
-  AllowedCollisionMatrixPtr acm_;
+  std::unordered_map<std::string, std::pair<Link::Ptr, Vertex>> link_map_;
+  std::unordered_map<std::string, std::pair<Joint::Ptr, Edge>> joint_map_;
+  AllowedCollisionMatrix::Ptr acm_;
 
   struct cycle_detector : public boost::dfs_visitor<>
   {
@@ -453,8 +456,6 @@ private:
   }
 
 };
-typedef std::shared_ptr<SceneGraph> SceneGraphPtr;
-typedef std::shared_ptr<const SceneGraph> SceneGraphConstPtr;
 
 
 inline std::ostream& operator<<(std::ostream& os, const SceneGraph::Path& path)

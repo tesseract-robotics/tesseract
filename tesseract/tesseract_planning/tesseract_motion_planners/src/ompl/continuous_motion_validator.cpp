@@ -8,8 +8,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_motion_planners
 {
 ContinuousMotionValidator::ContinuousMotionValidator(ompl::base::SpaceInformationPtr space_info,
-                                                     tesseract_environment::EnvironmentConstPtr env,
-                                                     tesseract_kinematics::ForwardKinematicsConstPtr kin)
+                                                     tesseract_environment::Environment::ConstPtr env,
+                                                     tesseract_kinematics::ForwardKinematics::ConstPtr kin)
   : MotionValidator(space_info), env_(std::move(env)), kin_(std::move(kin))
 {
   joints_ = kin_->getJointNames();
@@ -73,20 +73,20 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
   const ompl::base::RealVectorStateSpace::StateType* finish = s2->as<ompl::base::RealVectorStateSpace::StateType>();
 
   // Need to get thread id
-  tesseract_collision::ContinuousContactManagerPtr cm = contact_manager_->clone();
+  tesseract_collision::ContinuousContactManager::Ptr cm = contact_manager_->clone();
 
   const auto dof = si_->getStateDimension();
   Eigen::Map<Eigen::VectorXd> start_joints(start->values, dof);
   Eigen::Map<Eigen::VectorXd> finish_joints(finish->values, dof);
 
-  tesseract_environment::EnvStatePtr state0 = env_->getState(joints_, start_joints);
-  tesseract_environment::EnvStatePtr state1 = env_->getState(joints_, finish_joints);
+  tesseract_environment::EnvState::Ptr state0 = env_->getState(joints_, start_joints);
+  tesseract_environment::EnvState::Ptr state1 = env_->getState(joints_, finish_joints);
 
   for (const auto& link_name : links_)
     cm->setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
 
   tesseract_collision::ContactResultMap contact_map;
-  cm->contactTest(contact_map, tesseract_collision::ContactTestTypes::FIRST);
+  cm->contactTest(contact_map, tesseract_collision::ContactTestType::FIRST);
 
   return contact_map.empty();
 }

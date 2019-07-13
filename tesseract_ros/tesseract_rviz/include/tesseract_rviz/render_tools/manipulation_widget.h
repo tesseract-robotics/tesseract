@@ -134,11 +134,11 @@ protected:
   InteractiveMarker::Ptr interactive_marker_;
   std::map<std::string, InteractiveMarker::Ptr> joint_interactive_markers_;
   std::vector<std::string> manipulators_;
-  tesseract_kinematics::InverseKinematicsPtr inv_kin_;
+  tesseract_kinematics::InverseKinematics::Ptr inv_kin_;
   Eigen::VectorXd inv_seed_;
   int env_revision_;
   std::unordered_map<std::string, double> joints_;
-  tesseract_environment::EnvStatePtr env_state_;
+  tesseract_environment::EnvState::Ptr env_state_;
   Eigen::Isometry3d tcp_;
 
   ros::Publisher joint_state_pub_;

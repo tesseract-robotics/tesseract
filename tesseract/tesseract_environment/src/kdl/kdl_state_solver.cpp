@@ -36,7 +36,7 @@ namespace tesseract_environment
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-bool KDLStateSolver::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph)
+bool KDLStateSolver::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph)
 {
   scene_graph_ = std::move(scene_graph);
   return createKDETree();
@@ -82,9 +82,9 @@ void KDLStateSolver::setState(const std::vector<std::string>& joint_names,
   calculateTransforms(current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
 }
 
-EnvStatePtr KDLStateSolver::getState(const std::unordered_map<std::string, double>& joints) const
+EnvState::Ptr KDLStateSolver::getState(const std::unordered_map<std::string, double>& joints) const
 {
-  EnvStatePtr state(new EnvState(*current_state_));
+  EnvState::Ptr state(new EnvState(*current_state_));
   KDL::JntArray jnt_array = kdl_jnt_array_;
 
   for (auto& joint : joints)
@@ -100,9 +100,9 @@ EnvStatePtr KDLStateSolver::getState(const std::unordered_map<std::string, doubl
   return state;
 }
 
-EnvStatePtr KDLStateSolver::getState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values) const
+EnvState::Ptr KDLStateSolver::getState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values) const
 {
-  EnvStatePtr state(new EnvState(*current_state_));
+  EnvState::Ptr state(new EnvState(*current_state_));
   KDL::JntArray jnt_array = kdl_jnt_array_;
 
   for (auto i = 0u; i < joint_names.size(); ++i)
@@ -118,10 +118,10 @@ EnvStatePtr KDLStateSolver::getState(const std::vector<std::string>& joint_names
   return state;
 }
 
-EnvStatePtr KDLStateSolver::getState(const std::vector<std::string>& joint_names,
+EnvState::Ptr KDLStateSolver::getState(const std::vector<std::string>& joint_names,
                              const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
 {
-  EnvStatePtr state(new EnvState(*current_state_));
+  EnvState::Ptr state(new EnvState(*current_state_));
   KDL::JntArray jnt_array = kdl_jnt_array_;
 
   for (auto i = 0u; i < joint_names.size(); ++i)
@@ -146,7 +146,7 @@ bool KDLStateSolver::createKDETree()
     return false;
   }
 
-  current_state_ = EnvStatePtr(new EnvState());
+  current_state_ = EnvState::Ptr(new EnvState());
   kdl_jnt_array_.resize(kdl_tree_->getNrOfJoints());
   size_t j = 0;
   for (const auto& seg : kdl_tree_->getSegments())

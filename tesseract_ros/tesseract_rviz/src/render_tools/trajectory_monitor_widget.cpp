@@ -212,7 +212,7 @@ void TrajectoryMonitorWidget::createTrajectoryTrail()
   // always include last trajectory point
   int num_waypoints = static_cast<int>(t->joint_trajectory.points.size());
   num_trajectory_waypoints_ = static_cast<size_t>(std::ceil(static_cast<float>(num_waypoints + stepsize - 1) / static_cast<float>(stepsize)));
-  std::vector<tesseract_environment::EnvStatePtr> states_data;
+  std::vector<tesseract_environment::EnvState::Ptr> states_data;
   states_data.reserve(num_trajectory_waypoints_);
   for (std::size_t i = 0; i < num_trajectory_waypoints_; i++)
   {

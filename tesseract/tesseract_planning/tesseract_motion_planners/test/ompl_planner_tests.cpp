@@ -53,13 +53,13 @@ static void addBox(tesseract_environment::Environment& env)
 {
   Link link_1("box_attached");
 
-  VisualPtr visual = std::make_shared<Visual>();
+  Visual::Ptr visual = std::make_shared<Visual>();
   visual->origin = Eigen::Isometry3d::Identity();
   visual->origin.translation() = Eigen::Vector3d(0.4, 0, 0.55);
   visual->geometry = std::make_shared<tesseract_geometry::Box>(0.5, 0.001, 0.5);
   link_1.visual.push_back(visual);
 
-  CollisionPtr collision = std::make_shared<Collision>();
+  Collision::Ptr collision = std::make_shared<Collision>();
   collision->origin = visual->origin;
   collision->geometry = visual->geometry;
   link_1.collision.push_back(collision);

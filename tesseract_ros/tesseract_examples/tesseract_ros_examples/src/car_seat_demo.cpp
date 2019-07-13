@@ -123,17 +123,17 @@ void addSeats()
   {
     Link link_seat("seat_" + std::to_string(i + 1));
 
-    VisualPtr visual = std::make_shared<Visual>();
+    Visual::Ptr visual = std::make_shared<Visual>();
     visual->origin = Eigen::Isometry3d::Identity();
     visual->geometry = createMeshFromPath<tesseract_geometry::Mesh>(locator_("package://tesseract_ros_examples/meshes/car_seat/visual/seat.dae"), Eigen::Vector3d(1, 1, 1), true)[0];
     link_seat.visual.push_back(visual);
 
     for (int m = 1; m <= 10; ++m)
     {
-      std::vector<tesseract_geometry::MeshPtr> meshes = createMeshFromPath<tesseract_geometry::Mesh>(locator_("package://tesseract_ros_examples/meshes/car_seat/collision/seat_" + std::to_string(m) + ".stl"));
+      std::vector<tesseract_geometry::Mesh::Ptr> meshes = createMeshFromPath<tesseract_geometry::Mesh>(locator_("package://tesseract_ros_examples/meshes/car_seat/collision/seat_" + std::to_string(m) + ".stl"));
       for (auto& mesh : meshes)
       {
-        CollisionPtr collision = std::make_shared<Collision>();
+        Collision::Ptr collision = std::make_shared<Collision>();
         collision->origin = visual->origin;
         collision->geometry = makeConvexMesh(*mesh);
         link_seat.collision.push_back(collision);
@@ -256,7 +256,7 @@ std::unordered_map<std::string, std::unordered_map<std::string, double>> getPred
   return result;
 }
 
-std::vector<double> getPositionVector(const ForwardKinematicsConstPtr& kin, const std::unordered_map<std::string, double>& pos)
+std::vector<double> getPositionVector(const ForwardKinematics::ConstPtr& kin, const std::unordered_map<std::string, double>& pos)
 {
   std::vector<double> result;
   for (const auto& joint_name : kin->getJointNames())
@@ -265,7 +265,7 @@ std::vector<double> getPositionVector(const ForwardKinematicsConstPtr& kin, cons
   return result;
 }
 
-Eigen::VectorXd getPositionVectorXd(const ForwardKinematicsConstPtr& kin, const std::unordered_map<std::string, double>& pos)
+Eigen::VectorXd getPositionVectorXd(const ForwardKinematics::ConstPtr& kin, const std::unordered_map<std::string, double>& pos)
 {
   Eigen::VectorXd result;
   result.resize(kin->numJoints());
@@ -409,7 +409,7 @@ int main(int argc, char** argv)
   // Go pick up first seat
   ros::Time tStart;
   std::shared_ptr<ProblemConstructionInfo> pci;
-  TrajOptProbPtr prob;
+  TrajOptProb::Ptr prob;
 
   pci = cppMethod("Home", "Pick1");
   prob = ConstructProblem(*pci);
@@ -429,8 +429,8 @@ int main(int argc, char** argv)
   plotter->plotTrajectory(prob->GetKin()->getJointNames(), getTraj(pick1_opt.x(), prob->GetVars()));
 
   std::vector<ContactResultMap> collisions;
-  ContinuousContactManagerPtr manager = prob->GetEnv()->getContinuousContactManager();
-  AdjacencyMapPtr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
+  ContinuousContactManager::Ptr manager = prob->GetEnv()->getContinuousContactManager();
+  AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
                                                                                         prob->GetKin()->getActiveLinkNames(),
                                                                                         prob->GetEnv()->getCurrentState()->transforms);
 
@@ -442,7 +442,7 @@ int main(int argc, char** argv)
   ROS_INFO((found) ? ("Pick seat #1 trajectory is in collision") : ("Pick seat #1 trajectory is collision free"));
 
   // Get the state of at the end of pick 1 trajectory
-  EnvStatePtr state =
+  EnvState::Ptr state =
       tesseract_->getEnvironment()->getState(prob->GetKin()->getJointNames(), getPositionVectorXd(prob->GetKin(), saved_positions_["Pick1"]));
 
   // Now we to detach seat_1 and attach it to the robot end_effector

@@ -69,7 +69,7 @@ void runTest(tesseract_collision::DiscreteContactManager& checker, bool use_conv
 
   unsigned num_threads = 4;
   std::vector<ContactResultVector> result_vector(num_threads);
-  std::vector<DiscreteContactManagerPtr> contact_manager(num_threads);
+  std::vector<DiscreteContactManager::Ptr> contact_manager(num_threads);
   contact_manager[0] = checker.clone();
   contact_manager[1] = checker.clone();
   contact_manager[2] = checker.clone();
@@ -82,7 +82,7 @@ void runTest(tesseract_collision::DiscreteContactManager& checker, bool use_conv
   {
     const int tn = omp_get_thread_num();
     CONSOLE_BRIDGE_logDebug("Thread %i of %i", tn, omp_get_num_threads());
-    const DiscreteContactManagerPtr& manager = contact_manager[static_cast<size_t>(tn)];
+    const DiscreteContactManager::Ptr& manager = contact_manager[static_cast<size_t>(tn)];
     for (const auto& co : location)
     {
       if (tn == 0)

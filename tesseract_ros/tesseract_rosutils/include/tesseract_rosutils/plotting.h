@@ -50,7 +50,7 @@ namespace tesseract_rosutils
 class ROSPlotting : public tesseract_visualization::Visualization
 {
 public:
-  ROSPlotting(tesseract_environment::EnvironmentConstPtr env) : env_(std::move(env))
+  ROSPlotting(tesseract_environment::Environment::ConstPtr env) : env_(std::move(env))
   {
     ros::NodeHandle nh;
 
@@ -183,7 +183,7 @@ public:
   }
 
 private:
-  tesseract_environment::EnvironmentConstPtr env_;       /**< The Env */
+  tesseract_environment::Environment::ConstPtr env_;       /**< The Env */
   int marker_counter_;            /**< Counter when plotting */
   ros::Publisher scene_pub_;      /**< Scene publisher */
   ros::Publisher trajectory_pub_; /**< Trajectory publisher */

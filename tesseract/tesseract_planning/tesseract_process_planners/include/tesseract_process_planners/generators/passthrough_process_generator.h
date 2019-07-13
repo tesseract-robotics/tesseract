@@ -12,16 +12,16 @@ public:
   PassthroughProcessGenerator() {}
   ~PassthroughProcessGenerator() = default;
 
-  std::vector<tesseract_motion_planners::WaypointPtr> generate(const std::vector<tesseract_motion_planners::WaypointPtr>& waypoints,
+  std::vector<tesseract_motion_planners::Waypoint::Ptr> generate(const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints,
                                                                const ProcessDefinitionConfig& config) const override
   {
-    std::vector<tesseract_motion_planners::WaypointPtr> new_waypoints;
+    std::vector<tesseract_motion_planners::Waypoint::Ptr> new_waypoints;
     new_waypoints.reserve(waypoints.size());
     for(const auto& waypoint : waypoints)
     {
       assert(waypoint->getType() == tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT);
-      const tesseract_motion_planners::CartesianWaypointPtr& cur_waypoint = std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(waypoint);
-      tesseract_motion_planners::CartesianWaypointPtr new_waypoint = std::make_shared<tesseract_motion_planners::CartesianWaypoint>();
+      const tesseract_motion_planners::CartesianWaypoint::Ptr& cur_waypoint = std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(waypoint);
+      tesseract_motion_planners::CartesianWaypoint::Ptr new_waypoint = std::make_shared<tesseract_motion_planners::CartesianWaypoint>();
       new_waypoint->cartesian_position_ = config.world_offset_direction * cur_waypoint->cartesian_position_ * config.local_offset_direction;
       new_waypoint->coeffs_ = cur_waypoint->coeffs_;
       new_waypoint->is_critical_ = cur_waypoint->is_critical_;

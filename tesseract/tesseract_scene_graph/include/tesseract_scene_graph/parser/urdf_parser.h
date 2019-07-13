@@ -43,7 +43,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
 {
-  typedef std::function<std::string(const std::string&)> ResourceLocatorFn;
+  using ResourceLocatorFn = std::function<std::string(const std::string&)>;
 
   inline Eigen::Isometry3d urdfPose2Eigen(const urdf::Pose& pose)
   {
@@ -88,32 +88,32 @@ namespace tesseract_scene_graph
       }
     }
   }
-  inline JointCalibrationPtr convert(const urdf::JointCalibrationConstSharedPtr& calibration)
+  inline JointCalibration::Ptr convert(const urdf::JointCalibrationConstSharedPtr& calibration)
   {
     if (calibration == nullptr) return nullptr;
 
-    JointCalibrationPtr c(new JointCalibration());
+    JointCalibration::Ptr c(new JointCalibration());
     c->reference_position = calibration->reference_position;
     c->rising = (calibration->rising == nullptr) ? 0 : *(calibration->rising);
     c->falling = (calibration->falling == nullptr) ? 0 : *(calibration->falling);
     return c;
   }
 
-  inline JointDynamicsPtr convert(const urdf::JointDynamicsConstSharedPtr& dynamics)
+  inline JointDynamics::Ptr convert(const urdf::JointDynamicsConstSharedPtr& dynamics)
   {
     if (dynamics == nullptr) return nullptr;
 
-    JointDynamicsPtr d(new JointDynamics());
+    JointDynamics::Ptr d(new JointDynamics());
     d->damping = dynamics->damping;
     d->friction = dynamics->friction;
     return d;
   }
 
-  inline JointLimitsPtr convert(const urdf::JointLimitsConstSharedPtr& limits)
+  inline JointLimits::Ptr convert(const urdf::JointLimitsConstSharedPtr& limits)
   {
     if (limits == nullptr) return nullptr;
 
-    JointLimitsPtr l(new JointLimits());
+    JointLimits::Ptr l(new JointLimits());
     l->lower = limits->lower;
     l->upper = limits->upper;
     l->effort = limits->effort;
@@ -121,22 +121,22 @@ namespace tesseract_scene_graph
     return l;
   }
 
-  inline JointMimicPtr convert(const urdf::JointMimicConstSharedPtr& mimic)
+  inline JointMimic::Ptr convert(const urdf::JointMimicConstSharedPtr& mimic)
   {
     if (mimic == nullptr) return nullptr;
 
-    JointMimicPtr m(new JointMimic());
+    JointMimic::Ptr m(new JointMimic());
     m->offset = mimic->offset;
     m->multiplier = mimic->multiplier;
     m->joint_name = mimic->joint_name;
     return m;
   }
 
-  inline JointSafetyPtr convert(const urdf::JointSafetyConstSharedPtr& safety)
+  inline JointSafety::Ptr convert(const urdf::JointSafetyConstSharedPtr& safety)
   {
     if (safety == nullptr) return nullptr;
 
-    JointSafetyPtr s(new JointSafety());
+    JointSafety::Ptr s(new JointSafety());
     s->soft_upper_limit = safety->soft_upper_limit;
     s->soft_lower_limit = safety->soft_lower_limit;
     s->k_position = safety->k_position;
@@ -144,11 +144,11 @@ namespace tesseract_scene_graph
     return s;
   }
 
-  inline InertialPtr convert(const urdf::InertialConstSharedPtr& inertial)
+  inline Inertial::Ptr convert(const urdf::InertialConstSharedPtr& inertial)
   {
     if (inertial == nullptr) return nullptr;
 
-    InertialPtr i(new Inertial());
+    Inertial::Ptr i(new Inertial());
     i->origin = urdfPose2Eigen(inertial->origin);
     i->mass = inertial->mass;
     i->ixx = inertial->ixx;
@@ -160,9 +160,9 @@ namespace tesseract_scene_graph
     return i;
   }
 
-  inline std::vector<tesseract_geometry::GeometryPtr> convert(const urdf::GeometryConstSharedPtr& geometry, ResourceLocatorFn locator, bool visual = true)
+  inline std::vector<tesseract_geometry::Geometry::Ptr> convert(const urdf::GeometryConstSharedPtr& geometry, ResourceLocatorFn locator, bool visual = true)
   {
-    std::vector<tesseract_geometry::GeometryPtr> g;
+    std::vector<tesseract_geometry::Geometry::Ptr> g;
 
     if (geometry == nullptr) return g;
 
@@ -171,25 +171,25 @@ namespace tesseract_scene_graph
       case urdf::Geometry::BOX:
       {
         const urdf::Box& ug = static_cast<const urdf::Box&>(*geometry);
-        g.push_back(tesseract_geometry::GeometryPtr(new tesseract_geometry::Box(ug.dim.x, ug.dim.y, ug.dim.z)));
+        g.push_back(tesseract_geometry::Geometry::Ptr(new tesseract_geometry::Box(ug.dim.x, ug.dim.y, ug.dim.z)));
         break;
       }
       case urdf::Geometry::SPHERE:
       {
         const urdf::Sphere& ug = static_cast<const urdf::Sphere&>(*geometry);
-        g.push_back(tesseract_geometry::GeometryPtr(new tesseract_geometry::Sphere(ug.radius)));
+        g.push_back(tesseract_geometry::Geometry::Ptr(new tesseract_geometry::Sphere(ug.radius)));
         break;
       }
       case urdf::Geometry::CYLINDER:
       {
         const urdf::Cylinder& ug = static_cast<const urdf::Cylinder&>(*geometry);
-        g.push_back(tesseract_geometry::GeometryPtr(new tesseract_geometry::Cylinder(ug.radius, ug.length)));
+        g.push_back(tesseract_geometry::Geometry::Ptr(new tesseract_geometry::Cylinder(ug.radius, ug.length)));
         break;
       }
       case urdf::Geometry::MESH:
       {
         const urdf::Mesh& ug = static_cast<const urdf::Mesh&>(*geometry);
-        std::vector<tesseract_geometry::MeshPtr> meshes;
+        std::vector<tesseract_geometry::Mesh::Ptr> meshes;
 
         if (visual)
           meshes = createMeshFromPath<tesseract_geometry::Mesh>(locator(ug.filename), Eigen::Vector3d(ug.scale.x, ug.scale.y, ug.scale.z), true, true);
@@ -211,11 +211,11 @@ namespace tesseract_scene_graph
    * @param material The urdf material
    * @return Tesseract Material
    */
-  inline MaterialPtr convert(const urdf::MaterialConstSharedPtr& material)
+  inline Material::Ptr convert(const urdf::MaterialConstSharedPtr& material)
   {
     if (material == nullptr) return nullptr;
 
-    MaterialPtr m(new Material(material->name));
+    Material::Ptr m(new Material(material->name));
     m->color(0) = static_cast<double>(material->color.r);
     m->color(1) = static_cast<double>(material->color.g);
     m->color(2) = static_cast<double>(material->color.b);
@@ -229,15 +229,15 @@ namespace tesseract_scene_graph
    * @param visual The urdf visual
    * @return A tesseract visual object
    */
-  inline VisualPtr convert(const urdf::VisualConstSharedPtr& visual, ResourceLocatorFn locator)
+  inline Visual::Ptr convert(const urdf::VisualConstSharedPtr& visual, ResourceLocatorFn locator)
   {    
     if (visual == nullptr) return nullptr;
 
-    VisualPtr v(new Visual());
+    Visual::Ptr v(new Visual());
     v->name = visual->name;
     v->origin = urdfPose2Eigen(visual->origin);
     v->material = convert(visual->material);
-    std::vector<tesseract_geometry::GeometryPtr> geometries = convert(visual->geometry, locator, true);
+    std::vector<tesseract_geometry::Geometry::Ptr> geometries = convert(visual->geometry, locator, true);
     v->geometry = geometries[0];
 
     return v;
@@ -248,18 +248,18 @@ namespace tesseract_scene_graph
    * @param collision The urdf collision
    * @return A vector of tesseract collision object. When loading mesh files it can contain multiple meshes.
    */
-  inline std::vector<CollisionPtr> convert(const urdf::CollisionConstSharedPtr& collision, ResourceLocatorFn locator)
+  inline std::vector<Collision::Ptr> convert(const urdf::CollisionConstSharedPtr& collision, ResourceLocatorFn locator)
   {
-    if (collision == nullptr) return std::vector<CollisionPtr>();
+    if (collision == nullptr) return std::vector<Collision::Ptr>();
 
-    std::vector<CollisionPtr> cv;
+    std::vector<Collision::Ptr> cv;
     std::string name = collision->name;
     Eigen::Isometry3d pose = urdfPose2Eigen(collision->origin);
-    std::vector<tesseract_geometry::GeometryPtr> geometries = convert(collision->geometry, locator, false);
+    std::vector<tesseract_geometry::Geometry::Ptr> geometries = convert(collision->geometry, locator, false);
 
     if (geometries.size() == 1)
     {
-      CollisionPtr c(new Collision());
+      Collision::Ptr c(new Collision());
       c->name = name;
       c->origin = pose;
       c->geometry = geometries[0];
@@ -270,7 +270,7 @@ namespace tesseract_scene_graph
       int i = 0;
       for (auto g : geometries)
       {
-        CollisionPtr c(new Collision());
+        Collision::Ptr c(new Collision());
         c->name = name + "_" + std::to_string(i);
         c->origin = pose;
         c->geometry = g;
@@ -282,12 +282,12 @@ namespace tesseract_scene_graph
     return cv;
   }
 
-  inline SceneGraphPtr parseURDFModel(const urdf::ModelInterfaceSharedPtr& urdf_model, ResourceLocatorFn locator)
+  inline SceneGraph::Ptr parseURDFModel(const urdf::ModelInterfaceSharedPtr& urdf_model, ResourceLocatorFn locator)
   {
     if (urdf_model == nullptr || locator == nullptr)
         return nullptr;
 
-    SceneGraphPtr g(new SceneGraph());
+    SceneGraph::Ptr g(new SceneGraph());
 
     // Populate Links
     std::vector<urdf::LinkSharedPtr> urdf_links;
@@ -305,7 +305,7 @@ namespace tesseract_scene_graph
       {
         for (const auto& c : link->collision_array)
         {
-          std::vector<CollisionPtr> cv = convert(c, locator);
+          std::vector<Collision::Ptr> cv = convert(c, locator);
           tlink.collision.insert(tlink.collision.end(), cv.begin(), cv.end());
         }
       }
@@ -338,12 +338,12 @@ namespace tesseract_scene_graph
     return g;
   }
 
-  inline SceneGraphPtr parseURDFString(const std::string& urdf_xml_string, ResourceLocatorFn locator)
+  inline SceneGraph::Ptr parseURDFString(const std::string& urdf_xml_string, ResourceLocatorFn locator)
   {
     return parseURDFModel(urdf::parseURDF(urdf_xml_string), locator);
   }
 
-  inline SceneGraphPtr parseURDFFile(const std::string& path, ResourceLocatorFn locator)
+  inline SceneGraph::Ptr parseURDFFile(const std::string& path, ResourceLocatorFn locator)
   {
     std::ifstream ifs(path);
     std::string urdf_xml_string((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));

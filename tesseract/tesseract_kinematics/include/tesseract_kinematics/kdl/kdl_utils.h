@@ -207,7 +207,7 @@ inline bool parseSceneGraph(KDLChainData& results,
     }
 
     results.joint_list[j] = jnt.getName();
-    const tesseract_scene_graph::JointConstPtr& joint = scene_graph.getJoint(jnt.getName());
+    const tesseract_scene_graph::Joint::ConstPtr& joint = scene_graph.getJoint(jnt.getName());
     results.joint_limits(j, 0) = joint->limits->lower;
     results.joint_limits(j, 1) = joint->limits->upper;
     if (j > 0)
@@ -228,11 +228,11 @@ inline bool parseSceneGraph(KDLChainData& results,
   {
     bool found = false;
     const KDL::Segment& seg = results.robot_chain.getSegment(i);
-    tesseract_scene_graph::LinkConstPtr link_model = scene_graph.getLink(seg.getName());
+    tesseract_scene_graph::Link::ConstPtr link_model = scene_graph.getLink(seg.getName());
     while (!found)
     {
       // Check if the link is the root
-      std::vector<tesseract_scene_graph::JointConstPtr> parent_joints = scene_graph.getInboundJoints(link_model->getName());
+      std::vector<tesseract_scene_graph::Joint::ConstPtr> parent_joints = scene_graph.getInboundJoints(link_model->getName());
       if (parent_joints.empty())
       {
         results.segment_index[seg.getName()] = 0;

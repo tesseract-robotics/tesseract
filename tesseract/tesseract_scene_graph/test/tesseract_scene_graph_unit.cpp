@@ -19,8 +19,8 @@ void checkSceneGraph(tesseract_scene_graph::SceneGraph& scene_graph)
 {
   using namespace tesseract_scene_graph;
 
-  std::vector<LinkConstPtr> links = scene_graph.getLinks();
-  std::vector<LinkConstPtr> check_links;
+  std::vector<Link::ConstPtr> links = scene_graph.getLinks();
+  std::vector<Link::ConstPtr> check_links;
   SceneGraph::vertex_iterator i, iend;
   for (boost::tie(i, iend) = boost::vertices(scene_graph); i != iend; ++i)
     check_links.push_back(boost::get(boost::vertex_link, scene_graph)[*i]);
@@ -29,7 +29,7 @@ void checkSceneGraph(tesseract_scene_graph::SceneGraph& scene_graph)
 
   for (const auto& l : links)
   {
-    auto it = std::find_if(check_links.begin(), check_links.end(), [&](const LinkConstPtr& p) { return p.get() == l.get(); });
+    auto it = std::find_if(check_links.begin(), check_links.end(), [&](const Link::ConstPtr& p) { return p.get() == l.get(); });
     EXPECT_TRUE(it != check_links.end());
   }
 }
@@ -216,7 +216,7 @@ TEST(TesseractSceneGraphUnit, LoadMeshUnit)
   using namespace tesseract_scene_graph;
 
   std::string mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.stl";
-  std::vector<tesseract_geometry::MeshPtr> meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file);
+  std::vector<tesseract_geometry::Mesh::Ptr> meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file);
   EXPECT_TRUE(meshes.size() == 1);
   EXPECT_TRUE(meshes[0]->getTriangleCount() == 80);
   EXPECT_TRUE(meshes[0]->getVerticeCount() == 42);
@@ -254,7 +254,7 @@ TEST(TesseractSceneGraphUnit, LoadMeshUnit)
   EXPECT_TRUE(meshes[0]->getVerticeCount() == 8);
 
   mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
-  std::vector<tesseract_geometry::ConvexMeshPtr> convex_meshes = createMeshFromPath<tesseract_geometry::ConvexMesh>(mesh_file, Eigen::Vector3d(1,1,1), false, false);
+  std::vector<tesseract_geometry::ConvexMesh::Ptr> convex_meshes = createMeshFromPath<tesseract_geometry::ConvexMesh>(mesh_file, Eigen::Vector3d(1,1,1), false, false);
   EXPECT_TRUE(convex_meshes.size() == 1);
   EXPECT_TRUE(convex_meshes[0]->getFaceCount() == 6);
   EXPECT_TRUE(convex_meshes[0]->getVerticeCount() == 8);
@@ -294,7 +294,7 @@ TEST(TesseractSceneGraphUnit, LoadURDFUnit)
   std::string urdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
   ResourceLocatorFn locator = locateResource;
-  SceneGraphPtr g = parseURDFFile(urdf_file, locator);
+  SceneGraph::Ptr g = parseURDFFile(urdf_file, locator);
 
   EXPECT_TRUE(g->getJoints().size() == 9);
   EXPECT_TRUE(g->getLinks().size() == 10);
@@ -327,14 +327,14 @@ TEST(TesseractSceneGraphUnit, LoadSRDFUnit)
   std::string srdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
 
   ResourceLocatorFn locator = locateResource;
-  SceneGraphPtr g = parseURDFFile(urdf_file, locator);
+  SceneGraph::Ptr g = parseURDFFile(urdf_file, locator);
 
   SRDFModel srdf;
   EXPECT_TRUE(srdf.initFile(*g, srdf_file));
 
   processSRDFAllowedCollisions(*g, srdf);
 
-  AllowedCollisionMatrixConstPtr acm = g->getAllowedCollisionMatrix();
+  AllowedCollisionMatrix::ConstPtr acm = g->getAllowedCollisionMatrix();
   const AllowedCollisionMatrix::AllowedCollisionEntries& acm_entries = acm->getAllAllowedCollisions();
 
 
@@ -370,7 +370,7 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)
   std::string urdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
   ResourceLocatorFn locator = locateResource;
-  SceneGraphPtr g = parseURDFFile(urdf_file, locator);
+  SceneGraph::Ptr g = parseURDFFile(urdf_file, locator);
 
   KDL::Tree tree;
   EXPECT_TRUE(parseSceneGraph(*g, tree));

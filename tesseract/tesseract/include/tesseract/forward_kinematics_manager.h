@@ -32,6 +32,9 @@ namespace tesseract
 class ForwardKinematicsManager
 {
 public:
+  using Ptr = std::shared_ptr<ForwardKinematicsManager>;
+  using ConstPtr = std::shared_ptr<const ForwardKinematicsManager>;
+
   ForwardKinematicsManager() = default;
   virtual ~ForwardKinematicsManager() = default;
 
@@ -40,7 +43,7 @@ public:
    * @param factory The factory to register
    * @return False if factory already exists, otherwise true.
    */
-  bool registerFwdKinematicsFactory(tesseract_kinematics::ForwardKinematicsFactoryPtr factory)
+  bool registerFwdKinematicsFactory(tesseract_kinematics::ForwardKinematicsFactory::Ptr factory)
   {
     std::string name = factory->getName();
     if(fwd_kin_factories_.find(name) == fwd_kin_factories_.end())
@@ -95,7 +98,7 @@ public:
    * @param name The name of the solver
    * @return If not found it returns a nullptr, otherwise a new instance of the solver.
    */
-  tesseract_kinematics::ForwardKinematicsFactoryConstPtr getFwdKinematicFactory(const std::string& name) const
+  tesseract_kinematics::ForwardKinematicsFactory::ConstPtr getFwdKinematicFactory(const std::string& name) const
   {
     auto it = fwd_kin_factories_.find(name);
     if(it != fwd_kin_factories_.end())
@@ -110,7 +113,7 @@ public:
    * @param solver The solver
    * @return
    */
-  bool addFwdKinematicSolver(tesseract_kinematics::ForwardKinematicsConstPtr solver)
+  bool addFwdKinematicSolver(tesseract_kinematics::ForwardKinematics::ConstPtr solver)
   {
     auto it = fwd_kin_manipulators_.find(std::make_pair(solver->getName(), solver->getSolverName()));
     if(it != fwd_kin_manipulators_.end())
@@ -173,7 +176,7 @@ public:
    * @param name The name of the solver
    * @return If not found returns a nullptr, otherwise a instance of the solver.
    */
-  tesseract_kinematics::ForwardKinematicsPtr getFwdKinematicSolver(const std::string& manipulator, const std::string& name) const
+  tesseract_kinematics::ForwardKinematics::Ptr getFwdKinematicSolver(const std::string& manipulator, const std::string& name) const
   {
     auto it = fwd_kin_manipulators_.find(std::make_pair(manipulator, name));
     if(it != fwd_kin_manipulators_.end())
@@ -187,7 +190,7 @@ public:
    * @param manipulator The name of the manipulator
    * @return If not found returns a nullptr, otherwise a instance of the solver.
    */
-  tesseract_kinematics::ForwardKinematicsPtr getFwdKinematicSolver(const std::string& manipulator) const
+  tesseract_kinematics::ForwardKinematics::Ptr getFwdKinematicSolver(const std::string& manipulator) const
   {
     auto it = fwd_kin_manipulators_default_.find(manipulator);
     if(it != fwd_kin_manipulators_default_.end())
@@ -197,11 +200,9 @@ public:
   }
 
 private:
-  std::unordered_map<std::string, tesseract_kinematics::ForwardKinematicsFactoryConstPtr> fwd_kin_factories_;
-  std::map<std::pair<std::string, std::string>, tesseract_kinematics::ForwardKinematicsConstPtr> fwd_kin_manipulators_;
-  std::unordered_map<std::string, tesseract_kinematics::ForwardKinematicsConstPtr> fwd_kin_manipulators_default_;
+  std::unordered_map<std::string, tesseract_kinematics::ForwardKinematicsFactory::ConstPtr> fwd_kin_factories_;
+  std::map<std::pair<std::string, std::string>, tesseract_kinematics::ForwardKinematics::ConstPtr> fwd_kin_manipulators_;
+  std::unordered_map<std::string, tesseract_kinematics::ForwardKinematics::ConstPtr> fwd_kin_manipulators_default_;
 };
-typedef std::shared_ptr<ForwardKinematicsManager> ForwardKinematicsManagerPtr;
-typedef std::shared_ptr<const ForwardKinematicsManager> ForwardKinematicsManagerConstPtr;
 }
 #endif // TESSERACT_FORWARD_KINEMATICS_MANAGER_H

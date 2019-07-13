@@ -223,7 +223,7 @@ inline static bool dampedPInv(const Eigen::Ref<const Eigen::MatrixXd>& A,
  * @return Kinematics map between group name and kinematics object
  */
 template<class Chain_T, class Tree_T>
-ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::SceneGraphConstPtr& scene_graph,
+ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
                                                  const tesseract_scene_graph::SRDFModel& srdf_model)
 {
   ForwardKinematicsConstPtrMap manipulators;

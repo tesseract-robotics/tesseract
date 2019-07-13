@@ -48,6 +48,9 @@ class ForwardKinematics
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  using Ptr = std::shared_ptr<ForwardKinematics>;
+  using ConstPtr = std::shared_ptr<const ForwardKinematics>;
+
   virtual ~ForwardKinematics() = default;
 
   /**
@@ -157,10 +160,8 @@ public:
 
 };
 
-typedef std::shared_ptr<ForwardKinematics> ForwardKinematicsPtr;
-typedef std::shared_ptr<const ForwardKinematics> ForwardKinematicsConstPtr;
-typedef std::unordered_map<std::string, tesseract_kinematics::ForwardKinematicsPtr> ForwardKinematicsPtrMap;
-typedef std::unordered_map<std::string, tesseract_kinematics::ForwardKinematicsConstPtr> ForwardKinematicsConstPtrMap;
+using ForwardKinematicsPtrMap = std::unordered_map<std::string, ForwardKinematics::Ptr>;
+using ForwardKinematicsConstPtrMap = std::unordered_map<std::string, ForwardKinematics::ConstPtr>;
 }  // namespace tesseract_kinematics
 
 #endif  // TESSERACT_KINEMATICS_FORWARD_KINEMATICS_H

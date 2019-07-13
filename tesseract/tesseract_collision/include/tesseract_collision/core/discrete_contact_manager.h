@@ -44,6 +44,9 @@ class DiscreteContactManager
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  using Ptr = std::shared_ptr<DiscreteContactManager>;
+  using ConstPtr = std::shared_ptr<const DiscreteContactManager>;
+
   virtual ~DiscreteContactManager() = default;
 
   /**
@@ -154,7 +157,6 @@ public:
    */
   virtual void contactTest(ContactResultMap& collisions, const ContactTestType& type) = 0;
 };
-typedef std::shared_ptr<DiscreteContactManager> DiscreteContactManagerPtr;
-typedef std::shared_ptr<const DiscreteContactManager> DiscreteContactManagerConstPtr;
+
 }
 #endif  // TESSERACT_COLLISION_DISCRETE_CONTACT_MANAGER_H

@@ -46,6 +46,10 @@ enum class WaypointType
 class Waypoint
 {
 public:
+
+  using Ptr = std::shared_ptr<Waypoint>;
+  using ConstPtr = std::shared_ptr<const Waypoint>;
+
   Waypoint() {}
   /** @brief Returns the type of waypoint so that it may be cast back to the derived type */
   WaypointType getType() const { return waypoint_type_; }
@@ -67,6 +71,10 @@ protected:
 class JointWaypoint : public Waypoint
 {
 public:
+
+  using Ptr = std::shared_ptr<JointWaypoint>;
+  using ConstPtr = std::shared_ptr<const JointWaypoint>;
+
   // TODO: constructor that takes joint position vector
   JointWaypoint() { waypoint_type_ = WaypointType::JOINT_WAYPOINT; }
   /** Stores the joint values associated with this waypoint (radians). Must be in the same order as the joints in the
@@ -78,6 +86,9 @@ class CartesianWaypoint : public Waypoint
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+  using Ptr = std::shared_ptr<CartesianWaypoint>;
+  using ConstPtr = std::shared_ptr<const CartesianWaypoint>;
 
   CartesianWaypoint() { waypoint_type_ = WaypointType::CARTESIAN_WAYPOINT; }
   /** @brief Contains the position and orientation of this waypoint */
@@ -100,6 +111,10 @@ public:
 class JointTolerancedWaypoint : public Waypoint
 {
 public:
+
+  using Ptr = std::shared_ptr<JointTolerancedWaypoint>;
+  using ConstPtr = std::shared_ptr<const JointTolerancedWaypoint>;
+
   // TODO: constructor that takes joint position vector
   JointTolerancedWaypoint() { waypoint_type_ = WaypointType::JOINT_TOLERANCED_WAYPOINT; }
   /** @brief Stores the joint values associated with this waypoint (radians) */
@@ -113,15 +128,6 @@ public:
   The allowed range is joint_positions-lower_tolerance_ to joint_positions_+upper_tolerance*/
   Eigen::VectorXd lower_tolerance_;
 };
-
-typedef std::shared_ptr<Waypoint> WaypointPtr;
-typedef std::shared_ptr<const Waypoint> WaypointConstPtr;
-typedef std::shared_ptr<JointWaypoint> JointWaypointPtr;
-typedef std::shared_ptr<const JointWaypoint> JointWaypointConstPtr;
-typedef std::shared_ptr<JointTolerancedWaypoint> JointTolerancedWaypointPtr;
-typedef std::shared_ptr<const JointTolerancedWaypoint> JointTolerancedWaypointConstPtr;
-typedef std::shared_ptr<CartesianWaypoint> CartesianWaypointPtr;
-typedef std::shared_ptr<const CartesianWaypoint> CartesianWaypointConstPtr;
 
 }  // namespace tesseract_motion_planners
 #endif

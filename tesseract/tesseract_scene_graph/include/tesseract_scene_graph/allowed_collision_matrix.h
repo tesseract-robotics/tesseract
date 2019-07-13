@@ -18,6 +18,9 @@ class AllowedCollisionMatrix
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  using Ptr = std::shared_ptr<AllowedCollisionMatrix>;
+  using ConstPtr = std::shared_ptr<const AllowedCollisionMatrix>;
+
   using LinkNamesPair = std::pair<const std::string, const std::string>;
   struct PairHash
   {
@@ -119,8 +122,6 @@ private:
       return std::make_pair(link_name2, link_name1);
   }
 };
-typedef std::shared_ptr<AllowedCollisionMatrix> AllowedCollisionMatrixPtr;
-typedef std::shared_ptr<const AllowedCollisionMatrix> AllowedCollisionMatrixConstPtr;
 
 }
 #endif // TESSERACT_SCENE_GRAPH_ALLOWED_COLLISION_MATRIX_H

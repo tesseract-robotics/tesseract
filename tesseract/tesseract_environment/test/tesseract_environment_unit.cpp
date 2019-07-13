@@ -41,7 +41,7 @@ std::string locateResource(const std::string& url)
   return mod_url;
 }
 
-SceneGraphPtr getSceneGraph()
+SceneGraph::Ptr getSceneGraph()
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
@@ -49,20 +49,20 @@ SceneGraphPtr getSceneGraph()
   return tesseract_scene_graph::parseURDFFile(path, locator);
 }
 
-void runContactManagerCloneTest(const tesseract_environment::EnvironmentPtr& env)
+void runContactManagerCloneTest(const tesseract_environment::Environment::Ptr& env)
 {
   // Test after clone if active list correct
-  tesseract_collision::DiscreteContactManagerPtr discrete_manager = env->getDiscreteContactManager();
+  tesseract_collision::DiscreteContactManager::Ptr discrete_manager = env->getDiscreteContactManager();
   const std::vector<std::string>& e_active_list = env->getActiveLinkNames();
   const std::vector<std::string>& d_active_list = discrete_manager->getActiveCollisionObjects();
   EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), d_active_list.begin()));
 
-  tesseract_collision::ContinuousContactManagerPtr cast_manager = env->getContinuousContactManager();
+  tesseract_collision::ContinuousContactManager::Ptr cast_manager = env->getContinuousContactManager();
   const std::vector<std::string>& c_active_list = cast_manager->getActiveCollisionObjects();
   EXPECT_TRUE(std::equal(e_active_list.begin(), e_active_list.end(), c_active_list.begin()));
 }
 
-void runAddandRemoveLinkTest(const tesseract_environment::EnvironmentPtr& env)
+void runAddandRemoveLinkTest(const tesseract_environment::Environment::Ptr& env)
 {
   Link link_1("link_n1");
   Link link_2("link_n2");
@@ -99,7 +99,7 @@ void runAddandRemoveLinkTest(const tesseract_environment::EnvironmentPtr& env)
   env->getSceneGraph()->saveDOT("/tmp/after_remove_link_unit.dot");
 }
 
-void runMoveLinkandJointTest(const tesseract_environment::EnvironmentPtr& env)
+void runMoveLinkandJointTest(const tesseract_environment::Environment::Ptr& env)
 {
   Link link_1("link_n1");
   Link link_2("link_n2");
@@ -116,7 +116,7 @@ void runMoveLinkandJointTest(const tesseract_environment::EnvironmentPtr& env)
   joint_2.type = JointType::FIXED;
 
   env->addLink(link_1, joint_1);
-  EnvStateConstPtr state = env->getCurrentState();
+  EnvState::ConstPtr state = env->getCurrentState();
   EXPECT_TRUE(state->transforms.find(link_1.getName()) != state->transforms.end());
 
   env->addLink(link_2, joint_2);
@@ -141,7 +141,7 @@ void runMoveLinkandJointTest(const tesseract_environment::EnvironmentPtr& env)
   env->getSceneGraph()->saveDOT("/tmp/after_move_joint_unit.dot");
 }
 
-void runChangeJointOriginTest(const tesseract_environment::EnvironmentPtr& env)
+void runChangeJointOriginTest(const tesseract_environment::Environment::Ptr& env)
 {
   Link link_1("link_n1");
 
@@ -151,7 +151,7 @@ void runChangeJointOriginTest(const tesseract_environment::EnvironmentPtr& env)
   joint_1.type = JointType::FIXED;
 
   env->addLink(link_1, joint_1);
-  EnvStateConstPtr state = env->getCurrentState();
+  EnvState::ConstPtr state = env->getCurrentState();
   ASSERT_TRUE(state->transforms.find(link_1.getName()) != state->transforms.end());
 
   env->getSceneGraph()->saveDOT("/tmp/before_change_joint_origin_unit.dot");
@@ -168,10 +168,10 @@ void runChangeJointOriginTest(const tesseract_environment::EnvironmentPtr& env)
 
 TEST(TesseractEnvironmentUnit, KDLEnvCloneContactManagerUnit)
 {
-  tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
 
-  tesseract_environment::KDLEnvPtr env(new tesseract_environment::KDLEnv);
+  tesseract_environment::KDLEnv::Ptr env(new tesseract_environment::KDLEnv);
   EXPECT_TRUE(env != nullptr);
 
   bool success = env->init(scene_graph);
@@ -192,10 +192,10 @@ TEST(TesseractEnvironmentUnit, KDLEnvCloneContactManagerUnit)
 
 TEST(TesseractEnvironmentUnit, KDLEnvAddandRemoveLink)
 {
-  SceneGraphPtr scene_graph = getSceneGraph();
+  SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
 
-  KDLEnvPtr env(new KDLEnv());
+  KDLEnv::Ptr env(new KDLEnv());
   EXPECT_TRUE(env != nullptr);
 
   bool success = env->init(scene_graph);
@@ -216,10 +216,10 @@ TEST(TesseractEnvironmentUnit, KDLEnvAddandRemoveLink)
 
 TEST(TesseractEnvironmentUnit, KDLEnvMoveLinkandJoint)
 {
-  SceneGraphPtr scene_graph = getSceneGraph();
+  SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
 
-  KDLEnvPtr env(new KDLEnv());
+  KDLEnv::Ptr env(new KDLEnv());
   EXPECT_TRUE(env != nullptr);
 
   bool success = env->init(scene_graph);
@@ -240,10 +240,10 @@ TEST(TesseractEnvironmentUnit, KDLEnvMoveLinkandJoint)
 
 TEST(TesseractEnvironmentUnit, KDLEnvChangeJointOrigin)
 {
-  SceneGraphPtr scene_graph = getSceneGraph();
+  SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
 
-  KDLEnvPtr env(new KDLEnv());
+  KDLEnv::Ptr env(new KDLEnv());
   EXPECT_TRUE(env != nullptr);
 
   bool success = env->init(scene_graph);

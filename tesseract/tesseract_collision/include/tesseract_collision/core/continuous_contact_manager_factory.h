@@ -34,7 +34,7 @@ namespace tesseract_collision
 class ContinuousContactManagerFactory
 {
 public:
-  using CreateMethod = std::function<ContinuousContactManagerPtr()>;
+  using CreateMethod = std::function<ContinuousContactManager::Ptr()>;
   ContinuousContactManagerFactory() = default;
 
   bool registar(const std::string name, CreateMethod create_function)
@@ -47,7 +47,7 @@ public:
     }
     return false;
   }
-  ContinuousContactManagerPtr create(const std::string& name) const
+  ContinuousContactManager::Ptr create(const std::string& name) const
   {
     auto it = continuous_types.find(name);
     if (it != continuous_types.end())

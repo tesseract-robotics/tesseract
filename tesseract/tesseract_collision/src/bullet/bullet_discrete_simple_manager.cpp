@@ -60,13 +60,13 @@ BulletDiscreteSimpleManager::BulletDiscreteSimpleManager()
   contact_distance_ = 0;
 }
 
-DiscreteContactManagerPtr BulletDiscreteSimpleManager::clone() const
+DiscreteContactManager::Ptr BulletDiscreteSimpleManager::clone() const
 {
-  BulletDiscreteSimpleManagerPtr manager(new BulletDiscreteSimpleManager());
+  BulletDiscreteSimpleManager::Ptr manager(new BulletDiscreteSimpleManager());
 
   for (const auto& cow : link2cow_)
   {
-    COWPtr new_cow = cow.second->clone();
+    COW::Ptr new_cow = cow.second->clone();
 
     assert(new_cow->getCollisionShape());
     assert(new_cow->getCollisionShape()->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE);
@@ -90,7 +90,7 @@ bool BulletDiscreteSimpleManager::addCollisionObject(const std::string& name,
                                                      const tesseract_common::VectorIsometry3d& shape_poses,
                                                      bool enabled)
 {
-  COWPtr new_cow = createCollisionObject(name, mask_id, shapes, shape_poses, enabled);
+  COW::Ptr new_cow = createCollisionObject(name, mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
     addCollisionObject(new_cow);
@@ -173,7 +173,7 @@ void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::vector<st
 
   for (auto& co : link2cow_)
   {
-    COWPtr& cow = co.second;
+    COW::Ptr& cow = co.second;
 
     updateCollisionObjectFilters(active_, *cow, false);
 
@@ -203,7 +203,7 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
 
   for (auto cow1_iter = cows_.begin(); cow1_iter != (cows_.end() - 1); cow1_iter++)
   {
-    const COWPtr& cow1 = *cow1_iter;
+    const COW::Ptr& cow1 = *cow1_iter;
 
     if (cow1->m_collisionFilterGroup != btBroadphaseProxy::KinematicFilter)
       break;
@@ -221,7 +221,7 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
     {
       assert(!cdata.done);
 
-      const COWPtr& cow2 = *cow2_iter;
+      const COW::Ptr& cow2 = *cow2_iter;
       cow2->getAABB(min_aabb[1], max_aabb[1]);
 
       bool aabb_check = (min_aabb[0][0] <= max_aabb[1][0] && max_aabb[0][0] >= min_aabb[1][0]) &&
@@ -260,7 +260,7 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
   }
 }
 
-void BulletDiscreteSimpleManager::addCollisionObject(const COWPtr& cow)
+void BulletDiscreteSimpleManager::addCollisionObject(const COW::Ptr& cow)
 {
   link2cow_[cow->getName()] = cow;
 
