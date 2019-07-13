@@ -30,7 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
-#include <tesseract_planners/trajopt/trajopt_planner.h>
+#include <tesseract_motion_planners/trajopt/trajopt_motion_planner.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_msgs/ModifyEnvironment.h>
@@ -210,11 +210,6 @@ int main(int argc, char** argv)
   ROS_ERROR("Press enter to continue");
   std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-  // Create the planner and the responses that will store the results
-  tesseract_planners::TrajOptPlanner planner;
-  tesseract_planners::PlannerResponse planning_response;
-  tesseract_planners::PlannerResponse planning_response_place;
-
   // Choose the manipulator and end effector link
   std::string manip = "Manipulator";
   std::string end_effector = "iiwa_link_ee";
@@ -345,7 +340,7 @@ int main(int argc, char** argv)
   trajopt::TrajOptProbPtr pick_prob = ConstructProblem(pci);
 
   // Set the optimization parameters (Most are being left as defaults)
-  tesseract_planners::TrajOptPlannerConfig config(pick_prob);
+  tesseract_motion_planners::TrajOptPlannerConfig config(pick_prob);
   config.params.max_iter = 100;
 
   // Create Plot Callback
@@ -363,8 +358,16 @@ int main(int argc, char** argv)
     config.callbacks.push_back(trajopt::WriteCallback(stream_ptr, pick_prob));
   }
 
+  // Create the planner and the responses that will store the results
+  tesseract_motion_planners::TrajOptMotionPlanner planner;
+  tesseract_motion_planners::PlannerResponse planning_response;
+  tesseract_motion_planners::PlannerResponse planning_response_place;
+
+  // Set Planner Configuration
+  planner.setConfiguration(config);
+
   // Solve problem. Results are stored in the response
-  planner.solve(planning_response, config);
+  planner.solve(planning_response);
 
   if (write_to_file_)
     stream_ptr->close();
@@ -544,7 +547,7 @@ int main(int argc, char** argv)
   trajopt::TrajOptProbPtr place_prob = ConstructProblem(pci_place);
 
   // Set the optimization parameters
-  tesseract_planners::TrajOptPlannerConfig config_place(place_prob);
+  tesseract_motion_planners::TrajOptPlannerConfig config_place(place_prob);
   config_place.params.max_iter = 100;
 
   // Create Plot Callback
@@ -562,8 +565,11 @@ int main(int argc, char** argv)
     config_place.callbacks.push_back(trajopt::WriteCallback(stream_ptr_place, place_prob));
   }
 
+  // Set Planner Configuration
+  planner.setConfiguration(config_place);
+
   // Solve problem
-  planner.solve(planning_response_place, config_place);
+  planner.solve(planning_response_place);
 
   if (write_to_file_)
     stream_ptr_place->close();

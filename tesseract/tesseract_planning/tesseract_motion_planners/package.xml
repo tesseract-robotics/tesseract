@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>tesseract_motion_planners</name>
+  <version>0.1.0</version>
+  <description>This contains tesseract planners</description>
+
+  <maintainer email="levi.armstrong@swri.org">Levi Armstrong</maintainer>
+  <license>Apache 2.0</license>
+  <author >Levi Armstrong</author>
+
+  <depend>tesseract_environment</depend>
+  <depend>tesseract_kinematics</depend>
+  <depend>tesseract_common</depend>
+  <depend>trajopt</depend>
+  <depend>ompl</depend>
+  <depend>console_bridge</depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>

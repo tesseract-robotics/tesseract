@@ -28,6 +28,7 @@ The planning framework (Tesseract) was designed to be lightweight, limiting the 
 
 .. Warning:: These packages are under heavy development and are subject to change.
 
+
 See [issue #66](https://github.com/ros-industrial-consortium/tesseract/issues/66)
 
 ## Clone Repository
@@ -35,6 +36,12 @@ See [issue #66](https://github.com/ros-industrial-consortium/tesseract/issues/66
 This repository contains submodules so use the *--recursive* flag as shown below.
 
 `git clone --recursive`
+
+## Building Tests
+
+Must pass the -DENABLE_TESTS=ON to cmake when wanting to build tests.
+
+.. NOTE: If you are building using catkin tools, use `catkin build --force-cmake -DENABLE_TESTS=ON`.
 
 ## Build Branch Sphinx Documentation
 
