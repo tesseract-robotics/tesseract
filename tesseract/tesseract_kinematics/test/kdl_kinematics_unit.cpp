@@ -38,7 +38,7 @@ std::string locateResource(const std::string& url)
   return mod_url;
 }
 
-tesseract_scene_graph::SceneGraphPtr getSceneGraph()
+tesseract_scene_graph::SceneGraph::Ptr getSceneGraph()
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
@@ -266,7 +266,7 @@ void runInvKinTest(const tesseract_kinematics::InverseKinematics& inv_kin, const
 TEST(TesseractKinematicsUnit, KDLKinChainActiveLinkNamesUnit)
 {
   tesseract_kinematics::KDLFwdKinChain kin;
-  tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(kin.init(scene_graph, "base_link", "tool0", "manip"));
 
   runActiveLinkNamesTest(kin, false);
@@ -275,7 +275,7 @@ TEST(TesseractKinematicsUnit, KDLKinChainActiveLinkNamesUnit)
 TEST(TesseractKinematicsUnit, KDLKinTreeActiveLinkNamesUnit)
 {
   tesseract_kinematics::KDLFwdKinTree kin;
-  tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   std::vector<std::string> joint_names = { "joint_a1", "joint_a2", "joint_a3", "joint_a4",
                                            "joint_a5", "joint_a6", "joint_a7" };
 
@@ -296,7 +296,7 @@ TEST(TesseractKinematicsUnit, KDLKinTreeActiveLinkNamesUnit)
 TEST(TesseractKinematicsUnit, KDLKinChainForwardKinematicUnit)
 {
   tesseract_kinematics::KDLFwdKinChain kin;
-  tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(kin.init(scene_graph, "base_link", "tool0", "manip"));
 
   runFwdKinTest(kin);
@@ -305,7 +305,7 @@ TEST(TesseractKinematicsUnit, KDLKinChainForwardKinematicUnit)
 TEST(TesseractKinematicsUnit, KDLKinTreeForwardKinematicUnit)
 {
   tesseract_kinematics::KDLFwdKinTree kin;
-  tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   std::vector<std::string> joint_names = { "joint_a1", "joint_a2", "joint_a3", "joint_a4",
                                            "joint_a5", "joint_a6", "joint_a7" };
 
@@ -326,7 +326,7 @@ TEST(TesseractKinematicsUnit, KDLKinTreeForwardKinematicUnit)
 TEST(TesseractKinematicsUnit, KDLKinChainJacobianUnit)
 {
   tesseract_kinematics::KDLFwdKinChain kin;
-  tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(kin.init(scene_graph, "base_link", "tool0", "manip"));
 
   runJacobianTest(kin);
@@ -335,7 +335,7 @@ TEST(TesseractKinematicsUnit, KDLKinChainJacobianUnit)
 TEST(TesseractKinematicsUnit, KDLKinTreeJacobianUnit)
 {
   tesseract_kinematics::KDLFwdKinTree kin;
-  tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   std::vector<std::string> joint_names = { "joint_a1", "joint_a2", "joint_a3", "joint_a4",
                                            "joint_a5", "joint_a6", "joint_a7" };
 
@@ -357,7 +357,7 @@ TEST(TesseractKinematicsUnit, KDLKinChainLMAInverseKinematicUnit)
 {
   tesseract_kinematics::KDLInvKinChainLMA inv_kin;
   tesseract_kinematics::KDLFwdKinChain fwd_kin;
-  tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(inv_kin.init(scene_graph, "base_link", "tool0", "manip"));
   EXPECT_TRUE(fwd_kin.init(scene_graph, "base_link", "tool0", "manip"));
 
@@ -368,7 +368,7 @@ TEST(TesseractKinematicsUnit, KDLKinChainNRInverseKinematicUnit)
 {
   tesseract_kinematics::KDLInvKinChainNR inv_kin;
   tesseract_kinematics::KDLFwdKinChain fwd_kin;
-  tesseract_scene_graph::SceneGraphPtr scene_graph = getSceneGraph();
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(inv_kin.init(scene_graph, "base_link", "tool0", "manip"));
   EXPECT_TRUE(fwd_kin.init(scene_graph, "base_link", "tool0", "manip"));
 

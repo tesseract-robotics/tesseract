@@ -88,7 +88,7 @@ void runTest(DiscreteContactManager& checker, double dist_tol, double nearest_to
 
   // Clone and perform collision check
   ContactResultMap cloned_result;
-  DiscreteContactManagerPtr cloned_checker = checker.clone();
+  DiscreteContactManager::Ptr cloned_checker = checker.clone();
 
   cloned_checker->contactTest(cloned_result, ContactTestType::CLOSEST);
 

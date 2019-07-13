@@ -57,6 +57,9 @@ class Material
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  using Ptr = std::shared_ptr<Material>;
+  using ConstPtr = std::shared_ptr<const Material>;
+
   Material(const std::string& name) : name_(name) { this->clear(); }
 
   const std::string& getName() const { return name_; }
@@ -72,13 +75,14 @@ public:
 private:
   std::string name_;
 };
-typedef std::shared_ptr<Material> MaterialPtr;
-typedef std::shared_ptr<const Material> MaterialConstPtr;
 
 class Inertial
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+  using Ptr = std::shared_ptr<Inertial>;
+  using ConstPtr = std::shared_ptr<const Inertial>;
 
   Inertial() { this->clear(); }
   Eigen::Isometry3d origin;
@@ -92,20 +96,21 @@ public:
     ixx = ixy = ixz = iyy = iyz = izz = 0;
   }
 };
-typedef std::shared_ptr<Inertial> InertialPtr;
-typedef std::shared_ptr<const Inertial> InertialConstPtr;
 
 class Visual
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  using Ptr = std::shared_ptr<Visual>;
+  using ConstPtr = std::shared_ptr<const Visual>;
+
   Visual() { this->clear(); }
   Eigen::Isometry3d origin;
-  tesseract_geometry::GeometryPtr geometry;
+  tesseract_geometry::Geometry::Ptr geometry;
 
   std::string material_name;
-  MaterialPtr material;
+  Material::Ptr material;
 
   void clear()
   {
@@ -118,17 +123,18 @@ public:
 
   std::string name;
 };
-typedef std::shared_ptr<Visual> VisualPtr;
-typedef std::shared_ptr<const Visual> VisualConstPtr;
 
 class Collision
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  using Ptr = std::shared_ptr<Collision>;
+  using ConstPtr = std::shared_ptr<const Collision>;
+
   Collision() { this->clear(); }
   Eigen::Isometry3d origin;
-  tesseract_geometry::GeometryPtr geometry;
+  tesseract_geometry::Geometry::Ptr geometry;
 
   void clear()
   {
@@ -140,24 +146,26 @@ public:
   std::string name;
 
 };
-typedef std::shared_ptr<Collision> CollisionPtr;
-typedef std::shared_ptr<const Collision> CollisionConstPtr;
 
 class Link
 {
 public:
+
+  using Ptr = std::shared_ptr<Link>;
+  using ConstPtr = std::shared_ptr<const Link>;
+
   Link(std::string name) : name_(name) { this->clear(); }
 
   const std::string& getName() const { return name_; }
 
   /// inertial element
-  InertialPtr inertial;
+  Inertial::Ptr inertial;
 
   /// Visual Elements
-  std::vector<VisualPtr> visual;
+  std::vector<Visual::Ptr> visual;
 
   /// Collision Elements
-  std::vector<CollisionPtr> collision;
+  std::vector<Collision::Ptr> collision;
 
   void clear()
   {
@@ -169,10 +177,6 @@ public:
 private:
   const std::string name_;
 };
-
-typedef std::shared_ptr<Link> LinkPtr;
-typedef std::shared_ptr<const Link> LinkConstPtr;
-
 
 }
 

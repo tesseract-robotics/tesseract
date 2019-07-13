@@ -244,7 +244,7 @@ JointWidget* VisualizationWidget::LinkFactory::createJoint(VisualizationWidget* 
   return new JointWidget(robot, joint);
 }
 
-void VisualizationWidget::load(const tesseract_scene_graph::SceneGraphConstPtr& scene_graph,
+void VisualizationWidget::load(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
                  bool visual,
                  bool collision,
                  bool show_active,
@@ -270,8 +270,8 @@ void VisualizationWidget::load(const tesseract_scene_graph::SceneGraphConstPtr& 
   // Properties are not added to display until changedLinkTreeStyle() is called
   // (below).
   {
-    std::vector<tesseract_scene_graph::LinkConstPtr> links = scene_graph->getLinks();
-    for (const tesseract_scene_graph::LinkConstPtr& tlink : links)
+    std::vector<tesseract_scene_graph::Link::ConstPtr> links = scene_graph->getLinks();
+    for (const tesseract_scene_graph::Link::ConstPtr& tlink : links)
       addLink(*tlink);
 
     root_link_ = links_[scene_graph->getRoot()];
@@ -281,8 +281,8 @@ void VisualizationWidget::load(const tesseract_scene_graph::SceneGraphConstPtr& 
   // Properties are not added to display until changedLinkTreeStyle() is called
   // (below).
   {   
-    std::vector<tesseract_scene_graph::JointConstPtr> joints = scene_graph->getJoints();
-    for (const tesseract_scene_graph::JointConstPtr& tjoint : joints)
+    std::vector<tesseract_scene_graph::Joint::ConstPtr> joints = scene_graph->getJoints();
+    for (const tesseract_scene_graph::Joint::ConstPtr& tjoint : joints)
       addJoint(*tjoint);
   }
 

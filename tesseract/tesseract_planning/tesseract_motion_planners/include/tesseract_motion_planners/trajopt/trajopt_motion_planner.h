@@ -37,10 +37,10 @@ namespace tesseract_motion_planners
 {
 struct TrajOptPlannerConfig
 {
-  TrajOptPlannerConfig(trajopt::TrajOptProbPtr prob) : prob(prob) {}
+  TrajOptPlannerConfig(trajopt::TrajOptProb::Ptr prob) : prob(prob) {}
   virtual ~TrajOptPlannerConfig() {}
   /** @brief Trajopt problem to be solved (Required) */
-  trajopt::TrajOptProbPtr prob;
+  trajopt::TrajOptProb::Ptr prob;
 
   /** @brief Optimization parameters to be used (Optional) */
   sco::BasicTrustRegionSQPParameters params;

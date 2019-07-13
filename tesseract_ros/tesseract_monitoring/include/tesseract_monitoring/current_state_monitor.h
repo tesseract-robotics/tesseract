@@ -68,14 +68,14 @@ public:
    * @param robot_model The current kinematic model to build on
    * @param tf A pointer to the tf transformer to use
    */
-  CurrentStateMonitor(const tesseract_environment::EnvironmentConstPtr &env, const tesseract::ForwardKinematicsManagerConstPtr& kinematics_manager);
+  CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr &env, const tesseract::ForwardKinematicsManager::ConstPtr& kinematics_manager);
 
   /** @brief Constructor.
    *  @param robot_model The current kinematic model to build on
    *  @param tf A pointer to the tf transformer to use
    *  @param nh A ros::NodeHandle to pass node specific options
    */
-  CurrentStateMonitor(const tesseract_environment::EnvironmentConstPtr& env, const tesseract::ForwardKinematicsManagerConstPtr& kinematics_manager, ros::NodeHandle nh);
+  CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env, const tesseract::ForwardKinematicsManager::ConstPtr& kinematics_manager, ros::NodeHandle nh);
 
   ~CurrentStateMonitor();
 
@@ -92,7 +92,7 @@ public:
   bool isActive() const;
 
   /** @brief Get the RobotModel for which we are monitoring state */
-  const tesseract_environment::EnvironmentConstPtr& getEnvironment() const { return env_; }
+  const tesseract_environment::Environment::ConstPtr& getEnvironment() const { return env_; }
   /** @brief Get the name of the topic being monitored. Returns an empty string if the monitor is inactive. */
   std::string getMonitoredTopic() const;
 
@@ -122,14 +122,14 @@ public:
 
   /** @brief Get the current state
    *  @return Returns the current state */
-  tesseract_environment::EnvStatePtr getCurrentState() const;
+  tesseract_environment::EnvState::Ptr getCurrentState() const;
 
   /** @brief Get the time stamp for the current state */
   ros::Time getCurrentStateTime() const;
 
   /** @brief Get the current state and its time stamp
    *  @return Returns a pair of the current state and its time stamp */
-  std::pair<tesseract_environment::EnvStatePtr, ros::Time> getCurrentStateAndTime() const;
+  std::pair<tesseract_environment::EnvState::Ptr, ros::Time> getCurrentStateAndTime() const;
 
   /** @brief Get the current state values as a map from joint names to joint state values
    *  @return Returns the map from joint names to joint state values*/
@@ -175,10 +175,10 @@ private:
   bool isPassiveOrMimicDOF(const std::string& dof) const;
 
   ros::NodeHandle nh_;
-  tesseract_environment::EnvironmentConstPtr env_;
+  tesseract_environment::Environment::ConstPtr env_;
   tesseract_environment::EnvState env_state_;
   int last_environment_revision_;
-  tesseract::ForwardKinematicsManagerConstPtr kinematics_manager_;
+  tesseract::ForwardKinematicsManager::ConstPtr kinematics_manager_;
   std::map<std::string, ros::Time> joint_time_;
   bool state_monitor_started_;
   bool copy_dynamics_;  // Copy velocity and effort from joint_state

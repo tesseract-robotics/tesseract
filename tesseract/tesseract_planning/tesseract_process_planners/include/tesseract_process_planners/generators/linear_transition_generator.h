@@ -14,14 +14,14 @@ public:
   LinearTransitionGenerator(int step_count) : step_count_(step_count) {}
   ~LinearTransitionGenerator() override = default;
 
-  std::vector<tesseract_motion_planners::WaypointPtr> generate(const tesseract_motion_planners::WaypointPtr& start_waypoint,
-                                                               const tesseract_motion_planners::WaypointPtr& end_waypoint) const override
+  std::vector<tesseract_motion_planners::Waypoint::Ptr> generate(const tesseract_motion_planners::Waypoint::Ptr& start_waypoint,
+                                                               const tesseract_motion_planners::Waypoint::Ptr& end_waypoint) const override
   {
     assert(start_waypoint->getType() == tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT);
     assert(end_waypoint->getType() == tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT);
 
-    const tesseract_motion_planners::CartesianWaypointPtr& w1 = std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(start_waypoint);
-    const tesseract_motion_planners::CartesianWaypointPtr& w2 = std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(end_waypoint);
+    const tesseract_motion_planners::CartesianWaypoint::Ptr& w1 = std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(start_waypoint);
+    const tesseract_motion_planners::CartesianWaypoint::Ptr& w2 = std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(end_waypoint);
 
     return tesseract_motion_planners::interpolate(*w1, *w2, step_count_);
   }

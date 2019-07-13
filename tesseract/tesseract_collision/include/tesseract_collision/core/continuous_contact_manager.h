@@ -42,6 +42,9 @@ class ContinuousContactManager
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  using Ptr = std::shared_ptr<ContinuousContactManager>;
+  using ConstPtr = std::shared_ptr<const ContinuousContactManager>;
+
   virtual ~ContinuousContactManager() = default;
 
   /**
@@ -197,8 +200,7 @@ public:
    */
   virtual void contactTest(ContactResultMap& collisions, const ContactTestType& type) = 0;
 };
-typedef std::shared_ptr<ContinuousContactManager> ContinuousContactManagerPtr;
-typedef std::shared_ptr<const ContinuousContactManager> ContinuousContactManagerConstPtr;
+
 }
 
 #endif  // TESSERACT_COLLISION_CONTINUOUS_CONTACT_MANAGER_H

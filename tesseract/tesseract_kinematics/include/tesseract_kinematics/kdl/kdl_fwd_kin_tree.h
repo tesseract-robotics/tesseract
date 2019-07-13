@@ -52,6 +52,9 @@ class KDLFwdKinTree : public ForwardKinematics
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  using Ptr = std::shared_ptr<KDLFwdKinTree>;
+  using ConstPtr = std::shared_ptr<const KDLFwdKinTree>;
+
   KDLFwdKinTree() : initialized_(false), solver_name_("KDLFwdKinTree") {}
   KDLFwdKinTree(const KDLFwdKinTree& kin);
 
@@ -82,13 +85,13 @@ public:
 
   const Eigen::MatrixX2d& getLimits() const override;
 
-  tesseract_scene_graph::SceneGraphConstPtr getSceneGraph() const { return scene_graph_; }
+  tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const { return scene_graph_; }
   unsigned int numJoints() const override { return static_cast<unsigned>(joint_list_.size()); }
   const std::string& getBaseLinkName() const override { return scene_graph_->getRoot(); }
   const std::string& getTipLinkName() const override { return link_list_.back(); } //TODO: Should make this be provided
   const std::string& getName() const override { return name_; }
   const std::string& getSolverName() const override { return solver_name_; }
-  ForwardKinematicsPtr clone() const override { return std::make_shared<KDLFwdKinTree>(*this); }
+  ForwardKinematics::Ptr clone() const override { return std::make_shared<KDLFwdKinTree>(*this); }
 
   /**
    * @brief Initializes Forward Kinematics as tree
@@ -99,7 +102,7 @@ public:
    * @param start_state The initial start state for the tree. This should inlclude all joints in the scene graph
    * @return True if init() completes successfully
    */
-  bool init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
+  bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
             const std::vector<std::string>& joint_names,
             const std::string name,
             std::unordered_map<std::string, double> start_state = std::unordered_map<std::string, double>());
@@ -127,7 +130,7 @@ public:
 
 private:
   bool initialized_;                                            /**< Identifies if the object has been initialized */
-  tesseract_scene_graph::SceneGraphConstPtr scene_graph_;       /**< Tesseract Scene Graph */
+  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;       /**< Tesseract Scene Graph */
   KDL::Tree kdl_tree_;                                          /**< KDL tree object */
   std::string name_;                                            /**< Name of the kinematic chain */
   std::string solver_name_;                                     /**< Name of this solver */
@@ -160,7 +163,5 @@ private:
 
 };  // class KDLKinematicTree
 
-typedef std::shared_ptr<KDLFwdKinTree> KDLFwdKinTreePtr;
-typedef std::shared_ptr<const KDLFwdKinTree> KDLFwdKinTreeConstPtr;
 }
 #endif  // TESSERACT_KINEMATICS_KDL_KINEMATIC_TREE_H

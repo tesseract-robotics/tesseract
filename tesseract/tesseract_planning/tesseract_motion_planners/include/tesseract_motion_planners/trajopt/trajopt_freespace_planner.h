@@ -51,9 +51,9 @@ struct TrajOptFreespacePlannerConfig
 
   TrajOptFreespacePlannerConfig() {}
   /** @brief Determines the constraint placed at the start of the trajectory */
-  WaypointPtr start_waypoint_;
+  Waypoint::Ptr start_waypoint_;
   /** @brief Determines the constraint placed at the end of the trajectory */
-  WaypointPtr end_waypoint_;
+  Waypoint::Ptr end_waypoint_;
   // TODO: These are waypoints the planner must hit in between
   std::vector<Waypoint> intermediate_waypoints;
   /** @brief The total number of timesteps used in the freespace motion. Default: 20 */
@@ -69,7 +69,7 @@ struct TrajOptFreespacePlannerConfig
    *
    * An example use case is setting it to be at the center of the joint limits. This tends to pull the robot away from
    * singularities */
-  JointWaypointConstPtr configuration_ = std::make_shared<JointWaypoint>();
+  JointWaypoint::ConstPtr configuration_ = std::make_shared<JointWaypoint>();
 
   /** @brief If true, collision checking will be enabled. Default: true*/
   bool collision_check_ = true;

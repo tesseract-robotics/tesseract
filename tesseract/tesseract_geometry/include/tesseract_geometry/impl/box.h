@@ -35,13 +35,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
-  class Box;
-  typedef std::shared_ptr<Box> BoxPtr;
-  typedef std::shared_ptr<const Box> BoxConstPtr;
-
   class Box : public Geometry
   {
   public:
+
+    using Ptr = std::shared_ptr<Box>;
+    using ConstPtr = std::shared_ptr<const Box>;
+
     Box(double x, double y, double z) : Geometry(GeometryType::BOX), x_(x), y_(y), z_(z) {}
     ~Box() override = default;
 
@@ -49,7 +49,7 @@ namespace tesseract_geometry
     double getY() const { return y_; }
     double getZ() const { return z_; }
 
-    GeometryPtr clone() const override { return BoxPtr(new Box(x_, y_, z_)); }
+    Geometry::Ptr clone() const override { return Box::Ptr(new Box(x_, y_, z_)); }
 
   private:
     double x_;

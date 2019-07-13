@@ -37,13 +37,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
-  class Octree;
-  typedef std::shared_ptr<Octree> OctreePtr;
-  typedef std::shared_ptr<const Octree> OctreeConstPtr;
 
   class Octree : public Geometry
   {
   public:
+
+    using Ptr = std::shared_ptr<Octree>;
+    using ConstPtr = std::shared_ptr<const Octree>;
+
     enum SubType
     {
       BOX,
@@ -57,7 +58,7 @@ namespace tesseract_geometry
     const std::shared_ptr<const octomap::OcTree>& getOctree() const { return octree_; }
     SubType getSubType() const { return sub_type_; }
 
-    GeometryPtr clone() const override { return OctreePtr(new Octree(octree_, sub_type_)); }
+    Geometry::Ptr clone() const override { return Octree::Ptr(new Octree(octree_, sub_type_)); }
 
     /**
      * @brief Octrees are typically generated from 3D sensor data so this method

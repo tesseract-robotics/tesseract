@@ -46,12 +46,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_monitoring
 {
-CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::EnvironmentConstPtr& env, const tesseract::ForwardKinematicsManagerConstPtr& kinematics_manager)
+CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env, const tesseract::ForwardKinematicsManager::ConstPtr& kinematics_manager)
   : CurrentStateMonitor(env, kinematics_manager, ros::NodeHandle())
 {
 }
 
-CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::EnvironmentConstPtr &env, const tesseract::ForwardKinematicsManagerConstPtr& kinematics_manager, ros::NodeHandle nh)
+CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr &env, const tesseract::ForwardKinematicsManager::ConstPtr& kinematics_manager, ros::NodeHandle nh)
   : nh_(nh)
   , env_(env)
   , env_state_(*env->getCurrentState())
@@ -64,7 +64,7 @@ CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environmen
 }
 
 CurrentStateMonitor::~CurrentStateMonitor() { stopStateMonitor(); }
-tesseract_environment::EnvStatePtr CurrentStateMonitor::getCurrentState() const
+tesseract_environment::EnvState::Ptr CurrentStateMonitor::getCurrentState() const
 {
   boost::mutex::scoped_lock slock(state_update_lock_);
   return std::make_shared<tesseract_environment::EnvState>(env_state_);
@@ -76,7 +76,7 @@ ros::Time CurrentStateMonitor::getCurrentStateTime() const
   return current_state_time_;
 }
 
-std::pair<tesseract_environment::EnvStatePtr, ros::Time> CurrentStateMonitor::getCurrentStateAndTime() const
+std::pair<tesseract_environment::EnvState::Ptr, ros::Time> CurrentStateMonitor::getCurrentStateAndTime() const
 {
   boost::mutex::scoped_lock slock(state_update_lock_);
   return std::make_pair(std::make_shared<tesseract_environment::EnvState>(env_state_), current_state_time_);
@@ -288,7 +288,7 @@ bool CurrentStateMonitor::waitForCompleteState(const std::string& manip, double 
   std::vector<std::string> missing_joints;
   if (!haveCompleteState(missing_joints))
   {
-    const tesseract_kinematics::ForwardKinematicsConstPtr& jmg = kinematics_manager_->getFwdKinematicSolver(manip);
+    const tesseract_kinematics::ForwardKinematics::ConstPtr& jmg = kinematics_manager_->getFwdKinematicSolver(manip);
     if (jmg)
     {
       std::set<std::string> mj;

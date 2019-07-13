@@ -53,6 +53,10 @@ class Link;
 class JointDynamics
 {
 public:
+
+  using Ptr = std::shared_ptr<JointDynamics>;
+  using ConstPtr = std::shared_ptr<const JointDynamics>;
+
   JointDynamics() { this->clear(); }
   double damping;
   double friction;
@@ -63,12 +67,15 @@ public:
     friction = 0;
   }
 };
-typedef std::shared_ptr<JointDynamics> JointDynamicsPtr;
-typedef std::shared_ptr<const JointDynamics> JointDynamicsConstPtr;
+
 
 class JointLimits
 {
 public:
+
+  using Ptr = std::shared_ptr<JointLimits>;
+  using ConstPtr = std::shared_ptr<const JointLimits>;
+
   JointLimits() { this->clear(); }
   double lower;
   double upper;
@@ -83,13 +90,15 @@ public:
     velocity = 0;
   }
 };
-typedef std::shared_ptr<JointLimits> JointLimitsPtr;
-typedef std::shared_ptr<const JointLimits> JointLimitsConstPtr;
 
 /// \brief Parameters for Joint Safety Controllers
 class JointSafety
 {
 public:
+
+  using Ptr = std::shared_ptr<JointSafety>;
+  using ConstPtr = std::shared_ptr<const JointSafety>;
+
   /// clear variables on construction
   JointSafety() { this->clear(); }
 
@@ -137,12 +146,14 @@ public:
     k_velocity = 0;
   }
 };
-typedef std::shared_ptr<JointSafety> JointSafetyPtr;
-typedef std::shared_ptr<const JointSafety> JointSafetyConstPtr;
 
 class JointCalibration
 {
 public:
+
+  using Ptr = std::shared_ptr<JointCalibration>;
+  using ConstPtr = std::shared_ptr<const JointCalibration>;
+
   JointCalibration() { this->clear(); }
   double reference_position;
   double rising, falling;
@@ -152,12 +163,14 @@ public:
     reference_position = 0;
   }
 };
-typedef std::shared_ptr<JointCalibration> JointCalibrationPtr;
-typedef std::shared_ptr<const JointCalibration> JointCalibrationConstPtr;
 
 class JointMimic
 {
 public:
+
+  using Ptr = std::shared_ptr<JointMimic>;
+  using ConstPtr = std::shared_ptr<const JointMimic>;
+
   JointMimic() { this->clear(); }
   double offset;
   double multiplier;
@@ -170,8 +183,6 @@ public:
     joint_name.clear();
   }
 };
-typedef std::shared_ptr<JointMimic> JointMimicPtr;
-typedef std::shared_ptr<const JointMimic> JointMimicConstPtr;
 
 enum class JointType
 {
@@ -182,6 +193,9 @@ class Joint
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+  using Ptr = std::shared_ptr<Joint>;
+  using ConstPtr = std::shared_ptr<const Joint>;
 
   Joint(std::string name) : name_(name) { this->clear(); }
 
@@ -212,19 +226,19 @@ public:
   Eigen::Isometry3d parent_to_joint_origin_transform;
 
   /// Joint Dynamics
-  JointDynamicsPtr dynamics;
+  JointDynamics::Ptr dynamics;
 
   /// Joint Limits
-  JointLimitsPtr limits;
+  JointLimits::Ptr limits;
 
   /// Unsupported Hidden Feature
-  JointSafetyPtr safety;
+  JointSafety::Ptr safety;
 
   /// Unsupported Hidden Feature
-  JointCalibrationPtr calibration;
+  JointCalibration::Ptr calibration;
 
   /// Option to Mimic another Joint
-  JointMimicPtr mimic;
+  JointMimic::Ptr mimic;
 
   void clear()
   {
@@ -242,8 +256,6 @@ public:
 private:
   const std::string name_;
 };
-typedef std::shared_ptr<Joint> JointPtr;
-typedef std::shared_ptr<const Joint> JointConstPtr;
 
 inline std::ostream& operator<<(std::ostream & os, const JointType& type)
 {

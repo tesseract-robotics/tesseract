@@ -145,8 +145,8 @@ public:
 
   /** \brief Get the name of this monitor */
   const std::string& getName() const { return monitor_name_; }
-  const tesseract_scene_graph::SceneGraphConstPtr& getSceneGraph() const { return tesseract_->getEnvironment()->getSceneGraph(); }
-  const tesseract_scene_graph::SRDFModelConstPtr& getSRDF() const { return tesseract_->getSRDFModel(); }
+  const tesseract_scene_graph::SceneGraph::ConstPtr& getSceneGraph() const { return tesseract_->getEnvironment()->getSceneGraph(); }
+  const tesseract_scene_graph::SRDFModel::ConstPtr& getSRDF() const { return tesseract_->getSRDFModel(); }
   /** @brief <b>Avoid this function!</b>  Returns an @b
    *         unsafe pointer to the current planning scene.
    * @warning Most likely you do not want to call this function
@@ -161,22 +161,22 @@ public:
    * @see LockedPlanningSceneRO
    * @see LockedPlanningSceneRW.
    * @return A pointer to the current planning scene.*/
-  const tesseract_environment::EnvironmentPtr& getEnvironment() { return tesseract_->getEnvironment(); }
+  const tesseract_environment::Environment::Ptr& getEnvironment() { return tesseract_->getEnvironment(); }
   /*! @brief <b>Avoid this function!</b>  Returns an @b
    *         unsafe pointer to the current planning scene.
    * @copydetails PlanningSceneMonitor::getPlanningScene() */
-  const tesseract_environment::EnvironmentConstPtr& getEnvironment() const { return tesseract_->getEnvironmentConst(); }
+  const tesseract_environment::Environment::ConstPtr& getEnvironment() const { return tesseract_->getEnvironmentConst(); }
   /** @brief Return true if the scene \e scene can be updated directly
       or indirectly by this monitor. This function will return true if
       the pointer of the scene is the same as the one maintained,
       or if a parent of the scene is the one maintained. */
-  bool updatesEnvironment(const tesseract_environment::EnvironmentConstPtr& env) const;
+  bool updatesEnvironment(const tesseract_environment::Environment::ConstPtr& env) const;
 
   /** @brief Return true if the scene \e scene can be updated directly
       or indirectly by this monitor. This function will return true if
       the pointer of the scene is the same as the one maintained,
       or if a parent of the scene is the one maintained. */
-  bool updatesEnvironment(const tesseract_environment::EnvironmentPtr& env) const;
+  bool updatesEnvironment(const tesseract_environment::Environment::Ptr& env) const;
 
   /** @brief Get the stored robot description
    *  @return An instance of the stored robot description*/
@@ -415,12 +415,12 @@ public:
 
   const EnvironmentMonitorPtr& getEnvironmentMonitor() { return env_monitor_; }
   operator bool() const { return env_monitor_ && env_monitor_->getEnvironment(); }
-  operator const tesseract_environment::EnvironmentConstPtr&() const
+  operator const tesseract_environment::Environment::ConstPtr&() const
   {
     return static_cast<const EnvironmentMonitor*>(env_monitor_.get())->getEnvironment();
   }
 
-  const tesseract_environment::EnvironmentConstPtr& operator->() const
+  const tesseract_environment::Environment::ConstPtr& operator->() const
   {
     return static_cast<const EnvironmentMonitor*>(env_monitor_.get())->getEnvironment();
   }
@@ -496,8 +496,8 @@ public:
   {
   }
 
-  operator const tesseract_environment::EnvironmentPtr&() { return env_monitor_->getEnvironment(); }
-  const tesseract_environment::EnvironmentPtr& operator->() { return env_monitor_->getEnvironment(); }
+  operator const tesseract_environment::Environment::Ptr&() { return env_monitor_->getEnvironment(); }
+  const tesseract_environment::Environment::Ptr& operator->() { return env_monitor_->getEnvironment(); }
 };
 }
 

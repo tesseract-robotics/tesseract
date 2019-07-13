@@ -49,7 +49,7 @@ struct TrajOptArrayPlannerConfig
 
   TrajOptArrayPlannerConfig() {}
   /** @brief Vector of target waypoints given as constraints to the optimization */
-  std::vector<WaypointPtr> target_waypoints_;
+  std::vector<Waypoint::Ptr> target_waypoints_;
 
   /** @brief Selects the type of initialization used for raster path. If GIVEN_TRAJ, then the seed_trajectory_ must be
    * set */
@@ -61,7 +61,7 @@ struct TrajOptArrayPlannerConfig
    *
    * An example use case is setting it to be at the center of the joint limits. This tends to pull the robot away from
    * singularities */
-  JointWaypointConstPtr configuration_ = std::make_shared<JointWaypoint>();
+  JointWaypoint::ConstPtr configuration_ = std::make_shared<JointWaypoint>();
 
   /** @brief If true, collision checking will be enabled. Default: true*/
   bool collision_check_ = true;

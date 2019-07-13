@@ -180,12 +180,12 @@ int main(int argc, char** argv)
   // Add simulated box to environment
   Link link_box("box");
 
-  VisualPtr visual = std::make_shared<Visual>();
+  Visual::Ptr visual = std::make_shared<Visual>();
   visual->origin = Eigen::Isometry3d::Identity();
   visual->geometry = std::make_shared<tesseract_geometry::Box>(box_side, box_side, box_side);
   link_box.visual.push_back(visual);
 
-  CollisionPtr collision = std::make_shared<Collision>();
+  Collision::Ptr collision = std::make_shared<Collision>();
   collision->origin = visual->origin;
   collision->geometry = visual->geometry;
   link_box.collision.push_back(collision);
@@ -337,7 +337,7 @@ int main(int argc, char** argv)
   }
 
   // Create the pick problem
-  trajopt::TrajOptProbPtr pick_prob = ConstructProblem(pci);
+  trajopt::TrajOptProb::Ptr pick_prob = ConstructProblem(pci);
 
   // Set the optimization parameters (Most are being left as defaults)
   tesseract_motion_planners::TrajOptPlannerConfig config(pick_prob);
@@ -544,7 +544,7 @@ int main(int argc, char** argv)
   }
 
   // Create the place problem
-  trajopt::TrajOptProbPtr place_prob = ConstructProblem(pci_place);
+  trajopt::TrajOptProb::Ptr place_prob = ConstructProblem(pci_place);
 
   // Set the optimization parameters
   tesseract_motion_planners::TrajOptPlannerConfig config_place(place_prob);

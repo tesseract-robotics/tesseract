@@ -666,8 +666,8 @@ Ogre::MaterialPtr LinkWidget::getMaterialForLink(const tesseract_scene_graph::Li
   Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().create(material_name_generator.generate(), "rviz");
   mat->getTechnique(0)->setLightingEnabled(true);
 
-  tesseract_scene_graph::VisualPtr visual = nullptr;
-  std::vector<tesseract_scene_graph::VisualPtr>::const_iterator vi;
+  tesseract_scene_graph::Visual::Ptr visual = nullptr;
+  std::vector<tesseract_scene_graph::Visual::Ptr>::const_iterator vi;
   for (vi = link.visual.begin(); vi != link.visual.end(); vi++)
   {
     if ((*vi) && material_name != "" && (*vi)->material_name == material_name)
@@ -1295,10 +1295,10 @@ void LinkWidget::setOctomapColor(double z_pos,
 
 void LinkWidget::createCollision(const tesseract_scene_graph::Link& link)
 {
-  std::vector<tesseract_scene_graph::CollisionPtr>::const_iterator vi;
+  std::vector<tesseract_scene_graph::Collision::Ptr>::const_iterator vi;
   for (vi = link.collision.begin(); vi != link.collision.end(); vi++)
   {
-    tesseract_scene_graph::CollisionPtr collision = *vi;
+    tesseract_scene_graph::Collision::Ptr collision = *vi;
     if (collision && collision->geometry)
     {
       createEntityForGeometryElement(link, *collision->geometry, collision->origin, "", false);
@@ -1322,10 +1322,10 @@ void LinkWidget::createCollision(const tesseract_scene_graph::Link& link)
 
 void LinkWidget::createVisual(const tesseract_scene_graph::Link& link)
 {
-  std::vector<tesseract_scene_graph::VisualPtr>::const_iterator vi;
+  std::vector<tesseract_scene_graph::Visual::Ptr>::const_iterator vi;
   for (vi = link.visual.begin(); vi != link.visual.end(); vi++)
   {
-    tesseract_scene_graph::VisualPtr visual = *vi;
+    tesseract_scene_graph::Visual::Ptr visual = *vi;
     if (visual && visual->geometry)
     {
       createEntityForGeometryElement(link, *visual->geometry, visual->origin, visual->material_name, true);

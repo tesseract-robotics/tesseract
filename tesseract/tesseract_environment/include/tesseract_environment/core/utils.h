@@ -51,7 +51,7 @@ namespace tesseract_environment
    * @param active
    */
   inline void getActiveLinkNamesRecursive(std::vector<std::string>& active_links,
-                                          const tesseract_scene_graph::SceneGraphConstPtr& scene_graph,
+                                          const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
                                           const std::string& current_link,
                                           bool active)
   {
@@ -97,13 +97,13 @@ namespace tesseract_environment
     {
       tesseract_collision::ContactResultMap collisions;
 
-      tesseract_environment::EnvStatePtr state0 = env.getState(joint_names, traj.row(iStep));
-      tesseract_environment::EnvStatePtr state1 = env.getState(joint_names, traj.row(iStep + 1));
+      tesseract_environment::EnvState::Ptr state0 = env.getState(joint_names, traj.row(iStep));
+      tesseract_environment::EnvState::Ptr state1 = env.getState(joint_names, traj.row(iStep + 1));
 
       for (const auto& link_name : manager.getActiveCollisionObjects())
         manager.setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
 
-      manager.contactTest(collisions, tesseract_collision::ContactTestTypes::FIRST);
+      manager.contactTest(collisions, tesseract_collision::ContactTestType::FIRST);
 
       if (collisions.size() > 0)
       {
@@ -142,12 +142,12 @@ namespace tesseract_environment
     {
       tesseract_collision::ContactResultMap collisions;
 
-      tesseract_environment::EnvStatePtr state0 = env.getState(joint_names, traj.row(iStep));
+      tesseract_environment::EnvState::Ptr state0 = env.getState(joint_names, traj.row(iStep));
 
       for (const auto& link_name : manager.getActiveCollisionObjects())
         manager.setCollisionObjectsTransform(link_name, state0->transforms[link_name]);
 
-      manager.contactTest(collisions, tesseract_collision::ContactTestTypes::FIRST);
+      manager.contactTest(collisions, tesseract_collision::ContactTestType::FIRST);
 
       if (collisions.size() > 0)
       {
@@ -160,5 +160,5 @@ namespace tesseract_environment
 
     return found;
   }
-  }    // namespace tesseract_environment
+}    // namespace tesseract_environment
 #endif // TESSERACT_ENVIRONMENT_UTILS_H

@@ -20,8 +20,8 @@ struct OmplPlanParameters
 class ChainOmplInterface
 {
 public:
-  ChainOmplInterface(tesseract_environment::EnvironmentConstPtr env,
-                     tesseract_kinematics::ForwardKinematicsConstPtr kin);
+  ChainOmplInterface(tesseract_environment::Environment::ConstPtr env,
+                     tesseract_kinematics::ForwardKinematics::ConstPtr kin);
 
   boost::optional<ompl::geometric::PathGeometric> plan(ompl::base::PlannerPtr planner,
                                                        const std::vector<double>& from,
@@ -40,9 +40,9 @@ private:
 
 private:
   ompl::geometric::SimpleSetupPtr ss_;
-  tesseract_environment::EnvironmentConstPtr env_;
-  tesseract_kinematics::ForwardKinematicsConstPtr kin_;
-  tesseract_collision::DiscreteContactManagerPtr contact_manager_;
+  tesseract_environment::Environment::ConstPtr env_;
+  tesseract_kinematics::ForwardKinematics::ConstPtr kin_;
+  tesseract_collision::DiscreteContactManager::Ptr contact_manager_;
   std::vector<std::string> joint_names_;
   std::vector<std::string> link_names_;
 };

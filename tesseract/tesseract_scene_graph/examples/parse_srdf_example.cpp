@@ -52,7 +52,7 @@ int main(int /*argc*/, char** /*argv*/)
   std::string srdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
 
   ResourceLocatorFn locator = locateResource;
-  SceneGraphPtr g = parseURDFFile(urdf_file, locator);
+  SceneGraph::Ptr g = parseURDFFile(urdf_file, locator);
 
   SRDFModel srdf;
   bool success = srdf.initFile(*g, srdf_file);
@@ -60,6 +60,6 @@ int main(int /*argc*/, char** /*argv*/)
 
   processSRDFAllowedCollisions(*g, srdf);
 
-  AllowedCollisionMatrixConstPtr acm = g->getAllowedCollisionMatrix();
+  AllowedCollisionMatrix::ConstPtr acm = g->getAllowedCollisionMatrix();
   const AllowedCollisionMatrix::AllowedCollisionEntries& acm_entries = acm->getAllAllowedCollisions();
 }

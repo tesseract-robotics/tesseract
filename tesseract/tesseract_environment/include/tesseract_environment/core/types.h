@@ -43,41 +43,43 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_environment
 {
 
-namespace BodyTypes
-{
-enum BodyType
+enum class BodyType
 {
   ROBOT_LINK = 0,    /**< @brief These are links at the creation of the environment */
   ROBOT_ATTACHED = 1 /**< @brief These are links that are added after initial creation */
 };
-}
-typedef BodyTypes::BodyType BodyType;
 
 /** @brief This holds a state of the environment */
 struct EnvState
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  using Ptr = std::shared_ptr<EnvState>;
+  using ConstPtr = std::shared_ptr<const EnvState>;
+
   std::unordered_map<std::string, double> joints;
   tesseract_common::TransformMap transforms;
 };
-typedef std::shared_ptr<EnvState> EnvStatePtr;
-typedef std::shared_ptr<const EnvState> EnvStateConstPtr;
+
 
 /**
  * @brief The AdjacencyMapPair struct
  */
 struct AdjacencyMapPair
 {
+  using Ptr = std::shared_ptr<AdjacencyMapPair>;
+  using ConstPtr = std::shared_ptr<const AdjacencyMapPair>;
+
   std::string link_name;
   Eigen::Isometry3d transform;
 };
-typedef std::shared_ptr<AdjacencyMapPair> AdjacencyMapPairPtr;
-typedef std::shared_ptr<const AdjacencyMapPair> AdjacencyMapPairConstPtr;
 
 class AdjacencyMap
 {
 public:
+
+  using Ptr = std::shared_ptr<AdjacencyMap>;
+  using ConstPtr = std::shared_ptr<const AdjacencyMap>;
 
   /**
    * @brief Create a adjacency map provided state(map_links) and nearst parent in the active_links.
@@ -90,7 +92,7 @@ public:
    * @param active_links
    * @param state
    */
-  AdjacencyMap(const tesseract_scene_graph::SceneGraphConstPtr& scene_graph,
+  AdjacencyMap(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
                const std::vector<std::string>& active_links,
                const tesseract_common::TransformMap& state)
   {
@@ -101,7 +103,7 @@ public:
 
       if (std::find(active_links.begin(), active_links.end(), ml.first) != active_links.end())
       {
-        AdjacencyMapPairPtr pair = std::make_shared<AdjacencyMapPair>();
+        AdjacencyMapPair::Ptr pair = std::make_shared<AdjacencyMapPair>();
         pair->link_name = ml.first;
         pair->transform.setIdentity();
         adjacency_map_[ml.first] = pair;
@@ -118,7 +120,7 @@ public:
         std::vector<std::string>::const_iterator it = std::find(active_links.begin(), active_links.end(), ial);
         if (it != active_links.end())
         {
-          AdjacencyMapPairPtr pair = std::make_shared<AdjacencyMapPair>();
+          AdjacencyMapPair::Ptr pair = std::make_shared<AdjacencyMapPair>();
           pair->link_name = ial;
           pair->transform = state.at(ial).inverse() * ml.second;
           adjacency_map_[ml.first] = pair;
@@ -144,7 +146,7 @@ public:
    * @param link_name Name of link
    * @return If the link does not have a associated kinematics link it return nullptr, otherwise return the pair.
    */
-  AdjacencyMapPairConstPtr getLinkMapping(const std::string& link_name) const
+  AdjacencyMapPair::ConstPtr getLinkMapping(const std::string& link_name) const
   {
     const auto& it = adjacency_map_.find(link_name);
     if (it == adjacency_map_.end())
@@ -155,22 +157,9 @@ public:
 
 private:
   std::vector<std::string> active_link_names_;
-  std::unordered_map<std::string, AdjacencyMapPairConstPtr> adjacency_map_;
+  std::unordered_map<std::string, AdjacencyMapPair::ConstPtr> adjacency_map_;
 };
-typedef std::shared_ptr<AdjacencyMap> AdjacencyMapPtr;
-typedef std::shared_ptr<const AdjacencyMap> AdjacencyMapConstPtr;
 
-///** @brief ObjectColorMap Stores Object color in a 4d vector as RGBA*/
-//struct ObjectColor
-//{
-//  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-//  VectorVector4d visual;
-//  VectorVector4d collision;
-//};
-//typedef AlignedUnorderedMap<std::string, ObjectColor> ObjectColorMap;
-//typedef std::shared_ptr<ObjectColorMap> ObjectColorMapPtr;
-//typedef std::shared_ptr<const ObjectColorMap> ObjectColorMapConstPtr;
 }
 
 #endif  // TESSERACT_ENVIRONMENT_TYPES_H

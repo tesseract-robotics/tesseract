@@ -36,13 +36,15 @@ class KDLEnv : public Environment
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  using Ptr = std::shared_ptr<KDLEnv>;
+  using ConstPtr = std::shared_ptr<const KDLEnv>;
+
   KDLEnv() : Environment() {}
 
-  bool init(tesseract_scene_graph::SceneGraphPtr scene_graph) override;
+  bool init(tesseract_scene_graph::SceneGraph::Ptr scene_graph) override;
 
 };
-typedef std::shared_ptr<KDLEnv> KDLEnvPtr;
-typedef std::shared_ptr<const KDLEnv> KDLEnvConstPtr;
+
 }
 
 #endif  // TESSERACT_ENVIRONMENT_KDL_ENV_H

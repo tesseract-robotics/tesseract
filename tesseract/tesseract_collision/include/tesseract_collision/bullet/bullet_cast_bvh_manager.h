@@ -53,13 +53,17 @@ namespace tesseract_collision_bullet
 class BulletCastBVHManager : public ContinuousContactManager
 {
 public:
+
+  using Ptr = std::shared_ptr<BulletCastBVHManager>;
+  using ConstPtr = std::shared_ptr<const BulletCastBVHManager>;
+
   BulletCastBVHManager();
   ~BulletCastBVHManager() override;
 
   static std::string name() { return "BulletCastBVHManager"; }
-  static ContinuousContactManagerPtr create() { return std::make_shared<BulletCastBVHManager>(); }
+  static ContinuousContactManager::Ptr create() { return std::make_shared<BulletCastBVHManager>(); }
 
-  ContinuousContactManagerPtr clone() const override;
+  ContinuousContactManager::Ptr clone() const override;
 
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,
@@ -109,7 +113,7 @@ public:
    * @brief A a bullet collision object to the manager
    * @param cow The tesseract bullet collision object
    */
-  void addCollisionObject(const COWPtr& cow);
+  void addCollisionObject(const COW::Ptr& cow);
 
 private:
   std::vector<std::string> active_; /**< @brief A list of the active collision objects */
@@ -129,9 +133,8 @@ private:
    * @param cow The Collision object
    * @param collisions The collision results
    */
-  void contactTest(const COWPtr& cow, ContactTestData& collisions);
+  void contactTest(const COW::Ptr& cow, ContactTestData& collisions);
 };
-typedef std::shared_ptr<BulletCastBVHManager> BulletCastBVHManagerPtr;
 }
 }
 

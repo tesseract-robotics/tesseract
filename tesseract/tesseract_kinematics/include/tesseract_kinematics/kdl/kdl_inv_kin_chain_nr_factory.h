@@ -40,7 +40,7 @@ public:
 
   InverseKinematicsFactoryType getType() const override { return InverseKinematicsFactoryType::CHAIN; }
 
-  InverseKinematicsPtr create(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
+  InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
                               const std::string& base_link,
                               const std::string& tip_link,
                               const std::string name) const override

@@ -51,13 +51,17 @@ namespace tesseract_collision_bullet
 class BulletDiscreteBVHManager : public DiscreteContactManager
 {
 public:
+
+  using Ptr = std::shared_ptr<BulletDiscreteBVHManager>;
+  using ConstPtr = std::shared_ptr<const BulletDiscreteBVHManager>;
+
   BulletDiscreteBVHManager();
   ~BulletDiscreteBVHManager() override;
 
   static std::string name() { return "BulletDiscreteBVHManager"; }
-  static DiscreteContactManagerPtr create() { return std::make_shared<BulletDiscreteBVHManager>(); }
+  static DiscreteContactManager::Ptr create() { return std::make_shared<BulletDiscreteBVHManager>(); }
 
-  DiscreteContactManagerPtr clone() const override;
+  DiscreteContactManager::Ptr clone() const override;
 
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,
@@ -97,7 +101,7 @@ public:
    * @brief A a bullet collision object to the manager
    * @param cow The tesseract bullet collision object
    */
-  void addCollisionObject(const COWPtr& cow);
+  void addCollisionObject(const COW::Ptr& cow);
 
   /**
    * @brief Return collision objects
@@ -122,9 +126,9 @@ private:
    * @param cow The Collision object
    * @param collisions The collision results
    */
-  void contactTest(const COWPtr& cow, ContactTestData& collisions);
+  void contactTest(const COW::Ptr& cow, ContactTestData& collisions);
 };
-typedef std::shared_ptr<BulletDiscreteBVHManager> BulletDiscreteBVHManagerPtr;
+
 }
 }
 #endif  // TESSERACT_COLLISION_BULLET_DISCRETE_BVH_MANAGERS_H

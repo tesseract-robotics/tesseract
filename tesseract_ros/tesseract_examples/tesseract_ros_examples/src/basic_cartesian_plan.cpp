@@ -66,7 +66,7 @@ static Tesseract::Ptr tesseract_ = std::make_shared<Tesseract>();
 static ros::ServiceClient modify_env_rviz;
 static ros::ServiceClient get_env_changes_rviz;
 
-TrajOptProbPtr jsonMethod()
+TrajOptProb::Ptr jsonMethod()
 {
   ros::NodeHandle nh;
   std::string trajopt_config;
@@ -164,13 +164,13 @@ bool addPointCloud()
   // Add octomap to environment
   Link link_octomap("octomap_attached");
 
-  VisualPtr visual = std::make_shared<Visual>();
+  Visual::Ptr visual = std::make_shared<Visual>();
   visual->origin = Eigen::Isometry3d::Identity();
   visual->origin.translation() = Eigen::Vector3d(1, 0, 0);
   visual->geometry = std::make_shared<tesseract_geometry::Octree>(octree, tesseract_geometry::Octree::BOX);
   link_octomap.visual.push_back(visual);
 
-  CollisionPtr collision = std::make_shared<Collision>();
+  Collision::Ptr collision = std::make_shared<Collision>();
   collision->origin = visual->origin;
   collision->geometry = visual->geometry;
   link_octomap.collision.push_back(collision);
@@ -183,7 +183,7 @@ bool addPointCloud()
   return tesseract_->getEnvironment()->addLink(link_octomap, joint_octomap);
 }
 
-TrajOptProbPtr cppMethod()
+TrajOptProb::Ptr cppMethod()
 {
   ProblemConstructionInfo pci(tesseract_);
 
@@ -198,7 +198,7 @@ TrajOptProbPtr cppMethod()
   pci.kin = pci.getManipulator(pci.basic_info.manip);
 
   // Populate Init Info
-  EnvStateConstPtr current_state = pci.env->getCurrentState();
+  EnvState::ConstPtr current_state = pci.env->getCurrentState();
   Eigen::VectorXd start_pos;
   start_pos.resize(pci.kin->numJoints());
   int cnt = 0;
@@ -305,7 +305,7 @@ int main(int argc, char** argv)
   util::gLogLevel = util::LevelInfo;
 
   // Setup Problem
-  TrajOptProbPtr prob;
+  TrajOptProb::Ptr prob;
   if (method_ == "cpp")
     prob = cppMethod();
   else
@@ -315,8 +315,8 @@ int main(int argc, char** argv)
   ROS_INFO("basic cartesian plan example");
 
   std::vector<ContactResultMap> collisions;
-  ContinuousContactManagerPtr manager = prob->GetEnv()->getContinuousContactManager();
-  AdjacencyMapPtr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
+  ContinuousContactManager::Ptr manager = prob->GetEnv()->getContinuousContactManager();
+  AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
                                                                                         prob->GetKin()->getActiveLinkNames(),
                                                                                         prob->GetEnv()->getCurrentState()->transforms);
 

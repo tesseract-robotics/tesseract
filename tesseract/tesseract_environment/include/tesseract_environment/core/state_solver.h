@@ -47,9 +47,12 @@ class StateSolver
 {
 public:
 
+  using Ptr = std::shared_ptr<StateSolver>;
+  using ConstPtr = std::shared_ptr<const StateSolver>;
+
   virtual ~StateSolver() = default;
 
-  virtual bool init(tesseract_scene_graph::SceneGraphConstPtr scene_graph) = 0;
+  virtual bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph) = 0;
 
   /**
    * @brief Set the current state of the solver
@@ -70,20 +73,18 @@ public:
    * @param joints A map of joint names to joint values to change.
    * @return A the state of the environment
    */
-  virtual EnvStatePtr getState(const std::unordered_map<std::string, double>& joints) const = 0;
-  virtual EnvStatePtr getState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values) const = 0;
-  virtual EnvStatePtr getState(const std::vector<std::string>& joint_names, const Eigen::Ref<const Eigen::VectorXd>& joint_values) const = 0;
+  virtual EnvState::Ptr getState(const std::unordered_map<std::string, double>& joints) const = 0;
+  virtual EnvState::Ptr getState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values) const = 0;
+  virtual EnvState::Ptr getState(const std::vector<std::string>& joint_names, const Eigen::Ref<const Eigen::VectorXd>& joint_values) const = 0;
 
   /**
    * @brief Get the current state of the environment
    * @return
    */
-  virtual EnvStateConstPtr getCurrentState() const = 0;
+  virtual EnvState::ConstPtr getCurrentState() const = 0;
 
   virtual void onEnvironmentChanged(const Commands& commands) = 0;
 };
-typedef std::shared_ptr<StateSolver> StateSolverPtr;
-typedef std::shared_ptr<const StateSolver> StateSolverConstPtr;
 }
 
 #endif // TESSERACT_ENVIRONMENT_STATE_SOLVER_H

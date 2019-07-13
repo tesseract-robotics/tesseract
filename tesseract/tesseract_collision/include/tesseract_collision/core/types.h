@@ -42,40 +42,32 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_collision
 {
-  typedef std::vector<tesseract_geometry::GeometryConstPtr> CollisionShapesConst;
-  typedef tesseract_geometry::GeometryConstPtr CollisionShapeConstPtr;
-  typedef tesseract_geometry::GeometryPtr CollisionShapePtr;
+  using CollisionShapesConst = std::vector<tesseract_geometry::Geometry::ConstPtr>;
+  using CollisionShapeConstPtr = tesseract_geometry::Geometry::ConstPtr;
+  using CollisionShapePtr = tesseract_geometry::Geometry::Ptr;
 
   /**
    * @brief Should return true if contact allowed, otherwise false.
    *
    * Also the order of strings should not matter, the function should handled by the function.
    */
-  typedef std::function<bool(const std::string&, const std::string&)> IsContactAllowedFn;
+  using IsContactAllowedFn = std::function<bool(const std::string&, const std::string&)>;
 
-  namespace ContinouseCollisionTypes
-  {
-  enum ContinouseCollisionType
+  enum class ContinouseCollisionType
   {
     CCType_None,
     CCType_Time0,
     CCType_Time1,
     CCType_Between
   };
-  }
-  typedef ContinouseCollisionTypes::ContinouseCollisionType ContinouseCollisionType;
 
-  namespace ContactTestTypes
-  {
-  enum ContactTestType
+  enum class ContactTestType
   {
     FIRST = 0,   /**< Return at first contact for any pair of objects */
     CLOSEST = 1, /**< Return the global minimum for a pair of objects */
     ALL = 2,     /**< Return all contacts for a pair of objects */
     LIMITED = 3  /**< Return limited set of contacts for a pair of objects */
   };
-  }
-  typedef ContactTestTypes::ContactTestType ContactTestType;
 
   struct ContactResult
   {

@@ -49,6 +49,9 @@ class Environment
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  using Ptr = std::shared_ptr<Environment>;
+  using ConstPtr = std::shared_ptr<const Environment>;
+
   Environment() : initialized_(false), revision_(0) {}
 
   virtual ~Environment() = default;
@@ -61,7 +64,7 @@ public:
    * @param scene_graph
    * @return
    */
-  virtual bool init(tesseract_scene_graph::SceneGraphPtr scene_graph) = 0;
+  virtual bool init(tesseract_scene_graph::SceneGraph::Ptr scene_graph) = 0;
 
   /**
    * @brief Get the current revision number
@@ -85,7 +88,7 @@ public:
    * @brief Get the Scene Graph
    * @return SceneGraphConstPtr
    */
-  virtual const tesseract_scene_graph::SceneGraphConstPtr& getSceneGraph() const { return scene_graph_const_; }
+  virtual const tesseract_scene_graph::SceneGraph::ConstPtr& getSceneGraph() const { return scene_graph_const_; }
 
   /** @brief Give the environment a name */
   virtual void setName(const std::string& name) { scene_graph_->setName(name); }
@@ -115,14 +118,14 @@ public:
    * @param joints A map of joint names to joint values to change.
    * @return A the state of the environment
    */
-  virtual EnvStatePtr getState(const std::unordered_map<std::string, double>& joints) const;
-  virtual EnvStatePtr getState(const std::vector<std::string>& joint_names,
+  virtual EnvState::Ptr getState(const std::unordered_map<std::string, double>& joints) const;
+  virtual EnvState::Ptr getState(const std::vector<std::string>& joint_names,
                                const std::vector<double>& joint_values) const;
-  virtual EnvStatePtr getState(const std::vector<std::string>& joint_names,
+  virtual EnvState::Ptr getState(const std::vector<std::string>& joint_names,
                                const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
 
   /** @brief Get the current state of the environment */
-  virtual EnvStateConstPtr getCurrentState() const { return current_state_; }
+  virtual EnvState::ConstPtr getCurrentState() const { return current_state_; }
 
   /**
    * @brief Adds a link to the environment
@@ -167,14 +170,14 @@ public:
    * @param name The name of the link
    * @return Return nullptr if link name does not exists, otherwise a pointer to the link
    */
-  virtual tesseract_scene_graph::LinkConstPtr getLink(const std::string& name) const;
+  virtual tesseract_scene_graph::Link::ConstPtr getLink(const std::string& name) const;
 
   /**
    * @brief Get joint by name
    * @param name The name of the joint
    * @return Joint Const Pointer
    */
-  virtual tesseract_scene_graph::JointConstPtr getJoint(const std::string& name) const;
+  virtual tesseract_scene_graph::Joint::ConstPtr getJoint(const std::string& name) const;
 
   /**
    * @brief Removes a joint from the environment
@@ -260,7 +263,7 @@ public:
    * @brief Get the allowed collision matrix
    * @return AllowedCollisionMatrixConstPtr
    */
-  virtual tesseract_scene_graph::AllowedCollisionMatrixConstPtr getAllowedCollisionMatrix() const;
+  virtual tesseract_scene_graph::AllowedCollisionMatrix::ConstPtr getAllowedCollisionMatrix() const;
 
   /**
    * @brief Get a vector of joint names in the environment
@@ -333,10 +336,10 @@ public:
   virtual bool setActiveDiscreteContactManager(const std::string& name);
 
   /** @brief Get a copy of the environments active discrete contact manager */
-  virtual tesseract_collision::DiscreteContactManagerPtr getDiscreteContactManager() const { return discrete_manager_->clone(); }
+  virtual tesseract_collision::DiscreteContactManager::Ptr getDiscreteContactManager() const { return discrete_manager_->clone(); }
 
   /** @brief Get a copy of the environments available discrete contact manager by name */
-  virtual tesseract_collision::DiscreteContactManagerPtr getDiscreteContactManager(const std::string& name) const;
+  virtual tesseract_collision::DiscreteContactManager::Ptr getDiscreteContactManager(const std::string& name) const;
 
   /**
    * @brief Set the active continuous contact manager
@@ -346,10 +349,10 @@ public:
   virtual bool setActiveContinuousContactManager(const std::string& name);
 
   /** @brief Get a copy of the environments active continuous contact manager */
-  virtual tesseract_collision::ContinuousContactManagerPtr getContinuousContactManager() const { return continuous_manager_->clone(); }
+  virtual tesseract_collision::ContinuousContactManager::Ptr getContinuousContactManager() const { return continuous_manager_->clone(); }
 
   /** @brief Get a copy of the environments available continuous contact manager by name */
-  virtual tesseract_collision::ContinuousContactManagerPtr getContinuousContactManager(const std::string& name) const;
+  virtual tesseract_collision::ContinuousContactManager::Ptr getContinuousContactManager(const std::string& name) const;
 
   /**
    * @brief Set the discrete contact manager
@@ -379,17 +382,17 @@ protected:
   bool initialized_;                                            /**< Identifies if the object has been initialized */
   int revision_;                                                /**< This increments when the scene graph is modified */
   Commands commands_;                                           /**< The history of commands applied to the environment after intialization */
-  tesseract_scene_graph::SceneGraphPtr scene_graph_;            /**< Tesseract Scene Graph */
-  tesseract_scene_graph::SceneGraphConstPtr scene_graph_const_; /**< Tesseract Scene Graph Const */
-  EnvStatePtr current_state_;                                   /**< Current state of the environment */
-  StateSolverPtr state_solver_;                                 /**< Tesseract State Solver */
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph_;            /**< Tesseract Scene Graph */
+  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_const_; /**< Tesseract Scene Graph Const */
+  EnvState::Ptr current_state_;                                   /**< Current state of the environment */
+  StateSolver::Ptr state_solver_;                                 /**< Tesseract State Solver */
   std::vector<std::string> link_names_;                         /**< A vector of link names */
   std::vector<std::string> joint_names_;                        /**< A vector of joint names */
   std::vector<std::string> active_link_names_;                  /**< A vector of active link names */
   std::vector<std::string> active_joint_names_;                 /**< A vector of active joint names */
   tesseract_collision::IsContactAllowedFn is_contact_allowed_fn_;       /**< The function used to determine if two objects are allowed in collision */
-  tesseract_collision::DiscreteContactManagerPtr discrete_manager_;     /**< The discrete contact manager object */
-  tesseract_collision::ContinuousContactManagerPtr continuous_manager_; /**< The continuous contact manager object */
+  tesseract_collision::DiscreteContactManager::Ptr discrete_manager_;     /**< The discrete contact manager object */
+  tesseract_collision::ContinuousContactManager::Ptr continuous_manager_; /**< The continuous contact manager object */
   std::string discrete_manager_name_;                                   /**< Name of active descrete contact manager */
   std::string continuous_manager_name_;                                 /**< Name of active continuous contact manager */
   tesseract_collision::DiscreteContactManagerFactory discrete_factory_; /**< Descrete contact manager factory */
@@ -408,7 +411,7 @@ protected:
    * @return
    */
   template <typename S>
-  bool create(tesseract_scene_graph::SceneGraphPtr scene_graph)
+  bool create(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
   {
     initialized_ = false;
     revision_ = 0;
@@ -456,14 +459,10 @@ private:
                           tesseract_common::VectorIsometry3d& shape_poses,
                           const tesseract_scene_graph::Link& link) const;
 
-  tesseract_collision::DiscreteContactManagerPtr getDiscreteContactManagerHelper(const std::string& name) const;
+  tesseract_collision::DiscreteContactManager::Ptr getDiscreteContactManagerHelper(const std::string& name) const;
 
-  tesseract_collision::ContinuousContactManagerPtr getContinuousContactManagerHelper(const std::string& name) const;
+  tesseract_collision::ContinuousContactManager::Ptr getContinuousContactManagerHelper(const std::string& name) const;
 };
-
-typedef std::shared_ptr<Environment> EnvironmentPtr;
-typedef std::shared_ptr<const Environment> EnvironmentConstPtr;
-
 }  // namespace tesseract_environment
 
 #endif  // TESSERACT_ENVIRONMENT_ENVIRONMENT_H

@@ -56,7 +56,7 @@ namespace tesseract_collision
 {
 namespace tesseract_collision_bullet
 {
-btCollisionShape* createShapePrimitive(const tesseract_geometry::BoxConstPtr& geom)
+btCollisionShape* createShapePrimitive(const tesseract_geometry::Box::ConstPtr& geom)
 {
   btScalar a = static_cast<btScalar>(geom->getX() / 2);
   btScalar b = static_cast<btScalar>(geom->getY() / 2);
@@ -65,26 +65,26 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::BoxConstPtr& ge
   return (new btBoxShape(btVector3(a, b, c)));
 }
 
-btCollisionShape* createShapePrimitive(const tesseract_geometry::SphereConstPtr& geom)
+btCollisionShape* createShapePrimitive(const tesseract_geometry::Sphere::ConstPtr& geom)
 {
   return (new btSphereShape(static_cast<btScalar>(geom->getRadius())));
 }
 
-btCollisionShape* createShapePrimitive(const tesseract_geometry::CylinderConstPtr& geom)
+btCollisionShape* createShapePrimitive(const tesseract_geometry::Cylinder::ConstPtr& geom)
 {
   btScalar r = static_cast<btScalar>(geom->getRadius());
   btScalar l = static_cast<btScalar>(geom->getLength() / 2);
   return (new btCylinderShapeZ(btVector3(r, r, l)));
 }
 
-btCollisionShape* createShapePrimitive(const tesseract_geometry::ConeConstPtr& geom)
+btCollisionShape* createShapePrimitive(const tesseract_geometry::Cone::ConstPtr& geom)
 {
   btScalar r = static_cast<btScalar>(geom->getRadius());
   btScalar l = static_cast<btScalar>(geom->getLength());
   return (new btConeShapeZ(r, l));
 }
 
-btCollisionShape* createShapePrimitive(const tesseract_geometry::MeshConstPtr& geom,
+btCollisionShape* createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr& geom,
                                        CollisionObjectWrapper* cow)
 {
 
@@ -130,7 +130,7 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::MeshConstPtr& g
   return nullptr;
 }
 
-btCollisionShape* createShapePrimitive(const tesseract_geometry::ConvexMeshConstPtr& geom)
+btCollisionShape* createShapePrimitive(const tesseract_geometry::ConvexMesh::ConstPtr& geom)
 {
 
   int vertice_count = geom->getVerticeCount();
@@ -150,7 +150,7 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::ConvexMeshConst
   return nullptr;
 }
 
-btCollisionShape* createShapePrimitive(const tesseract_geometry::OctreeConstPtr& geom,
+btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPtr& geom,
                                        CollisionObjectWrapper* cow)
 {
 

@@ -115,7 +115,7 @@ TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionCompoundCompoundUnit)
   addCollisionObjects<DiscreteContactManager>(checker);
   runTest(checker);
 
-  DiscreteContactManagerPtr cloned_checker = checker.clone();
+  DiscreteContactManager::Ptr cloned_checker = checker.clone();
   runTest(*cloned_checker);
 }
 
@@ -125,7 +125,7 @@ TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionCompoundCompoundUnit)
   addCollisionObjects<DiscreteContactManager>(checker);
   runTest(checker);
 
-  DiscreteContactManagerPtr cloned_checker = checker.clone();
+  DiscreteContactManager::Ptr cloned_checker = checker.clone();
   runTest(*cloned_checker);
 }
 
@@ -135,7 +135,7 @@ TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionCompoundCompoundUnit)
   addCollisionObjects<DiscreteContactManager>(checker);
   runTest(checker);
 
-  DiscreteContactManagerPtr cloned_checker = checker.clone();
+  DiscreteContactManager::Ptr cloned_checker = checker.clone();
   runTest(*cloned_checker);
 }
 
@@ -145,7 +145,7 @@ TEST(TesseractCollisionUnit, BulletContinuousSimpleCollisionCompoundCompoundUnit
   addCollisionObjects<ContinuousContactManager>(checker);
   runCastTest(checker);
 
-  ContinuousContactManagerPtr cloned_checker = checker.clone();
+  ContinuousContactManager::Ptr cloned_checker = checker.clone();
   runCastTest(*cloned_checker);
 }
 
@@ -155,7 +155,7 @@ TEST(TesseractCollisionUnit, BulletContinuousBVHCollisionCompoundCompoundUnit)
   addCollisionObjects<ContinuousContactManager>(checker);
   runCastTest(checker);
 
-  ContinuousContactManagerPtr cloned_checker = checker.clone();
+  ContinuousContactManager::Ptr cloned_checker = checker.clone();
   runCastTest(*cloned_checker);
 }
 

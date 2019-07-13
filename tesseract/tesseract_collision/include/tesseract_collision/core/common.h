@@ -44,7 +44,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_collision
 {
-typedef std::pair<std::string, std::string> ObjectPairKey;
+using ObjectPairKey = std::pair<std::string, std::string>;
 
 /**
  * @brief Get a key for two object to search the collision matrix
@@ -234,7 +234,7 @@ inline int createConvexHull(tesseract_common::VectorVector3d& vertices,
   return num_faces;
 }
 
-inline tesseract_geometry::ConvexMeshPtr makeConvexMesh(const tesseract_geometry::Mesh& mesh)
+inline tesseract_geometry::ConvexMesh::Ptr makeConvexMesh(const tesseract_geometry::Mesh& mesh)
 {
   std::shared_ptr<tesseract_common::VectorVector3d> ch_vertices = std::make_shared<tesseract_common::VectorVector3d>();
   std::shared_ptr<Eigen::VectorXi> ch_faces = std::make_shared<Eigen::VectorXi>();

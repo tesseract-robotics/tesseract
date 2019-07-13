@@ -34,7 +34,7 @@ namespace tesseract_collision
 class DiscreteContactManagerFactory
 {
 public:
-  using CreateMethod = std::function<DiscreteContactManagerPtr()>;
+  using CreateMethod = std::function<DiscreteContactManager::Ptr()>;
   DiscreteContactManagerFactory() = default;
 
   bool registar(const std::string name, CreateMethod create_function)
@@ -48,7 +48,7 @@ public:
     return false;
   }
 
-  DiscreteContactManagerPtr create(const std::string& name) const
+  DiscreteContactManager::Ptr create(const std::string& name) const
   {
     auto it = discrete_types.find(name);
     if (it != discrete_types.end())

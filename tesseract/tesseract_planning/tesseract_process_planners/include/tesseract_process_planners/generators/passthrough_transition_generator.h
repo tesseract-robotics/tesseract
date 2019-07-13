@@ -13,10 +13,10 @@ public:
   PassthroughTransitionGenerator() {}
   ~PassthroughTransitionGenerator() override = default;
 
-  std::vector<tesseract_motion_planners::WaypointPtr> generate(const tesseract_motion_planners::WaypointPtr& start_waypoint,
-                                                               const tesseract_motion_planners::WaypointPtr& end_waypoint) const override
+  std::vector<tesseract_motion_planners::Waypoint::Ptr> generate(const tesseract_motion_planners::Waypoint::Ptr& start_waypoint,
+                                                               const tesseract_motion_planners::Waypoint::Ptr& end_waypoint) const override
   {
-    std::vector<tesseract_motion_planners::WaypointPtr> transition;
+    std::vector<tesseract_motion_planners::Waypoint::Ptr> transition;
     transition.reserve(2);
     transition.push_back(start_waypoint);
     transition.push_back(end_waypoint);

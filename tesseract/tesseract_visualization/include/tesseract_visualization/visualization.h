@@ -42,6 +42,10 @@ namespace tesseract_visualization
 class Visualization
 {
 public:
+
+  using Ptr = std::shared_ptr<Visualization>;
+  using ConstPtr = std::shared_ptr<const Visualization>;
+
   virtual ~Visualization() = default;
   /**
    * @brief Plot a trajectory
@@ -88,8 +92,7 @@ public:
   /** @brief Pause code and wait for enter key in terminal*/
   virtual void waitForInput() = 0;
 };
-typedef std::shared_ptr<Visualization> VisualizationPtr;
-typedef std::shared_ptr<const Visualization> VisualizationConstPtr;
+
 }
 
 #endif  // TESSERACT_VISUALIZATION_VISUALIZATION_H

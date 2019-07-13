@@ -58,6 +58,10 @@ namespace tesseract_scene_graph
 class SRDFModel
 {
 public:
+
+  using Ptr = std::shared_ptr<SRDFModel>;
+  using ConstPtr = std::shared_ptr<const SRDFModel>;
+
   SRDFModel()
   {
   }
@@ -869,8 +873,7 @@ private:
   std::vector<DisabledCollision> disabled_collisions_;
   std::vector<PassiveJoint> passive_joints_;
 };
-typedef std::shared_ptr<SRDFModel> SRDFModelPtr;
-typedef std::shared_ptr<const SRDFModel> SRDFModelConstPtr;
+
 }
 
 #endif // TESSERACT_SCENE_SRDF_PARSER_H

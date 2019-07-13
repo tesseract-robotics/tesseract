@@ -213,7 +213,7 @@ const std::vector<std::string>& KDLFwdKinChain::getActiveLinkNames() const
 
 const Eigen::MatrixX2d& KDLFwdKinChain::getLimits() const { return kdl_data_.joint_limits; }
 
-bool KDLFwdKinChain::init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
+bool KDLFwdKinChain::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
                           const std::string& base_link,
                           const std::string& tip_link,
                           const std::string name)

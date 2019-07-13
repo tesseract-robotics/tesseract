@@ -41,6 +41,10 @@ enum class ForwardKinematicsFactoryType
 class ForwardKinematicsFactory
 {
 public:
+
+  using Ptr = std::shared_ptr<ForwardKinematicsFactory>;
+  using ConstPtr = std::shared_ptr<const ForwardKinematicsFactory>;
+
   virtual ~ForwardKinematicsFactory() = default;
 
   /**
@@ -64,7 +68,7 @@ public:
    * @param name The name of the kinematic chain
    * @return True if init() completes successfully
    */
-  virtual ForwardKinematicsPtr create(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
+  virtual ForwardKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
                                       const std::string& base_link,
                                       const std::string& tip_link,
                                       const std::string name) const { return nullptr; }
@@ -78,13 +82,12 @@ public:
    * @param start_state The initial start state for the tree. This should inlclude all joints in the scene graph
    * @return True if init() completes successfully
    */
-  virtual ForwardKinematicsPtr create(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
+  virtual ForwardKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
                                       const std::vector<std::string>& joint_names,
                                       const std::string name,
                                       std::unordered_map<std::string, double> start_state = std::unordered_map<std::string, double>()) const { return nullptr; }
 
 };
-typedef std::shared_ptr<ForwardKinematicsFactory> ForwardKinematicsFactoryPtr;
-typedef std::shared_ptr<const ForwardKinematicsFactory> ForwardKinematicsFactoryConstPtr;
+
 }
 #endif // TESSERACT_KINEMATICS_FORWARD_KINEMATICS_FACTORY_H

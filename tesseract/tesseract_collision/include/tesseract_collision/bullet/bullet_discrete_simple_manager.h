@@ -51,12 +51,16 @@ namespace tesseract_collision_bullet
 class BulletDiscreteSimpleManager : public DiscreteContactManager
 {
 public:
+
+  using Ptr = std::shared_ptr<BulletDiscreteSimpleManager>;
+  using ConstPtr = std::shared_ptr<const BulletDiscreteSimpleManager>;
+
   BulletDiscreteSimpleManager();
 
   static std::string name() { return "BulletDiscreteSimpleManager"; }
-  static DiscreteContactManagerPtr create() { return std::make_shared<BulletDiscreteSimpleManager>(); }
+  static DiscreteContactManager::Ptr create() { return std::make_shared<BulletDiscreteSimpleManager>(); }
 
-  DiscreteContactManagerPtr clone() const override;
+  DiscreteContactManager::Ptr clone() const override;
 
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,
@@ -96,7 +100,7 @@ public:
    * @brief A a bullet collision object to the manager
    * @param cow The tesseract bullet collision object
    */
-  void addCollisionObject(const COWPtr& cow);
+  void addCollisionObject(const COW::Ptr& cow);
 
   /**
    * @brief Return collision objects
@@ -114,9 +118,9 @@ private:
   btDispatcherInfo dispatch_info_;              /**< @brief The bullet collision dispatcher configuration information */
   btDefaultCollisionConfiguration coll_config_; /**< @brief The bullet collision configuration */
   Link2Cow link2cow_;        /**< @brief A map of all (static and active) collision objects being managed */
-  std::vector<COWPtr> cows_; /**< @brief A vector of collision objects (active followed by static) */
+  std::vector<COW::Ptr> cows_; /**< @brief A vector of collision objects (active followed by static) */
 };
-typedef std::shared_ptr<BulletDiscreteSimpleManager> BulletDiscreteSimpleManagerPtr;
+
 }
 }
 #endif  // TESSERACT_COLLISION_BULLET_DISCRETE_SIMPLE_MANAGERS_H

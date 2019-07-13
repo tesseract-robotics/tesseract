@@ -71,7 +71,7 @@ void runTest(ContinuousContactManager& checker)
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, -0.2475, 0.001);
   EXPECT_NEAR(result_vector[0].cc_time, 0.25, 0.001);
-  EXPECT_TRUE(result_vector[0].cc_type == ContinouseCollisionTypes::CCType_Between);
+  EXPECT_TRUE(result_vector[0].cc_type == ContinouseCollisionType::CCType_Between);
 
   EXPECT_NEAR(result_vector[0].nearest_points[0][0], -0.5, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[0][1], 0.5, 0.001);

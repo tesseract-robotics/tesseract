@@ -33,7 +33,7 @@ const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default RO
 const double DEFAULT_CONTACT_DISTANCE = 0.1;
 
 static Tesseract::Ptr tess;
-static DiscreteContactManagerPtr manager;
+static DiscreteContactManager::Ptr manager;
 static ros::Subscriber joint_states_sub;
 static ros::Publisher contact_results_pub;
 static ros::Publisher environment_pub;
@@ -55,7 +55,7 @@ void callbackJointState(const sensor_msgs::JointState::ConstPtr& msg)
   contacts_msg.contacts.clear();
 
   tess->getEnvironment()->setState(msg->name, msg->position);
-  EnvStateConstPtr state = tess->getEnvironment()->getCurrentState();
+  EnvState::ConstPtr state = tess->getEnvironment()->getCurrentState();
 
   manager->setCollisionObjectsTransform(state->transforms);
   manager->contactTest(contacts, type);
@@ -107,7 +107,7 @@ bool callbackComputeContactResultVector(tesseract_msgs::ComputeContactResultVect
   boost::mutex::scoped_lock(modify_mutex);
 
   tess->getEnvironment()->setState(request.joint_states.name, request.joint_states.position);
-  EnvStateConstPtr state = tess->getEnvironment()->getCurrentState();
+  EnvState::ConstPtr state = tess->getEnvironment()->getCurrentState();
 
   manager->setCollisionObjectsTransform(state->transforms);
   manager->contactTest(contacts, type);
@@ -155,8 +155,8 @@ int main(int argc, char** argv)
   ros::NodeHandle pnh("~");
 
 
-  SceneGraphPtr scene_graph;
-  SRDFModelPtr srdf_model;
+  SceneGraph::Ptr scene_graph;
+  SRDFModel::Ptr srdf_model;
   std::string robot_description;
   std::string plugin;
 

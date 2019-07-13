@@ -312,14 +312,14 @@ int main(int argc, char** argv)
 
   // Setup Problem
   ProblemConstructionInfo pci = cppMethod();
-  TrajOptProbPtr prob = ConstructProblem(pci);
+  TrajOptProb::Ptr prob = ConstructProblem(pci);
 
   // Solve Trajectory
   ROS_INFO("puzzle piece plan");
 
   std::vector<ContactResultMap> collisions;
-  ContinuousContactManagerPtr manager = prob->GetEnv()->getContinuousContactManager();
-  AdjacencyMapPtr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
+  ContinuousContactManager::Ptr manager = prob->GetEnv()->getContinuousContactManager();
+  AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
                                                                                         prob->GetKin()->getActiveLinkNames(),
                                                                                         prob->GetEnv()->getCurrentState()->transforms);
 

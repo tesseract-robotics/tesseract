@@ -127,7 +127,7 @@ bool TrajOptArrayPlanner::setConfiguration(const TrajOptArrayPlannerConfig& conf
     {
       case tesseract_motion_planners::WaypointType::JOINT_WAYPOINT:
       {
-        JointWaypointPtr joint_waypoint = std::static_pointer_cast<JointWaypoint>(config.target_waypoints_[ind]);
+        JointWaypoint::Ptr joint_waypoint = std::static_pointer_cast<JointWaypoint>(config.target_waypoints_[ind]);
         std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
         Eigen::VectorXd coeffs = joint_waypoint->coeffs_;
         if (coeffs.size() != pci.kin->numJoints())
@@ -148,7 +148,7 @@ bool TrajOptArrayPlanner::setConfiguration(const TrajOptArrayPlannerConfig& conf
       {
         // For a toleranced waypoint we add an inequality term and a smaller equality term. This acts as a "leaky" hinge
         // to keep the problem numerically stable.
-        JointTolerancedWaypointPtr joint_waypoint =
+        JointTolerancedWaypoint::Ptr joint_waypoint =
             std::static_pointer_cast<JointTolerancedWaypoint>(config.target_waypoints_[ind]);
         std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
         Eigen::VectorXd coeffs = joint_waypoint->coeffs_;
@@ -190,7 +190,7 @@ bool TrajOptArrayPlanner::setConfiguration(const TrajOptArrayPlannerConfig& conf
       }
       case tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT:
       {
-        CartesianWaypointPtr cart_waypoint = std::static_pointer_cast<CartesianWaypoint>(config.target_waypoints_[ind]);
+        CartesianWaypoint::Ptr cart_waypoint = std::static_pointer_cast<CartesianWaypoint>(config.target_waypoints_[ind]);
         std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);
         pose->term_type = cart_waypoint->is_critical_ ? TT_CNT : TT_COST;
         pose->name = "cartesian_position";
@@ -266,7 +266,7 @@ bool TrajOptArrayPlanner::setConfiguration(const TrajOptArrayPlannerConfig& conf
   if (config.configuration_->joint_positions_.size() > 0)
   {
     assert(config.configuration_->joint_positions_.size() == pci.kin->numJoints());
-    JointWaypointConstPtr joint_waypoint = config.configuration_;
+    JointWaypoint::ConstPtr joint_waypoint = config.configuration_;
     std::shared_ptr<JointPosTermInfo> jp = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
     Eigen::VectorXd coeffs = joint_waypoint->coeffs_;
     if (coeffs.size() != pci.kin->numJoints())
@@ -286,7 +286,7 @@ bool TrajOptArrayPlanner::setConfiguration(const TrajOptArrayPlannerConfig& conf
   pci_ = std::make_shared<ProblemConstructionInfo>(pci);
   config_ = std::make_shared<TrajOptArrayPlannerConfig>(config);
 
-  trajopt::TrajOptProbPtr prob = ConstructProblem(*pci_);
+  trajopt::TrajOptProb::Ptr prob = ConstructProblem(*pci_);
   tesseract_motion_planners::TrajOptPlannerConfig config_planner(prob);
   config_planner.params = config_->params_;
   config_planner.callbacks = config_->callbacks_;

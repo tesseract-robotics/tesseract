@@ -53,12 +53,15 @@ namespace tesseract_collision_fcl
 class FCLDiscreteBVHManager : public DiscreteContactManager
 {
 public:
+
+  using Ptr = std::shared_ptr<FCLDiscreteBVHManager>;
+
   FCLDiscreteBVHManager();
 
   static std::string name() { return "FCLDiscreteBVHManager"; }
-  static DiscreteContactManagerPtr create() { return std::make_shared<FCLDiscreteBVHManager>(); }
+  static DiscreteContactManager::Ptr create() { return std::make_shared<FCLDiscreteBVHManager>(); }
 
-  DiscreteContactManagerPtr clone() const override;
+  DiscreteContactManager::Ptr clone() const override;
 
   bool addCollisionObject(const std::string& name,
                           const int& mask_id,
@@ -98,7 +101,7 @@ public:
    * @brief Add a fcl collision object to the manager
    * @param cow The tesseract fcl collision object
    */
-  void addCollisionObject(const COWPtr& cow);
+  void addCollisionObject(const COW::Ptr& cow);
 
   /**
    * @brief Return collision objects
@@ -114,7 +117,7 @@ private:
   double contact_distance_;         /**< @brief The contact distance threshold */
   IsContactAllowedFn fn_;           /**< @brief The is allowed collision function */
 };
-typedef std::shared_ptr<FCLDiscreteBVHManager> FCLDiscreteBVHManagerPtr;
+
 }
 }
 #endif  // TESSERACT_COLLISION_FCL_DISCRETE_MANAGERS_H

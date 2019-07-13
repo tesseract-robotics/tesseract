@@ -54,6 +54,9 @@ enum class CommandType
 class Command
 {
 public:
+  using Ptr = std::shared_ptr<Command>;
+  using ConstPtr = std::shared_ptr<const Command>;
+
   explicit Command(CommandType type) : type_(type) {}
   virtual ~Command() = default;
 
@@ -63,32 +66,31 @@ private:
   /** \brief The type of the shape */
   CommandType type_;
 };
-using CommandPtr = std::shared_ptr<Command>;
-using CommandConstPtr = std::shared_ptr<const Command>;
-using Commands = std::vector<CommandConstPtr>;
+
+using Commands = std::vector<Command::ConstPtr>;
 
 class AddCommand : public Command
 {
 public:
-  AddCommand(tesseract_scene_graph::LinkConstPtr link, tesseract_scene_graph::JointConstPtr joint) : Command(CommandType::ADD), link_(std::move(link)), joint_(std::move(joint)) {}
+  AddCommand(tesseract_scene_graph::Link::ConstPtr link, tesseract_scene_graph::Joint::ConstPtr joint) : Command(CommandType::ADD), link_(std::move(link)), joint_(std::move(joint)) {}
 
-  const tesseract_scene_graph::LinkConstPtr& getLink() const { return link_; }
-  const tesseract_scene_graph::JointConstPtr& getJoint() const { return joint_; }
+  const tesseract_scene_graph::Link::ConstPtr& getLink() const { return link_; }
+  const tesseract_scene_graph::Joint::ConstPtr& getJoint() const { return joint_; }
 
 private:
-  tesseract_scene_graph::LinkConstPtr link_;
-  tesseract_scene_graph::JointConstPtr joint_;
+  tesseract_scene_graph::Link::ConstPtr link_;
+  tesseract_scene_graph::Joint::ConstPtr joint_;
 };
 
 class MoveLinkCommand : public Command
 {
 public:
-  MoveLinkCommand(tesseract_scene_graph::JointConstPtr joint) : Command(CommandType::MOVE_LINK), joint_(std::move(joint)) {}
+  MoveLinkCommand(tesseract_scene_graph::Joint::ConstPtr joint) : Command(CommandType::MOVE_LINK), joint_(std::move(joint)) {}
 
-  const tesseract_scene_graph::JointConstPtr& getJoint() const { return joint_; }
+  const tesseract_scene_graph::Joint::ConstPtr& getJoint() const { return joint_; }
 
 private:
-  tesseract_scene_graph::JointConstPtr joint_;
+  tesseract_scene_graph::Joint::ConstPtr joint_;
 };
 
 class MoveJointCommand : public Command

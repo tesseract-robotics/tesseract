@@ -7,8 +7,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
-ChainOmplInterface::ChainOmplInterface(tesseract_environment::EnvironmentConstPtr env,
-                                       tesseract_kinematics::ForwardKinematicsConstPtr kin)
+ChainOmplInterface::ChainOmplInterface(tesseract_environment::Environment::ConstPtr env,
+                                       tesseract_kinematics::ForwardKinematics::ConstPtr kin)
   : env_(std::move(env)), kin_(std::move(kin))
 {
   joint_names_ = kin_->getJointNames();
@@ -85,14 +85,14 @@ bool ChainOmplInterface::isStateValid(const ompl::base::State* state) const
   const auto dof = joint_names_.size();
 
   Eigen::Map<Eigen::VectorXd> joint_angles(s->values, long(dof));
-  tesseract_environment::EnvStateConstPtr env_state = env_->getState(joint_names_, joint_angles);
+  tesseract_environment::EnvState::ConstPtr env_state = env_->getState(joint_names_, joint_angles);
 
   // Need to get thread id
-  tesseract_collision::DiscreteContactManagerPtr cm = contact_manager_->clone();
+  tesseract_collision::DiscreteContactManager::Ptr cm = contact_manager_->clone();
   cm->setCollisionObjectsTransform(env_state->transforms);
 
   tesseract_collision::ContactResultMap contact_map;
-  cm->contactTest(contact_map, tesseract_collision::ContactTestTypes::FIRST);
+  cm->contactTest(contact_map, tesseract_collision::ContactTestType::FIRST);
 
   return contact_map.empty();
 }

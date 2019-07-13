@@ -51,13 +51,13 @@ FCLDiscreteBVHManager::FCLDiscreteBVHManager()
   contact_distance_ = 0;
 }
 
-DiscreteContactManagerPtr FCLDiscreteBVHManager::clone() const
+DiscreteContactManager::Ptr FCLDiscreteBVHManager::clone() const
 {
-  FCLDiscreteBVHManagerPtr manager(new FCLDiscreteBVHManager());
+  FCLDiscreteBVHManager::Ptr manager(new FCLDiscreteBVHManager());
 
   for (const auto& cow : link2cow_)
   {
-    COWPtr new_cow = cow.second->clone();
+    COW::Ptr new_cow = cow.second->clone();
 
     // TODO LEVI: Should this happen as part of the clone?
     new_cow->setCollisionObjectsTransform(cow.second->getCollisionObjectsTransform());
@@ -77,7 +77,7 @@ bool FCLDiscreteBVHManager::addCollisionObject(const std::string& name,
                                                const tesseract_common::VectorIsometry3d& shape_poses,
                                                bool enabled)
 {
-  COWPtr new_cow = createFCLCollisionObject(name, mask_id, shapes, shape_poses, enabled);
+  COW::Ptr new_cow = createFCLCollisionObject(name, mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
     addCollisionObject(new_cow);
@@ -158,7 +158,7 @@ void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::str
 
   for (auto& co : link2cow_)
   {
-    COWPtr& cow = co.second;
+    COW::Ptr& cow = co.second;
 
     updateCollisionObjectFilters(active_, *cow);
   }
@@ -186,7 +186,7 @@ void FCLDiscreteBVHManager::contactTest(ContactResultMap& collisions, const Cont
   }
 }
 
-void FCLDiscreteBVHManager::addCollisionObject(const COWPtr& cow)
+void FCLDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
 {
   link2cow_[cow->getName()] = cow;
 

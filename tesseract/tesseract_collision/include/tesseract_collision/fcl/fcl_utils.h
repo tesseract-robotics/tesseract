@@ -58,9 +58,9 @@ namespace tesseract_collision
 {
 namespace tesseract_collision_fcl
 {
-typedef std::shared_ptr<fcl::CollisionGeometryd> CollisionGeometryPtr;
-typedef std::shared_ptr<fcl::CollisionObjectd> CollisionObjectPtr;
-typedef std::shared_ptr<const fcl::CollisionObjectd> CollisionObjectConstPtr;
+using CollisionGeometryPtr = std::shared_ptr<fcl::CollisionGeometryd>;
+using CollisionObjectPtr = std::shared_ptr<fcl::CollisionObjectd>;
+using CollisionObjectConstPtr = std::shared_ptr<const fcl::CollisionObjectd>;
 
 enum CollisionFilterGroups
 {
@@ -74,6 +74,10 @@ class CollisionObjectWrapper
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+  using Ptr = std::shared_ptr<CollisionObjectWrapper>;
+  using ConstPtr = std::shared_ptr<const CollisionObjectWrapper>;
+
   CollisionObjectWrapper(const std::string& name,
                          const int& type_id,
                          const CollisionShapesConst& shapes,
@@ -140,13 +144,11 @@ protected:
 
 CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom);
 
-typedef CollisionObjectWrapper COW;
-typedef std::shared_ptr<CollisionObjectWrapper> COWPtr;
-typedef std::shared_ptr<const CollisionObjectWrapper> COWConstPtr;
-typedef std::map<std::string, COWPtr> Link2COW;
-typedef std::map<std::string, COWConstPtr> Link2ConstCOW;
+using COW = CollisionObjectWrapper;
+using Link2COW = std::map<std::string, COW::Ptr>;
+using Link2ConstCOW = std::map<std::string, COW::ConstPtr>;
 
-inline COWPtr createFCLCollisionObject(const std::string& name,
+inline COW::Ptr createFCLCollisionObject(const std::string& name,
                                        const int& type_id,
                                        const CollisionShapesConst& shapes,
                                        const tesseract_common::VectorIsometry3d& shape_poses,
@@ -159,7 +161,7 @@ inline COWPtr createFCLCollisionObject(const std::string& name,
     return nullptr;
   }
 
-  COWPtr new_cow(new COW(name, type_id, shapes, shape_poses));
+  COW::Ptr new_cow(new COW(name, type_id, shapes, shape_poses));
 
   new_cow->m_enabled = enabled;
   CONSOLE_BRIDGE_logDebug("Created collision object for link %s", new_cow->getName().c_str());

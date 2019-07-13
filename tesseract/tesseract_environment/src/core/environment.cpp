@@ -50,17 +50,17 @@ void Environment::setState(const std::vector<std::string>& joint_names,
   currentStateChanged();
 }
 
-EnvStatePtr Environment::getState(const std::unordered_map<std::string, double>& joints) const
+EnvState::Ptr Environment::getState(const std::unordered_map<std::string, double>& joints) const
 {
   return state_solver_->getState(joints);
 }
 
-EnvStatePtr Environment::getState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values) const
+EnvState::Ptr Environment::getState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values) const
 {
   return state_solver_->getState(joint_names, joint_values);
 }
 
-EnvStatePtr Environment::getState(const std::vector<std::string>& joint_names,
+EnvState::Ptr Environment::getState(const std::vector<std::string>& joint_names,
                                   const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
 {
   return state_solver_->getState(joint_names, joint_values);
@@ -130,7 +130,7 @@ bool Environment::removeLink(const std::string& name)
 
 bool Environment::moveLink(tesseract_scene_graph::Joint joint)
 {
-  std::vector<tesseract_scene_graph::JointConstPtr> joints = scene_graph_->getInboundJoints(joint.child_link_name);
+  std::vector<tesseract_scene_graph::Joint::ConstPtr> joints = scene_graph_->getInboundJoints(joint.child_link_name);
   assert(joints.size() == 1);
   if (!scene_graph_->removeJoint(joints[0]->getName()))
     return false;
@@ -146,7 +146,7 @@ bool Environment::moveLink(tesseract_scene_graph::Joint joint)
   return true;
 }
 
-tesseract_scene_graph::LinkConstPtr Environment::getLink(const std::string& name) const
+tesseract_scene_graph::Link::ConstPtr Environment::getLink(const std::string& name) const
 {
   return scene_graph_->getLink(name);
 }
@@ -267,12 +267,12 @@ void Environment::removeAllowedCollision(const std::string& link_name)
   commands_.push_back(std::make_shared<RemoveAllowedCollisionLinkCommand>(link_name));
 }
 
-tesseract_scene_graph::AllowedCollisionMatrixConstPtr Environment::getAllowedCollisionMatrix() const
+tesseract_scene_graph::AllowedCollisionMatrix::ConstPtr Environment::getAllowedCollisionMatrix() const
 {
   return scene_graph_->getAllowedCollisionMatrix();
 }
 
-tesseract_scene_graph::JointConstPtr Environment::getJoint(const std::string& name) const
+tesseract_scene_graph::Joint::ConstPtr Environment::getJoint(const std::string& name) const
 {
   return scene_graph_->getJoint(name);
 }
@@ -328,7 +328,7 @@ void Environment::getCollisionObject(tesseract_collision::CollisionShapesConst& 
       std::shared_ptr<tesseract_common::VectorVector3d> ch_verticies(new tesseract_common::VectorVector3d());
       std::shared_ptr<Eigen::VectorXi> ch_faces(new Eigen::VectorXi());
       int ch_num_faces = tesseract_collision::createConvexHull(*ch_verticies, *ch_faces,*(std::static_pointer_cast<const tesseract_geometry::Mesh>(c->geometry)->getVertices()));
-      shapes.push_back(tesseract_geometry::ConvexMeshPtr(new tesseract_geometry::ConvexMesh(ch_verticies, ch_faces, ch_num_faces)));
+      shapes.push_back(tesseract_geometry::ConvexMesh::Ptr(new tesseract_geometry::ConvexMesh(ch_verticies, ch_faces, ch_num_faces)));
     }
     else
     {
@@ -340,7 +340,7 @@ void Environment::getCollisionObject(tesseract_collision::CollisionShapesConst& 
 
 bool Environment::setActiveDiscreteContactManager(const std::string& name)
 {
-  tesseract_collision::DiscreteContactManagerPtr manager = getDiscreteContactManagerHelper(name);
+  tesseract_collision::DiscreteContactManager::Ptr manager = getDiscreteContactManagerHelper(name);
   if (manager == nullptr)
   {
     CONSOLE_BRIDGE_logError("Discrete manager with %s does not exist in factory!", name.c_str());
@@ -352,9 +352,9 @@ bool Environment::setActiveDiscreteContactManager(const std::string& name)
   return true;
 }
 
-tesseract_collision::DiscreteContactManagerPtr Environment::getDiscreteContactManager(const std::string& name) const
+tesseract_collision::DiscreteContactManager::Ptr Environment::getDiscreteContactManager(const std::string& name) const
 {
-  tesseract_collision::DiscreteContactManagerPtr manager = getDiscreteContactManagerHelper(name);
+  tesseract_collision::DiscreteContactManager::Ptr manager = getDiscreteContactManagerHelper(name);
   if (manager == nullptr)
   {
     CONSOLE_BRIDGE_logError("Discrete manager with %s does not exist in factory!", name.c_str());
@@ -366,7 +366,7 @@ tesseract_collision::DiscreteContactManagerPtr Environment::getDiscreteContactMa
 
 bool Environment::setActiveContinuousContactManager(const std::string& name)
 {
-  tesseract_collision::ContinuousContactManagerPtr manager = getContinuousContactManagerHelper(name);
+  tesseract_collision::ContinuousContactManager::Ptr manager = getContinuousContactManagerHelper(name);
 
   if (manager == nullptr)
   {
@@ -379,9 +379,9 @@ bool Environment::setActiveContinuousContactManager(const std::string& name)
   return true;
 }
 
-tesseract_collision::ContinuousContactManagerPtr Environment::getContinuousContactManager(const std::string& name) const
+tesseract_collision::ContinuousContactManager::Ptr Environment::getContinuousContactManager(const std::string& name) const
 {
-  tesseract_collision::ContinuousContactManagerPtr manager = getContinuousContactManagerHelper(name);
+  tesseract_collision::ContinuousContactManager::Ptr manager = getContinuousContactManagerHelper(name);
   if (manager == nullptr)
   {
     CONSOLE_BRIDGE_logError("Continuous manager with %s does not exist in factory!", name.c_str());
@@ -391,9 +391,9 @@ tesseract_collision::ContinuousContactManagerPtr Environment::getContinuousConta
   return manager;
 }
 
-tesseract_collision::DiscreteContactManagerPtr Environment::getDiscreteContactManagerHelper(const std::string& name) const
+tesseract_collision::DiscreteContactManager::Ptr Environment::getDiscreteContactManagerHelper(const std::string& name) const
 {
-  tesseract_collision::DiscreteContactManagerPtr manager = discrete_factory_.create(name);
+  tesseract_collision::DiscreteContactManager::Ptr manager = discrete_factory_.create(name);
   if (manager == nullptr)
     return nullptr;
 
@@ -417,9 +417,9 @@ tesseract_collision::DiscreteContactManagerPtr Environment::getDiscreteContactMa
   return manager;
 }
 
-tesseract_collision::ContinuousContactManagerPtr Environment::getContinuousContactManagerHelper(const std::string& name) const
+tesseract_collision::ContinuousContactManager::Ptr Environment::getContinuousContactManagerHelper(const std::string& name) const
 {
-  tesseract_collision::ContinuousContactManagerPtr manager = continuous_factory_.create(name);
+  tesseract_collision::ContinuousContactManager::Ptr manager = continuous_factory_.create(name);
 
   if (manager == nullptr)
     return nullptr;
@@ -467,14 +467,14 @@ void Environment::currentStateChanged()
 void Environment::environmentChanged()
 {
   // Update link names
-  std::vector<tesseract_scene_graph::LinkConstPtr> links = scene_graph_->getLinks();
+  std::vector<tesseract_scene_graph::Link::ConstPtr> links = scene_graph_->getLinks();
   link_names_.clear();
   link_names_.reserve(links.size());
   for (const auto& link : links)
     link_names_.push_back(link->getName());
 
   // Update joint names and active joint name
-  std::vector<tesseract_scene_graph::JointConstPtr> joints = scene_graph_->getJoints();
+  std::vector<tesseract_scene_graph::Joint::ConstPtr> joints = scene_graph_->getJoints();
   active_joint_names_.clear();
   joint_names_.clear();
   joint_names_.reserve(joints.size());
@@ -506,7 +506,7 @@ bool Environment::removeLinkHelper(const std::string& name)
     CONSOLE_BRIDGE_logWarn("Tried to remove link (%s) that does not exist", name.c_str());
     return false;
   }
-  std::vector<tesseract_scene_graph::JointConstPtr> joints = scene_graph_->getInboundJoints(name);
+  std::vector<tesseract_scene_graph::Joint::ConstPtr> joints = scene_graph_->getInboundJoints(name);
   assert(joints.size() <= 1);
 
   // get child link names to remove

@@ -37,14 +37,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
-  class Mesh;
-  typedef std::shared_ptr<Mesh> MeshPtr;
-  typedef std::shared_ptr<const Mesh> MeshConstPtr;
 
   class Mesh : public Geometry
   {
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    using Ptr = std::shared_ptr<Mesh>;
+    using ConstPtr = std::shared_ptr<const Mesh>;
 
     Mesh(const std::shared_ptr<const tesseract_common::VectorVector3d>& vertices, const std::shared_ptr<const Eigen::VectorXi>& triangles, std::string file_path = "", Eigen::Vector3d scale = Eigen::Vector3d(1,1,1)) : Geometry(GeometryType::MESH), vertices_(vertices), triangles_(triangles), file_path_(file_path), scale_(scale)
     {
@@ -91,7 +91,7 @@ namespace tesseract_geometry
     const Eigen::Vector3d& getScale() const { return scale_; }
 
 
-    GeometryPtr clone() const override { return MeshPtr(new Mesh(vertices_, triangles_, triangle_count_, file_path_, scale_)); }
+    Geometry::Ptr clone() const override { return Mesh::Ptr(new Mesh(vertices_, triangles_, triangle_count_, file_path_, scale_)); }
 
   private:
     std::shared_ptr<const tesseract_common::VectorVector3d> vertices_;

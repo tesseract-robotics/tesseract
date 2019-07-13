@@ -35,19 +35,20 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
-  class Sphere;
-  typedef std::shared_ptr<Sphere> SpherePtr;
-  typedef std::shared_ptr<const Sphere> SphereConstPtr;
 
   class Sphere : public Geometry
   {
   public:
+
+    using Ptr = std::shared_ptr<Sphere>;
+    using ConstPtr = std::shared_ptr<const Sphere>;
+
     explicit Sphere(double r) : Geometry(GeometryType::SPHERE), r_(r) {}
     ~Sphere() override = default;
 
     double getRadius() const { return r_; }
 
-    GeometryPtr clone() const override { return SpherePtr(new Sphere(r_)); }
+    Geometry::Ptr clone() const override { return Sphere::Ptr(new Sphere(r_)); }
 
   private:
     double r_;

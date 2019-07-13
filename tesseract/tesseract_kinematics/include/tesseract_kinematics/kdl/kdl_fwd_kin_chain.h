@@ -54,6 +54,9 @@ class KDLFwdKinChain : public ForwardKinematics
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  using Ptr = std::shared_ptr<KDLFwdKinChain>;
+  using ConstPtr = std::shared_ptr<const KDLFwdKinChain>;
+
   KDLFwdKinChain() : initialized_(false), solver_name_("KDLFwdKinChain") {}
   KDLFwdKinChain(const KDLFwdKinChain& kin);
 
@@ -84,13 +87,13 @@ public:
 
   const Eigen::MatrixX2d& getLimits() const override;
 
-  tesseract_scene_graph::SceneGraphConstPtr getSceneGraph() const { return scene_graph_; }
+  tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const { return scene_graph_; }
   unsigned int numJoints() const override { return kdl_data_.robot_chain.getNrOfJoints(); }
   const std::string& getBaseLinkName() const override { return kdl_data_.base_name; }
   const std::string& getTipLinkName() const override { return kdl_data_.tip_name; }
   const std::string& getName() const override { return name_; }
   const std::string& getSolverName() const override { return solver_name_; }
-  ForwardKinematicsPtr clone() const override { return std::make_shared<KDLFwdKinChain>(*this); }
+  ForwardKinematics::Ptr clone() const override { return std::make_shared<KDLFwdKinChain>(*this); }
 
   /**
    * @brief Initializes Forward Kinematics as chain
@@ -101,7 +104,7 @@ public:
    * @param name The name of the kinematic chain
    * @return True if init() completes successfully
    */
-  bool init(tesseract_scene_graph::SceneGraphConstPtr scene_graph,
+  bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
             const std::string& base_link,
             const std::string& tip_link,
             const std::string name);
@@ -129,7 +132,7 @@ public:
 
 private:
   bool initialized_;                                           /**< Identifies if the object has been initialized */
-  tesseract_scene_graph::SceneGraphConstPtr scene_graph_;      /**< Tesseract Scene Graph */
+  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;      /**< Tesseract Scene Graph */
   KDLChainData kdl_data_;                                      /**< KDL data parsed from Scene Graph */
   std::string name_;                                           /**< Name of the kinematic chain */
   std::string solver_name_;                                    /**< Name of this solver */
@@ -153,7 +156,5 @@ private:
 
 };  // class KDLKinematicChain
 
-typedef std::shared_ptr<KDLFwdKinChain> KDLFwdKinChainPtr;
-typedef std::shared_ptr<const KDLFwdKinChain> KDLFwdKinChainConstPtr;
 }
 #endif  // TESSERACT_KDL_KINEMATIC_CHAIN_H

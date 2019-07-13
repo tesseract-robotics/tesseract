@@ -295,7 +295,7 @@ bool EnvironmentWidget::applyEnvironmentCommands(const std::vector<tesseract_msg
       {
         tesseract_scene_graph::Joint joint = tesseract_rosutils::fromMsg(command.move_link_joint);
 
-        std::vector<tesseract_scene_graph::JointConstPtr> joints = tesseract_->getEnvironment()->getSceneGraph()->getInboundJoints(joint.child_link_name);
+        std::vector<tesseract_scene_graph::Joint::ConstPtr> joints = tesseract_->getEnvironment()->getSceneGraph()->getInboundJoints(joint.child_link_name);
         assert(joints.size() == 1);
 
         if (!visualization_->removeJoint(joints[0]->getName()) || !visualization_->addJoint(joint))
@@ -324,7 +324,7 @@ bool EnvironmentWidget::applyEnvironmentCommands(const std::vector<tesseract_msg
           return false;
         }
 
-        std::vector<tesseract_scene_graph::JointConstPtr> joints = tesseract_->getEnvironment()->getSceneGraph()->getInboundJoints(command.remove_link);
+        std::vector<tesseract_scene_graph::Joint::ConstPtr> joints = tesseract_->getEnvironment()->getSceneGraph()->getInboundJoints(command.remove_link);
         assert(joints.size() <= 1);
 
         // get child link names to remove
@@ -341,7 +341,7 @@ bool EnvironmentWidget::applyEnvironmentCommands(const std::vector<tesseract_msg
           if (!visualization_->removeLink(link_name))
             return false;
 
-          std::vector<tesseract_scene_graph::JointConstPtr> joints = tesseract_->getEnvironment()->getSceneGraph()->getInboundJoints(link_name);
+          std::vector<tesseract_scene_graph::Joint::ConstPtr> joints = tesseract_->getEnvironment()->getSceneGraph()->getInboundJoints(link_name);
           if (joints.size() == 1)
           {
             if (!visualization_->removeJoint(joints[0]->getName()))
@@ -356,8 +356,8 @@ bool EnvironmentWidget::applyEnvironmentCommands(const std::vector<tesseract_msg
       }
       case tesseract_msgs::EnvironmentCommand::REMOVE_JOINT:
       {    
-        tesseract_scene_graph::JointConstPtr remove_joint = tesseract_->getEnvironment()->getJoint(command.remove_joint);
-        std::vector<tesseract_scene_graph::JointConstPtr> joints = tesseract_->getEnvironment()->getSceneGraph()->getInboundJoints(remove_joint->child_link_name);
+        tesseract_scene_graph::Joint::ConstPtr remove_joint = tesseract_->getEnvironment()->getJoint(command.remove_joint);
+        std::vector<tesseract_scene_graph::Joint::ConstPtr> joints = tesseract_->getEnvironment()->getSceneGraph()->getInboundJoints(remove_joint->child_link_name);
         assert(joints.size() <= 1);
 
         // get child link names to remove
@@ -374,7 +374,7 @@ bool EnvironmentWidget::applyEnvironmentCommands(const std::vector<tesseract_msg
           if (!visualization_->removeLink(link_name))
             return false;
 
-          std::vector<tesseract_scene_graph::JointConstPtr> joints = tesseract_->getEnvironment()->getSceneGraph()->getInboundJoints(link_name);
+          std::vector<tesseract_scene_graph::Joint::ConstPtr> joints = tesseract_->getEnvironment()->getSceneGraph()->getInboundJoints(link_name);
           if (joints.size() == 1)
           {
             if (!visualization_->removeJoint(joints[0]->getName()))

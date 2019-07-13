@@ -114,6 +114,10 @@ class CollisionObjectWrapper : public btCollisionObject
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+  using Ptr = std::shared_ptr<CollisionObjectWrapper>;
+  using ConstPtr = std::shared_ptr<const CollisionObjectWrapper>;
+
   CollisionObjectWrapper(const std::string& name,
                          const int& type_id,
                          const CollisionShapesConst& shapes,
@@ -198,11 +202,9 @@ protected:
       m_data; /**< @brief This manages the collision shape pointer so they get destroyed */
 };
 
-typedef CollisionObjectWrapper COW;
-typedef std::shared_ptr<CollisionObjectWrapper> COWPtr;
-typedef std::shared_ptr<const CollisionObjectWrapper> COWConstPtr;
-typedef std::map<std::string, COWPtr> Link2Cow;
-typedef std::map<std::string, COWConstPtr> Link2ConstCow;
+using COW = CollisionObjectWrapper;
+using Link2Cow = std::map<std::string, COW::Ptr>;
+using Link2ConstCow = std::map<std::string, COW::ConstPtr>;
 
 /** @brief This is a casted collision shape used for checking if an object is collision free between two transforms */
 struct CastHullShape : public btConvexShape
@@ -829,7 +831,7 @@ inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
   }
 }
 
-inline COWPtr createCollisionObject(const std::string& name,
+inline COW::Ptr createCollisionObject(const std::string& name,
                                     const int& type_id,
                                     const CollisionShapesConst& shapes,
                                     const tesseract_common::VectorIsometry3d& shape_poses,
@@ -842,7 +844,7 @@ inline COWPtr createCollisionObject(const std::string& name,
     return nullptr;
   }
 
-  COWPtr new_cow(new COW(name, type_id, shapes, shape_poses));
+  COW::Ptr new_cow(new COW(name, type_id, shapes, shape_poses));
 
   new_cow->m_enabled = enabled;
   new_cow->setContactProcessingThreshold(BULLET_DEFAULT_CONTACT_DISTANCE);
@@ -854,12 +856,12 @@ inline COWPtr createCollisionObject(const std::string& name,
 struct DiscreteCollisionCollector : public btCollisionWorld::ContactResultCallback
 {
   ContactTestData& collisions_;
-  const COWPtr cow_;
+  const COW::Ptr cow_;
   double contact_distance_;
   bool verbose_;
 
   DiscreteCollisionCollector(ContactTestData& collisions,
-                             const COWPtr cow,
+                             const COW::Ptr cow,
                              double contact_distance,
                              bool verbose = false)
     : collisions_(collisions), cow_(cow), contact_distance_(contact_distance), verbose_(verbose)
@@ -894,11 +896,11 @@ struct DiscreteCollisionCollector : public btCollisionWorld::ContactResultCallba
 struct CastCollisionCollector : public btCollisionWorld::ContactResultCallback
 {
   ContactTestData& collisions_;
-  const COWPtr cow_;
+  const COW::Ptr cow_;
   double contact_distance_;
   bool verbose_;
 
-  CastCollisionCollector(ContactTestData& collisions, const COWPtr cow, double contact_distance, bool verbose = false)
+  CastCollisionCollector(ContactTestData& collisions, const COW::Ptr cow, double contact_distance, bool verbose = false)
     : collisions_(collisions), cow_(cow), contact_distance_(contact_distance), verbose_(verbose)
   {
     m_closestDistanceThreshold = static_cast<btScalar>(contact_distance);
@@ -928,9 +930,9 @@ struct CastCollisionCollector : public btCollisionWorld::ContactResultCallback
   }
 };
 
-inline COWPtr makeCastCollisionObject(const COWPtr& cow)
+inline COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
 {
-  COWPtr new_cow = cow->clone();
+  COW::Ptr new_cow = cow->clone();
 
   btTransform tf;
   tf.setIdentity();
@@ -1032,7 +1034,7 @@ inline COWPtr makeCastCollisionObject(const COWPtr& cow)
  * @param broadphase The bullet broadphase interface
  * @param dispatcher The bullet collision dispatcher
  */
-inline void updateBroadphaseAABB(const COWPtr& cow,
+inline void updateBroadphaseAABB(const COW::Ptr& cow,
                                  const std::unique_ptr<btBroadphaseInterface>& broadphase,
                                  const std::unique_ptr<btCollisionDispatcher>& dispatcher)
 {
@@ -1051,7 +1053,7 @@ inline void updateBroadphaseAABB(const COWPtr& cow,
  * @param broadphase The bullet broadphase interface
  * @param dispatcher The bullet collision dispatcher
  */
-inline void removeCollisionObjectFromBroadphase(const COWPtr& cow,
+inline void removeCollisionObjectFromBroadphase(const COW::Ptr& cow,
                                                 const std::unique_ptr<btBroadphaseInterface>& broadphase,
                                                 const std::unique_ptr<btCollisionDispatcher>& dispatcher)
 {
@@ -1071,7 +1073,7 @@ inline void removeCollisionObjectFromBroadphase(const COWPtr& cow,
  * @param broadphase The bullet broadphase interface
  * @param dispatcher The bullet collision dispatcher
  */
-inline void addCollisionObjectToBroadphase(const COWPtr& cow,
+inline void addCollisionObjectToBroadphase(const COW::Ptr& cow,
                                            const std::unique_ptr<btBroadphaseInterface>& broadphase,
                                            const std::unique_ptr<btCollisionDispatcher>& dispatcher)
 {
