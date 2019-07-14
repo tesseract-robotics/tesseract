@@ -14,8 +14,8 @@
   <depend>liburdfdom-headers-dev</depend>
   <depend>libconsole-bridge-dev</depend>
   <depend>assimp-dev</depend>
-  <depend>libtinyxml-dev</depend>
-  <depend>liborocos-kdl-dev</depend>
+  <depend>tinyxml</depend>
+  <depend>orocos_kdl</depend>
 
   <test_depend>gtest</test_depend>
   <test_depend>tesseract_support</test_depend>

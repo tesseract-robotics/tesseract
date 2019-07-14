@@ -8,7 +8,7 @@
   <author>Levi Armstrong</author>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>Eigen3</depend>
+  <depend>eigen</depend>
   <depend>eigen_conversions</depend>
   <depend>roscpp</depend>
   <depend>roslib</depend>
