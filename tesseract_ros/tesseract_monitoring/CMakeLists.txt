@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   pluginlib
   tf2_ros
+  tf2_eigen
 )
 
 generate_dynamic_reconfigure_options(
@@ -33,6 +34,7 @@ catkin_package(
     pluginlib
     dynamic_reconfigure
     tf2_ros
+    tf2_eigen
   DEPENDS
     EIGEN3
     tesseract
