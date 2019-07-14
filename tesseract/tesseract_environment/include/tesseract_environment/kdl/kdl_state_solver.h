@@ -4,7 +4,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/tree.hpp>
-#include <kdl_parser/kdl_parser.hpp>
 #include <kdl/jntarray.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
