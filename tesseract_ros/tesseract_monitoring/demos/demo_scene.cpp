@@ -37,7 +37,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/console.h>
-#include <geometric_shapes/solid_primitive_dims.h>
 #include <tesseract_msgs/TesseractState.h>
 #include <tesseract_msgs/ModifyEnvironment.h>
 #include <tesseract_msgs/EnvironmentCommand.h>
