@@ -47,7 +47,6 @@ static bool publish_environment;
 static boost::mutex modify_mutex;
 static DiscreteContactManagerPluginLoaderPtr discrete_manager_loader; /**< The discrete contact manager loader */
 
-
 void callbackJointState(const sensor_msgs::JointState::ConstPtr& msg)
 {
   boost::mutex::scoped_lock(modify_mutex);
@@ -128,8 +127,8 @@ bool callbackComputeContactResultVector(tesseract_msgs::ComputeContactResultVect
 
 void callbackTesseractEnvDiff(const tesseract_msgs::TesseractStatePtr& state)
 {
-//  if (!state->is_diff)
-//    return;
+  //  if (!state->is_diff)
+  //    return;
 
   boost::mutex::scoped_lock(modify_mutex);
   if (!processMsg(*(tess->getEnvironment()), *state))
@@ -154,7 +153,6 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   ros::NodeHandle pnh("~");
 
-
   SceneGraph::Ptr scene_graph;
   SRDFModel::Ptr srdf_model;
   std::string robot_description;
@@ -162,19 +160,18 @@ int main(int argc, char** argv)
 
   pnh.param<std::string>("robot_description", robot_description, ROBOT_DESCRIPTION_PARAM);
   pnh.param<bool>("publish_environment", publish_environment, false);
-//  if (pnh.hasParam("plugin"))
-//  {
-//    discrete_manager_loader.reset(new DiscreteContactManagerPluginLoader("tesseract_collision", "tesseract_collision::DiscreteContactManager"));
-//    pnh.getParam("plugin", plugin);
-//    if (discrete_manager_loader->isClassAvailable(plugin))
-//    {
-//      ROS_ERROR("Failed to load tesseract contact checker plugin: %s.", plugin.c_str());
-//      return -1;
-//    }
-//    auto fn = [&]() -> DiscreteContactManagerPtr { return ::discrete_manager_loader->createUniqueInstance(plugin); };
-//    env->registerDiscreteContactManager(plugin, fn);
-//    env->setActiveDiscreteContactManager(plugin);
-//  }
+  //  if (pnh.hasParam("plugin"))
+  //  {
+  //    discrete_manager_loader.reset(new DiscreteContactManagerPluginLoader("tesseract_collision",
+  //    "tesseract_collision::DiscreteContactManager")); pnh.getParam("plugin", plugin); if
+  //    (discrete_manager_loader->isClassAvailable(plugin))
+  //    {
+  //      ROS_ERROR("Failed to load tesseract contact checker plugin: %s.", plugin.c_str());
+  //      return -1;
+  //    }
+  //    auto fn = [&]() -> DiscreteContactManagerPtr { return ::discrete_manager_loader->createUniqueInstance(plugin);
+  //    }; env->registerDiscreteContactManager(plugin, fn); env->setActiveDiscreteContactManager(plugin);
+  //  }
 
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;

@@ -39,126 +39,126 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-  /**
-   * @brief Get the active Link Names Recursively
-   *
-   *        This currently only works for graphs that are trees. Need to create a generic method using boost::visitor
-   *        TODO: Need to update using graph->getLinkChildren
-   *
-   * @param active_links
-   * @param scene_graph
-   * @param current_link
-   * @param active
-   */
-  inline void getActiveLinkNamesRecursive(std::vector<std::string>& active_links,
-                                          const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
-                                          const std::string& current_link,
-                                          bool active)
+/**
+ * @brief Get the active Link Names Recursively
+ *
+ *        This currently only works for graphs that are trees. Need to create a generic method using boost::visitor
+ *        TODO: Need to update using graph->getLinkChildren
+ *
+ * @param active_links
+ * @param scene_graph
+ * @param current_link
+ * @param active
+ */
+inline void getActiveLinkNamesRecursive(std::vector<std::string>& active_links,
+                                        const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
+                                        const std::string& current_link,
+                                        bool active)
+{
+  // recursively get all active links
+  assert(scene_graph->isTree());
+  if (active)
   {
-    // recursively get all active links
-    assert(scene_graph->isTree());
-    if (active)
-    {
-      active_links.push_back(current_link);
-      for (const auto& child_link : scene_graph->getAdjacentLinkNames(current_link))
+    active_links.push_back(current_link);
+    for (const auto& child_link : scene_graph->getAdjacentLinkNames(current_link))
+      getActiveLinkNamesRecursive(active_links, scene_graph, child_link, active);
+  }
+  else
+  {
+    for (const auto& child_link : scene_graph->getAdjacentLinkNames(current_link))
+      if (scene_graph->getInboundJoints(child_link)[0]->type != tesseract_scene_graph::JointType::FIXED)
+        getActiveLinkNamesRecursive(active_links, scene_graph, child_link, true);
+      else
         getActiveLinkNamesRecursive(active_links, scene_graph, child_link, active);
-    }
-    else
-    {
-      for (const auto& child_link : scene_graph->getAdjacentLinkNames(current_link))
-        if (scene_graph->getInboundJoints(child_link)[0]->type != tesseract_scene_graph::JointType::FIXED)
-          getActiveLinkNamesRecursive(active_links, scene_graph, child_link, true);
-        else
-          getActiveLinkNamesRecursive(active_links, scene_graph, child_link, active);
-    }
   }
+}
 
-  /**
-   * @brief Should perform a continuous collision check over the trajectory and stop on first collision.
-   * @param manager A continuous contact manager
-   * @param env The environment
-   * @param joint_names JointNames corresponding to the values in traj (must be in same order)
-   * @param traj The joint values at each time step
-   * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
-   * @param first_only Indicates if it should return on first contact
-   * @return True if collision was found, otherwise false.
-   */
-  inline bool checkTrajectory(tesseract_collision::ContinuousContactManager& manager,
-                              const tesseract_environment::Environment& env,
-                              const std::vector<std::string>& joint_names,
-                              const tesseract_common::TrajArray& traj,
-                              std::vector<tesseract_collision::ContactResultMap>& contacts,
-                              bool first_only = true)
+/**
+ * @brief Should perform a continuous collision check over the trajectory and stop on first collision.
+ * @param manager A continuous contact manager
+ * @param env The environment
+ * @param joint_names JointNames corresponding to the values in traj (must be in same order)
+ * @param traj The joint values at each time step
+ * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
+ * @param first_only Indicates if it should return on first contact
+ * @return True if collision was found, otherwise false.
+ */
+inline bool checkTrajectory(tesseract_collision::ContinuousContactManager& manager,
+                            const tesseract_environment::Environment& env,
+                            const std::vector<std::string>& joint_names,
+                            const tesseract_common::TrajArray& traj,
+                            std::vector<tesseract_collision::ContactResultMap>& contacts,
+                            bool first_only = true)
+{
+  bool found = false;
+
+  contacts.reserve(static_cast<size_t>(traj.rows() - 1));
+  for (int iStep = 0; iStep < traj.rows() - 1; ++iStep)
   {
-    bool found = false;
+    tesseract_collision::ContactResultMap collisions;
 
-    contacts.reserve(static_cast<size_t>(traj.rows() - 1));
-    for (int iStep = 0; iStep < traj.rows() - 1; ++iStep)
+    tesseract_environment::EnvState::Ptr state0 = env.getState(joint_names, traj.row(iStep));
+    tesseract_environment::EnvState::Ptr state1 = env.getState(joint_names, traj.row(iStep + 1));
+
+    for (const auto& link_name : manager.getActiveCollisionObjects())
+      manager.setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
+
+    manager.contactTest(collisions, tesseract_collision::ContactTestType::FIRST);
+
+    if (collisions.size() > 0)
     {
-      tesseract_collision::ContactResultMap collisions;
-
-      tesseract_environment::EnvState::Ptr state0 = env.getState(joint_names, traj.row(iStep));
-      tesseract_environment::EnvState::Ptr state1 = env.getState(joint_names, traj.row(iStep + 1));
-
-      for (const auto& link_name : manager.getActiveCollisionObjects())
-        manager.setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
-
-      manager.contactTest(collisions, tesseract_collision::ContactTestType::FIRST);
-
-      if (collisions.size() > 0)
-      {
-        found = true;
-        contacts.push_back(collisions);
-      }
-
-      if (found && first_only)
-        break;
+      found = true;
+      contacts.push_back(collisions);
     }
 
-    return found;
+    if (found && first_only)
+      break;
   }
 
-  /**
-   * @brief Should perform a discrete collision check over the trajectory and stop on first collision.
-   * @param manager A continuous contact manager
-   * @param env The environment
-   * @param joint_names JointNames corresponding to the values in traj (must be in same order)
-   * @param traj The joint values at each time step
-   * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
-   * @param first_only Indicates if it should return on first contact
-   * @return True if collision was found, otherwise false.
-   */
-  inline bool checkTrajectory(tesseract_collision::DiscreteContactManager& manager,
-                              const tesseract_environment::Environment& env,
-                              const std::vector<std::string>& joint_names,
-                              const tesseract_common::TrajArray& traj,
-                              std::vector<tesseract_collision::ContactResultMap>& contacts,
-                              bool first_only = true)
+  return found;
+}
+
+/**
+ * @brief Should perform a discrete collision check over the trajectory and stop on first collision.
+ * @param manager A continuous contact manager
+ * @param env The environment
+ * @param joint_names JointNames corresponding to the values in traj (must be in same order)
+ * @param traj The joint values at each time step
+ * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
+ * @param first_only Indicates if it should return on first contact
+ * @return True if collision was found, otherwise false.
+ */
+inline bool checkTrajectory(tesseract_collision::DiscreteContactManager& manager,
+                            const tesseract_environment::Environment& env,
+                            const std::vector<std::string>& joint_names,
+                            const tesseract_common::TrajArray& traj,
+                            std::vector<tesseract_collision::ContactResultMap>& contacts,
+                            bool first_only = true)
+{
+  bool found = false;
+
+  contacts.reserve(static_cast<size_t>(traj.rows()));
+  for (int iStep = 0; iStep < traj.rows(); ++iStep)
   {
-    bool found = false;
+    tesseract_collision::ContactResultMap collisions;
 
-    contacts.reserve(static_cast<size_t>(traj.rows()));
-    for (int iStep = 0; iStep < traj.rows(); ++iStep)
+    tesseract_environment::EnvState::Ptr state0 = env.getState(joint_names, traj.row(iStep));
+
+    for (const auto& link_name : manager.getActiveCollisionObjects())
+      manager.setCollisionObjectsTransform(link_name, state0->transforms[link_name]);
+
+    manager.contactTest(collisions, tesseract_collision::ContactTestType::FIRST);
+
+    if (collisions.size() > 0)
     {
-      tesseract_collision::ContactResultMap collisions;
-
-      tesseract_environment::EnvState::Ptr state0 = env.getState(joint_names, traj.row(iStep));
-
-      for (const auto& link_name : manager.getActiveCollisionObjects())
-        manager.setCollisionObjectsTransform(link_name, state0->transforms[link_name]);
-
-      manager.contactTest(collisions, tesseract_collision::ContactTestType::FIRST);
-
-      if (collisions.size() > 0)
-      {
-        found = true;
-        contacts.push_back(collisions);
-      }
-      if (found && first_only)
-        break;
+      found = true;
+      contacts.push_back(collisions);
     }
-
-    return found;
+    if (found && first_only)
+      break;
   }
-}    // namespace tesseract_environment
-#endif // TESSERACT_ENVIRONMENT_UTILS_H
+
+  return found;
+}
+}  // namespace tesseract_environment
+#endif  // TESSERACT_ENVIRONMENT_UTILS_H

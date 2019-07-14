@@ -30,7 +30,6 @@
 
 namespace tesseract_collision
 {
-
 class DiscreteContactManagerFactory
 {
 public:
@@ -52,12 +51,13 @@ public:
   {
     auto it = discrete_types.find(name);
     if (it != discrete_types.end())
-      return it->second(); // call the createFunc
+      return it->second();  // call the createFunc
 
     return nullptr;
   }
+
 private:
   std::unordered_map<std::string, CreateMethod> discrete_types;
 };
-}
-#endif // TESSERACT_COLLISION_DISCRETE_CONTACT_MANAGER_FACTORY_H
+}  // namespace tesseract_collision
+#endif  // TESSERACT_COLLISION_DISCRETE_CONTACT_MANAGER_FACTORY_H

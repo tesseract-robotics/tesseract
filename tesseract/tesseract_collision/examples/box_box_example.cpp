@@ -11,10 +11,7 @@ std::string toString(const Eigen::MatrixXd& a)
   return ss.str();
 }
 
-std::string toString(bool b)
-{
-  return b ? "true" : "false";
-}
+std::string toString(bool b) { return b ? "true" : "false"; }
 
 int main(int /*argc*/, char** /*argv*/)
 {
@@ -90,9 +87,16 @@ int main(int /*argc*/, char** /*argv*/)
 
   CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());
   CONSOLE_BRIDGE_logInform("Distance: %f", result_vector[0].distance);
-  CONSOLE_BRIDGE_logInform("Link %s nearest point: %s", result_vector[0].link_names[0].c_str(), toString(result_vector[0].nearest_points[0]).c_str());
-  CONSOLE_BRIDGE_logInform("Link %s nearest point: %s", result_vector[0].link_names[1].c_str(), toString(result_vector[0].nearest_points[1]).c_str());
-  CONSOLE_BRIDGE_logInform("Direction to move Link %s out of collision with Link %s: %s", result_vector[0].link_names[0].c_str(), result_vector[0].link_names[1].c_str(), toString(result_vector[0].normal).c_str());
+  CONSOLE_BRIDGE_logInform("Link %s nearest point: %s",
+                           result_vector[0].link_names[0].c_str(),
+                           toString(result_vector[0].nearest_points[0]).c_str());
+  CONSOLE_BRIDGE_logInform("Link %s nearest point: %s",
+                           result_vector[0].link_names[1].c_str(),
+                           toString(result_vector[0].nearest_points[1]).c_str());
+  CONSOLE_BRIDGE_logInform("Direction to move Link %s out of collision with Link %s: %s",
+                           result_vector[0].link_names[0].c_str(),
+                           result_vector[0].link_names[1].c_str(),
+                           toString(result_vector[0].normal).c_str());
 
   CONSOLE_BRIDGE_logInform("Test object is out side the contact distance");
   location["box_link"].translation() = Eigen::Vector3d(1.60, 0, 0);
@@ -115,7 +119,14 @@ int main(int /*argc*/, char** /*argv*/)
 
   CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());
   CONSOLE_BRIDGE_logInform("Distance: %f", result_vector[0].distance);
-  CONSOLE_BRIDGE_logInform("Link %s nearest point: %s", result_vector[0].link_names[0].c_str(), toString(result_vector[0].nearest_points[0]).c_str());
-  CONSOLE_BRIDGE_logInform("Link %s nearest point: %s", result_vector[0].link_names[1].c_str(), toString(result_vector[0].nearest_points[1]).c_str());
-  CONSOLE_BRIDGE_logInform("Direction to move Link %s further from Link %s: %s", result_vector[0].link_names[0].c_str(), result_vector[0].link_names[1].c_str(), toString(result_vector[0].normal).c_str());
+  CONSOLE_BRIDGE_logInform("Link %s nearest point: %s",
+                           result_vector[0].link_names[0].c_str(),
+                           toString(result_vector[0].nearest_points[0]).c_str());
+  CONSOLE_BRIDGE_logInform("Link %s nearest point: %s",
+                           result_vector[0].link_names[1].c_str(),
+                           toString(result_vector[0].nearest_points[1]).c_str());
+  CONSOLE_BRIDGE_logInform("Direction to move Link %s further from Link %s: %s",
+                           result_vector[0].link_names[0].c_str(),
+                           result_vector[0].link_names[1].c_str(),
+                           toString(result_vector[0].normal).c_str());
 }

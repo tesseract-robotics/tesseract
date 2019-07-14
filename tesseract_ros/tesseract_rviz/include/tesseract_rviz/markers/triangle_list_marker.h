@@ -44,26 +44,23 @@ namespace rviz
 {
 class Arrow;
 class DisplayContext;
-}
+}  // namespace rviz
 
 namespace tesseract_rviz
 {
-
-class TriangleListMarker: public MarkerBase
+class TriangleListMarker : public MarkerBase
 {
 public:
   using Ptr = boost::shared_ptr<TriangleListMarker>;
   using ConstPtr = boost::shared_ptr<const TriangleListMarker>;
 
-  TriangleListMarker(const std::string &ns,
+  TriangleListMarker(const std::string& ns,
                      const int id,
                      rviz::DisplayContext* context,
                      Ogre::SceneNode* parent_node,
                      const Ogre::ColourValue color,
-                     const std::vector<Ogre::Vector3> &points,
-                     const std::vector<Ogre::ColourValue> &colors);
-
-
+                     const std::vector<Ogre::Vector3>& points,
+                     const std::vector<Ogre::ColourValue>& colors);
 
   ~TriangleListMarker() override;
 
@@ -84,5 +81,5 @@ protected:
   std::string material_name_;
 };
 
-}
-#endif // TESSERACT_RVIZ_MARKERS_TRIANGLE_LIST_MARKER_H
+}  // namespace tesseract_rviz
+#endif  // TESSERACT_RVIZ_MARKERS_TRIANGLE_LIST_MARKER_H

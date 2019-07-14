@@ -30,7 +30,6 @@
 
 namespace tesseract_kinematics
 {
-
 class KDLInvKinChainLMAFactory : public InverseKinematicsFactory
 {
 public:
@@ -41,9 +40,9 @@ public:
   InverseKinematicsFactoryType getType() const override { return InverseKinematicsFactoryType::CHAIN; }
 
   InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-                              const std::string& base_link,
-                              const std::string& tip_link,
-                              const std::string name) const override
+                                const std::string& base_link,
+                                const std::string& tip_link,
+                                const std::string name) const override
   {
     auto kin = std::make_shared<KDLInvKinChainLMA>();
     if (!kin->init(scene_graph, base_link, tip_link, name))
@@ -56,6 +55,6 @@ private:
   std::string name_;
 };
 
-}
+}  // namespace tesseract_kinematics
 
-#endif // TESSERACT_KINEMATICS_KDL_INV_KIN_CHAIN_LMA_FACTORY_H
+#endif  // TESSERACT_KINEMATICS_KDL_INV_KIN_CHAIN_LMA_FACTORY_H

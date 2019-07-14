@@ -37,29 +37,21 @@
 
 namespace tesseract_rviz
 {
-
-SphereMarker::SphereMarker(const std::string &ns,
+SphereMarker::SphereMarker(const std::string& ns,
                            const int id,
                            rviz::DisplayContext* context,
                            Ogre::SceneNode* parent_node,
                            float radius)
-  : MarkerBase(ns, id, context, parent_node )
-  , shape_(nullptr)
-  , scale_(Ogre::Vector3(1,1,1))
-  , radius_(radius)
+  : MarkerBase(ns, id, context, parent_node), shape_(nullptr), scale_(Ogre::Vector3(1, 1, 1)), radius_(radius)
 {
-  shape_ = new rviz::Shape( rviz::Shape::Sphere, context_->getSceneManager(), scene_node_ );
+  shape_ = new rviz::Shape(rviz::Shape::Sphere, context_->getSceneManager(), scene_node_);
   setScale(scale_);
 
-  handler_.reset( new MarkerSelectionHandler( this, MarkerID( ns_, id_ ), context_ ));
-  handler_->addTrackedObjects( shape_->getRootNode() );
-
+  handler_.reset(new MarkerSelectionHandler(this, MarkerID(ns_, id_), context_));
+  handler_->addTrackedObjects(shape_->getRootNode());
 }
 
-SphereMarker::~SphereMarker()
-{
-  delete shape_;
-}
+SphereMarker::~SphereMarker() { delete shape_; }
 
 void SphereMarker::setScale(Ogre::Vector3 scale)
 {
@@ -67,10 +59,7 @@ void SphereMarker::setScale(Ogre::Vector3 scale)
   shape_->setScale(radius_ * scale_);
 }
 
-Ogre::Vector3 SphereMarker::getScale() const
-{
-  return scale_;
-}
+Ogre::Vector3 SphereMarker::getScale() const { return scale_; }
 
 void SphereMarker::setRadius(float radius)
 {
@@ -78,15 +67,9 @@ void SphereMarker::setRadius(float radius)
   shape_->setScale(radius_ * scale_);
 }
 
-float SphereMarker::getRadius() const
-{
-  return radius_;
-}
+float SphereMarker::getRadius() const { return radius_; }
 
-void SphereMarker::setColor(Ogre::ColourValue color)
-{
-  shape_->setColor(color.r, color.g, color.b, color.a);
-}
+void SphereMarker::setColor(Ogre::ColourValue color) { shape_->setColor(color.r, color.g, color.b, color.a); }
 
 std::set<Ogre::MaterialPtr> SphereMarker::getMaterials()
 {
@@ -95,4 +78,4 @@ std::set<Ogre::MaterialPtr> SphereMarker::getMaterials()
   return materials;
 }
 
-}
+}  // namespace tesseract_rviz

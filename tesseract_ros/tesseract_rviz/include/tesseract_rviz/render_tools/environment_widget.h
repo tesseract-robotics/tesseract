@@ -28,11 +28,10 @@ class Property;
 class RosTopicProperty;
 class StringProperty;
 class FloatProperty;
-}
+}  // namespace rviz
 
 namespace tesseract_rviz
 {
-
 class EnvironmentWidget : public QObject
 {
   Q_OBJECT
@@ -77,22 +76,22 @@ protected:
   VisualizationWidget::Ptr visualization_;
   tesseract::Tesseract::Ptr tesseract_;
   ros::NodeHandle nh_;
-  ros::Subscriber tesseract_state_subscriber_; /**< @brief subscriber for getting environment updates */
-  ros::ServiceServer modify_environment_server_; /**< @brief host a service for modifying the environment */
+  ros::Subscriber tesseract_state_subscriber_;        /**< @brief subscriber for getting environment updates */
+  ros::ServiceServer modify_environment_server_;      /**< @brief host a service for modifying the environment */
   ros::ServiceServer get_environment_changes_server_; /**< @brief host a service for getting the environment changes */
   bool update_required_;
-  bool update_state_; /**< @brief Update visualization current state from environment message */
+  bool update_state_;    /**< @brief Update visualization current state from environment message */
   bool load_tesseract_;  // for delayed initialization
   std::map<std::string, std_msgs::ColorRGBA> highlights_;
 
   void loadEnvironment();
 
   /** @brief Set the scene node's position, given the target frame and the planning frame */
-//  void calculateOffsetPosition();
+  //  void calculateOffsetPosition();
 
-//  void setLinkColor(const tesseract_msgs::TesseractState::_object_colors_type& link_colors);
-//  void setLinkColor(Robot* robot, const std::string& link_name, const QColor& color);
-//  void unsetLinkColor(Robot* robot, const std::string& link_name);
+  //  void setLinkColor(const tesseract_msgs::TesseractState::_object_colors_type& link_colors);
+  //  void setLinkColor(Robot* robot, const std::string& link_name, const QColor& color);
+  //  void unsetLinkColor(Robot* robot, const std::string& link_name);
 
   /** @brief Callback for new tesseract state message */
   void newTesseractStateCallback(const tesseract_msgs::TesseractStateConstPtr& state);
@@ -105,8 +104,9 @@ protected:
   bool getEnvironmentChangesCallback(tesseract_msgs::GetEnvironmentChangesRequest& req,
                                      tesseract_msgs::GetEnvironmentChangesResponse& res);
 
-  /** @brief Apply a list of commands to the environment. This used by both services and topics for updating environment visualization */
-  bool applyEnvironmentCommands(const std::vector<tesseract_msgs::EnvironmentCommand> &commands);
+  /** @brief Apply a list of commands to the environment. This used by both services and topics for updating environment
+   * visualization */
+  bool applyEnvironmentCommands(const std::vector<tesseract_msgs::EnvironmentCommand>& commands);
 
   rviz::Property* main_property_;
   rviz::StringProperty* urdf_description_property_;
@@ -120,12 +120,12 @@ protected:
   rviz::BoolProperty* show_all_links_;
 
 private:
-    /** @brief Keeps track of how many EnvironmentWidgets have been created for the default namespace */
-    static int environment_widget_counter_;
-    /** @brief Keeps track of which EnvironmentWidget this is */
-    int environment_widget_id_;
+  /** @brief Keeps track of how many EnvironmentWidgets have been created for the default namespace */
+  static int environment_widget_counter_;
+  /** @brief Keeps track of which EnvironmentWidget this is */
+  int environment_widget_id_;
 
-    std::string widget_ns_;
+  std::string widget_ns_;
 };
 }  // namespace tesseract_rviz
-#endif // TESSERACT_RVIZ_ENVIRONMENT_MONITORING_H
+#endif  // TESSERACT_RVIZ_ENVIRONMENT_MONITORING_H

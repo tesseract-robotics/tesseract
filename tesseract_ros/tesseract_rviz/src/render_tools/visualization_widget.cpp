@@ -59,9 +59,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_rviz
 {
 VisualizationWidget::VisualizationWidget(Ogre::SceneNode* root_node,
-             rviz::DisplayContext* context,
-             const std::string& name,
-             rviz::Property* parent_property)
+                                         rviz::DisplayContext* context,
+                                         const std::string& name,
+                                         rviz::Property* parent_property)
   : scene_manager_(context->getSceneManager())
   , visible_(true)
   , visual_visible_(true)
@@ -232,23 +232,24 @@ void VisualizationWidget::clear()
 }
 
 LinkWidget* VisualizationWidget::LinkFactory::createLink(VisualizationWidget* robot,
-                                                  const tesseract_scene_graph::Link& link,
-                                                  bool visual,
-                                                  bool collision)
+                                                         const tesseract_scene_graph::Link& link,
+                                                         bool visual,
+                                                         bool collision)
 {
   return new LinkWidget(robot, link, visual, collision);
 }
 
-JointWidget* VisualizationWidget::LinkFactory::createJoint(VisualizationWidget* robot, const tesseract_scene_graph::Joint& joint)
+JointWidget* VisualizationWidget::LinkFactory::createJoint(VisualizationWidget* robot,
+                                                           const tesseract_scene_graph::Joint& joint)
 {
   return new JointWidget(robot, joint);
 }
 
 void VisualizationWidget::load(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
-                 bool visual,
-                 bool collision,
-                 bool show_active,
-                 bool show_static)
+                               bool visual,
+                               bool collision,
+                               bool show_active,
+                               bool show_static)
 {
   link_tree_->hide();  // hide until loaded
   env_loaded_ = false;
@@ -261,7 +262,7 @@ void VisualizationWidget::load(const tesseract_scene_graph::SceneGraph::ConstPtr
   clear();
 
   // Populate the list of active links
-//  tesseract::tesseract_ros::getActiveLinkNamesRecursive(active_links_, urdf->getRoot(), false);
+  //  tesseract::tesseract_ros::getActiveLinkNamesRecursive(active_links_, urdf->getRoot(), false);
 
   // the root link is discovered below.  Set to nullptr until found.
   root_link_ = nullptr;
@@ -280,7 +281,7 @@ void VisualizationWidget::load(const tesseract_scene_graph::SceneGraph::ConstPtr
   // Create properties for each joint.
   // Properties are not added to display until changedLinkTreeStyle() is called
   // (below).
-  {   
+  {
     std::vector<tesseract_scene_graph::Joint::ConstPtr> joints = scene_graph->getJoints();
     for (const tesseract_scene_graph::Joint::ConstPtr& tjoint : joints)
       addJoint(*tjoint);
@@ -405,7 +406,7 @@ bool VisualizationWidget::moveJoint(const std::string& joint_name, const std::st
   return true;
 }
 
-bool VisualizationWidget::changeJointOrigin(const std::string &name, const Eigen::Isometry3d &new_origin)
+bool VisualizationWidget::changeJointOrigin(const std::string& name, const Eigen::Isometry3d& new_origin)
 {
   auto found = joints_.find(name);
 
@@ -425,8 +426,8 @@ bool VisualizationWidget::changeJointOrigin(const std::string &name, const Eigen
 }
 
 void VisualizationWidget::addAllowedCollision(const std::string& link_name1,
-                                           const std::string& link_name2,
-                                           const std::string& reason)
+                                              const std::string& link_name2,
+                                              const std::string& reason)
 {
   auto it1 = links_.find(link_name1);
   if (it1 == links_.end())
@@ -451,8 +452,7 @@ void VisualizationWidget::addAllowedCollision(const std::string& link_name1,
   changedLinkTreeStyle();
 }
 
-void VisualizationWidget::removeAllowedCollision(const std::string& link_name1,
-                                              const std::string& link_name2)
+void VisualizationWidget::removeAllowedCollision(const std::string& link_name1, const std::string& link_name2)
 {
   auto it1 = links_.find(link_name1);
   if (it1 == links_.end())
@@ -476,7 +476,6 @@ void VisualizationWidget::removeAllowedCollision(const std::string& link_name1,
 
   changedLinkTreeStyle();
 }
-
 
 void VisualizationWidget::removeAllowedCollision(const std::string& link_name)
 {
@@ -630,8 +629,14 @@ bool VisualizationWidget::styleShowLink(LinkTreeStyle style)
   return style == STYLE_LINK_LIST || style == STYLE_LINK_TREE || style == STYLE_JOINT_LINK_TREE;
 }
 
-bool VisualizationWidget::styleShowJoint(LinkTreeStyle style) { return style == STYLE_JOINT_LIST || style == STYLE_JOINT_LINK_TREE; }
-bool VisualizationWidget::styleIsTree(LinkTreeStyle style) { return style == STYLE_LINK_TREE || style == STYLE_JOINT_LINK_TREE; }
+bool VisualizationWidget::styleShowJoint(LinkTreeStyle style)
+{
+  return style == STYLE_JOINT_LIST || style == STYLE_JOINT_LINK_TREE;
+}
+bool VisualizationWidget::styleIsTree(LinkTreeStyle style)
+{
+  return style == STYLE_LINK_TREE || style == STYLE_JOINT_LINK_TREE;
+}
 void VisualizationWidget::setLinkTreeStyle(LinkTreeStyle style)
 {
   std::map<LinkTreeStyle, std::string>::const_iterator style_it = style_name_map_.find(style);
@@ -872,7 +877,8 @@ void VisualizationWidget::calculateJointCheckboxes()
     int child_links_with_geom;
     int child_links_with_geom_checked;
     int child_links_with_geom_unchecked;
-    child_joint->calculateJointCheckboxesRecursive(child_links_with_geom, child_links_with_geom_checked, child_links_with_geom_unchecked);
+    child_joint->calculateJointCheckboxesRecursive(
+        child_links_with_geom, child_links_with_geom_checked, child_links_with_geom_unchecked);
     links_with_geom_checked += child_links_with_geom_checked;
     links_with_geom_unchecked += child_links_with_geom_unchecked;
 
@@ -901,43 +907,43 @@ void VisualizationWidget::update(const TransformMap& transforms)
     auto it = transforms.find(link->getName());
     if (it != transforms.end())
     {
-//      // Check if visual_orientation, visual_position, collision_orientation,
-//      // and collision_position are NaN.
-//      if (visual_orientation.isNaN())
-//      {
-//        ROS_ERROR_THROTTLE(1.0,
-//                           "visual orientation of %s contains NaNs. "
-//                           "Skipping render as long as the orientation is "
-//                           "invalid.",
-//                           link->getName().c_str());
-//        continue;
-//      }
-//      if (visual_position.isNaN())
-//      {
-//        ROS_ERROR_THROTTLE(1.0,
-//                           "visual position of %s contains NaNs. Skipping "
-//                           "render as long as the position is invalid.",
-//                           link->getName().c_str());
-//        continue;
-//      }
-//      if (collision_orientation.isNaN())
-//      {
-//        ROS_ERROR_THROTTLE(1.0,
-//                           "collision orientation of %s contains NaNs. "
-//                           "Skipping render as long as the orientation is "
-//                           "invalid.",
-//                           link->getName().c_str());
-//        continue;
-//      }
-//      if (collision_position.isNaN())
-//      {
-//        ROS_ERROR_THROTTLE(1.0,
-//                           "collision position of %s contains NaNs. "
-//                           "Skipping render as long as the position is "
-//                           "invalid.",
-//                           link->getName().c_str());
-//        continue;
-//      }
+      //      // Check if visual_orientation, visual_position, collision_orientation,
+      //      // and collision_position are NaN.
+      //      if (visual_orientation.isNaN())
+      //      {
+      //        ROS_ERROR_THROTTLE(1.0,
+      //                           "visual orientation of %s contains NaNs. "
+      //                           "Skipping render as long as the orientation is "
+      //                           "invalid.",
+      //                           link->getName().c_str());
+      //        continue;
+      //      }
+      //      if (visual_position.isNaN())
+      //      {
+      //        ROS_ERROR_THROTTLE(1.0,
+      //                           "visual position of %s contains NaNs. Skipping "
+      //                           "render as long as the position is invalid.",
+      //                           link->getName().c_str());
+      //        continue;
+      //      }
+      //      if (collision_orientation.isNaN())
+      //      {
+      //        ROS_ERROR_THROTTLE(1.0,
+      //                           "collision orientation of %s contains NaNs. "
+      //                           "Skipping render as long as the orientation is "
+      //                           "invalid.",
+      //                           link->getName().c_str());
+      //        continue;
+      //      }
+      //      if (collision_position.isNaN())
+      //      {
+      //        ROS_ERROR_THROTTLE(1.0,
+      //                           "collision position of %s contains NaNs. "
+      //                           "Skipping render as long as the position is "
+      //                           "invalid.",
+      //                           link->getName().c_str());
+      //        continue;
+      //      }
       link->setCurrentTransform(it->second);
     }
     else
@@ -954,7 +960,6 @@ void VisualizationWidget::update(const TransformMap& transforms)
     LinkWidget* p_link = links_[joint->getParentLinkName()];
     joint->setTransforms(p_link->getPosition(), p_link->getOrientation());
   }
-
 }
 
 void VisualizationWidget::setPosition(const Ogre::Vector3& position)
@@ -977,4 +982,4 @@ void VisualizationWidget::setScale(const Ogre::Vector3& scale)
 
 const Ogre::Vector3& VisualizationWidget::getPosition() { return root_visual_node_->getPosition(); }
 const Ogre::Quaternion& VisualizationWidget::getOrientation() { return root_visual_node_->getOrientation(); }
-}  // namespace rviz
+}  // namespace tesseract_rviz

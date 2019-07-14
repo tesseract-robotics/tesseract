@@ -59,7 +59,7 @@ class Vector3;
 class Quaternion;
 class Any;
 class RibbonTrail;
-}
+}  // namespace Ogre
 
 namespace rviz
 {
@@ -73,7 +73,7 @@ class BoolProperty;
 class QuaternionProperty;
 class VectorProperty;
 class StringProperty;
-}
+}  // namespace rviz
 
 namespace tesseract_rviz
 {

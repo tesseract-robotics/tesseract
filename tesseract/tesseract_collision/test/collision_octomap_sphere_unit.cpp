@@ -90,7 +90,7 @@ void runTest(DiscreteContactManager& checker, double tol)
   }
   auto end_time = std::chrono::high_resolution_clock::now();
 
-  CONSOLE_BRIDGE_logInform("DT: %f ms",  std::chrono::duration<double, std::milli>(end_time - start_time).count());
+  CONSOLE_BRIDGE_logInform("DT: %f ms", std::chrono::duration<double, std::milli>(end_time - start_time).count());
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);

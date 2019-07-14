@@ -59,8 +59,7 @@ public:
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)
    * @return True if calculation successful, False if anything is wrong (including uninitialized BasicKin)
    */
-  virtual bool calcFwdKin(Eigen::Isometry3d& pose,
-                          const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
+  virtual bool calcFwdKin(Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const = 0;
 
   /**
    * @brief Calculates pose for all links of robot chain
@@ -101,7 +100,6 @@ public:
   virtual bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                             const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                             const std::string& link_name) const = 0;
-
 
   /**
    * @brief Check for consistency in # and limits of joints
@@ -157,7 +155,6 @@ public:
 
   /** @brief Clone the forward kinematics object */
   virtual std::shared_ptr<ForwardKinematics> clone() const = 0;
-
 };
 
 using ForwardKinematicsPtrMap = std::unordered_map<std::string, ForwardKinematics::Ptr>;

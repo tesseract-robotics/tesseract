@@ -68,14 +68,17 @@ public:
    * @param robot_model The current kinematic model to build on
    * @param tf A pointer to the tf transformer to use
    */
-  CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr &env, const tesseract::ForwardKinematicsManager::ConstPtr& kinematics_manager);
+  CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env,
+                      const tesseract::ForwardKinematicsManager::ConstPtr& kinematics_manager);
 
   /** @brief Constructor.
    *  @param robot_model The current kinematic model to build on
    *  @param tf A pointer to the tf transformer to use
    *  @param nh A ros::NodeHandle to pass node specific options
    */
-  CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env, const tesseract::ForwardKinematicsManager::ConstPtr& kinematics_manager, ros::NodeHandle nh);
+  CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env,
+                      const tesseract::ForwardKinematicsManager::ConstPtr& kinematics_manager,
+                      ros::NodeHandle nh);
 
   ~CurrentStateMonitor();
 
@@ -137,7 +140,7 @@ public:
 
   /** @brief Wait for at most \e wait_time seconds (default 1s) for a robot state more recent than t
    *  @return true on success, false if up-to-date robot state wasn't received within \e wait_time
-  */
+   */
   bool waitForCurrentState(const ros::Time t = ros::Time::now(), double wait_time = 1.0) const;
 
   /** @brief Wait for at most \e wait_time seconds until the complete robot state is known.
@@ -170,6 +173,7 @@ public:
    *  this is useful in some but not all applications
    */
   void enableCopyDynamics(bool enabled) { copy_dynamics_ = enabled; }
+
 private:
   void jointStateCallback(const sensor_msgs::JointStateConstPtr& joint_state);
   bool isPassiveOrMimicDOF(const std::string& dof) const;
@@ -189,13 +193,12 @@ private:
   ros::Time current_state_time_;
   ros::Time last_tf_update_;
 
-
   mutable boost::mutex state_update_lock_;
   mutable boost::condition_variable state_update_condition_;
   std::vector<JointStateUpdateCallback> update_callbacks_;
 };
 typedef std::shared_ptr<CurrentStateMonitor> CurrentStateMonitorPtr;
 typedef std::shared_ptr<const CurrentStateMonitor> CurrentStateMonitorConstPtr;
-}
+}  // namespace tesseract_monitoring
 
 #endif

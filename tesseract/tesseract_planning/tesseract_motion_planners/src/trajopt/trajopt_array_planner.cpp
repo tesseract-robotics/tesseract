@@ -42,10 +42,7 @@ using namespace trajopt;
 
 namespace tesseract_motion_planners
 {
-
-TrajOptArrayPlanner::TrajOptArrayPlanner(const std::string& name):
-  config_(nullptr),
-  pci_(nullptr)
+TrajOptArrayPlanner::TrajOptArrayPlanner(const std::string& name) : config_(nullptr), pci_(nullptr)
 {
   name_ = name;
   // TODO: These should be tied to enumeration ints and returned through an getLastErrorMsg() method
@@ -74,7 +71,7 @@ bool TrajOptArrayPlanner::isConfigured() const
 
 bool TrajOptArrayPlanner::solve(PlannerResponse& response)
 {
-  if(!isConfigured())
+  if (!isConfigured())
   {
     CONSOLE_BRIDGE_logError("Planner %s is not configured", name_.c_str());
     return false;
@@ -190,7 +187,8 @@ bool TrajOptArrayPlanner::setConfiguration(const TrajOptArrayPlannerConfig& conf
       }
       case tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT:
       {
-        CartesianWaypoint::Ptr cart_waypoint = std::static_pointer_cast<CartesianWaypoint>(config.target_waypoints_[ind]);
+        CartesianWaypoint::Ptr cart_waypoint =
+            std::static_pointer_cast<CartesianWaypoint>(config.target_waypoints_[ind]);
         std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);
         pose->term_type = cart_waypoint->is_critical_ ? TT_CNT : TT_COST;
         pose->name = "cartesian_position";

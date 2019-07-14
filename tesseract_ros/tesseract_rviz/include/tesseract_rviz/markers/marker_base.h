@@ -43,7 +43,7 @@ class SceneNode;
 class Vector3;
 class Quaternion;
 class Entity;
-}
+}  // namespace Ogre
 
 namespace rviz
 {
@@ -61,7 +61,7 @@ public:
   using Ptr = boost::shared_ptr<MarkerBase>;
   using ConstPtr = boost::shared_ptr<const MarkerBase>;
 
-  MarkerBase(const std::string& ns, const int id, rviz::DisplayContext* context, Ogre::SceneNode* parent_node );
+  MarkerBase(const std::string& ns, const int id, rviz::DisplayContext* context, Ogre::SceneNode* parent_node);
   virtual ~MarkerBase();
 
   MarkerID getID() { return MarkerID(ns_, id_); }
@@ -74,10 +74,10 @@ public:
   }
 
   /** @brief Associate an InteractiveObject with this MarkerBase. */
-  void setInteractiveObject( rviz::InteractiveObjectWPtr object );
+  void setInteractiveObject(rviz::InteractiveObjectWPtr object);
 
-  virtual void setPosition( const Ogre::Vector3& position );
-  virtual void setOrientation( const Ogre::Quaternion& orientation );
+  virtual void setPosition(const Ogre::Vector3& position);
+  virtual void setOrientation(const Ogre::Quaternion& orientation);
   const Ogre::Vector3& getPosition();
   const Ogre::Quaternion& getOrientation();
 
@@ -89,7 +89,7 @@ public:
   virtual std::set<Ogre::MaterialPtr> getMaterials() { return std::set<Ogre::MaterialPtr>(); }
 
 protected:
-  void extractMaterials( Ogre::Entity *entity, std::set<Ogre::MaterialPtr> &materials );
+  void extractMaterials(Ogre::Entity* entity, std::set<Ogre::MaterialPtr>& materials);
 
   std::string ns_;
 
@@ -102,6 +102,6 @@ protected:
   boost::shared_ptr<MarkerSelectionHandler> handler_;
 };
 
-}
+}  // namespace tesseract_rviz
 
-#endif // TESSERACT_RVIZ_INTERACTIVE_MARKER_MARKER_BASE_H
+#endif  // TESSERACT_RVIZ_INTERACTIVE_MARKER_MARKER_BASE_H

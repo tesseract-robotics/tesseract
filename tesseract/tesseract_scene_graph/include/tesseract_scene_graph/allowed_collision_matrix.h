@@ -12,7 +12,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
 {
-
 class AllowedCollisionMatrix
 {
 public:
@@ -105,7 +104,6 @@ public:
   void clearAllowedCollisions() { lookup_table_.clear(); }
 
 private:
-
   AllowedCollisionEntries lookup_table_;
 
   /**
@@ -123,5 +121,5 @@ private:
   }
 };
 
-}
-#endif // TESSERACT_SCENE_GRAPH_ALLOWED_COLLISION_MATRIX_H
+}  // namespace tesseract_scene_graph
+#endif  // TESSERACT_SCENE_GRAPH_ALLOWED_COLLISION_MATRIX_H

@@ -34,29 +34,40 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
-  enum GeometryType {SPHERE, CYLINDER, CONE, BOX, PLANE, MESH, CONVEX_MESH, SDF_MESH, OCTREE};
+enum GeometryType
+{
+  SPHERE,
+  CYLINDER,
+  CONE,
+  BOX,
+  PLANE,
+  MESH,
+  CONVEX_MESH,
+  SDF_MESH,
+  OCTREE
+};
 
-  class Geometry
-  {
-  public:
-    using Ptr = std::shared_ptr<Geometry>;
-    using ConstPtr = std::shared_ptr<const Geometry>;
+class Geometry
+{
+public:
+  using Ptr = std::shared_ptr<Geometry>;
+  using ConstPtr = std::shared_ptr<const Geometry>;
 
-    explicit Geometry(GeometryType type) : type_(type) {}
-    virtual ~Geometry() = default;
+  explicit Geometry(GeometryType type) : type_(type) {}
+  virtual ~Geometry() = default;
 
-    /** \brief Create a copy of this shape */
-    virtual Geometry::Ptr clone() const = 0;
+  /** \brief Create a copy of this shape */
+  virtual Geometry::Ptr clone() const = 0;
 
-    GeometryType getType() const { return type_; }
+  GeometryType getType() const { return type_; }
 
-  private:
-    /** \brief The type of the shape */
-    GeometryType type_;
-  };
+private:
+  /** \brief The type of the shape */
+  GeometryType type_;
+};
 
-  using Geometrys = std::vector<Geometry::Ptr>;
-  using GeometrysConst = std::vector<Geometry::ConstPtr>;
-}
+using Geometrys = std::vector<Geometry::Ptr>;
+using GeometrysConst = std::vector<Geometry::ConstPtr>;
+}  // namespace tesseract_geometry
 
-#endif // TESSERACT_GEOMETRY_GEOMETRY_H
+#endif  // TESSERACT_GEOMETRY_GEOMETRY_H

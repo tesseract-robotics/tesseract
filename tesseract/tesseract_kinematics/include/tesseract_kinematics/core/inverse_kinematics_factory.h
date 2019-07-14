@@ -41,7 +41,6 @@ enum class InverseKinematicsFactoryType
 class InverseKinematicsFactory
 {
 public:
-
   using Ptr = std::shared_ptr<InverseKinematicsFactory>;
   using ConstPtr = std::shared_ptr<const InverseKinematicsFactory>;
 
@@ -69,9 +68,12 @@ public:
    * @return True if init() completes successfully
    */
   virtual InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-                                      const std::string& base_link,
-                                      const std::string& tip_link,
-                                      const std::string name) const { return nullptr; }
+                                        const std::string& base_link,
+                                        const std::string& tip_link,
+                                        const std::string name) const
+  {
+    return nullptr;
+  }
 
   /**
    * @brief Create Inverse Kinematics Tree Object
@@ -82,12 +84,16 @@ public:
    * @param start_state The initial start state for the tree. This should inlclude all joints in the scene graph
    * @return True if init() completes successfully
    */
-  virtual InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-                                      const std::vector<std::string>& joint_names,
-                                      const std::string name,
-                                      std::unordered_map<std::string, double> start_state = std::unordered_map<std::string, double>()) const { return nullptr; }
+  virtual InverseKinematics::Ptr
+  create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+         const std::vector<std::string>& joint_names,
+         const std::string name,
+         std::unordered_map<std::string, double> start_state = std::unordered_map<std::string, double>()) const
+  {
+    return nullptr;
+  }
 };
 
-}
+}  // namespace tesseract_kinematics
 
-#endif // TESSERACT_KINEMATICS_INVERSE_KINEMATICS_FACTORY_H
+#endif  // TESSERACT_KINEMATICS_INVERSE_KINEMATICS_FACTORY_H

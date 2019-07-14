@@ -43,7 +43,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <ros/ros.h>
 
-
 namespace tesseract_rosutils
 {
 /** @brief The BasicPlotting class */
@@ -60,7 +59,8 @@ public:
     axes_pub_ = nh.advertise<visualization_msgs::MarkerArray>("/trajopt/display_axes", 1, true);
   }
 
-  void plotTrajectory(const std::vector<std::string>& joint_names, const Eigen::Ref<const tesseract_common::TrajArray>& traj) override
+  void plotTrajectory(const std::vector<std::string>& joint_names,
+                      const Eigen::Ref<const tesseract_common::TrajArray>& traj) override
   {
     tesseract_msgs::Trajectory msg;
 
@@ -183,13 +183,13 @@ public:
   }
 
 private:
-  tesseract_environment::Environment::ConstPtr env_;       /**< The Env */
-  int marker_counter_;            /**< Counter when plotting */
-  ros::Publisher scene_pub_;      /**< Scene publisher */
-  ros::Publisher trajectory_pub_; /**< Trajectory publisher */
-  ros::Publisher collisions_pub_; /**< Collision Data publisher */
-  ros::Publisher arrows_pub_;     /**< Used for publishing arrow markers */
-  ros::Publisher axes_pub_;       /**< Used for publishing axis markers */
+  tesseract_environment::Environment::ConstPtr env_; /**< The Env */
+  int marker_counter_;                               /**< Counter when plotting */
+  ros::Publisher scene_pub_;                         /**< Scene publisher */
+  ros::Publisher trajectory_pub_;                    /**< Trajectory publisher */
+  ros::Publisher collisions_pub_;                    /**< Collision Data publisher */
+  ros::Publisher arrows_pub_;                        /**< Used for publishing arrow markers */
+  ros::Publisher axes_pub_;                          /**< Used for publishing axis markers */
 
   visualization_msgs::Marker getMarkerArrowMsg(const Eigen::Ref<const Eigen::Vector3d>& pt1,
                                                const Eigen::Ref<const Eigen::Vector3d>& pt2,
@@ -283,6 +283,6 @@ private:
 };
 typedef std::shared_ptr<ROSPlotting> ROSPlottingPtr;
 typedef std::shared_ptr<const ROSPlotting> ROSPlottingConstPtr;
-}
+}  // namespace tesseract_rosutils
 
 #endif

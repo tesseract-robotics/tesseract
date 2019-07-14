@@ -55,7 +55,7 @@ class EnumProperty;
 class FloatProperty;
 class BoolProperty;
 class StringProperty;
-}
+}  // namespace rviz
 
 namespace Ogre
 {
@@ -64,7 +64,6 @@ class SceneNode;
 
 namespace tesseract_rviz
 {
-
 class ManipulationWidget : public QObject
 {
   Q_OBJECT
@@ -102,8 +101,8 @@ Q_SIGNALS:
   void availableManipulatorsChanged(QStringList manipulators);
   void availableTCPLinksChanged(QStringList tcp_links);
 
-public Q_SLOT:
-  void enableCartesianManipulation(bool enabled);
+public
+  Q_SLOT : void enableCartesianManipulation(bool enabled);
   void enableJointManipulation(bool enabled);
   void resetToCurrentState();
   bool changeManipulator(QString manipulator);
@@ -118,9 +117,16 @@ private Q_SLOTS:
   void changedJointMarkerScale();
   void changedJointManipulationEnabled();
   void clickedResetToCurrentState();
-  void markerFeedback(std::string reference_frame, Eigen::Isometry3d transform, Eigen::Vector3d mouse_point, bool mouse_point_valid);
-  void jointMarkerFeedback(std::string joint_name, std::string reference_frame, Eigen::Isometry3d transform, Eigen::Vector3d mouse_point, bool mouse_point_valid);
-//  void trajectorySliderPanelVisibilityChange(bool enable);
+  void markerFeedback(std::string reference_frame,
+                      Eigen::Isometry3d transform,
+                      Eigen::Vector3d mouse_point,
+                      bool mouse_point_valid);
+  void jointMarkerFeedback(std::string joint_name,
+                           std::string reference_frame,
+                           Eigen::Isometry3d transform,
+                           Eigen::Vector3d mouse_point,
+                           bool mouse_point_valid);
+  //  void trajectorySliderPanelVisibilityChange(bool enable);
 
 protected:
   Ogre::SceneNode* root_interactive_node_;
@@ -145,8 +151,8 @@ protected:
   QStringList available_manipulators_;
   QStringList available_tcp_links_;
 
-//  TrajectoryPanel* trajectory_slider_panel_;
-//  rviz::PanelDockWidget* trajectory_slider_dock_panel_;
+  //  TrajectoryPanel* trajectory_slider_panel_;
+  //  rviz::PanelDockWidget* trajectory_slider_dock_panel_;
 
   // Properties
   bool enabled_;
@@ -160,6 +166,6 @@ protected:
   rviz::EnumProperty* tcp_property_;
   rviz::Property* joint_values_property_;
 };
-}
+}  // namespace tesseract_rviz
 
-#endif // TESSERACT_RVIZ_MANIPULATION_WIDGET_H
+#endif  // TESSERACT_RVIZ_MANIPULATION_WIDGET_H

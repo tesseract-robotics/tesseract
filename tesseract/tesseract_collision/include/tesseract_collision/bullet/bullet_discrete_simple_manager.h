@@ -51,7 +51,6 @@ namespace tesseract_collision_bullet
 class BulletDiscreteSimpleManager : public DiscreteContactManager
 {
 public:
-
   using Ptr = std::shared_ptr<BulletDiscreteSimpleManager>;
   using ConstPtr = std::shared_ptr<const BulletDiscreteSimpleManager>;
 
@@ -78,7 +77,8 @@ public:
 
   void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override;
 
-  void setCollisionObjectsTransform(const std::vector<std::string>& names, const tesseract_common::VectorIsometry3d& poses) override;
+  void setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                    const tesseract_common::VectorIsometry3d& poses) override;
 
   void setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms) override;
 
@@ -117,10 +117,10 @@ private:
                                                          object to object collison algorithm */
   btDispatcherInfo dispatch_info_;              /**< @brief The bullet collision dispatcher configuration information */
   btDefaultCollisionConfiguration coll_config_; /**< @brief The bullet collision configuration */
-  Link2Cow link2cow_;        /**< @brief A map of all (static and active) collision objects being managed */
+  Link2Cow link2cow_;          /**< @brief A map of all (static and active) collision objects being managed */
   std::vector<COW::Ptr> cows_; /**< @brief A vector of collision objects (active followed by static) */
 };
 
-}
-}
+}  // namespace tesseract_collision_bullet
+}  // namespace tesseract_collision
 #endif  // TESSERACT_COLLISION_BULLET_DISCRETE_SIMPLE_MANAGERS_H

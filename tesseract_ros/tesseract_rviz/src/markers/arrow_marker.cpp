@@ -43,42 +43,38 @@
 
 namespace tesseract_rviz
 {
-
-ArrowMarker::ArrowMarker( const std::string &ns,
-                          const int id,
-                          rviz::DisplayContext* context,
-                          Ogre::SceneNode* parent_node)
-  : MarkerBase(ns, id, context, parent_node)
-  , arrow_( nullptr )
-  , location_(Ogre::Vector3(0,0,0))
+ArrowMarker::ArrowMarker(const std::string& ns,
+                         const int id,
+                         rviz::DisplayContext* context,
+                         Ogre::SceneNode* parent_node)
+  : MarkerBase(ns, id, context, parent_node), arrow_(nullptr), location_(Ogre::Vector3(0, 0, 0))
 {
   child_scene_node_ = scene_node_->createChildSceneNode();
 
   arrow_ = new rviz::Arrow(context_->getSceneManager(), child_scene_node_);
   setDefaultProportions();
-  handler_.reset( new MarkerSelectionHandler( this, MarkerID(ns, id), context_ ));
-  handler_->addTrackedObjects( arrow_->getSceneNode() );
+  handler_.reset(new MarkerSelectionHandler(this, MarkerID(ns, id), context_));
+  handler_->addTrackedObjects(arrow_->getSceneNode());
 
-  Ogre::Quaternion orient = Ogre::Vector3::NEGATIVE_UNIT_Z.getRotationTo( Ogre::Vector3(1,0,0) );
-  arrow_->setOrientation( orient );
+  Ogre::Quaternion orient = Ogre::Vector3::NEGATIVE_UNIT_Z.getRotationTo(Ogre::Vector3(1, 0, 0));
+  arrow_->setOrientation(orient);
 }
 
-ArrowMarker::ArrowMarker(const std::string &ns,
-                          const int id,
-                          Ogre::Vector3 point1,
-                          Ogre::Vector3 point2,
-                          rviz::DisplayContext* context,
-                          Ogre::SceneNode* parent_node)
-  : MarkerBase(ns, id, context, parent_node)
-  , arrow_( nullptr )
+ArrowMarker::ArrowMarker(const std::string& ns,
+                         const int id,
+                         Ogre::Vector3 point1,
+                         Ogre::Vector3 point2,
+                         rviz::DisplayContext* context,
+                         Ogre::SceneNode* parent_node)
+  : MarkerBase(ns, id, context, parent_node), arrow_(nullptr)
 {
   child_scene_node_ = scene_node_->createChildSceneNode();
   location_ = point1;
 
   arrow_ = new rviz::Arrow(context_->getSceneManager(), child_scene_node_);
   setDefaultProportions();
-  handler_.reset( new MarkerSelectionHandler( this, MarkerID(ns, id), context_ ));
-  handler_->addTrackedObjects( arrow_->getSceneNode() );
+  handler_.reset(new MarkerSelectionHandler(this, MarkerID(ns, id), context_));
+  handler_->addTrackedObjects(arrow_->getSceneNode());
 
   Ogre::Vector3 direction = point2 - point1;
   float distance = direction.length();
@@ -93,22 +89,19 @@ ArrowMarker::ArrowMarker(const std::string &ns,
   direction.normalise();
 
   // for some reason the arrow goes into the y direction by default
-  Ogre::Quaternion orient = Ogre::Vector3::NEGATIVE_UNIT_Z.getRotationTo( direction );
+  Ogre::Quaternion orient = Ogre::Vector3::NEGATIVE_UNIT_Z.getRotationTo(direction);
 
   arrow_->setPosition(point1);
-  arrow_->setOrientation( orient );
+  arrow_->setOrientation(orient);
 }
 
 ArrowMarker::~ArrowMarker()
 {
   delete arrow_;
-  context_->getSceneManager()->destroySceneNode( child_scene_node_ );
+  context_->getSceneManager()->destroySceneNode(child_scene_node_);
 }
 
-void ArrowMarker::setDefaultProportions()
-{
-  arrow_->set(0.77f, 1.0f, 0.23f, 2.0f);
-}
+void ArrowMarker::setDefaultProportions() { arrow_->set(0.77f, 1.0f, 0.23f, 2.0f); }
 
 void ArrowMarker::setScale(Ogre::Vector3 scale)
 {
@@ -116,22 +109,16 @@ void ArrowMarker::setScale(Ogre::Vector3 scale)
   arrow_->setPosition(scale.x * location_);
 }
 
-Ogre::Vector3 ArrowMarker::getScale() const
-{
-  return arrow_->getSceneNode()->getScale();
-}
+Ogre::Vector3 ArrowMarker::getScale() const { return arrow_->getSceneNode()->getScale(); }
 
-void ArrowMarker::setColor(Ogre::ColourValue color)
-{
-  arrow_->setColor(color.r, color.g, color.b, color.a);
-}
+void ArrowMarker::setColor(Ogre::ColourValue color) { arrow_->setColor(color.r, color.g, color.b, color.a); }
 
 std::set<Ogre::MaterialPtr> ArrowMarker::getMaterials()
 {
   std::set<Ogre::MaterialPtr> materials;
-  extractMaterials( arrow_->getHead()->getEntity(), materials );
-  extractMaterials( arrow_->getShaft()->getEntity(), materials );
+  extractMaterials(arrow_->getHead()->getEntity(), materials);
+  extractMaterials(arrow_->getShaft()->getEntity(), materials);
   return materials;
 }
 
-}
+}  // namespace tesseract_rviz

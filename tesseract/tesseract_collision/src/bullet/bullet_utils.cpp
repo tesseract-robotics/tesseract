@@ -84,10 +84,8 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Cone::ConstPtr&
   return (new btConeShapeZ(r, l));
 }
 
-btCollisionShape* createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr& geom,
-                                       CollisionObjectWrapper* cow)
+btCollisionShape* createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr& geom, CollisionObjectWrapper* cow)
 {
-
   int vertice_count = geom->getVerticeCount();
   int triangle_count = geom->getTriangleCount();
   const tesseract_common::VectorVector3d& vertices = *(geom->getVertices());
@@ -95,8 +93,7 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr&
 
   if (vertice_count > 0 && triangle_count > 0)
   {
-    btCompoundShape* compound =
-        new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(triangle_count));
+    btCompoundShape* compound = new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(triangle_count));
     compound->setMargin(BULLET_MARGIN);  // margin: compound. seems to have no
                                          // effect when positive but has an
                                          // effect when negative
@@ -132,7 +129,6 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr&
 
 btCollisionShape* createShapePrimitive(const tesseract_geometry::ConvexMesh::ConstPtr& geom)
 {
-
   int vertice_count = geom->getVerticeCount();
   int triangle_count = geom->getFaceCount();
   const tesseract_common::VectorVector3d& vertices = *(geom->getVertices());
@@ -150,22 +146,17 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::ConvexMesh::Con
   return nullptr;
 }
 
-btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPtr& geom,
-                                       CollisionObjectWrapper* cow)
+btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPtr& geom, CollisionObjectWrapper* cow)
 {
-
   const octomap::OcTree& octree = *(geom->getOctree());
-  btCompoundShape* subshape =
-      new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(octree.size()));
+  btCompoundShape* subshape = new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(octree.size()));
   double occupancy_threshold = octree.getOccupancyThres();
 
   switch (geom->getSubType())
   {
     case tesseract_geometry::Octree::SubType::BOX:
     {
-      for (auto it = octree.begin(static_cast<unsigned char>(octree.getTreeDepth())),
-                end = octree.end();
-           it != end;
+      for (auto it = octree.begin(static_cast<unsigned char>(octree.getTreeDepth())), end = octree.end(); it != end;
            ++it)
       {
         if (it->getOccupancy() >= occupancy_threshold)
@@ -187,9 +178,7 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPt
     }
     case tesseract_geometry::Octree::SubType::SPHERE_INSIDE:
     {
-      for (auto it = octree.begin(static_cast<unsigned char>(octree.getTreeDepth())),
-                end = octree.end();
-           it != end;
+      for (auto it = octree.begin(static_cast<unsigned char>(octree.getTreeDepth())), end = octree.end(); it != end;
            ++it)
       {
         if (it->getOccupancy() >= occupancy_threshold)
@@ -210,7 +199,8 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPt
     }
     case tesseract_geometry::Octree::SubType::SPHERE_OUTSIDE:
     {
-      for (auto it = octree.begin(static_cast<unsigned char>(octree.getTreeDepth())), end = octree.end(); it != end; ++it)
+      for (auto it = octree.begin(static_cast<unsigned char>(octree.getTreeDepth())), end = octree.end(); it != end;
+           ++it)
       {
         if (it->getOccupancy() >= occupancy_threshold)
         {
@@ -232,14 +222,13 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPt
     default:
     {
       CONSOLE_BRIDGE_logError("This bullet shape type (%d) is not supported for geometry octree",
-                static_cast<int>(geom->getSubType()));
+                              static_cast<int>(geom->getSubType()));
       return nullptr;
     }
   }
 }
 
-btCollisionShape* createShapePrimitive(const CollisionShapeConstPtr& geom,
-                                       CollisionObjectWrapper* cow)
+btCollisionShape* createShapePrimitive(const CollisionShapeConstPtr& geom, CollisionObjectWrapper* cow)
 {
   switch (geom->getType())
   {
@@ -273,7 +262,8 @@ btCollisionShape* createShapePrimitive(const CollisionShapeConstPtr& geom,
     }
     default:
     {
-      CONSOLE_BRIDGE_logError("This geometric shape type (%d) is not supported using BULLET yet", static_cast<int>(geom->getType()));
+      CONSOLE_BRIDGE_logError("This geometric shape type (%d) is not supported using BULLET yet",
+                              static_cast<int>(geom->getType()));
       return nullptr;
     }
   }
@@ -283,10 +273,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
                                                const int& type_id,
                                                const CollisionShapesConst& shapes,
                                                const tesseract_common::VectorIsometry3d& shape_poses)
-  : m_name(name)
-  , m_type_id(type_id)
-  , m_shapes(shapes)
-  , m_shape_poses(shape_poses)
+  : m_name(name), m_type_id(type_id), m_shapes(shapes), m_shape_poses(shape_poses)
 {
   assert(!shapes.empty());
   assert(!shape_poses.empty());
@@ -336,12 +323,8 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
                                                const CollisionShapesConst& shapes,
                                                const tesseract_common::VectorIsometry3d& shape_poses,
                                                const std::vector<std::shared_ptr<void>>& data)
-  : m_name(name)
-  , m_type_id(type_id)
-  , m_shapes(shapes)
-  , m_shape_poses(shape_poses)
-  , m_data(data)
+  : m_name(name), m_type_id(type_id), m_shapes(shapes), m_shape_poses(shape_poses), m_data(data)
 {
 }
-}
-}
+}  // namespace tesseract_collision_bullet
+}  // namespace tesseract_collision

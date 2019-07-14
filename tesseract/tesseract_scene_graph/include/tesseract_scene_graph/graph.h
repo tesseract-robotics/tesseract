@@ -28,8 +28,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <boost/graph/adjacency_list.hpp> // for customizable graphs
-#include <boost/graph/directed_graph.hpp> // A subclass to provide reasonable arguments to adjacency_list for a typical directed graph
+#include <boost/graph/adjacency_list.hpp>  // for customizable graphs
+#include <boost/graph/directed_graph.hpp>  // A subclass to provide reasonable arguments to adjacency_list for a typical directed graph
 #include <boost/graph/properties.hpp>
 #include <boost/graph/depth_first_search.hpp>
 #include <boost/graph/breadth_first_search.hpp>
@@ -42,42 +42,57 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/allowed_collision_matrix.h>
 
 /* definition of basic boost::graph properties */
-namespace boost {
-    enum vertex_link_t { vertex_link };
-    enum vertex_link_visible_t { vertex_link_visible };
-    enum vertex_link_collision_enabled_t { vertex_link_collision_enabled };
-    enum edge_joint_t { edge_joint };
-    enum graph_root_t { graph_root };
+namespace boost
+{
+enum vertex_link_t
+{
+  vertex_link
+};
+enum vertex_link_visible_t
+{
+  vertex_link_visible
+};
+enum vertex_link_collision_enabled_t
+{
+  vertex_link_collision_enabled
+};
+enum edge_joint_t
+{
+  edge_joint
+};
+enum graph_root_t
+{
+  graph_root
+};
 
-    BOOST_INSTALL_PROPERTY(vertex, link);
-    BOOST_INSTALL_PROPERTY(vertex, link_visible);
-    BOOST_INSTALL_PROPERTY(vertex, link_collision_enabled);
-    BOOST_INSTALL_PROPERTY(edge, joint);
-    BOOST_INSTALL_PROPERTY(graph, root);
-}
+BOOST_INSTALL_PROPERTY(vertex, link);
+BOOST_INSTALL_PROPERTY(vertex, link_visible);
+BOOST_INSTALL_PROPERTY(vertex, link_collision_enabled);
+BOOST_INSTALL_PROPERTY(edge, joint);
+BOOST_INSTALL_PROPERTY(graph, root);
+}  // namespace boost
 
 namespace tesseract_scene_graph
 {
-
 /** @brief Defines the boost graph property. */
-using GraphProperty = boost::property<boost::graph_name_t, std::string,
-                      boost::property<boost::graph_root_t, std::string>>;
+using GraphProperty =
+    boost::property<boost::graph_name_t, std::string, boost::property<boost::graph_root_t, std::string>>;
 
 /** @brief Defines the boost graph vertex property. */
-using VertexProperty = boost::property<boost::vertex_link_t, Link::Ptr,
-                       boost::property<boost::vertex_link_visible_t, bool,
-                       boost::property<boost::vertex_link_collision_enabled_t, bool>>>;
+using VertexProperty = boost::property<
+    boost::vertex_link_t,
+    Link::Ptr,
+    boost::property<boost::vertex_link_visible_t, bool, boost::property<boost::vertex_link_collision_enabled_t, bool>>>;
 
 /**
  * @brief EdgeProperty
  *
  * The edge_weight represents the distance between the two links
  */
-using EdgeProperty = boost::property<boost::edge_joint_t, Joint::Ptr,
-                     boost::property<boost::edge_weight_t, double> >;
+using EdgeProperty = boost::property<boost::edge_joint_t, Joint::Ptr, boost::property<boost::edge_weight_t, double>>;
 
-
-using Graph = boost::adjacency_list<boost::listS, boost::listS, boost::bidirectionalS, VertexProperty, EdgeProperty, GraphProperty>;
+using Graph = boost::
+    adjacency_list<boost::listS, boost::listS, boost::bidirectionalS, VertexProperty, EdgeProperty, GraphProperty>;
 class SceneGraph : private boost::noncopyable, public Graph
 {
 public:
@@ -178,7 +193,8 @@ public:
   /**
    * @brief Adds joint to the graph
    * @param joint The joint to be added
-   * @return Return False if parent or child link does not exists and if joint name already exists in the graph, otherwise true
+   * @return Return False if parent or child link does not exists and if joint name already exists in the graph,
+   * otherwise true
    */
   bool addJoint(Joint joint);
 
@@ -223,9 +239,7 @@ public:
    * @param link_name2 Collision object name
    * @param reason The reason for disabling collison
    */
-  void addAllowedCollision(const std::string& link_name1,
-                           const std::string& link_name2,
-                           const std::string& reason);
+  void addAllowedCollision(const std::string& link_name1, const std::string& link_name2, const std::string& reason);
 
   /**
    * @brief Remove disabled collision pair from allowed collision matrix
@@ -252,8 +266,7 @@ public:
    * @brief Get the allowed collision matrix
    * @return AllowedCollisionMatrixConstPtr
    */
-   AllowedCollisionMatrix::ConstPtr getAllowedCollisionMatrix() const;
-
+  AllowedCollisionMatrix::ConstPtr getAllowedCollisionMatrix() const;
 
   /**
    * @brief Get the source link (parent link) for a joint
@@ -339,7 +352,7 @@ public:
 
   Path getShortestPath(const std::string& root, const std::string& tip);
 
-  //static inline Graph copyGraph(const Graph& graph)
+  // static inline Graph copyGraph(const Graph& graph)
   //{
   //  Graph new_graph;
   //  boost::copy_graph(graph, new_graph);
@@ -361,28 +374,27 @@ public:
   Edge getEdge(const std::string& name) const;
 
 private:
-
   std::unordered_map<std::string, std::pair<Link::Ptr, Vertex>> link_map_;
   std::unordered_map<std::string, std::pair<Joint::Ptr, Edge>> joint_map_;
   AllowedCollisionMatrix::Ptr acm_;
 
   struct cycle_detector : public boost::dfs_visitor<>
   {
-    cycle_detector( bool& ascyclic)
-      : ascyclic_(ascyclic) { }
+    cycle_detector(bool& ascyclic) : ascyclic_(ascyclic) {}
 
     template <class e, class g>
-    void back_edge(e, g&) {
+    void back_edge(e, g&)
+    {
       ascyclic_ = false;
     }
+
   protected:
     bool& ascyclic_;
   };
 
   struct tree_detector : public boost::dfs_visitor<>
   {
-    tree_detector( bool& tree)
-      : tree_(tree) { }
+    tree_detector(bool& tree) : tree_(tree) {}
 
     template <class u, class g>
     void discover_vertex(u vertex, g graph)
@@ -408,14 +420,14 @@ private:
     {
       tree_ = false;
     }
+
   protected:
     bool& tree_;
   };
 
   struct children_detector : public boost::default_bfs_visitor
   {
-    children_detector(std::vector<std::string>& children)
-      : children_(children) { }
+    children_detector(std::vector<std::string>& children) : children_(children) {}
 
     template <class u, class g>
     void discover_vertex(u vertex, g graph)
@@ -450,13 +462,12 @@ private:
       boost::put(prop_index_map, *i, c);
 
     children_detector vis(child_link_names);
-    boost::breadth_first_search(graph, start_vertex, boost::visitor(vis).root_vertex(start_vertex).vertex_index_map(prop_index_map));
+    boost::breadth_first_search(
+        graph, start_vertex, boost::visitor(vis).root_vertex(start_vertex).vertex_index_map(prop_index_map));
 
     return child_link_names;
   }
-
 };
-
 
 inline std::ostream& operator<<(std::ostream& os, const SceneGraph::Path& path)
 {
@@ -471,6 +482,6 @@ inline std::ostream& operator<<(std::ostream& os, const SceneGraph::Path& path)
   return os;
 }
 
-} // namespace tesseract_scene_graph
+}  // namespace tesseract_scene_graph
 
-#endif // TESSERACT_SCENE_GRAPH_GRAPH_H
+#endif  // TESSERACT_SCENE_GRAPH_GRAPH_H

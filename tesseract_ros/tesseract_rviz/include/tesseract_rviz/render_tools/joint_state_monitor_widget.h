@@ -21,11 +21,10 @@ namespace rviz
 {
 class Property;
 class RosTopicProperty;
-}
+}  // namespace rviz
 
 namespace tesseract_rviz
 {
-
 class JointStateMonitorWidget : public QObject
 {
   Q_OBJECT
@@ -68,4 +67,4 @@ protected:
   bool isUpdateRequired(const sensor_msgs::JointState& joint_state);
 };
 }  // namespace tesseract_rviz
-#endif // TESSERACT_RVIZ_STATE_MONITORING_H
+#endif  // TESSERACT_RVIZ_STATE_MONITORING_H

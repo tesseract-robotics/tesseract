@@ -71,13 +71,13 @@ TesseractSceneDisplay::TesseractSceneDisplay(bool listen_to_planning_scene, bool
                                                      this,
                                                      SLOT(changedMoveGroupNS()),
                                                      this);
-  robot_description_property_ =
-      new rviz::StringProperty("Robot Description",
-                               "robot_description",
-                               "The name of the ROS parameter where the URDF for the robot is loaded",
-                               this,
-                               SLOT(changedRobotDescription()),
-                               this);
+  robot_description_property_ = new rviz::StringProperty("Robot Description",
+                                                         "robot_description",
+                                                         "The name of the ROS parameter where the URDF for the robot "
+                                                         "is loaded",
+                                                         this,
+                                                         SLOT(changedRobotDescription()),
+                                                         this);
 
   if (listen_to_planning_scene)
     planning_scene_topic_property_ =
@@ -119,13 +119,13 @@ TesseractSceneDisplay::TesseractSceneDisplay(bool listen_to_planning_scene, bool
   scene_alpha_property_->setMin(0.0);
   scene_alpha_property_->setMax(1.0);
 
-  scene_color_property_ =
-      new rviz::ColorProperty("Scene Color",
-                              QColor(50, 230, 50),
-                              "The color for the planning scene obstacles (if a color is not defined)",
-                              scene_category_,
-                              SLOT(changedSceneColor()),
-                              this);
+  scene_color_property_ = new rviz::ColorProperty("Scene Color",
+                                                  QColor(50, 230, 50),
+                                                  "The color for the planning scene obstacles (if a color is not "
+                                                  "defined)",
+                                                  scene_category_,
+                                                  SLOT(changedSceneColor()),
+                                                  this);
 
   octree_render_property_ = new rviz::EnumProperty("Voxel Rendering",
                                                    "Occupied Voxels",
@@ -157,25 +157,26 @@ TesseractSceneDisplay::TesseractSceneDisplay(bool listen_to_planning_scene, bool
   {
     robot_category_ = new rviz::Property("Scene Robot", QVariant(), "", this);
 
-    scene_robot_visual_enabled_property_ =
-        new rviz::BoolProperty("Show Robot Visual",
-                               true,
-                               "Indicates whether the robot state specified by the planning scene "
-                               "should be "
-                               "displayed as defined for visualisation purposes.",
-                               robot_category_,
-                               SLOT(changedSceneRobotVisualEnabled()),
-                               this);
+    scene_robot_visual_enabled_property_ = new rviz::BoolProperty("Show Robot Visual",
+                                                                  true,
+                                                                  "Indicates whether the robot state specified by the "
+                                                                  "planning scene "
+                                                                  "should be "
+                                                                  "displayed as defined for visualisation purposes.",
+                                                                  robot_category_,
+                                                                  SLOT(changedSceneRobotVisualEnabled()),
+                                                                  this);
 
-    scene_robot_collision_enabled_property_ =
-        new rviz::BoolProperty("Show Robot Collision",
-                               false,
-                               "Indicates whether the robot state specified by the planning scene "
-                               "should be "
-                               "displayed as defined for collision detection purposes.",
-                               robot_category_,
-                               SLOT(changedSceneRobotCollisionEnabled()),
-                               this);
+    scene_robot_collision_enabled_property_ = new rviz::BoolProperty("Show Robot Collision",
+                                                                     false,
+                                                                     "Indicates whether the robot state specified by "
+                                                                     "the planning scene "
+                                                                     "should be "
+                                                                     "displayed as defined for collision detection "
+                                                                     "purposes.",
+                                                                     robot_category_,
+                                                                     SLOT(changedSceneRobotCollisionEnabled()),
+                                                                     this);
 
     robot_alpha_property_ = new rviz::FloatProperty("Robot Alpha",
                                                     1.0f,
@@ -676,4 +677,4 @@ void TesseractSceneDisplay::fixedFrameChanged()
   calculateOffsetPosition();
 }
 
-}  // namespace moveit_rviz_plugin
+}  // namespace tesseract_rviz

@@ -42,7 +42,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-
 enum class BodyType
 {
   ROBOT_LINK = 0,    /**< @brief These are links at the creation of the environment */
@@ -61,7 +60,6 @@ struct EnvState
   tesseract_common::TransformMap transforms;
 };
 
-
 /**
  * @brief The AdjacencyMapPair struct
  */
@@ -77,7 +75,6 @@ struct AdjacencyMapPair
 class AdjacencyMap
 {
 public:
-
   using Ptr = std::shared_ptr<AdjacencyMap>;
   using ConstPtr = std::shared_ptr<const AdjacencyMap>;
 
@@ -100,7 +97,6 @@ public:
 
     for (const auto& ml : state)
     {
-
       if (std::find(active_links.begin(), active_links.end(), ml.first) != active_links.end())
       {
         AdjacencyMapPair::Ptr pair = std::make_shared<AdjacencyMapPair>();
@@ -160,6 +156,6 @@ private:
   std::unordered_map<std::string, AdjacencyMapPair::ConstPtr> adjacency_map_;
 };
 
-}
+}  // namespace tesseract_environment
 
 #endif  // TESSERACT_ENVIRONMENT_TYPES_H

@@ -43,8 +43,7 @@ using namespace trajopt;
 
 namespace tesseract_motion_planners
 {
-TrajOptMotionPlanner::TrajOptMotionPlanner(const std::string& name ):
-    config_(nullptr)
+TrajOptMotionPlanner::TrajOptMotionPlanner(const std::string& name) : config_(nullptr)
 {
   name_ = name;
 
@@ -73,7 +72,7 @@ void TrajOptMotionPlanner::clear()
 
 bool TrajOptMotionPlanner::solve(PlannerResponse& response)
 {
-  if(isConfigured())
+  if (isConfigured())
   {
     CONSOLE_BRIDGE_logError("Planner %s is not configured", name_.c_str());
     return false;
@@ -97,26 +96,31 @@ bool TrajOptMotionPlanner::solve(PlannerResponse& response)
 
   // Check and report collisions
   std::vector<tesseract_collision::ContactResultMap> collisions;
-  tesseract_collision::ContinuousContactManager::Ptr continuous_manager = config_->prob->GetEnv()->getContinuousContactManager();
-  tesseract_environment::AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-      config_->prob->GetEnv()->getSceneGraph(),
-      config_->prob->GetKin()->getActiveLinkNames(),
-      config_->prob->GetEnv()->getCurrentState()->transforms);
+  tesseract_collision::ContinuousContactManager::Ptr continuous_manager =
+      config_->prob->GetEnv()->getContinuousContactManager();
+  tesseract_environment::AdjacencyMap::Ptr adjacency_map =
+      std::make_shared<tesseract_environment::AdjacencyMap>(config_->prob->GetEnv()->getSceneGraph(),
+                                                            config_->prob->GetKin()->getActiveLinkNames(),
+                                                            config_->prob->GetEnv()->getCurrentState()->transforms);
 
   continuous_manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   continuous_manager->setContactDistanceThreshold(0);
   collisions.clear();
-  bool found = checkTrajectory(*continuous_manager, *config_->prob->GetEnv(),
+  bool found = checkTrajectory(*continuous_manager,
+                               *config_->prob->GetEnv(),
                                config_->prob->GetKin()->getJointNames(),
-                               getTraj(opt.x(), config_->prob->GetVars()), collisions);
+                               getTraj(opt.x(), config_->prob->GetVars()),
+                               collisions);
 
   // Do a discrete check until continuous collision checking is updated to do dynamic-dynamic checking
-  tesseract_collision::DiscreteContactManager::Ptr discrete_manager = config_->prob->GetEnv()->getDiscreteContactManager();
+  tesseract_collision::DiscreteContactManager::Ptr discrete_manager =
+      config_->prob->GetEnv()->getDiscreteContactManager();
   discrete_manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   discrete_manager->setContactDistanceThreshold(0);
   collisions.clear();
 
-  found = found || checkTrajectory(*discrete_manager, *config_->prob->GetEnv(),
+  found = found || checkTrajectory(*discrete_manager,
+                                   *config_->prob->GetEnv(),
                                    config_->prob->GetKin()->getJointNames(),
                                    getTraj(opt.x(), config_->prob->GetVars()),
                                    collisions);
@@ -145,10 +149,7 @@ bool TrajOptMotionPlanner::solve(PlannerResponse& response)
   return (response.status_code >= 0);
 }
 
-bool TrajOptMotionPlanner::isConfigured() const
-{
-  return config_ != nullptr;
-}
+bool TrajOptMotionPlanner::isConfigured() const { return config_ != nullptr; }
 
 bool TrajOptMotionPlanner::setConfiguration(const TrajOptPlannerConfig& config)
 {
@@ -156,4 +157,4 @@ bool TrajOptMotionPlanner::setConfiguration(const TrajOptPlannerConfig& config)
   return true;
 }
 
-} // namespace tesseract_motion_planners
+}  // namespace tesseract_motion_planners

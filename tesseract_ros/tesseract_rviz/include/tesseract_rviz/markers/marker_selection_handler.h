@@ -36,17 +36,17 @@ namespace tesseract_rviz
 class MarkerBase;
 typedef std::pair<std::string, int32_t> MarkerID;
 
-class MarkerSelectionHandler: public rviz::SelectionHandler
+class MarkerSelectionHandler : public rviz::SelectionHandler
 {
 public:
   using Ptr = boost::shared_ptr<MarkerSelectionHandler>;
   using ConstPtr = boost::shared_ptr<const MarkerSelectionHandler>;
 
-  MarkerSelectionHandler(const MarkerBase* marker, MarkerID id, rviz::DisplayContext* context );
+  MarkerSelectionHandler(const MarkerBase* marker, MarkerID id, rviz::DisplayContext* context);
   virtual ~MarkerSelectionHandler();
 
-  virtual void setPosition( const Ogre::Vector3& position );
-  virtual void setOrientation( const Ogre::Quaternion& orientation );
+  virtual void setPosition(const Ogre::Vector3& position);
+  virtual void setOrientation(const Ogre::Quaternion& orientation);
   Ogre::Vector3 getPosition();
   Ogre::Quaternion getOrientation();
 
@@ -57,6 +57,6 @@ private:
   Ogre::Quaternion orientation_;
 };
 
-}
+}  // namespace tesseract_rviz
 
-#endif // TESSERACT_RVIZ_INTERACTIVE_MARKER_MARKER_SELECTION_HANDLER_H
+#endif  // TESSERACT_RVIZ_INTERACTIVE_MARKER_MARKER_SELECTION_HANDLER_H

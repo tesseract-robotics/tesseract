@@ -115,7 +115,7 @@ public:
   static const std::string DEFAULT_MODIFY_ENVIRONMENT_SERVICE;  // "/modify_tesseract"
 
   /// The name of the service used by default for saving the scene graph as a DOT
-  static const std::string DEFAULT_SAVE_SCENE_GRAPH_SERVICE;   //"/save_scene_graph"
+  static const std::string DEFAULT_SAVE_SCENE_GRAPH_SERVICE;  //"/save_scene_graph"
 
   /// The name of the topic used by default for publishing the monitored tesseract environment (this is without "/" in
   /// the name, so the topic is prefixed by the node name)
@@ -145,7 +145,10 @@ public:
 
   /** \brief Get the name of this monitor */
   const std::string& getName() const { return monitor_name_; }
-  const tesseract_scene_graph::SceneGraph::ConstPtr& getSceneGraph() const { return tesseract_->getEnvironment()->getSceneGraph(); }
+  const tesseract_scene_graph::SceneGraph::ConstPtr& getSceneGraph() const
+  {
+    return tesseract_->getEnvironment()->getSceneGraph();
+  }
   const tesseract_scene_graph::SRDFModel::ConstPtr& getSRDF() const { return tesseract_->getSRDFModel(); }
   /** @brief <b>Avoid this function!</b>  Returns an @b
    *         unsafe pointer to the current planning scene.
@@ -165,7 +168,10 @@ public:
   /*! @brief <b>Avoid this function!</b>  Returns an @b
    *         unsafe pointer to the current planning scene.
    * @copydetails PlanningSceneMonitor::getPlanningScene() */
-  const tesseract_environment::Environment::ConstPtr& getEnvironment() const { return tesseract_->getEnvironmentConst(); }
+  const tesseract_environment::Environment::ConstPtr& getEnvironment() const
+  {
+    return tesseract_->getEnvironmentConst();
+  }
   /** @brief Return true if the scene \e scene can be updated directly
       or indirectly by this monitor. This function will return true if
       the pointer of the scene is the same as the one maintained,
@@ -348,11 +354,12 @@ private:
                                          tesseract_msgs::GetEnvironmentInformationResponse& res);
 
   /** @brief Callback to save the scene graph to a DOT via a service request */
-  bool saveSceneGraphCallback(tesseract_msgs::SaveSceneGraphRequest& req,
-                              tesseract_msgs::SaveSceneGraphResponse& res);
+  bool saveSceneGraphCallback(tesseract_msgs::SaveSceneGraphRequest& req, tesseract_msgs::SaveSceneGraphResponse& res);
 
   // Called when new service request is called to modify the environment.
-  bool applyEnvironmentCommandsMessage(std::string id, int revision, const std::vector<tesseract_msgs::EnvironmentCommand> &commands);
+  bool applyEnvironmentCommandsMessage(std::string id,
+                                       int revision,
+                                       const std::vector<tesseract_msgs::EnvironmentCommand>& commands);
 
   // Lock for state_update_pending_ and dt_state_update_
   boost::mutex state_pending_mutex_;
@@ -499,6 +506,6 @@ public:
   operator const tesseract_environment::Environment::Ptr&() { return env_monitor_->getEnvironment(); }
   const tesseract_environment::Environment::Ptr& operator->() { return env_monitor_->getEnvironment(); }
 };
-}
+}  // namespace tesseract_monitoring
 
 #endif

@@ -72,7 +72,10 @@ using Commands = std::vector<Command::ConstPtr>;
 class AddCommand : public Command
 {
 public:
-  AddCommand(tesseract_scene_graph::Link::ConstPtr link, tesseract_scene_graph::Joint::ConstPtr joint) : Command(CommandType::ADD), link_(std::move(link)), joint_(std::move(joint)) {}
+  AddCommand(tesseract_scene_graph::Link::ConstPtr link, tesseract_scene_graph::Joint::ConstPtr joint)
+    : Command(CommandType::ADD), link_(std::move(link)), joint_(std::move(joint))
+  {
+  }
 
   const tesseract_scene_graph::Link::ConstPtr& getLink() const { return link_; }
   const tesseract_scene_graph::Joint::ConstPtr& getJoint() const { return joint_; }
@@ -85,7 +88,10 @@ private:
 class MoveLinkCommand : public Command
 {
 public:
-  MoveLinkCommand(tesseract_scene_graph::Joint::ConstPtr joint) : Command(CommandType::MOVE_LINK), joint_(std::move(joint)) {}
+  MoveLinkCommand(tesseract_scene_graph::Joint::ConstPtr joint)
+    : Command(CommandType::MOVE_LINK), joint_(std::move(joint))
+  {
+  }
 
   const tesseract_scene_graph::Joint::ConstPtr& getJoint() const { return joint_; }
 
@@ -96,7 +102,10 @@ private:
 class MoveJointCommand : public Command
 {
 public:
-  MoveJointCommand(const std::string& joint_name, const std::string& parent_link) : Command(CommandType::MOVE_JOINT), joint_name_(joint_name), parent_link_(parent_link) {}
+  MoveJointCommand(const std::string& joint_name, const std::string& parent_link)
+    : Command(CommandType::MOVE_JOINT), joint_name_(joint_name), parent_link_(parent_link)
+  {
+  }
 
   const std::string& getJointName() const { return joint_name_; }
   const std::string& getParentLink() const { return parent_link_; }
@@ -131,10 +140,13 @@ private:
 class ChangeLinkOriginCommand : public Command
 {
 public:
-  ChangeLinkOriginCommand(const std::string& link_name, const Eigen::Isometry3d& origin) : Command(CommandType::CHANGE_LINK_ORIGIN), link_name_(link_name), origin_(origin) {}
+  ChangeLinkOriginCommand(const std::string& link_name, const Eigen::Isometry3d& origin)
+    : Command(CommandType::CHANGE_LINK_ORIGIN), link_name_(link_name), origin_(origin)
+  {
+  }
 
   const std::string& getLinkName() const { return link_name_; }
-  const Eigen::Isometry3d& getOrigin() const  { return origin_; }
+  const Eigen::Isometry3d& getOrigin() const { return origin_; }
 
 private:
   std::string link_name_;
@@ -144,10 +156,13 @@ private:
 class ChangeJointOriginCommand : public Command
 {
 public:
-  ChangeJointOriginCommand(const std::string& joint_name,  const Eigen::Isometry3d& origin) : Command(CommandType::CHANGE_JOINT_ORIGIN), joint_name_(joint_name), origin_(origin) {}
+  ChangeJointOriginCommand(const std::string& joint_name, const Eigen::Isometry3d& origin)
+    : Command(CommandType::CHANGE_JOINT_ORIGIN), joint_name_(joint_name), origin_(origin)
+  {
+  }
 
   const std::string& getJointName() const { return joint_name_; }
-  const Eigen::Isometry3d& getOrigin() const  { return origin_; }
+  const Eigen::Isometry3d& getOrigin() const { return origin_; }
 
 private:
   std::string joint_name_;
@@ -157,7 +172,10 @@ private:
 class ChangeLinkCollisionEnabledCommand : public Command
 {
 public:
-  ChangeLinkCollisionEnabledCommand(const std::string& link_name, bool enabled) : Command(CommandType::CHANGE_LINK_COLLISION_ENABLED), link_name_(link_name), enabled_(std::move(enabled)) {}
+  ChangeLinkCollisionEnabledCommand(const std::string& link_name, bool enabled)
+    : Command(CommandType::CHANGE_LINK_COLLISION_ENABLED), link_name_(link_name), enabled_(std::move(enabled))
+  {
+  }
 
   const std::string& getLinkName() const { return link_name_; }
   bool getEnabled() const { return enabled_; }
@@ -170,7 +188,10 @@ private:
 class ChangeLinkVisibilityCommand : public Command
 {
 public:
-  ChangeLinkVisibilityCommand(const std::string& link_name, bool enabled) : Command(CommandType::CHANGE_LINK_VISIBILITY), link_name_(link_name), enabled_(std::move(enabled)) {}
+  ChangeLinkVisibilityCommand(const std::string& link_name, bool enabled)
+    : Command(CommandType::CHANGE_LINK_VISIBILITY), link_name_(link_name), enabled_(std::move(enabled))
+  {
+  }
 
   const std::string& getLinkName() const { return link_name_; }
   bool getEnabled() const { return enabled_; }
@@ -183,7 +204,10 @@ private:
 class AddAllowedCollisionCommand : public Command
 {
 public:
-  AddAllowedCollisionCommand(const std::string& link_name1, const std::string& link_name2, const std::string& reason) : Command(CommandType::ADD_ALLOWED_COLLISION), link_name1_(link_name1), link_name2_(link_name2), reason_(reason) {}
+  AddAllowedCollisionCommand(const std::string& link_name1, const std::string& link_name2, const std::string& reason)
+    : Command(CommandType::ADD_ALLOWED_COLLISION), link_name1_(link_name1), link_name2_(link_name2), reason_(reason)
+  {
+  }
 
   const std::string& getLinkName1() const { return link_name1_; }
   const std::string& getLinkName2() const { return link_name2_; }
@@ -198,7 +222,10 @@ private:
 class RemoveAllowedCollisionCommand : public Command
 {
 public:
-  RemoveAllowedCollisionCommand(const std::string& link_name1, const std::string& link_name2) : Command(CommandType::REMOVE_ALLOWED_COLLISION), link_name1_(link_name1), link_name2_(link_name2) {}
+  RemoveAllowedCollisionCommand(const std::string& link_name1, const std::string& link_name2)
+    : Command(CommandType::REMOVE_ALLOWED_COLLISION), link_name1_(link_name1), link_name2_(link_name2)
+  {
+  }
 
   const std::string& getLinkName1() const { return link_name1_; }
   const std::string& getLinkName2() const { return link_name2_; }
@@ -211,7 +238,10 @@ private:
 class RemoveAllowedCollisionLinkCommand : public Command
 {
 public:
-  RemoveAllowedCollisionLinkCommand(const std::string& link_name) : Command(CommandType::REMOVE_ALLOWED_COLLISION_LINK), link_name_(link_name) {}
+  RemoveAllowedCollisionLinkCommand(const std::string& link_name)
+    : Command(CommandType::REMOVE_ALLOWED_COLLISION_LINK), link_name_(link_name)
+  {
+  }
 
   const std::string& getLinkName() const { return link_name_; }
 
@@ -219,6 +249,6 @@ private:
   std::string link_name_;
 };
 
-}
+}  // namespace tesseract_environment
 
-#endif // TESSERACT_ENVIRONMENT_COMMANDS_H
+#endif  // TESSERACT_ENVIRONMENT_COMMANDS_H

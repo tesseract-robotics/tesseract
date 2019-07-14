@@ -61,9 +61,13 @@ public:
   bool init(tesseract_scene_graph::SceneGraph::Ptr scene_graph);
   bool init(tesseract_scene_graph::SceneGraph::Ptr scene_graph, tesseract_scene_graph::SRDFModel::ConstPtr srdf_model);
   bool init(const std::string& urdf_string, tesseract_scene_graph::ResourceLocatorFn locator);
-  bool init(const std::string& urdf_string, const std::string& srdf_string, tesseract_scene_graph::ResourceLocatorFn locator);
+  bool init(const std::string& urdf_string,
+            const std::string& srdf_string,
+            tesseract_scene_graph::ResourceLocatorFn locator);
   bool init(const boost::filesystem::path& urdf_path, tesseract_scene_graph::ResourceLocatorFn locator);
-  bool init(const boost::filesystem::path& urdf_path, const boost::filesystem::path& srdf_path, tesseract_scene_graph::ResourceLocatorFn locator);
+  bool init(const boost::filesystem::path& urdf_path,
+            const boost::filesystem::path& srdf_path,
+            tesseract_scene_graph::ResourceLocatorFn locator);
 
   const tesseract_scene_graph::SRDFModel::ConstPtr& getSRDFModel() const;
 
@@ -86,7 +90,6 @@ private:
   InverseKinematicsManager::Ptr inv_kin_manager_;
   InverseKinematicsManager::ConstPtr inv_kin_manager_const_;
 
-
   bool registerDefaultContactManagers();
   bool registerDefaultInvKinSolvers();
   bool registerDefaultFwdKinSolvers();
@@ -94,5 +97,5 @@ private:
   void clear();
 };
 
-}
-#endif // TESSERACT_TESSERACT_H
+}  // namespace tesseract
+#endif  // TESSERACT_TESSERACT_H

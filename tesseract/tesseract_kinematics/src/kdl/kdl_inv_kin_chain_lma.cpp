@@ -146,9 +146,9 @@ const std::vector<std::string>& KDLInvKinChainLMA::getActiveLinkNames() const
 const Eigen::MatrixX2d& KDLInvKinChainLMA::getLimits() const { return kdl_data_.joint_limits; }
 
 bool KDLInvKinChainLMA::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-                          const std::string& base_link,
-                          const std::string& tip_link,
-                          const std::string name)
+                             const std::string& base_link,
+                             const std::string& tip_link,
+                             const std::string name)
 {
   initialized_ = false;
 
@@ -200,4 +200,4 @@ KDLInvKinChainLMA::KDLInvKinChainLMA(const KDLInvKinChainLMA& kin)
   ik_solver_.reset(new KDL::ChainIkSolverPos_LMA(kdl_data_.robot_chain));
   scene_graph_ = kin.scene_graph_;
 }
-}
+}  // namespace tesseract_kinematics

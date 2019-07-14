@@ -46,6 +46,6 @@ private:
   std::vector<std::string> joint_names_;
   std::vector<std::string> link_names_;
 };
-}
+}  // namespace tesseract_motion_planners
 
 #endif

@@ -34,6 +34,6 @@ private:
   std::vector<std::string> links_;
   std::vector<std::string> joints_;
 };
-}
+}  // namespace tesseract_motion_planners
 
 #endif  // TESSERACT_ROS_PLANNING_CONTINUOUS_MOTION_VALIDATOR_H

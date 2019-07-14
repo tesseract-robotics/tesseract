@@ -15,7 +15,8 @@ ChainOmplInterface::ChainOmplInterface(tesseract_environment::Environment::Const
 
   // kinematics objects does not know of every link affected by its motion so must compute adjacency map
   // to determine all active links.
-  tesseract_environment::AdjacencyMap adj_map(env_->getSceneGraph(), kin_->getActiveLinkNames(), env_->getCurrentState()->transforms);
+  tesseract_environment::AdjacencyMap adj_map(
+      env_->getSceneGraph(), kin_->getActiveLinkNames(), env_->getCurrentState()->transforms);
   link_names_ = adj_map.getActiveLinkNames();
 
   const auto dof = kin_->numJoints();
@@ -96,4 +97,4 @@ bool ChainOmplInterface::isStateValid(const ompl::base::State* state) const
 
   return contact_map.empty();
 }
-}
+}  // namespace tesseract_motion_planners

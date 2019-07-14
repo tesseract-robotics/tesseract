@@ -39,13 +39,17 @@ class Shape;
 
 namespace tesseract_rviz
 {
-class SphereMarker: public MarkerBase
+class SphereMarker : public MarkerBase
 {
 public:
   using Ptr = boost::shared_ptr<SphereMarker>;
   using ConstPtr = boost::shared_ptr<const SphereMarker>;
 
-  SphereMarker(const std::string& ns, const int id, rviz::DisplayContext* context, Ogre::SceneNode* parent_node, float radius = 1);
+  SphereMarker(const std::string& ns,
+               const int id,
+               rviz::DisplayContext* context,
+               Ogre::SceneNode* parent_node,
+               float radius = 1);
   ~SphereMarker() override;
 
   void setScale(Ogre::Vector3 scale) override;
@@ -59,10 +63,9 @@ public:
   std::set<Ogre::MaterialPtr> getMaterials() override;
 
 protected:
-
   rviz::Shape* shape_;
   Ogre::Vector3 scale_;
   float radius_;
 };
-}
-#endif // TESSERACT_RVIZ_MARKERS_SPHERE_MARKER_H
+}  // namespace tesseract_rviz
+#endif  // TESSERACT_RVIZ_MARKERS_SPHERE_MARKER_H

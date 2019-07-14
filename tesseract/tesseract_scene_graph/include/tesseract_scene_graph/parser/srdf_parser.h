@@ -1,36 +1,36 @@
 /*********************************************************************
-* Software License Agreement (BSD License)
-*
-*  Copyright (c) 2011, Willow Garage, Inc.
-*  All rights reserved.
-*
-*  Redistribution and use in source and binary forms, with or without
-*  modification, are permitted provided that the following conditions
-*  are met:
-*
-*   * Redistributions of source code must retain the above copyright
-*     notice, this list of conditions and the following disclaimer.
-*   * Redistributions in binary form must reproduce the above
-*     copyright notice, this list of conditions and the following
-*     disclaimer in the documentation and/or other materials provided
-*     with the distribution.
-*   * Neither the name of the Willow Garage nor the names of its
-*     contributors may be used to endorse or promote products derived
-*     from this software without specific prior written permission.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-*  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-*  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-*  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-*  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-*  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-*  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-*  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-*  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-*  POSSIBILITY OF SUCH DAMAGE.
-*********************************************************************/
+ * Software License Agreement (BSD License)
+ *
+ *  Copyright (c) 2011, Willow Garage, Inc.
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *   * Neither the name of the Willow Garage nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *********************************************************************/
 
 /* Author Ioan Sucan */
 
@@ -58,17 +58,12 @@ namespace tesseract_scene_graph
 class SRDFModel
 {
 public:
-
   using Ptr = std::shared_ptr<SRDFModel>;
   using ConstPtr = std::shared_ptr<const SRDFModel>;
 
-  SRDFModel()
-  {
-  }
+  SRDFModel() {}
 
-  ~SRDFModel()
-  {
-  }
+  ~SRDFModel() {}
 
   /// \brief Load Model from TiXMLElement
   bool initXml(const tesseract_scene_graph::SceneGraph& scene_graph, TiXmlElement* srdf_xml)
@@ -280,53 +275,29 @@ public:
   };
 
   /// Get the name of this model
-  const std::string& getName() const
-  {
-    return name_;
-  }
+  const std::string& getName() const { return name_; }
 
   /// Get the list of pairs of links that need not be checked for collisions (because they can never touch given the
   /// geometry and kinematics of the robot)
-  const std::vector<DisabledCollision>& getDisabledCollisionPairs() const
-  {
-    return disabled_collisions_;
-  }
+  const std::vector<DisabledCollision>& getDisabledCollisionPairs() const { return disabled_collisions_; }
 
   /// Get the list of groups defined for this model
-  const std::vector<Group>& getGroups() const
-  {
-    return groups_;
-  }
+  const std::vector<Group>& getGroups() const { return groups_; }
 
   /// Get the list of virtual joints defined for this model
-  const std::vector<VirtualJoint>& getVirtualJoints() const
-  {
-    return virtual_joints_;
-  }
+  const std::vector<VirtualJoint>& getVirtualJoints() const { return virtual_joints_; }
 
   /// Get the list of end effectors defined for this model
-  const std::vector<EndEffector>& getEndEffectors() const
-  {
-    return end_effectors_;
-  }
+  const std::vector<EndEffector>& getEndEffectors() const { return end_effectors_; }
 
   /// Get the list of group states defined for this model
-  const std::vector<GroupState>& getGroupStates() const
-  {
-    return group_states_;
-  }
+  const std::vector<GroupState>& getGroupStates() const { return group_states_; }
 
   /// Get the list of known passive joints
-  const std::vector<PassiveJoint>& getPassiveJoints() const
-  {
-    return passive_joints_;
-  }
+  const std::vector<PassiveJoint>& getPassiveJoints() const { return passive_joints_; }
 
   /// Get the collision spheres list
-  const std::vector<LinkSpheres>& getLinkSphereApproximations() const
-  {
-    return link_sphere_approximations_;
-  }
+  const std::vector<LinkSpheres>& getLinkSphereApproximations() const { return link_sphere_approximations_; }
 
   /// Clear the model
   void clear()
@@ -345,522 +316,525 @@ private:
   void loadVirtualJoints(const tesseract_scene_graph::SceneGraph& scene_graph, TiXmlElement* srdf_xml)
   {
     for (TiXmlElement* vj_xml = srdf_xml->FirstChildElement("virtual_joint"); vj_xml;
-           vj_xml = vj_xml->NextSiblingElement("virtual_joint"))
+         vj_xml = vj_xml->NextSiblingElement("virtual_joint"))
+    {
+      const char* jname = vj_xml->Attribute("name");
+      const char* child = vj_xml->Attribute("child_link");
+      const char* parent = vj_xml->Attribute("parent_frame");
+      const char* type = vj_xml->Attribute("type");
+      if (!jname)
       {
-        const char* jname = vj_xml->Attribute("name");
-        const char* child = vj_xml->Attribute("child_link");
-        const char* parent = vj_xml->Attribute("parent_frame");
-        const char* type = vj_xml->Attribute("type");
-        if (!jname)
-        {
-          CONSOLE_BRIDGE_logError("Name of virtual joint is not specified");
-          continue;
-        }
-        if (!child)
-        {
-          CONSOLE_BRIDGE_logError("Child link of virtual joint is not specified");
-          continue;
-        }
-        if (!scene_graph.getLink(boost::trim_copy(std::string(child))))
-        {
-          CONSOLE_BRIDGE_logError("Virtual joint does not attach to a link on the robot (link '%s' is not known)", child);
-          continue;
-        }
-        if (!parent)
-        {
-          CONSOLE_BRIDGE_logError("Parent frame of virtual joint is not specified");
-          continue;
-        }
-        if (!type)
-        {
-          CONSOLE_BRIDGE_logError("Type of virtual joint is not specified");
-          continue;
-        }
-        VirtualJoint vj;
-        vj.type_ = std::string(type);
-        boost::trim(vj.type_);
-        std::transform(vj.type_.begin(), vj.type_.end(), vj.type_.begin(), ::tolower);
-        if (vj.type_ != "planar" && vj.type_ != "floating" && vj.type_ != "fixed")
-        {
-          CONSOLE_BRIDGE_logError("Unknown type of joint: '%s'. Assuming 'fixed' instead. Other known types are 'planar' "
-                                  "and 'floating'.",
-                                  type);
-          vj.type_ = "fixed";
-        }
-        vj.name_ = std::string(jname);
-        boost::trim(vj.name_);
-        vj.child_link_ = std::string(child);
-        boost::trim(vj.child_link_);
-        vj.parent_frame_ = std::string(parent);
-        boost::trim(vj.parent_frame_);
-        virtual_joints_.push_back(vj);
+        CONSOLE_BRIDGE_logError("Name of virtual joint is not specified");
+        continue;
+      }
+      if (!child)
+      {
+        CONSOLE_BRIDGE_logError("Child link of virtual joint is not specified");
+        continue;
+      }
+      if (!scene_graph.getLink(boost::trim_copy(std::string(child))))
+      {
+        CONSOLE_BRIDGE_logError("Virtual joint does not attach to a link on the robot (link '%s' is not known)", child);
+        continue;
+      }
+      if (!parent)
+      {
+        CONSOLE_BRIDGE_logError("Parent frame of virtual joint is not specified");
+        continue;
+      }
+      if (!type)
+      {
+        CONSOLE_BRIDGE_logError("Type of virtual joint is not specified");
+        continue;
+      }
+      VirtualJoint vj;
+      vj.type_ = std::string(type);
+      boost::trim(vj.type_);
+      std::transform(vj.type_.begin(), vj.type_.end(), vj.type_.begin(), ::tolower);
+      if (vj.type_ != "planar" && vj.type_ != "floating" && vj.type_ != "fixed")
+      {
+        CONSOLE_BRIDGE_logError("Unknown type of joint: '%s'. Assuming 'fixed' instead. Other known types are 'planar' "
+                                "and 'floating'.",
+                                type);
+        vj.type_ = "fixed";
+      }
+      vj.name_ = std::string(jname);
+      boost::trim(vj.name_);
+      vj.child_link_ = std::string(child);
+      boost::trim(vj.child_link_);
+      vj.parent_frame_ = std::string(parent);
+      boost::trim(vj.parent_frame_);
+      virtual_joints_.push_back(vj);
     }
   }
   void loadGroups(const tesseract_scene_graph::SceneGraph& scene_graph, TiXmlElement* srdf_xml)
   {
     for (TiXmlElement* group_xml = srdf_xml->FirstChildElement("group"); group_xml;
-           group_xml = group_xml->NextSiblingElement("group"))
+         group_xml = group_xml->NextSiblingElement("group"))
+    {
+      const char* gname = group_xml->Attribute("name");
+      if (!gname)
       {
-        const char* gname = group_xml->Attribute("name");
-        if (!gname)
+        CONSOLE_BRIDGE_logError("Group name not specified");
+        continue;
+      }
+      Group g;
+      g.name_ = std::string(gname);
+      boost::trim(g.name_);
+
+      // get the links in the groups
+      for (TiXmlElement* link_xml = group_xml->FirstChildElement("link"); link_xml;
+           link_xml = link_xml->NextSiblingElement("link"))
+      {
+        const char* lname = link_xml->Attribute("name");
+        if (!lname)
         {
-          CONSOLE_BRIDGE_logError("Group name not specified");
+          CONSOLE_BRIDGE_logError("Link name not specified");
           continue;
         }
-        Group g;
-        g.name_ = std::string(gname);
-        boost::trim(g.name_);
-
-        // get the links in the groups
-        for (TiXmlElement* link_xml = group_xml->FirstChildElement("link"); link_xml;
-             link_xml = link_xml->NextSiblingElement("link"))
+        std::string lname_str = boost::trim_copy(std::string(lname));
+        if (!scene_graph.getLink(lname_str))
         {
-          const char* lname = link_xml->Attribute("name");
-          if (!lname)
-          {
-            CONSOLE_BRIDGE_logError("Link name not specified");
-            continue;
-          }
-          std::string lname_str = boost::trim_copy(std::string(lname));
-          if (!scene_graph.getLink(lname_str))
-          {
-            CONSOLE_BRIDGE_logError("Link '%s' declared as part of group '%s' is not known to the Scene Graph", lname, gname);
-            continue;
-          }
-          g.links_.push_back(lname_str);
+          CONSOLE_BRIDGE_logError(
+              "Link '%s' declared as part of group '%s' is not known to the Scene Graph", lname, gname);
+          continue;
         }
-
-        // get the joints in the groups
-        for (TiXmlElement* joint_xml = group_xml->FirstChildElement("joint"); joint_xml;
-             joint_xml = joint_xml->NextSiblingElement("joint"))
-        {
-          const char* jname = joint_xml->Attribute("name");
-          if (!jname)
-          {
-            CONSOLE_BRIDGE_logError("Joint name not specified");
-            continue;
-          }
-          std::string jname_str = boost::trim_copy(std::string(jname));
-          if (!scene_graph.getJoint(jname_str))
-          {
-            bool missing = true;
-            for (std::size_t k = 0; k < virtual_joints_.size(); ++k)
-              if (virtual_joints_[k].name_ == jname_str)
-              {
-                missing = false;
-                break;
-              }
-            if (missing)
-            {
-              CONSOLE_BRIDGE_logError("Joint '%s' declared as part of group '%s' is not known to the Scene Graph", jname, gname);
-              continue;
-            }
-          }
-          g.joints_.push_back(jname_str);
-        }
-
-        // get the chains in the groups
-        for (TiXmlElement* chain_xml = group_xml->FirstChildElement("chain"); chain_xml;
-             chain_xml = chain_xml->NextSiblingElement("chain"))
-        {
-          const char* base = chain_xml->Attribute("base_link");
-          const char* tip = chain_xml->Attribute("tip_link");
-          if (!base)
-          {
-            CONSOLE_BRIDGE_logError("Base link name not specified for chain");
-            continue;
-          }
-          if (!tip)
-          {
-            CONSOLE_BRIDGE_logError("Tip link name not specified for chain");
-            continue;
-          }
-          std::string base_str = boost::trim_copy(std::string(base));
-          std::string tip_str = boost::trim_copy(std::string(tip));
-          if (!scene_graph.getLink(base_str))
-          {
-            CONSOLE_BRIDGE_logError("Link '%s' declared as part of a chain in group '%s' is not known to the Scene Graph", base,
-                                    gname);
-            continue;
-          }
-          if (!scene_graph.getLink(tip_str))
-          {
-            CONSOLE_BRIDGE_logError("Link '%s' declared as part of a chain in group '%s' is not known to the Scene Graph", tip,
-                                    gname);
-            continue;
-          }
-
-          g.chains_.push_back(std::make_pair(base_str, tip_str));
-        }
-
-        // get the subgroups in the groups
-        for (TiXmlElement* subg_xml = group_xml->FirstChildElement("group"); subg_xml;
-             subg_xml = subg_xml->NextSiblingElement("group"))
-        {
-          const char* sub = subg_xml->Attribute("name");
-          if (!sub)
-          {
-            CONSOLE_BRIDGE_logError("Group name not specified when included as subgroup");
-            continue;
-          }
-          g.subgroups_.push_back(boost::trim_copy(std::string(sub)));
-        }
-        if (g.links_.empty() && g.joints_.empty() && g.chains_.empty() && g.subgroups_.empty())
-          CONSOLE_BRIDGE_logWarn("Group '%s' is empty.", gname);
-        groups_.push_back(g);
+        g.links_.push_back(lname_str);
       }
 
-      // check the subgroups
-      std::set<std::string> known_groups;
-      bool update = true;
-      while (update)
+      // get the joints in the groups
+      for (TiXmlElement* joint_xml = group_xml->FirstChildElement("joint"); joint_xml;
+           joint_xml = joint_xml->NextSiblingElement("joint"))
       {
-        update = false;
-        for (std::size_t i = 0; i < groups_.size(); ++i)
+        const char* jname = joint_xml->Attribute("name");
+        if (!jname)
         {
-          if (known_groups.find(groups_[i].name_) != known_groups.end())
+          CONSOLE_BRIDGE_logError("Joint name not specified");
+          continue;
+        }
+        std::string jname_str = boost::trim_copy(std::string(jname));
+        if (!scene_graph.getJoint(jname_str))
+        {
+          bool missing = true;
+          for (std::size_t k = 0; k < virtual_joints_.size(); ++k)
+            if (virtual_joints_[k].name_ == jname_str)
+            {
+              missing = false;
+              break;
+            }
+          if (missing)
+          {
+            CONSOLE_BRIDGE_logError(
+                "Joint '%s' declared as part of group '%s' is not known to the Scene Graph", jname, gname);
             continue;
-          if (groups_[i].subgroups_.empty())
+          }
+        }
+        g.joints_.push_back(jname_str);
+      }
+
+      // get the chains in the groups
+      for (TiXmlElement* chain_xml = group_xml->FirstChildElement("chain"); chain_xml;
+           chain_xml = chain_xml->NextSiblingElement("chain"))
+      {
+        const char* base = chain_xml->Attribute("base_link");
+        const char* tip = chain_xml->Attribute("tip_link");
+        if (!base)
+        {
+          CONSOLE_BRIDGE_logError("Base link name not specified for chain");
+          continue;
+        }
+        if (!tip)
+        {
+          CONSOLE_BRIDGE_logError("Tip link name not specified for chain");
+          continue;
+        }
+        std::string base_str = boost::trim_copy(std::string(base));
+        std::string tip_str = boost::trim_copy(std::string(tip));
+        if (!scene_graph.getLink(base_str))
+        {
+          CONSOLE_BRIDGE_logError(
+              "Link '%s' declared as part of a chain in group '%s' is not known to the Scene Graph", base, gname);
+          continue;
+        }
+        if (!scene_graph.getLink(tip_str))
+        {
+          CONSOLE_BRIDGE_logError(
+              "Link '%s' declared as part of a chain in group '%s' is not known to the Scene Graph", tip, gname);
+          continue;
+        }
+
+        g.chains_.push_back(std::make_pair(base_str, tip_str));
+      }
+
+      // get the subgroups in the groups
+      for (TiXmlElement* subg_xml = group_xml->FirstChildElement("group"); subg_xml;
+           subg_xml = subg_xml->NextSiblingElement("group"))
+      {
+        const char* sub = subg_xml->Attribute("name");
+        if (!sub)
+        {
+          CONSOLE_BRIDGE_logError("Group name not specified when included as subgroup");
+          continue;
+        }
+        g.subgroups_.push_back(boost::trim_copy(std::string(sub)));
+      }
+      if (g.links_.empty() && g.joints_.empty() && g.chains_.empty() && g.subgroups_.empty())
+        CONSOLE_BRIDGE_logWarn("Group '%s' is empty.", gname);
+      groups_.push_back(g);
+    }
+
+    // check the subgroups
+    std::set<std::string> known_groups;
+    bool update = true;
+    while (update)
+    {
+      update = false;
+      for (std::size_t i = 0; i < groups_.size(); ++i)
+      {
+        if (known_groups.find(groups_[i].name_) != known_groups.end())
+          continue;
+        if (groups_[i].subgroups_.empty())
+        {
+          known_groups.insert(groups_[i].name_);
+          update = true;
+        }
+        else
+        {
+          bool ok = true;
+          for (std::size_t j = 0; ok && j < groups_[i].subgroups_.size(); ++j)
+            if (known_groups.find(groups_[i].subgroups_[j]) == known_groups.end())
+              ok = false;
+          if (ok)
           {
             known_groups.insert(groups_[i].name_);
             update = true;
           }
-          else
-          {
-            bool ok = true;
-            for (std::size_t j = 0; ok && j < groups_[i].subgroups_.size(); ++j)
-              if (known_groups.find(groups_[i].subgroups_[j]) == known_groups.end())
-                ok = false;
-            if (ok)
-            {
-              known_groups.insert(groups_[i].name_);
-              update = true;
-            }
-          }
         }
       }
+    }
 
-      // if there are erroneous groups, keep only the valid ones
-      if (known_groups.size() != groups_.size())
-      {
-        std::vector<Group> correct;
-        for (std::size_t i = 0; i < groups_.size(); ++i)
-          if (known_groups.find(groups_[i].name_) != known_groups.end())
-            correct.push_back(groups_[i]);
-          else
-            CONSOLE_BRIDGE_logError("Group '%s' has unsatisfied subgroups", groups_[i].name_.c_str());
-        groups_.swap(correct);
+    // if there are erroneous groups, keep only the valid ones
+    if (known_groups.size() != groups_.size())
+    {
+      std::vector<Group> correct;
+      for (std::size_t i = 0; i < groups_.size(); ++i)
+        if (known_groups.find(groups_[i].name_) != known_groups.end())
+          correct.push_back(groups_[i]);
+        else
+          CONSOLE_BRIDGE_logError("Group '%s' has unsatisfied subgroups", groups_[i].name_.c_str());
+      groups_.swap(correct);
     }
   }
 
   void loadGroupStates(const tesseract_scene_graph::SceneGraph& scene_graph, TiXmlElement* srdf_xml)
   {
     for (TiXmlElement* gstate_xml = srdf_xml->FirstChildElement("group_state"); gstate_xml;
-           gstate_xml = gstate_xml->NextSiblingElement("group_state"))
+         gstate_xml = gstate_xml->NextSiblingElement("group_state"))
+    {
+      const char* sname = gstate_xml->Attribute("name");
+      const char* gname = gstate_xml->Attribute("group");
+      if (!sname)
       {
-        const char* sname = gstate_xml->Attribute("name");
-        const char* gname = gstate_xml->Attribute("group");
-        if (!sname)
+        CONSOLE_BRIDGE_logError("Name of group state is not specified");
+        continue;
+      }
+      if (!gname)
+      {
+        CONSOLE_BRIDGE_logError("Name of group for state '%s' is not specified", sname);
+        continue;
+      }
+
+      GroupState gs;
+      gs.name_ = boost::trim_copy(std::string(sname));
+      gs.group_ = boost::trim_copy(std::string(gname));
+
+      bool found = false;
+      for (std::size_t k = 0; k < groups_.size(); ++k)
+        if (groups_[k].name_ == gs.group_)
         {
-          CONSOLE_BRIDGE_logError("Name of group state is not specified");
+          found = true;
+          break;
+        }
+      if (!found)
+      {
+        CONSOLE_BRIDGE_logError("Group state '%s' specified for group '%s', but that group is not known", sname, gname);
+        continue;
+      }
+
+      // get the joint values in the group state
+      for (TiXmlElement* joint_xml = gstate_xml->FirstChildElement("joint"); joint_xml;
+           joint_xml = joint_xml->NextSiblingElement("joint"))
+      {
+        const char* jname = joint_xml->Attribute("name");
+        const char* jval = joint_xml->Attribute("value");
+        if (!jname)
+        {
+          CONSOLE_BRIDGE_logError("Joint name not specified in group state '%s'", sname);
           continue;
         }
-        if (!gname)
+        if (!jval)
         {
-          CONSOLE_BRIDGE_logError("Name of group for state '%s' is not specified", sname);
+          CONSOLE_BRIDGE_logError("Joint name not specified for joint '%s' in group state '%s'", jname, sname);
           continue;
         }
-
-        GroupState gs;
-        gs.name_ = boost::trim_copy(std::string(sname));
-        gs.group_ = boost::trim_copy(std::string(gname));
-
-        bool found = false;
-        for (std::size_t k = 0; k < groups_.size(); ++k)
-          if (groups_[k].name_ == gs.group_)
+        std::string jname_str = boost::trim_copy(std::string(jname));
+        if (!scene_graph.getJoint(jname_str))
+        {
+          bool missing = true;
+          for (std::size_t k = 0; k < virtual_joints_.size(); ++k)
+            if (virtual_joints_[k].name_ == jname_str)
+            {
+              missing = false;
+              break;
+            }
+          if (missing)
           {
-            found = true;
-            break;
-          }
-        if (!found)
-        {
-          CONSOLE_BRIDGE_logError("Group state '%s' specified for group '%s', but that group is not known", sname, gname);
-          continue;
-        }
-
-        // get the joint values in the group state
-        for (TiXmlElement* joint_xml = gstate_xml->FirstChildElement("joint"); joint_xml;
-             joint_xml = joint_xml->NextSiblingElement("joint"))
-        {
-          const char* jname = joint_xml->Attribute("name");
-          const char* jval = joint_xml->Attribute("value");
-          if (!jname)
-          {
-            CONSOLE_BRIDGE_logError("Joint name not specified in group state '%s'", sname);
+            CONSOLE_BRIDGE_logError(
+                "Joint '%s' declared as part of group state '%s' is not known to the URDF", jname, sname);
             continue;
           }
-          if (!jval)
-          {
-            CONSOLE_BRIDGE_logError("Joint name not specified for joint '%s' in group state '%s'", jname, sname);
-            continue;
-          }
-          std::string jname_str = boost::trim_copy(std::string(jname));
-          if (!scene_graph.getJoint(jname_str))
-          {
-            bool missing = true;
-            for (std::size_t k = 0; k < virtual_joints_.size(); ++k)
-              if (virtual_joints_[k].name_ == jname_str)
-              {
-                missing = false;
-                break;
-              }
-            if (missing)
-            {
-              CONSOLE_BRIDGE_logError("Joint '%s' declared as part of group state '%s' is not known to the URDF", jname,
-                                      sname);
-              continue;
-            }
-          }
-          try
-          {
-            std::string jval_str = std::string(jval);
-            std::istringstream ss(jval_str);
-            while (ss.good() && !ss.eof())
-            {
-              double val;
-              ss >> val >> std::ws;
-              gs.joint_values_[jname_str].push_back(val);
-            }
-          }
-          catch (const std::invalid_argument& e)
-          {
-            CONSOLE_BRIDGE_logError("Unable to parse joint value '%s'", jval);
-          }
-          catch (const std::out_of_range& e)
-          {
-            CONSOLE_BRIDGE_logError("Unable to parse joint value '%s' (out of range)", jval);
-          }
-
-          if (gs.joint_values_.empty())
-            CONSOLE_BRIDGE_logError("Unable to parse joint value ('%s') for joint '%s' in group state '%s'", jval, jname,
-                                    sname);
         }
-        group_states_.push_back(gs);
+        try
+        {
+          std::string jval_str = std::string(jval);
+          std::istringstream ss(jval_str);
+          while (ss.good() && !ss.eof())
+          {
+            double val;
+            ss >> val >> std::ws;
+            gs.joint_values_[jname_str].push_back(val);
+          }
+        }
+        catch (const std::invalid_argument& e)
+        {
+          CONSOLE_BRIDGE_logError("Unable to parse joint value '%s'", jval);
+        }
+        catch (const std::out_of_range& e)
+        {
+          CONSOLE_BRIDGE_logError("Unable to parse joint value '%s' (out of range)", jval);
+        }
+
+        if (gs.joint_values_.empty())
+          CONSOLE_BRIDGE_logError(
+              "Unable to parse joint value ('%s') for joint '%s' in group state '%s'", jval, jname, sname);
+      }
+      group_states_.push_back(gs);
     }
   }
 
   void loadEndEffectors(const tesseract_scene_graph::SceneGraph& scene_graph, TiXmlElement* srdf_xml)
   {
     for (TiXmlElement* eef_xml = srdf_xml->FirstChildElement("end_effector"); eef_xml;
-           eef_xml = eef_xml->NextSiblingElement("end_effector"))
+         eef_xml = eef_xml->NextSiblingElement("end_effector"))
+    {
+      const char* ename = eef_xml->Attribute("name");
+      const char* gname = eef_xml->Attribute("group");
+      const char* parent = eef_xml->Attribute("parent_link");
+      const char* parent_group = eef_xml->Attribute("parent_group");
+      if (!ename)
       {
-        const char* ename = eef_xml->Attribute("name");
-        const char* gname = eef_xml->Attribute("group");
-        const char* parent = eef_xml->Attribute("parent_link");
-        const char* parent_group = eef_xml->Attribute("parent_group");
-        if (!ename)
+        CONSOLE_BRIDGE_logError("Name of end effector is not specified");
+        continue;
+      }
+      if (!gname)
+      {
+        CONSOLE_BRIDGE_logError("Group not specified for end effector '%s'", ename);
+        continue;
+      }
+      EndEffector e;
+      e.name_ = std::string(ename);
+      boost::trim(e.name_);
+      e.component_group_ = std::string(gname);
+      boost::trim(e.component_group_);
+      bool found = false;
+      for (std::size_t k = 0; k < groups_.size(); ++k)
+        if (groups_[k].name_ == e.component_group_)
         {
-          CONSOLE_BRIDGE_logError("Name of end effector is not specified");
-          continue;
+          found = true;
+          break;
         }
-        if (!gname)
-        {
-          CONSOLE_BRIDGE_logError("Group not specified for end effector '%s'", ename);
-          continue;
-        }
-        EndEffector e;
-        e.name_ = std::string(ename);
-        boost::trim(e.name_);
-        e.component_group_ = std::string(gname);
-        boost::trim(e.component_group_);
-        bool found = false;
-        for (std::size_t k = 0; k < groups_.size(); ++k)
-          if (groups_[k].name_ == e.component_group_)
-          {
-            found = true;
-            break;
-          }
-        if (!found)
-        {
-          CONSOLE_BRIDGE_logError("End effector '%s' specified for group '%s', but that group is not known", ename, gname);
-          continue;
-        }
-        if (!parent)
-        {
-          CONSOLE_BRIDGE_logError("Parent link not specified for end effector '%s'", ename);
-          continue;
-        }
-        e.parent_link_ = std::string(parent);
-        boost::trim(e.parent_link_);
-        if (!scene_graph.getLink(e.parent_link_))
-        {
-          CONSOLE_BRIDGE_logError("Link '%s' specified as parent for end effector '%s' is not known to the URDF", parent,
-                                  ename);
-          continue;
-        }
-        if (parent_group)
-        {
-          e.parent_group_ = std::string(parent_group);
-          boost::trim(e.parent_group_);
-        }
-        end_effectors_.push_back(e);
+      if (!found)
+      {
+        CONSOLE_BRIDGE_logError(
+            "End effector '%s' specified for group '%s', but that group is not known", ename, gname);
+        continue;
+      }
+      if (!parent)
+      {
+        CONSOLE_BRIDGE_logError("Parent link not specified for end effector '%s'", ename);
+        continue;
+      }
+      e.parent_link_ = std::string(parent);
+      boost::trim(e.parent_link_);
+      if (!scene_graph.getLink(e.parent_link_))
+      {
+        CONSOLE_BRIDGE_logError(
+            "Link '%s' specified as parent for end effector '%s' is not known to the URDF", parent, ename);
+        continue;
+      }
+      if (parent_group)
+      {
+        e.parent_group_ = std::string(parent_group);
+        boost::trim(e.parent_group_);
+      }
+      end_effectors_.push_back(e);
     }
   }
   void loadLinkSphereApproximations(const tesseract_scene_graph::SceneGraph& scene_graph, TiXmlElement* srdf_xml)
   {
     for (TiXmlElement* cslink_xml = srdf_xml->FirstChildElement("link_sphere_approximation"); cslink_xml;
-           cslink_xml = cslink_xml->NextSiblingElement("link_sphere_approximation"))
+         cslink_xml = cslink_xml->NextSiblingElement("link_sphere_approximation"))
+    {
+      int non_0_radius_sphere_cnt = 0;
+      const char* link_name = cslink_xml->Attribute("link");
+      if (!link_name)
       {
-        int non_0_radius_sphere_cnt = 0;
-        const char* link_name = cslink_xml->Attribute("link");
-        if (!link_name)
+        CONSOLE_BRIDGE_logError("Name of link is not specified in link_collision_spheres");
+        continue;
+      }
+
+      LinkSpheres link_spheres;
+      link_spheres.link_ = boost::trim_copy(std::string(link_name));
+      if (!scene_graph.getLink(link_spheres.link_))
+      {
+        CONSOLE_BRIDGE_logError("Link '%s' is not known to URDF.", link_name);
+        continue;
+      }
+
+      // get the spheres for this link
+      int cnt = 0;
+      for (TiXmlElement* sphere_xml = cslink_xml->FirstChildElement("sphere"); sphere_xml;
+           sphere_xml = sphere_xml->NextSiblingElement("sphere"), cnt++)
+      {
+        const char* s_center = sphere_xml->Attribute("center");
+        const char* s_r = sphere_xml->Attribute("radius");
+        if (!s_center || !s_r)
         {
-          CONSOLE_BRIDGE_logError("Name of link is not specified in link_collision_spheres");
+          CONSOLE_BRIDGE_logError(
+              "Link collision sphere %d for link '%s' does not have both center and radius.", cnt, link_name);
           continue;
         }
 
-        LinkSpheres link_spheres;
-        link_spheres.link_ = boost::trim_copy(std::string(link_name));
-        if (!scene_graph.getLink(link_spheres.link_))
+        Sphere sphere;
+        try
         {
-          CONSOLE_BRIDGE_logError("Link '%s' is not known to URDF.", link_name);
+          std::stringstream center(s_center);
+          center.exceptions(std::stringstream::failbit | std::stringstream::badbit);
+          center >> sphere.center_x_ >> sphere.center_y_ >> sphere.center_z_;
+          sphere.radius_ = std::stod(s_r);
+        }
+        catch (std::stringstream::failure& e)
+        {
+          CONSOLE_BRIDGE_logError(
+              "Link collision sphere %d for link '%s' has bad center attribute value.", cnt, link_name);
+          continue;
+        }
+        catch (const std::invalid_argument& e)
+        {
+          CONSOLE_BRIDGE_logError(
+              "Link collision sphere %d for link '%s' has bad radius attribute value.", cnt, link_name);
+          continue;
+        }
+        catch (const std::out_of_range& e)
+        {
+          CONSOLE_BRIDGE_logError(
+              "Link collision sphere %d for link '%s' has an out of range radius attribute value.", cnt, link_name);
           continue;
         }
 
-        // get the spheres for this link
-        int cnt = 0;
-        for (TiXmlElement *sphere_xml = cslink_xml->FirstChildElement("sphere"); sphere_xml;
-             sphere_xml = sphere_xml->NextSiblingElement("sphere"), cnt++)
+        // ignore radius==0 spheres unless there is only 1 of them
+        //
+        // NOTE:
+        //  - If a link has no sphere_approximation then one will be generated
+        //     automatically containing a single sphere which encloses the entire
+        //     collision geometry.  Internally this is represented by not having
+        //     a link_sphere_approximations_ entry for this link.
+        //  - If a link has only spheres with radius 0 then it will not be
+        //     considered for collision detection.  In this case the internal
+        //     representation is a single radius=0 sphere.
+        //  - If a link has at least one sphere with radius>0 then those spheres
+        //     are used.  Any radius=0 spheres are eliminated.
+        if (sphere.radius_ > std::numeric_limits<double>::epsilon())
         {
-          const char* s_center = sphere_xml->Attribute("center");
-          const char* s_r = sphere_xml->Attribute("radius");
-          if (!s_center || !s_r)
-          {
-            CONSOLE_BRIDGE_logError("Link collision sphere %d for link '%s' does not have both center and radius.", cnt,
-                                    link_name);
-            continue;
-          }
-
-          Sphere sphere;
-          try
-          {
-            std::stringstream center(s_center);
-            center.exceptions(std::stringstream::failbit | std::stringstream::badbit);
-            center >> sphere.center_x_ >> sphere.center_y_ >> sphere.center_z_;
-            sphere.radius_ = std::stod(s_r);
-          }
-          catch (std::stringstream::failure& e)
-          {
-            CONSOLE_BRIDGE_logError("Link collision sphere %d for link '%s' has bad center attribute value.", cnt,
-                                    link_name);
-            continue;
-          }
-          catch (const std::invalid_argument& e)
-          {
-            CONSOLE_BRIDGE_logError("Link collision sphere %d for link '%s' has bad radius attribute value.", cnt,
-                                    link_name);
-            continue;
-          }
-          catch (const std::out_of_range& e)
-          {
-            CONSOLE_BRIDGE_logError("Link collision sphere %d for link '%s' has an out of range radius attribute value.",
-                                    cnt, link_name);
-            continue;
-          }
-
-          // ignore radius==0 spheres unless there is only 1 of them
-          //
-          // NOTE:
-          //  - If a link has no sphere_approximation then one will be generated
-          //     automatically containing a single sphere which encloses the entire
-          //     collision geometry.  Internally this is represented by not having
-          //     a link_sphere_approximations_ entry for this link.
-          //  - If a link has only spheres with radius 0 then it will not be
-          //     considered for collision detection.  In this case the internal
-          //     representation is a single radius=0 sphere.
-          //  - If a link has at least one sphere with radius>0 then those spheres
-          //     are used.  Any radius=0 spheres are eliminated.
-          if (sphere.radius_ > std::numeric_limits<double>::epsilon())
-          {
-            if (non_0_radius_sphere_cnt == 0)
-              link_spheres.spheres_.clear();
-            link_spheres.spheres_.push_back(sphere);
-            non_0_radius_sphere_cnt++;
-          }
-          else if (non_0_radius_sphere_cnt == 0)
-          {
-            sphere.center_x_ = 0.0;
-            sphere.center_y_ = 0.0;
-            sphere.center_z_ = 0.0;
-            sphere.radius_ = 0.0;
+          if (non_0_radius_sphere_cnt == 0)
             link_spheres.spheres_.clear();
-            link_spheres.spheres_.push_back(sphere);
-          }
+          link_spheres.spheres_.push_back(sphere);
+          non_0_radius_sphere_cnt++;
         }
+        else if (non_0_radius_sphere_cnt == 0)
+        {
+          sphere.center_x_ = 0.0;
+          sphere.center_y_ = 0.0;
+          sphere.center_z_ = 0.0;
+          sphere.radius_ = 0.0;
+          link_spheres.spheres_.clear();
+          link_spheres.spheres_.push_back(sphere);
+        }
+      }
 
-        if (!link_spheres.spheres_.empty())
-          link_sphere_approximations_.push_back(link_spheres);
+      if (!link_spheres.spheres_.empty())
+        link_sphere_approximations_.push_back(link_spheres);
     }
   }
 
   void loadDisabledCollisions(const tesseract_scene_graph::SceneGraph& scene_graph, TiXmlElement* srdf_xml)
   {
     for (TiXmlElement* c_xml = srdf_xml->FirstChildElement("disable_collisions"); c_xml;
-           c_xml = c_xml->NextSiblingElement("disable_collisions"))
+         c_xml = c_xml->NextSiblingElement("disable_collisions"))
+    {
+      const char* link1 = c_xml->Attribute("link1");
+      const char* link2 = c_xml->Attribute("link2");
+      if (!link1 || !link2)
       {
-        const char* link1 = c_xml->Attribute("link1");
-        const char* link2 = c_xml->Attribute("link2");
-        if (!link1 || !link2)
-        {
-          CONSOLE_BRIDGE_logError("A pair of links needs to be specified to disable collisions");
-          continue;
-        }
-        DisabledCollision dc;
-        dc.link1_ = boost::trim_copy(std::string(link1));
-        dc.link2_ = boost::trim_copy(std::string(link2));
-        if (!scene_graph.getLink(dc.link1_))
-        {
-          CONSOLE_BRIDGE_logWarn("Link '%s' is not known to URDF. Cannot disable collisons.", link1);
-          continue;
-        }
-        if (!scene_graph.getLink(dc.link2_))
-        {
-          CONSOLE_BRIDGE_logWarn("Link '%s' is not known to URDF. Cannot disable collisons.", link2);
-          continue;
-        }
-        const char* reason = c_xml->Attribute("reason");
-        if (reason)
-          dc.reason_ = std::string(reason);
-        disabled_collisions_.push_back(dc);
+        CONSOLE_BRIDGE_logError("A pair of links needs to be specified to disable collisions");
+        continue;
+      }
+      DisabledCollision dc;
+      dc.link1_ = boost::trim_copy(std::string(link1));
+      dc.link2_ = boost::trim_copy(std::string(link2));
+      if (!scene_graph.getLink(dc.link1_))
+      {
+        CONSOLE_BRIDGE_logWarn("Link '%s' is not known to URDF. Cannot disable collisons.", link1);
+        continue;
+      }
+      if (!scene_graph.getLink(dc.link2_))
+      {
+        CONSOLE_BRIDGE_logWarn("Link '%s' is not known to URDF. Cannot disable collisons.", link2);
+        continue;
+      }
+      const char* reason = c_xml->Attribute("reason");
+      if (reason)
+        dc.reason_ = std::string(reason);
+      disabled_collisions_.push_back(dc);
     }
   }
 
   void loadPassiveJoints(const tesseract_scene_graph::SceneGraph& scene_graph, TiXmlElement* srdf_xml)
   {
     for (TiXmlElement* c_xml = srdf_xml->FirstChildElement("passive_joint"); c_xml;
-           c_xml = c_xml->NextSiblingElement("passive_joint"))
+         c_xml = c_xml->NextSiblingElement("passive_joint"))
+    {
+      const char* name = c_xml->Attribute("name");
+      if (!name)
       {
-        const char* name = c_xml->Attribute("name");
-        if (!name)
-        {
-          CONSOLE_BRIDGE_logError("No name specified for passive joint. Ignoring.");
-          continue;
-        }
-        PassiveJoint pj;
-        pj.name_ = boost::trim_copy(std::string(name));
+        CONSOLE_BRIDGE_logError("No name specified for passive joint. Ignoring.");
+        continue;
+      }
+      PassiveJoint pj;
+      pj.name_ = boost::trim_copy(std::string(name));
 
-        // see if a virtual joint was marked as passive
-        bool vjoint = false;
-        for (std::size_t i = 0; !vjoint && i < virtual_joints_.size(); ++i)
-          if (virtual_joints_[i].name_ == pj.name_)
-            vjoint = true;
+      // see if a virtual joint was marked as passive
+      bool vjoint = false;
+      for (std::size_t i = 0; !vjoint && i < virtual_joints_.size(); ++i)
+        if (virtual_joints_[i].name_ == pj.name_)
+          vjoint = true;
 
-        if (!vjoint && !scene_graph.getJoint(pj.name_))
-        {
-          CONSOLE_BRIDGE_logError("Joint '%s' marked as passive is not known to the URDF. Ignoring.", name);
-          continue;
-        }
-        passive_joints_.push_back(pj);
+      if (!vjoint && !scene_graph.getJoint(pj.name_))
+      {
+        CONSOLE_BRIDGE_logError("Joint '%s' marked as passive is not known to the URDF. Ignoring.", name);
+        continue;
+      }
+      passive_joints_.push_back(pj);
     }
   }
 
@@ -874,6 +848,6 @@ private:
   std::vector<PassiveJoint> passive_joints_;
 };
 
-}
+}  // namespace tesseract_scene_graph
 
-#endif // TESSERACT_SCENE_SRDF_PARSER_H
+#endif  // TESSERACT_SCENE_SRDF_PARSER_H

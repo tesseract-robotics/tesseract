@@ -6,7 +6,6 @@
 
 namespace tesseract_process_planners
 {
-
 /**
  * @class tesseract_process_planners::ProcessSegmentDefinition
  * @details
@@ -38,15 +37,20 @@ struct ProcessSegmentDefinition
 };
 
 /**
- * @brief The ProcessTransitionDefinition struct which contains the waypoint data to allow moving between adjacent process segments
+ * @brief The ProcessTransitionDefinition struct which contains the waypoint data to allow moving between adjacent
+ * process segments
  */
 struct ProcessTransitionDefinition
 {
-  std::vector<tesseract_motion_planners::Waypoint::Ptr> transition_from_start; /**< A transition plans from the start of segment[i] to the end of segment[i+1],
-   	   	   	   	   	   	   	   	   	   	   	   	   	   	   	   	   	   	   	   	   	   this data can be used for finding collision free exit moves after cancelling
-   	   	   	   	   	   	   	   	   	   	   	   	   	   	   	   	   	   	   	   	   	   an ongoing process */
+  std::vector<tesseract_motion_planners::Waypoint::Ptr> transition_from_start; /**< A transition plans from the start of
+                                                                                  segment[i] to the end of segment[i+1],
+                                                                                       this data can be used for finding
+                                                                                  collision free exit moves after
+                                                                                  cancelling an ongoing process */
 
-  std::vector<tesseract_motion_planners::Waypoint::Ptr> transition_from_end;   /**< A transition plans from the end of segment[i] to the start of segment[i+1] */
+  std::vector<tesseract_motion_planners::Waypoint::Ptr> transition_from_end; /**< A transition plans from the end of
+                                                                                segment[i] to the start of segment[i+1]
+                                                                              */
 };
 
 /**
@@ -67,9 +71,10 @@ struct ProcessTransitionDefinition
  */
 struct ProcessDefinition
 {
-  tesseract_motion_planners::Waypoint::Ptr start;             /**< The start position of the robot */
-  std::vector<ProcessSegmentDefinition> segments;              /**< All of the raster segments with approaches and departures */
-  std::vector<ProcessTransitionDefinition> transitions; 	/**< All of the transition to/from a given segment. Must be same length as segments */
+  tesseract_motion_planners::Waypoint::Ptr start; /**< The start position of the robot */
+  std::vector<ProcessSegmentDefinition> segments; /**< All of the raster segments with approaches and departures */
+  std::vector<ProcessTransitionDefinition> transitions; /**< All of the transition to/from a given segment. Must be same
+                                                           length as segments */
 };
 
 /**definition
@@ -78,16 +83,14 @@ struct ProcessDefinition
 class ProcessTransitionGenerator
 {
 public:
-
   using Ptr = std::shared_ptr<ProcessTransitionGenerator>;
   using ConstPtr = std::shared_ptr<const ProcessTransitionGenerator>;
 
   virtual ~ProcessTransitionGenerator() = default;
-  virtual std::vector<tesseract_motion_planners::Waypoint::Ptr> generate(const tesseract_motion_planners::Waypoint::Ptr& start_waypoint,
-                                                                           const tesseract_motion_planners::Waypoint::Ptr& end_waypoint) const = 0;
+  virtual std::vector<tesseract_motion_planners::Waypoint::Ptr>
+  generate(const tesseract_motion_planners::Waypoint::Ptr& start_waypoint,
+           const tesseract_motion_planners::Waypoint::Ptr& end_waypoint) const = 0;
 };
-
-
 
 /**
  * @class tesseract_process_planners::ProcessDefinitionConfig
@@ -120,7 +123,6 @@ struct ProcessDefinitionConfig
   }
 };
 
-
 /**
  * @class tesseract_process_planners::ProcessStepGenerator
  * @details
@@ -136,14 +138,14 @@ struct ProcessDefinitionConfig
 class ProcessStepGenerator
 {
 public:
-
   using Ptr = std::shared_ptr<ProcessStepGenerator>;
   using ConstPtr = std::shared_ptr<const ProcessStepGenerator>;
 
   virtual ~ProcessStepGenerator() = default;
 
-  virtual std::vector<tesseract_motion_planners::Waypoint::Ptr> generate(const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints,
-                                                                           const ProcessDefinitionConfig& config) const = 0;
+  virtual std::vector<tesseract_motion_planners::Waypoint::Ptr>
+  generate(const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints,
+           const ProcessDefinitionConfig& config) const = 0;
 };
 
 /**
@@ -162,14 +164,12 @@ struct ProcessSegmentDefinitionConfig
   ProcessStepGenerator::ConstPtr departure;
 };
 
-
 ProcessDefinition generateProcessDefinition(const ProcessDefinitionConfig& process_config,
                                             const ProcessSegmentDefinitionConfig& segment_config);
 
 ProcessDefinition generateProcessDefinition(const ProcessDefinitionConfig& process_config,
                                             const std::vector<ProcessSegmentDefinitionConfig>& segment_config);
 
+}  // namespace tesseract_process_planners
 
-}
-
-#endif //TESSERACT_PLANNING_PROCESS_DEFINITION_H
+#endif  // TESSERACT_PLANNING_PROCESS_DEFINITION_H

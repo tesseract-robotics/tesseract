@@ -33,11 +33,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace
 {
-  const size_t ERROR_IN_COMMAND_LINE = 1;
-  const size_t SUCCESS = 0;
-  const size_t ERROR_UNHANDLED_EXCEPTION = 2;
+const size_t ERROR_IN_COMMAND_LINE = 1;
+const size_t SUCCESS = 0;
+const size_t ERROR_UNHANDLED_EXCEPTION = 2;
 
-} // namespace
+}  // namespace
 
 int main(int argc, char** argv)
 {
@@ -48,30 +48,34 @@ int main(int argc, char** argv)
 
   namespace po = boost::program_options;
   po::options_description desc("Options");
-  desc.add_options()
-      ("help,h", "Print help messages")
-      ("input,i", po::value<std::string>(&input)->required(), "File path to mesh used to create a convex hull.")
-      ("output,o", po::value<std::string>(&output)->required(), "File path to save the generated convex hull as a ply.")
-      ("shrink,s", po::value<double>(&shrink), "If positive, the convex hull is shrunken by that amount (each face is moved by 'shrink' length units towards the center along its normal).")
-      ("clamp,c", po::value<double>(&clamp), "If positive, 'shrink' is clamped to not exceed 'clamp * innerRadius', where 'innerRadius' is the minimum distance of a face to the center of the convex hull.");
+  desc.add_options()("help,h", "Print help messages")(
+      "input,i", po::value<std::string>(&input)->required(), "File path to mesh used to create a convex hull.")(
+      "output,o", po::value<std::string>(&output)->required(), "File path to save the generated convex hull as a ply.")(
+      "shrink,s",
+      po::value<double>(&shrink),
+      "If positive, the convex hull is shrunken by that amount (each face is moved by 'shrink' length units towards "
+      "the center along its normal).")("clamp,c",
+                                       po::value<double>(&clamp),
+                                       "If positive, 'shrink' is clamped to not exceed 'clamp * innerRadius', where "
+                                       "'innerRadius' is the minimum distance of a face to the center of the convex "
+                                       "hull.");
 
   po::variables_map vm;
   try
   {
-    po::store(po::parse_command_line(argc, argv, desc), vm); // can throw
+    po::store(po::parse_command_line(argc, argv, desc), vm);  // can throw
 
     /** --help option */
-    if ( vm.count("help")  )
+    if (vm.count("help"))
     {
-      std::cout << "Basic Command Line Parameter App" << std::endl
-                << desc << std::endl;
+      std::cout << "Basic Command Line Parameter App" << std::endl << desc << std::endl;
       return SUCCESS;
     }
 
-    po::notify(vm); // throws on error, so do after help in case
-                    // there are any problems
+    po::notify(vm);  // throws on error, so do after help in case
+                     // there are any problems
   }
-  catch(po::error& e)
+  catch (po::error& e)
   {
     std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
     std::cerr << desc << std::endl;

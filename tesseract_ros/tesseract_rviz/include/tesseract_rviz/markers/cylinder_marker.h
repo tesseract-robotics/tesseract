@@ -39,7 +39,7 @@ class Shape;
 
 namespace tesseract_rviz
 {
-class CylinderMarker: public MarkerBase
+class CylinderMarker : public MarkerBase
 {
 public:
   using Ptr = boost::shared_ptr<CylinderMarker>;
@@ -67,12 +67,11 @@ public:
   std::set<Ogre::MaterialPtr> getMaterials() override;
 
 protected:
-
   rviz::Shape* shape_;
   Ogre::Vector3 scale_;
   float radius_;
   float height_;
 };
-}
+}  // namespace tesseract_rviz
 
-#endif // TESSERACT_RVIZ_MARKERS_CYLINDER_MARKER_H
+#endif  // TESSERACT_RVIZ_MARKERS_CYLINDER_MARKER_H

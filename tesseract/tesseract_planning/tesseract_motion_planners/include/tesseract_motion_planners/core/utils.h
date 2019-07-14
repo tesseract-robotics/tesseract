@@ -40,7 +40,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
-inline tesseract_common::VectorIsometry3d interpolate(const Eigen::Isometry3d& start, const Eigen::Isometry3d& stop, int steps)
+inline tesseract_common::VectorIsometry3d interpolate(const Eigen::Isometry3d& start,
+                                                      const Eigen::Isometry3d& stop,
+                                                      int steps)
 {
   // Required position change
   Eigen::Vector3d delta_translation = (stop.translation() - start.translation());
@@ -79,7 +81,8 @@ inline std::vector<Waypoint::Ptr> interpolate(const Waypoint& start, const Waypo
     {
       const CartesianWaypoint& w1 = static_cast<const CartesianWaypoint&>(start);
       const CartesianWaypoint& w2 = static_cast<const CartesianWaypoint&>(stop);
-      tesseract_common::VectorIsometry3d eigen_poses = interpolate(w1.cartesian_position_, w2.cartesian_position_, steps);
+      tesseract_common::VectorIsometry3d eigen_poses =
+          interpolate(w1.cartesian_position_, w2.cartesian_position_, steps);
 
       std::vector<Waypoint::Ptr> result;
       result.reserve(eigen_poses.size());
@@ -101,6 +104,6 @@ inline std::vector<Waypoint::Ptr> interpolate(const Waypoint& start, const Waypo
     }
   }
 }
-}
+}  // namespace tesseract_motion_planners
 
 #endif  // TESSERACT_PLANNING_UTILS_H

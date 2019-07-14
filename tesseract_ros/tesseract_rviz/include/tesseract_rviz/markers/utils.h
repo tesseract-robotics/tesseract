@@ -38,7 +38,7 @@ class SceneNode;
 class Quaternion;
 class Vector3;
 class ColourValue;
-}
+}  // namespace Ogre
 
 namespace rviz
 {
@@ -56,13 +56,13 @@ class InteractiveMarker;
  *  @param control  the interactive marker control that this will go into
  *  @param radius   The radius of the sphere
  */
-void makeSphere(InteractiveMarkerControl &control, float radius);
+void makeSphere(InteractiveMarkerControl& control, float radius);
 
 /** @brief make a default-style arrow marker based on the properties of the given interactive marker
  *  @param control  the interactive marker control that this will go into
  *  @param pos          how far from the center should the arrow be, and on which side
  */
-void makeArrow(InteractiveMarkerControl &control, float pos );
+void makeArrow(InteractiveMarkerControl& control, float pos);
 
 /** @brief make a default-style disc marker (e.g for rotating) based on the properties of the given interactive marker
  *  @param control  the interactive marker control that this will go into
@@ -73,11 +73,11 @@ void makeDisc(InteractiveMarkerControl& control, float width = 0.3f);
 ///// @brief make a box which shows the given text and is view facing
 ///// @param msg      the interactive marker that this will go into
 ///// @param text     the text to display
-//void makeViewFacingButton( const visualization_msgs::InteractiveMarker &msg,
+// void makeViewFacingButton( const visualization_msgs::InteractiveMarker &msg,
 //    visualization_msgs::InteractiveMarkerControl &control, std::string text );
 
 /** @brief Get the default orientation */
-Ogre::ColourValue getDefaultColor(const Ogre::Quaternion &quat);
+Ogre::ColourValue getDefaultColor(const Ogre::Quaternion& quat);
 
 /** @brief create a control which shows the description of the interactive marker */
 void makeTitle(InteractiveMarkerControl& control, const std::string& text);
@@ -85,7 +85,6 @@ void makeTitle(InteractiveMarkerControl& control, const std::string& text);
 /** @brief Make a 6 dof interactive marker */
 void make6Dof(InteractiveMarker& interactive_marker);
 
+}  // namespace tesseract_rviz
 
-}
-
-#endif // TESSERACT_RVIZ_RENDER_TOOLS_UTILS_H
+#endif  // TESSERACT_RVIZ_RENDER_TOOLS_UTILS_H

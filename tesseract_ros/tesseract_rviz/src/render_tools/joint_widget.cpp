@@ -72,11 +72,11 @@ JointWidget::JointWidget(VisualizationWidget* env, const tesseract_scene_graph::
                                                 joint_property_);
   position_property_->setReadOnly(true);
 
-  orientation_property_ =
-      new rviz::QuaternionProperty("Orientation",
-                                   Ogre::Quaternion::IDENTITY,
-                                   "Orientation of this joint, in the current Fixed Frame.  (Not editable)",
-                                   joint_property_);
+  orientation_property_ = new rviz::QuaternionProperty("Orientation",
+                                                       Ogre::Quaternion::IDENTITY,
+                                                       "Orientation of this joint, in the current Fixed Frame.  (Not "
+                                                       "editable)",
+                                                       joint_property_);
   orientation_property_->setReadOnly(true);
 
   std::string type = "";
@@ -139,8 +139,10 @@ JointWidget::JointWidget(VisualizationWidget* env, const tesseract_scene_graph::
   const Eigen::Vector3d& pos = joint.parent_to_joint_origin_transform.translation();
   Eigen::Quaterniond rot(joint.parent_to_joint_origin_transform.linear());
   joint_origin_pos_ = Ogre::Vector3(static_cast<float>(pos(0)), static_cast<float>(pos(1)), static_cast<float>(pos(2)));
-  joint_origin_rot_ = Ogre::Quaternion(
-      static_cast<float>(rot.w()), static_cast<float>(rot.x()), static_cast<float>(rot.y()), static_cast<float>(rot.z()));
+  joint_origin_rot_ = Ogre::Quaternion(static_cast<float>(rot.w()),
+                                       static_cast<float>(rot.x()),
+                                       static_cast<float>(rot.y()),
+                                       static_cast<float>(rot.z()));
 }
 
 JointWidget::~JointWidget()
@@ -205,8 +207,8 @@ void JointWidget::setJointCheckbox(QVariant val)
 }
 
 void JointWidget::calculateJointCheckboxesRecursive(int& links_with_geom,
-                                                 int& links_with_geom_checked,
-                                                 int& links_with_geom_unchecked)
+                                                    int& links_with_geom_checked,
+                                                    int& links_with_geom_unchecked)
 {
   links_with_geom_checked = 0;
   links_with_geom_unchecked = 0;
@@ -238,7 +240,8 @@ void JointWidget::calculateJointCheckboxesRecursive(int& links_with_geom,
     int child_links_with_geom;
     int child_links_with_geom_checked;
     int child_links_with_geom_unchecked;
-    child_joint->calculateJointCheckboxesRecursive(child_links_with_geom, child_links_with_geom_checked, child_links_with_geom_unchecked);
+    child_joint->calculateJointCheckboxesRecursive(
+        child_links_with_geom, child_links_with_geom_checked, child_links_with_geom_unchecked);
     links_with_geom_checked += child_links_with_geom_checked;
     links_with_geom_unchecked += child_links_with_geom_unchecked;
 
@@ -262,9 +265,9 @@ void JointWidget::calculateJointCheckboxesRecursive(int& links_with_geom,
 }
 
 void JointWidget::getChildLinkState(int& links_with_geom,
-                                 int& links_with_geom_checked,
-                                 int& links_with_geom_unchecked,
-                                   bool recursive) const
+                                    int& links_with_geom_checked,
+                                    int& links_with_geom_unchecked,
+                                    bool recursive) const
 {
   links_with_geom_checked = 0;
   links_with_geom_unchecked = 0;
@@ -285,7 +288,8 @@ void JointWidget::getChildLinkState(int& links_with_geom,
       int child_links_with_geom;
       int child_links_with_geom_checked;
       int child_links_with_geom_unchecked;
-      child_joint->calculateJointCheckboxesRecursive(child_links_with_geom, child_links_with_geom_checked, child_links_with_geom_unchecked);
+      child_joint->calculateJointCheckboxesRecursive(
+          child_links_with_geom, child_links_with_geom_checked, child_links_with_geom_unchecked);
       links_with_geom_checked += child_links_with_geom_checked;
       links_with_geom_unchecked += child_links_with_geom_unchecked;
 
@@ -388,7 +392,7 @@ void JointWidget::updateAxis()
 }
 
 void JointWidget::setTransforms(const Ogre::Vector3& parent_link_position,
-                               const Ogre::Quaternion& parent_link_orientation)
+                                const Ogre::Quaternion& parent_link_orientation)
 {
   Ogre::Vector3 position = parent_link_position + parent_link_orientation * joint_origin_pos_;
   Ogre::Quaternion orientation = parent_link_orientation * joint_origin_rot_;
@@ -477,4 +481,4 @@ void JointWidget::expandDetails(bool expand)
   }
 }
 
-}  // namespace rviz
+}  // namespace tesseract_rviz

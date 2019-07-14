@@ -84,7 +84,7 @@ bool checkRviz()
   }
 
   // There should not be any changes but check
-  if(env_changes.response.revision != 0)
+  if (env_changes.response.revision != 0)
   {
     ROS_ERROR("The environment has changed externally!");
     return false;
@@ -98,7 +98,8 @@ bool sendRvizChanges(int past_revision)
   tesseract_msgs::ModifyEnvironment update_env;
   update_env.request.id = tesseract_->getEnvironment()->getName();
   update_env.request.revision = past_revision;
-  if (!toMsg(update_env.request.commands, tesseract_->getEnvironment()->getCommandHistory(), update_env.request.revision))
+  if (!toMsg(
+          update_env.request.commands, tesseract_->getEnvironment()->getCommandHistory(), update_env.request.revision))
   {
     ROS_ERROR("Failed to generate commands to update rviz environment!");
     return false;
@@ -125,12 +126,16 @@ void addSeats()
 
     Visual::Ptr visual = std::make_shared<Visual>();
     visual->origin = Eigen::Isometry3d::Identity();
-    visual->geometry = createMeshFromPath<tesseract_geometry::Mesh>(locator_("package://tesseract_ros_examples/meshes/car_seat/visual/seat.dae"), Eigen::Vector3d(1, 1, 1), true)[0];
+    visual->geometry = createMeshFromPath<tesseract_geometry::Mesh>(locator_("package://tesseract_ros_examples/meshes/"
+                                                                             "car_seat/visual/seat.dae"),
+                                                                    Eigen::Vector3d(1, 1, 1),
+                                                                    true)[0];
     link_seat.visual.push_back(visual);
 
     for (int m = 1; m <= 10; ++m)
     {
-      std::vector<tesseract_geometry::Mesh::Ptr> meshes = createMeshFromPath<tesseract_geometry::Mesh>(locator_("package://tesseract_ros_examples/meshes/car_seat/collision/seat_" + std::to_string(m) + ".stl"));
+      std::vector<tesseract_geometry::Mesh::Ptr> meshes = createMeshFromPath<tesseract_geometry::Mesh>(
+          locator_("package://tesseract_ros_examples/meshes/car_seat/collision/seat_" + std::to_string(m) + ".stl"));
       for (auto& mesh : meshes)
       {
         Collision::Ptr collision = std::make_shared<Collision>();
@@ -256,7 +261,8 @@ std::unordered_map<std::string, std::unordered_map<std::string, double>> getPred
   return result;
 }
 
-std::vector<double> getPositionVector(const ForwardKinematics::ConstPtr& kin, const std::unordered_map<std::string, double>& pos)
+std::vector<double> getPositionVector(const ForwardKinematics::ConstPtr& kin,
+                                      const std::unordered_map<std::string, double>& pos)
 {
   std::vector<double> result;
   for (const auto& joint_name : kin->getJointNames())
@@ -265,7 +271,8 @@ std::vector<double> getPositionVector(const ForwardKinematics::ConstPtr& kin, co
   return result;
 }
 
-Eigen::VectorXd getPositionVectorXd(const ForwardKinematics::ConstPtr& kin, const std::unordered_map<std::string, double>& pos)
+Eigen::VectorXd getPositionVectorXd(const ForwardKinematics::ConstPtr& kin,
+                                    const std::unordered_map<std::string, double>& pos)
 {
   Eigen::VectorXd result;
   result.resize(kin->numJoints());
@@ -372,7 +379,8 @@ int main(int argc, char** argv)
   get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", 10);
 
   // Create plotting tool
-  tesseract_rosutils::ROSPlottingPtr plotter = std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment());
+  tesseract_rosutils::ROSPlottingPtr plotter =
+      std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment());
 
   // Get ROS Parameters
   pnh.param("plotting", plotting_, plotting_);
@@ -430,27 +438,30 @@ int main(int argc, char** argv)
 
   std::vector<ContactResultMap> collisions;
   ContinuousContactManager::Ptr manager = prob->GetEnv()->getContinuousContactManager();
-  AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
-                                                                                        prob->GetKin()->getActiveLinkNames(),
-                                                                                        prob->GetEnv()->getCurrentState()->transforms);
+  AdjacencyMap::Ptr adjacency_map =
+      std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
+                                                            prob->GetKin()->getActiveLinkNames(),
+                                                            prob->GetEnv()->getCurrentState()->transforms);
 
   manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   manager->setContactDistanceThreshold(0);
 
-  bool found = checkTrajectory(*manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(pick1_opt.x(), prob->GetVars()), collisions);
+  bool found = checkTrajectory(
+      *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(pick1_opt.x(), prob->GetVars()), collisions);
 
   ROS_INFO((found) ? ("Pick seat #1 trajectory is in collision") : ("Pick seat #1 trajectory is collision free"));
 
   // Get the state of at the end of pick 1 trajectory
-  EnvState::Ptr state =
-      tesseract_->getEnvironment()->getState(prob->GetKin()->getJointNames(), getPositionVectorXd(prob->GetKin(), saved_positions_["Pick1"]));
+  EnvState::Ptr state = tesseract_->getEnvironment()->getState(
+      prob->GetKin()->getJointNames(), getPositionVectorXd(prob->GetKin(), saved_positions_["Pick1"]));
 
   // Now we to detach seat_1 and attach it to the robot end_effector
   Joint joint_seat_1_robot("joint_seat_1_robot");
   joint_seat_1_robot.parent_link_name = "end_effector";
   joint_seat_1_robot.child_link_name = "seat_1";
   joint_seat_1_robot.type = JointType::FIXED;
-  joint_seat_1_robot.parent_to_joint_origin_transform = state->transforms["end_effector"].inverse() * state->transforms["seat_1"];
+  joint_seat_1_robot.parent_to_joint_origin_transform =
+      state->transforms["end_effector"].inverse() * state->transforms["seat_1"];
 
   tesseract_->getEnvironment()->moveLink(joint_seat_1_robot);
   tesseract_->getEnvironment()->addAllowedCollision("seat_1", "end_effector", "Adjacent");
@@ -492,12 +503,14 @@ int main(int argc, char** argv)
   manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   manager->setContactDistanceThreshold(0);
   collisions.clear();
-  found = checkTrajectory(*manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(place1_opt.x(), prob->GetVars()), collisions);
+  found = checkTrajectory(
+      *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(place1_opt.x(), prob->GetVars()), collisions);
 
   ROS_INFO((found) ? ("Place seat #1 trajectory is in collision") : ("Place seat #1 trajectory is collision free"));
 
   // Get the state of at the end of place 1 trajectory
-  state = tesseract_->getEnvironment()->getState(prob->GetKin()->getJointNames(), getPositionVectorXd(prob->GetKin(), saved_positions_["Place1"]));
+  state = tesseract_->getEnvironment()->getState(prob->GetKin()->getJointNames(),
+                                                 getPositionVectorXd(prob->GetKin(), saved_positions_["Place1"]));
 
   // Now we to detach seat_1 and attach it to the robot end_effector
   Joint joint_seat_1_car("joint_seat_1_car");
@@ -540,7 +553,8 @@ int main(int argc, char** argv)
   manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   manager->setContactDistanceThreshold(0);
   collisions.clear();
-  found = checkTrajectory(*manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(pick2_opt.x(), prob->GetVars()), collisions);
+  found = checkTrajectory(
+      *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(pick2_opt.x(), prob->GetVars()), collisions);
 
   ROS_INFO((found) ? ("Pick seat #2 trajectory is in collision") : ("Pick seat #2 trajectory is collision free"));
 
@@ -552,7 +566,8 @@ int main(int argc, char** argv)
   joint_seat_2_robot.parent_link_name = "end_effector";
   joint_seat_2_robot.child_link_name = "seat_2";
   joint_seat_2_robot.type = JointType::FIXED;
-  joint_seat_2_robot.parent_to_joint_origin_transform = state->transforms["end_effector"].inverse() * state->transforms["seat_2"];
+  joint_seat_2_robot.parent_to_joint_origin_transform =
+      state->transforms["end_effector"].inverse() * state->transforms["seat_2"];
 
   tesseract_->getEnvironment()->moveLink(joint_seat_2_robot);
 
@@ -562,7 +577,6 @@ int main(int argc, char** argv)
 
   // Store current revision
   env_current_revision = tesseract_->getEnvironment()->getRevision();
-
 }
 // int main(int argc, char **argv)
 //{

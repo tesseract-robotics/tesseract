@@ -75,20 +75,20 @@ ManipulationWidget::ManipulationWidget(rviz::Property* widget, rviz::Display* di
 
   main_property_->setCaptions("Reset");
 
-  joint_state_topic_property_ =
-      new rviz::RosTopicProperty("Topic",
-                                 "/tesseract/manipulation_joint_states",
-                                 ros::message_traits::datatype<sensor_msgs::JointState>(),
-                                 "The topic on which the sensor_msgs::JointState messages are published",
-                                 main_property_,
-                                 SLOT(changedJointStateTopic()),
-                                 this);
+  joint_state_topic_property_ = new rviz::RosTopicProperty("Topic",
+                                                           "/tesseract/manipulation_joint_states",
+                                                           ros::message_traits::datatype<sensor_msgs::JointState>(),
+                                                           "The topic on which the sensor_msgs::JointState messages "
+                                                           "are published",
+                                                           main_property_,
+                                                           SLOT(changedJointStateTopic()),
+                                                           this);
 
   manipulator_property_ = new rviz::EnumProperty(
       "Manipulator", "", "The manipulator to move around.", main_property_, SLOT(changedManipulator()), this);
 
-  tcp_property_ = new rviz::EnumProperty(
-      "TCP Link", "", "The tool center point link", main_property_, SLOT(changedTCP()), this);
+  tcp_property_ =
+      new rviz::EnumProperty("TCP Link", "", "The tool center point link", main_property_, SLOT(changedTCP()), this);
 
   cartesian_manipulation_property_ = new rviz::BoolProperty("Cartesian Manipulation",
                                                             true,
@@ -101,7 +101,8 @@ ManipulationWidget::ManipulationWidget(rviz::Property* widget, rviz::Display* di
                                                              0.5,
                                                              "Change the scale of the cartesian interactive marker",
                                                              cartesian_manipulation_property_,
-                                                             SLOT(changedCartesianMarkerScale()), this);
+                                                             SLOT(changedCartesianMarkerScale()),
+                                                             this);
   cartesian_marker_scale_property_->setMin(0.001f);
 
   joint_manipulation_property_ = new rviz::BoolProperty("Joint Manipulation",
@@ -115,15 +116,12 @@ ManipulationWidget::ManipulationWidget(rviz::Property* widget, rviz::Display* di
                                                          0.5,
                                                          "Change the scale of the joint interactive markers",
                                                          joint_manipulation_property_,
-                                                         SLOT(changedJointMarkerScale()), this);
+                                                         SLOT(changedJointMarkerScale()),
+                                                         this);
   joint_marker_scale_property_->setMin(0.001f);
 
-  joint_values_property_ = new rviz::Property("Joint Values",
-                                              "",
-                                              "Shows current joint values",
-                                              main_property_,
-                                              nullptr,
-                                              this);
+  joint_values_property_ =
+      new rviz::Property("Joint Values", "", "Shows current joint values", main_property_, nullptr, this);
 
   joint_values_property_->setReadOnly(true);
 }
@@ -133,8 +131,8 @@ ManipulationWidget::~ManipulationWidget()
   if (root_interactive_node_)
     context_->getSceneManager()->destroySceneNode(root_interactive_node_->getName());
 
-//  if (trajectory_slider_dock_panel_)
-//    delete trajectory_slider_dock_panel_;
+  //  if (trajectory_slider_dock_panel_)
+  //    delete trajectory_slider_dock_panel_;
 }
 
 void ManipulationWidget::onInitialize(Ogre::SceneNode* root_node,
@@ -165,7 +163,8 @@ void ManipulationWidget::onInitialize(Ogre::SceneNode* root_node,
     }
 
     env_revision_ = tesseract_->getEnvironmentConst()->getRevision();
-    env_state_ = std::make_shared<tesseract_environment::EnvState>(*(tesseract_->getEnvironmentConst()->getCurrentState()));
+    env_state_ =
+        std::make_shared<tesseract_environment::EnvState>(*(tesseract_->getEnvironmentConst()->getCurrentState()));
     joints_ = env_state_->joints;
   }
 
@@ -179,21 +178,19 @@ void ManipulationWidget::onInitialize(Ogre::SceneNode* root_node,
   changedManipulator();
   Q_EMIT availableManipulatorsChanged(available_manipulators_);
 
-
-
-//  rviz::WindowManagerInterface* window_context = context_->getWindowManager();
-//  if (window_context)
-//  {
-//    trajectory_slider_panel_ = new TrajectoryPanel(window_context->getParentWindow());
-//    trajectory_slider_dock_panel_ =
-//        window_context->addPane(display_->getName() + " - Slider", trajectory_slider_panel_);
-//    trajectory_slider_dock_panel_->setIcon(display_->getIcon());
-//    connect(trajectory_slider_dock_panel_,
-//            SIGNAL(visibilityChanged(bool)),
-//            this,
-//            SLOT(trajectorySliderPanelVisibilityChange(bool)));
-//    trajectory_slider_panel_->onInitialize();
-//  }
+  //  rviz::WindowManagerInterface* window_context = context_->getWindowManager();
+  //  if (window_context)
+  //  {
+  //    trajectory_slider_panel_ = new TrajectoryPanel(window_context->getParentWindow());
+  //    trajectory_slider_dock_panel_ =
+  //        window_context->addPane(display_->getName() + " - Slider", trajectory_slider_panel_);
+  //    trajectory_slider_dock_panel_->setIcon(display_->getIcon());
+  //    connect(trajectory_slider_dock_panel_,
+  //            SIGNAL(visibilityChanged(bool)),
+  //            this,
+  //            SLOT(trajectorySliderPanelVisibilityChange(bool)));
+  //    trajectory_slider_panel_->onInitialize();
+  //  }
 }
 
 void ManipulationWidget::onEnable()
@@ -230,8 +227,8 @@ void ManipulationWidget::onDisable()
   for (auto& joint_marker : joint_interactive_markers_)
     joint_marker.second->setVisible(enabled_);
 
-//  if (trajectory_slider_panel_)
-//    trajectory_slider_panel_->onDisable();
+  //  if (trajectory_slider_panel_)
+  //    trajectory_slider_panel_->onDisable();
 }
 
 void ManipulationWidget::onReset()
@@ -244,8 +241,8 @@ void ManipulationWidget::onReset()
 
 void ManipulationWidget::onNameChange(const QString& name)
 {
-//  if (trajectory_slider_dock_panel_)
-//    trajectory_slider_dock_panel_->setWindowTitle(name + " - Slider");
+  //  if (trajectory_slider_dock_panel_)
+  //    trajectory_slider_dock_panel_->setWindowTitle(name + " - Slider");
 }
 
 void ManipulationWidget::enableCartesianManipulation(bool enabled)
@@ -262,10 +259,7 @@ void ManipulationWidget::enableJointManipulation(bool enabled)
   joint_manipulation_property_->setBool(enabled);
 }
 
-void ManipulationWidget::resetToCurrentState()
-{
-  env_state_ = nullptr;
-}
+void ManipulationWidget::resetToCurrentState() { env_state_ = nullptr; }
 
 bool ManipulationWidget::changeManipulator(QString manipulator)
 {
@@ -288,14 +282,11 @@ bool ManipulationWidget::changeManipulator(QString manipulator)
       const auto& joint = scene_graph->getJoint(j);
       QString joint_description = "Limits: [inf, inf]";
       if (joint->limits)
-        joint_description = QString("Limits: [%1, %2]").arg(QString("%1").arg(joint->limits->lower), QString("%1").arg(joint->limits->upper));
+        joint_description = QString("Limits: [%1, %2]")
+                                .arg(QString("%1").arg(joint->limits->lower), QString("%1").arg(joint->limits->upper));
 
-      rviz::FloatProperty* joint_value_property = new rviz::FloatProperty(QString::fromStdString(j),
-                                                                          static_cast<float>(joints_[j]),
-                                                                          joint_description,
-                                                                          nullptr,
-                                                                          nullptr,
-                                                                          this);
+      rviz::FloatProperty* joint_value_property = new rviz::FloatProperty(
+          QString::fromStdString(j), static_cast<float>(joints_[j]), joint_description, nullptr, nullptr, this);
       joint_value_property->setReadOnly(true);
       joint_values_property_->addChild(joint_value_property);
     }
@@ -305,7 +296,8 @@ bool ManipulationWidget::changeManipulator(QString manipulator)
 
     // Get available TCP's
     QString current_tcp = tcp_property_->getString();
-    std::vector<std::string> tcp_links = tesseract_->getEnvironmentConst()->getSceneGraph()->getLinkChildrenNames(inv_kin_->getTipLinkName());
+    std::vector<std::string> tcp_links =
+        tesseract_->getEnvironmentConst()->getSceneGraph()->getLinkChildrenNames(inv_kin_->getTipLinkName());
     tcp_links.push_back(inv_kin_->getTipLinkName());
 
     available_tcp_links_.clear();
@@ -324,15 +316,21 @@ bool ManipulationWidget::changeManipulator(QString manipulator)
     else
     {
       tcp_property_->setString(current_tcp);
-      tcp_ = env_state_->transforms[inv_kin_->getTipLinkName()].inverse() * env_state_->transforms[current_tcp.toStdString()];
+      tcp_ = env_state_->transforms[inv_kin_->getTipLinkName()].inverse() *
+             env_state_->transforms[current_tcp.toStdString()];
     }
 
     Q_EMIT availableTCPLinksChanged(available_tcp_links_);
 
     // Add 6 DOF interactive marker at the end of the manipulator
-    interactive_marker_ = boost::make_shared<InteractiveMarker>("6DOF", "Move Robot", tesseract_->getEnvironmentConst()->getRootLinkName(), root_interactive_node_, context_, true, cartesian_marker_scale_property_->getFloat());
+    interactive_marker_ = boost::make_shared<InteractiveMarker>("6DOF",
+                                                                "Move Robot",
+                                                                tesseract_->getEnvironmentConst()->getRootLinkName(),
+                                                                root_interactive_node_,
+                                                                context_,
+                                                                true,
+                                                                cartesian_marker_scale_property_->getFloat());
     make6Dof(*interactive_marker_);
-
 
     Eigen::Isometry3d pose = env_state_->transforms[inv_kin_->getTipLinkName()] * tcp_;
     Ogre::Vector3 position;
@@ -356,7 +354,14 @@ bool ManipulationWidget::changeManipulator(QString manipulator)
     {
       std::string name = joint_name + "_interactive_marker";
       std::string disc = "Move joint: " + joint_name;
-      InteractiveMarker::Ptr interactive_marker = boost::make_shared<InteractiveMarker>(name, disc, tesseract_->getEnvironmentConst()->getRootLinkName(), root_interactive_node_, context_, true, joint_marker_scale_property_->getFloat());
+      InteractiveMarker::Ptr interactive_marker =
+          boost::make_shared<InteractiveMarker>(name,
+                                                disc,
+                                                tesseract_->getEnvironmentConst()->getRootLinkName(),
+                                                root_interactive_node_,
+                                                context_,
+                                                true,
+                                                joint_marker_scale_property_->getFloat());
       const auto& joint = scene_graph->getJoint(joint_name);
 
       switch (joint->type)
@@ -366,9 +371,13 @@ bool ManipulationWidget::changeManipulator(QString manipulator)
           Eigen::Vector3d disc_axis(1, 0, 0);
           Eigen::Quaternionf q = Eigen::Quaterniond::FromTwoVectors(disc_axis, joint->axis).cast<float>();
 
-          InteractiveMarkerControl::Ptr control = interactive_marker->createInteractiveControl("move_" + joint_name, "Move prismatic joint: " + joint_name,
-                                                                                               InteractiveMode::MOVE_AXIS, OrientationMode::INHERIT,
-                                                                                               true, Ogre::Quaternion(q.w(), q.x(), q.y(), q.z()));
+          InteractiveMarkerControl::Ptr control =
+              interactive_marker->createInteractiveControl("move_" + joint_name,
+                                                           "Move prismatic joint: " + joint_name,
+                                                           InteractiveMode::MOVE_AXIS,
+                                                           OrientationMode::INHERIT,
+                                                           true,
+                                                           Ogre::Quaternion(q.w(), q.x(), q.y(), q.z()));
           makeArrow(*control, 0.5);
           makeArrow(*control, -0.5);
           joint_interactive_markers_[joint_name] = interactive_marker;
@@ -376,12 +385,15 @@ bool ManipulationWidget::changeManipulator(QString manipulator)
         }
         case tesseract_scene_graph::JointType::REVOLUTE:
         {
-
           Eigen::Vector3d disc_axis(1, 0, 0);
           Eigen::Quaternionf q = Eigen::Quaterniond::FromTwoVectors(disc_axis, joint->axis).cast<float>();
-          InteractiveMarkerControl::Ptr control = interactive_marker->createInteractiveControl("rotate_x", "Rotate around X Axis",
-                                                                                               InteractiveMode::ROTATE_AXIS, OrientationMode::INHERIT,
-                                                                                               true, Ogre::Quaternion(q.w(), q.x(), q.y(), q.z()));
+          InteractiveMarkerControl::Ptr control =
+              interactive_marker->createInteractiveControl("rotate_x",
+                                                           "Rotate around X Axis",
+                                                           InteractiveMode::ROTATE_AXIS,
+                                                           OrientationMode::INHERIT,
+                                                           true,
+                                                           Ogre::Quaternion(q.w(), q.x(), q.y(), q.z()));
           makeDisc(*control, 0.3f);
           joint_interactive_markers_[joint_name] = interactive_marker;
           break;
@@ -400,12 +412,15 @@ bool ManipulationWidget::changeManipulator(QString manipulator)
       interactive_marker->setShowDescription(false);
       interactive_marker->setVisible(enabled_ && joint_manipulation_property_->getBool());
 
-      auto fn = std::bind(&tesseract_rviz::ManipulationWidget::jointMarkerFeedback, this, joint_name, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+      auto fn = std::bind(&tesseract_rviz::ManipulationWidget::jointMarkerFeedback,
+                          this,
+                          joint_name,
+                          std::placeholders::_1,
+                          std::placeholders::_2,
+                          std::placeholders::_3,
+                          std::placeholders::_4);
 
-      connect(interactive_marker.get(),
-              &tesseract_rviz::InteractiveMarker::userFeedback,
-              this,
-              fn);
+      connect(interactive_marker.get(), &tesseract_rviz::InteractiveMarker::userFeedback, this, fn);
     }
     return true;
   }
@@ -427,7 +442,8 @@ bool ManipulationWidget::changeTCP(QString tcp_link)
   else
   {
     tcp_property_->setString(tcp_link);
-    tcp_ = env_state_->transforms[inv_kin_->getTipLinkName()].inverse() * env_state_->transforms[tcp_link.toStdString()];
+    tcp_ =
+        env_state_->transforms[inv_kin_->getTipLinkName()].inverse() * env_state_->transforms[tcp_link.toStdString()];
     success = true;
   }
 
@@ -443,36 +459,30 @@ bool ManipulationWidget::changeTCP(QString tcp_link)
   return success;
 }
 
-void ManipulationWidget::clickedResetToCurrentState()
-{
-  resetToCurrentState();
-}
+void ManipulationWidget::clickedResetToCurrentState() { resetToCurrentState(); }
 
 void ManipulationWidget::changedManipulator()
 {
   changeManipulator(manipulator_property_->getString());
 
-//  if (display_mode_property_->getOptionInt() != 2)
-//  {
-//    if (display_->isEnabled() && displaying_trajectory_message_ && animating_path_)
-//      return;
+  //  if (display_mode_property_->getOptionInt() != 2)
+  //  {
+  //    if (display_->isEnabled() && displaying_trajectory_message_ && animating_path_)
+  //      return;
 
-//    clearTrajectoryTrail();
+  //    clearTrajectoryTrail();
 
-//    if (trajectory_slider_panel_)
-//      trajectory_slider_panel_->pauseButton(false);
-//  }
-//  else
-//  {
-//    if (trajectory_slider_panel_)
-//      trajectory_slider_panel_->pauseButton(true);
-//  }
+  //    if (trajectory_slider_panel_)
+  //      trajectory_slider_panel_->pauseButton(false);
+  //  }
+  //  else
+  //  {
+  //    if (trajectory_slider_panel_)
+  //      trajectory_slider_panel_->pauseButton(true);
+  //  }
 }
 
-void ManipulationWidget::changedTCP()
-{
-  changeTCP(tcp_property_->getString());
-}
+void ManipulationWidget::changedTCP() { changeTCP(tcp_property_->getString()); }
 
 void ManipulationWidget::changedCartesianMarkerScale()
 {
@@ -505,7 +515,10 @@ void ManipulationWidget::changedJointStateTopic()
   }
 }
 
-void ManipulationWidget::markerFeedback(std::string reference_frame, Eigen::Isometry3d transform, Eigen::Vector3d mouse_point, bool mouse_point_valid)
+void ManipulationWidget::markerFeedback(std::string reference_frame,
+                                        Eigen::Isometry3d transform,
+                                        Eigen::Vector3d mouse_point,
+                                        bool mouse_point_valid)
 {
   if (inv_kin_ && env_state_)
   {
@@ -546,14 +559,13 @@ void ManipulationWidget::markerFeedback(std::string reference_frame, Eigen::Isom
         for (auto& joint_marker : joint_interactive_markers_)
         {
           const auto& joint = scene_graph->getJoint(joint_marker.first);
-          Eigen::Isometry3d pose =  env_state_->transforms[joint->child_link_name];
+          Eigen::Isometry3d pose = env_state_->transforms[joint->child_link_name];
           Ogre::Vector3 position;
           Ogre::Quaternion orientation;
           toOgre(position, orientation, pose);
 
           joint_marker.second->setPose(position, orientation, "");
         }
-
       }
       else
       {
@@ -571,7 +583,7 @@ void ManipulationWidget::markerFeedback(std::string reference_frame, Eigen::Isom
         for (auto& joint_marker : joint_interactive_markers_)
         {
           const auto& joint = scene_graph->getJoint(joint_marker.first);
-          Eigen::Isometry3d pose =  env_state_->transforms[joint->child_link_name];
+          Eigen::Isometry3d pose = env_state_->transforms[joint->child_link_name];
           Ogre::Vector3 position;
           Ogre::Quaternion orientation;
           toOgre(position, orientation, pose);
@@ -677,7 +689,6 @@ void ManipulationWidget::jointMarkerFeedback(std::string joint_name,
 
       joint_marker.second->setPose(position, orientation, "");
     }
-
   }
   else
   {
@@ -725,7 +736,8 @@ void ManipulationWidget::onUpdate(float wall_dt)
     if (env_revision_ != tesseract_->getEnvironmentConst()->getRevision() || !env_state_)
     {
       env_revision_ = tesseract_->getEnvironmentConst()->getRevision();
-      env_state_ = std::make_shared<tesseract_environment::EnvState>(*(tesseract_->getEnvironmentConst()->getCurrentState()));
+      env_state_ =
+          std::make_shared<tesseract_environment::EnvState>(*(tesseract_->getEnvironmentConst()->getCurrentState()));
       joints_ = env_state_->joints;
       if (state_ == ManipulatorState::START)
       {
@@ -787,7 +799,8 @@ void ManipulationWidget::onUpdate(float wall_dt)
       changedManipulator();
 
     std::string current_manipulator = manipulator_property_->getStdString();
-    std::vector<std::string> manipulators = tesseract_->getInvKinematicsManagerConst()->getAvailableInvKinematicsManipulators();
+    std::vector<std::string> manipulators =
+        tesseract_->getInvKinematicsManagerConst()->getAvailableInvKinematicsManipulators();
 
     if (manipulators_.size() != manipulators.size() && !manipulators.empty())
     {
@@ -817,10 +830,9 @@ void ManipulationWidget::onUpdate(float wall_dt)
 
   for (auto& joint_marker : joint_interactive_markers_)
     joint_marker.second->update(wall_dt);
-
 }
 
-//void TrajectoryMonitorWidget::trajectorySliderPanelVisibilityChange(bool enable)
+// void TrajectoryMonitorWidget::trajectorySliderPanelVisibilityChange(bool enable)
 //{
 //  if (!trajectory_slider_panel_)
 //    return;

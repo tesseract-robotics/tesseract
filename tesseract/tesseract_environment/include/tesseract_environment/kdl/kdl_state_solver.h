@@ -15,7 +15,6 @@ namespace tesseract_environment
 class KDLStateSolver : public StateSolver
 {
 public:
-
   using Ptr = std::shared_ptr<KDLStateSolver>;
   using ConstPtr = std::shared_ptr<const KDLStateSolver>;
 
@@ -30,7 +29,8 @@ public:
    */
   void setState(const std::unordered_map<std::string, double>& joints) override;
   void setState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values) override;
-  void setState(const std::vector<std::string>& joint_names, const Eigen::Ref<const Eigen::VectorXd>& joint_values) override;
+  void setState(const std::vector<std::string>& joint_names,
+                const Eigen::Ref<const Eigen::VectorXd>& joint_values) override;
 
   /**
    * @brief Get the state of the environment for a given set or subset of joint values.
@@ -41,20 +41,21 @@ public:
    * @return A the state of the environment
    */
   EnvState::Ptr getState(const std::unordered_map<std::string, double>& joints) const override;
-  EnvState::Ptr getState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values) const override;
-  EnvState::Ptr getState(const std::vector<std::string>& joint_names, const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override;
+  EnvState::Ptr getState(const std::vector<std::string>& joint_names,
+                         const std::vector<double>& joint_values) const override;
+  EnvState::Ptr getState(const std::vector<std::string>& joint_names,
+                         const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override;
 
   EnvState::ConstPtr getCurrentState() const override { return current_state_; }
 
   void onEnvironmentChanged(const Commands& commands) override { createKDETree(); }
 
 private:
-  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;      /**< Tesseract Scene Graph */
-  EnvState::Ptr current_state_;                                  /**< Current state of the environment */
+  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;    /**< Tesseract Scene Graph */
+  EnvState::Ptr current_state_;                                /**< Current state of the environment */
   std::shared_ptr<KDL::Tree> kdl_tree_;                        /**< KDL tree object */
   std::unordered_map<std::string, unsigned int> joint_to_qnr_; /**< Map between joint name and kdl q index */
   KDL::JntArray kdl_jnt_array_;                                /**< The kdl joint array */
-
 
   void calculateTransforms(tesseract_common::TransformMap& transforms,
                            const KDL::JntArray& q_in,
@@ -69,8 +70,7 @@ private:
   bool setJointValuesHelper(KDL::JntArray& q, const std::string& joint_name, const double& joint_value) const;
 
   bool createKDETree();
-
 };
 
-}
-#endif // TESSERACT_ENVIRONMENT_KDL_STATE_SOLVER_H
+}  // namespace tesseract_environment
+#endif  // TESSERACT_ENVIRONMENT_KDL_STATE_SOLVER_H

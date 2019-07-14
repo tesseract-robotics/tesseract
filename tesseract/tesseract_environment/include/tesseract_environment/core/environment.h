@@ -43,7 +43,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-
 class Environment
 {
 public:
@@ -108,7 +107,8 @@ public:
    */
   virtual void setState(const std::unordered_map<std::string, double>& joints);
   virtual void setState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values);
-  virtual void setState(const std::vector<std::string>& joint_names, const Eigen::Ref<const Eigen::VectorXd>& joint_values);
+  virtual void setState(const std::vector<std::string>& joint_names,
+                        const Eigen::Ref<const Eigen::VectorXd>& joint_values);
 
   /**
    * @brief Get the state of the environment for a given set or subset of joint values.
@@ -120,9 +120,9 @@ public:
    */
   virtual EnvState::Ptr getState(const std::unordered_map<std::string, double>& joints) const;
   virtual EnvState::Ptr getState(const std::vector<std::string>& joint_names,
-                               const std::vector<double>& joint_values) const;
+                                 const std::vector<double>& joint_values) const;
   virtual EnvState::Ptr getState(const std::vector<std::string>& joint_names,
-                               const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
+                                 const Eigen::Ref<const Eigen::VectorXd>& joint_values) const;
 
   /** @brief Get the current state of the environment */
   virtual EnvState::ConstPtr getCurrentState() const { return current_state_; }
@@ -224,10 +224,10 @@ public:
   virtual bool getLinkCollisionEnabled(const std::string& name) const;
 
   /**
-  * @brief Set a links visibility
-  * @param name The name of the link
-  * @param visibility True if should be visible, otherwise false
-  */
+   * @brief Set a links visibility
+   * @param name The name of the link
+   * @param visibility True if should be visible, otherwise false
+   */
   virtual void setLinkVisibility(const std::string& name, bool visibility);
 
   /**
@@ -336,7 +336,10 @@ public:
   virtual bool setActiveDiscreteContactManager(const std::string& name);
 
   /** @brief Get a copy of the environments active discrete contact manager */
-  virtual tesseract_collision::DiscreteContactManager::Ptr getDiscreteContactManager() const { return discrete_manager_->clone(); }
+  virtual tesseract_collision::DiscreteContactManager::Ptr getDiscreteContactManager() const
+  {
+    return discrete_manager_->clone();
+  }
 
   /** @brief Get a copy of the environments available discrete contact manager by name */
   virtual tesseract_collision::DiscreteContactManager::Ptr getDiscreteContactManager(const std::string& name) const;
@@ -349,7 +352,10 @@ public:
   virtual bool setActiveContinuousContactManager(const std::string& name);
 
   /** @brief Get a copy of the environments active continuous contact manager */
-  virtual tesseract_collision::ContinuousContactManager::Ptr getContinuousContactManager() const { return continuous_manager_->clone(); }
+  virtual tesseract_collision::ContinuousContactManager::Ptr getContinuousContactManager() const
+  {
+    return continuous_manager_->clone();
+  }
 
   /** @brief Get a copy of the environments available continuous contact manager by name */
   virtual tesseract_collision::ContinuousContactManager::Ptr getContinuousContactManager(const std::string& name) const;
@@ -372,30 +378,32 @@ public:
    * This method should clear the contents of the manager and reload it with the objects
    * in the environment.
    */
-  bool registerContinuousContactManager(const std::string name,
-                                        tesseract_collision::ContinuousContactManagerFactory::CreateMethod create_function)
+  bool
+  registerContinuousContactManager(const std::string name,
+                                   tesseract_collision::ContinuousContactManagerFactory::CreateMethod create_function)
   {
     return continuous_factory_.registar(name, create_function);
   }
 
 protected:
-  bool initialized_;                                            /**< Identifies if the object has been initialized */
-  int revision_;                                                /**< This increments when the scene graph is modified */
-  Commands commands_;                                           /**< The history of commands applied to the environment after intialization */
+  bool initialized_;  /**< Identifies if the object has been initialized */
+  int revision_;      /**< This increments when the scene graph is modified */
+  Commands commands_; /**< The history of commands applied to the environment after intialization */
   tesseract_scene_graph::SceneGraph::Ptr scene_graph_;            /**< Tesseract Scene Graph */
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_const_; /**< Tesseract Scene Graph Const */
   EnvState::Ptr current_state_;                                   /**< Current state of the environment */
   StateSolver::Ptr state_solver_;                                 /**< Tesseract State Solver */
-  std::vector<std::string> link_names_;                         /**< A vector of link names */
-  std::vector<std::string> joint_names_;                        /**< A vector of joint names */
-  std::vector<std::string> active_link_names_;                  /**< A vector of active link names */
-  std::vector<std::string> active_joint_names_;                 /**< A vector of active joint names */
-  tesseract_collision::IsContactAllowedFn is_contact_allowed_fn_;       /**< The function used to determine if two objects are allowed in collision */
+  std::vector<std::string> link_names_;                           /**< A vector of link names */
+  std::vector<std::string> joint_names_;                          /**< A vector of joint names */
+  std::vector<std::string> active_link_names_;                    /**< A vector of active link names */
+  std::vector<std::string> active_joint_names_;                   /**< A vector of active joint names */
+  tesseract_collision::IsContactAllowedFn is_contact_allowed_fn_; /**< The function used to determine if two objects are
+                                                                     allowed in collision */
   tesseract_collision::DiscreteContactManager::Ptr discrete_manager_;     /**< The discrete contact manager object */
   tesseract_collision::ContinuousContactManager::Ptr continuous_manager_; /**< The continuous contact manager object */
-  std::string discrete_manager_name_;                                   /**< Name of active descrete contact manager */
-  std::string continuous_manager_name_;                                 /**< Name of active continuous contact manager */
-  tesseract_collision::DiscreteContactManagerFactory discrete_factory_; /**< Descrete contact manager factory */
+  std::string discrete_manager_name_;   /**< Name of active descrete contact manager */
+  std::string continuous_manager_name_; /**< Name of active continuous contact manager */
+  tesseract_collision::DiscreteContactManagerFactory discrete_factory_;     /**< Descrete contact manager factory */
   tesseract_collision::ContinuousContactManagerFactory continuous_factory_; /**< Continuous contact manager factory */
 
   /** This will update the contact managers transforms */
@@ -442,7 +450,10 @@ protected:
       return false;
     }
 
-    is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed, scene_graph_, std::placeholders::_1, std::placeholders::_2);
+    is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed,
+                                       scene_graph_,
+                                       std::placeholders::_1,
+                                       std::placeholders::_2);
 
     initialized_ = true;
 
@@ -452,7 +463,6 @@ protected:
   }
 
 private:
-
   bool removeLinkHelper(const std::string& name);
 
   void getCollisionObject(tesseract_collision::CollisionShapesConst& shapes,

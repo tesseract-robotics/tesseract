@@ -39,9 +39,9 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
 bool KDLInvKinChainNR::calcInvKinHelper(Eigen::VectorXd& solutions,
-                                         const Eigen::Isometry3d& pose,
-                                         const Eigen::Ref<const Eigen::VectorXd>& seed,
-                                         int segment_num) const
+                                        const Eigen::Isometry3d& pose,
+                                        const Eigen::Ref<const Eigen::VectorXd>& seed,
+                                        int segment_num) const
 {
   KDL::JntArray kdl_seed, kdl_solution;
   EigenToKDL(seed, kdl_seed);
@@ -57,7 +57,8 @@ bool KDLInvKinChainNR::calcInvKinHelper(Eigen::VectorXd& solutions,
   {
     if (status == KDL::ChainIkSolverPos_NR::E_DEGRADED)
     {
-      CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK, solution converged to <eps in maxiter, but solution is degraded in quality (e.g. pseudo-inverse in iksolver is singular)");
+      CONSOLE_BRIDGE_logDebug("KDL NR Failed to calculate IK, solution converged to <eps in maxiter, but solution is "
+                              "degraded in quality (e.g. pseudo-inverse in iksolver is singular)");
     }
     else if (status == KDL::ChainIkSolverPos_NR::E_IKSOLVER_FAILED)
     {
@@ -86,17 +87,17 @@ bool KDLInvKinChainNR::calcInvKinHelper(Eigen::VectorXd& solutions,
 }
 
 bool KDLInvKinChainNR::calcInvKin(Eigen::VectorXd& solutions,
-                                   const Eigen::Isometry3d& pose,
-                                   const Eigen::Ref<const Eigen::VectorXd>& seed) const
+                                  const Eigen::Isometry3d& pose,
+                                  const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   assert(checkInitialized());
   return calcInvKinHelper(solutions, pose, seed);
 }
 
 bool KDLInvKinChainNR::calcInvKin(Eigen::VectorXd& solutions,
-                                   const Eigen::Isometry3d& pose,
-                                   const Eigen::Ref<const Eigen::VectorXd>& seed,
-                                   const std::string& link_name) const
+                                  const Eigen::Isometry3d& pose,
+                                  const Eigen::Ref<const Eigen::VectorXd>& seed,
+                                  const std::string& link_name) const
 {
   assert(checkInitialized());
   assert(false);
@@ -152,9 +153,9 @@ const std::vector<std::string>& KDLInvKinChainNR::getActiveLinkNames() const
 const Eigen::MatrixX2d& KDLInvKinChainNR::getLimits() const { return kdl_data_.joint_limits; }
 
 bool KDLInvKinChainNR::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-                          const std::string& base_link,
-                          const std::string& tip_link,
-                          const std::string name)
+                            const std::string& base_link,
+                            const std::string& tip_link,
+                            const std::string name)
 {
   initialized_ = false;
 
@@ -213,4 +214,4 @@ KDLInvKinChainNR::KDLInvKinChainNR(const KDLInvKinChainNR& kin)
   scene_graph_ = kin.scene_graph_;
 }
 
-}
+}  // namespace tesseract_kinematics

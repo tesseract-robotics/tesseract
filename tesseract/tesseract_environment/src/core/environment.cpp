@@ -30,7 +30,6 @@
 
 namespace tesseract_environment
 {
-
 void Environment::setState(const std::unordered_map<std::string, double>& joints)
 {
   state_solver_->setState(joints);
@@ -44,7 +43,7 @@ void Environment::setState(const std::vector<std::string>& joint_names, const st
 }
 
 void Environment::setState(const std::vector<std::string>& joint_names,
-                      const Eigen::Ref<const Eigen::VectorXd>& joint_values)
+                           const Eigen::Ref<const Eigen::VectorXd>& joint_values)
 {
   state_solver_->setState(joint_names, joint_values);
   currentStateChanged();
@@ -55,13 +54,14 @@ EnvState::Ptr Environment::getState(const std::unordered_map<std::string, double
   return state_solver_->getState(joints);
 }
 
-EnvState::Ptr Environment::getState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values) const
+EnvState::Ptr Environment::getState(const std::vector<std::string>& joint_names,
+                                    const std::vector<double>& joint_values) const
 {
   return state_solver_->getState(joint_names, joint_values);
 }
 
 EnvState::Ptr Environment::getState(const std::vector<std::string>& joint_names,
-                                  const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
+                                    const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
 {
   return state_solver_->getState(joint_names, joint_values);
 }
@@ -103,12 +103,15 @@ bool Environment::addLink(tesseract_scene_graph::Link link, tesseract_scene_grap
     tesseract_common::VectorIsometry3d shape_poses;
     getCollisionObject(shapes, shape_poses, link);
 
-    if (discrete_manager_ != nullptr) discrete_manager_->addCollisionObject(link.getName(), 0, shapes, shape_poses, true);
-    if (continuous_manager_ != nullptr) continuous_manager_->addCollisionObject(link.getName(), 0, shapes, shape_poses, true);
+    if (discrete_manager_ != nullptr)
+      discrete_manager_->addCollisionObject(link.getName(), 0, shapes, shape_poses, true);
+    if (continuous_manager_ != nullptr)
+      continuous_manager_->addCollisionObject(link.getName(), 0, shapes, shape_poses, true);
   }
 
   ++revision_;
-  commands_.push_back(std::make_shared<AddCommand>(scene_graph_->getLink(link.getName()), scene_graph_->getJoint(joint.getName())));
+  commands_.push_back(
+      std::make_shared<AddCommand>(scene_graph_->getLink(link.getName()), scene_graph_->getJoint(joint.getName())));
 
   environmentChanged();
 
@@ -117,7 +120,7 @@ bool Environment::addLink(tesseract_scene_graph::Link link, tesseract_scene_grap
 
 bool Environment::removeLink(const std::string& name)
 {
-  if(!removeLinkHelper(name))
+  if (!removeLinkHelper(name))
     return false;
 
   ++revision_;
@@ -161,7 +164,7 @@ bool Environment::removeJoint(const std::string& name)
 
   std::string target_link_name = scene_graph_->getTargetLink(name)->getName();
 
-  if(!removeLinkHelper(target_link_name))
+  if (!removeLinkHelper(target_link_name))
     return false;
 
   ++revision_;
@@ -210,7 +213,7 @@ void Environment::setLinkCollisionEnabled(const std::string& name, bool enabled)
 
   if (continuous_manager_ != nullptr)
   {
-    if(enabled)
+    if (enabled)
       continuous_manager_->enableCollisionObject(name);
     else
       continuous_manager_->disableCollisionObject(name);
@@ -235,14 +238,11 @@ void Environment::setLinkVisibility(const std::string& name, bool visibility)
   commands_.push_back(std::make_shared<ChangeLinkVisibilityCommand>(name, visibility));
 }
 
-bool Environment::getLinkVisibility(const std::string& name) const
-{
-  return scene_graph_->getLinkVisibility(name);
-}
+bool Environment::getLinkVisibility(const std::string& name) const { return scene_graph_->getLinkVisibility(name); }
 
 void Environment::addAllowedCollision(const std::string& link_name1,
-                                 const std::string& link_name2,
-                                 const std::string& reason)
+                                      const std::string& link_name2,
+                                      const std::string& reason)
 {
   scene_graph_->addAllowedCollision(link_name1, link_name2, reason);
 
@@ -250,8 +250,7 @@ void Environment::addAllowedCollision(const std::string& link_name1,
   commands_.push_back(std::make_shared<AddAllowedCollisionCommand>(link_name1, link_name2, reason));
 }
 
-void Environment::removeAllowedCollision(const std::string& link_name1,
-                                    const std::string& link_name2)
+void Environment::removeAllowedCollision(const std::string& link_name1, const std::string& link_name2)
 {
   scene_graph_->removeAllowedCollision(link_name1, link_name2);
 
@@ -327,8 +326,12 @@ void Environment::getCollisionObject(tesseract_collision::CollisionShapesConst& 
       // This is required because convex hull cannot have multiple faces on the same plane.
       std::shared_ptr<tesseract_common::VectorVector3d> ch_verticies(new tesseract_common::VectorVector3d());
       std::shared_ptr<Eigen::VectorXi> ch_faces(new Eigen::VectorXi());
-      int ch_num_faces = tesseract_collision::createConvexHull(*ch_verticies, *ch_faces,*(std::static_pointer_cast<const tesseract_geometry::Mesh>(c->geometry)->getVertices()));
-      shapes.push_back(tesseract_geometry::ConvexMesh::Ptr(new tesseract_geometry::ConvexMesh(ch_verticies, ch_faces, ch_num_faces)));
+      int ch_num_faces = tesseract_collision::createConvexHull(
+          *ch_verticies,
+          *ch_faces,
+          *(std::static_pointer_cast<const tesseract_geometry::Mesh>(c->geometry)->getVertices()));
+      shapes.push_back(tesseract_geometry::ConvexMesh::Ptr(
+          new tesseract_geometry::ConvexMesh(ch_verticies, ch_faces, ch_num_faces)));
     }
     else
     {
@@ -379,7 +382,8 @@ bool Environment::setActiveContinuousContactManager(const std::string& name)
   return true;
 }
 
-tesseract_collision::ContinuousContactManager::Ptr Environment::getContinuousContactManager(const std::string& name) const
+tesseract_collision::ContinuousContactManager::Ptr
+Environment::getContinuousContactManager(const std::string& name) const
 {
   tesseract_collision::ContinuousContactManager::Ptr manager = getContinuousContactManagerHelper(name);
   if (manager == nullptr)
@@ -391,7 +395,8 @@ tesseract_collision::ContinuousContactManager::Ptr Environment::getContinuousCon
   return manager;
 }
 
-tesseract_collision::DiscreteContactManager::Ptr Environment::getDiscreteContactManagerHelper(const std::string& name) const
+tesseract_collision::DiscreteContactManager::Ptr
+Environment::getDiscreteContactManagerHelper(const std::string& name) const
 {
   tesseract_collision::DiscreteContactManager::Ptr manager = discrete_factory_.create(name);
   if (manager == nullptr)
@@ -417,7 +422,8 @@ tesseract_collision::DiscreteContactManager::Ptr Environment::getDiscreteContact
   return manager;
 }
 
-tesseract_collision::ContinuousContactManager::Ptr Environment::getContinuousContactManagerHelper(const std::string& name) const
+tesseract_collision::ContinuousContactManager::Ptr
+Environment::getContinuousContactManagerHelper(const std::string& name) const
 {
   tesseract_collision::ContinuousContactManager::Ptr manager = continuous_factory_.create(name);
 
@@ -447,7 +453,8 @@ tesseract_collision::ContinuousContactManager::Ptr Environment::getContinuousCon
 void Environment::currentStateChanged()
 {
   current_state_ = std::make_shared<EnvState>(*(state_solver_->getCurrentState()));
-  if (discrete_manager_ != nullptr) discrete_manager_->setCollisionObjectsTransform(current_state_->transforms);
+  if (discrete_manager_ != nullptr)
+    discrete_manager_->setCollisionObjectsTransform(current_state_->transforms);
   if (continuous_manager_ != nullptr)
   {
     for (const auto& tf : current_state_->transforms)
@@ -482,8 +489,9 @@ void Environment::environmentChanged()
   {
     joint_names_.push_back(joint->getName());
 
-    //UNKNOWN, REVOLUTE, CONTINUOUS, PRISMATIC, FLOATING, PLANAR, FIXED
-    if (joint->type == tesseract_scene_graph::JointType::REVOLUTE || joint->type == tesseract_scene_graph::JointType::PRISMATIC)
+    // UNKNOWN, REVOLUTE, CONTINUOUS, PRISMATIC, FLOATING, PLANAR, FIXED
+    if (joint->type == tesseract_scene_graph::JointType::REVOLUTE ||
+        joint->type == tesseract_scene_graph::JointType::PRISMATIC)
       active_joint_names_.push_back(joint->getName());
   }
 
@@ -491,8 +499,10 @@ void Environment::environmentChanged()
   active_link_names_.clear();
   getActiveLinkNamesRecursive(active_link_names_, scene_graph_, scene_graph_->getRoot(), false);
 
-  if (discrete_manager_ != nullptr) discrete_manager_->setActiveCollisionObjects(active_link_names_);
-  if (continuous_manager_ != nullptr) continuous_manager_->setActiveCollisionObjects(active_link_names_);
+  if (discrete_manager_ != nullptr)
+    discrete_manager_->setActiveCollisionObjects(active_link_names_);
+  if (continuous_manager_ != nullptr)
+    continuous_manager_->setActiveCollisionObjects(active_link_names_);
 
   state_solver_->onEnvironmentChanged(commands_);
 
@@ -513,18 +523,22 @@ bool Environment::removeLinkHelper(const std::string& name)
   std::vector<std::string> child_link_names = scene_graph_->getLinkChildrenNames(name);
 
   scene_graph_->removeLink(name);
-  if (discrete_manager_ != nullptr) discrete_manager_->removeCollisionObject(name);
-  if (continuous_manager_ != nullptr) continuous_manager_->removeCollisionObject(name);
+  if (discrete_manager_ != nullptr)
+    discrete_manager_->removeCollisionObject(name);
+  if (continuous_manager_ != nullptr)
+    continuous_manager_->removeCollisionObject(name);
 
   for (const auto& link_name : child_link_names)
   {
     scene_graph_->removeLink(link_name);
 
-    if (discrete_manager_ != nullptr) discrete_manager_->removeCollisionObject(link_name);
-    if (continuous_manager_ != nullptr) continuous_manager_->removeCollisionObject(link_name);
+    if (discrete_manager_ != nullptr)
+      discrete_manager_->removeCollisionObject(link_name);
+    if (continuous_manager_ != nullptr)
+      continuous_manager_->removeCollisionObject(link_name);
   }
 
   return true;
 }
 
-}
+}  // namespace tesseract_environment

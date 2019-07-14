@@ -6,7 +6,6 @@
 
 namespace tesseract_process_planners
 {
-
 /**
  * @brief Is a results structure to hold the results generated based on the process segment definition
  *
@@ -14,13 +13,17 @@ namespace tesseract_process_planners
  *
  * TODO: Should we store the planner response for each?
  *
-*/
+ */
 struct ProcessSegmentPlan
 {
-  tesseract_common::TrajArray approach;  /**< The generated approach trajectory generated based on the Process Segment Definition */
-  tesseract_common::TrajArray process;   /**< The generated process trajectory generated based on the Process Segment Definition */
-  tesseract_common::TrajArray departure; /**< The generated departure trajectory generated based on the Process Segment Definition */
-  bool valid = true;              /**< If true, a motion plan was sucessfully found for approach, process and departure, otherwise false */
+  tesseract_common::TrajArray approach;  /**< The generated approach trajectory generated based on the Process Segment
+                                            Definition */
+  tesseract_common::TrajArray process;   /**< The generated process trajectory generated based on the Process Segment
+                                            Definition */
+  tesseract_common::TrajArray departure; /**< The generated departure trajectory generated based on the Process Segment
+                                            Definition */
+  bool valid =
+      true; /**< If true, a motion plan was sucessfully found for approach, process and departure, otherwise false */
 };
 
 /**
@@ -28,16 +31,20 @@ struct ProcessSegmentPlan
  *
  * Note: An empty trajectory for any process step indicates that it is to be omitted.
  *
-*/
+ */
 struct ProcessPlan
 {
-  tesseract_common::TrajArray from_start;                          /**< A trajectory from the start position to the first point in the first segment */
-  std::vector<ProcessSegmentPlan> segments;                /**< A vector of process segment results */
-  std::vector<tesseract_common::TrajArray> transition_from_start; /**< A vector of transition plans from the start of segment[i] to the end of segment[i+1]
-   	   	   	   	   	   	   	   	   	   	   	   	   	   	   	   	, this data can be useful to make quick exit moves after canceling an ongoing process */
-  std::vector<tesseract_common::TrajArray> transition_from_end;   /**< A vector of transition plans from the end of segment[i] to the start of segment[i+1] */
-  tesseract_common::TrajArray to_start;                            /**< A trajectory from the last segments waypoint to the start position */
-  bool valid = true;                                       /**< If true, a motion plan was successfully found for everything, otherwise false */
+  tesseract_common::TrajArray from_start;   /**< A trajectory from the start position to the first point in the first
+                                               segment */
+  std::vector<ProcessSegmentPlan> segments; /**< A vector of process segment results */
+  std::vector<tesseract_common::TrajArray> transition_from_start; /**< A vector of transition plans from the start of
+                                                                segment[i] to the end of segment[i+1]
+                                                                , this data can be useful to make quick exit moves after
+                                                                canceling an ongoing process */
+  std::vector<tesseract_common::TrajArray> transition_from_end;   /**< A vector of transition plans from the end of
+                                                                     segment[i] to the start of segment[i+1] */
+  tesseract_common::TrajArray to_start; /**< A trajectory from the last segments waypoint to the start position */
+  bool valid = true; /**< If true, a motion plan was successfully found for everything, otherwise false */
 };
 
 /**
@@ -73,5 +80,5 @@ public:
    */
   virtual ProcessPlan plan(const Eigen::VectorXd& seed) = 0;
 };
-}
-#endif // TESSERACT_PLANNING_PROCESS_PLANNER_H
+}  // namespace tesseract_process_planners
+#endif  // TESSERACT_PLANNING_PROCESS_PLANNER_H

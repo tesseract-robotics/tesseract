@@ -99,7 +99,7 @@ ContinuousContactManager::Ptr BulletCastBVHManager::clone() const
 
 bool BulletCastBVHManager::addCollisionObject(const std::string& name,
                                               const int& mask_id,
-                                              const CollisionShapesConst &shapes,
+                                              const CollisionShapesConst& shapes,
                                               const tesseract_common::VectorIsometry3d& shape_poses,
                                               bool enabled)
 {
@@ -260,9 +260,9 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
       }
       else
       {
-        throw std::runtime_error(
-            "I can only continuous collision check convex shapes and compound shapes made of convex "
-            "shapes");
+        throw std::runtime_error("I can only continuous collision check convex shapes and compound shapes made of "
+                                 "convex "
+                                 "shapes");
       }
 
       // Now update Broadphase AABB (See BulletWorld updateSingleAabb function)
@@ -281,7 +281,8 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::vector<std::s
     setCollisionObjectsTransform(names[i], pose1[i], pose2[i]);
 }
 
-void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract_common::TransformMap& pose1, const tesseract_common::TransformMap& pose2)
+void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract_common::TransformMap& pose1,
+                                                        const tesseract_common::TransformMap& pose2)
 {
   assert(pose1.size() == pose2.size());
   auto it1 = pose1.begin();
@@ -426,5 +427,5 @@ void BulletCastBVHManager::contactTest(const COW::Ptr& cow, ContactTestData& col
 
   broadphase_->aabbTest(aabb_min, aabb_max, contactCB);
 }
-}
-}
+}  // namespace tesseract_collision_bullet
+}  // namespace tesseract_collision

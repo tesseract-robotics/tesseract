@@ -61,7 +61,7 @@ class Vector3;
 class Quaternion;
 class Any;
 class RibbonTrail;
-}
+}  // namespace Ogre
 
 namespace rviz
 {
@@ -71,7 +71,7 @@ class Property;
 class EnumProperty;
 class BoolProperty;
 class DisplayContext;
-}
+}  // namespace rviz
 
 namespace tf
 {
@@ -103,9 +103,9 @@ public:
   using ConstPtr = std::shared_ptr<const VisualizationWidget>;
 
   VisualizationWidget(Ogre::SceneNode* root_node,
-                   rviz::DisplayContext* context,
-                   const std::string& name,
-                   rviz::Property* parent_property);
+                      rviz::DisplayContext* context,
+                      const std::string& name,
+                      rviz::Property* parent_property);
   virtual ~VisualizationWidget();
 
   /**
@@ -144,7 +144,8 @@ public:
   /**
    * @brief Adds joint to the visualization
    * @param joint The joint to be added
-   * @return Return False if parent or child link does not exists and if joint name already exists in the graph, otherwise true
+   * @return Return False if parent or child link does not exists and if joint name already exists in the graph,
+   * otherwise true
    */
   virtual bool addJoint(const tesseract_scene_graph::Joint& joint);
 
@@ -195,7 +196,6 @@ public:
    * @param link_name Collision object name
    */
   virtual void removeAllowedCollision(const std::string& link_name);
-
 
   virtual void update(const TransformMap& transforms);
 
@@ -281,10 +281,8 @@ public:
   {
   public:
     virtual ~LinkFactory() {}
-    virtual LinkWidget* createLink(VisualizationWidget* env,
-                                const tesseract_scene_graph::Link& link,
-                                bool visual,
-                                bool collision);
+    virtual LinkWidget*
+    createLink(VisualizationWidget* env, const tesseract_scene_graph::Link& link, bool visual, bool collision);
 
     virtual JointWidget* createJoint(VisualizationWidget* robot, const tesseract_scene_graph::Joint& joint);
   };
@@ -381,12 +379,13 @@ protected:
   rviz::BoolProperty* expand_link_details_;
   rviz::BoolProperty* expand_joint_details_;
   rviz::BoolProperty* enable_all_links_;
-//  rviz::PropertyTreeWidget* property_widget_; TODO: Need to add this capability see view_panel.cpp in rviz as example
+  //  rviz::PropertyTreeWidget* property_widget_; TODO: Need to add this capability see view_panel.cpp in rviz as
+  //  example
 
   std::map<LinkTreeStyle, std::string> style_name_map_;
 
   bool doing_set_checkbox_;  // used only inside setEnableAllLinksCheckbox()
-  bool env_loaded_;        // true after robot model is loaded.
+  bool env_loaded_;          // true after robot model is loaded.
 
   // true inside changedEnableAllLinks().  Prevents calculateJointCheckboxes()
   // from recalculating over and over.

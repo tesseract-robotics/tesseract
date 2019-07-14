@@ -32,7 +32,7 @@ std::string locateResource(const std::string& url)
       return std::string();
     }
 
-    mod_url = package_path + mod_url; // "file://" + package_path + mod_url;
+    mod_url = package_path + mod_url;  // "file://" + package_path + mod_url;
   }
 
   return mod_url;
@@ -95,9 +95,10 @@ void runJacobianTest(tesseract_kinematics::ForwardKinematics& kin)
   jacobian.resize(6, 7);
   EXPECT_TRUE(kin.calcJacobian(jacobian, jvals, "tool0"));
 
-  Eigen::Vector3d link_point(0,0,0);
+  Eigen::Vector3d link_point(0, 0, 0);
   numerical_jacobian.resize(6, 7);
-  tesseract_kinematics::numericalJacobian(numerical_jacobian, Eigen::Isometry3d::Identity(), kin, jvals, "tool0", link_point);
+  tesseract_kinematics::numericalJacobian(
+      numerical_jacobian, Eigen::Isometry3d::Identity(), kin, jvals, "tool0", link_point);
 
   for (int i = 0; i < 6; ++i)
     for (int j = 0; j < 7; ++j)
@@ -110,7 +111,7 @@ void runJacobianTest(tesseract_kinematics::ForwardKinematics& kin)
   kin.calcFwdKin(pose, jvals, "tool0");
   for (int k = 0; k < 3; ++k)
   {
-    Eigen::Vector3d link_point(0,0,0);
+    Eigen::Vector3d link_point(0, 0, 0);
     link_point[k] = 1;
 
     // calcJacobian requires the link point to be in the base frame for which the jacobian is calculated.
@@ -118,7 +119,8 @@ void runJacobianTest(tesseract_kinematics::ForwardKinematics& kin)
     tesseract_kinematics::jacobianChangeRefPoint(jacobian, pose.linear() * link_point);
 
     numerical_jacobian.resize(6, 7);
-    tesseract_kinematics::numericalJacobian(numerical_jacobian, Eigen::Isometry3d::Identity(), kin, jvals, "tool0", link_point);
+    tesseract_kinematics::numericalJacobian(
+        numerical_jacobian, Eigen::Isometry3d::Identity(), kin, jvals, "tool0", link_point);
 
     for (int i = 0; i < 6; ++i)
       for (int j = 0; j < 7; ++j)
@@ -156,7 +158,7 @@ void runJacobianTest(tesseract_kinematics::ForwardKinematics& kin)
   ///////////////////////////////////////////
   for (int k = 0; k < 3; ++k)
   {
-    Eigen::Vector3d link_point(0,0,0);
+    Eigen::Vector3d link_point(0, 0, 0);
     link_point[k] = 1;
 
     Eigen::Isometry3d change_base;
@@ -227,7 +229,8 @@ void runActiveLinkNamesTest(tesseract_kinematics::ForwardKinematics& kin, bool i
   }
 }
 
-void runInvKinTest(const tesseract_kinematics::InverseKinematics& inv_kin, const tesseract_kinematics::ForwardKinematics& fwd_kin)
+void runInvKinTest(const tesseract_kinematics::InverseKinematics& inv_kin,
+                   const tesseract_kinematics::ForwardKinematics& fwd_kin)
 {
   //////////////////////////////////////////////////////////////////
   // Test inverse kinematics when tip link is the base of the chain

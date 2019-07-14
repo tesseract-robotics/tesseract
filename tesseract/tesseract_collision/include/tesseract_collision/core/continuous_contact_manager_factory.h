@@ -51,13 +51,14 @@ public:
   {
     auto it = continuous_types.find(name);
     if (it != continuous_types.end())
-      return it->second(); // call the createFunc
+      return it->second();  // call the createFunc
 
     return nullptr;
   }
+
 private:
   std::unordered_map<std::string, CreateMethod> continuous_types;
 };
-}
+}  // namespace tesseract_collision
 
-#endif // TESSERACT_COLLISION_CONTINUOUS_CONTACT_MANAGER_FACTORY_H
+#endif  // TESSERACT_COLLISION_CONTINUOUS_CONTACT_MANAGER_FACTORY_H

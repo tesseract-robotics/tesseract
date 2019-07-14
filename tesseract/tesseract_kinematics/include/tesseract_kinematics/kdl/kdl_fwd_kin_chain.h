@@ -60,8 +60,7 @@ public:
   KDLFwdKinChain() : initialized_(false), solver_name_("KDLFwdKinChain") {}
   KDLFwdKinChain(const KDLFwdKinChain& kin);
 
-  bool calcFwdKin(Eigen::Isometry3d& pose,
-                  const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
+  bool calcFwdKin(Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
 
   bool calcFwdKin(tesseract_common::VectorIsometry3d& poses,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
@@ -132,7 +131,7 @@ public:
 
 private:
   bool initialized_;                                           /**< Identifies if the object has been initialized */
-  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;      /**< Tesseract Scene Graph */
+  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;    /**< Tesseract Scene Graph */
   KDLChainData kdl_data_;                                      /**< KDL data parsed from Scene Graph */
   std::string name_;                                           /**< Name of the kinematic chain */
   std::string solver_name_;                                    /**< Name of this solver */
@@ -156,5 +155,5 @@ private:
 
 };  // class KDLKinematicChain
 
-}
+}  // namespace tesseract_kinematics
 #endif  // TESSERACT_KDL_KINEMATIC_CHAIN_H

@@ -47,7 +47,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_rviz
 {
-
 TesseractTrajectoryDisplay::TesseractTrajectoryDisplay() : Display()
 {
   tesseract_ = std::make_shared<tesseract::Tesseract>();

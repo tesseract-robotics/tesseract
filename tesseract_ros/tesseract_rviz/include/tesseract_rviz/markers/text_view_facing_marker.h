@@ -43,16 +43,15 @@ class MovableText;
 
 namespace tesseract_rviz
 {
-
 class TextViewFacingMarker : public MarkerBase
 {
 public:
   using Ptr = boost::shared_ptr<TextViewFacingMarker>;
   using ConstPtr = boost::shared_ptr<const TextViewFacingMarker>;
 
-  TextViewFacingMarker(const std::string &ns,
+  TextViewFacingMarker(const std::string& ns,
                        const int id,
-                       const std::string &caption,
+                       const std::string& caption,
                        rviz::DisplayContext* context,
                        Ogre::SceneNode* parent_node);
 
@@ -60,7 +59,7 @@ public:
 
   void setText(const std::string& text);
 
-  void setOrientation( const Ogre::Quaternion& /*orientation*/ ) override {}
+  void setOrientation(const Ogre::Quaternion& /*orientation*/) override {}
 
   void setScale(Ogre::Vector3 scale) override;
   Ogre::Vector3 getScale() const override;
@@ -71,8 +70,7 @@ public:
 
 protected:
   rviz::MovableText* text_;
-
 };
 
-}
-#endif // TESSERACT_RVIZ_MARKERS_TEXT_VIEW_FACING_MARKER_H
+}  // namespace tesseract_rviz
+#endif  // TESSERACT_RVIZ_MARKERS_TEXT_VIEW_FACING_MARKER_H

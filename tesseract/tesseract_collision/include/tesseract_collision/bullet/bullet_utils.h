@@ -193,13 +193,13 @@ protected:
                          const tesseract_common::VectorIsometry3d& shape_poses,
                          const std::vector<std::shared_ptr<void>>& data);
 
-  std::string m_name;             /**< @brief The name of the collision object */
-  int m_type_id;                  /**< @brief A user defined type id */
-  CollisionShapesConst m_shapes;  /**< @brief The shapes that define the collison object */
+  std::string m_name;                               /**< @brief The name of the collision object */
+  int m_type_id;                                    /**< @brief A user defined type id */
+  CollisionShapesConst m_shapes;                    /**< @brief The shapes that define the collison object */
   tesseract_common::VectorIsometry3d m_shape_poses; /**< @brief The shpaes poses information */
 
-  std::vector<std::shared_ptr<void>>
-      m_data; /**< @brief This manages the collision shape pointer so they get destroyed */
+  std::vector<std::shared_ptr<void>> m_data; /**< @brief This manages the collision shape pointer so they get destroyed
+                                              */
 };
 
 using COW = CollisionObjectWrapper;
@@ -685,7 +685,7 @@ struct TesseractBroadphaseBridgedManifoldResult : public btManifoldResult
  * This is currently not used but will remain because it is needed
  * to check a collision object not in the broadphase to the broadphase
  * which may eventually be exposed.
-*/
+ */
 struct TesseractSingleContactCallback : public btBroadphaseAabbCallback
 {
   btCollisionObject* m_collisionObject;    /**< @brief The bullet collision object */
@@ -793,8 +793,7 @@ public:
   }
 };
 
-btCollisionShape* createShapePrimitive(const CollisionShapeConstPtr& geom,
-                                       CollisionObjectWrapper* cow);
+btCollisionShape* createShapePrimitive(const CollisionShapeConstPtr& geom, CollisionObjectWrapper* cow);
 
 /**
  * @brief Update a collision objects filters
@@ -832,10 +831,10 @@ inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
 }
 
 inline COW::Ptr createCollisionObject(const std::string& name,
-                                    const int& type_id,
-                                    const CollisionShapesConst& shapes,
-                                    const tesseract_common::VectorIsometry3d& shape_poses,
-                                    bool enabled = true)
+                                      const int& type_id,
+                                      const CollisionShapesConst& shapes,
+                                      const tesseract_common::VectorIsometry3d& shape_poses,
+                                      bool enabled = true)
 {
   // dont add object that does not have geometry
   if (shapes.empty() || shape_poses.empty() || (shapes.size() != shape_poses.size()))
@@ -941,8 +940,8 @@ inline COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
   {
     assert(dynamic_cast<btConvexShape*>(new_cow->getCollisionShape()) != nullptr);
     btConvexShape* convex = static_cast<btConvexShape*>(new_cow->getCollisionShape());
-    assert(convex->getShapeType() !=
-           CUSTOM_CONVEX_SHAPE_TYPE);  // This checks if the collision object is already a cast collision object
+    assert(convex->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE);  // This checks if the collision object is already a
+                                                                 // cast collision object
 
     CastHullShape* shape = new CastHullShape(convex, tf);
     assert(shape != nullptr);
@@ -1085,6 +1084,6 @@ inline void addCollisionObjectToBroadphase(const COW::Ptr& cow,
   cow->setBroadphaseHandle(broadphase->createProxy(
       aabb_min, aabb_max, type, cow.get(), cow->m_collisionFilterGroup, cow->m_collisionFilterMask, dispatcher.get()));
 }
-}
-}
+}  // namespace tesseract_collision_bullet
+}  // namespace tesseract_collision
 #endif  // TESSERACT_COLLISION_BULLET_UTILS_H

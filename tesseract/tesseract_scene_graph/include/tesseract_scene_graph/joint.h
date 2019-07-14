@@ -1,36 +1,36 @@
 /*********************************************************************
-* Software License Agreement (BSD License)
-*
-*  Copyright (c) 2008, Willow Garage, Inc.
-*  All rights reserved.
-*
-*  Redistribution and use in source and binary forms, with or without
-*  modification, are permitted provided that the following conditions
-*  are met:
-*
-*   * Redistributions of source code must retain the above copyright
-*     notice, this list of conditions and the following disclaimer.
-*   * Redistributions in binary form must reproduce the above
-*     copyright notice, this list of conditions and the following
-*     disclaimer in the documentation and/or other materials provided
-*     with the distribution.
-*   * Neither the name of the Willow Garage nor the names of its
-*     contributors may be used to endorse or promote products derived
-*     from this software without specific prior written permission.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-*  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-*  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-*  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-*  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-*  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-*  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-*  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-*  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-*  POSSIBILITY OF SUCH DAMAGE.
-*********************************************************************/
+ * Software License Agreement (BSD License)
+ *
+ *  Copyright (c) 2008, Willow Garage, Inc.
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *   * Neither the name of the Willow Garage nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *********************************************************************/
 
 /* Author: Wim Meeussen */
 
@@ -47,13 +47,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
 {
-
 class Link;
 
 class JointDynamics
 {
 public:
-
   using Ptr = std::shared_ptr<JointDynamics>;
   using ConstPtr = std::shared_ptr<const JointDynamics>;
 
@@ -68,11 +66,9 @@ public:
   }
 };
 
-
 class JointLimits
 {
 public:
-
   using Ptr = std::shared_ptr<JointLimits>;
   using ConstPtr = std::shared_ptr<const JointLimits>;
 
@@ -95,7 +91,6 @@ public:
 class JointSafety
 {
 public:
-
   using Ptr = std::shared_ptr<JointSafety>;
   using ConstPtr = std::shared_ptr<const JointSafety>;
 
@@ -113,8 +108,9 @@ public:
   ///                  JointSafety::soft_uppper_limit - JointLimits::velocity / JointSafety::k_position]
   ///
   /// if (joint_position is outside of the position range above)
-  ///     velocity_limit_min = -JointLimits::velocity + JointSafety::k_position * (joint_position - JointSafety::soft_lower_limit)
-  ///     velocity_limit_max =  JointLimits::velocity + JointSafety::k_position * (joint_position - JointSafety::soft_upper_limit)
+  ///     velocity_limit_min = -JointLimits::velocity + JointSafety::k_position * (joint_position -
+  ///     JointSafety::soft_lower_limit) velocity_limit_max =  JointLimits::velocity + JointSafety::k_position *
+  ///     (joint_position - JointSafety::soft_upper_limit)
   /// else
   ///     velocity_limit_min = -JointLimits::velocity
   ///     velocity_limit_max =  JointLimits::velocity
@@ -150,7 +146,6 @@ public:
 class JointCalibration
 {
 public:
-
   using Ptr = std::shared_ptr<JointCalibration>;
   using ConstPtr = std::shared_ptr<const JointCalibration>;
 
@@ -158,16 +153,12 @@ public:
   double reference_position;
   double rising, falling;
 
-  void clear()
-  {
-    reference_position = 0;
-  }
+  void clear() { reference_position = 0; }
 };
 
 class JointMimic
 {
 public:
-
   using Ptr = std::shared_ptr<JointMimic>;
   using ConstPtr = std::shared_ptr<const JointMimic>;
 
@@ -186,7 +177,13 @@ public:
 
 enum class JointType
 {
-  UNKNOWN, REVOLUTE, CONTINUOUS, PRISMATIC, FLOATING, PLANAR, FIXED
+  UNKNOWN,
+  REVOLUTE,
+  CONTINUOUS,
+  PRISMATIC,
+  FLOATING,
+  PLANAR,
+  FIXED
 };
 
 class Joint
@@ -253,11 +250,12 @@ public:
     this->mimic.reset();
     this->type = JointType::UNKNOWN;
   }
+
 private:
   const std::string name_;
 };
 
-inline std::ostream& operator<<(std::ostream & os, const JointType& type)
+inline std::ostream& operator<<(std::ostream& os, const JointType& type)
 {
   switch (type)
   {
@@ -299,6 +297,6 @@ inline std::ostream& operator<<(std::ostream & os, const JointType& type)
   }
   return os;
 }
-}
+}  // namespace tesseract_scene_graph
 
-#endif // TESSERACT_SCENE_GRAPH_JOINT_H
+#endif  // TESSERACT_SCENE_GRAPH_JOINT_H

@@ -80,7 +80,7 @@ void runTest(DiscreteContactManager& checker, bool use_convex_mesh = false)
   }
   auto end_time = std::chrono::high_resolution_clock::now();
 
-  CONSOLE_BRIDGE_logInform("DT: %f ms",  std::chrono::duration<double, std::milli>(end_time - start_time).count());
+  CONSOLE_BRIDGE_logInform("DT: %f ms", std::chrono::duration<double, std::milli>(end_time - start_time).count());
 
   EXPECT_TRUE(result_vector.size() == 300);
 }

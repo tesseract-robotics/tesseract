@@ -42,11 +42,8 @@ using namespace trajopt;
 
 namespace tesseract_motion_planners
 {
-
 /** @brief Construct a basic planner */
-TrajOptFreespacePlanner::TrajOptFreespacePlanner(const std::string& name):
-    config_(nullptr),
-    pci_(nullptr)
+TrajOptFreespacePlanner::TrajOptFreespacePlanner(const std::string& name) : config_(nullptr), pci_(nullptr)
 {
   name_ = name;
   // TODO: These should be tied to enumeration ints and returned through an getLastErrorMsg() method
@@ -64,7 +61,7 @@ bool TrajOptFreespacePlanner::terminate()
 
 bool TrajOptFreespacePlanner::solve(PlannerResponse& response)
 {
-  if(!isConfigured())
+  if (!isConfigured())
   {
     CONSOLE_BRIDGE_logError("Planner %s is not configured", name_.c_str());
     return false;
@@ -135,7 +132,7 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
   {
     case tesseract_motion_planners::WaypointType::JOINT_WAYPOINT:
     {
-      start_step+=1;
+      start_step += 1;
       JointWaypoint::Ptr start_position = std::static_pointer_cast<JointWaypoint>(config.start_waypoint_);
       // Add initial joint position constraint
       std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
@@ -231,7 +228,7 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
   {
     case tesseract_motion_planners::WaypointType::JOINT_WAYPOINT:
     {
-      end_step-=1;
+      end_step -= 1;
       JointWaypoint::Ptr end_position = std::static_pointer_cast<JointWaypoint>(config.end_waypoint_);
       // Add initial joint position constraint
       std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
@@ -253,7 +250,8 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
     {
       // For a toleranced waypoint we add an inequality term and a smaller equality term. This acts as a "leaky" hinge
       // to keep the problem numerically stable.
-      JointTolerancedWaypoint::Ptr end_position = std::static_pointer_cast<JointTolerancedWaypoint>(config.end_waypoint_);
+      JointTolerancedWaypoint::Ptr end_position =
+          std::static_pointer_cast<JointTolerancedWaypoint>(config.end_waypoint_);
       std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
       Eigen::VectorXd coeffs = end_position->coeffs_;
       if (coeffs.size() != pci.kin->numJoints())
@@ -399,4 +397,4 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
   return true;
 }
 
-} // namespace tesseract_motion_planners
+}  // namespace tesseract_motion_planners

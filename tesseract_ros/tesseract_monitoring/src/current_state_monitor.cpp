@@ -46,12 +46,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_monitoring
 {
-CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env, const tesseract::ForwardKinematicsManager::ConstPtr& kinematics_manager)
+CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env,
+                                         const tesseract::ForwardKinematicsManager::ConstPtr& kinematics_manager)
   : CurrentStateMonitor(env, kinematics_manager, ros::NodeHandle())
 {
 }
 
-CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr &env, const tesseract::ForwardKinematicsManager::ConstPtr& kinematics_manager, ros::NodeHandle nh)
+CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env,
+                                         const tesseract::ForwardKinematicsManager::ConstPtr& kinematics_manager,
+                                         ros::NodeHandle nh)
   : nh_(nh)
   , env_(env)
   , env_state_(*env->getCurrentState())
@@ -368,4 +371,4 @@ void CurrentStateMonitor::jointStateCallback(const sensor_msgs::JointStateConstP
   // notify waitForCurrentState() *after* potential update callbacks
   state_update_condition_.notify_all();
 }
-}
+}  // namespace tesseract_monitoring

@@ -116,7 +116,8 @@ public:
    * @param names The name of the object
    * @param poses The tranformation in world
    */
-  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names, const tesseract_common::VectorIsometry3d& poses) = 0;
+  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                            const tesseract_common::VectorIsometry3d& poses) = 0;
 
   /**
    * @brief Set a series of static collision object's tranforms
@@ -161,7 +162,8 @@ public:
    * @param pose1 A start transform map <name, pose>
    * @param pose2 A end transform map <name, pose>
    */
-  virtual void setCollisionObjectsTransform(const tesseract_common::TransformMap& pose1, const tesseract_common::TransformMap& pose2) = 0;
+  virtual void setCollisionObjectsTransform(const tesseract_common::TransformMap& pose1,
+                                            const tesseract_common::TransformMap& pose2) = 0;
 
   /**
    * @brief Set which collision objects can move
@@ -201,6 +203,6 @@ public:
   virtual void contactTest(ContactResultMap& collisions, const ContactTestType& type) = 0;
 };
 
-}
+}  // namespace tesseract_collision
 
 #endif  // TESSERACT_COLLISION_CONTINUOUS_CONTACT_MANAGER_H

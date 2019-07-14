@@ -39,7 +39,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
-
 /**
  * @brief Change the base coordinate system of the jacobian
  * @param jacobian The current Jacobian which gets modified in place
@@ -48,7 +47,7 @@ namespace tesseract_kinematics
 inline static void jacobianChangeBase(Eigen::Ref<Eigen::MatrixXd> jacobian, const Eigen::Isometry3d& change_base)
 {
   assert(jacobian.rows() == 6);
-  for (int i=0; i < jacobian.cols(); i++)
+  for (int i = 0; i < jacobian.cols(); i++)
   {
     jacobian.col(i).head(3) = change_base.linear() * jacobian.col(i).head(3);
     jacobian.col(i).tail(3) = change_base.linear() * jacobian.col(i).tail(3);
@@ -61,10 +60,11 @@ inline static void jacobianChangeBase(Eigen::Ref<Eigen::MatrixXd> jacobian, cons
  * @param ref_point Is expressed in the same base frame of the jacobian
  *                  and is a vector from the old point to the new point.
  */
-inline static void jacobianChangeRefPoint(Eigen::Ref<Eigen::MatrixXd> jacobian, const Eigen::Ref<const Eigen::Vector3d>& ref_point)
+inline static void jacobianChangeRefPoint(Eigen::Ref<Eigen::MatrixXd> jacobian,
+                                          const Eigen::Ref<const Eigen::Vector3d>& ref_point)
 {
   assert(jacobian.rows() == 6);
-  for(int i=0; i < jacobian.cols(); i++)
+  for (int i = 0; i < jacobian.cols(); i++)
   {
     jacobian(0, i) += jacobian(4, i) * ref_point(2) - jacobian(5, i) * ref_point(1);
     jacobian(1, i) += jacobian(5, i) * ref_point(0) - jacobian(3, i) * ref_point(2);
@@ -222,7 +222,7 @@ inline static bool dampedPInv(const Eigen::Ref<const Eigen::MatrixXd>& A,
  * @param srdf_model Tesseract SRDF Model
  * @return Kinematics map between group name and kinematics object
  */
-template<class Chain_T, class Tree_T>
+template <class Chain_T, class Tree_T>
 ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
                                                  const tesseract_scene_graph::SRDFModel& srdf_model)
 {
@@ -241,7 +241,7 @@ ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::Sc
         }
         else
         {
-           manipulators.insert(std::make_pair(group.name_, manip));
+          manipulators.insert(std::make_pair(group.name_, manip));
         }
       }
     }
@@ -257,7 +257,7 @@ ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::Sc
         }
         else
         {
-           manipulators.insert(std::make_pair(group.name_, manip));
+          manipulators.insert(std::make_pair(group.name_, manip));
         }
       }
     }
@@ -277,8 +277,7 @@ ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::Sc
   return manipulators;
 }
 
-inline static bool isWithinLimits(const Eigen::VectorXd& joint_values,
-                                  const Eigen::MatrixX2d& limits)
+inline static bool isWithinLimits(const Eigen::VectorXd& joint_values, const Eigen::MatrixX2d& limits)
 {
   for (int i = 0; i < limits.rows(); ++i)
     if ((joint_values[i] < limits(i, 0)) || (joint_values[i] > limits(i, 1)))
@@ -287,5 +286,5 @@ inline static bool isWithinLimits(const Eigen::VectorXd& joint_values,
   return true;
 }
 
-}
-#endif // TESSERACT_KINEMATICS_UTILS_H
+}  // namespace tesseract_kinematics
+#endif  // TESSERACT_KINEMATICS_UTILS_H

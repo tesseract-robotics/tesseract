@@ -37,38 +37,39 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
+class Octree : public Geometry
+{
+public:
+  using Ptr = std::shared_ptr<Octree>;
+  using ConstPtr = std::shared_ptr<const Octree>;
 
-  class Octree : public Geometry
+  enum SubType
   {
-  public:
-
-    using Ptr = std::shared_ptr<Octree>;
-    using ConstPtr = std::shared_ptr<const Octree>;
-
-    enum SubType
-    {
-      BOX,
-      SPHERE_INSIDE,
-      SPHERE_OUTSIDE
-    };
-
-    Octree(const std::shared_ptr<const octomap::OcTree>& octree, SubType sub_type)  : Geometry(GeometryType::OCTREE), octree_(octree), sub_type_(sub_type) {}
-    ~Octree() override = default;
-
-    const std::shared_ptr<const octomap::OcTree>& getOctree() const { return octree_; }
-    SubType getSubType() const { return sub_type_; }
-
-    Geometry::Ptr clone() const override { return Octree::Ptr(new Octree(octree_, sub_type_)); }
-
-    /**
-     * @brief Octrees are typically generated from 3D sensor data so this method
-     * should be used to efficiently update the collision shape.
-     */
-    void update() { assert(false); }
-
-  private:
-    std::shared_ptr<const octomap::OcTree> octree_;
-    SubType sub_type_;
+    BOX,
+    SPHERE_INSIDE,
+    SPHERE_OUTSIDE
   };
-}
+
+  Octree(const std::shared_ptr<const octomap::OcTree>& octree, SubType sub_type)
+    : Geometry(GeometryType::OCTREE), octree_(octree), sub_type_(sub_type)
+  {
+  }
+  ~Octree() override = default;
+
+  const std::shared_ptr<const octomap::OcTree>& getOctree() const { return octree_; }
+  SubType getSubType() const { return sub_type_; }
+
+  Geometry::Ptr clone() const override { return Octree::Ptr(new Octree(octree_, sub_type_)); }
+
+  /**
+   * @brief Octrees are typically generated from 3D sensor data so this method
+   * should be used to efficiently update the collision shape.
+   */
+  void update() { assert(false); }
+
+private:
+  std::shared_ptr<const octomap::OcTree> octree_;
+  SubType sub_type_;
+};
+}  // namespace tesseract_geometry
 #endif

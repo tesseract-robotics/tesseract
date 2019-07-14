@@ -90,8 +90,7 @@ bool KDLFwdKinChain::calcFwdKin(tesseract_common::VectorIsometry3d& poses,
   return calcFwdKinHelper(poses, joint_angles);
 }
 
-bool KDLFwdKinChain::calcFwdKin(Eigen::Isometry3d& pose,
-                                const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
+bool KDLFwdKinChain::calcFwdKin(Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
@@ -149,8 +148,8 @@ bool KDLFwdKinChain::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
 }
 
 bool KDLFwdKinChain::calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                                     const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                                     const std::string& link_name) const
+                                  const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
+                                  const std::string& link_name) const
 {
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
@@ -272,4 +271,4 @@ KDLFwdKinChain::KDLFwdKinChain(const KDLFwdKinChain& kin)
   scene_graph_ = kin.scene_graph_;
 }
 
-}
+}  // namespace tesseract_kinematics
