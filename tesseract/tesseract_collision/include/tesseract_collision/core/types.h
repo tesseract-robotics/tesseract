@@ -42,107 +42,107 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_collision
 {
-  using CollisionShapesConst = std::vector<tesseract_geometry::Geometry::ConstPtr>;
-  using CollisionShapeConstPtr = tesseract_geometry::Geometry::ConstPtr;
-  using CollisionShapePtr = tesseract_geometry::Geometry::Ptr;
+using CollisionShapesConst = std::vector<tesseract_geometry::Geometry::ConstPtr>;
+using CollisionShapeConstPtr = tesseract_geometry::Geometry::ConstPtr;
+using CollisionShapePtr = tesseract_geometry::Geometry::Ptr;
 
-  /**
-   * @brief Should return true if contact allowed, otherwise false.
-   *
-   * Also the order of strings should not matter, the function should handled by the function.
-   */
-  using IsContactAllowedFn = std::function<bool(const std::string&, const std::string&)>;
+/**
+ * @brief Should return true if contact allowed, otherwise false.
+ *
+ * Also the order of strings should not matter, the function should handled by the function.
+ */
+using IsContactAllowedFn = std::function<bool(const std::string&, const std::string&)>;
 
-  enum class ContinouseCollisionType
+enum class ContinouseCollisionType
+{
+  CCType_None,
+  CCType_Time0,
+  CCType_Time1,
+  CCType_Between
+};
+
+enum class ContactTestType
+{
+  FIRST = 0,   /**< Return at first contact for any pair of objects */
+  CLOSEST = 1, /**< Return the global minimum for a pair of objects */
+  ALL = 2,     /**< Return all contacts for a pair of objects */
+  LIMITED = 3  /**< Return limited set of contacts for a pair of objects */
+};
+
+struct ContactResult
+{
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+  double distance;
+  int type_id[2];
+  std::string link_names[2];
+  Eigen::Vector3d nearest_points[2];
+  Eigen::Vector3d normal;
+  Eigen::Vector3d cc_nearest_points[2];
+  double cc_time;
+  ContinouseCollisionType cc_type;
+
+  ContactResult() { clear(); }
+  /// Clear structure data
+  void clear()
   {
-    CCType_None,
-    CCType_Time0,
-    CCType_Time1,
-    CCType_Between
-  };
-
-  enum class ContactTestType
-  {
-    FIRST = 0,   /**< Return at first contact for any pair of objects */
-    CLOSEST = 1, /**< Return the global minimum for a pair of objects */
-    ALL = 2,     /**< Return all contacts for a pair of objects */
-    LIMITED = 3  /**< Return limited set of contacts for a pair of objects */
-  };
-
-  struct ContactResult
-  {
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-    double distance;
-    int type_id[2];
-    std::string link_names[2];
-    Eigen::Vector3d nearest_points[2];
-    Eigen::Vector3d normal;
-    Eigen::Vector3d cc_nearest_points[2];
-    double cc_time;
-    ContinouseCollisionType cc_type;
-
-    ContactResult() { clear(); }
-    /// Clear structure data
-    void clear()
-    {
-      distance = std::numeric_limits<double>::max();
-      nearest_points[0].setZero();
-      nearest_points[1].setZero();
-      link_names[0] = "";
-      link_names[1] = "";
-      type_id[0] = 0;
-      type_id[1] = 0;
-      normal.setZero();
-      cc_nearest_points[0].setZero();
-      cc_nearest_points[1].setZero();
-      cc_time = -1;
-      cc_type = ContinouseCollisionType::CCType_None;
-    }
-  };
-
-  using ContactResultVector = tesseract_common::AlignedVector<ContactResult> ;
-  using ContactResultMap = tesseract_common::AlignedMap<std::pair<std::string, std::string>, ContactResultVector>;
-
-  inline std::size_t flattenResults(ContactResultMap&& m, ContactResultVector& v)
-  {
-      v.clear();
-      size_t l = 0;
-      for (const auto& mv : m)
-        l+=mv.second.size();
-
-      v.reserve(l);
-      for (const auto& mv : m)
-        std::move(mv.second.begin(), mv.second.end(), std::back_inserter(v));
-
-      return v.size();
+    distance = std::numeric_limits<double>::max();
+    nearest_points[0].setZero();
+    nearest_points[1].setZero();
+    link_names[0] = "";
+    link_names[1] = "";
+    type_id[0] = 0;
+    type_id[1] = 0;
+    normal.setZero();
+    cc_nearest_points[0].setZero();
+    cc_nearest_points[1].setZero();
+    cc_time = -1;
+    cc_type = ContinouseCollisionType::CCType_None;
   }
+};
 
-  /// Contact test data and query results information
-  struct ContactTestData
-  {
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+using ContactResultVector = tesseract_common::AlignedVector<ContactResult>;
+using ContactResultMap = tesseract_common::AlignedMap<std::pair<std::string, std::string>, ContactResultVector>;
 
-    ContactTestData(const std::vector<std::string>& active,
-                    const double& contact_distance,
-                    const IsContactAllowedFn& fn,
-                    const ContactTestType& type,
-                    ContactResultMap& res)
-      : active(active), contact_distance(contact_distance), fn(fn), type(type), res(res), done(false)
-    {
-    }
+inline std::size_t flattenResults(ContactResultMap&& m, ContactResultVector& v)
+{
+  v.clear();
+  size_t l = 0;
+  for (const auto& mv : m)
+    l += mv.second.size();
 
-    const std::vector<std::string>& active;
-    const double& contact_distance;
-    const IsContactAllowedFn& fn;
-    const ContactTestType& type;
+  v.reserve(l);
+  for (const auto& mv : m)
+    std::move(mv.second.begin(), mv.second.end(), std::back_inserter(v));
 
-    /// Destance query results information
-    ContactResultMap& res;
-
-    /// Indicate if search is finished
-    bool done;
-  };
+  return v.size();
 }
 
-#endif // TESSERACT_COLLISION_TYPES_H
+/// Contact test data and query results information
+struct ContactTestData
+{
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+  ContactTestData(const std::vector<std::string>& active,
+                  const double& contact_distance,
+                  const IsContactAllowedFn& fn,
+                  const ContactTestType& type,
+                  ContactResultMap& res)
+    : active(active), contact_distance(contact_distance), fn(fn), type(type), res(res), done(false)
+  {
+  }
+
+  const std::vector<std::string>& active;
+  const double& contact_distance;
+  const IsContactAllowedFn& fn;
+  const ContactTestType& type;
+
+  /// Destance query results information
+  ContactResultMap& res;
+
+  /// Indicate if search is finished
+  bool done;
+};
+}  // namespace tesseract_collision
+
+#endif  // TESSERACT_COLLISION_TYPES_H

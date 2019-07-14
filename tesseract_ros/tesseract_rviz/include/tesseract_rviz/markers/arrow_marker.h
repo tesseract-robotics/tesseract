@@ -43,28 +43,24 @@ namespace rviz
 {
 class Arrow;
 class DisplayContext;
-}
+}  // namespace rviz
 
 namespace tesseract_rviz
 {
-
-class ArrowMarker: public MarkerBase
+class ArrowMarker : public MarkerBase
 {
 public:
   using Ptr = boost::shared_ptr<ArrowMarker>;
   using ConstPtr = boost::shared_ptr<const ArrowMarker>;
 
-  ArrowMarker(const std::string &ns,
-              const int id,
-              rviz::DisplayContext* context,
-              Ogre::SceneNode* parent_node);
+  ArrowMarker(const std::string& ns, const int id, rviz::DisplayContext* context, Ogre::SceneNode* parent_node);
 
-  ArrowMarker(const std::string &ns,
+  ArrowMarker(const std::string& ns,
               const int id,
               Ogre::Vector3 point1,
               Ogre::Vector3 point2,
               rviz::DisplayContext* context,
-              Ogre::SceneNode* parent_node );
+              Ogre::SceneNode* parent_node);
 
   ~ArrowMarker() override;
 
@@ -78,10 +74,10 @@ public:
 protected:
   virtual void setDefaultProportions();
 
-  rviz::Arrow *arrow_;
-  Ogre::SceneNode *child_scene_node_;
+  rviz::Arrow* arrow_;
+  Ogre::SceneNode* child_scene_node_;
   Ogre::Vector3 location_;
 };
 
-}
-#endif // TESSERACT_RVIZ_MARKERS_ARROW_MARKER_H
+}  // namespace tesseract_rviz
+#endif  // TESSERACT_RVIZ_MARKERS_ARROW_MARKER_H

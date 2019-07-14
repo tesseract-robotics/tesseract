@@ -67,11 +67,12 @@ enum class CollisionObjectType
 
 /** \brief Clutters the world of the planning scene with random objects in a certain area around the origin. All added
  *  objects are not in collision.
-*
-*   \param planning_scene The planning scene
-*   \param num_objects The number of objects to be cluttered
-*   \param CollisionObjectType Type of object to clutter (mesh or box) */
-void clutterWorld(planning_scene::PlanningScenePtr planning_scene, const unsigned int num_objects,
+ *
+ *   \param planning_scene The planning scene
+ *   \param num_objects The number of objects to be cluttered
+ *   \param CollisionObjectType Type of object to clutter (mesh or box) */
+void clutterWorld(planning_scene::PlanningScenePtr planning_scene,
+                  const unsigned int num_objects,
                   CollisionObjectType type)
 {
   ROS_INFO("Cluttering scene...");
@@ -169,13 +170,15 @@ void clutterWorld(planning_scene::PlanningScenePtr planning_scene, const unsigne
 }
 
 /** \brief Runs a collision detection benchmark and measures the time.
-*
-*   \param trials The number of repeated collision checks for each state
-*   \param scene The planning scene
-*   \param CollisionDetector The type of collision detector
-*   \param only_self Flag for only self collision check performed */
-void runCollisionDetection(unsigned int trials, planning_scene::PlanningScenePtr scene,
-                           const std::vector<robot_state::RobotState>& states, const CollisionDetector col_detector,
+ *
+ *   \param trials The number of repeated collision checks for each state
+ *   \param scene The planning scene
+ *   \param CollisionDetector The type of collision detector
+ *   \param only_self Flag for only self collision check performed */
+void runCollisionDetection(unsigned int trials,
+                           planning_scene::PlanningScenePtr scene,
+                           const std::vector<robot_state::RobotState>& states,
+                           const CollisionDetector col_detector,
                            bool only_self)
 {
   collision_detection::AllowedCollisionMatrix acm{ collision_detection::AllowedCollisionMatrix(
@@ -247,8 +250,10 @@ void runCollisionDetection(unsigned int trials, planning_scene::PlanningScenePtr
  *  \param num_states Number of desired states
  *  \param scene The planning scene
  *  \param robot_states Result vector */
-void findStates(const RobotStateSelector desired_states, unsigned int num_states,
-                planning_scene::PlanningScenePtr scene, std::vector<robot_state::RobotState>& robot_states)
+void findStates(const RobotStateSelector desired_states,
+                unsigned int num_states,
+                planning_scene::PlanningScenePtr scene,
+                std::vector<robot_state::RobotState>& robot_states)
 {
   robot_state::RobotState& current_state{ scene->getCurrentStateNonConst() };
   collision_detection::CollisionRequest req;
@@ -348,4 +353,3 @@ int main(int argc, char** argv)
 
   return 0;
 }
-

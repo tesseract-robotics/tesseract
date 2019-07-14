@@ -6,15 +6,15 @@
 
 namespace tesseract_process_planners
 {
-
 class PassthroughTransitionGenerator : public ProcessTransitionGenerator
 {
 public:
   PassthroughTransitionGenerator() {}
   ~PassthroughTransitionGenerator() override = default;
 
-  std::vector<tesseract_motion_planners::Waypoint::Ptr> generate(const tesseract_motion_planners::Waypoint::Ptr& start_waypoint,
-                                                               const tesseract_motion_planners::Waypoint::Ptr& end_waypoint) const override
+  std::vector<tesseract_motion_planners::Waypoint::Ptr>
+  generate(const tesseract_motion_planners::Waypoint::Ptr& start_waypoint,
+           const tesseract_motion_planners::Waypoint::Ptr& end_waypoint) const override
   {
     std::vector<tesseract_motion_planners::Waypoint::Ptr> transition;
     transition.reserve(2);
@@ -23,8 +23,7 @@ public:
 
     return transition;
   }
-
 };
 
-}
-#endif // TESSERACT_PLANNING_PASSTHROUGH_TRANSITION_GENERATOR_H
+}  // namespace tesseract_process_planners
+#endif  // TESSERACT_PLANNING_PASSTHROUGH_TRANSITION_GENERATOR_H

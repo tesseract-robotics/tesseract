@@ -245,5 +245,5 @@ void BulletDiscreteBVHManager::contactTest(const COW::Ptr& cow, ContactTestData&
 
   broadphase_->aabbTest(min_aabb, max_aabb, contactCB);
 }
-}
-}
+}  // namespace tesseract_collision_bullet
+}  // namespace tesseract_collision

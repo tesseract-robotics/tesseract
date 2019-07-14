@@ -50,16 +50,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_rviz
 {
-
 TesseractStateDisplay::TesseractStateDisplay() : Display()
 {
   tesseract_ = std::make_shared<tesseract::Tesseract>();
   environment_monitor_ = std::make_shared<EnvironmentWidget>(this, this);
   state_monitor_ = std::make_shared<JointStateMonitorWidget>(this, this);
-
 }
 
-TesseractStateDisplay::~TesseractStateDisplay(){}
+TesseractStateDisplay::~TesseractStateDisplay() {}
 
 void TesseractStateDisplay::onInitialize()
 {
@@ -108,7 +106,7 @@ void TesseractStateDisplay::update(float wall_dt, float ros_dt)
 // ******************************************************************************************
 // Calculate Offset Position
 // ******************************************************************************************
-//void TesseractStateDisplay::calculateOffsetPosition()
+// void TesseractStateDisplay::calculateOffsetPosition()
 //{
 //  if (!env_)
 //    return;
@@ -121,7 +119,7 @@ void TesseractStateDisplay::update(float wall_dt, float ros_dt)
 //  scene_node_->setOrientation(orientation);
 //}
 
-//void TesseractStateDisplay::fixedFrameChanged()
+// void TesseractStateDisplay::fixedFrameChanged()
 //{
 //  Display::fixedFrameChanged();
 //  calculateOffsetPosition();

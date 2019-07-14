@@ -43,58 +43,38 @@
 
 namespace tesseract_rviz
 {
-
-MarkerBase::MarkerBase(const std::string &ns, const int id, rviz::DisplayContext* context, Ogre::SceneNode* parent_node )
-  : ns_(ns)
-  , id_(id)
-  , context_( context )
-  , scene_node_( parent_node->createChildSceneNode() )
-{}
-
-MarkerBase::~MarkerBase()
+MarkerBase::MarkerBase(const std::string& ns, const int id, rviz::DisplayContext* context, Ogre::SceneNode* parent_node)
+  : ns_(ns), id_(id), context_(context), scene_node_(parent_node->createChildSceneNode())
 {
-  context_->getSceneManager()->destroySceneNode(scene_node_);
 }
 
-void MarkerBase::setInteractiveObject( rviz::InteractiveObjectWPtr control )
+MarkerBase::~MarkerBase() { context_->getSceneManager()->destroySceneNode(scene_node_); }
+
+void MarkerBase::setInteractiveObject(rviz::InteractiveObjectWPtr control)
 {
-  if( handler_ )
+  if (handler_)
   {
-    handler_->setInteractiveObject( control );
+    handler_->setInteractiveObject(control);
   }
 }
 
-void MarkerBase::setPosition( const Ogre::Vector3& position )
-{
-  scene_node_->setPosition( position );
-}
+void MarkerBase::setPosition(const Ogre::Vector3& position) { scene_node_->setPosition(position); }
 
-void MarkerBase::setOrientation( const Ogre::Quaternion& orientation )
-{
-  scene_node_->setOrientation( orientation );
-}
+void MarkerBase::setOrientation(const Ogre::Quaternion& orientation) { scene_node_->setOrientation(orientation); }
 
-const Ogre::Vector3& MarkerBase::getPosition()
-{
-  return scene_node_->getPosition();
-}
+const Ogre::Vector3& MarkerBase::getPosition() { return scene_node_->getPosition(); }
 
-const Ogre::Quaternion& MarkerBase::getOrientation()
-{
-  return scene_node_->getOrientation();
-}
+const Ogre::Quaternion& MarkerBase::getOrientation() { return scene_node_->getOrientation(); }
 
-void MarkerBase::extractMaterials( Ogre::Entity *entity, std::set<Ogre::MaterialPtr> &materials )
+void MarkerBase::extractMaterials(Ogre::Entity* entity, std::set<Ogre::MaterialPtr>& materials)
 {
   uint32_t num_sub_entities = entity->getNumSubEntities();
   for (uint32_t i = 0; i < num_sub_entities; ++i)
   {
     Ogre::SubEntity* sub = entity->getSubEntity(i);
     Ogre::MaterialPtr material = sub->getMaterial();
-    materials.insert( material );
+    materials.insert(material);
   }
 }
 
-
-
-}
+}  // namespace tesseract_rviz

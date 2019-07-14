@@ -55,7 +55,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_rviz
 {
-
 class TesseractStateDisplay : public rviz::Display
 {
   Q_OBJECT
@@ -78,7 +77,7 @@ protected:
   void onInitialize() override;
   void onEnable() override;
   void onDisable() override;
-//  void fixedFrameChanged() override;
+  //  void fixedFrameChanged() override;
 
   ros::NodeHandle nh_;
 
@@ -87,7 +86,6 @@ protected:
   JointStateMonitorWidget::Ptr state_monitor_;
   EnvironmentWidget::Ptr environment_monitor_;
 };
-
 
 }  // namespace tesseract_rviz
 

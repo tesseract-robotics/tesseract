@@ -37,12 +37,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_visualization
 {
-
 /** @brief The Vizualization class */
 class Visualization
 {
 public:
-
   using Ptr = std::shared_ptr<Visualization>;
   using ConstPtr = std::shared_ptr<const Visualization>;
 
@@ -51,7 +49,8 @@ public:
    * @brief Plot a trajectory
    * @param traj
    */
-  virtual void plotTrajectory(const std::vector<std::string>& joint_names, const Eigen::Ref<const tesseract_common::TrajArray>& traj) = 0;
+  virtual void plotTrajectory(const std::vector<std::string>& joint_names,
+                              const Eigen::Ref<const tesseract_common::TrajArray>& traj) = 0;
 
   /**
    * @brief Plot the collision results data
@@ -93,6 +92,6 @@ public:
   virtual void waitForInput() = 0;
 };
 
-}
+}  // namespace tesseract_visualization
 
 #endif  // TESSERACT_VISUALIZATION_VISUALIZATION_H

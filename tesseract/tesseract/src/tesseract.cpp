@@ -40,380 +40,384 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract
 {
-  Tesseract::Tesseract()
+Tesseract::Tesseract() { clear(); }
+
+bool Tesseract::isInitialized() const { return initialized_; }
+
+bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
+{
+  clear();
+
+  // Construct Environment from Scene Graph
+  environment_ = std::make_shared<tesseract_environment::KDLEnv>();
+  if (!environment_->init(scene_graph))
   {
-    clear();
+    CONSOLE_BRIDGE_logError("Failed to initialize environment.");
+    return false;
   }
+  environment_const_ = environment_;
 
-  bool Tesseract::isInitialized() const
-  {
-    return initialized_;
-  }
+  registerDefaultContactManagers();
+  registerDefaultFwdKinSolvers();
+  registerDefaultInvKinSolvers();
 
-  bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
-  {
-    clear();
-
-    // Construct Environment from Scene Graph
-    environment_ = std::make_shared<tesseract_environment::KDLEnv>();
-    if (!environment_->init(scene_graph))
-    {
-      CONSOLE_BRIDGE_logError("Failed to initialize environment.");
-      return false;
-    }
-    environment_const_ = environment_;
-
-    registerDefaultContactManagers();
-    registerDefaultFwdKinSolvers();
-    registerDefaultInvKinSolvers();
-
-    initialized_ = true;
-    return true;
-  }
-
-  bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph, tesseract_scene_graph::SRDFModel::ConstPtr srdf_model)
-  {
-    clear();
-
-    srdf_model_ = srdf_model;
-
-    // Construct Environment from Scene Graph
-    environment_ = std::make_shared<tesseract_environment::KDLEnv>();
-    if (!environment_->init(scene_graph))
-    {
-      CONSOLE_BRIDGE_logError("Failed to initialize environment.");
-      return false;
-    }
-    environment_const_ = environment_;
-
-    registerDefaultContactManagers();
-    registerDefaultFwdKinSolvers();
-    registerDefaultInvKinSolvers();
-
-    initialized_ = true;
-    return true;
-  }
-
-  bool Tesseract::init(const std::string& urdf_string, tesseract_scene_graph::ResourceLocatorFn locator)
-  {
-    clear();
-
-    // Parse urdf string into Scene Graph
-    tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_scene_graph::parseURDFString(urdf_string, locator);
-    if (scene_graph == nullptr)
-    {
-      CONSOLE_BRIDGE_logError("Failed to parse URDF.");
-      return false;
-    }
-
-    // Construct Environment from Scene Graph
-    environment_ = std::make_shared<tesseract_environment::KDLEnv>();
-    if (!environment_->init(scene_graph))
-    {
-      CONSOLE_BRIDGE_logError("Failed to initialize environment.");
-      return false;
-    }
-    environment_const_ = environment_;
-    registerDefaultContactManagers();
-    registerDefaultFwdKinSolvers();
-    registerDefaultInvKinSolvers();
-
-    initialized_ = true;
-    return true;
-  }
-
-  bool Tesseract::init(const std::string& urdf_string, const std::string& srdf_string, tesseract_scene_graph::ResourceLocatorFn locator)
-  {
-    clear();
-
-    // Parse urdf string into Scene Graph
-    tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_scene_graph::parseURDFString(urdf_string, locator);
-    if (scene_graph == nullptr)
-    {
-      CONSOLE_BRIDGE_logError("Failed to parse URDF.");
-      return false;
-    }
-
-    // Parse srdf string into SRDF Model
-    tesseract_scene_graph::SRDFModel::Ptr srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
-    if (!srdf->initString(*scene_graph, srdf_string))
-    {
-      CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
-      return false;
-    }
-    srdf_model_ = srdf;
-
-    // Add allowed collision matrix to scene graph
-    tesseract_scene_graph::processSRDFAllowedCollisions(*scene_graph, *srdf);
-
-    // Construct Environment
-    environment_ = std::make_shared<tesseract_environment::KDLEnv>();
-    if (!environment_->init(scene_graph))
-    {
-      CONSOLE_BRIDGE_logError("Failed to initialize environment.");
-      return false;
-    }
-    environment_const_ = environment_;
-    registerDefaultContactManagers();
-    registerDefaultFwdKinSolvers();
-    registerDefaultInvKinSolvers();
-
-    initialized_ = true;
-    return true;
-  }
-
-  bool Tesseract::init(const boost::filesystem::path& urdf_path, tesseract_scene_graph::ResourceLocatorFn locator)
-  {
-    clear();
-
-    // Parse urdf file into Scene Graph
-    tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_scene_graph::parseURDFFile(urdf_path.string(), locator);
-    if (scene_graph == nullptr)
-    {
-      CONSOLE_BRIDGE_logError("Failed to parse URDF.");
-      return false;
-    }
-
-    // Construct Environment from Scene Graph
-    environment_ = std::make_shared<tesseract_environment::KDLEnv>();
-    if (!environment_->init(scene_graph))
-    {
-      CONSOLE_BRIDGE_logError("Failed to initialize environment.");
-      return false;
-    }
-    environment_const_ = environment_;
-    registerDefaultContactManagers();
-    registerDefaultFwdKinSolvers();
-    registerDefaultInvKinSolvers();
-
-    initialized_ = true;
-    return true;
-  }
-
-  bool Tesseract::init(const boost::filesystem::path& urdf_path, const boost::filesystem::path& srdf_path, tesseract_scene_graph::ResourceLocatorFn locator)
-  {
-    clear();
-
-    // Parse urdf file into Scene Graph
-    tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_scene_graph::parseURDFFile(urdf_path.string(), locator);
-    if (scene_graph == nullptr)
-    {
-      CONSOLE_BRIDGE_logError("Failed to parse URDF.");
-      return false;
-    }
-
-    // Parse srdf file into SRDF Model
-    tesseract_scene_graph::SRDFModel::Ptr srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
-    if (!srdf->initFile(*scene_graph, srdf_path.string()))
-    {
-      CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
-      return false;
-    }
-    srdf_model_ = srdf;
-
-    // Add allowed collision matrix to scene graph
-    tesseract_scene_graph::processSRDFAllowedCollisions(*scene_graph, *srdf);
-
-    // Construct Environment
-    environment_ = std::make_shared<tesseract_environment::KDLEnv>();
-    if (!environment_->init(scene_graph))
-    {
-      CONSOLE_BRIDGE_logError("Failed to initialize environment.");
-      return false;
-    }
-    environment_const_ = environment_;
-    registerDefaultContactManagers();
-    registerDefaultFwdKinSolvers();
-    registerDefaultInvKinSolvers();
-
-    initialized_ = true;
-    return true;
-  }
-
-  const tesseract_environment::Environment::Ptr& Tesseract::getEnvironment()
-  {
-    return environment_;
-  }
-
-  const tesseract_environment::Environment::ConstPtr& Tesseract::getEnvironmentConst() const
-  {
-    return environment_const_;
-  }
-
-  const tesseract_scene_graph::SRDFModel::ConstPtr& Tesseract::getSRDFModel() const
-  {
-    return srdf_model_;
-  }
-
-  const ForwardKinematicsManager::Ptr& Tesseract::getFwdKinematicsManager()
-  {
-    return fwd_kin_manager_;
-  }
-
-  const ForwardKinematicsManager::ConstPtr& Tesseract::getFwdKinematicsManagerConst() const
-  {
-    return fwd_kin_manager_const_;
-  }
-
-  const InverseKinematicsManager::Ptr& Tesseract::getInvKinematicsManager()
-  {
-    return inv_kin_manager_;
-  }
-
-  const InverseKinematicsManager::ConstPtr& Tesseract::getInvKinematicsManagerConst() const
-  {
-    return inv_kin_manager_const_;
-  }
-
-  /** @brief registerDefaultContactManagers */
-  bool Tesseract::registerDefaultContactManagers()
-  {
-    using namespace tesseract_collision;
-
-    // Register contact manager
-    environment_->registerDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name(),
-                                                 &tesseract_collision_bullet::BulletDiscreteBVHManager::create);
-    environment_->registerContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name(),
-                                                   &tesseract_collision_bullet::BulletCastBVHManager::create);
-
-    // Set Active contact manager
-    environment_->setActiveDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name());
-    environment_->setActiveContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name());
-
-    return true;
-  }
-
-  bool Tesseract::registerDefaultFwdKinSolvers()
-  {
-    bool success = true;
-
-    fwd_kin_manager_ = std::make_shared<ForwardKinematicsManager>();
-    fwd_kin_manager_const_ = fwd_kin_manager_;
-
-    auto chain_factory = std::make_shared<tesseract_kinematics::KDLFwdKinChainFactory>();
-    fwd_kin_manager_->registerFwdKinematicsFactory(chain_factory);
-
-    auto tree_factory = std::make_shared<tesseract_kinematics::KDLFwdKinTreeFactory>();
-    fwd_kin_manager_->registerFwdKinematicsFactory(tree_factory);
-
-    for (const auto& group : srdf_model_->getGroups())
-    {
-      if (!group.chains_.empty())
-      {
-        assert(group.chains_.size() == 1);
-        tesseract_kinematics::ForwardKinematics::Ptr solver = chain_factory->create(environment_->getSceneGraph(), group.chains_.front().first, group.chains_.front().second, group.name_);
-        if (solver != nullptr)
-        {
-          if (!fwd_kin_manager_->addFwdKinematicSolver(solver))
-          {
-            CONSOLE_BRIDGE_logError("Failed to add inverse kinematic chain solver %s for manipulator %s to manager!", solver->getSolverName().c_str(), group.name_.c_str());
-            success = false;
-          }
-        }
-        else
-        {
-          CONSOLE_BRIDGE_logError("Failed to create inverse kinematic chain solver %s for manipulator %s!", solver->getSolverName().c_str(), group.name_.c_str());
-          success = false;
-        }
-      }
-
-      if (!group.joints_.empty())
-      {
-        assert(group.joints_.size() == 1);
-        tesseract_kinematics::ForwardKinematics::Ptr solver = tree_factory->create(environment_->getSceneGraph(), group.joints_, group.name_);
-        if (solver != nullptr)
-        {
-          if (!fwd_kin_manager_->addFwdKinematicSolver(solver))
-          {
-            CONSOLE_BRIDGE_logError("Failed to add inverse kinematic tree solver %s for manipulator %s to manager!", solver->getSolverName().c_str(), group.name_.c_str());
-            success = false;
-          }
-        }
-        else
-        {
-          CONSOLE_BRIDGE_logError("Failed to create inverse kinematic tree solver %s for manipulator %s!", solver->getSolverName().c_str(), group.name_.c_str());
-          success = false;
-        }
-      }
-
-      // TODO: Need to add other options
-      if (!group.links_.empty())
-      {
-        CONSOLE_BRIDGE_logError("Link groups are currently not supported!");
-        success = false;
-      }
-
-      if (!group.subgroups_.empty())
-      {
-        CONSOLE_BRIDGE_logError("Subgroups are currently not supported!");
-        success = false;
-      }
-    }
-
-    return success;
-  }
-
-  bool Tesseract::registerDefaultInvKinSolvers()
-  {
-    bool success = true;
-
-    inv_kin_manager_ = std::make_shared<InverseKinematicsManager>();
-    inv_kin_manager_const_ = inv_kin_manager_;
-
-    auto factory = std::make_shared<tesseract_kinematics::KDLInvKinChainLMAFactory>();
-    inv_kin_manager_->registerInvKinematicsFactory(factory);
-
-    for (const auto& group : srdf_model_->getGroups())
-    {
-      if (!group.chains_.empty())
-      {
-        assert(group.chains_.size() == 1);
-        tesseract_kinematics::InverseKinematics::Ptr solver = factory->create(environment_->getSceneGraph(), group.chains_.front().first, group.chains_.front().second, group.name_);
-        if (solver != nullptr)
-        {
-          if (!inv_kin_manager_->addInvKinematicSolver(solver))
-          {
-            CONSOLE_BRIDGE_logError("Failed to add inverse kinematic chain solver %s for manipulator %s to manager!", solver->getSolverName().c_str(), group.name_.c_str());
-            success = false;
-          }
-        }
-        else
-        {
-          CONSOLE_BRIDGE_logError("Failed to create inverse kinematic chain solver %s for manipulator %s!", solver->getSolverName().c_str(), group.name_.c_str());
-          success = false;
-        }
-      }
-
-      if (!group.joints_.empty())
-      {
-        CONSOLE_BRIDGE_logError("Joint groups are currently not supported!");
-        success = false;
-      }
-
-      // TODO: Need to add other options
-      if (!group.links_.empty())
-      {
-        CONSOLE_BRIDGE_logError("Link groups are currently not supported!");
-        success = false;
-      }
-
-      if (!group.subgroups_.empty())
-      {
-        CONSOLE_BRIDGE_logError("Subgroups are currently not supported!");
-        success = false;
-      }
-    }
-
-    return success;
-  }
-
-  void Tesseract::clear()
-  {
-    initialized_ = false;
-    environment_ = nullptr;
-    environment_const_ = nullptr;
-    srdf_model_ = nullptr;
-    inv_kin_manager_ = nullptr;
-    fwd_kin_manager_ = nullptr;
-  }
+  initialized_ = true;
+  return true;
 }
+
+bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph,
+                     tesseract_scene_graph::SRDFModel::ConstPtr srdf_model)
+{
+  clear();
+
+  srdf_model_ = srdf_model;
+
+  // Construct Environment from Scene Graph
+  environment_ = std::make_shared<tesseract_environment::KDLEnv>();
+  if (!environment_->init(scene_graph))
+  {
+    CONSOLE_BRIDGE_logError("Failed to initialize environment.");
+    return false;
+  }
+  environment_const_ = environment_;
+
+  registerDefaultContactManagers();
+  registerDefaultFwdKinSolvers();
+  registerDefaultInvKinSolvers();
+
+  initialized_ = true;
+  return true;
+}
+
+bool Tesseract::init(const std::string& urdf_string, tesseract_scene_graph::ResourceLocatorFn locator)
+{
+  clear();
+
+  // Parse urdf string into Scene Graph
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_scene_graph::parseURDFString(urdf_string, locator);
+  if (scene_graph == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+    return false;
+  }
+
+  // Construct Environment from Scene Graph
+  environment_ = std::make_shared<tesseract_environment::KDLEnv>();
+  if (!environment_->init(scene_graph))
+  {
+    CONSOLE_BRIDGE_logError("Failed to initialize environment.");
+    return false;
+  }
+  environment_const_ = environment_;
+  registerDefaultContactManagers();
+  registerDefaultFwdKinSolvers();
+  registerDefaultInvKinSolvers();
+
+  initialized_ = true;
+  return true;
+}
+
+bool Tesseract::init(const std::string& urdf_string,
+                     const std::string& srdf_string,
+                     tesseract_scene_graph::ResourceLocatorFn locator)
+{
+  clear();
+
+  // Parse urdf string into Scene Graph
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_scene_graph::parseURDFString(urdf_string, locator);
+  if (scene_graph == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+    return false;
+  }
+
+  // Parse srdf string into SRDF Model
+  tesseract_scene_graph::SRDFModel::Ptr srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
+  if (!srdf->initString(*scene_graph, srdf_string))
+  {
+    CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
+    return false;
+  }
+  srdf_model_ = srdf;
+
+  // Add allowed collision matrix to scene graph
+  tesseract_scene_graph::processSRDFAllowedCollisions(*scene_graph, *srdf);
+
+  // Construct Environment
+  environment_ = std::make_shared<tesseract_environment::KDLEnv>();
+  if (!environment_->init(scene_graph))
+  {
+    CONSOLE_BRIDGE_logError("Failed to initialize environment.");
+    return false;
+  }
+  environment_const_ = environment_;
+  registerDefaultContactManagers();
+  registerDefaultFwdKinSolvers();
+  registerDefaultInvKinSolvers();
+
+  initialized_ = true;
+  return true;
+}
+
+bool Tesseract::init(const boost::filesystem::path& urdf_path, tesseract_scene_graph::ResourceLocatorFn locator)
+{
+  clear();
+
+  // Parse urdf file into Scene Graph
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph =
+      tesseract_scene_graph::parseURDFFile(urdf_path.string(), locator);
+  if (scene_graph == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+    return false;
+  }
+
+  // Construct Environment from Scene Graph
+  environment_ = std::make_shared<tesseract_environment::KDLEnv>();
+  if (!environment_->init(scene_graph))
+  {
+    CONSOLE_BRIDGE_logError("Failed to initialize environment.");
+    return false;
+  }
+  environment_const_ = environment_;
+  registerDefaultContactManagers();
+  registerDefaultFwdKinSolvers();
+  registerDefaultInvKinSolvers();
+
+  initialized_ = true;
+  return true;
+}
+
+bool Tesseract::init(const boost::filesystem::path& urdf_path,
+                     const boost::filesystem::path& srdf_path,
+                     tesseract_scene_graph::ResourceLocatorFn locator)
+{
+  clear();
+
+  // Parse urdf file into Scene Graph
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph =
+      tesseract_scene_graph::parseURDFFile(urdf_path.string(), locator);
+  if (scene_graph == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+    return false;
+  }
+
+  // Parse srdf file into SRDF Model
+  tesseract_scene_graph::SRDFModel::Ptr srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
+  if (!srdf->initFile(*scene_graph, srdf_path.string()))
+  {
+    CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
+    return false;
+  }
+  srdf_model_ = srdf;
+
+  // Add allowed collision matrix to scene graph
+  tesseract_scene_graph::processSRDFAllowedCollisions(*scene_graph, *srdf);
+
+  // Construct Environment
+  environment_ = std::make_shared<tesseract_environment::KDLEnv>();
+  if (!environment_->init(scene_graph))
+  {
+    CONSOLE_BRIDGE_logError("Failed to initialize environment.");
+    return false;
+  }
+  environment_const_ = environment_;
+  registerDefaultContactManagers();
+  registerDefaultFwdKinSolvers();
+  registerDefaultInvKinSolvers();
+
+  initialized_ = true;
+  return true;
+}
+
+const tesseract_environment::Environment::Ptr& Tesseract::getEnvironment() { return environment_; }
+
+const tesseract_environment::Environment::ConstPtr& Tesseract::getEnvironmentConst() const
+{
+  return environment_const_;
+}
+
+const tesseract_scene_graph::SRDFModel::ConstPtr& Tesseract::getSRDFModel() const { return srdf_model_; }
+
+const ForwardKinematicsManager::Ptr& Tesseract::getFwdKinematicsManager() { return fwd_kin_manager_; }
+
+const ForwardKinematicsManager::ConstPtr& Tesseract::getFwdKinematicsManagerConst() const
+{
+  return fwd_kin_manager_const_;
+}
+
+const InverseKinematicsManager::Ptr& Tesseract::getInvKinematicsManager() { return inv_kin_manager_; }
+
+const InverseKinematicsManager::ConstPtr& Tesseract::getInvKinematicsManagerConst() const
+{
+  return inv_kin_manager_const_;
+}
+
+/** @brief registerDefaultContactManagers */
+bool Tesseract::registerDefaultContactManagers()
+{
+  using namespace tesseract_collision;
+
+  // Register contact manager
+  environment_->registerDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name(),
+                                               &tesseract_collision_bullet::BulletDiscreteBVHManager::create);
+  environment_->registerContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name(),
+                                                 &tesseract_collision_bullet::BulletCastBVHManager::create);
+
+  // Set Active contact manager
+  environment_->setActiveDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name());
+  environment_->setActiveContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name());
+
+  return true;
+}
+
+bool Tesseract::registerDefaultFwdKinSolvers()
+{
+  bool success = true;
+
+  fwd_kin_manager_ = std::make_shared<ForwardKinematicsManager>();
+  fwd_kin_manager_const_ = fwd_kin_manager_;
+
+  auto chain_factory = std::make_shared<tesseract_kinematics::KDLFwdKinChainFactory>();
+  fwd_kin_manager_->registerFwdKinematicsFactory(chain_factory);
+
+  auto tree_factory = std::make_shared<tesseract_kinematics::KDLFwdKinTreeFactory>();
+  fwd_kin_manager_->registerFwdKinematicsFactory(tree_factory);
+
+  for (const auto& group : srdf_model_->getGroups())
+  {
+    if (!group.chains_.empty())
+    {
+      assert(group.chains_.size() == 1);
+      tesseract_kinematics::ForwardKinematics::Ptr solver = chain_factory->create(
+          environment_->getSceneGraph(), group.chains_.front().first, group.chains_.front().second, group.name_);
+      if (solver != nullptr)
+      {
+        if (!fwd_kin_manager_->addFwdKinematicSolver(solver))
+        {
+          CONSOLE_BRIDGE_logError("Failed to add inverse kinematic chain solver %s for manipulator %s to manager!",
+                                  solver->getSolverName().c_str(),
+                                  group.name_.c_str());
+          success = false;
+        }
+      }
+      else
+      {
+        CONSOLE_BRIDGE_logError("Failed to create inverse kinematic chain solver %s for manipulator %s!",
+                                solver->getSolverName().c_str(),
+                                group.name_.c_str());
+        success = false;
+      }
+    }
+
+    if (!group.joints_.empty())
+    {
+      assert(group.joints_.size() == 1);
+      tesseract_kinematics::ForwardKinematics::Ptr solver =
+          tree_factory->create(environment_->getSceneGraph(), group.joints_, group.name_);
+      if (solver != nullptr)
+      {
+        if (!fwd_kin_manager_->addFwdKinematicSolver(solver))
+        {
+          CONSOLE_BRIDGE_logError("Failed to add inverse kinematic tree solver %s for manipulator %s to manager!",
+                                  solver->getSolverName().c_str(),
+                                  group.name_.c_str());
+          success = false;
+        }
+      }
+      else
+      {
+        CONSOLE_BRIDGE_logError("Failed to create inverse kinematic tree solver %s for manipulator %s!",
+                                solver->getSolverName().c_str(),
+                                group.name_.c_str());
+        success = false;
+      }
+    }
+
+    // TODO: Need to add other options
+    if (!group.links_.empty())
+    {
+      CONSOLE_BRIDGE_logError("Link groups are currently not supported!");
+      success = false;
+    }
+
+    if (!group.subgroups_.empty())
+    {
+      CONSOLE_BRIDGE_logError("Subgroups are currently not supported!");
+      success = false;
+    }
+  }
+
+  return success;
+}
+
+bool Tesseract::registerDefaultInvKinSolvers()
+{
+  bool success = true;
+
+  inv_kin_manager_ = std::make_shared<InverseKinematicsManager>();
+  inv_kin_manager_const_ = inv_kin_manager_;
+
+  auto factory = std::make_shared<tesseract_kinematics::KDLInvKinChainLMAFactory>();
+  inv_kin_manager_->registerInvKinematicsFactory(factory);
+
+  for (const auto& group : srdf_model_->getGroups())
+  {
+    if (!group.chains_.empty())
+    {
+      assert(group.chains_.size() == 1);
+      tesseract_kinematics::InverseKinematics::Ptr solver = factory->create(
+          environment_->getSceneGraph(), group.chains_.front().first, group.chains_.front().second, group.name_);
+      if (solver != nullptr)
+      {
+        if (!inv_kin_manager_->addInvKinematicSolver(solver))
+        {
+          CONSOLE_BRIDGE_logError("Failed to add inverse kinematic chain solver %s for manipulator %s to manager!",
+                                  solver->getSolverName().c_str(),
+                                  group.name_.c_str());
+          success = false;
+        }
+      }
+      else
+      {
+        CONSOLE_BRIDGE_logError("Failed to create inverse kinematic chain solver %s for manipulator %s!",
+                                solver->getSolverName().c_str(),
+                                group.name_.c_str());
+        success = false;
+      }
+    }
+
+    if (!group.joints_.empty())
+    {
+      CONSOLE_BRIDGE_logError("Joint groups are currently not supported!");
+      success = false;
+    }
+
+    // TODO: Need to add other options
+    if (!group.links_.empty())
+    {
+      CONSOLE_BRIDGE_logError("Link groups are currently not supported!");
+      success = false;
+    }
+
+    if (!group.subgroups_.empty())
+    {
+      CONSOLE_BRIDGE_logError("Subgroups are currently not supported!");
+      success = false;
+    }
+  }
+
+  return success;
+}
+
+void Tesseract::clear()
+{
+  initialized_ = false;
+  environment_ = nullptr;
+  environment_const_ = nullptr;
+  srdf_model_ = nullptr;
+  inv_kin_manager_ = nullptr;
+  fwd_kin_manager_ = nullptr;
+}
+}  // namespace tesseract

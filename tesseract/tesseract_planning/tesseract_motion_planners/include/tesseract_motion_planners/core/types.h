@@ -35,21 +35,21 @@ using StatusCodeMap = std::unordered_map<int, std::string>;
 
 struct PlannerRequest
 {
-  std::string name;                                           /**< @brief The name of the planner to use */
-  tesseract::Tesseract::ConstPtr tesseract;                   /**< @brief Tesseract */
-  tesseract_environment::EnvState::ConstPtr start_state;        /**< @brief The start state to use for planning */
-  std::string config;                                         /**< @brief The configuration to use (json file) */
-  std::string config_format;                                  /**< @brief The file extension used to parse config */
+  std::string name;                                      /**< @brief The name of the planner to use */
+  tesseract::Tesseract::ConstPtr tesseract;              /**< @brief Tesseract */
+  tesseract_environment::EnvState::ConstPtr start_state; /**< @brief The start state to use for planning */
+  std::string config;                                    /**< @brief The configuration to use (json file) */
+  std::string config_format;                             /**< @brief The file extension used to parse config */
 };
 
 struct PlannerResponse
 {
-  std::vector<std::string> joint_names; /**< @brief The joint names */
+  std::vector<std::string> joint_names;   /**< @brief The joint names */
   tesseract_common::TrajArray trajectory; /**< @brief The generated trajectory */
   int status_code; /**< @brief Negative status code should be related to errors and positive should be used for status
                       of covergenace */
   std::string status_description; /**< @brief Provide a brief description about what the error code means */
 };
-}
+}  // namespace tesseract_motion_planners
 
 #endif  // TESSERACT_PLANNING_PLANNER_TYPES_H

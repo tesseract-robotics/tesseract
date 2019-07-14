@@ -12,40 +12,27 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_rviz
 {
 JointStateMonitorWidget::JointStateMonitorWidget(rviz::Property* widget, rviz::Display* display)
-  : widget_(widget)
-  , display_(display)
-  , visualization_(nullptr)
-  , tesseract_(nullptr)
-  , update_required_(false)
+  : widget_(widget), display_(display), visualization_(nullptr), tesseract_(nullptr), update_required_(false)
 {
+  main_property_ = new rviz::Property(
+      "Joint State Monitor", "", "Monitor a joint state topic and update the visualization", widget_, nullptr, this);
 
-  main_property_ = new rviz::Property("Joint State Monitor",
-                                      "",
-                                      "Monitor a joint state topic and update the visualization",
-                                      widget_,
-                                      nullptr,
-                                      this);
-
-  joint_state_topic_property_ =
-      new rviz::RosTopicProperty("Topic",
-                                 "joint_states",
-                                 ros::message_traits::datatype<sensor_msgs::JointState>(),
-                                 "The topic on which the sensor_msgs::JointState messages are received",
-                                 main_property_,
-                                 SLOT(changedJointStateTopic()),
-                                 this);
-
- }
-
-JointStateMonitorWidget::~JointStateMonitorWidget()
-{
-  joint_state_subscriber_.shutdown();
+  joint_state_topic_property_ = new rviz::RosTopicProperty("Topic",
+                                                           "joint_states",
+                                                           ros::message_traits::datatype<sensor_msgs::JointState>(),
+                                                           "The topic on which the sensor_msgs::JointState messages "
+                                                           "are received",
+                                                           main_property_,
+                                                           SLOT(changedJointStateTopic()),
+                                                           this);
 }
 
+JointStateMonitorWidget::~JointStateMonitorWidget() { joint_state_subscriber_.shutdown(); }
+
 void JointStateMonitorWidget::onInitialize(VisualizationWidget::Ptr visualization,
-                                tesseract::Tesseract::Ptr tesseract,
-                                rviz::DisplayContext* context,
-                                ros::NodeHandle update_nh)
+                                           tesseract::Tesseract::Ptr tesseract,
+                                           rviz::DisplayContext* context,
+                                           ros::NodeHandle update_nh)
 {
   visualization_ = std::move(visualization);
   tesseract_ = std::move(tesseract);
@@ -72,15 +59,9 @@ void JointStateMonitorWidget::newJointStateCallback(const sensor_msgs::JointStat
   }
 }
 
-void JointStateMonitorWidget::onEnable()
-{
-  changedJointStateTopic();
-}
+void JointStateMonitorWidget::onEnable() { changedJointStateTopic(); }
 
-void JointStateMonitorWidget::onDisable()
-{
-  joint_state_subscriber_.shutdown();
-}
+void JointStateMonitorWidget::onDisable() { joint_state_subscriber_.shutdown(); }
 
 void JointStateMonitorWidget::onUpdate()
 {
@@ -91,16 +72,13 @@ void JointStateMonitorWidget::onUpdate()
   }
 }
 
-void JointStateMonitorWidget::onReset()
-{
-  changedJointStateTopic();
-}
+void JointStateMonitorWidget::onReset() { changedJointStateTopic(); }
 
 bool JointStateMonitorWidget::isUpdateRequired(const sensor_msgs::JointState& joint_state)
 {
   std::unordered_map<std::string, double> joints = tesseract_->getEnvironment()->getCurrentState()->joints;
   for (auto i = 0u; i < joint_state.name.size(); ++i)
-    if(std::abs(joints[joint_state.name[i]] - joint_state.position[i]) > 1e-5)
+    if (std::abs(joints[joint_state.name[i]] - joint_state.position[i]) > 1e-5)
       return true;
 
   return false;

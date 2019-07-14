@@ -29,7 +29,8 @@ void checkSceneGraph(tesseract_scene_graph::SceneGraph& scene_graph)
 
   for (const auto& l : links)
   {
-    auto it = std::find_if(check_links.begin(), check_links.end(), [&](const Link::ConstPtr& p) { return p.get() == l.get(); });
+    auto it = std::find_if(
+        check_links.begin(), check_links.end(), [&](const Link::ConstPtr& p) { return p.get() == l.get(); });
     EXPECT_TRUE(it != check_links.end());
   }
 }
@@ -194,8 +195,8 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
   // Get Shortest Path
   SceneGraph::Path path = g.getShortestPath("link_1", "link_4");
 
-// Todo:: Look at using filtered graph for chains and subgraphs
-// boost::filtered_graph<
+  // Todo:: Look at using filtered graph for chains and subgraphs
+  // boost::filtered_graph<
 
   std::cout << path << std::endl;
   EXPECT_TRUE(path.first.size() == 4);
@@ -236,25 +237,26 @@ TEST(TesseractSceneGraphUnit, LoadMeshUnit)
   EXPECT_TRUE(meshes[1]->getVerticeCount() == 42);
 
   mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.dae";
-  meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file, Eigen::Vector3d(1,1,1), false, true);
+  meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file, Eigen::Vector3d(1, 1, 1), false, true);
   EXPECT_TRUE(meshes.size() == 1);
-  EXPECT_TRUE(meshes[0]->getTriangleCount() == 2*80);
-  EXPECT_TRUE(meshes[0]->getVerticeCount() == 2*42);
+  EXPECT_TRUE(meshes[0]->getTriangleCount() == 2 * 80);
+  EXPECT_TRUE(meshes[0]->getVerticeCount() == 2 * 42);
 
   mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
-  meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file, Eigen::Vector3d(1,1,1), true, true);
-  EXPECT_TRUE(meshes.size() == 1);
-  EXPECT_TRUE(meshes[0]->getTriangleCount() == 12);
-  EXPECT_TRUE(meshes[0]->getVerticeCount() == 8);
-
-  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
-  meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file, Eigen::Vector3d(1,1,1), true, true);
+  meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file, Eigen::Vector3d(1, 1, 1), true, true);
   EXPECT_TRUE(meshes.size() == 1);
   EXPECT_TRUE(meshes[0]->getTriangleCount() == 12);
   EXPECT_TRUE(meshes[0]->getVerticeCount() == 8);
 
   mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
-  std::vector<tesseract_geometry::ConvexMesh::Ptr> convex_meshes = createMeshFromPath<tesseract_geometry::ConvexMesh>(mesh_file, Eigen::Vector3d(1,1,1), false, false);
+  meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file, Eigen::Vector3d(1, 1, 1), true, true);
+  EXPECT_TRUE(meshes.size() == 1);
+  EXPECT_TRUE(meshes[0]->getTriangleCount() == 12);
+  EXPECT_TRUE(meshes[0]->getVerticeCount() == 8);
+
+  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
+  std::vector<tesseract_geometry::ConvexMesh::Ptr> convex_meshes =
+      createMeshFromPath<tesseract_geometry::ConvexMesh>(mesh_file, Eigen::Vector3d(1, 1, 1), false, false);
   EXPECT_TRUE(convex_meshes.size() == 1);
   EXPECT_TRUE(convex_meshes[0]->getFaceCount() == 6);
   EXPECT_TRUE(convex_meshes[0]->getVerticeCount() == 8);
@@ -337,28 +339,26 @@ TEST(TesseractSceneGraphUnit, LoadSRDFUnit)
   AllowedCollisionMatrix::ConstPtr acm = g->getAllowedCollisionMatrix();
   const AllowedCollisionMatrix::AllowedCollisionEntries& acm_entries = acm->getAllAllowedCollisions();
 
+  //  acm.addAllowedCollision("link1", "link2", "test");
+  //  // collision between link1 and link2 should be allowed
+  //  EXPECT_TRUE(acm.isCollisionAllowed("link1", "link2"));
+  //  // but now between link2 and link3
+  //  EXPECT_FALSE(acm.isCollisionAllowed("link2", "link3"));
 
-//  acm.addAllowedCollision("link1", "link2", "test");
-//  // collision between link1 and link2 should be allowed
-//  EXPECT_TRUE(acm.isCollisionAllowed("link1", "link2"));
-//  // but now between link2 and link3
-//  EXPECT_FALSE(acm.isCollisionAllowed("link2", "link3"));
+  //  acm.removeAllowedCollision("link1", "link2");
+  //  // now collision link1 and link2 is not allowed anymore
+  //  EXPECT_FALSE(acm.isCollisionAllowed("link1", "link2"));
 
-//  acm.removeAllowedCollision("link1", "link2");
-//  // now collision link1 and link2 is not allowed anymore
-//  EXPECT_FALSE(acm.isCollisionAllowed("link1", "link2"));
-
-//  acm.addAllowedCollision("link3", "link3", "test");
-//  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 1);
-//  acm.clearAllowedCollisions();
-//  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 0);
-
+  //  acm.addAllowedCollision("link3", "link3", "test");
+  //  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 1);
+  //  acm.clearAllowedCollisions();
+  //  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 0);
 }
 
-void printKDLTree(const KDL::SegmentMap::const_iterator & link, const std::string & prefix)
+void printKDLTree(const KDL::SegmentMap::const_iterator& link, const std::string& prefix)
 {
-  std::cout << prefix << "- Segment " << GetTreeElementSegment(link->second).getName() <<
-    " has " << GetTreeElementChildren(link->second).size() << " children" << std::endl;
+  std::cout << prefix << "- Segment " << GetTreeElementSegment(link->second).getName() << " has "
+            << GetTreeElementChildren(link->second).size() << " children" << std::endl;
   for (unsigned int i = 0; i < GetTreeElementChildren(link->second).size(); i++)
     printKDLTree(GetTreeElementChildren(link->second)[i], prefix + "  ");
 }
@@ -434,7 +434,6 @@ TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)
   double d = boost::get(boost::edge_weight_t(), g)[e];
   EXPECT_EQ(d, g.getJoint("joint_n1")->parent_to_joint_origin_transform.translation().norm());
 }
-
 
 int main(int argc, char** argv)
 {

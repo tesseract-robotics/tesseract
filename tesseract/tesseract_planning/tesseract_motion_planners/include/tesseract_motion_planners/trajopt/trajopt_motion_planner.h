@@ -55,7 +55,7 @@ public:
   /** @brief Construct a basic planner */
   TrajOptMotionPlanner(const std::string& name = "TRAJOPT");
 
-  ~TrajOptMotionPlanner(){}
+  ~TrajOptMotionPlanner() {}
 
   /**
    * @brief Set the configuration for the planner
@@ -85,7 +85,6 @@ public:
   bool isConfigured() const override;
 
 protected:
-
   std::shared_ptr<TrajOptPlannerConfig> config_;
 };
 }  // namespace tesseract_motion_planners

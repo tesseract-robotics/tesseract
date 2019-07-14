@@ -10,7 +10,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractGeometryUnit, Instantiation)
 {
-  std::shared_ptr<const tesseract_common::VectorVector3d> vertices = std::make_shared<const tesseract_common::VectorVector3d>();
+  std::shared_ptr<const tesseract_common::VectorVector3d> vertices =
+      std::make_shared<const tesseract_common::VectorVector3d>();
   std::shared_ptr<const Eigen::VectorXi> faces = std::make_shared<const Eigen::VectorXi>();
 
   auto box = std::make_shared<tesseract_geometry::Box>(1, 1, 1);

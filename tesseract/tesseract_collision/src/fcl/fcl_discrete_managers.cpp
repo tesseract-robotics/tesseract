@@ -73,7 +73,7 @@ DiscreteContactManager::Ptr FCLDiscreteBVHManager::clone() const
 
 bool FCLDiscreteBVHManager::addCollisionObject(const std::string& name,
                                                const int& mask_id,
-                                               const CollisionShapesConst &shapes,
+                                               const CollisionShapesConst& shapes,
                                                const tesseract_common::VectorIsometry3d& shape_poses,
                                                bool enabled)
 {
@@ -196,5 +196,5 @@ void FCLDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
 }
 
 const Link2COW& FCLDiscreteBVHManager::getCollisionObjects() const { return link2cow_; }
-}
-}
+}  // namespace tesseract_collision_fcl
+}  // namespace tesseract_collision

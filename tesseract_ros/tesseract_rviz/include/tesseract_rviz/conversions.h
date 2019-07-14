@@ -32,8 +32,9 @@
 
 namespace tesseract_rviz
 {
-
-static inline void toEigen(Eigen::Isometry3d& transform, const Ogre::Vector3& position, const Ogre::Quaternion& orientation)
+static inline void toEigen(Eigen::Isometry3d& transform,
+                           const Ogre::Vector3& position,
+                           const Ogre::Quaternion& orientation)
 {
   transform.linear() = Eigen::Quaterniond(orientation.w, orientation.x, orientation.y, orientation.z).matrix();
   transform.translation() = Eigen::Vector3d(position.x, position.y, position.z);
@@ -50,5 +51,5 @@ static inline void toOgre(Ogre::Vector3& position, Ogre::Quaternion& orientation
                                  robot_visual_orientation.z());
 }
 
-}
-#endif // TESSERACT_RVIZ_CONVERSIONS_H
+}  // namespace tesseract_rviz
+#endif  // TESSERACT_RVIZ_CONVERSIONS_H

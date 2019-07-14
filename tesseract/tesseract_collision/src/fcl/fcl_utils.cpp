@@ -120,7 +120,8 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::ConvexMesh::
 
   if (vertice_count > 0 && face_count > 0)
   {
-    std::shared_ptr<std::vector<int>> faces(new std::vector<int>(geom->getFaces()->data(), geom->getFaces()->data() + geom->getFaces()->size()));
+    std::shared_ptr<std::vector<int>> faces(
+        new std::vector<int>(geom->getFaces()->data(), geom->getFaces()->data() + geom->getFaces()->size()));
     return CollisionGeometryPtr(new fcl::Convexd(geom->getVertices(), face_count, faces));
   }
 
@@ -138,13 +139,14 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Octree::Cons
     }
     default:
     {
-      CONSOLE_BRIDGE_logError("This fcl octree sub shape type (%d) is not supported for geometry octree", static_cast<int>(geom->getSubType()));
+      CONSOLE_BRIDGE_logError("This fcl octree sub shape type (%d) is not supported for geometry octree",
+                              static_cast<int>(geom->getSubType()));
       return nullptr;
     }
   }
 }
 
-CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr &geom)
+CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom)
 {
   switch (geom->getType())
   {
@@ -182,7 +184,8 @@ CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr &geom)
     }
     default:
     {
-      CONSOLE_BRIDGE_logError("This geometric shape type (%d) is not supported using fcl yet", static_cast<int>(geom->getType()));
+      CONSOLE_BRIDGE_logError("This geometric shape type (%d) is not supported using fcl yet",
+                              static_cast<int>(geom->getType()));
       return nullptr;
     }
   }
@@ -296,12 +299,9 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
 
 CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
                                                const int& type_id,
-                                               const CollisionShapesConst &shapes,
+                                               const CollisionShapesConst& shapes,
                                                const tesseract_common::VectorIsometry3d& shape_poses)
-  : name_(name)
-  , type_id_(type_id)
-  , shapes_(shapes)
-  , shape_poses_(shape_poses)
+  : name_(name), type_id_(type_id), shapes_(shapes), shape_poses_(shape_poses)
 {
   assert(!shapes.empty());
   assert(!shape_poses.empty());
@@ -325,7 +325,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
 
 CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
                                                const int& type_id,
-                                               const CollisionShapesConst &shapes,
+                                               const CollisionShapesConst& shapes,
                                                const tesseract_common::VectorIsometry3d& shape_poses,
                                                const std::vector<CollisionGeometryPtr>& collision_geometries,
                                                const std::vector<CollisionObjectPtr>& collision_objects)
@@ -343,5 +343,5 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
     collision_objects_.push_back(collObj);
   }
 }
-}
-}
+}  // namespace tesseract_collision_fcl
+}  // namespace tesseract_collision

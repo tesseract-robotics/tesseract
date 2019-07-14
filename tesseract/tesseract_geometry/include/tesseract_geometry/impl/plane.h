@@ -35,29 +35,27 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
+class Plane : public Geometry
+{
+public:
+  using Ptr = std::shared_ptr<Plane>;
+  using ConstPtr = std::shared_ptr<const Plane>;
 
-  class Plane : public Geometry
-  {
-  public:
+  Plane(double a, double b, double c, double d) : Geometry(GeometryType::PLANE), a_(a), b_(b), c_(c), d_(d) {}
+  ~Plane() override = default;
 
-    using Ptr = std::shared_ptr<Plane>;
-    using ConstPtr = std::shared_ptr<const Plane>;
+  double getA() const { return a_; }
+  double getB() const { return b_; }
+  double getC() const { return c_; }
+  double getD() const { return d_; }
 
-    Plane(double a, double b, double c, double d) : Geometry(GeometryType::PLANE), a_(a), b_(b), c_(c), d_(d) {}
-    ~Plane() override = default;
+  Geometry::Ptr clone() const override { return Plane::Ptr(new Plane(a_, b_, c_, d_)); }
 
-    double getA() const { return a_; }
-    double getB() const { return b_; }
-    double getC() const { return c_; }
-    double getD() const { return d_; }
-
-    Geometry::Ptr clone() const override { return Plane::Ptr(new Plane(a_, b_, c_, d_)); }
-
-  private:
-    double a_;
-    double b_;
-    double c_;
-    double d_;
-  };
-}
+private:
+  double a_;
+  double b_;
+  double c_;
+  double d_;
+};
+}  // namespace tesseract_geometry
 #endif

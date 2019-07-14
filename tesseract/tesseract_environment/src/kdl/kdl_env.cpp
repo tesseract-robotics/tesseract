@@ -28,10 +28,9 @@
 
 namespace tesseract_environment
 {
-
 bool KDLEnv::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
 {
   return Environment::create<KDLStateSolver>(scene_graph);
 }
 
-}
+}  // namespace tesseract_environment

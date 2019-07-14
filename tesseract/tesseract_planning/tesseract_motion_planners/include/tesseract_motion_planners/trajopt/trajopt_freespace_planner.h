@@ -107,7 +107,6 @@ struct TrajOptFreespacePlannerConfig
 class TrajOptFreespacePlanner : public MotionPlanner
 {
 public:
-
   /** @brief Construct a basic planner */
   TrajOptFreespacePlanner(const std::string& name = "TRAJOPT_FREESPACE");
 
@@ -122,12 +121,12 @@ public:
   bool setConfiguration(const TrajOptFreespacePlannerConfig& config);
 
   /**
-   * @brief Sets up the TrajOpt problem then solves using TrajOptMotionPlanner. It is intended to simplify setting up and
-   * solving freespace motion problems.
+   * @brief Sets up the TrajOpt problem then solves using TrajOptMotionPlanner. It is intended to simplify setting up
+   * and solving freespace motion problems.
    *
-   * This planner (and the associated config passed to the setConfiguration) does not expose all of the available configuration data in TrajOpt.
-   *  This is done to simplify the interface. However, many problems may require more specific setups. In that case, the
-   * source code for this planner may be used as an example.
+   * This planner (and the associated config passed to the setConfiguration) does not expose all of the available
+   * configuration data in TrajOpt. This is done to simplify the interface. However, many problems may require more
+   * specific setups. In that case, the source code for this planner may be used as an example.
    *
    * Note: This does not use the request information because everything is provided by config parameter
    *
@@ -147,7 +146,6 @@ public:
   bool isConfigured() const override;
 
 protected:
-
   tesseract_motion_planners::TrajOptMotionPlanner planner_; /** @brief The trajopt planner */
   std::shared_ptr<trajopt::ProblemConstructionInfo> pci_;
   std::shared_ptr<TrajOptFreespacePlannerConfig> config_;

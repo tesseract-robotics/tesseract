@@ -42,11 +42,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-
 class StateSolver
 {
 public:
-
   using Ptr = std::shared_ptr<StateSolver>;
   using ConstPtr = std::shared_ptr<const StateSolver>;
 
@@ -63,7 +61,8 @@ public:
    */
   virtual void setState(const std::unordered_map<std::string, double>& joints) = 0;
   virtual void setState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values) = 0;
-  virtual void setState(const std::vector<std::string>& joint_names, const Eigen::Ref<const Eigen::VectorXd>& joint_values) = 0;
+  virtual void setState(const std::vector<std::string>& joint_names,
+                        const Eigen::Ref<const Eigen::VectorXd>& joint_values) = 0;
 
   /**
    * @brief Get the state of the environment for a given set or subset of joint values.
@@ -74,8 +73,10 @@ public:
    * @return A the state of the environment
    */
   virtual EnvState::Ptr getState(const std::unordered_map<std::string, double>& joints) const = 0;
-  virtual EnvState::Ptr getState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values) const = 0;
-  virtual EnvState::Ptr getState(const std::vector<std::string>& joint_names, const Eigen::Ref<const Eigen::VectorXd>& joint_values) const = 0;
+  virtual EnvState::Ptr getState(const std::vector<std::string>& joint_names,
+                                 const std::vector<double>& joint_values) const = 0;
+  virtual EnvState::Ptr getState(const std::vector<std::string>& joint_names,
+                                 const Eigen::Ref<const Eigen::VectorXd>& joint_values) const = 0;
 
   /**
    * @brief Get the current state of the environment
@@ -85,6 +86,6 @@ public:
 
   virtual void onEnvironmentChanged(const Commands& commands) = 0;
 };
-}
+}  // namespace tesseract_environment
 
-#endif // TESSERACT_ENVIRONMENT_STATE_SOLVER_H
+#endif  // TESSERACT_ENVIRONMENT_STATE_SOLVER_H

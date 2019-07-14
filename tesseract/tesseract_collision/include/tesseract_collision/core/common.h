@@ -86,7 +86,8 @@ isContactAllowed(const std::string& name1, const std::string& name2, const IsCon
   {
     if (verbose)
     {
-      CONSOLE_BRIDGE_logDebug("Collision between '%s' and '%s' is allowed. No contacts are computed.", name1.c_str(), name2.c_str());
+      CONSOLE_BRIDGE_logDebug(
+          "Collision between '%s' and '%s' is allowed. No contacts are computed.", name1.c_str(), name2.c_str());
     }
     return true;
   }
@@ -331,13 +332,13 @@ inline bool writeSimplePlyFile(const std::string& path,
  */
 inline bool isNumeric(const std::string& s)
 {
-    if (s.empty())
-      return false;
+  if (s.empty())
+    return false;
 
-    if (s[0] == '-')
-      return std::find_if(s.begin() + 1, s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
-    else
-      return std::find_if(s.begin(), s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
+  if (s[0] == '-')
+    return std::find_if(s.begin() + 1, s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
+  else
+    return std::find_if(s.begin(), s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
 }
 
 /**
@@ -441,7 +442,7 @@ inline int loadSimplePlyFile(const std::string& path,
 
   std::vector<int> local_faces;
   local_faces.reserve(num_faces * 3);
-  size_t copy_num_faces = num_faces; // Becuase num_faces can change within for loop
+  size_t copy_num_faces = num_faces;  // Becuase num_faces can change within for loop
   for (size_t i = 0; i < copy_num_faces; ++i)
   {
     std::getline(myfile, str);
@@ -486,6 +487,6 @@ inline int loadSimplePlyFile(const std::string& path,
   return static_cast<int>(num_faces);
 }
 
-}
+}  // namespace tesseract_collision
 
 #endif  // TESSERACT_COLLISION_COMMON_H

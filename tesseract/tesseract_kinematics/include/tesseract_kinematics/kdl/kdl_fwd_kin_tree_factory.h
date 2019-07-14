@@ -30,7 +30,6 @@
 
 namespace tesseract_kinematics
 {
-
 class KDLFwdKinTreeFactory : public ForwardKinematicsFactory
 {
 public:
@@ -40,10 +39,11 @@ public:
 
   ForwardKinematicsFactoryType getType() const override { return ForwardKinematicsFactoryType::TREE; }
 
-  ForwardKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-                              const std::vector<std::string>& joint_names,
-                              const std::string name,
-                              std::unordered_map<std::string, double> start_state = std::unordered_map<std::string, double>()) const override
+  ForwardKinematics::Ptr
+  create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+         const std::vector<std::string>& joint_names,
+         const std::string name,
+         std::unordered_map<std::string, double> start_state = std::unordered_map<std::string, double>()) const override
   {
     auto kin = std::make_shared<KDLFwdKinTree>();
     if (!kin->init(scene_graph, joint_names, name, start_state))
@@ -56,5 +56,5 @@ private:
   std::string name_;
 };
 
-}
-#endif // TESSERACT_KINEMATICS_KDL_FWD_KIN_TREE_FACTORY_H
+}  // namespace tesseract_kinematics
+#endif  // TESSERACT_KINEMATICS_KDL_FWD_KIN_TREE_FACTORY_H

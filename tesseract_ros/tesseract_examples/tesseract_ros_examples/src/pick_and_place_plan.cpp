@@ -80,7 +80,7 @@ bool checkRviz()
   }
 
   // There should not be any changes but check
-  if(env_changes.response.revision != 0)
+  if (env_changes.response.revision != 0)
   {
     ROS_ERROR("The environment has changed externally!");
     return false;
@@ -99,7 +99,8 @@ bool sendRvizChanges(int past_revision)
   tesseract_msgs::ModifyEnvironment update_env;
   update_env.request.id = tesseract_->getEnvironment()->getName();
   update_env.request.revision = past_revision;
-  if (!toMsg(update_env.request.commands, tesseract_->getEnvironment()->getCommandHistory(), update_env.request.revision))
+  if (!toMsg(
+          update_env.request.commands, tesseract_->getEnvironment()->getCommandHistory(), update_env.request.revision))
   {
     ROS_ERROR("Failed to generate commands to update rviz environment!");
     return false;
@@ -156,7 +157,8 @@ int main(int argc, char** argv)
     return -1;
 
   // Create plotting tool
-  tesseract_rosutils::ROSPlottingPtr plotter = std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment());
+  tesseract_rosutils::ROSPlottingPtr plotter =
+      std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment());
 
   // These are used to keep visualization updated
   modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", 10);
@@ -374,7 +376,8 @@ int main(int argc, char** argv)
 
   // Plot the resulting trajectory
   if (plotting_)
-    plotter->plotTrajectory(pick_prob->GetKin()->getJointNames(), planning_response.trajectory.leftCols(pick_prob->GetKin()->getJointNames().size()));
+    plotter->plotTrajectory(pick_prob->GetKin()->getJointNames(),
+                            planning_response.trajectory.leftCols(pick_prob->GetKin()->getJointNames().size()));
 
   std::cout << planning_response.trajectory << '\n';
 
@@ -403,7 +406,8 @@ int main(int argc, char** argv)
     return -1;
 
   // Set the current state to the last state of the pick trajectory
-  tesseract_->getEnvironment()->setState(pick_prob->GetKin()->getJointNames(), planning_response.trajectory.bottomRows(1).transpose());
+  tesseract_->getEnvironment()->setState(pick_prob->GetKin()->getJointNames(),
+                                         planning_response.trajectory.bottomRows(1).transpose());
 
   // Retreat to the approach pose
   Eigen::Isometry3d retreat_pose = approach_pose;
@@ -576,7 +580,8 @@ int main(int argc, char** argv)
 
   // Plot the resulting trajectory
   if (plotting_)
-    plotter->plotTrajectory(place_prob->GetKin()->getJointNames(), planning_response_place.trajectory.leftCols(place_prob->GetKin()->getJointNames().size()));
+    plotter->plotTrajectory(place_prob->GetKin()->getJointNames(),
+                            planning_response_place.trajectory.leftCols(place_prob->GetKin()->getJointNames().size()));
 
   std::cout << planning_response_place.trajectory << '\n';
 

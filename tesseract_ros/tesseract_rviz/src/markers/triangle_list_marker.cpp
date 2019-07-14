@@ -46,43 +46,43 @@
 
 namespace tesseract_rviz
 {
-
 static Ogre::NameGenerator tringle_list_generator("Tesseract_Triangle_List");
 static Ogre::NameGenerator material_name_generator("Tesseract_Triangle_List_Material");
 
-TriangleListMarker::TriangleListMarker(const std::string &ns,
+TriangleListMarker::TriangleListMarker(const std::string& ns,
                                        const int id,
                                        rviz::DisplayContext* context,
                                        Ogre::SceneNode* parent_node,
                                        const Ogre::ColourValue color,
                                        const std::vector<Ogre::Vector3>& points,
                                        const std::vector<Ogre::ColourValue>& colors)
-: MarkerBase(ns, id, context, parent_node)
-, manual_object_(nullptr)
-, has_vertex_colors_(false)
-, has_face_colors_(false)
-, any_vertex_has_alpha_(false)
+  : MarkerBase(ns, id, context, parent_node)
+  , manual_object_(nullptr)
+  , has_vertex_colors_(false)
+  , has_face_colors_(false)
+  , any_vertex_has_alpha_(false)
 {
   size_t num_points = points.size();
-  if( (num_points % 3) != 0 || num_points == 0 )
+  if ((num_points % 3) != 0 || num_points == 0)
   {
     std::stringstream ss;
-    if( num_points == 0 )
+    if (num_points == 0)
     {
       ss << "TriMesh marker [" << getStringID() << "] has no points.";
     }
     else
     {
-      ss << "TriMesh marker [" << getStringID() << "] has a point count which is not divisible by 3 [" << num_points <<"]";
+      ss << "TriMesh marker [" << getStringID() << "] has a point count which is not divisible by 3 [" << num_points
+         << "]";
     }
     ROS_DEBUG("%s", ss.str().c_str());
 
-    scene_node_->setVisible( false );
+    scene_node_->setVisible(false);
     return;
   }
   else
   {
-    scene_node_->setVisible( true );
+    scene_node_->setVisible(true);
   }
 
   if (!manual_object_)
@@ -106,34 +106,28 @@ TriangleListMarker::TriangleListMarker(const std::string &ns,
   has_vertex_colors_ = colors.size() == num_points;
   has_face_colors_ = colors.size() == num_points / 3;
 
-  for(size_t i = 0; i < num_points; i += 3)
+  for (size_t i = 0; i < num_points; i += 3)
   {
     std::vector<Ogre::Vector3> corners(3);
-    for(size_t c = 0; c < 3; c++)
-      corners[c] = points[i+c];
+    for (size_t c = 0; c < 3; c++)
+      corners[c] = points[i + c];
 
     Ogre::Vector3 normal = (corners[1] - corners[0]).crossProduct(corners[2] - corners[0]);
     normal.normalise();
 
-    for(size_t c = 0; c < 3; c++)
+    for (size_t c = 0; c < 3; c++)
     {
       manual_object_->position(corners[c]);
       manual_object_->normal(normal);
-      if(has_vertex_colors_)
+      if (has_vertex_colors_)
       {
-        any_vertex_has_alpha_ = any_vertex_has_alpha_ || (colors[i+c].a < 0.9998f);
-        manual_object_->colour(colors[i+c].r,
-                               colors[i+c].g,
-                               colors[i+c].b,
-                               color.a * colors[i+c].a);
+        any_vertex_has_alpha_ = any_vertex_has_alpha_ || (colors[i + c].a < 0.9998f);
+        manual_object_->colour(colors[i + c].r, colors[i + c].g, colors[i + c].b, color.a * colors[i + c].a);
       }
       else if (has_face_colors_)
       {
-        any_vertex_has_alpha_ = any_vertex_has_alpha_ || (colors[i/3].a < 0.9998f);
-        manual_object_->colour(colors[i/3].r,
-                               colors[i/3].g,
-                               colors[i/3].b,
-                               color.a * colors[i/3].a);
+        any_vertex_has_alpha_ = any_vertex_has_alpha_ || (colors[i / 3].a < 0.9998f);
+        manual_object_->colour(colors[i / 3].r, colors[i / 3].g, colors[i / 3].b, color.a * colors[i / 3].a);
       }
     }
   }
@@ -142,7 +136,7 @@ TriangleListMarker::TriangleListMarker(const std::string &ns,
 
   setColor(color);
 
-  handler_->addTrackedObject( manual_object_ );
+  handler_->addTrackedObject(manual_object_);
 }
 
 TriangleListMarker::~TriangleListMarker()
@@ -155,15 +149,9 @@ TriangleListMarker::~TriangleListMarker()
   }
 }
 
-void TriangleListMarker::setScale(Ogre::Vector3 scale)
-{
-  scene_node_->setScale(scale);
-}
+void TriangleListMarker::setScale(Ogre::Vector3 scale) { scene_node_->setScale(scale); }
 
-Ogre::Vector3 TriangleListMarker::getScale() const
-{
-  return scene_node_->getScale();
-}
+Ogre::Vector3 TriangleListMarker::getScale() const { return scene_node_->getScale(); }
 
 void TriangleListMarker::setColor(Ogre::ColourValue color)
 {
@@ -174,27 +162,27 @@ void TriangleListMarker::setColor(Ogre::ColourValue color)
   else
   {
     material_->getTechnique(0)->setLightingEnabled(true);
-    material_->getTechnique(0)->setAmbient( color.r/2, color.g/2, color.b/2 );
+    material_->getTechnique(0)->setAmbient(color.r / 2, color.g / 2, color.b / 2);
     material_->getTechnique(0)->setDiffuse(color);
   }
 
-  if( (!has_vertex_colors_ && color.a < 0.9998f) || (has_vertex_colors_ && any_vertex_has_alpha_))
+  if ((!has_vertex_colors_ && color.a < 0.9998f) || (has_vertex_colors_ && any_vertex_has_alpha_))
   {
-    material_->getTechnique(0)->setSceneBlending( Ogre::SBT_TRANSPARENT_ALPHA );
-    material_->getTechnique(0)->setDepthWriteEnabled( false );
+    material_->getTechnique(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+    material_->getTechnique(0)->setDepthWriteEnabled(false);
   }
   else
   {
-    material_->getTechnique(0)->setSceneBlending( Ogre::SBT_REPLACE );
-    material_->getTechnique(0)->setDepthWriteEnabled( true );
+    material_->getTechnique(0)->setSceneBlending(Ogre::SBT_REPLACE);
+    material_->getTechnique(0)->setDepthWriteEnabled(true);
   }
 }
 
 std::set<Ogre::MaterialPtr> TriangleListMarker::getMaterials()
 {
   std::set<Ogre::MaterialPtr> materials;
-  materials.insert( material_ );
+  materials.insert(material_);
   return materials;
 }
 
-}
+}  // namespace tesseract_rviz

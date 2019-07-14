@@ -86,13 +86,17 @@ TEST(TesseractPlanningUnit, OMPLPlannerUnit)
 
   // A tesseract plotter makes generating and publishing visualization messages
   // easy
-//  tesseract::tesseract_ros::ROSBasicPlottingPtr plotter =
-//      std::make_shared<tesseract::tesseract_ros::ROSBasicPlotting>(env);
+  //  tesseract::tesseract_ros::ROSBasicPlottingPtr plotter =
+  //      std::make_shared<tesseract::tesseract_ros::ROSBasicPlotting>(env);
 
   // Step 4: Create a planning context for OMPL - this sets up the OMPL state environment for your given chain
-  tesseract_motion_planners::ChainOmplInterface ompl_context(tesseract->getEnvironment(), tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator"));
+  tesseract_motion_planners::ChainOmplInterface ompl_context(
+      tesseract->getEnvironment(), tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator"));
 
-  ompl::base::MotionValidatorPtr mv = std::make_shared<tesseract_motion_planners::ContinuousMotionValidator>(ompl_context.spaceInformation(), tesseract->getEnvironment(), tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator"));
+  ompl::base::MotionValidatorPtr mv = std::make_shared<tesseract_motion_planners::ContinuousMotionValidator>(
+      ompl_context.spaceInformation(),
+      tesseract->getEnvironment(),
+      tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator"));
   ompl_context.setMotionValidator(mv);
 
   // Step 5: Create an OMPL planner that we want to use
@@ -110,18 +114,17 @@ TEST(TesseractPlanningUnit, OMPLPlannerUnit)
   EXPECT_TRUE(maybe_path);
 
   // Plot results
-//  if (maybe_path)
-//  {
-//    const ompl::geometric::PathGeometric& path = *maybe_path;
-//    const auto& names = env->getManipulator("manipulator")->getJointNames();
-//    plotter->plotTrajectory(names, tesseract::tesseract_motion_planners::toTrajArray(path));
-//  }
-//  else
-//  {
-//    ROS_WARN_STREAM("Planning failed");
-//  }
+  //  if (maybe_path)
+  //  {
+  //    const ompl::geometric::PathGeometric& path = *maybe_path;
+  //    const auto& names = env->getManipulator("manipulator")->getJointNames();
+  //    plotter->plotTrajectory(names, tesseract::tesseract_motion_planners::toTrajArray(path));
+  //  }
+  //  else
+  //  {
+  //    ROS_WARN_STREAM("Planning failed");
+  //  }
 }
-
 
 int main(int argc, char** argv)
 {

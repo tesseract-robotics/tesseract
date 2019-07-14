@@ -135,11 +135,9 @@ public:
   bool isConfigured() const override;
 
 protected:
-
   tesseract_motion_planners::TrajOptMotionPlanner planner_; /** @brief The trajopt planner */
   std::shared_ptr<trajopt::ProblemConstructionInfo> pci_;   /** @brief The problem info*/
   std::shared_ptr<TrajOptArrayPlannerConfig> config_;       /** @brief the configuration passed at construction **/
-
 };
 }  // namespace tesseract_motion_planners
 #endif  // TESSERACT_PLANNING_TRAJOPT_PLANNER_H

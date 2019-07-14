@@ -139,15 +139,15 @@ inline void KDLToEigen(const KDL::JntArray& joints, Eigen::Ref<Eigen::VectorXd> 
  */
 struct KDLChainData
 {
-  KDL::Chain robot_chain;                                     /**< KDL Chain object */
-  KDL::Tree kdl_tree;                                         /**< KDL tree object */
-  std::string base_name;                                      /**< Link name of first link in the kinematic chain */
-  std::string tip_name;                                       /**< Link name of last kink in the kinematic chain */
-  std::vector<std::string> joint_list;                        /**< List of joint names */
-  std::vector<std::string> link_list;                         /**< List of link names */
-  std::vector<std::string> active_link_list;                  /**< List of link names that move with changes in joint values */
-  Eigen::MatrixX2d joint_limits;                              /**< Joint limits */
-  std::map<std::string, int> segment_index;                   /**< A map from chain link name to kdl chain segment number */
+  KDL::Chain robot_chain;                    /**< KDL Chain object */
+  KDL::Tree kdl_tree;                        /**< KDL tree object */
+  std::string base_name;                     /**< Link name of first link in the kinematic chain */
+  std::string tip_name;                      /**< Link name of last kink in the kinematic chain */
+  std::vector<std::string> joint_list;       /**< List of joint names */
+  std::vector<std::string> link_list;        /**< List of link names */
+  std::vector<std::string> active_link_list; /**< List of link names that move with changes in joint values */
+  Eigen::MatrixX2d joint_limits;             /**< Joint limits */
+  std::map<std::string, int> segment_index;  /**< A map from chain link name to kdl chain segment number */
 };
 
 /**
@@ -174,7 +174,8 @@ inline bool parseSceneGraph(KDLChainData& results,
 
   if (!results.kdl_tree.getChain(results.base_name, results.tip_name, results.robot_chain))
   {
-    CONSOLE_BRIDGE_logError("Failed to initialize KDL between links: '%s' and '%s'", results.base_name.c_str(), results.tip_name.c_str());
+    CONSOLE_BRIDGE_logError(
+        "Failed to initialize KDL between links: '%s' and '%s'", results.base_name.c_str(), results.tip_name.c_str());
     return false;
   }
 
@@ -216,7 +217,8 @@ inline bool parseSceneGraph(KDLChainData& results,
     // Need to set limits for continuous joints. TODO: This may not be required
     // by the optization library but may be nice to have
     if (joint->type == tesseract_scene_graph::JointType::CONTINUOUS &&
-        std::abs(results.joint_limits(j, 0) - results.joint_limits(j, 1)) <= static_cast<double>(std::numeric_limits<float>::epsilon()))
+        std::abs(results.joint_limits(j, 0) - results.joint_limits(j, 1)) <=
+            static_cast<double>(std::numeric_limits<float>::epsilon()))
     {
       results.joint_limits(j, 0) = -4 * M_PI;
       results.joint_limits(j, 1) = +4 * M_PI;
@@ -232,7 +234,8 @@ inline bool parseSceneGraph(KDLChainData& results,
     while (!found)
     {
       // Check if the link is the root
-      std::vector<tesseract_scene_graph::Joint::ConstPtr> parent_joints = scene_graph.getInboundJoints(link_model->getName());
+      std::vector<tesseract_scene_graph::Joint::ConstPtr> parent_joints =
+          scene_graph.getInboundJoints(link_model->getName());
       if (parent_joints.empty())
       {
         results.segment_index[seg.getName()] = 0;
@@ -240,7 +243,8 @@ inline bool parseSceneGraph(KDLChainData& results,
       }
 
       std::string joint_name = parent_joints[0]->getName();
-      std::vector<std::string>::const_iterator it = std::find(results.joint_list.begin(), results.joint_list.end(), joint_name);
+      std::vector<std::string>::const_iterator it =
+          std::find(results.joint_list.begin(), results.joint_list.end(), joint_name);
       if (it != results.joint_list.end())
       {
         unsigned joint_index = static_cast<unsigned>(it - results.joint_list.begin());
@@ -256,5 +260,5 @@ inline bool parseSceneGraph(KDLChainData& results,
 
   return true;
 }
-}
+}  // namespace tesseract_kinematics
 #endif  // TESSERACT_KINEMATICS_KDL_UTILS_H

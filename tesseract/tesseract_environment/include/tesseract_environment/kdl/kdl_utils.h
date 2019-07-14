@@ -113,7 +113,7 @@ inline void KDLToEigen(const KDL::Jacobian& jacobian, const std::vector<int>& q_
  */
 inline void EigenToKDL(const Eigen::Ref<const Eigen::VectorXd>& vec, KDL::JntArray& joints) { joints.data = vec; }
 
-//inline tesseract_collision::CollisionShapePtr constructShape(const urdf::Geometry* geom)
+// inline tesseract_collision::CollisionShapePtr constructShape(const urdf::Geometry* geom)
 //{
 //  tesseract_collision::CollisionShape* result = nullptr;
 //  switch (geom->type)
@@ -142,7 +142,8 @@ inline void EigenToKDL(const Eigen::Ref<const Eigen::VectorXd>& vec, KDL::JntArr
 //        tesseract_collision::VectorVector3d mesh_vertices;
 //        mesh_vertices.reserve(m->vertex_count);
 //        for (unsigned int i = 0; i < m->vertex_count; ++i)
-//          mesh_vertices.push_back(Eigen::Vector3d(m->vertices[3 * i + 0], m->vertices[3 * i + 1], m->vertices[3 * i + 2]));
+//          mesh_vertices.push_back(Eigen::Vector3d(m->vertices[3 * i + 0], m->vertices[3 * i + 1], m->vertices[3 * i +
+//          2]));
 
 //        std::shared_ptr<tesseract_collision::VectorVector3d> ch_vertices(new tesseract_collision::VectorVector3d());
 //        std::shared_ptr<std::vector<int>> ch_faces(new std::vector<int>());
@@ -160,7 +161,7 @@ inline void EigenToKDL(const Eigen::Ref<const Eigen::VectorXd>& vec, KDL::JntArr
 //  return tesseract_collision::CollisionShapePtr(result);
 //}
 
-//inline Eigen::Isometry3d urdfPose2Eigen(const urdf::Pose& pose)
+// inline Eigen::Isometry3d urdfPose2Eigen(const urdf::Pose& pose)
 //{
 //  Eigen::Quaterniond q(pose.rotation.w, pose.rotation.x, pose.rotation.y, pose.rotation.z);
 //  Eigen::Isometry3d result;
@@ -168,5 +169,5 @@ inline void EigenToKDL(const Eigen::Ref<const Eigen::VectorXd>& vec, KDL::JntArr
 //  result.linear() = q.toRotationMatrix();
 //  return result;
 //}
-}
+}  // namespace tesseract_environment
 #endif  // TESSERACT_ENVIRONMENT_KDL_UTILS_H

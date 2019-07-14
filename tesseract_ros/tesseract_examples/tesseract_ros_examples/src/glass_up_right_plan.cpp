@@ -51,7 +51,8 @@ using namespace tesseract_rosutils;
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
 const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic"; /**< Default ROS parameter for robot
                                                                           description */
-const std::string TRAJOPT_DESCRIPTION_PARAM = "trajopt_description"; /**< Default ROS parameter for trajopt description */
+const std::string TRAJOPT_DESCRIPTION_PARAM =
+    "trajopt_description"; /**< Default ROS parameter for trajopt description */
 const std::string GET_ENVIRONMENT_CHANGES_SERVICE = "get_tesseract_changes_rviz";
 const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
 
@@ -98,7 +99,7 @@ bool checkRviz()
   }
 
   // There should not be any changes but check
-  if(env_changes.response.revision != 0)
+  if (env_changes.response.revision != 0)
   {
     ROS_ERROR("The environment has changed externally!");
     return false;
@@ -117,7 +118,8 @@ bool sendRvizChanges(int past_revision)
   tesseract_msgs::ModifyEnvironment update_env;
   update_env.request.id = tesseract_->getEnvironment()->getName();
   update_env.request.revision = past_revision;
-  if (!toMsg(update_env.request.commands, tesseract_->getEnvironment()->getCommandHistory(), update_env.request.revision))
+  if (!toMsg(
+          update_env.request.commands, tesseract_->getEnvironment()->getCommandHistory(), update_env.request.revision))
   {
     ROS_ERROR("Failed to generate commands to update rviz environment!");
     return false;
@@ -246,7 +248,8 @@ int main(int argc, char** argv)
     return -1;
 
   // Create plotting tool
-  tesseract_rosutils::ROSPlottingPtr plotter = std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment());
+  tesseract_rosutils::ROSPlottingPtr plotter =
+      std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment());
 
   // These are used to keep visualization updated
   modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", 10);
@@ -292,7 +295,7 @@ int main(int argc, char** argv)
   ipos["joint_a7"] = 0.0;
   tesseract_->getEnvironment()->setState(ipos);
 
-//  plotter->plotScene();
+  //  plotter->plotScene();
 
   // Set Log Level
   util::gLogLevel = util::LevelInfo;
@@ -309,14 +312,16 @@ int main(int argc, char** argv)
 
   std::vector<ContactResultMap> collisions;
   ContinuousContactManager::Ptr manager = prob->GetEnv()->getContinuousContactManager();
-  AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
-                                                                                        prob->GetKin()->getActiveLinkNames(),
-                                                                                        prob->GetEnv()->getCurrentState()->transforms);
+  AdjacencyMap::Ptr adjacency_map =
+      std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
+                                                            prob->GetKin()->getActiveLinkNames(),
+                                                            prob->GetEnv()->getCurrentState()->transforms);
 
   manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   manager->setContactDistanceThreshold(0);
   collisions.clear();
-  bool found = checkTrajectory(*manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), prob->GetInitTraj(), collisions);
+  bool found =
+      checkTrajectory(*manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), prob->GetInitTraj(), collisions);
 
   ROS_INFO((found) ? ("Initial trajectory is in collision") : ("Initial trajectory is collision free"));
 
@@ -364,7 +369,8 @@ int main(int argc, char** argv)
   }
 
   collisions.clear();
-  found = checkTrajectory(*manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()), collisions);
+  found = checkTrajectory(
+      *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()), collisions);
 
   ROS_INFO((found) ? ("Final trajectory is in collision") : ("Final trajectory is collision free"));
 

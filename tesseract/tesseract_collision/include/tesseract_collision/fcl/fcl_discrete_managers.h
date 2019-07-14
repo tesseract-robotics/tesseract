@@ -53,7 +53,6 @@ namespace tesseract_collision_fcl
 class FCLDiscreteBVHManager : public DiscreteContactManager
 {
 public:
-
   using Ptr = std::shared_ptr<FCLDiscreteBVHManager>;
 
   FCLDiscreteBVHManager();
@@ -79,7 +78,8 @@ public:
 
   void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override;
 
-  void setCollisionObjectsTransform(const std::vector<std::string>& names, const tesseract_common::VectorIsometry3d& poses) override;
+  void setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                    const tesseract_common::VectorIsometry3d& poses) override;
 
   void setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms) override;
 
@@ -118,6 +118,6 @@ private:
   IsContactAllowedFn fn_;           /**< @brief The is allowed collision function */
 };
 
-}
-}
+}  // namespace tesseract_collision_fcl
+}  // namespace tesseract_collision
 #endif  // TESSERACT_COLLISION_FCL_DISCRETE_MANAGERS_H

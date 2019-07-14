@@ -30,7 +30,6 @@
 
 namespace tesseract_environment
 {
-
 class KDLEnv : public Environment
 {
 public:
@@ -42,9 +41,8 @@ public:
   KDLEnv() : Environment() {}
 
   bool init(tesseract_scene_graph::SceneGraph::Ptr scene_graph) override;
-
 };
 
-}
+}  // namespace tesseract_environment
 
 #endif  // TESSERACT_ENVIRONMENT_KDL_ENV_H

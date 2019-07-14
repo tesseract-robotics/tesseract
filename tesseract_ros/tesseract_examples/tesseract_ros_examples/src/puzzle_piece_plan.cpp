@@ -53,7 +53,7 @@ static Tesseract::Ptr tesseract_ = std::make_shared<Tesseract>();
 static tesseract_common::VectorIsometry3d makePuzzleToolPoses()
 {
   tesseract_common::VectorIsometry3d path;  // results
-  std::ifstream indata;   // input file
+  std::ifstream indata;                     // input file
 
   // You could load your parts from anywhere, but we are transporting them with
   // the git repo
@@ -225,7 +225,8 @@ int main(int argc, char** argv)
     return -1;
 
   // Create plotting tool
-  tesseract_rosutils::ROSPlottingPtr plotter = std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment());
+  tesseract_rosutils::ROSPlottingPtr plotter =
+      std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment());
 
   // Get ROS Parameters
   pnh.param("plotting", plotting_, plotting_);
@@ -243,7 +244,7 @@ int main(int argc, char** argv)
   ipos["joint_aux2"] = 0.0;
   tesseract_->getEnvironment()->setState(ipos);
 
-//  plotter->plotScene();
+  //  plotter->plotScene();
 
   // Set Log Level
   util::gLogLevel = util::LevelInfo;
@@ -257,14 +258,16 @@ int main(int argc, char** argv)
 
   std::vector<ContactResultMap> collisions;
   ContinuousContactManager::Ptr manager = prob->GetEnv()->getContinuousContactManager();
-  AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
-                                                                                        prob->GetKin()->getActiveLinkNames(),
-                                                                                        prob->GetEnv()->getCurrentState()->transforms);
+  AdjacencyMap::Ptr adjacency_map =
+      std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
+                                                            prob->GetKin()->getActiveLinkNames(),
+                                                            prob->GetEnv()->getCurrentState()->transforms);
 
   manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   manager->setContactDistanceThreshold(0);
   collisions.clear();
-  bool found = checkTrajectory(*manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), prob->GetInitTraj(), collisions);
+  bool found =
+      checkTrajectory(*manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), prob->GetInitTraj(), collisions);
 
   ROS_INFO((found) ? ("Initial trajectory is in collision") : ("Initial trajectory is collision free"));
 
@@ -286,7 +289,8 @@ int main(int argc, char** argv)
     plotter->clear();
 
   collisions.clear();
-  found = checkTrajectory(*manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()), collisions);
+  found = checkTrajectory(
+      *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()), collisions);
 
   ROS_INFO((found) ? ("Final trajectory is in collision") : ("Final trajectory is collision free"));
 

@@ -37,30 +37,26 @@
 
 namespace tesseract_rviz
 {
-
-CylinderMarker::CylinderMarker(const std::string &ns,
+CylinderMarker::CylinderMarker(const std::string& ns,
                                const int id,
                                rviz::DisplayContext* context,
                                Ogre::SceneNode* parent_node,
                                float radius,
                                float height)
-  : MarkerBase(ns, id, context, parent_node )
+  : MarkerBase(ns, id, context, parent_node)
   , shape_(nullptr)
-  , scale_(Ogre::Vector3(1,1,1))
+  , scale_(Ogre::Vector3(1, 1, 1))
   , radius_(radius)
   , height_(height)
 {
-  shape_ = new rviz::Shape( rviz::Shape::Cylinder, context_->getSceneManager(), scene_node_ );
+  shape_ = new rviz::Shape(rviz::Shape::Cylinder, context_->getSceneManager(), scene_node_);
   setScale(scale_);
 
-  handler_.reset( new MarkerSelectionHandler( this, MarkerID( ns_, id_ ), context_ ));
-  handler_->addTrackedObjects( shape_->getRootNode() );
+  handler_.reset(new MarkerSelectionHandler(this, MarkerID(ns_, id_), context_));
+  handler_->addTrackedObjects(shape_->getRootNode());
 }
 
-CylinderMarker::~CylinderMarker()
-{
-  delete shape_;
-}
+CylinderMarker::~CylinderMarker() { delete shape_; }
 
 void CylinderMarker::setScale(Ogre::Vector3 scale)
 {
@@ -68,10 +64,7 @@ void CylinderMarker::setScale(Ogre::Vector3 scale)
   shape_->setScale(Ogre::Vector3(radius_ * scale_.x, radius_ * scale_.y, height_ * scale_.z));
 }
 
-Ogre::Vector3 CylinderMarker::getScale() const
-{
-  return scale_;
-}
+Ogre::Vector3 CylinderMarker::getScale() const { return scale_; }
 
 void CylinderMarker::setRadius(float radius)
 {
@@ -79,10 +72,7 @@ void CylinderMarker::setRadius(float radius)
   shape_->setScale(Ogre::Vector3(radius_ * scale_.x, radius_ * scale_.y, height_ * scale_.z));
 }
 
-float CylinderMarker::getRadius() const
-{
-  return radius_;
-}
+float CylinderMarker::getRadius() const { return radius_; }
 
 void CylinderMarker::setHeight(float height)
 {
@@ -90,15 +80,9 @@ void CylinderMarker::setHeight(float height)
   shape_->setScale(Ogre::Vector3(radius_ * scale_.x, radius_ * scale_.y, height_ * scale_.z));
 }
 
-float CylinderMarker::getHeight() const
-{
-  return height_;
-}
+float CylinderMarker::getHeight() const { return height_; }
 
-void CylinderMarker::setColor(Ogre::ColourValue color)
-{
-  shape_->setColor(color.r, color.g, color.b, color.a);
-}
+void CylinderMarker::setColor(Ogre::ColourValue color) { shape_->setColor(color.r, color.g, color.b, color.a); }
 
 std::set<Ogre::MaterialPtr> CylinderMarker::getMaterials()
 {
@@ -107,4 +91,4 @@ std::set<Ogre::MaterialPtr> CylinderMarker::getMaterials()
   return materials;
 }
 
-}
+}  // namespace tesseract_rviz

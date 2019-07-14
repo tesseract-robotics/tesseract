@@ -252,7 +252,8 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const std::vector<std
     setCollisionObjectsTransform(names[i], pose1[i], pose2[i]);
 }
 
-void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract_common::TransformMap& pose1, const tesseract_common::TransformMap& pose2)
+void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract_common::TransformMap& pose1,
+                                                           const tesseract_common::TransformMap& pose2)
 {
   assert(pose1.size() == pose2.size());
   auto it1 = pose1.begin();
@@ -394,5 +395,5 @@ void BulletCastSimpleManager::addCollisionObject(const COW::Ptr& cow)
   else
     cows_.push_back(cow);
 }
-}
-}
+}  // namespace tesseract_collision_bullet
+}  // namespace tesseract_collision

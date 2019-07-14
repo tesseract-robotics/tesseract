@@ -14,7 +14,6 @@
 
 namespace tesseact_rosutils
 {
-
 /**
  * @brief Convert STD Vector to Eigen Vector
  * @param vector The STD Vector to be converted
@@ -54,7 +53,8 @@ inline Eigen::VectorXd toEigen(const sensor_msgs::JointState& joint_state, const
  * @param change_base A tranformation applied to the pose = change_base * pose
  * @return WaypointPtr
  */
-inline tesseract_planners::WaypointPtr toWaypoint(const geometry_msgs::Pose& pose, Eigen::Isometry3d change_base = Eigen::Isometry3d::Identity())
+inline tesseract_planners::WaypointPtr toWaypoint(const geometry_msgs::Pose& pose,
+                                                  Eigen::Isometry3d change_base = Eigen::Isometry3d::Identity())
 {
   tesseract_planners::CartesianWaypointPtr waypoint = std::make_shared<tesseract_planners::CartesianWaypoint>();
   Eigen::Isometry3d pose_eigen;
@@ -69,7 +69,8 @@ inline tesseract_planners::WaypointPtr toWaypoint(const geometry_msgs::Pose& pos
  * @param change_base A tranformation applied to the pose = change_base * pose
  * @return std::vector<WaypointPtr>
  */
-inline std::vector<tesseract_planners::WaypointPtr> toWaypoint(const std::vector<geometry_msgs::Pose>& poses, Eigen::Isometry3d change_base = Eigen::Isometry3d::Identity())
+inline std::vector<tesseract_planners::WaypointPtr>
+toWaypoint(const std::vector<geometry_msgs::Pose>& poses, Eigen::Isometry3d change_base = Eigen::Isometry3d::Identity())
 {
   std::vector<tesseract_planners::WaypointPtr> waypoints;
   waypoints.reserve(poses.size());
@@ -85,9 +86,10 @@ inline std::vector<tesseract_planners::WaypointPtr> toWaypoint(const std::vector
  * @param change_base A tranformation applied to the pose = change_base * pose
  * @return std::vector<std::vector<WaypointPtr>>
  */
-inline std::vector<std::vector<tesseract_planners::WaypointPtr>> toWaypoint(const std::vector<geometry_msgs::PoseArray>& pose_arrays, Eigen::Isometry3d change_base = Eigen::Isometry3d::Identity())
+inline std::vector<std::vector<tesseract_planners::WaypointPtr>>
+toWaypoint(const std::vector<geometry_msgs::PoseArray>& pose_arrays,
+           Eigen::Isometry3d change_base = Eigen::Isometry3d::Identity())
 {
-
   std::vector<std::vector<tesseract_planners::WaypointPtr>> paths;
   paths.reserve(pose_arrays.size());
   for (const auto& pose_array : pose_arrays)
@@ -114,13 +116,13 @@ inline tesseract_planners::WaypointPtr toWaypoint(const std::vector<double>& pos
  * @param joint_names This is the desired order of the joints
  * @return WaypointPtr
  */
-inline tesseract_planners::WaypointPtr toWaypoint(const sensor_msgs::JointState& joint_state, const std::vector<std::string>& joint_names)
+inline tesseract_planners::WaypointPtr toWaypoint(const sensor_msgs::JointState& joint_state,
+                                                  const std::vector<std::string>& joint_names)
 {
   tesseract_planners::JointWaypointPtr waypoint = std::make_shared<tesseract_planners::JointWaypoint>();
   waypoint->joint_positions_ = toEigen(joint_state, joint_names);
   return waypoint;
 }
-
 
 /**
  * @brief Convert a vector of waypoints into a pose array
@@ -135,7 +137,8 @@ geometry_msgs::PoseArray toPoseArray(const std::vector<tesseract_planners::Waypo
     if (wp->getType() == tesseract_planners::WaypointType::CARTESIAN_WAYPOINT)
     {
       geometry_msgs::Pose pose;
-      const tesseract_planners::CartesianWaypointPtr& cwp = std::static_pointer_cast<tesseract_planners::CartesianWaypoint>(wp);
+      const tesseract_planners::CartesianWaypointPtr& cwp =
+          std::static_pointer_cast<tesseract_planners::CartesianWaypoint>(wp);
       tf::poseEigenToMsg(cwp->cartesian_position_, pose);
       pose_array.poses.push_back(pose);
     }
@@ -186,10 +189,12 @@ geometry_msgs::PoseArray toPoseArray(const tesseract_process_planning::ProcessDe
 bool toCSVFile(const trajectory_msgs::JointTrajectory& joint_trajectory, const std::string& file_path)
 {
   std::ofstream myfile;
-  myfile.open (file_path);
+  myfile.open(file_path);
 
   // Write Joint names as header
-  std::copy(joint_trajectory.joint_names.begin(), joint_trajectory.joint_names.end(), std::ostream_iterator<std::string>(myfile, ","));
+  std::copy(joint_trajectory.joint_names.begin(),
+            joint_trajectory.joint_names.end(),
+            std::ostream_iterator<std::string>(myfile, ","));
   myfile << ",\n";
   for (const auto& point : joint_trajectory.points)
   {
@@ -199,5 +204,5 @@ bool toCSVFile(const trajectory_msgs::JointTrajectory& joint_trajectory, const s
   myfile.close();
   return true;
 }
-}
-#endif // TESSERACT_ROSUTILS_CONVERSIONS_H
+}  // namespace tesseact_rosutils
+#endif  // TESSERACT_ROSUTILS_CONVERSIONS_H

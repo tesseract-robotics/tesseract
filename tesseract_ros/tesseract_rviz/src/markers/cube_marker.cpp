@@ -37,28 +37,21 @@
 
 namespace tesseract_rviz
 {
-
-CubeMarker::CubeMarker(const std::string &ns,
+CubeMarker::CubeMarker(const std::string& ns,
                        const int id,
                        rviz::DisplayContext* context,
                        Ogre::SceneNode* parent_node,
                        float size)
-  : MarkerBase(ns, id, context, parent_node )
-  , shape_(nullptr)
-  , scale_(Ogre::Vector3(1,1,1))
-  , size_(size)
+  : MarkerBase(ns, id, context, parent_node), shape_(nullptr), scale_(Ogre::Vector3(1, 1, 1)), size_(size)
 {
-  shape_ = new rviz::Shape( rviz::Shape::Cube, context_->getSceneManager(), scene_node_ );
+  shape_ = new rviz::Shape(rviz::Shape::Cube, context_->getSceneManager(), scene_node_);
   setScale(scale_);
 
-  handler_.reset( new MarkerSelectionHandler( this, MarkerID( ns_, id_ ), context_ ));
-  handler_->addTrackedObjects( shape_->getRootNode() );
+  handler_.reset(new MarkerSelectionHandler(this, MarkerID(ns_, id_), context_));
+  handler_->addTrackedObjects(shape_->getRootNode());
 }
 
-CubeMarker::~CubeMarker()
-{
-  delete shape_;
-}
+CubeMarker::~CubeMarker() { delete shape_; }
 
 void CubeMarker::setScale(Ogre::Vector3 scale)
 {
@@ -66,10 +59,7 @@ void CubeMarker::setScale(Ogre::Vector3 scale)
   shape_->setScale(size_ * scale_);
 }
 
-Ogre::Vector3 CubeMarker::getScale() const
-{
-  return scale_;
-}
+Ogre::Vector3 CubeMarker::getScale() const { return scale_; }
 
 void CubeMarker::setSize(float size)
 {
@@ -77,15 +67,9 @@ void CubeMarker::setSize(float size)
   shape_->setScale(size_ * scale_);
 }
 
-float CubeMarker::getSize() const
-{
-  return size_;
-}
+float CubeMarker::getSize() const { return size_; }
 
-void CubeMarker::setColor(Ogre::ColourValue color)
-{
-  shape_->setColor(color.r, color.g, color.b, color.a);
-}
+void CubeMarker::setColor(Ogre::ColourValue color) { shape_->setColor(color.r, color.g, color.b, color.a); }
 
 std::set<Ogre::MaterialPtr> CubeMarker::getMaterials()
 {
@@ -94,4 +78,4 @@ std::set<Ogre::MaterialPtr> CubeMarker::getMaterials()
   return materials;
 }
 
-}
+}  // namespace tesseract_rviz

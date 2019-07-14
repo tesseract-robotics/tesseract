@@ -46,7 +46,6 @@ enum class WaypointType
 class Waypoint
 {
 public:
-
   using Ptr = std::shared_ptr<Waypoint>;
   using ConstPtr = std::shared_ptr<const Waypoint>;
 
@@ -71,7 +70,6 @@ protected:
 class JointWaypoint : public Waypoint
 {
 public:
-
   using Ptr = std::shared_ptr<JointWaypoint>;
   using ConstPtr = std::shared_ptr<const JointWaypoint>;
 
@@ -111,7 +109,6 @@ public:
 class JointTolerancedWaypoint : public Waypoint
 {
 public:
-
   using Ptr = std::shared_ptr<JointTolerancedWaypoint>;
   using ConstPtr = std::shared_ptr<const JointTolerancedWaypoint>;
 

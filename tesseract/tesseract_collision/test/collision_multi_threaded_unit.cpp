@@ -117,7 +117,7 @@ void runTest(tesseract_collision::DiscreteContactManager& checker, bool use_conv
   }
   auto end_time = std::chrono::high_resolution_clock::now();
 
-  CONSOLE_BRIDGE_logInform("DT: %f ms",  std::chrono::duration<double, std::milli>(end_time - start_time).count());
+  CONSOLE_BRIDGE_logInform("DT: %f ms", std::chrono::duration<double, std::milli>(end_time - start_time).count());
 
   for (unsigned i = 0; i < num_threads; ++i)
   {

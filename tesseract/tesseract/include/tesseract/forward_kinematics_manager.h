@@ -46,7 +46,7 @@ public:
   bool registerFwdKinematicsFactory(tesseract_kinematics::ForwardKinematicsFactory::Ptr factory)
   {
     std::string name = factory->getName();
-    if(fwd_kin_factories_.find(name) == fwd_kin_factories_.end())
+    if (fwd_kin_factories_.find(name) == fwd_kin_factories_.end())
     {
       fwd_kin_factories_[name] = std::move(factory);
       return true;
@@ -58,10 +58,7 @@ public:
    * @brief Removes a registered forward kinematics factory
    * @param name The name of the factory to remove
    */
-  void removeFwdKinematicsFactory(const std::string& name)
-  {
-    fwd_kin_factories_.erase(name);
-  }
+  void removeFwdKinematicsFactory(const std::string& name) { fwd_kin_factories_.erase(name); }
 
   /**
    * @brief Get a list of all available forward kinematics solvers
@@ -82,7 +79,8 @@ public:
    * @param type The type of solver {CHAIN, TREE, GRAPH}
    * @return Vector of names
    */
-  std::vector<std::string> getAvailableFwdKinematicsSolvers(tesseract_kinematics::ForwardKinematicsFactoryType type) const
+  std::vector<std::string>
+  getAvailableFwdKinematicsSolvers(tesseract_kinematics::ForwardKinematicsFactoryType type) const
   {
     std::vector<std::string> names;
     names.reserve(fwd_kin_factories_.size());
@@ -101,7 +99,7 @@ public:
   tesseract_kinematics::ForwardKinematicsFactory::ConstPtr getFwdKinematicFactory(const std::string& name) const
   {
     auto it = fwd_kin_factories_.find(name);
-    if(it != fwd_kin_factories_.end())
+    if (it != fwd_kin_factories_.end())
       return it->second;
 
     return nullptr;
@@ -116,14 +114,14 @@ public:
   bool addFwdKinematicSolver(tesseract_kinematics::ForwardKinematics::ConstPtr solver)
   {
     auto it = fwd_kin_manipulators_.find(std::make_pair(solver->getName(), solver->getSolverName()));
-    if(it != fwd_kin_manipulators_.end())
+    if (it != fwd_kin_manipulators_.end())
       return false;
 
     fwd_kin_manipulators_[std::make_pair(solver->getName(), solver->getSolverName())] = solver;
 
     // If default solver does not exist for this manipulator set this solver as the default.
     auto it2 = fwd_kin_manipulators_default_.find(solver->getName());
-    if(it2 == fwd_kin_manipulators_default_.end())
+    if (it2 == fwd_kin_manipulators_default_.end())
       fwd_kin_manipulators_default_[solver->getName()] = solver;
 
     return true;
@@ -162,7 +160,7 @@ public:
   bool setDefaultFwdKinematicSolver(const std::string& manipulator, const std::string& name)
   {
     auto it = fwd_kin_manipulators_.find(std::make_pair(manipulator, name));
-    if(it == fwd_kin_manipulators_.end())
+    if (it == fwd_kin_manipulators_.end())
       return false;
 
     fwd_kin_manipulators_default_[manipulator] = it->second;
@@ -176,10 +174,11 @@ public:
    * @param name The name of the solver
    * @return If not found returns a nullptr, otherwise a instance of the solver.
    */
-  tesseract_kinematics::ForwardKinematics::Ptr getFwdKinematicSolver(const std::string& manipulator, const std::string& name) const
+  tesseract_kinematics::ForwardKinematics::Ptr getFwdKinematicSolver(const std::string& manipulator,
+                                                                     const std::string& name) const
   {
     auto it = fwd_kin_manipulators_.find(std::make_pair(manipulator, name));
-    if(it != fwd_kin_manipulators_.end())
+    if (it != fwd_kin_manipulators_.end())
       return it->second->clone();
 
     return nullptr;
@@ -193,7 +192,7 @@ public:
   tesseract_kinematics::ForwardKinematics::Ptr getFwdKinematicSolver(const std::string& manipulator) const
   {
     auto it = fwd_kin_manipulators_default_.find(manipulator);
-    if(it != fwd_kin_manipulators_default_.end())
+    if (it != fwd_kin_manipulators_default_.end())
       return it->second->clone();
 
     return nullptr;
@@ -201,8 +200,9 @@ public:
 
 private:
   std::unordered_map<std::string, tesseract_kinematics::ForwardKinematicsFactory::ConstPtr> fwd_kin_factories_;
-  std::map<std::pair<std::string, std::string>, tesseract_kinematics::ForwardKinematics::ConstPtr> fwd_kin_manipulators_;
+  std::map<std::pair<std::string, std::string>, tesseract_kinematics::ForwardKinematics::ConstPtr>
+      fwd_kin_manipulators_;
   std::unordered_map<std::string, tesseract_kinematics::ForwardKinematics::ConstPtr> fwd_kin_manipulators_default_;
 };
-}
-#endif // TESSERACT_FORWARD_KINEMATICS_MANAGER_H
+}  // namespace tesseract
+#endif  // TESSERACT_FORWARD_KINEMATICS_MANAGER_H

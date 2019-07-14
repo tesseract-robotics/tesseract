@@ -72,21 +72,17 @@ TrajectoryMonitorWidget::TrajectoryMonitorWidget(rviz::Property* widget, rviz::D
   , trajectory_slider_dock_panel_(nullptr)
   , cached_visible_(false)
 {
-  main_property_ = new rviz::Property("Trajectory Monitor",
-                                      "",
-                                      "Monitor a joint state topic and update the visualization",
-                                      widget_,
-                                      nullptr,
-                                      this);
+  main_property_ = new rviz::Property(
+      "Trajectory Monitor", "", "Monitor a joint state topic and update the visualization", widget_, nullptr, this);
 
-  trajectory_topic_property_ =
-      new rviz::RosTopicProperty("Topic",
-                                 "/tesseract/display_tesseract_trajectory",
-                                 ros::message_traits::datatype<tesseract_msgs::Trajectory>(),
-                                 "The topic on which the tesseract_msgs::Trajectory messages are received",
-                                 main_property_,
-                                 SLOT(changedTrajectoryTopic()),
-                                 this);
+  trajectory_topic_property_ = new rviz::RosTopicProperty("Topic",
+                                                          "/tesseract/display_tesseract_trajectory",
+                                                          ros::message_traits::datatype<tesseract_msgs::Trajectory>(),
+                                                          "The topic on which the tesseract_msgs::Trajectory messages "
+                                                          "are received",
+                                                          main_property_,
+                                                          SLOT(changedTrajectoryTopic()),
+                                                          this);
 
   display_mode_property_ = new rviz::EnumProperty(
       "Display Mode", "Loop", "How to display the trajectoy.", main_property_, SLOT(changedDisplayMode()), this);
@@ -211,7 +207,8 @@ void TrajectoryMonitorWidget::createTrajectoryTrail()
   int stepsize = trail_step_size_property_->getInt();
   // always include last trajectory point
   int num_waypoints = static_cast<int>(t->joint_trajectory.points.size());
-  num_trajectory_waypoints_ = static_cast<size_t>(std::ceil(static_cast<float>(num_waypoints + stepsize - 1) / static_cast<float>(stepsize)));
+  num_trajectory_waypoints_ =
+      static_cast<size_t>(std::ceil(static_cast<float>(num_waypoints + stepsize - 1) / static_cast<float>(stepsize)));
   std::vector<tesseract_environment::EnvState::Ptr> states_data;
   states_data.reserve(num_trajectory_waypoints_);
   for (std::size_t i = 0; i < num_trajectory_waypoints_; i++)
@@ -236,7 +233,7 @@ void TrajectoryMonitorWidget::createTrajectoryTrail()
     lw->clearTrajectory();
 
     if (!visualization_->isCurrentStateVisible())
-      lw->setTrajectory({tf.second});
+      lw->setTrajectory({ tf.second });
   }
 
   // Set Trajectory for active links
@@ -414,9 +411,8 @@ void TrajectoryMonitorWidget::onUpdate(float wall_dt)
         tm = 0;
       else
         tm = static_cast<float>(
-            (d -
-             displaying_trajectory_message_->joint_trajectory.points[static_cast<size_t>(current_state_)]
-                 .time_from_start)
+            (d - displaying_trajectory_message_->joint_trajectory.points[static_cast<size_t>(current_state_)]
+                     .time_from_start)
                 .toSec());
     }
 
@@ -434,7 +430,6 @@ void TrajectoryMonitorWidget::onUpdate(float wall_dt)
 
         for (const auto& link_name : tesseract_->getEnvironment()->getActiveLinkNames())
           visualization_->getLink(link_name)->showTrajectoryWaypointOnly(current_state_);
-
       }
       else
       {

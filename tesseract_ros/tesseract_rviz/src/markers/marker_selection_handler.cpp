@@ -36,21 +36,18 @@
 
 namespace tesseract_rviz
 {
-
-MarkerSelectionHandler::MarkerSelectionHandler( const MarkerBase* marker, MarkerID id, rviz::DisplayContext* context )
-  : SelectionHandler( context )
-  , marker_( marker )
-  , marker_id_( QString::fromStdString( id.first ) + "/" + QString::number( id.second ))
+MarkerSelectionHandler::MarkerSelectionHandler(const MarkerBase* marker, MarkerID id, rviz::DisplayContext* context)
+  : SelectionHandler(context)
+  , marker_(marker)
+  , marker_id_(QString::fromStdString(id.first) + "/" + QString::number(id.second))
 {
 }
 
-MarkerSelectionHandler::~MarkerSelectionHandler()
-{
-}
+MarkerSelectionHandler::~MarkerSelectionHandler() {}
 
-void MarkerSelectionHandler::setPosition( const Ogre::Vector3& position ) { position_ = position; }
-void MarkerSelectionHandler::setOrientation( const Ogre::Quaternion& orientation ) { orientation_ = orientation; }
+void MarkerSelectionHandler::setPosition(const Ogre::Vector3& position) { position_ = position; }
+void MarkerSelectionHandler::setOrientation(const Ogre::Quaternion& orientation) { orientation_ = orientation; }
 Ogre::Vector3 MarkerSelectionHandler::getPosition() { return position_; }
 Ogre::Quaternion MarkerSelectionHandler::getOrientation() { return orientation_; }
 
-}
+}  // namespace tesseract_rviz

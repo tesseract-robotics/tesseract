@@ -77,8 +77,7 @@ bool KDLFwdKinTree::calcFwdKinHelper(Eigen::Isometry3d& pose,
   return true;
 }
 
-bool KDLFwdKinTree::calcFwdKin(Eigen::Isometry3d& /*pose*/,
-                               const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
+bool KDLFwdKinTree::calcFwdKin(Eigen::Isometry3d& /*pose*/, const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
@@ -90,7 +89,7 @@ bool KDLFwdKinTree::calcFwdKin(Eigen::Isometry3d& /*pose*/,
 }
 
 bool KDLFwdKinTree::calcFwdKin(tesseract_common::VectorIsometry3d& poses,
-                                const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
+                               const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
@@ -344,4 +343,4 @@ KDLFwdKinTree::KDLFwdKinTree(const KDLFwdKinTree& kin)
   joint_to_qnr_ = kin.joint_to_qnr_;
 }
 
-}
+}  // namespace tesseract_kinematics

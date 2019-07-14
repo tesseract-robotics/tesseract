@@ -117,20 +117,19 @@ public:
   KDLInvKinChainLMA& operator=(const KDLInvKinChainLMA& rhs);
 
 private:
-  bool initialized_;                                           /**< Identifies if the object has been initialized */
-  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;      /**< Tesseract Scene Graph */
-  KDLChainData kdl_data_;                                      /**< KDL data parsed from Scene Graph */
-  std::string name_;                                           /**< Name of the kinematic chain */
-  std::string solver_name_;                                    /**< Name of this solver */
-  std::unique_ptr<KDL::ChainIkSolverPos_LMA> ik_solver_;       /**< KDL Inverse kinematic solver */
+  bool initialized_;                                        /**< Identifies if the object has been initialized */
+  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_; /**< Tesseract Scene Graph */
+  KDLChainData kdl_data_;                                   /**< KDL data parsed from Scene Graph */
+  std::string name_;                                        /**< Name of the kinematic chain */
+  std::string solver_name_;                                 /**< Name of this solver */
+  std::unique_ptr<KDL::ChainIkSolverPos_LMA> ik_solver_;    /**< KDL Inverse kinematic solver */
 
   /** @brief calcFwdKin helper function */
   bool calcInvKinHelper(Eigen::VectorXd& solutions,
                         const Eigen::Isometry3d& pose,
                         const Eigen::Ref<const Eigen::VectorXd>& seed,
                         int segment_num = -1) const;
-
 };
 
-}
-#endif // TESSERACT_KINEMATICS_KDL_INV_KIN_CHAIN_LMA_H
+}  // namespace tesseract_kinematics
+#endif  // TESSERACT_KINEMATICS_KDL_INV_KIN_CHAIN_LMA_H

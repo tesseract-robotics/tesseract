@@ -60,7 +60,7 @@ class FloatProperty;
 class RosTopicProperty;
 class ColorProperty;
 class EnumProperty;
-}
+}  // namespace rviz
 
 namespace tesseract_rviz
 {

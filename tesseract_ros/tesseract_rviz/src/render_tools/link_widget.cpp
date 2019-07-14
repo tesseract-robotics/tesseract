@@ -177,10 +177,7 @@ void EnvLinkSelectionHandler::postRenderPass(uint32_t /*pass*/)
   }
 }
 
-LinkWidget::LinkWidget(VisualizationWidget* env,
-                 const tesseract_scene_graph::Link& link,
-                 bool visual,
-                 bool collision)
+LinkWidget::LinkWidget(VisualizationWidget* env, const tesseract_scene_graph::Link& link, bool visual, bool collision)
   : env_(env)
   , scene_manager_(env->getDisplayContext()->getSceneManager())
   , context_(env->getDisplayContext())
@@ -219,21 +216,19 @@ LinkWidget::LinkWidget(VisualizationWidget* env,
                                                 link_property_);
   position_property_->setReadOnly(true);
 
-  orientation_property_ =
-      new rviz::QuaternionProperty("Orientation",
-                                   Ogre::Quaternion::IDENTITY,
-                                   "Orientation of this link, in the current Fixed Frame.  (Not editable)",
-                                   link_property_);
+  orientation_property_ = new rviz::QuaternionProperty("Orientation",
+                                                       Ogre::Quaternion::IDENTITY,
+                                                       "Orientation of this link, in the current Fixed Frame.  (Not "
+                                                       "editable)",
+                                                       link_property_);
   orientation_property_->setReadOnly(true);
 
-  collision_enabled_property_ = new rviz::StringProperty("Collision",
-                                                         "enabled",
-                                                         "Indicate if link is considered during collision checking.",
-                                                         link_property_);
+  collision_enabled_property_ = new rviz::StringProperty(
+      "Collision", "enabled", "Indicate if link is considered during collision checking.", link_property_);
   collision_enabled_property_->setReadOnly(true);
 
-
-  allowed_collision_matrix_property_ = new rviz::Property("ACM", "", "Links allowed to be in collision with", collision_enabled_property_);
+  allowed_collision_matrix_property_ =
+      new rviz::Property("ACM", "", "Links allowed to be in collision with", collision_enabled_property_);
 
   allowed_collision_matrix_property_->setReadOnly(true);
 
@@ -433,7 +428,6 @@ LinkWidget::~LinkWidget()
   }
   collision_trajectory_octrees_.clear();
 
-
   for (size_t i = 0; i < visual_end_octrees_.size(); i++)
   {
     delete visual_end_octrees_[i];
@@ -470,7 +464,9 @@ LinkWidget::~LinkWidget()
 
 bool LinkWidget::hasGeometry() const
 {
-  return visual_current_meshes_.size() + collision_current_meshes_.size() + visual_current_octrees_.size() + collision_current_octrees_.size() > 0;
+  return visual_current_meshes_.size() + collision_current_meshes_.size() + visual_current_octrees_.size() +
+             collision_current_octrees_.size() >
+         0;
 }
 
 bool LinkWidget::getEnabled() const
@@ -628,13 +624,15 @@ void LinkWidget::updateVisibility()
   {
     visual_trajectory_node_->setVisible(enabled && env_->isVisualVisible() && env_->isTrajectoryVisible(), false);
     for (int i = 0; i < visual_trajectory_waypoint_visibility_.size(); ++i)
-      visual_trajectory_waypoint_nodes_[i]->setVisible(visual_trajectory_waypoint_visibility_[i] && enabled && env_->isVisualVisible() && env_->isTrajectoryVisible());
+      visual_trajectory_waypoint_nodes_[i]->setVisible(visual_trajectory_waypoint_visibility_[i] && enabled &&
+                                                       env_->isVisualVisible() && env_->isTrajectoryVisible());
   }
   if (collision_trajectory_node_)
   {
     collision_trajectory_node_->setVisible(enabled && env_->isCollisionVisible() && env_->isTrajectoryVisible(), false);
     for (int i = 0; i < collision_trajectory_waypoint_visibility_.size(); ++i)
-      collision_trajectory_waypoint_nodes_[i]->setVisible(collision_trajectory_waypoint_visibility_[i] && enabled && env_->isCollisionVisible() && env_->isTrajectoryVisible());
+      collision_trajectory_waypoint_nodes_[i]->setVisible(collision_trajectory_waypoint_visibility_[i] && enabled &&
+                                                          env_->isCollisionVisible() && env_->isTrajectoryVisible());
   }
 
   if (visual_end_node_)
@@ -656,7 +654,8 @@ void LinkWidget::updateVisibility()
   }
 }
 
-Ogre::MaterialPtr LinkWidget::getMaterialForLink(const tesseract_scene_graph::Link& link, const std::string material_name)
+Ogre::MaterialPtr LinkWidget::getMaterialForLink(const tesseract_scene_graph::Link& link,
+                                                 const std::string material_name)
 {
   if (link.visual.empty() || !link.visual[0]->material)
   {
@@ -753,7 +752,10 @@ rviz::PointCloud* createPointCloud(std::vector<rviz::PointCloud::Point>&& points
   return cloud;
 }
 
-Ogre::Entity* LinkWidget::createEntityForMeshData(const std::string& entity_name, const std::shared_ptr<const tesseract_common::VectorVector3d>& mesh_vertices, const std::shared_ptr<const Eigen::VectorXi>& mesh_faces)
+Ogre::Entity*
+LinkWidget::createEntityForMeshData(const std::string& entity_name,
+                                    const std::shared_ptr<const tesseract_common::VectorVector3d>& mesh_vertices,
+                                    const std::shared_ptr<const Eigen::VectorXi>& mesh_faces)
 {
   Ogre::ManualObject* object = new Ogre::ManualObject("the one and only");
   object->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST);
@@ -780,9 +782,7 @@ Ogre::Entity* LinkWidget::createEntityForMeshData(const std::string& entity_name
     for (size_t k = 0; k < num_verts; ++k)
     {
       Eigen::Vector3d v = (*mesh_vertices)[((*mesh_faces)[++t])];
-      vertices[k] = Ogre::Vector3(static_cast<float>(v.x()),
-                                  static_cast<float>(v.y()),
-                                  static_cast<float>(v.z()));
+      vertices[k] = Ogre::Vector3(static_cast<float>(v.x()), static_cast<float>(v.y()), static_cast<float>(v.z()));
     }
 
     Ogre::Vector3 side1 = vertices[0] - vertices[1];
@@ -850,9 +850,7 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
 
   {
     const Eigen::Vector3d& pos = origin.translation();
-    Ogre::Vector3 position(static_cast<float>(pos(0)),
-                           static_cast<float>(pos(1)),
-                           static_cast<float>(pos(2)));
+    Ogre::Vector3 position(static_cast<float>(pos(0)), static_cast<float>(pos(1)), static_cast<float>(pos(2)));
 
     Eigen::Quaterniond rot(origin.linear());
     Ogre::Quaternion orientation(Ogre::Quaternion::IDENTITY);
@@ -879,7 +877,8 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
     {
       const tesseract_geometry::Box& box = static_cast<const tesseract_geometry::Box&>(geom);
       entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Cube, scene_manager_);
-      scale = Ogre::Vector3(static_cast<float>(box.getX()), static_cast<float>(box.getY()), static_cast<float>(box.getZ()));
+      scale =
+          Ogre::Vector3(static_cast<float>(box.getX()), static_cast<float>(box.getY()), static_cast<float>(box.getZ()));
       break;
     }
     case tesseract_geometry::GeometryType::CYLINDER:
@@ -905,7 +904,8 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
         std::string model_name = "file://" + mesh.getFilePath();
 
         const Eigen::Vector3d& mesh_scale = mesh.getScale();
-        scale = Ogre::Vector3(static_cast<float>(mesh_scale.x()), static_cast<float>(mesh_scale.y()), static_cast<float>(mesh_scale.z()));
+        scale = Ogre::Vector3(
+            static_cast<float>(mesh_scale.x()), static_cast<float>(mesh_scale.y()), static_cast<float>(mesh_scale.z()));
 
         try
         {
@@ -922,7 +922,8 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
         }
         catch (Ogre::Exception& e)
         {
-          ROS_ERROR("Could not load model '%s' for link '%s': %s", model_name.c_str(), link.getName().c_str(), e.what());
+          ROS_ERROR(
+              "Could not load model '%s' for link '%s': %s", model_name.c_str(), link.getName().c_str(), e.what());
         }
       }
       else
@@ -941,7 +942,8 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
         std::string model_name = "file://" + mesh.getFilePath();
 
         const Eigen::Vector3d& mesh_scale = mesh.getScale();
-        scale = Ogre::Vector3(static_cast<float>(mesh_scale.x()), static_cast<float>(mesh_scale.y()), static_cast<float>(mesh_scale.z()));
+        scale = Ogre::Vector3(
+            static_cast<float>(mesh_scale.x()), static_cast<float>(mesh_scale.y()), static_cast<float>(mesh_scale.z()));
 
         try
         {
@@ -958,7 +960,8 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
         }
         catch (Ogre::Exception& e)
         {
-          ROS_ERROR("Could not load model '%s' for link '%s': %s", model_name.c_str(), link.getName().c_str(), e.what());
+          ROS_ERROR(
+              "Could not load model '%s' for link '%s': %s", model_name.c_str(), link.getName().c_str(), e.what());
         }
       }
       else
@@ -977,7 +980,8 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
       Ogre::SceneNode* offset_node;
       std::vector<OctreeDataContainer>* octree_objects;
 
-      const std::shared_ptr<const octomap::OcTree>& octree = static_cast<const tesseract_geometry::Octree&>(geom).getOctree();
+      const std::shared_ptr<const octomap::OcTree>& octree =
+          static_cast<const tesseract_geometry::Octree&>(geom).getOctree();
 
       if (!max_octree_depth)
         octree_depth = octree->getTreeDepth();
@@ -1008,7 +1012,8 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
       size_t pointCount = 0;
       {
         // traverse all leafs in the tree:
-        for (octomap::OcTree::iterator it = octree->begin(static_cast<unsigned char>(octree_depth)), end = octree->end();
+        for (octomap::OcTree::iterator it = octree->begin(static_cast<unsigned char>(octree_depth)),
+                                       end = octree->end();
              it != end;
              ++it)
         {
@@ -1189,9 +1194,13 @@ void LinkWidget::clone(Ogre::SceneNode* scene_node,
     }
     else
     {
-      auto it = std::find_if(visual_current_octrees_.begin(), visual_current_octrees_.end(), [movable](const OctreeDataContainer& m){return m.point_cloud == movable;});
+      auto it = std::find_if(visual_current_octrees_.begin(),
+                             visual_current_octrees_.end(),
+                             [movable](const OctreeDataContainer& m) { return m.point_cloud == movable; });
       if (it == visual_current_octrees_.end())
-        it = std::find_if(collision_current_octrees_.begin(), collision_current_octrees_.end(), [movable](const OctreeDataContainer& m){return m.point_cloud == movable;});
+        it = std::find_if(collision_current_octrees_.begin(),
+                          collision_current_octrees_.end(),
+                          [movable](const OctreeDataContainer& m) { return m.point_cloud == movable; });
 
       rviz::PointCloud* cloned_point_cloud = it->clone();
       cloned_scene_node->attachObject(cloned_point_cloud);
@@ -1211,7 +1220,7 @@ void LinkWidget::clone(Ogre::SceneNode* scene_node,
 
     Ogre::SceneNode::ObjectIterator child_node_iter = child_node->getAttachedObjectIterator();
     while (child_node_iter.hasMoreElements())
-    {     
+    {
       Ogre::MovableObject* movable = static_cast<Ogre::MovableObject*>(child_node_iter.getNext());
       Ogre::Entity* entity = dynamic_cast<Ogre::Entity*>(movable);
       if (entity != nullptr)
@@ -1222,9 +1231,13 @@ void LinkWidget::clone(Ogre::SceneNode* scene_node,
       }
       else
       {
-        auto it = std::find_if(visual_current_octrees_.begin(), visual_current_octrees_.end(), [movable](const OctreeDataContainer& m){return m.point_cloud == movable;});
+        auto it = std::find_if(visual_current_octrees_.begin(),
+                               visual_current_octrees_.end(),
+                               [movable](const OctreeDataContainer& m) { return m.point_cloud == movable; });
         if (it == visual_current_octrees_.end())
-          it = std::find_if(collision_current_octrees_.begin(), collision_current_octrees_.end(), [movable](const OctreeDataContainer& m){return m.point_cloud == movable;});
+          it = std::find_if(collision_current_octrees_.begin(),
+                            collision_current_octrees_.end(),
+                            [movable](const OctreeDataContainer& m) { return m.point_cloud == movable; });
 
         rviz::PointCloud* cloned_point_cloud = it->clone();
         cloned_child_scene_node->attachObject(cloned_point_cloud);
@@ -1244,10 +1257,10 @@ rviz::PointCloud* LinkWidget::OctreeDataContainer::clone()
 }
 
 void LinkWidget::setOctomapColor(double z_pos,
-                                double min_z,
-                                double max_z,
-                                double color_factor,
-                                rviz::PointCloud::Point* point)
+                                 double min_z,
+                                 double max_z,
+                                 double color_factor,
+                                 rviz::PointCloud::Point* point)
 {
   int i;
   float m, n, f;
@@ -1311,7 +1324,8 @@ void LinkWidget::createCollision(const tesseract_scene_graph::Link& link)
   collision_start_node_->setVisible(getEnabled() && env_->isStartStateVisible());
 
   Ogre::SceneNode* collision_trajectory_clone = collision_trajectory_node_->createChildSceneNode();
-  clone(collision_current_node_, collision_trajectory_clone, collision_trajectory_meshes_, collision_trajectory_octrees_);
+  clone(
+      collision_current_node_, collision_trajectory_clone, collision_trajectory_meshes_, collision_trajectory_octrees_);
   collision_trajectory_clone->setVisible(getEnabled() && env_->isTrajectoryVisible());
   collision_trajectory_waypoint_nodes_.push_back(collision_trajectory_clone);
   collision_trajectory_waypoint_visibility_.push_back(getEnabled() && env_->isTrajectoryVisible());
@@ -1539,7 +1553,10 @@ void LinkWidget::setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory)
         if (collision_current_node_ != nullptr)
         {
           Ogre::SceneNode* new_collision_clone = collision_trajectory_node_->createChildSceneNode();
-          clone(collision_current_node_, new_collision_clone, collision_trajectory_meshes_, collision_trajectory_octrees_);
+          clone(collision_current_node_,
+                new_collision_clone,
+                collision_trajectory_meshes_,
+                collision_trajectory_octrees_);
           new_collision_clone->setPosition(position);
           new_collision_clone->setOrientation(orientation);
           new_collision_clone->setVisible(enabled && env_->isCollisionVisible());
@@ -1549,7 +1566,7 @@ void LinkWidget::setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory)
       }
     }
   }
-  else if(current_size >= trajectory_size)
+  else if (current_size >= trajectory_size)
   {
     for (int i = 0; i < current_size; ++i)
     {
@@ -1619,7 +1636,8 @@ void LinkWidget::showTrajectoryWaypointOnly(int waypoint)
 {
   clearTrajectory();
 
-  bool enabled = getEnabled() && env_->isVisible() && env_->isTrajectoryVisible();;
+  bool enabled = getEnabled() && env_->isVisible() && env_->isTrajectoryVisible();
+  ;
 
   if (visual_current_node_ && (visual_trajectory_waypoint_nodes_.size() > waypoint))
   {
@@ -1632,7 +1650,6 @@ void LinkWidget::showTrajectoryWaypointOnly(int waypoint)
     collision_trajectory_waypoint_nodes_[waypoint]->setVisible(enabled && env_->isCollisionVisible());
     collision_trajectory_waypoint_visibility_[waypoint] = enabled;
   }
-
 }
 
 void LinkWidget::setToErrorMaterial()
@@ -1723,7 +1740,7 @@ void LinkWidget::setParentProperty(rviz::Property* new_parent)
 
 void LinkWidget::setCollisionEnabled(bool enabled)
 {
-  if(enabled)
+  if (enabled)
     collision_enabled_property_->setString("enabled");
   else
     collision_enabled_property_->setString("disabled");
@@ -1731,7 +1748,8 @@ void LinkWidget::setCollisionEnabled(bool enabled)
 
 void LinkWidget::addAllowedCollision(const std::string& link_name, const std::string& reason)
 {
-  acm_[link_name] = new rviz::StringProperty(QString::fromStdString(link_name), QString::fromStdString(reason), "Entry", allowed_collision_matrix_property_);
+  acm_[link_name] = new rviz::StringProperty(
+      QString::fromStdString(link_name), QString::fromStdString(reason), "Entry", allowed_collision_matrix_property_);
 }
 void LinkWidget::removeAllowedCollision(const std::string& link_name)
 {
@@ -1742,12 +1760,8 @@ void LinkWidget::removeAllowedCollision(const std::string& link_name)
   allowed_collision_matrix_property_->takeChild(it->second);
   delete it->second;
   acm_.erase(link_name);
-
 }
-void LinkWidget::clearAllowedCollisions()
-{
-  allowed_collision_matrix_property_->removeChildren();
-}
+void LinkWidget::clearAllowedCollisions() { allowed_collision_matrix_property_->removeChildren(); }
 
 // if use_detail:
 //    - all sub properties become children of details_ property.
@@ -1796,6 +1810,4 @@ void LinkWidget::expandDetails(bool expand)
   }
 }
 
-
-
-}  // namespace rviz
+}  // namespace tesseract_rviz

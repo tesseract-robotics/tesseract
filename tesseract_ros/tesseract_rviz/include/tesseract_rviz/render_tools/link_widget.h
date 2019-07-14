@@ -66,7 +66,7 @@ class Vector3;
 class Quaternion;
 class Any;
 class RibbonTrail;
-}
+}  // namespace Ogre
 
 namespace rviz
 {
@@ -79,7 +79,7 @@ class BoolProperty;
 class QuaternionProperty;
 class VectorProperty;
 class StringProperty;
-}
+}  // namespace rviz
 
 namespace octomap
 {
@@ -114,10 +114,7 @@ class LinkWidget : public QObject
 {
   Q_OBJECT
 public:
-  LinkWidget(VisualizationWidget* env,
-          const tesseract_scene_graph::Link& link,
-          bool visual,
-          bool collision);
+  LinkWidget(VisualizationWidget* env, const tesseract_scene_graph::Link& link, bool visual, bool collision);
 
   virtual ~LinkWidget();
 
@@ -244,9 +241,9 @@ private:
   void setOctomapColor(double z_pos, double min_z, double max_z, double color_factor, rviz::PointCloud::Point* point);
 
   void clone(Ogre::SceneNode* scene_node,
-             Ogre::SceneNode *cloned_scene_node,
-             std::vector<Ogre::Entity *> &meshes,
-             std::vector<rviz::PointCloud *> &octrees);
+             Ogre::SceneNode* cloned_scene_node,
+             std::vector<Ogre::Entity*>& meshes,
+             std::vector<rviz::PointCloud*>& octrees);
 
 protected:
   VisualizationWidget* env_;
@@ -273,25 +270,31 @@ private:
   std::string default_material_name_;
   std::map<std::string, rviz::StringProperty*> acm_;
 
-  std::vector<Ogre::Entity*> visual_current_meshes_;     ///< The entities representing the visual mesh of this link (if they
-                                                 /// exist)
-  std::vector<Ogre::Entity*> collision_current_meshes_;  ///< The entities representing the collision mesh of this link (if they
-                                                 /// exist)
+  std::vector<Ogre::Entity*> visual_current_meshes_;     ///< The entities representing the visual mesh of this link (if
+                                                         ///< they
+                                                         /// exist)
+  std::vector<Ogre::Entity*> collision_current_meshes_;  ///< The entities representing the collision mesh of this link
+                                                         ///< (if they
+                                                         /// exist)
 
-  std::vector<Ogre::Entity*> visual_start_meshes_;     ///< The entities representing the visual mesh of this link (if they
-                                                 /// exist)
-  std::vector<Ogre::Entity*> collision_start_meshes_;  ///< The entities representing the collision mesh of this link (if they
-                                                 /// exist)
+  std::vector<Ogre::Entity*> visual_start_meshes_;  ///< The entities representing the visual mesh of this link (if they
+                                                    /// exist)
+  std::vector<Ogre::Entity*> collision_start_meshes_;  ///< The entities representing the collision mesh of this link
+                                                       ///< (if they
+                                                       /// exist)
 
-  std::vector<Ogre::Entity*> visual_trajectory_meshes_;     ///< The entities representing the visual mesh of this link (if they
-                                                 /// exist)
-  std::vector<Ogre::Entity*> collision_trajectory_meshes_;  ///< The entities representing the collision mesh of this link (if they
-                                                 /// exist)
+  std::vector<Ogre::Entity*> visual_trajectory_meshes_;  ///< The entities representing the visual mesh of this link (if
+                                                         ///< they
+                                                         /// exist)
+  std::vector<Ogre::Entity*> collision_trajectory_meshes_;  ///< The entities representing the collision mesh of this
+                                                            ///< link (if they
+                                                            /// exist)
 
-  std::vector<Ogre::Entity*> visual_end_meshes_;     ///< The entities representing the visual mesh of this link (if they
-                                                 /// exist)
-  std::vector<Ogre::Entity*> collision_end_meshes_;  ///< The entities representing the collision mesh of this link (if they
-                                                 /// exist)
+  std::vector<Ogre::Entity*> visual_end_meshes_;  ///< The entities representing the visual mesh of this link (if they
+                                                  /// exist)
+  std::vector<Ogre::Entity*> collision_end_meshes_;  ///< The entities representing the collision mesh of this link (if
+                                                     ///< they
+                                                     /// exist)
 
   struct OctreeDataContainer
   {
@@ -302,34 +305,43 @@ private:
     rviz::PointCloud* clone();
   };
 
-  std::vector<OctreeDataContainer> visual_current_octrees_;  ///< The object representing the visual of this link (if they exist)
-  std::vector<OctreeDataContainer> collision_current_octrees_;  ///< The object representing the visual of this link (if they
-                                                      /// exist)
+  std::vector<OctreeDataContainer> visual_current_octrees_;     ///< The object representing the visual of this link (if
+                                                                ///< they exist)
+  std::vector<OctreeDataContainer> collision_current_octrees_;  ///< The object representing the visual of this link (if
+                                                                ///< they
+                                                                /// exist)
 
-  std::vector<rviz::PointCloud*> visual_start_octrees_;  ///< The object representing the visual of this link (if they exist)
-  std::vector<rviz::PointCloud*> collision_start_octrees_;  ///< The object representing the visual of this link (if they
-                                                      /// exist)
+  std::vector<rviz::PointCloud*> visual_start_octrees_;  ///< The object representing the visual of this link (if they
+                                                         ///< exist)
+  std::vector<rviz::PointCloud*> collision_start_octrees_;  ///< The object representing the visual of this link (if
+                                                            ///< they
+                                                            /// exist)
 
-  std::vector<rviz::PointCloud*> visual_trajectory_octrees_;  ///< The object representing the visual of this link (if they exist)
-  std::vector<rviz::PointCloud*> collision_trajectory_octrees_;  ///< The object representing the visual of this link (if they
-                                                      /// exist)
+  std::vector<rviz::PointCloud*> visual_trajectory_octrees_;  ///< The object representing the visual of this link (if
+                                                              ///< they exist)
+  std::vector<rviz::PointCloud*> collision_trajectory_octrees_;  ///< The object representing the visual of this link
+                                                                 ///< (if they
+                                                                 /// exist)
 
-  std::vector<rviz::PointCloud*> visual_end_octrees_;  ///< The object representing the visual of this link (if they exist)
+  std::vector<rviz::PointCloud*> visual_end_octrees_;     ///< The object representing the visual of this link (if they
+                                                          ///< exist)
   std::vector<rviz::PointCloud*> collision_end_octrees_;  ///< The object representing the visual of this link (if they
-                                                      /// exist)
+                                                          /// exist)
 
-  Ogre::SceneNode* visual_current_node_;    ///< The scene node the visual meshes are attached to
-  Ogre::SceneNode* collision_current_node_; ///< The scene node the collision meshes are attached to
-  Ogre::SceneNode* visual_start_node_;      ///< The scene node the visual meshes are attached to
-  Ogre::SceneNode* collision_start_node_;   ///< The scene node the collision meshes are attached to
-  Ogre::SceneNode* visual_end_node_;        ///< The scene node the visual meshes are attached to
-  Ogre::SceneNode* collision_end_node_;     ///< The scene node the collision meshes are attached to
+  Ogre::SceneNode* visual_current_node_;     ///< The scene node the visual meshes are attached to
+  Ogre::SceneNode* collision_current_node_;  ///< The scene node the collision meshes are attached to
+  Ogre::SceneNode* visual_start_node_;       ///< The scene node the visual meshes are attached to
+  Ogre::SceneNode* collision_start_node_;    ///< The scene node the collision meshes are attached to
+  Ogre::SceneNode* visual_end_node_;         ///< The scene node the visual meshes are attached to
+  Ogre::SceneNode* collision_end_node_;      ///< The scene node the collision meshes are attached to
   Ogre::SceneNode* visual_trajectory_node_;
   Ogre::SceneNode* collision_trajectory_node_;
   std::vector<Ogre::SceneNode*> visual_trajectory_waypoint_nodes_;
-  std::vector<bool> visual_trajectory_waypoint_visibility_; // cache visibility state for toggling collision/visual visibility
+  std::vector<bool> visual_trajectory_waypoint_visibility_;  // cache visibility state for toggling collision/visual
+                                                             // visibility
   std::vector<Ogre::SceneNode*> collision_trajectory_waypoint_nodes_;
-  std::vector<bool> collision_trajectory_waypoint_visibility_; // cache visibility state for toggling collision/visual visibility
+  std::vector<bool> collision_trajectory_waypoint_visibility_;  // cache visibility state for toggling collision/visual
+                                                                // visibility
 
   Ogre::RibbonTrail* trail_;
 
@@ -337,7 +349,7 @@ private:
 
   float material_alpha_;  ///< If material is not a texture, this saves the alpha value set in the URDF, otherwise is
                           /// 1.0.
-  float alpha_;     ///< Alpha value from top-level robot alpha Property (set via setRobotAlpha()).
+  float alpha_;           ///< Alpha value from top-level robot alpha Property (set via setRobotAlpha()).
 
   bool only_render_depth_;
   bool is_selectable_;

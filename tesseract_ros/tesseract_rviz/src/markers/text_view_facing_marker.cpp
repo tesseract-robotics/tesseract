@@ -41,63 +41,49 @@
 
 namespace tesseract_rviz
 {
-
-TextViewFacingMarker::TextViewFacingMarker(const std::string &ns,
+TextViewFacingMarker::TextViewFacingMarker(const std::string& ns,
                                            const int id,
                                            const std::string& caption,
                                            rviz::DisplayContext* context,
                                            Ogre::SceneNode* parent_node)
 
-: MarkerBase(ns, id, context, parent_node)
-, text_(nullptr)
+  : MarkerBase(ns, id, context, parent_node), text_(nullptr)
 {
   text_ = new rviz::MovableText(caption);
   text_->setTextAlignment(rviz::MovableText::H_CENTER, rviz::MovableText::V_CENTER);
   text_->setCharacterHeight(0.15f);
   scene_node_->attachObject(text_);
 
-  handler_.reset( new MarkerSelectionHandler(this, MarkerID(ns, id), context_ ));
-  handler_->addTrackedObject( text_ );
+  handler_.reset(new MarkerSelectionHandler(this, MarkerID(ns, id), context_));
+  handler_->addTrackedObject(text_);
 }
 
-TextViewFacingMarker::~TextViewFacingMarker()
-{
-  delete text_;
-}
+TextViewFacingMarker::~TextViewFacingMarker() { delete text_; }
 
 void TextViewFacingMarker::setScale(Ogre::Vector3 scale)
 {
   Ogre::Vector3 pos = getPosition();
-  pos.x*=scale.x;
-  pos.y*=scale.y;
-  pos.z*=scale.z;
+  pos.x *= scale.x;
+  pos.y *= scale.y;
+  pos.z *= scale.z;
   scene_node_->setScale(scale);
   setPosition(pos);
 }
 
-Ogre::Vector3 TextViewFacingMarker::getScale() const
-{
-  return scene_node_->getScale();
-}
+Ogre::Vector3 TextViewFacingMarker::getScale() const { return scene_node_->getScale(); }
 
-void TextViewFacingMarker::setColor(Ogre::ColourValue color)
-{
-  text_->setColor(color);
-}
+void TextViewFacingMarker::setColor(Ogre::ColourValue color) { text_->setColor(color); }
 
-void TextViewFacingMarker::setText(const std::string& text)
-{
-  text_->setCaption(text);
-}
+void TextViewFacingMarker::setText(const std::string& text) { text_->setCaption(text); }
 
 std::set<Ogre::MaterialPtr> TextViewFacingMarker::getMaterials()
 {
   std::set<Ogre::MaterialPtr> materials;
-  if ( text_->getMaterial().get() )
+  if (text_->getMaterial().get())
   {
-    materials.insert( text_->getMaterial() );
+    materials.insert(text_->getMaterial());
   }
   return materials;
 }
 
-}
+}  // namespace tesseract_rviz

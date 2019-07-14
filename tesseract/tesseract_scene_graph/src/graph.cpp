@@ -35,10 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
 {
-
-SceneGraph::SceneGraph() : Graph(), acm_(std::make_shared<AllowedCollisionMatrix>())
-{
-}
+SceneGraph::SceneGraph() : Graph(), acm_(std::make_shared<AllowedCollisionMatrix>()) {}
 
 void SceneGraph::setName(const std::string& name)
 {
@@ -134,25 +131,29 @@ bool SceneGraph::removeLink(const std::string& name)
 
 void SceneGraph::setLinkVisibility(const std::string& name, bool visibility)
 {
-  boost::property_map<Graph, boost::vertex_link_visible_t>::type param = get(boost::vertex_link_visible, static_cast<Graph&>(*this));
+  boost::property_map<Graph, boost::vertex_link_visible_t>::type param =
+      get(boost::vertex_link_visible, static_cast<Graph&>(*this));
   param[getVertex(name)] = visibility;
 }
 
 bool SceneGraph::getLinkVisibility(const std::string& name) const
 {
-  boost::property_map<Graph, boost::vertex_link_visible_t>::const_type param = get(boost::vertex_link_visible, static_cast<const Graph&>(*this));
+  boost::property_map<Graph, boost::vertex_link_visible_t>::const_type param =
+      get(boost::vertex_link_visible, static_cast<const Graph&>(*this));
   return param[getVertex(name)];
 }
 
 void SceneGraph::setLinkCollisionEnabled(const std::string& name, bool enabled)
 {
-  boost::property_map<Graph, boost::vertex_link_collision_enabled_t>::type param = get(boost::vertex_link_collision_enabled, static_cast<Graph&>(*this));
+  boost::property_map<Graph, boost::vertex_link_collision_enabled_t>::type param =
+      get(boost::vertex_link_collision_enabled, static_cast<Graph&>(*this));
   param[getVertex(name)] = enabled;
 }
 
 bool SceneGraph::getLinkCollisionEnabled(const std::string& name) const
 {
-  boost::property_map<Graph, boost::vertex_link_collision_enabled_t>::const_type param = get(boost::vertex_link_collision_enabled, static_cast<const Graph&>(*this));
+  boost::property_map<Graph, boost::vertex_link_collision_enabled_t>::const_type param =
+      get(boost::vertex_link_collision_enabled, static_cast<const Graph&>(*this));
   return param[getVertex(name)];
 }
 
@@ -184,7 +185,8 @@ bool SceneGraph::addJoint(tesseract_scene_graph::Joint joint)
   double d = joint_ptr->parent_to_joint_origin_transform.translation().norm();
 
   EdgeProperty info(joint_ptr, d);
-  std::pair<Edge, bool> e = boost::add_edge(parent->second.second, child->second.second, info, static_cast<Graph&>(*this));
+  std::pair<Edge, bool> e =
+      boost::add_edge(parent->second.second, child->second.second, info, static_cast<Graph&>(*this));
   assert(e.second == true);
   joint_map_[joint_ptr->getName()] = std::make_pair(joint_ptr, e.first);
 
@@ -246,7 +248,8 @@ bool SceneGraph::changeJointOrigin(const std::string& name, const Eigen::Isometr
 
   if (found == joint_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("Tried to change Joint origin with name (%s) which does not exist in scene graph.", name.c_str());
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint origin with name (%s) which does not exist in scene graph.",
+                           name.c_str());
     return false;
   }
 
@@ -274,20 +277,14 @@ void SceneGraph::removeAllowedCollision(const std::string& link_name1, const std
   acm_->removeAllowedCollision(link_name1, link_name2);
 }
 
-void SceneGraph::removeAllowedCollision(const std::string& link_name)
-{
-  acm_->removeAllowedCollision(link_name);
-}
+void SceneGraph::removeAllowedCollision(const std::string& link_name) { acm_->removeAllowedCollision(link_name); }
 
 bool SceneGraph::isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const
 {
   return acm_->isCollisionAllowed(link_name1, link_name2);
 }
 
-AllowedCollisionMatrix::ConstPtr SceneGraph::getAllowedCollisionMatrix() const
-{
-  return acm_;
-}
+AllowedCollisionMatrix::ConstPtr SceneGraph::getAllowedCollisionMatrix() const { return acm_; }
 
 Link::ConstPtr SceneGraph::getSourceLink(const std::string& joint_name) const
 {
@@ -310,7 +307,7 @@ std::vector<Joint::ConstPtr> SceneGraph::getInboundJoints(const std::string& lin
 
   // Get incomming edges
   int num_in_edges = static_cast<int>(boost::in_degree(vertex, *this));
-  if (num_in_edges == 0) // The root of the tree will have not incoming edges
+  if (num_in_edges == 0)  // The root of the tree will have not incoming edges
     return joints;
 
   boost::graph_traits<Graph>::in_edge_iterator ei, ei_end;
@@ -422,10 +419,11 @@ void SceneGraph::saveDOT(std::string path) const
   std::ofstream dot_file(path);
 
   dot_file << "digraph D {\n"
-    << "  rankdir=LR\n"
-    << "  size=\"4,3\"\n"
-    << "  ratio=\"fill\"\n"
-    << "  edge[style=\"bold\"]\n" << "  node[shape=\"circle\"]\n";
+           << "  rankdir=LR\n"
+           << "  size=\"4,3\"\n"
+           << "  ratio=\"fill\"\n"
+           << "  edge[style=\"bold\"]\n"
+           << "  node[shape=\"circle\"]\n";
 
   const Graph& graph = static_cast<const Graph&>(*this);
   Graph::edge_iterator ei, ei_end;
@@ -436,10 +434,9 @@ void SceneGraph::saveDOT(std::string path) const
     Vertex v = boost::target(e, graph);
     Joint::ConstPtr joint = boost::get(boost::edge_joint, graph)[e];
 
-    dot_file << '"' << boost::get(boost::vertex_link, graph)[u]->getName() << '"'
-             << " -> " << '"' << boost::get(boost::vertex_link, graph)[v]->getName() << '"'
-             << "[label=\"" << joint->getName() << "\n(" << joint->type << ")\", color=\"black\"]";
-
+    dot_file << '"' << boost::get(boost::vertex_link, graph)[u]->getName() << '"' << " -> " << '"'
+             << boost::get(boost::vertex_link, graph)[v]->getName() << '"' << "[label=\"" << joint->getName() << "\n("
+             << joint->type << ")\", color=\"black\"]";
   }
   dot_file << "}";
 }
@@ -455,7 +452,6 @@ SceneGraph::Path SceneGraph::getShortestPath(const std::string& root, const std:
   std::map<Vertex, double> distance_map;
   boost::associative_property_map<std::map<Vertex, double>> prop_distance_map(distance_map);
 
-
   std::map<Vertex, size_t> index_map;
   boost::associative_property_map<std::map<Vertex, size_t>> prop_index_map(index_map);
 
@@ -470,14 +466,25 @@ SceneGraph::Path SceneGraph::getShortestPath(const std::string& root, const std:
   for (boost::tie(j, jend) = boost::edges(graph); j != jend; ++j)
     boost::put(prop_weight_map, *j, boost::get(boost::edge_weight, graph)[*j]);
 
-  dijkstra_shortest_paths(graph, s, prop_predicessor_map, prop_distance_map, prop_weight_map, prop_index_map, std::less<double>(), boost::closed_plus<double>(),(std::numeric_limits<double>::max)(), 0, boost::default_dijkstra_visitor());
+  dijkstra_shortest_paths(graph,
+                          s,
+                          prop_predicessor_map,
+                          prop_distance_map,
+                          prop_weight_map,
+                          prop_index_map,
+                          std::less<double>(),
+                          boost::closed_plus<double>(),
+                          (std::numeric_limits<double>::max)(),
+                          0,
+                          boost::default_dijkstra_visitor());
 
   std::vector<std::string> links;
   std::vector<std::string> joints;
-  Vertex v = getVertex(tip); // We want to start at the destination and work our way back to the source
-  for(Vertex u = predicessor_map[v]; // Start by setting 'u' to the destintaion node's predecessor
-      u != v; // Keep tracking the path until we get to the source
-      v = u, u = predicessor_map[v]) // Set the current vertex to the current predecessor, and the predecessor to one level up
+  Vertex v = getVertex(tip);           // We want to start at the destination and work our way back to the source
+  for (Vertex u = predicessor_map[v];  // Start by setting 'u' to the destintaion node's predecessor
+       u != v;                         // Keep tracking the path until we get to the source
+       v = u, u = predicessor_map[v])  // Set the current vertex to the current predecessor, and the predecessor to one
+                                       // level up
   {
     links.push_back(boost::get(boost::vertex_link, graph)[v]->getName());
     joints.push_back(boost::get(boost::edge_joint, graph)[boost::edge(u, v, graph).first]->getName());
@@ -501,7 +508,7 @@ SceneGraph::Path SceneGraph::getShortestPath(const std::string& root, const std:
   return Path(links, joints);
 }
 
-//static inline Graph copyGraph(const Graph& graph)
+// static inline Graph copyGraph(const Graph& graph)
 //{
 //  Graph new_graph;
 //  boost::copy_graph(graph, new_graph);
@@ -526,4 +533,4 @@ SceneGraph::Edge SceneGraph::getEdge(const std::string& name) const
   return found->second.second;
 }
 
-} // namespace tesseract_scene_graph
+}  // namespace tesseract_scene_graph

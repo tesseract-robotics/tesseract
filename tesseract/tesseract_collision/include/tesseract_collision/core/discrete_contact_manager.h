@@ -35,10 +35,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
 
-
 namespace tesseract_collision
 {
-
 class DiscreteContactManager
 {
 public:
@@ -113,7 +111,8 @@ public:
    * @param names The name of the object
    * @param poses The tranformation in world
    */
-  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names, const tesseract_common::VectorIsometry3d& poses) = 0;
+  virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                            const tesseract_common::VectorIsometry3d& poses) = 0;
 
   /**
    * @brief Set a series of collision object's tranforms
@@ -158,5 +157,5 @@ public:
   virtual void contactTest(ContactResultMap& collisions, const ContactTestType& type) = 0;
 };
 
-}
+}  // namespace tesseract_collision
 #endif  // TESSERACT_COLLISION_DISCRETE_CONTACT_MANAGER_H

@@ -39,7 +39,7 @@ class Shape;
 
 namespace tesseract_rviz
 {
-class CubeMarker: public MarkerBase
+class CubeMarker : public MarkerBase
 {
 public:
   using Ptr = boost::shared_ptr<CubeMarker>;
@@ -63,11 +63,10 @@ public:
   std::set<Ogre::MaterialPtr> getMaterials() override;
 
 protected:
-
   rviz::Shape* shape_;
   Ogre::Vector3 scale_;
   float size_;
 };
-}
+}  // namespace tesseract_rviz
 
-#endif // TESSERACT_RVIZ_MARKERS_CUBE_MARKER_H
+#endif  // TESSERACT_RVIZ_MARKERS_CUBE_MARKER_H

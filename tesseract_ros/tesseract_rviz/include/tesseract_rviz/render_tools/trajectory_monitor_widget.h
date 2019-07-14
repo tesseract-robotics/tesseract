@@ -68,11 +68,10 @@ class EditableEnumProperty;
 class EnumProperty;
 class ColorProperty;
 class MovableText;
-}
+}  // namespace rviz
 
 namespace tesseract_rviz
 {
-
 class TrajectoryMonitorWidget : public QObject
 {
   Q_OBJECT
@@ -132,7 +131,7 @@ protected:
   bool animating_path_;
   bool drop_displaying_trajectory_;
   int current_state_;
-  float current_state_time_; 
+  float current_state_time_;
   TrajectoryPanel* trajectory_slider_panel_;
   rviz::PanelDockWidget* trajectory_slider_dock_panel_;
   int previous_display_mode_;

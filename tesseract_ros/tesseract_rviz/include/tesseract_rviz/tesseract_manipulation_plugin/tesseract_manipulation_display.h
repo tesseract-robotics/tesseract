@@ -71,4 +71,4 @@ protected:
 
 }  // namespace tesseract_rviz
 
-#endif // TESSERACT_RVIZ_TESSERACT_MANIPULATION_DISPLAY_H
+#endif  // TESSERACT_RVIZ_TESSERACT_MANIPULATION_DISPLAY_H

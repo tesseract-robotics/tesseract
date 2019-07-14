@@ -14,10 +14,7 @@ std::string toString(const SceneGraph::Path& path)
   return ss.str();
 }
 
-std::string toString(bool b)
-{
-  return b ? "true" : "false";
-}
+std::string toString(bool b) { return b ? "true" : "false"; }
 
 std::string locateResource(const std::string& url)
 {

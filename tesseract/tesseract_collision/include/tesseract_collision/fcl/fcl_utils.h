@@ -117,8 +117,8 @@ public:
   std::vector<CollisionObjectPtr>& getCollisionObjects() { return collision_objects_; }
   std::shared_ptr<CollisionObjectWrapper> clone() const
   {
-    std::shared_ptr<CollisionObjectWrapper> clone_cow(new CollisionObjectWrapper(
-        name_, type_id_, shapes_, shape_poses_, collision_geometries_, collision_objects_));
+    std::shared_ptr<CollisionObjectWrapper> clone_cow(
+        new CollisionObjectWrapper(name_, type_id_, shapes_, shape_poses_, collision_geometries_, collision_objects_));
     clone_cow->m_collisionFilterGroup = m_collisionFilterGroup;
     clone_cow->m_collisionFilterMask = m_collisionFilterMask;
     clone_cow->m_enabled = m_enabled;
@@ -149,10 +149,10 @@ using Link2COW = std::map<std::string, COW::Ptr>;
 using Link2ConstCOW = std::map<std::string, COW::ConstPtr>;
 
 inline COW::Ptr createFCLCollisionObject(const std::string& name,
-                                       const int& type_id,
-                                       const CollisionShapesConst& shapes,
-                                       const tesseract_common::VectorIsometry3d& shape_poses,
-                                       bool enabled)
+                                         const int& type_id,
+                                         const CollisionShapesConst& shapes,
+                                         const tesseract_common::VectorIsometry3d& shape_poses,
+                                         bool enabled)
 {
   // dont add object that does not have geometry
   if (shapes.empty() || shape_poses.empty() || (shapes.size() != shape_poses.size()))
@@ -196,6 +196,6 @@ inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
 bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data);
 
 bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data, double& min_dist);
-}
-}
+}  // namespace tesseract_collision_fcl
+}  // namespace tesseract_collision
 #endif  // TESSERACT_COLLISION_FCL_UTILS_H

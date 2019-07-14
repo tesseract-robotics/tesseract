@@ -33,33 +33,29 @@
 
 namespace tesseract_rviz
 {
-
-class ButtonProperty: public rviz::Property
+class ButtonProperty : public rviz::Property
 {
-Q_OBJECT
+  Q_OBJECT
 public:
-  ButtonProperty( const QString& name = QString(),
-                  const QString& default_value = QString(),
-                  const QString& description = QString(),
-                  rviz::Property* parent = nullptr,
-                  const char *changed_slot = nullptr,
-                  QObject* receiver = nullptr );
+  ButtonProperty(const QString& name = QString(),
+                 const QString& default_value = QString(),
+                 const QString& description = QString(),
+                 rviz::Property* parent = nullptr,
+                 const char* changed_slot = nullptr,
+                 QObject* receiver = nullptr);
 
-  QWidget* createEditor( QWidget* parent,
-                         const QStyleOptionViewItem& option ) override;
+  QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option) override;
 
-  bool paint( QPainter * painter, const QStyleOptionViewItem & option ) const override;
+  bool paint(QPainter* painter, const QStyleOptionViewItem& option) const override;
 
 public Q_SLOTS:
-  virtual void setCaptions( const QString& str );
+  virtual void setCaptions(const QString& str);
 
 protected:
-
   QPushButton* button_;
   QString captions_;
 };
 
-} // end namespace rviz
+}  // namespace tesseract_rviz
 
-
-#endif // TESSERACT_RVIZ_PROPERTY_BUTTON_PROPERTY_H
+#endif  // TESSERACT_RVIZ_PROPERTY_BUTTON_PROPERTY_H

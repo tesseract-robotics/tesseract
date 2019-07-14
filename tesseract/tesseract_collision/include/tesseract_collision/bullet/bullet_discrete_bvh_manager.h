@@ -51,7 +51,6 @@ namespace tesseract_collision_bullet
 class BulletDiscreteBVHManager : public DiscreteContactManager
 {
 public:
-
   using Ptr = std::shared_ptr<BulletDiscreteBVHManager>;
   using ConstPtr = std::shared_ptr<const BulletDiscreteBVHManager>;
 
@@ -79,7 +78,8 @@ public:
 
   void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) override;
 
-  void setCollisionObjectsTransform(const std::vector<std::string>& names, const tesseract_common::VectorIsometry3d& poses) override;
+  void setCollisionObjectsTransform(const std::vector<std::string>& names,
+                                    const tesseract_common::VectorIsometry3d& poses) override;
 
   void setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms) override;
 
@@ -129,6 +129,6 @@ private:
   void contactTest(const COW::Ptr& cow, ContactTestData& collisions);
 };
 
-}
-}
+}  // namespace tesseract_collision_bullet
+}  // namespace tesseract_collision
 #endif  // TESSERACT_COLLISION_BULLET_DISCRETE_BVH_MANAGERS_H
