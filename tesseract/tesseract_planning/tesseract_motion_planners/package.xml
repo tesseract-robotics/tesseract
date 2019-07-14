@@ -13,7 +13,7 @@
   <depend>tesseract_common</depend>
   <depend>trajopt</depend>
   <depend>ompl</depend>
-  <depend>console_bridge</depend>
+  <depend>libconsole-bridge-dev</depend>
 
   <export>
     <build_type>cmake</build_type>
