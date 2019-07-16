@@ -41,11 +41,11 @@ using Eigen::VectorXd;
 bool KDLInvKinChainNR::calcInvKinHelper(Eigen::VectorXd& solutions,
                                         const Eigen::Isometry3d& pose,
                                         const Eigen::Ref<const Eigen::VectorXd>& seed,
-                                        int segment_num) const
+                                        int /*segment_num*/) const
 {
   KDL::JntArray kdl_seed, kdl_solution;
   EigenToKDL(seed, kdl_seed);
-  kdl_solution.resize(seed.size());
+  kdl_solution.resize(static_cast<unsigned>(seed.size()));
   solutions.resize(seed.size());
 
   // run IK solver
@@ -94,10 +94,10 @@ bool KDLInvKinChainNR::calcInvKin(Eigen::VectorXd& solutions,
   return calcInvKinHelper(solutions, pose, seed);
 }
 
-bool KDLInvKinChainNR::calcInvKin(Eigen::VectorXd& solutions,
-                                  const Eigen::Isometry3d& pose,
-                                  const Eigen::Ref<const Eigen::VectorXd>& seed,
-                                  const std::string& link_name) const
+bool KDLInvKinChainNR::calcInvKin(Eigen::VectorXd& /*solutions*/,
+                                  const Eigen::Isometry3d& /*pose*/,
+                                  const Eigen::Ref<const Eigen::VectorXd>& /*seed*/,
+                                  const std::string& /*link_name*/) const
 {
   assert(checkInitialized());
   assert(false);

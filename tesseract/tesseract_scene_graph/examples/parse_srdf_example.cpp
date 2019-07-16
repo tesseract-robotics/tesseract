@@ -59,4 +59,5 @@ int main(int /*argc*/, char** /*argv*/)
 
   AllowedCollisionMatrix::ConstPtr acm = g->getAllowedCollisionMatrix();
   const AllowedCollisionMatrix::AllowedCollisionEntries& acm_entries = acm->getAllAllowedCollisions();
+  CONSOLE_BRIDGE_logInform("ACM Number of entries: %d", acm_entries.size());
 }

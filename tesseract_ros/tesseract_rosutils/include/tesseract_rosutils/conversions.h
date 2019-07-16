@@ -1,16 +1,23 @@
 #ifndef TESSERACT_ROSUTILS_CONVERSIONS_H
 #define TESSERACT_ROSUTILS_CONVERSIONS_H
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <tesseract_planners/core/waypoint.h>
+#include <ros/console.h>
 #include <sensor_msgs/JointState.h>
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseArray.h>
 #include <trajectory_msgs/JointTrajectory.h>
 #include <eigen_conversions/eigen_msg.h>
-#include <tesseract_process_planning/process_definition.h>
-#include <tesseract_process_planning/process_planner.h>
 #include <iostream>
 #include <fstream>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_motion_planners/core/waypoint.h>
+#include <tesseract_process_planners/process_definition.h>
+#include <tesseract_process_planners/process_planner.h>
 
 namespace tesseact_rosutils
 {
@@ -53,10 +60,11 @@ inline Eigen::VectorXd toEigen(const sensor_msgs::JointState& joint_state, const
  * @param change_base A tranformation applied to the pose = change_base * pose
  * @return WaypointPtr
  */
-inline tesseract_planners::WaypointPtr toWaypoint(const geometry_msgs::Pose& pose,
-                                                  Eigen::Isometry3d change_base = Eigen::Isometry3d::Identity())
+inline tesseract_motion_planners::Waypoint::Ptr
+toWaypoint(const geometry_msgs::Pose& pose, Eigen::Isometry3d change_base = Eigen::Isometry3d::Identity())
 {
-  tesseract_planners::CartesianWaypointPtr waypoint = std::make_shared<tesseract_planners::CartesianWaypoint>();
+  tesseract_motion_planners::CartesianWaypoint::Ptr waypoint =
+      std::make_shared<tesseract_motion_planners::CartesianWaypoint>();
   Eigen::Isometry3d pose_eigen;
   tf::poseMsgToEigen(pose, pose_eigen);
   waypoint->cartesian_position_ = change_base * pose_eigen;
@@ -69,10 +77,10 @@ inline tesseract_planners::WaypointPtr toWaypoint(const geometry_msgs::Pose& pos
  * @param change_base A tranformation applied to the pose = change_base * pose
  * @return std::vector<WaypointPtr>
  */
-inline std::vector<tesseract_planners::WaypointPtr>
+inline std::vector<tesseract_motion_planners::Waypoint::Ptr>
 toWaypoint(const std::vector<geometry_msgs::Pose>& poses, Eigen::Isometry3d change_base = Eigen::Isometry3d::Identity())
 {
-  std::vector<tesseract_planners::WaypointPtr> waypoints;
+  std::vector<tesseract_motion_planners::Waypoint::Ptr> waypoints;
   waypoints.reserve(poses.size());
   for (const auto& pose : poses)
     waypoints.push_back(toWaypoint(pose, change_base));
@@ -86,11 +94,11 @@ toWaypoint(const std::vector<geometry_msgs::Pose>& poses, Eigen::Isometry3d chan
  * @param change_base A tranformation applied to the pose = change_base * pose
  * @return std::vector<std::vector<WaypointPtr>>
  */
-inline std::vector<std::vector<tesseract_planners::WaypointPtr>>
+inline std::vector<std::vector<tesseract_motion_planners::Waypoint::Ptr>>
 toWaypoint(const std::vector<geometry_msgs::PoseArray>& pose_arrays,
            Eigen::Isometry3d change_base = Eigen::Isometry3d::Identity())
 {
-  std::vector<std::vector<tesseract_planners::WaypointPtr>> paths;
+  std::vector<std::vector<tesseract_motion_planners::Waypoint::Ptr>> paths;
   paths.reserve(pose_arrays.size());
   for (const auto& pose_array : pose_arrays)
     paths.push_back(toWaypoint(pose_array.poses, change_base));
@@ -103,9 +111,9 @@ toWaypoint(const std::vector<geometry_msgs::PoseArray>& pose_arrays,
  * @param pose The joint positions
  * @return WaypointPtr
  */
-inline tesseract_planners::WaypointPtr toWaypoint(const std::vector<double>& pose)
+inline tesseract_motion_planners::Waypoint::Ptr toWaypoint(const std::vector<double>& pose)
 {
-  tesseract_planners::JointWaypointPtr waypoint = std::make_shared<tesseract_planners::JointWaypoint>();
+  tesseract_motion_planners::JointWaypoint::Ptr waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>();
   waypoint->joint_positions_ = toEigen(pose);
   return waypoint;
 }
@@ -116,10 +124,10 @@ inline tesseract_planners::WaypointPtr toWaypoint(const std::vector<double>& pos
  * @param joint_names This is the desired order of the joints
  * @return WaypointPtr
  */
-inline tesseract_planners::WaypointPtr toWaypoint(const sensor_msgs::JointState& joint_state,
-                                                  const std::vector<std::string>& joint_names)
+inline tesseract_motion_planners::Waypoint::Ptr toWaypoint(const sensor_msgs::JointState& joint_state,
+                                                           const std::vector<std::string>& joint_names)
 {
-  tesseract_planners::JointWaypointPtr waypoint = std::make_shared<tesseract_planners::JointWaypoint>();
+  tesseract_motion_planners::JointWaypoint::Ptr waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>();
   waypoint->joint_positions_ = toEigen(joint_state, joint_names);
   return waypoint;
 }
@@ -129,16 +137,16 @@ inline tesseract_planners::WaypointPtr toWaypoint(const sensor_msgs::JointState&
  * @param waypoints A vector of waypoints
  * @return Pose Array
  */
-geometry_msgs::PoseArray toPoseArray(const std::vector<tesseract_planners::WaypointPtr>& waypoints)
+geometry_msgs::PoseArray toPoseArray(const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints)
 {
   geometry_msgs::PoseArray pose_array;
   for (const auto& wp : waypoints)
   {
-    if (wp->getType() == tesseract_planners::WaypointType::CARTESIAN_WAYPOINT)
+    if (wp->getType() == tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT)
     {
       geometry_msgs::Pose pose;
-      const tesseract_planners::CartesianWaypointPtr& cwp =
-          std::static_pointer_cast<tesseract_planners::CartesianWaypoint>(wp);
+      const tesseract_motion_planners::CartesianWaypoint::Ptr& cwp =
+          std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(wp);
       tf::poseEigenToMsg(cwp->cartesian_position_, pose);
       pose_array.poses.push_back(pose);
     }
@@ -156,7 +164,7 @@ geometry_msgs::PoseArray toPoseArray(const std::vector<tesseract_planners::Waypo
  * @param process_definition A process definition
  * @return Pose Array
  */
-geometry_msgs::PoseArray toPoseArray(const tesseract_process_planning::ProcessDefinition& process_definition)
+geometry_msgs::PoseArray toPoseArray(const tesseract_process_planners::ProcessDefinition& process_definition)
 {
   geometry_msgs::PoseArray full_path;
   for (size_t i = 0; i < process_definition.segments.size(); ++i)

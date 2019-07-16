@@ -57,6 +57,8 @@ bool KDLFwdKinChain::calcFwdKinHelper(Eigen::Isometry3d& pose,
   return true;
 }
 
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+
 bool KDLFwdKinChain::calcFwdKinHelper(tesseract_common::VectorIsometry3d& poses,
                                       const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                       int segment_num) const
@@ -80,6 +82,8 @@ bool KDLFwdKinChain::calcFwdKinHelper(tesseract_common::VectorIsometry3d& poses,
   return false;
 #endif
 }
+
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 bool KDLFwdKinChain::calcFwdKin(tesseract_common::VectorIsometry3d& poses,
                                 const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const

@@ -112,7 +112,7 @@ bool checkRviz()
  * @param n The past revision number
  * @return True if successful otherwise false
  */
-bool sendRvizChanges(int past_revision)
+bool sendRvizChanges(unsigned long past_revision)
 {
   modify_env_rviz.waitForExistence();
   tesseract_msgs::ModifyEnvironment update_env;

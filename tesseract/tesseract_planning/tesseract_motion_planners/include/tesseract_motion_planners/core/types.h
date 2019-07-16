@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PLANNERS_PLANNER_TYPES_H
-#define TESSERACT_PLANNERS_PLANNER_TYPES_H
+#ifndef TESSERACT_MOTION_PLANNERS_PLANNER_TYPES_H
+#define TESSERACT_MOTION_PLANNERS_PLANNER_TYPES_H
 
 #include <tesseract/tesseract.h>
 

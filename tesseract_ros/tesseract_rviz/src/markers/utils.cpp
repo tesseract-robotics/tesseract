@@ -149,7 +149,7 @@ void makeDisc(InteractiveMarkerControl& control, float width)
         points[p + 4] = circle2[i2];
         points[p + 5] = circle2[i3];
 
-        float t = 0.6f + 0.4f * (i % 2);
+        float t = 0.6f + 0.4f * static_cast<float>((i % 2));
         color.r = base_color.r * t;
         color.g = base_color.g * t;
         color.b = base_color.b * t;

@@ -93,7 +93,7 @@ bool checkRviz()
  * @param n The past revision number
  * @return True if successful otherwise false
  */
-bool sendRvizChanges(int past_revision)
+bool sendRvizChanges(unsigned long past_revision)
 {
   modify_env_rviz.waitForExistence();
   tesseract_msgs::ModifyEnvironment update_env;
@@ -376,8 +376,9 @@ int main(int argc, char** argv)
 
   // Plot the resulting trajectory
   if (plotting_)
-    plotter->plotTrajectory(pick_prob->GetKin()->getJointNames(),
-                            planning_response.trajectory.leftCols(pick_prob->GetKin()->getJointNames().size()));
+    plotter->plotTrajectory(
+        pick_prob->GetKin()->getJointNames(),
+        planning_response.trajectory.leftCols(static_cast<long>(pick_prob->GetKin()->getJointNames().size())));
 
   std::cout << planning_response.trajectory << '\n';
 
@@ -580,8 +581,9 @@ int main(int argc, char** argv)
 
   // Plot the resulting trajectory
   if (plotting_)
-    plotter->plotTrajectory(place_prob->GetKin()->getJointNames(),
-                            planning_response_place.trajectory.leftCols(place_prob->GetKin()->getJointNames().size()));
+    plotter->plotTrajectory(
+        place_prob->GetKin()->getJointNames(),
+        planning_response_place.trajectory.leftCols(static_cast<long>(place_prob->GetKin()->getJointNames().size())));
 
   std::cout << planning_response_place.trajectory << '\n';
 

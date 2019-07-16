@@ -42,7 +42,7 @@ using namespace trajopt;
 
 namespace tesseract_motion_planners
 {
-TrajOptArrayPlanner::TrajOptArrayPlanner(const std::string& name) : config_(nullptr), pci_(nullptr)
+TrajOptArrayPlanner::TrajOptArrayPlanner(const std::string& name) : pci_(nullptr), config_(nullptr)
 {
   name_ = name;
   // TODO: These should be tied to enumeration ints and returned through an getLastErrorMsg() method

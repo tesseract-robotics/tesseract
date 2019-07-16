@@ -92,7 +92,7 @@ bool checkRviz()
   return true;
 }
 
-bool sendRvizChanges(int past_revision)
+bool sendRvizChanges(unsigned long past_revision)
 {
   modify_env_rviz.waitForExistence();
   tesseract_msgs::ModifyEnvironment update_env;
@@ -307,8 +307,8 @@ std::shared_ptr<ProblemConstructionInfo> cppMethod(const std::string& start, con
   pci->init_info.type = InitInfo::GIVEN_TRAJ;
   pci->init_info.data = start_pos.transpose().replicate(pci->basic_info.n_steps, 1);
   for (auto i = 0; i < start_pos.size(); ++i)
-    pci->init_info.data.col(i) = Eigen::VectorXd::LinSpaced(
-        static_cast<size_t>(pci->basic_info.n_steps), start_pos[i], joint_pose[static_cast<size_t>(i)]);
+    pci->init_info.data.col(i) =
+        Eigen::VectorXd::LinSpaced(pci->basic_info.n_steps, start_pos[i], joint_pose[static_cast<size_t>(i)]);
 
   // Populate Cost Info
   std::shared_ptr<JointVelTermInfo> joint_vel = std::shared_ptr<JointVelTermInfo>(new JointVelTermInfo);
@@ -399,7 +399,7 @@ int main(int argc, char** argv)
   addSeats();
 
   // Now update rviz environment
-  if (!sendRvizChanges(env_current_revision))
+  if (!sendRvizChanges(static_cast<unsigned long>(env_current_revision)))
     return -1;
 
   // Store current revision
@@ -472,7 +472,7 @@ int main(int argc, char** argv)
   tesseract_->getEnvironment()->addAllowedCollision("seat_1", "link_t", "Never");
 
   // Now update rviz environment
-  if (!sendRvizChanges(env_current_revision))
+  if (!sendRvizChanges(static_cast<unsigned long>(env_current_revision)))
     return -1;
 
   // Store current revision
@@ -522,7 +522,7 @@ int main(int argc, char** argv)
   tesseract_->getEnvironment()->moveLink(joint_seat_1_car);
 
   // Now update rviz environment
-  if (!sendRvizChanges(env_current_revision))
+  if (!sendRvizChanges(static_cast<unsigned long>(env_current_revision)))
     return -1;
 
   // Store current revision
@@ -572,7 +572,7 @@ int main(int argc, char** argv)
   tesseract_->getEnvironment()->moveLink(joint_seat_2_robot);
 
   // Now update rviz environment
-  if (!sendRvizChanges(env_current_revision))
+  if (!sendRvizChanges(static_cast<unsigned long>(env_current_revision)))
     return -1;
 
   // Store current revision

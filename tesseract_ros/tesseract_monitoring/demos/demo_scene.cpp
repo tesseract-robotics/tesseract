@@ -52,7 +52,7 @@ static ros::ServiceClient get_env_changes_rviz;
 static ros::ServiceClient modify_env_master;
 static ros::ServiceClient get_env_changes_master;
 
-void addSphere(const std::string& name, const std::string id, int& revision)
+void addSphere(const std::string& name, const std::string id, unsigned long& revision)
 {
   tesseract_msgs::ModifyEnvironment update_env;
 
@@ -106,7 +106,7 @@ void addSphere(const std::string& name, const std::string id, int& revision)
   }
 }
 
-void removeSphere(const std::string& name, const std::string id, int& revision)
+void removeSphere(const std::string& name, const std::string id, unsigned long& revision)
 {
   tesseract_msgs::ModifyEnvironment update_env;
 
@@ -147,7 +147,7 @@ bool updateRViz()
   }
 
   std::string id = env_changes.response.id;
-  int revision = env_changes.response.revision;
+  unsigned long revision = env_changes.response.revision;
 
   modify_env_rviz.waitForExistence();
 
@@ -177,7 +177,7 @@ bool updateMaster()
   }
 
   std::string id = env_changes.response.id;
-  int revision = env_changes.response.revision;
+  unsigned long revision = env_changes.response.revision;
 
   modify_env_master.waitForExistence();
 

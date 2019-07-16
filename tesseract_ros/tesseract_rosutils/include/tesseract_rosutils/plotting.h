@@ -35,13 +35,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/Trajectory.h>
 #include <tesseract_msgs/TesseractState.h>
 #include <Eigen/Geometry>
+#include <ros/ros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/visualization.h>
 #include <tesseract_rosutils/utils.h>
 #include <tesseract_environment/core/environment.h>
-
-#include <ros/ros.h>
 
 namespace tesseract_rosutils
 {

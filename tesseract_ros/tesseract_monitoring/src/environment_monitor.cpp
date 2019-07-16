@@ -152,8 +152,8 @@ EnvironmentMonitor::EnvironmentMonitor(tesseract::Tesseract::Ptr tesseract,
   : monitor_name_(name)
   , discrete_plugin_name_(discrete_plugin)
   , continuous_plugin_name_(continuous_plugin)
-  , nh_("~")
   , tesseract_(std::move(tesseract))
+  , nh_("~")
 {
   initialize();
 }
@@ -511,7 +511,7 @@ bool EnvironmentMonitor::saveSceneGraphCallback(tesseract_msgs::SaveSceneGraphRe
   res.success = !(env == nullptr);
   env->getSceneGraph()->saveDOT(req.filepath);
   res.id = env->getName();
-  res.revision = env->getRevision();
+  res.revision = static_cast<unsigned long>(env->getRevision());
 
   return true;
 }
@@ -748,21 +748,21 @@ bool EnvironmentMonitor::modifyEnvironmentCallback(tesseract_msgs::ModifyEnviron
                                                    tesseract_msgs::ModifyEnvironmentResponse& res)
 {
   res.success = applyEnvironmentCommandsMessage(req.id, static_cast<int>(req.revision), req.commands);
-  res.revision = tesseract_->getEnvironmentConst()->getRevision();
+  res.revision = static_cast<unsigned long>(tesseract_->getEnvironmentConst()->getRevision());
   return res.success;
 }
 
 bool EnvironmentMonitor::getEnvironmentChangesCallback(tesseract_msgs::GetEnvironmentChangesRequest& req,
                                                        tesseract_msgs::GetEnvironmentChangesResponse& res)
 {
-  if (req.revision > tesseract_->getEnvironment()->getRevision())
+  if (static_cast<int>(req.revision) > tesseract_->getEnvironment()->getRevision())
   {
     res.success = false;
     return false;
   }
 
   res.id = tesseract_->getEnvironment()->getName();
-  res.revision = tesseract_->getEnvironment()->getRevision();
+  res.revision = static_cast<unsigned long>(tesseract_->getEnvironment()->getRevision());
   if (!tesseract_rosutils::toMsg(res.commands, tesseract_->getEnvironment()->getCommandHistory(), req.revision))
   {
     res.success = false;
@@ -777,7 +777,7 @@ bool EnvironmentMonitor::getEnvironmentInformationCallback(tesseract_msgs::GetEn
                                                            tesseract_msgs::GetEnvironmentInformationResponse& res)
 {
   res.id = tesseract_->getEnvironment()->getName();
-  res.revision = tesseract_->getEnvironment()->getRevision();
+  res.revision = static_cast<unsigned long>(tesseract_->getEnvironment()->getRevision());
 
   if (req.flags & tesseract_msgs::GetEnvironmentInformationRequest::COMMAND_HISTORY)
   {

@@ -56,7 +56,7 @@ const std::string GET_ENVIRONMENT_CHANGES_SERVICE = "get_tesseract_changes_rviz"
 const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
 
 static bool plotting_ = true;
-static int steps_ = 5;
+// static int steps_ = 5;
 static std::string method_ = "json";
 static Tesseract::Ptr tesseract_ = std::make_shared<Tesseract>();
 static ros::ServiceClient modify_env_rviz;
@@ -92,7 +92,7 @@ bool checkRviz()
  * @param n The past revision number
  * @return True if successful otherwise false
  */
-bool sendRvizChanges(int past_revision)
+bool sendRvizChanges(unsigned long past_revision)
 {
   modify_env_rviz.waitForExistence();
   tesseract_msgs::ModifyEnvironment update_env;

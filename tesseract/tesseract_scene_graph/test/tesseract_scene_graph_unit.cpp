@@ -337,22 +337,19 @@ TEST(TesseractSceneGraphUnit, LoadSRDFUnit)
   processSRDFAllowedCollisions(*g, srdf);
 
   AllowedCollisionMatrix::ConstPtr acm = g->getAllowedCollisionMatrix();
-  const AllowedCollisionMatrix::AllowedCollisionEntries& acm_entries = acm->getAllAllowedCollisions();
 
-  //  acm.addAllowedCollision("link1", "link2", "test");
-  //  // collision between link1 and link2 should be allowed
-  //  EXPECT_TRUE(acm.isCollisionAllowed("link1", "link2"));
-  //  // but now between link2 and link3
-  //  EXPECT_FALSE(acm.isCollisionAllowed("link2", "link3"));
+  // collision between link1 and link2 should be allowed
+  EXPECT_TRUE(acm->isCollisionAllowed("link_1", "link_2"));
 
-  //  acm.removeAllowedCollision("link1", "link2");
-  //  // now collision link1 and link2 is not allowed anymore
-  //  EXPECT_FALSE(acm.isCollisionAllowed("link1", "link2"));
+  // collision between link1 and link2 should be allowed
+  EXPECT_FALSE(acm->isCollisionAllowed("base_link", "link_5"));
 
-  //  acm.addAllowedCollision("link3", "link3", "test");
-  //  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 1);
-  //  acm.clearAllowedCollisions();
-  //  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 0);
+  g->removeAllowedCollision("link_1", "link_2");
+  // now collision link1 and link2 is not allowed anymore
+  EXPECT_FALSE(acm->isCollisionAllowed("link_1", "link_2"));
+
+  g->clearAllowedCollisions();
+  EXPECT_EQ(acm->getAllAllowedCollisions().size(), 0);
 }
 
 void printKDLTree(const KDL::SegmentMap::const_iterator& link, const std::string& prefix)

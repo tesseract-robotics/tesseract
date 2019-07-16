@@ -22,7 +22,7 @@ public:
     assert(waypoints.back()->getType() == tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT);
 
     std::vector<tesseract_motion_planners::Waypoint::Ptr> departure;
-    departure.reserve(step_count_ + 1);
+    departure.reserve(static_cast<size_t>(step_count_) + 1);
 
     const tesseract_motion_planners::CartesianWaypoint::Ptr& cur_waypoint =
         std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(waypoints.back());
