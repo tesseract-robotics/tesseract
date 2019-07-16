@@ -47,7 +47,7 @@ public:
 
   EnvState::ConstPtr getCurrentState() const override { return current_state_; }
 
-  void onEnvironmentChanged(const Commands& commands) override { createKDETree(); }
+  void onEnvironmentChanged(const Commands& /*commands*/) override { createKDETree(); }
 
 private:
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;    /**< Tesseract Scene Graph */

@@ -43,7 +43,7 @@ using namespace trajopt;
 namespace tesseract_motion_planners
 {
 /** @brief Construct a basic planner */
-TrajOptFreespacePlanner::TrajOptFreespacePlanner(const std::string& name) : config_(nullptr), pci_(nullptr)
+TrajOptFreespacePlanner::TrajOptFreespacePlanner(const std::string& name) : pci_(nullptr), config_(nullptr)
 {
   name_ = name;
   // TODO: These should be tied to enumeration ints and returned through an getLastErrorMsg() method

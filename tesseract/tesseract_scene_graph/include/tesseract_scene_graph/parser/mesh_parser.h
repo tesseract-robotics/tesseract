@@ -106,7 +106,7 @@ inline std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
     for (long i = 0; i < triangles->size(); ++i)
       (*triangles)[i] = local_triangles[static_cast<size_t>(i)];
 
-    meshes.push_back(std::shared_ptr<T>(new T(vertices, triangles, triangle_count, path, scale)));
+    meshes.push_back(std::shared_ptr<T>(new T(vertices, triangles, static_cast<int>(triangle_count), path, scale)));
   }
 
   for (unsigned int n = 0; n < node->mNumChildren; ++n)

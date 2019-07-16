@@ -12,6 +12,8 @@
   <depend>eigen_conversions</depend>
   <depend>roscpp</depend>
   <depend>roslib</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
   <depend>tesseract_collision</depend>
   <depend>tesseract_msgs</depend>
   <depend>tesseract_scene_graph</depend>
@@ -19,6 +21,7 @@
   <depend>tesseract_visualization</depend>
   <depend>tesseract_common</depend>
   <depend>tesseract_process_planners</depend>
+  <depend>tesseract_motion_planners</depend>
 
   <export>
   </export>

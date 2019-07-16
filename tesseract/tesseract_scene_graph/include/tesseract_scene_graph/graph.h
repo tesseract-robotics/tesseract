@@ -254,6 +254,9 @@ public:
    */
   void removeAllowedCollision(const std::string& link_name);
 
+  /** @brief Remove all allowed collisions */
+  void clearAllowedCollisions();
+
   /**
    * @brief Check if two links are allowed to be in collision
    * @param link_name1 link name

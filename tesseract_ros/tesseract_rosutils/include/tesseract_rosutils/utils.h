@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_ROS_UTILS_H
-#define TESSERACT_ROS_UTILS_H
+#ifndef TESSERACT_ROSUTILS_UTILS_H
+#define TESSERACT_ROSUTILS_UTILS_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -255,14 +255,14 @@ static inline bool isIdentical(const tesseract_geometry::Geometry& shape1, const
   return true;
 }
 
-static inline bool isIdentical(const tesseract_scene_graph::Visual& visual1,
-                               const tesseract_scene_graph::Visual& visual2)
+static inline bool isIdentical(const tesseract_scene_graph::Visual& /*visual1*/,
+                               const tesseract_scene_graph::Visual& /*visual2*/)
 {
   assert(false);
 }
 
-static inline bool isIdentical(const tesseract_scene_graph::Collision& collision1,
-                               const tesseract_scene_graph::Collision& collision2)
+static inline bool isIdentical(const tesseract_scene_graph::Collision& /*collision1*/,
+                               const tesseract_scene_graph::Collision& /*collision2*/)
 {
   assert(false);
 }
@@ -370,9 +370,9 @@ static inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesserac
       }
 
       const Eigen::VectorXi& faces = *(mesh.getTriangles());
-      geometry_msgs.mesh.faces.resize(faces.size());
-      for (size_t i = 0; i < faces.size(); ++i)
-        geometry_msgs.mesh.faces[i] = faces[i];
+      geometry_msgs.mesh.faces.resize(static_cast<size_t>(faces.size()));
+      for (size_t i = 0; i < static_cast<size_t>(faces.size()); ++i)
+        geometry_msgs.mesh.faces[i] = static_cast<unsigned>(faces[static_cast<unsigned>(i)]);
 
       geometry_msgs.mesh.file_path = mesh.getFilePath();
       if (geometry_msgs.mesh.file_path.empty())
@@ -383,7 +383,7 @@ static inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesserac
       }
       else
       {
-        const Eigen::Vector3d& scale = mesh.getScale();
+        const Eigen::Vector3f& scale = mesh.getScale().cast<float>();
         geometry_msgs.mesh.scale[0] = scale.x();
         geometry_msgs.mesh.scale[1] = scale.y();
         geometry_msgs.mesh.scale[2] = scale.z();
@@ -407,9 +407,9 @@ static inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesserac
       }
 
       const Eigen::VectorXi& faces = *(mesh.getFaces());
-      geometry_msgs.mesh.faces.resize(faces.size());
-      for (size_t i = 0; i < faces.size(); ++i)
-        geometry_msgs.mesh.faces[i] = faces[i];
+      geometry_msgs.mesh.faces.resize(static_cast<size_t>(faces.size()));
+      for (size_t i = 0; i < static_cast<size_t>(faces.size()); ++i)
+        geometry_msgs.mesh.faces[i] = static_cast<unsigned>(faces[static_cast<unsigned>(i)]);
 
       geometry_msgs.mesh.file_path = mesh.getFilePath();
       if (geometry_msgs.mesh.file_path.empty())
@@ -420,7 +420,7 @@ static inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesserac
       }
       else
       {
-        const Eigen::Vector3d& scale = mesh.getScale();
+        const Eigen::Vector3f& scale = mesh.getScale().cast<float>();
         geometry_msgs.mesh.scale[0] = scale.x();
         geometry_msgs.mesh.scale[1] = scale.y();
         geometry_msgs.mesh.scale[2] = scale.z();
@@ -444,9 +444,9 @@ static inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesserac
       }
 
       const Eigen::VectorXi& faces = *(mesh.getTriangles());
-      geometry_msgs.mesh.faces.resize(faces.size());
-      for (size_t i = 0; i < faces.size(); ++i)
-        geometry_msgs.mesh.faces[i] = faces[i];
+      geometry_msgs.mesh.faces.resize(static_cast<size_t>(faces.size()));
+      for (size_t i = 0; i < static_cast<size_t>(faces.size()); ++i)
+        geometry_msgs.mesh.faces[i] = static_cast<unsigned>(faces[static_cast<unsigned>(i)]);
 
       geometry_msgs.mesh.file_path = mesh.getFilePath();
       if (geometry_msgs.mesh.file_path.empty())
@@ -457,7 +457,7 @@ static inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesserac
       }
       else
       {
-        const Eigen::Vector3d& scale = mesh.getScale();
+        const Eigen::Vector3f& scale = mesh.getScale().cast<float>();
         geometry_msgs.mesh.scale[0] = scale.x();
         geometry_msgs.mesh.scale[1] = scale.y();
         geometry_msgs.mesh.scale[2] = scale.z();
@@ -516,7 +516,7 @@ static inline bool fromMsg(tesseract_geometry::Geometry::Ptr& geometry, const te
           geometry_msg.mesh.vertices[i].x, geometry_msg.mesh.vertices[i].y, geometry_msg.mesh.vertices[i].z);
 
     for (unsigned int i = 0; i < geometry_msg.mesh.faces.size(); ++i)
-      (*faces)[i] = geometry_msg.mesh.faces[i];
+      (*faces)[static_cast<int>(i)] = static_cast<int>(geometry_msg.mesh.faces[i]);
 
     if (!geometry_msg.mesh.file_path.empty())
       geometry = tesseract_geometry::Mesh::Ptr(new tesseract_geometry::Mesh(
@@ -538,7 +538,7 @@ static inline bool fromMsg(tesseract_geometry::Geometry::Ptr& geometry, const te
           geometry_msg.mesh.vertices[i].x, geometry_msg.mesh.vertices[i].y, geometry_msg.mesh.vertices[i].z);
 
     for (unsigned int i = 0; i < geometry_msg.mesh.faces.size(); ++i)
-      (*faces)[i] = geometry_msg.mesh.faces[i];
+      (*faces)[static_cast<int>(i)] = static_cast<int>(geometry_msg.mesh.faces[i]);
 
     if (!geometry_msg.mesh.file_path.empty())
       geometry = tesseract_geometry::ConvexMesh::Ptr(new tesseract_geometry::ConvexMesh(
@@ -560,7 +560,7 @@ static inline bool fromMsg(tesseract_geometry::Geometry::Ptr& geometry, const te
           geometry_msg.mesh.vertices[i].x, geometry_msg.mesh.vertices[i].y, geometry_msg.mesh.vertices[i].z);
 
     for (unsigned int i = 0; i < geometry_msg.mesh.faces.size(); ++i)
-      (*faces)[i] = geometry_msg.mesh.faces[i];
+      (*faces)[static_cast<int>(i)] = static_cast<int>(geometry_msg.mesh.faces[i]);
 
     if (!geometry_msg.mesh.file_path.empty())
       geometry = tesseract_geometry::SDFMesh::Ptr(new tesseract_geometry::SDFMesh(
@@ -579,7 +579,12 @@ static inline bool fromMsg(tesseract_geometry::Geometry::Ptr& geometry, const te
   }
 
   if (geometry == nullptr)
+  {
     ROS_ERROR("Unable to construct shape corresponding to shape_msg of type %d", static_cast<int>(geometry_msg.type));
+    return false;
+  }
+
+  return true;
 }
 
 static inline bool toMsg(tesseract_msgs::Material& material_msg, const tesseract_scene_graph::Material::Ptr& material)
@@ -592,10 +597,10 @@ static inline bool toMsg(tesseract_msgs::Material& material_msg, const tesseract
 
   material_msg.name = material->getName();
   material_msg.texture_filename = material->texture_filename;
-  material_msg.color.r = material->color(0);
-  material_msg.color.g = material->color(1);
-  material_msg.color.b = material->color(2);
-  material_msg.color.a = material->color(3);
+  material_msg.color.r = static_cast<float>(material->color(0));
+  material_msg.color.g = static_cast<float>(material->color(1));
+  material_msg.color.b = static_cast<float>(material->color(2));
+  material_msg.color.a = static_cast<float>(material->color(3));
   return true;
 }
 
@@ -928,7 +933,7 @@ static inline bool fromMsg(tesseract_scene_graph::JointSafety::Ptr& joint_safety
 static inline bool toMsg(tesseract_msgs::Joint& joint_msg, const tesseract_scene_graph::Joint& joint)
 {
   joint_msg.name = joint.getName();
-  joint_msg.type = static_cast<int>(joint.type);
+  joint_msg.type = static_cast<unsigned char>(joint.type);
 
   joint_msg.axis[0] = joint.axis[0];
   joint_msg.axis[1] = joint.axis[1];
@@ -938,11 +943,24 @@ static inline bool toMsg(tesseract_msgs::Joint& joint_msg, const tesseract_scene
   joint_msg.parent_link_name = joint.parent_link_name;
 
   tf::poseEigenToMsg(joint.parent_to_joint_origin_transform, joint_msg.parent_to_joint_origin_transform);
-  toMsg(joint_msg.limits, joint.limits);
-  toMsg(joint_msg.dynamics, joint.dynamics);
-  toMsg(joint_msg.safety, joint.safety);
-  toMsg(joint_msg.calibration, joint.calibration);
-  toMsg(joint_msg.mimic, joint.mimic);
+
+  bool success = true;
+  if (!toMsg(joint_msg.limits, joint.limits))
+    success = false;
+
+  if (!toMsg(joint_msg.dynamics, joint.dynamics))
+    success = false;
+
+  if (!toMsg(joint_msg.safety, joint.safety))
+    success = false;
+
+  if (!toMsg(joint_msg.calibration, joint.calibration))
+    success = false;
+
+  if (!toMsg(joint_msg.mimic, joint.mimic))
+    success = false;
+
+  return success;
 }
 
 static inline tesseract_scene_graph::Joint fromMsg(const tesseract_msgs::Joint& joint_msg)
@@ -1093,9 +1111,9 @@ static inline bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const 
 
 static inline bool toMsg(std::vector<tesseract_msgs::EnvironmentCommand>& commands_msg,
                          const tesseract_environment::Commands& commands,
-                         const int past_revision)
+                         const unsigned long past_revision)
 {
-  for (int i = past_revision; i < commands.size(); ++i)
+  for (unsigned long i = past_revision; i < commands.size(); ++i)
   {
     tesseract_msgs::EnvironmentCommand command_msg;
     if (!tesseract_rosutils::toMsg(command_msg, *(commands[i])))
@@ -1115,7 +1133,7 @@ static inline void toMsg(const sensor_msgs::JointStatePtr& joint_state, const te
 static inline void toMsg(tesseract_msgs::TesseractState& state_msg, const tesseract_environment::Environment& env)
 {
   state_msg.id = env.getName();
-  state_msg.revision = env.getRevision();
+  state_msg.revision = static_cast<unsigned long>(env.getRevision());
   toMsg(state_msg.commands, env.getCommandHistory(), 0);
 
   tesseract_environment::EnvState::ConstPtr state = env.getCurrentState();
@@ -1356,7 +1374,7 @@ static inline bool processMsg(const tesseract_environment::Environment::Ptr& env
 
 static inline bool processMsg(tesseract_environment::Environment& env, const tesseract_msgs::TesseractState& state_msg)
 {
-  if (state_msg.id != env.getName() || env.getRevision() > state_msg.revision)
+  if (state_msg.id != env.getName() || static_cast<unsigned long>(env.getRevision()) > state_msg.revision)
     return false;
 
   if (!processMsg(env, state_msg.commands))

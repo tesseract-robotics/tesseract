@@ -86,7 +86,7 @@ bool KDLFwdKinTree::calcFwdKin(Eigen::Isometry3d& /*pose*/, const Eigen::Ref<con
   return false;
 }
 
-bool KDLFwdKinTree::calcFwdKin(tesseract_common::VectorIsometry3d& poses,
+bool KDLFwdKinTree::calcFwdKin(tesseract_common::VectorIsometry3d& /*poses*/,
                                const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const
 {
   assert(checkInitialized());

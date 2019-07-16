@@ -65,21 +65,21 @@ InteractiveMarker::InteractiveMarker(const std::string& name,
                                      const float scale)
   : visible_(true)
   , context_(context)
+  , reference_frame_(reference_frame)
+  , reference_frame_locked_(reference_frame_locked)
+  , reference_node_(scene_node->createChildSceneNode())
+  , position_(scene_node->getPosition())
+  , orientation_(scene_node->getOrientation())
   , pose_changed_(false)
   , time_since_last_feedback_(0)
+  , name_(name)
+  , description_(description)
   , dragging_(false)
   , pose_update_requested_(false)
+  , scale_(scale)
   , show_visual_aids_(false)
   , show_axes_(false)
   , show_description_(false)
-  , name_(name)
-  , description_(description)
-  , scale_(scale)
-  , reference_frame_(reference_frame)
-  , reference_frame_locked_(reference_frame_locked)
-  , position_(scene_node->getPosition())
-  , orientation_(scene_node->getOrientation())
-  , reference_node_(scene_node->createChildSceneNode())
 {
   axes_ = new rviz::Axes(context->getSceneManager(), reference_node_, 1, 0.05f);
 
@@ -644,7 +644,7 @@ void InteractiveMarker::stopDragging()
 
 bool InteractiveMarker::handle3DCursorEvent(rviz::ViewportMouseEvent& event,
                                             const Ogre::Vector3& cursor_pos,
-                                            const Ogre::Quaternion& cursor_rot,
+                                            const Ogre::Quaternion& /*cursor_rot*/,
                                             const std::string& control_name)
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
@@ -672,7 +672,7 @@ bool InteractiveMarker::handle3DCursorEvent(rviz::ViewportMouseEvent& event,
       Ogre::Vector3 three_d_point = cursor_pos;
       bool valid_point = true;
       Ogre::Vector2 mouse_pos = rviz::project3DPointToViewportXY(event.viewport, cursor_pos);
-      QCursor::setPos(event.panel->mapToGlobal(QPoint(mouse_pos.x, mouse_pos.y)));
+      QCursor::setPos(event.panel->mapToGlobal(QPoint(static_cast<int>(mouse_pos.x), static_cast<int>(mouse_pos.y))));
       showMenu(event, control_name, three_d_point, valid_point);
       return true;
     }

@@ -279,6 +279,8 @@ void SceneGraph::removeAllowedCollision(const std::string& link_name1, const std
 
 void SceneGraph::removeAllowedCollision(const std::string& link_name) { acm_->removeAllowedCollision(link_name); }
 
+void SceneGraph::clearAllowedCollisions() { acm_->clearAllowedCollisions(); }
+
 bool SceneGraph::isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const
 {
   return acm_->isCollisionAllowed(link_name1, link_name2);
