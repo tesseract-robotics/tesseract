@@ -27,14 +27,14 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <jsoncpp/json/json.h>
 #include <ros/ros.h>
+#include <tesseract_msgs/ModifyEnvironment.h>
+#include <tesseract_msgs/GetEnvironmentChanges.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
-#include <tesseract_msgs/ModifyEnvironment.h>
-#include <tesseract_msgs/GetEnvironmentChanges.h>
 #include <trajopt/plot_callback.hpp>
 #include <trajopt/file_write_callback.hpp>
 #include <trajopt/problem_description.hpp>
@@ -84,7 +84,11 @@ TrajOptProb::Ptr jsonMethod()
 
 bool checkRviz()
 {
-  // Get the current state of the environment
+  // Get the current state of the environment.
+  // Usually you would not be getting environment state from rviz
+  // this is just an example. You would be gettting it from the
+  // environment_monitor node. Need to update examples to launch
+  // environment_monitor node.
   get_env_changes_rviz.waitForExistence();
   tesseract_msgs::GetEnvironmentChanges env_changes;
   env_changes.request.revision = 0;
@@ -251,13 +255,16 @@ int main(int argc, char** argv)
   tesseract_rosutils::ROSPlottingPtr plotter =
       std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment());
 
-  // These are used to keep visualization updated
-  modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", 10);
-  get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", 10);
+  if (plotting_)
+  {
+    // These are used to keep visualization updated
+    modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", false);
+    get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", false);
 
-  // Check RViz to make sure nothing has changed
-  if (!checkRviz())
-    return -1;
+    // Check RViz to make sure nothing has changed
+    if (!checkRviz())
+      return -1;
+  }
 
   // Add sphere to environment
   Link link_sphere("sphere_attached");
@@ -280,9 +287,12 @@ int main(int argc, char** argv)
 
   tesseract_->getEnvironment()->addLink(link_sphere, joint_sphere);
 
-  // Now update rviz environment
-  if (!sendRvizChanges(0))
-    return -1;
+  if (plotting_)
+  {
+    // Now update rviz environment
+    if (!sendRvizChanges(0))
+      return -1;
+  }
 
   // Set the robot initial state
   std::unordered_map<std::string, double> ipos;
@@ -374,8 +384,5 @@ int main(int argc, char** argv)
 
   ROS_INFO((found) ? ("Final trajectory is in collision") : ("Final trajectory is collision free"));
 
-  if (plotting_)
-  {
-    plotter->plotTrajectory(prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()));
-  }
+  plotter->plotTrajectory(prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()));
 }

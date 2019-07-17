@@ -27,4 +27,9 @@
   <node pkg="tesseract_ros_examples" type="tesseract_ros_examples_puzzle_piece_auxillary_axes_plan" name="tesseract_ros_examples_puzzle_piece_auxillary_axes_plan">
     <param name="plotting" type="bool" value="$(arg plotting)"/>
   </node>
+
+  <!-- Launch visualization -->
+  <node if="$(arg plotting)" pkg="rviz" type="rviz" name="tesseract_ros_examples_puzzle_piece_auxillary_axes_plan_rviz"
+      args="-d $(find tesseract_ros_examples)/config/examples.rviz" />
+
 </launch>
