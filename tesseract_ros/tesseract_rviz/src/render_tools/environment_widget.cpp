@@ -30,7 +30,7 @@ EnvironmentWidget::EnvironmentWidget(rviz::Property* widget, rviz::Display* disp
   , tesseract_(nullptr)
   , update_required_(false)
   , update_state_(true)
-  , load_tesseract_(false)
+  , load_tesseract_(true)
 {
   environment_widget_counter_++;
   if (widget_ns == std::string())
@@ -127,12 +127,6 @@ void EnvironmentWidget::onInitialize(VisualizationWidget::Ptr visualization,
   update_state_ = update_state;
 
   tesseract_state_topic_property_->setString(tesseract_state_topic);
-
-  modify_environment_server_ = nh_.advertiseService(
-      widget_ns_ + DEFAULT_MODIFY_ENVIRONMENT_SERVICE, &EnvironmentWidget::modifyEnvironmentCallback, this);
-
-  get_environment_changes_server_ = nh_.advertiseService(
-      widget_ns_ + DEFAULT_GET_ENVIRONMENT_CHANGES_SERVICE, &EnvironmentWidget::getEnvironmentChangesCallback, this);
 
   changedEnableVisualVisible();
   changedEnableCollisionVisible();
@@ -246,11 +240,15 @@ void EnvironmentWidget::changedURDFDescription()
 
 void EnvironmentWidget::changedEnvironmentNamespace()
 {
+  widget_ns_ = environment_namespace_property_->getStdString();
+
+  if (load_tesseract_)
+    return;
+
   // Need to kill services and relaunch with new name
   modify_environment_server_.shutdown();
   get_environment_changes_server_.shutdown();
 
-  widget_ns_ = environment_namespace_property_->getStdString();
   modify_environment_server_ = nh_.advertiseService(
       widget_ns_ + DEFAULT_MODIFY_ENVIRONMENT_SERVICE, &EnvironmentWidget::modifyEnvironmentCallback, this);
 
@@ -473,6 +471,7 @@ bool EnvironmentWidget::getEnvironmentChangesCallback(tesseract_msgs::GetEnviron
 {
   if (req.revision > tesseract_->getEnvironment()->getRevision())
   {
+    ROS_WARN("Requested changes for id %d greater than current change id %d", req.revision, tesseract_->getEnvironment()->getRevision());
     res.success = false;
     return false;
   }
@@ -611,6 +610,18 @@ void EnvironmentWidget::loadEnvironment()
       changedEnableVisualVisible();
       changedEnableCollisionVisible();
       visualization_->setVisible(true);
+
+      if (modify_environment_server_.getService().empty())
+      {
+        modify_environment_server_ = nh_.advertiseService(
+            widget_ns_ + DEFAULT_MODIFY_ENVIRONMENT_SERVICE, &EnvironmentWidget::modifyEnvironmentCallback, this);
+      }
+
+      if (get_environment_changes_server_.getService().empty())
+      {
+        get_environment_changes_server_ = nh_.advertiseService(
+            widget_ns_ + DEFAULT_GET_ENVIRONMENT_CHANGES_SERVICE, &EnvironmentWidget::getEnvironmentChangesCallback, this);
+      }
     }
     else
     {

@@ -4,7 +4,7 @@
   <!-- The name of the parameter under which the URDF is loaded -->
   <arg name="robot_description" default="robot_description"/>
   <arg name="trajopt_description" default="trajopt_description"/>
-  <arg name="plotting" default="true"/>
+  <arg name="plotting" default="false"/>
 
   <!-- Load universal robot description format (URDF) -->
   <param name="$(arg trajopt_description)" textfile="$(find tesseract_ros_examples)/config/basic_cartesian_plan.json"/>
@@ -31,5 +31,9 @@
   <node pkg="tesseract_ros_examples" type="tesseract_ros_examples_basic_cartesian_plan" name="tesseract_ros_examples_basic_cartesian_plan">
     <param name="plotting" type="bool" value="$(arg plotting)"/>
   </node>
+
+  <!-- Launch visualization -->
+  <node if="$(arg plotting)" pkg="rviz" type="rviz" name="tesseract_ros_examples_basic_cartesian_plan_rviz"
+      args="-d $(find tesseract_ros_examples)/config/examples.rviz" />
 
 </launch>
