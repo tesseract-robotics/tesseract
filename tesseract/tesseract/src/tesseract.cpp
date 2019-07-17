@@ -313,7 +313,7 @@ bool Tesseract::registerDefaultFwdKinSolvers()
 
     if (!group.joints_.empty())
     {
-      assert(group.joints_.size() == 1);
+      assert(group.joints_.size() > 0);
       tesseract_kinematics::ForwardKinematics::Ptr solver =
           tree_factory->create(environment_->getSceneGraph(), group.joints_, group.name_);
       if (solver != nullptr)
@@ -390,14 +390,14 @@ bool Tesseract::registerDefaultInvKinSolvers()
 
     if (!group.joints_.empty())
     {
-      CONSOLE_BRIDGE_logError("Joint groups are currently not supported!");
+      CONSOLE_BRIDGE_logError("Joint groups are currently not supported by inverse kinematics!");
       success = false;
     }
 
     // TODO: Need to add other options
     if (!group.links_.empty())
     {
-      CONSOLE_BRIDGE_logError("Link groups are currently not supported!");
+      CONSOLE_BRIDGE_logError("Link groups are currently not supported by inverse kinematics!");
       success = false;
     }
 
