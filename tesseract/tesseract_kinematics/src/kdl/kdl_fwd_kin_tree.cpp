@@ -314,6 +314,7 @@ KDLFwdKinTree& KDLFwdKinTree::operator=(const KDLFwdKinTree& rhs)
   joint_limits_ = rhs.joint_limits_;
   joint_list_ = rhs.joint_list_;
   link_list_ = rhs.link_list_;
+  active_link_list_ = rhs.active_link_list_;
   fk_solver_.reset(new KDL::TreeFkSolverPos_recursive(kdl_tree_));
   jac_solver_.reset(new KDL::TreeJntToJacSolver(kdl_tree_));
   scene_graph_ = rhs.scene_graph_;
@@ -333,6 +334,7 @@ KDLFwdKinTree::KDLFwdKinTree(const KDLFwdKinTree& kin)
   joint_limits_ = kin.joint_limits_;
   joint_list_ = kin.joint_list_;
   link_list_ = kin.link_list_;
+  active_link_list_ = kin.active_link_list_;
   fk_solver_.reset(new KDL::TreeFkSolverPos_recursive(kdl_tree_));
   jac_solver_.reset(new KDL::TreeJntToJacSolver(kdl_tree_));
   scene_graph_ = kin.scene_graph_;
