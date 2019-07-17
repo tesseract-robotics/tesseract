@@ -106,7 +106,7 @@ TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionOctomapSphereUnit)
   runTest(checker, 0.001);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionBoxSphereConvexHullUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionOctomapSphereConvexHullUnit)
 {
   tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker, true);
@@ -120,7 +120,7 @@ TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionOctomapSphereUnit)
   runTest(checker, 0.001);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxSphereConvexHullUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionOctomapSphereConvexHullUnit)
 {
   tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker, true);
@@ -135,7 +135,7 @@ TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionOctomapSphereUnit)
 }
 
 // TODO: Levi, enable once FCL PR #338
-// TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxSphereConvexHullUnit)
+// TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionOctomapSphereConvexHullUnit)
 //{
 //  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
 //  addCollisionObjects(checker, true);
