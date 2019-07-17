@@ -24,6 +24,7 @@ macro(add_gtest test_name test_file)
   else()
       gtest_discover_tests(${test_name})
   endif()
+  add_dependencies(${test_name} ${PACKAGE_LIBRARIES})
   add_dependencies(run_tests ${test_name})
 endmacro()
 
