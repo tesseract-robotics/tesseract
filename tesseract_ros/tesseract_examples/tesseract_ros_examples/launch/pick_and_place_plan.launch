@@ -1,7 +1,7 @@
+<?xml version="1.0"?>
 <launch>
-    <arg name="rviz" default="true"/>
     <arg name="steps_per_phase" default="10"/>
-    <arg name="plotting" default="false" />
+    <arg name="plotting" default="true" />
     <arg name="file_write_cb" default="false" />
     <arg name="box_side" default="0.2"/>
     <arg name="box_x" default="0.15"/>
@@ -34,7 +34,7 @@
     </node>
 
     <!-- Launch visualization -->
-    <node if="$(arg rviz)" pkg="rviz" type="rviz" name="pick_and_place_viz"
-        args="-d $(find tesseract_ros_examples)/config/pick_and_place_plan.rviz" />
+    <node if="$(arg plotting)" pkg="rviz" type="rviz" name="pick_and_place_viz"
+        args="-d $(find tesseract_ros_examples)/config/examples.rviz" />
 
 </launch>

@@ -27,14 +27,14 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <fstream>
+#include <tesseract_msgs/ModifyEnvironment.h>
+#include <tesseract_msgs/GetEnvironmentChanges.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
-#include <tesseract_msgs/ModifyEnvironment.h>
-#include <tesseract_msgs/GetEnvironmentChanges.h>
 #include <trajopt/plot_callback.hpp>
 #include <trajopt/problem_description.hpp>
 #include <trajopt_utils/config.hpp>
@@ -285,14 +285,16 @@ int main(int argc, char** argv)
   // Create plotting tool
   ROSPlottingPtr plotter = std::make_shared<ROSPlotting>(tesseract_->getEnvironment());
 
-  // These are used to keep visualization updated
-  modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", 10);
-  get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", 10);
+  if (plotting_)
+  {
+    // These are used to keep visualization updated
+    modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", false);
+    get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", false);
 
-  // Check RViz to make sure nothing has changed
-  if (!checkRviz())
-    return -1;
-
+    // Check RViz to make sure nothing has changed
+    if (!checkRviz())
+      return -1;
+  }
   // Set the robot initial state
   std::unordered_map<std::string, double> ipos;
   ipos["joint_a1"] = -0.785398;
@@ -306,9 +308,12 @@ int main(int argc, char** argv)
   ipos["joint_aux2"] = 0.0;
   tesseract_->getEnvironment()->setState(ipos);
 
-  // Now update rviz environment
-  if (!sendRvizChanges(0))
-    return -1;
+  if (plotting_)
+  {
+    // Now update rviz environment
+    if (!sendRvizChanges(0))
+      return -1;
+  }
 
   // Set Log Level
   util::gLogLevel = util::LevelInfo;

@@ -27,14 +27,14 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <jsoncpp/json/json.h>
 #include <ros/ros.h>
+#include <tesseract_msgs/ModifyEnvironment.h>
+#include <tesseract_msgs/GetEnvironmentChanges.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
-#include <tesseract_msgs/ModifyEnvironment.h>
-#include <tesseract_msgs/GetEnvironmentChanges.h>
 #include <trajopt/plot_callback.hpp>
 #include <trajopt/problem_description.hpp>
 #include <trajopt_utils/config.hpp>
@@ -69,7 +69,11 @@ std::unordered_map<std::string, std::unordered_map<std::string, double>> saved_p
 
 bool checkRviz()
 {
-  // Get the current state of the environment
+  // Get the current state of the environment.
+  // Usually you would not be getting environment state from rviz
+  // this is just an example. You would be gettting it from the
+  // environment_monitor node. Need to update examples to launch
+  // environment_monitor node.
   get_env_changes_rviz.waitForExistence();
   tesseract_msgs::GetEnvironmentChanges env_changes;
   env_changes.request.revision = 0;
@@ -366,6 +370,9 @@ int main(int argc, char** argv)
   ros::NodeHandle pnh("~");
   ros::NodeHandle nh;
 
+  // Get ROS Parameters
+  pnh.param("plotting", plotting_, plotting_);
+
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;
   nh.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
@@ -375,22 +382,22 @@ int main(int argc, char** argv)
     return -1;
 
   // These are used to keep visualization updated
-  modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", 10);
-  get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", 10);
+  if (plotting_)
+  {
+    modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", false);
+    get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", false);
+
+    // Check RViz to make sure nothing has changed
+    if (!checkRviz())
+      return -1;
+  }
 
   // Create plotting tool
   tesseract_rosutils::ROSPlottingPtr plotter =
       std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment());
 
-  // Get ROS Parameters
-  pnh.param("plotting", plotting_, plotting_);
-
   // Get predefined positions
   saved_positions_ = getPredefinedPosition();
-
-  // Check RViz to make sure nothing has changed
-  if (!checkRviz())
-    return -1;
 
   //  // Add the car as a detailed mesh
   //  addCar();
@@ -398,9 +405,12 @@ int main(int argc, char** argv)
   // Put three seats on the conveyor
   addSeats();
 
-  // Now update rviz environment
-  if (!sendRvizChanges(static_cast<unsigned long>(env_current_revision)))
-    return -1;
+  if (plotting_)
+  {
+    // Now update rviz environment
+    if (!sendRvizChanges(static_cast<unsigned long>(env_current_revision)))
+      return -1;
+  }
 
   // Store current revision
   env_current_revision = tesseract_->getEnvironment()->getRevision();
@@ -471,9 +481,12 @@ int main(int argc, char** argv)
   tesseract_->getEnvironment()->addAllowedCollision("seat_1", "link_r", "Never");
   tesseract_->getEnvironment()->addAllowedCollision("seat_1", "link_t", "Never");
 
-  // Now update rviz environment
-  if (!sendRvizChanges(static_cast<unsigned long>(env_current_revision)))
-    return -1;
+  if (plotting_)
+  {
+    // Now update rviz environment
+    if (!sendRvizChanges(static_cast<unsigned long>(env_current_revision)))
+      return -1;
+  }
 
   // Store current revision
   env_current_revision = tesseract_->getEnvironment()->getRevision();
@@ -521,9 +534,12 @@ int main(int argc, char** argv)
 
   tesseract_->getEnvironment()->moveLink(joint_seat_1_car);
 
-  // Now update rviz environment
-  if (!sendRvizChanges(static_cast<unsigned long>(env_current_revision)))
-    return -1;
+  if (plotting_)
+  {
+    // Now update rviz environment
+    if (!sendRvizChanges(static_cast<unsigned long>(env_current_revision)))
+      return -1;
+  }
 
   // Store current revision
   env_current_revision = tesseract_->getEnvironment()->getRevision();
@@ -571,9 +587,12 @@ int main(int argc, char** argv)
 
   tesseract_->getEnvironment()->moveLink(joint_seat_2_robot);
 
-  // Now update rviz environment
-  if (!sendRvizChanges(static_cast<unsigned long>(env_current_revision)))
-    return -1;
+  if (plotting_)
+  {
+    // Now update rviz environment
+    if (!sendRvizChanges(static_cast<unsigned long>(env_current_revision)))
+      return -1;
+  }
 
   // Store current revision
   env_current_revision = tesseract_->getEnvironment()->getRevision();

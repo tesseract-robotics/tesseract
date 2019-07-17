@@ -65,7 +65,11 @@ static ros::ServiceClient get_env_changes_rviz;
 
 bool checkRviz()
 {
-  // Get the current state of the environment
+  // Get the current state of the environment.
+  // Usually you would not be getting environment state from rviz
+  // this is just an example. You would be gettting it from the
+  // environment_monitor node. Need to update examples to launch
+  // environment_monitor node.
   get_env_changes_rviz.waitForExistence();
   tesseract_msgs::GetEnvironmentChanges env_changes;
   env_changes.request.revision = 0;
@@ -75,7 +79,7 @@ bool checkRviz()
   }
   else
   {
-    ROS_ERROR("Failed retrieve current environment changes!");
+    ROS_ERROR("Failed to retrieve current environment changes!");
     return false;
   }
 
@@ -160,13 +164,16 @@ int main(int argc, char** argv)
   tesseract_rosutils::ROSPlottingPtr plotter =
       std::make_shared<tesseract_rosutils::ROSPlotting>(tesseract_->getEnvironment());
 
-  // These are used to keep visualization updated
-  modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", 10);
-  get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", 10);
+  if (plotting_)
+  {
+    // These are used to keep visualization updated
+    modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", false);
+    get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", false);
 
-  // Check RViz to make sure nothing has changed
-  if (!checkRviz())
-    return -1;
+    // Check RViz to make sure nothing has changed
+    if (!checkRviz())
+      return -1;
+  }
 
   // Set the initial state of the robot
   std::unordered_map<std::string, double> joint_states;
@@ -201,9 +208,12 @@ int main(int argc, char** argv)
 
   tesseract_->getEnvironment()->addLink(link_box, joint_box);
 
-  // Now update rviz environment
-  if (!sendRvizChanges(0))
-    return -1;
+  if (plotting_)
+  {
+    // Now update rviz environment
+    if (!sendRvizChanges(0))
+      return -1;
+  }
 
   ////////////
   /// PICK ///
@@ -234,7 +244,7 @@ int main(int argc, char** argv)
   pci.basic_info.dt_lower_lim = 2;    // 1/most time
   pci.basic_info.dt_upper_lim = 100;  // 1/least time
   pci.basic_info.start_fixed = true;
-  pci.basic_info.use_time = true;
+  pci.basic_info.use_time = false;
 
   // Create Kinematic Object
   pci.kin = pci.getManipulator(pci.basic_info.manip);
@@ -249,7 +259,7 @@ int main(int argc, char** argv)
     collision->name = "collision";
     collision->term_type = trajopt::TT_COST;
     collision->continuous = true;
-    collision->first_step = 0;
+    collision->first_step = 1;
     collision->last_step = pci.basic_info.n_steps - 1;
     collision->gap = 1;
     collision->info = trajopt::createSafetyMarginDataVector(pci.basic_info.n_steps, 0.025, 40);
@@ -270,7 +280,7 @@ int main(int argc, char** argv)
   }
 
   // Add a velocity cnt with time to insure that robot dynamics are obeyed
-  if (true)
+  if (false)
   {
     std::shared_ptr<trajopt::JointVelTermInfo> jv(new trajopt::JointVelTermInfo);
 
@@ -328,7 +338,7 @@ int main(int argc, char** argv)
   }
 
   // Add a cost on the total time to complete the pick
-  if (true)
+  if (false)
   {
     std::shared_ptr<trajopt::TotalTimeTermInfo> time_cost(new trajopt::TotalTimeTermInfo);
     time_cost->name = "time_cost";
@@ -395,16 +405,18 @@ int main(int argc, char** argv)
   joint_box2.child_link_name = link_box.getName();
   joint_box2.type = JointType::FIXED;
   joint_box2.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
-  joint_box2.parent_to_joint_origin_transform.translation() += Eigen::Vector3d(box_x, box_y, box_side / 2.0);
+  joint_box2.parent_to_joint_origin_transform.translation() += Eigen::Vector3d(0, 0, box_side / 2.0);
 
   tesseract_->getEnvironment()->moveLink(joint_box2);
   tesseract_->getEnvironment()->addAllowedCollision(link_box.getName(), "iiwa_link_ee", "Never");
   tesseract_->getEnvironment()->addAllowedCollision(link_box.getName(), end_effector, "Adjacent");
-  tesseract_->getEnvironment()->addAllowedCollision(link_box.getName(), "workcell_base", "Allowed");
 
-  // Now update rviz environment
-  if (!sendRvizChanges(1))
-    return -1;
+  if (plotting_)
+  {
+    // Now update rviz environment
+    if (!sendRvizChanges(1))
+      return -1;
+  }
 
   // Set the current state to the last state of the pick trajectory
   tesseract_->getEnvironment()->setState(pick_prob->GetKin()->getJointNames(),
@@ -444,7 +456,7 @@ int main(int argc, char** argv)
   pci_place.basic_info.dt_lower_lim = 2;    // 1/most time
   pci_place.basic_info.dt_upper_lim = 100;  // 1/least time
   pci_place.basic_info.start_fixed = true;
-  pci_place.basic_info.use_time = true;
+  pci_place.basic_info.use_time = false;
 
   // Create Kinematic Object
   pci_place.kin = pci_place.getManipulator(pci_place.basic_info.manip);
@@ -459,7 +471,7 @@ int main(int argc, char** argv)
     collision->name = "collision";
     collision->term_type = trajopt::TT_COST;
     collision->continuous = true;
-    collision->first_step = 0;
+    collision->first_step = 1;
     collision->last_step = pci_place.basic_info.n_steps - 1;
     collision->gap = 1;
     collision->info = trajopt::createSafetyMarginDataVector(pci_place.basic_info.n_steps, 0.025, 40);
@@ -479,7 +491,7 @@ int main(int argc, char** argv)
     pci_place.cost_infos.push_back(jv);
   }
   // Add a velocity cnt with time to insure that robot dynamics are obeyed
-  if (true)
+  if (false)
   {
     std::shared_ptr<trajopt::JointVelTermInfo> jv(new trajopt::JointVelTermInfo);
 
@@ -539,7 +551,7 @@ int main(int argc, char** argv)
   }
 
   // Add a cost on the total time to complete the pick
-  if (true)
+  if (false)
   {
     std::shared_ptr<trajopt::TotalTimeTermInfo> time_cost(new trajopt::TotalTimeTermInfo);
     time_cost->name = "time_cost";
@@ -588,5 +600,4 @@ int main(int argc, char** argv)
   std::cout << planning_response_place.trajectory << '\n';
 
   ROS_INFO("Done");
-  ros::spin();
 }

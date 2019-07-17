@@ -27,11 +27,14 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ros/ros.h>
 #include <fstream>
+#include <tesseract_msgs/ModifyEnvironment.h>
+#include <tesseract_msgs/GetEnvironmentChanges.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_rosutils/plotting.h>
+#include <tesseract_rosutils/utils.h>
 #include <trajopt/plot_callback.hpp>
 #include <trajopt/problem_description.hpp>
 #include <trajopt_utils/config.hpp>
@@ -42,13 +45,19 @@ using namespace tesseract;
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
+using namespace tesseract_rosutils;
 
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
 const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic"; /**< Default ROS parameter for robot
                                                                           description */
+const std::string GET_ENVIRONMENT_CHANGES_SERVICE = "get_tesseract_changes_rviz";
+const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
+
 
 static bool plotting_ = true;
 static Tesseract::Ptr tesseract_ = std::make_shared<Tesseract>();
+static ros::ServiceClient modify_env_rviz;
+static ros::ServiceClient get_env_changes_rviz;
 
 static tesseract_common::VectorIsometry3d makePuzzleToolPoses()
 {
@@ -108,6 +117,67 @@ static tesseract_common::VectorIsometry3d makePuzzleToolPoses()
   indata.close();
 
   return path;
+}
+
+bool checkRviz()
+{
+
+  // Get the current state of the environment.
+  // Usually you would not be getting environment state from rviz
+  // this is just an example. You would be gettting it from the
+  // environment_monitor node. Need to update examples to launch
+  // environment_monitor node.
+  get_env_changes_rviz.waitForExistence();
+  tesseract_msgs::GetEnvironmentChanges env_changes;
+  env_changes.request.revision = 0;
+  if (get_env_changes_rviz.call(env_changes))
+  {
+    ROS_INFO("Retrieve current environment changes!");
+  }
+  else
+  {
+    ROS_ERROR("Failed to retrieve current environment changes!");
+    return false;
+  }
+
+  // There should not be any changes but check
+  if (env_changes.response.revision != 0)
+  {
+    ROS_ERROR("The environment has changed externally!");
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Send RViz the latest number of commands
+ * @param n The past revision number
+ * @return True if successful otherwise false
+ */
+bool sendRvizChanges(unsigned long past_revision)
+{
+  modify_env_rviz.waitForExistence();
+  tesseract_msgs::ModifyEnvironment update_env;
+  update_env.request.id = tesseract_->getEnvironment()->getName();
+  update_env.request.revision = past_revision;
+  if (!toMsg(
+          update_env.request.commands, tesseract_->getEnvironment()->getCommandHistory(), update_env.request.revision))
+  {
+    ROS_ERROR("Failed to generate commands to update rviz environment!");
+    return false;
+  }
+
+  if (modify_env_rviz.call(update_env))
+  {
+    ROS_INFO("RViz environment Updated!");
+  }
+  else
+  {
+    ROS_INFO("Failed to update rviz environment");
+    return false;
+  }
+
+  return true;
 }
 
 ProblemConstructionInfo cppMethod()
@@ -231,6 +301,17 @@ int main(int argc, char** argv)
   // Get ROS Parameters
   pnh.param("plotting", plotting_, plotting_);
 
+  // These are used to keep visualization updated
+  if (plotting_)
+  {
+    modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", false);
+    get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", false);
+
+    // Check RViz to make sure nothing has changed
+    if (!checkRviz())
+      return -1;
+  }
+
   // Set the robot initial state
   std::unordered_map<std::string, double> ipos;
   ipos["joint_a1"] = -0.785398;
@@ -244,7 +325,12 @@ int main(int argc, char** argv)
   ipos["joint_aux2"] = 0.0;
   tesseract_->getEnvironment()->setState(ipos);
 
-  //  plotter->plotScene();
+  if (plotting_)
+  {
+    // Now update rviz environment
+    if (!sendRvizChanges(0))
+      return -1;
+  }
 
   // Set Log Level
   util::gLogLevel = util::LevelInfo;

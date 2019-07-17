@@ -4,7 +4,7 @@
   <!-- The name of the parameter under which the URDF is loaded -->
   <arg name="robot_description" default="robot_description"/>
   <arg name="trajopt_description" default="trajopt_description"/>
-  <arg name="plotting" default="false"/>
+  <arg name="plotting" default="true"/>
 
   <!-- Load universal robot description format (URDF) -->
   <param name="$(arg trajopt_description)" textfile="$(find tesseract_ros_examples)/config/basic_cartesian_plan.json"/>

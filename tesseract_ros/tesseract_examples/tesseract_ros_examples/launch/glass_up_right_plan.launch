@@ -34,4 +34,8 @@
     <param name="write_to_file" type="bool" value="$(arg write_to_file)"/>
   </node>
 
+  <!-- Launch visualization -->
+  <node if="$(arg plotting)" pkg="rviz" type="rviz" name="tesseract_ros_examples_glass_up_right_plan_rviz"
+      args="-d $(find tesseract_ros_examples)/config/examples.rviz" />
+
 </launch>

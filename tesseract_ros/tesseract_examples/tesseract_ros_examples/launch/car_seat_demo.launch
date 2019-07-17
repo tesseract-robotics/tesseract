@@ -19,5 +19,9 @@
   <node pkg="tesseract_ros_examples" type="tesseract_ros_examples_car_seat_demo" name="tesseract_ros_examples_car_seat_demo">
     <param name="plotting" type="bool" value="$(arg plotting)"/>
   </node>
+
+  <!-- Launch visualization -->
+  <node if="$(arg plotting)" pkg="rviz" type="rviz" name="tesseract_ros_examples_car_seat_demo_rviz"
+      args="-d $(find tesseract_ros_examples)/config/examples.rviz" />
 </launch>
 
