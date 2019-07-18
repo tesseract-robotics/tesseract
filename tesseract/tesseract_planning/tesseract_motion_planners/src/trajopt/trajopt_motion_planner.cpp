@@ -56,6 +56,7 @@ TrajOptMotionPlanner::TrajOptMotionPlanner(const std::string& name) : config_(nu
   status_code_map_[-2] = "Failed to parse config data";
   status_code_map_[-3] = "Failed to find valid solution";
   status_code_map_[-4] = "Found valid solution, but is in collision";
+  status_code_map_[-5] = "Planner is not configured, must call setConfiguration prior to calling solve.";
 }
 
 bool TrajOptMotionPlanner::terminate()
@@ -72,8 +73,10 @@ void TrajOptMotionPlanner::clear()
 
 bool TrajOptMotionPlanner::solve(PlannerResponse& response)
 {
-  if (isConfigured())
+  if (!isConfigured())
   {
+    response.status_code = -5;
+    response.status_description = status_code_map_[response.status_code];
     CONSOLE_BRIDGE_logError("Planner %s is not configured", name_.c_str());
     return false;
   }
