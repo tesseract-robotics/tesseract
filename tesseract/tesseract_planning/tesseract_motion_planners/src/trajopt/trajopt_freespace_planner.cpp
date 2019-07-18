@@ -48,9 +48,7 @@ TrajOptFreespacePlanner::TrajOptFreespacePlanner(const std::string& name) : pci_
   name_ = name;
   // TODO: These should be tied to enumeration ints and returned through an getLastErrorMsg() method
   // Error Status Codes
-  status_code_map_[-1] = "Invalid config data format";
-  status_code_map_[-2] = "Failed to parse config data";
-  status_code_map_[-3] = "";
+  status_code_map_ = planner_.getAvailableStatusCodes();
 }
 
 bool TrajOptFreespacePlanner::terminate()
@@ -63,6 +61,8 @@ bool TrajOptFreespacePlanner::solve(PlannerResponse& response)
 {
   if (!isConfigured())
   {
+    response.status_code = -5;
+    response.status_description = status_code_map_[response.status_code];
     CONSOLE_BRIDGE_logError("Planner %s is not configured", name_.c_str());
     return false;
   }
