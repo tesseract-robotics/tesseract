@@ -118,3 +118,27 @@ install(
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
+if(CATKIN_ENABLE_TESTING)
+    add_custom_target(run_examples_test ALL
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -V)
+
+    add_test(NAME ${PROJECT_NAME}_basic_cartesian_plan_unit COMMAND roslaunch tesseract_ros_examples basic_cartesian_plan.launch plotting:=false)
+    add_dependencies(run_examples_test ${PROJECT_NAME}_basic_cartesian_plan)
+
+    add_test(NAME ${PROJECT_NAME}_glass_up_right_plan_unit COMMAND roslaunch tesseract_ros_examples glass_up_right_plan.launch plotting:=false)
+    add_dependencies(run_examples_test ${PROJECT_NAME}_glass_up_right_plan)
+
+    add_test(NAME ${PROJECT_NAME}_puzzle_piece_plan_unit COMMAND roslaunch tesseract_ros_examples puzzle_piece_plan.launch plotting:=false)
+    add_dependencies(run_examples_test ${PROJECT_NAME}_puzzle_piece_plan)
+
+    add_test(NAME ${PROJECT_NAME}_car_seat_demo_unit COMMAND roslaunch tesseract_ros_examples car_seat_demo.launch plotting:=false)
+    add_dependencies(run_examples_test ${PROJECT_NAME}_car_seat_demo)
+
+    add_test(NAME ${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan_unit COMMAND roslaunch tesseract_ros_examples puzzle_piece_auxillary_axes_plan.launch plotting:=false)
+    add_dependencies(run_examples_test ${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan)
+
+    add_test(NAME ${PROJECT_NAME}_pick_and_place_plan_unit COMMAND roslaunch tesseract_ros_examples pick_and_place_plan.launch plotting:=false)
+    add_dependencies(run_examples_test ${PROJECT_NAME}_pick_and_place_plan)
+endif()
+
