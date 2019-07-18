@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
  <!-- The name of the parameter under which the URDF is loaded -->
   <arg name="robot_description" default="robot_description"/>
@@ -16,7 +17,7 @@
   <!-- If needed, broadcast static tf for robot root -->
   <node pkg="tf" type="static_transform_publisher" name="virtual_joint_broadcaster_0" args="0 0 0 0 0 0 world base_link 100" />
 
-  <node pkg="tesseract_ros_examples" type="tesseract_ros_examples_car_seat_demo" name="tesseract_ros_examples_car_seat_demo">
+  <node pkg="tesseract_ros_examples" type="tesseract_ros_examples_car_seat_demo" name="tesseract_ros_examples_car_seat_demo" required="true">
     <param name="plotting" type="bool" value="$(arg plotting)"/>
   </node>
 

@@ -219,9 +219,6 @@ int main(int argc, char** argv)
   /// PICK ///
   ////////////
 
-  ROS_ERROR("Press enter to continue");
-  std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
   // Choose the manipulator and end effector link
   std::string manip = "Manipulator";
   std::string end_effector = "iiwa_link_ee";
@@ -395,11 +392,9 @@ int main(int argc, char** argv)
   /////////////
   /// PLACE ///
   /////////////
-  ROS_ERROR("Press enter to continue");
-  std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
 
   // Detach the simulated box from the world and attach to the end effector
-
   Joint joint_box2("joint_box2");
   joint_box2.parent_link_name = end_effector;
   joint_box2.child_link_name = link_box.getName();

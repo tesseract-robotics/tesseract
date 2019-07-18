@@ -197,9 +197,9 @@ TrajOptProb::Ptr cppMethod()
   collision->info = createSafetyMarginDataVector(pci.basic_info.n_steps, 0.025, 20);
   for (auto& info : collision->info)
   {
-    info->SetPairSafetyMarginData("base_link", "link_5", 0.05, 10);
-    info->SetPairSafetyMarginData("link_3", "link_5", 0.01, 10);
-    info->SetPairSafetyMarginData("link_3", "link_6", 0.01, 10);
+    info->setPairSafetyMarginData("base_link", "link_5", 0.05, 10);
+    info->setPairSafetyMarginData("link_3", "link_5", 0.01, 10);
+    info->setPairSafetyMarginData("link_3", "link_6", 0.01, 10);
   }
   pci.cost_infos.push_back(collision);
 

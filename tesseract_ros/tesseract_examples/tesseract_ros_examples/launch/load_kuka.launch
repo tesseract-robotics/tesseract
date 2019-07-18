@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
   <!-- By default we do not overwrite the URDF. Change the following to true to change the default behavior -->
   <!-- The name of the parameter under which the URDF is loaded -->
