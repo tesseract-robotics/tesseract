@@ -47,7 +47,17 @@ public:
 
   EnvState::ConstPtr getCurrentState() const override { return current_state_; }
 
-  void onEnvironmentChanged(const Commands& /*commands*/) override { createKDETree(); }
+  void onEnvironmentChanged(const Commands& /*commands*/) override
+  {
+    // Cache current joint values
+    std::unordered_map<std::string, double> joints = current_state_->joints;
+
+    // Recreate state solver
+    createKDETree();
+
+    // Set to current state
+    setState(joints);
+  }
 
 private:
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;    /**< Tesseract Scene Graph */
