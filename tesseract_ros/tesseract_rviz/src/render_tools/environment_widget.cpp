@@ -471,7 +471,9 @@ bool EnvironmentWidget::getEnvironmentChangesCallback(tesseract_msgs::GetEnviron
 {
   if (req.revision > tesseract_->getEnvironment()->getRevision())
   {
-    ROS_WARN("Requested changes for id %d greater than current change id %d", req.revision, tesseract_->getEnvironment()->getRevision());
+    ROS_WARN("Requested changes for id %d greater than current change id %d",
+             req.revision,
+             tesseract_->getEnvironment()->getRevision());
     res.success = false;
     return false;
   }
@@ -619,8 +621,9 @@ void EnvironmentWidget::loadEnvironment()
 
       if (get_environment_changes_server_.getService().empty())
       {
-        get_environment_changes_server_ = nh_.advertiseService(
-            widget_ns_ + DEFAULT_GET_ENVIRONMENT_CHANGES_SERVICE, &EnvironmentWidget::getEnvironmentChangesCallback, this);
+        get_environment_changes_server_ = nh_.advertiseService(widget_ns_ + DEFAULT_GET_ENVIRONMENT_CHANGES_SERVICE,
+                                                               &EnvironmentWidget::getEnvironmentChangesCallback,
+                                                               this);
       }
     }
     else
