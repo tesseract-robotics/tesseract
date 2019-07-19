@@ -166,6 +166,41 @@ void runChangeJointOriginTest(const tesseract_environment::Environment::Ptr& env
   env->getSceneGraph()->saveDOT("/tmp/after_change_joint_origin_unit.dot");
 }
 
+void runCurrentStatePreservedWhenEnvChangesTest(const tesseract_environment::Environment::Ptr& env)
+{
+  // Set the initial state of the robot
+  std::unordered_map<std::string, double> joint_states;
+  joint_states["joint_a1"] = 0.0;
+  joint_states["joint_a2"] = 0.0;
+  joint_states["joint_a3"] = 0.0;
+  joint_states["joint_a4"] = -1.57;
+  joint_states["joint_a5"] = 0.0;
+  joint_states["joint_a6"] = 0.0;
+  joint_states["joint_a7"] = 0.0;
+  env->setState(joint_states);
+
+  EnvState::ConstPtr current_state = env->getCurrentState();
+  for (auto& joint_state : joint_states)
+  {
+    EXPECT_NEAR(current_state->joints.at(joint_state.first), joint_state.second, 1e-5);
+  }
+
+  Link link("link_n1");
+
+  Joint joint("joint_n1");
+  joint.parent_link_name = env->getRootLinkName();
+  joint.child_link_name = "link_n1";
+  joint.type = JointType::FIXED;
+
+  env->addLink(link, joint);
+
+  current_state = env->getCurrentState();
+  for (auto& joint_state : joint_states)
+  {
+    EXPECT_NEAR(current_state->joints.at(joint_state.first), joint_state.second, 1e-5);
+  }
+}
+
 TEST(TesseractEnvironmentUnit, KDLEnvCloneContactManagerUnit)
 {
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
@@ -260,6 +295,20 @@ TEST(TesseractEnvironmentUnit, KDLEnvChangeJointOrigin)
   EXPECT_TRUE(env->setActiveContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name()));
 
   runChangeJointOriginTest(env);
+}
+
+TEST(TesseractEnvironmentUnit, KDLEnvCurrentStatePreservedWhenEnvChanges)
+{
+  SceneGraph::Ptr scene_graph = getSceneGraph();
+  EXPECT_TRUE(scene_graph != nullptr);
+
+  KDLEnv::Ptr env(new KDLEnv());
+  EXPECT_TRUE(env != nullptr);
+
+  bool success = env->init(scene_graph);
+  EXPECT_TRUE(success);
+
+  runCurrentStatePreservedWhenEnvChangesTest(env);
 }
 
 int main(int argc, char** argv)
