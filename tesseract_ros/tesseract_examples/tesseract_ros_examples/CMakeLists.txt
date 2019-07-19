@@ -20,94 +20,190 @@ list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
 
 catkin_package()
 
-add_executable(${PROJECT_NAME}_basic_cartesian_plan src/basic_cartesian_plan.cpp)
-target_link_libraries(${PROJECT_NAME}_basic_cartesian_plan tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${PCL_LIBRARIES} ${catkin_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_basic_cartesian_plan PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+add_library(${PROJECT_NAME}_basic_cartesian_example src/basic_cartesian_example.cpp)
+target_link_libraries(${PROJECT_NAME}_basic_cartesian_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${PCL_LIBRARIES} ${catkin_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_basic_cartesian_example PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
-    target_compile_options(${PROJECT_NAME}_basic_cartesian_plan PRIVATE -std=c++11)
+    target_compile_options(${PROJECT_NAME}_basic_cartesian_example PRIVATE -std=c++11)
 else()
-    target_compile_features(${PROJECT_NAME}_basic_cartesian_plan PRIVATE cxx_std_11)
+    target_compile_features(${PROJECT_NAME}_basic_cartesian_example PRIVATE cxx_std_11)
 endif()
-target_include_directories(${PROJECT_NAME}_basic_cartesian_plan PUBLIC
+target_include_directories(${PROJECT_NAME}_basic_cartesian_example PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_basic_cartesian_plan SYSTEM PUBLIC
+target_include_directories(${PROJECT_NAME}_basic_cartesian_example SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS})
 
-add_executable(${PROJECT_NAME}_glass_up_right_plan src/glass_up_right_plan.cpp)
-target_link_libraries(${PROJECT_NAME}_glass_up_right_plan tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_glass_up_right_plan PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+add_executable(${PROJECT_NAME}_basic_cartesian_example_node src/basic_cartesian_example_node.cpp)
+target_link_libraries(${PROJECT_NAME}_basic_cartesian_example_node ${PROJECT_NAME}_basic_cartesian_example ${catkin_LIBRARIES})
 if(CXX_FEATURE_FOUND EQUAL "-1")
-    target_compile_options(${PROJECT_NAME}_glass_up_right_plan PRIVATE -std=c++11)
+    target_compile_options(${PROJECT_NAME}_basic_cartesian_example_node PRIVATE -std=c++11)
 else()
-    target_compile_features(${PROJECT_NAME}_glass_up_right_plan PRIVATE cxx_std_11)
+    target_compile_features(${PROJECT_NAME}_basic_cartesian_example_node PRIVATE cxx_std_11)
 endif()
-target_include_directories(${PROJECT_NAME}_glass_up_right_plan PUBLIC
+target_include_directories(${PROJECT_NAME}_basic_cartesian_example_node PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_glass_up_right_plan SYSTEM PUBLIC
+target_include_directories(${PROJECT_NAME}_basic_cartesian_example_node SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS}
+    ${PCL_INCLUDE_DIRS})
+
+add_library(${PROJECT_NAME}_glass_up_right_example src/glass_up_right_example.cpp)
+target_link_libraries(${PROJECT_NAME}_glass_up_right_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_glass_up_right_example PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+if(CXX_FEATURE_FOUND EQUAL "-1")
+    target_compile_options(${PROJECT_NAME}_glass_up_right_example PRIVATE -std=c++11)
+else()
+    target_compile_features(${PROJECT_NAME}_glass_up_right_example PRIVATE cxx_std_11)
+endif()
+target_include_directories(${PROJECT_NAME}_glass_up_right_example PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_glass_up_right_example SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS})
 
-add_executable(${PROJECT_NAME}_puzzle_piece_plan src/puzzle_piece_plan.cpp)
-target_link_libraries(${PROJECT_NAME}_puzzle_piece_plan tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_puzzle_piece_plan PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+add_executable(${PROJECT_NAME}_glass_up_right_example_node src/glass_up_right_example_node.cpp)
+target_link_libraries(${PROJECT_NAME}_glass_up_right_example_node ${PROJECT_NAME}_glass_up_right_example ${catkin_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_glass_up_right_example_node PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
-    target_compile_options(${PROJECT_NAME}_puzzle_piece_plan PRIVATE -std=c++11)
+    target_compile_options(${PROJECT_NAME}_glass_up_right_example_node PRIVATE -std=c++11)
 else()
-    target_compile_features(${PROJECT_NAME}_puzzle_piece_plan PRIVATE cxx_std_11)
+    target_compile_features(${PROJECT_NAME}_glass_up_right_example_node PRIVATE cxx_std_11)
 endif()
-target_include_directories(${PROJECT_NAME}_puzzle_piece_plan PUBLIC
+target_include_directories(${PROJECT_NAME}_glass_up_right_example_node PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_puzzle_piece_plan SYSTEM PUBLIC
+target_include_directories(${PROJECT_NAME}_glass_up_right_example_node SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS})
 
-add_executable(${PROJECT_NAME}_car_seat_demo src/car_seat_demo.cpp)
-target_link_libraries(${PROJECT_NAME}_car_seat_demo tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_car_seat_demo PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+add_library(${PROJECT_NAME}_puzzle_piece_example src/puzzle_piece_example.cpp)
+target_link_libraries(${PROJECT_NAME}_puzzle_piece_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_puzzle_piece_example PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
-    target_compile_options(${PROJECT_NAME}_car_seat_demo PRIVATE -std=c++11)
+    target_compile_options(${PROJECT_NAME}_puzzle_piece_example PRIVATE -std=c++11)
 else()
-    target_compile_features(${PROJECT_NAME}_car_seat_demo PRIVATE cxx_std_11)
+    target_compile_features(${PROJECT_NAME}_puzzle_piece_example PRIVATE cxx_std_11)
 endif()
-target_include_directories(${PROJECT_NAME}_car_seat_demo PUBLIC
+target_include_directories(${PROJECT_NAME}_puzzle_piece_example PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_car_seat_demo SYSTEM PUBLIC
+target_include_directories(${PROJECT_NAME}_puzzle_piece_example SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS})
 
-add_executable(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan src/puzzle_piece_auxillary_axes_plan.cpp)
-target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+add_executable(${PROJECT_NAME}_puzzle_piece_example_node src/puzzle_piece_example_node.cpp)
+target_link_libraries(${PROJECT_NAME}_puzzle_piece_example_node ${PROJECT_NAME}_puzzle_piece_example ${catkin_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_puzzle_piece_example_node PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
-    target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan PRIVATE -std=c++11)
+    target_compile_options(${PROJECT_NAME}_puzzle_piece_example_node PRIVATE -std=c++11)
 else()
-    target_compile_features(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan PRIVATE cxx_std_11)
+    target_compile_features(${PROJECT_NAME}_puzzle_piece_example_node PRIVATE cxx_std_11)
 endif()
-target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan PUBLIC
+target_include_directories(${PROJECT_NAME}_puzzle_piece_example_node PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan SYSTEM PUBLIC
+target_include_directories(${PROJECT_NAME}_puzzle_piece_example_node SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS})
 
-add_executable(${PROJECT_NAME}_pick_and_place_plan src/pick_and_place_plan.cpp)
-target_link_libraries(${PROJECT_NAME}_pick_and_place_plan tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
-target_compile_options(${PROJECT_NAME}_pick_and_place_plan PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+add_library(${PROJECT_NAME}_car_seat_example src/car_seat_example.cpp)
+target_link_libraries(${PROJECT_NAME}_car_seat_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_car_seat_example PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
-    target_compile_options(${PROJECT_NAME}_pick_and_place_plan PRIVATE -std=c++11)
+    target_compile_options(${PROJECT_NAME}_car_seat_example PRIVATE -std=c++11)
 else()
-    target_compile_features(${PROJECT_NAME}_pick_and_place_plan PRIVATE cxx_std_11)
+    target_compile_features(${PROJECT_NAME}_car_seat_example PRIVATE cxx_std_11)
 endif()
-target_include_directories(${PROJECT_NAME}_pick_and_place_plan PUBLIC
+target_include_directories(${PROJECT_NAME}_car_seat_example PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_pick_and_place_plan SYSTEM PUBLIC
+target_include_directories(${PROJECT_NAME}_car_seat_example SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS})
+
+add_executable(${PROJECT_NAME}_car_seat_example_node src/car_seat_example_node.cpp)
+target_link_libraries(${PROJECT_NAME}_car_seat_example_node ${PROJECT_NAME}_car_seat_example ${catkin_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_car_seat_example_node PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+if(CXX_FEATURE_FOUND EQUAL "-1")
+    target_compile_options(${PROJECT_NAME}_car_seat_example_node PRIVATE -std=c++11)
+else()
+    target_compile_features(${PROJECT_NAME}_car_seat_example_node PRIVATE cxx_std_11)
+endif()
+target_include_directories(${PROJECT_NAME}_car_seat_example_node PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_car_seat_example_node SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS})
+
+add_library(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example src/puzzle_piece_auxillary_axes_example.cpp)
+target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+if(CXX_FEATURE_FOUND EQUAL "-1")
+    target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example PRIVATE -std=c++11)
+else()
+    target_compile_features(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example PRIVATE cxx_std_11)
+endif()
+target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS})
+
+add_executable(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node src/puzzle_piece_auxillary_axes_example_node.cpp)
+target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example ${catkin_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+if(CXX_FEATURE_FOUND EQUAL "-1")
+    target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node PRIVATE -std=c++11)
+else()
+    target_compile_features(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node PRIVATE cxx_std_11)
+endif()
+target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS})
+
+add_library(${PROJECT_NAME}_pick_and_place_example src/pick_and_place_example.cpp)
+target_link_libraries(${PROJECT_NAME}_pick_and_place_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_pick_and_place_example PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+if(CXX_FEATURE_FOUND EQUAL "-1")
+    target_compile_options(${PROJECT_NAME}_pick_and_place_example PRIVATE -std=c++11)
+else()
+    target_compile_features(${PROJECT_NAME}_pick_and_place_example PRIVATE cxx_std_11)
+endif()
+target_include_directories(${PROJECT_NAME}_pick_and_place_example PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_pick_and_place_example SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS})
+
+add_executable(${PROJECT_NAME}_pick_and_place_example_node src/pick_and_place_example_node.cpp)
+target_link_libraries(${PROJECT_NAME}_pick_and_place_example_node ${PROJECT_NAME}_pick_and_place_example ${catkin_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_pick_and_place_example_node PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+if(CXX_FEATURE_FOUND EQUAL "-1")
+    target_compile_options(${PROJECT_NAME}_pick_and_place_example_node PRIVATE -std=c++11)
+else()
+    target_compile_features(${PROJECT_NAME}_pick_and_place_example_node PRIVATE cxx_std_11)
+endif()
+target_include_directories(${PROJECT_NAME}_pick_and_place_example_node PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_pick_and_place_example_node SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS})
 
 # Mark executables and/or libraries for installation
 install(
-  TARGETS ${PROJECT_NAME}_basic_cartesian_plan ${PROJECT_NAME}_glass_up_right_plan ${PROJECT_NAME}_puzzle_piece_plan ${PROJECT_NAME}_car_seat_demo ${PROJECT_NAME}_pick_and_place_plan ${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan
+  TARGETS
+    ${PROJECT_NAME}_basic_cartesian_example
+    ${PROJECT_NAME}_basic_cartesian_example_node
+    ${PROJECT_NAME}_glass_up_right_example
+    ${PROJECT_NAME}_glass_up_right_example_node
+    ${PROJECT_NAME}_puzzle_piece_example
+    ${PROJECT_NAME}_puzzle_piece_example_node
+    ${PROJECT_NAME}_car_seat_example
+    ${PROJECT_NAME}_car_seat_example_node
+    ${PROJECT_NAME}_pick_and_place_example
+    ${PROJECT_NAME}_pick_and_place_example_node
+    ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example
+    ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -119,26 +215,92 @@ install(
 )
 
 if(CATKIN_ENABLE_TESTING)
-    add_custom_target(run_examples_test ALL
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -V)
+    find_package(rostest REQUIRED)
+    find_package(GTest REQUIRED)
 
-    add_test(NAME ${PROJECT_NAME}_basic_cartesian_plan_unit COMMAND roslaunch tesseract_ros_examples basic_cartesian_plan.launch plotting:=false)
-    add_dependencies(run_examples_test ${PROJECT_NAME}_basic_cartesian_plan)
+    add_rostest_gtest(${PROJECT_NAME}_basic_cartesian_example_unit test/basic_cartesian_example_unit.test test/basic_cartesian_example_unit.cpp)
+    target_link_libraries(${PROJECT_NAME}_basic_cartesian_example_unit ${PROJECT_NAME}_basic_cartesian_example ${GTEST_BOTH_LIBRARIES} ${catkin_LIBRARIES})
+    if(CXX_FEATURE_FOUND EQUAL "-1")
+        target_compile_options(${PROJECT_NAME}_basic_cartesian_example_unit PRIVATE -std=c++11)
+    else()
+        target_compile_features(${PROJECT_NAME}_basic_cartesian_example_unit PRIVATE cxx_std_11)
+    endif()
+    target_include_directories(${PROJECT_NAME}_basic_cartesian_example_unit PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:include>")
+    target_include_directories(${PROJECT_NAME}_basic_cartesian_example_unit SYSTEM PUBLIC
+        ${catkin_INCLUDE_DIRS}
+        ${PCL_INCLUDE_DIRS}
+        ${GTEST_INCLUDE_DIRS})
 
-    add_test(NAME ${PROJECT_NAME}_glass_up_right_plan_unit COMMAND roslaunch tesseract_ros_examples glass_up_right_plan.launch plotting:=false)
-    add_dependencies(run_examples_test ${PROJECT_NAME}_glass_up_right_plan)
+    add_rostest_gtest(${PROJECT_NAME}_car_seat_example_unit test/car_seat_example_unit.test test/car_seat_example_unit.cpp)
+    target_link_libraries(${PROJECT_NAME}_car_seat_example_unit ${PROJECT_NAME}_car_seat_example ${GTEST_BOTH_LIBRARIES} ${catkin_LIBRARIES})
+    target_compile_options(${PROJECT_NAME}_car_seat_example_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+    if(CXX_FEATURE_FOUND EQUAL "-1")
+        target_compile_options(${PROJECT_NAME}_car_seat_example_unit PRIVATE -std=c++11)
+    else()
+        target_compile_features(${PROJECT_NAME}_car_seat_example_unit PRIVATE cxx_std_11)
+    endif()
+    target_include_directories(${PROJECT_NAME}_car_seat_example_unit PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:include>")
+    target_include_directories(${PROJECT_NAME}_car_seat_example_unit SYSTEM PUBLIC
+        ${catkin_INCLUDE_DIRS})
 
-    add_test(NAME ${PROJECT_NAME}_puzzle_piece_plan_unit COMMAND roslaunch tesseract_ros_examples puzzle_piece_plan.launch plotting:=false)
-    add_dependencies(run_examples_test ${PROJECT_NAME}_puzzle_piece_plan)
+    add_rostest_gtest(${PROJECT_NAME}_glass_up_right_example_unit test/glass_up_right_example_unit.test test/glass_up_right_example_unit.cpp)
+    target_link_libraries(${PROJECT_NAME}_glass_up_right_example_unit ${PROJECT_NAME}_glass_up_right_example ${catkin_LIBRARIES})
+    target_compile_options(${PROJECT_NAME}_glass_up_right_example_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+    if(CXX_FEATURE_FOUND EQUAL "-1")
+        target_compile_options(${PROJECT_NAME}_glass_up_right_example_unit PRIVATE -std=c++11)
+    else()
+        target_compile_features(${PROJECT_NAME}_glass_up_right_example_unit PRIVATE cxx_std_11)
+    endif()
+    target_include_directories(${PROJECT_NAME}_glass_up_right_example_unit PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:include>")
+    target_include_directories(${PROJECT_NAME}_glass_up_right_example_unit SYSTEM PUBLIC
+        ${catkin_INCLUDE_DIRS})
 
-    add_test(NAME ${PROJECT_NAME}_car_seat_demo_unit COMMAND roslaunch tesseract_ros_examples car_seat_demo.launch plotting:=false)
-    add_dependencies(run_examples_test ${PROJECT_NAME}_car_seat_demo)
+    add_rostest_gtest(${PROJECT_NAME}_puzzle_piece_example_unit test/puzzle_piece_example_unit.test test/puzzle_piece_example_unit.cpp)
+    target_link_libraries(${PROJECT_NAME}_puzzle_piece_example_unit ${PROJECT_NAME}_puzzle_piece_example ${catkin_LIBRARIES})
+    target_compile_options(${PROJECT_NAME}_puzzle_piece_example_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+    if(CXX_FEATURE_FOUND EQUAL "-1")
+        target_compile_options(${PROJECT_NAME}_puzzle_piece_example_unit PRIVATE -std=c++11)
+    else()
+        target_compile_features(${PROJECT_NAME}_puzzle_piece_example_unit PRIVATE cxx_std_11)
+    endif()
+    target_include_directories(${PROJECT_NAME}_puzzle_piece_example_unit PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:include>")
+    target_include_directories(${PROJECT_NAME}_puzzle_piece_example_unit SYSTEM PUBLIC
+        ${catkin_INCLUDE_DIRS})
 
-    add_test(NAME ${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan_unit COMMAND roslaunch tesseract_ros_examples puzzle_piece_auxillary_axes_plan.launch plotting:=false)
-    add_dependencies(run_examples_test ${PROJECT_NAME}_puzzle_piece_auxillary_axes_plan)
+    add_rostest_gtest(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit test/puzzle_piece_auxillary_axes_example_unit.test test/puzzle_piece_auxillary_axes_example_unit.cpp)
+    target_link_libraries(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example ${catkin_LIBRARIES})
+    target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+    if(CXX_FEATURE_FOUND EQUAL "-1")
+        target_compile_options(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit PRIVATE -std=c++11)
+    else()
+        target_compile_features(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit PRIVATE cxx_std_11)
+    endif()
+    target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:include>")
+    target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_unit SYSTEM PUBLIC
+        ${catkin_INCLUDE_DIRS})
 
-    add_test(NAME ${PROJECT_NAME}_pick_and_place_plan_unit COMMAND roslaunch tesseract_ros_examples pick_and_place_plan.launch plotting:=false)
-    add_dependencies(run_examples_test ${PROJECT_NAME}_pick_and_place_plan)
+    add_rostest_gtest(${PROJECT_NAME}_pick_and_place_example_unit test/pick_and_place_example_unit.test test/pick_and_place_example_unit.cpp)
+    target_link_libraries(${PROJECT_NAME}_pick_and_place_example_unit ${PROJECT_NAME}_pick_and_place_example ${catkin_LIBRARIES})
+    target_compile_options(${PROJECT_NAME}_pick_and_place_example_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+    if(CXX_FEATURE_FOUND EQUAL "-1")
+        target_compile_options(${PROJECT_NAME}_pick_and_place_example_unit PRIVATE -std=c++11)
+    else()
+        target_compile_features(${PROJECT_NAME}_pick_and_place_example_unit PRIVATE cxx_std_11)
+    endif()
+    target_include_directories(${PROJECT_NAME}_pick_and_place_example_unit PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:include>")
+    target_include_directories(${PROJECT_NAME}_pick_and_place_example_unit SYSTEM PUBLIC
+        ${catkin_INCLUDE_DIRS})
 endif()
 
