@@ -60,7 +60,6 @@ const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
 
 namespace tesseract_ros_examples
 {
-
 TrajOptProb::Ptr BasicCartesianExample::jsonMethod()
 {
   std::string trajopt_config;
@@ -203,7 +202,8 @@ bool BasicCartesianExample::run()
   if (rviz_)
   {
     modify_env_rviz_ = nh_.serviceClient<tesseract_msgs::ModifyEnvironment>(MODIFY_ENVIRONMENT_SERVICE, false);
-    get_env_changes_rviz_ = nh_.serviceClient<tesseract_msgs::GetEnvironmentChanges>(GET_ENVIRONMENT_CHANGES_SERVICE, false);
+    get_env_changes_rviz_ =
+        nh_.serviceClient<tesseract_msgs::GetEnvironmentChanges>(GET_ENVIRONMENT_CHANGES_SERVICE, false);
 
     // Check RViz to make sure nothing has changed
     if (!checkRviz())
@@ -289,4 +289,4 @@ bool BasicCartesianExample::run()
   return true;
 }
 
-}
+}  // namespace tesseract_ros_examples

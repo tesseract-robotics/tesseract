@@ -13,11 +13,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_ros_examples
 {
-
 class GlassUpRightExample : public Example
 {
 public:
-  GlassUpRightExample(ros::NodeHandle nh, bool plotting, bool rviz, int steps, bool write_to_file, std::string method) : Example(plotting, rviz), nh_(nh), steps_(steps), write_to_file_(write_to_file), method_(method) {}
+  GlassUpRightExample(ros::NodeHandle nh, bool plotting, bool rviz, int steps, bool write_to_file, std::string method)
+    : Example(plotting, rviz), nh_(nh), steps_(steps), write_to_file_(write_to_file), method_(method)
+  {
+  }
   ~GlassUpRightExample() = default;
 
   bool run() override;
@@ -30,9 +32,8 @@ private:
 
   trajopt::TrajOptProb::Ptr jsonMethod();
   trajopt::TrajOptProb::Ptr cppMethod();
-
 };
 
-}
+}  // namespace tesseract_ros_examples
 
-#endif // TESSERACT_ROS_EXAMPLES_GLASS_UP_RIGHT_EXAMPLE_H
+#endif  // TESSERACT_ROS_EXAMPLES_GLASS_UP_RIGHT_EXAMPLE_H

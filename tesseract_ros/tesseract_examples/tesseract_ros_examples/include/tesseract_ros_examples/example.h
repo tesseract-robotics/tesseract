@@ -41,11 +41,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_ros_examples
 {
-
 class Example
 {
 public:
-  Example(bool plotting, bool rviz) : plotting_(plotting), rviz_(rviz), tesseract_(std::make_shared<tesseract::Tesseract>()) {}
+  Example(bool plotting, bool rviz)
+    : plotting_(plotting), rviz_(rviz), tesseract_(std::make_shared<tesseract::Tesseract>())
+  {
+  }
   virtual ~Example() = default;
 
   virtual bool run() = 0;
@@ -59,7 +61,6 @@ protected:
 
   bool checkRviz()
   {
-
     // Get the current state of the environment.
     // Usually you would not be getting environment state from rviz
     // this is just an example. You would be gettting it from the
@@ -98,8 +99,9 @@ protected:
     tesseract_msgs::ModifyEnvironment update_env;
     update_env.request.id = tesseract_->getEnvironment()->getName();
     update_env.request.revision = past_revision;
-    if (!tesseract_rosutils::toMsg(
-            update_env.request.commands, tesseract_->getEnvironment()->getCommandHistory(), update_env.request.revision))
+    if (!tesseract_rosutils::toMsg(update_env.request.commands,
+                                   tesseract_->getEnvironment()->getCommandHistory(),
+                                   update_env.request.revision))
     {
       ROS_ERROR("Failed to generate commands to update rviz environment!");
       return false;
@@ -119,5 +121,5 @@ protected:
   }
 };
 
-}
-#endif // TESSERACT_ROS_EXAMPLES_EXAMPLES_H
+}  // namespace tesseract_ros_examples
+#endif  // TESSERACT_ROS_EXAMPLES_EXAMPLES_H

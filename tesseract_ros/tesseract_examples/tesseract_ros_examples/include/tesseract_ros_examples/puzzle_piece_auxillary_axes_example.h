@@ -13,7 +13,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_ros_examples
 {
-
 class PuzzlePieceAuxillaryAxesExample : public Example
 {
 public:
@@ -30,6 +29,6 @@ private:
   tesseract_common::VectorIsometry3d makePuzzleToolPoses();
 };
 
-}
+}  // namespace tesseract_ros_examples
 
-#endif // TESSERACT_ROS_EXAMPLES_PUZZLE_PIECE_AUXILLARY_AXES_EXAMPLE_H
+#endif  // TESSERACT_ROS_EXAMPLES_PUZZLE_PIECE_AUXILLARY_AXES_EXAMPLE_H

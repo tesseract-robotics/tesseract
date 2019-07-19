@@ -16,7 +16,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_ros_examples
 {
-
 class CarSeatExample : public Example
 {
 public:
@@ -41,6 +40,6 @@ private:
                                       const std::unordered_map<std::string, double>& pos);
 };
 
-}
+}  // namespace tesseract_ros_examples
 
-#endif // TESSERACT_ROS_EXAMPLES_CAR_SEAT_EXAMPLE_H
+#endif  // TESSERACT_ROS_EXAMPLES_CAR_SEAT_EXAMPLE_H
