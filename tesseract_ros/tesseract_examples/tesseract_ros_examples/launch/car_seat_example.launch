@@ -4,6 +4,8 @@
   <arg name="robot_description" default="robot_description"/>
   <arg name="trajopt_description" default="trajopt_description"/>
   <arg name="plotting" default="true"/>
+  <arg name="rviz" default="true"/>
+  <arg name="testing" default="false"/>
 
   <!-- Load universal robot description format (URDF) -->
 <!--  <param name="$(arg trajopt_description)" textfile="$(find tesseract_ros_examples)/config/basic_cartesian_plan.json"/>-->
@@ -14,15 +16,18 @@
   <!-- The semantic description that corresponds to the URDF -->
   <param name="$(arg robot_description)_semantic" textfile="$(find tesseract_ros_examples)/config/car_seat_demo.srdf" />
 
-  <!-- If needed, broadcast static tf for robot root -->
-  <node pkg="tf" type="static_transform_publisher" name="virtual_joint_broadcaster_0" args="0 0 0 0 0 0 world base_link 100" />
+  <group unless="$(arg testing)">
+    <!-- If needed, broadcast static tf for robot root -->
+    <node pkg="tf" type="static_transform_publisher" name="virtual_joint_broadcaster_0" args="0 0 0 0 0 0 world base_link 100" />
 
-  <node pkg="tesseract_ros_examples" type="tesseract_ros_examples_car_seat_demo" name="tesseract_ros_examples_car_seat_demo" required="true">
-    <param name="plotting" type="bool" value="$(arg plotting)"/>
-  </node>
+    <node pkg="tesseract_ros_examples" type="tesseract_ros_examples_car_seat_exmple_node" name="tesseract_ros_examples_car_seat_example_node">
+      <param name="plotting" type="bool" value="$(arg plotting)"/>
+      <param name="rviz" type="bool" value="$(arg rviz)"/>
+    </node>
 
-  <!-- Launch visualization -->
-  <node if="$(arg plotting)" pkg="rviz" type="rviz" name="tesseract_ros_examples_car_seat_demo_rviz"
-      args="-d $(find tesseract_ros_examples)/config/examples.rviz" />
+    <!-- Launch visualization -->
+    <node if="$(arg rviz)" pkg="rviz" type="rviz" name="tesseract_ros_examples_car_seat_example_rviz"
+        args="-d $(find tesseract_ros_examples)/config/examples.rviz" />
+  </group>
 </launch>
 

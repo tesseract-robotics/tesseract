@@ -33,16 +33,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <pcl_conversions/pcl_conversions.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/point_cloud_conversion.h>
-#include <tesseract_msgs/ModifyEnvironment.h>
-#include <tesseract_msgs/GetEnvironmentChanges.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract/tesseract.h>
+#include <tesseract_ros_examples/basic_cartesian_example.h>
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
 #include <trajopt/plot_callback.hpp>
-#include <trajopt/problem_description.hpp>
 #include <trajopt_utils/config.hpp>
 #include <trajopt_utils/logging.hpp>
 
@@ -61,19 +58,14 @@ const std::string TRAJOPT_DESCRIPTION_PARAM =
 const std::string GET_ENVIRONMENT_CHANGES_SERVICE = "get_tesseract_changes_rviz";
 const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
 
-static bool plotting_ = true;
-static int steps_ = 5;
-static std::string method_ = "json";
-static Tesseract::Ptr tesseract_ = std::make_shared<Tesseract>();
-static ros::ServiceClient modify_env_rviz;
-static ros::ServiceClient get_env_changes_rviz;
-
-TrajOptProb::Ptr jsonMethod()
+namespace tesseract_ros_examples
 {
-  ros::NodeHandle nh;
+
+TrajOptProb::Ptr BasicCartesianExample::jsonMethod()
+{
   std::string trajopt_config;
 
-  nh.getParam(TRAJOPT_DESCRIPTION_PARAM, trajopt_config);
+  nh_.getParam(TRAJOPT_DESCRIPTION_PARAM, trajopt_config);
 
   Json::Value root;
   Json::Reader reader;
@@ -86,68 +78,7 @@ TrajOptProb::Ptr jsonMethod()
   return ConstructProblem(root, tesseract_);
 }
 
-bool checkRviz()
-{
-
-  // Get the current state of the environment.
-  // Usually you would not be getting environment state from rviz
-  // this is just an example. You would be gettting it from the
-  // environment_monitor node. Need to update examples to launch
-  // environment_monitor node.
-  get_env_changes_rviz.waitForExistence();
-  tesseract_msgs::GetEnvironmentChanges env_changes;
-  env_changes.request.revision = 0;
-  if (get_env_changes_rviz.call(env_changes))
-  {
-    ROS_INFO("Retrieve current environment changes!");
-  }
-  else
-  {
-    ROS_ERROR("Failed to retrieve current environment changes!");
-    return false;
-  }
-
-  // There should not be any changes but check
-  if (env_changes.response.revision != 0)
-  {
-    ROS_ERROR("The environment has changed externally!");
-    return false;
-  }
-  return true;
-}
-
-/**
- * @brief Send RViz the latest number of commands
- * @param n The past revision number
- * @return True if successful otherwise false
- */
-bool sendRvizChanges(unsigned long past_revision)
-{
-  modify_env_rviz.waitForExistence();
-  tesseract_msgs::ModifyEnvironment update_env;
-  update_env.request.id = tesseract_->getEnvironment()->getName();
-  update_env.request.revision = past_revision;
-  if (!toMsg(
-          update_env.request.commands, tesseract_->getEnvironment()->getCommandHistory(), update_env.request.revision))
-  {
-    ROS_ERROR("Failed to generate commands to update rviz environment!");
-    return false;
-  }
-
-  if (modify_env_rviz.call(update_env))
-  {
-    ROS_INFO("RViz environment Updated!");
-  }
-  else
-  {
-    ROS_INFO("Failed to update rviz environment");
-    return false;
-  }
-
-  return true;
-}
-
-bool addPointCloud()
+bool BasicCartesianExample::addPointCloud()
 {
   // Create octomap and add it to the local environment
   pcl::PointCloud<pcl::PointXYZ> full_cloud;
@@ -191,7 +122,7 @@ bool addPointCloud()
   return tesseract_->getEnvironment()->addLink(link_octomap, joint_octomap);
 }
 
-TrajOptProb::Ptr cppMethod()
+TrajOptProb::Ptr BasicCartesianExample::cppMethod()
 {
   ProblemConstructionInfo pci(tesseract_);
 
@@ -257,46 +188,37 @@ TrajOptProb::Ptr cppMethod()
   return ConstructProblem(pci);
 }
 
-int main(int argc, char** argv)
+bool BasicCartesianExample::run()
 {
-  ros::init(argc, argv, "basic_cartesian_plan");
-  ros::NodeHandle pnh("~");
-  ros::NodeHandle nh;
-
-  // Get ROS Parameters
-  pnh.param("plotting", plotting_, plotting_);
-  pnh.param<std::string>("method", method_, method_);
-  pnh.param<int>("steps", steps_, steps_);
-
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;
-  nh.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
-  nh.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
+  nh_.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
+  nh_.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
 
   ResourceLocatorFn locator = tesseract_rosutils::locateResource;
   if (!tesseract_->init(urdf_xml_string, srdf_xml_string, locator))
-    return -1;
+    return false;
 
   // These are used to keep visualization updated
-  if (plotting_)
+  if (rviz_)
   {
-    modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", false);
-    get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", false);
+    modify_env_rviz_ = nh_.serviceClient<tesseract_msgs::ModifyEnvironment>(MODIFY_ENVIRONMENT_SERVICE, false);
+    get_env_changes_rviz_ = nh_.serviceClient<tesseract_msgs::GetEnvironmentChanges>(GET_ENVIRONMENT_CHANGES_SERVICE, false);
 
     // Check RViz to make sure nothing has changed
     if (!checkRviz())
-      return -1;
+      return false;
   }
 
   // Create octomap and add it to the local environment
   if (!addPointCloud())
-    return -1;
+    return false;
 
-  if (plotting_)
+  if (rviz_)
   {
     // Now update rviz environment
     if (!sendRvizChanges(0))
-      return -1;
+      return false;
   }
 
   // Create plotting tool
@@ -363,4 +285,8 @@ int main(int argc, char** argv)
   ROS_INFO((found) ? ("Final trajectory is in collision") : ("Final trajectory is collision free"));
 
   plotter->plotTrajectory(prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()));
+
+  return true;
+}
+
 }

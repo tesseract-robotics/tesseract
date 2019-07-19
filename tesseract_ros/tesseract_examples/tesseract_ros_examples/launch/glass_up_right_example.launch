@@ -5,9 +5,12 @@
   <arg name="robot_description" default="robot_description"/>
   <arg name="trajopt_description" default="trajopt_description"/>
   <arg name="plotting" default="true"/>
+  <arg name="write_to_file" default="false"/>
+  <arg name="rviz" default="true"/>
+  <arg name="testing" default="false"/>
 
   <!-- Load universal robot description format (URDF) -->
-  <param name="$(arg trajopt_description)" textfile="$(find tesseract_ros_examples)/config/basic_cartesian_plan.json"/>
+  <param name="$(arg trajopt_description)" textfile="$(find tesseract_ros_examples)/config/glass_up_right_plan.json"/>
 
   <!-- Load universal robot description format (URDF) -->
   <param name="$(arg robot_description)" command="$(find xacro)/xacro --inorder '$(find tesseract_ros_examples)/urdf/lbr_iiwa_14_r820.xacro'" />
@@ -25,15 +28,19 @@
     <rosparam command="load" file="$(find tesseract_ros_examples)/config/kinematics.yaml"/>
   </group>
 
-  <!-- If needed, broadcast static tf for robot root -->
-  <node pkg="tf" type="static_transform_publisher" name="virtual_joint_broadcaster_0" args="0 0 0 0 0 0 world base_link 100" />
+  <group unless="$(arg testing)">
+    <!-- If needed, broadcast static tf for robot root -->
+    <node pkg="tf" type="static_transform_publisher" name="virtual_joint_broadcaster_0" args="0 0 0 0 0 0 world base_link 100" />
 
-  <node pkg="tesseract_ros_examples" type="tesseract_ros_examples_basic_cartesian_plan" name="tesseract_ros_examples_basic_cartesian_plan" required="true">
-    <param name="plotting" type="bool" value="$(arg plotting)"/>
-  </node>
+    <node pkg="tesseract_ros_examples" type="tesseract_ros_examples_glass_up_right_example_node" name="tesseract_ros_examples_glass_up_right_example_node">
+      <param name="plotting" type="bool" value="$(arg plotting)"/>
+      <param name="write_to_file" type="bool" value="$(arg write_to_file)"/>
+      <param name="rviz" type="bool" value="$(arg rviz)"/>
+    </node>
 
-  <!-- Launch visualization -->
-  <node if="$(arg plotting)" pkg="rviz" type="rviz" name="tesseract_ros_examples_basic_cartesian_plan_rviz"
-       args="-d $(find tesseract_ros_examples)/config/examples.rviz" />
+    <!-- Launch visualization -->
+    <node if="$(arg rviz)" pkg="rviz" type="rviz" name="tesseract_ros_examples_glass_up_right_example_rviz"
+        args="-d $(find tesseract_ros_examples)/config/examples.rviz" />
+  </group>
 
 </launch>
