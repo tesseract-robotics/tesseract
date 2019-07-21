@@ -189,6 +189,13 @@ target_include_directories(${PROJECT_NAME}_pick_and_place_example_node PUBLIC
 target_include_directories(${PROJECT_NAME}_pick_and_place_example_node SYSTEM PUBLIC
     ${catkin_INCLUDE_DIRS})
 
+# Mark cpp header files for installation
+install(DIRECTORY include/${PROJECT_NAME}
+  DESTINATION include
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE
+ )
+
 # Mark executables and/or libraries for installation
 install(
   TARGETS
@@ -214,12 +221,17 @@ install(
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
+install(
+  DIRECTORY test
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  FILES_MATCHING PATTERN "*.test"
+)
+
 if(CATKIN_ENABLE_TESTING)
     find_package(rostest REQUIRED)
-    find_package(GTest REQUIRED)
 
     add_rostest_gtest(${PROJECT_NAME}_basic_cartesian_example_unit test/basic_cartesian_example_unit.test test/basic_cartesian_example_unit.cpp)
-    target_link_libraries(${PROJECT_NAME}_basic_cartesian_example_unit ${PROJECT_NAME}_basic_cartesian_example ${GTEST_BOTH_LIBRARIES} ${catkin_LIBRARIES})
+    target_link_libraries(${PROJECT_NAME}_basic_cartesian_example_unit ${PROJECT_NAME}_basic_cartesian_example ${catkin_LIBRARIES})
     if(CXX_FEATURE_FOUND EQUAL "-1")
         target_compile_options(${PROJECT_NAME}_basic_cartesian_example_unit PRIVATE -std=c++11)
     else()
@@ -230,11 +242,10 @@ if(CATKIN_ENABLE_TESTING)
         "$<INSTALL_INTERFACE:include>")
     target_include_directories(${PROJECT_NAME}_basic_cartesian_example_unit SYSTEM PUBLIC
         ${catkin_INCLUDE_DIRS}
-        ${PCL_INCLUDE_DIRS}
-        ${GTEST_INCLUDE_DIRS})
+        ${PCL_INCLUDE_DIRS})
 
     add_rostest_gtest(${PROJECT_NAME}_car_seat_example_unit test/car_seat_example_unit.test test/car_seat_example_unit.cpp)
-    target_link_libraries(${PROJECT_NAME}_car_seat_example_unit ${PROJECT_NAME}_car_seat_example ${GTEST_BOTH_LIBRARIES} ${catkin_LIBRARIES})
+    target_link_libraries(${PROJECT_NAME}_car_seat_example_unit ${PROJECT_NAME}_car_seat_example ${catkin_LIBRARIES})
     target_compile_options(${PROJECT_NAME}_car_seat_example_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
     if(CXX_FEATURE_FOUND EQUAL "-1")
         target_compile_options(${PROJECT_NAME}_car_seat_example_unit PRIVATE -std=c++11)
