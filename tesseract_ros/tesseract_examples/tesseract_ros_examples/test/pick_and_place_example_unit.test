@@ -5,5 +5,5 @@
   <arg name="testing" default="true"/>
 
   <include file="$(find tesseract_ros_examples)/launch/pick_and_place_example.launch" pass_all_args="true"/>
-  <test pkg="tesseract_ros_examples" type="tesseract_ros_examples_pick_and_place_example_unit" test-name="pick_and_place_example_unit"/>
+  <test pkg="tesseract_ros_examples" type="tesseract_ros_examples_pick_and_place_example_unit" test-name="pick_and_place_example_unit" time-limit="120.0"/>
 </launch>
