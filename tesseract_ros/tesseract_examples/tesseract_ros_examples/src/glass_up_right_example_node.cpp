@@ -1,9 +1,9 @@
 /**
  * @file glass_up_right_example_node.cpp
- * @brief Example
+ * @brief Glass up right example node
  *
  * @author Levi Armstrong
- * @date Dec 18, 2017
+ * @date July 22, 2019
  * @version TODO
  * @bug No known bugs
  *

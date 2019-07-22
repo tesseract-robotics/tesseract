@@ -1,9 +1,9 @@
 /**
- * @file glass_up_right_plan.cpp
- * @brief Example using Trajopt for constrained free space planning
+ * @file glass_up_right_example.cpp
+ * @brief Glass up right example implementation
  *
  * @author Levi Armstrong
- * @date Dec 18, 2017
+ * @date July 22, 2019
  * @version TODO
  * @bug No known bugs
  *

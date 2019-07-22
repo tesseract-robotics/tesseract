@@ -1,9 +1,9 @@
 /**
  * @file basic_cartesian_plan.cpp
- * @brief Example using Trajopt for cartesian planning
+ * @brief Basic cartesian example implementation
  *
  * @author Levi Armstrong
- * @date Dec 18, 2017
+ * @date July 22, 2019
  * @version TODO
  * @bug No known bugs
  *

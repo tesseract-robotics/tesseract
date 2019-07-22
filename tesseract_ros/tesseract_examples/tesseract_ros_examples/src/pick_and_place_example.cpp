@@ -1,9 +1,9 @@
 /**
- * @file glass_up_right_plan.cpp
- * @brief Example using Trajopt for constrained free space planning
+ * @file pick_and_place_example.cpp
+ * @brief Pick and place implementation
  *
  * @author Levi Armstrong
- * @date Dec 18, 2017
+ * @date July 22, 2019
  * @version TODO
  * @bug No known bugs
  *
