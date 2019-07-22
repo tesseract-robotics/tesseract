@@ -1,9 +1,9 @@
 /**
  * @file puzzle_piece_example_node.cpp
- * @brief Example
+ * @brief Puzzle piece example node
  *
  * @author Levi Armstrong
- * @date Dec 18, 2017
+ * @date July 22, 2019
  * @version TODO
  * @bug No known bugs
  *

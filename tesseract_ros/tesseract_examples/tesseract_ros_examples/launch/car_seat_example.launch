@@ -20,7 +20,7 @@
     <!-- If needed, broadcast static tf for robot root -->
     <node pkg="tf" type="static_transform_publisher" name="virtual_joint_broadcaster_0" args="0 0 0 0 0 0 world base_link 100" />
 
-    <node pkg="tesseract_ros_examples" type="tesseract_ros_examples_car_seat_exmple_node" name="tesseract_ros_examples_car_seat_example_node">
+    <node pkg="tesseract_ros_examples" type="tesseract_ros_examples_car_seat_example_node" name="tesseract_ros_examples_car_seat_example_node">
       <param name="plotting" type="bool" value="$(arg plotting)"/>
       <param name="rviz" type="bool" value="$(arg rviz)"/>
     </node>

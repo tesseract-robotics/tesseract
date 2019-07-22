@@ -3,7 +3,7 @@
  * @brief Examples base class
  *
  * @author Levi Armstrong
- * @date Dec 18, 2017
+ * @date July 22, 2018
  * @version TODO
  * @bug No known bugs
  *
@@ -41,6 +41,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_ros_examples
 {
+/**
+ * @brief The Example base class
+ *
+ * It provides a generic interface for all examples as a library which then
+ * can easily be integrated as unit tests so breaking changes are caught.
+ * Also it provides a few utility functions for checking rviz environment and
+ * updating the rviz environment.
+ */
 class Example
 {
 public:
@@ -53,12 +61,16 @@ public:
   virtual bool run() = 0;
 
 protected:
-  bool plotting_;
-  bool rviz_;
-  tesseract::Tesseract::Ptr tesseract_;
-  ros::ServiceClient modify_env_rviz_;
-  ros::ServiceClient get_env_changes_rviz_;
+  bool plotting_;                           /**< @brief Enable plotting so data is published for rviz if available */
+  bool rviz_;                               /**< @brief Enable rviz updating */
+  tesseract::Tesseract::Ptr tesseract_;     /**< @brief Tesseract Manager Class */
+  ros::ServiceClient modify_env_rviz_;      /**< @brief Service for modifying tesseract environment in rviz */
+  ros::ServiceClient get_env_changes_rviz_; /**< @brief Get the environment changes from rviz */
 
+  /**
+   * @brief Check rviz and make sure the rviz environment revision number is zero.
+   * @return True if revision number is zero, otherwise false.
+   */
   bool checkRviz()
   {
     // Get the current state of the environment.

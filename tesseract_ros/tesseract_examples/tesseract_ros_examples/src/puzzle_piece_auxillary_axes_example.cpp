@@ -1,9 +1,9 @@
 /**
- * @file puzzle_piece_plan.cpp
- * @brief Example using Trajopt for constrained cartesian planning
+ * @file puzzle_piece_auxillary_axes_example.cpp
+ * @brief Puzzle piece auxillary axes implementation
  *
  * @author Levi Armstrong
- * @date Dec 18, 2017
+ * @date July 22, 2019
  * @version TODO
  * @bug No known bugs
  *
