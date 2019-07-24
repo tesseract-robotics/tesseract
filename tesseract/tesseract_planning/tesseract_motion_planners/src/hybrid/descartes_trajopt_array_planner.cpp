@@ -46,6 +46,7 @@ void DescartesTrajOptArrayPlanner<FloatType>::clear()
   request_ = PlannerRequest();
   trajopt_planner_.clear();
   descartes_planner_.clear();
+  trajopt_config_ = TrajOptArrayPlannerConfig();
 }
 
 template<typename FloatType>
@@ -86,8 +87,12 @@ tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::solve(Plan
     return descartes_status;
   }
 
+  trajopt_config_.seed_trajectory_ = descartes_planning_response.trajectory;
+  trajopt_planner_.setConfiguration(trajopt_config_);
+
   tesseract_motion_planners::PlannerResponse trajopt_planning_response;
   tesseract_common::StatusCode trajopt_status = trajopt_planner_.solve(trajopt_planning_response);
+  response = std::move(trajopt_planning_response);
 
   return trajopt_status;
 }
@@ -101,6 +106,8 @@ bool DescartesTrajOptArrayPlanner<FloatType>::setConfiguration(const DescartesMo
 
   if (!trajopt_planner_.setConfiguration(trajopt_config))
     success = false;
+  else
+    trajopt_config_ = trajopt_config;
 
   return success;
 }

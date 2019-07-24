@@ -29,6 +29,7 @@ ProcessDefinition generateProcessDefinition(const ProcessDefinitionConfig& proce
   for (size_t i = 0; i < (process_config.tool_paths.size() - 1); ++i)
   {
     ProcessTransitionDefinition transition_def;
+    assert(process_config.transition_generator[i] != nullptr); // transition generators should never be nullptrs
     if (process_config.transition_generator[i] != nullptr)
     {
       if ((process_definition.segments[i].process.front() != nullptr) &&
@@ -107,6 +108,7 @@ ProcessDefinition generateProcessDefinition(const ProcessDefinitionConfig& proce
   for (size_t i = 0; i < (process_config.tool_paths.size() - 1); ++i)
   {
     ProcessTransitionDefinition transition_def;
+    assert(process_config.transition_generator[i] != nullptr); // transition generators should never be nullptrs
     if (process_config.transition_generator[i] != nullptr)
     {
       if ((process_definition.segments[i].process.front() != nullptr) &&

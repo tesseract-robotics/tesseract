@@ -247,8 +247,8 @@ trajectory_msgs::JointTrajectory toJointTrajectory(const tesseract_msgs::Process
     t = trajectory.points.back().time_from_start.toSec();
   else
   {
-    trajectory.joint_names = process_plan.segments[0].approach.trajectory.joint_names;
-    trajectory.header = process_plan.segments[0].approach.trajectory.header;
+    trajectory.joint_names = process_plan.segments[0].process.trajectory.joint_names;
+    trajectory.header = process_plan.segments[0].process.trajectory.header;
   }
 
   // Append process segments and transitions
