@@ -43,7 +43,7 @@ struct ProcessPlan
                                                                 canceling an ongoing process */
   std::vector<tesseract_common::TrajArray> transition_from_end;   /**< A vector of transition plans from the end of
                                                                      segment[i] to the start of segment[i+1] */
-  tesseract_common::TrajArray to_start; /**< A trajectory from the last segments waypoint to the start position */
+  tesseract_common::TrajArray to_end; /**< A trajectory from the last segments waypoint to the end position */
   bool valid = true; /**< If true, a motion plan was successfully found for everything, otherwise false */
 };
 
@@ -53,6 +53,9 @@ struct ProcessPlan
 class ProcessPlanner
 {
 public:
+  using Ptr = std::shared_ptr<ProcessPlanner>;
+  using ConstPtr = std::shared_ptr<const ProcessPlanner>;
+
   virtual ~ProcessPlanner() = default;
 
   /**
