@@ -13,6 +13,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <eigen_conversions/eigen_msg.h>
 #include <iostream>
 #include <fstream>
+#include <tesseract_msgs/ProcessPlan.h>
+#include <tesseract_msgs/ProcessPlanPath.h>
+#include <tesseract_msgs/ProcessPlanSegment.h>
+#include <tesseract_msgs/ProcessPlanTransitionPair.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/waypoint.h>
@@ -198,6 +202,98 @@ geometry_msgs::PoseArray toPoseArray(const tesseract_process_planners::ProcessDe
   }
 
   return full_path;
+}
+
+/**
+ * @brief Convert a Tesseract Trajectory to Process Plan Path
+ * @param trajectory Tesseract Trajectory
+ * @param joint_names Joint names corresponding to the tesseract trajectory
+ * @return A process plan path
+ */
+inline tesseract_msgs::ProcessPlanPath toProcessPlanPath(const tesseract_common::TrajArray& trajectory, const std::vector<std::string>& joint_names)
+{
+  tesseract_msgs::ProcessPlanPath path;
+  if (trajectory.size() != 0)
+    tesseract_rosutils::toMsg(path.trajectory, joint_names, trajectory);
+  return path;
+}
+
+/**
+ * @brief Convert a process plan segment to a process plan segment message
+ * @param segment_results The process segment plan
+ * @param joint_names Joint names corresponding to the tesseract trajectory
+ * @return Process Segment Message
+ */
+inline tesseract_msgs::ProcessPlanSegment toProcessPlanSegement(const tesseract_process_planners::ProcessSegmentPlan& process_plan_segment, const std::vector<std::string>& joint_names)
+{
+  tesseract_msgs::ProcessPlanSegment process_segment;
+  process_segment.approach = toProcessPlanPath(process_plan_segment.approach, joint_names);
+  process_segment.process = toProcessPlanPath(process_plan_segment.process, joint_names);
+  process_segment.departure = toProcessPlanPath(process_plan_segment.departure, joint_names);
+  return process_segment;
+}
+
+/**
+ * @brief Convert a Process Plan to a single Joint Trajector for visualization
+ * @param process_plan Process Plan
+ * @return Joint Trajectory
+ */
+trajectory_msgs::JointTrajectory toJointTrajectory(const tesseract_msgs::ProcessPlan& process_plan)
+{
+  // Initialize with path from home
+  double t = 0;
+  trajectory_msgs::JointTrajectory trajectory = process_plan.from_start.trajectory;
+  if (!trajectory.points.empty())
+    t = trajectory.points.back().time_from_start.toSec();
+  else
+  {
+    trajectory.joint_names = process_plan.segments[0].approach.trajectory.joint_names;
+    trajectory.header = process_plan.segments[0].approach.trajectory.header;
+  }
+
+  // Append process segments and transitions
+  for (size_t i = 0; i < process_plan.segments.size(); ++i)
+  {
+    for (const auto& point : process_plan.segments[i].approach.trajectory.points)
+    {
+      trajectory.points.push_back(point);
+      trajectory.points.back().time_from_start.fromSec(t + point.time_from_start.toSec());
+    }
+    t = trajectory.points.back().time_from_start.toSec();
+
+    for (const auto& point : process_plan.segments[i].process.trajectory.points)
+    {
+      trajectory.points.push_back(point);
+      trajectory.points.back().time_from_start.fromSec(t + point.time_from_start.toSec());
+    }
+    t = trajectory.points.back().time_from_start.toSec();
+
+    for (const auto& point : process_plan.segments[i].departure.trajectory.points)
+    {
+      trajectory.points.push_back(point);
+      trajectory.points.back().time_from_start.fromSec(t + point.time_from_start.toSec());
+    }
+    t = trajectory.points.back().time_from_start.toSec();
+
+    if (i < (process_plan.segments.size() - 1))
+    {
+      for (const auto& point : process_plan.transitions[i].from_end.trajectory.points)
+      {
+        trajectory.points.push_back(point);
+        trajectory.points.back().time_from_start.fromSec(t + point.time_from_start.toSec());
+      }
+      t = trajectory.points.back().time_from_start.toSec();
+    }
+  }
+
+  // Append path to home
+  for (const auto& point : process_plan.to_end.trajectory.points)
+  {
+    trajectory.points.push_back(point);
+    trajectory.points.back().time_from_start.fromSec(t + point.time_from_start.toSec());
+  }
+
+  return trajectory;
 }
 
 /**
