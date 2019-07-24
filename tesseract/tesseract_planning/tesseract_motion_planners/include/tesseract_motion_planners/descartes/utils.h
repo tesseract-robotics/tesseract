@@ -53,7 +53,7 @@ makeGantryPositionSamplers(const std::vector<Waypoint::Ptr>& path,
     }
     else
     {
-      CONSOLE_BRIDGE_logError("Tesseract Descartes planner only supports cartesian waypoints!");
+      CONSOLE_BRIDGE_logError("Tesseract Descartes planner does not currently support waypoint type: %d", wp->getType());
       return std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr>();
     }
   }

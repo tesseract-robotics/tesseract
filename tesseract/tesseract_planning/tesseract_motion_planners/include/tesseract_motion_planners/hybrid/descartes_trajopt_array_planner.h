@@ -48,6 +48,7 @@ protected:
   TrajOptArrayPlanner trajopt_planner_;
   DescartesMotionPlanner<FloatType> descartes_planner_;
   std::shared_ptr<const tesseract_common::GeneralStatusCategory> status_category_; /** @brief The plannsers status codes */
+  TrajOptArrayPlannerConfig trajopt_config_;
 };
 
 using DescartesTrajOptArrayPlannerD = DescartesTrajOptArrayPlanner<double>;

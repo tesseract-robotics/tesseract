@@ -1,5 +1,5 @@
 /**
- * @file descartes_planner.h
+ * @file descartes_motion_planner.h
  * @brief Tesseract ROS Descartes planner
  *
  * @author Levi Armstrong
