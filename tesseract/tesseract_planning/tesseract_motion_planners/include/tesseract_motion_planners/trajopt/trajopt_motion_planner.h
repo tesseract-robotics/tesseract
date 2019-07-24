@@ -35,6 +35,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
+class TrajOptMotionPlannerStatusCategory;
+
 struct TrajOptPlannerConfig
 {
   TrajOptPlannerConfig(trajopt::TrajOptProb::Ptr prob) : prob(prob) {}
@@ -53,7 +55,7 @@ class TrajOptMotionPlanner : public MotionPlanner
 {
 public:
   /** @brief Construct a basic planner */
-  TrajOptMotionPlanner(const std::string& name = "TRAJOPT");
+  TrajOptMotionPlanner(std::string name = "TRAJOPT");
 
   ~TrajOptMotionPlanner() {}
 
@@ -72,7 +74,7 @@ public:
    * @param response The results of the optimization. Primary output is the optimized joint trajectory
    * @return true if optimization complete
    */
-  bool solve(PlannerResponse& response) override;
+  tesseract_common::StatusCode solve(PlannerResponse& response) override;
 
   bool terminate() override;
 
@@ -82,10 +84,33 @@ public:
    * @brief checks whether the planner is properly configure for solving a motion plan
    * @return True when it is configured correctly, false otherwise
    */
-  bool isConfigured() const override;
+  tesseract_common::StatusCode isConfigured() const override;
 
 protected:
   std::shared_ptr<TrajOptPlannerConfig> config_;
+  std::shared_ptr<const TrajOptMotionPlannerStatusCategory> status_category_; /** @brief The plannsers status codes */
 };
+
+class TrajOptMotionPlannerStatusCategory : public tesseract_common::StatusCategory
+{
+public:
+  TrajOptMotionPlannerStatusCategory(std::string name);
+  const std::string& name() const noexcept override;
+  std::string message(int code) const override;
+
+  enum
+  {
+    IsConfigured = 1,
+    SolutionFound = 0,
+    IsNotConfigured = -1,
+    FailedToParseConfig = -2,
+    FailedToFindValidSolution = -3,
+    FoundValidSolutionInCollision = -4
+  };
+
+private:
+  std::string name_;
+};
+
 }  // namespace tesseract_motion_planners
 #endif  // TESSERACT_PLANNING_TRAJOPT_PLANNER_H

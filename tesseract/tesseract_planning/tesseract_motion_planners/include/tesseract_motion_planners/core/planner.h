@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/status_code.h>
 #include <tesseract_motion_planners/core/types.h>
 
 namespace tesseract_motion_planners
@@ -39,7 +40,7 @@ class MotionPlanner
 {
 public:
   /** @brief Construct a basic planner */
-  MotionPlanner() {}
+  MotionPlanner(std::string name) : name_(std::move(name)) {}
   virtual ~MotionPlanner() {}
   /** @brief Get the name of this planner */
   const std::string& getName() const { return name_; }
@@ -48,16 +49,14 @@ public:
   /** @brief Set the planner request for this context */
   void setRequest(const PlannerRequest& request) { request_ = request; }
 
-  const StatusCodeMap& getAvailableStatusCodes() const { return status_code_map_; }
-
   /** @brief Solve the planner request problem */
-  virtual bool solve(PlannerResponse& res) = 0;
+  virtual tesseract_common::StatusCode solve(PlannerResponse& res) = 0;
 
   /**
    * @brief checks if the planner is configured for planning
    * @return True if configured, false otherwise
    */
-  virtual bool isConfigured() const = 0;
+  virtual tesseract_common::StatusCode isConfigured() const = 0;
 
   /**
    * @brief If solve() is running, terminate the computation. Return false if termination not possible. No-op if
@@ -71,7 +70,6 @@ public:
 protected:
   std::string name_;              /**< @brief The name of this planner */
   PlannerRequest request_;        /**< @brief The planner request information */
-  StatusCodeMap status_code_map_; /**< @brief A map of error codes to description */
 };
 }  // namespace tesseract_motion_planners
 #endif  // TESSERACT_PLANNING_PLANNER_H

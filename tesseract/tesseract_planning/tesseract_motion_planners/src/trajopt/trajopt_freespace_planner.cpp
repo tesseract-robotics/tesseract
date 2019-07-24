@@ -42,13 +42,32 @@ using namespace trajopt;
 
 namespace tesseract_motion_planners
 {
-/** @brief Construct a basic planner */
-TrajOptFreespacePlanner::TrajOptFreespacePlanner(const std::string& name) : pci_(nullptr), config_(nullptr)
+
+TrajOptFreespacePlannerStatusCategory::TrajOptFreespacePlannerStatusCategory(std::string name) : name_(name) {}
+const std::string& TrajOptFreespacePlannerStatusCategory::name() const noexcept { return name_; }
+std::string TrajOptFreespacePlannerStatusCategory::message(int code) const
 {
-  name_ = name;
-  // TODO: These should be tied to enumeration ints and returned through an getLastErrorMsg() method
-  // Error Status Codes
-  status_code_map_ = planner_.getAvailableStatusCodes();
+  switch (code)
+  {
+    case IsConfigured:
+    {
+      return "TrajOpt Freespace Planner is configured.";
+    }
+    case IsNotConfigured:
+    {
+      return "TrajOpt Freespace Planner is not configured, must call setConfiguration prior to calling solve.";
+    }
+    default:
+    {
+      assert (false);
+      return "";
+    }
+  }
+}
+
+/** @brief Construct a basic planner */
+TrajOptFreespacePlanner::TrajOptFreespacePlanner(std::string name) : MotionPlanner(std::move(name)), pci_(nullptr), config_(nullptr), status_category_(std::make_shared<const TrajOptFreespacePlannerStatusCategory>(name))
+{
 }
 
 bool TrajOptFreespacePlanner::terminate()
@@ -57,22 +76,22 @@ bool TrajOptFreespacePlanner::terminate()
   return false;
 }
 
-bool TrajOptFreespacePlanner::solve(PlannerResponse& response)
+tesseract_common::StatusCode TrajOptFreespacePlanner::solve(PlannerResponse& response)
 {
-  if (!isConfigured())
+  tesseract_common::StatusCode config_status = isConfigured();
+  if (!config_status)
   {
-    response.status_code = -5;
-    response.status_description = status_code_map_[response.status_code];
+    response.status = config_status;
     CONSOLE_BRIDGE_logError("Planner %s is not configured", name_.c_str());
-    return false;
+    return config_status;
   }
 
   tesseract_motion_planners::PlannerResponse planning_response;
 
   // Solve problem. Results are stored in the response
-  bool success = planner_.solve(planning_response);
+  tesseract_common::StatusCode status = planner_.solve(planning_response);
   response = std::move(planning_response);
-  return success;
+  return status;
 }
 
 void TrajOptFreespacePlanner::clear()
@@ -82,9 +101,16 @@ void TrajOptFreespacePlanner::clear()
   pci_ = nullptr;
 }
 
-bool TrajOptFreespacePlanner::isConfigured() const
+tesseract_common::StatusCode TrajOptFreespacePlanner::isConfigured() const
 {
-  return pci_ != nullptr && config_ != nullptr && planner_.isConfigured();
+  if (pci_ == nullptr || config_ == nullptr)
+    return tesseract_common::StatusCode(TrajOptFreespacePlannerStatusCategory::IsNotConfigured, status_category_);
+
+  tesseract_common::StatusCode trajopt_status = planner_.isConfigured();
+  if (!trajopt_status)
+    return trajopt_status;
+
+  return tesseract_common::StatusCode(TrajOptFreespacePlannerStatusCategory::IsConfigured, status_category_);
 }
 
 bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConfig& config)

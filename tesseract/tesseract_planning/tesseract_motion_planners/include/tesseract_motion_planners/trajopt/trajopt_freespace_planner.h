@@ -37,6 +37,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
+
+class TrajOptFreespacePlannerStatusCategory;
+
 /**
  * @brief Config to setup freespace planner. Specify the start and end position. Freespace motion can be defined between
  * either joint space positions or cartesian positions
@@ -108,7 +111,7 @@ class TrajOptFreespacePlanner : public MotionPlanner
 {
 public:
   /** @brief Construct a basic planner */
-  TrajOptFreespacePlanner(const std::string& name = "TRAJOPT_FREESPACE");
+  TrajOptFreespacePlanner(std::string name = "TRAJOPT_FREESPACE");
 
   /**
    * @brief Set the configuration for the planner
@@ -133,7 +136,7 @@ public:
    * @param response The results of the optimization. Primary output is the optimized joint trajectory
    * @return true if optimization complete
    */
-  bool solve(PlannerResponse& response) override;
+  tesseract_common::StatusCode solve(PlannerResponse& response) override;
 
   bool terminate() override;
 
@@ -143,12 +146,32 @@ public:
    * @brief checks whether the planner is properly configure for solving a motion plan
    * @return True when it is configured correctly, false otherwise
    */
-  bool isConfigured() const override;
+  tesseract_common::StatusCode isConfigured() const override;
 
 protected:
   tesseract_motion_planners::TrajOptMotionPlanner planner_; /** @brief The trajopt planner */
   std::shared_ptr<trajopt::ProblemConstructionInfo> pci_;
   std::shared_ptr<TrajOptFreespacePlannerConfig> config_;
+  std::shared_ptr<const TrajOptFreespacePlannerStatusCategory> status_category_; /** @brief The plannsers status codes */
 };
+
+class TrajOptFreespacePlannerStatusCategory : public tesseract_common::StatusCategory
+{
+public:
+  TrajOptFreespacePlannerStatusCategory(std::string name);
+  const std::string& name() const noexcept override;
+  std::string message(int code) const override;
+
+  enum
+  {
+    IsConfigured = 0,
+    IsNotConfigured = -1
+  };
+
+private:
+  std::string name_;
+};
+
+
 }  // namespace tesseract_motion_planners
 #endif  // TESSERACT_PLANNING_TRAJOPT_PLANNER_H

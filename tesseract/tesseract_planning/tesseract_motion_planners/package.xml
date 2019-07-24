@@ -12,6 +12,10 @@
   <depend>tesseract_kinematics</depend>
   <depend>tesseract_common</depend>
   <depend>trajopt</depend>
+  <depend>descartes_light</depend>
+  <depend>descartes_samplers</depend>
+  <depend>descartes_opw</depend>
+  <depend>descartes_tesseract</depend>
   <depend>ompl</depend>
   <depend>libconsole-bridge-dev</depend>
 
