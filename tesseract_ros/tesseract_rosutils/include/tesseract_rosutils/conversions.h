@@ -19,7 +19,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_process_planners/process_definition.h>
 #include <tesseract_process_planners/process_planner.h>
 
-namespace tesseact_rosutils
+namespace tesseract_rosutils
 {
 /**
  * @brief Convert STD Vector to Eigen Vector
