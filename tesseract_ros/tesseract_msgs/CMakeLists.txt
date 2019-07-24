@@ -43,6 +43,10 @@ add_message_files(
     Trajectory.msg
     VisualGeometry.msg
     TransformMap.msg
+    ProcessPlan.msg
+    ProcessPlanPath.msg
+    ProcessPlanSegment.msg
+    ProcessPlanTransitionPair.msg
 )
 
 add_service_files(
