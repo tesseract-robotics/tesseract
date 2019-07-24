@@ -32,6 +32,18 @@ inline Eigen::VectorXd toEigen(const std::vector<double>& vector)
 }
 
 /**
+ * @brief Convert Geometry Pose Message to Eigen
+ * @param pose Geometry Pose Message
+ * @return Eigen Isometry Matrix
+ */
+inline Eigen::Isometry3d toEigen(const geometry_msgs::Pose& pose)
+{
+  Eigen::Isometry3d pose_eigen;
+  tf::poseMsgToEigen(pose, pose_eigen);
+  return pose_eigen;
+}
+
+/**
  * @brief Converts JointState position to Eigen vector in the order provided by joint_names
  * @param joint_state The JointState
  * @param joint_names The vector joint names used to order the output
@@ -68,7 +80,7 @@ toWaypoint(const geometry_msgs::Pose& pose, Eigen::Isometry3d change_base = Eige
   Eigen::Isometry3d pose_eigen;
   tf::poseMsgToEigen(pose, pose_eigen);
   waypoint->cartesian_position_ = change_base * pose_eigen;
-  return waypoint;
+  return std::move(waypoint);
 }
 
 /**
@@ -115,7 +127,7 @@ inline tesseract_motion_planners::Waypoint::Ptr toWaypoint(const std::vector<dou
 {
   tesseract_motion_planners::JointWaypoint::Ptr waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>();
   waypoint->joint_positions_ = toEigen(pose);
-  return waypoint;
+  return std::move(waypoint);
 }
 
 /**
@@ -129,7 +141,7 @@ inline tesseract_motion_planners::Waypoint::Ptr toWaypoint(const sensor_msgs::Jo
 {
   tesseract_motion_planners::JointWaypoint::Ptr waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>();
   waypoint->joint_positions_ = toEigen(joint_state, joint_names);
-  return waypoint;
+  return std::move(waypoint);
 }
 
 /**
