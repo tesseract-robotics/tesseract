@@ -14,8 +14,10 @@ public:
   using Ptr = std::shared_ptr<StatusCategory>;
   using ConstPtr = std::shared_ptr<const StatusCategory>;
 
-  constexpr StatusCategory() noexcept;
+  constexpr StatusCategory() noexcept = default;
   StatusCategory( const StatusCategory& other ) = delete;
+  virtual ~StatusCategory() = default;
+
   virtual const std::string& name() const noexcept = 0;
   virtual std::string message(int code) const = 0;
 

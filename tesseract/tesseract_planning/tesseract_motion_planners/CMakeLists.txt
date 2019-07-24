@@ -3,7 +3,12 @@ project(tesseract_motion_planners VERSION 0.1.0 LANGUAGES CXX)
 
 find_package(ompl REQUIRED)
 find_package(trajopt REQUIRED)
+find_package(descartes_light REQUIRED)
+find_package(descartes_samplers REQUIRED)
+find_package(descartes_opw REQUIRED)
+find_package(descartes_tesseract REQUIRED)
 find_package(tesseract REQUIRED)
+find_package(tesseract_common REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(Boost REQUIRED)
 
@@ -11,7 +16,7 @@ list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core INTERFACE)
-target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract::tesseract console_bridge)
+target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract::tesseract tesseract::tesseract_common console_bridge)
 target_compile_options(${PROJECT_NAME}_core INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_core INTERFACE -std=c++11)
@@ -36,7 +41,7 @@ endif()
 target_include_directories(${PROJECT_NAME}_trajopt PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_trajopt SYSTEM INTERFACE
+target_include_directories(${PROJECT_NAME}_trajopt SYSTEM PUBLIC
     ${Boost_INCLUDE_DIRS})
 
 # Trajopt Freespace Planner
@@ -84,11 +89,39 @@ target_include_directories(${PROJECT_NAME}_ompl PUBLIC
 target_include_directories(${PROJECT_NAME}_ompl SYSTEM PUBLIC
     ${OMPL_INCLUDE_DIRS})
 
+# Descartes Planner
+add_library(${PROJECT_NAME}_descartes SHARED src/descartes/descartes_motion_planner.cpp)
+target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME}_core descartes::descartes_light descartes::descartes_samplers descartes::descartes_opw descartes::descartes_tesseract)
+target_compile_options(${PROJECT_NAME}_descartes PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+if(CXX_FEATURE_FOUND EQUAL "-1")
+    target_compile_options(${PROJECT_NAME}_descartes PUBLIC -std=c++11)
+else()
+    target_compile_features(${PROJECT_NAME}_descartes PUBLIC cxx_std_11)
+endif()
+target_include_directories(${PROJECT_NAME}_descartes PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+
+# Descartes Planner
+add_library(${PROJECT_NAME}_descartes_trajopt_array SHARED src/hybrid/descartes_trajopt_array_planner.cpp)
+target_link_libraries(${PROJECT_NAME}_descartes_trajopt_array PUBLIC ${PROJECT_NAME}_descartes ${PROJECT_NAME}_trajopt_array)
+target_compile_options(${PROJECT_NAME}_descartes_trajopt_array PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+if(CXX_FEATURE_FOUND EQUAL "-1")
+    target_compile_options(${PROJECT_NAME}_descartes_trajopt_array PUBLIC -std=c++11)
+else()
+    target_compile_features(${PROJECT_NAME}_descartes_trajopt_array PUBLIC cxx_std_11)
+endif()
+target_include_directories(${PROJECT_NAME}_descartes_trajopt_array PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_core)
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_trajopt)
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_trajopt_freespace)
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_trajopt_array)
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_ompl)
+list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_descartes)
+list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_descartes_trajopt_array)
 
 install(TARGETS ${PACKAGE_LIBRARIES} EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
 install(EXPORT ${PROJECT_NAME}-targets NAMESPACE tesseract:: DESTINATION lib/cmake/${PROJECT_NAME})

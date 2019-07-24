@@ -43,20 +43,48 @@ using namespace trajopt;
 
 namespace tesseract_motion_planners
 {
-TrajOptMotionPlanner::TrajOptMotionPlanner(const std::string& name) : config_(nullptr)
+
+TrajOptMotionPlannerStatusCategory::TrajOptMotionPlannerStatusCategory(std::string name) : name_(name) {}
+const std::string& TrajOptMotionPlannerStatusCategory::name() const noexcept { return name_; }
+std::string TrajOptMotionPlannerStatusCategory::message(int code) const
 {
-  name_ = name;
+  switch (code)
+  {
+    case IsConfigured:
+    {
+      return "Is Configured";
+    }
+    case SolutionFound:
+    {
+      return "Found valid solution";
+    }
+    case IsNotConfigured:
+    {
+      return "Planner is not configured, must call setConfiguration prior to calling solve.";
+    }
+    case FailedToParseConfig:
+    {
+      return "Failed to parse config data";
+    }
+    case FailedToFindValidSolution:
+    {
+      return "Failed to find valid solution";
+    }
+    case FoundValidSolutionInCollision:
+    {
+      return "Found valid solution, but is in collision";
+    }
+    default:
+    {
+      assert (false);
+      return "";
+    }
+  }
+}
 
-  // Success Status Codes
-  status_code_map_[0] = "Found valid solution";
 
-  // TODO: These should be tied to enumeration ints and returned through an getLastErrorMsg() method
-  // Error Status Codes
-  status_code_map_[-1] = "Invalid config data format";
-  status_code_map_[-2] = "Failed to parse config data";
-  status_code_map_[-3] = "Failed to find valid solution";
-  status_code_map_[-4] = "Found valid solution, but is in collision";
-  status_code_map_[-5] = "Planner is not configured, must call setConfiguration prior to calling solve.";
+TrajOptMotionPlanner::TrajOptMotionPlanner(std::string name) : MotionPlanner(std::move(name)), config_(nullptr), status_category_(std::make_shared<const TrajOptMotionPlannerStatusCategory>(name))
+{
 }
 
 bool TrajOptMotionPlanner::terminate()
@@ -71,14 +99,14 @@ void TrajOptMotionPlanner::clear()
   config_ = nullptr;
 }
 
-bool TrajOptMotionPlanner::solve(PlannerResponse& response)
+tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& response)
 {
-  if (!isConfigured())
+  tesseract_common::StatusCode config_status = isConfigured();
+  if (!config_status)
   {
-    response.status_code = -5;
-    response.status_description = status_code_map_[response.status_code];
+    response.status = config_status;
     CONSOLE_BRIDGE_logError("Planner %s is not configured", name_.c_str());
-    return false;
+    return config_status;
   }
 
   // Create optimizer
@@ -134,25 +162,28 @@ bool TrajOptMotionPlanner::solve(PlannerResponse& response)
   if (opt.results().status == sco::OptStatus::OPT_PENALTY_ITERATION_LIMIT ||
       opt.results().status == sco::OptStatus::OPT_FAILED || opt.results().status == sco::OptStatus::INVALID)
   {
-    response.status_code = -3;
-    response.status_description = status_code_map_.at(-3) + ": " + sco::statusToString(opt.results().status);
+    response.status = tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::FailedToFindValidSolution, status_category_);
   }
   else if (found)
   {
-    response.status_code = -4;
-    response.status_description = status_code_map_.at(-4);
+    response.status = tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::FoundValidSolutionInCollision, status_category_);
   }
   else
   {
+    response.status = tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::SolutionFound, status_category_);
     CONSOLE_BRIDGE_logInform("Final trajectory is collision free");
-    response.status_code = 0;
-    response.status_description = status_code_map_.at(0) + ": " + sco::statusToString(opt.results().status);
   }
 
-  return (response.status_code >= 0);
+  return response.status;
 }
 
-bool TrajOptMotionPlanner::isConfigured() const { return config_ != nullptr; }
+tesseract_common::StatusCode TrajOptMotionPlanner::isConfigured() const
+{
+  if (config_ != nullptr)
+    return tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::IsConfigured, status_category_);
+  else
+    return tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::IsNotConfigured, status_category_);
+}
 
 bool TrajOptMotionPlanner::setConfiguration(const TrajOptPlannerConfig& config)
 {

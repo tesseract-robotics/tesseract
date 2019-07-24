@@ -27,11 +27,10 @@
 #define TESSERACT_MOTION_PLANNERS_PLANNER_TYPES_H
 
 #include <tesseract/tesseract.h>
+#include <tesseract_common/status_code.h>
 
 namespace tesseract_motion_planners
 {
-/** @brief Negative status code should be related to errors and positive should be used for status of covergenace */
-using StatusCodeMap = std::unordered_map<int, std::string>;
 
 struct PlannerRequest
 {
@@ -46,10 +45,10 @@ struct PlannerResponse
 {
   std::vector<std::string> joint_names;   /**< @brief The joint names */
   tesseract_common::TrajArray trajectory; /**< @brief The generated trajectory */
-  int status_code; /**< @brief Negative status code should be related to errors and positive should be used for status
-                      of covergenace */
-  std::string status_description; /**< @brief Provide a brief description about what the error code means */
+  tesseract_common::StatusCode status; /**< @brief The status information */
 };
+
+
 }  // namespace tesseract_motion_planners
 
 #endif  // TESSERACT_PLANNING_PLANNER_TYPES_H
