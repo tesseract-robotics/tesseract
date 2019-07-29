@@ -134,13 +134,12 @@ TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionOctomapSphereUnit)
   runTest(checker, 0.16);  // TODO: There appears to be an issue in fcl for octomap::OcTree.
 }
 
-// TODO: Levi, enable once FCL PR #338
-// TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionOctomapSphereConvexHullUnit)
-//{
-//  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
-//  addCollisionObjects(checker, true);
-//  runTest(checker, 0.16); // TODO: There appears to be an issue in fcl for octomap::OcTree.
-//}
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionOctomapSphereConvexHullUnit)
+{
+  tesseract_collision_fcl::FCLDiscreteBVHManager checker;
+  addCollisionObjects(checker, true);
+  runTest(checker, 0.16);  // TODO: There appears to be an issue in fcl for octomap::OcTree.
+}
 
 int main(int argc, char** argv)
 {

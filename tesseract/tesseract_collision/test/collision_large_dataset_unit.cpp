@@ -109,12 +109,11 @@ TEST(TesseractCollisionLargeDataSetUnit, BulletDiscreteBVHCollisionLargeDataSetU
   runTest(checker);
 }
 
-// TODO: Levi, enable once FCL PR #338
-// TEST(TesseractCollisionLargeDataSetUnit, FCLDiscreteBVHCollisionLargeDataSetConvexHullUnit)
-//{
-//  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
-//  runTest(checker, true);
-//}
+TEST(TesseractCollisionLargeDataSetUnit, FCLDiscreteBVHCollisionLargeDataSetConvexHullUnit)
+{
+  tesseract_collision_fcl::FCLDiscreteBVHManager checker;
+  runTest(checker, true);
+}
 
 TEST(TesseractCollisionLargeDataSetUnit, FCLDiscreteBVHCollisionLargeDataSetUnit)
 {

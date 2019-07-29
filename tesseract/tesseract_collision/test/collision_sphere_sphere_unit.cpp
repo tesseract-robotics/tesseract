@@ -194,17 +194,21 @@ void runConvexTest(DiscreteContactManager& checker)
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);
 
+  // Bullet: -0.270548 {0.232874,0,-0.025368} {-0.032874,0,0.025368}
+  // FCL:    -0.270548 {0.232874,0,-0.025368} {-0.032874,0,0.025368}
   EXPECT_TRUE(!result_vector.empty());
-  EXPECT_NEAR(result_vector[0].distance, -0.27552, 0.03);
+  EXPECT_NEAR(result_vector[0].distance, -0.270548, 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
   if (result_vector[0].link_names[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.23776, 0.03);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], -0.03776, 0.03);
-  EXPECT_NEAR(result_vector[0].nearest_points[0][1], result_vector[0].nearest_points[1][1], 0.11);
-  EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.11);
+  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.232874, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.0, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][2], -0.025368, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], -0.032874, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1], 0.0, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][2], 0.025368, 0.001);
   EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1, 0, 0)), 0.0);
   EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1, 0, 0)))), 0.5);
 
@@ -220,21 +224,26 @@ void runConvexTest(DiscreteContactManager& checker)
   flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(result_vector.empty());
+}
 
+void runConvexTest2(DiscreteContactManager& checker)
+{
   /////////////////////////////////////////////////////////////////////////
   // Test object inside the contact distance (Closest Feature Edge to Edge)
   /////////////////////////////////////////////////////////////////////////
-  result.clear();
-  result_vector.clear();
+  ContactResultMap result;
+  ContactResultVector result_vector;
 
   checker.setContactDistanceThreshold(0.55);
   checker.contactTest(result, ContactTestType::CLOSEST);
   flattenResults(std::move(result), result_vector);
 
+  // Bullet: 0.524565 {0.237717,0,0} {0.7622825,0,0} Using blender this appears to be the correct result
+  // FCL:    0.546834 {0.237717,-0.0772317,0} {0.7622825,0.0772317}
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, 0.52448, 0.001);
 
-  idx = { 0, 1, 1 };
+  std::vector<int> idx = { 0, 1, 1 };
   if (result_vector[0].link_names[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
@@ -244,67 +253,43 @@ void runConvexTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
   EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1, 0, 0)), 0.0);
   EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1, 0, 0)))), 0.00001);
+}
 
+void runConvexTest3(DiscreteContactManager& checker)
+{
   //////////////////////////////////////////////////////////////////////
-  // Test when object is in collision (Closest Feature Vertex to Vertex)
+  // Test when object is in collision (Closest Feature face to edge)
   //////////////////////////////////////////////////////////////////////
+  tesseract_common::TransformMap location;
   location["sphere1_link"] = Eigen::Isometry3d::Identity();
   location["sphere1_link"].translation()(1) = 0.2;
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
-  result.clear();
-  result_vector.clear();
-
+  ContactResultMap result;
+  ContactResultVector result_vector;
   checker.contactTest(result, ContactTestType::CLOSEST);
   flattenResults(std::move(result), result_vector);
 
+  // Bullet: -0.280223 {0.0425563,0.2308753,-0.0263040} {-0.0425563, -0.0308753, 0.0263040}
+  // FCL:    -0.280223 {0.0425563,0.2308753,-0.0263040} {-0.0425563, -0.0308753, 0.0263040}
   EXPECT_TRUE(!result_vector.empty());
-  EXPECT_NEAR(result_vector[0].distance, -0.25, 0.035);
+  EXPECT_NEAR(result_vector[0].distance, -0.280223, 0.001);
 
-  idx = { 0, 1, 1 };
+  std::vector<int> idx = { 0, 1, 1 };
   if (result_vector[0].link_names[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.25, 0.03);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1], -0.05, 0.03);
-  EXPECT_NEAR(result_vector[0].nearest_points[0][0], result_vector[0].nearest_points[1][0], 0.10);
-  EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.10);
-  EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(0, 1, 0)), 0.0);
+  EXPECT_NEAR(std::abs(result_vector[0].nearest_points[idx[0]][0]), 0.0425563, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.2308753, 0.001);
+  EXPECT_NEAR(std::abs(result_vector[0].nearest_points[idx[0]][2]), 0.0263040, 0.001);
+  EXPECT_NEAR(std::abs(result_vector[0].nearest_points[idx[1]][0]), 0.0425563, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1], -0.0308753, 0.001);
+  EXPECT_NEAR(std::abs(result_vector[0].nearest_points[idx[1]][2]), 0.0263040, 0.001);
+  EXPECT_NEAR(std::abs(idx[2] * result_vector[0].normal[0]), 0.3037316, 0.001);
+  EXPECT_NEAR(idx[2] * result_vector[0].normal[1], 0.9340783, 0.001);
+  EXPECT_NEAR(std::abs(idx[2] * result_vector[0].normal[2]), 0.1877358, 0.001);
   EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(0, 1, 0)))), 0.4);
-
-  /////////////////////////////////////////////////////////////////////////////
-  // Test object inside the contact distance (Closest Feature Vertex to Vertex)
-  /////////////////////////////////////////////////////////////////////////////
-
-  //  TODO: This test currently fail for fcl. An issue has been created and they are
-  //        currently working toward addressing the issue.
-
-  //  location["sphere1_link"].translation() = Eigen::Vector3d(0, 1, 0);
-  //  result.clear();
-  //  result_vector.clear();
-  //  checker.setCollisionObjectsTransform(location);
-
-  //  req.contact_distance = 0.55;
-  //  checker.setContactRequest(req);
-
-  //  // The closest feature of the mesh should be edge to edge
-  //  checker.contactTest(result);
-  //  tesseract::flattenResults(result, result_vector);
-
-  //  EXPECT_TRUE(!result_vector.empty());
-  //  EXPECT_NEAR(result_vector[0].distance, 0.5, 0.001);
-
-  //  idx = { 0, 1, 1 };
-  //  if (result_vector[0].link_names[0] != "sphere_link")
-  //    idx = { 1, 0, -1 };
-
-  //  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.25, 0.001);
-  //  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1], 0.75, 0.001);
-  //  EXPECT_NEAR(result_vector[0].nearest_points[0][0], result_vector[0].nearest_points[1][0], 0.001);
-  //  EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
-  //  EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(0,1,0)), 0.0);
-  //  EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(0,1,0)))), 0.00001);
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionSphereSphereUnit)
@@ -319,6 +304,8 @@ TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionSphereSphereConvexHull
   tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker, true);
   runConvexTest(checker);
+  runConvexTest2(checker);
+  runConvexTest3(checker);
 }
 
 TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionSphereSphereUnit)
@@ -333,6 +320,8 @@ TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionSphereSphereConvexHullUni
   tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker, true);
   runConvexTest(checker);
+  runConvexTest2(checker);
+  runConvexTest3(checker);
 }
 
 TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionSphereSphereUnit)
@@ -342,13 +331,14 @@ TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionSphereSphereUnit)
   runTest(checker);
 }
 
-// TODO: Levi, enable once FCL PR #338
-// TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionSphereSphereConvexHullUnit)
-//{
-//  tesseract::tesseract_fcl::FCLDiscreteBVHManager checker;
-//  addCollisionObjects(checker, true);
-//  runConvexTest(checker);
-//}
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionSphereSphereConvexHullUnit)
+{
+  tesseract_collision_fcl::FCLDiscreteBVHManager checker;
+  addCollisionObjects(checker, true);
+  runConvexTest(checker);
+  //  runConvexTest2(checker); FCL return incorrect results, need to create an issue on FCL
+  runConvexTest3(checker);
+}
 
 int main(int argc, char** argv)
 {
