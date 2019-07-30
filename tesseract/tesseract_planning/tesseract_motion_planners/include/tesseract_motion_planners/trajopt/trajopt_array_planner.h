@@ -64,7 +64,7 @@ struct TrajOptArrayPlannerConfig
    *
    * An example use case is setting it to be at the center of the joint limits. This tends to pull the robot away from
    * singularities */
-  JointWaypoint::ConstPtr configuration_ = std::make_shared<JointWaypoint>();
+  JointWaypoint::ConstPtr configuration_ = nullptr;
 
   /** @brief If true, collision checking will be enabled. Default: true*/
   bool collision_check_ = true;

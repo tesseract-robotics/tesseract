@@ -179,7 +179,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
       if (wp->getType() == WaypointType::CARTESIAN_WAYPOINT)
       {
         CartesianWaypoint::ConstPtr cwp = std::static_pointer_cast<const CartesianWaypoint>(wp);
-        config_->kinematics->analyzeIK(cwp->cartesian_position_.cast<FloatType>());
+        config_->kinematics->analyzeIK(cwp->getTransform().cast<FloatType>());
       }
     }
 
