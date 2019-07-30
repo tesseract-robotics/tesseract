@@ -22,12 +22,9 @@ public:
       assert(waypoint->getType() == tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT);
       const tesseract_motion_planners::CartesianWaypoint::Ptr& cur_waypoint =
           std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(waypoint);
-      tesseract_motion_planners::CartesianWaypoint::Ptr new_waypoint =
-          std::make_shared<tesseract_motion_planners::CartesianWaypoint>();
-      new_waypoint->cartesian_position_ =
-          config.world_offset_direction * cur_waypoint->cartesian_position_ * config.local_offset_direction;
-      new_waypoint->coeffs_ = cur_waypoint->coeffs_;
-      new_waypoint->is_critical_ = cur_waypoint->is_critical_;
+      tesseract_motion_planners::CartesianWaypoint::Ptr new_waypoint = std::make_shared<tesseract_motion_planners::CartesianWaypoint>(config.world_offset_direction * cur_waypoint->getTransform() * config.local_offset_direction);
+      new_waypoint->setCoefficients(cur_waypoint->getCoefficients());
+      new_waypoint->setIsCritical(cur_waypoint->isCritical());
       new_waypoints.push_back(new_waypoint);
     }
     return new_waypoints;

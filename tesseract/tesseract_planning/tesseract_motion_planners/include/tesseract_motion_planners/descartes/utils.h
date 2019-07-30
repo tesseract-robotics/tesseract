@@ -28,14 +28,14 @@ makeGantryPositionSamplers(const std::vector<Waypoint::Ptr>& path,
     if (wp->getType() == WaypointType::CARTESIAN_WAYPOINT)
     {
       CartesianWaypoint::ConstPtr cwp = std::static_pointer_cast<const CartesianWaypoint>(wp);
-      if (wp->coeffs_.size() == 0 || (wp->coeffs_.array() > 0).all()) // Fixed pose
+      if (wp->getCoefficients().size() == 0 || (wp->getCoefficients().array() > 0).all()) // Fixed pose
       {
-        auto sampler = std::make_shared<descartes_light::RailedCartesianPointSampler<FloatType>>(cwp->cartesian_position_.cast<FloatType>(), kinematic_interface, collision_interface->clone(), true);
+        auto sampler = std::make_shared<descartes_light::RailedCartesianPointSampler<FloatType>>(cwp->getTransform().cast<FloatType>(), kinematic_interface, collision_interface->clone(), true);
         result.push_back(std::move(sampler));
       }
-      else if ((wp->coeffs_.head(5).array() > 0).all() && !(wp->coeffs_(5) > 0))
+      else if ((wp->getCoefficients().head(5).array() > 0).all() && !(wp->getCoefficients()(5) > 0))
       {
-        auto sampler = std::make_shared<descartes_light::RailedAxialSymmetricSampler<FloatType>>(cwp->cartesian_position_.cast<FloatType>(), kinematic_interface, gantry_axis_sampling_density, collision_interface->clone(), true);
+        auto sampler = std::make_shared<descartes_light::RailedAxialSymmetricSampler<FloatType>>(cwp->getTransform().cast<FloatType>(), kinematic_interface, gantry_axis_sampling_density, collision_interface->clone(), true);
         result.push_back(std::move(sampler));
       }
       else
@@ -47,7 +47,7 @@ makeGantryPositionSamplers(const std::vector<Waypoint::Ptr>& path,
     else if (wp->getType() == WaypointType::JOINT_WAYPOINT)
     {
       JointWaypoint::ConstPtr jwp = std::static_pointer_cast<const JointWaypoint>(wp);
-      std::vector<FloatType> joint_pose(jwp->joint_positions_.data(), jwp->joint_positions_.data() + jwp->joint_positions_.rows() * jwp->joint_positions_.cols());
+      std::vector<FloatType> joint_pose(jwp->getPositions().data(), jwp->getPositions().data() + jwp->getPositions().rows() * jwp->getPositions().cols());
       auto sampler = std::make_shared<descartes_light::FixedJointPoseSampler<FloatType>>(joint_pose);
       result.push_back(std::move(sampler));
     }

@@ -136,19 +136,13 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner0)
   config.tesseract_ = tesseract_ptr_;
   config.num_steps_ = NUM_STEPS;
 
+  std::vector<std::string> joint_names = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
+
   // Specify a JointWaypoint as the start
-  JointWaypoint::Ptr start_waypoint = std::make_shared<JointWaypoint>();
-  Eigen::VectorXd joint_positions1(7);
-  joint_positions1 << 0, 0, 0, -1.57, 0, 0, 0;
-  start_waypoint->joint_positions_ = joint_positions1;
-  config.start_waypoint_ = start_waypoint;
+  config.start_waypoint_ = std::make_shared<JointWaypoint>(std::vector<double>({0, 0, 0, -1.57, 0, 0, 0}), joint_names);
 
   // Specify a Joint Waypoint as the finish
-  JointWaypoint::Ptr end_waypoint = std::make_shared<JointWaypoint>();
-  Eigen::VectorXd joint_positions2(7);
-  joint_positions2 << 0, 0, 0, 1.57, 0, 0, 0;
-  end_waypoint->joint_positions_ = joint_positions2;
-  config.end_waypoint_ = end_waypoint;
+  config.end_waypoint_ = std::make_shared<JointWaypoint>(std::vector<double>({0, 0, 0, 1.57, 0, 0, 0}), joint_names);
 
   // Create test planner used for testing problem creation
   tesseract_tests::TrajOptFreespacePlannerTest test_planner;
@@ -185,25 +179,19 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner1)
   config.tesseract_ = tesseract_ptr_;
   config.num_steps_ = NUM_STEPS;
 
+  std::vector<std::string> joint_names = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
+
   // Specify a JointWaypoint as the start
-  JointWaypoint::Ptr start_waypoint = std::make_shared<JointWaypoint>();
-  Eigen::VectorXd joint_positions1(7);
-  joint_positions1 << 0, 0, 0, -1.57, 0, 0, 0;
-  start_waypoint->joint_positions_ = joint_positions1;
-  config.start_waypoint_ = start_waypoint;
+  config.start_waypoint_ = std::make_shared<JointWaypoint>(std::vector<double>({0, 0, 0, -1.57, 0, 0, 0}), joint_names);
 
   // Specify a Joint Waypoint as the finish
-  JointWaypoint::Ptr end_waypoint = std::make_shared<JointWaypoint>();
-  Eigen::VectorXd joint_positions2(7);
-  joint_positions2 << 0, 0, 0, 1.57, 0, 0, 0;
-  end_waypoint->joint_positions_ = joint_positions2;
-  config.end_waypoint_ = end_waypoint;
+  config.end_waypoint_ = std::make_shared<JointWaypoint>(std::vector<double>({0, 0, 0, 1.57, 0, 0, 0}), joint_names);
 
   // Create test planner used for testing problem creation
   tesseract_tests::TrajOptFreespacePlannerTest test_planner;
   {
-    config.start_waypoint_->is_critical_ = true;
-    config.end_waypoint_->is_critical_ = true;
+    config.start_waypoint_->setIsCritical(true);
+    config.end_waypoint_->setIsCritical(true);
     test_planner.setConfiguration(config);
     trajopt::TrajOptProb::Ptr prob = test_planner.getProblem();
     EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
@@ -212,8 +200,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner1)
         prob->getConstraints())));
   }
   {
-    config.start_waypoint_->is_critical_ = false;
-    config.end_waypoint_->is_critical_ = false;
+    config.start_waypoint_->setIsCritical(false);
+    config.end_waypoint_->setIsCritical(false);
     test_planner.setConfiguration(config);
     trajopt::TrajOptProb::Ptr prob = test_planner.getProblem();
     EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(prob->getCosts())));
@@ -237,24 +225,19 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner2)
   config.tesseract_ = tesseract_ptr_;
   config.num_steps_ = NUM_STEPS;
 
+  std::vector<std::string> joint_names = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
+
   // Specify a Joint Waypoint as the start
-  JointWaypoint::Ptr start_waypoint = std::make_shared<JointWaypoint>();
-  Eigen::VectorXd joint_positions1(7);
-  joint_positions1 << 0, 0, 0, -1.57, 0, 0, 0;
-  start_waypoint->joint_positions_ = joint_positions1;
-  config.start_waypoint_ = start_waypoint;
+  config.start_waypoint_ = std::make_shared<JointWaypoint>(std::vector<double>({0, 0, 0, -1.57, 0, 0, 0}), joint_names);
 
   // Specify a Cartesian Waypoint as the finish
-  CartesianWaypoint::Ptr end_waypoint = std::make_shared<CartesianWaypoint>();
-  end_waypoint->cartesian_position_.translation() = Eigen::Vector3d(-.20, .4, 0.2);
-  end_waypoint->cartesian_position_.linear() = Eigen::Quaterniond(0, 0, 1.0, 0).toRotationMatrix();
-  config.end_waypoint_ = end_waypoint;
+  config.end_waypoint_ = std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0));
 
   // Create test planner used for testing problem creation
   tesseract_tests::TrajOptFreespacePlannerTest test_planner;
   {
-    config.start_waypoint_->is_critical_ = true;
-    config.end_waypoint_->is_critical_ = true;
+    config.start_waypoint_->setIsCritical(true);
+    config.end_waypoint_->setIsCritical(true);
     test_planner.setConfiguration(config);
     trajopt::TrajOptProb::Ptr prob = test_planner.getProblem();
     EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
@@ -263,8 +246,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner2)
         prob->getConstraints())));
   }
   {
-    config.start_waypoint_->is_critical_ = false;
-    config.end_waypoint_->is_critical_ = false;
+    config.start_waypoint_->setIsCritical(false);
+    config.end_waypoint_->setIsCritical(false);
     test_planner.setConfiguration(config);
     trajopt::TrajOptProb::Ptr prob = test_planner.getProblem();
     EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(prob->getCosts())));
@@ -288,24 +271,19 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner3)
   config.tesseract_ = tesseract_ptr_;
   config.num_steps_ = NUM_STEPS;
 
+  std::vector<std::string> joint_names = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
+
   // Specify a Cartesian Waypoint as the start
-  CartesianWaypoint::Ptr start_waypoint = std::make_shared<CartesianWaypoint>();
-  start_waypoint->cartesian_position_.translation() = Eigen::Vector3d(-.20, .4, 0.2);
-  start_waypoint->cartesian_position_.linear() = Eigen::Quaterniond(0, 0, 1.0, 0).toRotationMatrix();
-  config.start_waypoint_ = start_waypoint;
+  config.start_waypoint_ = std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0));
 
   // Specify a Joint Waypoint as the finish
-  JointWaypoint::Ptr end_waypoint = std::make_shared<JointWaypoint>();
-  Eigen::VectorXd joint_positions1(7);
-  joint_positions1 << 0, 0, 0, -1.57, 0, 0, 0;
-  end_waypoint->joint_positions_ = joint_positions1;
-  config.end_waypoint_ = end_waypoint;
+  config.end_waypoint_ = std::make_shared<JointWaypoint>(std::vector<double>({0, 0, 0, -1.57, 0, 0, 0}), joint_names);
 
   // Create test planner used for testing problem creation
   tesseract_tests::TrajOptFreespacePlannerTest test_planner;
   {
-    config.start_waypoint_->is_critical_ = true;
-    config.end_waypoint_->is_critical_ = true;
+    config.start_waypoint_->setIsCritical(true);
+    config.end_waypoint_->setIsCritical(true);
     test_planner.setConfiguration(config);
     trajopt::TrajOptProb::Ptr prob = test_planner.getProblem();
     EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
@@ -314,8 +292,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner3)
         prob->getConstraints())));
   }
   {
-    config.start_waypoint_->is_critical_ = false;
-    config.end_waypoint_->is_critical_ = false;
+    config.start_waypoint_->setIsCritical(false);
+    config.end_waypoint_->setIsCritical(false);
     test_planner.setConfiguration(config);
     trajopt::TrajOptProb::Ptr prob = test_planner.getProblem();
     EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(prob->getCosts())));
@@ -340,22 +318,16 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4)
   config.num_steps_ = NUM_STEPS;
 
   // Specify a Cartesian Waypoint as the start
-  CartesianWaypoint::Ptr start_waypoint = std::make_shared<CartesianWaypoint>();
-  start_waypoint->cartesian_position_.translation() = Eigen::Vector3d(-.20, .4, 0.2);
-  start_waypoint->cartesian_position_.linear() = Eigen::Quaterniond(0, 0, 1.0, 0).toRotationMatrix();
-  config.start_waypoint_ = start_waypoint;
+  config.start_waypoint_ = std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0));
 
   // Specify a Cartesian Waypoint as the finish
-  CartesianWaypoint::Ptr end_waypoint = std::make_shared<CartesianWaypoint>();
-  end_waypoint->cartesian_position_.translation() = Eigen::Vector3d(-.20, .4, 0.2);
-  end_waypoint->cartesian_position_.linear() = Eigen::Quaterniond(0, 0, 1.0, 0).toRotationMatrix();
-  config.end_waypoint_ = end_waypoint;
+  config.end_waypoint_ = std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0));
 
   // Create test planner used for testing problem creation
   tesseract_tests::TrajOptFreespacePlannerTest test_planner;
   {
-    config.start_waypoint_->is_critical_ = true;
-    config.end_waypoint_->is_critical_ = true;
+    config.start_waypoint_->setIsCritical(true);
+    config.end_waypoint_->setIsCritical(true);
     test_planner.setConfiguration(config);
     trajopt::TrajOptProb::Ptr prob = test_planner.getProblem();
     EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
@@ -364,8 +336,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4)
         prob->getConstraints())));
   }
   {
-    config.start_waypoint_->is_critical_ = false;
-    config.end_waypoint_->is_critical_ = false;
+    config.start_waypoint_->setIsCritical(false);
+    config.end_waypoint_->setIsCritical(false);
     test_planner.setConfiguration(config);
     trajopt::TrajOptProb::Ptr prob = test_planner.getProblem();
     EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(prob->getCosts())));
@@ -392,10 +364,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0)
   // These specify the series of points to be optimized
   for (int ind = 0; ind < NUM_STEPS; ind++)
   {
-    CartesianWaypoint::Ptr waypoint = std::make_shared<CartesianWaypoint>();
-    waypoint->cartesian_position_.translation() = Eigen::Vector3d(-0.2 + ind * .02, 0.4, 0.8);
-    waypoint->cartesian_position_.linear() = Eigen::Quaterniond(0, 1.0, 0, 0).toRotationMatrix();
-    waypoint->is_critical_ = true;
+    CartesianWaypoint::Ptr waypoint = std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-0.2 + ind * .02, 0.4, 0.8), Eigen::Quaterniond(0, 1.0, 0, 0));
+    waypoint->setIsCritical(true);
     config.target_waypoints_.push_back(waypoint);
   }
 
@@ -444,10 +414,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner1)
   // These specify the series of points to be optimized
   for (int ind = 0; ind < NUM_STEPS; ind++)
   {
-    CartesianWaypoint::Ptr waypoint = std::make_shared<CartesianWaypoint>();
-    waypoint->cartesian_position_.translation() = Eigen::Vector3d(-0.2 + ind * .02, 0.4, 0.8);
-    waypoint->cartesian_position_.linear() = Eigen::Quaterniond(0, 1.0, 0, 0).toRotationMatrix();
-    waypoint->is_critical_ = false;
+    CartesianWaypoint::Ptr waypoint = std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-0.2 + ind * .02, 0.4, 0.8), Eigen::Quaterniond(0, 1.0, 0, 0));
+    waypoint->setIsCritical(false);
     config.target_waypoints_.push_back(waypoint);
   }
 
@@ -474,14 +442,13 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner2)
   config.manipulator_ = "manipulator";
   config.tesseract_ = tesseract_ptr_;
 
+  std::vector<std::string> joint_names = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
+
   // These specify the series of points to be optimized
   for (int ind = 0; ind < NUM_STEPS; ind++)
   {
-    JointWaypoint::Ptr waypoint = std::make_shared<JointWaypoint>();
-    Eigen::VectorXd joint_positions1(7);
-    joint_positions1 << 0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0;
-    waypoint->joint_positions_ = joint_positions1;
-    waypoint->is_critical_ = true;
+    JointWaypoint::Ptr waypoint = std::make_shared<JointWaypoint>(std::vector<double>({0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0}), joint_names);
+    waypoint->setIsCritical(true);
     config.target_waypoints_.push_back(waypoint);
   }
 
@@ -509,14 +476,13 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner3)
   config.manipulator_ = "manipulator";
   config.tesseract_ = tesseract_ptr_;
 
+  std::vector<std::string> joint_names = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
+
   // These specify the series of points to be optimized
   for (int ind = 0; ind < NUM_STEPS; ind++)
   {
-    JointWaypoint::Ptr waypoint = std::make_shared<JointWaypoint>();
-    Eigen::VectorXd joint_positions1(7);
-    joint_positions1 << 0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0;
-    waypoint->joint_positions_ = joint_positions1;
-    waypoint->is_critical_ = false;
+    JointWaypoint::Ptr waypoint = std::make_shared<JointWaypoint>(std::vector<double>({0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0}), joint_names);
+    waypoint->setIsCritical(false);
     config.target_waypoints_.push_back(waypoint);
   }
 

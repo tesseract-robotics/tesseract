@@ -161,20 +161,21 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
       start_step += 1;
       JointWaypoint::Ptr start_position = std::static_pointer_cast<JointWaypoint>(config.start_waypoint_);
       // Add initial joint position constraint
-      std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
-      Eigen::VectorXd coeffs = start_position->coeffs_;
+      std::shared_ptr<JointPosTermInfo> jv = std::make_shared<JointPosTermInfo>();
+      const Eigen::VectorXd& coeffs = start_position->getCoefficients();
+      assert(std::equal(pci.kin->getJointNames().begin(), pci.kin->getJointNames().end(), start_position->getNames().begin()));
       if (coeffs.size() != pci.kin->numJoints())
         jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);  // Default value
       else
         jv->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
       jv->targets =
-          std::vector<double>(start_position->joint_positions_.data(),
-                              start_position->joint_positions_.data() + start_position->joint_positions_.size());
+          std::vector<double>(start_position->getPositions().data(),
+                              start_position->getPositions().data() + start_position->getPositions().size());
       jv->first_step = 0;
       jv->last_step = 0;
       jv->name = "initial_joint_position";
-      jv->term_type = start_position->is_critical_ ? TT_CNT : TT_COST;
-      start_position->is_critical_ ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
+      jv->term_type = start_position->isCritical() ? TT_CNT : TT_COST;
+      start_position->isCritical() ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
       break;
     }
     case tesseract_motion_planners::WaypointType::JOINT_TOLERANCED_WAYPOINT:
@@ -183,36 +184,37 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
       // to keep the problem numerically stable.
       JointTolerancedWaypoint::Ptr start_position =
           std::static_pointer_cast<JointTolerancedWaypoint>(config.start_waypoint_);
-      std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
-      Eigen::VectorXd coeffs = start_position->coeffs_;
+      std::shared_ptr<JointPosTermInfo> jv = std::make_shared<JointPosTermInfo>();
+      const Eigen::VectorXd& coeffs = start_position->getCoefficients();
+      assert(std::equal(pci.kin->getJointNames().begin(), pci.kin->getJointNames().end(), start_position->getNames().begin()));
       if (coeffs.size() != pci.kin->numJoints())
         jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);  // Default value
       else
         jv->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
       jv->targets =
-          std::vector<double>(start_position->joint_positions_.data(),
-                              start_position->joint_positions_.data() + start_position->joint_positions_.size());
+          std::vector<double>(start_position->getPositions().data(),
+                              start_position->getPositions().data() + start_position->getPositions().size());
       jv->upper_tols =
-          std::vector<double>(start_position->upper_tolerance_.data(),
-                              start_position->upper_tolerance_.data() + start_position->upper_tolerance_.size());
+          std::vector<double>(start_position->getUpperTolerance().data(),
+                              start_position->getUpperTolerance().data() + start_position->getUpperTolerance().size());
       jv->lower_tols =
-          std::vector<double>(start_position->lower_tolerance_.data(),
-                              start_position->lower_tolerance_.data() + start_position->lower_tolerance_.size());
+          std::vector<double>(start_position->getLowerTolerance().data(),
+                              start_position->getLowerTolerance().data() + start_position->getLowerTolerance().size());
       jv->first_step = 0;
       jv->last_step = 0;
       jv->name = "initial_joint_toleranced_position";
-      jv->term_type = start_position->is_critical_ ? TT_CNT : TT_COST;
-      start_position->is_critical_ ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
+      jv->term_type = start_position->isCritical() ? TT_CNT : TT_COST;
+      start_position->isCritical() ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
 
       // Equality cost with coeffs much smaller than inequality
-      std::shared_ptr<JointPosTermInfo> jv_equal = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
+      std::shared_ptr<JointPosTermInfo> jv_equal = std::make_shared<JointPosTermInfo>();
       std::vector<double> leaky_coeffs;
       for (auto& ind : jv->coeffs)
         leaky_coeffs.push_back(ind * 0.1);
       jv_equal->coeffs = leaky_coeffs;
       jv_equal->targets =
-          std::vector<double>(start_position->joint_positions_.data(),
-                              start_position->joint_positions_.data() + start_position->joint_positions_.size());
+          std::vector<double>(start_position->getPositions().data(),
+                              start_position->getPositions().data() + start_position->getPositions().size());
       jv_equal->first_step = 0;
       jv_equal->last_step = 0;
       jv_equal->name = "initial_joint_toleranced_position_leaky";
@@ -224,26 +226,19 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
     case tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT:
     {
       CartesianWaypoint::Ptr start_pose = std::static_pointer_cast<CartesianWaypoint>(config.start_waypoint_);
-      std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);
-      pose->term_type = start_pose->is_critical_ ? TT_CNT : TT_COST;
+      std::shared_ptr<CartPoseTermInfo> pose = std::make_shared<CartPoseTermInfo>();
+      pose->term_type = start_pose->isCritical() ? TT_CNT : TT_COST;
       pose->name = "initial_cartesian_position";
       pose->link = config.link_;
       pose->tcp = config.tcp_;
       pose->timestep = 0;
       pose->xyz = start_pose->getPosition();
       pose->wxyz = start_pose->getOrientation();
-      Eigen::VectorXd coeffs = start_pose->coeffs_;
-      if (coeffs.size() != 6)
-      {
-        pose->pos_coeffs = Eigen::Vector3d(10, 10, 10);
-        pose->rot_coeffs = Eigen::Vector3d(10, 10, 10);
-      }
-      else
-      {
-        pose->pos_coeffs = coeffs.head<3>();
-        pose->rot_coeffs = coeffs.tail<3>();
-      }
-      start_pose->is_critical_ ? pci.cnt_infos.push_back(pose) : pci.cost_infos.push_back(pose);
+      const Eigen::VectorXd& coeffs = start_pose->getCoefficients();
+      assert(coeffs.size() == 6);
+      pose->pos_coeffs = coeffs.head<3>();
+      pose->rot_coeffs = coeffs.tail<3>();
+      start_pose->isCritical() ? pci.cnt_infos.push_back(pose) : pci.cost_infos.push_back(pose);
       break;
     }
   }
@@ -257,19 +252,20 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
       end_step -= 1;
       JointWaypoint::Ptr end_position = std::static_pointer_cast<JointWaypoint>(config.end_waypoint_);
       // Add initial joint position constraint
-      std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
-      Eigen::VectorXd coeffs = end_position->coeffs_;
+      std::shared_ptr<JointPosTermInfo> jv = std::make_shared<JointPosTermInfo>();
+      const Eigen::VectorXd& coeffs = end_position->getCoefficients();
+      assert(std::equal(pci.kin->getJointNames().begin(), pci.kin->getJointNames().end(), end_position->getNames().begin()));
       if (coeffs.size() != pci.kin->numJoints())
         jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);  // Default value
       else
         jv->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
-      jv->targets = std::vector<double>(end_position->joint_positions_.data(),
-                                        end_position->joint_positions_.data() + end_position->joint_positions_.size());
+      jv->targets = std::vector<double>(end_position->getPositions().data(),
+                                        end_position->getPositions().data() + end_position->getPositions().size());
       jv->first_step = pci.basic_info.n_steps - 1;
       jv->last_step = pci.basic_info.n_steps - 1;
       jv->name = "target_joint_position";
-      jv->term_type = end_position->is_critical_ ? TT_CNT : TT_COST;
-      end_position->is_critical_ ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
+      jv->term_type = end_position->isCritical() ? TT_CNT : TT_COST;
+      end_position->isCritical() ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
       break;
     }
     case tesseract_motion_planners::WaypointType::JOINT_TOLERANCED_WAYPOINT:
@@ -278,35 +274,36 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
       // to keep the problem numerically stable.
       JointTolerancedWaypoint::Ptr end_position =
           std::static_pointer_cast<JointTolerancedWaypoint>(config.end_waypoint_);
-      std::shared_ptr<JointPosTermInfo> jv = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
-      Eigen::VectorXd coeffs = end_position->coeffs_;
+      std::shared_ptr<JointPosTermInfo> jv = std::make_shared<JointPosTermInfo>();
+      const Eigen::VectorXd& coeffs = end_position->getCoefficients();
+      assert(std::equal(pci.kin->getJointNames().begin(), pci.kin->getJointNames().end(), end_position->getNames().begin()));
       if (coeffs.size() != pci.kin->numJoints())
         jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);  // Default value
       else
         jv->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
-      jv->targets = std::vector<double>(end_position->joint_positions_.data(),
-                                        end_position->joint_positions_.data() + end_position->joint_positions_.size());
+      jv->targets = std::vector<double>(end_position->getPositions().data(),
+                                        end_position->getPositions().data() + end_position->getPositions().size());
       jv->upper_tols =
-          std::vector<double>(end_position->upper_tolerance_.data(),
-                              end_position->upper_tolerance_.data() + end_position->upper_tolerance_.size());
+          std::vector<double>(end_position->getUpperTolerance().data(),
+                              end_position->getUpperTolerance().data() + end_position->getUpperTolerance().size());
       jv->lower_tols =
-          std::vector<double>(end_position->lower_tolerance_.data(),
-                              end_position->lower_tolerance_.data() + end_position->lower_tolerance_.size());
+          std::vector<double>(end_position->getLowerTolerance().data(),
+                              end_position->getLowerTolerance().data() + end_position->getLowerTolerance().size());
       jv->first_step = pci.basic_info.n_steps - 1;
       jv->last_step = pci.basic_info.n_steps - 1;
       jv->name = "target_joint_toleranced_position";
-      jv->term_type = end_position->is_critical_ ? TT_CNT : TT_COST;
-      end_position->is_critical_ ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
+      jv->term_type = end_position->isCritical() ? TT_CNT : TT_COST;
+      end_position->isCritical() ? pci.cnt_infos.push_back(jv) : pci.cost_infos.push_back(jv);
 
       // Equality cost with coeffs much smaller than inequality
-      std::shared_ptr<JointPosTermInfo> jv_equal = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
+      std::shared_ptr<JointPosTermInfo> jv_equal = std::make_shared<JointPosTermInfo>();
       std::vector<double> leaky_coeffs;
       for (auto& ind : jv->coeffs)
         leaky_coeffs.push_back(ind * 0.1);
       jv_equal->coeffs = leaky_coeffs;
       jv_equal->targets =
-          std::vector<double>(end_position->joint_positions_.data(),
-                              end_position->joint_positions_.data() + end_position->joint_positions_.size());
+          std::vector<double>(end_position->getPositions().data(),
+                              end_position->getPositions().data() + end_position->getPositions().size());
       jv_equal->first_step = pci.basic_info.n_steps - 1;
       jv_equal->last_step = pci.basic_info.n_steps - 1;
       jv_equal->name = "joint_toleranced_position_leaky";
@@ -318,26 +315,19 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
     case tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT:
     {
       CartesianWaypoint::Ptr end_pose = std::static_pointer_cast<CartesianWaypoint>(config.end_waypoint_);
-      std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);
-      pose->term_type = end_pose->is_critical_ ? TT_CNT : TT_COST;
+      std::shared_ptr<CartPoseTermInfo> pose = std::make_shared<CartPoseTermInfo>();
+      pose->term_type = end_pose->isCritical() ? TT_CNT : TT_COST;
       pose->name = "target_cartesian_position";
       pose->link = config.link_;
       pose->tcp = config.tcp_;
       pose->timestep = pci.basic_info.n_steps - 1;
       pose->xyz = end_pose->getPosition();
       pose->wxyz = end_pose->getOrientation();
-      Eigen::VectorXd coeffs = end_pose->coeffs_;
-      if (coeffs.size() != 6)
-      {
-        pose->pos_coeffs = Eigen::Vector3d(10, 10, 10);
-        pose->rot_coeffs = Eigen::Vector3d(10, 10, 10);
-      }
-      else
-      {
-        pose->pos_coeffs = coeffs.head<3>();
-        pose->rot_coeffs = coeffs.tail<3>();
-      }
-      end_pose->is_critical_ ? pci.cnt_infos.push_back(pose) : pci.cost_infos.push_back(pose);
+      const Eigen::VectorXd& coeffs = end_pose->getCoefficients();
+      assert(coeffs.size() == 6);
+      pose->pos_coeffs = coeffs.head<3>();
+      pose->rot_coeffs = coeffs.tail<3>();
+      end_pose->isCritical() ? pci.cnt_infos.push_back(pose) : pci.cost_infos.push_back(pose);
       break;
     }
   }
@@ -345,7 +335,7 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
   // Set costs for the rest of the points
   if (config.collision_check_)
   {
-    std::shared_ptr<CollisionTermInfo> collision = std::shared_ptr<CollisionTermInfo>(new CollisionTermInfo);
+    std::shared_ptr<CollisionTermInfo> collision = std::make_shared<CollisionTermInfo>();
     collision->name = "collision_cost";
     collision->term_type = TT_COST;
     collision->continuous = config.collision_continuous_;
@@ -357,7 +347,7 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
   }
   if (config.smooth_velocities_)
   {
-    std::shared_ptr<JointVelTermInfo> jv = std::shared_ptr<JointVelTermInfo>(new JointVelTermInfo);
+    std::shared_ptr<JointVelTermInfo> jv = std::make_shared<JointVelTermInfo>();
     jv->coeffs = std::vector<double>(pci.kin->numJoints(), 5.0);
     jv->targets = std::vector<double>(pci.kin->numJoints(), 0.0);
     jv->first_step = 0;
@@ -368,7 +358,7 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
   }
   if (config.smooth_accelerations_)
   {
-    std::shared_ptr<JointAccTermInfo> ja = std::shared_ptr<JointAccTermInfo>(new JointAccTermInfo);
+    std::shared_ptr<JointAccTermInfo> ja = std::make_shared<JointAccTermInfo>();
     ja->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);
     ja->targets = std::vector<double>(pci.kin->numJoints(), 0.0);
     ja->first_step = 0;
@@ -379,7 +369,7 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
   }
   if (config.smooth_jerks_)
   {
-    std::shared_ptr<JointJerkTermInfo> jj = std::shared_ptr<JointJerkTermInfo>(new JointJerkTermInfo);
+    std::shared_ptr<JointJerkTermInfo> jj = std::make_shared<JointJerkTermInfo>();
     jj->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);
     jj->targets = std::vector<double>(pci.kin->numJoints(), 0.0);
     jj->first_step = 0;
@@ -389,19 +379,20 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
     pci.cost_infos.push_back(jj);
   }
   // Add configuration cost
-  if (config.configuration_->joint_positions_.size() > 0)
+  if (config.configuration_ != nullptr)
   {
-    assert(config.configuration_->joint_positions_.size() == pci.kin->numJoints());
+    assert(config.configuration_->getPositions().size() == pci.kin->numJoints());
+    assert(std::equal(pci.kin->getJointNames().begin(), pci.kin->getJointNames().end(), config.configuration_->getNames().begin()));
     JointWaypoint::ConstPtr joint_waypoint = config.configuration_;
-    std::shared_ptr<JointPosTermInfo> jp = std::shared_ptr<JointPosTermInfo>(new JointPosTermInfo);
-    Eigen::VectorXd coeffs = joint_waypoint->coeffs_;
+    std::shared_ptr<JointPosTermInfo> jp = std::make_shared<JointPosTermInfo>();
+    const Eigen::VectorXd& coeffs = joint_waypoint->getCoefficients();
     if (coeffs.size() != pci.kin->numJoints())
       jp->coeffs = std::vector<double>(pci.kin->numJoints(), 0.1);  // Default value
     else
       jp->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
     jp->targets =
-        std::vector<double>(joint_waypoint->joint_positions_.data(),
-                            joint_waypoint->joint_positions_.data() + joint_waypoint->joint_positions_.size());
+        std::vector<double>(joint_waypoint->getPositions().data(),
+                            joint_waypoint->getPositions().data() + joint_waypoint->getPositions().size());
     jp->first_step = start_step;
     jp->last_step = end_step;
     jp->name = "configuration_cost";

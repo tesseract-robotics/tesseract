@@ -44,13 +44,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/Inertial.h>
 #include <tesseract_msgs/VisualGeometry.h>
 #include <tesseract_msgs/CollisionGeometry.h>
-
 #include <tesseract_msgs/Joint.h>
 #include <tesseract_msgs/JointCalibration.h>
 #include <tesseract_msgs/JointDynamics.h>
 #include <tesseract_msgs/JointLimits.h>
 #include <tesseract_msgs/JointMimic.h>
 #include <tesseract_msgs/JointSafety.h>
+#include <tesseract_msgs/ProcessPlan.h>
+
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseArray.h>
 
 #include <tesseract_environment/core/environment.h>
 
@@ -60,10 +63,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_collision/core/common.h>
+#include <tesseract_motion_planners/core/waypoint.h>
+#include <tesseract_common/types.h>
+#include <tesseract_process_planners/process_definition.h>
 
 namespace tesseract_rosutils
 {
-static inline std::string locateResource(const std::string& url)
+inline std::string locateResource(const std::string& url)
 {
   std::string mod_url = url;
   if (url.find("package://") == 0)
@@ -99,17 +105,17 @@ static inline std::string locateResource(const std::string& url)
   return mod_url;
 }
 
-static inline bool isMsgEmpty(const sensor_msgs::JointState& msg)
+inline bool isMsgEmpty(const sensor_msgs::JointState& msg)
 {
   return msg.name.empty() && msg.position.empty() && msg.velocity.empty() && msg.effort.empty();
 }
 
-static inline bool isMsgEmpty(const sensor_msgs::MultiDOFJointState& msg)
+inline bool isMsgEmpty(const sensor_msgs::MultiDOFJointState& msg)
 {
   return msg.joint_names.empty() && msg.transforms.empty() && msg.twist.empty() && msg.wrench.empty();
 }
 
-static inline bool isIdentical(const tesseract_geometry::Geometry& shape1, const tesseract_geometry::Geometry& shape2)
+inline bool isIdentical(const tesseract_geometry::Geometry& shape1, const tesseract_geometry::Geometry& shape2)
 {
   if (shape1.getType() != shape2.getType())
     return false;
@@ -255,19 +261,19 @@ static inline bool isIdentical(const tesseract_geometry::Geometry& shape1, const
   return true;
 }
 
-static inline bool isIdentical(const tesseract_scene_graph::Visual& /*visual1*/,
+inline bool isIdentical(const tesseract_scene_graph::Visual& /*visual1*/,
                                const tesseract_scene_graph::Visual& /*visual2*/)
 {
   assert(false);
 }
 
-static inline bool isIdentical(const tesseract_scene_graph::Collision& /*collision1*/,
+inline bool isIdentical(const tesseract_scene_graph::Collision& /*collision1*/,
                                const tesseract_scene_graph::Collision& /*collision2*/)
 {
   assert(false);
 }
 
-static inline bool isIdentical(const tesseract_scene_graph::Link& link1, const tesseract_scene_graph::Link& link2)
+inline bool isIdentical(const tesseract_scene_graph::Link& link1, const tesseract_scene_graph::Link& link2)
 {
   if (link1.getName() != link2.getName())
     return false;
@@ -295,7 +301,7 @@ static inline bool isIdentical(const tesseract_scene_graph::Link& link1, const t
 }
 
 /** \brief Construct the message that corresponds to the shape. Return false on failure. */
-static inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract_geometry::Geometry& geometry)
+inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract_geometry::Geometry& geometry)
 {
   switch (geometry.getType())
   {
@@ -476,7 +482,7 @@ static inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesserac
   return true;
 }
 
-static inline bool fromMsg(tesseract_geometry::Geometry::Ptr& geometry, const tesseract_msgs::Geometry& geometry_msg)
+inline bool fromMsg(tesseract_geometry::Geometry::Ptr& geometry, const tesseract_msgs::Geometry& geometry_msg)
 {
   geometry = nullptr;
   if (geometry_msg.type == tesseract_msgs::Geometry::SPHERE)
@@ -587,7 +593,7 @@ static inline bool fromMsg(tesseract_geometry::Geometry::Ptr& geometry, const te
   return true;
 }
 
-static inline bool toMsg(tesseract_msgs::Material& material_msg, const tesseract_scene_graph::Material::Ptr& material)
+inline bool toMsg(tesseract_msgs::Material& material_msg, const tesseract_scene_graph::Material::Ptr& material)
 {
   if (material == nullptr)
   {
@@ -604,7 +610,7 @@ static inline bool toMsg(tesseract_msgs::Material& material_msg, const tesseract
   return true;
 }
 
-static inline bool fromMsg(tesseract_scene_graph::Material::Ptr& material, const tesseract_msgs::Material& material_msg)
+inline bool fromMsg(tesseract_scene_graph::Material::Ptr& material, const tesseract_msgs::Material& material_msg)
 {
   if (material_msg.empty)
   {
@@ -621,7 +627,7 @@ static inline bool fromMsg(tesseract_scene_graph::Material::Ptr& material, const
   return true;
 }
 
-static inline bool toMsg(tesseract_msgs::Inertial& inertial_msg, const tesseract_scene_graph::Inertial::Ptr& inertial)
+inline bool toMsg(tesseract_msgs::Inertial& inertial_msg, const tesseract_scene_graph::Inertial::Ptr& inertial)
 {
   if (inertial == nullptr)
   {
@@ -642,7 +648,7 @@ static inline bool toMsg(tesseract_msgs::Inertial& inertial_msg, const tesseract
   return true;
 }
 
-static inline bool fromMsg(tesseract_scene_graph::Inertial::Ptr& inertial, const tesseract_msgs::Inertial& inertial_msg)
+inline bool fromMsg(tesseract_scene_graph::Inertial::Ptr& inertial, const tesseract_msgs::Inertial& inertial_msg)
 {
   if (inertial_msg.empty)
   {
@@ -665,7 +671,7 @@ static inline bool fromMsg(tesseract_scene_graph::Inertial::Ptr& inertial, const
   return true;
 }
 
-static inline bool toMsg(tesseract_msgs::VisualGeometry& visual_msg, const tesseract_scene_graph::Visual& visual)
+inline bool toMsg(tesseract_msgs::VisualGeometry& visual_msg, const tesseract_scene_graph::Visual& visual)
 {
   visual_msg.name = visual.name;
   tf::poseEigenToMsg(visual.origin, visual_msg.origin);
@@ -674,7 +680,7 @@ static inline bool toMsg(tesseract_msgs::VisualGeometry& visual_msg, const tesse
   return true;
 }
 
-static inline bool fromMsg(tesseract_scene_graph::Visual::Ptr& visual, const tesseract_msgs::VisualGeometry& visual_msg)
+inline bool fromMsg(tesseract_scene_graph::Visual::Ptr& visual, const tesseract_msgs::VisualGeometry& visual_msg)
 {
   visual = std::make_shared<tesseract_scene_graph::Visual>();
   visual->name = visual_msg.name;
@@ -684,7 +690,7 @@ static inline bool fromMsg(tesseract_scene_graph::Visual::Ptr& visual, const tes
   return true;
 }
 
-static inline bool toMsg(tesseract_msgs::CollisionGeometry& collision_msg,
+inline bool toMsg(tesseract_msgs::CollisionGeometry& collision_msg,
                          const tesseract_scene_graph::Collision& collision)
 {
   collision_msg.name = collision.name;
@@ -693,7 +699,7 @@ static inline bool toMsg(tesseract_msgs::CollisionGeometry& collision_msg,
   return true;
 }
 
-static inline bool fromMsg(tesseract_scene_graph::Collision::Ptr& collision,
+inline bool fromMsg(tesseract_scene_graph::Collision::Ptr& collision,
                            const tesseract_msgs::CollisionGeometry& collision_msg)
 {
   collision = std::make_shared<tesseract_scene_graph::Collision>();
@@ -703,7 +709,7 @@ static inline bool fromMsg(tesseract_scene_graph::Collision::Ptr& collision,
   return true;
 }
 
-static inline bool toMsg(tesseract_msgs::Link& link_msg, const tesseract_scene_graph::Link& link)
+inline bool toMsg(tesseract_msgs::Link& link_msg, const tesseract_scene_graph::Link& link)
 {
   link_msg.name = link.getName();
 
@@ -720,7 +726,7 @@ static inline bool toMsg(tesseract_msgs::Link& link_msg, const tesseract_scene_g
   return true;
 }
 
-static inline tesseract_scene_graph::Link fromMsg(const tesseract_msgs::Link& link_msg)
+inline tesseract_scene_graph::Link fromMsg(const tesseract_msgs::Link& link_msg)
 {
   tesseract_scene_graph::Link link(link_msg.name);
 
@@ -737,7 +743,7 @@ static inline tesseract_scene_graph::Link fromMsg(const tesseract_msgs::Link& li
   return link;
 }
 
-static inline bool toMsg(tesseract_msgs::JointCalibration& joint_calibration_msg,
+inline bool toMsg(tesseract_msgs::JointCalibration& joint_calibration_msg,
                          const tesseract_scene_graph::JointCalibration::Ptr& joint_calibration)
 {
   if (joint_calibration == nullptr)
@@ -755,7 +761,7 @@ static inline bool toMsg(tesseract_msgs::JointCalibration& joint_calibration_msg
   return true;
 }
 
-static inline bool fromMsg(tesseract_scene_graph::JointCalibration::Ptr& joint_calibration,
+inline bool fromMsg(tesseract_scene_graph::JointCalibration::Ptr& joint_calibration,
                            const tesseract_msgs::JointCalibration& joint_calibration_msg)
 {
   if (joint_calibration_msg.empty)
@@ -774,7 +780,7 @@ static inline bool fromMsg(tesseract_scene_graph::JointCalibration::Ptr& joint_c
   return true;
 }
 
-static inline bool toMsg(tesseract_msgs::JointDynamics& joint_dynamics_msg,
+inline bool toMsg(tesseract_msgs::JointDynamics& joint_dynamics_msg,
                          const tesseract_scene_graph::JointDynamics::Ptr& joint_dynamics)
 {
   if (joint_dynamics == nullptr)
@@ -790,7 +796,7 @@ static inline bool toMsg(tesseract_msgs::JointDynamics& joint_dynamics_msg,
   return true;
 }
 
-static inline bool fromMsg(tesseract_scene_graph::JointDynamics::Ptr& joint_dynamics,
+inline bool fromMsg(tesseract_scene_graph::JointDynamics::Ptr& joint_dynamics,
                            const tesseract_msgs::JointDynamics& joint_dynamics_msg)
 {
   if (joint_dynamics_msg.empty)
@@ -808,7 +814,7 @@ static inline bool fromMsg(tesseract_scene_graph::JointDynamics::Ptr& joint_dyna
   return true;
 }
 
-static inline bool toMsg(tesseract_msgs::JointLimits& joint_limits_msg,
+inline bool toMsg(tesseract_msgs::JointLimits& joint_limits_msg,
                          const tesseract_scene_graph::JointLimits::Ptr& joint_limits)
 {
   if (joint_limits == nullptr)
@@ -828,7 +834,7 @@ static inline bool toMsg(tesseract_msgs::JointLimits& joint_limits_msg,
   return true;
 }
 
-static inline bool fromMsg(tesseract_scene_graph::JointLimits::Ptr& joint_limits,
+inline bool fromMsg(tesseract_scene_graph::JointLimits::Ptr& joint_limits,
                            const tesseract_msgs::JointLimits& joint_limits_msg)
 {
   if (joint_limits_msg.empty)
@@ -850,7 +856,7 @@ static inline bool fromMsg(tesseract_scene_graph::JointLimits::Ptr& joint_limits
   return true;
 }
 
-static inline bool toMsg(tesseract_msgs::JointMimic& joint_mimic_msg,
+inline bool toMsg(tesseract_msgs::JointMimic& joint_mimic_msg,
                          const tesseract_scene_graph::JointMimic::Ptr& joint_mimic)
 {
   if (joint_mimic == nullptr)
@@ -868,7 +874,7 @@ static inline bool toMsg(tesseract_msgs::JointMimic& joint_mimic_msg,
   return true;
 }
 
-static inline bool fromMsg(tesseract_scene_graph::JointMimic::Ptr& joint_mimic,
+inline bool fromMsg(tesseract_scene_graph::JointMimic::Ptr& joint_mimic,
                            const tesseract_msgs::JointMimic& joint_mimic_msg)
 {
   if (joint_mimic_msg.empty)
@@ -888,7 +894,7 @@ static inline bool fromMsg(tesseract_scene_graph::JointMimic::Ptr& joint_mimic,
   return true;
 }
 
-static inline bool toMsg(tesseract_msgs::JointSafety& joint_safety_msg,
+inline bool toMsg(tesseract_msgs::JointSafety& joint_safety_msg,
                          const tesseract_scene_graph::JointSafety::Ptr& joint_safety)
 {
   if (joint_safety == nullptr)
@@ -908,7 +914,7 @@ static inline bool toMsg(tesseract_msgs::JointSafety& joint_safety_msg,
   return true;
 }
 
-static inline bool fromMsg(tesseract_scene_graph::JointSafety::Ptr& joint_safety,
+inline bool fromMsg(tesseract_scene_graph::JointSafety::Ptr& joint_safety,
                            const tesseract_msgs::JointSafety& joint_safety_msg)
 {
   if (joint_safety_msg.empty)
@@ -930,7 +936,7 @@ static inline bool fromMsg(tesseract_scene_graph::JointSafety::Ptr& joint_safety
   return true;
 }
 
-static inline bool toMsg(tesseract_msgs::Joint& joint_msg, const tesseract_scene_graph::Joint& joint)
+inline bool toMsg(tesseract_msgs::Joint& joint_msg, const tesseract_scene_graph::Joint& joint)
 {
   joint_msg.name = joint.getName();
   joint_msg.type = static_cast<unsigned char>(joint.type);
@@ -963,7 +969,7 @@ static inline bool toMsg(tesseract_msgs::Joint& joint_msg, const tesseract_scene
   return success;
 }
 
-static inline tesseract_scene_graph::Joint fromMsg(const tesseract_msgs::Joint& joint_msg)
+inline tesseract_scene_graph::Joint fromMsg(const tesseract_msgs::Joint& joint_msg)
 {
   tesseract_scene_graph::Joint joint(joint_msg.name);
 
@@ -986,7 +992,7 @@ static inline tesseract_scene_graph::Joint fromMsg(const tesseract_msgs::Joint& 
   return joint;
 }
 
-static inline void toMsg(sensor_msgs::JointState& joint_state, const tesseract_environment::EnvState& state)
+inline void toMsg(sensor_msgs::JointState& joint_state, const tesseract_environment::EnvState& state)
 {
   joint_state.header.stamp = ros::Time::now();
   for (const auto& joint : state.joints)
@@ -996,7 +1002,7 @@ static inline void toMsg(sensor_msgs::JointState& joint_state, const tesseract_e
   }
 }
 
-static inline bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_environment::Command& command)
+inline bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const tesseract_environment::Command& command)
 {
   switch (command.getType())
   {
@@ -1109,7 +1115,7 @@ static inline bool toMsg(tesseract_msgs::EnvironmentCommand& command_msg, const 
   return false;
 }
 
-static inline bool toMsg(std::vector<tesseract_msgs::EnvironmentCommand>& commands_msg,
+inline bool toMsg(std::vector<tesseract_msgs::EnvironmentCommand>& commands_msg,
                          const tesseract_environment::Commands& commands,
                          const unsigned long past_revision)
 {
@@ -1125,12 +1131,12 @@ static inline bool toMsg(std::vector<tesseract_msgs::EnvironmentCommand>& comman
   return true;
 }
 
-static inline void toMsg(const sensor_msgs::JointStatePtr& joint_state, const tesseract_environment::EnvState& state)
+inline void toMsg(const sensor_msgs::JointStatePtr& joint_state, const tesseract_environment::EnvState& state)
 {
   toMsg(*joint_state, state);
 }
 
-static inline void toMsg(tesseract_msgs::TesseractState& state_msg, const tesseract_environment::Environment& env)
+inline void toMsg(tesseract_msgs::TesseractState& state_msg, const tesseract_environment::Environment& env)
 {
   state_msg.id = env.getName();
   state_msg.revision = static_cast<unsigned long>(env.getRevision());
@@ -1140,7 +1146,7 @@ static inline void toMsg(tesseract_msgs::TesseractState& state_msg, const tesser
   toMsg(state_msg.joint_state, *state);
 }
 
-static inline void toMsg(const tesseract_msgs::TesseractStatePtr& state_msg,
+inline void toMsg(const tesseract_msgs::TesseractStatePtr& state_msg,
                          const tesseract_environment::Environment& env)
 {
   toMsg(*state_msg, env);
@@ -1153,7 +1159,7 @@ static inline void toMsg(const tesseract_msgs::TesseractStatePtr& state_msg,
  * @param joint_names The joint names corresponding to the trajectory
  * @param traj The joint trajectory
  */
-static inline void toMsg(trajectory_msgs::JointTrajectory& traj_msg,
+inline void toMsg(trajectory_msgs::JointTrajectory& traj_msg,
                          const tesseract_environment::EnvState& start_state,
                          const std::vector<std::string>& joint_names,
                          const Eigen::Ref<const tesseract_common::TrajArray>& traj)
@@ -1203,7 +1209,7 @@ static inline void toMsg(trajectory_msgs::JointTrajectory& traj_msg,
  * @param joint_names The joint names corresponding to the trajectory
  * @param traj The joint trajectory
  */
-static inline void toMsg(const trajectory_msgs::JointTrajectoryPtr& traj_msg,
+inline void toMsg(const trajectory_msgs::JointTrajectoryPtr& traj_msg,
                          const tesseract_environment::EnvState& start_state,
                          const std::vector<std::string>& joint_names,
                          const Eigen::Ref<const tesseract_common::TrajArray>& traj)
@@ -1217,7 +1223,7 @@ static inline void toMsg(const trajectory_msgs::JointTrajectoryPtr& traj_msg,
  * @param joint_names The joint names corresponding to the trajectory
  * @param traj The joint trajectory
  */
-static inline void toMsg(trajectory_msgs::JointTrajectory& traj_msg,
+inline void toMsg(trajectory_msgs::JointTrajectory& traj_msg,
                          const std::vector<std::string>& joint_names,
                          const Eigen::Ref<const tesseract_common::TrajArray>& traj)
 {
@@ -1252,14 +1258,14 @@ static inline void toMsg(trajectory_msgs::JointTrajectory& traj_msg,
  * @param joint_names The joint names corresponding to the trajectory
  * @param traj The joint trajectory
  */
-static inline void toMsg(const trajectory_msgs::JointTrajectoryPtr& traj_msg,
+inline void toMsg(const trajectory_msgs::JointTrajectoryPtr& traj_msg,
                          const std::vector<std::string>& joint_names,
                          const Eigen::Ref<const tesseract_common::TrajArray>& traj)
 {
   toMsg(*traj_msg, joint_names, traj);
 }
 
-static inline bool processMsg(tesseract_environment::Environment& env, const sensor_msgs::JointState& joint_state_msg)
+inline bool processMsg(tesseract_environment::Environment& env, const sensor_msgs::JointState& joint_state_msg)
 {
   if (!isMsgEmpty(joint_state_msg))
   {
@@ -1274,7 +1280,7 @@ static inline bool processMsg(tesseract_environment::Environment& env, const sen
   return false;
 }
 
-static inline bool processMsg(tesseract_environment::Environment& env,
+inline bool processMsg(tesseract_environment::Environment& env,
                               const std::vector<tesseract_msgs::EnvironmentCommand>& env_command_msg)
 {
   bool success = true;
@@ -1366,13 +1372,13 @@ static inline bool processMsg(tesseract_environment::Environment& env,
   return success;
 }
 
-static inline bool processMsg(const tesseract_environment::Environment::Ptr& env,
+inline bool processMsg(const tesseract_environment::Environment::Ptr& env,
                               const sensor_msgs::JointState& joint_state_msg)
 {
   return processMsg(*env, joint_state_msg);
 }
 
-static inline bool processMsg(tesseract_environment::Environment& env, const tesseract_msgs::TesseractState& state_msg)
+inline bool processMsg(tesseract_environment::Environment& env, const tesseract_msgs::TesseractState& state_msg)
 {
   if (state_msg.id != env.getName() || static_cast<unsigned long>(env.getRevision()) > state_msg.revision)
     return false;
@@ -1386,13 +1392,13 @@ static inline bool processMsg(tesseract_environment::Environment& env, const tes
   return true;
 }
 
-static inline bool processMsg(const tesseract_environment::Environment::Ptr& env,
+inline bool processMsg(const tesseract_environment::Environment::Ptr& env,
                               const tesseract_msgs::TesseractState& state_msg)
 {
   return processMsg(*env, state_msg);
 }
 
-static inline void toMsg(tesseract_msgs::ContactResult& contact_result_msg,
+inline void toMsg(tesseract_msgs::ContactResult& contact_result_msg,
                          const tesseract_collision::ContactResult& contact_result,
                          const ros::Time& stamp = ros::Time::now())
 {
@@ -1430,11 +1436,147 @@ static inline void toMsg(tesseract_msgs::ContactResult& contact_result_msg,
     contact_result_msg.cc_type = 0;
 }
 
-static inline void toMsg(const tesseract_msgs::ContactResultPtr& contact_result_msg,
+inline void toMsg(const tesseract_msgs::ContactResultPtr& contact_result_msg,
                          const tesseract_collision::ContactResult& contact_result,
                          const ros::Time& stamp = ros::Time::now())
 {
   toMsg(*contact_result_msg, contact_result, stamp);
+}
+
+/**
+ * @brief Convert Geometry Pose Message to Eigen
+ * @param pose Eigen type to filled out
+ * @param pose_msg The message to be converted
+ * @return True if successful, otherwise false
+ */
+inline bool fromMsg(Eigen::Isometry3d& pose, const geometry_msgs::Pose& pose_msg)
+{
+  tf::poseMsgToEigen(pose_msg, pose);
+  return true;
+}
+
+/**
+ * @brief Convert Eigen to Geometry Pose Message
+ * @param pose_msg Geometry Pose Message to filled out
+ * @param pose The Eigen type to be converted
+ * @return True if successful, otherwise false
+ */
+inline bool toMsg(geometry_msgs::Pose& pose_msg, const Eigen::Isometry3d& pose)
+{
+
+  tf::poseEigenToMsg(pose, pose_msg);
+  return true;
+}
+
+inline bool toMsg(sensor_msgs::JointState& joint_state, const tesseract_motion_planners::Waypoint& waypoint)
+{
+  switch (waypoint.getType())
+  {
+    case tesseract_motion_planners::WaypointType::JOINT_WAYPOINT:
+    {
+      const tesseract_motion_planners::JointWaypoint& joint_wp = static_cast<const tesseract_motion_planners::JointWaypoint&>(waypoint);
+      assert(joint_wp.getNames().size() == joint_wp.getPositions().size());
+      for (int i = 0; i < joint_wp.getPositions().size(); ++i)
+      {
+        joint_state.name.push_back(joint_wp.getNames()[i]);
+        joint_state.position.push_back(joint_wp.getPositions()[i]);
+      }
+      return true;
+    }
+    case tesseract_motion_planners::WaypointType::JOINT_TOLERANCED_WAYPOINT:
+    {
+      const tesseract_motion_planners::JointTolerancedWaypoint& joint_wp = static_cast<const tesseract_motion_planners::JointTolerancedWaypoint&>(waypoint);
+      assert(joint_wp.getNames().size() == joint_wp.getPositions().size());
+      for (int i = 0; i < joint_wp.getPositions().size(); ++i)
+      {
+        joint_state.name.push_back(joint_wp.getNames()[i]);
+        joint_state.position.push_back(joint_wp.getPositions()[i]);
+      }
+      return true;
+    }
+    default:
+    {
+      CONSOLE_BRIDGE_logError("Unable to convert waypoint type '%d' to joint state message.", waypoint.getType());
+      assert(false);
+      return false;
+    }
+  }
+}
+
+/**
+ * @brief Convert a vector of waypoints into a pose array
+ * @param Pose Array
+ * @param waypoints A vector of waypoints
+ * @return True if successful, otherwise false
+ */
+inline bool toMsg(geometry_msgs::PoseArray& pose_array, const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints)
+{
+  for (const auto& wp : waypoints)
+  {
+    if (wp->getType() == tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT)
+    {
+      geometry_msgs::Pose pose;
+      const tesseract_motion_planners::CartesianWaypoint::Ptr& cwp =
+          std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(wp);
+      tf::poseEigenToMsg(cwp->getTransform(), pose);
+      pose_array.poses.push_back(pose);
+    }
+    else
+    {
+      CONSOLE_BRIDGE_logError("toPoseArray only support Cartesian Waypoints at this time.");
+      assert(false);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * @brief Convert a vector of Eigen::Isometry3d into a pose array
+ * @param Pose Array
+ * @param transforms A vector of transforms
+ * @return True if successful, otherwise false
+ */
+inline bool toMsg(geometry_msgs::PoseArray& pose_array, const tesseract_common::VectorIsometry3d& transforms)
+{
+  for (const auto& transform : transforms)
+  {
+    geometry_msgs::Pose pose;
+    tf::poseEigenToMsg(transform, pose);
+    pose_array.poses.push_back(pose);
+  }
+
+  return true;
+}
+
+/**
+ * @brief Convert a process definition into a single pose array
+ * @param pose_array A pose array to load the process definition into.
+ * @param process_definition A process definition
+ * @return True if successful, otherwise false
+ */
+inline bool toMsg(geometry_msgs::PoseArray& pose_array, const tesseract_process_planners::ProcessDefinition& process_definition)
+{
+  for (size_t i = 0; i < process_definition.segments.size(); ++i)
+  {
+    if (!toMsg(pose_array, process_definition.segments[i].approach))
+      return false;
+
+    if (!toMsg(pose_array, process_definition.segments[i].process))
+      return false;
+
+    if (!toMsg(pose_array, process_definition.segments[i].departure))
+      return false;
+
+    if (i < process_definition.transitions.size())
+    {
+      if (!toMsg(pose_array, process_definition.transitions[i].transition_from_end));
+        return false;
+    }
+  }
+
+  return true;
 }
 
 }  // namespace tesseract_rosutils
