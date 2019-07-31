@@ -166,13 +166,12 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
   }
 
   ros::Time tStart = ros::Time::now();
-  response.joint_names = config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config_->manipulator)->getJointNames();
 
   const auto dof = config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config_->manipulator)->numJoints();
   descartes_light::Solver<FloatType> graph_builder(dof);
   if (!graph_builder.build(config_->samplers, config_->timing_constraint, config_->edge_evaluator))
   {
-    ROS_ERROR("Failed to build vertices");
+    CONSOLE_BRIDGE_logError("Failed to build vertices");
     for (const auto& i : graph_builder.getFailedVertices())
     {
       const Waypoint::Ptr& wp = config_->waypoints[i];
@@ -191,15 +190,16 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
   std::vector<FloatType> solution;
   if (!graph_builder.search(solution))
   {
-    ROS_ERROR("Search for graph completion failed");
+    CONSOLE_BRIDGE_logError("Search for graph completion failed");
     response.status = tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::FailedToFindValidSolution, status_category_);
     return response.status;
   }
 
-  response.trajectory.resize(static_cast<long>(config_->waypoints.size()), dof);
+  response.joint_trajectory.joint_names = config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config_->manipulator)->getJointNames();
+  response.joint_trajectory.trajectory.resize(static_cast<long>(config_->waypoints.size()), dof);
   for (size_t r = 0; r < config_->waypoints.size(); ++r)
     for (size_t c = 0; c < dof; ++c)
-      response.trajectory(static_cast<long>(r), static_cast<long>(c)) = solution[(r * dof) + c];
+      response.joint_trajectory.trajectory(static_cast<long>(r), static_cast<long>(c)) = solution[(r * dof) + c];
 
   // Check and report collisions
   std::vector<tesseract_collision::ContactResultMap> collisions;
@@ -210,9 +210,9 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
   manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   manager->setContactDistanceThreshold(0);
   collisions.clear();
-  bool found = tesseract_environment::checkTrajectory(*manager, *config_->tesseract->getEnvironmentConst(), response.joint_names, response.trajectory, collisions);
+  bool found = tesseract_environment::checkTrajectory(*manager, *config_->tesseract->getEnvironmentConst(), response.joint_trajectory.joint_names, response.joint_trajectory.trajectory, collisions);
 
-  ROS_INFO("Descartes planning time: %.3f", (ros::Time::now() - tStart).toSec());
+  CONSOLE_BRIDGE_logInform("Descartes planning time: %.3f", (ros::Time::now() - tStart).toSec());
 
   if (found)
   {
@@ -220,7 +220,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
     return response.status;
   }
 
-  ROS_INFO("Final trajectory is collision free");
+  CONSOLE_BRIDGE_logInform("Final trajectory is collision free");
   response.status = tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::SolutionFound, status_category_);
   return response.status;
 }

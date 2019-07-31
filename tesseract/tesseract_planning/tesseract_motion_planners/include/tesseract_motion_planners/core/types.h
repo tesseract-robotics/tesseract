@@ -28,6 +28,7 @@
 
 #include <tesseract/tesseract.h>
 #include <tesseract_common/status_code.h>
+#include <tesseract_common/types.h>
 
 namespace tesseract_motion_planners
 {
@@ -43,8 +44,7 @@ struct PlannerRequest
 
 struct PlannerResponse
 {
-  std::vector<std::string> joint_names;   /**< @brief The joint names */
-  tesseract_common::TrajArray trajectory; /**< @brief The generated trajectory */
+  tesseract_common::JointTrajectory joint_trajectory; /**< @brief The joint trajectory */
   tesseract_common::StatusCode status; /**< @brief The status information */
 };
 

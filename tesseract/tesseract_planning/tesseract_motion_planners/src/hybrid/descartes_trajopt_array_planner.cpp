@@ -87,7 +87,7 @@ tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::solve(Plan
     return descartes_status;
   }
 
-  trajopt_config_.seed_trajectory_ = descartes_planning_response.trajectory;
+  trajopt_config_.seed_trajectory_ = descartes_planning_response.joint_trajectory.trajectory;
   trajopt_planner_.setConfiguration(trajopt_config_);
 
   tesseract_motion_planners::PlannerResponse trajopt_planning_response;

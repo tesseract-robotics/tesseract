@@ -135,11 +135,11 @@ inline tesseract_motion_planners::Waypoint::Ptr toWaypoint(const sensor_msgs::Jo
  * @param joint_names Joint names corresponding to the tesseract trajectory
  * @return A process plan path
  */
-inline tesseract_msgs::ProcessPlanPath toProcessPlanPath(const tesseract_common::TrajArray& trajectory, const std::vector<std::string>& joint_names)
+inline tesseract_msgs::ProcessPlanPath toProcessPlanPath(const tesseract_common::JointTrajectory& joint_trajectory)
 {
   tesseract_msgs::ProcessPlanPath path;
-  if (trajectory.size() != 0)
-    tesseract_rosutils::toMsg(path.trajectory, joint_names, trajectory);
+  if (joint_trajectory.trajectory.size() != 0)
+    tesseract_rosutils::toMsg(path.trajectory, joint_trajectory);
   return path;
 }
 
@@ -149,12 +149,12 @@ inline tesseract_msgs::ProcessPlanPath toProcessPlanPath(const tesseract_common:
  * @param joint_names Joint names corresponding to the tesseract trajectory
  * @return Process Segment Message
  */
-inline tesseract_msgs::ProcessPlanSegment toProcessPlanSegement(const tesseract_process_planners::ProcessSegmentPlan& process_plan_segment, const std::vector<std::string>& joint_names)
+inline tesseract_msgs::ProcessPlanSegment toProcessPlanSegement(const tesseract_process_planners::ProcessSegmentPlan& process_plan_segment)
 {
   tesseract_msgs::ProcessPlanSegment process_segment;
-  process_segment.approach = toProcessPlanPath(process_plan_segment.approach, joint_names);
-  process_segment.process = toProcessPlanPath(process_plan_segment.process, joint_names);
-  process_segment.departure = toProcessPlanPath(process_plan_segment.departure, joint_names);
+  process_segment.approach = toProcessPlanPath(process_plan_segment.approach);
+  process_segment.process = toProcessPlanPath(process_plan_segment.process);
+  process_segment.departure = toProcessPlanPath(process_plan_segment.departure);
   return process_segment;
 }
 
@@ -213,7 +213,7 @@ bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory, const
   }
   t = joint_trajectory.points.back().time_from_start.toSec();
 
-  if (process_plan.from_start.trajectory.points.empty())
+  if (!process_plan.from_start.trajectory.points.empty())
   {
     joint_trajectory.joint_names = process_plan.segments[0].process.trajectory.joint_names;
     joint_trajectory.header = process_plan.segments[0].process.trajectory.header;

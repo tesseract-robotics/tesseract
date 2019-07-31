@@ -1223,29 +1223,22 @@ inline void toMsg(const trajectory_msgs::JointTrajectoryPtr& traj_msg,
  * @param joint_names The joint names corresponding to the trajectory
  * @param traj The joint trajectory
  */
-inline void toMsg(trajectory_msgs::JointTrajectory& traj_msg,
-                         const std::vector<std::string>& joint_names,
-                         const Eigen::Ref<const tesseract_common::TrajArray>& traj)
+inline void toMsg(trajectory_msgs::JointTrajectory& traj_msg, const tesseract_common::JointTrajectory& traj)
 {
-  assert(joint_names.size() == static_cast<unsigned>(traj.cols()));
+  assert(traj.joint_names.size() == static_cast<unsigned>(traj.trajectory.cols()));
 
   // Initialze the whole traject with the current state.
   std::map<std::string, int> jn_to_index;
-  traj_msg.joint_names.resize(joint_names.size());
-  traj_msg.points.resize(static_cast<size_t>(traj.rows()));
+  traj_msg.joint_names = traj.joint_names;
+  traj_msg.points.resize(static_cast<size_t>(traj.trajectory.rows()));
 
-  for (int i = 0; i < traj.rows(); ++i)
+  for (int i = 0; i < traj.trajectory.rows(); ++i)
   {
     trajectory_msgs::JointTrajectoryPoint jtp;
-    jtp.positions.resize(static_cast<size_t>(traj.cols()));
+    jtp.positions.resize(static_cast<size_t>(traj.trajectory.cols()));
 
-    for (int j = 0; j < traj.cols(); ++j)
-    {
-      if (i == 0)
-        traj_msg.joint_names[static_cast<size_t>(j)] = joint_names[static_cast<size_t>(j)];
-
-      jtp.positions[static_cast<size_t>(j)] = traj(i, j);
-    }
+    for (int j = 0; j < traj.trajectory.cols(); ++j)
+      jtp.positions[static_cast<size_t>(j)] = traj.trajectory(i, j);
 
     jtp.time_from_start = ros::Duration(i);
     traj_msg.points[static_cast<size_t>(i)] = jtp;
@@ -1258,11 +1251,9 @@ inline void toMsg(trajectory_msgs::JointTrajectory& traj_msg,
  * @param joint_names The joint names corresponding to the trajectory
  * @param traj The joint trajectory
  */
-inline void toMsg(const trajectory_msgs::JointTrajectoryPtr& traj_msg,
-                         const std::vector<std::string>& joint_names,
-                         const Eigen::Ref<const tesseract_common::TrajArray>& traj)
+inline void toMsg(const trajectory_msgs::JointTrajectoryPtr& traj_msg, const tesseract_common::JointTrajectory& traj)
 {
-  toMsg(*traj_msg, joint_names, traj);
+  toMsg(*traj_msg, traj);
 }
 
 inline bool processMsg(tesseract_environment::Environment& env, const sensor_msgs::JointState& joint_state_msg)
