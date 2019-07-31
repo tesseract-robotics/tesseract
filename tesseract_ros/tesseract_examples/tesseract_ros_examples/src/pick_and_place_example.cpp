@@ -313,9 +313,9 @@ bool PickAndPlaceExample::run()
   if (plotting_)
     plotter->plotTrajectory(
         pick_prob->GetKin()->getJointNames(),
-        planning_response.trajectory.leftCols(static_cast<long>(pick_prob->GetKin()->getJointNames().size())));
+        planning_response.joint_trajectory.trajectory.leftCols(static_cast<long>(pick_prob->GetKin()->getJointNames().size())));
 
-  std::cout << planning_response.trajectory << '\n';
+  std::cout << planning_response.joint_trajectory.trajectory << '\n';
 
   /////////////
   /// PLACE ///
@@ -347,8 +347,8 @@ bool PickAndPlaceExample::run()
   }
 
   // Set the current state to the last state of the pick trajectory
-  tesseract_->getEnvironment()->setState(pick_prob->GetKin()->getJointNames(),
-                                         planning_response.trajectory.bottomRows(1).transpose());
+  tesseract_->getEnvironment()->setState(planning_response.joint_trajectory.joint_names,
+                                         planning_response.joint_trajectory.trajectory.bottomRows(1).transpose());
 
   // Retreat to the approach pose
   Eigen::Isometry3d retreat_pose = approach_pose;
@@ -522,10 +522,10 @@ bool PickAndPlaceExample::run()
   // Plot the resulting trajectory
   if (plotting_)
     plotter->plotTrajectory(
-        place_prob->GetKin()->getJointNames(),
-        planning_response_place.trajectory.leftCols(static_cast<long>(place_prob->GetKin()->getJointNames().size())));
+        planning_response_place.joint_trajectory.joint_names,
+        planning_response_place.joint_trajectory.trajectory.leftCols(static_cast<long>(place_prob->GetKin()->getJointNames().size())));
 
-  std::cout << planning_response_place.trajectory << '\n';
+  std::cout << planning_response_place.joint_trajectory.trajectory << '\n';
 
   ROS_INFO("Done");
   return true;

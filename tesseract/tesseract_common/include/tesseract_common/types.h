@@ -33,5 +33,12 @@ using TransformMap = AlignedMap<std::string, Eigen::Isometry3d>;
 
 using TrajArray = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
+/** @brief Represents a joint trajectory */
+struct JointTrajectory
+{
+  std::vector<std::string> joint_names;   /**< @brief The joint names */
+  tesseract_common::TrajArray trajectory; /**< @brief The generated trajectory */
+};
+
 }  // namespace tesseract_common
 #endif  // TESSERACT_COMMON_TYPES_H

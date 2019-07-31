@@ -16,14 +16,10 @@ namespace tesseract_process_planners
  */
 struct ProcessSegmentPlan
 {
-  tesseract_common::TrajArray approach;  /**< The generated approach trajectory generated based on the Process Segment
-                                            Definition */
-  tesseract_common::TrajArray process;   /**< The generated process trajectory generated based on the Process Segment
-                                            Definition */
-  tesseract_common::TrajArray departure; /**< The generated departure trajectory generated based on the Process Segment
-                                            Definition */
-  bool valid =
-      true; /**< If true, a motion plan was sucessfully found for approach, process and departure, otherwise false */
+  tesseract_common::JointTrajectory approach;  /**< The generated approach trajectory generated based on the Process Segment Definition */
+  tesseract_common::JointTrajectory process;   /**< The generated process trajectory generated based on the Process Segment Definition */
+  tesseract_common::JointTrajectory departure; /**< The generated departure trajectory generated based on the Process Segment Definition */
+  bool valid = true; /**< If true, a motion plan was sucessfully found for approach, process and departure, otherwise false */
 };
 
 /**
@@ -34,16 +30,11 @@ struct ProcessSegmentPlan
  */
 struct ProcessPlan
 {
-  tesseract_common::TrajArray from_start;   /**< A trajectory from the start position to the first point in the first
-                                               segment */
+  tesseract_common::JointTrajectory from_start;   /**< A trajectory from the start position to the first point in the first segment */
   std::vector<ProcessSegmentPlan> segments; /**< A vector of process segment results */
-  std::vector<tesseract_common::TrajArray> transition_from_start; /**< A vector of transition plans from the start of
-                                                                segment[i] to the end of segment[i+1]
-                                                                , this data can be useful to make quick exit moves after
-                                                                canceling an ongoing process */
-  std::vector<tesseract_common::TrajArray> transition_from_end;   /**< A vector of transition plans from the end of
-                                                                     segment[i] to the start of segment[i+1] */
-  tesseract_common::TrajArray to_end; /**< A trajectory from the last segments waypoint to the end position */
+  std::vector<tesseract_common::JointTrajectory> transition_from_start; /**< A vector of transition plans from the start of segment[i] to the end of segment[i+1], this data can be useful to make quick exit moves after canceling an ongoing process */
+  std::vector<tesseract_common::JointTrajectory> transition_from_end;   /**< A vector of transition plans from the end of segment[i] to the start of segment[i+1] */
+  tesseract_common::JointTrajectory to_end; /**< A trajectory from the last segments waypoint to the end position */
   bool valid = true; /**< If true, a motion plan was successfully found for everything, otherwise false */
 };
 

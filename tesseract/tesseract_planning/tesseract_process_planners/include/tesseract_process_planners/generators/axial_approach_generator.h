@@ -28,14 +28,12 @@ public:
         std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(waypoints.front());
     for (int i = step_count_; i >= 0; i--)
     {
-      tesseract_motion_planners::CartesianWaypoint::Ptr new_waypoint =
-          std::make_shared<tesseract_motion_planners::CartesianWaypoint>();
       Eigen::Isometry3d scaled = approach_;
       scaled.translation() = (i * 1.0 / step_count_) * approach_.translation();
-      new_waypoint->cartesian_position_ =
-          config.world_offset_direction * cur_waypoint->cartesian_position_ * config.local_offset_direction * scaled;
-      new_waypoint->coeffs_ = cur_waypoint->coeffs_;
-      new_waypoint->is_critical_ = cur_waypoint->is_critical_;
+
+      tesseract_motion_planners::CartesianWaypoint::Ptr new_waypoint = std::make_shared<tesseract_motion_planners::CartesianWaypoint>(config.world_offset_direction * cur_waypoint->getTransform() * config.local_offset_direction * scaled);
+      new_waypoint->setCoefficients(cur_waypoint->getCoefficients());
+      new_waypoint->setIsCritical(cur_waypoint->isCritical());
       approach.push_back(new_waypoint);
     }
 
