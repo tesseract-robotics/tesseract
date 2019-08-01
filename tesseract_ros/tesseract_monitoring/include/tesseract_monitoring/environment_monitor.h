@@ -172,6 +172,19 @@ public:
   {
     return tesseract_->getEnvironmentConst();
   }
+
+  /**
+   * @brief Get Tesseract Non Const
+   * @return A shared point to a tesseract object
+   */
+  const tesseract::Tesseract::Ptr& getTesseract() { return tesseract_; }
+
+  /**
+   * @brief Get Tesseract Const
+   * @return A shared point to a const tesseract object
+   */
+  tesseract::Tesseract::ConstPtr getTesseractConst() const { return tesseract_; }
+
   /** @brief Return true if the scene \e scene can be updated directly
       or indirectly by this monitor. This function will return true if
       the pointer of the scene is the same as the one maintained,
