@@ -1562,7 +1562,7 @@ inline bool toMsg(geometry_msgs::PoseArray& pose_array, const tesseract_process_
 
     if (i < process_definition.transitions.size())
     {
-      if (!toMsg(pose_array, process_definition.transitions[i].transition_from_end));
+      if (!toMsg(pose_array, process_definition.transitions[i].transition_from_end))
         return false;
     }
   }
