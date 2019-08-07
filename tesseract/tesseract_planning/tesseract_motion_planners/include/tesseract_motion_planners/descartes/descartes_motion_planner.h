@@ -66,16 +66,17 @@ struct DescartesMotionPlannerConfig
 
   virtual ~DescartesMotionPlannerConfig() = default;
 
-  tesseract::Tesseract::ConstPtr tesseract;
-  typename descartes_light::CollisionInterface<FloatType>::Ptr contact_checker;
-  typename descartes_light::KinematicsInterface<FloatType>::Ptr kinematics;
-  typename descartes_light::EdgeEvaluator<FloatType>::Ptr edge_evaluator;
-  std::vector<descartes_core::TimingConstraint<FloatType>> timing_constraint;
-  std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr> samplers;
-  std::vector<Waypoint::Ptr> waypoints;
+  const tesseract::Tesseract::ConstPtr tesseract;
+  const std::string manipulator;
+  const typename descartes_light::CollisionInterface<FloatType>::Ptr contact_checker;
+  const typename descartes_light::KinematicsInterface<FloatType>::Ptr kinematics;
+  const typename descartes_light::EdgeEvaluator<FloatType>::Ptr edge_evaluator;
+  const std::vector<descartes_core::TimingConstraint<FloatType>> timing_constraint;
+  const std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr> samplers;
+  const std::vector<Waypoint::Ptr> waypoints;
   Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
   Eigen::Isometry3d world_to_base = Eigen::Isometry3d::Identity();
-  std::string manipulator;
+
 };
 
 using DescartesMotionPlannerConfigD = DescartesMotionPlannerConfig<double>;
