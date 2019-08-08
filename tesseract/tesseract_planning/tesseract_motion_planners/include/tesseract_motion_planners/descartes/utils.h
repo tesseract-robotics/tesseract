@@ -33,13 +33,29 @@ makeRobotPositionSamplers(const std::vector<Waypoint::Ptr>& path,
       CartesianWaypoint::ConstPtr cwp = std::static_pointer_cast<const CartesianWaypoint>(wp);
       if (wp->getCoefficients().size() == 0 || (wp->getCoefficients().array() > 0).all()) // Fixed pose
       {
-        auto sampler = std::make_shared<descartes_light::CartesianPointSampler<FloatType>>(cwp->getTransform().cast<FloatType>(), kinematic_interface, collision_interface->clone(), true);
-        result.push_back(std::move(sampler));
+        if (collision_interface == nullptr)
+        {
+          auto sampler = std::make_shared<descartes_light::CartesianPointSampler<FloatType>>(cwp->getTransform().cast<FloatType>(), kinematic_interface, nullptr, true);
+          result.push_back(std::move(sampler));
+        }
+        else
+        {
+          auto sampler = std::make_shared<descartes_light::CartesianPointSampler<FloatType>>(cwp->getTransform().cast<FloatType>(), kinematic_interface, collision_interface->clone(), true);
+          result.push_back(std::move(sampler));
+        }
       }
       else if ((wp->getCoefficients().head(5).array() > 0).all() && !(wp->getCoefficients()(5) > 0))
       {
-        auto sampler = std::make_shared<descartes_light::AxialSymmetricSampler<FloatType>>(cwp->getTransform().cast<FloatType>(), kinematic_interface, radial_sample_resolution, collision_interface->clone(), true);
-        result.push_back(std::move(sampler));
+        if (collision_interface == nullptr)
+        {
+          auto sampler = std::make_shared<descartes_light::AxialSymmetricSampler<FloatType>>(cwp->getTransform().cast<FloatType>(), kinematic_interface, radial_sample_resolution, nullptr, true);
+          result.push_back(std::move(sampler));
+        }
+        else
+        {
+          auto sampler = std::make_shared<descartes_light::AxialSymmetricSampler<FloatType>>(cwp->getTransform().cast<FloatType>(), kinematic_interface, radial_sample_resolution, collision_interface->clone(), true);
+          result.push_back(std::move(sampler));
+        }
       }
       else
       {
@@ -80,13 +96,29 @@ makeGantryPositionSamplers(const std::vector<Waypoint::Ptr>& path,
       CartesianWaypoint::ConstPtr cwp = std::static_pointer_cast<const CartesianWaypoint>(wp);
       if (wp->getCoefficients().size() == 0 || (wp->getCoefficients().array() > 0).all()) // Fixed pose
       {
-        auto sampler = std::make_shared<descartes_light::RailedCartesianPointSampler<FloatType>>(cwp->getTransform().cast<FloatType>(), kinematic_interface, collision_interface->clone(), true);
-        result.push_back(std::move(sampler));
+        if (collision_interface == nullptr)
+        {
+          auto sampler = std::make_shared<descartes_light::RailedCartesianPointSampler<FloatType>>(cwp->getTransform().cast<FloatType>(), kinematic_interface, nullptr, true);
+          result.push_back(std::move(sampler));
+        }
+        else
+        {
+          auto sampler = std::make_shared<descartes_light::RailedCartesianPointSampler<FloatType>>(cwp->getTransform().cast<FloatType>(), kinematic_interface, collision_interface->clone(), true);
+          result.push_back(std::move(sampler));
+        }
       }
       else if ((wp->getCoefficients().head(5).array() > 0).all() && !(wp->getCoefficients()(5) > 0))
       {
-        auto sampler = std::make_shared<descartes_light::RailedAxialSymmetricSampler<FloatType>>(cwp->getTransform().cast<FloatType>(), kinematic_interface, radial_sample_resolution, collision_interface->clone(), true);
-        result.push_back(std::move(sampler));
+        if (collision_interface == nullptr)
+        {
+          auto sampler = std::make_shared<descartes_light::RailedAxialSymmetricSampler<FloatType>>(cwp->getTransform().cast<FloatType>(), kinematic_interface, radial_sample_resolution, nullptr, true);
+          result.push_back(std::move(sampler));
+        }
+        else
+        {
+          auto sampler = std::make_shared<descartes_light::RailedAxialSymmetricSampler<FloatType>>(cwp->getTransform().cast<FloatType>(), kinematic_interface, radial_sample_resolution, collision_interface->clone(), true);
+          result.push_back(std::move(sampler));
+        }
       }
       else
       {
