@@ -226,6 +226,10 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
       ContactResult contact;
       contact.link_names[0] = cd1->getName();
       contact.link_names[1] = cd2->getName();
+      contact.shape_id[0] = -1; // TODO: TODO: Need to figure out how to get shape id
+      contact.shape_id[1] = -1; // TODO: TODO: Need to figure out how to get shape id
+      contact.subshape_id[0] = fcl_contact.b1;
+      contact.subshape_id[1] = fcl_contact.b2;
       contact.nearest_points[0] = fcl_contact.pos;
       contact.nearest_points[1] = fcl_contact.pos;
       contact.type_id[0] = cd1->getTypeID();
@@ -274,6 +278,10 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
     ContactResult contact;
     contact.link_names[0] = cd1->getName();
     contact.link_names[1] = cd2->getName();
+    contact.shape_id[0] = -1; // TODO: Need to figure out how to get shape id
+    contact.shape_id[1] = -1; // TODO: Need to figure out how to get shape id
+    contact.subshape_id[0] = fcl_result.b1;
+    contact.subshape_id[1] = fcl_result.b2;
     contact.nearest_points[0] = fcl_result.nearest_points[0];
     contact.nearest_points[1] = fcl_result.nearest_points[1];
     contact.type_id[0] = cd1->getTypeID();

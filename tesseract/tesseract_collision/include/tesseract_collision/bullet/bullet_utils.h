@@ -357,6 +357,10 @@ inline btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   ContactResult contact;
   contact.link_names[0] = cd0->getName();
   contact.link_names[1] = cd1->getName();
+  contact.shape_id[0] = (colObj0Wrap->m_parent == nullptr) ? 0 : colObj0Wrap->m_parent->m_index;
+  contact.shape_id[1] = (colObj1Wrap->m_parent == nullptr) ? 0 : colObj1Wrap->m_parent->m_index;
+  contact.subshape_id[0] = colObj0Wrap->m_index;
+  contact.subshape_id[1] = colObj1Wrap->m_index;
   contact.nearest_points[0] = convertBtToEigen(cp.m_positionWorldOnA);
   contact.nearest_points[1] = convertBtToEigen(cp.m_positionWorldOnB);
   contact.type_id[0] = cd0->getTypeID();
@@ -402,6 +406,10 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
   ContactResult contact;
   contact.link_names[0] = cd0->getName();
   contact.link_names[1] = cd1->getName();
+  contact.shape_id[0] = (colObj0Wrap->m_parent == nullptr) ? 0 : colObj0Wrap->m_parent->m_index;
+  contact.shape_id[1] = (colObj1Wrap->m_parent == nullptr) ? 0 : colObj1Wrap->m_parent->m_index;
+  contact.subshape_id[0] = colObj0Wrap->m_index;
+  contact.subshape_id[1] = colObj1Wrap->m_index;
   contact.nearest_points[0] = convertBtToEigen(cp.m_positionWorldOnA);
   contact.nearest_points[1] = convertBtToEigen(cp.m_positionWorldOnB);
   contact.type_id[0] = cd0->getTypeID();
@@ -427,6 +435,8 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
     std::swap(col->nearest_points[0], col->nearest_points[1]);
     std::swap(col->link_names[0], col->link_names[1]);
     std::swap(col->type_id[0], col->type_id[1]);
+    std::swap(col->shape_id[0], col->shape_id[1]);
+    std::swap(col->subshape_id[0], col->subshape_id[1]);
     col->normal *= -1;
   }
 
