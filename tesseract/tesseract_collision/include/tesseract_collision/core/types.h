@@ -73,14 +73,16 @@ struct ContactResult
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  double distance;
-  int type_id[2];
-  std::string link_names[2];
-  Eigen::Vector3d nearest_points[2];
-  Eigen::Vector3d normal;
-  Eigen::Vector3d cc_nearest_points[2];
-  double cc_time;
-  ContinouseCollisionType cc_type;
+  double distance;                      /**< @brief The distance between two links */
+  int type_id[2];                       /**< @brief A user defined type id that is added to the contact shapes */
+  std::string link_names[2];            /**< @brief The two links that are in contact */
+  int shape_id[2];                      /**< @brief A link can be made up of multiple shapes */
+  int subshape_id[2];                   /**< @brief Some shapes linke octomap and mesh have subshape (boxes and triangles) */
+  Eigen::Vector3d nearest_points[2];    /**< @brief The nearest point on both links */
+  Eigen::Vector3d normal;               /**< @brief The normal vector to move the two objects out of contact */
+  Eigen::Vector3d cc_nearest_points[2]; /**< @brief When using continuous contact checking this is the nearest point on the object */
+  double cc_time;                       /**< @brief This is between 0 and 1 indicating the point of contact */
+  ContinouseCollisionType cc_type;      /**< @brief The type of continuous contact */
 
   ContactResult() { clear(); }
   /// Clear structure data
@@ -91,6 +93,10 @@ struct ContactResult
     nearest_points[1].setZero();
     link_names[0] = "";
     link_names[1] = "";
+    shape_id[0] = -1;
+    shape_id[1] = -1;
+    subshape_id[0] = -1;
+    subshape_id[1] = -1;
     type_id[0] = 0;
     type_id[1] = 0;
     normal.setZero();

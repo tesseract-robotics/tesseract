@@ -1397,6 +1397,10 @@ inline void toMsg(tesseract_msgs::ContactResult& contact_result_msg,
   contact_result_msg.distance = contact_result.distance;
   contact_result_msg.link_names[0] = contact_result.link_names[0];
   contact_result_msg.link_names[1] = contact_result.link_names[1];
+  contact_result_msg.shape_id[0] = contact_result.shape_id[0];
+  contact_result_msg.shape_id[1] = contact_result.shape_id[1];
+  contact_result_msg.subshape_id[0] = contact_result.subshape_id[0];
+  contact_result_msg.subshape_id[1] = contact_result.subshape_id[1];
   contact_result_msg.normal.x = contact_result.normal[0];
   contact_result_msg.normal.y = contact_result.normal[1];
   contact_result_msg.normal.z = contact_result.normal[2];
