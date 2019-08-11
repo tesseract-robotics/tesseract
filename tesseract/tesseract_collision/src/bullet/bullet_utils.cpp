@@ -84,7 +84,7 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Cone::ConstPtr&
   return (new btConeShapeZ(r, l));
 }
 
-btCollisionShape* createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr& geom, CollisionObjectWrapper* cow)
+btCollisionShape* createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr& geom, CollisionObjectWrapper* cow, int shape_index)
 {
   int vertice_count = geom->getVerticeCount();
   int triangle_count = geom->getTriangleCount();
@@ -113,6 +113,7 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr&
       btCollisionShape* subshape = new btTriangleShapeEx(v[0], v[1], v[2]);
       if (subshape != nullptr)
       {
+        subshape->setUserIndex(shape_index);
         cow->manage(subshape);
         subshape->setMargin(BULLET_MARGIN);
         btTransform geomTrans;
@@ -146,7 +147,7 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::ConvexMesh::Con
   return nullptr;
 }
 
-btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPtr& geom, CollisionObjectWrapper* cow)
+btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPtr& geom, CollisionObjectWrapper* cow, int shape_index)
 {
   const octomap::OcTree& octree = *(geom->getOctree());
   btCompoundShape* subshape = new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(octree.size()));
@@ -168,6 +169,7 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPt
               static_cast<btScalar>(it.getX()), static_cast<btScalar>(it.getY()), static_cast<btScalar>(it.getZ())));
           btScalar l = static_cast<btScalar>(size / 2);
           btBoxShape* childshape = new btBoxShape(btVector3(l, l, l));
+          childshape->setUserIndex(shape_index);
           childshape->setMargin(BULLET_MARGIN);
           cow->manage(childshape);
 
@@ -189,6 +191,7 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPt
           geomTrans.setOrigin(btVector3(
               static_cast<btScalar>(it.getX()), static_cast<btScalar>(it.getY()), static_cast<btScalar>(it.getZ())));
           btSphereShape* childshape = new btSphereShape(static_cast<btScalar>((size / 2)));
+          childshape->setUserIndex(shape_index);
           childshape->setMargin(BULLET_MARGIN);
           cow->manage(childshape);
 
@@ -211,6 +214,7 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPt
               static_cast<btScalar>(it.getX()), static_cast<btScalar>(it.getY()), static_cast<btScalar>(it.getZ())));
           btSphereShape* childshape =
               new btSphereShape(static_cast<btScalar>(std::sqrt(2 * ((size / 2) * (size / 2)))));
+          childshape->setUserIndex(shape_index);
           childshape->setMargin(BULLET_MARGIN);
           cow->manage(childshape);
 
@@ -228,45 +232,63 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPt
   }
 }
 
-btCollisionShape* createShapePrimitive(const CollisionShapeConstPtr& geom, CollisionObjectWrapper* cow)
+btCollisionShape* createShapePrimitive(const CollisionShapeConstPtr& geom, CollisionObjectWrapper* cow, int shape_index)
 {
+  btCollisionShape* shape = nullptr;
+
   switch (geom->getType())
   {
     case tesseract_geometry::GeometryType::BOX:
     {
-      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Box>(geom));
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Box>(geom));
+      shape->setUserIndex(shape_index);
+      break;
     }
     case tesseract_geometry::GeometryType::SPHERE:
     {
-      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Sphere>(geom));
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Sphere>(geom));
+      shape->setUserIndex(shape_index);
+      break;
     }
     case tesseract_geometry::GeometryType::CYLINDER:
     {
-      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Cylinder>(geom));
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Cylinder>(geom));
+      shape->setUserIndex(shape_index);
+      break;
     }
     case tesseract_geometry::GeometryType::CONE:
     {
-      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Cone>(geom));
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Cone>(geom));
+      shape->setUserIndex(shape_index);
+      break;
     }
     case tesseract_geometry::GeometryType::MESH:
     {
-      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Mesh>(geom), cow);
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Mesh>(geom), cow, shape_index);
+      shape->setUserIndex(shape_index);
+      break;
     }
     case tesseract_geometry::GeometryType::CONVEX_MESH:
     {
-      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::ConvexMesh>(geom));
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::ConvexMesh>(geom));
+      shape->setUserIndex(shape_index);
+      break;
     }
     case tesseract_geometry::GeometryType::OCTREE:
     {
-      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Octree>(geom), cow);
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Octree>(geom), cow, shape_index);
+      shape->setUserIndex(shape_index);
+      break;
     }
     default:
     {
       CONSOLE_BRIDGE_logError("This geometric shape type (%d) is not supported using BULLET yet",
                               static_cast<int>(geom->getType()));
-      return nullptr;
+      break;
     }
   }
+
+  return shape;
 }
 
 CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
@@ -285,7 +307,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
 
   if (shapes.size() == 1 && m_shape_poses[0].matrix().isIdentity())
   {
-    btCollisionShape* shape = createShapePrimitive(m_shapes[0], this);
+    btCollisionShape* shape = createShapePrimitive(m_shapes[0], this, 0);
     shape->setMargin(BULLET_MARGIN);
     manage(shape);
     setCollisionShape(shape);
@@ -302,7 +324,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
 
     for (std::size_t j = 0; j < m_shapes.size(); ++j)
     {
-      btCollisionShape* subshape = createShapePrimitive(m_shapes[j], this);
+      btCollisionShape* subshape = createShapePrimitive(m_shapes[j], this, static_cast<int>(j));
       if (subshape != nullptr)
       {
         manage(subshape);
