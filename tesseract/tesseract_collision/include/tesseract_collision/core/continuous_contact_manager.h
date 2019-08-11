@@ -79,6 +79,20 @@ public:
                                   bool enabled = true) = 0;
 
   /**
+   * @brief Get a collision objects collision geometries
+   * @param name The collision objects name
+   * @return A vector of collision geometries. The vector will be empty if the collision object is not found.
+   */
+  virtual const CollisionShapesConst& getCollisionObjectGeometries(const std::string& name) const = 0;
+
+  /**
+   * @brief Get a collision objects collision geometries transforms
+   * @param name  The collision objects name
+   * @return A vector of collision geometries transforms. The vector will be empty if the collision object is not found.
+   */
+  virtual const tesseract_common::VectorIsometry3d& getCollisionObjectGeometriesTransforms(const std::string& name) const = 0;
+
+  /**
    * @brief Find if a collision object already exists
    * @param name The name of the collision object
    * @return true if it exists, otherwise false.

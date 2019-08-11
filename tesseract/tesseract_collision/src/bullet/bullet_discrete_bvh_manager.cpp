@@ -45,6 +45,10 @@ namespace tesseract_collision
 {
 namespace tesseract_collision_bullet
 {
+
+static const CollisionShapesConst EMPTY_COLLISION_SHAPES_CONST;
+static const tesseract_common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORMS;
+
 BulletDiscreteBVHManager::BulletDiscreteBVHManager()
 {
   dispatcher_.reset(new btCollisionDispatcher(&coll_config_));
@@ -90,7 +94,7 @@ DiscreteContactManager::Ptr BulletDiscreteBVHManager::clone() const
   manager->setContactDistanceThreshold(contact_distance_);
   manager->setIsContactAllowedFn(fn_);
 
-  return manager;
+  return std::move(manager);
 }
 
 bool BulletDiscreteBVHManager::addCollisionObject(const std::string& name,
@@ -109,6 +113,18 @@ bool BulletDiscreteBVHManager::addCollisionObject(const std::string& name,
   {
     return false;
   }
+}
+
+const CollisionShapesConst& BulletDiscreteBVHManager::getCollisionObjectGeometries(const std::string& name) const
+{
+  auto cow = link2cow_.find(name);
+  return (link2cow_.find(name) != link2cow_.end()) ? cow->second->getCollisionGeometries() : EMPTY_COLLISION_SHAPES_CONST;
+}
+
+const tesseract_common::VectorIsometry3d& BulletDiscreteBVHManager::getCollisionObjectGeometriesTransforms(const std::string& name) const
+{
+  auto cow = link2cow_.find(name);
+  return (link2cow_.find(name) != link2cow_.end()) ? cow->second->getCollisionGeometriesTransforms() : EMPTY_COLLISION_SHAPES_TRANSFORMS;
 }
 
 bool BulletDiscreteBVHManager::hasCollisionObject(const std::string& name) const

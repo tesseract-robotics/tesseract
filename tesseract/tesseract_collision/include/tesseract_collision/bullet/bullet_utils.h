@@ -143,6 +143,10 @@ public:
                       [](const Eigen::Isometry3d& t1, const Eigen::Isometry3d& t2) { return t1.isApprox(t2); });
   }
 
+  const CollisionShapesConst& getCollisionGeometries() const { return m_shapes; }
+
+  const tesseract_common::VectorIsometry3d& getCollisionGeometriesTransforms() const { return m_shape_poses; }
+
   /**
    * @brief Get the collision objects axis aligned bounding box
    * @param aabb_min The minimum point
@@ -357,8 +361,8 @@ inline btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   ContactResult contact;
   contact.link_names[0] = cd0->getName();
   contact.link_names[1] = cd1->getName();
-  contact.shape_id[0] = (colObj0Wrap->m_parent == nullptr) ? 0 : colObj0Wrap->m_parent->m_index;
-  contact.shape_id[1] = (colObj1Wrap->m_parent == nullptr) ? 0 : colObj1Wrap->m_parent->m_index;
+  contact.shape_id[0] = colObj0Wrap->getCollisionShape()->getUserIndex();
+  contact.shape_id[1] = colObj1Wrap->getCollisionShape()->getUserIndex();
   contact.subshape_id[0] = colObj0Wrap->m_index;
   contact.subshape_id[1] = colObj1Wrap->m_index;
   contact.nearest_points[0] = convertBtToEigen(cp.m_positionWorldOnA);
@@ -406,8 +410,8 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
   ContactResult contact;
   contact.link_names[0] = cd0->getName();
   contact.link_names[1] = cd1->getName();
-  contact.shape_id[0] = (colObj0Wrap->m_parent == nullptr) ? 0 : colObj0Wrap->m_parent->m_index;
-  contact.shape_id[1] = (colObj1Wrap->m_parent == nullptr) ? 0 : colObj1Wrap->m_parent->m_index;
+  contact.shape_id[0] = colObj0Wrap->getCollisionShape()->getUserIndex();
+  contact.shape_id[1] = colObj1Wrap->getCollisionShape()->getUserIndex();
   contact.subshape_id[0] = colObj0Wrap->m_index;
   contact.subshape_id[1] = colObj1Wrap->m_index;
   contact.nearest_points[0] = convertBtToEigen(cp.m_positionWorldOnA);
@@ -803,7 +807,14 @@ public:
   }
 };
 
-btCollisionShape* createShapePrimitive(const CollisionShapeConstPtr& geom, CollisionObjectWrapper* cow);
+/**
+ * @brief Create a bullet collision shape from tesseract collision shape
+ * @param geom Tesseract collision shape
+ * @param cow The collision object wrapper the collision shape is associated with
+ * @param shape_index The collision shapes index within the collision shape wrapper. This can be accessed from the bullet collision shape by calling getUserIndex function.
+ * @return Bullet collision shape.
+ */
+btCollisionShape* createShapePrimitive(const CollisionShapeConstPtr& geom, CollisionObjectWrapper* cow, int shape_index);
 
 /**
  * @brief Update a collision objects filters

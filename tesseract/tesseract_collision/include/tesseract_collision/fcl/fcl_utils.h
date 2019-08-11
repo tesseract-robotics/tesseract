@@ -101,6 +101,10 @@ public:
                       [](const Eigen::Isometry3d& t1, const Eigen::Isometry3d& t2) { return t1.isApprox(t2); });
   }
 
+  const CollisionShapesConst& getCollisionGeometries() const { return shapes_; }
+
+  const tesseract_common::VectorIsometry3d& getCollisionGeometriesTransforms() const { return shape_poses_; }
+
   void setCollisionObjectsTransform(const Eigen::Isometry3d& pose)
   {
     world_pose_ = pose;
@@ -125,6 +129,13 @@ public:
     return clone_cow;
   }
 
+  /**
+   * @brief Given fcl collision shape get the index to the links collision shape
+   * @param co fcl collision shape
+   * @return links collision shape index
+   */
+  int getShapeIndex(const fcl::CollisionObjectd* co) const;
+
 protected:
   CollisionObjectWrapper(const std::string& name,
                          const int& type_id,
@@ -132,6 +143,8 @@ protected:
                          const tesseract_common::VectorIsometry3d& shape_poses,
                          const std::vector<CollisionGeometryPtr>& collision_geometries,
                          const std::vector<CollisionObjectPtr>& collision_objects);
+
+
 
   std::string name_;             // name of the collision object
   int type_id_;                  // user defined type id

@@ -247,12 +247,14 @@ inline tesseract_geometry::ConvexMesh::Ptr makeConvexMesh(const tesseract_geomet
  * @brief Write a simple ply file given vertices and faces
  * @param path The file path
  * @param vertices A vector of vertices
+ * @param vertices_color The vertices color (0-255,0-255,0-255), if empty uses a default color
  * @param faces The first values indicates the number of vertices that define the face followed by the vertice index
  * @param num_faces The number of faces
  * @return False if failed to write file, otherwise true
  */
 inline bool writeSimplePlyFile(const std::string& path,
                                const tesseract_common::VectorVector3d& vertices,
+                               const std::vector<Eigen::Vector3i>& vectices_color,
                                const Eigen::VectorXi& faces,
                                int num_faces)
 {
@@ -264,6 +266,9 @@ inline bool writeSimplePlyFile(const std::string& path,
   //  property float x           { vertex contains float "x" coordinate }
   //  property float y           { y coordinate is also a vertex property }
   //  property float z           { z coordinate, too }
+  //  property uchar red         { start of vertex color }
+  //  property uchar green
+  //  property uchar blue
   //  element face 6             { there are 6 "face" elements in the file }
   //  property list uchar int vertex_index { "vertex_indices" is a list of ints }
   //  end_header                 { delimits the end of the header }
@@ -296,15 +301,41 @@ inline bool writeSimplePlyFile(const std::string& path,
   myfile << "property double x\n";
   myfile << "property double y\n";
   myfile << "property double z\n";
+  myfile << "property uchar red\n";
+  myfile << "property uchar green\n";
+  myfile << "property uchar blue\n";
   myfile << "element face " << num_faces << "\n";
   myfile << "property list uchar uint vertex_indices\n";
   myfile << "end_header\n";
 
   // Add vertices
-  for (const auto& v : vertices)
+  if (vectices_color.empty())
   {
-    myfile << std::fixed << std::setprecision(std::numeric_limits<double>::digits10 + 1) << v[0] << " " << v[1] << " "
-           << v[2] << "\n";
+    Eigen::Vector3i default_color(100, 100, 100);
+    for (const auto& v : vertices)
+    {
+      myfile << std::fixed << std::setprecision(std::numeric_limits<double>::digits10 + 1) << v[0] << " " << v[1] << " "
+             << v[2] << " " << default_color[0] << " " << default_color[1] << " " << default_color[2] << "\n";
+    }
+  }
+  else if (vectices_color.size() == 1)
+  {
+    const Eigen::Vector3i& default_color = vectices_color[0];
+    for (const auto& v : vertices)
+    {
+      myfile << std::fixed << std::setprecision(std::numeric_limits<double>::digits10 + 1) << v[0] << " " << v[1] << " "
+             << v[2] << " " << default_color[0] << " " << default_color[1] << " " << default_color[2] << "\n";
+    }
+  }
+  else
+  {
+    for (std::size_t i = 0; i < vertices.size(); ++i)
+    {
+      const Eigen::Vector3d& v = vertices[i];
+      const Eigen::Vector3i& v_color = vectices_color[i];
+      myfile << std::fixed << std::setprecision(std::numeric_limits<double>::digits10 + 1) << v[0] << " " << v[1] << " "
+             << v[2] << " " << v_color[0] << " " << v_color[1] << " " << v_color[2] << "\n";
+    }
   }
 
   // Add faces
@@ -323,6 +354,23 @@ inline bool writeSimplePlyFile(const std::string& path,
 
   myfile.close();
   return true;
+}
+
+/**
+ * @brief Write a simple ply file given vertices and faces
+ * @param path The file path
+ * @param vertices A vector of vertices
+ * @param faces The first values indicates the number of vertices that define the face followed by the vertice index
+ * @param num_faces The number of faces
+ * @return False if failed to write file, otherwise true
+ */
+inline bool writeSimplePlyFile(const std::string& path,
+                               const tesseract_common::VectorVector3d& vertices,
+                               const Eigen::VectorXi& faces,
+                               int num_faces)
+{
+  std::vector<Eigen::Vector3i> vertices_color;
+  return writeSimplePlyFile(path, vertices, vertices_color, faces, num_faces);
 }
 
 /**

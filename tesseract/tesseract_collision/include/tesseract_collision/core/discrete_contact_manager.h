@@ -61,10 +61,6 @@ public:
    * @param mask_id         User defined id which gets stored in the results structure.
    * @param shapes          A vector of shapes that make up the collision object.
    * @param shape_poses     A vector of poses for each shape, must be same length as shapes
-   * @param shape_types     A vector of shape types for encode the collision object. If the vector is of length 1 it is
-   * used for all shapes.
-   * @param collision_object_types A int identifying a conversion mode for the object. (ex. convert meshes to
-   * convex_hulls)
    * @return true if successfully added, otherwise false.
    */
   virtual bool addCollisionObject(const std::string& name,
@@ -72,6 +68,20 @@ public:
                                   const CollisionShapesConst& shapes,
                                   const tesseract_common::VectorIsometry3d& shape_poses,
                                   bool enabled = true) = 0;
+
+  /**
+   * @brief Get a collision objects collision geometries
+   * @param name The collision objects name
+   * @return A vector of collision geometries. The vector will be empty if the collision object is not found.
+   */
+  virtual const CollisionShapesConst& getCollisionObjectGeometries(const std::string& name) const = 0;
+
+  /**
+   * @brief Get a collision objects collision geometries transforms
+   * @param name  The collision objects name
+   * @return A vector of collision geometries transforms. The vector will be empty if the collision object is not found.
+   */
+  virtual const tesseract_common::VectorIsometry3d& getCollisionObjectGeometriesTransforms(const std::string& name) const = 0;
 
   /**
    * @brief Find if a collision object already exists

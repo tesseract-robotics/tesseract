@@ -68,6 +68,10 @@ public:
                           const tesseract_common::VectorIsometry3d& shape_poses,
                           bool enabled = true) override;
 
+  const CollisionShapesConst& getCollisionObjectGeometries(const std::string& name) const;
+
+  const tesseract_common::VectorIsometry3d& getCollisionObjectGeometriesTransforms(const std::string& name) const;
+
   bool hasCollisionObject(const std::string& name) const override;
 
   bool removeCollisionObject(const std::string& name) override;
