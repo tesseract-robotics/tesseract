@@ -6,7 +6,6 @@
   <maintainer email="levi.armstrong@swri.org">Levi Armstrong</maintainer>
   <license>BSD</license>
 
-  <buildtool_depend>catkin</buildtool_depend>
   <depend>libccd</depend>
 
   <export>
