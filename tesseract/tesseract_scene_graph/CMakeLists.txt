@@ -9,6 +9,7 @@ find_package(urdfdom REQUIRED)
 find_package(urdfdom_headers REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(orocos_kdl REQUIRED)
+find_package(TinyXML2 REQUIRED)
 find_package(TinyXML REQUIRED)
 find_package(tesseract_geometry REQUIRED)
 find_package(tesseract_common REQUIRED)
@@ -23,7 +24,7 @@ if (NOT ASSIMP_FOUND)
 endif()
 
 add_library(${PROJECT_NAME} SHARED src/graph.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_geometry orocos-kdl console_bridge ${Boost_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${ASSIMP_LIBRARIES} ${TinyXML_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_geometry orocos-kdl console_bridge ${Boost_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${ASSIMP_LIBRARIES} ${TinyXML2_LIBRARIES} ${TinyXML_LIBRARIES})
 target_compile_options(${PROJECT_NAME} PUBLIC -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_definitions(${PROJECT_NAME} PUBLIC Boost_USE_STATIC_LIBS=OFF Boost_USE_MULTITHREADED=ON Boost_USE_STATIC_RUNTIME=OFF)
 if(CXX_FEATURE_FOUND EQUAL "-1")
@@ -38,9 +39,10 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}
     ${console_bridge_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
+    ${TinyXML2_INCLUDE_DIRS}
+    ${TinyXML_INCLUDE_DIRS}
     ${urdfdom_INCLUDE_DIRS}
     ${urdfdom_headers_INCLUDE_DIRS}
-    ${TinyXML_INCLUDE_DIRS}
     ${orocos_kdl_INCLUDE_DIRS} # Orocos did not export target correctly
     $<TARGET_PROPERTY:tesseract::tesseract_common,INTERFACE_INCLUDE_DIRECTORIES>) #tesseract::tesseract_common Due to bug in catkin, there is an open PR
 
@@ -56,7 +58,7 @@ install(DIRECTORY include/${PROJECT_NAME}
   PATTERN ".svn" EXCLUDE
 )
 
-install(FILES cmake/FindTinyXML.cmake DESTINATION lib/cmake/${PROJECT_NAME})
+install(FILES cmake/FindTinyXML2.cmake cmake/FindTinyXML.cmake DESTINATION lib/cmake/${PROJECT_NAME})
 
 install(FILES package.xml DESTINATION share/${PROJECT_NAME})
 

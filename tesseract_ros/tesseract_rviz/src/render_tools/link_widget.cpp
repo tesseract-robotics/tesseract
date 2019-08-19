@@ -669,7 +669,7 @@ Ogre::MaterialPtr LinkWidget::getMaterialForLink(const tesseract_scene_graph::Li
   std::vector<tesseract_scene_graph::Visual::Ptr>::const_iterator vi;
   for (vi = link.visual.begin(); vi != link.visual.end(); vi++)
   {
-    if ((*vi) && material_name != "" && (*vi)->material_name == material_name)
+    if ((*vi) && (*vi)->material != nullptr && (*vi)->material->getName() == material_name)
     {
       visual = *vi;
       break;
@@ -1342,7 +1342,7 @@ void LinkWidget::createVisual(const tesseract_scene_graph::Link& link)
     tesseract_scene_graph::Visual::Ptr visual = *vi;
     if (visual && visual->geometry)
     {
-      createEntityForGeometryElement(link, *visual->geometry, visual->origin, visual->material_name, true);
+      createEntityForGeometryElement(link, *visual->geometry, visual->origin, visual->material->getName(), true);
     }
   }
 

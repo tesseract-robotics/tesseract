@@ -15,6 +15,7 @@
   <depend>libconsole-bridge-dev</depend>
   <depend>assimp-dev</depend>
   <depend>tinyxml</depend>
+  <depend>tinyxml2</depend>
   <depend>orocos_kdl</depend>
 
   <test_depend>gtest</test_depend>

@@ -29,6 +29,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <fstream>
 #include <console_bridge/console.h>
+//#include <graphviz/gvc.h>
+//#include <graphviz/gvplugin_device.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
@@ -74,6 +76,11 @@ bool SceneGraph::addLink(Link link)
   VertexProperty info(link_ptr);
   Vertex v = boost::add_vertex(info, static_cast<Graph&>(*this));
   link_map_[link_ptr->getName()] = std::make_pair(link_ptr, v);
+
+  // First link added set as root
+  if (link_map_.size() == 1)
+    setRoot(link_ptr->getName());
+
   return true;
 }
 
