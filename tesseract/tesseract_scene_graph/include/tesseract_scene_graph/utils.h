@@ -3,12 +3,13 @@
 
 #include <tesseract_scene_graph/allowed_collision_matrix.h>
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/parser/urdf_parser.h>
 #include <tesseract_scene_graph/parser/srdf_parser.h>
-#include <console_bridge/console.h>
+#include <functional>
 
 namespace tesseract_scene_graph
 {
+using ResourceLocatorFn = std::function<std::string(const std::string&)>;
+
 inline void processSRDFAllowedCollisions(SceneGraph& scene_graph, const tesseract_scene_graph::SRDFModel& srdf_model)
 {
   for (const auto& pair : srdf_model.getDisabledCollisionPairs())

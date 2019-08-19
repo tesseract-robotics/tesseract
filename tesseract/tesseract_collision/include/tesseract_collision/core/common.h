@@ -39,6 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/utils.h>
 #include <tesseract_collision/core/types.h>
 #include <tesseract_collision/core/common.h>
 
@@ -374,22 +375,6 @@ inline bool writeSimplePlyFile(const std::string& path,
 }
 
 /**
- * @brief Determine if a string is a number
- * @param s The string to evaluate
- * @return True if numeric, otherwise false.
- */
-inline bool isNumeric(const std::string& s)
-{
-  if (s.empty())
-    return false;
-
-  if (s[0] == '-')
-    return std::find_if(s.begin() + 1, s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
-  else
-    return std::find_if(s.begin(), s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
-}
-
-/**
  * @brief Loads a simple ply file given a path
  * @param path The file path
  * @param vertices A vector of vertices
@@ -444,7 +429,7 @@ inline int loadSimplePlyFile(const std::string& path,
   std::getline(myfile, str);
   std::vector<std::string> tokens;
   boost::split(tokens, str, boost::is_any_of(" "));
-  if (tokens.size() != 3 || !isNumeric(tokens.back()))
+  if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens.back()))
   {
     CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
     return false;
@@ -458,7 +443,7 @@ inline int loadSimplePlyFile(const std::string& path,
 
   tokens.clear();
   boost::split(tokens, str, boost::is_any_of(" "));
-  if (tokens.size() != 3 || !isNumeric(tokens.back()))
+  if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens.back()))
   {
     CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
     return false;

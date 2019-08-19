@@ -37,6 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <trajopt/problem_description.hpp>
 #include <trajopt_utils/config.hpp>
 #include <trajopt_utils/logging.hpp>
+#include <tesseract_scene_graph/parser/mesh_parser.h>
 #include <memory>
 
 using namespace trajopt;

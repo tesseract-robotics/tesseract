@@ -51,6 +51,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
 {
+
 class Material
 {
 public:
@@ -68,13 +69,15 @@ public:
 
   void clear()
   {
-    color.setZero();
+    color = Eigen::Vector4d(0.5, 0.5, 0.5, 1.0);
     texture_filename.clear();
   }
 
 private:
   std::string name_;
 };
+
+static auto DEFAULT_TESSERACT_MATERIAL = std::make_shared<Material>("default_tesseract_material");
 
 class Inertial
 {
@@ -109,14 +112,12 @@ public:
   Eigen::Isometry3d origin;
   tesseract_geometry::Geometry::Ptr geometry;
 
-  std::string material_name;
   Material::Ptr material;
 
   void clear()
   {
     origin.setIdentity();
-    material_name.clear();
-    material.reset();
+    material = DEFAULT_TESSERACT_MATERIAL;
     geometry.reset();
     name.clear();
   }

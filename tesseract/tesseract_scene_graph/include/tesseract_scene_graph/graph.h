@@ -309,7 +309,7 @@ public:
 
   /**
    * @brief Determine if the graph contains cycles
-   * @return True if graph is acyclic otherwise false
+   * @return True if graph is acyclic (no cycles) otherwise false
    */
   bool isAcyclic() const;
 

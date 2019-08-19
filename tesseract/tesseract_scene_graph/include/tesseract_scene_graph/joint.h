@@ -153,7 +153,12 @@ public:
   double reference_position;
   double rising, falling;
 
-  void clear() { reference_position = 0; }
+  void clear()
+  {
+    reference_position = 0;
+    rising = 0;
+    falling = 0;
+  }
 };
 
 class JointMimic
@@ -170,7 +175,7 @@ public:
   void clear()
   {
     offset = 0.0;
-    multiplier = 0.0;
+    multiplier = 1.0;
     joint_name.clear();
   }
 };
@@ -239,7 +244,7 @@ public:
 
   void clear()
   {
-    this->axis.setZero();
+    this->axis = Eigen::Vector3d(1, 0, 0);
     this->child_link_name.clear();
     this->parent_link_name.clear();
     this->parent_to_joint_origin_transform.setIdentity();
