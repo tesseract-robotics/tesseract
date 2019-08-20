@@ -14,6 +14,7 @@
   <depend>libconsole-bridge-dev</depend>
 
   <test_depend>gtest</test_depend>
+  <test_depend>tesseract_scene_graph</test_depend>
 
   <export>
     <build_type>cmake</build_type>
