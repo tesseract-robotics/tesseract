@@ -136,13 +136,15 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner0)
   config.tesseract_ = tesseract_ptr_;
   config.num_steps_ = NUM_STEPS;
 
-  std::vector<std::string> joint_names = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
+  std::vector<std::string> joint_names =
+      tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
 
   // Specify a JointWaypoint as the start
-  config.start_waypoint_ = std::make_shared<JointWaypoint>(std::vector<double>({0, 0, 0, -1.57, 0, 0, 0}), joint_names);
+  config.start_waypoint_ =
+      std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, -1.57, 0, 0, 0 }), joint_names);
 
   // Specify a Joint Waypoint as the finish
-  config.end_waypoint_ = std::make_shared<JointWaypoint>(std::vector<double>({0, 0, 0, 1.57, 0, 0, 0}), joint_names);
+  config.end_waypoint_ = std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, 1.57, 0, 0, 0 }), joint_names);
 
   // Create test planner used for testing problem creation
   tesseract_tests::TrajOptFreespacePlannerTest test_planner;
@@ -179,13 +181,15 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner1)
   config.tesseract_ = tesseract_ptr_;
   config.num_steps_ = NUM_STEPS;
 
-  std::vector<std::string> joint_names = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
+  std::vector<std::string> joint_names =
+      tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
 
   // Specify a JointWaypoint as the start
-  config.start_waypoint_ = std::make_shared<JointWaypoint>(std::vector<double>({0, 0, 0, -1.57, 0, 0, 0}), joint_names);
+  config.start_waypoint_ =
+      std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, -1.57, 0, 0, 0 }), joint_names);
 
   // Specify a Joint Waypoint as the finish
-  config.end_waypoint_ = std::make_shared<JointWaypoint>(std::vector<double>({0, 0, 0, 1.57, 0, 0, 0}), joint_names);
+  config.end_waypoint_ = std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, 1.57, 0, 0, 0 }), joint_names);
 
   // Create test planner used for testing problem creation
   tesseract_tests::TrajOptFreespacePlannerTest test_planner;
@@ -225,13 +229,16 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner2)
   config.tesseract_ = tesseract_ptr_;
   config.num_steps_ = NUM_STEPS;
 
-  std::vector<std::string> joint_names = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
+  std::vector<std::string> joint_names =
+      tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
 
   // Specify a Joint Waypoint as the start
-  config.start_waypoint_ = std::make_shared<JointWaypoint>(std::vector<double>({0, 0, 0, -1.57, 0, 0, 0}), joint_names);
+  config.start_waypoint_ =
+      std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, -1.57, 0, 0, 0 }), joint_names);
 
   // Specify a Cartesian Waypoint as the finish
-  config.end_waypoint_ = std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0));
+  config.end_waypoint_ =
+      std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0));
 
   // Create test planner used for testing problem creation
   tesseract_tests::TrajOptFreespacePlannerTest test_planner;
@@ -271,13 +278,15 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner3)
   config.tesseract_ = tesseract_ptr_;
   config.num_steps_ = NUM_STEPS;
 
-  std::vector<std::string> joint_names = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
+  std::vector<std::string> joint_names =
+      tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
 
   // Specify a Cartesian Waypoint as the start
-  config.start_waypoint_ = std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0));
+  config.start_waypoint_ =
+      std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0));
 
   // Specify a Joint Waypoint as the finish
-  config.end_waypoint_ = std::make_shared<JointWaypoint>(std::vector<double>({0, 0, 0, -1.57, 0, 0, 0}), joint_names);
+  config.end_waypoint_ = std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, -1.57, 0, 0, 0 }), joint_names);
 
   // Create test planner used for testing problem creation
   tesseract_tests::TrajOptFreespacePlannerTest test_planner;
@@ -318,10 +327,12 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4)
   config.num_steps_ = NUM_STEPS;
 
   // Specify a Cartesian Waypoint as the start
-  config.start_waypoint_ = std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0));
+  config.start_waypoint_ =
+      std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0));
 
   // Specify a Cartesian Waypoint as the finish
-  config.end_waypoint_ = std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0));
+  config.end_waypoint_ =
+      std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0));
 
   // Create test planner used for testing problem creation
   tesseract_tests::TrajOptFreespacePlannerTest test_planner;
@@ -364,7 +375,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0)
   // These specify the series of points to be optimized
   for (int ind = 0; ind < NUM_STEPS; ind++)
   {
-    CartesianWaypoint::Ptr waypoint = std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-0.2 + ind * .02, 0.4, 0.8), Eigen::Quaterniond(0, 1.0, 0, 0));
+    CartesianWaypoint::Ptr waypoint = std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-0.2 + ind * .02, 0.4, 0.8),
+                                                                          Eigen::Quaterniond(0, 1.0, 0, 0));
     waypoint->setIsCritical(true);
     config.target_waypoints_.push_back(waypoint);
   }
@@ -414,7 +426,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner1)
   // These specify the series of points to be optimized
   for (int ind = 0; ind < NUM_STEPS; ind++)
   {
-    CartesianWaypoint::Ptr waypoint = std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-0.2 + ind * .02, 0.4, 0.8), Eigen::Quaterniond(0, 1.0, 0, 0));
+    CartesianWaypoint::Ptr waypoint = std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-0.2 + ind * .02, 0.4, 0.8),
+                                                                          Eigen::Quaterniond(0, 1.0, 0, 0));
     waypoint->setIsCritical(false);
     config.target_waypoints_.push_back(waypoint);
   }
@@ -442,12 +455,14 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner2)
   config.manipulator_ = "manipulator";
   config.tesseract_ = tesseract_ptr_;
 
-  std::vector<std::string> joint_names = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
+  std::vector<std::string> joint_names =
+      tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
 
   // These specify the series of points to be optimized
   for (int ind = 0; ind < NUM_STEPS; ind++)
   {
-    JointWaypoint::Ptr waypoint = std::make_shared<JointWaypoint>(std::vector<double>({0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0}), joint_names);
+    JointWaypoint::Ptr waypoint =
+        std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0 }), joint_names);
     waypoint->setIsCritical(true);
     config.target_waypoints_.push_back(waypoint);
   }
@@ -476,12 +491,14 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner3)
   config.manipulator_ = "manipulator";
   config.tesseract_ = tesseract_ptr_;
 
-  std::vector<std::string> joint_names = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
+  std::vector<std::string> joint_names =
+      tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
 
   // These specify the series of points to be optimized
   for (int ind = 0; ind < NUM_STEPS; ind++)
   {
-    JointWaypoint::Ptr waypoint = std::make_shared<JointWaypoint>(std::vector<double>({0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0}), joint_names);
+    JointWaypoint::Ptr waypoint =
+        std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0 }), joint_names);
     waypoint->setIsCritical(false);
     config.target_waypoints_.push_back(waypoint);
   }

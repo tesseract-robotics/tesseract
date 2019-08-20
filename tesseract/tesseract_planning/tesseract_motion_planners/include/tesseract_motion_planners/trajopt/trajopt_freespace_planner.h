@@ -37,7 +37,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
-
 class TrajOptFreespacePlannerStatusCategory;
 
 /**
@@ -152,7 +151,8 @@ protected:
   tesseract_motion_planners::TrajOptMotionPlanner planner_; /** @brief The trajopt planner */
   std::shared_ptr<trajopt::ProblemConstructionInfo> pci_;
   std::shared_ptr<TrajOptFreespacePlannerConfig> config_;
-  std::shared_ptr<const TrajOptFreespacePlannerStatusCategory> status_category_; /** @brief The plannsers status codes */
+  std::shared_ptr<const TrajOptFreespacePlannerStatusCategory> status_category_; /** @brief The plannsers status codes
+                                                                                  */
 };
 
 class TrajOptFreespacePlannerStatusCategory : public tesseract_common::StatusCategory
@@ -171,7 +171,6 @@ public:
 private:
   std::string name_;
 };
-
 
 }  // namespace tesseract_motion_planners
 #endif  // TESSERACT_PLANNING_TRAJOPT_PLANNER_H

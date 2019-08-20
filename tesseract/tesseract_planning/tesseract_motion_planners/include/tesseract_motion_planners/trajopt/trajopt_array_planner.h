@@ -37,7 +37,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
-
 class TrajOptArrayPlannerStatusCategory;
 
 /**

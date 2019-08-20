@@ -354,7 +354,9 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
 
 int CollisionObjectWrapper::getShapeIndex(const fcl::CollisionObjectd* co) const
 {
-  auto it = std::find_if(collision_objects_.begin(), collision_objects_.end(), [&co](const CollisionObjectPtr& c) { return c.get() == co; });
+  auto it = std::find_if(collision_objects_.begin(), collision_objects_.end(), [&co](const CollisionObjectPtr& c) {
+    return c.get() == co;
+  });
 
   if (it != collision_objects_.end())
     return static_cast<int>(std::distance(collision_objects_.begin(), it));

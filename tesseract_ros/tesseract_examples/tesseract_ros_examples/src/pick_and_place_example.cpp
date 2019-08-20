@@ -311,9 +311,9 @@ bool PickAndPlaceExample::run()
 
   // Plot the resulting trajectory
   if (plotting_)
-    plotter->plotTrajectory(
-        pick_prob->GetKin()->getJointNames(),
-        planning_response.joint_trajectory.trajectory.leftCols(static_cast<long>(pick_prob->GetKin()->getJointNames().size())));
+    plotter->plotTrajectory(pick_prob->GetKin()->getJointNames(),
+                            planning_response.joint_trajectory.trajectory.leftCols(
+                                static_cast<long>(pick_prob->GetKin()->getJointNames().size())));
 
   std::cout << planning_response.joint_trajectory.trajectory << '\n';
 
@@ -521,9 +521,9 @@ bool PickAndPlaceExample::run()
 
   // Plot the resulting trajectory
   if (plotting_)
-    plotter->plotTrajectory(
-        planning_response_place.joint_trajectory.joint_names,
-        planning_response_place.joint_trajectory.trajectory.leftCols(static_cast<long>(place_prob->GetKin()->getJointNames().size())));
+    plotter->plotTrajectory(planning_response_place.joint_trajectory.joint_names,
+                            planning_response_place.joint_trajectory.trajectory.leftCols(
+                                static_cast<long>(place_prob->GetKin()->getJointNames().size())));
 
   std::cout << planning_response_place.joint_trajectory.trajectory << '\n';
 

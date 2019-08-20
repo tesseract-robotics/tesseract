@@ -36,7 +36,8 @@ void addCollisionObjects(DiscreteContactManager& checker)
   /////////////////////////////////////////////////////////////////
   // Add plane mesh to checker.
   /////////////////////////////////////////////////////////////////
-  CollisionShapePtr sphere = createMeshFromPath<tesseract_geometry::Mesh>(std::string(DATA_DIR) + "/plane_4m.stl", Eigen::Vector3d(1, 1, 1), true)[0];
+  CollisionShapePtr sphere = createMeshFromPath<tesseract_geometry::Mesh>(
+      std::string(DATA_DIR) + "/plane_4m.stl", Eigen::Vector3d(1, 1, 1), true)[0];
 
   Eigen::Isometry3d sphere_pose;
   sphere_pose.setIdentity();
@@ -85,9 +86,12 @@ void runTest(DiscreteContactManager& checker, double tol, std::string file_path)
     if (r.link_names[0] != "plane_link")
       idx = 1;
 
-    mesh_vertices_color[static_cast<std::size_t>((*mesh_triangles)[4 * r.subshape_id[idx] + 1])] = Eigen::Vector3i(255, 0, 0);
-    mesh_vertices_color[static_cast<std::size_t>((*mesh_triangles)[4 * r.subshape_id[idx] + 2])] = Eigen::Vector3i(255, 0, 0);
-    mesh_vertices_color[static_cast<std::size_t>((*mesh_triangles)[4 * r.subshape_id[idx] + 3])] = Eigen::Vector3i(255, 0, 0);
+    mesh_vertices_color[static_cast<std::size_t>((*mesh_triangles)[4 * r.subshape_id[idx] + 1])] =
+        Eigen::Vector3i(255, 0, 0);
+    mesh_vertices_color[static_cast<std::size_t>((*mesh_triangles)[4 * r.subshape_id[idx] + 2])] =
+        Eigen::Vector3i(255, 0, 0);
+    mesh_vertices_color[static_cast<std::size_t>((*mesh_triangles)[4 * r.subshape_id[idx] + 3])] =
+        Eigen::Vector3i(255, 0, 0);
   }
 
   writeSimplePlyFile(file_path, *mesh_vertices, mesh_vertices_color, *mesh_triangles, mesh->getTriangleCount());
@@ -111,11 +115,12 @@ TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionOctomapSphereMeshUnit)
 }
 
 // TODO: There is an issue with fcl octomap collision type. Either with tesseract implementation or fcl
-//TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionOctomapSphereMeshUnit)
+// TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionOctomapSphereMeshUnit)
 //{
 //  tesseract_collision_fcl::FCLDiscreteBVHManager checker;
 //  addCollisionObjects(checker);
-//  runTest(checker, 0.16, "/tmp/FCLDiscreteBVHCollisionOctomapSphereMeshUnit.ply");  // TODO: There appears to be an issue in fcl for octomap::OcTree.
+//  runTest(checker, 0.16, "/tmp/FCLDiscreteBVHCollisionOctomapSphereMeshUnit.ply");  // TODO: There appears to be an
+//  issue in fcl for octomap::OcTree.
 //}
 
 /** @brief This is to test the shape id and subshape id of the contact results. */

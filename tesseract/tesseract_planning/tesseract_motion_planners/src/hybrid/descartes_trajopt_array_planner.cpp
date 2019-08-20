@@ -27,20 +27,20 @@
 
 namespace tesseract_motion_planners
 {
-
-template<typename FloatType>
-DescartesTrajOptArrayPlanner<FloatType>::DescartesTrajOptArrayPlanner(std::string name) : MotionPlanner(std::move(name)), status_category_(std::make_shared<tesseract_common::GeneralStatusCategory>(name))
+template <typename FloatType>
+DescartesTrajOptArrayPlanner<FloatType>::DescartesTrajOptArrayPlanner(std::string name)
+  : MotionPlanner(std::move(name)), status_category_(std::make_shared<tesseract_common::GeneralStatusCategory>(name))
 {
 }
 
-template<typename FloatType>
+template <typename FloatType>
 bool DescartesTrajOptArrayPlanner<FloatType>::terminate()
 {
   CONSOLE_BRIDGE_logWarn("Termination of ongoing optimization is not implemented yet");
   return false;
 }
 
-template<typename FloatType>
+template <typename FloatType>
 void DescartesTrajOptArrayPlanner<FloatType>::clear()
 {
   request_ = PlannerRequest();
@@ -49,7 +49,7 @@ void DescartesTrajOptArrayPlanner<FloatType>::clear()
   trajopt_config_ = TrajOptArrayPlannerConfig();
 }
 
-template<typename FloatType>
+template <typename FloatType>
 tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::isConfigured() const
 {
   tesseract_common::StatusCode descartes_status = descartes_planner_.isConfigured();
@@ -67,7 +67,7 @@ tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::isConfigur
   return tesseract_common::StatusCode(status_category_->IsConfigured, status_category_);
 }
 
-template<typename FloatType>
+template <typename FloatType>
 tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::solve(PlannerResponse& response)
 {
   tesseract_common::StatusCode config_status = isConfigured();
@@ -78,10 +78,11 @@ tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::solve(Plan
     return config_status;
   }
 
-  //Solve problem using descartes. Results are stored in the response
+  // Solve problem using descartes. Results are stored in the response
   tesseract_motion_planners::PlannerResponse descartes_planning_response;
   tesseract_common::StatusCode descartes_status = descartes_planner_.solve(descartes_planning_response);
-  if (!descartes_status && (descartes_status.value() != DescartesMotionPlannerStatusCategory::FoundValidSolutionInCollision))
+  if (!descartes_status &&
+      (descartes_status.value() != DescartesMotionPlannerStatusCategory::FoundValidSolutionInCollision))
   {
     response = std::move(descartes_planning_response);
     return descartes_status;
@@ -97,8 +98,10 @@ tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::solve(Plan
   return trajopt_status;
 }
 
-template<typename FloatType>
-bool DescartesTrajOptArrayPlanner<FloatType>::setConfiguration(const DescartesMotionPlannerConfig<FloatType>& descartes_config, const TrajOptArrayPlannerConfig& trajopt_config)
+template <typename FloatType>
+bool DescartesTrajOptArrayPlanner<FloatType>::setConfiguration(
+    const DescartesMotionPlannerConfig<FloatType>& descartes_config,
+    const TrajOptArrayPlannerConfig& trajopt_config)
 {
   bool success = true;
   if (!descartes_planner_.setConfiguration(descartes_config))
@@ -111,4 +114,4 @@ bool DescartesTrajOptArrayPlanner<FloatType>::setConfiguration(const DescartesMo
 
   return success;
 }
-}
+}  // namespace tesseract_motion_planners

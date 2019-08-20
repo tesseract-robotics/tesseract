@@ -7,7 +7,6 @@
 
 namespace tesseract_common
 {
-
 class StatusCategory
 {
 public:
@@ -15,18 +14,18 @@ public:
   using ConstPtr = std::shared_ptr<const StatusCategory>;
 
   constexpr StatusCategory() noexcept = default;
-  StatusCategory( const StatusCategory& other ) = delete;
+  StatusCategory(const StatusCategory& other) = delete;
   virtual ~StatusCategory() = default;
 
   virtual const std::string& name() const noexcept = 0;
   virtual std::string message(int code) const = 0;
 
-  bool operator==( const StatusCategory& rhs ) const noexcept
+  bool operator==(const StatusCategory& rhs) const noexcept
   {
     return std::equal_to<const StatusCategory*>()(this, &rhs);
   }
 
-  bool operator!=( const StatusCategory& rhs ) const noexcept
+  bool operator!=(const StatusCategory& rhs) const noexcept
   {
     return std::not_equal_to<const StatusCategory*>()(this, &rhs);
   }
@@ -84,16 +83,13 @@ public:
   StatusCode(int val, StatusCategory::ConstPtr cat) : val_(val), cat_(std::move(cat)) {}
   ~StatusCode() = default;
   int value() const noexcept { return val_; }
-  const StatusCategory::ConstPtr& category() const noexcept  { return cat_; }
+  const StatusCategory::ConstPtr& category() const noexcept { return cat_; }
   std::string message() const { return category()->message(value()); }
 
   /**
    * @brief This return true if status value is greater or equal to zero which is not in an error state
    */
-  explicit operator bool() const noexcept
-  {
-    return (value() >= 0);
-  }
+  explicit operator bool() const noexcept { return (value() >= 0); }
 
   bool operator==(const StatusCode& rhs) noexcept
   {
@@ -110,8 +106,5 @@ private:
   StatusCategory::ConstPtr cat_;
 };
 
-
-
-
-}
-#endif // TESSERACT_COMMON_STATUS_CODE_H
+}  // namespace tesseract_common
+#endif  // TESSERACT_COMMON_STATUS_CODE_H

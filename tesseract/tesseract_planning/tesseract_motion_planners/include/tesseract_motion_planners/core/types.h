@@ -32,7 +32,6 @@
 
 namespace tesseract_motion_planners
 {
-
 struct PlannerRequest
 {
   std::string name;                                      /**< @brief The name of the planner to use */
@@ -45,9 +44,8 @@ struct PlannerRequest
 struct PlannerResponse
 {
   tesseract_common::JointTrajectory joint_trajectory; /**< @brief The joint trajectory */
-  tesseract_common::StatusCode status; /**< @brief The status information */
+  tesseract_common::StatusCode status;                /**< @brief The status information */
 };
-
 
 }  // namespace tesseract_motion_planners
 

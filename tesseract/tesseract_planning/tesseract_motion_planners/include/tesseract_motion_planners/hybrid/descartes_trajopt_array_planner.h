@@ -7,7 +7,6 @@
 
 namespace tesseract_motion_planners
 {
-
 template <typename FloatType>
 class DescartesTrajOptArrayPlanner : public MotionPlanner
 {
@@ -25,7 +24,8 @@ public:
    * @param config The planners configuration
    * @return True if successful otherwise false
    */
-  bool setConfiguration(const DescartesMotionPlannerConfig<FloatType>& descartes_config, const TrajOptArrayPlannerConfig& trajopt_config);
+  bool setConfiguration(const DescartesMotionPlannerConfig<FloatType>& descartes_config,
+                        const TrajOptArrayPlannerConfig& trajopt_config);
 
   /**
    * @brief Sets up the opimizer and solves a SQP problem read from json with no callbacks and dafault parameterss
@@ -47,7 +47,8 @@ public:
 protected:
   TrajOptArrayPlanner trajopt_planner_;
   DescartesMotionPlanner<FloatType> descartes_planner_;
-  std::shared_ptr<const tesseract_common::GeneralStatusCategory> status_category_; /** @brief The plannsers status codes */
+  std::shared_ptr<const tesseract_common::GeneralStatusCategory> status_category_; /** @brief The plannsers status codes
+                                                                                    */
   TrajOptArrayPlannerConfig trajopt_config_;
 };
 
@@ -55,4 +56,4 @@ using DescartesTrajOptArrayPlannerD = DescartesTrajOptArrayPlanner<double>;
 using DescartesTrajOptArrayPlannerF = DescartesTrajOptArrayPlanner<float>;
 
 }  // namespace tesseract_motion_planners
-#endif // TESSERACT_MOTION_PLANNERS_DESCARTES_TRAJOPT_PLANNER_H
+#endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_TRAJOPT_PLANNER_H

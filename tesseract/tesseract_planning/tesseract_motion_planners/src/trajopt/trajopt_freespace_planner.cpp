@@ -42,7 +42,6 @@ using namespace trajopt;
 
 namespace tesseract_motion_planners
 {
-
 TrajOptFreespacePlannerStatusCategory::TrajOptFreespacePlannerStatusCategory(std::string name) : name_(name) {}
 const std::string& TrajOptFreespacePlannerStatusCategory::name() const noexcept { return name_; }
 std::string TrajOptFreespacePlannerStatusCategory::message(int code) const
@@ -59,14 +58,18 @@ std::string TrajOptFreespacePlannerStatusCategory::message(int code) const
     }
     default:
     {
-      assert (false);
+      assert(false);
       return "";
     }
   }
 }
 
 /** @brief Construct a basic planner */
-TrajOptFreespacePlanner::TrajOptFreespacePlanner(std::string name) : MotionPlanner(std::move(name)), pci_(nullptr), config_(nullptr), status_category_(std::make_shared<const TrajOptFreespacePlannerStatusCategory>(name))
+TrajOptFreespacePlanner::TrajOptFreespacePlanner(std::string name)
+  : MotionPlanner(std::move(name))
+  , pci_(nullptr)
+  , config_(nullptr)
+  , status_category_(std::make_shared<const TrajOptFreespacePlannerStatusCategory>(name))
 {
 }
 
@@ -163,14 +166,14 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
       // Add initial joint position constraint
       std::shared_ptr<JointPosTermInfo> jv = std::make_shared<JointPosTermInfo>();
       const Eigen::VectorXd& coeffs = start_position->getCoefficients();
-      assert(std::equal(pci.kin->getJointNames().begin(), pci.kin->getJointNames().end(), start_position->getNames().begin()));
+      assert(std::equal(
+          pci.kin->getJointNames().begin(), pci.kin->getJointNames().end(), start_position->getNames().begin()));
       if (coeffs.size() != pci.kin->numJoints())
         jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);  // Default value
       else
         jv->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
-      jv->targets =
-          std::vector<double>(start_position->getPositions().data(),
-                              start_position->getPositions().data() + start_position->getPositions().size());
+      jv->targets = std::vector<double>(start_position->getPositions().data(),
+                                        start_position->getPositions().data() + start_position->getPositions().size());
       jv->first_step = 0;
       jv->last_step = 0;
       jv->name = "initial_joint_position";
@@ -186,14 +189,14 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
           std::static_pointer_cast<JointTolerancedWaypoint>(config.start_waypoint_);
       std::shared_ptr<JointPosTermInfo> jv = std::make_shared<JointPosTermInfo>();
       const Eigen::VectorXd& coeffs = start_position->getCoefficients();
-      assert(std::equal(pci.kin->getJointNames().begin(), pci.kin->getJointNames().end(), start_position->getNames().begin()));
+      assert(std::equal(
+          pci.kin->getJointNames().begin(), pci.kin->getJointNames().end(), start_position->getNames().begin()));
       if (coeffs.size() != pci.kin->numJoints())
         jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);  // Default value
       else
         jv->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
-      jv->targets =
-          std::vector<double>(start_position->getPositions().data(),
-                              start_position->getPositions().data() + start_position->getPositions().size());
+      jv->targets = std::vector<double>(start_position->getPositions().data(),
+                                        start_position->getPositions().data() + start_position->getPositions().size());
       jv->upper_tols =
           std::vector<double>(start_position->getUpperTolerance().data(),
                               start_position->getUpperTolerance().data() + start_position->getUpperTolerance().size());
@@ -254,7 +257,8 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
       // Add initial joint position constraint
       std::shared_ptr<JointPosTermInfo> jv = std::make_shared<JointPosTermInfo>();
       const Eigen::VectorXd& coeffs = end_position->getCoefficients();
-      assert(std::equal(pci.kin->getJointNames().begin(), pci.kin->getJointNames().end(), end_position->getNames().begin()));
+      assert(std::equal(
+          pci.kin->getJointNames().begin(), pci.kin->getJointNames().end(), end_position->getNames().begin()));
       if (coeffs.size() != pci.kin->numJoints())
         jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);  // Default value
       else
@@ -276,7 +280,8 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
           std::static_pointer_cast<JointTolerancedWaypoint>(config.end_waypoint_);
       std::shared_ptr<JointPosTermInfo> jv = std::make_shared<JointPosTermInfo>();
       const Eigen::VectorXd& coeffs = end_position->getCoefficients();
-      assert(std::equal(pci.kin->getJointNames().begin(), pci.kin->getJointNames().end(), end_position->getNames().begin()));
+      assert(std::equal(
+          pci.kin->getJointNames().begin(), pci.kin->getJointNames().end(), end_position->getNames().begin()));
       if (coeffs.size() != pci.kin->numJoints())
         jv->coeffs = std::vector<double>(pci.kin->numJoints(), 1.0);  // Default value
       else
@@ -382,7 +387,8 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
   if (config.configuration_ != nullptr)
   {
     assert(config.configuration_->getPositions().size() == pci.kin->numJoints());
-    assert(std::equal(pci.kin->getJointNames().begin(), pci.kin->getJointNames().end(), config.configuration_->getNames().begin()));
+    assert(std::equal(
+        pci.kin->getJointNames().begin(), pci.kin->getJointNames().end(), config.configuration_->getNames().begin()));
     JointWaypoint::ConstPtr joint_waypoint = config.configuration_;
     std::shared_ptr<JointPosTermInfo> jp = std::make_shared<JointPosTermInfo>();
     const Eigen::VectorXd& coeffs = joint_waypoint->getCoefficients();
@@ -390,9 +396,8 @@ bool TrajOptFreespacePlanner::setConfiguration(const TrajOptFreespacePlannerConf
       jp->coeffs = std::vector<double>(pci.kin->numJoints(), 0.1);  // Default value
     else
       jp->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
-    jp->targets =
-        std::vector<double>(joint_waypoint->getPositions().data(),
-                            joint_waypoint->getPositions().data() + joint_waypoint->getPositions().size());
+    jp->targets = std::vector<double>(joint_waypoint->getPositions().data(),
+                                      joint_waypoint->getPositions().data() + joint_waypoint->getPositions().size());
     jp->first_step = start_step;
     jp->last_step = end_step;
     jp->name = "configuration_cost";

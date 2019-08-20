@@ -144,8 +144,6 @@ protected:
                          const std::vector<CollisionGeometryPtr>& collision_geometries,
                          const std::vector<CollisionObjectPtr>& collision_objects);
 
-
-
   std::string name_;             // name of the collision object
   int type_id_;                  // user defined type id
   Eigen::Isometry3d world_pose_; /**< @brief Collision Object World Transformation */

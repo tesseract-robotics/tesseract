@@ -84,7 +84,9 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Cone::ConstPtr&
   return (new btConeShapeZ(r, l));
 }
 
-btCollisionShape* createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr& geom, CollisionObjectWrapper* cow, int shape_index)
+btCollisionShape* createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr& geom,
+                                       CollisionObjectWrapper* cow,
+                                       int shape_index)
 {
   int vertice_count = geom->getVerticeCount();
   int triangle_count = geom->getTriangleCount();
@@ -147,7 +149,9 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::ConvexMesh::Con
   return nullptr;
 }
 
-btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPtr& geom, CollisionObjectWrapper* cow, int shape_index)
+btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPtr& geom,
+                                       CollisionObjectWrapper* cow,
+                                       int shape_index)
 {
   const octomap::OcTree& octree = *(geom->getOctree());
   btCompoundShape* subshape = new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(octree.size()));
