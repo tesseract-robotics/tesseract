@@ -1,6 +1,6 @@
 /**
- * @file geometry.h
- * @brief Tesseract Geometries
+ * @file capsule.h
+ * @brief Tesseract Capsule Geometry
  *
  * @author Levi Armstrong
  * @date January 18, 2018
@@ -23,52 +23,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_GEOMETRY_GEOMETRY_H
-#define TESSERACT_GEOMETRY_GEOMETRY_H
+#ifndef TESSERACT_GEOMETRY_CAPSULE_H
+#define TESSERACT_GEOMETRY_CAPSULE_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_geometry/geometry.h>
 
 namespace tesseract_geometry
 {
-enum GeometryType
-{
-  SPHERE,
-  CYLINDER,
-  CAPSULE,
-  CONE,
-  BOX,
-  PLANE,
-  MESH,
-  CONVEX_MESH,
-  SDF_MESH,
-  OCTREE
-};
-
-class Geometry
+class Capsule : public Geometry
 {
 public:
-  using Ptr = std::shared_ptr<Geometry>;
-  using ConstPtr = std::shared_ptr<const Geometry>;
+  using Ptr = std::shared_ptr<Capsule>;
+  using ConstPtr = std::shared_ptr<const Capsule>;
 
-  explicit Geometry(GeometryType type) : type_(type) {}
-  virtual ~Geometry() = default;
+  Capsule(double r, double l) : Geometry(GeometryType::CAPSULE), r_(r), l_(l) {}
+  ~Capsule() override = default;
 
-  /** \brief Create a copy of this shape */
-  virtual Geometry::Ptr clone() const = 0;
+  double getRadius() const { return r_; }
+  double getLength() const { return l_; }
 
-  GeometryType getType() const { return type_; }
+  Geometry::Ptr clone() const override { return Capsule::Ptr(new Capsule(r_, l_)); }
 
 private:
-  /** \brief The type of the shape */
-  GeometryType type_;
+  double r_;
+  double l_;
 };
-
-using Geometrys = std::vector<Geometry::Ptr>;
-using GeometrysConst = std::vector<Geometry::ConstPtr>;
 }  // namespace tesseract_geometry
 
-#endif  // TESSERACT_GEOMETRY_GEOMETRY_H
+#endif // TESSERACT_GEOMETRY_CAPSULE_H
