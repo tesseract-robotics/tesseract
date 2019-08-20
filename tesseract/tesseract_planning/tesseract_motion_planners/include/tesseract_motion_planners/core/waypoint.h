@@ -40,18 +40,12 @@ enum class WaypointType
 {
   JOINT_WAYPOINT,
   JOINT_TOLERANCED_WAYPOINT,
-  CARTESIAN_WAYPOINT // All joint waypoint must come before this type and all cartesian must come after
+  CARTESIAN_WAYPOINT  // All joint waypoint must come before this type and all cartesian must come after
 };
 
-inline bool isCartesianWaypointType(WaypointType type)
-{
-  return (type >= WaypointType::CARTESIAN_WAYPOINT);
-}
+inline bool isCartesianWaypointType(WaypointType type) { return (type >= WaypointType::CARTESIAN_WAYPOINT); }
 
-inline bool isJointWaypointType(WaypointType type)
-{
-  return (type < WaypointType::CARTESIAN_WAYPOINT);
-}
+inline bool isJointWaypointType(WaypointType type) { return (type < WaypointType::CARTESIAN_WAYPOINT); }
 
 /** @brief Defines a generic way of sending waypoints to a Tesseract Planner */
 class Waypoint
@@ -135,8 +129,7 @@ public:
   }
 
   JointWaypoint(std::vector<double> joint_positions, std::vector<std::string> joint_names)
-    : Waypoint(WaypointType::JOINT_WAYPOINT)
-    , joint_names_(std::move(joint_names))
+    : Waypoint(WaypointType::JOINT_WAYPOINT), joint_names_(std::move(joint_names))
   {
     joint_positions_.resize(joint_positions.size());
     for (long i = 0; i < static_cast<long>(joint_positions.size()); ++i)
@@ -159,7 +152,7 @@ public:
   const std::vector<std::string>& getNames() const { return joint_names_; }
 
 protected:
-  Eigen::VectorXd joint_positions_; /**< @brief Joint position in radians */
+  Eigen::VectorXd joint_positions_;      /**< @brief Joint position in radians */
   std::vector<std::string> joint_names_; /**< @brief Joint names */
 };
 /** @brief Defines a cartesian position waypoint for use with Tesseract Planners */
@@ -172,8 +165,7 @@ public:
   using ConstPtr = std::shared_ptr<const CartesianWaypoint>;
 
   CartesianWaypoint(Eigen::Isometry3d cartesian_position)
-    : Waypoint(WaypointType::CARTESIAN_WAYPOINT)
-    , cartesian_position_(std::move(cartesian_position))
+    : Waypoint(WaypointType::CARTESIAN_WAYPOINT), cartesian_position_(std::move(cartesian_position))
   {
     setCoefficients(Eigen::VectorXd::Ones(6));
   }
@@ -203,6 +195,7 @@ public:
     Eigen::Quaterniond q(cartesian_position_.rotation());
     return Eigen::Vector4d(q.w(), q.x(), q.y(), q.z());
   }
+
 protected:
   Eigen::Isometry3d cartesian_position_; /**< @brief Pose of this waypoint */
 };
@@ -226,8 +219,7 @@ public:
   }
 
   JointTolerancedWaypoint(std::vector<double> joint_positions, std::vector<std::string> joint_names)
-    : Waypoint(WaypointType::JOINT_TOLERANCED_WAYPOINT)
-    , joint_names_(std::move(joint_names))
+    : Waypoint(WaypointType::JOINT_TOLERANCED_WAYPOINT), joint_names_(std::move(joint_names))
   {
     joint_positions_.resize(joint_positions.size());
     for (long i = 0; i < static_cast<long>(joint_positions.size()); ++i)
@@ -298,7 +290,7 @@ public:
   const Eigen::VectorXd& getLowerTolerance() const { return lower_tolerance_; }
 
 protected:
-  Eigen::VectorXd joint_positions_; /**< @brief Joint position in radians */
+  Eigen::VectorXd joint_positions_;      /**< @brief Joint position in radians */
   std::vector<std::string> joint_names_; /**< @brief Joint names */
 
   /** @brief Amount over joint_positions_ that is allowed (positive radians). */

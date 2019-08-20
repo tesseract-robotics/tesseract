@@ -86,20 +86,22 @@ std::string DescartesMotionPlannerStatusCategory::message(int code) const
     }
     default:
     {
-      assert (false);
+      assert(false);
       return "";
     }
   }
 }
 
-
-template<typename FloatType>
-DescartesMotionPlanner<FloatType>::DescartesMotionPlanner(std::string name) : MotionPlanner(name), config_(nullptr), status_category_(std::make_shared<const DescartesMotionPlannerStatusCategory>(name))
+template <typename FloatType>
+DescartesMotionPlanner<FloatType>::DescartesMotionPlanner(std::string name)
+  : MotionPlanner(name)
+  , config_(nullptr)
+  , status_category_(std::make_shared<const DescartesMotionPlannerStatusCategory>(name))
 {
 }
 
-template<typename FloatType>
-bool DescartesMotionPlanner<FloatType>::setConfiguration(const DescartesMotionPlannerConfig<FloatType> &config)
+template <typename FloatType>
+bool DescartesMotionPlanner<FloatType>::setConfiguration(const DescartesMotionPlannerConfig<FloatType>& config)
 {
   // Check that parameters are valid
   if (config.tesseract == nullptr)
@@ -144,7 +146,8 @@ bool DescartesMotionPlanner<FloatType>::setConfiguration(const DescartesMotionPl
     return false;
   }
 
-  if ((config.timing_constraint.size() != config.waypoints.size()) || (config.timing_constraint.size() != config.samplers.size()))
+  if ((config.timing_constraint.size() != config.waypoints.size()) ||
+      (config.timing_constraint.size() != config.samplers.size()))
   {
     CONSOLE_BRIDGE_logError("In %s: waypoints, timing_constraint and samplers must be the same size", name_.c_str());
     return false;
@@ -154,7 +157,7 @@ bool DescartesMotionPlanner<FloatType>::setConfiguration(const DescartesMotionPl
   return true;
 }
 
-template<typename FloatType>
+template <typename FloatType>
 tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerResponse& response)
 {
   tesseract_common::StatusCode config_status = isConfigured();
@@ -167,7 +170,8 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
 
   ros::Time tStart = ros::Time::now();
 
-  const auto dof = config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config_->manipulator)->numJoints();
+  const auto dof =
+      config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config_->manipulator)->numJoints();
   descartes_light::Solver<FloatType> graph_builder(dof);
   if (!graph_builder.build(config_->samplers, config_->timing_constraint, config_->edge_evaluator))
   {
@@ -182,7 +186,8 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
       }
     }
 
-    response.status = tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::FailedToBuildGraph, status_category_);
+    response.status =
+        tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::FailedToBuildGraph, status_category_);
     return response.status;
   }
 
@@ -191,11 +196,13 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
   if (!graph_builder.search(solution))
   {
     CONSOLE_BRIDGE_logError("Search for graph completion failed");
-    response.status = tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::FailedToFindValidSolution, status_category_);
+    response.status =
+        tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::FailedToFindValidSolution, status_category_);
     return response.status;
   }
 
-  response.joint_trajectory.joint_names = config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config_->manipulator)->getJointNames();
+  response.joint_trajectory.joint_names =
+      config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config_->manipulator)->getJointNames();
   response.joint_trajectory.trajectory.resize(static_cast<long>(config_->waypoints.size()), dof);
   for (size_t r = 0; r < config_->waypoints.size(); ++r)
     for (size_t c = 0; c < dof; ++c)
@@ -203,20 +210,27 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
 
   // Check and report collisions
   std::vector<tesseract_collision::ContactResultMap> collisions;
-  tesseract_collision::ContinuousContactManager::Ptr manager = config_->tesseract->getEnvironmentConst()->getContinuousContactManager();
-  tesseract_environment::AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(config_->tesseract->getEnvironmentConst()->getSceneGraph(),
-                                                                                        config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config_->manipulator)->getLinkNames(),
-                                                                                        config_->tesseract->getEnvironmentConst()->getCurrentState()->transforms);
+  tesseract_collision::ContinuousContactManager::Ptr manager =
+      config_->tesseract->getEnvironmentConst()->getContinuousContactManager();
+  tesseract_environment::AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
+      config_->tesseract->getEnvironmentConst()->getSceneGraph(),
+      config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config_->manipulator)->getLinkNames(),
+      config_->tesseract->getEnvironmentConst()->getCurrentState()->transforms);
   manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   manager->setContactDistanceThreshold(0);
   collisions.clear();
-  bool found = tesseract_environment::checkTrajectory(*manager, *config_->tesseract->getEnvironmentConst(), response.joint_trajectory.joint_names, response.joint_trajectory.trajectory, collisions);
+  bool found = tesseract_environment::checkTrajectory(*manager,
+                                                      *config_->tesseract->getEnvironmentConst(),
+                                                      response.joint_trajectory.joint_names,
+                                                      response.joint_trajectory.trajectory,
+                                                      collisions);
 
   CONSOLE_BRIDGE_logInform("Descartes planning time: %.3f", (ros::Time::now() - tStart).toSec());
 
   if (found)
   {
-    response.status = tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::FoundValidSolutionInCollision, status_category_);
+    response.status = tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::FoundValidSolutionInCollision,
+                                                   status_category_);
     return response.status;
   }
 
@@ -225,21 +239,21 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
   return response.status;
 }
 
-template<typename FloatType>
+template <typename FloatType>
 bool DescartesMotionPlanner<FloatType>::terminate()
 {
   CONSOLE_BRIDGE_logWarn("Termination of ongoing optimization is not implemented yet");
   return false;
 }
 
-template<typename FloatType>
+template <typename FloatType>
 void DescartesMotionPlanner<FloatType>::clear()
 {
   request_ = PlannerRequest();
   config_ = nullptr;
 }
 
-template<typename FloatType>
+template <typename FloatType>
 tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::isConfigured() const
 {
   if (config_ != nullptr)
@@ -248,5 +262,5 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::isConfigured() c
     return tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::IsNotConfigured, status_category_);
 }
 
-}
-#endif // TESSERACT_MOTION_PLANNERS_DECARTES_MOTION_PLANNER_HPP
+}  // namespace tesseract_motion_planners
+#endif  // TESSERACT_MOTION_PLANNERS_DECARTES_MOTION_PLANNER_HPP

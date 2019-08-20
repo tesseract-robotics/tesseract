@@ -43,7 +43,6 @@ using namespace trajopt;
 
 namespace tesseract_motion_planners
 {
-
 TrajOptMotionPlannerStatusCategory::TrajOptMotionPlannerStatusCategory(std::string name) : name_(name) {}
 const std::string& TrajOptMotionPlannerStatusCategory::name() const noexcept { return name_; }
 std::string TrajOptMotionPlannerStatusCategory::message(int code) const
@@ -76,14 +75,16 @@ std::string TrajOptMotionPlannerStatusCategory::message(int code) const
     }
     default:
     {
-      assert (false);
+      assert(false);
       return "";
     }
   }
 }
 
-
-TrajOptMotionPlanner::TrajOptMotionPlanner(std::string name) : MotionPlanner(std::move(name)), config_(nullptr), status_category_(std::make_shared<const TrajOptMotionPlannerStatusCategory>(name))
+TrajOptMotionPlanner::TrajOptMotionPlanner(std::string name)
+  : MotionPlanner(std::move(name))
+  , config_(nullptr)
+  , status_category_(std::make_shared<const TrajOptMotionPlannerStatusCategory>(name))
 {
 }
 
@@ -162,11 +163,13 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
   if (opt.results().status == sco::OptStatus::OPT_PENALTY_ITERATION_LIMIT ||
       opt.results().status == sco::OptStatus::OPT_FAILED || opt.results().status == sco::OptStatus::INVALID)
   {
-    response.status = tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::FailedToFindValidSolution, status_category_);
+    response.status =
+        tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::FailedToFindValidSolution, status_category_);
   }
   else if (found)
   {
-    response.status = tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::FoundValidSolutionInCollision, status_category_);
+    response.status = tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::FoundValidSolutionInCollision,
+                                                   status_category_);
   }
   else
   {

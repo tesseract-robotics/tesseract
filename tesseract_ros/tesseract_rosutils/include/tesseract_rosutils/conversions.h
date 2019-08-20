@@ -113,7 +113,8 @@ toWaypoint(const std::vector<geometry_msgs::PoseArray>& pose_arrays,
  * @param pose The joint positions
  * @return WaypointPtr
  */
-inline tesseract_motion_planners::Waypoint::Ptr toWaypoint(const std::vector<double>& pose, const std::vector<std::string>& names)
+inline tesseract_motion_planners::Waypoint::Ptr toWaypoint(const std::vector<double>& pose,
+                                                           const std::vector<std::string>& names)
 {
   return std::make_shared<tesseract_motion_planners::JointWaypoint>(toEigen(pose), names);
 }
@@ -149,7 +150,8 @@ inline tesseract_msgs::ProcessPlanPath toProcessPlanPath(const tesseract_common:
  * @param joint_names Joint names corresponding to the tesseract trajectory
  * @return Process Segment Message
  */
-inline tesseract_msgs::ProcessPlanSegment toProcessPlanSegement(const tesseract_process_planners::ProcessSegmentPlan& process_plan_segment)
+inline tesseract_msgs::ProcessPlanSegment
+toProcessPlanSegement(const tesseract_process_planners::ProcessSegmentPlan& process_plan_segment)
 {
   tesseract_msgs::ProcessPlanSegment process_segment;
   process_segment.approach = toProcessPlanPath(process_plan_segment.approach);
@@ -164,7 +166,8 @@ inline tesseract_msgs::ProcessPlanSegment toProcessPlanSegement(const tesseract_
  * @param process_plan_segment Process plan segment
  * @return
  */
-bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory, const tesseract_msgs::ProcessPlanSegment& process_plan_segment)
+bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
+                       const tesseract_msgs::ProcessPlanSegment& process_plan_segment)
 {
   double t = 0;
   if (!joint_trajectory.points.empty())
@@ -200,7 +203,8 @@ bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory, const
  * @param process_plan Process Plan
  * @return True if successful, otherwise false
  */
-bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory, const tesseract_msgs::ProcessPlan& process_plan)
+bool toJointTrajectory(trajectory_msgs::JointTrajectory& joint_trajectory,
+                       const tesseract_msgs::ProcessPlan& process_plan)
 {
   double t = 0;
   if (!joint_trajectory.points.empty())
@@ -270,5 +274,5 @@ bool toCSVFile(const trajectory_msgs::JointTrajectory& joint_trajectory, const s
   myfile.close();
   return true;
 }
-}  // namespace tesseact_rosutils
+}  // namespace tesseract_rosutils
 #endif  // TESSERACT_ROSUTILS_CONVERSIONS_H

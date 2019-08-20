@@ -81,14 +81,14 @@ inline std::vector<Waypoint::Ptr> interpolate(const Waypoint& start, const Waypo
     {
       const CartesianWaypoint& w1 = static_cast<const CartesianWaypoint&>(start);
       const CartesianWaypoint& w2 = static_cast<const CartesianWaypoint&>(stop);
-      tesseract_common::VectorIsometry3d eigen_poses =
-          interpolate(w1.getTransform(), w2.getTransform(), steps);
+      tesseract_common::VectorIsometry3d eigen_poses = interpolate(w1.getTransform(), w2.getTransform(), steps);
 
       std::vector<Waypoint::Ptr> result;
       result.reserve(eigen_poses.size());
       for (auto& eigen_pose : eigen_poses)
       {
-        CartesianWaypoint::Ptr new_waypoint = std::make_shared<tesseract_motion_planners::CartesianWaypoint>(eigen_pose);
+        CartesianWaypoint::Ptr new_waypoint =
+            std::make_shared<tesseract_motion_planners::CartesianWaypoint>(eigen_pose);
         new_waypoint->setCoefficients(start.getCoefficients());
         new_waypoint->setIsCritical(start.isCritical());
         result.push_back(new_waypoint);

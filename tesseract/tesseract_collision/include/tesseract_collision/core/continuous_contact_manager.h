@@ -90,7 +90,8 @@ public:
    * @param name  The collision objects name
    * @return A vector of collision geometries transforms. The vector will be empty if the collision object is not found.
    */
-  virtual const tesseract_common::VectorIsometry3d& getCollisionObjectGeometriesTransforms(const std::string& name) const = 0;
+  virtual const tesseract_common::VectorIsometry3d&
+  getCollisionObjectGeometriesTransforms(const std::string& name) const = 0;
 
   /**
    * @brief Find if a collision object already exists

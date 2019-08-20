@@ -31,7 +31,9 @@ public:
       Eigen::Isometry3d scaled = approach_;
       scaled.translation() = (i * 1.0 / step_count_) * approach_.translation();
 
-      tesseract_motion_planners::CartesianWaypoint::Ptr new_waypoint = std::make_shared<tesseract_motion_planners::CartesianWaypoint>(config.world_offset_direction * cur_waypoint->getTransform() * config.local_offset_direction * scaled);
+      tesseract_motion_planners::CartesianWaypoint::Ptr new_waypoint =
+          std::make_shared<tesseract_motion_planners::CartesianWaypoint>(
+              config.world_offset_direction * cur_waypoint->getTransform() * config.local_offset_direction * scaled);
       new_waypoint->setCoefficients(cur_waypoint->getCoefficients());
       new_waypoint->setIsCritical(cur_waypoint->isCritical());
       approach.push_back(new_waypoint);

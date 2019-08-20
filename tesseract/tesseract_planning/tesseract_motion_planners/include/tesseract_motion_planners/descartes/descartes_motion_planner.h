@@ -47,12 +47,12 @@ struct DescartesMotionPlannerConfig
 {
   DescartesMotionPlannerConfig(tesseract::Tesseract::ConstPtr tesseract_ptr,
                                const std::string& manipulator,
-                         const typename descartes_light::CollisionInterface<FloatType>::Ptr& contact_checker,
-                         const typename descartes_light::KinematicsInterface<FloatType>::Ptr& kinematics,
-                         const typename descartes_light::EdgeEvaluator<FloatType>::Ptr& edge_evaluator,
-                         std::vector<descartes_core::TimingConstraint<FloatType>> timing_constraint,
-                         std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr> samplers,
-                         const std::vector<Waypoint::Ptr>& waypoints)
+                               const typename descartes_light::CollisionInterface<FloatType>::Ptr& contact_checker,
+                               const typename descartes_light::KinematicsInterface<FloatType>::Ptr& kinematics,
+                               const typename descartes_light::EdgeEvaluator<FloatType>::Ptr& edge_evaluator,
+                               std::vector<descartes_core::TimingConstraint<FloatType>> timing_constraint,
+                               std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr> samplers,
+                               const std::vector<Waypoint::Ptr>& waypoints)
     : tesseract(tesseract_ptr)
     , manipulator(manipulator)
     , contact_checker(contact_checker)
@@ -76,13 +76,12 @@ struct DescartesMotionPlannerConfig
   const std::vector<Waypoint::Ptr> waypoints;
   Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
   Eigen::Isometry3d world_to_base = Eigen::Isometry3d::Identity();
-
 };
 
 using DescartesMotionPlannerConfigD = DescartesMotionPlannerConfig<double>;
 using DescartesMotionPlannerConfigF = DescartesMotionPlannerConfig<float>;
 
-template<typename FloatType>
+template <typename FloatType>
 class DescartesMotionPlanner : public MotionPlanner
 {
 public:
@@ -148,6 +147,5 @@ private:
   std::string name_;
 };
 
-
-}  // namespace tesseract_planning
-#endif // TESSERACT_MOTION_PLANNERS_DECARTES_MOTION_PLANNER_H
+}  // namespace tesseract_motion_planners
+#endif  // TESSERACT_MOTION_PLANNERS_DECARTES_MOTION_PLANNER_H
