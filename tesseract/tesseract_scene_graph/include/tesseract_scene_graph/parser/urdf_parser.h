@@ -205,7 +205,7 @@ inline std::vector<tesseract_geometry::Geometry::Ptr> convert(const urdf::Geomet
             locator(ug.filename), Eigen::Vector3d(ug.scale.x, ug.scale.y, ug.scale.z), true, true);
       else
         meshes = createMeshFromPath<tesseract_geometry::Mesh>(
-            locator(ug.filename), Eigen::Vector3d(ug.scale.x, ug.scale.y, ug.scale.z), true, true);
+            locator(ug.filename), Eigen::Vector3d(ug.scale.x, ug.scale.y, ug.scale.z), true, false);
 
       assert(!meshes.empty());
       g.insert(g.end(), meshes.begin(), meshes.end());
