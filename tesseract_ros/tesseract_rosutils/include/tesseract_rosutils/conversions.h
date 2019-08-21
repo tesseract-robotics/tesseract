@@ -45,7 +45,7 @@ inline Eigen::VectorXd toEigen(const std::vector<double>& vector)
 inline Eigen::VectorXd toEigen(const sensor_msgs::JointState& joint_state, const std::vector<std::string>& joint_names)
 {
   Eigen::VectorXd position;
-  position.resize(static_cast<long>(joint_state.position.size()));
+  position.resize(static_cast<long>(joint_names.size()));
   int i = 0;
   for (const auto& joint_name : joint_names)
   {
