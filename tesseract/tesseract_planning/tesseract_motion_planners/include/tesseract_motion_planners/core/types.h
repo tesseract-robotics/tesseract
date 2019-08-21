@@ -29,6 +29,7 @@
 #include <tesseract/tesseract.h>
 #include <tesseract_common/status_code.h>
 #include <tesseract_common/types.h>
+#include <tesseract_motion_planners/core/waypoint.h>
 
 namespace tesseract_motion_planners
 {
@@ -45,6 +46,8 @@ struct PlannerResponse
 {
   tesseract_common::JointTrajectory joint_trajectory; /**< @brief The joint trajectory */
   tesseract_common::StatusCode status;                /**< @brief The status information */
+  std::vector<Waypoint::Ptr> succeeded_waypoints;     /**< @brief Waypoints for which the planner succeeded */
+  std::vector<Waypoint::Ptr> failed_waypoints;        /**< @brief Waypoints for which the planner failed */
 };
 
 }  // namespace tesseract_motion_planners

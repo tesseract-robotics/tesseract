@@ -184,12 +184,24 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
         CartesianWaypoint::ConstPtr cwp = std::static_pointer_cast<const CartesianWaypoint>(wp);
         config_->kinematics->analyzeIK(cwp->getTransform().cast<FloatType>());
       }
+      response.failed_waypoints.push_back(wp);
     }
+    // Copy the waypoint if it is not already in the failed waypoints list
+    std::copy_if(config_->waypoints.begin(),
+                 config_->waypoints.end(),
+                 std::back_inserter(response.succeeded_waypoints),
+                 [&response](const Waypoint::ConstPtr wp) {
+                   return std::find(response.failed_waypoints.begin(), response.failed_waypoints.end(), wp) ==
+                          response.failed_waypoints.end();
+                 });
 
     response.status =
         tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::FailedToBuildGraph, status_category_);
     return response.status;
   }
+  // No failed waypoints
+  response.succeeded_waypoints = config_->waypoints;
+  response.failed_waypoints.clear();
 
   // Search for edges
   std::vector<FloatType> solution;
