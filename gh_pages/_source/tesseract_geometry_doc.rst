@@ -35,37 +35,43 @@ Example Explanation
 
    .. literalinclude:: ../../tesseract/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
-      :lines: 11
+      :start-after: // Primitive Shapes
+      :end-before: auto cone = std::make_shared<tesseract_geometry::Cone>(1, 1);
 
 #. Create a cone.
 
    .. literalinclude:: ../../tesseract/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
-      :lines: 12
+      :start-after: auto box = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
+      :end-before: auto cylinder = std::make_shared<tesseract_geometry::Cylinder>(1, 1);
 
 #. Create a cylinder.
 
    .. literalinclude:: ../../tesseract/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
-      :lines: 13
+      :start-after: auto cone = std::make_shared<tesseract_geometry::Cone>(1, 1);
+      :end-before: auto plane = std::make_shared<tesseract_geometry::Plane>(1, 1, 1, 1);
 
 #. Create a plane.
 
    .. literalinclude:: ../../tesseract/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
-      :lines: 14
+      :start-after: auto cylinder = std::make_shared<tesseract_geometry::Cylinder>(1, 1);
+      :end-before: auto sphere = std::make_shared<tesseract_geometry::Sphere>(1);
 
 #. Create a sphere.
 
    .. literalinclude:: ../../tesseract/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
-      :lines: 15
+      :start-after: auto plane = std::make_shared<tesseract_geometry::Plane>(1, 1, 1, 1);
+      :end-before: // Manually create mesh
 
 #. Create a mesh.
 
    .. literalinclude:: ../../tesseract/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
-      :lines: 16-21
+      :start-after: // Manually create mesh
+      :end-before: // Manually create signed distance field mesh
 
    .. Note::
 
@@ -79,7 +85,8 @@ Example Explanation
 
    .. literalinclude:: ../../tesseract/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
-      :lines: 24-27
+      :start-after: // Manually create signed distance field mesh
+      :end-before: // Manually create convex mesh
 
    .. Note::
 
@@ -93,17 +100,19 @@ Example Explanation
 
    .. literalinclude:: ../../tesseract/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
-      :lines: 30-33
+      :start-after: // Manually create convex mesh
+      :end-before: // Create an octree
 
    .. Note::
 
       This shows how to create a convex mesh provided vertices and faces. You may also use utilities in tesseract_scene_graph mesh parser to load meshes from file.
 
-#. Create a octree.
+#. Create an octree.
 
    .. literalinclude:: ../../tesseract/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
-      :lines: 35-37
+      :start-after: // Create an octree
+      :end-before: }
 
    .. Note::
 

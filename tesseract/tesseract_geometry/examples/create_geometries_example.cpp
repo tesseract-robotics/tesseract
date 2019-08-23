@@ -20,7 +20,7 @@ int main(int /*argc*/, char** /*argv*/)
   // Next fill out vertices and triangles
   auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
 
-  // Manually create mesh
+  // Manually create signed distance field mesh
   std::shared_ptr<const tesseract_common::VectorVector3d> sdf_vertices =
       std::make_shared<const tesseract_common::VectorVector3d>();
   std::shared_ptr<const Eigen::VectorXi> sdf_faces = std::make_shared<const Eigen::VectorXi>();
@@ -34,7 +34,7 @@ int main(int /*argc*/, char** /*argv*/)
   // Next fill out vertices and triangles
   auto convex_mesh = std::make_shared<tesseract_geometry::ConvexMesh>(convex_vertices, convex_faces);
 
+  // Create an octree
   std::shared_ptr<const octomap::OcTree> octree;
-  // Next populate octree
   auto octree_t = std::make_shared<tesseract_geometry::Octree>(octree, tesseract_geometry::Octree::SubType::BOX);
 }

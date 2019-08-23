@@ -36,7 +36,8 @@ Create Contact Checker
 
 .. literalinclude:: ../../tesseract/tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :lines: 22
+   :start-after: // Create Collision Manager
+   :end-before: // Add box to checker
 
 There are several available contact checkers.
 
@@ -68,42 +69,48 @@ Add collision object in a enabled state
 
 .. literalinclude:: ../../tesseract/tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :lines: 25-34
+   :start-after: // Add box to checker
+   :end-before: // Add thin box to checker which is disabled
 
 Add collision object in a disabled state
 """"""""""""""""""""""""""""""""""""""""
 
 .. literalinclude:: ../../tesseract/tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :lines: 37-46
+   :start-after: // Add thin box to checker which is disabled
+   :end-before: // Add second box to checker, but convert to convex hull mesh.
 
 Add another collision object
 """"""""""""""""""""""""""""
 
 .. literalinclude:: ../../tesseract/tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :lines: 49-69
+   :start-after: // This is required because convex hull cannot have multiple faces on the same plane.
+   :end-before: CONSOLE_BRIDGE_logInform("Test when object is inside another");
 
 Set the active collision object's
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. literalinclude:: ../../tesseract/tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :lines: 72
+   :start-after: CONSOLE_BRIDGE_logInform("Test when object is inside another");
+   :end-before: checker.setContactDistanceThreshold(0.1);
 
 Set the contact distance threshold
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. literalinclude:: ../../tesseract/tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :lines: 73
+   :start-after: checker.setActiveCollisionObjects({ "box_link", "second_box_link" });
+   :end-before: // Set the collision object transforms
 
 Set the collision object's transform
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. literalinclude:: ../../tesseract/tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :lines: 76-82
+   :start-after: // Set the collision object transforms
+   :end-before: // Perform collision check
 
 Perform collision check
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -114,14 +121,21 @@ Perform collision check
 
 .. literalinclude:: ../../tesseract/tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :lines: 85-89
+   :start-after: // Perform collision check
+   :end-before: CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());
 
 Set the collision object's transform
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. literalinclude:: ../../tesseract/tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :lines: 98,102
+   :start-after: CONSOLE_BRIDGE_logInform("Test object is out side the contact distance");
+   :end-before: result.clear();
+
+.. literalinclude:: ../../tesseract/tesseract_collision/examples/box_box_example.cpp
+   :language: c++
+   :start-after: result_vector.clear();
+   :end-before: // Check for collision
 
 Perform collision check
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -132,14 +146,17 @@ Perform collision check
 
 .. literalinclude:: ../../tesseract/tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :lines: 103
+   :start-after: // Check for collision after moving object
+   :end-before: CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());
 
 Change contact distance threshold
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. literalinclude:: ../../tesseract/tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :lines: 112
+   :start-after: // Set higher contact distance threshold
+   :end-before: // Check for contact with new threshold
+
 
 Perform collision check
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -150,4 +167,5 @@ Perform collision check
 
 .. literalinclude:: ../../tesseract/tesseract_collision/examples/box_box_example.cpp
    :language: c++
-   :lines: 113
+   :start-after: // Check for contact with new threshold
+   :end-before: CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());
