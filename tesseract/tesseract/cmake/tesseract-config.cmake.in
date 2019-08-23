@@ -16,5 +16,7 @@ find_dependency(tesseract_collision)
 find_dependency(tesseract_environment)
 find_dependency(tesseract_kinematics)
 find_dependency(tesseract_common)
+find_dependency(tesseract_urdf)
+find_dependency(console_bridge)
 
 include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-targets.cmake")

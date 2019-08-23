@@ -8,8 +8,15 @@ find_package(octomap REQUIRED)
 
 list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
 
+find_package(ASSIMP QUIET)
+if (NOT ASSIMP_FOUND)
+  find_package(PkgConfig REQUIRED)
+  # assimp is required, so REQUIRE the second attempt
+  pkg_check_modules(ASSIMP REQUIRED assimp)
+endif()
+
 add_library(${PROJECT_NAME} INTERFACE)
-target_link_libraries(${PROJECT_NAME} INTERFACE console_bridge ${OCTOMAP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} INTERFACE console_bridge ${OCTOMAP_LIBRARIES} ${ASSIMP_LIBRARIES})
 target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME} INTERFACE -std=c++11)

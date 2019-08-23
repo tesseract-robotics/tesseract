@@ -171,16 +171,18 @@ inline int createConvexHull(tesseract_common::VectorVector3d& vertices,
   vertices.clear();
 
   btConvexHullComputer conv;
-  btAlignedObjectArray<btVector3> points;
-  points.reserve(static_cast<int>(input.size()));
+  std::vector<double> points;
+  points.reserve(static_cast<int>(input.size() * 3));
   for (const auto& v : input)
   {
-    points.push_back(btVector3(static_cast<btScalar>(v[0]), static_cast<btScalar>(v[1]), static_cast<btScalar>(v[2])));
+    points.push_back(v[0]);
+    points.push_back(v[1]);
+    points.push_back(v[2]);
   }
 
-  btScalar val = conv.compute(&points[0].getX(),
-                              sizeof(btVector3),
-                              points.size(),
+  btScalar val = conv.compute(points.data(),
+                              3 * sizeof(double),
+                              input.size(),
                               static_cast<btScalar>(shrink),
                               static_cast<btScalar>(shrinkClamp));
   if (val < 0)

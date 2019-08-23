@@ -2,7 +2,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <algorithm>
-#include <tesseract_scene_graph/parser/urdf_parser.h>
+#include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -46,7 +46,7 @@ SceneGraph::Ptr getSceneGraph()
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
   tesseract_scene_graph::ResourceLocatorFn locator = locateResource;
-  return tesseract_scene_graph::parseURDFFile(path, locator);
+  return tesseract_urdf::parseURDFFile(path, locator);
 }
 
 void runContactManagerCloneTest(const tesseract_environment::Environment::Ptr& env)

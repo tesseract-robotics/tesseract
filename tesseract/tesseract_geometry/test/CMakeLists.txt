@@ -2,7 +2,7 @@ find_package(GTest REQUIRED)
 find_package(tesseract_support REQUIRED)
 
 add_executable(${PROJECT_NAME}_unit tesseract_geometry_unit.cpp)
-target_link_libraries(${PROJECT_NAME}_unit ${GTEST_BOTH_LIBRARIES} tesseract_geometry)
+target_link_libraries(${PROJECT_NAME}_unit ${GTEST_BOTH_LIBRARIES} tesseract_geometry tesseract::tesseract_support)
 target_compile_options(${PROJECT_NAME}_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_unit PUBLIC -std=c++11)

@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <trajopt/problem_description.hpp>
 #include <trajopt_utils/config.hpp>
 #include <trajopt_utils/logging.hpp>
-#include <tesseract_scene_graph/parser/mesh_parser.h>
+#include <tesseract_geometry/mesh_parser.h>
 #include <memory>
 
 using namespace trajopt;
@@ -70,16 +70,12 @@ void CarSeatExample::addSeats()
 
     Visual::Ptr visual = std::make_shared<Visual>();
     visual->origin = Eigen::Isometry3d::Identity();
-    visual->geometry = createMeshFromPath<tesseract_geometry::Mesh>(locator_("package://tesseract_ros_examples/meshes/"
-                                                                             "car_seat/visual/seat.dae"),
-                                                                    Eigen::Vector3d(1, 1, 1),
-                                                                    true)[0];
+    visual->geometry = tesseract_geometry::createMeshFromPath<tesseract_geometry::Mesh>(locator_("package://tesseract_ros_examples/meshes/car_seat/visual/seat.dae"), Eigen::Vector3d(1, 1, 1), true)[0];
     link_seat.visual.push_back(visual);
 
     for (int m = 1; m <= 10; ++m)
     {
-      std::vector<tesseract_geometry::Mesh::Ptr> meshes = createMeshFromPath<tesseract_geometry::Mesh>(
-          locator_("package://tesseract_ros_examples/meshes/car_seat/collision/seat_" + std::to_string(m) + ".stl"));
+      std::vector<tesseract_geometry::Mesh::Ptr> meshes = tesseract_geometry::createMeshFromPath<tesseract_geometry::Mesh>(locator_("package://tesseract_ros_examples/meshes/car_seat/collision/seat_" + std::to_string(m) + ".stl"));
       for (auto& mesh : meshes)
       {
         Collision::Ptr collision = std::make_shared<Collision>();

@@ -11,6 +11,7 @@
   <depend>libconsole-bridge-dev</depend>
   <depend>tesseract_common</depend>
   <depend>octomap</depend>
+  <depend>assimp-dev</depend>
 
   <test_depend>gtest</test_depend>
   <test_depend>tesseract_support</test_depend>

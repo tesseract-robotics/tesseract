@@ -10,4 +10,11 @@ find_dependency(console_bridge)
 find_dependency(tesseract_common)
 find_dependency(octomap)
 
+find_package(ASSIMP QUIET)
+if (NOT ASSIMP_FOUND)
+  find_package(PkgConfig REQUIRED)
+  # assimp is required, so REQUIRE the second attempt
+  pkg_check_modules(ASSIMP REQUIRED assimp)
+endif()
+
 include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-targets.cmake")

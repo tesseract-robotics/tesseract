@@ -8,12 +8,13 @@ find_package(tesseract_collision REQUIRED)
 find_package(tesseract_environment REQUIRED)
 find_package(tesseract_kinematics REQUIRED)
 find_package(tesseract_common REQUIRED)
+find_package(tesseract_urdf REQUIRED)
 
 list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
 
 # Create target
 add_library(${PROJECT_NAME} SHARED src/tesseract.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_scene_graph tesseract::tesseract_collision_bullet tesseract::tesseract_environment_kdl tesseract::tesseract_kinematics_kdl console_bridge)
+target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_urdf tesseract::tesseract_scene_graph tesseract::tesseract_collision_bullet tesseract::tesseract_environment_kdl tesseract::tesseract_kinematics_kdl console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME} PUBLIC -std=c++11)
