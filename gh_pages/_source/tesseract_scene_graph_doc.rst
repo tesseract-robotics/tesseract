@@ -52,6 +52,7 @@ Examples
 #. :ref:`Parse Mesh <ex4>`
 
 .. _ex1:
+
 Building A Scene Graph
 ======================
 
@@ -66,7 +67,8 @@ Create Scene Graph
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
-   :lines: 23
+   :start-after: // Create scene graph
+   :end-before: // Create links
 
 Add Links
 ^^^^^^^^^
@@ -75,13 +77,15 @@ Create the links. The links are able to be configured see Link documentation.
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
   :language: c++
-  :lines: 25-29
+  :start-after: // Create links
+  :end-before: // Add links
 
 Add the links to the scene graph
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
-   :lines: 31-35
+   :start-after: // Add links
+   :end-before: // Create joints
 
 Add Joints
 ^^^^^^^^^^
@@ -90,13 +94,15 @@ Create the joints. The links are able to be configured see Joint documentation.
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
-   :lines: 37-59
+   :start-after: // Create joints
+   :end-before: // Add joints
 
 Add the joints to the scene graph_acyclic_tree_example
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
-   :lines: 61-64
+   :start-after: // Add joints
+   :end-before: // Check getAdjacentLinkNames Method
 
 Inspect Scene Graph
 ^^^^^^^^^^^^^^^^^^^
@@ -105,43 +111,50 @@ Get the adjacent links for **link_3** and print to terminal
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
-   :lines: 67-69
+   :start-after: // Check getAdjacentLinkNames Method
+   :end-before: // Check getInvAdjacentLinkNames Method
 
 Get the inverse adjacent links for **link_3** and print to terminal
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
-   :lines: 72-74
+   :start-after: // Check getInvAdjacentLinkNames Method
+   :end-before: // Check getLinkChildrenNames
 
 Get child link names for link **link_3** and print to terminal
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
-   :lines: 77-79
+   :start-after: // Check getLinkChildrenNames
+   :end-before: // Check getJointChildrenNames
 
 Get child link names for joint **joint_1** and print to terminal
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
-   :lines: 82-84
+   :start-after: // Check getJointChildrenNames
+   :end-before: // Save Graph
 
 Save the graph to a file for visualization
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
-   :lines: 87
+   :start-after: // Save Graph
+   :end-before: // Test if the graph is Acyclic
 
 Test if the graph is Acyclic and print to terminal
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
-   :lines: 90-91
+   :start-after: // Test if the graph is Acyclic
+   :end-before: // Test if the graph is Tree
 
 Test if the graph is a tree and print to terminal
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
-   :lines: 94-95
+   :start-after: // Test if the graph is Tree
+   :end-before: // Test for unused links
 
 Detect Unused Links
 ^^^^^^^^^^^^^^^^^^^
@@ -150,13 +163,15 @@ First add a link but do not create joint and check if it is a tree. It should re
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
-   :lines: 98-101
+   :start-after: // Test for unused links
+   :end-before: // Remove unused link
 
 Remove link and check if it is a tree. It should return true.
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
-   :lines: 103-105
+   :start-after: // Remove unused link
+   :end-before: // Add new joint
 
 Create Acyclic Graph
 ^^^^^^^^^^^^^^^^^^^^
@@ -167,34 +182,40 @@ Add joint connecting **link_5** and **link_4** to create an Acyclic graph_acycli
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
-   :lines: 107-112
+   :start-after: // Add new joint
+   :end-before: // Save new graph
 
 Save the Acyclic graph
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
-   :lines: 115
+   :start-after: // Save new graph
+   :end-before: // Test again if the graph is Acyclic
 
 Test to confirm it is acyclic, should return true.
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
-   :lines: 118-119
+   :start-after: // Test again if the graph is Acyclic
+   :end-before: // Test again if the graph is Tree
 
 Test if it is a tree, should return false.
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
-   :lines: 122-123
+   :start-after: // Test again if the graph is Tree
+   :end-before: // Get Shortest Path
 
 Get Shortest Path
 ^^^^^^^^^^^^^^^^^
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
    :language: c++
-   :lines: 126-127
+   :start-after: // Get Shortest Path
+   :end-before: }
 
 .. _ex2:
+
 Create Scene Graph from URDF
 ============================
 
@@ -208,38 +229,44 @@ Create Resource Locator
 
 Because this is ROS agnostic you need to provide a resource locator for interpreting **package:/**.
 
-.. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
+.. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/load_urdf_example.cpp
    :language: c++
-   :lines: 20-42
+   :start-after: // Define a resource locator function
+   :end-before: int main(int /*argc*/, char** /*argv*/)
 
 Load URDF
 ^^^^^^^^^
 
 Get the file path to the urdf file
 
-.. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
+.. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/load_urdf_example.cpp
    :language: c++
-   :lines: 49
+   :start-after: // Get the urdf file path
+   :end-before: // Create scene graph
 
 Create scene graph from urdf
 
-.. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
+.. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/load_urdf_example.cpp
    :language: c++
-   :lines: 51-52
+   :start-after: // Create scene graph
+   :end-before: // Print information
 
 Print information about the scene graph to the terminal
 
-.. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
+.. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/load_urdf_example.cpp
    :language: c++
-   :lines: 54-57
+   :start-after: // Print information
+   :end-before: // Save graph
 
 Save the graph to a file.
 
-.. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/build_scene_graph_example.cpp
+.. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/load_urdf_example.cpp
    :language: c++
-   :lines: 60
+   :start-after: // Save graph
+   :end-before: }
 
 .. _ex3:
+
 Parse SRDF adding Allowed Collision Matrix to Graph
 ===================================================
 
@@ -255,7 +282,8 @@ Because this is ROS agnostic you need to provide a resource locator for interpre
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/parse_srdf_example.cpp
    :language: c++
-   :lines: 22-47
+   :start-after: // Define a resource locator function
+   :end-before: int main(int /*argc*/, char** /*argv*/)
 
 Load URDF and SRDF
 ^^^^^^^^^^^^^^^^^^
@@ -264,33 +292,39 @@ Get the file path to the URDF and SRDF file
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/parse_srdf_example.cpp
    :language: c++
-   :lines: 51-52
+   :start-after: // Get the urdf and srdf file paths
+   :end-before: // Create scene graph
 
 Create Scene Graph from URDF
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/parse_srdf_example.cpp
    :language: c++
-   :lines: 54-55
+   :start-after: // Create scene graph
+   :end-before: // Parse the srdf
 
 Parse SRDF
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/parse_srdf_example.cpp
    :language: c++
-   :lines: 57-59
+   :start-after: // Parse the srdf
+   :end-before: // Add allowed collision matrix to scene graph
 
 Add Allowed Collision Matrix to Scene Graph
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/parse_srdf_example.cpp
    :language: c++
-   :lines: 61
+   :start-after: // Add allowed collision matrix to scene graph
+   :end-before: // Get info about allowed collision matrix
 
 Methods for getting Allowed Collision Matrix from Scene Graph
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/parse_srdf_example.cpp
    :language: c++
-   :lines: 63-64
+   :start-after: // Get info about allowed collision matrix
+   :end-before: const AllowedCollisionMatrix::AllowedCollisionEntries& acm_entries = acm->getAllAllowedCollisions();
 
 .. _ex4:
+
 Parse Mesh from file
 ====================
 
@@ -306,11 +340,13 @@ Mesh files can contain multiple meshes. This is a critical difference between Mo
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/parse_mesh_example.cpp
    :language: c++
-   :lines: 10-11
+   :start-after: // Create meshes
+   :end-before: // Print mesh information
 
 Print Mesh Information to Terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. literalinclude:: ../../tesseract/tesseract_scene_graph/examples/parse_mesh_example.cpp
    :language: c++
-   :lines: 13-17
+   :start-after: // Print mesh information
+   :end-before: }

@@ -17,20 +17,24 @@ int main(int /*argc*/, char** /*argv*/)
 {
   console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO);
 
+  // Create scene graph
   SceneGraph g;
 
+  // Create links
   Link link_1("link_1");
   Link link_2("link_2");
   Link link_3("link_3");
   Link link_4("link_4");
   Link link_5("link_5");
 
+  // Add links
   g.addLink(link_1);
   g.addLink(link_2);
   g.addLink(link_3);
   g.addLink(link_4);
   g.addLink(link_5);
 
+  // Create joints
   Joint joint_1("joint_1");
   joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
   joint_1.parent_link_name = "link_1";
@@ -55,6 +59,7 @@ int main(int /*argc*/, char** /*argv*/)
   joint_4.child_link_name = "link_5";
   joint_4.type = JointType::REVOLUTE;
 
+  // Add joints
   g.addJoint(joint_1);
   g.addJoint(joint_2);
   g.addJoint(joint_3);
@@ -97,10 +102,12 @@ int main(int /*argc*/, char** /*argv*/)
   is_tree = g.isTree();
   CONSOLE_BRIDGE_logInform(toString(is_tree).c_str());
 
+  // Remove unused link
   g.removeLink(link_6.getName());
   is_tree = g.isTree();
   CONSOLE_BRIDGE_logInform(toString(is_tree).c_str());
 
+  // Add new joint
   Joint joint_5("joint_5");
   joint_5.parent_to_joint_origin_transform.translation()(1) = 1.25;
   joint_5.parent_link_name = "link_5";
@@ -108,14 +115,14 @@ int main(int /*argc*/, char** /*argv*/)
   joint_5.type = JointType::CONTINUOUS;
   g.addJoint(joint_5);
 
-  // Save Graph
+  // Save new graph
   g.saveDOT("/tmp/graph_acyclic_not_tree_example.dot");
 
-  // Test if the graph is Acyclic
+  // Test again if the graph is Acyclic
   is_acyclic = g.isAcyclic();
   std::cout << toString(is_acyclic).c_str();
 
-  // Test if the graph is Tree
+  // Test again if the graph is Tree
   is_tree = g.isTree();
   CONSOLE_BRIDGE_logInform(toString(is_tree).c_str());
 

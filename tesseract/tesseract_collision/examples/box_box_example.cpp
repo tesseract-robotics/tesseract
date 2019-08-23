@@ -104,6 +104,8 @@ int main(int /*argc*/, char** /*argv*/)
   result_vector.clear();
 
   checker.setCollisionObjectsTransform(location);
+
+  // Check for collision after moving object
   checker.contactTest(result, ContactTestType::CLOSEST);
   flattenResults(std::move(result), result_vector);
 
@@ -113,7 +115,10 @@ int main(int /*argc*/, char** /*argv*/)
   result.clear();
   result_vector.clear();
 
+  // Set higher contact distance threshold
   checker.setContactDistanceThreshold(0.25);
+
+  // Check for contact with new threshold
   checker.contactTest(result, ContactTestType::CLOSEST);
   flattenResults(std::move(result), result_vector);
 
