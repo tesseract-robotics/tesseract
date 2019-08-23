@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_tree_factory.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_lma_factory.h>
 #include <tesseract_kinematics/core/utils.h>
-#include <tesseract_scene_graph/parser/urdf_parser.h>
+#include <tesseract_urdf/urdf_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
@@ -94,7 +94,7 @@ bool Tesseract::init(const std::string& urdf_string, tesseract_scene_graph::Reso
   clear();
 
   // Parse urdf string into Scene Graph
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_scene_graph::parseURDFString(urdf_string, locator);
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_urdf::parseURDFString(urdf_string, locator);
   if (scene_graph == nullptr)
   {
     CONSOLE_BRIDGE_logError("Failed to parse URDF.");
@@ -124,7 +124,7 @@ bool Tesseract::init(const std::string& urdf_string,
   clear();
 
   // Parse urdf string into Scene Graph
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_scene_graph::parseURDFString(urdf_string, locator);
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_urdf::parseURDFString(urdf_string, locator);
   if (scene_graph == nullptr)
   {
     CONSOLE_BRIDGE_logError("Failed to parse URDF.");
@@ -165,7 +165,7 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path, tesseract_scene_g
 
   // Parse urdf file into Scene Graph
   tesseract_scene_graph::SceneGraph::Ptr scene_graph =
-      tesseract_scene_graph::parseURDFFile(urdf_path.string(), locator);
+      tesseract_urdf::parseURDFFile(urdf_path.string(), locator);
   if (scene_graph == nullptr)
   {
     CONSOLE_BRIDGE_logError("Failed to parse URDF.");
@@ -196,7 +196,7 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
 
   // Parse urdf file into Scene Graph
   tesseract_scene_graph::SceneGraph::Ptr scene_graph =
-      tesseract_scene_graph::parseURDFFile(urdf_path.string(), locator);
+      tesseract_urdf::parseURDFFile(urdf_path.string(), locator);
   if (scene_graph == nullptr)
   {
     CONSOLE_BRIDGE_logError("Failed to parse URDF.");

@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>tesseract_urdf</name>
+  <version>0.1.0</version>
+  <description>The tesseract_urdf package for parsing tesseract specific urdf</description>
+  <maintainer email="Armstrong@todo.todo">Levi Armstrong</maintainer>
+  <license>Apache 2.0</license>
+  <author >Levi Armstrong</author>
+
+  <depend>tesseract_geometry</depend>
+  <depend>tesseract_common</depend>
+  <depend>tesseract_collision</depend>
+  <depend>tesseract_scene_graph</depend>
+  <depend>libconsole-bridge-dev</depend>
+  <depend>tinyxml2</depend>
+
+  <test_depend>gtest</test_depend>
+  <test_depend>tesseract_support</test_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+
+</package>

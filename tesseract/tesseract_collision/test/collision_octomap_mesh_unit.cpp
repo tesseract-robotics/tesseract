@@ -3,7 +3,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <octomap/octomap.h>
 #include <console_bridge/console.h>
 #include <gtest/gtest.h>
-#include <tesseract_scene_graph/parser/mesh_parser.h>
+#include <tesseract_geometry/mesh_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include "tesseract_collision/bullet/bullet_discrete_simple_manager.h"
@@ -13,7 +13,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract_collision;
 using namespace tesseract_geometry;
-using namespace tesseract_scene_graph;
 
 void addCollisionObjects(DiscreteContactManager& checker)
 {

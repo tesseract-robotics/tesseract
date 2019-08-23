@@ -9,8 +9,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/utils.h>
-#include <tesseract_scene_graph/parser/mesh_parser.h>
-#include <tesseract_scene_graph/parser/urdf_parser.h>
 #include <tesseract_scene_graph/parser/srdf_parser.h>
 #include <tesseract_scene_graph/parser/kdl_parser.h>
 
@@ -212,56 +210,6 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
   std::cout << (g.getName().c_str()) << std::endl;
 }
 
-TEST(TesseractSceneGraphUnit, LoadMeshUnit)
-{
-  using namespace tesseract_scene_graph;
-
-  std::string mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.stl";
-  std::vector<tesseract_geometry::Mesh::Ptr> meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file);
-  EXPECT_TRUE(meshes.size() == 1);
-  EXPECT_TRUE(meshes[0]->getTriangleCount() == 80);
-  EXPECT_TRUE(meshes[0]->getVerticeCount() == 42);
-
-  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply";
-  meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file);
-  EXPECT_TRUE(meshes.size() == 1);
-  EXPECT_TRUE(meshes[0]->getTriangleCount() == 80);
-  EXPECT_TRUE(meshes[0]->getVerticeCount() == 42);
-
-  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.dae";
-  meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file);
-  EXPECT_TRUE(meshes.size() == 2);
-  EXPECT_TRUE(meshes[0]->getTriangleCount() == 80);
-  EXPECT_TRUE(meshes[0]->getVerticeCount() == 42);
-  EXPECT_TRUE(meshes[1]->getTriangleCount() == 80);
-  EXPECT_TRUE(meshes[1]->getVerticeCount() == 42);
-
-  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.dae";
-  meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file, Eigen::Vector3d(1, 1, 1), false, true);
-  EXPECT_TRUE(meshes.size() == 1);
-  EXPECT_TRUE(meshes[0]->getTriangleCount() == 2 * 80);
-  EXPECT_TRUE(meshes[0]->getVerticeCount() == 2 * 42);
-
-  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
-  meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file, Eigen::Vector3d(1, 1, 1), true, true);
-  EXPECT_TRUE(meshes.size() == 1);
-  EXPECT_TRUE(meshes[0]->getTriangleCount() == 12);
-  EXPECT_TRUE(meshes[0]->getVerticeCount() == 8);
-
-  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
-  meshes = createMeshFromPath<tesseract_geometry::Mesh>(mesh_file, Eigen::Vector3d(1, 1, 1), true, true);
-  EXPECT_TRUE(meshes.size() == 1);
-  EXPECT_TRUE(meshes[0]->getTriangleCount() == 12);
-  EXPECT_TRUE(meshes[0]->getVerticeCount() == 8);
-
-  mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
-  std::vector<tesseract_geometry::ConvexMesh::Ptr> convex_meshes =
-      createMeshFromPath<tesseract_geometry::ConvexMesh>(mesh_file, Eigen::Vector3d(1, 1, 1), false, false);
-  EXPECT_TRUE(convex_meshes.size() == 1);
-  EXPECT_TRUE(convex_meshes[0]->getFaceCount() == 6);
-  EXPECT_TRUE(convex_meshes[0]->getVerticeCount() == 8);
-}
-
 std::string locateResource(const std::string& url)
 {
   std::string mod_url = url;
@@ -289,54 +237,98 @@ std::string locateResource(const std::string& url)
   return mod_url;
 }
 
-TEST(TesseractSceneGraphUnit, LoadURDFUnit)
-{
-  using namespace tesseract_scene_graph;
 
-  std::string urdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
-
-  ResourceLocatorFn locator = locateResource;
-  SceneGraph::Ptr g = parseURDFFile(urdf_file, locator);
-
-  EXPECT_TRUE(g->getJoints().size() == 9);
-  EXPECT_TRUE(g->getLinks().size() == 10);
-  EXPECT_TRUE(g->isTree());
-  EXPECT_TRUE(g->isAcyclic());
-
-  // Save Graph
-  g->saveDOT("/tmp/tesseract_urdf_import.dot");
-
-  // Get Shortest Path
-  SceneGraph::Path path = g->getShortestPath("link_1", "link_4");
-
-  std::cout << path << std::endl;
-  EXPECT_TRUE(path.first.size() == 4);
-  EXPECT_TRUE(std::find(path.first.begin(), path.first.end(), "link_1") != path.first.end());
-  EXPECT_TRUE(std::find(path.first.begin(), path.first.end(), "link_2") != path.first.end());
-  EXPECT_TRUE(std::find(path.first.begin(), path.first.end(), "link_3") != path.first.end());
-  EXPECT_TRUE(std::find(path.first.begin(), path.first.end(), "link_4") != path.first.end());
-  EXPECT_TRUE(path.second.size() == 3);
-  EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_a2") != path.second.end());
-  EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_a3") != path.second.end());
-  EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_a4") != path.second.end());
-}
 
 TEST(TesseractSceneGraphUnit, LoadSRDFUnit)
 {
   using namespace tesseract_scene_graph;
 
-  std::string urdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
   std::string srdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
 
   ResourceLocatorFn locator = locateResource;
-  SceneGraph::Ptr g = parseURDFFile(urdf_file, locator);
+  SceneGraph g;
+
+  g.setName("kuka_lbr_iiwa_14_r820");
+
+  Link base_link("base_link");
+  Link link_1("link_1");
+  Link link_2("link_2");
+  Link link_3("link_3");
+  Link link_4("link_4");
+  Link link_5("link_5");
+  Link link_6("link_6");
+  Link link_7("link_7");
+  Link tool0("tool0");
+
+  g.addLink(base_link);
+  g.addLink(link_1);
+  g.addLink(link_2);
+  g.addLink(link_3);
+  g.addLink(link_4);
+  g.addLink(link_5);
+  g.addLink(link_6);
+  g.addLink(link_7);
+  g.addLink(tool0);
+
+  Joint base_joint("base_joint");
+  base_joint.parent_link_name = "base_link";
+  base_joint.child_link_name = "link_1";
+  base_joint.type = JointType::FIXED;
+  g.addJoint(base_joint);
+
+  Joint joint_1("joint_1");
+  joint_1.parent_link_name = "link_1";
+  joint_1.child_link_name = "link_2";
+  joint_1.type = JointType::REVOLUTE;
+  g.addJoint(joint_1);
+
+  Joint joint_2("joint_2");
+  joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_2.parent_link_name = "link_2";
+  joint_2.child_link_name = "link_3";
+  joint_2.type = JointType::REVOLUTE;
+  g.addJoint(joint_2);
+
+  Joint joint_3("joint_3");
+  joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_3.parent_link_name = "link_3";
+  joint_3.child_link_name = "link_4";
+  joint_3.type = JointType::REVOLUTE;
+  g.addJoint(joint_3);
+
+  Joint joint_4("joint_4");
+  joint_4.parent_to_joint_origin_transform.translation()(1) = 1.25;
+  joint_4.parent_link_name = "link_4";
+  joint_4.child_link_name = "link_5";
+  joint_4.type = JointType::REVOLUTE;
+  g.addJoint(joint_4);
+
+  Joint joint_5("joint_5");
+  joint_5.parent_to_joint_origin_transform.translation()(1) = 1.25;
+  joint_5.parent_link_name = "link_5";
+  joint_5.child_link_name = "link_6";
+  joint_5.type = JointType::REVOLUTE;
+  g.addJoint(joint_5);
+
+  Joint joint_6("joint_6");
+  joint_6.parent_to_joint_origin_transform.translation()(1) = 1.25;
+  joint_6.parent_link_name = "link_6";
+  joint_6.child_link_name = "link_7";
+  joint_6.type = JointType::REVOLUTE;
+  g.addJoint(joint_6);
+
+  Joint joint_tool0("joint_tool0");
+  joint_tool0.parent_link_name = "link_7";
+  joint_tool0.child_link_name = "tool0";
+  joint_tool0.type = JointType::FIXED;
+  g.addJoint(joint_tool0);
 
   SRDFModel srdf;
-  EXPECT_TRUE(srdf.initFile(*g, srdf_file));
+  EXPECT_TRUE(srdf.initFile(g, srdf_file));
 
-  processSRDFAllowedCollisions(*g, srdf);
+  processSRDFAllowedCollisions(g, srdf);
 
-  AllowedCollisionMatrix::ConstPtr acm = g->getAllowedCollisionMatrix();
+  AllowedCollisionMatrix::ConstPtr acm = g.getAllowedCollisionMatrix();
 
   // collision between link1 and link2 should be allowed
   EXPECT_TRUE(acm->isCollisionAllowed("link_1", "link_2"));
@@ -344,11 +336,11 @@ TEST(TesseractSceneGraphUnit, LoadSRDFUnit)
   // collision between link1 and link2 should be allowed
   EXPECT_FALSE(acm->isCollisionAllowed("base_link", "link_5"));
 
-  g->removeAllowedCollision("link_1", "link_2");
+  g.removeAllowedCollision("link_1", "link_2");
   // now collision link1 and link2 is not allowed anymore
   EXPECT_FALSE(acm->isCollisionAllowed("link_1", "link_2"));
 
-  g->clearAllowedCollisions();
+  g.clearAllowedCollisions();
   EXPECT_EQ(acm->getAllAllowedCollisions().size(), 0);
 }
 
@@ -363,14 +355,57 @@ void printKDLTree(const KDL::SegmentMap::const_iterator& link, const std::string
 TEST(TesseractSceneGraphUnit, LoadKDLUnit)
 {
   using namespace tesseract_scene_graph;
+  SceneGraph g;
 
-  std::string urdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
+  Link base_link("base_link");
+  Link link_1("link_1");
+  Link link_2("link_2");
+  Link link_3("link_3");
+  Link link_4("link_4");
+  Link link_5("link_5");
 
-  ResourceLocatorFn locator = locateResource;
-  SceneGraph::Ptr g = parseURDFFile(urdf_file, locator);
+  g.addLink(base_link);
+  g.addLink(link_1);
+  g.addLink(link_2);
+  g.addLink(link_3);
+  g.addLink(link_4);
+  g.addLink(link_5);
+
+  Joint base_joint("base_joint");
+  base_joint.parent_link_name = "base_link";
+  base_joint.child_link_name = "link_1";
+  base_joint.type = JointType::FIXED;
+  g.addJoint(base_joint);
+
+  Joint joint_1("joint_1");
+  joint_1.parent_link_name = "link_1";
+  joint_1.child_link_name = "link_2";
+  joint_1.type = JointType::REVOLUTE;
+  g.addJoint(joint_1);
+
+  Joint joint_2("joint_2");
+  joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_2.parent_link_name = "link_2";
+  joint_2.child_link_name = "link_3";
+  joint_2.type = JointType::REVOLUTE;
+  g.addJoint(joint_2);
+
+  Joint joint_3("joint_3");
+  joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_3.parent_link_name = "link_3";
+  joint_3.child_link_name = "link_4";
+  joint_3.type = JointType::REVOLUTE;
+  g.addJoint(joint_3);
+
+  Joint joint_4("joint_4");
+  joint_4.parent_to_joint_origin_transform.translation()(1) = 1.25;
+  joint_4.parent_link_name = "link_2";
+  joint_4.child_link_name = "link_5";
+  joint_4.type = JointType::REVOLUTE;
+  g.addJoint(joint_4);
 
   KDL::Tree tree;
-  EXPECT_TRUE(parseSceneGraph(*g, tree));
+  EXPECT_TRUE(parseSceneGraph(g, tree));
 
   // walk through tree
   std::cout << " ======================================" << std::endl;
@@ -379,8 +414,8 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)
   KDL::SegmentMap::const_iterator root = tree.getRootSegment();
   printKDLTree(root, "");
 
-  EXPECT_TRUE(tree.getNrOfJoints() == 7);
-  EXPECT_TRUE(tree.getNrOfSegments() == 9);
+  EXPECT_TRUE(tree.getNrOfJoints() == 4);
+  EXPECT_TRUE(tree.getNrOfSegments() == 5);
 }
 
 /// Testing AllowedCollisionMatrix

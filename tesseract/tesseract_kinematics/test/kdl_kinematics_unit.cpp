@@ -2,7 +2,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <fstream>
-#include <tesseract_scene_graph/parser/urdf_parser.h>
+#include <tesseract_urdf/urdf_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include "tesseract_kinematics/kdl/kdl_fwd_kin_chain.h"
@@ -43,7 +43,7 @@ tesseract_scene_graph::SceneGraph::Ptr getSceneGraph()
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
   tesseract_scene_graph::ResourceLocatorFn locator = locateResource;
-  return tesseract_scene_graph::parseURDFFile(path, locator);
+  return tesseract_urdf::parseURDFFile(path, locator);
 }
 
 void runFwdKinTest(tesseract_kinematics::ForwardKinematics& kin)

@@ -13,8 +13,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/tesseract.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/utils.h>
-#include <tesseract_scene_graph/parser/urdf_parser.h>
 #include <tesseract_scene_graph/parser/srdf_parser.h>
+#include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_environment/kdl/kdl_env.h>
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_rosutils/utils.h>
