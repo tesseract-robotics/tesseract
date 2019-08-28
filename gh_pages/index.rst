@@ -22,6 +22,7 @@ Tesseract Core Packages
 * **tesseract_scene_graph** – This package contains the scene graph which is the data structure used to manage the connectivity of objects in the environment. It inherits from boost graph and provides addition functionality for adding,removing and modifying Links and Joints along with search implementation.
 * **tesseract_support** – This package contains support data used for unit tests and examples throughout Tesseract.
 * **tesseract_visualization** – This package contains visualization utilities and libraries.
+* **tesseract_urdf** - This package contains a custom urdf parser supporting addition shapes and features currently not supported by urdfdom.
 
 Tesseract ROS Packages
 ----------------------
@@ -50,6 +51,7 @@ Packages
    tesseract_rviz <_source/tesseract_rviz_doc.rst>
    tesseract_monitoring <_source/tesseract_monitoring_doc.rst>
    tesseract_planning <_source/tesseract_planning_doc.rst>
+   tesseract_urdf <_source/tesseract_urdf_doc.rst>
 
 FAQ
 ---
