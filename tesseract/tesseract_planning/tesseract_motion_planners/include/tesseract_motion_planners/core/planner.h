@@ -50,7 +50,7 @@ public:
   void setRequest(const PlannerRequest& request) { request_ = request; }
 
   /** @brief Solve the planner request problem */
-  virtual tesseract_common::StatusCode solve(PlannerResponse& res) = 0;
+  virtual tesseract_common::StatusCode solve(PlannerResponse& res, const bool verbose = false) = 0;
 
   /**
    * @brief checks if the planner is configured for planning
