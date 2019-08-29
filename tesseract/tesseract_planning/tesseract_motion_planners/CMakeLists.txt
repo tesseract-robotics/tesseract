@@ -74,6 +74,7 @@ target_include_directories(${PROJECT_NAME}_trajopt_array PUBLIC
 add_library(${PROJECT_NAME}_ompl_freespace SHARED
   src/ompl/ompl_freespace_planner.cpp
   src/ompl/conversions.cpp
+  src/ompl/discrete_valid_state_sampler.cpp
   src/ompl/continuous_motion_validator.cpp
 )
 target_link_libraries(${PROJECT_NAME}_ompl_freespace PUBLIC ${PROJECT_NAME}_core ${OMPL_LIBRARIES})
