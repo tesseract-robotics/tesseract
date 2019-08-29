@@ -79,7 +79,7 @@ bool TrajOptFreespacePlanner::terminate()
   return false;
 }
 
-tesseract_common::StatusCode TrajOptFreespacePlanner::solve(PlannerResponse& response)
+tesseract_common::StatusCode TrajOptFreespacePlanner::solve(PlannerResponse& response, const bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
@@ -92,7 +92,7 @@ tesseract_common::StatusCode TrajOptFreespacePlanner::solve(PlannerResponse& res
   tesseract_motion_planners::PlannerResponse planning_response;
 
   // Solve problem. Results are stored in the response
-  tesseract_common::StatusCode status = planner_.solve(planning_response);
+  tesseract_common::StatusCode status = planner_.solve(planning_response, verbose);
   response = std::move(planning_response);
   return status;
 }
