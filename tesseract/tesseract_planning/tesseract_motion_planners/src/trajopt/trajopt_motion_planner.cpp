@@ -100,7 +100,7 @@ void TrajOptMotionPlanner::clear()
   config_ = nullptr;
 }
 
-tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& response)
+tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& response, const bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
@@ -142,7 +142,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
                                *config_->prob->GetEnv(),
                                config_->prob->GetKin()->getJointNames(),
                                getTraj(opt.x(), config_->prob->GetVars()),
-                               collisions);
+                               collisions, true, verbose);
 
   // Do a discrete check until continuous collision checking is updated to do dynamic-dynamic checking
   tesseract_collision::DiscreteContactManager::Ptr discrete_manager =
@@ -155,7 +155,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
                                    *config_->prob->GetEnv(),
                                    config_->prob->GetKin()->getJointNames(),
                                    getTraj(opt.x(), config_->prob->GetVars()),
-                                   collisions);
+                                   collisions, true, verbose);
 
   // Send response
   response.joint_trajectory.trajectory = getTraj(opt.x(), config_->prob->GetVars());

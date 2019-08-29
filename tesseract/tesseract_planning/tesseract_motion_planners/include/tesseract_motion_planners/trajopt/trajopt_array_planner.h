@@ -122,9 +122,10 @@ public:
   /**
    * @brief solves the plan using the configuration passed to the setConfiguration and the request
    * @param response The response
+   * @param verbose Boolean indicating whether logging information about the motion planning solution should be printed to console
    * @return True on success, false otherwise
    */
-  tesseract_common::StatusCode solve(PlannerResponse& response) override;
+  tesseract_common::StatusCode solve(PlannerResponse& response, const bool verbose = false) override;
 
   bool terminate() override;
 

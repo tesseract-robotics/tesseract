@@ -158,7 +158,7 @@ bool DescartesMotionPlanner<FloatType>::setConfiguration(const DescartesMotionPl
 }
 
 template <typename FloatType>
-tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerResponse& response)
+tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerResponse& response, const bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
@@ -235,7 +235,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
                                                       *config_->tesseract->getEnvironmentConst(),
                                                       response.joint_trajectory.joint_names,
                                                       response.joint_trajectory.trajectory,
-                                                      collisions);
+                                                      collisions, true, verbose);
 
   CONSOLE_BRIDGE_logInform("Descartes planning time: %.3f", (ros::Time::now() - tStart).toSec());
 

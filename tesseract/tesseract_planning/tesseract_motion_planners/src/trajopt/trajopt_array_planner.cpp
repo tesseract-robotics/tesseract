@@ -97,7 +97,7 @@ tesseract_common::StatusCode TrajOptArrayPlanner::isConfigured() const
   return tesseract_common::StatusCode(TrajOptArrayPlannerStatusCategory::IsConfigured, status_category_);
 }
 
-tesseract_common::StatusCode TrajOptArrayPlanner::solve(PlannerResponse& response)
+tesseract_common::StatusCode TrajOptArrayPlanner::solve(PlannerResponse& response, const bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
@@ -110,7 +110,7 @@ tesseract_common::StatusCode TrajOptArrayPlanner::solve(PlannerResponse& respons
   tesseract_motion_planners::PlannerResponse planning_response;
 
   // Solve problem. Results are stored in the response
-  tesseract_common::StatusCode status = planner_.solve(planning_response);
+  tesseract_common::StatusCode status = planner_.solve(planning_response, verbose);
   response = std::move(planning_response);
   return status;
 }

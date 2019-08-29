@@ -68,7 +68,7 @@ tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::isConfigur
 }
 
 template <typename FloatType>
-tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::solve(PlannerResponse& response)
+tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::solve(PlannerResponse& response, const bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
@@ -80,7 +80,7 @@ tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::solve(Plan
 
   // Solve problem using descartes. Results are stored in the response
   tesseract_motion_planners::PlannerResponse descartes_planning_response;
-  tesseract_common::StatusCode descartes_status = descartes_planner_.solve(descartes_planning_response);
+  tesseract_common::StatusCode descartes_status = descartes_planner_.solve(descartes_planning_response, verbose);
   if (!descartes_status &&
       (descartes_status.value() != DescartesMotionPlannerStatusCategory::FoundValidSolutionInCollision))
   {
@@ -92,7 +92,7 @@ tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::solve(Plan
   trajopt_planner_.setConfiguration(trajopt_config_);
 
   tesseract_motion_planners::PlannerResponse trajopt_planning_response;
-  tesseract_common::StatusCode trajopt_status = trajopt_planner_.solve(trajopt_planning_response);
+  tesseract_common::StatusCode trajopt_status = trajopt_planner_.solve(trajopt_planning_response, verbose);
   response = std::move(trajopt_planning_response);
 
   return trajopt_status;
