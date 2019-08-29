@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/ompl_freespace_planner.h>
 #include <tesseract_motion_planners/ompl/conversions.h>
 #include <tesseract_motion_planners/ompl/continuous_motion_validator.h>
+#include <tesseract_motion_planners/ompl/discrete_valid_state_sampler.h>
 
 namespace tesseract_motion_planners
 {
@@ -187,10 +188,11 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
   simple_setup_ = std::make_shared<ompl::geometric::SimpleSetup>(state_space_ptr);
 
   // Setup state checking functionality
-  if (config.svc == nullptr && config.collision_check)
-    simple_setup_->setStateValidityChecker(std::bind(&OMPLFreespacePlanner::isStateValid, this, std::placeholders::_1));
-  else if (config.svc != nullptr)
+  if (config.svc != nullptr)
     simple_setup_->setStateValidityChecker(config.svc);
+
+  if (config.collision_check)
+    simple_setup_->getSpaceInformation()->setValidStateSamplerAllocator(std::bind(&OMPLFreespacePlanner::allocDiscreteValidStateSampler, this, std::placeholders::_1));
 
   if (config.collision_check && config.collision_continuous && config.mv == nullptr)
   {
@@ -266,23 +268,9 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
 }
 
 template <typename PlannerType>
-bool OMPLFreespacePlanner<PlannerType>::isStateValid(const ompl::base::State* state) const
+ompl::base::ValidStateSamplerPtr OMPLFreespacePlanner<PlannerType>::allocDiscreteValidStateSampler(const ompl::base::SpaceInformation *si) const
 {
-  const ompl::base::RealVectorStateSpace::StateType* s = state->as<ompl::base::RealVectorStateSpace::StateType>();
-  const auto dof = kin_->numJoints();
-
-  Eigen::Map<Eigen::VectorXd> joint_angles(s->values, long(dof));
-  tesseract_environment::EnvState::ConstPtr env_state =
-      config_->tesseract->getEnvironmentConst()->getState(kin_->getJointNames(), joint_angles);
-
-  // Need to get thread id
-  tesseract_collision::DiscreteContactManager::Ptr cm = discrete_contact_manager_->clone();
-  cm->setCollisionObjectsTransform(env_state->transforms);
-
-  tesseract_collision::ContactResultMap contact_map;
-  cm->contactTest(contact_map, tesseract_collision::ContactTestType::FIRST);
-
-  return contact_map.empty();
+  return std::make_shared<DiscreteValidStateSampler>(si, config_->tesseract->getEnvironmentConst(), kin_, discrete_contact_manager_);
 }
 
 }  // namespace tesseract_motion_planners

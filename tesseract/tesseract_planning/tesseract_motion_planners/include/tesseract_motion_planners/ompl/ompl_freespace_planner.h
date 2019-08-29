@@ -98,7 +98,7 @@ public:
   tesseract_common::StatusCode isConfigured() const override;
 
 private:
-  bool isStateValid(const ompl::base::State* state) const;
+  ompl::base::ValidStateSamplerPtr allocDiscreteValidStateSampler(const ompl::base::SpaceInformation *si) const;
 
 protected:
   /** @brief The ompl planner planner */
