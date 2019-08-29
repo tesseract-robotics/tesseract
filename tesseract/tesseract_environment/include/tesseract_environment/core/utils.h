@@ -88,7 +88,8 @@ inline bool checkTrajectory(tesseract_collision::ContinuousContactManager& manag
                             const std::vector<std::string>& joint_names,
                             const tesseract_common::TrajArray& traj,
                             std::vector<tesseract_collision::ContactResultMap>& contacts,
-                            bool first_only = true)
+                            const bool first_only = true,
+                            const bool verbose = false)
 {
   bool found = false;
 
@@ -107,6 +108,16 @@ inline bool checkTrajectory(tesseract_collision::ContinuousContactManager& manag
 
     if (collisions.size() > 0)
     {
+      if (verbose)
+      {
+        for (auto it = collisions.begin(); it != collisions.end(); ++it)
+        {
+          std::stringstream ss;
+          ss << "Continuous collision detected at step " << iStep << " between '" << it->first.first << "' and '" << it->first.second << "'";
+          CONSOLE_BRIDGE_logError(ss.str().c_str());
+        }
+      }
+
       found = true;
       contacts.push_back(collisions);
     }
@@ -133,7 +144,8 @@ inline bool checkTrajectory(tesseract_collision::DiscreteContactManager& manager
                             const std::vector<std::string>& joint_names,
                             const tesseract_common::TrajArray& traj,
                             std::vector<tesseract_collision::ContactResultMap>& contacts,
-                            bool first_only = true)
+                            const bool first_only = true,
+                            const bool verbose = false)
 {
   bool found = false;
 
@@ -151,6 +163,16 @@ inline bool checkTrajectory(tesseract_collision::DiscreteContactManager& manager
 
     if (collisions.size() > 0)
     {
+      if (verbose)
+      {
+        for (auto it = collisions.begin(); it != collisions.end(); ++it)
+        {
+          std::stringstream ss;
+          ss << "Discrete collision detected at step " << iStep << " between '" << it->first.first << "' and '" << it->first.second << "'";
+          CONSOLE_BRIDGE_logError(ss.str().c_str());
+        }
+      }
+
       found = true;
       contacts.push_back(collisions);
     }
