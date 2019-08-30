@@ -9,6 +9,7 @@
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_motion_planners/ompl/continuous_motion_validator.h>
 #include <tesseract_motion_planners/ompl/ompl_freespace_planner.h>
+#include <tesseract_motion_planners/ompl/ompl_settings.h>
 
 #include <functional>
 #include <gtest/gtest.h>
@@ -19,6 +20,7 @@ using namespace tesseract_collision;
 using namespace tesseract_environment;
 using namespace tesseract_geometry;
 using namespace tesseract_kinematics;
+using namespace tesseract_motion_planners;
 
 std::string locateResource(const std::string& url)
 {
@@ -86,17 +88,18 @@ TEST(TesseractPlanningUnit, OMPLFreespacePlannerUnit)
   auto kin = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
   std::vector<double> swp = { -1.2, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
   std::vector<double> ewp = { 1.2, 0.2762, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
-  tesseract_motion_planners::OMPLFreespacePlannerConfig config;
-  config.start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
-  config.end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
-  config.tesseract = tesseract;
-  config.manipulator = "manipulator";
-  config.collision_safety_margin = 0.01;
-  config.planning_time = 5;
+  tesseract_motion_planners::OMPLFreespacePlannerConfig<RRTConnectConfig> rrt_connect_config;
+  rrt_connect_config.start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+  rrt_connect_config.end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
+  rrt_connect_config.tesseract = tesseract;
+  rrt_connect_config.manipulator = "manipulator";
+  rrt_connect_config.collision_safety_margin = 0.01;
+  rrt_connect_config.planning_time = 5;
+  rrt_connect_config.settings.range = 0.1;
 
   // RRTConnect Solve
-  tesseract_motion_planners::OMPLFreespacePlanner<ompl::geometric::RRTConnect> rrt_connect_planner;
-  rrt_connect_planner.setConfiguration(config);
+  tesseract_motion_planners::OMPLFreespacePlanner<ompl::geometric::RRTConnect, RRTConnectConfig> rrt_connect_planner;
+  rrt_connect_planner.setConfiguration(rrt_connect_config);
 
   tesseract_motion_planners::PlannerResponse rrt_connect_planning_response;
   tesseract_common::StatusCode status = rrt_connect_planner.solve(rrt_connect_planning_response);
@@ -104,8 +107,17 @@ TEST(TesseractPlanningUnit, OMPLFreespacePlannerUnit)
   EXPECT_TRUE(status);
 
   // PRM Solve
-  tesseract_motion_planners::OMPLFreespacePlanner<ompl::geometric::PRM> prm_planner;
-  prm_planner.setConfiguration(config);
+  tesseract_motion_planners::OMPLFreespacePlannerConfig<PRMConfig> prm_config;
+  prm_config.start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+  prm_config.end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
+  prm_config.tesseract = tesseract;
+  prm_config.manipulator = "manipulator";
+  prm_config.collision_safety_margin = 0.01;
+  prm_config.planning_time = 5;
+  prm_config.settings.max_nearest_neighbors = 5;
+
+  tesseract_motion_planners::OMPLFreespacePlanner<ompl::geometric::PRM, PRMConfig> prm_planner;
+  prm_planner.setConfiguration(prm_config);
 
   tesseract_motion_planners::PlannerResponse prm_planning_response;
   status = prm_planner.solve(prm_planning_response);
@@ -113,8 +125,16 @@ TEST(TesseractPlanningUnit, OMPLFreespacePlannerUnit)
   EXPECT_TRUE(status);
 
   // PRMstar Solve
-  tesseract_motion_planners::OMPLFreespacePlanner<ompl::geometric::PRMstar> prm_star_planner;
-  prm_star_planner.setConfiguration(config);
+  tesseract_motion_planners::OMPLFreespacePlannerConfig<PRMstarConfig> prm_star_config;
+  prm_star_config.start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+  prm_star_config.end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
+  prm_star_config.tesseract = tesseract;
+  prm_star_config.manipulator = "manipulator";
+  prm_star_config.collision_safety_margin = 0.01;
+  prm_star_config.planning_time = 5;
+
+  tesseract_motion_planners::OMPLFreespacePlanner<ompl::geometric::PRMstar, PRMstarConfig> prm_star_planner;
+  prm_star_planner.setConfiguration(prm_star_config);
 
   tesseract_motion_planners::PlannerResponse prm_star_planning_response;
   status = prm_star_planner.solve(prm_star_planning_response);
@@ -122,22 +142,21 @@ TEST(TesseractPlanningUnit, OMPLFreespacePlannerUnit)
   EXPECT_TRUE(status);
 
   // LazyPRMstar Solve
-  tesseract_motion_planners::OMPLFreespacePlanner<ompl::geometric::LazyPRMstar> lazy_prm_star_planner;
-  lazy_prm_star_planner.setConfiguration(config);
+  tesseract_motion_planners::OMPLFreespacePlannerConfig<LazyPRMstarConfig> lazy_prm_star_config;
+  lazy_prm_star_config.start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+  lazy_prm_star_config.end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
+  lazy_prm_star_config.tesseract = tesseract;
+  lazy_prm_star_config.manipulator = "manipulator";
+  lazy_prm_star_config.collision_safety_margin = 0.01;
+  lazy_prm_star_config.planning_time = 5;
+
+  tesseract_motion_planners::OMPLFreespacePlanner<ompl::geometric::LazyPRMstar, LazyPRMstarConfig> lazy_prm_star_planner;
+  lazy_prm_star_planner.setConfiguration(lazy_prm_star_config);
 
   tesseract_motion_planners::PlannerResponse lazy_prm_star_planning_response;
   status = lazy_prm_star_planner.solve(lazy_prm_star_planning_response);
 
   EXPECT_TRUE(status);
-
-  //  // SPARS Solve
-  //  tesseract_motion_planners::OMPLFreespacePlanner<ompl::geometric::SPARS> spars_planner;
-  //  spars_planner.setConfiguration(config);
-
-  //  tesseract_motion_planners::PlannerResponse spars_planning_response;
-  //  status = spars_planner.solve(spars_planning_response);
-
-  //  EXPECT_TRUE(status);
 }
 
 int main(int argc, char** argv)

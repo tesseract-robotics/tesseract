@@ -76,6 +76,7 @@ add_library(${PROJECT_NAME}_ompl_freespace SHARED
   src/ompl/conversions.cpp
   src/ompl/discrete_valid_state_sampler.cpp
   src/ompl/continuous_motion_validator.cpp
+  src/ompl/weighted_real_vector_state_sampler.cpp
 )
 target_link_libraries(${PROJECT_NAME}_ompl_freespace PUBLIC ${PROJECT_NAME}_core ${OMPL_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_ompl_freespace PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
