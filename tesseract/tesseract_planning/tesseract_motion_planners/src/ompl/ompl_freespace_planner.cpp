@@ -26,7 +26,15 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <ompl/geometric/planners/sbl/SBL.h>
+#include <ompl/geometric/planners/est/EST.h>
+#include <ompl/geometric/planners/kpiece/LBKPIECE1.h>
+#include <ompl/geometric/planners/kpiece/BKPIECE1.h>
+#include <ompl/geometric/planners/kpiece/KPIECE1.h>
+#include <ompl/geometric/planners/rrt/RRT.h>
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
+#include <ompl/geometric/planners/rrt/RRTstar.h>
+#include <ompl/geometric/planners/rrt/TRRT.h>
 #include <ompl/geometric/planners/prm/PRM.h>
 #include <ompl/geometric/planners/prm/PRMstar.h>
 #include <ompl/geometric/planners/prm/LazyPRMstar.h>
@@ -34,14 +42,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/impl/ompl_freespace_planner.hpp>
+#include <tesseract_motion_planners/ompl/ompl_settings.h>
 
 namespace tesseract_motion_planners
 {
+
 // Explicit template instantiation
-template class OMPLFreespacePlanner<ompl::geometric::RRTConnect>;
-template class OMPLFreespacePlanner<ompl::geometric::PRM>;
-template class OMPLFreespacePlanner<ompl::geometric::PRMstar>;
-template class OMPLFreespacePlanner<ompl::geometric::LazyPRMstar>;
-template class OMPLFreespacePlanner<ompl::geometric::SPARS>;
+template class OMPLFreespacePlanner<ompl::geometric::SBL, SBLConfig>;
+template class OMPLFreespacePlanner<ompl::geometric::EST, ESTConfig>;
+template class OMPLFreespacePlanner<ompl::geometric::LBKPIECE1, LBKPIECEConfig>;
+template class OMPLFreespacePlanner<ompl::geometric::BKPIECE1, BKPIECEConfig>;
+template class OMPLFreespacePlanner<ompl::geometric::KPIECE1, KPIECEConfig>;
+template class OMPLFreespacePlanner<ompl::geometric::RRT, RRTConfig>;
+template class OMPLFreespacePlanner<ompl::geometric::RRTConnect, RRTConnectConfig>;
+template class OMPLFreespacePlanner<ompl::geometric::RRTstar, RRTstarConfig>;
+template class OMPLFreespacePlanner<ompl::geometric::TRRT, TRRTConfig>;
+template class OMPLFreespacePlanner<ompl::geometric::PRM, PRMConfig>;
+template class OMPLFreespacePlanner<ompl::geometric::PRMstar, PRMstarConfig>;
+template class OMPLFreespacePlanner<ompl::geometric::LazyPRMstar, LazyPRMstarConfig>;
+template class OMPLFreespacePlanner<ompl::geometric::SPARS, SPARSConfig>;
 
 }  // namespace tesseract_motion_planners

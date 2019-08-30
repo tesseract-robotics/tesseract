@@ -37,6 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/conversions.h>
 #include <tesseract_motion_planners/ompl/continuous_motion_validator.h>
 #include <tesseract_motion_planners/ompl/discrete_valid_state_sampler.h>
+#include <tesseract_motion_planners/ompl/weighted_real_vector_state_sampler.h>
 
 namespace tesseract_motion_planners
 {
@@ -75,23 +76,23 @@ std::string OMPLFreespacePlannerStatusCategory::message(int code) const
 }
 
 /** @brief Construct a basic planner */
-template <typename PlannerType>
-OMPLFreespacePlanner<PlannerType>::OMPLFreespacePlanner(std::string name)
+template <typename PlannerType, typename PlannerSettingsType>
+OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::OMPLFreespacePlanner(std::string name)
   : MotionPlanner(std::move(name))
   , config_(nullptr)
   , status_category_(std::make_shared<const OMPLFreespacePlannerStatusCategory>(name))
 {
 }
 
-template <typename PlannerType>
-bool OMPLFreespacePlanner<PlannerType>::terminate()
+template <typename PlannerType, typename PlannerSettingsType>
+bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::terminate()
 {
   CONSOLE_BRIDGE_logWarn("Termination of ongoing optimization is not implemented yet");
   return false;
 }
 
-template <typename PlannerType>
-tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerResponse& response)
+template <typename PlannerType, typename PlannerSettingsType>
+tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::solve(PlannerResponse& response)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
@@ -127,8 +128,8 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
   return planning_response.status;
 }
 
-template <typename PlannerType>
-void OMPLFreespacePlanner<PlannerType>::clear()
+template <typename PlannerType, typename PlannerSettingsType>
+void OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::clear()
 {
   request_ = PlannerRequest();
   config_ = nullptr;
@@ -139,8 +140,8 @@ void OMPLFreespacePlanner<PlannerType>::clear()
   simple_setup_ = nullptr;
 }
 
-template <typename PlannerType>
-tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::isConfigured() const
+template <typename PlannerType, typename PlannerSettingsType>
+tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::isConfigured() const
 {
   if (config_ == nullptr)
     return tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::IsNotConfigured, status_category_);
@@ -148,25 +149,32 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::isConfigured() c
   return tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::IsConfigured, status_category_);
 }
 
-template <typename PlannerType>
-bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlannerConfig& config)
+template <typename PlannerType, typename PlannerSettingsType>
+bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(const OMPLFreespacePlannerConfig<PlannerSettingsType>& config)
 {
+  config_ = std::make_shared<OMPLFreespacePlannerConfig<PlannerSettingsType>>(config);
+
   // Check that parameters are valid
-  if (config.tesseract == nullptr)
+  if (config_->tesseract == nullptr)
   {
     CONSOLE_BRIDGE_logError("In ompl_freespace_planner: tesseract is a required parameter and has not been set");
+    config_ = nullptr;
     return false;
   }
 
-  kin_ = config.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config.manipulator);
+  kin_ = config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config_->manipulator);
   if (kin_ == nullptr)
   {
     CONSOLE_BRIDGE_logError("In ompl_freespace_planner: failed to get kinematics object for manipulator: %s.",
-                            config.manipulator);
+                            config_->manipulator);
+    config_ = nullptr;
     return false;
   }
 
-  const tesseract_environment::Environment::ConstPtr& env = config.tesseract->getEnvironmentConst();
+  if (config_->weights.size() == 0)
+    config_->weights = Eigen::VectorXd::Ones(kin_->numJoints());
+
+  const tesseract_environment::Environment::ConstPtr& env = config_->tesseract->getEnvironmentConst();
   // kinematics objects does not know of every link affected by its motion so must compute adjacency map
   // to determine all active links.
   adj_map_ = std::make_shared<tesseract_environment::AdjacencyMap>(
@@ -179,42 +187,42 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
   // Construct the OMPL state space for this manipulator
   ompl::base::RealVectorStateSpace* space = new ompl::base::RealVectorStateSpace();
   for (unsigned i = 0; i < dof; ++i)
-  {
     space->addDimension(joint_names[i], limits(i, 0), limits(i, 1));
-  }
+
+  space->setStateSamplerAllocator(std::bind(&OMPLFreespacePlanner::allocWeightedRealVectorStateSampler, this, std::placeholders::_1));
 
   ompl::base::StateSpacePtr state_space_ptr(space);
-  state_space_ptr->setLongestValidSegmentFraction(config.longest_valid_segment_fraction);
+  state_space_ptr->setLongestValidSegmentFraction(config_->longest_valid_segment_fraction);
   simple_setup_ = std::make_shared<ompl::geometric::SimpleSetup>(state_space_ptr);
 
   // Setup state checking functionality
-  if (config.svc != nullptr)
-    simple_setup_->setStateValidityChecker(config.svc);
+  if (config_->svc != nullptr)
+    simple_setup_->setStateValidityChecker(config_->svc);
 
-  if (config.collision_check)
+  if (config_->collision_check)
     simple_setup_->getSpaceInformation()->setValidStateSamplerAllocator(std::bind(&OMPLFreespacePlanner::allocDiscreteValidStateSampler, this, std::placeholders::_1));
 
-  if (config.collision_check && config.collision_continuous && config.mv == nullptr)
+  if (config_->collision_check && config_->collision_continuous && config_->mv == nullptr)
   {
     ompl::base::MotionValidatorPtr mv =
         std::make_shared<ContinuousMotionValidator>(simple_setup_->getSpaceInformation(), env, kin_);
     simple_setup_->getSpaceInformation()->setMotionValidator(std::move(mv));
   }
-  else if (config.mv != nullptr)
+  else if (config_->mv != nullptr)
   {
-    simple_setup_->getSpaceInformation()->setMotionValidator(config.mv);
+    simple_setup_->getSpaceInformation()->setMotionValidator(config_->mv);
   }
 
   JointWaypoint::Ptr start_position;
   JointWaypoint::Ptr end_position;
 
   // Set initial point
-  auto start_type = config.start_waypoint->getType();
+  auto start_type = config_->start_waypoint->getType();
   switch (start_type)
   {
     case tesseract_motion_planners::WaypointType::JOINT_WAYPOINT:
     {
-      start_position = std::static_pointer_cast<JointWaypoint>(config.start_waypoint);
+      start_position = std::static_pointer_cast<JointWaypoint>(config_->start_waypoint);
       break;
     }
     default:
@@ -225,12 +233,12 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
   };
 
   // Set end point
-  auto end_type = config.end_waypoint->getType();
+  auto end_type = config_->end_waypoint->getType();
   switch (end_type)
   {
     case tesseract_motion_planners::WaypointType::JOINT_WAYPOINT:
     {
-      end_position = std::static_pointer_cast<JointWaypoint>(config.end_waypoint);
+      end_position = std::static_pointer_cast<JointWaypoint>(config_->end_waypoint);
       break;
     }
     default:
@@ -251,26 +259,31 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
   simple_setup_->setStartAndGoalStates(start_state, goal_state);
 
   // Set the ompl planner
-  ompl::base::PlannerPtr planner = std::make_shared<PlannerType>(simple_setup_->getSpaceInformation());
+  std::shared_ptr<PlannerType> planner = std::make_shared<PlannerType>(simple_setup_->getSpaceInformation());
+  config_->settings.apply(*planner);
   simple_setup_->setPlanner(planner);
 
   discrete_contact_manager_ = env->getDiscreteContactManager();
   discrete_contact_manager_->setActiveCollisionObjects(adj_map_->getActiveLinkNames());
-  discrete_contact_manager_->setContactDistanceThreshold(config.collision_safety_margin);
+  discrete_contact_manager_->setContactDistanceThreshold(config_->collision_safety_margin);
 
   continuous_contact_manager_ = env->getContinuousContactManager();
   continuous_contact_manager_->setActiveCollisionObjects(adj_map_->getActiveLinkNames());
-  continuous_contact_manager_->setContactDistanceThreshold(config.collision_safety_margin);
-
-  config_ = std::make_shared<OMPLFreespacePlannerConfig>(config);
+  continuous_contact_manager_->setContactDistanceThreshold(config_->collision_safety_margin);
 
   return true;
 }
 
-template <typename PlannerType>
-ompl::base::ValidStateSamplerPtr OMPLFreespacePlanner<PlannerType>::allocDiscreteValidStateSampler(const ompl::base::SpaceInformation *si) const
+template <typename PlannerType, typename PlannerSettingsType>
+ompl::base::ValidStateSamplerPtr OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::allocDiscreteValidStateSampler(const ompl::base::SpaceInformation *si) const
 {
   return std::make_shared<DiscreteValidStateSampler>(si, config_->tesseract->getEnvironmentConst(), kin_, discrete_contact_manager_);
+}
+
+template <typename PlannerType, typename PlannerSettingsType>
+ompl::base::StateSamplerPtr OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::allocWeightedRealVectorStateSampler(const ompl::base::StateSpace *space) const
+{
+  return std::make_shared<WeightedRealVectorStateSampler>(space, config_->weights);
 }
 
 }  // namespace tesseract_motion_planners
