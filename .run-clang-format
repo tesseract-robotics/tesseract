@@ -1,0 +1,2 @@
+#!/bin/bash
+find . -type d \( -name bullet3_ros -o -name fcl_ros -o -name libccd_ros -o -name gtest_ros -o -name tesseract_ext \) -prune -o -type f -regex '.*\.\(cpp\|hpp\|cc\|cxx\|h\|hxx\)' -exec clang-format-8 -style=file -i {} \;
