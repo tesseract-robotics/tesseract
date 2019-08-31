@@ -23,7 +23,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #ifndef TESSERACT_MOTION_PLANNERS_OMPL_FREESPACE_PLANNER_HPP
 #define TESSERACT_MOTION_PLANNERS_OMPL_FREESPACE_PLANNER_HPP
 
@@ -150,7 +149,8 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType, PlannerSettingsTy
 }
 
 template <typename PlannerType, typename PlannerSettingsType>
-bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(const OMPLFreespacePlannerConfig<PlannerSettingsType>& config)
+bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(
+    const OMPLFreespacePlannerConfig<PlannerSettingsType>& config)
 {
   config_ = std::make_shared<OMPLFreespacePlannerConfig<PlannerSettingsType>>(config);
 
@@ -189,7 +189,8 @@ bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(co
   for (unsigned i = 0; i < dof; ++i)
     space->addDimension(joint_names[i], limits(i, 0), limits(i, 1));
 
-  space->setStateSamplerAllocator(std::bind(&OMPLFreespacePlanner::allocWeightedRealVectorStateSampler, this, std::placeholders::_1));
+  space->setStateSamplerAllocator(
+      std::bind(&OMPLFreespacePlanner::allocWeightedRealVectorStateSampler, this, std::placeholders::_1));
 
   ompl::base::StateSpacePtr state_space_ptr(space);
   state_space_ptr->setLongestValidSegmentFraction(config_->longest_valid_segment_fraction);
@@ -200,7 +201,8 @@ bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(co
     simple_setup_->setStateValidityChecker(config_->svc);
 
   if (config_->collision_check)
-    simple_setup_->getSpaceInformation()->setValidStateSamplerAllocator(std::bind(&OMPLFreespacePlanner::allocDiscreteValidStateSampler, this, std::placeholders::_1));
+    simple_setup_->getSpaceInformation()->setValidStateSamplerAllocator(
+        std::bind(&OMPLFreespacePlanner::allocDiscreteValidStateSampler, this, std::placeholders::_1));
 
   if (config_->collision_check && config_->collision_continuous && config_->mv == nullptr)
   {
@@ -275,13 +277,16 @@ bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(co
 }
 
 template <typename PlannerType, typename PlannerSettingsType>
-ompl::base::ValidStateSamplerPtr OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::allocDiscreteValidStateSampler(const ompl::base::SpaceInformation *si) const
+ompl::base::ValidStateSamplerPtr OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::allocDiscreteValidStateSampler(
+    const ompl::base::SpaceInformation* si) const
 {
-  return std::make_shared<DiscreteValidStateSampler>(si, config_->tesseract->getEnvironmentConst(), kin_, discrete_contact_manager_);
+  return std::make_shared<DiscreteValidStateSampler>(
+      si, config_->tesseract->getEnvironmentConst(), kin_, discrete_contact_manager_);
 }
 
 template <typename PlannerType, typename PlannerSettingsType>
-ompl::base::StateSamplerPtr OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::allocWeightedRealVectorStateSampler(const ompl::base::StateSpace *space) const
+ompl::base::StateSamplerPtr OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::allocWeightedRealVectorStateSampler(
+    const ompl::base::StateSpace* space) const
 {
   return std::make_shared<WeightedRealVectorStateSampler>(space, config_->weights);
 }

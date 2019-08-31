@@ -1,3 +1,33 @@
+/**
+ * @file discrete_valid_state_sampler.cpp
+ * @brief Tesseract OMPL planner discrete valid state sampler.
+ *
+ * This not only generates the sample but it also performs discrete
+ * collision checking here instead of the isValid function because
+ * this is generated for every thread removing the multiple clones
+ * of the contact manager in the isValid function.
+ *
+ * @author Levi Armstrong
+ * @date April 18, 2018
+ * @version TODO
+ * @bug No known bugs
+ *
+ * @copyright Copyright (c) 2017, Southwest Research Institute
+ *
+ * @par License
+ * Software License Agreement (Apache License)
+ * @par
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * @par
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/samplers/UniformValidStateSampler.h>
@@ -9,8 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
-
-DiscreteValidStateSampler::DiscreteValidStateSampler(const ompl::base::SpaceInformation *si,
+DiscreteValidStateSampler::DiscreteValidStateSampler(const ompl::base::SpaceInformation* si,
                                                      tesseract_environment::Environment::ConstPtr env,
                                                      tesseract_kinematics::ForwardKinematics::ConstPtr kin,
                                                      tesseract_collision::DiscreteContactManager::Ptr contact_manager)
@@ -20,40 +49,42 @@ DiscreteValidStateSampler::DiscreteValidStateSampler(const ompl::base::SpaceInfo
   , kin_(std::move(kin))
   , contact_manager_(contact_manager->clone())
 {
-    name_ = "Tesseract Discrete Valid State Sampler";
+  name_ = "Tesseract Discrete Valid State Sampler";
 }
 
-bool DiscreteValidStateSampler::sample(ompl::base::State *state)
+bool DiscreteValidStateSampler::sample(ompl::base::State* state)
 {
-    unsigned int attempts = 0;
-    bool valid = false;
-    do
-    {
-      sampler_->sampleUniform(state);
-      valid = si_->isValid(state);
-      if (valid)
-        valid = isCollisionFree(state);
-      ++attempts;
-    } while (!valid && attempts < attempts_);
-    return valid;
+  unsigned int attempts = 0;
+  bool valid = false;
+  do
+  {
+    sampler_->sampleUniform(state);
+    valid = si_->isValid(state);
+    if (valid)
+      valid = isCollisionFree(state);
+    ++attempts;
+  } while (!valid && attempts < attempts_);
+  return valid;
 }
 
-bool DiscreteValidStateSampler::sampleNear(ompl::base::State *state, const ompl::base::State *near, const double distance)
+bool DiscreteValidStateSampler::sampleNear(ompl::base::State* state,
+                                           const ompl::base::State* near,
+                                           const double distance)
 {
-    unsigned int attempts = 0;
-    bool valid = false;
-    do
-    {
-      sampler_->sampleUniformNear(state, near, distance);
-      valid = si_->isValid(state);
-      if (valid)
-        valid = isCollisionFree(state);
-      ++attempts;
-    } while (!valid && attempts < attempts_);
-    return valid;
+  unsigned int attempts = 0;
+  bool valid = false;
+  do
+  {
+    sampler_->sampleUniformNear(state, near, distance);
+    valid = si_->isValid(state);
+    if (valid)
+      valid = isCollisionFree(state);
+    ++attempts;
+  } while (!valid && attempts < attempts_);
+  return valid;
 }
 
-bool DiscreteValidStateSampler::isCollisionFree(ompl::base::State *state)
+bool DiscreteValidStateSampler::isCollisionFree(ompl::base::State* state)
 {
   // Ompl Valid state sampler is created for each thread so
   // do not need to clone inside this function.
@@ -71,4 +102,4 @@ bool DiscreteValidStateSampler::isCollisionFree(ompl::base::State *state)
   return contact_map.empty();
 }
 
-}
+}  // namespace tesseract_motion_planners
