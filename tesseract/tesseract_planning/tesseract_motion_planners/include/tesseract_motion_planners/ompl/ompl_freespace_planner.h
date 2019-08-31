@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/geometric/SimpleSetup.h>
+#include <ompl/base/OptimizationObjective.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/planner.h>
@@ -57,6 +58,10 @@ struct OMPLFreespacePlannerConfig
   double collision_safety_margin = 0.025;
   /** @brief Max planning time allowed */
   double planning_time = 5.0;
+  /** @brief The max number of solutions. If max solutions are hit it will exit even if other threads are running. */
+  int max_solutions = 10;
+  /** @brief The number of threads to use */
+  int num_threads = 1;
   /** @brief Simplify trajectory */
   bool simplify = true;
   /** @brief This scales the variables search space. Must be same size as number of joints.

@@ -97,6 +97,8 @@ TEST(TesseractPlanningUnit, OMPLFreespacePlannerUnit)
   rrt_connect_config.manipulator = "manipulator";
   rrt_connect_config.collision_safety_margin = 0.01;
   rrt_connect_config.planning_time = 5;
+  rrt_connect_config.num_threads = 4;
+  rrt_connect_config.max_solutions = 4;
   rrt_connect_config.settings.range = 0.1;
 
   // RRTConnect Solve
@@ -116,6 +118,8 @@ TEST(TesseractPlanningUnit, OMPLFreespacePlannerUnit)
   prm_config.manipulator = "manipulator";
   prm_config.collision_safety_margin = 0.01;
   prm_config.planning_time = 5;
+  prm_config.num_threads = 4;
+  prm_config.max_solutions = 4;
   prm_config.settings.max_nearest_neighbors = 5;
 
   tesseract_motion_planners::OMPLFreespacePlanner<ompl::geometric::PRM, PRMConfig> prm_planner;
@@ -135,6 +139,8 @@ TEST(TesseractPlanningUnit, OMPLFreespacePlannerUnit)
   prm_star_config.manipulator = "manipulator";
   prm_star_config.collision_safety_margin = 0.01;
   prm_star_config.planning_time = 5;
+  prm_star_config.num_threads = 4;
+  prm_star_config.max_solutions = 4;
 
   tesseract_motion_planners::OMPLFreespacePlanner<ompl::geometric::PRMstar, PRMstarConfig> prm_star_planner;
   prm_star_planner.setConfiguration(prm_star_config);
@@ -154,6 +160,8 @@ TEST(TesseractPlanningUnit, OMPLFreespacePlannerUnit)
   lazy_prm_star_config.manipulator = "manipulator";
   lazy_prm_star_config.collision_safety_margin = 0.01;
   lazy_prm_star_config.planning_time = 5;
+  lazy_prm_star_config.num_threads = 4;
+  lazy_prm_star_config.max_solutions = 4;
 
   tesseract_motion_planners::OMPLFreespacePlanner<ompl::geometric::LazyPRMstar, LazyPRMstarConfig>
       lazy_prm_star_planner;
