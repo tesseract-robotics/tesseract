@@ -1,5 +1,31 @@
+/**
+ * @file ompl_freespace_planner.h
+ * @brief Tesseract OMPL freespace planner.
+ *
+ * @author Levi Armstrong
+ * @date April 18, 2018
+ * @version TODO
+ * @bug No known bugs
+ *
+ * @copyright Copyright (c) 2017, Southwest Research Institute
+ *
+ * @par License
+ * Software License Agreement (Apache License)
+ * @par
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * @par
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #ifndef TESSERACT_MOTION_PLANNERS_OMPL_FREESPACE_PLANNER_H
 #define TESSERACT_MOTION_PLANNERS_OMPL_FREESPACE_PLANNER_H
+
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/geometric/SimpleSetup.h>
@@ -59,14 +85,14 @@ struct OMPLFreespacePlannerConfig
 };
 
 /**
- * @brief This planner is intended to provide an easy to use interface to TrajOpt for freespace planning. It is made to
- * take a start and end point and automate the generation of the TrajOpt problem.
+ * @brief This planner is intended to provide an easy to use interface to OMPL for freespace planning. It is made to
+ * take a start and end point and automate the generation of the OMPL problem.
  */
 template <typename PlannerType, typename PlannerSettingsType>
 class OMPLFreespacePlanner : public MotionPlanner
 {
 public:
-  /** @brief Construct a basic planner */
+  /** @brief Construct a planner */
   OMPLFreespacePlanner(std::string name = "OMPL_FREESPACE");
 
   /**
@@ -80,17 +106,17 @@ public:
   bool setConfiguration(const OMPLFreespacePlannerConfig<PlannerSettingsType>& config);
 
   /**
-   * @brief Sets up the TrajOpt problem then solves using TrajOptMotionPlanner. It is intended to simplify setting up
+   * @brief Sets up the OMPL problem then solves. It is intended to simplify setting up
    * and solving freespace motion problems.
    *
    * This planner (and the associated config passed to the setConfiguration) does not expose all of the available
-   * configuration data in TrajOpt. This is done to simplify the interface. However, many problems may require more
+   * configuration data in OMPL. This is done to simplify the interface. However, many problems may require more
    * specific setups. In that case, the source code for this planner may be used as an example.
    *
    * Note: This does not use the request information because everything is provided by config parameter
    *
-   * @param response The results of the optimization. Primary output is the optimized joint trajectory
-   * @return true if optimization complete
+   * @param response The results of OMPL.
+   * @return true if valid solution was found
    */
   tesseract_common::StatusCode solve(PlannerResponse& response) override;
 
@@ -105,8 +131,8 @@ public:
   tesseract_common::StatusCode isConfigured() const override;
 
 private:
-  ompl::base::ValidStateSamplerPtr allocDiscreteValidStateSampler(const ompl::base::SpaceInformation *si) const;
-  ompl::base::StateSamplerPtr allocWeightedRealVectorStateSampler(const ompl::base::StateSpace *space) const;
+  ompl::base::ValidStateSamplerPtr allocDiscreteValidStateSampler(const ompl::base::SpaceInformation* si) const;
+  ompl::base::StateSamplerPtr allocWeightedRealVectorStateSampler(const ompl::base::StateSpace* space) const;
 
 protected:
   /** @brief The ompl planner planner */

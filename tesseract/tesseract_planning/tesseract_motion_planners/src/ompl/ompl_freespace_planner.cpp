@@ -46,7 +46,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
-
 // Explicit template instantiation
 template class OMPLFreespacePlanner<ompl::geometric::SBL, SBLConfig>;
 template class OMPLFreespacePlanner<ompl::geometric::EST, ESTConfig>;

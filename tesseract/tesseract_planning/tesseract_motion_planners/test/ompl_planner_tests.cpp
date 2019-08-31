@@ -89,8 +89,10 @@ TEST(TesseractPlanningUnit, OMPLFreespacePlannerUnit)
   std::vector<double> swp = { -1.2, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
   std::vector<double> ewp = { 1.2, 0.2762, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
   tesseract_motion_planners::OMPLFreespacePlannerConfig<RRTConnectConfig> rrt_connect_config;
-  rrt_connect_config.start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
-  rrt_connect_config.end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
+  rrt_connect_config.start_waypoint =
+      std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+  rrt_connect_config.end_waypoint =
+      std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
   rrt_connect_config.tesseract = tesseract;
   rrt_connect_config.manipulator = "manipulator";
   rrt_connect_config.collision_safety_margin = 0.01;
@@ -126,7 +128,8 @@ TEST(TesseractPlanningUnit, OMPLFreespacePlannerUnit)
 
   // PRMstar Solve
   tesseract_motion_planners::OMPLFreespacePlannerConfig<PRMstarConfig> prm_star_config;
-  prm_star_config.start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+  prm_star_config.start_waypoint =
+      std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
   prm_star_config.end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
   prm_star_config.tesseract = tesseract;
   prm_star_config.manipulator = "manipulator";
@@ -143,14 +146,17 @@ TEST(TesseractPlanningUnit, OMPLFreespacePlannerUnit)
 
   // LazyPRMstar Solve
   tesseract_motion_planners::OMPLFreespacePlannerConfig<LazyPRMstarConfig> lazy_prm_star_config;
-  lazy_prm_star_config.start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
-  lazy_prm_star_config.end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
+  lazy_prm_star_config.start_waypoint =
+      std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+  lazy_prm_star_config.end_waypoint =
+      std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
   lazy_prm_star_config.tesseract = tesseract;
   lazy_prm_star_config.manipulator = "manipulator";
   lazy_prm_star_config.collision_safety_margin = 0.01;
   lazy_prm_star_config.planning_time = 5;
 
-  tesseract_motion_planners::OMPLFreespacePlanner<ompl::geometric::LazyPRMstar, LazyPRMstarConfig> lazy_prm_star_planner;
+  tesseract_motion_planners::OMPLFreespacePlanner<ompl::geometric::LazyPRMstar, LazyPRMstarConfig>
+      lazy_prm_star_planner;
   lazy_prm_star_planner.setConfiguration(lazy_prm_star_config);
 
   tesseract_motion_planners::PlannerResponse lazy_prm_star_planning_response;
