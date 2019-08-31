@@ -37,7 +37,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 class LimitsStatusCategory : public tesseract_common::StatusCategory
 {
 public:
@@ -101,6 +100,6 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointLimit
   return std::make_shared<tesseract_common::StatusCode>(LimitsStatusCategory::Success, status_cat);
 }
 
-}
+}  // namespace tesseract_urdf
 
-#endif // TESSERACT_URDF_LIMITS_H
+#endif  // TESSERACT_URDF_LIMITS_H

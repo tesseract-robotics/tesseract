@@ -40,7 +40,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 class CollisionStatusCategory : public tesseract_common::StatusCategory
 {
 public:
@@ -87,23 +86,26 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_scene_graph
 
   // get origin
   Eigen::Isometry3d collision_origin = Eigen::Isometry3d::Identity();
-  const tinyxml2::XMLElement *origin = xml_element->FirstChildElement("origin");
+  const tinyxml2::XMLElement* origin = xml_element->FirstChildElement("origin");
   if (origin != nullptr)
   {
     auto status = parse(collision_origin, origin);
     if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(CollisionStatusCategory::ErrorParsingOriginElement, status_cat, status);
+      return std::make_shared<tesseract_common::StatusCode>(
+          CollisionStatusCategory::ErrorParsingOriginElement, status_cat, status);
   }
 
   // get geometry
-  const tinyxml2::XMLElement *geometry = xml_element->FirstChildElement("geometry");
+  const tinyxml2::XMLElement* geometry = xml_element->FirstChildElement("geometry");
   if (geometry == nullptr)
-    return std::make_shared<tesseract_common::StatusCode>(CollisionStatusCategory::ErrorMissingGeometryElement, status_cat);
+    return std::make_shared<tesseract_common::StatusCode>(CollisionStatusCategory::ErrorMissingGeometryElement,
+                                                          status_cat);
 
   std::vector<tesseract_geometry::Geometry::Ptr> geometries;
   auto status = parse(geometries, geometry, locator, true);
   if (!(*status))
-    return std::make_shared<tesseract_common::StatusCode>(CollisionStatusCategory::ErrorParsingGeometryElement, status_cat, status);
+    return std::make_shared<tesseract_common::StatusCode>(
+        CollisionStatusCategory::ErrorParsingGeometryElement, status_cat, status);
 
   if (geometries.size() == 1)
   {
@@ -134,6 +136,6 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_scene_graph
   return std::make_shared<tesseract_common::StatusCode>(CollisionStatusCategory::Success, status_cat);
 }
 
-}
+}  // namespace tesseract_urdf
 
-#endif // TESSERACT_URDF_COLLISION_H
+#endif  // TESSERACT_URDF_COLLISION_H

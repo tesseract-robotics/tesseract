@@ -39,7 +39,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 class MeshStatusCategory : public tesseract_common::StatusCategory
 {
 public:
@@ -116,9 +115,10 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::M
   if (meshes.empty())
     return std::make_shared<tesseract_common::StatusCode>(MeshStatusCategory::ErrorImportingMeshes, status_cat);
 
-  return std::make_shared<tesseract_common::StatusCode>(MeshStatusCategory::Success, status_cat);;
+  return std::make_shared<tesseract_common::StatusCode>(MeshStatusCategory::Success, status_cat);
+  ;
 }
 
-}
+}  // namespace tesseract_urdf
 
-#endif // TESSERACT_URDF_MESH_H
+#endif  // TESSERACT_URDF_MESH_H

@@ -111,11 +111,17 @@ public:
   using Ptr = std::shared_ptr<StatusCode>;
   using ConstPtr = std::shared_ptr<const StatusCode>;
 
-  StatusCode(StatusCode::ConstPtr child = nullptr) : val_(0), cat_(std::make_shared<GeneralStatusCategory>()), child_(child) {}
-  StatusCode(int val, StatusCategory::ConstPtr cat, StatusCode::ConstPtr child = nullptr) : val_(val), cat_(std::move(cat)), child_(child) {}
+  StatusCode(StatusCode::ConstPtr child = nullptr)
+    : val_(0), cat_(std::make_shared<GeneralStatusCategory>()), child_(child)
+  {
+  }
+  StatusCode(int val, StatusCategory::ConstPtr cat, StatusCode::ConstPtr child = nullptr)
+    : val_(val), cat_(std::move(cat)), child_(child)
+  {
+  }
   ~StatusCode() = default;
   int value() const noexcept { return val_; }
-  const StatusCategory::ConstPtr& category() const noexcept  { return cat_; }
+  const StatusCategory::ConstPtr& category() const noexcept { return cat_; }
   std::string message() const
   {
     if (child_ != nullptr)
@@ -138,6 +144,7 @@ public:
   {
     return ((this->value() != rhs.value()) || (this->category() != rhs.category()));
   }
+
 protected:
   std::string messageIndent(std::string previous_indent) const
   {
@@ -147,6 +154,7 @@ protected:
     else
       return "\n" + indent + category()->message(value());
   }
+
 private:
   int val_;
   StatusCategory::ConstPtr cat_;

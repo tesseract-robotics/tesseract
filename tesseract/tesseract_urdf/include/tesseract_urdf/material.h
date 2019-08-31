@@ -41,7 +41,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 class MaterialStatusCategory : public tesseract_common::StatusCategory
 {
 public:
@@ -86,9 +85,10 @@ private:
   std::string name_;
 };
 
-inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Material::Ptr& material,
-                                               const tinyxml2::XMLElement* xml_element,
-                                               const std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
+inline tesseract_common::StatusCode::Ptr
+parse(tesseract_scene_graph::Material::Ptr& material,
+      const tinyxml2::XMLElement* xml_element,
+      const std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
 {
   material = tesseract_scene_graph::DEFAULT_TESSERACT_MATERIAL;
   auto status_cat = std::make_shared<MaterialStatusCategory>();
@@ -100,45 +100,53 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Material::
   auto m = std::make_shared<tesseract_scene_graph::Material>(material_name);
 
   m->texture_filename = "";
-  const tinyxml2::XMLElement *texture = xml_element->FirstChildElement("texture");
+  const tinyxml2::XMLElement* texture = xml_element->FirstChildElement("texture");
   if (texture != nullptr)
   {
     if (QueryStringAttribute(texture, "filename", m->texture_filename) != tinyxml2::XML_SUCCESS)
-      return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorTextureAttributeFilename, status_cat);
+      return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorTextureAttributeFilename,
+                                                            status_cat);
   }
 
-  const tinyxml2::XMLElement *color = xml_element->FirstChildElement("color");
+  const tinyxml2::XMLElement* color = xml_element->FirstChildElement("color");
   if (color != nullptr)
   {
     std::string color_string;
     if (QueryStringAttribute(color, "rgba", color_string) != tinyxml2::XML_SUCCESS)
-      return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorColorAttributeRGBA, status_cat);
+      return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorColorAttributeRGBA,
+                                                            status_cat);
 
     if (!color_string.empty())
     {
       std::vector<std::string> tokens;
       boost::split(tokens, color_string, boost::is_any_of(" "), boost::token_compress_on);
       if (tokens.size() != 4 || !tesseract_common::isNumeric(tokens))
-        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA, status_cat);
+        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA,
+                                                              status_cat);
 
       double r, g, b, a;
       if (!tinyxml2::XMLUtil::ToDouble(tokens[0].c_str(), &r))
-        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA, status_cat);
+        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA,
+                                                              status_cat);
 
       if (!tinyxml2::XMLUtil::ToDouble(tokens[1].c_str(), &g))
-        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA, status_cat);
+        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA,
+                                                              status_cat);
 
       if (!tinyxml2::XMLUtil::ToDouble(tokens[2].c_str(), &b))
-        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA, status_cat);
+        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA,
+                                                              status_cat);
 
       if (!tinyxml2::XMLUtil::ToDouble(tokens[3].c_str(), &a))
-        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA, status_cat);
+        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA,
+                                                              status_cat);
 
       m->color = Eigen::Vector4d(r, g, b, a);
     }
     else
     {
-      return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorColorAttributeRGBA, status_cat);
+      return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorColorAttributeRGBA,
+                                                            status_cat);
     }
   }
 
@@ -146,13 +154,15 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Material::
   {
     if (available_materials.empty())
     {
-      return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorNameOnlyIsNotAllowed, status_cat);
+      return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorNameOnlyIsNotAllowed,
+                                                            status_cat);
     }
     else
     {
       auto it = available_materials.find(material_name);
       if (it == available_materials.end())
-        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorLocatingMaterialByName, status_cat);
+        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorLocatingMaterialByName,
+                                                              status_cat);
       m = it->second;
     }
   }
@@ -161,5 +171,5 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Material::
   return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::Success, status_cat);
 }
 
-}
-#endif // TESSERACT_URDF_MATERIAL_H
+}  // namespace tesseract_urdf
+#endif  // TESSERACT_URDF_MATERIAL_H

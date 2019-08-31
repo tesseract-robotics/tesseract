@@ -35,7 +35,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 class SphereStatusCategory : public tesseract_common::StatusCategory
 {
 public:
@@ -64,7 +63,8 @@ private:
   std::string name_;
 };
 
-inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Sphere::Ptr& sphere, const tinyxml2::XMLElement* xml_element)
+inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Sphere::Ptr& sphere,
+                                               const tinyxml2::XMLElement* xml_element)
 {
   sphere = nullptr;
   auto status_cat = std::make_shared<SphereStatusCategory>();
@@ -77,6 +77,6 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Sphere::Ptr& 
   return std::make_shared<tesseract_common::StatusCode>(SphereStatusCategory::Success, status_cat);
 }
 
-}
+}  // namespace tesseract_urdf
 
-#endif // TESSERACT_URDF_SPHERE_H
+#endif  // TESSERACT_URDF_SPHERE_H

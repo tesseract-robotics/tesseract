@@ -55,4 +55,4 @@ private:
 };
 }  // namespace tesseract_geometry
 
-#endif // TESSERACT_GEOMETRY_CAPSULE_H
+#endif  // TESSERACT_GEOMETRY_CAPSULE_H

@@ -37,7 +37,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 class DynamicsStatusCategory : public tesseract_common::StatusCategory
 {
 public:
@@ -86,25 +85,30 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointDynam
   auto status_code = std::make_shared<tesseract_common::StatusCode>(DynamicsStatusCategory::Success, status_cat);
 
   if (xml_element->Attribute("damping") == nullptr && xml_element->Attribute("friction") == nullptr)
-    return std::make_shared<tesseract_common::StatusCode>(DynamicsStatusCategory::ErrorMissingAttributeDampingAndFriction, status_cat);
+    return std::make_shared<tesseract_common::StatusCode>(
+        DynamicsStatusCategory::ErrorMissingAttributeDampingAndFriction, status_cat);
 
   dynamics = std::make_shared<tesseract_scene_graph::JointDynamics>();
 
   tinyxml2::XMLError status = xml_element->QueryDoubleAttribute("damping", &(dynamics->damping));
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(DynamicsStatusCategory::ErrorParsingAttributeDamping, status_cat);
+    return std::make_shared<tesseract_common::StatusCode>(DynamicsStatusCategory::ErrorParsingAttributeDamping,
+                                                          status_cat);
   else if (status == tinyxml2::XML_NO_ATTRIBUTE)
-    status_code = std::make_shared<tesseract_common::StatusCode>(DynamicsStatusCategory::MissingAttributeDamping, status_cat);
+    status_code =
+        std::make_shared<tesseract_common::StatusCode>(DynamicsStatusCategory::MissingAttributeDamping, status_cat);
 
   status = xml_element->QueryDoubleAttribute("friction", &(dynamics->friction));
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(DynamicsStatusCategory::ErrorParsingAttributeFriction, status_cat);
+    return std::make_shared<tesseract_common::StatusCode>(DynamicsStatusCategory::ErrorParsingAttributeFriction,
+                                                          status_cat);
   else if (status == tinyxml2::XML_NO_ATTRIBUTE)
-    status_code = std::make_shared<tesseract_common::StatusCode>(DynamicsStatusCategory::MissingAttributeFriction, status_cat);
+    status_code =
+        std::make_shared<tesseract_common::StatusCode>(DynamicsStatusCategory::MissingAttributeFriction, status_cat);
 
   return status_code;
 }
 
-}
+}  // namespace tesseract_urdf
 
-#endif // TESSERACT_URDF_DYNAMICS_H
+#endif  // TESSERACT_URDF_DYNAMICS_H

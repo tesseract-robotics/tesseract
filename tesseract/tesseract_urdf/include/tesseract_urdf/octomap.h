@@ -40,7 +40,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 class OctomapStatusCategory : public tesseract_common::StatusCategory
 {
 public:
@@ -55,7 +54,8 @@ public:
       case ErrorAttributeShapeType:
         return "Missing or failed parsing octomap attribute 'shape_type'!";
       case ErrorInvalidShapeType:
-        return "Invalide sub shape type for octoamp attribute 'shape_type', must be 'box', 'sphere_inside', or 'sphere_outside'!";
+        return "Invalide sub shape type for octoamp attribute 'shape_type', must be 'box', 'sphere_inside', or "
+               "'sphere_outside'!";
       case ErrorMissingOctreeOrPointCloudElement:
         return "Missing octomap element 'octree' or 'pointcloud', must define one!";
       case ErrorParsingOctreeElement:
@@ -81,7 +81,6 @@ private:
   std::string name_;
 };
 
-
 inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& octree,
                                                const tinyxml2::XMLElement* xml_element,
                                                tesseract_scene_graph::ResourceLocatorFn locator,
@@ -106,17 +105,19 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& 
 
   bool prune = xml_element->BoolAttribute("prune", false);
 
-  const tinyxml2::XMLElement *pcd_element = xml_element->FirstChildElement("point_cloud");
-  const tinyxml2::XMLElement *octree_element = xml_element->FirstChildElement("octree");
+  const tinyxml2::XMLElement* pcd_element = xml_element->FirstChildElement("point_cloud");
+  const tinyxml2::XMLElement* octree_element = xml_element->FirstChildElement("octree");
 
   if (pcd_element == nullptr && octree_element == nullptr)
-    return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::ErrorMissingOctreeOrPointCloudElement, status_cat);
+    return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::ErrorMissingOctreeOrPointCloudElement,
+                                                          status_cat);
 
   if (octree_element != nullptr)
   {
     auto status = parseOctree(octree, octree_element, locator, sub_type, prune);
     if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::ErrorParsingOctreeElement, status_cat, status);
+      return std::make_shared<tesseract_common::StatusCode>(
+          OctomapStatusCategory::ErrorParsingOctreeElement, status_cat, status);
 
     return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::Success, status_cat);
   }
@@ -125,11 +126,12 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& 
   {
     auto status = parsePointCloud(octree, pcd_element, locator, sub_type, prune);
     if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::ErrorParsingPointCloudElement, status_cat, status);
+      return std::make_shared<tesseract_common::StatusCode>(
+          OctomapStatusCategory::ErrorParsingPointCloudElement, status_cat, status);
 
     return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::Success, status_cat);
   }
 }
 
-}
-#endif // TESSERACT_URDF_OCTOMAP_H
+}  // namespace tesseract_urdf
+#endif  // TESSERACT_URDF_OCTOMAP_H

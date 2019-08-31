@@ -26,7 +26,6 @@
 #ifndef TESSERACT_URDF_CONVEX_MESH_H
 #define TESSERACT_URDF_CONVEX_MESH_H
 
-
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/status_code.h>
@@ -44,7 +43,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 class ConvexMeshStatusCategory : public tesseract_common::StatusCategory
 {
 public:
@@ -98,17 +96,21 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::C
     std::vector<std::string> tokens;
     boost::split(tokens, scale_string, boost::is_any_of(" "), boost::token_compress_on);
     if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
-      return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::ErrorParsingAttributeScale, status_cat);
+      return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::ErrorParsingAttributeScale,
+                                                            status_cat);
 
     double sx, sy, sz;
     if (!tinyxml2::XMLUtil::ToDouble(tokens[0].c_str(), &sx))
-      return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::ErrorParsingAttributeScale, status_cat);
+      return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::ErrorParsingAttributeScale,
+                                                            status_cat);
 
     if (!tinyxml2::XMLUtil::ToDouble(tokens[1].c_str(), &sy))
-      return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::ErrorParsingAttributeScale, status_cat);
+      return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::ErrorParsingAttributeScale,
+                                                            status_cat);
 
     if (!tinyxml2::XMLUtil::ToDouble(tokens[2].c_str(), &sz))
-      return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::ErrorParsingAttributeScale, status_cat);
+      return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::ErrorParsingAttributeScale,
+                                                            status_cat);
 
     scale = Eigen::Vector3d(sx, sy, sz);
   }
@@ -116,16 +118,19 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::C
   bool convert = xml_element->BoolAttribute("convert", false);
 
   if (visual)
-    meshes = tesseract_geometry::createMeshFromPath<tesseract_geometry::ConvexMesh>(locator(filename), scale, true, true);
+    meshes =
+        tesseract_geometry::createMeshFromPath<tesseract_geometry::ConvexMesh>(locator(filename), scale, true, true);
   else
   {
     if (!convert)
     {
-      meshes = tesseract_geometry::createMeshFromPath<tesseract_geometry::ConvexMesh>(locator(filename), scale, false, false);
+      meshes = tesseract_geometry::createMeshFromPath<tesseract_geometry::ConvexMesh>(
+          locator(filename), scale, false, false);
     }
     else
     {
-      std::vector<tesseract_geometry::Mesh::Ptr> temp_meshes = tesseract_geometry::createMeshFromPath<tesseract_geometry::Mesh>(locator(filename), scale, true, false);
+      std::vector<tesseract_geometry::Mesh::Ptr> temp_meshes =
+          tesseract_geometry::createMeshFromPath<tesseract_geometry::Mesh>(locator(filename), scale, true, false);
       for (auto& mesh : temp_meshes)
         meshes.push_back(tesseract_collision::makeConvexMesh(*mesh));
     }
@@ -134,9 +139,10 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::C
   if (meshes.empty())
     return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::ErrorImportingMeshes, status_cat);
 
-  return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::Success, status_cat);;
+  return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::Success, status_cat);
+  ;
 }
 
-}
+}  // namespace tesseract_urdf
 
-#endif // TESSERACT_URDF_CONVEX_MESH_H
+#endif  // TESSERACT_URDF_CONVEX_MESH_H

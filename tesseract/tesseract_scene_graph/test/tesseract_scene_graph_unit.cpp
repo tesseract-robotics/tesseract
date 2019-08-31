@@ -237,8 +237,6 @@ std::string locateResource(const std::string& url)
   return mod_url;
 }
 
-
-
 TEST(TesseractSceneGraphUnit, LoadSRDFUnit)
 {
   using namespace tesseract_scene_graph;

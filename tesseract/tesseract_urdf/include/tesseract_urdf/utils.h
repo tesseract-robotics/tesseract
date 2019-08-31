@@ -36,7 +36,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 inline tinyxml2::XMLError QueryStringValue(const tinyxml2::XMLElement* xml_element, std::string& value)
 {
   if (xml_element->Value() == nullptr)
@@ -57,13 +56,15 @@ inline tinyxml2::XMLError QueryStringValue(const tinyxml2::XMLAttribute* xml_att
   return tinyxml2::XML_SUCCESS;
 }
 
-inline tinyxml2::XMLError QueryStringAttribute(const tinyxml2::XMLElement* xml_element, const char* name, std::string& value)
+inline tinyxml2::XMLError QueryStringAttribute(const tinyxml2::XMLElement* xml_element,
+                                               const char* name,
+                                               std::string& value)
 {
-    const tinyxml2::XMLAttribute* attribute = xml_element->FindAttribute(name);
-    if (attribute == nullptr)
-      return tinyxml2::XML_NO_ATTRIBUTE;
+  const tinyxml2::XMLAttribute* attribute = xml_element->FindAttribute(name);
+  if (attribute == nullptr)
+    return tinyxml2::XML_NO_ATTRIBUTE;
 
-    return QueryStringValue(attribute, value);
+  return QueryStringValue(attribute, value);
 }
 
 inline std::string StringAttribute(const tinyxml2::XMLElement* xml_element, const char* name, std::string default_value)
@@ -73,6 +74,6 @@ inline std::string StringAttribute(const tinyxml2::XMLElement* xml_element, cons
   return str;
 }
 
-}
+}  // namespace tesseract_urdf
 
-#endif // TESSERACT_URDF_UTILS_H
+#endif  // TESSERACT_URDF_UTILS_H

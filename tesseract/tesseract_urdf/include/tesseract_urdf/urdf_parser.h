@@ -42,7 +42,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 class URDFStatusCategory : public tesseract_common::StatusCategory
 {
 public:
