@@ -39,7 +39,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 class OctreeStatusCategory : public tesseract_common::StatusCategory
 {
 public:
@@ -98,11 +97,10 @@ inline tesseract_common::StatusCode::Ptr parseOctree(tesseract_geometry::Octree:
   if (geom == nullptr)
     return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::ErrorCreatingGeometry, status_cat);
 
-
   octree = std::move(geom);
   return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::Success, status_cat);
 }
 
-}
+}  // namespace tesseract_urdf
 
-#endif // TESSERACT_URDF_OCTREE_H
+#endif  // TESSERACT_URDF_OCTREE_H

@@ -164,8 +164,7 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path, tesseract_scene_g
   clear();
 
   // Parse urdf file into Scene Graph
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph =
-      tesseract_urdf::parseURDFFile(urdf_path.string(), locator);
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_urdf::parseURDFFile(urdf_path.string(), locator);
   if (scene_graph == nullptr)
   {
     CONSOLE_BRIDGE_logError("Failed to parse URDF.");
@@ -195,8 +194,7 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
   clear();
 
   // Parse urdf file into Scene Graph
-  tesseract_scene_graph::SceneGraph::Ptr scene_graph =
-      tesseract_urdf::parseURDFFile(urdf_path.string(), locator);
+  tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_urdf::parseURDFFile(urdf_path.string(), locator);
   if (scene_graph == nullptr)
   {
     CONSOLE_BRIDGE_logError("Failed to parse URDF.");

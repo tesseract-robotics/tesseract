@@ -41,7 +41,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 class LinkStatusCategory : public tesseract_common::StatusCategory
 {
 public:
@@ -80,10 +79,11 @@ private:
   std::string link_name_;
 };
 
-inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Link::Ptr& link,
-                                               const tinyxml2::XMLElement* xml_element,
-                                               tesseract_scene_graph::ResourceLocatorFn locator,
-                                               const std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials)
+inline tesseract_common::StatusCode::Ptr
+parse(tesseract_scene_graph::Link::Ptr& link,
+      const tinyxml2::XMLElement* xml_element,
+      tesseract_scene_graph::ResourceLocatorFn locator,
+      const std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials)
 {
   link = nullptr;
   auto status_cat = std::make_shared<LinkStatusCategory>();
@@ -96,32 +96,37 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Link::Ptr&
   auto l = std::make_shared<tesseract_scene_graph::Link>(link_name);
 
   // get inertia if it exists
-  const tinyxml2::XMLElement *inertial = xml_element->FirstChildElement("inertial");
+  const tinyxml2::XMLElement* inertial = xml_element->FirstChildElement("inertial");
   if (inertial != nullptr)
   {
     auto status = parse(l->inertial, inertial);
     if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(LinkStatusCategory::ErrorParsingInertialElement, status_cat, status);
+      return std::make_shared<tesseract_common::StatusCode>(
+          LinkStatusCategory::ErrorParsingInertialElement, status_cat, status);
   }
 
   // get visual if it exists
-  for (const tinyxml2::XMLElement* visual = xml_element->FirstChildElement("visual"); visual; visual = xml_element->NextSiblingElement("visual"))
+  for (const tinyxml2::XMLElement* visual = xml_element->FirstChildElement("visual"); visual;
+       visual = xml_element->NextSiblingElement("visual"))
   {
     std::vector<tesseract_scene_graph::Visual::Ptr> temp_visual;
     auto status = parse(temp_visual, visual, locator, available_materials);
     if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(LinkStatusCategory::ErrorParsingVisualElement, status_cat, status);
+      return std::make_shared<tesseract_common::StatusCode>(
+          LinkStatusCategory::ErrorParsingVisualElement, status_cat, status);
 
     l->visual.insert(l->visual.end(), temp_visual.begin(), temp_visual.end());
   }
 
   // get collision if exists
-  for (const tinyxml2::XMLElement* collision = xml_element->FirstChildElement("collision"); collision; collision = collision->NextSiblingElement("collision"))
+  for (const tinyxml2::XMLElement* collision = xml_element->FirstChildElement("collision"); collision;
+       collision = collision->NextSiblingElement("collision"))
   {
     std::vector<tesseract_scene_graph::Collision::Ptr> temp_collision;
     auto status = parse(temp_collision, collision, locator);
     if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(LinkStatusCategory::ErrorParsingCollisionElement, status_cat, status);
+      return std::make_shared<tesseract_common::StatusCode>(
+          LinkStatusCategory::ErrorParsingCollisionElement, status_cat, status);
 
     l->collision.insert(l->collision.end(), temp_collision.begin(), temp_collision.end());
   }
@@ -131,5 +136,5 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Link::Ptr&
   return std::make_shared<tesseract_common::StatusCode>(LinkStatusCategory::Success, status_cat);
 }
 
-}
-#endif // TESSERACT_URDF_LINK_H
+}  // namespace tesseract_urdf
+#endif  // TESSERACT_URDF_LINK_H

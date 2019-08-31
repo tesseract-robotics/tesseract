@@ -40,7 +40,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 class PointCloudStatusCategory : public tesseract_common::StatusCategory
 {
 public:
@@ -96,12 +95,14 @@ inline tesseract_common::StatusCode::Ptr parsePointCloud(tesseract_geometry::Oct
 
   double resolution;
   if (xml_element->QueryDoubleAttribute("resolution", &resolution) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::ErrorAttributeResolution, status_cat);
+    return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::ErrorAttributeResolution,
+                                                          status_cat);
 
   auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
-  if (pcl::io::loadPCDFile<pcl::PointXYZ> (locator(filename), *cloud) == -1)
-    return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::ErrorImportingPointCloud, status_cat);
+  if (pcl::io::loadPCDFile<pcl::PointXYZ>(locator(filename), *cloud) == -1)
+    return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::ErrorImportingPointCloud,
+                                                          status_cat);
 
   if (cloud->points.empty())
     return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::ErrorPointCloudEmpty, status_cat);
@@ -119,9 +120,10 @@ inline tesseract_common::StatusCode::Ptr parsePointCloud(tesseract_geometry::Oct
     return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::ErrorCreatingGeometry, status_cat);
 
   octree = std::move(geom);
-  return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::Success, status_cat);;
+  return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::Success, status_cat);
+  ;
 }
 
-}
+}  // namespace tesseract_urdf
 
-#endif // TESSERACT_URDF_POINT_CLOUD_H
+#endif  // TESSERACT_URDF_POINT_CLOUD_H

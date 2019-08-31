@@ -71,7 +71,7 @@ tesseract_common::StatusCode::Ptr runTest(ElementType& type,
   tinyxml2::XMLDocument xml_doc;
   EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
 
-  tinyxml2::XMLElement *element = xml_doc.FirstChildElement(element_name.c_str());
+  tinyxml2::XMLElement* element = xml_doc.FirstChildElement(element_name.c_str());
   EXPECT_TRUE(element != nullptr);
 
   auto status = parse(type, element);
@@ -93,7 +93,7 @@ tesseract_common::StatusCode::Ptr runTest(ElementType& type,
   tinyxml2::XMLDocument xml_doc;
   EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
 
-  tinyxml2::XMLElement *element = xml_doc.FirstChildElement(element_name.c_str());
+  tinyxml2::XMLElement* element = xml_doc.FirstChildElement(element_name.c_str());
   EXPECT_TRUE(element != nullptr);
 
   auto status = parse(type, element, locator, visual);
@@ -114,7 +114,7 @@ tesseract_common::StatusCode::Ptr runTest(ElementType& type,
   tinyxml2::XMLDocument xml_doc;
   EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
 
-  tinyxml2::XMLElement *element = xml_doc.FirstChildElement(element_name.c_str());
+  tinyxml2::XMLElement* element = xml_doc.FirstChildElement(element_name.c_str());
   EXPECT_TRUE(element != nullptr);
 
   auto status = parse(type, element, locator);
@@ -127,16 +127,17 @@ tesseract_common::StatusCode::Ptr runTest(ElementType& type,
 }
 
 template <typename ElementType>
-tesseract_common::StatusCode::Ptr runTest(ElementType& type,
-                                          const std::string& xml_string,
-                                          const std::string element_name,
-                                          tesseract_scene_graph::ResourceLocatorFn locator,
-                                          const std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
+tesseract_common::StatusCode::Ptr
+runTest(ElementType& type,
+        const std::string& xml_string,
+        const std::string element_name,
+        tesseract_scene_graph::ResourceLocatorFn locator,
+        const std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
 {
   tinyxml2::XMLDocument xml_doc;
   EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
 
-  tinyxml2::XMLElement *element = xml_doc.FirstChildElement(element_name.c_str());
+  tinyxml2::XMLElement* element = xml_doc.FirstChildElement(element_name.c_str());
   EXPECT_TRUE(element != nullptr);
 
   auto status = parse(type, element, locator, available_materials);
@@ -149,15 +150,16 @@ tesseract_common::StatusCode::Ptr runTest(ElementType& type,
 }
 
 template <typename ElementType>
-tesseract_common::StatusCode::Ptr runTest(ElementType& type,
-                                          const std::string& xml_string,
-                                          const std::string element_name,
-                                          const std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
+tesseract_common::StatusCode::Ptr
+runTest(ElementType& type,
+        const std::string& xml_string,
+        const std::string element_name,
+        const std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
 {
   tinyxml2::XMLDocument xml_doc;
   EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
 
-  tinyxml2::XMLElement *element = xml_doc.FirstChildElement(element_name.c_str());
+  tinyxml2::XMLElement* element = xml_doc.FirstChildElement(element_name.c_str());
   EXPECT_TRUE(element != nullptr);
 
   auto status = parse(type, element, available_materials);
@@ -271,13 +273,13 @@ TEST(TesseractURDFUnit, parse_sphere)
     EXPECT_FALSE(*status);
   }
 
-// TODO: I would expect this to fail but tinyxml2 still parses it so need to create an issue.
-//  {
-//    std::string str = "<sphere radius=\"1 2\"/>";
-//    tesseract_geometry::Sphere::Ptr geom;
-//    auto status = runTest<tesseract_geometry::Sphere::Ptr>(geom, str, "sphere");
-//    EXPECT_FALSE(*status);
-//  }
+  // TODO: I would expect this to fail but tinyxml2 still parses it so need to create an issue.
+  //  {
+  //    std::string str = "<sphere radius=\"1 2\"/>";
+  //    tesseract_geometry::Sphere::Ptr geom;
+  //    auto status = runTest<tesseract_geometry::Sphere::Ptr>(geom, str, "sphere");
+  //    EXPECT_FALSE(*status);
+  //  }
 
   {
     std::string str = "<sphere />";
@@ -313,12 +315,12 @@ TEST(TesseractURDFUnit, parse_cone)
   }
 
   // TODO: I would expect this to fail but tinyxml2 still parses it so need to create an issue.
-//  {
-//    std::string str = "<cone radius=\"1 2\" length=\"2 3\"/>";
-//    tesseract_geometry::Cone::Ptr geom;
-//    auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone");
-//    EXPECT_FALSE(*status);
-//  }
+  //  {
+  //    std::string str = "<cone radius=\"1 2\" length=\"2 3\"/>";
+  //    tesseract_geometry::Cone::Ptr geom;
+  //    auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone");
+  //    EXPECT_FALSE(*status);
+  //  }
 
   {
     std::string str = "<cone radius=\"1\"/>";
@@ -368,12 +370,12 @@ TEST(TesseractURDFUnit, parse_cylinder)
   }
 
   // TODO: I would expect this to fail but tinyxml2 still parses it so need to create an issue.
-//  {
-//    std::string str = "<cylinder radius=\"1 2\" length=\"2 3\"/>";
-//    tesseract_geometry::Cylinder::Ptr geom;
-//    auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str, "cylinder");
-//    EXPECT_FALSE(*status);
-//  }
+  //  {
+  //    std::string str = "<cylinder radius=\"1 2\" length=\"2 3\"/>";
+  //    tesseract_geometry::Cylinder::Ptr geom;
+  //    auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str, "cylinder");
+  //    EXPECT_FALSE(*status);
+  //  }
 
   {
     std::string str = "<cylinder radius=\"1\"/>";
@@ -423,12 +425,12 @@ TEST(TesseractURDFUnit, parse_capsule)
   }
 
   // TODO: I would expect this to fail but tinyxml2 still parses it so need to create an issue.
-//  {
-//    std::string str = "<capsule radius=\"1 2\" length=\"2 3\"/>";
-//    tesseract_geometry::Capsule::Ptr geom;
-//    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule");
-//    EXPECT_FALSE(*status);
-//  }
+  //  {
+  //    std::string str = "<capsule radius=\"1 2\" length=\"2 3\"/>";
+  //    tesseract_geometry::Capsule::Ptr geom;
+  //    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule");
+  //    EXPECT_FALSE(*status);
+  //  }
 
   {
     std::string str = "<capsule radius=\"1\"/>";
@@ -510,7 +512,6 @@ TEST(TesseractURDFUnit, parse_mesh)
   }
 }
 
-
 TEST(TesseractURDFUnit, parse_sdf_mesh)
 {
   {
@@ -574,7 +575,8 @@ TEST(TesseractURDFUnit, parse_convex_mesh)
   {
     std::string str = "<convex_mesh filename=\"package://tesseract_support/meshes/box_2m.ply\" scale=\"1 2 1\"/>";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status = runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", locateResource, false);
+    auto status =
+        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", locateResource, false);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getFaceCount() == 6);
@@ -582,19 +584,23 @@ TEST(TesseractURDFUnit, parse_convex_mesh)
   }
 
   {
-    std::string str = "<convex_mesh filename=\"package://tesseract_support/meshes/box_2m.ply\" scale=\"1 2 1\" convert=\"true\"/>";
+    std::string str = "<convex_mesh filename=\"package://tesseract_support/meshes/box_2m.ply\" scale=\"1 2 1\" "
+                      "convert=\"true\"/>";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status = runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", locateResource, false);
+    auto status =
+        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", locateResource, false);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(geom.size() == 1);
-    EXPECT_TRUE(geom[0]->getFaceCount() >= 6); // Because we are converting due to numerical variance you could end up with additional faces.
+    EXPECT_TRUE(geom[0]->getFaceCount() >= 6);  // Because we are converting due to numerical variance you could end up
+                                                // with additional faces.
     EXPECT_TRUE(geom[0]->getVerticeCount() == 8);
   }
 
   {
     std::string str = "<convex_mesh filename=\"package://tesseract_support/meshes/box_2m.ply\"/>";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status = runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", locateResource, false);
+    auto status =
+        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", locateResource, false);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getFaceCount() == 6);
@@ -604,40 +610,45 @@ TEST(TesseractURDFUnit, parse_convex_mesh)
   {
     std::string str = "<convex_mesh filename=\"abc\" scale=\"1 2 1\"/>";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status = runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", locateResource, false);
+    auto status =
+        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", locateResource, false);
     EXPECT_FALSE(*status);
   }
 
   {
     std::string str = "<convex_mesh filename=\"package://tesseract_support/meshes/box_2m.ply\" scale=\"1 a 1\"/>";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status = runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", locateResource, false);
+    auto status =
+        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", locateResource, false);
     EXPECT_FALSE(*status);
   }
 
   {
     std::string str = "<convex_mesh filename=\"package://tesseract_support/meshes/box_2m.ply\" scale=\"1 2 1 3\"/>";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status = runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", locateResource, false);
+    auto status =
+        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", locateResource, false);
     EXPECT_FALSE(*status);
   }
 
   {
     std::string str = "<convex_mesh scale=\"1 2 1\"/>";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status = runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", locateResource, false);
+    auto status =
+        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", locateResource, false);
     EXPECT_FALSE(*status);
   }
 
   {
     std::string str = "<convex_mesh />";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
-    auto status = runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", locateResource, false);
+    auto status =
+        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", locateResource, false);
     EXPECT_FALSE(*status);
   }
 }
 
-//bool isNodeCollapsible(octomap::OcTree& octree, octomap::OcTreeNode* node)
+// bool isNodeCollapsible(octomap::OcTree& octree, octomap::OcTreeNode* node)
 //{
 //  if (!octree.nodeChildExists(node, 0))
 //    return false;
@@ -669,7 +680,7 @@ TEST(TesseractURDFUnit, parse_convex_mesh)
 //  return true;
 //}
 
-//bool pruneNode(octomap::OcTree& octree, octomap::OcTreeNode* node)
+// bool pruneNode(octomap::OcTree& octree, octomap::OcTreeNode* node)
 //{
 //  if (!isNodeCollapsible(octree, node))
 //    return false;
@@ -686,7 +697,7 @@ TEST(TesseractURDFUnit, parse_convex_mesh)
 //  return true;
 //}
 
-//void pruneRecurs(octomap::OcTree& octree, octomap::OcTreeNode* node,
+// void pruneRecurs(octomap::OcTree& octree, octomap::OcTreeNode* node,
 //                 unsigned int depth, unsigned int max_depth, unsigned int& num_pruned)
 //{
 //  assert(node);
@@ -711,7 +722,7 @@ TEST(TesseractURDFUnit, parse_convex_mesh)
 //  }
 //}
 
-//void prune(octomap::OcTree& octree)
+// void prune(octomap::OcTree& octree)
 //{
 //  if (octree.getRoot() == nullptr)
 //    return;
@@ -727,22 +738,21 @@ TEST(TesseractURDFUnit, parse_convex_mesh)
 
 TEST(TesseractURDFUnit, parse_octree)
 {
-//  {
-//    // Create octomap and add save it
-//    pcl::PointCloud<pcl::PointXYZ> full_cloud;
-//    double delta = 0.05;
-//    int length = static_cast<int>(1 / delta);
+  //  {
+  //    // Create octomap and add save it
+  //    pcl::PointCloud<pcl::PointXYZ> full_cloud;
+  //    double delta = 0.05;
+  //    int length = static_cast<int>(1 / delta);
 
-//    for (int x = 0; x < length; ++x)
-//      for (int y = 0; y < length; ++y)
-//        for (int z = 0; z < length; ++z)
-//          full_cloud.push_back(pcl::PointXYZ(-0.5f + static_cast<float>(x * delta),
-//                                             -0.5f + static_cast<float>(y * delta),
-//                                             -0.5f + static_cast<float>(z * delta)));
+  //    for (int x = 0; x < length; ++x)
+  //      for (int y = 0; y < length; ++y)
+  //        for (int z = 0; z < length; ++z)
+  //          full_cloud.push_back(pcl::PointXYZ(-0.5f + static_cast<float>(x * delta),
+  //                                             -0.5f + static_cast<float>(y * delta),
+  //                                             -0.5f + static_cast<float>(z * delta)));
 
-
-//    pcl::io::savePCDFile("/tmp/box_pcd.pcd", full_cloud, true);
-//  }
+  //    pcl::io::savePCDFile("/tmp/box_pcd.pcd", full_cloud, true);
+  //  }
 
   {
     std::string str = "<octomap shape_type=\"box\">"
@@ -851,7 +861,6 @@ TEST(TesseractURDFUnit, parse_octree)
   }
 }
 
-
 TEST(TesseractURDFUnit, parse_calibration)
 {
   {
@@ -958,10 +967,10 @@ TEST(TesseractURDFUnit, parse_inertial)
 {
   {
     std::string str = "<inertial>"
-        "  <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-        "  <mass value=\"1.0\"/>"
-        "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
-        "</inertial>";
+                      "  <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
+                      "  <mass value=\"1.0\"/>"
+                      "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_TRUE(*status);
@@ -976,9 +985,9 @@ TEST(TesseractURDFUnit, parse_inertial)
 
   {
     std::string str = "<inertial>"
-        "  <mass value=\"1.0\"/>"
-        "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
-        "</inertial>";
+                      "  <mass value=\"1.0\"/>"
+                      "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_TRUE(*status);
@@ -993,8 +1002,8 @@ TEST(TesseractURDFUnit, parse_inertial)
 
   {
     std::string str = "<inertial>"
-        "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
-        "</inertial>";
+                      "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_FALSE(*status);
@@ -1002,8 +1011,8 @@ TEST(TesseractURDFUnit, parse_inertial)
 
   {
     std::string str = "<inertial>"
-        "  <mass value=\"1.0\"/>"
-        "</inertial>";
+                      "  <mass value=\"1.0\"/>"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_FALSE(*status);
@@ -1011,9 +1020,9 @@ TEST(TesseractURDFUnit, parse_inertial)
 
   {
     std::string str = "<inertial>"
-        "  <mass value=\"a\"/>"
-        "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
-        "</inertial>";
+                      "  <mass value=\"a\"/>"
+                      "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_FALSE(*status);
@@ -1021,9 +1030,9 @@ TEST(TesseractURDFUnit, parse_inertial)
 
   {
     std::string str = "<inertial>"
-        "  <mass />"
-        "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
-        "</inertial>";
+                      "  <mass />"
+                      "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_FALSE(*status);
@@ -1031,9 +1040,9 @@ TEST(TesseractURDFUnit, parse_inertial)
 
   {
     std::string str = "<inertial>"
-        "  <mass value=\"1.0\"/>"
-        "  <inertia ixx=\"a\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
-        "</inertial>";
+                      "  <mass value=\"1.0\"/>"
+                      "  <inertia ixx=\"a\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_FALSE(*status);
@@ -1041,9 +1050,9 @@ TEST(TesseractURDFUnit, parse_inertial)
 
   {
     std::string str = "<inertial>"
-        "  <mass value=\"1.0\"/>"
-        "  <inertia ixx=\"1.0\" ixy=\"a\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
-        "</inertial>";
+                      "  <mass value=\"1.0\"/>"
+                      "  <inertia ixx=\"1.0\" ixy=\"a\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_FALSE(*status);
@@ -1051,9 +1060,9 @@ TEST(TesseractURDFUnit, parse_inertial)
 
   {
     std::string str = "<inertial>"
-        "  <mass value=\"1.0\"/>"
-        "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"a\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
-        "</inertial>";
+                      "  <mass value=\"1.0\"/>"
+                      "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"a\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_FALSE(*status);
@@ -1061,9 +1070,9 @@ TEST(TesseractURDFUnit, parse_inertial)
 
   {
     std::string str = "<inertial>"
-        "  <mass value=\"1.0\"/>"
-        "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"a\" iyz=\"5.0\" izz=\"6.0\"/>"
-        "</inertial>";
+                      "  <mass value=\"1.0\"/>"
+                      "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"a\" iyz=\"5.0\" izz=\"6.0\"/>"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_FALSE(*status);
@@ -1071,9 +1080,9 @@ TEST(TesseractURDFUnit, parse_inertial)
 
   {
     std::string str = "<inertial>"
-        "  <mass value=\"1.0\"/>"
-        "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"a\" izz=\"6.0\"/>"
-        "</inertial>";
+                      "  <mass value=\"1.0\"/>"
+                      "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"a\" izz=\"6.0\"/>"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_FALSE(*status);
@@ -1081,9 +1090,9 @@ TEST(TesseractURDFUnit, parse_inertial)
 
   {
     std::string str = "<inertial>"
-        "  <mass value=\"1.0\"/>"
-        "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"a\"/>"
-        "</inertial>";
+                      "  <mass value=\"1.0\"/>"
+                      "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"a\"/>"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_FALSE(*status);
@@ -1091,9 +1100,9 @@ TEST(TesseractURDFUnit, parse_inertial)
 
   {
     std::string str = "<inertial>"
-        "  <mass value=\"1.0\"/>"
-        "  <inertia ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
-        "</inertial>";
+                      "  <mass value=\"1.0\"/>"
+                      "  <inertia ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_FALSE(*status);
@@ -1101,9 +1110,9 @@ TEST(TesseractURDFUnit, parse_inertial)
 
   {
     std::string str = "<inertial>"
-        "  <mass value=\"1.0\"/>"
-        "  <inertia ixx=\"1.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
-        "</inertial>";
+                      "  <mass value=\"1.0\"/>"
+                      "  <inertia ixx=\"1.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_FALSE(*status);
@@ -1111,9 +1120,9 @@ TEST(TesseractURDFUnit, parse_inertial)
 
   {
     std::string str = "<inertial>"
-        "  <mass value=\"1.0\"/>"
-        "  <inertia ixx=\"1.0\" ixy=\"2.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
-        "</inertial>";
+                      "  <mass value=\"1.0\"/>"
+                      "  <inertia ixx=\"1.0\" ixy=\"2.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\"/>"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_FALSE(*status);
@@ -1121,9 +1130,9 @@ TEST(TesseractURDFUnit, parse_inertial)
 
   {
     std::string str = "<inertial>"
-        "  <mass value=\"1.0\"/>"
-        "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyz=\"5.0\" izz=\"6.0\"/>"
-        "</inertial>";
+                      "  <mass value=\"1.0\"/>"
+                      "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyz=\"5.0\" izz=\"6.0\"/>"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_FALSE(*status);
@@ -1131,9 +1140,9 @@ TEST(TesseractURDFUnit, parse_inertial)
 
   {
     std::string str = "<inertial>"
-        "  <mass value=\"1.0\"/>"
-        "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" izz=\"6.0\"/>"
-        "</inertial>";
+                      "  <mass value=\"1.0\"/>"
+                      "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" izz=\"6.0\"/>"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_FALSE(*status);
@@ -1141,9 +1150,9 @@ TEST(TesseractURDFUnit, parse_inertial)
 
   {
     std::string str = "<inertial>"
-        "  <mass value=\"1.0\"/>"
-        "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\"/>"
-        "</inertial>";
+                      "  <mass value=\"1.0\"/>"
+                      "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\"/>"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_FALSE(*status);
@@ -1151,9 +1160,9 @@ TEST(TesseractURDFUnit, parse_inertial)
 
   {
     std::string str = "<inertial>"
-        "  <mass value=\"1.0\"/>"
-        "  <inertia />"
-        "</inertial>";
+                      "  <mass value=\"1.0\"/>"
+                      "  <inertia />"
+                      "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");
     EXPECT_FALSE(*status);
@@ -1267,9 +1276,9 @@ TEST(TesseractURDFUnit, parse_material)
 
   {
     std::string str = "<material name=\"test_material\">"
-        "  <color rgba=\"1 .5 .5 1\"/>"
-        "  <texture filename=\"/tmp/texture.txt\"/>"
-        "</material>";
+                      "  <color rgba=\"1 .5 .5 1\"/>"
+                      "  <texture filename=\"/tmp/texture.txt\"/>"
+                      "</material>";
     tesseract_scene_graph::Material::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials);
     EXPECT_TRUE(*status);
@@ -1280,8 +1289,8 @@ TEST(TesseractURDFUnit, parse_material)
 
   {
     std::string str = "<material name=\"test_material\">"
-        "  <color rgba=\"1 .5 .5 1\"/>"
-        "</material>";
+                      "  <color rgba=\"1 .5 .5 1\"/>"
+                      "</material>";
     tesseract_scene_graph::Material::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials);
     EXPECT_TRUE(*status);
@@ -1309,9 +1318,9 @@ TEST(TesseractURDFUnit, parse_material)
 
   {
     std::string str = "<material name=\"test_material\">"
-        "  <color rgba=\"1 .5 .5 a\"/>"
-        "  <texture filename=\"/tmp/texture.txt\"/>"
-        "</material>";
+                      "  <color rgba=\"1 .5 .5 a\"/>"
+                      "  <texture filename=\"/tmp/texture.txt\"/>"
+                      "</material>";
     tesseract_scene_graph::Material::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials);
     EXPECT_FALSE(*status);
@@ -1319,9 +1328,9 @@ TEST(TesseractURDFUnit, parse_material)
 
   {
     std::string str = "<material name=\"test_material\">"
-        "  <color rgba=\"1 .5 .5 1 1\"/>"
-        "  <texture filename=\"/tmp/texture.txt\"/>"
-        "</material>";
+                      "  <color rgba=\"1 .5 .5 1 1\"/>"
+                      "  <texture filename=\"/tmp/texture.txt\"/>"
+                      "</material>";
     tesseract_scene_graph::Material::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials);
     EXPECT_FALSE(*status);
@@ -1395,7 +1404,8 @@ TEST(TesseractURDFUnit, parse_mimic)
 TEST(TesseractURDFUnit, parse_safety_controller)
 {
   {
-    std::string str = "<safety_controller soft_lower_limit=\"1\" soft_upper_limit=\"2\" k_position=\"3\" k_velocity=\"4\"/>";
+    std::string str = "<safety_controller soft_lower_limit=\"1\" soft_upper_limit=\"2\" k_position=\"3\" "
+                      "k_velocity=\"4\"/>";
     tesseract_scene_graph::JointSafety::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointSafety::Ptr>(elem, str, "safety_controller");
     EXPECT_TRUE(*status);
@@ -1468,8 +1478,8 @@ TEST(TesseractURDFUnit, parse_geometry)
 {
   {
     std::string str = "<geometry>"
-        "  <box size=\"1 1 1\" />"
-        "</geometry>";
+                      "  <box size=\"1 1 1\" />"
+                      "</geometry>";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
     auto status = runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", locateResource, true);
     EXPECT_TRUE(*status);
@@ -1479,7 +1489,7 @@ TEST(TesseractURDFUnit, parse_geometry)
 
   {
     std::string str = "<geometry>"
-        "</geometry>";
+                      "</geometry>";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
     auto status = runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", locateResource, true);
     EXPECT_FALSE(*status);
@@ -1487,8 +1497,8 @@ TEST(TesseractURDFUnit, parse_geometry)
 
   {
     std::string str = "<geometry>"
-        "  <box size=\"1 1 a\" />"
-        "</geometry>";
+                      "  <box size=\"1 1 a\" />"
+                      "</geometry>";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
     auto status = runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", locateResource, true);
     EXPECT_FALSE(*status);
@@ -1500,16 +1510,17 @@ TEST(TesseractURDFUnit, parse_visual)
   std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
   {
     std::string str = "<visual>"
-        "  <origin xyz=\"1 2 3\" rpy=\"0 0 0\" />"
-        "  <geometry>"
-        "    <box size=\"1 2 3\" />"
-        "  </geometry>"
-        "  <material name=\"Cyan\">"
-        "    <color rgba=\"0 1.0 1.0 1.0\"/>"
-        "  </material>"
-        "</visual>";
+                      "  <origin xyz=\"1 2 3\" rpy=\"0 0 0\" />"
+                      "  <geometry>"
+                      "    <box size=\"1 2 3\" />"
+                      "  </geometry>"
+                      "  <material name=\"Cyan\">"
+                      "    <color rgba=\"0 1.0 1.0 1.0\"/>"
+                      "  </material>"
+                      "</visual>";
     std::vector<tesseract_scene_graph::Visual::Ptr> elem;
-    auto status = runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(elem, str, "visual", locateResource, empty_available_materials);
+    auto status = runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
+        elem, str, "visual", locateResource, empty_available_materials);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->geometry != nullptr);
@@ -1519,15 +1530,16 @@ TEST(TesseractURDFUnit, parse_visual)
 
   {
     std::string str = "<visual>"
-        "  <geometry>"
-        "    <box size=\"1 2 3\" />"
-        "  </geometry>"
-        "  <material name=\"Cyan\">"
-        "    <color rgba=\"0 1.0 1.0 1.0\"/>"
-        "  </material>"
-        "</visual>";
+                      "  <geometry>"
+                      "    <box size=\"1 2 3\" />"
+                      "  </geometry>"
+                      "  <material name=\"Cyan\">"
+                      "    <color rgba=\"0 1.0 1.0 1.0\"/>"
+                      "  </material>"
+                      "</visual>";
     std::vector<tesseract_scene_graph::Visual::Ptr> elem;
-    auto status = runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(elem, str, "visual", locateResource, empty_available_materials);
+    auto status = runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
+        elem, str, "visual", locateResource, empty_available_materials);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->geometry != nullptr);
@@ -1537,12 +1549,13 @@ TEST(TesseractURDFUnit, parse_visual)
 
   {
     std::string str = "<visual>"
-        "  <geometry>"
-        "    <box size=\"1 2 3\" />"
-        "  </geometry>"
-        "</visual>";
+                      "  <geometry>"
+                      "    <box size=\"1 2 3\" />"
+                      "  </geometry>"
+                      "</visual>";
     std::vector<tesseract_scene_graph::Visual::Ptr> elem;
-    auto status = runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(elem, str, "visual", locateResource, empty_available_materials);
+    auto status = runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
+        elem, str, "visual", locateResource, empty_available_materials);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->geometry != nullptr);
@@ -1552,12 +1565,13 @@ TEST(TesseractURDFUnit, parse_visual)
 
   {
     std::string str = "<visual>"
-        "  <material name=\"Cyan\">"
-        "    <color rgba=\"0 1.0 1.0 1.0\"/>"
-        "  </material>"
-        "</visual>";
+                      "  <material name=\"Cyan\">"
+                      "    <color rgba=\"0 1.0 1.0 1.0\"/>"
+                      "  </material>"
+                      "</visual>";
     std::vector<tesseract_scene_graph::Visual::Ptr> elem;
-    auto status = runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(elem, str, "visual", locateResource, empty_available_materials);
+    auto status = runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
+        elem, str, "visual", locateResource, empty_available_materials);
     EXPECT_FALSE(*status);
   }
 }
@@ -1566,11 +1580,11 @@ TEST(TesseractURDFUnit, parse_collision)
 {
   {
     std::string str = "<collision>"
-        "  <origin xyz=\"1 2 3\" rpy=\"0 0 0\" />"
-        "  <geometry>"
-        "    <box size=\"1 2 3\" />"
-        "  </geometry>"
-        "</collision>";
+                      "  <origin xyz=\"1 2 3\" rpy=\"0 0 0\" />"
+                      "  <geometry>"
+                      "    <box size=\"1 2 3\" />"
+                      "  </geometry>"
+                      "</collision>";
     std::vector<tesseract_scene_graph::Collision::Ptr> elem;
     auto status = runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", locateResource);
     EXPECT_TRUE(*status);
@@ -1581,10 +1595,10 @@ TEST(TesseractURDFUnit, parse_collision)
 
   {
     std::string str = "<collision>"
-        "  <geometry>"
-        "    <box size=\"1 2 3\" />"
-        "  </geometry>"
-        "</collision>";
+                      "  <geometry>"
+                      "    <box size=\"1 2 3\" />"
+                      "  </geometry>"
+                      "</collision>";
     std::vector<tesseract_scene_graph::Collision::Ptr> elem;
     auto status = runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", locateResource);
     EXPECT_TRUE(*status);
@@ -1595,7 +1609,7 @@ TEST(TesseractURDFUnit, parse_collision)
 
   {
     std::string str = "<collision>"
-        "</collision>";
+                      "</collision>";
     std::vector<tesseract_scene_graph::Collision::Ptr> elem;
     auto status = runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", locateResource);
     EXPECT_FALSE(*status);
@@ -1629,7 +1643,8 @@ TEST(TesseractURDFUnit, parse_link)
                       "  </collision>"
                       "</link>";
     tesseract_scene_graph::Link::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials);
+    auto status =
+        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial != nullptr);
@@ -1656,7 +1671,8 @@ TEST(TesseractURDFUnit, parse_link)
                       "  </collision>"
                       "</link>";
     tesseract_scene_graph::Link::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials);
+    auto status =
+        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
@@ -1677,7 +1693,8 @@ TEST(TesseractURDFUnit, parse_link)
                       "  </visual>"
                       "</link>";
     tesseract_scene_graph::Link::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials);
+    auto status =
+        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
@@ -1695,7 +1712,8 @@ TEST(TesseractURDFUnit, parse_link)
                       "  </collision>"
                       "</link>";
     tesseract_scene_graph::Link::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials);
+    auto status =
+        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
@@ -1706,7 +1724,8 @@ TEST(TesseractURDFUnit, parse_link)
   {
     std::string str = "<link name=\"my_link\"/>";
     tesseract_scene_graph::Link::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials);
+    auto status =
+        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
@@ -1727,7 +1746,8 @@ TEST(TesseractURDFUnit, parse_link)
                       "  </visual>"
                       "</link>";
     tesseract_scene_graph::Link::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials);
+    auto status =
+        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials);
     EXPECT_FALSE(*status);
   }
 
@@ -1744,7 +1764,8 @@ TEST(TesseractURDFUnit, parse_link)
                       "  </visual>"
                       "</link>";
     tesseract_scene_graph::Link::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials);
+    auto status =
+        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials);
     EXPECT_FALSE(*status);
   }
 }
@@ -1759,7 +1780,8 @@ TEST(TesseractURDFUnit, parse_joint)
                       "  <calibration rising=\"0.0\"/>"
                       "  <dynamics damping=\"0.0\" friction=\"0.0\"/>"
                       "  <limit effort=\"30\" velocity=\"1.0\" lower=\"-2.2\" upper=\"0.7\" />"
-                      "  <safety_controller k_velocity=\"10\" k_position=\"15\" soft_lower_limit=\"-2.0\" soft_upper_limit=\"0.5\" />"
+                      "  <safety_controller k_velocity=\"10\" k_position=\"15\" soft_lower_limit=\"-2.0\" "
+                      "soft_upper_limit=\"0.5\" />"
                       "</joint>";
     tesseract_scene_graph::Joint::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint");
@@ -1767,7 +1789,7 @@ TEST(TesseractURDFUnit, parse_joint)
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::FLOATING);
     EXPECT_FALSE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
-    EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(1,0,0), 1e-8));
+    EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(1, 0, 0), 1e-8));
     EXPECT_TRUE(elem->parent_link_name == "link1");
     EXPECT_TRUE(elem->child_link_name == "link2");
     EXPECT_TRUE(elem->calibration != nullptr);
@@ -1785,7 +1807,8 @@ TEST(TesseractURDFUnit, parse_joint)
                       "  <calibration rising=\"0.0\"/>"
                       "  <dynamics damping=\"0.0\" friction=\"0.0\"/>"
                       "  <limit effort=\"30\" velocity=\"1.0\" lower=\"-2.2\" upper=\"0.7\" />"
-                      "  <safety_controller k_velocity=\"10\" k_position=\"15\" soft_lower_limit=\"-2.0\" soft_upper_limit=\"0.5\" />"
+                      "  <safety_controller k_velocity=\"10\" k_position=\"15\" soft_lower_limit=\"-2.0\" "
+                      "soft_upper_limit=\"0.5\" />"
                       "</joint>";
     tesseract_scene_graph::Joint::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Joint::Ptr>(elem, str, "joint");
@@ -1793,7 +1816,7 @@ TEST(TesseractURDFUnit, parse_joint)
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::REVOLUTE);
     EXPECT_FALSE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
-    EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(1,0,0), 1e-8));
+    EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(1, 0, 0), 1e-8));
     EXPECT_TRUE(elem->parent_link_name == "link1");
     EXPECT_TRUE(elem->child_link_name == "link2");
     EXPECT_TRUE(elem->calibration != nullptr);
@@ -1816,7 +1839,7 @@ TEST(TesseractURDFUnit, parse_joint)
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::REVOLUTE);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
-    EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(0,0,1), 1e-8));
+    EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(0, 0, 1), 1e-8));
     EXPECT_TRUE(elem->parent_link_name == "link1");
     EXPECT_TRUE(elem->child_link_name == "link2");
     EXPECT_TRUE(elem->calibration == nullptr);
@@ -1839,7 +1862,7 @@ TEST(TesseractURDFUnit, parse_joint)
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::CONTINUOUS);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
-    EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(0,0,1), 1e-8));
+    EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(0, 0, 1), 1e-8));
     EXPECT_TRUE(elem->parent_link_name == "link1");
     EXPECT_TRUE(elem->child_link_name == "link2");
     EXPECT_TRUE(elem->calibration == nullptr);
@@ -1862,7 +1885,7 @@ TEST(TesseractURDFUnit, parse_joint)
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::FIXED);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
-    EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(1,0,0), 1e-8));
+    EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(1, 0, 0), 1e-8));
     EXPECT_TRUE(elem->parent_link_name == "link1");
     EXPECT_TRUE(elem->child_link_name == "link2");
     EXPECT_TRUE(elem->calibration == nullptr);
@@ -1885,7 +1908,7 @@ TEST(TesseractURDFUnit, parse_joint)
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::PRISMATIC);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
-    EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(0,0,1), 1e-8));
+    EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(0, 0, 1), 1e-8));
     EXPECT_TRUE(elem->parent_link_name == "link1");
     EXPECT_TRUE(elem->child_link_name == "link2");
     EXPECT_TRUE(elem->calibration == nullptr);
@@ -1908,7 +1931,7 @@ TEST(TesseractURDFUnit, parse_joint)
     EXPECT_TRUE(elem->getName() == "my_joint");
     EXPECT_TRUE(elem->type == tesseract_scene_graph::JointType::PLANAR);
     EXPECT_TRUE(elem->parent_to_joint_origin_transform.isApprox(Eigen::Isometry3d::Identity(), 1e-8));
-    EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(0,0,1), 1e-8));
+    EXPECT_TRUE(elem->axis.isApprox(Eigen::Vector3d(0, 0, 1), 1e-8));
     EXPECT_TRUE(elem->parent_link_name == "link1");
     EXPECT_TRUE(elem->child_link_name == "link2");
     EXPECT_TRUE(elem->calibration == nullptr);
@@ -1960,21 +1983,21 @@ TEST(TesseractURDFUnit, parse_joint)
 TEST(TesseractURDFUnit, parse_urdf)
 {
   {
-    std::string str =
-        "<robot name=\"test\">"
-        "  <joint name=\"j1\" type=\"fixed\">"
-        "    <parent link=\"l1\"/>"
-        "    <child link=\"l2\"/>"
-        "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-        "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-        "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-        "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-        "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-        "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-        "  </joint>"
-        "  <link name=\"l1\"/>"
-        "  <link name=\"l2\"/>"
-        "</robot>";
+    std::string str = "<robot name=\"test\">"
+                      "  <joint name=\"j1\" type=\"fixed\">"
+                      "    <parent link=\"l1\"/>"
+                      "    <child link=\"l2\"/>"
+                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
+                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
+                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
+                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
+                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
+                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
+                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
+                      "  </joint>"
+                      "  <link name=\"l1\"/>"
+                      "  <link name=\"l2\"/>"
+                      "</robot>";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = parseURDFString(sg, str, locateResource);
     EXPECT_TRUE(*status);
@@ -1987,25 +2010,25 @@ TEST(TesseractURDFUnit, parse_urdf)
   }
 
   {
-    std::string str =
-        "<robot name=\"test\">"
-        "  <joint name=\"j1\" type=\"fixed\">"
-        "    <parent link=\"l1\"/>"
-        "    <child link=\"l2\"/>"
-        "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-        "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-        "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-        "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-        "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-        "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-        "  </joint>"
-        "  <joint name=\"j2\" type=\"fixed\">"
-        "    <parent link=\"l1\"/>"
-        "    <child link=\"l2\"/>"
-        "  </joint>"
-        "  <link name=\"l1\"/>"
-        "  <link name=\"l2\"/>"
-        "</robot>";
+    std::string str = "<robot name=\"test\">"
+                      "  <joint name=\"j1\" type=\"fixed\">"
+                      "    <parent link=\"l1\"/>"
+                      "    <child link=\"l2\"/>"
+                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
+                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
+                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
+                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
+                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
+                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
+                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
+                      "  </joint>"
+                      "  <joint name=\"j2\" type=\"fixed\">"
+                      "    <parent link=\"l1\"/>"
+                      "    <child link=\"l2\"/>"
+                      "  </joint>"
+                      "  <link name=\"l1\"/>"
+                      "  <link name=\"l2\"/>"
+                      "</robot>";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = parseURDFString(sg, str, locateResource);
     EXPECT_FALSE(*status);
@@ -2014,21 +2037,21 @@ TEST(TesseractURDFUnit, parse_urdf)
   }
 
   {
-    std::string str =
-        "<robot name=\"test\">"
-        "  <joint name=\"j1\" type=\"fixed\">"
-        "    <parent link=\"l1\"/>"
-        "    <child link=\"l2\"/>"
-        "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-        "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-        "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-        "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-        "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-        "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-        "  </joint>"
-        "  <link name=\"l1\"/>"
-        "  <link name=\"l3\"/>"
-        "</robot>";
+    std::string str = "<robot name=\"test\">"
+                      "  <joint name=\"j1\" type=\"fixed\">"
+                      "    <parent link=\"l1\"/>"
+                      "    <child link=\"l2\"/>"
+                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
+                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
+                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
+                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
+                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
+                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
+                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
+                      "  </joint>"
+                      "  <link name=\"l1\"/>"
+                      "  <link name=\"l3\"/>"
+                      "</robot>";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = parseURDFString(sg, str, locateResource);
     EXPECT_FALSE(*status);
@@ -2037,22 +2060,22 @@ TEST(TesseractURDFUnit, parse_urdf)
   }
 
   {
-    std::string str =
-        "<robot name=\"test\">"
-        "  <joint name=\"j1\" type=\"fixed\">"
-        "    <parent link=\"l1\"/>"
-        "    <child link=\"l2\"/>"
-        "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-        "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-        "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-        "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-        "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-        "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-        "  </joint>"
-        "  <link name=\"l1\"/>"
-        "  <link name=\"l2\"/>"
-        "  <link name=\"l3\"/>"
-        "</robot>";
+    std::string str = "<robot name=\"test\">"
+                      "  <joint name=\"j1\" type=\"fixed\">"
+                      "    <parent link=\"l1\"/>"
+                      "    <child link=\"l2\"/>"
+                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
+                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
+                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
+                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
+                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
+                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
+                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
+                      "  </joint>"
+                      "  <link name=\"l1\"/>"
+                      "  <link name=\"l2\"/>"
+                      "  <link name=\"l3\"/>"
+                      "</robot>";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = parseURDFString(sg, str, locateResource);
     EXPECT_FALSE(*status);
@@ -2061,21 +2084,21 @@ TEST(TesseractURDFUnit, parse_urdf)
   }
 
   {
-    std::string str =
-        "<robot name=\"test\">"
-        "  <joint name=\"j1\" type=\"fixed\">"
-        "    <parent link=\"l1\"/>"
-        "    <child link=\"l3\"/>"
-        "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-        "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-        "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-        "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-        "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-        "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-        "  </joint>"
-        "  <link name=\"l1\"/>"
-        "  <link name=\"l2\"/>"
-        "</robot>";
+    std::string str = "<robot name=\"test\">"
+                      "  <joint name=\"j1\" type=\"fixed\">"
+                      "    <parent link=\"l1\"/>"
+                      "    <child link=\"l3\"/>"
+                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
+                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
+                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
+                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
+                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
+                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
+                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
+                      "  </joint>"
+                      "  <link name=\"l1\"/>"
+                      "  <link name=\"l2\"/>"
+                      "</robot>";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = parseURDFString(sg, str, locateResource);
     EXPECT_FALSE(*status);
@@ -2084,22 +2107,22 @@ TEST(TesseractURDFUnit, parse_urdf)
   }
 
   {
-    std::string str =
-        "<robot name=\"test\">"
-        "  <joint name=\"j1\" type=\"fixed\">"
-        "    <parent link=\"l1\"/>"
-        "    <child link=\"l2\"/>"
-        "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-        "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-        "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-        "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-        "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-        "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-        "  </joint>"
-        "  <link name=\"l1\"/>"
-        "  <link name=\"l2\"/>"
-        "  <link name=\"l1\"/>"
-        "</robot>";
+    std::string str = "<robot name=\"test\">"
+                      "  <joint name=\"j1\" type=\"fixed\">"
+                      "    <parent link=\"l1\"/>"
+                      "    <child link=\"l2\"/>"
+                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
+                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
+                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
+                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
+                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
+                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
+                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
+                      "  </joint>"
+                      "  <link name=\"l1\"/>"
+                      "  <link name=\"l2\"/>"
+                      "  <link name=\"l1\"/>"
+                      "</robot>";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = parseURDFString(sg, str, locateResource);
     EXPECT_FALSE(*status);
@@ -2108,21 +2131,21 @@ TEST(TesseractURDFUnit, parse_urdf)
   }
 
   {
-    std::string str =
-        "<robot>"
-        "  <joint name=\"j1\" type=\"fixed\">"
-        "    <parent link=\"l1\"/>"
-        "    <child link=\"l2\"/>"
-        "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-        "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-        "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-        "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-        "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-        "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-        "  </joint>"
-        "  <link name=\"l1\"/>"
-        "  <link name=\"l2\"/>"
-        "</robot>";
+    std::string str = "<robot>"
+                      "  <joint name=\"j1\" type=\"fixed\">"
+                      "    <parent link=\"l1\"/>"
+                      "    <child link=\"l2\"/>"
+                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
+                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
+                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
+                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
+                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
+                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
+                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
+                      "  </joint>"
+                      "  <link name=\"l1\"/>"
+                      "  <link name=\"l2\"/>"
+                      "</robot>";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = parseURDFString(sg, str, locateResource);
     EXPECT_FALSE(*status);
@@ -2131,26 +2154,26 @@ TEST(TesseractURDFUnit, parse_urdf)
   }
 
   {
-    std::string str =
-        "<robot name=\"test\">"
-        "  <joint name=\"j1\" type=\"fixed\">"
-        "    <parent link=\"l2\"/>"
-        "    <child link=\"l3\"/>"
-        "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-        "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-        "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-        "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-        "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-        "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-        "  </joint>"
-        "  <joint name=\"j1\" type=\"fixed\">"
-        "    <parent link=\"l1\"/>"
-        "    <child link=\"l2\"/>"
-        "  </joint>"
-        "  <link name=\"l1\"/>"
-        "  <link name=\"l2\"/>"
-        "  <link name=\"l3\"/>"
-        "</robot>";
+    std::string str = "<robot name=\"test\">"
+                      "  <joint name=\"j1\" type=\"fixed\">"
+                      "    <parent link=\"l2\"/>"
+                      "    <child link=\"l3\"/>"
+                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
+                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
+                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
+                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
+                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
+                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
+                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
+                      "  </joint>"
+                      "  <joint name=\"j1\" type=\"fixed\">"
+                      "    <parent link=\"l1\"/>"
+                      "    <child link=\"l2\"/>"
+                      "  </joint>"
+                      "  <link name=\"l1\"/>"
+                      "  <link name=\"l2\"/>"
+                      "  <link name=\"l3\"/>"
+                      "</robot>";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = parseURDFString(sg, str, locateResource);
     EXPECT_FALSE(*status);
@@ -2197,7 +2220,7 @@ TEST(TesseractURDFUnit, LoadURDFUnit)
   EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_a4") != path.second.end());
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
 

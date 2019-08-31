@@ -69,7 +69,8 @@ TEST(TesseractGeometryUnit, LoadMeshUnit)
   EXPECT_TRUE(meshes[0]->getVerticeCount() == 8);
 
   mesh_file = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply";
-  std::vector<ConvexMesh::Ptr> convex_meshes = createMeshFromPath<ConvexMesh>(mesh_file, Eigen::Vector3d(1, 1, 1), false, false);
+  std::vector<ConvexMesh::Ptr> convex_meshes =
+      createMeshFromPath<ConvexMesh>(mesh_file, Eigen::Vector3d(1, 1, 1), false, false);
   EXPECT_TRUE(convex_meshes.size() == 1);
   EXPECT_TRUE(convex_meshes[0]->getFaceCount() == 6);
   EXPECT_TRUE(convex_meshes[0]->getVerticeCount() == 8);

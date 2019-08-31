@@ -38,7 +38,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 class MimicStatusCategory : public tesseract_common::StatusCategory
 {
 public:
@@ -94,9 +93,11 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointMimic
 
   auto status = std::make_shared<tesseract_common::StatusCode>(MimicStatusCategory::Success, status_cat);
   if (xml_element->Attribute("offset") == nullptr && xml_element->Attribute("multiplier") == nullptr)
-    status = std::make_shared<tesseract_common::StatusCode>(MimicStatusCategory::MissingAttributeOffsetAndMultiplier, status_cat);
+    status = std::make_shared<tesseract_common::StatusCode>(MimicStatusCategory::MissingAttributeOffsetAndMultiplier,
+                                                            status_cat);
   else if (xml_element->Attribute("offset") != nullptr && xml_element->Attribute("multiplier") == nullptr)
-    status = std::make_shared<tesseract_common::StatusCode>(MimicStatusCategory::MissingAttributeMultiplier, status_cat);
+    status =
+        std::make_shared<tesseract_common::StatusCode>(MimicStatusCategory::MissingAttributeMultiplier, status_cat);
   else if (xml_element->Attribute("offset") == nullptr && xml_element->Attribute("multiplier") != nullptr)
     status = std::make_shared<tesseract_common::StatusCode>(MimicStatusCategory::MissingAttributeOffset, status_cat);
 
@@ -106,12 +107,13 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointMimic
 
   s = xml_element->QueryDoubleAttribute("multiplier", &(m->multiplier));
   if (s != tinyxml2::XML_NO_ATTRIBUTE && s != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(MimicStatusCategory::ErrorParsingAttributeMultiplier, status_cat);
+    return std::make_shared<tesseract_common::StatusCode>(MimicStatusCategory::ErrorParsingAttributeMultiplier,
+                                                          status_cat);
 
   mimic = std::move(m);
   return status;
 }
 
-}
+}  // namespace tesseract_urdf
 
-#endif // TESSERACT_URDF_MIMIC_H
+#endif  // TESSERACT_URDF_MIMIC_H

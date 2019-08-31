@@ -28,7 +28,6 @@
 
 namespace tesseract_urdf
 {
-
 tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGraph::Ptr& scene_graph,
                                                   const std::string& urdf_xml_string,
                                                   tesseract_scene_graph::ResourceLocatorFn locator)
@@ -40,7 +39,7 @@ tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGr
   if (xml_doc.Parse(urdf_xml_string.c_str()) != tinyxml2::XML_SUCCESS)
     return std::make_shared<tesseract_common::StatusCode>(URDFStatusCategory::ErrorOpeningFile, status_cat);
 
-  tinyxml2::XMLElement *robot = xml_doc.FirstChildElement("robot");
+  tinyxml2::XMLElement* robot = xml_doc.FirstChildElement("robot");
   if (robot == nullptr)
     return std::make_shared<tesseract_common::StatusCode>(URDFStatusCategory::ErrorParsingRobotElement, status_cat);
 
@@ -54,12 +53,14 @@ tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGr
   sg->setName(robot_name);
 
   std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
-  for (tinyxml2::XMLElement* material = robot->FirstChildElement("material"); material; material = material->NextSiblingElement("material"))
+  for (tinyxml2::XMLElement* material = robot->FirstChildElement("material"); material;
+       material = material->NextSiblingElement("material"))
   {
     tesseract_scene_graph::Material::Ptr m = nullptr;
     auto status = parse(m, material, std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>());
     if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(URDFStatusCategory::ErrorParsingAvailableMaterialElement, status_cat, status);
+      return std::make_shared<tesseract_common::StatusCode>(
+          URDFStatusCategory::ErrorParsingAvailableMaterialElement, status_cat, status);
 
     available_materials[m->getName()] = m;
   }
@@ -69,32 +70,39 @@ tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGr
     tesseract_scene_graph::Link::Ptr l = nullptr;
     auto status = parse(l, link, locator, available_materials);
     if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(URDFStatusCategory::ErrorParsingLinkElement, status_cat, status);
+      return std::make_shared<tesseract_common::StatusCode>(
+          URDFStatusCategory::ErrorParsingLinkElement, status_cat, status);
 
     // Check if link name is unique
     if (sg->getLink(l->getName()) != nullptr)
-      return std::make_shared<tesseract_common::StatusCode>(URDFStatusCategory::ErrorLinkNamesNotUnique, status_cat, status);
+      return std::make_shared<tesseract_common::StatusCode>(
+          URDFStatusCategory::ErrorLinkNamesNotUnique, status_cat, status);
 
     if (!sg->addLink(tesseract_scene_graph::Link(*l)))
-      return std::make_shared<tesseract_common::StatusCode>(URDFStatusCategory::ErrorAddingLinkToSceneGraph, status_cat, status);
+      return std::make_shared<tesseract_common::StatusCode>(
+          URDFStatusCategory::ErrorAddingLinkToSceneGraph, status_cat, status);
   }
 
   if (sg->getLinks().empty())
     return std::make_shared<tesseract_common::StatusCode>(URDFStatusCategory::ErrorNoLinks, status_cat);
 
-  for (tinyxml2::XMLElement* joint = robot->FirstChildElement("joint"); joint; joint = joint->NextSiblingElement("joint"))
+  for (tinyxml2::XMLElement* joint = robot->FirstChildElement("joint"); joint; joint = joint->NextSiblingElement("join"
+                                                                                                                 "t"))
   {
     tesseract_scene_graph::Joint::Ptr j = nullptr;
     auto status = parse(j, joint);
     if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(URDFStatusCategory::ErrorParsingLinkElement, status_cat, status);
+      return std::make_shared<tesseract_common::StatusCode>(
+          URDFStatusCategory::ErrorParsingLinkElement, status_cat, status);
 
     // Check if joint name is unique
     if (sg->getLink(j->getName()) != nullptr)
-      return std::make_shared<tesseract_common::StatusCode>(URDFStatusCategory::ErrorJointNamesNotUnique, status_cat, status);
+      return std::make_shared<tesseract_common::StatusCode>(
+          URDFStatusCategory::ErrorJointNamesNotUnique, status_cat, status);
 
     if (!sg->addJoint(tesseract_scene_graph::Joint(*j)))
-      return std::make_shared<tesseract_common::StatusCode>(URDFStatusCategory::ErrorAddingJointToSceneGraph, status_cat, status);
+      return std::make_shared<tesseract_common::StatusCode>(
+          URDFStatusCategory::ErrorAddingJointToSceneGraph, status_cat, status);
   }
 
   if (sg->getJoints().empty())
@@ -162,4 +170,4 @@ tesseract_scene_graph::SceneGraph::Ptr parseURDFString(const std::string& urdf_x
   return scene_graph;
 }
 
-}
+}  // namespace tesseract_urdf

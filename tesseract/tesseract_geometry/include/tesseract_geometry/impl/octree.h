@@ -78,7 +78,8 @@ public:
   {
     long cnt = 0;
     double occupancy_threshold = octree_->getOccupancyThres();
-    for (auto it = octree_->begin(static_cast<unsigned char>(octree_->getTreeDepth())), end = octree_->end(); it != end; ++it)
+    for (auto it = octree_->begin(static_cast<unsigned char>(octree_->getTreeDepth())), end = octree_->end(); it != end;
+         ++it)
       if (it->getOccupancy() >= occupancy_threshold)
         ++cnt;
 
@@ -100,7 +101,7 @@ private:
     if (octree.nodeHasChildren(firstChild) || firstChild->getOccupancy() < occupancy_threshold)
       return false;
 
-    for (unsigned int i = 1; i<8; i++)
+    for (unsigned int i = 1; i < 8; i++)
     {
       // comparison via getChild so that casts of derived classes ensure
       // that the right == operator gets called
@@ -126,7 +127,7 @@ private:
     node->copyData(*(octree.getNodeChild(node, 0)));
 
     // delete children (known to be leafs at this point!)
-    for (unsigned int i=0;i<8;i++)
+    for (unsigned int i = 0; i < 8; i++)
     {
       octree.deleteNodeChild(node, i);
     }
@@ -134,23 +135,27 @@ private:
     return true;
   }
 
-  static void pruneRecurs(octomap::OcTree& octree, octomap::OcTreeNode* node,
-                   unsigned int depth, unsigned int max_depth, unsigned int& num_pruned)
+  static void pruneRecurs(octomap::OcTree& octree,
+                          octomap::OcTreeNode* node,
+                          unsigned int depth,
+                          unsigned int max_depth,
+                          unsigned int& num_pruned)
   {
     assert(node);
 
     if (depth < max_depth)
     {
-      for (unsigned int i=0; i<8; i++)
+      for (unsigned int i = 0; i < 8; i++)
       {
         if (octree.nodeChildExists(node, i))
         {
-          pruneRecurs(octree, octree.getNodeChild(node, i), depth+1, max_depth, num_pruned);
+          pruneRecurs(octree, octree.getNodeChild(node, i), depth + 1, max_depth, num_pruned);
         }
       }
-    } // end if depth
+    }  // end if depth
 
-    else {
+    else
+    {
       // max level reached
       if (pruneNode(octree, node))
       {
@@ -160,7 +165,6 @@ private:
   }
 
 public:
-
   /**
    * @brief A custom octree prune which will prune if all children are above the occupency threshold.
    *
@@ -174,7 +178,7 @@ public:
     if (octree.getRoot() == nullptr)
       return;
 
-    for (unsigned int depth = octree.getTreeDepth()-1; depth > 0; --depth)
+    for (unsigned int depth = octree.getTreeDepth() - 1; depth > 0; --depth)
     {
       unsigned int num_pruned = 0;
       pruneRecurs(octree, octree.getRoot(), 0, depth, num_pruned);
@@ -182,7 +186,6 @@ public:
         break;
     }
   }
-
 };
 }  // namespace tesseract_geometry
 #endif

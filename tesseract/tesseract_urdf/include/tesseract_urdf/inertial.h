@@ -38,7 +38,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 class InertialStatusCategory : public tesseract_common::StatusCategory
 {
 public:
@@ -104,24 +103,26 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Inertial::
   auto status_cat = std::make_shared<InertialStatusCategory>();
 
   auto i = std::make_shared<tesseract_scene_graph::Inertial>();
-  const tinyxml2::XMLElement *origin = xml_element->FirstChildElement("origin");
+  const tinyxml2::XMLElement* origin = xml_element->FirstChildElement("origin");
   if (origin != nullptr)
   {
     auto status = parse(i->origin, origin);
     if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(InertialStatusCategory::ErrorParsingOrigin, status_cat, status);
+      return std::make_shared<tesseract_common::StatusCode>(
+          InertialStatusCategory::ErrorParsingOrigin, status_cat, status);
   }
 
-  const tinyxml2::XMLElement *mass = xml_element->FirstChildElement("mass");
+  const tinyxml2::XMLElement* mass = xml_element->FirstChildElement("mass");
   if (mass == nullptr)
     return std::make_shared<tesseract_common::StatusCode>(InertialStatusCategory::ErrorMissingMassElement, status_cat);
 
   if (mass->QueryDoubleAttribute("value", &(i->mass)) != tinyxml2::XML_SUCCESS)
     return std::make_shared<tesseract_common::StatusCode>(InertialStatusCategory::ErrorMassAttributeValue, status_cat);
 
-  const tinyxml2::XMLElement *inertia = xml_element->FirstChildElement("inertia");
-  if (inertia == nullptr )
-    return std::make_shared<tesseract_common::StatusCode>(InertialStatusCategory::ErrorMissingInertiaElement, status_cat);
+  const tinyxml2::XMLElement* inertia = xml_element->FirstChildElement("inertia");
+  if (inertia == nullptr)
+    return std::make_shared<tesseract_common::StatusCode>(InertialStatusCategory::ErrorMissingInertiaElement,
+                                                          status_cat);
 
   if (inertia->QueryDoubleAttribute("ixx", &(i->ixx)) != tinyxml2::XML_SUCCESS)
     return std::make_shared<tesseract_common::StatusCode>(InertialStatusCategory::ErrorInertiaAttributeIxx, status_cat);
@@ -145,6 +146,6 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Inertial::
   return std::make_shared<tesseract_common::StatusCode>(InertialStatusCategory::Success, status_cat);
 }
 
-}
+}  // namespace tesseract_urdf
 
-#endif // TESSERACT_URDF_INERTIAL_H
+#endif  // TESSERACT_URDF_INERTIAL_H

@@ -35,7 +35,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 class CylinderStatusCategory : public tesseract_common::StatusCategory
 {
 public:
@@ -67,7 +66,8 @@ private:
   std::string name_;
 };
 
-inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Cylinder::Ptr& cylinder, const tinyxml2::XMLElement* xml_element)
+inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Cylinder::Ptr& cylinder,
+                                               const tinyxml2::XMLElement* xml_element)
 {
   cylinder = nullptr;
   auto status_cat = std::make_shared<CylinderStatusCategory>();
@@ -83,6 +83,6 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Cylinder::Ptr
   return std::make_shared<tesseract_common::StatusCode>(CylinderStatusCategory::Success, status_cat);
 }
 
-}
+}  // namespace tesseract_urdf
 
-#endif // TESSERACT_URDF_CYLINDER_H
+#endif  // TESSERACT_URDF_CYLINDER_H

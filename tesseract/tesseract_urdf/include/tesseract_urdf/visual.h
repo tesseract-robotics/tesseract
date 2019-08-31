@@ -41,7 +41,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 class VisualStatusCategory : public tesseract_common::StatusCategory
 {
 public:
@@ -82,10 +81,11 @@ private:
   std::string name_;
 };
 
-inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_scene_graph::Visual::Ptr>& visuals,
-                                               const tinyxml2::XMLElement* xml_element,
-                                               tesseract_scene_graph::ResourceLocatorFn locator,
-                                               const std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials)
+inline tesseract_common::StatusCode::Ptr
+parse(std::vector<tesseract_scene_graph::Visual::Ptr>& visuals,
+      const tinyxml2::XMLElement* xml_element,
+      tesseract_scene_graph::ResourceLocatorFn locator,
+      const std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials)
 {
   visuals.clear();
   auto status_cat = std::make_shared<VisualStatusCategory>();
@@ -95,33 +95,37 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_scene_graph
 
   // get origin
   Eigen::Isometry3d visual_origin = Eigen::Isometry3d::Identity();
-  const tinyxml2::XMLElement *origin = xml_element->FirstChildElement("origin");
+  const tinyxml2::XMLElement* origin = xml_element->FirstChildElement("origin");
   if (origin != nullptr)
   {
     auto status = parse(visual_origin, origin);
     if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(VisualStatusCategory::ErrorParsingOriginElement, status_cat, status);
+      return std::make_shared<tesseract_common::StatusCode>(
+          VisualStatusCategory::ErrorParsingOriginElement, status_cat, status);
   }
 
   // get material
   tesseract_scene_graph::Material::Ptr visual_material = tesseract_scene_graph::DEFAULT_TESSERACT_MATERIAL;
-  const tinyxml2::XMLElement *material = xml_element->FirstChildElement("material");
+  const tinyxml2::XMLElement* material = xml_element->FirstChildElement("material");
   if (material != nullptr)
   {
     auto status = parse(visual_material, material, available_materials);
     if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(VisualStatusCategory::ErrorParsingMaterialElement, status_cat, status);
+      return std::make_shared<tesseract_common::StatusCode>(
+          VisualStatusCategory::ErrorParsingMaterialElement, status_cat, status);
   }
 
   // get geometry
-  const tinyxml2::XMLElement *geometry = xml_element->FirstChildElement("geometry");
+  const tinyxml2::XMLElement* geometry = xml_element->FirstChildElement("geometry");
   if (geometry == nullptr)
-    return std::make_shared<tesseract_common::StatusCode>(VisualStatusCategory::ErrorMissingGeometryElement, status_cat);
+    return std::make_shared<tesseract_common::StatusCode>(VisualStatusCategory::ErrorMissingGeometryElement,
+                                                          status_cat);
 
   std::vector<tesseract_geometry::Geometry::Ptr> geometries;
   auto status = parse(geometries, geometry, locator, true);
   if (!(*status))
-    return std::make_shared<tesseract_common::StatusCode>(VisualStatusCategory::ErrorParsingGeometryElement, status_cat, status);
+    return std::make_shared<tesseract_common::StatusCode>(
+        VisualStatusCategory::ErrorParsingGeometryElement, status_cat, status);
 
   if (geometries.size() == 1)
   {
@@ -154,6 +158,6 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_scene_graph
   return std::make_shared<tesseract_common::StatusCode>(VisualStatusCategory::Success, status_cat);
 }
 
-}
+}  // namespace tesseract_urdf
 
-#endif // TESSERACT_URDF_VISUAL_H
+#endif  // TESSERACT_URDF_VISUAL_H
