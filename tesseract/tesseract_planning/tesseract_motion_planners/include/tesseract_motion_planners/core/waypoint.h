@@ -85,7 +85,11 @@ public:
    *
    * @return True if valid, otherwise false
    */
-  virtual bool setCoefficients(Eigen::VectorXd coefficients) { coeffs_ = std::move(coefficients); }
+  virtual bool setCoefficients(Eigen::VectorXd coefficients)
+  {
+    coeffs_ = std::move(coefficients);
+    return true;
+  }
 
   /**
    * @brief Get coefficients used to weight different terms in the waypoints
@@ -124,18 +128,18 @@ public:
     , joint_positions_(std::move(joint_positions))
     , joint_names_(std::move(joint_names))
   {
-    assert(joint_positions_.size() == joint_names_.size());
+    assert(joint_positions_.size() == static_cast<long>(joint_names_.size()));
     setCoefficients(Eigen::VectorXd::Ones(joint_positions_.size()));
   }
 
   JointWaypoint(std::vector<double> joint_positions, std::vector<std::string> joint_names)
     : Waypoint(WaypointType::JOINT_WAYPOINT), joint_names_(std::move(joint_names))
   {
-    joint_positions_.resize(joint_positions.size());
+    joint_positions_.resize(static_cast<long>(joint_positions.size()));
     for (long i = 0; i < static_cast<long>(joint_positions.size()); ++i)
       joint_positions_[i] = joint_positions[static_cast<size_t>(i)];
 
-    assert(joint_positions_.size() == joint_names_.size());
+    assert(joint_positions_.size() == static_cast<long>(joint_names_.size()));
     setCoefficients(Eigen::VectorXd::Ones(joint_positions_.size()));
   }
 
@@ -212,7 +216,7 @@ public:
     , joint_positions_(std::move(joint_positions))
     , joint_names_(std::move(joint_names))
   {
-    assert(joint_positions_.size() == joint_names_.size());
+    assert(joint_positions_.size() == static_cast<long>(joint_names_.size()));
     setCoefficients(Eigen::VectorXd::Ones(joint_positions_.size()));
     setUpperTolerance(Eigen::VectorXd::Zero(joint_positions_.size()));
     setLowerTolerance(Eigen::VectorXd::Zero(joint_positions_.size()));
@@ -221,11 +225,11 @@ public:
   JointTolerancedWaypoint(std::vector<double> joint_positions, std::vector<std::string> joint_names)
     : Waypoint(WaypointType::JOINT_TOLERANCED_WAYPOINT), joint_names_(std::move(joint_names))
   {
-    joint_positions_.resize(joint_positions.size());
+    joint_positions_.resize(static_cast<long>(joint_positions.size()));
     for (long i = 0; i < static_cast<long>(joint_positions.size()); ++i)
       joint_positions_[i] = joint_positions[static_cast<size_t>(i)];
 
-    assert(joint_positions_.size() == joint_names_.size());
+    assert(joint_positions_.size() == static_cast<long>(joint_names_.size()));
     setCoefficients(Eigen::VectorXd::Ones(joint_positions_.size()));
     setUpperTolerance(Eigen::VectorXd::Zero(joint_positions_.size()));
     setLowerTolerance(Eigen::VectorXd::Zero(joint_positions_.size()));
