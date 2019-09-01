@@ -136,7 +136,6 @@ public:
   tesseract_common::StatusCode isConfigured() const override;
 
 private:
-  ompl::base::ValidStateSamplerPtr allocDiscreteValidStateSampler(const ompl::base::SpaceInformation* si) const;
   ompl::base::StateSamplerPtr allocWeightedRealVectorStateSampler(const ompl::base::StateSpace* space) const;
 
 protected:

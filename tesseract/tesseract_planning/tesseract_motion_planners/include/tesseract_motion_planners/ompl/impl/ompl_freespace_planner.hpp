@@ -38,6 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/ompl_freespace_planner.h>
 #include <tesseract_motion_planners/ompl/conversions.h>
 #include <tesseract_motion_planners/ompl/continuous_motion_validator.h>
+#include <tesseract_motion_planners/ompl/discrete_motion_validator.h>
 #include <tesseract_motion_planners/ompl/discrete_valid_state_sampler.h>
 #include <tesseract_motion_planners/ompl/weighted_real_vector_state_sampler.h>
 
@@ -255,14 +256,16 @@ bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(
   if (config_->svc != nullptr)
     simple_setup_->setStateValidityChecker(config_->svc);
 
-  if (config_->collision_check)
-    simple_setup_->getSpaceInformation()->setValidStateSamplerAllocator(
-        std::bind(&OMPLFreespacePlanner::allocDiscreteValidStateSampler, this, std::placeholders::_1));
-
   if (config_->collision_check && config_->collision_continuous && config_->mv == nullptr)
   {
     ompl::base::MotionValidatorPtr mv =
         std::make_shared<ContinuousMotionValidator>(simple_setup_->getSpaceInformation(), env, kin_);
+    simple_setup_->getSpaceInformation()->setMotionValidator(std::move(mv));
+  }
+  else if (config_->collision_check && !config_->collision_continuous && config_->mv == nullptr)
+  {
+    ompl::base::MotionValidatorPtr mv =
+        std::make_shared<DiscreteMotionValidator>(simple_setup_->getSpaceInformation(), env, kin_);
     simple_setup_->getSpaceInformation()->setMotionValidator(std::move(mv));
   }
   else if (config_->mv != nullptr)
@@ -282,14 +285,6 @@ bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(
   continuous_contact_manager_->setContactDistanceThreshold(config_->collision_safety_margin);
 
   return true;
-}
-
-template <typename PlannerType, typename PlannerSettingsType>
-ompl::base::ValidStateSamplerPtr OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::allocDiscreteValidStateSampler(
-    const ompl::base::SpaceInformation* si) const
-{
-  return std::make_shared<DiscreteValidStateSampler>(
-      si, config_->tesseract->getEnvironmentConst(), kin_, discrete_contact_manager_);
 }
 
 template <typename PlannerType, typename PlannerSettingsType>
