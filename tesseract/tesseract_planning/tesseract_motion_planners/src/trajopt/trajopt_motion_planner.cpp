@@ -160,8 +160,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
   // Send response
   response.joint_trajectory.trajectory = getTraj(opt.x(), config_->prob->GetVars());
   response.joint_trajectory.joint_names = config_->prob->GetKin()->getJointNames();
-  if (opt.results().status == sco::OptStatus::OPT_PENALTY_ITERATION_LIMIT ||
-      opt.results().status == sco::OptStatus::OPT_FAILED || opt.results().status == sco::OptStatus::INVALID)
+  if (opt.results().status != sco::OptStatus::OPT_CONVERGED)
   {
     response.status =
         tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::FailedToFindValidSolution, status_category_);
