@@ -4,6 +4,7 @@
 #include <string>
 #include <functional>
 #include <memory>
+#include <assert.h>
 
 namespace tesseract_common
 {
