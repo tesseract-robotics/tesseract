@@ -172,9 +172,9 @@ public:
   {
     IsConfigured = 1,
     SolutionFound = 0,
-    IsNotConfigured = -1,
-    FailedToParseConfig = -2,
-    FailedToFindValidSolution = -3,
+    ErrorIsNotConfigured = -1,
+    ErrorFailedToParseConfig = -2,
+    ErrorFailedToFindValidSolution = -3
   };
 
 private:
