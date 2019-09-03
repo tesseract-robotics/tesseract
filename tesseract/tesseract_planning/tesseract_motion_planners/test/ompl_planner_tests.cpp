@@ -110,6 +110,37 @@ TEST(TesseractPlanningUnit, OMPLFreespacePlannerUnit)
 
   EXPECT_TRUE(status);
 
+  // Check for start state in collision error
+  swp = { 0, 0.7, 0.0, 0, 0.0, 0, 0.0 };
+  rrt_connect_config.start_waypoint =
+      std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+
+  rrt_connect_planner.setConfiguration(rrt_connect_config);
+  status = rrt_connect_planner.solve(rrt_connect_planning_response);
+
+  EXPECT_FALSE(status);
+
+  // Check for start state in collision error
+  swp = { -1.2, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
+  ewp = { 0, 0.7, 0.0, 0, 0.0, 0, 0.0 };
+  rrt_connect_config.start_waypoint =
+      std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+  rrt_connect_config.end_waypoint =
+      std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
+
+  rrt_connect_planner.setConfiguration(rrt_connect_config);
+  status = rrt_connect_planner.solve(rrt_connect_planning_response);
+
+  EXPECT_FALSE(status);
+
+  // Reset start and end waypoints
+  swp = { -1.2, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
+  ewp = { 1.2, 0.2762, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
+  rrt_connect_config.start_waypoint =
+      std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+  rrt_connect_config.end_waypoint =
+      std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
+
   // PRM Solve
   tesseract_motion_planners::OMPLFreespacePlannerConfig<PRMConfig> prm_config;
   prm_config.start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());

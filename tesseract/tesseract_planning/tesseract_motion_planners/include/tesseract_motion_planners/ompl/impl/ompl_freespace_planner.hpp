@@ -57,15 +57,15 @@ std::string OMPLFreespacePlannerStatusCategory::message(int code) const
     {
       return "Found valid solution";
     }
-    case IsNotConfigured:
+    case ErrorIsNotConfigured:
     {
       return "Planner is not configured, must call setConfiguration prior to calling solve.";
     }
-    case FailedToParseConfig:
+    case ErrorFailedToParseConfig:
     {
       return "Failed to parse config data";
     }
-    case FailedToFindValidSolution:
+    case ErrorFailedToFindValidSolution:
     {
       return "Failed to find valid solution";
     }
@@ -119,7 +119,7 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType, PlannerSettingsTy
   if (!status || !simple_setup_->haveExactSolutionPath())
   {
     planning_response.status =
-        tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::FailedToFindValidSolution, status_category_);
+        tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::ErrorFailedToFindValidSolution, status_category_);
     return planning_response.status;
   }
 
@@ -153,7 +153,7 @@ template <typename PlannerType, typename PlannerSettingsType>
 tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::isConfigured() const
 {
   if (config_ == nullptr)
-    return tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::IsNotConfigured, status_category_);
+    return tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::ErrorIsNotConfigured, status_category_);
 
   return tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::IsConfigured, status_category_);
 }
@@ -209,6 +209,13 @@ bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(
   JointWaypoint::Ptr start_position;
   JointWaypoint::Ptr end_position;
 
+  // Get descrete contact manager for testing provided start and end position
+  // This is required because collision checking happens in motion validators now
+  // instead of the isValid function to avoid unnecessary collision checks.
+  tesseract_collision::DiscreteContactManager::Ptr cm = env->getDiscreteContactManager();
+  cm->setActiveCollisionObjects(adj_map_->getActiveLinkNames());
+  cm->setContactDistanceThreshold(config_->collision_safety_margin);
+
   // Set initial point
   auto start_type = config_->start_waypoint->getType();
   switch (start_type)
@@ -216,11 +223,26 @@ bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(
     case tesseract_motion_planners::WaypointType::JOINT_WAYPOINT:
     {
       start_position = std::static_pointer_cast<JointWaypoint>(config_->start_waypoint);
+      tesseract_environment::EnvState::Ptr s = env->getState(start_position->getNames(), start_position->getPositions());
+
+      for (const auto& link_name : adj_map_->getActiveLinkNames())
+        cm->setCollisionObjectsTransform(link_name, s->transforms[link_name]);
+
+      tesseract_collision::ContactResultMap contact_map;
+      cm->contactTest(contact_map, tesseract_collision::ContactTestType::FIRST);
+
+      if (!contact_map.empty())
+      {
+        CONSOLE_BRIDGE_logError("In ompl_freespace_planner: Start state is in collision");
+        config_ = nullptr;
+        return false;
+      }
       break;
     }
     default:
     {
       CONSOLE_BRIDGE_logError("In ompl_freespace_planner: only support joint waypoints for start_waypoint");
+      config_ = nullptr;
       return false;
     }
   };
@@ -232,11 +254,26 @@ bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(
     case tesseract_motion_planners::WaypointType::JOINT_WAYPOINT:
     {
       end_position = std::static_pointer_cast<JointWaypoint>(config_->end_waypoint);
+      tesseract_environment::EnvState::Ptr s = env->getState(end_position->getNames(), end_position->getPositions());
+
+      for (const auto& link_name : adj_map_->getActiveLinkNames())
+        cm->setCollisionObjectsTransform(link_name, s->transforms[link_name]);
+
+      tesseract_collision::ContactResultMap contact_map;
+      cm->contactTest(contact_map, tesseract_collision::ContactTestType::FIRST);
+
+      if (!contact_map.empty())
+      {
+        CONSOLE_BRIDGE_logError("In ompl_freespace_planner: End state is in collision");
+        config_ = nullptr;
+        return false;
+      }
       break;
     }
     default:
     {
       CONSOLE_BRIDGE_logError("In ompl_freespace_planner: only support joint waypoints for end_waypoint");
+      config_ = nullptr;
       return false;
     }
   };
