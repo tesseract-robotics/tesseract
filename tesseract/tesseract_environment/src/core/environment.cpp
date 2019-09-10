@@ -352,6 +352,10 @@ bool Environment::setActiveDiscreteContactManager(const std::string& name)
 
   discrete_manager_name_ = name;
   discrete_manager_ = std::move(manager);
+
+  // Update the current state information since the contact manager has been created/set
+  currentStateChanged();
+
   return true;
 }
 
@@ -379,6 +383,10 @@ bool Environment::setActiveContinuousContactManager(const std::string& name)
 
   continuous_manager_name_ = name;
   continuous_manager_ = std::move(manager);
+
+  // Update the current state information since the contact manager has been created/set
+  currentStateChanged();
+
   return true;
 }
 
