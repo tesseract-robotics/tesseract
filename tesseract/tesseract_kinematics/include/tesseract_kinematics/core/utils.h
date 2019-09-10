@@ -42,7 +42,7 @@ namespace tesseract_kinematics
 /**
  * @brief Change the base coordinate system of the jacobian
  * @param jacobian The current Jacobian which gets modified in place
- * @param change_base The transform from the base frame of the jacobian to the desired frame.
+ * @param change_base The transform from the desired frame to the current base frame of the jacobian
  */
 inline static void jacobianChangeBase(Eigen::Ref<Eigen::MatrixXd> jacobian, const Eigen::Isometry3d& change_base)
 {
