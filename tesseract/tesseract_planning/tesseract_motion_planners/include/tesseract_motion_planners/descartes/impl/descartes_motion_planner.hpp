@@ -43,6 +43,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <descartes_samplers/samplers/cartesian_point_sampler.h>
 #include <descartes_samplers/samplers/fixed_joint_pose_sampler.h>
 #include <descartes_samplers/evaluators/distance_edge_evaluator.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -168,12 +169,12 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
     return config_status;
   }
 
-  ros::Time tStart = ros::Time::now();
+  auto tStart = boost::posix_time::second_clock::local_time();
 
   const auto dof =
       config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config_->manipulator)->numJoints();
   descartes_light::Solver<FloatType> graph_builder(dof);
-  if (!graph_builder.build(config_->samplers, config_->timing_constraint, config_->edge_evaluator))
+  if (!graph_builder.build(config_->samplers, config_->timing_constraint, config_->edge_evaluator, config_->num_threads))
   {
     CONSOLE_BRIDGE_logError("Failed to build vertices");
     for (const auto& i : graph_builder.getFailedVertices())
@@ -239,7 +240,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
                                                       true,
                                                       verbose);
 
-  CONSOLE_BRIDGE_logInform("Descartes planning time: %.3f", (ros::Time::now() - tStart).toSec());
+  CONSOLE_BRIDGE_logInform("Descartes planning time: %.3f", (boost::posix_time::second_clock::local_time() - tStart).seconds());
 
   if (found)
   {
