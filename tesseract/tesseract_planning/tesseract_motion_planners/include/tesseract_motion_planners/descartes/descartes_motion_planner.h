@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <descartes_light/interface/kinematics_interface.h>
 #include <descartes_light/interface/edge_evaluator.h>
 #include <descartes_light/interface/position_sampler.h>
+#include <descartes_light/descartes_light.h>
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -76,6 +77,7 @@ struct DescartesMotionPlannerConfig
   const std::vector<Waypoint::Ptr> waypoints;
   Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
   Eigen::Isometry3d world_to_base = Eigen::Isometry3d::Identity();
+  int num_threads = descartes_light::Solver<double>::getMaxThreads();
 };
 
 using DescartesMotionPlannerConfigD = DescartesMotionPlannerConfig<double>;
