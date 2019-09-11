@@ -133,7 +133,8 @@ public:
    * Note: This does not use the request information because everything is provided by config parameter
    *
    * @param response The results of the optimization. Primary output is the optimized joint trajectory
-   * @param verbose Boolean indicating whether logging information about the motion planning solution should be printed to console
+   * @param verbose Boolean indicating whether logging information about the motion planning solution should be printed
+   * to console
    * @return true if optimization complete
    */
   tesseract_common::StatusCode solve(PlannerResponse& response, const bool verbose = false) override;

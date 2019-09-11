@@ -68,7 +68,8 @@ tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::isConfigur
 }
 
 template <typename FloatType>
-tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::solve(PlannerResponse& response, const bool verbose)
+tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::solve(PlannerResponse& response,
+                                                                            const bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
