@@ -113,7 +113,8 @@ inline bool checkTrajectory(tesseract_collision::ContinuousContactManager& manag
         for (auto it = collisions.begin(); it != collisions.end(); ++it)
         {
           std::stringstream ss;
-          ss << "Continuous collision detected at step " << iStep << " between '" << it->first.first << "' and '" << it->first.second << "'";
+          ss << "Continuous collision detected at step " << iStep << " between '" << it->first.first << "' and '"
+             << it->first.second << "'";
           CONSOLE_BRIDGE_logError(ss.str().c_str());
         }
       }
@@ -168,7 +169,8 @@ inline bool checkTrajectory(tesseract_collision::DiscreteContactManager& manager
         for (auto it = collisions.begin(); it != collisions.end(); ++it)
         {
           std::stringstream ss;
-          ss << "Discrete collision detected at step " << iStep << " between '" << it->first.first << "' and '" << it->first.second << "'";
+          ss << "Discrete collision detected at step " << iStep << " between '" << it->first.first << "' and '"
+             << it->first.second << "'";
           CONSOLE_BRIDGE_logError(ss.str().c_str());
         }
       }
