@@ -53,14 +53,17 @@ public:
 
 private:
   bool continuousCollisionCheck(const ompl::base::State* s1, const ompl::base::State* s2) const;
+  bool discreteCollisionCheck(const ompl::base::State* s2) const;
 
   tesseract_environment::Environment::ConstPtr env_;
   tesseract_kinematics::ForwardKinematics::ConstPtr kin_;
-  tesseract_collision::ContinuousContactManager::Ptr contact_manager_;
+  tesseract_collision::ContinuousContactManager::Ptr continuous_contact_manager_;
+  tesseract_collision::DiscreteContactManager::Ptr discrete_contact_manager_;
   std::vector<std::string> links_;
   std::vector<std::string> joints_;
   mutable std::mutex mutex_;
-  mutable std::map<unsigned long int, tesseract_collision::ContinuousContactManager::Ptr> contact_managers_;
+  mutable std::map<unsigned long int, tesseract_collision::ContinuousContactManager::Ptr> continuous_contact_managers_;
+  mutable std::map<unsigned long int, tesseract_collision::DiscreteContactManager::Ptr> discrete_contact_managers_;
 };
 }  // namespace tesseract_motion_planners
 

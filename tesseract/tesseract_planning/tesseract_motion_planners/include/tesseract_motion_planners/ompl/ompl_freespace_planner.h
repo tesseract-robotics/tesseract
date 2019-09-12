@@ -123,7 +123,7 @@ public:
    * @param response The results of OMPL.
    * @return true if valid solution was found
    */
-  tesseract_common::StatusCode solve(PlannerResponse& response) override;
+  tesseract_common::StatusCode solve(PlannerResponse& response, const bool verbose = false) override;
 
   bool terminate() override;
 

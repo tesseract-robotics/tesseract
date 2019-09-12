@@ -47,9 +47,13 @@ ContinuousMotionValidator::ContinuousMotionValidator(ompl::base::SpaceInformatio
       env_->getSceneGraph(), kin_->getActiveLinkNames(), env_->getCurrentState()->transforms);
   links_ = adj_map.getActiveLinkNames();
 
-  contact_manager_ = env_->getContinuousContactManager();
-  contact_manager_->setActiveCollisionObjects(links_);
-  contact_manager_->setContactDistanceThreshold(0);
+  continuous_contact_manager_ = env_->getContinuousContactManager();
+  continuous_contact_manager_->setActiveCollisionObjects(links_);
+  continuous_contact_manager_->setContactDistanceThreshold(0);
+
+  discrete_contact_manager_ = env_->getDiscreteContactManager();
+  discrete_contact_manager_->setActiveCollisionObjects(links_);
+  discrete_contact_manager_->setContactDistanceThreshold(0);
 }
 
 bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1, const ompl::base::State* s2) const
@@ -76,7 +80,7 @@ bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1,
     state_space.interpolate(s1, s2, static_cast<double>(i - 1) / n_steps, start_interp);
     state_space.interpolate(s1, s2, static_cast<double>(i) / n_steps, end_interp);
 
-    if (!si_->isValid(end_interp) || !continuousCollisionCheck(start_interp, end_interp))
+    if (!si_->isValid(end_interp) || !continuousCollisionCheck(start_interp, end_interp) || !discreteCollisionCheck(end_interp))
     {
       is_valid = false;
       break;
@@ -104,11 +108,11 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
   unsigned long int hash = std::hash<std::thread::id>{}(std::this_thread::get_id());
   tesseract_collision::ContinuousContactManager::Ptr cm;
   mutex_.lock();
-  auto it = contact_managers_.find(hash);
-  if (it == contact_managers_.end())
+  auto it = continuous_contact_managers_.find(hash);
+  if (it == continuous_contact_managers_.end())
   {
-    cm = contact_manager_->clone();
-    contact_managers_[hash] = cm;
+    cm = continuous_contact_manager_->clone();
+    continuous_contact_managers_[hash] = cm;
   }
   else
   {
@@ -131,4 +135,39 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
 
   return contact_map.empty();
 }
+
+bool ContinuousMotionValidator::discreteCollisionCheck(const ompl::base::State* s2) const
+{
+  const ompl::base::RealVectorStateSpace::StateType* finish = s2->as<ompl::base::RealVectorStateSpace::StateType>();
+
+  // It was time using chronos time elapsed and it was faster to cache the contact manager
+  unsigned long int hash = std::hash<std::thread::id>{}(std::this_thread::get_id());
+  tesseract_collision::DiscreteContactManager::Ptr cm;
+  mutex_.lock();
+  auto it = discrete_contact_managers_.find(hash);
+  if (it == discrete_contact_managers_.end())
+  {
+    cm = discrete_contact_manager_->clone();
+    discrete_contact_managers_[hash] = cm;
+  }
+  else
+  {
+    cm = it->second;
+  }
+  mutex_.unlock();
+
+  const auto dof = si_->getStateDimension();
+  Eigen::Map<Eigen::VectorXd> finish_joints(finish->values, dof);
+
+  tesseract_environment::EnvState::Ptr state1 = env_->getState(joints_, finish_joints);
+
+  for (const auto& link_name : links_)
+    cm->setCollisionObjectsTransform(link_name, state1->transforms[link_name]);
+
+  tesseract_collision::ContactResultMap contact_map;
+  cm->contactTest(contact_map, tesseract_collision::ContactTestType::FIRST);
+
+  return contact_map.empty();
+}
+
 }  // namespace tesseract_motion_planners
