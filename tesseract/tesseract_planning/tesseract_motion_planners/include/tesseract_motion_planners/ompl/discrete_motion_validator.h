@@ -64,4 +64,4 @@ private:
 };
 }  // namespace tesseract_motion_planners
 
-#endif // TESSERACT_MOTION_PLANNERS_DISCRETE_MOTION_VALIDATOR_H
+#endif  // TESSERACT_MOTION_PLANNERS_DISCRETE_MOTION_VALIDATOR_H

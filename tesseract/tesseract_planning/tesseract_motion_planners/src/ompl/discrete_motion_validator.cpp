@@ -74,7 +74,6 @@ bool DiscreteMotionValidator::checkMotion(const ompl::base::State* s1,
   {
     state_space.interpolate(s1, s2, static_cast<double>(i) / n_steps, end_interp);
 
-
     if (!si_->isValid(end_interp) || !discreteCollisionCheck(end_interp))
     {
       is_valid = false;
