@@ -69,7 +69,8 @@ std::string locateResource(const std::string& url)
   return mod_url;
 }
 
-std::vector<descartes_core::TimingConstraintD> makeTiming(const std::vector<tesseract_motion_planners::Waypoint::Ptr>& path, const double dt)
+std::vector<descartes_core::TimingConstraintD>
+makeTiming(const std::vector<tesseract_motion_planners::Waypoint::Ptr>& path, const double dt)
 {
   std::vector<descartes_core::TimingConstraintD> timing(path.size(), dt);
   // TODO(jmeyer): Compute the real time
@@ -81,35 +82,42 @@ std::vector<descartes_core::TimingConstraintD> makeTiming(const std::vector<tess
   return timing;
 }
 
-
-DescartesMotionPlannerConfigD createDescartesPlannerConfig(const opw_kinematics::Parameters<double>& params,
-                                                           const tesseract::Tesseract::ConstPtr tesseract_ptr,
-                                                           const std::string manip,
-                                                           const tesseract_kinematics::ForwardKinematics::ConstPtr& kin,
-                                                           const Eigen::Isometry3d& tcp,
-                                                           const tesseract_environment::EnvState::ConstPtr& current_state,
-                                                           const std::vector<tesseract_motion_planners::Waypoint::Ptr> waypoints)
+DescartesMotionPlannerConfigD
+createDescartesPlannerConfig(const opw_kinematics::Parameters<double>& params,
+                             const tesseract::Tesseract::ConstPtr tesseract_ptr,
+                             const std::string manip,
+                             const tesseract_kinematics::ForwardKinematics::ConstPtr& kin,
+                             const Eigen::Isometry3d& tcp,
+                             const tesseract_environment::EnvState::ConstPtr& current_state,
+                             const std::vector<tesseract_motion_planners::Waypoint::Ptr> waypoints)
 {
-  descartes_light::IsValidFn<double> is_valid_fn = std::bind(&descartes_light::isWithinLimits<double>, std::placeholders::_1, kin->getLimits());
-  descartes_light::GetRedundantSolutionsFn<double> get_redundant_sol_fn = std::bind(&descartes_light::getRedundantSolutions<double>, std::placeholders::_1, kin->getLimits());
+  descartes_light::IsValidFn<double> is_valid_fn =
+      std::bind(&descartes_light::isWithinLimits<double>, std::placeholders::_1, kin->getLimits());
+  descartes_light::GetRedundantSolutionsFn<double> get_redundant_sol_fn =
+      std::bind(&descartes_light::getRedundantSolutions<double>, std::placeholders::_1, kin->getLimits());
 
-  auto robot_kin = std::make_shared<OPWKinematics<double>>(params, current_state->transforms.at("base_link"), tcp.cast<double>(), is_valid_fn, get_redundant_sol_fn);
+  auto robot_kin = std::make_shared<OPWKinematics<double>>(
+      params, current_state->transforms.at("base_link"), tcp.cast<double>(), is_valid_fn, get_redundant_sol_fn);
 
   // OPWRailedKinematics expects the joint to be auxiliary axes followed robot joints
-  tesseract_environment::AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(tesseract_ptr->getEnvironmentConst()->getSceneGraph(),
-                                                                                                                 kin->getActiveLinkNames(),
-                                                                                                                 current_state->transforms);
-  typename descartes_light::CollisionInterface<double>::Ptr coll_interface = std::make_shared<descartes_light::TesseractCollision<double>>(tesseract_ptr->getEnvironmentConst(), adjacency_map->getActiveLinkNames(), kin->getJointNames());
-
+  tesseract_environment::AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
+      tesseract_ptr->getEnvironmentConst()->getSceneGraph(), kin->getActiveLinkNames(), current_state->transforms);
+  typename descartes_light::CollisionInterface<double>::Ptr coll_interface =
+      std::make_shared<descartes_light::TesseractCollision<double>>(
+          tesseract_ptr->getEnvironmentConst(), adjacency_map->getActiveLinkNames(), kin->getJointNames());
 
   // Create Timing Constraint
-  std::vector<descartes_core::TimingConstraint<double>> timing = makeTiming(waypoints, std::numeric_limits<double>::max());
+  std::vector<descartes_core::TimingConstraint<double>> timing =
+      makeTiming(waypoints, std::numeric_limits<double>::max());
 
   // Create Edge Evaluator
-  typename descartes_light::EdgeEvaluator<double>::Ptr edge_computer = std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<double>>(kin->numJoints());
-  std::vector<typename descartes_light::PositionSampler<double>::Ptr> position_samplers = makeRobotPositionSamplers<double>(waypoints, robot_kin, coll_interface, 60 * M_PI / 180);
+  typename descartes_light::EdgeEvaluator<double>::Ptr edge_computer =
+      std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<double>>(kin->numJoints());
+  std::vector<typename descartes_light::PositionSampler<double>::Ptr> position_samplers =
+      makeRobotPositionSamplers<double>(waypoints, robot_kin, coll_interface, 60 * M_PI / 180);
 
-  return DescartesMotionPlannerConfigD(tesseract_ptr, manip, coll_interface, robot_kin, edge_computer, timing, position_samplers, waypoints);
+  return DescartesMotionPlannerConfigD(
+      tesseract_ptr, manip, coll_interface, robot_kin, edge_computer, timing, position_samplers, waypoints);
 }
 
 class TesseractPlanningDescartesUnit : public ::testing::Test
@@ -129,7 +137,7 @@ protected:
 
     opw_params_.a1 = (0.100);
     opw_params_.a2 = (-0.135);
-    opw_params_.b =  (0.000);
+    opw_params_.b = (0.000);
     opw_params_.c1 = (0.615);
     opw_params_.c2 = (0.705);
     opw_params_.c3 = (0.755);
@@ -146,15 +154,16 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)
   Eigen::VectorXd x = Eigen::VectorXd::LinSpaced(NUM_STEPS, -0.2, 0.2);
   for (int i = 0; i < x.size(); ++i)
   {
-    CartesianWaypoint::Ptr waypoint = std::make_shared<CartesianWaypoint>(Eigen::Vector3d(0.8, x[i], 0.8),
-                                                                          Eigen::Quaterniond(0, 0, -1.0, 0));
+    CartesianWaypoint::Ptr waypoint =
+        std::make_shared<CartesianWaypoint>(Eigen::Vector3d(0.8, x[i], 0.8), Eigen::Quaterniond(0, 0, -1.0, 0));
     waypoint->setIsCritical(true);
     waypoints.push_back(waypoint);
   }
 
   auto robot_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
   auto current_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
-  DescartesMotionPlannerConfigD config = createDescartesPlannerConfig(opw_params_, tesseract_ptr_, "manipulator", robot_kin, Eigen::Isometry3d::Identity(), current_state, waypoints);
+  DescartesMotionPlannerConfigD config = createDescartesPlannerConfig(
+      opw_params_, tesseract_ptr_, "manipulator", robot_kin, Eigen::Isometry3d::Identity(), current_state, waypoints);
   config.num_threads = 1;
   DescartesMotionPlanner<double> single_descartes_planner;
   PlannerResponse single_planner_response;
@@ -172,7 +181,8 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)
     EXPECT_TRUE(status);
     for (int j = 0; j < static_cast<int>(waypoints.size()); ++j)
     {
-      EXPECT_TRUE(single_planner_response.joint_trajectory.trajectory.row(j).isApprox(planner_response.joint_trajectory.trajectory.row(j), 1e-5));
+      EXPECT_TRUE(single_planner_response.joint_trajectory.trajectory.row(j).isApprox(
+          planner_response.joint_trajectory.trajectory.row(j), 1e-5));
     }
   }
 }
@@ -184,8 +194,8 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)
   Eigen::VectorXd x = Eigen::VectorXd::LinSpaced(NUM_STEPS, -0.2, 0.2);
   for (int i = 0; i < x.size(); ++i)
   {
-    CartesianWaypoint::Ptr waypoint = std::make_shared<CartesianWaypoint>(Eigen::Vector3d(0.8, x[i], 0.8),
-                                                                          Eigen::Quaterniond(0, 0, -1.0, 0));
+    CartesianWaypoint::Ptr waypoint =
+        std::make_shared<CartesianWaypoint>(Eigen::Vector3d(0.8, x[i], 0.8), Eigen::Quaterniond(0, 0, -1.0, 0));
     waypoint->setIsCritical(true);
     Eigen::VectorXd c(6);
     c << 1, 1, 1, 1, 1, 0;
@@ -195,7 +205,8 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)
 
   auto robot_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
   auto current_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
-  DescartesMotionPlannerConfigD config = createDescartesPlannerConfig(opw_params_, tesseract_ptr_, "manipulator", robot_kin, Eigen::Isometry3d::Identity(), current_state, waypoints);
+  DescartesMotionPlannerConfigD config = createDescartesPlannerConfig(
+      opw_params_, tesseract_ptr_, "manipulator", robot_kin, Eigen::Isometry3d::Identity(), current_state, waypoints);
   config.num_threads = 1;
   DescartesMotionPlanner<double> single_descartes_planner;
   PlannerResponse single_planner_response;
@@ -213,7 +224,8 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)
     EXPECT_TRUE(status);
     for (int j = 0; j < static_cast<int>(waypoints.size()); ++j)
     {
-      EXPECT_TRUE(single_planner_response.joint_trajectory.trajectory.row(j).isApprox(planner_response.joint_trajectory.trajectory.row(j), 1e-5));
+      EXPECT_TRUE(single_planner_response.joint_trajectory.trajectory.row(j).isApprox(
+          planner_response.joint_trajectory.trajectory.row(j), 1e-5));
     }
   }
 }

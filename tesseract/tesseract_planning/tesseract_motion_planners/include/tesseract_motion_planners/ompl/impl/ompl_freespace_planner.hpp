@@ -118,8 +118,8 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType, PlannerSettingsTy
 
   if (!status || !simple_setup_->haveExactSolutionPath())
   {
-    planning_response.status =
-        tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::ErrorFailedToFindValidSolution, status_category_);
+    planning_response.status = tesseract_common::StatusCode(
+        OMPLFreespacePlannerStatusCategory::ErrorFailedToFindValidSolution, status_category_);
     return planning_response.status;
   }
 
@@ -223,7 +223,8 @@ bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(
     case tesseract_motion_planners::WaypointType::JOINT_WAYPOINT:
     {
       start_position = std::static_pointer_cast<JointWaypoint>(config_->start_waypoint);
-      tesseract_environment::EnvState::Ptr s = env->getState(start_position->getNames(), start_position->getPositions());
+      tesseract_environment::EnvState::Ptr s =
+          env->getState(start_position->getNames(), start_position->getPositions());
 
       for (const auto& link_name : adj_map_->getActiveLinkNames())
         cm->setCollisionObjectsTransform(link_name, s->transforms[link_name]);
@@ -310,7 +311,8 @@ bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(
   }
 
   // make sure the planners run until the time limit, and get the best possible solution
-  simple_setup_->getProblemDefinition()->setOptimizationObjective(std::make_shared<ompl::base::PathLengthOptimizationObjective>(simple_setup_->getSpaceInformation()));
+  simple_setup_->getProblemDefinition()->setOptimizationObjective(
+      std::make_shared<ompl::base::PathLengthOptimizationObjective>(simple_setup_->getSpaceInformation()));
 
   discrete_contact_manager_ = env->getDiscreteContactManager();
   discrete_contact_manager_->setActiveCollisionObjects(adj_map_->getActiveLinkNames());

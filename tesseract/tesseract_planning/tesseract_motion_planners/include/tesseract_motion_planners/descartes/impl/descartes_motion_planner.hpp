@@ -174,7 +174,8 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
   const auto dof =
       config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config_->manipulator)->numJoints();
   descartes_light::Solver<FloatType> graph_builder(dof);
-  if (!graph_builder.build(config_->samplers, config_->timing_constraint, config_->edge_evaluator, config_->num_threads))
+  if (!graph_builder.build(
+          config_->samplers, config_->timing_constraint, config_->edge_evaluator, config_->num_threads))
   {
     CONSOLE_BRIDGE_logError("Failed to build vertices");
     for (const auto& i : graph_builder.getFailedVertices())
@@ -240,7 +241,8 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
                                                       true,
                                                       verbose);
 
-  CONSOLE_BRIDGE_logInform("Descartes planning time: %.3f", (boost::posix_time::second_clock::local_time() - tStart).seconds());
+  CONSOLE_BRIDGE_logInform("Descartes planning time: %.3f",
+                           (boost::posix_time::second_clock::local_time() - tStart).seconds());
 
   if (found)
   {
