@@ -94,7 +94,7 @@ bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::terminate()
 }
 
 template <typename PlannerType, typename PlannerSettingsType>
-tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::solve(PlannerResponse& response)
+tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::solve(PlannerResponse& response, const bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
