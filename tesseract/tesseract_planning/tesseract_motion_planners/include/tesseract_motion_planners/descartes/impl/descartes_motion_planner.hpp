@@ -65,23 +65,23 @@ std::string DescartesMotionPlannerStatusCategory::message(int code) const
     {
       return "Found valid solution";
     }
-    case IsNotConfigured:
+    case ErrorIsNotConfigured:
     {
       return "Planner is not configured, must call setConfiguration prior to calling solve.";
     }
-    case FailedToParseConfig:
+    case ErrorFailedToParseConfig:
     {
       return "Failed to parse config data";
     }
-    case FailedToBuildGraph:
+    case ErrorFailedToBuildGraph:
     {
       return "Failed to build graph";
     }
-    case FailedToFindValidSolution:
+    case ErrorFailedToFindValidSolution:
     {
       return "Failed to search graph";
     }
-    case FoundValidSolutionInCollision:
+    case ErrorFoundValidSolutionInCollision:
     {
       return "Found valid solution, but is in collision";
     }
@@ -198,7 +198,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
                  });
 
     response.status =
-        tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::FailedToBuildGraph, status_category_);
+        tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::ErrorFailedToBuildGraph, status_category_);
     return response.status;
   }
   // No failed waypoints
@@ -210,8 +210,8 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
   if (!graph_builder.search(solution))
   {
     CONSOLE_BRIDGE_logError("Search for graph completion failed");
-    response.status =
-        tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::FailedToFindValidSolution, status_category_);
+    response.status = tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::ErrorFailedToFindValidSolution,
+                                                   status_category_);
     return response.status;
   }
 
@@ -246,8 +246,8 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
 
   if (found)
   {
-    response.status = tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::FoundValidSolutionInCollision,
-                                                   status_category_);
+    response.status = tesseract_common::StatusCode(
+        DescartesMotionPlannerStatusCategory::ErrorFoundValidSolutionInCollision, status_category_);
     return response.status;
   }
 
@@ -276,7 +276,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::isConfigured() c
   if (config_ != nullptr)
     return tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::IsConfigured, status_category_);
   else
-    return tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::IsNotConfigured, status_category_);
+    return tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::ErrorIsNotConfigured, status_category_);
 }
 
 }  // namespace tesseract_motion_planners

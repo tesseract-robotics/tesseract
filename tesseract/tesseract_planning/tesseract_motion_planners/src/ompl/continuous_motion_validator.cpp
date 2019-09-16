@@ -80,7 +80,10 @@ bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1,
     state_space.interpolate(s1, s2, static_cast<double>(i - 1) / n_steps, start_interp);
     state_space.interpolate(s1, s2, static_cast<double>(i) / n_steps, end_interp);
 
-    if (!si_->isValid(end_interp) || !continuousCollisionCheck(start_interp, end_interp) || !discreteCollisionCheck(end_interp))
+    // Currently we must perform both continuous and discrete because continuous does not perform
+    // self collision checking.
+    if (!si_->isValid(end_interp) || !continuousCollisionCheck(start_interp, end_interp) ||
+        !discreteCollisionCheck(end_interp))
     {
       is_valid = false;
       break;
