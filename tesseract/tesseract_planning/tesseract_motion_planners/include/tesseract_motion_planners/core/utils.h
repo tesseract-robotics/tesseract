@@ -40,6 +40,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
+/**
+ * @brief Inerpolate between two transforms return a vector of Eigen::Isometry transforms.
+ * @param start The Start Transform
+ * @param stop The Stop/End Transform
+ * @param steps The number of step
+ * @return A vector of Eigen::Isometry with a length = steps + 1
+ */
 inline tesseract_common::VectorIsometry3d interpolate(const Eigen::Isometry3d& start,
                                                       const Eigen::Isometry3d& stop,
                                                       int steps)
@@ -73,6 +80,13 @@ inline tesseract_common::VectorIsometry3d interpolate(const Eigen::Isometry3d& s
   return result;
 }
 
+/**
+ * @brief Inerpolate between two waypoints return a vector of waypoints.
+ * @param start The Start Waypoint
+ * @param stop The Stop/End Waypoint
+ * @param steps The number of step
+ * @return A vector of waypoints with a length = steps + 1
+ */
 inline std::vector<Waypoint::Ptr> interpolate(const Waypoint& start, const Waypoint& stop, int steps)
 {
   switch (start.getType())

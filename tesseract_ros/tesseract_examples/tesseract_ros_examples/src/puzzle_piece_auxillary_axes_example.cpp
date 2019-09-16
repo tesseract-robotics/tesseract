@@ -175,7 +175,7 @@ ProblemConstructionInfo PuzzlePieceAuxillaryAxesExample::cppMethod()
   collision->first_step = 0;
   collision->last_step = pci.basic_info.n_steps - 1;
   collision->gap = 1;
-  collision->info = createSafetyMarginDataVector(pci.basic_info.n_steps, 0.025, 20);
+  collision->info = createSafetyMarginDataVector(pci.basic_info.n_steps, 0.025, 1);
   pci.cost_infos.push_back(collision);
 
   // Populate Constraints
@@ -190,8 +190,8 @@ ProblemConstructionInfo PuzzlePieceAuxillaryAxesExample::cppMethod()
 
     pose->link = "part";
     pose->tcp = tool_poses[static_cast<size_t>(i)];
-    pose->pos_coeffs = Eigen::Vector3d(10, 10, 10);
-    pose->rot_coeffs = Eigen::Vector3d(10, 10, 0);
+    pose->pos_coeffs = Eigen::Vector3d(5, 5, 5);
+    pose->rot_coeffs = Eigen::Vector3d(2, 2, 0);
 
     pci.cnt_infos.push_back(pose);
   }

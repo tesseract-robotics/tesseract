@@ -122,13 +122,19 @@ public:
   tesseract_common::StatusCode isConfigured() const override;
 
 private:
-  std::shared_ptr<DescartesMotionPlannerConfig<FloatType>> config_;
-  std::shared_ptr<const DescartesMotionPlannerStatusCategory> status_category_; /** @brief The plannsers status codes */
+  std::shared_ptr<DescartesMotionPlannerConfig<FloatType>> config_; /**< @brief The planners configuration */
+  std::shared_ptr<const DescartesMotionPlannerStatusCategory> status_category_; /**< @brief The planners status codes */
 };
 
 using DescartesMotionPlannerD = DescartesMotionPlanner<double>;
 using DescartesMotionPlannerF = DescartesMotionPlanner<float>;
 
+/**
+ * @brief The Descartes motion planner status category
+ *
+ * It contains both successfull and error status codes.
+
+ */
 class DescartesMotionPlannerStatusCategory : public tesseract_common::StatusCategory
 {
 public:
@@ -140,15 +146,15 @@ public:
   {
     IsConfigured = 1,
     SolutionFound = 0,
-    IsNotConfigured = -1,
-    FailedToParseConfig = -2,
-    FailedToBuildGraph = -3,
-    FailedToFindValidSolution = -4,
-    FoundValidSolutionInCollision = -5
+    ErrorIsNotConfigured = -1,
+    ErrorFailedToParseConfig = -2,
+    ErrorFailedToBuildGraph = -3,
+    ErrorFailedToFindValidSolution = -4,
+    ErrorFoundValidSolutionInCollision = -5
   };
 
 private:
-  std::string name_;
+  std::string name_; /**< @brief The name of the status category */
 };
 
 }  // namespace tesseract_motion_planners

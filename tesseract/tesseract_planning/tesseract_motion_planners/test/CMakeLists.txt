@@ -36,7 +36,7 @@ else()
 endif()
 add_dependencies(run_tests ${PROJECT_NAME}_trajopt_unit)
 
-# TrajOpt Planner Tests
+# Descartes Planner Tests
 add_executable(${PROJECT_NAME}_descartes_unit descartes_planner_tests.cpp)
 target_link_libraries(${PROJECT_NAME}_descartes_unit ${GTEST_BOTH_LIBRARIES} ${PROJECT_NAME}_descartes tesseract::tesseract_support)
 target_compile_options(${PROJECT_NAME}_descartes_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)

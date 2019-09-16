@@ -45,9 +45,20 @@ struct OMPLFreespacePlannerConfig
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   OMPLFreespacePlannerConfig() {}
-  /** @brief Determines the constraint placed at the start of the trajectory */
+  /**
+   * @brief Determines the constraint placed at the start of the trajectory
+   *
+   * The planner currently only support joint waypoints. Need to expose the ability
+   * to create a state sampler.
+   */
   Waypoint::Ptr start_waypoint;
-  /** @brief Determines the constraint placed at the end of the trajectory */
+
+  /**
+   * @brief Determines the constraint placed at the end of the trajectory
+   *
+   * The planner currently only support joint waypoints. Need to expose the ability
+   * to create a state sampler.
+   */
   Waypoint::Ptr end_waypoint;
 
   /** @brief If true, collision checking will be enabled. Default: true*/
@@ -157,7 +168,10 @@ protected:
   /** @brief The mapping of environment links to kinematics links */
   tesseract_environment::AdjacencyMap::ConstPtr adj_map_;
 
+  /** @brief The discrete contact manager */
   tesseract_collision::DiscreteContactManager::Ptr discrete_contact_manager_;
+
+  /** @brief The continuous contact manager */
   tesseract_collision::ContinuousContactManager::Ptr continuous_contact_manager_;
 };
 

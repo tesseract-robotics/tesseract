@@ -94,7 +94,8 @@ bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::terminate()
 }
 
 template <typename PlannerType, typename PlannerSettingsType>
-tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::solve(PlannerResponse& response, const bool verbose)
+tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::solve(PlannerResponse& response,
+                                                                                           const bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
@@ -182,7 +183,16 @@ bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(
   }
 
   if (config_->weights.size() == 0)
+  {
     config_->weights = Eigen::VectorXd::Ones(kin_->numJoints());
+  }
+  else if (config_->weights.size() != kin_->numJoints())
+  {
+    CONSOLE_BRIDGE_logError("In ompl_freespace_planner: The weights must be the same length as the number of joints or "
+                            "have a length of zero!");
+    config_ = nullptr;
+    return false;
+  }
 
   const tesseract_environment::Environment::ConstPtr& env = config_->tesseract->getEnvironmentConst();
   // kinematics objects does not know of every link affected by its motion so must compute adjacency map

@@ -83,7 +83,7 @@ tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::solve(Plan
   tesseract_motion_planners::PlannerResponse descartes_planning_response;
   tesseract_common::StatusCode descartes_status = descartes_planner_.solve(descartes_planning_response, verbose);
   if (!descartes_status &&
-      (descartes_status.value() != DescartesMotionPlannerStatusCategory::FoundValidSolutionInCollision))
+      (descartes_status.value() != DescartesMotionPlannerStatusCategory::ErrorFoundValidSolutionInCollision))
   {
     response = std::move(descartes_planning_response);
     return descartes_status;

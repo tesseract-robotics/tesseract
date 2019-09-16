@@ -16,6 +16,18 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
+/**
+ * @brief Make a vector of robot position samplers from a vector of waypoints.
+ *
+ * This chooses a position sampler based on the waypoint type.
+ *
+ * @param path A vector of waypoints
+ * @param kinematic_interface The descartes kinematic interface to use
+ * @param collision_interface The descartes collision interface to use.
+ * @param radial_sample_resolution The radial sampling resolution. This is required any of the waypoints have an axis
+ * that is free to rotate.
+ * @return A vector of descartes position samplers.
+ */
 template <typename FloatType>
 std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr>
 makeRobotPositionSamplers(const std::vector<Waypoint::Ptr>& path,
@@ -91,6 +103,19 @@ makeRobotPositionSamplers(const std::vector<Waypoint::Ptr>& path,
   return result;
 }
 
+/**
+ * @brief Make a vector of gantry position samplers from a vector of waypoints.
+ *
+ * This chooses a position sampler based on the waypoint type. Also the kinematics interface should only be for the
+ * robot when using this utility function.
+ *
+ * @param path A vector of waypoints
+ * @param kinematic_interface The descartes kinematic interface to use
+ * @param collision_interface The descartes collision interface to use.
+ * @param radial_sample_resolution The radial sampling resolution. This is required any of the waypoints have an axis
+ * that is free to rotate.
+ * @return A vector of descartes position samplers.
+ */
 template <typename FloatType>
 std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr>
 makeGantryPositionSamplers(const std::vector<Waypoint::Ptr>& path,
@@ -165,6 +190,27 @@ makeGantryPositionSamplers(const std::vector<Waypoint::Ptr>& path,
 
   return result;
 }
+
+/**
+ * @brief Make a vector of Descartes timing constraints from a vector of waypoints
+ * @param path The vector of waypoints
+ * @param dt The timing constraint to be used for each waypoint
+ * @return A vector of Descartes timing constraints
+ */
+template <typename FloatType>
+std::vector<descartes_core::TimingConstraint<FloatType>> makeTiming(const std::vector<Waypoint::Ptr>& path,
+                                                                    const double dt)
+{
+  std::vector<descartes_core::TimingConstraint<FloatType>> timing(path.size(), dt);
+  // TODO(jmeyer): Compute the real time
+  // In Descartes land, the timing constraint represents how long the dt is between the previous point and the point
+  // associated with this particular constraint. In a trajectory with only one pass the first point is meaningless (?).
+  // Here I want to append many passes together so setting the DT to 0.0 is sort of saying: "Hey, take as long
+  // as you need to get to here from the last point".
+
+  return timing;
+}
+
 }  // namespace tesseract_motion_planners
 
 #endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_UTILS_H
