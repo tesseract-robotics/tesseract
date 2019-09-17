@@ -157,8 +157,8 @@ public:
   const std::vector<std::string>& getNames() const { return joint_names_; }
 
 protected:
-  Eigen::VectorXd joint_positions_;      /**< @brief Joint position in radians */
-  std::vector<std::string> joint_names_; /**< @brief Joint names */
+  Eigen::VectorXd joint_positions_;      /** @brief Joint position in radians */
+  std::vector<std::string> joint_names_; /** @brief Joint names */
 };
 
 /** @brief Defines a cartesian position waypoint for use with Tesseract Planners */
@@ -170,14 +170,17 @@ public:
   using Ptr = std::shared_ptr<CartesianWaypoint>;
   using ConstPtr = std::shared_ptr<const CartesianWaypoint>;
 
-  CartesianWaypoint(Eigen::Isometry3d cartesian_position)
-    : Waypoint(WaypointType::CARTESIAN_WAYPOINT), cartesian_position_(std::move(cartesian_position))
+  CartesianWaypoint(Eigen::Isometry3d cartesian_position, std::string parent_link = "")
+    : Waypoint(WaypointType::CARTESIAN_WAYPOINT)
+    , cartesian_position_(std::move(cartesian_position))
+    , parent_link_(std::move(parent_link))
   {
     setCoefficients(Eigen::VectorXd::Ones(6));
   }
 
-  CartesianWaypoint(Eigen::Vector3d position, Eigen::Quaterniond orientation)
+  CartesianWaypoint(Eigen::Vector3d position, Eigen::Quaterniond orientation, std::string link = "")
     : Waypoint(WaypointType::CARTESIAN_WAYPOINT)
+    , parent_link_(std::move(link))
   {
     cartesian_position_.translation() = position;
     cartesian_position_.linear() = orientation.toRotationMatrix();
@@ -191,19 +194,23 @@ public:
   const Eigen::Isometry3d& getTransform() const { return cartesian_position_; }
 
   /** @brief Convenience function that returns the xyz cartesian position contained in cartesian_position_ */
-  Eigen::Vector3d getPosition() { return cartesian_position_.translation(); }
+  Eigen::Vector3d getPosition() const { return cartesian_position_.translation(); }
   /**
    * @brief Convenience function that returns the wxyz rotation quarternion contained in cartesian_position
    * @return Quaternion(w, x, y, z)
    */
-  Eigen::Vector4d getOrientation()
+  Eigen::Vector4d getOrientation() const
   {
     Eigen::Quaterniond q(cartesian_position_.rotation());
     return Eigen::Vector4d(q.w(), q.x(), q.y(), q.z());
   }
 
+  /** @brief Gets the name of the link to which this position is relative */
+  std::string getParentLinkName() const { return parent_link_; }
+
 protected:
-  Eigen::Isometry3d cartesian_position_; /**< @brief Pose of this waypoint */
+  Eigen::Isometry3d cartesian_position_; /** @brief Pose of this waypoint */
+  std::string parent_link_; /** @brief The link to which this position is defined */
 };
 
 /** @brief Defines a joint toleranced position waypoint for use with Tesseract Planners*/
