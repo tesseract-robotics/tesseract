@@ -115,7 +115,8 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::C
     scale = Eigen::Vector3d(sx, sy, sz);
   }
 
-  bool convert = xml_element->BoolAttribute("convert", false);
+  bool convert = false;
+  xml_element->QueryBoolAttribute("convert", &convert);
 
   if (visual)
     meshes =

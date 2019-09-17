@@ -111,9 +111,12 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointSafet
           SafetyStatusCategory::MissingAttributeKPosition, status_cat, status);
   }
 
-  s->soft_upper_limit = xml_element->DoubleAttribute("soft_upper_limit", 0);
-  s->soft_lower_limit = xml_element->DoubleAttribute("soft_lower_limit", 0);
-  s->k_position = xml_element->DoubleAttribute("k_position", 0);
+  s->soft_upper_limit = 0;
+  s->soft_lower_limit = 0;
+  s->k_position = 0;
+  xml_element->QueryDoubleAttribute("soft_upper_limit", &s->soft_upper_limit);
+  xml_element->QueryDoubleAttribute("soft_lower_limit", &s->soft_lower_limit);
+  xml_element->QueryDoubleAttribute("k_position", &s->k_position);
 
   safety = std::move(s);
   return std::make_shared<tesseract_common::StatusCode>(SafetyStatusCategory::Success, status_cat, status);
