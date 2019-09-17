@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_ros_examples/pick_and_place_example.h>
+#include <tesseract_motion_planners/trajopt/config/trajopt_planner_config.h>
 #include <tesseract_motion_planners/trajopt/trajopt_motion_planner.h>
 #include <tesseract_rosutils/plotting.h>
 #include <tesseract_rosutils/utils.h>
@@ -301,7 +302,7 @@ bool PickAndPlaceExample::run()
   tesseract_motion_planners::PlannerResponse planning_response_place;
 
   // Set Planner Configuration
-  planner.setConfiguration(config);
+  planner.setConfiguration(std::make_shared<tesseract_motion_planners::TrajOptPlannerConfig>(config));
 
   // Solve problem. Results are stored in the response
   planner.solve(planning_response);
@@ -511,7 +512,7 @@ bool PickAndPlaceExample::run()
   }
 
   // Set Planner Configuration
-  planner.setConfiguration(config_place);
+  planner.setConfiguration(std::make_shared<tesseract_motion_planners::TrajOptPlannerConfig>(config_place));
 
   // Solve problem
   planner.solve(planning_response_place);
