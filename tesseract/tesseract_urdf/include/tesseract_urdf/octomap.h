@@ -103,7 +103,8 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& 
   else
     return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::ErrorInvalidShapeType, status_cat);
 
-  bool prune = xml_element->BoolAttribute("prune", false);
+  bool prune = false;
+  xml_element->QueryBoolAttribute("prune", &prune);
 
   const tinyxml2::XMLElement* pcd_element = xml_element->FirstChildElement("point_cloud");
   const tinyxml2::XMLElement* octree_element = xml_element->FirstChildElement("octree");
