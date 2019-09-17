@@ -114,6 +114,7 @@ protected:
    */
   bool is_critical_ = true;
 };
+
 /** @brief Defines a joint position waypoint for use with Tesseract Planners*/
 class JointWaypoint : public Waypoint
 {
@@ -159,6 +160,7 @@ protected:
   Eigen::VectorXd joint_positions_;      /**< @brief Joint position in radians */
   std::vector<std::string> joint_names_; /**< @brief Joint names */
 };
+
 /** @brief Defines a cartesian position waypoint for use with Tesseract Planners */
 class CartesianWaypoint : public Waypoint
 {
@@ -205,32 +207,24 @@ protected:
 };
 
 /** @brief Defines a joint toleranced position waypoint for use with Tesseract Planners*/
-class JointTolerancedWaypoint : public Waypoint
+class JointTolerancedWaypoint : public JointWaypoint
 {
 public:
   using Ptr = std::shared_ptr<JointTolerancedWaypoint>;
   using ConstPtr = std::shared_ptr<const JointTolerancedWaypoint>;
 
   JointTolerancedWaypoint(Eigen::VectorXd joint_positions, std::vector<std::string> joint_names)
-    : Waypoint(WaypointType::JOINT_TOLERANCED_WAYPOINT)
-    , joint_positions_(std::move(joint_positions))
-    , joint_names_(std::move(joint_names))
+    : JointWaypoint(joint_positions, joint_names)
   {
-    assert(joint_positions_.size() == static_cast<long>(joint_names_.size()));
-    setCoefficients(Eigen::VectorXd::Ones(joint_positions_.size()));
+    waypoint_type_ = WaypointType::JOINT_TOLERANCED_WAYPOINT;
     setUpperTolerance(Eigen::VectorXd::Zero(joint_positions_.size()));
     setLowerTolerance(Eigen::VectorXd::Zero(joint_positions_.size()));
   }
 
   JointTolerancedWaypoint(std::vector<double> joint_positions, std::vector<std::string> joint_names)
-    : Waypoint(WaypointType::JOINT_TOLERANCED_WAYPOINT), joint_names_(std::move(joint_names))
+    : JointWaypoint(joint_positions, joint_names)
   {
-    joint_positions_.resize(static_cast<long>(joint_positions.size()));
-    for (long i = 0; i < static_cast<long>(joint_positions.size()); ++i)
-      joint_positions_[i] = joint_positions[static_cast<size_t>(i)];
-
-    assert(joint_positions_.size() == static_cast<long>(joint_names_.size()));
-    setCoefficients(Eigen::VectorXd::Ones(joint_positions_.size()));
+    waypoint_type_ = WaypointType::JOINT_TOLERANCED_WAYPOINT;
     setUpperTolerance(Eigen::VectorXd::Zero(joint_positions_.size()));
     setLowerTolerance(Eigen::VectorXd::Zero(joint_positions_.size()));
   }
@@ -294,9 +288,6 @@ public:
   const Eigen::VectorXd& getLowerTolerance() const { return lower_tolerance_; }
 
 protected:
-  Eigen::VectorXd joint_positions_;      /**< @brief Joint position in radians */
-  std::vector<std::string> joint_names_; /**< @brief Joint names */
-
   /** @brief Amount over joint_positions_ that is allowed (positive radians). */
   Eigen::VectorXd upper_tolerance_;
 
