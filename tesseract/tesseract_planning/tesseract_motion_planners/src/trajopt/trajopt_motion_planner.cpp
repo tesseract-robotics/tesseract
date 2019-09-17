@@ -139,7 +139,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
   continuous_manager->setContactDistanceThreshold(0);
   collisions.clear();
   bool found = checkTrajectory(*continuous_manager,
-                               *config_->prob->GetEnv(),
+                               *(config_->prob->GetEnv()),
                                config_->prob->GetKin()->getJointNames(),
                                getTraj(opt.x(), config_->prob->GetVars()),
                                collisions,
@@ -154,7 +154,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
   collisions.clear();
 
   found = found || checkTrajectory(*discrete_manager,
-                                   *config_->prob->GetEnv(),
+                                   *(config_->prob->GetEnv()),
                                    config_->prob->GetKin()->getJointNames(),
                                    getTraj(opt.x(), config_->prob->GetVars()),
                                    collisions,
@@ -185,16 +185,16 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
 
 tesseract_common::StatusCode TrajOptMotionPlanner::isConfigured() const
 {
-  if (config_ != nullptr)
+  if (config_ != nullptr && config_->prob != nullptr)
     return tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::IsConfigured, status_category_);
   else
     return tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::IsNotConfigured, status_category_);
 }
 
-bool TrajOptMotionPlanner::setConfiguration(const TrajOptPlannerConfig& config)
+bool TrajOptMotionPlanner::setConfiguration(const TrajOptPlannerConfigBase::Ptr& config)
 {
-  config_ = std::make_shared<TrajOptPlannerConfig>(config);
-  return true;
+  config_ = config;
+  return config_->generate();
 }
 
 }  // namespace tesseract_motion_planners
