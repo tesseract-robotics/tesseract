@@ -102,7 +102,7 @@ inline std::vector<Waypoint::Ptr> interpolate(const Waypoint& start, const Waypo
       for (auto& eigen_pose : eigen_poses)
       {
         CartesianWaypoint::Ptr new_waypoint =
-            std::make_shared<tesseract_motion_planners::CartesianWaypoint>(eigen_pose);
+            std::make_shared<tesseract_motion_planners::CartesianWaypoint>(eigen_pose, w1.getParentLinkName());
         new_waypoint->setCoefficients(start.getCoefficients());
         new_waypoint->setIsCritical(start.isCritical());
         result.push_back(new_waypoint);

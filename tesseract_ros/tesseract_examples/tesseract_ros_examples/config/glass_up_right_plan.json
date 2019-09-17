@@ -52,7 +52,8 @@
         "wxyz" : [0.0, 0.0, 1.0, 0.0],
         "link" : "tool0",
         "pos_coeffs" : [10, 10, 10],
-        "rot_coeffs" : [10, 10, 10]
+        "rot_coeffs" : [10, 10, 10],
+        "target" : "base_link"
       }
     },
     {
@@ -65,7 +66,8 @@
         "wxyz" : [0.0, 0.0, 1.0, 0.0],
         "link" : "tool0",
         "pos_coeffs" : [0, 0, 0],
-        "rot_coeffs" : [10, 10, 0]
+        "rot_coeffs" : [10, 10, 0],
+        "target" : "base_link"
       }
     },
     {
@@ -78,7 +80,8 @@
         "wxyz" : [0.0, 0.0, 1.0, 0.0],
         "link" : "tool0",
         "pos_coeffs" : [0, 0, 0],
-        "rot_coeffs" : [10, 10, 0]
+        "rot_coeffs" : [10, 10, 0],
+        "target" : "base_link"
       }
     },
     {
@@ -91,7 +94,8 @@
         "wxyz" : [0.0, 0.0, 1.0, 0.0],
         "link" : "tool0",
         "pos_coeffs" : [0, 0, 0],
-        "rot_coeffs" : [10, 10, 0]
+        "rot_coeffs" : [10, 10, 0],
+        "target" : "base_link"
       }
     },
     {
@@ -104,7 +108,8 @@
         "wxyz" : [0.0, 0.0, 1.0, 0.0],
         "link" : "tool0",
         "pos_coeffs" : [10, 10, 10],
-        "rot_coeffs" : [10, 10, 0]
+        "rot_coeffs" : [10, 10, 0],
+        "target" : "base_link"
       }
     }
   ],
