@@ -33,23 +33,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/planner.h>
 
+#include <tesseract_motion_planners/trajopt/config/trajopt_planner_config_base.h>
+
 namespace tesseract_motion_planners
 {
 class TrajOptMotionPlannerStatusCategory;
-
-struct TrajOptPlannerConfig
-{
-  TrajOptPlannerConfig(trajopt::TrajOptProb::Ptr prob) : prob(prob) {}
-  virtual ~TrajOptPlannerConfig() {}
-  /** @brief Trajopt problem to be solved (Required) */
-  trajopt::TrajOptProb::Ptr prob;
-
-  /** @brief Optimization parameters to be used (Optional) */
-  sco::BasicTrustRegionSQPParameters params;
-
-  /** @brief Callback functions called on each iteration of the optimization (Optional) */
-  std::vector<sco::Optimizer::Callback> callbacks;
-};
 
 class TrajOptMotionPlanner : public MotionPlanner
 {
@@ -67,7 +55,7 @@ public:
    * @param config The planners configuration
    * @return True if successful otherwise false
    */
-  bool setConfiguration(const TrajOptPlannerConfig& config);
+  bool setConfiguration(const TrajOptPlannerConfigBase::Ptr& config);
 
   /**
    * @brief Sets up the opimizer and solves a SQP problem read from json with no callbacks and dafault parameterss
@@ -89,7 +77,7 @@ public:
   tesseract_common::StatusCode isConfigured() const override;
 
 protected:
-  std::shared_ptr<TrajOptPlannerConfig> config_;
+  TrajOptPlannerConfigBase::Ptr config_;
   std::shared_ptr<const TrajOptMotionPlannerStatusCategory> status_category_; /** @brief The plannsers status codes */
 };
 
