@@ -32,3 +32,4 @@ string[] active_link_names
 string[] active_joint_names
 tesseract_msgs/TransformMap link_transforms
 tesseract_msgs/TransformMap joint_transforms
+tesseract_msgs/AllowedCollisionEntry[] allowed_collision_matrix

@@ -51,6 +51,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_msgs/JointMimic.h>
 #include <tesseract_msgs/JointSafety.h>
 #include <tesseract_msgs/ProcessPlan.h>
+#include <tesseract_msgs/AllowedCollisionEntry.h>
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseArray.h>
@@ -1570,6 +1571,27 @@ inline bool toMsg(geometry_msgs::PoseArray& pose_array,
       if (!toMsg(pose_array, process_definition.transitions[i].transition_from_end))
         return false;
     }
+  }
+
+  return true;
+}
+
+/**
+ * @brief Convert allowed collision matrix to a vector of allowed collision entry messages
+ * @param acm_msg Vector of allowed collision entries to populate
+ * @param acm Allowed collision matrix to convert to message
+ * @return True if successful, otherwise false
+ */
+inline bool toMsg(std::vector<tesseract_msgs::AllowedCollisionEntry>& acm_msg,
+                  const tesseract_scene_graph::AllowedCollisionMatrix& acm)
+{
+  for (const auto& entry : acm.getAllAllowedCollisions())
+  {
+    tesseract_msgs::AllowedCollisionEntry entry_msg;
+    entry_msg.link_1 = entry.first.first;
+    entry_msg.link_2 = entry.first.second;
+    entry_msg.reason = entry.second;
+    acm_msg.push_back(entry_msg);
   }
 
   return true;
