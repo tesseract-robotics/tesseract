@@ -61,42 +61,6 @@ target_include_directories(${PROJECT_NAME}_trajopt PUBLIC
 target_include_directories(${PROJECT_NAME}_trajopt SYSTEM PUBLIC
     ${Boost_INCLUDE_DIRS})
 
-# Trajopt Freespace Planner
-add_library(${PROJECT_NAME}_trajopt_freespace SHARED src/trajopt/trajopt_freespace_planner.cpp)
-target_link_libraries(${PROJECT_NAME}_trajopt_freespace PUBLIC ${PROJECT_NAME}_trajopt)
-target_compile_options(${PROJECT_NAME}_trajopt_freespace PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
-if(CXX_FEATURE_FOUND EQUAL "-1")
-    target_compile_options(${PROJECT_NAME}_trajopt_freespace PUBLIC -std=c++11)
-else()
-    target_compile_features(${PROJECT_NAME}_trajopt_freespace PUBLIC cxx_std_11)
-endif()
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(${PROJECT_NAME}_trajopt_freespace PUBLIC -mno-avx)
-  else()
-    message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
-  endif()
-target_include_directories(${PROJECT_NAME}_trajopt_freespace PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-
-# Trajopt Array Planner
-add_library(${PROJECT_NAME}_trajopt_array SHARED src/trajopt/trajopt_array_planner.cpp)
-target_link_libraries(${PROJECT_NAME}_trajopt_array PUBLIC ${PROJECT_NAME}_trajopt)
-target_compile_options(${PROJECT_NAME}_trajopt_array PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
-if(CXX_FEATURE_FOUND EQUAL "-1")
-    target_compile_options(${PROJECT_NAME}_trajopt_array PUBLIC -std=c++11)
-else()
-    target_compile_features(${PROJECT_NAME}_trajopt_array PUBLIC cxx_std_11)
-endif()
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(${PROJECT_NAME}_trajopt_array PUBLIC -mno-avx)
-  else()
-    message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
-  endif()
-target_include_directories(${PROJECT_NAME}_trajopt_array PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-
 # OMPL Freespace Planning Interface
 add_library(${PROJECT_NAME}_ompl_freespace SHARED
   src/ompl/ompl_freespace_planner.cpp
@@ -161,8 +125,6 @@ target_include_directories(${PROJECT_NAME}_descartes_trajopt_array PUBLIC
 
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_core)
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_trajopt)
-list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_trajopt_freespace)
-list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_trajopt_array)
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_ompl_freespace)
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_descartes)
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_descartes_trajopt_array)
