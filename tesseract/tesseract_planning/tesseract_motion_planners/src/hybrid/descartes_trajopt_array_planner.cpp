@@ -24,6 +24,7 @@
  * limitations under the License.
  */
 #include <tesseract_motion_planners/hybrid/descartes_trajopt_array_planner.h>
+#include <tesseract_motion_planners/trajopt/config/trajopt_planner_default_config.h>
 
 namespace tesseract_motion_planners
 {
@@ -46,7 +47,7 @@ void DescartesTrajOptArrayPlanner<FloatType>::clear()
   request_ = PlannerRequest();
   trajopt_planner_.clear();
   descartes_planner_.clear();
-  trajopt_config_ = TrajOptArrayPlannerConfig();
+  trajopt_config_ = nullptr;
 }
 
 template <typename FloatType>
@@ -89,7 +90,19 @@ tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::solve(Plan
     return descartes_status;
   }
 
-  trajopt_config_.seed_trajectory_ = descartes_planning_response.joint_trajectory.trajectory;
+  std::shared_ptr<TrajOptPlannerDefaultConfig> config =
+      std::dynamic_pointer_cast<TrajOptPlannerDefaultConfig>(trajopt_config_);
+  if (config)
+  {
+    config->seed_trajectory = descartes_planning_response.joint_trajectory.trajectory;
+  }
+  else
+  {
+    CONSOLE_BRIDGE_logError("Failed to set initial trajectory; ensure DescartesTrajOptArrayPlanner is configured with "
+                            "TrajOptPlannerDefaultConfig");
+    return tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::FailedToParseConfig, status_category_);
+  }
+
   trajopt_planner_.setConfiguration(trajopt_config_);
 
   tesseract_motion_planners::PlannerResponse trajopt_planning_response;
@@ -102,7 +115,7 @@ tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::solve(Plan
 template <typename FloatType>
 bool DescartesTrajOptArrayPlanner<FloatType>::setConfiguration(
     const DescartesMotionPlannerConfig<FloatType>& descartes_config,
-    const TrajOptArrayPlannerConfig& trajopt_config)
+    const TrajOptPlannerConfigBase::Ptr& trajopt_config)
 {
   bool success = true;
   if (!descartes_planner_.setConfiguration(descartes_config))
