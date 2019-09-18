@@ -3,11 +3,11 @@
  * @brief Parse cylinder from xml string
  *
  * @author Levi Armstrong
- * @date Dec 18, 2017
+ * @date September 1, 2019
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2019, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -32,6 +32,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_geometry/impl/cylinder.h>
 
 namespace tesseract_urdf
 {
@@ -73,10 +75,10 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Cylinder::Ptr
   auto status_cat = std::make_shared<CylinderStatusCategory>();
 
   double r, l;
-  if (xml_element->QueryDoubleAttribute("length", &(l)) != tinyxml2::XML_SUCCESS)
+  if (xml_element->QueryDoubleAttribute("length", &(l)) != tinyxml2::XML_SUCCESS || !(l > 0))
     return std::make_shared<tesseract_common::StatusCode>(CylinderStatusCategory::ErrorAttributeLength, status_cat);
 
-  if (xml_element->QueryDoubleAttribute("radius", &(r)) != tinyxml2::XML_SUCCESS)
+  if (xml_element->QueryDoubleAttribute("radius", &(r)) != tinyxml2::XML_SUCCESS || !(r > 0))
     return std::make_shared<tesseract_common::StatusCode>(CylinderStatusCategory::ErrorAttributeRadius, status_cat);
 
   cylinder = std::make_shared<tesseract_geometry::Cylinder>(r, l);

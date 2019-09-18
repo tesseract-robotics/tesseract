@@ -3,11 +3,11 @@
  * @brief Parse box from xml string
  *
  * @author Levi Armstrong
- * @date Dec 18, 2017
+ * @date September 1, 2019
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2019, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -29,9 +29,14 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/status_code.h>
+#include <tesseract_common/utils.h>
 #include <Eigen/Geometry>
 #include <tinyxml2.h>
+#include <boost/algorithm/string.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_geometry/impl/box.h>
+#include <tesseract_urdf/utils.h>
 
 namespace tesseract_urdf
 {
@@ -82,13 +87,13 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Box::Ptr& box
     return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSizeConversion, status_cat);
 
   double l, w, h;
-  if (!tinyxml2::XMLUtil::ToDouble(tokens[0].c_str(), &l))
+  if (!tinyxml2::XMLUtil::ToDouble(tokens[0].c_str(), &l) || !(l > 0))
     return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSizeConversion, status_cat);
 
-  if (!tinyxml2::XMLUtil::ToDouble(tokens[1].c_str(), &w))
+  if (!tinyxml2::XMLUtil::ToDouble(tokens[1].c_str(), &w) || !(w > 0))
     return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSizeConversion, status_cat);
 
-  if (!tinyxml2::XMLUtil::ToDouble(tokens[2].c_str(), &h))
+  if (!tinyxml2::XMLUtil::ToDouble(tokens[2].c_str(), &h) || !(h > 0))
     return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSizeConversion, status_cat);
 
   box = std::make_shared<tesseract_geometry::Box>(l, w, h);

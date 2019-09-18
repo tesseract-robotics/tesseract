@@ -3,11 +3,11 @@
  * @brief Parse visual from xml string
  *
  * @author Levi Armstrong
- * @date Dec 18, 2017
+ * @date September 1, 2019
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2019, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/utils.h>
+#include <tesseract_scene_graph/link.h>
 #include <tesseract_urdf/utils.h>
 #include <tesseract_urdf/origin.h>
 #include <tesseract_urdf/material.h>

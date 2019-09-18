@@ -3,11 +3,11 @@
  * @brief Parse sphere from xml string
  *
  * @author Levi Armstrong
- * @date Dec 18, 2017
+ * @date September 1, 2019
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2019, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -32,6 +32,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_geometry/impl/sphere.h>
 
 namespace tesseract_urdf
 {
@@ -70,7 +72,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Sphere::Ptr& 
   auto status_cat = std::make_shared<SphereStatusCategory>();
 
   double radius;
-  if (xml_element->QueryDoubleAttribute("radius", &(radius)) != tinyxml2::XML_SUCCESS)
+  if (xml_element->QueryDoubleAttribute("radius", &(radius)) != tinyxml2::XML_SUCCESS || !(radius > 0))
     return std::make_shared<tesseract_common::StatusCode>(SphereStatusCategory::ErrorAttributeRadius, status_cat);
 
   sphere = std::make_shared<tesseract_geometry::Sphere>(radius);

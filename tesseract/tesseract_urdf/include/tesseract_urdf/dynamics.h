@@ -3,11 +3,11 @@
  * @brief Parse dynamics from xml string
  *
  * @author Levi Armstrong
- * @date Dec 18, 2017
+ * @date September 1, 2019
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2019, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -53,7 +53,7 @@ public:
       case MissingAttributeFriction:
         return "Missing dynamics attribute 'friction', using default value 0!";
       case ErrorMissingAttributeDampingAndFriction:
-        return "Missing both dynamics attribute 'damping' and 'friction', either remove tag add attributes and values";
+        return "Missing both dynamics attribute 'damping' and 'friction', remove tag or add attributes and values";
       case ErrorParsingAttributeDamping:
         return "Error parsing dynamics attribute 'damping'!";
       case ErrorParsingAttributeFriction:

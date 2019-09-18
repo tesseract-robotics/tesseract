@@ -3,11 +3,11 @@
  * @brief Utils for parsing urdf
  *
  * @author Levi Armstrong
- * @date Dec 18, 2017
+ * @date September 1, 2019
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2019, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -36,6 +36,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
+
+/**
+ * @brief Query a string value from xml element
+ * @param xml_element The xml element to query string from
+ * @param value The value to update from the xml element
+ * @return tinyxml2::XML_SUCCESS if successful, otherwise returns tinyxml2::XML_NO_ATTRIBUTE
+ */
 inline tinyxml2::XMLError QueryStringValue(const tinyxml2::XMLElement* xml_element, std::string& value)
 {
   if (xml_element->Value() == nullptr)
@@ -46,6 +53,12 @@ inline tinyxml2::XMLError QueryStringValue(const tinyxml2::XMLElement* xml_eleme
   return tinyxml2::XML_SUCCESS;
 }
 
+/**
+ * @brief Query a string value from xml attribute
+ * @param xml_attribute The xml attribute to query string from
+ * @param value The value to update from the xml attribute
+ * @return tinyxml2::XML_SUCCESS if successful, otherwise returns tinyxml2::XML_WRONG_ATTRIBUTE_TYPE
+ */
 inline tinyxml2::XMLError QueryStringValue(const tinyxml2::XMLAttribute* xml_attribute, std::string& value)
 {
   if (xml_attribute->Value() == nullptr)
@@ -56,6 +69,13 @@ inline tinyxml2::XMLError QueryStringValue(const tinyxml2::XMLAttribute* xml_att
   return tinyxml2::XML_SUCCESS;
 }
 
+/**
+ * @brief Query a string attribute from an xml element
+ * @param xml_element The xml attribute to query attribute
+ * @param name The name of the attribute to query
+ * @param value The value to update from the xml attribute
+ * @return tinyxml2::XML_SUCCESS if successful, otherwise returns tinyxml2::XML_NO_ATTRIBUTE or tinyxml2::XML_WRONG_ATTRIBUTE_TYPE
+ */
 inline tinyxml2::XMLError QueryStringAttribute(const tinyxml2::XMLElement* xml_element,
                                                const char* name,
                                                std::string& value)
@@ -67,6 +87,13 @@ inline tinyxml2::XMLError QueryStringAttribute(const tinyxml2::XMLElement* xml_e
   return QueryStringValue(attribute, value);
 }
 
+/**
+ * @brief Get string attribute if exist. If it does not exist it returns the default value.
+ * @param xml_element The xml element to attempt to parse attribute
+ * @param name The name of the attribute
+ * @param default_value The default value to return if attribute does not exist
+ * @return Parsed string attribute or default value if attribute does not exist.
+ */
 inline std::string StringAttribute(const tinyxml2::XMLElement* xml_element, const char* name, std::string default_value)
 {
   std::string str = default_value;
