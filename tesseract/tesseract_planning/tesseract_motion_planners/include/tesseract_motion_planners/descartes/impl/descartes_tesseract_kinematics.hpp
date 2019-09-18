@@ -1,6 +1,37 @@
+/**
+ * @file descartes_tesseract_kinematics.h
+ * @brief Implememntatino of a wrapper around tesseract kinematics for the descartes_light kinematics interface
+ *
+ * @author Matthew Powelson
+ * @author Levi Armstrong
+ * @date September 17, 2019
+ * @version TODO
+ * @bug No known bugs
+ *
+ * @copyright Copyright (c) 2019, Southwest Research Institute
+ *
+ * @par License
+ * Software License Agreement (Apache License)
+ * @par
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * @par
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#ifndef TESSERACT_MOTION_PLANNERS_DESCARTES_TESSERACT_KINEMATICS_HPP
+#define TESSERACT_MOTION_PLANNERS_DESCARTES_TESSERACT_KINEMATICS_HPP
+
 #include <tesseract_motion_planners/descartes/descartes_tesseract_kinematics.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Eigen>
 #include <console_bridge/console.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
@@ -35,9 +66,6 @@ bool DescartesTesseractKinematics<FloatType>::ik(
   FloatType* sol = solution_float_type.data();
 
   // Apply is_valid_fn and redundant_sol_fn
-
-  // Levi - Do we need harmonizeTowardZero(sol) here?
-
   if (is_valid_fn && redundant_sol_fn)
   {
     if (is_valid_fn_(sol))
@@ -60,6 +88,13 @@ bool DescartesTesseractKinematics<FloatType>::ik(
   {
     if (is_valid_fn(sol))
       solution_set.insert(end(solution_set), sol, sol + dof);  // If good then add to solution set
+    else
+    {
+      // If it failed the is_valid_fn get solution that is +/-pi and retry
+      descartes_light::harmonizeTowardZero<FloatType>(sol, dof);
+      if (is_valid_fn(sol))
+        solution_set.insert(end(solution_set), sol, sol + dof);
+    }
   }
   else if (!is_valid_fn && redundant_sol_fn)
   {
@@ -168,3 +203,4 @@ void DescartesTesseractKinematics<FloatType>::setIKSeed(const std::vector<FloatT
   ik_seed_ = Eigen::Map<Eigen::VectorXd>(seed_copy.data(), seed_copy.size());
 }
 }  // namespace tesseract_motion_planners
+#endif
