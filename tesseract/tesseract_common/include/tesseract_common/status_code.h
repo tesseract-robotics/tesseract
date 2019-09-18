@@ -131,6 +131,18 @@ public:
   }
 
   /**
+   * @brief Set the child status code
+   * @param child The child status code to assign
+   */
+  void setChild(StatusCode::ConstPtr child) { child_ = std::move(child); }
+
+  /**
+   * @brief Get the child status code if it exist
+   * @return Child status code, nullptr if it does not have a child.
+   */
+  const StatusCode::ConstPtr& getChild() const { return child_; }
+
+  /**
    * @brief This return true if status value is greater or equal to zero which is not in an error state
    */
   explicit operator bool() const noexcept { return (value() >= 0); }
