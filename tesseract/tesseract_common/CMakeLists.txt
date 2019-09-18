@@ -49,3 +49,12 @@ install(FILES
   DESTINATION lib/cmake/${PROJECT_NAME})
 
 export(EXPORT ${PROJECT_NAME}-targets FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake)
+
+if (ENABLE_TESTS)
+  enable_testing()
+  add_custom_target(run_tests ALL
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -V)
+
+  add_subdirectory(test)
+endif()
