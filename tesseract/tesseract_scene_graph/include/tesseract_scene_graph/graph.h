@@ -138,6 +138,9 @@ public:
 
   /**
    * @brief Adds a link to the graph
+   *
+   * The first link added to the graph is set as the root by default. Use setRoot to change the root link of the graph.
+   *
    * @param link The link to be added to the graph
    * @return Return False if a link with the same name allready exists, otherwise true
    */
