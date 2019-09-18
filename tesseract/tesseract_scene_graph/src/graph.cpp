@@ -29,8 +29,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <fstream>
 #include <console_bridge/console.h>
-//#include <graphviz/gvc.h>
-//#include <graphviz/gvplugin_device.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
