@@ -3,11 +3,11 @@
  * @brief Parse material from xml string
  *
  * @author Levi Armstrong
- * @date Dec 18, 2017
+ * @date September 1, 2019
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2019, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)

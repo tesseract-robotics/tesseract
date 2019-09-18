@@ -3,11 +3,11 @@
  * @brief Parse octomap from xml string
  *
  * @author Levi Armstrong
- * @date Dec 18, 2017
+ * @date September 1, 2019
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2019, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -108,10 +108,6 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& 
   const tinyxml2::XMLElement* pcd_element = xml_element->FirstChildElement("point_cloud");
   const tinyxml2::XMLElement* octree_element = xml_element->FirstChildElement("octree");
 
-  if (pcd_element == nullptr && octree_element == nullptr)
-    return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::ErrorMissingOctreeOrPointCloudElement,
-                                                          status_cat);
-
   if (octree_element != nullptr)
   {
     auto status = parseOctree(octree, octree_element, locator, sub_type, prune);
@@ -131,6 +127,10 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& 
 
     return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::Success, status_cat);
   }
+
+  return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::ErrorMissingOctreeOrPointCloudElement,
+                                                        status_cat);
+
 }
 
 }  // namespace tesseract_urdf

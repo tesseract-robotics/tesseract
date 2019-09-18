@@ -3,11 +3,11 @@
  * @brief Parse safety_controller from xml string
  *
  * @author Levi Armstrong
- * @date Dec 18, 2017
+ * @date September 1, 2019
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2019, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -87,29 +87,34 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointSafet
   auto s = std::make_shared<tesseract_scene_graph::JointSafety>();
   if (xml_element->QueryDoubleAttribute("k_velocity", &(s->k_velocity)) != tinyxml2::XML_SUCCESS)
     return std::make_shared<tesseract_common::StatusCode>(SafetyStatusCategory::ErrorAttributeKVelocity, status_cat);
-  ;
 
-  auto status = std::make_shared<tesseract_common::StatusCode>(SafetyStatusCategory::Success, status_cat);
+
   if (xml_element->Attribute("soft_upper_limit") == nullptr && xml_element->Attribute("soft_lower_limit") == nullptr &&
       xml_element->Attribute("k_position") == nullptr)
-    status =
-        std::make_shared<tesseract_common::StatusCode>(SafetyStatusCategory::MissingAttributeAllOptional, status_cat);
-  else if (xml_element->Attribute("soft_upper_limit") == nullptr)
-    status = std::make_shared<tesseract_common::StatusCode>(SafetyStatusCategory::MissingAttributeSoftUpperLimit,
-                                                            status_cat);
-  else if (xml_element->Attribute("soft_lower_limit") == nullptr)
-    status = std::make_shared<tesseract_common::StatusCode>(SafetyStatusCategory::MissingAttributeSoftLowerLimit,
-                                                            status_cat);
-  else if (xml_element->Attribute("k_position") == nullptr)
-    status =
-        std::make_shared<tesseract_common::StatusCode>(SafetyStatusCategory::MissingAttributeKPosition, status_cat);
+  {
+    return std::make_shared<tesseract_common::StatusCode>(SafetyStatusCategory::MissingAttributeAllOptional, status_cat);
+  }
+
+  tesseract_common::StatusCode::Ptr status = nullptr;
+  if (xml_element->Attribute("soft_upper_limit") == nullptr || xml_element->Attribute("soft_lower_limit") == nullptr || xml_element->Attribute("k_position") == nullptr)
+  {
+
+    if (xml_element->Attribute("soft_upper_limit") == nullptr)
+      status = std::make_shared<tesseract_common::StatusCode>(SafetyStatusCategory::MissingAttributeSoftUpperLimit, status_cat, status);
+
+    if (xml_element->Attribute("soft_lower_limit") == nullptr)
+      status = std::make_shared<tesseract_common::StatusCode>(SafetyStatusCategory::MissingAttributeSoftLowerLimit, status_cat, status);
+
+    if (xml_element->Attribute("k_position") == nullptr)
+      status = std::make_shared<tesseract_common::StatusCode>(SafetyStatusCategory::MissingAttributeKPosition, status_cat, status);
+  }
 
   s->soft_upper_limit = xml_element->DoubleAttribute("soft_upper_limit", 0);
   s->soft_lower_limit = xml_element->DoubleAttribute("soft_lower_limit", 0);
   s->k_position = xml_element->DoubleAttribute("k_position", 0);
 
   safety = std::move(s);
-  return status;
+  return std::make_shared<tesseract_common::StatusCode>(SafetyStatusCategory::Success, status_cat, status);
 }
 
 }  // namespace tesseract_urdf

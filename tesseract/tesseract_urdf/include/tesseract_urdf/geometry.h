@@ -3,11 +3,11 @@
  * @brief Parse geometry from xml string
  *
  * @author Levi Armstrong
- * @date Dec 18, 2017
+ * @date September 1, 2019
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2019, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -39,6 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/box.h>
 #include <tesseract_urdf/cylinder.h>
 #include <tesseract_urdf/cone.h>
+#include <tesseract_urdf/capsule.h>
 #include <tesseract_urdf/mesh.h>
 #include <tesseract_urdf/convex_mesh.h>
 #include <tesseract_urdf/sdf_mesh.h>
@@ -159,6 +160,16 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::G
           GeometryStatusCategory::ErrorParsingCone, status_cat, status);
 
     geometries = { cone };
+  }
+  else if (geometry_type == "capsule")
+  {
+    tesseract_geometry::Capsule::Ptr capsule;
+    tesseract_common::StatusCode::Ptr status = parse(capsule, geometry);
+    if (!(*status))
+      return std::make_shared<tesseract_common::StatusCode>(
+          GeometryStatusCategory::ErrorParsingCapsule, status_cat, status);
+
+    geometries = { capsule };
   }
   else if (geometry_type == "octomap")
   {
