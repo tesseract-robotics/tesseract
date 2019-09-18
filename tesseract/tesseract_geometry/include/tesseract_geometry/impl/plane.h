@@ -49,7 +49,7 @@ public:
   double getC() const { return c_; }
   double getD() const { return d_; }
 
-  Geometry::Ptr clone() const override { return Plane::Ptr(new Plane(a_, b_, c_, d_)); }
+  Geometry::Ptr clone() const override { return std::make_shared<Plane>(a_, b_, c_, d_); }
 
 private:
   double a_;

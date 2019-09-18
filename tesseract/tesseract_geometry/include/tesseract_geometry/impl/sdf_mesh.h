@@ -104,7 +104,7 @@ public:
 
   Geometry::Ptr clone() const override
   {
-    return SDFMesh::Ptr(new SDFMesh(vertices_, triangles_, triangle_count_, file_path_, scale_));
+    return std::make_shared<SDFMesh>(vertices_, triangles_, triangle_count_, file_path_, scale_);
   }
 
 private:

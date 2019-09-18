@@ -48,7 +48,7 @@ public:
   double getY() const { return y_; }
   double getZ() const { return z_; }
 
-  Geometry::Ptr clone() const override { return Box::Ptr(new Box(x_, y_, z_)); }
+  Geometry::Ptr clone() const override { return std::make_shared<Box>(x_, y_, z_); }
 
 private:
   double x_;

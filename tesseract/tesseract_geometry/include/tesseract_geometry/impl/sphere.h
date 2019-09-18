@@ -46,7 +46,7 @@ public:
 
   double getRadius() const { return r_; }
 
-  Geometry::Ptr clone() const override { return Sphere::Ptr(new Sphere(r_)); }
+  Geometry::Ptr clone() const override { return std::make_shared<Sphere>(r_); }
 
 private:
   double r_;
