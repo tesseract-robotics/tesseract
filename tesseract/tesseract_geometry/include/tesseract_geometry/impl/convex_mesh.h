@@ -102,7 +102,7 @@ public:
 
   Geometry::Ptr clone() const override
   {
-    return ConvexMesh::Ptr(new ConvexMesh(vertices_, faces_, face_count_, file_path_, scale_));
+    return std::make_shared<ConvexMesh>(vertices_, faces_, face_count_, file_path_, scale_);
   }
 
 private:

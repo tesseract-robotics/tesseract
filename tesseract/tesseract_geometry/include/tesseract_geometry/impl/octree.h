@@ -59,7 +59,7 @@ public:
   const std::shared_ptr<const octomap::OcTree>& getOctree() const { return octree_; }
   SubType getSubType() const { return sub_type_; }
 
-  Geometry::Ptr clone() const override { return Octree::Ptr(new Octree(octree_, sub_type_)); }
+  Geometry::Ptr clone() const override { return std::make_shared<Octree>(octree_, sub_type_); }
 
   /**
    * @brief Octrees are typically generated from 3D sensor data so this method

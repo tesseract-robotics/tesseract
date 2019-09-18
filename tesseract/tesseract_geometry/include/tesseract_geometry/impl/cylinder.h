@@ -47,7 +47,7 @@ public:
   double getRadius() const { return r_; }
   double getLength() const { return l_; }
 
-  Geometry::Ptr clone() const override { return Cylinder::Ptr(new Cylinder(r_, l_)); }
+  Geometry::Ptr clone() const override { return std::make_shared<Cylinder>(r_, l_); }
 
 private:
   double r_;

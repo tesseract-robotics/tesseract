@@ -72,8 +72,8 @@ inline std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
   transform *= node->mTransformation;
   for (unsigned int j = 0; j < node->mNumMeshes; ++j)
   {
-    std::shared_ptr<tesseract_common::VectorVector3d> vertices(new tesseract_common::VectorVector3d());
-    std::shared_ptr<Eigen::VectorXi> triangles(new Eigen::VectorXi());
+    auto vertices = std::make_shared<tesseract_common::VectorVector3d>();
+    auto triangles = std::make_shared<Eigen::VectorXi>();
 
     const aiMesh* a = scene->mMeshes[node->mMeshes[j]];
     for (unsigned int i = 0; i < a->mNumVertices; ++i)
@@ -106,7 +106,7 @@ inline std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
     for (long i = 0; i < triangles->size(); ++i)
       (*triangles)[i] = local_triangles[static_cast<size_t>(i)];
 
-    meshes.push_back(std::shared_ptr<T>(new T(vertices, triangles, static_cast<int>(triangle_count), path, scale)));
+    meshes.push_back(std::make_shared<T>(vertices, triangles, static_cast<int>(triangle_count), path, scale));
   }
 
   for (unsigned int n = 0; n < node->mNumChildren; ++n)
