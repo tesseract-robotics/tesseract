@@ -125,19 +125,19 @@ parse(tesseract_scene_graph::Material::Ptr& material,
                                                               status_cat);
 
       double r, g, b, a;
-      if (!tinyxml2::XMLUtil::ToDouble(tokens[0].c_str(), &r))
+      if (!tesseract_common::toNumeric<double>(tokens[0].c_str(), r))
         return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA,
                                                               status_cat);
 
-      if (!tinyxml2::XMLUtil::ToDouble(tokens[1].c_str(), &g))
+      if (!tesseract_common::toNumeric<double>(tokens[1].c_str(), g))
         return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA,
                                                               status_cat);
 
-      if (!tinyxml2::XMLUtil::ToDouble(tokens[2].c_str(), &b))
+      if (!tesseract_common::toNumeric<double>(tokens[2].c_str(), b))
         return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA,
                                                               status_cat);
 
-      if (!tinyxml2::XMLUtil::ToDouble(tokens[3].c_str(), &a))
+      if (!tesseract_common::toNumeric<double>(tokens[3].c_str(), a))
         return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA,
                                                               status_cat);
 

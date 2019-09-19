@@ -100,15 +100,15 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::C
                                                             status_cat);
 
     double sx, sy, sz;
-    if (!tinyxml2::XMLUtil::ToDouble(tokens[0].c_str(), &sx))
+    if (!tesseract_common::toNumeric<double>(tokens[0].c_str(), sx))
       return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::ErrorParsingAttributeScale,
                                                             status_cat);
 
-    if (!tinyxml2::XMLUtil::ToDouble(tokens[1].c_str(), &sy))
+    if (!tesseract_common::toNumeric<double>(tokens[1].c_str(), sy))
       return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::ErrorParsingAttributeScale,
                                                             status_cat);
 
-    if (!tinyxml2::XMLUtil::ToDouble(tokens[2].c_str(), &sz))
+    if (!tesseract_common::toNumeric<double>(tokens[2].c_str(), sz))
       return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::ErrorParsingAttributeScale,
                                                             status_cat);
 

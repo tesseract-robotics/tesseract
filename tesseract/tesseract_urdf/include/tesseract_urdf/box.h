@@ -87,13 +87,13 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Box::Ptr& box
     return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSizeConversion, status_cat);
 
   double l, w, h;
-  if (!tinyxml2::XMLUtil::ToDouble(tokens[0].c_str(), &l) || !(l > 0))
+  if (!tesseract_common::toNumeric<double>(tokens[0].c_str(), l) || !(l > 0))
     return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSizeConversion, status_cat);
 
-  if (!tinyxml2::XMLUtil::ToDouble(tokens[1].c_str(), &w) || !(w > 0))
+  if (!tesseract_common::toNumeric<double>(tokens[1].c_str(), w) || !(w > 0))
     return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSizeConversion, status_cat);
 
-  if (!tinyxml2::XMLUtil::ToDouble(tokens[2].c_str(), &h) || !(h > 0))
+  if (!tesseract_common::toNumeric<double>(tokens[2].c_str(), h) || !(h > 0))
     return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSizeConversion, status_cat);
 
   box = std::make_shared<tesseract_geometry::Box>(l, w, h);

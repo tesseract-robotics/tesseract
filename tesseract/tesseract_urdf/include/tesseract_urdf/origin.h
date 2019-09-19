@@ -111,15 +111,15 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin, const 
                                                             status_cat);
 
     double x, y, z;
-    if (!tinyxml2::XMLUtil::ToDouble(tokens[0].c_str(), &x))
+    if (!tesseract_common::toNumeric<double>(tokens[0].c_str(), x))
       return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeXYZString,
                                                             status_cat);
 
-    if (!tinyxml2::XMLUtil::ToDouble(tokens[1].c_str(), &y))
+    if (!tesseract_common::toNumeric<double>(tokens[1].c_str(), y))
       return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeXYZString,
                                                             status_cat);
 
-    if (!tinyxml2::XMLUtil::ToDouble(tokens[2].c_str(), &z))
+    if (!tesseract_common::toNumeric<double>(tokens[2].c_str(), z))
       return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeXYZString,
                                                             status_cat);
 
@@ -142,15 +142,15 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin, const 
                                                               status_cat);
 
       double r, p, y;
-      if (!tinyxml2::XMLUtil::ToDouble(tokens[0].c_str(), &r))
+      if (!tesseract_common::toNumeric<double>(tokens[0].c_str(), r))
         return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeRPYString,
                                                               status_cat);
 
-      if (!tinyxml2::XMLUtil::ToDouble(tokens[1].c_str(), &p))
+      if (!tesseract_common::toNumeric<double>(tokens[1].c_str(), p))
         return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeRPYString,
                                                               status_cat);
 
-      if (!tinyxml2::XMLUtil::ToDouble(tokens[2].c_str(), &y))
+      if (!tesseract_common::toNumeric<double>(tokens[2].c_str(), y))
         return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeRPYString,
                                                               status_cat);
 
@@ -179,19 +179,19 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin, const 
                                                               status_cat);
 
       double qw, qx, qy, qz;
-      if (!tinyxml2::XMLUtil::ToDouble(tokens[0].c_str(), &qw))
+      if (!tesseract_common::toNumeric<double>(tokens[0].c_str(), qw))
         return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQString,
                                                               status_cat);
 
-      if (!tinyxml2::XMLUtil::ToDouble(tokens[1].c_str(), &qz))
+      if (!tesseract_common::toNumeric<double>(tokens[1].c_str(), qz))
         return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQString,
                                                               status_cat);
 
-      if (!tinyxml2::XMLUtil::ToDouble(tokens[2].c_str(), &qy))
+      if (!tesseract_common::toNumeric<double>(tokens[2].c_str(), qy))
         return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQString,
                                                               status_cat);
 
-      if (!tinyxml2::XMLUtil::ToDouble(tokens[3].c_str(), &qz))
+      if (!tesseract_common::toNumeric<double>(tokens[3].c_str(), qz))
         return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQString,
                                                               status_cat);
 
