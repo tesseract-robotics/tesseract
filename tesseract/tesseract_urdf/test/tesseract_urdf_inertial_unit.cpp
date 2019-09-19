@@ -13,7 +13,8 @@ TEST(TesseractURDFUnit, parse_inertial)
     std::string str = "<inertial extra=\"0 0 0\">"
                       "  <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
                       "  <mass value=\"1.0\" extra=\"0 0 0\"/>"
-                      "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\" extra=\"0 0 0\"/>"
+                      "  <inertia ixx=\"1.0\" ixy=\"2.0\" ixz=\"3.0\" iyy=\"4.0\" iyz=\"5.0\" izz=\"6.0\" extra=\"0 0 "
+                      "0\"/>"
                       "</inertial>";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial");

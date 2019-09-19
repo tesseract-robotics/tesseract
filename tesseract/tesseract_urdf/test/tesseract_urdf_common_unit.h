@@ -145,4 +145,4 @@ runTest(ElementType& type,
   return status;
 }
 
-#endif // TESSERACT_URDF_COMMON_UNIT_H
+#endif  // TESSERACT_URDF_COMMON_UNIT_H

@@ -130,7 +130,6 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& 
 
   return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::ErrorMissingOctreeOrPointCloudElement,
                                                         status_cat);
-
 }
 
 }  // namespace tesseract_urdf

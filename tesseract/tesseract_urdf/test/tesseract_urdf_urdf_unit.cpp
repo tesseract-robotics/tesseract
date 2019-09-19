@@ -210,7 +210,8 @@ TEST(TesseractURDFUnit, parse_urdf)
 
   {
     tesseract_scene_graph::SceneGraph::Ptr sg;
-    auto status = tesseract_urdf::parseURDFFile(sg, std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf", locateResource);
+    auto status = tesseract_urdf::parseURDFFile(
+        sg, std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf", locateResource);
     EXPECT_TRUE(*status);
   }
 }

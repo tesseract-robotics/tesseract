@@ -34,9 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 //#include <tesseract_urdf/joint.h>
 //#include <tesseract_urdf/urdf_parser.h>
 
-//using namespace tesseract_urdf;
-
-
+// using namespace tesseract_urdf;
 
 int main(int argc, char** argv)
 {
