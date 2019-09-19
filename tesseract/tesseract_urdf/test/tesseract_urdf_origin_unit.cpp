@@ -18,7 +18,7 @@ TEST(TesseractURDFUnit, parse_origin)
   }
 
   {
-    std::string str = "<origin xyz=\"0 0 0\" q=\"1 0 0 0\"/>";
+    std::string str = "<origin xyz=\"0 0 0\" wxyz=\"1 0 0 0\"/>";
     Eigen::Isometry3d origin;
     auto status = runTest<Eigen::Isometry3d>(origin, str, "origin");
     EXPECT_TRUE(*status);
@@ -37,7 +37,7 @@ TEST(TesseractURDFUnit, parse_origin)
   }
 
   {
-    std::string str = "<origin xyz=\"0 2.5 0\" rpy=\"3.14 0 0\" q=\"1 0 0 0\"/>";
+    std::string str = "<origin xyz=\"0 2.5 0\" rpy=\"3.14 0 0\" wxyz=\"1 0 0 0\"/>";
     Eigen::Isometry3d origin;
     auto status = runTest<Eigen::Isometry3d>(origin, str, "origin");
     EXPECT_TRUE(*status);

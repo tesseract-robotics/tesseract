@@ -144,7 +144,7 @@ Create Origin
 
 .. code-block:: xml
 
-   <origin xyz="0 0 0" rpy="0 0 0" q="1 0 0 0"/>;
+   <origin xyz="0 0 0" rpy="0 0 0" wxyz="1 0 0 0"/>;
 
 This allows the ability to use a quaternion instead of roll, pitch and yaw values. It is acceptable to have both to allow backwards compatability with other parsers, but the quaternion will take preference over rpy.
 
@@ -155,6 +155,6 @@ This allows the ability to use a quaternion instead of roll, pitch and yaw value
    * - Parameter
      - Required/Optional
      - Description
-   * - q
+   * - wxyz
      - Optional
      - A Quaternion = [w, x, y, z]. It will be normalized on creation.
