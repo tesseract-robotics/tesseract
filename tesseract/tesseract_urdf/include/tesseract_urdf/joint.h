@@ -208,15 +208,15 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
                                                               status_cat);
 
       double ax, ay, az;
-      if (!tinyxml2::XMLUtil::ToDouble(tokens[0].c_str(), &ax))
+      if (!tesseract_common::toNumeric<double>(tokens[0].c_str(), ax))
         return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorParsingAxisAttributeXYZ,
                                                               status_cat);
 
-      if (!tinyxml2::XMLUtil::ToDouble(tokens[1].c_str(), &ay))
+      if (!tesseract_common::toNumeric<double>(tokens[1].c_str(), ay))
         return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorParsingAxisAttributeXYZ,
                                                               status_cat);
 
-      if (!tinyxml2::XMLUtil::ToDouble(tokens[2].c_str(), &az))
+      if (!tesseract_common::toNumeric<double>(tokens[2].c_str(), az))
         return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorParsingAxisAttributeXYZ,
                                                               status_cat);
 

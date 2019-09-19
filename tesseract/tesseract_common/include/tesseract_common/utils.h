@@ -71,5 +71,32 @@ inline bool isNumeric(const std::vector<std::string>& sv)
   return true;
 }
 
+/**
+ * @brief Convert a string to a numeric value type
+ * @param s The string to be converted
+ * @param value The value to be loaded with coverted string
+ * @return True if successful, otherwise false
+ */
+template <typename FloatType>
+inline bool toNumeric(const std::string& s, FloatType& value)
+{
+  if (s.empty())
+    return false;
+
+  std::stringstream ss;
+  ss.imbue(std::locale::classic());
+
+  ss << s;
+
+  FloatType out;
+  ss >> out;
+
+  if (ss.fail() || !ss.eof())
+    return false;
+
+  value = out;
+  return true;
+}
+
 }  // namespace tesseract_common
 #endif  // TESSERACT_COMMON_UTILS_H
