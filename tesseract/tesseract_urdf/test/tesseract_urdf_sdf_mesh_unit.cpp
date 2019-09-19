@@ -10,7 +10,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 TEST(TesseractURDFUnit, parse_sdf_mesh)
 {
   {
-    std::string str = "<sdf_mesh filename=\"package://tesseract_support/meshes/sphere_p25m.stl\" scale=\"1 2 1\" extra=\"0 0 0\"/>";
+    std::string str = "<sdf_mesh filename=\"package://tesseract_support/meshes/sphere_p25m.stl\" scale=\"1 2 1\" "
+                      "extra=\"0 0 0\"/>";
     std::vector<tesseract_geometry::SDFMesh::Ptr> geom;
     auto status = runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom, str, "sdf_mesh", locateResource, true);
     EXPECT_TRUE(*status);

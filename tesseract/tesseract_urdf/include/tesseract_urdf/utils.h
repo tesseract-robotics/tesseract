@@ -36,7 +36,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-
 /**
  * @brief Query a string value from xml element
  * @param xml_element The xml element to query string from
@@ -74,7 +73,8 @@ inline tinyxml2::XMLError QueryStringValue(const tinyxml2::XMLAttribute* xml_att
  * @param xml_element The xml attribute to query attribute
  * @param name The name of the attribute to query
  * @param value The value to update from the xml attribute
- * @return tinyxml2::XML_SUCCESS if successful, otherwise returns tinyxml2::XML_NO_ATTRIBUTE or tinyxml2::XML_WRONG_ATTRIBUTE_TYPE
+ * @return tinyxml2::XML_SUCCESS if successful, otherwise returns tinyxml2::XML_NO_ATTRIBUTE or
+ * tinyxml2::XML_WRONG_ATTRIBUTE_TYPE
  */
 inline tinyxml2::XMLError QueryStringAttribute(const tinyxml2::XMLElement* xml_element,
                                                const char* name,

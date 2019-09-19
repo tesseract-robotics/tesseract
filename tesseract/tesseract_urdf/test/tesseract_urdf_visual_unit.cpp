@@ -77,4 +77,3 @@ TEST(TesseractURDFUnit, parse_visual)
     EXPECT_FALSE(*status);
   }
 }
-
