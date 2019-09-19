@@ -179,8 +179,7 @@ public:
   }
 
   CartesianWaypoint(Eigen::Vector3d position, Eigen::Quaterniond orientation, std::string link = "")
-    : Waypoint(WaypointType::CARTESIAN_WAYPOINT)
-    , parent_link_(std::move(link))
+    : Waypoint(WaypointType::CARTESIAN_WAYPOINT), parent_link_(std::move(link))
   {
     cartesian_position_.translation() = position;
     cartesian_position_.linear() = orientation.toRotationMatrix();
@@ -210,7 +209,7 @@ public:
 
 protected:
   Eigen::Isometry3d cartesian_position_; /** @brief Pose of this waypoint */
-  std::string parent_link_; /** @brief The link to which this position is defined */
+  std::string parent_link_;              /** @brief The link to which this position is defined */
 };
 
 /** @brief Defines a joint toleranced position waypoint for use with Tesseract Planners*/

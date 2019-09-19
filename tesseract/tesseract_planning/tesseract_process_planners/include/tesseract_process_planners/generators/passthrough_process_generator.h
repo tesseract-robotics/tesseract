@@ -24,7 +24,8 @@ public:
           std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(waypoint);
       tesseract_motion_planners::CartesianWaypoint::Ptr new_waypoint =
           std::make_shared<tesseract_motion_planners::CartesianWaypoint>(
-              config.world_offset_direction * cur_waypoint->getTransform() * config.local_offset_direction, cur_waypoint->getParentLinkName());
+              config.world_offset_direction * cur_waypoint->getTransform() * config.local_offset_direction,
+              cur_waypoint->getParentLinkName());
       new_waypoint->setCoefficients(cur_waypoint->getCoefficients());
       new_waypoint->setIsCritical(cur_waypoint->isCritical());
       new_waypoints.push_back(new_waypoint);
