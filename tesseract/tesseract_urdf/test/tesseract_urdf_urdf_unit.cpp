@@ -215,6 +215,48 @@ TEST(TesseractURDFUnit, parse_urdf)
   }
 }
 
+TEST(TesseractURDFUnit, parse_urdf_with_available_materials)
+{
+  {
+    std::string str = "<robot name=\"test\" extra=\"0 0 0\">"
+                      "  <material name=\"test_material\" extra=\"0 0 0\">"
+                      "    <color rgba=\"1 .5 .5 1\" extra=\"0 0 0\"/>"
+                      "  </material>"
+                      "  <joint name=\"j1\" type=\"fixed\">"
+                      "    <parent link=\"l1\"/>"
+                      "    <child link=\"l2\"/>"
+                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
+                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
+                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
+                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
+                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
+                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
+                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
+                      "  </joint>"
+                      "  <link name=\"l1\">"
+                      "    <visual>"
+                      "      <origin xyz=\"0 0 0\" rpy=\"0 0 0\" />"
+                      "      <geometry>"
+                      "        <box size=\"1 1 1\" />"
+                      "      </geometry>"
+                      "      <material name=\"test_material\"/>"
+                      "    </visual>"
+                      "  </link>"
+                      "  <link name=\"l2\"/>"
+                      "</robot>";
+    tesseract_scene_graph::SceneGraph::Ptr sg;
+    auto status = tesseract_urdf::parseURDFString(sg, str, locateResource);
+    EXPECT_TRUE(*status);
+    EXPECT_TRUE(sg != nullptr);
+    EXPECT_TRUE(sg->getName() == "test");
+    EXPECT_TRUE(sg->isTree());
+    EXPECT_TRUE(sg->isAcyclic());
+    EXPECT_TRUE(sg->getJoints().size() == 1);
+    EXPECT_TRUE(sg->getLinks().size() == 2);
+    EXPECT_EQ(sg->getLink("l1")->visual[0]->material->getName(), "test_material");
+  }
+}
+
 TEST(TesseractURDFUnit, LoadURDFUnit)
 {
   using namespace tesseract_scene_graph;
