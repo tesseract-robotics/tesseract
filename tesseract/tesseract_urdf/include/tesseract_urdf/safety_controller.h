@@ -89,16 +89,14 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointSafet
     return std::make_shared<tesseract_common::StatusCode>(SafetyStatusCategory::ErrorAttributeKVelocity, status_cat);
 
 
+  tesseract_common::StatusCode::Ptr status = nullptr;
   if (xml_element->Attribute("soft_upper_limit") == nullptr && xml_element->Attribute("soft_lower_limit") == nullptr &&
       xml_element->Attribute("k_position") == nullptr)
   {
-    return std::make_shared<tesseract_common::StatusCode>(SafetyStatusCategory::MissingAttributeAllOptional, status_cat);
+    status = std::make_shared<tesseract_common::StatusCode>(SafetyStatusCategory::MissingAttributeAllOptional, status_cat, status);
   }
-
-  tesseract_common::StatusCode::Ptr status = nullptr;
-  if (xml_element->Attribute("soft_upper_limit") == nullptr || xml_element->Attribute("soft_lower_limit") == nullptr || xml_element->Attribute("k_position") == nullptr)
+  else if (xml_element->Attribute("soft_upper_limit") == nullptr || xml_element->Attribute("soft_lower_limit") == nullptr || xml_element->Attribute("k_position") == nullptr)
   {
-
     if (xml_element->Attribute("soft_upper_limit") == nullptr)
       status = std::make_shared<tesseract_common::StatusCode>(SafetyStatusCategory::MissingAttributeSoftUpperLimit, status_cat, status);
 
