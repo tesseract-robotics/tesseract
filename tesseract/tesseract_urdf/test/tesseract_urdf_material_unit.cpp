@@ -9,14 +9,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_material)
 {
-  std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
-  std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
+
   auto m = std::make_shared<tesseract_scene_graph::Material>("test_material");
   m->color = Eigen::Vector4d(1, .5, .5, 1);
   m->texture_filename = "/tmp/texture.txt";
-  available_materials["test_material"] = m;
 
   {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
+    available_materials["test_material"] = m;
+
     std::string str = "<material name=\"test_material\" extra=\"0 0 0\">"
                       "  <color rgba=\"1 .5 .5 1\" extra=\"0 0 0\"/>"
                       "  <texture filename=\"/tmp/texture.txt\" extra=\"0 0 0\"/>"
@@ -30,6 +32,10 @@ TEST(TesseractURDFUnit, parse_material)
   }
 
   {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
+    available_materials["test_material"] = m;
+
     std::string str = "<material name=\"test_material\">"
                       "  <color rgba=\"1 .5 .5 1\"/>"
                       "</material>";
@@ -42,6 +48,10 @@ TEST(TesseractURDFUnit, parse_material)
   }
 
   {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
+    available_materials["test_material"] = m;
+
     std::string str = "<material name=\"test_material\"/>";
     tesseract_scene_graph::Material::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", available_materials);
@@ -52,6 +62,10 @@ TEST(TesseractURDFUnit, parse_material)
   }
 
   {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
+    available_materials["test_material"] = m;
+
     std::string str = "<material name=\"test_material\"/>";
     tesseract_scene_graph::Material::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials);
@@ -59,6 +73,10 @@ TEST(TesseractURDFUnit, parse_material)
   }
 
   {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
+    available_materials["test_material"] = m;
+
     std::string str = "<material name=\"test_material\">"
                       "  <color rgba=\"1 .5 .5 a\"/>"
                       "  <texture filename=\"/tmp/texture.txt\"/>"
@@ -69,6 +87,10 @@ TEST(TesseractURDFUnit, parse_material)
   }
 
   {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
+    available_materials["test_material"] = m;
+
     std::string str = "<material name=\"test_material\">"
                       "  <color rgba=\"1 .5 .5 1 1\"/>"
                       "  <texture filename=\"/tmp/texture.txt\"/>"

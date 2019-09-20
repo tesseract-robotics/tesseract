@@ -9,8 +9,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_link)
 {
-  std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
   {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
     std::string str = "<link name=\"my_link\" extra=\"0 0 0\">"
                       "  <inertial>"
                       "    <origin xyz=\"0 0 0.5\" rpy=\"0 0 0\"/>"
@@ -41,9 +41,11 @@ TEST(TesseractURDFUnit, parse_link)
     EXPECT_TRUE(elem->inertial != nullptr);
     EXPECT_TRUE(elem->visual.size() == 1);
     EXPECT_TRUE(elem->collision.size() == 1);
+    EXPECT_TRUE(empty_available_materials.size() == 1);
   }
 
   {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
     std::string str = "<link name=\"my_link\">"
                       "  <visual>"
                       "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\" />"
@@ -69,9 +71,11 @@ TEST(TesseractURDFUnit, parse_link)
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.size() == 1);
     EXPECT_TRUE(elem->collision.size() == 1);
+    EXPECT_TRUE(empty_available_materials.size() == 1);
   }
 
   {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
     std::string str = "<link name=\"my_link\">"
                       "  <visual>"
                       "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\" />"
@@ -91,9 +95,11 @@ TEST(TesseractURDFUnit, parse_link)
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.size() == 1);
     EXPECT_TRUE(elem->collision.size() == 0);
+    EXPECT_TRUE(empty_available_materials.size() == 1);
   }
 
   {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
     std::string str = "<link name=\"my_link\">"
                       "  <collision>"
                       "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
@@ -110,9 +116,11 @@ TEST(TesseractURDFUnit, parse_link)
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.size() == 0);
     EXPECT_TRUE(elem->collision.size() == 1);
+    EXPECT_TRUE(empty_available_materials.size() == 0);
   }
 
   {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
     std::string str = "<link name=\"my_link\"/>";
     tesseract_scene_graph::Link::Ptr elem;
     auto status =
@@ -125,6 +133,7 @@ TEST(TesseractURDFUnit, parse_link)
   }
 
   {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
     std::string str = "<link >"
                       "  <visual>"
                       "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\" />"
@@ -143,6 +152,7 @@ TEST(TesseractURDFUnit, parse_link)
   }
 
   {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
     std::string str = "<link name=\"my_link\">"
                       "  <visual>"
                       "    <origin xyz=\"0 0 0\" rpy=\"0 0 a\" />"

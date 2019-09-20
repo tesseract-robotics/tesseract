@@ -9,8 +9,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_visual)
 {
-  std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
   {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
     std::string str = "<visual extra=\"0 0 0\">"
                       "  <origin xyz=\"1 2 3\" rpy=\"0 0 0\" />"
                       "  <geometry>"
@@ -31,6 +31,7 @@ TEST(TesseractURDFUnit, parse_visual)
   }
 
   {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
     std::string str = "<visual>"
                       "  <geometry>"
                       "    <box size=\"1 2 3\" />"
@@ -50,6 +51,7 @@ TEST(TesseractURDFUnit, parse_visual)
   }
 
   {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
     std::string str = "<visual>"
                       "  <geometry>"
                       "    <box size=\"1 2 3\" />"
@@ -66,6 +68,7 @@ TEST(TesseractURDFUnit, parse_visual)
   }
 
   {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
     std::string str = "<visual>"
                       "  <material name=\"Cyan\">"
                       "    <color rgba=\"0 1.0 1.0 1.0\"/>"

@@ -64,6 +64,8 @@ public:
         return "Material name only is not allowed!";
       case ErrorLocatingMaterialByName:
         return "Material with name only was not located in available materials!";
+      case ErrorMultipleMaterialsWithSameName:
+        return "Multiple materials with the same name exist!";
       default:
         return "Invalid error code for " + name_ + "!";
     }
@@ -77,7 +79,8 @@ public:
     ErrorColorAttributeRGBA = -3,
     ErrorParsingColorAttributeRGBA = -4,
     ErrorNameOnlyIsNotAllowed = -5,
-    ErrorLocatingMaterialByName = -6
+    ErrorLocatingMaterialByName = -6,
+    ErrorMultipleMaterialsWithSameName = -7
 
   };
 
@@ -88,7 +91,7 @@ private:
 inline tesseract_common::StatusCode::Ptr
 parse(tesseract_scene_graph::Material::Ptr& material,
       const tinyxml2::XMLElement* xml_element,
-      const std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
+      std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
 {
   material = tesseract_scene_graph::DEFAULT_TESSERACT_MATERIAL;
   auto status_cat = std::make_shared<MaterialStatusCategory>();
@@ -166,8 +169,16 @@ parse(tesseract_scene_graph::Material::Ptr& material,
       m = it->second;
     }
   }
+  else
+  {
+    auto it = available_materials.find(material_name);
+    if (it != available_materials.end())
+      return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorMultipleMaterialsWithSameName,
+                                                            status_cat);
+    available_materials[material_name] = m;
+  }
 
-  material = std::move(m);
+  material = m;
   return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::Success, status_cat);
 }
 

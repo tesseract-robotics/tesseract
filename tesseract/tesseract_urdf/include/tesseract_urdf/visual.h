@@ -86,7 +86,7 @@ inline tesseract_common::StatusCode::Ptr
 parse(std::vector<tesseract_scene_graph::Visual::Ptr>& visuals,
       const tinyxml2::XMLElement* xml_element,
       tesseract_scene_graph::ResourceLocatorFn locator,
-      const std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials)
+      std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
 {
   visuals.clear();
   auto status_cat = std::make_shared<VisualStatusCategory>();

@@ -106,7 +106,7 @@ runTest(ElementType& type,
         const std::string& xml_string,
         const std::string element_name,
         tesseract_scene_graph::ResourceLocatorFn locator,
-        const std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
+        std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
 {
   tinyxml2::XMLDocument xml_doc;
   EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
@@ -128,7 +128,7 @@ tesseract_common::StatusCode::Ptr
 runTest(ElementType& type,
         const std::string& xml_string,
         const std::string element_name,
-        const std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
+        std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
 {
   tinyxml2::XMLDocument xml_doc;
   EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
