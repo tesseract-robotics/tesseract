@@ -31,10 +31,11 @@ add_executable(${PROJECT_NAME}_unit
 target_link_libraries(${PROJECT_NAME}_unit ${GTEST_BOTH_LIBRARIES} ${PROJECT_NAME} tesseract::tesseract_support tesseract::tesseract_geometry)
 target_compile_options(${PROJECT_NAME}_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
-    target_compile_options(${PROJECT_NAME}_unit PUBLIC -std=c++11)
+    target_compile_options(${PROJECT_NAME}_unit PRIVATE -std=c++11)
 else()
     target_compile_features(${PROJECT_NAME}_unit PRIVATE cxx_std_11)
 endif()
+target_compile_options(${PROJECT_NAME}_unit PRIVATE -mno-avx)
 target_include_directories(${PROJECT_NAME}_unit PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
 target_include_directories(${PROJECT_NAME}_unit PRIVATE ${GTEST_INCLUDE_DIRS})

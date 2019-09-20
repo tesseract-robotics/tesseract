@@ -23,6 +23,7 @@ if(CXX_FEATURE_FOUND EQUAL "-1")
 else()
     target_compile_features(${PROJECT_NAME}_core INTERFACE cxx_std_11)
 endif()
+target_compile_options(${PROJECT_NAME}_core INTERFACE -mno-avx)
 target_include_directories(${PROJECT_NAME}_core INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -38,6 +39,7 @@ if(CXX_FEATURE_FOUND EQUAL "-1")
 else()
     target_compile_features(${PROJECT_NAME}_trajopt PUBLIC cxx_std_11)
 endif()
+target_compile_options(${PROJECT_NAME}_trajopt PUBLIC -mno-avx)
 target_include_directories(${PROJECT_NAME}_trajopt PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -53,6 +55,7 @@ if(CXX_FEATURE_FOUND EQUAL "-1")
 else()
     target_compile_features(${PROJECT_NAME}_trajopt_freespace PUBLIC cxx_std_11)
 endif()
+target_compile_options(${PROJECT_NAME}_trajopt_freespace PUBLIC -mno-avx)
 target_include_directories(${PROJECT_NAME}_trajopt_freespace PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -66,6 +69,7 @@ if(CXX_FEATURE_FOUND EQUAL "-1")
 else()
     target_compile_features(${PROJECT_NAME}_trajopt_array PUBLIC cxx_std_11)
 endif()
+target_compile_options(${PROJECT_NAME}_trajopt_array PUBLIC -mno-avx)
 target_include_directories(${PROJECT_NAME}_trajopt_array PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -85,6 +89,7 @@ if(CXX_FEATURE_FOUND EQUAL "-1")
 else()
     target_compile_features(${PROJECT_NAME}_ompl_freespace PUBLIC cxx_std_11)
 endif()
+target_compile_options(${PROJECT_NAME}_ompl_freespace PUBLIC -mno-avx)
 target_include_directories(${PROJECT_NAME}_ompl_freespace PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -100,6 +105,7 @@ if(CXX_FEATURE_FOUND EQUAL "-1")
 else()
     target_compile_features(${PROJECT_NAME}_descartes PUBLIC cxx_std_11)
 endif()
+target_compile_options(${PROJECT_NAME}_descartes PUBLIC -mno-avx)
 target_include_directories(${PROJECT_NAME}_descartes PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -113,6 +119,7 @@ if(CXX_FEATURE_FOUND EQUAL "-1")
 else()
     target_compile_features(${PROJECT_NAME}_descartes_trajopt_array PUBLIC cxx_std_11)
 endif()
+target_compile_options(${PROJECT_NAME}_descartes_trajopt_array PUBLIC -mno-avx)
 target_include_directories(${PROJECT_NAME}_descartes_trajopt_array PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")

@@ -20,6 +20,7 @@ if(CXX_FEATURE_FOUND EQUAL "-1")
 else()
     target_compile_features(${PROJECT_NAME}_core PUBLIC cxx_std_11)
 endif()
+target_compile_options(${PROJECT_NAME}_core PUBLIC -mno-avx)
 target_include_directories(${PROJECT_NAME}_core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -35,6 +36,7 @@ if(CXX_FEATURE_FOUND EQUAL "-1")
 else()
     target_compile_features(${PROJECT_NAME}_kdl PUBLIC cxx_std_11)
 endif()
+target_compile_options(${PROJECT_NAME}_kdl PUBLIC -mno-avx)
 target_include_directories(${PROJECT_NAME}_kdl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
