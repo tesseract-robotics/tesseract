@@ -47,6 +47,8 @@ public:
 
   EnvState::ConstPtr getCurrentState() const override { return current_state_; }
 
+  StateSolver::Ptr clone() const override;
+
   void onEnvironmentChanged(const Commands& /*commands*/) override
   {
     // Cache current joint values
