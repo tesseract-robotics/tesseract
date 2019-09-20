@@ -51,7 +51,7 @@ add_dependencies(run_tests ${PROJECT_NAME}_ompl_unit)
 
 # TrajOpt Planner Tests
 add_executable(${PROJECT_NAME}_trajopt_unit trajopt_planner_tests.cpp)
-target_link_libraries(${PROJECT_NAME}_trajopt_unit ${GTEST_BOTH_LIBRARIES} ${PROJECT_NAME}_trajopt_freespace ${PROJECT_NAME}_trajopt_array tesseract::tesseract_support)
+target_link_libraries(${PROJECT_NAME}_trajopt_unit ${GTEST_BOTH_LIBRARIES} ${PROJECT_NAME}_trajopt tesseract::tesseract_support)
 target_compile_options(${PROJECT_NAME}_trajopt_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_trajopt_unit PRIVATE -std=c++11)
