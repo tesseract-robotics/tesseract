@@ -27,6 +27,7 @@ if(CXX_FEATURE_FOUND EQUAL "-1")
 else()
     target_compile_features(${PROJECT_NAME}_core INTERFACE cxx_std_11)
 endif()
+target_compile_options(${PROJECT_NAME}_core INTERFACE -mno-avx)
 target_include_directories(${PROJECT_NAME}_core INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -51,6 +52,7 @@ if(CXX_FEATURE_FOUND EQUAL "-1")
 else()
     target_compile_features(${PROJECT_NAME}_bullet PUBLIC cxx_std_11)
 endif()
+target_compile_options(${PROJECT_NAME}_bullet PUBLIC -mno-avx)
 target_include_directories(${PROJECT_NAME}_bullet PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -69,6 +71,7 @@ if(CXX_FEATURE_FOUND EQUAL "-1")
 else()
     target_compile_features(${PROJECT_NAME}_fcl PUBLIC cxx_std_11)
 endif()
+target_compile_options(${PROJECT_NAME}_fcl PUBLIC -mno-avx)
 target_include_directories(${PROJECT_NAME}_fcl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -88,6 +91,7 @@ if(CXX_FEATURE_FOUND EQUAL "-1")
 else()
     target_compile_features(create_convex_hull PUBLIC cxx_std_11)
 endif()
+target_compile_options(create_convex_hull PUBLIC -mno-avx)
 target_include_directories(create_convex_hull PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 target_include_directories(create_convex_hull SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}
