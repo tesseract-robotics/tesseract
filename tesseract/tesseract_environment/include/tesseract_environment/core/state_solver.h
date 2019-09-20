@@ -85,6 +85,8 @@ public:
   virtual EnvState::ConstPtr getCurrentState() const = 0;
 
   virtual void onEnvironmentChanged(const Commands& commands) = 0;
+
+  virtual Ptr clone() const = 0;
 };
 }  // namespace tesseract_environment
 

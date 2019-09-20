@@ -330,6 +330,16 @@ public:
   virtual const Eigen::Isometry3d& getLinkTransform(const std::string& link_name) const;
 
   /**
+   * @brief Returns a clone of the environments state solver
+   *
+   * The Environment::getState contains mutex's which is may not be needed in all motion planners. This allows the user
+   * to get snap shot of the environment to calculate the state.
+   *
+   * @return A clone of the environments state solver
+   */
+  virtual StateSolver::Ptr getStateSolver() const;
+
+  /**
    * @brief Set the active discrete contact manager
    * @param name The name used to registar the contact manager
    * @return True of name exists in DiscreteContactManagerFactory

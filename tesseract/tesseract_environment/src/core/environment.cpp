@@ -388,6 +388,15 @@ const Eigen::Isometry3d& Environment::getLinkTransform(const std::string& link_n
   return tf;
 }
 
+StateSolver::Ptr Environment::getStateSolver() const
+{
+  mutex_.lock();
+  StateSolver::Ptr state_solver = state_solver_->clone();
+  mutex_.unlock();
+
+  return state_solver;
+}
+
 void Environment::getCollisionObject(tesseract_collision::CollisionShapesConst& shapes,
                                      tesseract_common::VectorIsometry3d& shape_poses,
                                      const tesseract_scene_graph::Link& link) const

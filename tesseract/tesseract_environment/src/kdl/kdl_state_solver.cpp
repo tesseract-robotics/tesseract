@@ -141,6 +141,13 @@ EnvState::Ptr KDLStateSolver::getState(const std::vector<std::string>& joint_nam
   return state;
 }
 
+StateSolver::Ptr KDLStateSolver::clone() const
+{
+  KDLStateSolver::Ptr state_solver = std::make_shared<KDLStateSolver>();
+  state_solver->init(scene_graph_);
+  return std::move(state_solver);
+}
+
 bool KDLStateSolver::createKDETree()
 {
   kdl_tree_.reset(new KDL::Tree());
