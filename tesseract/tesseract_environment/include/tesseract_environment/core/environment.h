@@ -29,6 +29,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <string>
+#include <mutex>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -405,6 +406,7 @@ protected:
   std::string continuous_manager_name_; /**< Name of active continuous contact manager */
   tesseract_collision::DiscreteContactManagerFactory discrete_factory_;     /**< Descrete contact manager factory */
   tesseract_collision::ContinuousContactManagerFactory continuous_factory_; /**< Continuous contact manager factory */
+  mutable std::mutex mutex_; /**< The environment can be accessed from multiple threads, need use mutex throughout */
 
   /** This will update the contact managers transforms */
   void currentStateChanged();
