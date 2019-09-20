@@ -57,7 +57,8 @@ tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGr
        material = material->NextSiblingElement("material"))
   {
     tesseract_scene_graph::Material::Ptr m = nullptr;
-    auto status = parse(m, material, std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>());
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_material;
+    auto status = parse(m, material, empty_material);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           URDFStatusCategory::ErrorParsingAvailableMaterialElement, status_cat, status);
