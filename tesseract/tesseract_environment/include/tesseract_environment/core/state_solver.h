@@ -84,9 +84,22 @@ public:
    */
   virtual EnvState::ConstPtr getCurrentState() const = 0;
 
+  /**
+   * @brief This should clone the object so it may be used in a multi threaded application where each thread would
+   * clone the solver.
+   * @return A clone of the object.
+   */
+  virtual Ptr clone() const = 0;
+
+protected:
+
+  /**
+   * @brief This is to only be used by the environment
+   * @param commands
+   */
   virtual void onEnvironmentChanged(const Commands& commands) = 0;
 
-  virtual Ptr clone() const = 0;
+  friend class Environment;
 };
 }  // namespace tesseract_environment
 

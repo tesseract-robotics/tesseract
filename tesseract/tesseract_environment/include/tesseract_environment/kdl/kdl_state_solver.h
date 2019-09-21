@@ -17,6 +17,14 @@ public:
   using Ptr = std::shared_ptr<KDLStateSolver>;
   using ConstPtr = std::shared_ptr<const KDLStateSolver>;
 
+  KDLStateSolver() = default;
+
+  /**
+   * @brief Copy constructor which clones the object.
+   * @param solver The solver to copy/clone
+   */
+  KDLStateSolver(const KDLStateSolver &solver);
+
   bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph) override;
 
   /**
@@ -49,18 +57,6 @@ public:
 
   StateSolver::Ptr clone() const override;
 
-  void onEnvironmentChanged(const Commands& /*commands*/) override
-  {
-    // Cache current joint values
-    std::unordered_map<std::string, double> joints = current_state_->joints;
-
-    // Recreate state solver
-    createKDETree();
-
-    // Set to current state
-    setState(joints);
-  }
-
 private:
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;    /**< Tesseract Scene Graph */
   EnvState::Ptr current_state_;                                /**< Current state of the environment */
@@ -81,6 +77,18 @@ private:
   bool setJointValuesHelper(KDL::JntArray& q, const std::string& joint_name, const double& joint_value) const;
 
   bool createKDETree();
+
+  void onEnvironmentChanged(const Commands& /*commands*/) override
+  {
+    // Cache current joint values
+    std::unordered_map<std::string, double> joints = current_state_->joints;
+
+    // Recreate state solver
+    createKDETree();
+
+    // Set to current state
+    setState(joints);
+  }
 };
 
 }  // namespace tesseract_environment
