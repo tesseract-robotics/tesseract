@@ -36,6 +36,14 @@ namespace tesseract_environment
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+KDLStateSolver::KDLStateSolver(const KDLStateSolver &solver)
+  : scene_graph_(solver.scene_graph_)
+  , current_state_(std::make_shared<EnvState>(*(solver.current_state_)))
+  , kdl_tree_(std::make_shared<KDL::Tree>(*(solver.kdl_tree_)))
+  , joint_to_qnr_(solver.joint_to_qnr_)
+  , kdl_jnt_array_(solver.kdl_jnt_array_)
+{}
+
 bool KDLStateSolver::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph)
 {
   scene_graph_ = std::move(scene_graph);
@@ -143,9 +151,7 @@ EnvState::Ptr KDLStateSolver::getState(const std::vector<std::string>& joint_nam
 
 StateSolver::Ptr KDLStateSolver::clone() const
 {
-  KDLStateSolver::Ptr state_solver = std::make_shared<KDLStateSolver>();
-  state_solver->init(scene_graph_);
-  return std::move(state_solver);
+  return std::make_shared<KDLStateSolver>(*this);
 }
 
 bool KDLStateSolver::createKDETree()
