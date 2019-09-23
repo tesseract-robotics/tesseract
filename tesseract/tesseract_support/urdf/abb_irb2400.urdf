@@ -30,7 +30,7 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/base_link.dae"/>
       </geometry>
-      <material name="">
+      <material name="base_link_material">
         <color rgba="0.7372549 0.3490196 0.1607843 1"/>
       </material>
     </visual>
@@ -38,7 +38,7 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/collision/base_link.stl"/>
       </geometry>
-      <material name="">
+      <material name="yellow">
         <color rgba="1 1 0 1"/>
       </material>
     </collision>
@@ -49,7 +49,7 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/link_1.dae"/>
       </geometry>
-      <material name="">
+      <material name="link_1_material">
         <color rgba="0.7372549 0.3490196 0.1607843 1"/>
       </material>
     </visual>
@@ -58,9 +58,6 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/collision/link_1.stl"/>
       </geometry>
-      <material name="">
-        <color rgba="1 1 0 1"/>
-      </material>
     </collision>
   </link>
   <link name="link_2">
@@ -69,7 +66,7 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/link_2.dae"/>
       </geometry>
-      <material name="">
+      <material name="link_2_material">
         <color rgba="0.7372549 0.3490196 0.1607843 1"/>
       </material>
     </visual>
@@ -78,9 +75,6 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/collision/link_2_whole.stl"/>
       </geometry>
-      <material name="">
-        <color rgba="1 1 0 1"/>
-      </material>
     </collision>
   </link>
   <link name="link_3">
@@ -89,7 +83,7 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/link_3.dae"/>
       </geometry>
-      <material name="">
+      <material name="link_3_material">
         <color rgba="0.7372549 0.3490196 0.1607843 1"/>
       </material>
     </visual>
@@ -98,9 +92,6 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/collision/link_3.stl"/>
       </geometry>
-      <material name="">
-        <color rgba="1 1 0 1"/>
-      </material>
     </collision>
   </link>
   <link name="link_4">
@@ -109,7 +100,7 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/link_4.dae"/>
       </geometry>
-      <material name="">
+      <material name="link_4_material">
         <color rgba="0.7372549 0.3490196 0.1607843 1"/>
       </material>
     </visual>
@@ -118,9 +109,6 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/collision/link_4.stl"/>
       </geometry>
-      <material name="">
-        <color rgba="1 1 0 1"/>
-      </material>
     </collision>
   </link>
   <link name="link_5">
@@ -129,7 +117,7 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/link_5.dae"/>
       </geometry>
-      <material name="">
+      <material name="link_5_material">
         <color rgba="0.7372549 0.3490196 0.1607843 1"/>
       </material>
     </visual>
@@ -138,9 +126,6 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/collision/link_5.stl"/>
       </geometry>
-      <material name="">
-        <color rgba="1 1 0 1"/>
-      </material>
     </collision>
   </link>
   <link name="link_6">
@@ -149,7 +134,7 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/link_6.dae"/>
       </geometry>
-      <material name="">
+      <material name="link_6_material">
         <color rgba="0.1882353 0.1960784 0.2039216 1"/>
       </material>
     </visual>
@@ -158,9 +143,6 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/collision/link_6.stl"/>
       </geometry>
-      <material name="">
-        <color rgba="1 1 0 1"/>
-      </material>
     </collision>
   </link>
   <link name="tool0"/>
