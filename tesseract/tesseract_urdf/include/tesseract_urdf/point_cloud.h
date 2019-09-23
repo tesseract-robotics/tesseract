@@ -107,15 +107,7 @@ inline tesseract_common::StatusCode::Ptr parsePointCloud(tesseract_geometry::Oct
   if (cloud->points.empty())
     return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::ErrorPointCloudEmpty, status_cat);
 
-  auto ot = std::make_shared<octomap::OcTree>(resolution);
-
-  for (auto& point : cloud->points)
-    ot->updateNode(point.x, point.y, point.z, true);
-
-  if (prune)
-    tesseract_geometry::Octree::prune(*ot);
-
-  auto geom = std::make_shared<tesseract_geometry::Octree>(ot, shape_type);
+  auto geom = std::make_shared<tesseract_geometry::Octree>(*cloud, resolution, shape_type, prune);
   if (geom == nullptr)
     return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::ErrorCreatingGeometry, status_cat);
 

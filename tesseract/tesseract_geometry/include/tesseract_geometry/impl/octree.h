@@ -50,9 +50,24 @@ public:
     SPHERE_OUTSIDE
   };
 
-  Octree(const std::shared_ptr<const octomap::OcTree>& octree, SubType sub_type)
+  Octree(const std::shared_ptr<const octomap::OcTree>& octree, const SubType sub_type)
     : Geometry(GeometryType::OCTREE), octree_(octree), sub_type_(sub_type)
   {
+  }
+
+  template <typename PointT>
+  Octree(const PointT& point_cloud, const double resolution, const SubType sub_type, const bool prune)
+    : Geometry(GeometryType::OCTREE), sub_type_(sub_type)
+  {
+    auto ot = std::make_shared<octomap::OcTree>(resolution);
+
+    for (auto& point : point_cloud.points)
+      ot->updateNode(point.x, point.y, point.z, true);
+
+    if (prune)
+      tesseract_geometry::Octree::prune(*ot);
+
+    octree_ = ot;
   }
   ~Octree() override = default;
 
