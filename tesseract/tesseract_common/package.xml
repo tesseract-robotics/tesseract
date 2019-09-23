@@ -7,6 +7,8 @@
   <license>Apache 2.0</license>
   <author>Levi Armstrong</author>
 
+  <test_depend>gtest</test_depend>
+
   <export>
     <build_type>cmake</build_type>
   </export>
