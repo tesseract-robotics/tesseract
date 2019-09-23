@@ -9,7 +9,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_material)
 {
-
   auto m = std::make_shared<tesseract_scene_graph::Material>("test_material");
   m->color = Eigen::Vector4d(1, .5, .5, 1);
   m->texture_filename = "/tmp/texture.txt";
