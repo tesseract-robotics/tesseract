@@ -24,6 +24,24 @@ TEST(TesseractGeometryUnit, Instantiation)
   auto mesh = std::make_shared<tesseract_geometry::Mesh>(vertices, faces);
   auto sdf_mesh = std::make_shared<tesseract_geometry::SDFMesh>(vertices, faces);
   auto octree = std::make_shared<tesseract_geometry::Octree>(nullptr, tesseract_geometry::Octree::SubType::BOX);
+
+  // Instead making this depend on pcl it expects the structure to have a member called points which is a vector
+  // of another object with has float members x, y and z.
+  struct TestPointCloud
+  {
+    struct point
+    {
+      double x;
+      double y;
+      double z;
+    };
+
+    std::vector<point> points;
+  };
+
+  TestPointCloud pc;
+  auto octree_pc =
+      std::make_shared<tesseract_geometry::Octree>(pc, 0.01, tesseract_geometry::Octree::SubType::BOX, false);
 }
 
 TEST(TesseractGeometryUnit, LoadMeshUnit)
