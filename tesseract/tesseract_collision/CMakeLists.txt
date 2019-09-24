@@ -114,6 +114,8 @@ install(DIRECTORY include/${PROJECT_NAME}
 
 install(FILES package.xml DESTINATION share/${PROJECT_NAME})
 
+file(WRITE ${CMAKE_INSTALL_PREFIX}/share/ament_index/resource_index/packages/${PROJECT_NAME} "")
+
 # Create cmake config files
 include(CMakePackageConfigHelpers)
 configure_package_config_file(${CMAKE_CURRENT_LIST_DIR}/cmake/${PROJECT_NAME}-config.cmake.in
