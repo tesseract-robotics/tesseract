@@ -30,7 +30,7 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/base_link.dae"/>
       </geometry>
-      <material name="base_link_material">
+      <material name="">
         <color rgba="0.7372549 0.3490196 0.1607843 1"/>
       </material>
     </visual>
@@ -49,7 +49,7 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/link_1.dae"/>
       </geometry>
-      <material name="link_1_material">
+      <material name="">
         <color rgba="0.7372549 0.3490196 0.1607843 1"/>
       </material>
     </visual>
@@ -66,7 +66,7 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/link_2.dae"/>
       </geometry>
-      <material name="link_2_material">
+      <material name="">
         <color rgba="0.7372549 0.3490196 0.1607843 1"/>
       </material>
     </visual>
@@ -83,7 +83,7 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/link_3.dae"/>
       </geometry>
-      <material name="link_3_material">
+      <material name="">
         <color rgba="0.7372549 0.3490196 0.1607843 1"/>
       </material>
     </visual>
@@ -100,7 +100,7 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/link_4.dae"/>
       </geometry>
-      <material name="link_4_material">
+      <material name="">
         <color rgba="0.7372549 0.3490196 0.1607843 1"/>
       </material>
     </visual>
@@ -117,7 +117,7 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/link_5.dae"/>
       </geometry>
-      <material name="link_5_material">
+      <material name="">
         <color rgba="0.7372549 0.3490196 0.1607843 1"/>
       </material>
     </visual>
@@ -134,7 +134,7 @@
       <geometry>
         <mesh filename="package://tesseract_support/urdf/abb_irb2400/irb2400/visual/link_6.dae"/>
       </geometry>
-      <material name="link_6_material">
+      <material name="">
         <color rgba="0.1882353 0.1960784 0.2039216 1"/>
       </material>
     </visual>
