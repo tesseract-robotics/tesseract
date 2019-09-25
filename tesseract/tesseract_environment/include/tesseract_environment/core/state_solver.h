@@ -92,7 +92,6 @@ public:
   virtual Ptr clone() const = 0;
 
 protected:
-
   /**
    * @brief This is to only be used by the environment
    * @param commands

@@ -23,7 +23,7 @@ public:
    * @brief Copy constructor which clones the object.
    * @param solver The solver to copy/clone
    */
-  KDLStateSolver(const KDLStateSolver &solver);
+  KDLStateSolver(const KDLStateSolver& solver);
 
   bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph) override;
 
