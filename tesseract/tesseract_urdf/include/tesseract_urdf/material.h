@@ -66,6 +66,8 @@ public:
         return "Material with name only was not located in available materials!";
       case ErrorMultipleMaterialsWithSameName:
         return "Multiple materials with the same name exist!";
+      case ErrorAnonymousMaterialNamesNotAllowed:
+        return "Anonymous material names (empty string) not allowed!";
       default:
         return "Invalid error code for " + name_ + "!";
     }
@@ -80,7 +82,8 @@ public:
     ErrorParsingColorAttributeRGBA = -4,
     ErrorNameOnlyIsNotAllowed = -5,
     ErrorLocatingMaterialByName = -6,
-    ErrorMultipleMaterialsWithSameName = -7
+    ErrorMultipleMaterialsWithSameName = -7,
+    ErrorAnonymousMaterialNamesNotAllowed = -8
 
   };
 
@@ -91,7 +94,8 @@ private:
 inline tesseract_common::StatusCode::Ptr
 parse(tesseract_scene_graph::Material::Ptr& material,
       const tinyxml2::XMLElement* xml_element,
-      std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
+      std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
+      const bool allow_anonymous = true)
 {
   material = tesseract_scene_graph::DEFAULT_TESSERACT_MATERIAL;
   auto status_cat = std::make_shared<MaterialStatusCategory>();
@@ -171,11 +175,19 @@ parse(tesseract_scene_graph::Material::Ptr& material,
   }
   else
   {
-    auto it = available_materials.find(material_name);
-    if (it != available_materials.end())
-      return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorMultipleMaterialsWithSameName,
+    if (!material_name.empty())
+    {
+      auto it = available_materials.find(material_name);
+      if (it != available_materials.end())
+        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorMultipleMaterialsWithSameName,
+                                                              status_cat);
+      available_materials[material_name] = m;
+    }
+    else if (!allow_anonymous)
+    {
+      return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorAnonymousMaterialNamesNotAllowed,
                                                             status_cat);
-    available_materials[material_name] = m;
+    }
   }
 
   material = m;
