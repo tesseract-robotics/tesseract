@@ -114,6 +114,9 @@ install(DIRECTORY include/${PROJECT_NAME}
 
 install(FILES package.xml DESTINATION share/${PROJECT_NAME})
 
+# Create an ament_index resource file to allow ROS2 ament_index_cpp to locate the installed path to this package.
+# This is a workaround to let the ROS2 version of pluginlib find tesseract_collision's plugins, since tesseract_collision is a non-ROS CMake package.
+# ADDITIONAL REQUIREMENT: The installed path must be added to the AMENT_PREFIX_PATH environment variable at runtime, which is outside the scope of CMakeLists.txt.
 file(WRITE ${CMAKE_INSTALL_PREFIX}/share/ament_index/resource_index/packages/${PROJECT_NAME} "")
 
 # Create cmake config files
