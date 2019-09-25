@@ -36,7 +36,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_urdf/utils.h>
 #include <tesseract_urdf/octree.h>
-#include <tesseract_urdf/point_cloud.h>
+
+#ifdef TESSERACT_PARSE_POINT_CLOUDS
+    #include <tesseract_urdf/point_cloud.h>
+#endif
+
 
 namespace tesseract_urdf
 {
@@ -118,7 +122,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& 
 
     return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::Success, status_cat);
   }
-
+#ifdef TESSERACT_PARSE_POINT_CLOUDS
   if (pcd_element != nullptr)
   {
     auto status = parsePointCloud(octree, pcd_element, locator, sub_type, prune);
@@ -128,7 +132,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& 
 
     return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::Success, status_cat);
   }
-
+#endif
   return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::ErrorMissingOctreeOrPointCloudElement,
                                                         status_cat);
 }

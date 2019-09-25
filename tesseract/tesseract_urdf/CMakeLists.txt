@@ -16,15 +16,21 @@ find_package(tesseract_collision REQUIRED)
 list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
 
 add_library(${PROJECT_NAME} SHARED src/urdf_parser.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_geometry tesseract::tesseract_scene_graph tesseract::tesseract_collision_core console_bridge ${Boost_LIBRARIES} ${TinyXML2_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_geometry tesseract::tesseract_scene_graph tesseract::tesseract_collision_core console_bridge ${Boost_LIBRARIES} ${TinyXML2_LIBRARIES})
 target_compile_options(${PROJECT_NAME} PUBLIC -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-target_compile_definitions(${PROJECT_NAME} PUBLIC Boost_USE_STATIC_LIBS=OFF Boost_USE_MULTITHREADED=ON Boost_USE_STATIC_RUNTIME=OFF)
-foreach(DEF ${PCL_DEFINITIONS})
-  string(STRIP ${DEF} DEF)
-  if (NOT "${DEF}" STREQUAL "")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC ${DEF})
-  endif()
-endforeach()
+
+# PCL does not support c++11 on Xenial so cannot include point cloud parsing from urdf
+if(Boost_VERSION VERSION_GREATER "1.60")
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${PCL_LIBRARIES})
+    target_compile_definitions(${PROJECT_NAME} INTERFACE TESSERACT_PARSE_POINT_CLOUDS="ON")
+    foreach(DEF ${PCL_DEFINITIONS})
+      string(STRIP ${DEF} DEF)
+      if (NOT "${DEF}" STREQUAL "")
+        target_compile_definitions(${PROJECT_NAME} PUBLIC ${DEF})
+      endif()
+    endforeach()
+    target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${PCL_INCLUDE_DIRS})
+endif()
 
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME} PUBLIC -std=c++11)
@@ -44,7 +50,6 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
     ${console_bridge_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
     ${TinyXML2_INCLUDE_DIRS}
-    ${PCL_INCLUDE_DIRS}
     $<TARGET_PROPERTY:tesseract::tesseract_common,INTERFACE_INCLUDE_DIRECTORIES>) #tesseract::tesseract_common Due to bug in catkin, there is an open PR
 
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
