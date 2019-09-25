@@ -62,6 +62,7 @@ TEST(TesseractURDFUnit, parse_octree)
     EXPECT_EQ(geom->calcNumSubShapes(), 8);
   }
 
+#ifdef TESSERACT_PARSE_POINT_CLOUDS
   {
     std::string str = "<octomap shape_type=\"box\">"
                       "  <point_cloud filename=\"package://tesseract_support/meshes/box_pcd.pcd\" resolution=\"0.1\"/>"
@@ -87,6 +88,7 @@ TEST(TesseractURDFUnit, parse_octree)
     EXPECT_EQ(geom->calcNumSubShapes(), 496);
     EXPECT_NEAR(geom->getOctree()->getResolution(), 0.1, 1e-5);
   }
+#endif
 
   {
     std::string str = "<octomap shape_type=\"sphere_outside\" prune=\"true\">"
