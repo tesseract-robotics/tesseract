@@ -26,7 +26,7 @@ add_dependencies(run_tests ${PROJECT_NAME}_descartes_kin_unit)
 
 # OMPL Planning Test/Example Program
 add_executable(${PROJECT_NAME}_ompl_unit ompl_planner_tests.cpp)
-target_link_libraries(${PROJECT_NAME}_ompl_unit ${GTEST_BOTH_LIBRARIES} ${PROJECT_NAME}_ompl_freespace tesseract::tesseract_support)
+target_link_libraries(${PROJECT_NAME}_ompl_unit ${Boost_LIBRARIES}${GTEST_BOTH_LIBRARIES} ${PROJECT_NAME}_ompl_freespace tesseract::tesseract_support)
 target_compile_options(${PROJECT_NAME}_ompl_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_ompl_unit PRIVATE -std=c++11)
@@ -39,6 +39,8 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
   endif()
 target_include_directories(${PROJECT_NAME}_ompl_unit PRIVATE ${GTEST_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME}_ompl_unit SYSTEM PUBLIC
+    ${Boost_INCLUDE_DIRS})
 if(${CMAKE_VERSION} VERSION_LESS "3.10.0")
     gtest_add_tests(${PROJECT_NAME}_ompl_unit "" AUTO)
 else()

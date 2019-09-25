@@ -42,8 +42,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <string>
 #include <vector>
 
-#include <urdf/model.h>
-#include <urdf/urdfdom_compatibility.h>
 #include <kdl/tree.hpp>
 #include <console_bridge/console.h>
 

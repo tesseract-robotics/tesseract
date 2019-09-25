@@ -18,6 +18,8 @@
   Matthew Powelson
 */
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 
 // These contain the definitions of the cost types
@@ -25,10 +27,10 @@
 #include <trajopt_sco/modeling.hpp>
 #include <trajopt/collision_terms.hpp>
 #include <trajopt/problem_description.hpp>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/trajopt/trajopt_freespace_planner.h>
 #include <tesseract_motion_planners/trajopt/trajopt_array_planner.h>
-#include <urdf_parser/urdf_parser.h>
 
 const int NUM_STEPS = 7;
 
