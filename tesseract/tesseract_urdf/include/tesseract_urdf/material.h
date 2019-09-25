@@ -179,14 +179,14 @@ parse(tesseract_scene_graph::Material::Ptr& material,
     {
       auto it = available_materials.find(material_name);
       if (it != available_materials.end())
-        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorMultipleMaterialsWithSameName,
-                                                              status_cat);
+        return std::make_shared<tesseract_common::StatusCode>(
+            MaterialStatusCategory::ErrorMultipleMaterialsWithSameName, status_cat);
       available_materials[material_name] = m;
     }
     else if (!allow_anonymous)
     {
-      return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorAnonymousMaterialNamesNotAllowed,
-                                                            status_cat);
+      return std::make_shared<tesseract_common::StatusCode>(
+          MaterialStatusCategory::ErrorAnonymousMaterialNamesNotAllowed, status_cat);
     }
   }
 
