@@ -60,7 +60,7 @@ public:
 private:
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;    /**< Tesseract Scene Graph */
   EnvState::Ptr current_state_;                                /**< Current state of the environment */
-  std::shared_ptr<KDL::Tree> kdl_tree_;                        /**< KDL tree object */
+  KDL::Tree kdl_tree_;                                         /**< KDL tree object */
   std::unordered_map<std::string, unsigned int> joint_to_qnr_; /**< Map between joint name and kdl q index */
   KDL::JntArray kdl_jnt_array_;                                /**< The kdl joint array */
 
