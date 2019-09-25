@@ -33,7 +33,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <descartes_tesseract/descartes_tesseract_collision_checker.h>
 #include <descartes_samplers/evaluators/euclidean_distance_edge_evaluator.h>
 #include <descartes_samplers/samplers/axial_symmetric_sampler.h>
-#include <urdf_parser/urdf_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/descartes/descartes_motion_planner.h>

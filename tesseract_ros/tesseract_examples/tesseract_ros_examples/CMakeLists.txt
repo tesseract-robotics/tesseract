@@ -23,6 +23,12 @@ catkin_package()
 add_library(${PROJECT_NAME}_basic_cartesian_example src/basic_cartesian_example.cpp)
 target_link_libraries(${PROJECT_NAME}_basic_cartesian_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${PCL_LIBRARIES} ${catkin_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_basic_cartesian_example PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+foreach(DEF ${PCL_DEFINITIONS})
+  string(STRIP ${DEF} DEF)
+  if (NOT "${DEF}" STREQUAL "")
+    target_compile_definitions(${PROJECT_NAME}_basic_cartesian_example PUBLIC ${DEF})
+  endif()
+endforeach()
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_basic_cartesian_example PRIVATE -std=c++11)
 else()
@@ -46,8 +52,7 @@ target_include_directories(${PROJECT_NAME}_basic_cartesian_example_node PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_basic_cartesian_example_node SYSTEM PUBLIC
-    ${catkin_INCLUDE_DIRS}
-    ${PCL_INCLUDE_DIRS})
+    ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_glass_up_right_example src/glass_up_right_example.cpp)
 target_link_libraries(${PROJECT_NAME}_glass_up_right_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
@@ -241,8 +246,7 @@ if(CATKIN_ENABLE_TESTING)
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
         "$<INSTALL_INTERFACE:include>")
     target_include_directories(${PROJECT_NAME}_basic_cartesian_example_unit SYSTEM PUBLIC
-        ${catkin_INCLUDE_DIRS}
-        ${PCL_INCLUDE_DIRS})
+        ${catkin_INCLUDE_DIRS})
 
     add_rostest_gtest(${PROJECT_NAME}_car_seat_example_unit test/car_seat_example_unit.test test/car_seat_example_unit.cpp)
     target_link_libraries(${PROJECT_NAME}_car_seat_example_unit ${PROJECT_NAME}_car_seat_example ${catkin_LIBRARIES})

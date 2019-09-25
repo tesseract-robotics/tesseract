@@ -14,7 +14,7 @@ find_package(tesseract_common REQUIRED)
 list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
 
 add_library(${PROJECT_NAME} SHARED src/graph.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_geometry orocos-kdl console_bridge ${Boost_LIBRARIES} ${urdfdom_LIBRARIES} ${TinyXML_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_geometry orocos-kdl console_bridge ${Boost_LIBRARIES} ${TinyXML_LIBRARIES})
 target_compile_options(${PROJECT_NAME} PUBLIC -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 target_compile_definitions(${PROJECT_NAME} PUBLIC Boost_USE_STATIC_LIBS=OFF Boost_USE_MULTITHREADED=ON Boost_USE_STATIC_RUNTIME=OFF)
 if(CXX_FEATURE_FOUND EQUAL "-1")

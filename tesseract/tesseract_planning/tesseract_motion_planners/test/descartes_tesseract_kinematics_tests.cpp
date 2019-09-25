@@ -4,7 +4,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fstream>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
-#include <urdf_parser/urdf_parser.h>
 #include <tesseract/tesseract.h>
 
 #include <tesseract_motion_planners/descartes/impl/descartes_tesseract_kinematics.hpp>
