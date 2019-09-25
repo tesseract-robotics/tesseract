@@ -39,7 +39,7 @@ using Eigen::VectorXd;
 KDLStateSolver::KDLStateSolver(const KDLStateSolver &solver)
   : scene_graph_(solver.scene_graph_)
   , current_state_(std::make_shared<EnvState>(*(solver.current_state_)))
-  , kdl_tree_(std::make_shared<KDL::Tree>(*(solver.kdl_tree_)))
+  , kdl_tree_(solver.kdl_tree_)
   , joint_to_qnr_(solver.joint_to_qnr_)
   , kdl_jnt_array_(solver.kdl_jnt_array_)
 {}
@@ -61,7 +61,7 @@ void KDLStateSolver::setState(const std::unordered_map<std::string, double>& joi
   }
 
   calculateTransforms(
-      current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
+      current_state_->transforms, kdl_jnt_array_, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
 }
 
 void KDLStateSolver::setState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values)
@@ -75,7 +75,7 @@ void KDLStateSolver::setState(const std::vector<std::string>& joint_names, const
   }
 
   calculateTransforms(
-      current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
+      current_state_->transforms, kdl_jnt_array_, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
 }
 
 void KDLStateSolver::setState(const std::vector<std::string>& joint_names,
@@ -90,7 +90,7 @@ void KDLStateSolver::setState(const std::vector<std::string>& joint_names,
   }
 
   calculateTransforms(
-      current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
+      current_state_->transforms, kdl_jnt_array_, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
 }
 
 EnvState::Ptr KDLStateSolver::getState(const std::unordered_map<std::string, double>& joints) const
@@ -106,7 +106,7 @@ EnvState::Ptr KDLStateSolver::getState(const std::unordered_map<std::string, dou
     }
   }
 
-  calculateTransforms(state->transforms, jnt_array, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
+  calculateTransforms(state->transforms, jnt_array, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
 
   return state;
 }
@@ -125,7 +125,7 @@ EnvState::Ptr KDLStateSolver::getState(const std::vector<std::string>& joint_nam
     }
   }
 
-  calculateTransforms(state->transforms, jnt_array, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
+  calculateTransforms(state->transforms, jnt_array, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
 
   return state;
 }
@@ -144,7 +144,7 @@ EnvState::Ptr KDLStateSolver::getState(const std::vector<std::string>& joint_nam
     }
   }
 
-  calculateTransforms(state->transforms, jnt_array, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
+  calculateTransforms(state->transforms, jnt_array, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
 
   return state;
 }
@@ -156,17 +156,17 @@ StateSolver::Ptr KDLStateSolver::clone() const
 
 bool KDLStateSolver::createKDETree()
 {
-  kdl_tree_.reset(new KDL::Tree());
-  if (!tesseract_scene_graph::parseSceneGraph(*scene_graph_, *kdl_tree_))
+  kdl_tree_ = KDL::Tree();
+  if (!tesseract_scene_graph::parseSceneGraph(*scene_graph_, kdl_tree_))
   {
     CONSOLE_BRIDGE_logError("Failed to parse KDL tree from Scene Graph");
     return false;
   }
 
   current_state_ = EnvState::Ptr(new EnvState());
-  kdl_jnt_array_.resize(kdl_tree_->getNrOfJoints());
+  kdl_jnt_array_.resize(kdl_tree_.getNrOfJoints());
   size_t j = 0;
-  for (const auto& seg : kdl_tree_->getSegments())
+  for (const auto& seg : kdl_tree_.getSegments())
   {
     const KDL::Joint& jnt = seg.second.segment.getJoint();
 
@@ -181,7 +181,7 @@ bool KDLStateSolver::createKDETree()
   }
 
   calculateTransforms(
-      current_state_->transforms, kdl_jnt_array_, kdl_tree_->getRootSegment(), Eigen::Isometry3d::Identity());
+      current_state_->transforms, kdl_jnt_array_, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
   return true;
 }
 
@@ -207,7 +207,7 @@ void KDLStateSolver::calculateTransformsHelper(tesseract_common::TransformMap& t
                                                const KDL::SegmentMap::const_iterator& it,
                                                const Eigen::Isometry3d& parent_frame) const
 {
-  if (it != kdl_tree_->getSegments().end())
+  if (it != kdl_tree_.getSegments().end())
   {
     const KDL::TreeElementType& current_element = it->second;
     KDL::Frame current_frame = GetTreeElementSegment(current_element).pose(q_in(GetTreeElementQNr(current_element)));
