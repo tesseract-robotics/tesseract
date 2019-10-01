@@ -78,7 +78,8 @@ private:
 };
 
 inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointDynamics::Ptr& dynamics,
-                                               const tinyxml2::XMLElement* xml_element)
+                                               const tinyxml2::XMLElement* xml_element,
+                                               const int version)
 {
   dynamics = nullptr;
   auto status_cat = std::make_shared<DynamicsStatusCategory>();

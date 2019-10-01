@@ -78,7 +78,8 @@ private:
 inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::SDFMesh::Ptr>& meshes,
                                                const tinyxml2::XMLElement* xml_element,
                                                tesseract_scene_graph::ResourceLocatorFn locator,
-                                               bool visual = true)
+                                               const bool visual,
+                                               const int version)
 {
   meshes.clear();
   auto status_cat = std::make_shared<SDFMeshStatusCategory>();

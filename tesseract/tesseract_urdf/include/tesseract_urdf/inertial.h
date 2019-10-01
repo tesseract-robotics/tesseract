@@ -97,7 +97,8 @@ private:
 };
 
 inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Inertial::Ptr& inertial,
-                                               const tinyxml2::XMLElement* xml_element)
+                                               const tinyxml2::XMLElement* xml_element,
+                                               const int version)
 {
   inertial = nullptr;
   auto status_cat = std::make_shared<InertialStatusCategory>();
@@ -106,7 +107,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Inertial::
   const tinyxml2::XMLElement* origin = xml_element->FirstChildElement("origin");
   if (origin != nullptr)
   {
-    auto status = parse(i->origin, origin);
+    auto status = parse(i->origin, origin, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           InertialStatusCategory::ErrorParsingOrigin, status_cat, status);

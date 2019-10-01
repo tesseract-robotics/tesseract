@@ -69,7 +69,8 @@ private:
 };
 
 inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Cylinder::Ptr& cylinder,
-                                               const tinyxml2::XMLElement* xml_element)
+                                               const tinyxml2::XMLElement* xml_element,
+                                               const int version)
 {
   cylinder = nullptr;
   auto status_cat = std::make_shared<CylinderStatusCategory>();

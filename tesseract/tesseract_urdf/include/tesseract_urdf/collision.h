@@ -76,7 +76,8 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_scene_graph::Collision::Ptr>& collisions,
                                                const tinyxml2::XMLElement* xml_element,
-                                               tesseract_scene_graph::ResourceLocatorFn locator)
+                                               tesseract_scene_graph::ResourceLocatorFn locator,
+                                               const int version)
 {
   collisions.clear();
   auto status_cat = std::make_shared<CollisionStatusCategory>();
@@ -89,7 +90,7 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_scene_graph
   const tinyxml2::XMLElement* origin = xml_element->FirstChildElement("origin");
   if (origin != nullptr)
   {
-    auto status = parse(collision_origin, origin);
+    auto status = parse(collision_origin, origin, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           CollisionStatusCategory::ErrorParsingOriginElement, status_cat, status);
@@ -102,7 +103,7 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_scene_graph
                                                           status_cat);
 
   std::vector<tesseract_geometry::Geometry::Ptr> geometries;
-  auto status = parse(geometries, geometry, locator, false);
+  auto status = parse(geometries, geometry, locator, false, version);
   if (!(*status))
     return std::make_shared<tesseract_common::StatusCode>(
         CollisionStatusCategory::ErrorParsingGeometryElement, status_cat, status);

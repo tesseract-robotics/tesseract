@@ -83,6 +83,8 @@ public:
         return "Error parsing urdf, is not a tree structure for urdf '" + desc_ + "'!";
       case ErrorIsAcyclic:
         return "Error parsing urdf, is acyclic for urdf '" + desc_ + "'!";
+      case ErrorAttributeVersion:
+        return "Failed parsing urdf attribute 'version' for urdf '" + desc_ + "'!";
       default:
         return "Invalid error code for " + name_ + " for urdf '" + desc_ + "'!";
     }
@@ -105,7 +107,8 @@ public:
     ErrorAddingJointToSceneGraph = -12,
     ErrorNoJoints = -13,
     ErrorIsNotTree = -14,
-    ErrorIsAcyclic = -15
+    ErrorIsAcyclic = -15,
+    ErrorAttributeVersion = -16
   };
 
 private:

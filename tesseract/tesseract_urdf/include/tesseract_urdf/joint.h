@@ -123,7 +123,8 @@ private:
 };
 
 inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr& joint,
-                                               const tinyxml2::XMLElement* xml_element)
+                                               const tinyxml2::XMLElement* xml_element,
+                                               const int version)
 {
   joint = nullptr;
   auto status_cat = std::make_shared<JointStatusCategory>();
@@ -142,7 +143,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
   const tinyxml2::XMLElement* origin = xml_element->FirstChildElement("origin");
   if (origin != nullptr)
   {
-    auto status = parse(j->parent_to_joint_origin_transform, origin);
+    auto status = parse(j->parent_to_joint_origin_transform, origin, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           JointStatusCategory::ErrorParsingOrigin, status_cat, status);
@@ -239,7 +240,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
     }
     else
     {
-      auto status = parse(j->limits, limits);
+      auto status = parse(j->limits, limits, version);
       if (!(*status))
         return std::make_shared<tesseract_common::StatusCode>(
             JointStatusCategory::ErrorParsingLimits, status_cat, status);
@@ -250,7 +251,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
   const tinyxml2::XMLElement* safety = xml_element->FirstChildElement("safety_controller");
   if (safety != nullptr)
   {
-    auto status = parse(j->safety, safety);
+    auto status = parse(j->safety, safety, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           JointStatusCategory::ErrorParsingSafetyController, status_cat, status);
@@ -260,7 +261,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
   const tinyxml2::XMLElement* calibration = xml_element->FirstChildElement("calibration");
   if (calibration != nullptr)
   {
-    auto status = parse(j->calibration, calibration);
+    auto status = parse(j->calibration, calibration, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           JointStatusCategory::ErrorParsingCalibration, status_cat, status);
@@ -270,7 +271,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
   const tinyxml2::XMLElement* mimic = xml_element->FirstChildElement("mimic");
   if (mimic != nullptr)
   {
-    auto status = parse(j->mimic, mimic);
+    auto status = parse(j->mimic, mimic, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorParsingMimic, status_cat, status);
   }
@@ -279,7 +280,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
   const tinyxml2::XMLElement* dynamics = xml_element->FirstChildElement("dynamics");
   if (dynamics != nullptr)
   {
-    auto status = parse(j->dynamics, dynamics);
+    auto status = parse(j->dynamics, dynamics, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           JointStatusCategory::ErrorParsingDynamics, status_cat, status);

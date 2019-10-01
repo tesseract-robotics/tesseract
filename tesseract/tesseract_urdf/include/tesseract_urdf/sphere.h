@@ -66,7 +66,8 @@ private:
 };
 
 inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Sphere::Ptr& sphere,
-                                               const tinyxml2::XMLElement* xml_element)
+                                               const tinyxml2::XMLElement* xml_element,
+                                               const int version)
 {
   sphere = nullptr;
   auto status_cat = std::make_shared<SphereStatusCategory>();

@@ -13,7 +13,8 @@ TEST(TesseractURDFUnit, parse_sdf_mesh)
     std::string str = "<sdf_mesh filename=\"package://tesseract_support/meshes/sphere_p25m.stl\" scale=\"1 2 1\" "
                       "extra=\"0 0 0\"/>";
     std::vector<tesseract_geometry::SDFMesh::Ptr> geom;
-    auto status = runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom, str, "sdf_mesh", locateResource, true);
+    auto status =
+        runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom, str, "sdf_mesh", locateResource, 2, true);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getTriangleCount() == 80);
@@ -26,7 +27,8 @@ TEST(TesseractURDFUnit, parse_sdf_mesh)
   {
     std::string str = "<sdf_mesh filename=\"package://tesseract_support/meshes/sphere_p25m.stl\"/>";
     std::vector<tesseract_geometry::SDFMesh::Ptr> geom;
-    auto status = runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom, str, "sdf_mesh", locateResource, true);
+    auto status =
+        runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom, str, "sdf_mesh", locateResource, true, 2);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getTriangleCount() == 80);
@@ -39,35 +41,40 @@ TEST(TesseractURDFUnit, parse_sdf_mesh)
   {
     std::string str = "<sdf_mesh filename=\"abc\" scale=\"1 2 1\"/>";
     std::vector<tesseract_geometry::SDFMesh::Ptr> geom;
-    auto status = runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom, str, "sdf_mesh", locateResource, true);
+    auto status =
+        runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom, str, "sdf_mesh", locateResource, true, 2);
     EXPECT_FALSE(*status);
   }
 
   {
     std::string str = "<sdf_mesh filename=\"package://tesseract_support/meshes/sphere_p25m.stl\" scale=\"1 a 1\"/>";
     std::vector<tesseract_geometry::SDFMesh::Ptr> geom;
-    auto status = runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom, str, "sdf_mesh", locateResource, true);
+    auto status =
+        runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom, str, "sdf_mesh", locateResource, true, 2);
     EXPECT_FALSE(*status);
   }
 
   {
     std::string str = "<sdf_mesh filename=\"package://tesseract_support/meshes/sphere_p25m.stl\" scale=\"1 2 1 3\"/>";
     std::vector<tesseract_geometry::SDFMesh::Ptr> geom;
-    auto status = runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom, str, "sdf_mesh", locateResource, true);
+    auto status =
+        runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom, str, "sdf_mesh", locateResource, true, 2);
     EXPECT_FALSE(*status);
   }
 
   {
     std::string str = "<sdf_mesh scale=\"1 2 1\"/>";
     std::vector<tesseract_geometry::SDFMesh::Ptr> geom;
-    auto status = runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom, str, "sdf_mesh", locateResource, true);
+    auto status =
+        runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom, str, "sdf_mesh", locateResource, true, 2);
     EXPECT_FALSE(*status);
   }
 
   {
     std::string str = "<sdf_mesh />";
     std::vector<tesseract_geometry::SDFMesh::Ptr> geom;
-    auto status = runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom, str, "sdf_mesh", locateResource, true);
+    auto status =
+        runTest<std::vector<tesseract_geometry::SDFMesh::Ptr>>(geom, str, "sdf_mesh", locateResource, true, 2);
     EXPECT_FALSE(*status);
   }
 }

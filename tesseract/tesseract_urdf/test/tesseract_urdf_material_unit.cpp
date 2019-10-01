@@ -23,7 +23,7 @@ TEST(TesseractURDFUnit, parse_material)
                       "  <texture filename=\"/tmp/texture.txt\" extra=\"0 0 0\"/>"
                       "</material>";
     tesseract_scene_graph::Material::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials);
+    auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials, true, 2);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem->getName() == "test_material");
     EXPECT_TRUE(elem->color.isApprox(Eigen::Vector4d(1, .5, .5, 1), 1e-8));
@@ -39,7 +39,7 @@ TEST(TesseractURDFUnit, parse_material)
                       "  <color rgba=\"1 .5 .5 1\"/>"
                       "</material>";
     tesseract_scene_graph::Material::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials);
+    auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials, true, 2);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem->getName() == "test_material");
     EXPECT_TRUE(elem->color.isApprox(Eigen::Vector4d(1, .5, .5, 1), 1e-8));
@@ -53,7 +53,7 @@ TEST(TesseractURDFUnit, parse_material)
 
     std::string str = "<material name=\"test_material\"/>";
     tesseract_scene_graph::Material::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", available_materials);
+    auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", available_materials, true, 2);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem->getName() == "test_material");
     EXPECT_TRUE(elem->color.isApprox(Eigen::Vector4d(1, .5, .5, 1), 1e-8));
@@ -67,7 +67,7 @@ TEST(TesseractURDFUnit, parse_material)
 
     std::string str = "<material name=\"test_material\"/>";
     tesseract_scene_graph::Material::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials);
+    auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials, true, 2);
     EXPECT_FALSE(*status);
   }
 
@@ -81,7 +81,7 @@ TEST(TesseractURDFUnit, parse_material)
                       "  <texture filename=\"/tmp/texture.txt\"/>"
                       "</material>";
     tesseract_scene_graph::Material::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials);
+    auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials, true, 2);
     EXPECT_FALSE(*status);
   }
 
@@ -95,7 +95,7 @@ TEST(TesseractURDFUnit, parse_material)
                       "  <texture filename=\"/tmp/texture.txt\"/>"
                       "</material>";
     tesseract_scene_graph::Material::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials);
+    auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials, true, 2);
     EXPECT_FALSE(*status);
   }
 }

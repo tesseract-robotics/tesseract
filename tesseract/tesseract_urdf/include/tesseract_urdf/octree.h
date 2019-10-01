@@ -77,7 +77,8 @@ inline tesseract_common::StatusCode::Ptr parseOctree(tesseract_geometry::Octree:
                                                      const tinyxml2::XMLElement* xml_element,
                                                      tesseract_scene_graph::ResourceLocatorFn locator,
                                                      tesseract_geometry::Octree::SubType shape_type,
-                                                     bool prune)
+                                                     const bool prune,
+                                                     const int version)
 {
   octree = nullptr;
   auto status_cat = std::make_shared<OctreeStatusCategory>();

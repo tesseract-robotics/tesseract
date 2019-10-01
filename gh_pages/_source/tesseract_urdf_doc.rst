@@ -21,6 +21,19 @@ Features
 
    * Quaternion
 
+#. URDF Version
+
+   * The original implementation of Tesseract interpreted mesh tags different than what is called version 2. It originally converted mesh geometry types to convex hull because there was no way to distinguish different types of meshes. Now in version 2 it supports the shape types (mesh, convex_mesh, sdf_mesh, etc.), therefore in version 2 the mesh tag is now interpreted as a detailed mesh and is no longer converted to a convex hull. To get the same behavior using version 2 change the tag to convex_mesh and set convert equal to true. For backwards compatibility any URDF without a version is assumed version 1 and mesh tags will be converted to convex hulls.
+
+Change URDF Version
+===================
+
+.. code-block:: xml
+
+   <robot name="kuka_iiwa" version="2">
+   </robot>
+
+
 Defining New Shapes
 ===================
 
