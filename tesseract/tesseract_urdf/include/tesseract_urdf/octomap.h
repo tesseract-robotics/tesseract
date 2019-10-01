@@ -87,7 +87,8 @@ private:
 inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& octree,
                                                const tinyxml2::XMLElement* xml_element,
                                                tesseract_scene_graph::ResourceLocatorFn locator,
-                                               bool /*visual*/ = true)
+                                               const bool /*visual*/,
+                                               const int version)
 {
   octree = nullptr;
   auto status_cat = std::make_shared<OctomapStatusCategory>();
@@ -114,7 +115,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& 
 
   if (octree_element != nullptr)
   {
-    auto status = parseOctree(octree, octree_element, locator, sub_type, prune);
+    auto status = parseOctree(octree, octree_element, locator, sub_type, prune, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           OctomapStatusCategory::ErrorParsingOctreeElement, status_cat, status);
@@ -124,7 +125,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& 
 #ifdef TESSERACT_PARSE_POINT_CLOUDS
   if (pcd_element != nullptr)
   {
-    auto status = parsePointCloud(octree, pcd_element, locator, sub_type, prune);
+    auto status = parsePointCloud(octree, pcd_element, locator, sub_type, prune, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           OctomapStatusCategory::ErrorParsingPointCloudElement, status_cat, status);

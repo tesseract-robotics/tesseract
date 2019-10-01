@@ -86,7 +86,8 @@ inline tesseract_common::StatusCode::Ptr
 parse(std::vector<tesseract_scene_graph::Visual::Ptr>& visuals,
       const tinyxml2::XMLElement* xml_element,
       tesseract_scene_graph::ResourceLocatorFn locator,
-      std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
+      std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
+      const int version)
 {
   visuals.clear();
   auto status_cat = std::make_shared<VisualStatusCategory>();
@@ -99,7 +100,7 @@ parse(std::vector<tesseract_scene_graph::Visual::Ptr>& visuals,
   const tinyxml2::XMLElement* origin = xml_element->FirstChildElement("origin");
   if (origin != nullptr)
   {
-    auto status = parse(visual_origin, origin);
+    auto status = parse(visual_origin, origin, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           VisualStatusCategory::ErrorParsingOriginElement, status_cat, status);
@@ -110,7 +111,7 @@ parse(std::vector<tesseract_scene_graph::Visual::Ptr>& visuals,
   const tinyxml2::XMLElement* material = xml_element->FirstChildElement("material");
   if (material != nullptr)
   {
-    auto status = parse(visual_material, material, available_materials);
+    auto status = parse(visual_material, material, available_materials, true, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           VisualStatusCategory::ErrorParsingMaterialElement, status_cat, status);
@@ -123,7 +124,7 @@ parse(std::vector<tesseract_scene_graph::Visual::Ptr>& visuals,
                                                           status_cat);
 
   std::vector<tesseract_geometry::Geometry::Ptr> geometries;
-  auto status = parse(geometries, geometry, locator, true);
+  auto status = parse(geometries, geometry, locator, true, version);
   if (!(*status))
     return std::make_shared<tesseract_common::StatusCode>(
         VisualStatusCategory::ErrorParsingGeometryElement, status_cat, status);

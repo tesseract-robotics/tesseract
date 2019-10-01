@@ -12,7 +12,7 @@ TEST(TesseractURDFUnit, parse_dynamics)
   {
     std::string str = "<dynamics damping=\"1\" friction=\"2\" extra=\"0 0 0\"/>";
     tesseract_scene_graph::JointDynamics::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics");
+    auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics", 2);
     EXPECT_TRUE(*status);
     EXPECT_NEAR(elem->damping, 1, 1e-8);
     EXPECT_NEAR(elem->friction, 2, 1e-8);
@@ -21,7 +21,7 @@ TEST(TesseractURDFUnit, parse_dynamics)
   {
     std::string str = "<dynamics damping=\"1\"/>";
     tesseract_scene_graph::JointDynamics::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics");
+    auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics", 2);
     EXPECT_TRUE(*status);
     EXPECT_NEAR(elem->damping, 1, 1e-8);
     EXPECT_NEAR(elem->friction, 0, 1e-8);
@@ -30,7 +30,7 @@ TEST(TesseractURDFUnit, parse_dynamics)
   {
     std::string str = "<dynamics friction=\"2\"/>";
     tesseract_scene_graph::JointDynamics::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics");
+    auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics", 2);
     EXPECT_TRUE(*status);
     EXPECT_NEAR(elem->damping, 0, 1e-8);
     EXPECT_NEAR(elem->friction, 2, 1e-8);
@@ -39,21 +39,21 @@ TEST(TesseractURDFUnit, parse_dynamics)
   {
     std::string str = "<dynamics damping=\"a\" friction=\"2\"/>";
     tesseract_scene_graph::JointDynamics::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics");
+    auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics", 2);
     EXPECT_FALSE(*status);
   }
 
   {
     std::string str = "<dynamics damping=\"1\" friction=\"b\"/>";
     tesseract_scene_graph::JointDynamics::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics");
+    auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics", 2);
     EXPECT_FALSE(*status);
   }
 
   {
     std::string str = "<dynamics/>";
     tesseract_scene_graph::JointDynamics::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics");
+    auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics", 2);
     EXPECT_FALSE(*status);
   }
 }

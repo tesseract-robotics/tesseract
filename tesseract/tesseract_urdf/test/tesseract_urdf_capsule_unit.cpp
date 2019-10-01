@@ -12,7 +12,7 @@ TEST(TesseractURDFUnit, parse_capsule)
   {
     std::string str = "<capsule radius=\"1\" length=\"2\" extra=\"0 0 0\"/>";
     tesseract_geometry::Capsule::Ptr geom;
-    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule");
+    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule", 2);
     EXPECT_TRUE(*status);
     EXPECT_NEAR(geom->getRadius(), 1, 1e-8);
     EXPECT_NEAR(geom->getLength(), 2, 1e-8);
@@ -21,28 +21,28 @@ TEST(TesseractURDFUnit, parse_capsule)
   {
     std::string str = "<capsule radius=\"-1\" length=\"2\" extra=\"0 0 0\"/>";
     tesseract_geometry::Capsule::Ptr geom;
-    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule");
+    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule", 2);
     EXPECT_FALSE(*status);
   }
 
   {
     std::string str = "<capsule radius=\"1\" length=\"-2\" extra=\"0 0 0\"/>";
     tesseract_geometry::Capsule::Ptr geom;
-    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule");
+    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule", 2);
     EXPECT_FALSE(*status);
   }
 
   {
     std::string str = "<capsule radius=\"a\" length=\"2\"/>";
     tesseract_geometry::Capsule::Ptr geom;
-    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule");
+    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule", 2);
     EXPECT_FALSE(*status);
   }
 
   {
     std::string str = "<capsule radius=\"1\" length=\"a\"/>";
     tesseract_geometry::Capsule::Ptr geom;
-    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule");
+    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule", 2);
     EXPECT_FALSE(*status);
   }
 
@@ -57,21 +57,21 @@ TEST(TesseractURDFUnit, parse_capsule)
   {
     std::string str = "<capsule radius=\"1\"/>";
     tesseract_geometry::Capsule::Ptr geom;
-    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule");
+    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule", 2);
     EXPECT_FALSE(*status);
   }
 
   {
     std::string str = "<capsule length=\"2\"/>";
     tesseract_geometry::Capsule::Ptr geom;
-    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule");
+    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule", 2);
     EXPECT_FALSE(*status);
   }
 
   {
     std::string str = "<capsule />";
     tesseract_geometry::Capsule::Ptr geom;
-    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule");
+    auto status = runTest<tesseract_geometry::Capsule::Ptr>(geom, str, "capsule", 2);
     EXPECT_FALSE(*status);
   }
 }

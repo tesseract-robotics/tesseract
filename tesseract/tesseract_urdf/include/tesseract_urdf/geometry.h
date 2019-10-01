@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_collision/core/common.h>
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_urdf/sphere.h>
@@ -106,7 +107,8 @@ private:
 inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::Geometry::Ptr>& geometries,
                                                const tinyxml2::XMLElement* xml_element,
                                                tesseract_scene_graph::ResourceLocatorFn locator,
-                                               bool visual)
+                                               const bool visual,
+                                               const int version)
 {
   geometries.clear();
   auto status_cat = std::make_shared<GeometryStatusCategory>();
@@ -124,7 +126,7 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::G
   if (geometry_type == "sphere")
   {
     tesseract_geometry::Sphere::Ptr sphere;
-    tesseract_common::StatusCode::Ptr status = parse(sphere, geometry);
+    tesseract_common::StatusCode::Ptr status = parse(sphere, geometry, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           GeometryStatusCategory::ErrorParsingSphere, status_cat, status);
@@ -134,7 +136,7 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::G
   else if (geometry_type == "box")
   {
     tesseract_geometry::Box::Ptr box;
-    tesseract_common::StatusCode::Ptr status = parse(box, geometry);
+    tesseract_common::StatusCode::Ptr status = parse(box, geometry, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           GeometryStatusCategory::ErrorParsingBox, status_cat, status);
@@ -144,7 +146,7 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::G
   else if (geometry_type == "cylinder")
   {
     tesseract_geometry::Cylinder::Ptr cylinder;
-    tesseract_common::StatusCode::Ptr status = parse(cylinder, geometry);
+    tesseract_common::StatusCode::Ptr status = parse(cylinder, geometry, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           GeometryStatusCategory::ErrorParsingCylinder, status_cat, status);
@@ -154,7 +156,7 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::G
   else if (geometry_type == "cone")
   {
     tesseract_geometry::Cone::Ptr cone;
-    tesseract_common::StatusCode::Ptr status = parse(cone, geometry);
+    tesseract_common::StatusCode::Ptr status = parse(cone, geometry, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           GeometryStatusCategory::ErrorParsingCone, status_cat, status);
@@ -164,7 +166,7 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::G
   else if (geometry_type == "capsule")
   {
     tesseract_geometry::Capsule::Ptr capsule;
-    tesseract_common::StatusCode::Ptr status = parse(capsule, geometry);
+    tesseract_common::StatusCode::Ptr status = parse(capsule, geometry, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           GeometryStatusCategory::ErrorParsingCapsule, status_cat, status);
@@ -174,7 +176,7 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::G
   else if (geometry_type == "octomap")
   {
     tesseract_geometry::Octree::Ptr octree;
-    tesseract_common::StatusCode::Ptr status = parse(octree, geometry, locator, visual);
+    tesseract_common::StatusCode::Ptr status = parse(octree, geometry, locator, visual, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           GeometryStatusCategory::ErrorParsingOctomap, status_cat, status);
@@ -184,17 +186,30 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::G
   else if (geometry_type == "mesh")
   {
     std::vector<tesseract_geometry::Mesh::Ptr> meshes;
-    tesseract_common::StatusCode::Ptr status = parse(meshes, geometry, locator, visual);
+    tesseract_common::StatusCode::Ptr status = parse(meshes, geometry, locator, visual, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           GeometryStatusCategory::ErrorParsingMesh, status_cat, status);
 
-    geometries = std::vector<tesseract_geometry::Geometry::Ptr>(meshes.begin(), meshes.end());
+    if (version < 2 && !visual)
+    {
+      for (const auto& mesh : meshes)
+      {
+        auto ch_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+        auto ch_faces = std::make_shared<Eigen::VectorXi>();
+        int ch_num_faces = tesseract_collision::createConvexHull(*ch_vertices, *ch_faces, *(mesh->getVertices()));
+        geometries.push_back(std::make_shared<tesseract_geometry::ConvexMesh>(ch_vertices, ch_faces, ch_num_faces));
+      }
+    }
+    else
+    {
+      geometries = std::vector<tesseract_geometry::Geometry::Ptr>(meshes.begin(), meshes.end());
+    }
   }
   else if (geometry_type == "convex_mesh")
   {
     std::vector<tesseract_geometry::ConvexMesh::Ptr> meshes;
-    tesseract_common::StatusCode::Ptr status = parse(meshes, geometry, locator, visual);
+    tesseract_common::StatusCode::Ptr status = parse(meshes, geometry, locator, visual, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           GeometryStatusCategory::ErrorParsingConvexMesh, status_cat, status);
@@ -204,7 +219,7 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::G
   else if (geometry_type == "sdf_mesh")
   {
     std::vector<tesseract_geometry::SDFMesh::Ptr> meshes;
-    tesseract_common::StatusCode::Ptr status = parse(meshes, geometry, locator, visual);
+    tesseract_common::StatusCode::Ptr status = parse(meshes, geometry, locator, visual, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           GeometryStatusCategory::ErrorParsingSDFMesh, status_cat, status);

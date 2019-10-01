@@ -95,7 +95,8 @@ inline tesseract_common::StatusCode::Ptr
 parse(tesseract_scene_graph::Material::Ptr& material,
       const tinyxml2::XMLElement* xml_element,
       std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
-      const bool allow_anonymous = true)
+      const bool allow_anonymous,
+      const int version)
 {
   material = tesseract_scene_graph::DEFAULT_TESSERACT_MATERIAL;
   auto status_cat = std::make_shared<MaterialStatusCategory>();

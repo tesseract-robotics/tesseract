@@ -47,6 +47,11 @@ tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGr
   if (QueryStringAttribute(robot, "name", robot_name) != tinyxml2::XML_SUCCESS)
     return std::make_shared<tesseract_common::StatusCode>(URDFStatusCategory::ErrorAttributeName, status_cat);
 
+  int urdf_version = 1;
+  auto version_status = robot->QueryIntAttribute("version", &urdf_version);
+  if (version_status != tinyxml2::XML_NO_ATTRIBUTE && version_status != tinyxml2::XML_SUCCESS)
+    return std::make_shared<tesseract_common::StatusCode>(URDFStatusCategory::ErrorAttributeVersion, status_cat);
+
   status_cat = std::make_shared<URDFStatusCategory>(robot_name);
 
   auto sg = std::make_shared<tesseract_scene_graph::SceneGraph>();
@@ -58,7 +63,7 @@ tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGr
   {
     tesseract_scene_graph::Material::Ptr m = nullptr;
     std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_material;
-    auto status = parse(m, material, empty_material);
+    auto status = parse(m, material, empty_material, true, urdf_version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           URDFStatusCategory::ErrorParsingAvailableMaterialElement, status_cat, status);
@@ -69,7 +74,7 @@ tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGr
   for (tinyxml2::XMLElement* link = robot->FirstChildElement("link"); link; link = link->NextSiblingElement("link"))
   {
     tesseract_scene_graph::Link::Ptr l = nullptr;
-    auto status = parse(l, link, locator, available_materials);
+    auto status = parse(l, link, locator, available_materials, urdf_version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           URDFStatusCategory::ErrorParsingLinkElement, status_cat, status);
@@ -91,7 +96,7 @@ tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGr
                                                                                                                  "t"))
   {
     tesseract_scene_graph::Joint::Ptr j = nullptr;
-    auto status = parse(j, joint);
+    auto status = parse(j, joint, urdf_version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           URDFStatusCategory::ErrorParsingLinkElement, status_cat, status);

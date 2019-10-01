@@ -12,7 +12,7 @@ TEST(TesseractURDFUnit, parse_calibration)
   {
     std::string str = "<calibration rising=\"1\" falling=\"2\" extra=\"0 0 0\"/>";
     tesseract_scene_graph::JointCalibration::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointCalibration::Ptr>(elem, str, "calibration");
+    auto status = runTest<tesseract_scene_graph::JointCalibration::Ptr>(elem, str, "calibration", 2);
     EXPECT_TRUE(*status);
     EXPECT_NEAR(elem->rising, 1, 1e-8);
     EXPECT_NEAR(elem->falling, 2, 1e-8);
@@ -21,7 +21,7 @@ TEST(TesseractURDFUnit, parse_calibration)
   {
     std::string str = "<calibration rising=\"1\"/>";
     tesseract_scene_graph::JointCalibration::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointCalibration::Ptr>(elem, str, "calibration");
+    auto status = runTest<tesseract_scene_graph::JointCalibration::Ptr>(elem, str, "calibration", 2);
     EXPECT_TRUE(*status);
     EXPECT_NEAR(elem->rising, 1, 1e-8);
     EXPECT_NEAR(elem->falling, 0, 1e-8);
@@ -30,7 +30,7 @@ TEST(TesseractURDFUnit, parse_calibration)
   {
     std::string str = "<calibration falling=\"2\"/>";
     tesseract_scene_graph::JointCalibration::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointCalibration::Ptr>(elem, str, "calibration");
+    auto status = runTest<tesseract_scene_graph::JointCalibration::Ptr>(elem, str, "calibration", 2);
     EXPECT_TRUE(*status);
     EXPECT_NEAR(elem->rising, 0, 1e-8);
     EXPECT_NEAR(elem->falling, 2, 1e-8);
@@ -39,21 +39,21 @@ TEST(TesseractURDFUnit, parse_calibration)
   {
     std::string str = "<calibration rising=\"a\" falling=\"2\"/>";
     tesseract_scene_graph::JointCalibration::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointCalibration::Ptr>(elem, str, "calibration");
+    auto status = runTest<tesseract_scene_graph::JointCalibration::Ptr>(elem, str, "calibration", 2);
     EXPECT_FALSE(*status);
   }
 
   {
     std::string str = "<calibration rising=\"1\" falling=\"b\"/>";
     tesseract_scene_graph::JointCalibration::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointCalibration::Ptr>(elem, str, "calibration");
+    auto status = runTest<tesseract_scene_graph::JointCalibration::Ptr>(elem, str, "calibration", 2);
     EXPECT_FALSE(*status);
   }
 
   {
     std::string str = "<calibration/>";
     tesseract_scene_graph::JointCalibration::Ptr elem;
-    auto status = runTest<tesseract_scene_graph::JointCalibration::Ptr>(elem, str, "calibration");
+    auto status = runTest<tesseract_scene_graph::JointCalibration::Ptr>(elem, str, "calibration", 2);
     EXPECT_FALSE(*status);
   }
 }

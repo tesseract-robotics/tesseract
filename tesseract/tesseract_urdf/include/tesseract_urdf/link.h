@@ -84,7 +84,8 @@ inline tesseract_common::StatusCode::Ptr
 parse(tesseract_scene_graph::Link::Ptr& link,
       const tinyxml2::XMLElement* xml_element,
       tesseract_scene_graph::ResourceLocatorFn locator,
-      std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials)
+      std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
+      const int version)
 {
   link = nullptr;
   auto status_cat = std::make_shared<LinkStatusCategory>();
@@ -100,7 +101,7 @@ parse(tesseract_scene_graph::Link::Ptr& link,
   const tinyxml2::XMLElement* inertial = xml_element->FirstChildElement("inertial");
   if (inertial != nullptr)
   {
-    auto status = parse(l->inertial, inertial);
+    auto status = parse(l->inertial, inertial, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           LinkStatusCategory::ErrorParsingInertialElement, status_cat, status);
@@ -111,7 +112,7 @@ parse(tesseract_scene_graph::Link::Ptr& link,
        visual = xml_element->NextSiblingElement("visual"))
   {
     std::vector<tesseract_scene_graph::Visual::Ptr> temp_visual;
-    auto status = parse(temp_visual, visual, locator, available_materials);
+    auto status = parse(temp_visual, visual, locator, available_materials, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           LinkStatusCategory::ErrorParsingVisualElement, status_cat, status);
@@ -124,7 +125,7 @@ parse(tesseract_scene_graph::Link::Ptr& link,
        collision = collision->NextSiblingElement("collision"))
   {
     std::vector<tesseract_scene_graph::Collision::Ptr> temp_collision;
-    auto status = parse(temp_collision, collision, locator);
+    auto status = parse(temp_collision, collision, locator, version);
     if (!(*status))
       return std::make_shared<tesseract_common::StatusCode>(
           LinkStatusCategory::ErrorParsingCollisionElement, status_cat, status);

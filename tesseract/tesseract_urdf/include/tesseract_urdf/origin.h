@@ -86,7 +86,9 @@ private:
   std::string name_;
 };
 
-inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin, const tinyxml2::XMLElement* xml_element)
+inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
+                                               const tinyxml2::XMLElement* xml_element,
+                                               const int version)
 {
   origin = Eigen::Isometry3d::Identity();
   auto status_cat = std::make_shared<OriginStatusCategory>();

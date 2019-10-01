@@ -17,7 +17,8 @@ TEST(TesseractURDFUnit, parse_collision)
                       "  </geometry>"
                       "</collision>";
     std::vector<tesseract_scene_graph::Collision::Ptr> elem;
-    auto status = runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", locateResource);
+    auto status =
+        runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", locateResource, 2);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->geometry != nullptr);
@@ -31,7 +32,8 @@ TEST(TesseractURDFUnit, parse_collision)
                       "  </geometry>"
                       "</collision>";
     std::vector<tesseract_scene_graph::Collision::Ptr> elem;
-    auto status = runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", locateResource);
+    auto status =
+        runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", locateResource, 2);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->geometry != nullptr);
@@ -42,7 +44,8 @@ TEST(TesseractURDFUnit, parse_collision)
     std::string str = "<collision>"
                       "</collision>";
     std::vector<tesseract_scene_graph::Collision::Ptr> elem;
-    auto status = runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", locateResource);
+    auto status =
+        runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", locateResource, 2);
     EXPECT_FALSE(*status);
   }
 }

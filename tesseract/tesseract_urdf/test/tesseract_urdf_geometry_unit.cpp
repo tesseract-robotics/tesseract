@@ -14,7 +14,8 @@ TEST(TesseractURDFUnit, parse_geometry)
                       "  <box size=\"1 1 1\" />"
                       "</geometry>";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status = runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", locateResource, true);
+    auto status =
+        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", locateResource, true, 2);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->getType() == tesseract_geometry::GeometryType::BOX);
@@ -24,7 +25,8 @@ TEST(TesseractURDFUnit, parse_geometry)
     std::string str = "<geometry>"
                       "</geometry>";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status = runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", locateResource, true);
+    auto status =
+        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", locateResource, true, 2);
     EXPECT_FALSE(*status);
   }
 
@@ -33,7 +35,8 @@ TEST(TesseractURDFUnit, parse_geometry)
                       "  <box size=\"1 1 a\" />"
                       "</geometry>";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
-    auto status = runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", locateResource, true);
+    auto status =
+        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", locateResource, true, 2);
     EXPECT_FALSE(*status);
   }
 }
