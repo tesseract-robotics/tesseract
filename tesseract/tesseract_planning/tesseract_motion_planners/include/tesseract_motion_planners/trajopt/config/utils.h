@@ -49,11 +49,12 @@ trajopt::TermInfo::Ptr createCartesianWaypointTermInfo(const CartesianWaypoint::
                                                        const Eigen::Isometry3d& tcp = Eigen::Isometry3d::Identity(),
                                                        const std::string& name = "cartesian_position_position");
 
-trajopt::TermInfo::Ptr createDynamicCartesianWaypointTermInfo(const CartesianWaypoint::ConstPtr& waypoint,
-                                                              const int ind,
-                                                              const std::string& link,
-                                                              const Eigen::Isometry3d& tcp = Eigen::Isometry3d::Identity(),
-                                                              const std::string& name="dynamic_cartesian_position");
+trajopt::TermInfo::Ptr
+createDynamicCartesianWaypointTermInfo(const CartesianWaypoint::ConstPtr& waypoint,
+                                       const int ind,
+                                       const std::string& link,
+                                       const Eigen::Isometry3d& tcp = Eigen::Isometry3d::Identity(),
+                                       const std::string& name = "dynamic_cartesian_position");
 
 struct WaypointTermInfo
 {
@@ -96,6 +97,6 @@ trajopt::TermInfo::Ptr createSmoothJerkTermInfo(const int n_steps,
                                                 const double coeff = 1.0,
                                                 const std::string& name = "joint_jerk_cost");
 
-} // namespace tesseract_motion_planners
+}  // namespace tesseract_motion_planners
 
-#endif // TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_UTILS_H
+#endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_UTILS_H

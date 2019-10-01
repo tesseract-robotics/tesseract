@@ -2,7 +2,7 @@
 
 namespace tesseract_motion_planners
 {
-TrajOptPlannerConfig::TrajOptPlannerConfig(trajopt::TrajOptProb::Ptr prob_) { prob = prob_;}
+TrajOptPlannerConfig::TrajOptPlannerConfig(trajopt::TrajOptProb::Ptr prob_) { prob = prob_; }
 
 bool TrajOptPlannerConfig::generate()
 {
@@ -12,4 +12,4 @@ bool TrajOptPlannerConfig::generate()
     return false;
 }
 
-} // namespace tesseract_motion_planners
+}  // namespace tesseract_motion_planners

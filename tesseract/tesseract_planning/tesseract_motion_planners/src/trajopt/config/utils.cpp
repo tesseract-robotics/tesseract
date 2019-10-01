@@ -2,7 +2,6 @@
 
 namespace tesseract_motion_planners
 {
-
 trajopt::TermInfo::Ptr createJointWaypointTermInfo(const JointWaypoint::ConstPtr& waypoint,
                                                    const int ind,
                                                    const std::vector<std::string>& joint_names,
@@ -150,8 +149,10 @@ WaypointTermInfo createWaypointTermInfo(const Waypoint::ConstPtr& waypoint,
       joint_waypoint->isCritical() ? term_info.cnt.push_back(info) : term_info.cost.push_back(info);
 
       // Create the tolerance joint term info
-      JointTolerancedWaypoint::ConstPtr joint_tol_waypoint = std::static_pointer_cast<const JointTolerancedWaypoint>(waypoint);
-      trajopt::TermInfo::Ptr info_tol = createJointTolerancedWaypointTermInfo(joint_tol_waypoint, ind, joint_names, 0.1);
+      JointTolerancedWaypoint::ConstPtr joint_tol_waypoint =
+          std::static_pointer_cast<const JointTolerancedWaypoint>(waypoint);
+      trajopt::TermInfo::Ptr info_tol =
+          createJointTolerancedWaypointTermInfo(joint_tol_waypoint, ind, joint_names, 0.1);
       term_info.cost.push_back(info);
 
       break;
@@ -165,7 +166,7 @@ WaypointTermInfo createWaypointTermInfo(const Waypoint::ConstPtr& waypoint,
        * (i.e. defined relative to a frame that will move with the kinematic chain)
        */
       auto it = std::find(adjacency_map_links.begin(), adjacency_map_links.end(), cart_waypoint->getParentLinkName());
-      if(it != adjacency_map_links.end())
+      if (it != adjacency_map_links.end())
       {
         // This point is a dynamic cartesian waypoint
         info = createDynamicCartesianWaypointTermInfo(cart_waypoint, ind, link, tcp);
@@ -204,10 +205,8 @@ trajopt::TermInfo::Ptr createCollisionTermInfo(const int n_steps,
   return collision;
 }
 
-trajopt::TermInfo::Ptr createSmoothVelocityTermInfo(const int n_steps,
-                                                    const int n_joints,
-                                                    const double coeff,
-                                                    const std::string& name)
+trajopt::TermInfo::Ptr
+createSmoothVelocityTermInfo(const int n_steps, const int n_joints, const double coeff, const std::string& name)
 {
   std::shared_ptr<trajopt::JointVelTermInfo> jv = std::make_shared<trajopt::JointVelTermInfo>();
   jv->coeffs = std::vector<double>(n_joints, coeff);
@@ -219,10 +218,8 @@ trajopt::TermInfo::Ptr createSmoothVelocityTermInfo(const int n_steps,
   return jv;
 }
 
-trajopt::TermInfo::Ptr createSmoothAccelerationTermInfo(const int n_steps,
-                                                        const int n_joints,
-                                                        const double coeff,
-                                                        const std::string& name)
+trajopt::TermInfo::Ptr
+createSmoothAccelerationTermInfo(const int n_steps, const int n_joints, const double coeff, const std::string& name)
 {
   std::shared_ptr<trajopt::JointAccTermInfo> ja = std::make_shared<trajopt::JointAccTermInfo>();
   ja->coeffs = std::vector<double>(n_joints, coeff);
@@ -234,10 +231,8 @@ trajopt::TermInfo::Ptr createSmoothAccelerationTermInfo(const int n_steps,
   return ja;
 }
 
-trajopt::TermInfo::Ptr createSmoothJerkTermInfo(const int n_steps,
-                                                const int n_joints,
-                                                const double coeff,
-                                                const std::string& name)
+trajopt::TermInfo::Ptr
+createSmoothJerkTermInfo(const int n_steps, const int n_joints, const double coeff, const std::string& name)
 {
   std::shared_ptr<trajopt::JointJerkTermInfo> jj = std::make_shared<trajopt::JointJerkTermInfo>();
   jj->coeffs = std::vector<double>(n_joints, coeff);
@@ -249,4 +244,4 @@ trajopt::TermInfo::Ptr createSmoothJerkTermInfo(const int n_steps,
   return jj;
 }
 
-} // namespace tesseract_motion_planners
+}  // namespace tesseract_motion_planners

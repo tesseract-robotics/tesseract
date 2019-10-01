@@ -4,21 +4,17 @@
 namespace tesseract_motion_planners
 {
 TrajOptPlannerDefaultConfig::TrajOptPlannerDefaultConfig(const tesseract::Tesseract::ConstPtr& tesseract_,
-                                           const std::string& manipulator_,
-                                           const std::string& link_,
-                                           const tesseract_common::VectorIsometry3d& tcp_)
-  : TrajOptPlannerConfigBase()
-  , tesseract(tesseract_)
-  , manipulator(manipulator_)
-  , link(link_)
-  , tcp(tcp_)
+                                                         const std::string& manipulator_,
+                                                         const std::string& link_,
+                                                         const tesseract_common::VectorIsometry3d& tcp_)
+  : TrajOptPlannerConfigBase(), tesseract(tesseract_), manipulator(manipulator_), link(link_), tcp(tcp_)
 {
 }
 
 TrajOptPlannerDefaultConfig::TrajOptPlannerDefaultConfig(const tesseract::Tesseract::ConstPtr& tesseract_,
-                                           const std::string& manipulator_,
-                                           const std::string& link_,
-                                           const Eigen::Isometry3d& tcp_)
+                                                         const std::string& manipulator_,
+                                                         const std::string& link_,
+                                                         const Eigen::Isometry3d& tcp_)
   : TrajOptPlannerDefaultConfig(tesseract_, manipulator_, link_, tesseract_common::VectorIsometry3d(1, tcp_))
 {
 }
@@ -84,11 +80,13 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerDefaultConfig::g
     WaypointTermInfo term_info;
     if (tcp.size() == target_waypoints.size())
     {
-      term_info = createWaypointTermInfo(target_waypoints[ind], ind, pci.kin->getJointNames(), adjacency_links, link, tcp[ind]);
+      term_info =
+          createWaypointTermInfo(target_waypoints[ind], ind, pci.kin->getJointNames(), adjacency_links, link, tcp[ind]);
     }
     else
     {
-      term_info = createWaypointTermInfo(target_waypoints[ind], ind, pci.kin->getJointNames(), adjacency_links, link, tcp.front());
+      term_info = createWaypointTermInfo(
+          target_waypoints[ind], ind, pci.kin->getJointNames(), adjacency_links, link, tcp.front());
     }
 
     pci.cnt_infos.insert(pci.cnt_infos.end(), term_info.cnt.begin(), term_info.cnt.end());
@@ -167,4 +165,4 @@ bool TrajOptPlannerDefaultConfig::generate()
   return true;
 }
 
-} // namespace tesseract_motion_planners
+}  // namespace tesseract_motion_planners
