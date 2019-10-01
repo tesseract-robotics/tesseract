@@ -95,11 +95,37 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerDefaultConfig::g
     pci.cost_infos.insert(pci.cost_infos.end(), term_info.cost.begin(), term_info.cost.end());
   }
 
+  /* Update the first and last step for the costs
+   * Certain costs (collision checking and configuration) should not be applied to start and end states
+   * that are incapable of changing (i.e. joint positions). Therefore, the first and last indices of these
+   * costs (which equal 0 and num_steps-1 by default) should be changed to exclude those states
+   */
+  int cost_first_step = 0;
+  int cost_last_step = pci.basic_info.n_steps - 1;
+  if (target_waypoints.front()->getType() == WaypointType::JOINT_WAYPOINT ||
+      target_waypoints.front()->getType() == WaypointType::JOINT_TOLERANCED_WAYPOINT)
+  {
+    ++cost_first_step;
+  }
+  if (target_waypoints.back()->getType() == WaypointType::JOINT_WAYPOINT ||
+      target_waypoints.back()->getType() == WaypointType::JOINT_TOLERANCED_WAYPOINT)
+  {
+    --cost_last_step;
+  }
+
   // Set costs for the rest of the points
   if (collision_check)
   {
-    pci.cost_infos.push_back(
-        createCollisionTermInfo(pci.basic_info.n_steps, collision_safety_margin, collision_continuous));
+    // Create a default collision term info
+    trajopt::TermInfo::Ptr ti =
+        createCollisionTermInfo(pci.basic_info.n_steps, collision_safety_margin, collision_continuous);
+
+    // Update the term info with the (possibly) new start and end state indices for which to apply this cost
+    std::shared_ptr<trajopt::CollisionTermInfo> ct = std::static_pointer_cast<trajopt::CollisionTermInfo>(ti);
+    ct->first_step = cost_first_step;
+    ct->last_step = cost_last_step;
+
+    pci.cost_infos.push_back(ct);
   }
   if (smooth_velocities)
   {
@@ -115,7 +141,15 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerDefaultConfig::g
   }
   if (configuration != nullptr)
   {
-    pci.cost_infos.push_back(createConfigurationTermInfo(configuration, pci.kin->getJointNames(), pci.basic_info.n_steps));
+    trajopt::TermInfo::Ptr ti =
+        createConfigurationTermInfo(configuration, pci.kin->getJointNames(), pci.basic_info.n_steps);
+
+    // Update the term info with the (possibly) new start and end state indices for which to apply this cost
+    std::shared_ptr<trajopt::JointPosTermInfo> jp = std::static_pointer_cast<trajopt::JointPosTermInfo>(ti);
+    jp->first_step = cost_first_step;
+    jp->last_step = cost_last_step;
+
+    pci.cost_infos.push_back(jp);
   }
 
   return std::make_shared<trajopt::ProblemConstructionInfo>(pci);
