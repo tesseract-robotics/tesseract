@@ -49,6 +49,6 @@ struct TrajOptPlannerFreespaceConfig : public TrajOptPlannerDefaultConfig
   int num_steps = 20;
 };
 
-} // namespace tesseract_motion_planners
+}  // namespace tesseract_motion_planners
 
-#endif // TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_FREESPACE_CONFIG_H
+#endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_FREESPACE_CONFIG_H

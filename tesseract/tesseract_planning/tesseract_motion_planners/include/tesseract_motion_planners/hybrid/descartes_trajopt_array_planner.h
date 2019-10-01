@@ -7,7 +7,6 @@
 
 namespace tesseract_motion_planners
 {
-
 template <typename FloatType>
 class DescartesTrajOptArrayPlanner : public MotionPlanner
 {

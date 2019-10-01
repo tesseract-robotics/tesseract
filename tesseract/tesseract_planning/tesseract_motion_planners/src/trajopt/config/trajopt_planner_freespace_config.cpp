@@ -61,7 +61,8 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerFreespaceConfig:
   // Add the first waypoint
   {
     WaypointTermInfo term_info;
-    term_info = createWaypointTermInfo(target_waypoints.front(), 0, pci.kin->getJointNames(), adjacency_links, link, tcp.front());
+    term_info = createWaypointTermInfo(
+        target_waypoints.front(), 0, pci.kin->getJointNames(), adjacency_links, link, tcp.front());
     pci.cnt_infos.insert(pci.cnt_infos.end(), term_info.cnt.begin(), term_info.cnt.end());
     pci.cost_infos.insert(pci.cost_infos.end(), term_info.cost.begin(), term_info.cost.end());
   }
@@ -71,11 +72,13 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerFreespaceConfig:
     int ind = num_steps - 1;
     if (tcp.size() == target_waypoints.size())
     {
-      term_info = createWaypointTermInfo(target_waypoints.back(), ind, pci.kin->getJointNames(), adjacency_links, link, tcp[ind]);
+      term_info = createWaypointTermInfo(
+          target_waypoints.back(), ind, pci.kin->getJointNames(), adjacency_links, link, tcp[ind]);
     }
     else
     {
-      term_info = createWaypointTermInfo(target_waypoints.back(), ind, pci.kin->getJointNames(), adjacency_links, link, tcp.front());
+      term_info = createWaypointTermInfo(
+          target_waypoints.back(), ind, pci.kin->getJointNames(), adjacency_links, link, tcp.front());
     }
 
     pci.cnt_infos.insert(pci.cnt_infos.end(), term_info.cnt.begin(), term_info.cnt.end());
@@ -142,4 +145,4 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerFreespaceConfig:
   return std::make_shared<trajopt::ProblemConstructionInfo>(pci);
 }
 
-} // namespace tesseract_motion_planners
+}  // namespace tesseract_motion_planners

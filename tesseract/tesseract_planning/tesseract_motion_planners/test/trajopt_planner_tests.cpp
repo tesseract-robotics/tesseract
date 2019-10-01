@@ -117,17 +117,20 @@ bool objectIsType(Base unit)
 TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner0)
 {
   // Set the parameters (Most are being left as defaults)
-  std::shared_ptr<TrajOptPlannerFreespaceConfig> config = std::make_shared<TrajOptPlannerFreespaceConfig>(tesseract_ptr_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
+  std::shared_ptr<TrajOptPlannerFreespaceConfig> config = std::make_shared<TrajOptPlannerFreespaceConfig>(
+      tesseract_ptr_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
   config->num_steps = NUM_STEPS;
 
   std::vector<std::string> joint_names =
       tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
 
   // Specify a JointWaypoint as the start
-  config->target_waypoints.push_back(std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, -1.57, 0, 0, 0 }), joint_names));
+  config->target_waypoints.push_back(
+      std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, -1.57, 0, 0, 0 }), joint_names));
 
   // Specify a Joint Waypoint as the finish
-  config->target_waypoints.push_back(std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, 1.57, 0, 0, 0 }), joint_names));
+  config->target_waypoints.push_back(
+      std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, 1.57, 0, 0, 0 }), joint_names));
 
   // Create test planner used for testing problem creation
   TrajOptMotionPlanner test_planner;
@@ -146,10 +149,14 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner0)
     config->collision_check = t4;
     test_planner.setConfiguration(config);
 
-    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointVelEqCost>(config->prob->getCosts())), t1);
-    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointAccEqCost>(config->prob->getCosts())), t2);
-    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointJerkEqCost>(config->prob->getCosts())), t3);
-    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::CollisionCost>(config->prob->getCosts())), t4);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointVelEqCost>(config->prob->getCosts())),
+              t1);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointAccEqCost>(config->prob->getCosts())),
+              t2);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointJerkEqCost>(config->prob->getCosts())),
+              t3);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::CollisionCost>(config->prob->getCosts())),
+              t4);
   }
 }
 
@@ -157,17 +164,20 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner0)
 TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner1)
 {
   // Set the parameters (Most are being left as defaults)
-  std::shared_ptr<TrajOptPlannerFreespaceConfig> config = std::make_shared<TrajOptPlannerFreespaceConfig>(tesseract_ptr_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
+  std::shared_ptr<TrajOptPlannerFreespaceConfig> config = std::make_shared<TrajOptPlannerFreespaceConfig>(
+      tesseract_ptr_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
   config->num_steps = NUM_STEPS;
 
   std::vector<std::string> joint_names =
       tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
 
   // Specify a JointWaypoint as the start
-  config->target_waypoints.push_back(std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, -1.57, 0, 0, 0 }), joint_names));
+  config->target_waypoints.push_back(
+      std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, -1.57, 0, 0, 0 }), joint_names));
 
   // Specify a Joint Waypoint as the finish
-  config->target_waypoints.push_back(std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, 1.57, 0, 0, 0 }), joint_names));
+  config->target_waypoints.push_back(
+      std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, 1.57, 0, 0, 0 }), joint_names));
 
   // Create test planner used for testing problem creation
   TrajOptMotionPlanner test_planner;
@@ -184,9 +194,10 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner1)
     config->target_waypoints.front()->setIsCritical(false);
     config->target_waypoints.back()->setIsCritical(false);
     test_planner.setConfiguration(config);
-    EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
-    EXPECT_FALSE(
-        (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
+    EXPECT_TRUE(
+        (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
+    EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(
+        config->prob->getCosts())));
   }
 }
 
@@ -197,17 +208,20 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner2)
   PlannerResponse planning_response;
 
   // Set the parameters (Most are being left as defaults)
-  std::shared_ptr<TrajOptPlannerFreespaceConfig> config = std::make_shared<TrajOptPlannerFreespaceConfig>(tesseract_ptr_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
+  std::shared_ptr<TrajOptPlannerFreespaceConfig> config = std::make_shared<TrajOptPlannerFreespaceConfig>(
+      tesseract_ptr_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
   config->num_steps = NUM_STEPS;
 
   std::vector<std::string> joint_names =
       tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
 
   // Specify a Joint Waypoint as the start
-  config->target_waypoints.push_back(std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, -1.57, 0, 0, 0 }), joint_names));
+  config->target_waypoints.push_back(
+      std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, -1.57, 0, 0, 0 }), joint_names));
 
   // Specify a Cartesian Waypoint as the finish
-  config->target_waypoints.push_back(std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0), "base_link"));
+  config->target_waypoints.push_back(std::make_shared<CartesianWaypoint>(
+      Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0), "base_link"));
 
   // Create test planner used for testing problem creation
   TrajOptMotionPlanner test_planner;
@@ -224,9 +238,10 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner2)
     config->target_waypoints.front()->setIsCritical(false);
     config->target_waypoints.back()->setIsCritical(false);
     test_planner.setConfiguration(config);
-    EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
     EXPECT_TRUE(
-        (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
+        (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
+    EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(
+        config->prob->getCosts())));
   }
 }
 
@@ -237,17 +252,20 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner3)
   PlannerResponse planning_response;
 
   // Set the parameters (Most are being left as defaults)
-  std::shared_ptr<TrajOptPlannerFreespaceConfig> config = std::make_shared<TrajOptPlannerFreespaceConfig>(tesseract_ptr_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
+  std::shared_ptr<TrajOptPlannerFreespaceConfig> config = std::make_shared<TrajOptPlannerFreespaceConfig>(
+      tesseract_ptr_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
   config->num_steps = NUM_STEPS;
 
   std::vector<std::string> joint_names =
       tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
 
   // Specify a Cartesian Waypoint as the start
-  config->target_waypoints.push_back(std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0), "base_link"));
+  config->target_waypoints.push_back(std::make_shared<CartesianWaypoint>(
+      Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0), "base_link"));
 
   // Specify a Joint Waypoint as the finish
-  config->target_waypoints.push_back(std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, -1.57, 0, 0, 0 }), joint_names));
+  config->target_waypoints.push_back(
+      std::make_shared<JointWaypoint>(std::vector<double>({ 0, 0, 0, -1.57, 0, 0, 0 }), joint_names));
 
   // Create test planner used for testing problem creation
   TrajOptMotionPlanner test_planner;
@@ -264,9 +282,10 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner3)
     config->target_waypoints.front()->setIsCritical(false);
     config->target_waypoints.back()->setIsCritical(false);
     test_planner.setConfiguration(config);
-    EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
     EXPECT_TRUE(
-        (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
+        (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
+    EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(
+        config->prob->getCosts())));
   }
 }
 
@@ -277,14 +296,17 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4)
   PlannerResponse planning_response;
 
   // Set the parameters (Most are being left as defaults)
-  std::shared_ptr<TrajOptPlannerFreespaceConfig> config = std::make_shared<TrajOptPlannerFreespaceConfig>(tesseract_ptr_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
+  std::shared_ptr<TrajOptPlannerFreespaceConfig> config = std::make_shared<TrajOptPlannerFreespaceConfig>(
+      tesseract_ptr_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
   config->num_steps = NUM_STEPS;
 
   // Specify a Cartesian Waypoint as the start
-  config->target_waypoints.push_back(std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0), "base_link"));
+  config->target_waypoints.push_back(std::make_shared<CartesianWaypoint>(
+      Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0), "base_link"));
 
   // Specify a Cartesian Waypoint as the finish
-  config->target_waypoints.push_back(std::make_shared<CartesianWaypoint>(Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0), "base_link"));
+  config->target_waypoints.push_back(std::make_shared<CartesianWaypoint>(
+      Eigen::Vector3d(-.20, .4, 0.2), Eigen::Quaterniond(0, 0, 1.0, 0), "base_link"));
 
   // Create test planner used for testing problem creation
   TrajOptMotionPlanner test_planner;
@@ -301,9 +323,10 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4)
     config->target_waypoints.front()->setIsCritical(false);
     config->target_waypoints.back()->setIsCritical(false);
     test_planner.setConfiguration(config);
-    EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
-    EXPECT_TRUE(
-        (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
+    EXPECT_FALSE(
+        (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
+    EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(
+        config->prob->getCosts())));
   }
 }
 
@@ -316,7 +339,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4)
 TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0)
 {
   // Set the parameters (Most are being left as defaults)
-  std::shared_ptr<TrajOptPlannerDefaultConfig> config = std::make_shared<TrajOptPlannerDefaultConfig>(tesseract_ptr_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
+  std::shared_ptr<TrajOptPlannerDefaultConfig> config = std::make_shared<TrajOptPlannerDefaultConfig>(
+      tesseract_ptr_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
 
   // These specify the series of points to be optimized
   for (int ind = 0; ind < NUM_STEPS; ind++)
@@ -343,16 +367,21 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0)
     config->smooth_jerks = t3;
     config->collision_check = t4;
     test_planner.setConfiguration(config);
-    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointVelEqCost>(config->prob->getCosts())), t1);
-    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointAccEqCost>(config->prob->getCosts())), t2);
-    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointJerkEqCost>(config->prob->getCosts())), t3);
-    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::CollisionCost>(config->prob->getCosts())), t4);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointVelEqCost>(config->prob->getCosts())),
+              t1);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointAccEqCost>(config->prob->getCosts())),
+              t2);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointJerkEqCost>(config->prob->getCosts())),
+              t3);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::CollisionCost>(config->prob->getCosts())),
+              t4);
   }
   EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
       config->prob->getConstraints())));
   EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
       config->prob->getConstraints())));
-  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
+  EXPECT_FALSE(
+      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
   EXPECT_FALSE(
       (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
 }
@@ -361,7 +390,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0)
 TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner1)
 {
   // Set the parameters (Most are being left as defaults)
-  std::shared_ptr<TrajOptPlannerDefaultConfig> config = std::make_shared<TrajOptPlannerDefaultConfig>(tesseract_ptr_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
+  std::shared_ptr<TrajOptPlannerDefaultConfig> config = std::make_shared<TrajOptPlannerDefaultConfig>(
+      tesseract_ptr_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
 
   // These specify the series of points to be optimized
   for (int ind = 0; ind < NUM_STEPS; ind++)
@@ -380,15 +410,18 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner1)
       config->prob->getConstraints())));
   EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
       config->prob->getConstraints())));
-  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
-  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
+  EXPECT_FALSE(
+      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
+  EXPECT_TRUE(
+      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
 }
 
 // This test checks that the terms are being added correctly for joint cnts
 TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner2)
 {
   // Set the parameters (Most are being left as defaults)
-  std::shared_ptr<TrajOptPlannerDefaultConfig> config = std::make_shared<TrajOptPlannerDefaultConfig>(tesseract_ptr_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
+  std::shared_ptr<TrajOptPlannerDefaultConfig> config = std::make_shared<TrajOptPlannerDefaultConfig>(
+      tesseract_ptr_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
 
   std::vector<std::string> joint_names =
       tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
@@ -410,7 +443,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner2)
       config->prob->getConstraints())));
   EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
       config->prob->getConstraints())));
-  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
+  EXPECT_FALSE(
+      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
   EXPECT_FALSE(
       (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
 }
@@ -419,8 +453,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner2)
 TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner3)
 {
   // Set the parameters (Most are being left as defaults)
-  std::shared_ptr<TrajOptPlannerDefaultConfig> config =
-      std::make_shared<TrajOptPlannerDefaultConfig>(tesseract_ptr_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
+  std::shared_ptr<TrajOptPlannerDefaultConfig> config = std::make_shared<TrajOptPlannerDefaultConfig>(
+      tesseract_ptr_, "manipulator", "tool0", Eigen::Isometry3d::Identity());
 
   std::vector<std::string> joint_names =
       tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();

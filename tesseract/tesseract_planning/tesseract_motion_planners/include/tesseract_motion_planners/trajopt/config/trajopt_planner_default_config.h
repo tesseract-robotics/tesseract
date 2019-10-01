@@ -30,7 +30,6 @@
 
 namespace tesseract_motion_planners
 {
-
 /**
  * @brief Default configuration to setup TrajOpt planner.
  *
@@ -98,6 +97,6 @@ struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfigBase
   bool smooth_jerks = true;
 };
 
-} // namespace tesseract_motion_planners
+}  // namespace tesseract_motion_planners
 
-#endif // TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_DEFAULT_CONFIG_H
+#endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_DEFAULT_CONFIG_H

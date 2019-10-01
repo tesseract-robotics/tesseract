@@ -41,6 +41,6 @@ struct TrajOptPlannerConfig : public TrajOptPlannerConfigBase
   virtual bool generate() override;
 };
 
-} // namespace tesseract_motion_planners
+}  // namespace tesseract_motion_planners
 
-#endif // TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_CONFIG_H
+#endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_CONFIG_H
