@@ -193,7 +193,7 @@ if (ENABLE_TESTS)
   enable_testing()
   add_custom_target(run_tests ALL
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-      COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -V)
+      COMMAND ${CMAKE_CTEST_COMMAND} -V -C $<CONFIGURATION>)
 
   add_subdirectory(test)
 endif()
