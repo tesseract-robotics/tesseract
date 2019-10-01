@@ -102,7 +102,7 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_scene_graph
                                                           status_cat);
 
   std::vector<tesseract_geometry::Geometry::Ptr> geometries;
-  auto status = parse(geometries, geometry, locator, true);
+  auto status = parse(geometries, geometry, locator, false);
   if (!(*status))
     return std::make_shared<tesseract_common::StatusCode>(
         CollisionStatusCategory::ErrorParsingGeometryElement, status_cat, status);

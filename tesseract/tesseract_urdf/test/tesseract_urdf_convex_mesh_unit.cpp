@@ -38,6 +38,16 @@ TEST(TesseractURDFUnit, parse_convex_mesh)
   }
 
   {
+    std::string str = "<convex_mesh filename=\"package://tesseract_support/meshes/box_box.dae\" scale=\"1 2 1\" "
+                      "convert=\"true\"/>";
+    std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
+    auto status =
+        runTest<std::vector<tesseract_geometry::ConvexMesh::Ptr>>(geom, str, "convex_mesh", locateResource, false);
+    EXPECT_TRUE(*status);
+    EXPECT_TRUE(geom.size() == 2);
+  }
+
+  {
     std::string str = "<convex_mesh filename=\"package://tesseract_support/meshes/box_2m.ply\"/>";
     std::vector<tesseract_geometry::ConvexMesh::Ptr> geom;
     auto status =
