@@ -403,23 +403,7 @@ void Environment::getCollisionObject(tesseract_collision::CollisionShapesConst& 
 {
   for (const auto& c : link.collision)
   {
-    // Need to force convex hull TODO: Remove after URDF dom has been updated.
-    if (c->geometry->getType() == tesseract_geometry::MESH)
-    {
-      // This is required because convex hull cannot have multiple faces on the same plane.
-      std::shared_ptr<tesseract_common::VectorVector3d> ch_verticies(new tesseract_common::VectorVector3d());
-      std::shared_ptr<Eigen::VectorXi> ch_faces(new Eigen::VectorXi());
-      int ch_num_faces = tesseract_collision::createConvexHull(
-          *ch_verticies,
-          *ch_faces,
-          *(std::static_pointer_cast<const tesseract_geometry::Mesh>(c->geometry)->getVertices()));
-      shapes.push_back(tesseract_geometry::ConvexMesh::Ptr(
-          new tesseract_geometry::ConvexMesh(ch_verticies, ch_faces, ch_num_faces)));
-    }
-    else
-    {
-      shapes.push_back(c->geometry);
-    }
+    shapes.push_back(c->geometry);
     shape_poses.push_back(c->origin);
   }
 }
