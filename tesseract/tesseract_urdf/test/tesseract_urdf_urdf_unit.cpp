@@ -380,7 +380,7 @@ TEST(TesseractURDFUnit, parse_urdf_with_available_materials)
                       "</robot>";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = tesseract_urdf::parseURDFString(sg, str, locateResource);
-    EXPECT_FALSE(*status);
+    EXPECT_TRUE(*status);
   }
 }
 

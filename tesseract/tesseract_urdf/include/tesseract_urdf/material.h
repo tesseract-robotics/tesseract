@@ -52,6 +52,8 @@ public:
     {
       case Success:
         return "Sucessfully parsed material element!";
+      case MultipleMaterialsWithSameName:
+        return "Multiple materials with the same name exist!";
       case ErrorAttributeName:
         return "Missing or failed parsing material attribute 'name'!";
       case ErrorTextureAttributeFilename:
@@ -64,8 +66,6 @@ public:
         return "Material name only is not allowed!";
       case ErrorLocatingMaterialByName:
         return "Material with name only was not located in available materials!";
-      case ErrorMultipleMaterialsWithSameName:
-        return "Multiple materials with the same name exist!";
       case ErrorAnonymousMaterialNamesNotAllowed:
         return "Anonymous material names (empty string) not allowed!";
       default:
@@ -75,6 +75,7 @@ public:
 
   enum
   {
+    MultipleMaterialsWithSameName = 1,
     Success = 0,
     ErrorAttributeName = -1,
     ErrorTextureAttributeFilename = -2,
@@ -82,8 +83,7 @@ public:
     ErrorParsingColorAttributeRGBA = -4,
     ErrorNameOnlyIsNotAllowed = -5,
     ErrorLocatingMaterialByName = -6,
-    ErrorMultipleMaterialsWithSameName = -7,
-    ErrorAnonymousMaterialNamesNotAllowed = -8
+    ErrorAnonymousMaterialNamesNotAllowed = -7
 
   };
 
@@ -100,6 +100,7 @@ parse(tesseract_scene_graph::Material::Ptr& material,
 {
   material = tesseract_scene_graph::DEFAULT_TESSERACT_MATERIAL;
   auto status_cat = std::make_shared<MaterialStatusCategory>();
+  auto success_status = std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::Success, status_cat);
 
   std::string material_name;
   if (QueryStringAttribute(xml_element, "name", material_name) != tinyxml2::XML_SUCCESS)
@@ -180,8 +181,9 @@ parse(tesseract_scene_graph::Material::Ptr& material,
     {
       auto it = available_materials.find(material_name);
       if (it != available_materials.end())
-        return std::make_shared<tesseract_common::StatusCode>(
-            MaterialStatusCategory::ErrorMultipleMaterialsWithSameName, status_cat);
+        success_status->setChild(std::make_shared<tesseract_common::StatusCode>(
+            MaterialStatusCategory::MultipleMaterialsWithSameName, status_cat));
+
       available_materials[material_name] = m;
     }
     else if (!allow_anonymous)
@@ -192,7 +194,7 @@ parse(tesseract_scene_graph::Material::Ptr& material,
   }
 
   material = m;
-  return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::Success, status_cat);
+  return success_status;
 }
 
 }  // namespace tesseract_urdf
