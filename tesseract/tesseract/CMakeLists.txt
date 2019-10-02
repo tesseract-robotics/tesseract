@@ -70,7 +70,7 @@ export(EXPORT ${PROJECT_NAME}-targets FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT
 #  enable_testing()
 #  add_custom_target(run_tests ALL
 #      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-#      COMMAND ${CMAKE_CTEST_COMMAND} -V -C $<CONFIGURATION>)
+#      COMMAND ${CMAKE_CTEST_COMMAND} -V -O "/tmp/${PROJECT_NAME}_ctest.log" -C $<CONFIGURATION>)
 
 #  add_subdirectory(test)
 #endif()
