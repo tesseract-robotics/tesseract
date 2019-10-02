@@ -34,7 +34,6 @@
 #include <tesseract_motion_planners/core/waypoint.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <jsoncpp/json/json.h>
-#include <ros/console.h>
 #include <descartes_light/descartes_light.h>
 #include <descartes_light/interface/position_sampler.h>
 #include <descartes_samplers/samplers/railed_cartesian_point_sampler.h>
