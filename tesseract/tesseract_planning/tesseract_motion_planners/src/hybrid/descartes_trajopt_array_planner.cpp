@@ -115,7 +115,7 @@ tesseract_common::StatusCode DescartesTrajOptArrayPlanner<FloatType>::solve(Plan
 template <typename FloatType>
 bool DescartesTrajOptArrayPlanner<FloatType>::setConfiguration(
     const DescartesMotionPlannerConfig<FloatType>& descartes_config,
-    const TrajOptPlannerConfigBase::Ptr& trajopt_config)
+    const TrajOptPlannerConfig::Ptr& trajopt_config)
 {
   bool success = true;
   if (!descartes_planner_.setConfiguration(descartes_config))
