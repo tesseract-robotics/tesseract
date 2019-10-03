@@ -26,7 +26,7 @@
 #ifndef TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_FREESPACE_CONFIG_H
 #define TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_FREESPACE_CONFIG_H
 
-#include "tesseract_motion_planners/trajopt/config/trajopt_planner_default_config.h"
+#include <tesseract_motion_planners/trajopt/config/trajopt_planner_default_config.h>
 
 namespace tesseract_motion_planners
 {

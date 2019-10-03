@@ -26,7 +26,7 @@
 #ifndef TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_DEFAULT_CONFIG_H
 #define TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_DEFAULT_CONFIG_H
 
-#include "tesseract_motion_planners/trajopt/config/trajopt_planner_config.h"
+#include <tesseract_motion_planners/trajopt/config/trajopt_planner_config.h>
 
 namespace tesseract_motion_planners
 {
@@ -37,7 +37,7 @@ namespace tesseract_motion_planners
  * problems. These are always required: tesseract_, maninpulator_, link_, tcp_
  *
  */
-struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfigBase
+struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
 {
   TrajOptPlannerDefaultConfig(const tesseract::Tesseract::ConstPtr& tesseract_,
                               const std::string& manipulator_,
