@@ -1,6 +1,6 @@
 /**
- * @file trajopt_planner_config.h
- * @brief A simple TrajOpt configuration class constructed from a TrajOpt problem
+ * @file trajopt_planner_config_base.h
+ * @brief The base class for TrajOpt planner configuration
  *
  * @author Michael Ripperger
  * @date September 16, 2019
@@ -26,21 +26,39 @@
 #ifndef TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_CONFIG_H
 #define TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_CONFIG_H
 
-#include "tesseract_motion_planners/trajopt/config/trajopt_planner_config_base.h"
+#include <trajopt/problem_description.hpp>
+#include <tesseract_motion_planners/core/waypoint.h>
 
 namespace tesseract_motion_planners
 {
 /**
- * @brief Simple planner configuration struct that takes a completed TrajOptProb directly
- * and saves it internally
+ * @brief The TrajOptPlannerConfigBase struct
  */
-struct TrajOptPlannerConfig : public TrajOptPlannerConfigBase
+struct TrajOptPlannerConfig
 {
-  TrajOptPlannerConfig(trajopt::TrajOptProb::Ptr prob_);
+  using Ptr = std::shared_ptr<TrajOptPlannerConfig>;
 
-  virtual bool generate() override;
+  explicit TrajOptPlannerConfig() = default;
+  explicit TrajOptPlannerConfig(trajopt::TrajOptProb::Ptr problem);
+
+  virtual ~TrajOptPlannerConfig() = default;
+
+  /**
+   * @brief Generates the TrajOpt problem and saves the result internally
+   * @return True on success, false on failure
+   */
+  virtual bool generate();
+
+  /** @brief Optimization parameters to be used (Optional) */
+  sco::BasicTrustRegionSQPParameters params;
+
+  /** @brief Callback functions called on each iteration of the optimization (Optional) */
+  std::vector<sco::Optimizer::Callback> callbacks;
+
+  /** @brief Trajopt problem to be solved (Required) */
+  trajopt::TrajOptProb::Ptr prob;
 };
 
 }  // namespace tesseract_motion_planners
 
-#endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_CONFIG_H
+#endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_CONFIG_BASE_H

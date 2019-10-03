@@ -25,7 +25,7 @@ public:
    * @return True if successful otherwise false
    */
   bool setConfiguration(const DescartesMotionPlannerConfig<FloatType>& descartes_config,
-                        const TrajOptPlannerConfigBase::Ptr& trajopt_config);
+                        const TrajOptPlannerConfig::Ptr& trajopt_config);
 
   /**
    * @brief Sets up the opimizer and solves a SQP problem read from json with no callbacks and dafault parameterss
@@ -51,7 +51,7 @@ protected:
   DescartesMotionPlanner<FloatType> descartes_planner_;
   std::shared_ptr<const tesseract_common::GeneralStatusCategory> status_category_; /** @brief The plannsers status codes
                                                                                     */
-  TrajOptPlannerConfigBase::Ptr trajopt_config_;
+  TrajOptPlannerConfig::Ptr trajopt_config_;
 };
 
 using DescartesTrajOptArrayPlannerD = DescartesTrajOptArrayPlanner<double>;

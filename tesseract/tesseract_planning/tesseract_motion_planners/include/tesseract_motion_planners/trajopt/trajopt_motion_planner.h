@@ -32,8 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/planner.h>
-
-#include <tesseract_motion_planners/trajopt/config/trajopt_planner_config_base.h>
+#include <tesseract_motion_planners/trajopt/config/trajopt_planner_config.h>
 
 namespace tesseract_motion_planners
 {
@@ -55,7 +54,7 @@ public:
    * @param config The planners configuration
    * @return True if successful otherwise false
    */
-  bool setConfiguration(const TrajOptPlannerConfigBase::Ptr& config);
+  bool setConfiguration(const TrajOptPlannerConfig::Ptr& config);
 
   /**
    * @brief Sets up the opimizer and solves a SQP problem read from json with no callbacks and dafault parameterss
@@ -77,7 +76,7 @@ public:
   tesseract_common::StatusCode isConfigured() const override;
 
 protected:
-  TrajOptPlannerConfigBase::Ptr config_;
+  TrajOptPlannerConfig::Ptr config_;
   std::shared_ptr<const TrajOptMotionPlannerStatusCategory> status_category_; /** @brief The plannsers status codes */
 };
 
