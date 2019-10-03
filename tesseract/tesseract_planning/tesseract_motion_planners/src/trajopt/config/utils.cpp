@@ -1,4 +1,29 @@
-#include "tesseract_motion_planners/trajopt/config/utils.h"
+/**
+ * @file utils.cpp
+ * @brief Utilities for creating TrajOpt term information
+ *
+ * @author Michael Ripperger
+ * @date September 16, 2019
+ * @version TODO
+ * @bug No known bugs
+ *
+ * @copyright Copyright (c) 2019, Southwest Research Institute
+ *
+ * @par License
+ * Software License Agreement (Apache License)
+ * @par
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * @par
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#include <tesseract_motion_planners/trajopt/config/utils.h>
 
 namespace tesseract_motion_planners
 {
@@ -98,31 +123,6 @@ trajopt::TermInfo::Ptr createDynamicCartesianWaypointTermInfo(const CartesianWay
   return pose;
 }
 
-trajopt::TermInfo::Ptr createConfigurationTermInfo(const JointWaypoint::ConstPtr& configuration,
-                                                   const std::vector<std::string>& joint_names,
-                                                   const int n_steps,
-                                                   const double coeff,
-                                                   const std::string& name)
-{
-  assert(static_cast<std::size_t>(configuration->getPositions().size()) == joint_names.size());
-  //  JointWaypoint::ConstPtr joint_waypoint = configuration;
-  std::shared_ptr<trajopt::JointPosTermInfo> jp = std::make_shared<trajopt::JointPosTermInfo>();
-  const Eigen::VectorXd& coeffs = configuration->getCoefficients();
-  assert(std::equal(joint_names.begin(), joint_names.end(), configuration->getNames().begin()));
-  if (static_cast<std::size_t>(coeffs.size()) != joint_names.size())
-    jp->coeffs = std::vector<double>(joint_names.size(), coeff);  // Default value
-  else
-    jp->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
-  jp->targets = std::vector<double>(configuration->getPositions().data(),
-                                    configuration->getPositions().data() + configuration->getPositions().size());
-  jp->first_step = 0;
-  jp->last_step = n_steps - 1;
-  jp->name = name;
-  jp->term_type = trajopt::TT_COST;
-
-  return jp;
-}
-
 WaypointTermInfo createWaypointTermInfo(const Waypoint::ConstPtr& waypoint,
                                         const int ind,
                                         const std::vector<std::string>& joint_names,
@@ -186,6 +186,31 @@ WaypointTermInfo createWaypointTermInfo(const Waypoint::ConstPtr& waypoint,
   }
 
   return term_info;
+}
+
+trajopt::TermInfo::Ptr createConfigurationTermInfo(const JointWaypoint::ConstPtr& configuration,
+                                                   const std::vector<std::string>& joint_names,
+                                                   const int n_steps,
+                                                   const double coeff,
+                                                   const std::string& name)
+{
+  assert(static_cast<std::size_t>(configuration->getPositions().size()) == joint_names.size());
+  //  JointWaypoint::ConstPtr joint_waypoint = configuration;
+  std::shared_ptr<trajopt::JointPosTermInfo> jp = std::make_shared<trajopt::JointPosTermInfo>();
+  const Eigen::VectorXd& coeffs = configuration->getCoefficients();
+  assert(std::equal(joint_names.begin(), joint_names.end(), configuration->getNames().begin()));
+  if (static_cast<std::size_t>(coeffs.size()) != joint_names.size())
+    jp->coeffs = std::vector<double>(joint_names.size(), coeff);  // Default value
+  else
+    jp->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
+  jp->targets = std::vector<double>(configuration->getPositions().data(),
+                                    configuration->getPositions().data() + configuration->getPositions().size());
+  jp->first_step = 0;
+  jp->last_step = n_steps - 1;
+  jp->name = name;
+  jp->term_type = trajopt::TT_COST;
+
+  return jp;
 }
 
 trajopt::TermInfo::Ptr createCollisionTermInfo(const int n_steps,
