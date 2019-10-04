@@ -15,7 +15,6 @@
   <depend>descartes_light</depend>
   <depend>descartes_samplers</depend>
   <depend>descartes_opw</depend>
-  <depend>descartes_tesseract</depend>
   <depend>ompl</depend>
   <depend>libconsole-bridge-dev</depend>
 
