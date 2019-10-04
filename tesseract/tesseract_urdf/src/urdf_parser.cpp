@@ -102,7 +102,7 @@ tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGr
           URDFStatusCategory::ErrorParsingLinkElement, status_cat, status);
 
     // Check if joint name is unique
-    if (sg->getLink(j->getName()) != nullptr)
+    if (sg->getJoint(j->getName()) != nullptr)
       return std::make_shared<tesseract_common::StatusCode>(
           URDFStatusCategory::ErrorJointNamesNotUnique, status_cat, status);
 
