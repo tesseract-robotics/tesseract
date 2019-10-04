@@ -6,7 +6,6 @@ find_package(trajopt REQUIRED)
 find_package(descartes_light REQUIRED)
 find_package(descartes_samplers REQUIRED)
 find_package(descartes_opw REQUIRED)
-find_package(descartes_tesseract REQUIRED)
 find_package(tesseract REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(console_bridge REQUIRED)
@@ -88,8 +87,13 @@ target_include_directories(${PROJECT_NAME}_ompl_freespace SYSTEM PUBLIC
     ${OMPL_INCLUDE_DIRS})
 
 # Descartes Planner
-add_library(${PROJECT_NAME}_descartes SHARED src/descartes/descartes_motion_planner.cpp)
-target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME}_core descartes::descartes_light descartes::descartes_samplers descartes::descartes_opw descartes::descartes_tesseract)
+add_library(${PROJECT_NAME}_descartes SHARED
+  src/descartes/descartes_motion_planner.cpp
+  src/descartes/descartes_collision.cpp
+  src/descartes/descartes_railed_kinematics.cpp
+  src/descartes/descartes_positioner_kinematics.cpp)
+
+target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME}_core descartes::descartes_light descartes::descartes_samplers descartes::descartes_opw)
 target_compile_options(${PROJECT_NAME}_descartes PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_descartes PUBLIC -std=c++11)
