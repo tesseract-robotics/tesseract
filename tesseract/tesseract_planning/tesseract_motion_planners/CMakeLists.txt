@@ -55,6 +55,14 @@ target_include_directories(${PROJECT_NAME}_ompl_freespace PUBLIC
 target_include_directories(${PROJECT_NAME}_ompl_freespace SYSTEM PUBLIC
     ${OMPL_INCLUDE_DIRS})
 
+# OMPL Hybrid Planner
+add_library(${PROJECT_NAME}_ompl_trajopt_freespace SHARED src/hybrid/ompl_trajopt_freespace_planner.cpp)
+target_link_libraries(${PROJECT_NAME}_ompl_trajopt_freespace PUBLIC ${PROJECT_NAME}_ompl_freespace ${PROJECT_NAME}_trajopt)
+tesseract_target_compile_options(${PROJECT_NAME}_ompl_trajopt_freespace PUBLIC)
+target_include_directories(${PROJECT_NAME}_ompl_trajopt_freespace PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+
 # Descartes Planner
 add_library(${PROJECT_NAME}_descartes SHARED
   src/descartes/descartes_motion_planner.cpp
