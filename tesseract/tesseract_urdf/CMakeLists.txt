@@ -20,7 +20,11 @@ target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_geometry tesse
 target_compile_options(${PROJECT_NAME} PUBLIC -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 
 # PCL does not support c++11 on Xenial so cannot include point cloud parsing from urdf
-if(Boost_VERSION VERSION_GREATER "1.60")
+# Boost version number is in XYYYZZ format such that:
+#   (BOOST_VERSION % 100) is the sub-minor version
+#   ((BOOST_VERSION / 100) % 1000) is the minor version
+#   (BOOST_VERSION / 100000) is the major version.
+if(Boost_VERSION VERSION_GREATER "106000")
     target_link_libraries(${PROJECT_NAME} PUBLIC ${PCL_LIBRARIES})
     target_compile_definitions(${PROJECT_NAME} PUBLIC TESSERACT_PARSE_POINT_CLOUDS="ON")
     foreach(DEF ${PCL_DEFINITIONS})
