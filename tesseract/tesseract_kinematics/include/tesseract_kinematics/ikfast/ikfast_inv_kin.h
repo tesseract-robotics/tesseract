@@ -30,7 +30,55 @@
 
 namespace tesseract_kinematics
 {
-/** @brief KDL Inverse kinematic chain implementation. */
+/**
+ * @brief IKFast Inverse Kinematics Implmentation.
+ *
+ * This along with the ikfast_inv_kin.hpp is to be used with a generated ikfast to create a tesseract implementation.
+ * Once you have created your ikfast solver of your robot all you need is to create header similiar to what is shown
+ * below:
+ *
+ * Header File: fanuc_p50ib_15_inv_kinematics.h
+ *
+ * #include <Eigen/Geometry>
+ * #include <vector>
+ * #include <tesseract_kinematics/ikfast/ikfast_inv_kin.h>
+ * #include <tesseract_kinematics/core/forward_kinematics.h>
+
+ * namespace fanuc_p50ib_15_ikfast_wrapper
+ * {
+ * class FanucP50iBInvKinematics : public tesseract_kinematics::IKFastInvKin
+ * {
+ * public:
+ *   FanucP50iBInvKinematics(const std::string name,
+ *                           const std::string base_link_name,
+ *                           const std::string tip_link_name,
+ *                           const std::vector<std::string> joint_names,
+ *                           const std::vector<std::string> link_names,
+ *                           const std::vector<std::string> active_link_names,
+ *                           const Eigen::MatrixX2d joint_limits)
+ * };
+ *
+ * Cpp File:
+ *
+ * #include <tesseract_kinematics/ikfast/impl/ikfast_inv_kin.hpp>
+ * #include <fanuc_p50ib_15_ikfast_wrapper/impl/fanuc_p50ib_15_ikfast.hpp>
+ * #include <fanuc_p50ib_15_ikfast_wrapper/tesseract_fanuc_p50ib_kinematics.h>
+ *
+ * namespace fanuc_p50ib_15_ikfast_wrapper
+ * {
+ *   FanucP50iBInvKinematics::FanucP50iBInvKinematics(const std::string name,
+ *                                                    const std::string base_link_name,
+ *                                                    const std::string tip_link_name,
+ *                                                    const std::vector<std::string> joint_names,
+ *                                                    const std::vector<std::string> link_names,
+ *                                                    const std::vector<std::string> active_link_names,
+ *                                                    const Eigen::MatrixX2d joint_limits)
+ *   : FanucP50iBInvKinematics(name, base_link_name, tip_link_name, joint_names, link_names, active_link_names,
+ joint_limits)
+ *   {}
+ * }
+ *
+*/
 class IKFastInvKin : public InverseKinematics
 {
 public:
@@ -84,17 +132,17 @@ public:
   }
 
 protected:
-  bool initialized_ = true;                                 /**< Identifies if the object has been initialized */
-  std::string base_link_name_;                              /**< Kinematic base link name */
-  std::string tip_link_name_;                               /**< Kinematic tip link name */
-  Eigen::MatrixX2d joint_limits_;                           /**< Joint Limits */
-  std::vector<std::string> joint_names_;                    /**< joint names */
-  std::vector<std::string> link_names_;                     /**< link names */
-  std::vector<std::string> active_link_names_;              /**< active link names */
-  std::string name_;                                        /**< Name of the kinematic chain */
-  std::string solver_name_ = "IKFastInvKin";                /**< Name of this solver */
+  bool initialized_ = true;                    /**< @brief Identifies if the object has been initialized */
+  std::string base_link_name_;                 /**< @brief Kinematic base link name */
+  std::string tip_link_name_;                  /**< @brief Kinematic tip link name */
+  Eigen::MatrixX2d joint_limits_;              /**< @brief Joint Limits */
+  std::vector<std::string> joint_names_;       /**< @brief joint names */
+  std::vector<std::string> link_names_;        /**< @brief link names */
+  std::vector<std::string> active_link_names_; /**< @brief active link names */
+  std::string name_;                           /**< @brief Name of the kinematic chain */
+  std::string solver_name_ = "IKFastInvKin";   /**< @brief Name of this solver */
 };
 
 }  // namespace tesseract_kinematics
 
-#endif // TESSERACT_KINEMATICS_IKFAST_INV_KIN_H
+#endif  // TESSERACT_KINEMATICS_IKFAST_INV_KIN_H

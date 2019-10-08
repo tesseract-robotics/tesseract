@@ -90,8 +90,8 @@ target_include_directories(${PROJECT_NAME}_ompl_freespace SYSTEM PUBLIC
 add_library(${PROJECT_NAME}_descartes SHARED
   src/descartes/descartes_motion_planner.cpp
   src/descartes/descartes_collision.cpp
-  src/descartes/descartes_railed_kinematics.cpp
-  src/descartes/descartes_positioner_kinematics.cpp)
+  src/descartes/descartes_railed_sampler.cpp
+  src/descartes/descartes_positioner_sampler.cpp)
 
 target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME}_core descartes::descartes_light descartes::descartes_samplers descartes::descartes_opw)
 target_compile_options(${PROJECT_NAME}_descartes PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
