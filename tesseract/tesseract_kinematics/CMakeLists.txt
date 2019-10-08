@@ -31,6 +31,26 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
     ${EIGEN3_INCLUDE_DIRS}
     $<TARGET_PROPERTY:tesseract::tesseract_common,INTERFACE_INCLUDE_DIRECTORIES>) #tesseract::tesseract_common Due to bug in catkin, there is an open PR
 
+# Create ikfast kinematics interface
+add_library(${PROJECT_NAME}_ikfast INTERFACE)
+target_link_libraries(${PROJECT_NAME}_ikfast INTERFACE ${PROJECT_NAME}_core)
+target_compile_options(${PROJECT_NAME}_ikfast INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
+if(CXX_FEATURE_FOUND EQUAL "-1")
+    target_compile_options(${PROJECT_NAME}_ikfast INTERFACE -std=c++11)
+else()
+    target_compile_features(${PROJECT_NAME}_ikfast INTERFACE cxx_std_11)
+endif()
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(${PROJECT_NAME}_ikfast INTERFACE -mno-avx)
+  else()
+    message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
+  endif()
+target_include_directories(${PROJECT_NAME}_ikfast INTERFACE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_ikfast SYSTEM INTERFACE
+    ${EIGEN3_INCLUDE_DIRS})
+
 # Add KDL implementation of tesseract_kinematics
 add_library(${PROJECT_NAME}_kdl SHARED
   src/kdl/kdl_fwd_kin_chain.cpp
@@ -62,6 +82,7 @@ target_include_directories(${PROJECT_NAME}_kdl SYSTEM PUBLIC
 
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_core)
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_kdl)
+list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_ikfast)
 
 # Mark executables and/or libraries for installation
 install(TARGETS ${PACKAGE_LIBRARIES} EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
@@ -70,7 +91,7 @@ install(EXPORT ${PROJECT_NAME}-targets NAMESPACE tesseract:: DESTINATION lib/cma
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
-  FILES_MATCHING PATTERN "*.h"
+  FILES_MATCHING PATTERN "*.h*"
   PATTERN ".svn" EXCLUDE
 )
 
