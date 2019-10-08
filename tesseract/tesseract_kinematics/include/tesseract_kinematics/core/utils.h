@@ -292,8 +292,7 @@ inline static bool isWithinLimits(const Eigen::VectorXd& joint_values, const Eig
  * @param limits The joint limits of the robot
  */
 template <typename FloatType>
-inline std::vector<FloatType> getRedundantSolutions(const FloatType* sol,
-                                                    const Eigen::MatrixX2d& limits)
+inline std::vector<FloatType> getRedundantSolutions(const FloatType* sol, const Eigen::MatrixX2d& limits)
 {
   int dof = limits.rows();
   FloatType val;

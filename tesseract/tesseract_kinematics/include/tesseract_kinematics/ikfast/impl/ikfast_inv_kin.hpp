@@ -41,21 +41,22 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
-
-  IKFastInvKin::IKFastInvKin(const std::string name,
-                             const std::string base_link_name,
-               const std::string tip_link_name,
-               const std::vector<std::string> joint_names,
-               const std::vector<std::string> link_names,
-               const std::vector<std::string> active_link_names,
-               const Eigen::MatrixX2d joint_limits)
-    : name_(name)
-    , base_link_name_(std::move(base_link_name))
-    , tip_link_name_(std::move(tip_link_name))
-    , joint_names_(std::move(joint_names))
-    , link_names_(std::move(link_names))
-    , active_link_names_(std::move(active_link_names))
-    , joint_limits_(std::move(joint_limits)) {}
+IKFastInvKin::IKFastInvKin(const std::string name,
+                           const std::string base_link_name,
+                           const std::string tip_link_name,
+                           const std::vector<std::string> joint_names,
+                           const std::vector<std::string> link_names,
+                           const std::vector<std::string> active_link_names,
+                           const Eigen::MatrixX2d joint_limits)
+  : name_(name)
+  , base_link_name_(std::move(base_link_name))
+  , tip_link_name_(std::move(tip_link_name))
+  , joint_names_(std::move(joint_names))
+  , link_names_(std::move(link_names))
+  , active_link_names_(std::move(active_link_names))
+  , joint_limits_(std::move(joint_limits))
+{
+}
 
 bool IKFastInvKin::calcInvKin(Eigen::VectorXd& solutions,
                               const Eigen::Isometry3d& pose,
@@ -91,7 +92,7 @@ bool IKFastInvKin::calcInvKin(Eigen::VectorXd& solutions,
   }
 
   std::vector<double> sols;
-  sols.insert(end(sols), ikfast_output.begin(), ikfast_output.end());
+  sols.insert(end(sols), std::make_move_iterator(ikfast_output.begin()), std::make_move_iterator(ikfast_output.end()));
 
   // Check the output
   int num_sol = sols.size() / ikfast_dof;
@@ -115,31 +116,33 @@ bool IKFastInvKin::calcInvKin(Eigen::VectorXd& solutions,
         for (int s = 0; s < num_sol; ++s)
         {
           double* redundant_sol = redundant_sols.data() + ikfast_dof * s;
-          solution_set.insert(end(solution_set), redundant_sol, redundant_sol + ikfast_dof);
+          solution_set.insert(end(solution_set),
+                              std::make_move_iterator(redundant_sol),
+                              std::make_move_iterator(redundant_sol + ikfast_dof));
         }
       }
     }
   }
 
-  solutions = Eigen::Map<Eigen::VectorXd>(solution_set.data() solution_set.size());
+  solutions = Eigen::Map<Eigen::VectorXd>(solution_set.data(), solution_set.size());
   return !solution_set.empty();
 }
 
 bool IKFastInvKin::calcInvKin(Eigen::VectorXd& solutions,
-                const Eigen::Isometry3d& pose,
-                const Eigen::Ref<const Eigen::VectorXd>& seed,
-                const std::string& link_name) const
+                              const Eigen::Isometry3d& pose,
+                              const Eigen::Ref<const Eigen::VectorXd>& seed,
+                              const std::string& link_name) const
 {
-  throw std::runtime_error("IKFastInvKin::calcInvKin(Eigen::VectorXd&, const Eigen::Isometry3d&, const Eigen::Ref<const Eigen::VectorXd>&, const std::string&) Not Supported!");
+  throw std::runtime_error("IKFastInvKin::calcInvKin(Eigen::VectorXd&, const Eigen::Isometry3d&, const "
+                           "Eigen::Ref<const Eigen::VectorXd>&, const std::string&) Not Supported!");
 }
 
 bool IKFastInvKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const
 {
   if (vec.size() != numJoints())
   {
-    CONSOLE_BRIDGE_logError("Number of joint angles (%d) don't match robot_model (%d)",
-                            static_cast<int>(vec.size()),
-                            numJoints());
+    CONSOLE_BRIDGE_logError(
+        "Number of joint angles (%d) don't match robot_model (%d)", static_cast<int>(vec.size()), numJoints());
     return false;
   }
 
@@ -149,11 +152,8 @@ bool IKFastInvKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) con
   return true;
 }
 
-unsigned int IKFastInvKin::numJoints() const
-{
-  return GetNumJoints();
-}
+unsigned int IKFastInvKin::numJoints() const { return GetNumJoints(); }
 
-}
+}  // namespace tesseract_kinematics
 
-#endif // TESSERACT_KINEMATICS_IMPL_IKFAST_INV_KIN_HPP
+#endif  // TESSERACT_KINEMATICS_IMPL_IKFAST_INV_KIN_HPP
