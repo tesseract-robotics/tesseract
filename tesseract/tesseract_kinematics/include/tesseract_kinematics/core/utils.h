@@ -286,5 +286,64 @@ inline static bool isWithinLimits(const Eigen::VectorXd& joint_values, const Eig
   return true;
 }
 
+/**
+ * @brief Kinematics only return solution between PI and -PI. Provided the limits it will append redundant solutions.
+ * @param sol The current solution returned from OPW kinematics
+ * @param limits The joint limits of the robot
+ */
+template <typename FloatType>
+inline std::vector<FloatType> getRedundantSolutions(const FloatType* sol,
+                                                    const Eigen::MatrixX2d& limits)
+{
+  int dof = limits.rows();
+  FloatType val;
+  std::vector<FloatType> redundant_sols;
+  for (int i = 0; i < dof; ++i)
+  {
+    val = sol[i];
+    while ((val -= (2 * M_PI)) > limits(i, 0))
+    {
+      std::vector<FloatType> new_sol(sol, sol + dof);
+      new_sol[i] = val;
+      redundant_sols.insert(redundant_sols.end(), new_sol.begin(), new_sol.end());
+    }
+
+    val = sol[i];
+    while ((val += (static_cast<FloatType>(2.0 * M_PI))) < limits(i, 1))
+    {
+      std::vector<FloatType> new_sol(sol, sol + dof);
+      new_sol[i] = val;
+      redundant_sols.insert(redundant_sols.end(), new_sol.begin(), new_sol.end());
+    }
+  }
+
+  return redundant_sols;
+}
+
+template <typename FloatType>
+inline bool isValid(const FloatType* qs, int dof)
+{
+  for (int i = 0; i < dof; ++i)
+    if (!std::isfinite(qs[i]))
+      return false;
+
+  return true;
+}
+
+template <typename FloatType>
+inline void harmonizeTowardZero(FloatType* qs, int dof)
+{
+  const static FloatType pi = FloatType(M_PI);
+  const static FloatType two_pi = FloatType(2.0 * M_PI);
+
+  for (int i = 0; i < dof; i++)
+  {
+    if (qs[i] > pi)
+      qs[i] -= two_pi;
+    else if (qs[i] < -pi)
+      qs[i] += two_pi;
+  }
+}
+
 }  // namespace tesseract_kinematics
 #endif  // TESSERACT_KINEMATICS_UTILS_H
