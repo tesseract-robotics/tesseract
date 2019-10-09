@@ -89,7 +89,7 @@ target_include_directories(${PROJECT_NAME}_ompl_freespace SYSTEM PUBLIC
 
 # Descartes Planner
 add_library(${PROJECT_NAME}_descartes SHARED src/descartes/descartes_motion_planner.cpp)
-target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME}_core descartes::descartes_light descartes::descartes_samplers descartes::descartes_opw descartes::descartes_tesseract)
+target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME}_core descartes::descartes_light descartes::descartes_samplers descartes::descartes_opw)
 target_compile_options(${PROJECT_NAME}_descartes PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_descartes PUBLIC -std=c++11)
