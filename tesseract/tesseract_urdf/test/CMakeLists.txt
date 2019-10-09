@@ -28,7 +28,7 @@ add_executable(${PROJECT_NAME}_unit
   tesseract_urdf_urdf_unit.cpp
   tesseract_urdf_visual_unit.cpp)
 
-target_link_libraries(${PROJECT_NAME}_unit ${GTEST_BOTH_LIBRARIES} ${PROJECT_NAME} tesseract::tesseract_support tesseract::tesseract_geometry)
+target_link_libraries(${PROJECT_NAME}_unit GTest::GTest GTest::Main ${PROJECT_NAME} tesseract::tesseract_support tesseract::tesseract_geometry)
 target_compile_options(${PROJECT_NAME}_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_unit PRIVATE -std=c++11)
@@ -42,7 +42,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   endif()
 target_include_directories(${PROJECT_NAME}_unit PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
-target_include_directories(${PROJECT_NAME}_unit PRIVATE ${GTEST_INCLUDE_DIRS})
 if(${CMAKE_VERSION} VERSION_LESS "3.10.0")
     gtest_add_tests(${PROJECT_NAME}_unit "" AUTO)
 else()
