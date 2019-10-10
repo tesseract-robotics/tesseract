@@ -121,11 +121,11 @@ bool KDLInvKinChainNR::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec)
   {
     if ((vec[i] < kdl_data_.joint_limits(i, 0)) || (vec(i) > kdl_data_.joint_limits(i, 1)))
     {
-      CONSOLE_BRIDGE_logWarn("Joint %s is out-of-range (%g < %g < %g)",
-                             kdl_data_.joint_list[static_cast<size_t>(i)].c_str(),
-                             kdl_data_.joint_limits(i, 0),
-                             vec(i),
-                             kdl_data_.joint_limits(i, 1));
+      CONSOLE_BRIDGE_logDebug("Joint %s is out-of-range (%g < %g < %g)",
+                              kdl_data_.joint_list[static_cast<size_t>(i)].c_str(),
+                              kdl_data_.joint_limits(i, 0),
+                              vec(i),
+                              kdl_data_.joint_limits(i, 1));
     }
   }
 
