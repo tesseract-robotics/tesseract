@@ -7,6 +7,7 @@ find_package(orocos_kdl REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_common REQUIRED)
+find_package(opw_kinematics REQUIRED)
 
 list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
 
@@ -66,10 +67,10 @@ else()
     target_compile_features(${PROJECT_NAME}_kdl PUBLIC cxx_std_11)
 endif()
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(${PROJECT_NAME}_kdl PUBLIC -mno-avx)
-  else()
-    message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
-  endif()
+  target_compile_options(${PROJECT_NAME}_kdl PUBLIC -mno-avx)
+else()
+  message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
+endif()
 if(KDL_VERSION VERSION_LESS "1.4.0")
     target_compile_definitions(${PROJECT_NAME}_kdl PUBLIC KDL_LESS_1_4_0=ON)
 endif()
@@ -80,9 +81,32 @@ target_include_directories(${PROJECT_NAME}_kdl SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}
     ${orocos_kdl_INCLUDE_DIRS}) # Orocos did not export target correctly
 
+# Add OPW implementation of tesseract_kinematics
+add_library(${PROJECT_NAME}_opw SHARED src/opw/opw_inv_kin.cpp)
+target_link_libraries(${PROJECT_NAME}_opw PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph opw_kinematics::opw_kinematics console_bridge)
+target_compile_options(${PROJECT_NAME}_opw PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
+if(CXX_FEATURE_FOUND EQUAL "-1")
+    target_compile_options(${PROJECT_NAME}_opw PUBLIC -std=c++11)
+else()
+    target_compile_features(${PROJECT_NAME}_opw PUBLIC cxx_std_11)
+endif()
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  target_compile_options(${PROJECT_NAME}_opw PUBLIC -mno-avx)
+else()
+  message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
+endif()
+
+target_include_directories(${PROJECT_NAME}_opw PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_opw SYSTEM PUBLIC
+    ${EIGEN3_INCLUDE_DIRS})
+
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_core)
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_kdl)
 list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_ikfast)
+list (APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_opw)
+
 
 # Mark executables and/or libraries for installation
 install(TARGETS ${PACKAGE_LIBRARIES} EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
