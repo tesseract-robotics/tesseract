@@ -146,7 +146,7 @@ bool IKFastInvKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) con
     return false;
   }
 
-  if (!isWithinLimits(vec, joint_limits_))
+  if (!isWithinLimits<double>(vec, joint_limits_))
     return false;
 
   return true;

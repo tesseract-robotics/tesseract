@@ -277,7 +277,9 @@ ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::Sc
   return manipulators;
 }
 
-inline static bool isWithinLimits(const Eigen::VectorXd& joint_values, const Eigen::MatrixX2d& limits)
+template <typename FloatType>
+inline static bool isWithinLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1> >& joint_values,
+                                  const Eigen::MatrixX2d& limits)
 {
   for (int i = 0; i < limits.rows(); ++i)
     if ((joint_values[i] < limits(i, 0)) || (joint_values[i] > limits(i, 1)))
