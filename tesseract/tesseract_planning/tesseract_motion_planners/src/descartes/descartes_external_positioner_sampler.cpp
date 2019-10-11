@@ -1,6 +1,6 @@
 /**
- * @file descartes_sampler.cpp
- * @brief Tesseract Descartes Kinematics Sampler
+ * @file descartes_external_positioner_sampler.cpp
+ * @brief Tesseract Descartes Robot + External Sampler Implementation
  *
  * @author Levi Armstrong
  * @date April 18, 2018
@@ -23,12 +23,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_motion_planners/descartes/impl/descartes_sampler.hpp>
+#include <tesseract_motion_planners/descartes/impl/descartes_external_positioner_sampler.hpp>
 
 namespace tesseract_motion_planners
 {
 // Explicit template instantiation
-template class DescartesSampler<float>;
-template class DescartesSampler<double>;
+template class DescartesExternalPositionerSampler<float>;
+template class DescartesExternalPositionerSampler<double>;
 
 }  // namespace tesseract_motion_planners

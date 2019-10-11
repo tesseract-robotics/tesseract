@@ -1,6 +1,6 @@
 /**
- * @file tool_pose_samplers.h
- * @brief Tesseract tool pose sampers
+ * @file pose_samplers.h
+ * @brief Tesseract pose sampers
  *
  * @author Levi Armstrong
  * @date April 18, 2018
@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_MOTION_PLANNERS_TOOL_POSE_SAMPLERS_H
-#define TESSERACT_MOTION_PLANNERS_TOOL_POSE_SAMPLERS_H
+#ifndef TESSERACT_MOTION_PLANNERS_POSE_SAMPLERS_H
+#define TESSERACT_MOTION_PLANNERS_POSE_SAMPLERS_H
 
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
-using ToolPoseSamplerFn = std::function<tesseract_common::VectorIsometry3d(const Eigen::Isometry3d& tool_pose)>;
+using PoseSamplerFn = std::function<tesseract_common::VectorIsometry3d(const Eigen::Isometry3d& tool_pose)>;
 
 /**
  * @brief Given a tool pose create samples from [-PI, PI) around the provided axis.
@@ -94,4 +94,4 @@ inline tesseract_common::VectorIsometry3d sampleToolZAxis(const Eigen::Isometry3
 }
 
 }  // namespace tesseract_motion_planners
-#endif  // TESSERACT_MOTION_PLANNERS_TOOL_POSE_SAMPLERS_H
+#endif  // TESSERACT_MOTION_PLANNERS_POSE_SAMPLERS_H
