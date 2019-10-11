@@ -1,6 +1,6 @@
 /**
- * @file types.h
- * @brief Tesseract descartes types
+ * @file descartes_sampler.cpp
+ * @brief Tesseract Descartes Kinematics Sampler
  *
  * @author Levi Armstrong
  * @date April 18, 2018
@@ -23,25 +23,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_MOTION_PLANNERS_DESCARTES_TYPES_H
-#define TESSERACT_MOTION_PLANNERS_DESCARTES_TYPES_H
-
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <Eigen/Geometry>
-#include <functional>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#include <tesseract_motion_planners/descartes/impl/descartes_sampler.hpp>
 
 namespace tesseract_motion_planners
 {
-/**
- * @brief This is used for passing a function to tesseract descartes samplers that filters out invalid solutions.
- *
- * Example: This would be used to filter out solution outside of custom joint limits.
- *
- */
-template <typename FloatType>
-using DescartesIsValidFn = std::function<bool(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1> >&)>;
+// Explicit template instantiation
+template class DescartesSampler<float>;
+template class DescartesSampler<double>;
 
 }  // namespace tesseract_motion_planners
-#endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_TYPES_H

@@ -73,7 +73,7 @@ add_dependencies(run_tests ${PROJECT_NAME}_trajopt_unit)
 
 # Descartes Planner Tests
 add_executable(${PROJECT_NAME}_descartes_unit descartes_planner_tests.cpp)
-target_link_libraries(${PROJECT_NAME}_descartes_unit ${GTEST_BOTH_LIBRARIES} ${PROJECT_NAME}_descartes tesseract::tesseract_support)
+target_link_libraries(${PROJECT_NAME}_descartes_unit ${GTEST_BOTH_LIBRARIES} ${PROJECT_NAME}_descartes tesseract::tesseract_support tesseract::tesseract_kinematics_opw)
 target_compile_options(${PROJECT_NAME}_descartes_unit PRIVATE -Wsuggest-override -Wconversion -Wsign-conversion)
 if(CXX_FEATURE_FOUND EQUAL "-1")
     target_compile_options(${PROJECT_NAME}_descartes_unit PRIVATE -std=c++11)
