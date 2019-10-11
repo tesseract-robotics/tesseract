@@ -90,6 +90,7 @@ target_include_directories(${PROJECT_NAME}_ompl_freespace SYSTEM PUBLIC
 add_library(${PROJECT_NAME}_descartes SHARED
   src/descartes/descartes_motion_planner.cpp
   src/descartes/descartes_collision.cpp
+  src/descartes/descartes_sampler.cpp
   src/descartes/descartes_railed_sampler.cpp
   src/descartes/descartes_positioner_sampler.cpp)
 

@@ -28,15 +28,15 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <opw_kinematics/opw_parameters.h>
-#include <opw_kinematics/opw_kinematics.h>
-#include <descartes_opw/descartes_opw_kinematics.h>
 #include <tesseract_motion_planners/descartes/descartes_collision.h>
 #include <descartes_samplers/evaluators/euclidean_distance_edge_evaluator.h>
-#include <descartes_samplers/samplers/axial_symmetric_sampler.h>
+#include <tesseract_kinematics/opw/opw_inv_kin.h>
+#include <tesseract_kinematics/core/utils.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/descartes/descartes_motion_planner.h>
 #include <tesseract_motion_planners/descartes/utils.h>
+#include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/core/utils.h>
 
 const int NUM_STEPS = 200;
@@ -46,6 +46,7 @@ using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
 using namespace tesseract_motion_planners;
+using namespace tesseract_kinematics;
 using namespace opw_kinematics;
 using namespace descartes_light;
 using namespace descartes_core;
@@ -78,28 +79,24 @@ std::string locateResource(const std::string& url)
 }
 
 DescartesMotionPlannerConfigD
-createDescartesPlannerConfig(const opw_kinematics::Parameters<double>& params,
-                             const tesseract::Tesseract::ConstPtr tesseract_ptr,
+createDescartesPlannerConfig(const tesseract::Tesseract::ConstPtr tesseract_ptr,
                              const std::string manip,
-                             const tesseract_kinematics::ForwardKinematics::ConstPtr& kin,
+                             const tesseract_kinematics::InverseKinematics::ConstPtr& kin,
                              const Eigen::Isometry3d& tcp,
+                             const double robot_reach,
                              const tesseract_environment::EnvState::ConstPtr& current_state,
                              const std::vector<tesseract_motion_planners::Waypoint::Ptr> waypoints)
 {
-  descartes_light::IsValidFn<double> is_valid_fn =
-      std::bind(&descartes_light::isWithinLimits<double>, std::placeholders::_1, kin->getLimits());
-  descartes_light::GetRedundantSolutionsFn<double> get_redundant_sol_fn =
-      std::bind(&descartes_light::getRedundantSolutions<double>, std::placeholders::_1, kin->getLimits());
+  const std::vector<std::string>& joint_names = kin->getJointNames();
+  const std::vector<std::string>& active_link_names = kin->getActiveLinkNames();
 
-  auto robot_kin = std::make_shared<OPWKinematics<double>>(
-      params, current_state->transforms.at("base_link"), tcp.cast<double>(), is_valid_fn, get_redundant_sol_fn);
-
-  // OPWRailedKinematics expects the joint to be auxiliary axes followed robot joints
   tesseract_environment::AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-      tesseract_ptr->getEnvironmentConst()->getSceneGraph(), kin->getActiveLinkNames(), current_state->transforms);
+      tesseract_ptr->getEnvironmentConst()->getSceneGraph(), active_link_names, current_state->transforms);
+
+  // Create Collision Interface
   typename descartes_light::CollisionInterface<double>::Ptr coll_interface =
       std::make_shared<tesseract_motion_planners::DescartesCollision<double>>(
-          tesseract_ptr->getEnvironmentConst(), adjacency_map->getActiveLinkNames(), kin->getJointNames());
+          tesseract_ptr->getEnvironmentConst(), adjacency_map->getActiveLinkNames(), joint_names);
 
   // Create Timing Constraint
   std::vector<descartes_core::TimingConstraint<double>> timing =
@@ -108,16 +105,22 @@ createDescartesPlannerConfig(const opw_kinematics::Parameters<double>& params,
   // Create Edge Evaluator
   typename descartes_light::EdgeEvaluator<double>::Ptr edge_computer =
       std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<double>>(kin->numJoints());
-  std::vector<typename descartes_light::PositionSampler<double>::Ptr> position_samplers =
-      makeRobotPositionSamplers<double>(waypoints, robot_kin, coll_interface, 60 * M_PI / 180);
 
-  return DescartesMotionPlannerConfigD(tesseract_ptr,
-                                       adjacency_map->getActiveLinkNames(),
-                                       kin->getJointNames(),
-                                       edge_computer,
-                                       timing,
-                                       position_samplers,
-                                       waypoints);
+  // Create is valid function
+  tesseract_motion_planners::DescartesIsValidFn<double> is_valid_fn =
+      std::bind(&tesseract_kinematics::isWithinLimits<double>, std::placeholders::_1, kin->getLimits());
+
+  // Create Position Samplers
+  std::vector<typename descartes_light::PositionSampler<double>::Ptr> position_samplers =
+      makeRobotSamplers<double>(waypoints, kin, coll_interface, current_state, tcp, robot_reach, true, is_valid_fn);
+
+  return tesseract_motion_planners::DescartesMotionPlannerConfigD(tesseract_ptr,
+                                                                  adjacency_map->getActiveLinkNames(),
+                                                                  joint_names,
+                                                                  edge_computer,
+                                                                  timing,
+                                                                  position_samplers,
+                                                                  waypoints);
 }
 
 class TesseractPlanningDescartesUnit : public ::testing::Test
@@ -144,6 +147,17 @@ protected:
     opw_params_.c4 = (0.085);
 
     opw_params_.offsets[2] = -M_PI / 2.0;
+
+    auto robot_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
+    auto opw_kin = std::make_shared<OPWInvKin>("manipulator",
+                                               opw_params_,
+                                               robot_kin->getBaseLinkName(),
+                                               robot_kin->getTipLinkName(),
+                                               robot_kin->getJointNames(),
+                                               robot_kin->getLinkNames(),
+                                               robot_kin->getActiveLinkNames(),
+                                               robot_kin->getLimits());
+    tesseract_ptr_->getInvKinematicsManager()->addInvKinematicSolver(opw_kin);
   }
 };
 
@@ -160,11 +174,10 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)
     waypoints.push_back(waypoint);
   }
 
-  auto robot_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
+  auto robot_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator", "OPWInvKin");
   auto current_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
-
   DescartesMotionPlannerConfigD config = createDescartesPlannerConfig(
-      opw_params_, tesseract_ptr_, "manipulator", robot_kin, Eigen::Isometry3d::Identity(), current_state, waypoints);
+      tesseract_ptr_, "manipulator", robot_kin, Eigen::Isometry3d::Identity(), 1.5, current_state, waypoints);
   config.num_threads = 1;
   DescartesMotionPlanner<double> single_descartes_planner;
   PlannerResponse single_planner_response;
@@ -204,10 +217,10 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)
     waypoints.push_back(waypoint);
   }
 
-  auto robot_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
+  auto robot_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator", "OPWInvKin");
   auto current_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
   DescartesMotionPlannerConfigD config = createDescartesPlannerConfig(
-      opw_params_, tesseract_ptr_, "manipulator", robot_kin, Eigen::Isometry3d::Identity(), current_state, waypoints);
+      tesseract_ptr_, "manipulator", robot_kin, Eigen::Isometry3d::Identity(), 1.5, current_state, waypoints);
   config.num_threads = 1;
   DescartesMotionPlanner<double> single_descartes_planner;
   PlannerResponse single_planner_response;
@@ -233,7 +246,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)
 
 TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerMakeRobotSampler)
 {
-  auto robot_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
+  auto robot_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator", "OPWInvKin");
   auto current_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
 
   // These specify the series of points to be optimized
@@ -272,16 +285,14 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerMakeRobotSampler)
   }
 
   DescartesMotionPlannerConfigD config = createDescartesPlannerConfig(
-      opw_params_, tesseract_ptr_, "manipulator", robot_kin, Eigen::Isometry3d::Identity(), current_state, waypoints);
+      tesseract_ptr_, "manipulator", robot_kin, Eigen::Isometry3d::Identity(), 1.5, current_state, waypoints);
   config.num_threads = 1;
 
   // Verify that the right sampler was choosen
-  auto test1 = std::dynamic_pointer_cast<descartes_light::FixedJointPoseSampler<double>>(config.samplers[0]);
-  EXPECT_TRUE(test1 != nullptr);
-  auto test2 = std::dynamic_pointer_cast<descartes_light::CartesianPointSampler<double>>(config.samplers[1]);
-  EXPECT_TRUE(test2 != nullptr);
-  auto test3 = std::dynamic_pointer_cast<descartes_light::AxialSymmetricSampler<double>>(config.samplers[2]);
-  EXPECT_TRUE(test3 != nullptr);
+  EXPECT_TRUE(config.samplers.size() == static_cast<std::size_t>(x.size()));
+  EXPECT_TRUE(config.samplers[0] != nullptr);
+  EXPECT_TRUE(config.samplers[1] != nullptr);
+  EXPECT_TRUE(config.samplers[2] != nullptr);
 }
 
 int main(int argc, char** argv)

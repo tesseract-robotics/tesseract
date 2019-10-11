@@ -28,9 +28,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <descartes_samplers/samplers/railed_cartesian_point_sampler.h>
-#include <descartes_samplers/samplers/axial_symmetric_sampler.h>
-#include <descartes_samplers/samplers/cartesian_point_sampler.h>
 #include <descartes_samplers/samplers/fixed_joint_pose_sampler.h>
 #include <descartes_light/ladder_graph.h>
 #include <console_bridge/console.h>
@@ -40,15 +37,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/waypoint.h>
+#include <tesseract_motion_planners/descartes/descartes_sampler.h>
 #include <tesseract_motion_planners/descartes/descartes_railed_sampler.h>
 #include <tesseract_motion_planners/descartes/types.h>
 
 namespace tesseract_motion_planners
 {
 /**
- * @brief Make a vector of robot position samplers from a vector of waypoints.
+ * @brief Make a vector of gantry position samplers from a vector of waypoints.
  *
- * This chooses a position sampler based on the waypoint type.
+ * This chooses a position sampler based on the waypoint type. Also the kinematics interface should only be for the
+ * robot when using this utility function.
  *
  * @param path A vector of waypoints
  * @param kinematic_interface The descartes kinematic interface to use
@@ -59,51 +58,57 @@ namespace tesseract_motion_planners
  */
 template <typename FloatType>
 std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr>
-makeRobotPositionSamplers(const std::vector<Waypoint::Ptr>& path,
-                          const typename descartes_light::KinematicsInterface<FloatType>::Ptr& kinematic_interface,
-                          const typename descartes_light::CollisionInterface<FloatType>::Ptr& collision_interface,
-                          const FloatType radial_sample_resolution = 60 * M_PI / 180)
+makeRobotSamplers(const std::vector<Waypoint::Ptr>& path,
+                  const tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics,
+                  const typename descartes_light::CollisionInterface<FloatType>::Ptr& collision_interface,
+                  const tesseract_environment::EnvState::ConstPtr current_state,
+                  const Eigen::Isometry3d robot_tcp,
+                  const double robot_reach,
+                  const bool allow_collision,
+                  const DescartesIsValidFn<FloatType>& is_valid,
+                  const FloatType x_sample_resolution = 0.001,
+                  const FloatType y_sample_resolution = 0.001,
+                  const FloatType z_sample_resolution = 0.001,
+                  const FloatType x_axes_sample_resolution = 60 * M_PI / 180,
+                  const FloatType y_axes_sample_resolution = 60 * M_PI / 180,
+                  const FloatType z_axes_sample_resolution = 60 * M_PI / 180)
 {
   std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr> result;
   result.reserve(path.size());
+
   for (const auto& wp : path)
   {
+    typename descartes_light::CollisionInterface<FloatType>::Ptr ci = nullptr;
+    if (collision_interface != nullptr)
+      ci = collision_interface->clone();
+
+    tesseract_motion_planners::ToolPoseSamplerFn tool_pose_sampler = nullptr;
     if (wp->getType() == WaypointType::CARTESIAN_WAYPOINT)
     {
       CartesianWaypoint::ConstPtr cwp = std::static_pointer_cast<const CartesianWaypoint>(wp);
       if (wp->getCoefficients().size() == 0 || (wp->getCoefficients().array() > 0).all())  // Fixed pose
       {
-        if (collision_interface == nullptr)
-        {
-          auto sampler = std::make_shared<descartes_light::CartesianPointSampler<FloatType>>(
-              cwp->getTransform().cast<FloatType>(), kinematic_interface, nullptr, true);
-          result.push_back(std::move(sampler));
-        }
-        else
-        {
-          auto sampler = std::make_shared<descartes_light::CartesianPointSampler<FloatType>>(
-              cwp->getTransform().cast<FloatType>(), kinematic_interface, collision_interface->clone(), true);
-          result.push_back(std::move(sampler));
-        }
+        tool_pose_sampler = [](const Eigen::Isometry3d& tool_pose) {
+          return tesseract_common::VectorIsometry3d({ tool_pose });
+        };
       }
-      else if ((wp->getCoefficients().head(5).array() > 0).all() && !(wp->getCoefficients()(5) > 0))
+      else if ((wp->getCoefficients().head(3).array() > 0).all() && !(wp->getCoefficients()(3) > 0) &&
+               (wp->getCoefficients()(4) > 0) && (wp->getCoefficients()(5) > 0))
       {
-        if (collision_interface == nullptr)
-        {
-          auto sampler = std::make_shared<descartes_light::AxialSymmetricSampler<FloatType>>(
-              cwp->getTransform().cast<FloatType>(), kinematic_interface, radial_sample_resolution, nullptr, true);
-          result.push_back(std::move(sampler));
-        }
-        else
-        {
-          auto sampler =
-              std::make_shared<descartes_light::AxialSymmetricSampler<FloatType>>(cwp->getTransform().cast<FloatType>(),
-                                                                                  kinematic_interface,
-                                                                                  radial_sample_resolution,
-                                                                                  collision_interface->clone(),
-                                                                                  true);
-          result.push_back(std::move(sampler));
-        }
+        tool_pose_sampler =
+            std::bind(&tesseract_motion_planners::sampleToolXAxis, std::placeholders::_1, x_axes_sample_resolution);
+      }
+      else if ((wp->getCoefficients().head(3).array() > 0).all() && (wp->getCoefficients()(3) > 0) &&
+               !(wp->getCoefficients()(4) > 0) && (wp->getCoefficients()(5) > 0))
+      {
+        tool_pose_sampler =
+            std::bind(&tesseract_motion_planners::sampleToolYAxis, std::placeholders::_1, y_axes_sample_resolution);
+      }
+      else if ((wp->getCoefficients().head(3).array() > 0).all() && (wp->getCoefficients()(3) > 0) &&
+               (wp->getCoefficients()(4) > 0) && !(wp->getCoefficients()(5) > 0))
+      {
+        tool_pose_sampler =
+            std::bind(&tesseract_motion_planners::sampleToolZAxis, std::placeholders::_1, z_axes_sample_resolution);
       }
       else
       {
@@ -111,6 +116,21 @@ makeRobotPositionSamplers(const std::vector<Waypoint::Ptr>& path,
                                 "pose!");
         return std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr>();
       }
+
+      Eigen::Isometry3d world_to_waypoint = Eigen::Isometry3d::Identity();
+      if (!cwp->getParentLinkName().empty())
+        world_to_waypoint = current_state->transforms.at(cwp->getParentLinkName());
+
+      auto sampler = std::make_shared<DescartesSampler<FloatType>>(world_to_waypoint * cwp->getTransform(),
+                                                                   tool_pose_sampler,
+                                                                   robot_kinematics,
+                                                                   ci,
+                                                                   current_state,
+                                                                   robot_tcp,
+                                                                   robot_reach,
+                                                                   allow_collision,
+                                                                   is_valid);
+      result.push_back(std::move(sampler));
     }
     else if (wp->getType() == WaypointType::JOINT_WAYPOINT)
     {
@@ -212,20 +232,7 @@ makeRailedPositionSamplers(const std::vector<Waypoint::Ptr>& path,
       if (!cwp->getParentLinkName().empty())
         world_to_waypoint = current_state->transforms.at(cwp->getParentLinkName());
 
-      auto tf = world_to_waypoint * cwp->getTransform();
-      //      DescartesRailedSampler<FloatType> temp(tf,
-      //                                             tool_pose_sampler,
-      //                                             railed_kinematics,
-      //                                             robot_kinematics,
-      //                                             ci,
-      //                                             current_state,
-      //                                             railed_sample_resolution,
-      //                                             robot_tcp,
-      //                                             robot_reach,
-      //                                             allow_collision,
-      //                                             is_valid);
-
-      auto sampler = std::make_shared<DescartesRailedSampler<FloatType>>(tf,
+      auto sampler = std::make_shared<DescartesRailedSampler<FloatType>>(world_to_waypoint * cwp->getTransform(),
                                                                          tool_pose_sampler,
                                                                          railed_kinematics,
                                                                          robot_kinematics,
