@@ -36,6 +36,21 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
+/**
+ * @brief This compares a forward kinematics object to an inverse kinematics object and check that they are the same.
+ *
+ * It checks that the following are the same:
+ *   - Manipulator Name
+ *   - Number of joints
+ *   - Link names
+ *   - Active link names
+ *   - Joint names
+ *   - Joint limits
+ *   - The forward kinematic solution matches the inverse kinematic solutions
+ * @param fwd_kin The forward kinematics object for a manipulator
+ * @param inv_kin The inverse kinematics object for a manipulator
+ * @return True it they match, otherwise false.
+ */
 inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::ConstPtr& fwd_kin,
                             const tesseract_kinematics::InverseKinematics::ConstPtr& inv_kin)
 {
@@ -72,8 +87,8 @@ inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::Const
 
   Eigen::Isometry3d test1;
   Eigen::Isometry3d test2;
-  Eigen::VectorXd seed_angles(6);
-  Eigen::VectorXd joint_angles2(6);
+  Eigen::VectorXd seed_angles(fwd_kin->numJoints());
+  Eigen::VectorXd joint_angles2(fwd_kin->numJoints());
   seed_angles.setZero();
   joint_angles2.setZero();
 
@@ -98,6 +113,21 @@ inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::Const
   return true;
 }
 
+/**
+ * @brief This compares a forward kinematics object to a forward kinematics object and check that they are the same.
+ *
+ * It checks that the following are the same:
+ *   - Manipulator Name
+ *   - Number of joints
+ *   - Link names
+ *   - Active link names
+ *   - Joint names
+ *   - Joint limits
+ *   - The forward kinematic solution matches the forward kinematic solutions
+ * @param fwd_kin1 The forward kinematics object for a manipulator
+ * @param fwd_kin2 The forward kinematics object for a manipulator
+ * @return True it they match, otherwise false.
+ */
 inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::ConstPtr& fwd_kin1,
                             const tesseract_kinematics::ForwardKinematics::ConstPtr& fwd_kin2)
 {
@@ -135,7 +165,7 @@ inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::Const
 
   Eigen::Isometry3d test1;
   Eigen::Isometry3d test2;
-  Eigen::VectorXd joint_angles2(6);
+  Eigen::VectorXd joint_angles2(fwd_kin1->numJoints());
   joint_angles2.setZero();
 
   for (int t = 0; t < fwd_kin1->numJoints(); ++t)

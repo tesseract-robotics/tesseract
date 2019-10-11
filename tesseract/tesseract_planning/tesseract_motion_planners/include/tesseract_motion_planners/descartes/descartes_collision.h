@@ -45,10 +45,12 @@ public:
    * @param collision_env The collision Environment
    * @param active_links The list of active links
    * @param joint_names The list of joint names in the order that the data will be provided to the validate function.
+   * @param debug If true, this print debug information to the terminal
    */
   DescartesCollision(const tesseract_environment::Environment::ConstPtr& collision_env,
                      const std::vector<std::string>& active_links,
-                     const std::vector<std::string>& joint_names);
+                     const std::vector<std::string>& joint_names,
+                     const bool debug = false);
 
   /**
    * @brief Copy constructor that clones the object
@@ -56,20 +58,43 @@ public:
    */
   DescartesCollision(const DescartesCollision& collision_interface);
 
+  /**
+   * @brief This check is the provided solution passes the collision test defined by this class
+   * @param pos The joint values array to validate
+   * @param size The length of the array
+   * @return True if passes collision test, otherwise false
+   */
   bool validate(const FloatType* pos, const std::size_t size) override;
 
+  /**
+   * @brief This gets the distance to the closest object
+   * @param pos The joint values array to calculate the distance to the closest object
+   * @param size The length of the array
+   * @return The distance to the closest object
+   */
   FloatType distance(const FloatType* pos, const std::size_t size) override;
 
+  /**
+   * @brief This should clone the object and make new instance of objects that are not safe to share across threads
+   * @return Descartes collision interface
+   */
   typename descartes_light::CollisionInterface<FloatType>::Ptr clone() const override;
 
 private:
+  /**
+   * @brief Check if two links are allowed to be in collision
+   * @param a The name of the first link
+   * @param b The name of the second link
+   * @return True if allowed to be in collision, otherwise false
+   */
   bool isContactAllowed(const std::string& a, const std::string& b) const;
 
-  tesseract_environment::StateSolver::Ptr state_solver_;
-  tesseract_scene_graph::AllowedCollisionMatrix acm_;
-  std::vector<std::string> active_link_names_;
-  std::vector<std::string> joint_names_;
-  tesseract_collision::DiscreteContactManager::Ptr contact_manager_;
+  tesseract_environment::StateSolver::Ptr state_solver_;             /**< @brief The tesseract state solver */
+  tesseract_scene_graph::AllowedCollisionMatrix acm_;                /**< @brief The allowed collision matrix */
+  std::vector<std::string> active_link_names_;                       /**< @brief A vector of active link names */
+  std::vector<std::string> joint_names_;                             /**< @brief A vector of joint names */
+  tesseract_collision::DiscreteContactManager::Ptr contact_manager_; /**< @brief The discrete contact manager */
+  bool debug_; /**< @brief Enable debug information to be printed to the terminal */
 };
 
 using DescartesCollisionF = DescartesCollision<float>;

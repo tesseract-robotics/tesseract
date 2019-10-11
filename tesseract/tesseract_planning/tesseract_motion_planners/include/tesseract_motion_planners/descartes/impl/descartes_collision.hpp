@@ -39,12 +39,14 @@ bool DescartesCollision<FloatType>::isContactAllowed(const std::string& a, const
 template <typename FloatType>
 DescartesCollision<FloatType>::DescartesCollision(const tesseract_environment::Environment::ConstPtr& collision_env,
                                                   const std::vector<std::string>& active_links,
-                                                  const std::vector<std::string>& joint_names)
+                                                  const std::vector<std::string>& joint_names,
+                                                  const bool debug)
   : state_solver_(collision_env->getStateSolver())
   , acm_(*(collision_env->getAllowedCollisionMatrix()))
   , active_link_names_(active_links)
   , joint_names_(joint_names)
   , contact_manager_(collision_env->getDiscreteContactManager())
+  , debug_(debug)
 {
   contact_manager_->setActiveCollisionObjects(active_links);
   contact_manager_->setIsContactAllowedFn(
@@ -61,6 +63,7 @@ DescartesCollision<FloatType>::DescartesCollision(const DescartesCollision& coll
   , active_link_names_(collision_interface.active_link_names_)
   , joint_names_(collision_interface.joint_names_)
   , contact_manager_(collision_interface.contact_manager_->clone())
+  , debug_(collision_interface.debug_)
 {
   contact_manager_->setActiveCollisionObjects(active_link_names_);
   contact_manager_->setIsContactAllowedFn(
@@ -88,13 +91,14 @@ bool DescartesCollision<FloatType>::validate(const FloatType* pos, const std::si
   // 4. Analyze results
   const bool no_contacts = results.empty();
 
-  //#ifndef NDEBUG
-  //  for (const auto& contact : results)
-  //  {
-  //    std::cout << "Contact: " << contact.first.first << " - " << contact.first.second << " Distance: " <<
-  //    contact.second[0].distance << "\n";
-  //  }
-  //#endif
+  if (debug_)
+  {
+    for (const auto& contact : results)
+    {
+      std::cout << "Contact: " << contact.first.first << " - " << contact.first.second
+                << " Distance: " << contact.second[0].distance << "\n";
+    }
+  }
 
   return no_contacts;
 }

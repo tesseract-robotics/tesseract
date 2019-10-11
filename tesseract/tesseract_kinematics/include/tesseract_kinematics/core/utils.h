@@ -277,6 +277,12 @@ ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::Sc
   return manipulators;
 }
 
+/**
+ * @brief This will check if the provided joint values are within the privided limits
+ * @param joint_values The joint values to check
+ * @param limits The joint limits
+ * @return True if joint values are within the joint limits, otherwise false
+ */
 template <typename FloatType>
 inline static bool isWithinLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1> >& joint_values,
                                   const Eigen::MatrixX2d& limits)
@@ -321,6 +327,15 @@ inline std::vector<FloatType> getRedundantSolutions(const FloatType* sol, const 
   return redundant_sols;
 }
 
+/**
+ * @brief Given a vector of floats, this check if they are finite
+ *
+ *  In the case of OPW and IKFast they can return NANS so this is used to check that solutions are valid.
+ *
+ * @param qs A pointer to a floats array
+ * @param dof The length of the float array
+ * @return True if the array is valid, otherwise false
+ */
 template <typename FloatType>
 inline bool isValid(const FloatType* qs, int dof)
 {
@@ -331,6 +346,11 @@ inline bool isValid(const FloatType* qs, int dof)
   return true;
 }
 
+/**
+ * @brief This take an array of floats and modifies them in place to be between [-PI, PI]
+ * @param qs A pointer to a float array
+ * @param dof The length of the float array
+ */
 template <typename FloatType>
 inline void harmonizeTowardZero(FloatType* qs, int dof)
 {

@@ -1,6 +1,6 @@
 /**
- * @file descartes_railed_sampler.cpp
- * @brief Tesseract Descartes Railed Kinematics Sampler
+ * @file descartes_robot_sampler.cpp
+ * @brief Tesseract Descartes Robot Kinematics Sampler
  *
  * @author Levi Armstrong
  * @date April 18, 2018
@@ -23,12 +23,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_motion_planners/descartes/impl/descartes_railed_sampler.hpp>
+#include <tesseract_motion_planners/descartes/impl/descartes_robot_sampler.hpp>
 
 namespace tesseract_motion_planners
 {
 // Explicit template instantiation
-template class DescartesRailedSampler<float>;
-template class DescartesRailedSampler<double>;
+template class DescartesRobotSampler<float>;
+template class DescartesRobotSampler<double>;
 
 }  // namespace tesseract_motion_planners
