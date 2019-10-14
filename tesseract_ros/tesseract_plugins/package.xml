@@ -14,6 +14,7 @@
   <depend>eigen_conversions</depend>
   <depend>tesseract_msgs</depend>
   <depend>tesseract_collision</depend>
+  <depend>tesseract_common</depend>
   <depend>pluginlib</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
