@@ -171,11 +171,11 @@ bool KDLFwdKinTree::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) co
   {
     if ((vec[i] < joint_limits_(i, 0)) || (vec(i) > joint_limits_(i, 1)))
     {
-      CONSOLE_BRIDGE_logWarn("Joint %s is out-of-range (%g < %g < %g)",
-                             joint_list_[static_cast<size_t>(i)].c_str(),
-                             joint_limits_(i, 0),
-                             vec(i),
-                             joint_limits_(i, 1));
+      CONSOLE_BRIDGE_logDebug("Joint %s is out-of-range (%g < %g < %g)",
+                              joint_list_[static_cast<size_t>(i)].c_str(),
+                              joint_limits_(i, 0),
+                              vec(i),
+                              joint_limits_(i, 1));
     }
   }
 

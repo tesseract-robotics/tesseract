@@ -530,7 +530,7 @@ void ManipulationWidget::markerFeedback(std::string reference_frame,
     if (inv_kin_->calcInvKin(solutions, local_tf, inv_seed_))
     {
       Eigen::VectorXd temp_seed = solutions.head(inv_kin_->numJoints());
-      if (!tesseract_kinematics::isWithinLimits(temp_seed, inv_kin_->getLimits()))
+      if (!tesseract_kinematics::isWithinLimits<double>(temp_seed, inv_kin_->getLimits()))
         return;
 
       inv_seed_ = temp_seed;

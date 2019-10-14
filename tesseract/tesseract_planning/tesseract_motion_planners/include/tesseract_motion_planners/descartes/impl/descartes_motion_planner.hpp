@@ -110,18 +110,6 @@ bool DescartesMotionPlanner<FloatType>::setConfiguration(const DescartesMotionPl
     return false;
   }
 
-  if (config.contact_checker == nullptr)
-  {
-    CONSOLE_BRIDGE_logError("In %s: contact_checker is a required parameter and has not been set", name_.c_str());
-    return false;
-  }
-
-  if (config.kinematics == nullptr)
-  {
-    CONSOLE_BRIDGE_logError("In %s: kinematics is a required parameter and has not been set", name_.c_str());
-    return false;
-  }
-
   if (config.edge_evaluator == nullptr)
   {
     CONSOLE_BRIDGE_logError("In %s: edge_evaluator is a required parameter and has not been set", name_.c_str());
@@ -170,23 +158,15 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
 
   auto tStart = boost::posix_time::second_clock::local_time();
 
-  const auto dof =
-      config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config_->manipulator)->numJoints();
+  const auto dof = config_->joint_names.size();
   descartes_light::Solver<FloatType> graph_builder(dof);
   if (!graph_builder.build(
           config_->samplers, config_->timing_constraint, config_->edge_evaluator, config_->num_threads))
   {
     CONSOLE_BRIDGE_logError("Failed to build vertices");
     for (const auto& i : graph_builder.getFailedVertices())
-    {
-      const Waypoint::Ptr& wp = config_->waypoints[i];
-      if (wp->getType() == WaypointType::CARTESIAN_WAYPOINT)
-      {
-        CartesianWaypoint::ConstPtr cwp = std::static_pointer_cast<const CartesianWaypoint>(wp);
-        config_->kinematics->analyzeIK(cwp->getTransform().cast<FloatType>());
-      }
-      response.failed_waypoints.push_back(wp);
-    }
+      response.failed_waypoints.push_back(config_->waypoints[i]);
+
     // Copy the waypoint if it is not already in the failed waypoints list
     std::copy_if(config_->waypoints.begin(),
                  config_->waypoints.end(),
@@ -214,8 +194,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
     return response.status;
   }
 
-  response.joint_trajectory.joint_names =
-      config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config_->manipulator)->getJointNames();
+  response.joint_trajectory.joint_names = config_->joint_names;
   response.joint_trajectory.trajectory.resize(static_cast<long>(config_->waypoints.size()), dof);
   for (size_t r = 0; r < config_->waypoints.size(); ++r)
     for (size_t c = 0; c < dof; ++c)
@@ -223,13 +202,8 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
 
   // Check and report collisions
   std::vector<tesseract_collision::ContactResultMap> collisions;
-  tesseract_collision::ContinuousContactManager::Ptr manager =
-      config_->tesseract->getEnvironmentConst()->getContinuousContactManager();
-  tesseract_environment::AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-      config_->tesseract->getEnvironmentConst()->getSceneGraph(),
-      config_->tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(config_->manipulator)->getLinkNames(),
-      config_->tesseract->getEnvironmentConst()->getCurrentState()->transforms);
-  manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
+  auto manager = config_->tesseract->getEnvironmentConst()->getContinuousContactManager();
+  manager->setActiveCollisionObjects(config_->active_link_names);
   manager->setContactDistanceThreshold(0);
   collisions.clear();
   bool found = tesseract_environment::checkTrajectory(*manager,

@@ -47,17 +47,15 @@ template <typename FloatType>
 struct DescartesMotionPlannerConfig
 {
   DescartesMotionPlannerConfig(tesseract::Tesseract::ConstPtr tesseract_ptr,
-                               const std::string& manipulator,
-                               const typename descartes_light::CollisionInterface<FloatType>::Ptr& contact_checker,
-                               const typename descartes_light::KinematicsInterface<FloatType>::Ptr& kinematics,
+                               const std::vector<std::string> active_link_names,
+                               const std::vector<std::string> joint_names,
                                const typename descartes_light::EdgeEvaluator<FloatType>::Ptr& edge_evaluator,
                                std::vector<descartes_core::TimingConstraint<FloatType>> timing_constraint,
                                std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr> samplers,
                                const std::vector<Waypoint::Ptr>& waypoints)
     : tesseract(tesseract_ptr)
-    , manipulator(manipulator)
-    , contact_checker(contact_checker)
-    , kinematics(kinematics)
+    , active_link_names(std::move(active_link_names))
+    , joint_names(std::move(joint_names))
     , edge_evaluator(edge_evaluator)
     , timing_constraint(timing_constraint)
     , samplers(samplers)
@@ -68,9 +66,8 @@ struct DescartesMotionPlannerConfig
   virtual ~DescartesMotionPlannerConfig() = default;
 
   const tesseract::Tesseract::ConstPtr tesseract;
-  const std::string manipulator;
-  const typename descartes_light::CollisionInterface<FloatType>::Ptr contact_checker;
-  const typename descartes_light::KinematicsInterface<FloatType>::Ptr kinematics;
+  const std::vector<std::string> active_link_names;
+  const std::vector<std::string> joint_names;
   const typename descartes_light::EdgeEvaluator<FloatType>::Ptr edge_evaluator;
   const std::vector<descartes_core::TimingConstraint<FloatType>> timing_constraint;
   const std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr> samplers;
