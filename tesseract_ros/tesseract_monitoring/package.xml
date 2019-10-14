@@ -15,6 +15,7 @@
   <depend>tesseract</depend>
   <depend>tesseract_rosutils</depend>
   <depend>tesseract_msgs</depend>
+  <depend>tesseract_common</depend>
   <depend>pluginlib</depend>
   <depend>dynamic_reconfigure</depend>
   <depend>tf2_ros</depend>

@@ -16,6 +16,7 @@
   <depend>tesseract_msgs</depend>
   <depend>tesseract</depend>
   <depend>tesseract_rosutils</depend>
+  <depend>tesseract_common</depend>
 
   <export>
     <rviz plugin="${prefix}/tesseract_rviz_state_plugin_description.xml"/>
