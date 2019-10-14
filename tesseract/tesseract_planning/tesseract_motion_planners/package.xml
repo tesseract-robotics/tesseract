@@ -19,6 +19,8 @@
   <depend>ompl</depend>
   <depend>libconsole-bridge-dev</depend>
 
+  <test_depend>gtest</test_depend>
+
   <export>
     <build_type>cmake</build_type>
   </export>

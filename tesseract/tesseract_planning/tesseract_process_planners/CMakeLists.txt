@@ -5,7 +5,9 @@ find_package(tesseract_common REQUIRED)
 find_package(tesseract_motion_planners REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-add_library(${PROJECT_NAME} SHARED src/${PROJECT_NAME}/process_definition.cpp)
+add_library(${PROJECT_NAME} SHARED
+  src/${PROJECT_NAME}/process_definition.cpp
+  src/${PROJECT_NAME}/process_segment_definition.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_common tesseract::tesseract_motion_planners_core)
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
 target_include_directories(${PROJECT_NAME} PUBLIC
