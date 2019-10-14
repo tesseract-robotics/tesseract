@@ -11,6 +11,8 @@
 
   <depend>tesseract_common</depend>
   <depend>tesseract_motion_planners</depend>
+
+  <test_depend>gtest</test_depend>
   
   <export>
   	<build_type>cmake</build_type>
