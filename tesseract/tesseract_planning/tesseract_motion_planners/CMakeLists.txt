@@ -3,6 +3,7 @@ project(tesseract_motion_planners VERSION 0.1.0 LANGUAGES CXX)
 
 find_package(ompl REQUIRED)
 find_package(trajopt REQUIRED)
+find_package(trajopt_sco REQUIRED)
 find_package(descartes_light REQUIRED)
 find_package(descartes_samplers REQUIRED)
 find_package(descartes_opw REQUIRED)

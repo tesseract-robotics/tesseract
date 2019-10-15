@@ -187,6 +187,40 @@ bool TrajOptPlannerDefaultConfig::generate()
     return false;
   }
   prob = trajopt::ConstructProblem(*pci);
+
+  for (std::size_t i = 0; i < constraint_error_functions.size(); ++i)
+  {
+    auto& c = constraint_error_functions[i];
+    if (c.first == nullptr)
+    {
+      CONSOLE_BRIDGE_logError("Failed to create constraint from error function, nullptr was provided!");
+      return false;
+    }
+
+    for (int s = 0; s < pci->basic_info.n_steps; ++s)
+    {
+      if (c.second == nullptr)
+      {
+        prob->addConstraint(
+            std::make_shared<trajopt::TrajOptConstraintFromErrFunc>(sco::VectorOfVector::construct(c.first),
+                                                                    prob->GetVarRow(s, 0, pci->kin->numJoints()),
+                                                                    Eigen::VectorXd::Ones(0),
+                                                                    sco::EQ,
+                                                                    "ConstraintErrFunc_" + std::to_string(i)));
+      }
+      else
+      {
+        prob->addConstraint(
+            std::make_shared<trajopt::TrajOptConstraintFromErrFunc>(sco::VectorOfVector::construct(c.first),
+                                                                    sco::MatrixOfVector::construct(c.second),
+                                                                    prob->GetVarRow(s, 0, pci->kin->numJoints()),
+                                                                    Eigen::VectorXd::Ones(0),
+                                                                    sco::EQ,
+                                                                    "ConstraintErrFunc_" + std::to_string(i)));
+      }
+    }
+  }
+
   return true;
 }
 

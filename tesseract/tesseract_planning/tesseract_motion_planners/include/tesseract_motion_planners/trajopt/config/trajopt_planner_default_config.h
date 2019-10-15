@@ -95,6 +95,21 @@ struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
   bool smooth_accelerations = true;
   /** @brief If true, a joint jerk cost with a target of 0 will be applied for all timesteps Default: false*/
   bool smooth_jerks = true;
+
+  /** @brief Error function that is set as a constraint for each timestep.
+   *
+   * This is a vector of std::pair<Error Function, Error Function Jacobian>, the error function is required, but the
+   * jacobian is optional (nullptr).
+   *
+   * Error Function:
+   *   arg: VectorXd will be all of the joint values for one timestep.
+   *   return: VectorXd of violations for each joint. Anything != 0 will be a violation
+   *
+   * Error Function Jacobian:
+   *   arg: VectorXd will be all of the joint values for one timestep.
+   *   return: Eigen::MatrixXd that represents the change in the error function with respect to joint values
+   */
+  std::vector<std::pair<sco::VectorOfVector::func, sco::MatrixOfVector::func>> constraint_error_functions;
 };
 
 }  // namespace tesseract_motion_planners
