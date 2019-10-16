@@ -240,7 +240,7 @@ private:
                                                   double scale)
   {
     visualization_msgs::Marker marker;
-    marker.header.frame_id = env_->getSceneGraph()->getName();
+    marker.header.frame_id = env_->getSceneGraph()->getRoot();
     marker.header.stamp = ros::Time::now();
     marker.ns = "trajopt";
     marker.id = ++marker_counter_;
