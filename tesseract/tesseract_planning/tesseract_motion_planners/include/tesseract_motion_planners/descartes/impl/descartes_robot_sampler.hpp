@@ -112,7 +112,8 @@ bool DescartesRobotSampler<FloatType>::ikAt(std::vector<FloatType>& solution_set
     std::vector<FloatType> full_sol;
     full_sol.insert(end(full_sol), std::make_move_iterator(sol), std::make_move_iterator(sol + robot_dof));
 
-    if (!is_valid_(Eigen::Map<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>(full_sol.data(), full_sol.size())))
+    if ((is_valid_ != nullptr) &&
+        !is_valid_(Eigen::Map<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>(full_sol.data(), full_sol.size())))
       continue;
 
     if (!get_best_solution)
