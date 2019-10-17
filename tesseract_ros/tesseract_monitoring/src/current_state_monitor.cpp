@@ -183,6 +183,7 @@ bool CurrentStateMonitor::haveCompleteState(std::vector<std::string>& missing_st
     if (joint_time_.find(joint.first) == joint_time_.end())
       if (!isPassiveOrMimicDOF(joint.first))
       {
+        ROS_DEBUG("Joint variable '%s' has never been updated", joint.first.c_str());
         missing_states.push_back(joint.first);
         result = false;
       }
@@ -340,6 +341,7 @@ void CurrentStateMonitor::jointStateCallback(const sensor_msgs::JointStateConstP
           env_state_.joints[joint_state->name[i]] = joint_state->position[i];
           update = true;
         }
+        joint_time_[joint_state->name[i]] = joint_state->header.stamp;
       }
     }
 
