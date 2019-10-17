@@ -78,7 +78,10 @@ bool DescartesCollision<FloatType>::validate(const FloatType* pos, const std::si
 {
   // Happens in two phases:
   // 1. Compute the transform of all objects
-  Eigen::Map<const Eigen::VectorXd> joint_angles(reinterpret_cast<const double*>(pos), long(size));
+  Eigen::VectorXd joint_angles(size);
+  for (int i = 0; i < size; ++i)
+    joint_angles(i) = pos[i];
+
   tesseract_environment::EnvState::Ptr env_state = state_solver_->getState(joint_names_, joint_angles);
 
   // 2. Update the scene
@@ -108,7 +111,9 @@ FloatType DescartesCollision<FloatType>::distance(const FloatType* pos, const st
 {
   // Happens in two phases:
   // 1. Compute the transform of all objects
-  Eigen::Map<const Eigen::VectorXd> joint_angles(reinterpret_cast<const double*>(pos), long(size));
+  Eigen::VectorXd joint_angles(size);
+  for (int i = 0; i < size; ++i)
+    joint_angles(i) = pos[i];
   tesseract_environment::EnvState::Ptr env_state = state_solver_->getState(joint_names_, joint_angles);
 
   // 2. Update the scene
@@ -118,14 +123,15 @@ FloatType DescartesCollision<FloatType>::distance(const FloatType* pos, const st
   tesseract_collision::ContactResultMap results;
   contact_manager_->contactTest(results, tesseract_collision::ContactTestType::CLOSEST);
 
-#ifndef NDEBUG
-  std::cout << "Called descartes_light::TesseractCollision::distance\n";
-  for (const auto& contact : results)
+  if (debug_)
   {
-    std::cout << "Contact: " << contact.first.first << " - " << contact.first.second
-              << " Distance: " << contact.second[0].distance << "\n";
+    std::cout << "Called descartes_light::TesseractCollision::distance\n";
+    for (const auto& contact : results)
+    {
+      std::cout << "Contact: " << contact.first.first << " - " << contact.first.second
+                << " Distance: " << contact.second[0].distance << "\n";
+    }
   }
-#endif
 
   if (results.empty())
     return static_cast<FloatType>(contact_manager_->getContactDistanceThreshold());
