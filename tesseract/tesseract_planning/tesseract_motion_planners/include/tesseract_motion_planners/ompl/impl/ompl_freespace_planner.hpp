@@ -78,24 +78,24 @@ std::string OMPLFreespacePlannerStatusCategory::message(int code) const
 }
 
 /** @brief Construct a basic planner */
-template <typename PlannerType, typename PlannerSettingsType>
-OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::OMPLFreespacePlanner(std::string name)
+template <typename PlannerType>
+OMPLFreespacePlanner<PlannerType>::OMPLFreespacePlanner(std::string name)
   : MotionPlanner(std::move(name))
   , config_(nullptr)
   , status_category_(std::make_shared<const OMPLFreespacePlannerStatusCategory>(name))
 {
 }
 
-template <typename PlannerType, typename PlannerSettingsType>
-bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::terminate()
+template <typename PlannerType>
+bool OMPLFreespacePlanner<PlannerType>::terminate()
 {
   CONSOLE_BRIDGE_logWarn("Termination of ongoing optimization is not implemented yet");
   return false;
 }
 
-template <typename PlannerType, typename PlannerSettingsType>
-tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::solve(PlannerResponse& response,
-                                                                                           const bool verbose)
+template <typename PlannerType>
+tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerResponse& response,
+                                                                      const bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
@@ -135,11 +135,11 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType, PlannerSettingsTy
   planning_response.joint_trajectory.joint_names = kin_->getJointNames();
 
   response = std::move(planning_response);
-  return planning_response.status;
+  return response.status;
 }
 
-template <typename PlannerType, typename PlannerSettingsType>
-void OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::clear()
+template <typename PlannerType>
+void OMPLFreespacePlanner<PlannerType>::clear()
 {
   request_ = PlannerRequest();
   config_ = nullptr;
@@ -150,8 +150,8 @@ void OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::clear()
   simple_setup_ = nullptr;
 }
 
-template <typename PlannerType, typename PlannerSettingsType>
-tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::isConfigured() const
+template <typename PlannerType>
+tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::isConfigured() const
 {
   if (config_ == nullptr)
     return tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::ErrorIsNotConfigured, status_category_);
@@ -159,11 +159,10 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType, PlannerSettingsTy
   return tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::IsConfigured, status_category_);
 }
 
-template <typename PlannerType, typename PlannerSettingsType>
-bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(
-    const OMPLFreespacePlannerConfig<PlannerSettingsType>& config)
+template <typename PlannerType>
+bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlannerConfig<PlannerType>& config)
 {
-  config_ = std::make_shared<OMPLFreespacePlannerConfig<PlannerSettingsType>>(config);
+  config_ = std::make_shared<OMPLFreespacePlannerConfig<PlannerType>>(config);
 
   // Check that parameters are valid
   if (config_->tesseract == nullptr)
@@ -335,8 +334,8 @@ bool OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::setConfiguration(
   return true;
 }
 
-template <typename PlannerType, typename PlannerSettingsType>
-ompl::base::StateSamplerPtr OMPLFreespacePlanner<PlannerType, PlannerSettingsType>::allocWeightedRealVectorStateSampler(
+template <typename PlannerType>
+ompl::base::StateSamplerPtr OMPLFreespacePlanner<PlannerType>::allocWeightedRealVectorStateSampler(
     const ompl::base::StateSpace* space) const
 {
   return std::make_shared<WeightedRealVectorStateSampler>(space, config_->weights);
