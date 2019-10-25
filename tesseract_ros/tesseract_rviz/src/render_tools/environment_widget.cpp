@@ -365,7 +365,7 @@ bool EnvironmentWidget::applyEnvironmentCommands(const std::vector<tesseract_msg
         std::vector<std::string> child_link_names =
             tesseract_->getEnvironment()->getSceneGraph()->getLinkChildrenNames(remove_joint->child_link_name);
 
-        if (!visualization_->removeLink(command.remove_link))
+        if (!visualization_->removeLink(remove_joint->child_link_name))
           return false;
 
         if (!visualization_->removeJoint(joints[0]->getName()))
