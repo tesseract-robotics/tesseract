@@ -110,6 +110,12 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
     return config_status;
   }
 
+  // Set Log Level
+  if (verbose)
+    util::gLogLevel = util::LevelDebug;
+  else
+    util::gLogLevel = util::LevelInfo;
+
   // Create optimizer
   sco::BasicTrustRegionSQP opt(config_->prob);
   opt.setParameters(config_->params);

@@ -152,11 +152,17 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerDefaultConfig::g
   }
   if (smooth_velocities)
   {
-    pci.cost_infos.push_back(createSmoothVelocityTermInfo(pci.basic_info.n_steps, pci.kin->numJoints()));
+    if (velocity_coeff.empty())
+      pci.cost_infos.push_back(createSmoothVelocityTermInfo(pci.basic_info.n_steps, pci.kin->numJoints()));
+    else
+      pci.cost_infos.push_back(createSmoothVelocityTermInfo(pci.basic_info.n_steps, velocity_coeff));
   }
   if (smooth_accelerations)
   {
-    pci.cost_infos.push_back(createSmoothAccelerationTermInfo(pci.basic_info.n_steps, pci.kin->numJoints()));
+    if (acceleration_coeff.empty())
+      pci.cost_infos.push_back(createSmoothAccelerationTermInfo(pci.basic_info.n_steps, pci.kin->numJoints()));
+    else
+      pci.cost_infos.push_back(createSmoothAccelerationTermInfo(pci.basic_info.n_steps, acceleration_coeff));
   }
   if (smooth_jerks)
   {

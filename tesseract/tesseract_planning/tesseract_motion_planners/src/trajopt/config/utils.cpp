@@ -244,11 +244,37 @@ createSmoothVelocityTermInfo(const int n_steps, const int n_joints, const double
 }
 
 trajopt::TermInfo::Ptr
+createSmoothVelocityTermInfo(const int n_steps, const std::vector<double>& coeff, const std::string& name)
+{
+  std::shared_ptr<trajopt::JointVelTermInfo> jv = std::make_shared<trajopt::JointVelTermInfo>();
+  jv->coeffs = coeff;
+  jv->targets = std::vector<double>(coeff.size(), 0.0);
+  jv->first_step = 0;
+  jv->last_step = n_steps - 1;
+  jv->name = name;
+  jv->term_type = trajopt::TT_COST;
+  return jv;
+}
+
+trajopt::TermInfo::Ptr
 createSmoothAccelerationTermInfo(const int n_steps, const int n_joints, const double coeff, const std::string& name)
 {
   std::shared_ptr<trajopt::JointAccTermInfo> ja = std::make_shared<trajopt::JointAccTermInfo>();
   ja->coeffs = std::vector<double>(n_joints, coeff);
   ja->targets = std::vector<double>(n_joints, 0.0);
+  ja->first_step = 0;
+  ja->last_step = n_steps - 1;
+  ja->name = name;
+  ja->term_type = trajopt::TT_COST;
+  return ja;
+}
+
+trajopt::TermInfo::Ptr
+createSmoothAccelerationTermInfo(const int n_steps, const std::vector<double>& coeff, const std::string& name)
+{
+  std::shared_ptr<trajopt::JointAccTermInfo> ja = std::make_shared<trajopt::JointAccTermInfo>();
+  ja->coeffs = coeff;
+  ja->targets = std::vector<double>(coeff.size(), 0.0);
   ja->first_step = 0;
   ja->last_step = n_steps - 1;
   ja->name = name;

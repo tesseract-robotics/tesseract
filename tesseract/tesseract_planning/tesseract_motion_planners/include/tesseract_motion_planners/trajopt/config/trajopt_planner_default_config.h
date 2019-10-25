@@ -39,6 +39,8 @@ namespace tesseract_motion_planners
  */
 struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
 {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   TrajOptPlannerDefaultConfig(const tesseract::Tesseract::ConstPtr& tesseract_,
                               const std::string& manipulator_,
                               const std::string& link_,
@@ -91,8 +93,12 @@ struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
   double collision_safety_margin = 0.025;
   /** @brief If true, a joint velocity cost with a target of 0 will be applied for all timesteps Default: true*/
   bool smooth_velocities = true;
+  /** @brief This default to all ones, but allows you to weight different joints */
+  std::vector<double> velocity_coeff;
   /** @brief If true, a joint acceleration cost with a target of 0 will be applied for all timesteps Default: false*/
   bool smooth_accelerations = true;
+  /** @brief This default to all ones, but allows you to weight different joints */
+  std::vector<double> acceleration_coeff;
   /** @brief If true, a joint jerk cost with a target of 0 will be applied for all timesteps Default: false*/
   bool smooth_jerks = true;
 
