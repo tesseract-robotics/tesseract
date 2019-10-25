@@ -58,7 +58,7 @@ struct OMPLSettings
   void apply(PlannerT& planner) const;
 };
 
-template<>
+template <>
 struct OMPLSettings<ompl::geometric::SBL>
 {
   /** @brief Max motion added to tree */
@@ -68,7 +68,7 @@ struct OMPLSettings<ompl::geometric::SBL>
   void apply(ompl::geometric::SBL& planner) const { planner.setRange(range); }
 };
 
-template<>
+template <>
 struct OMPLSettings<ompl::geometric::EST>
 {
   /** @brief Max motion added to tree */
@@ -85,7 +85,7 @@ struct OMPLSettings<ompl::geometric::EST>
   }
 };
 
-template<>
+template <>
 struct OMPLSettings<ompl::geometric::LBKPIECE1>
 {
   /** @brief Max motion added to tree */
@@ -106,7 +106,7 @@ struct OMPLSettings<ompl::geometric::LBKPIECE1>
   }
 };
 
-template<>
+template <>
 struct OMPLSettings<ompl::geometric::BKPIECE1>
 {
   /** @brief Max motion added to tree */
@@ -131,7 +131,7 @@ struct OMPLSettings<ompl::geometric::BKPIECE1>
   }
 };
 
-template<>
+template <>
 struct OMPLSettings<ompl::geometric::KPIECE1>
 {
   /** @brief Max motion added to tree */
@@ -160,7 +160,7 @@ struct OMPLSettings<ompl::geometric::KPIECE1>
   }
 };
 
-template<>
+template <>
 struct OMPLSettings<ompl::geometric::RRT>
 {
   /** @brief Max motion added to tree */
@@ -177,7 +177,7 @@ struct OMPLSettings<ompl::geometric::RRT>
   }
 };
 
-template<>
+template <>
 struct OMPLSettings<ompl::geometric::RRTConnect>
 {
   /** @brief Max motion added to tree */
@@ -187,7 +187,7 @@ struct OMPLSettings<ompl::geometric::RRTConnect>
   void apply(ompl::geometric::RRTConnect& planner) const { planner.setRange(range); }
 };
 
-template<>
+template <>
 struct OMPLSettings<ompl::geometric::RRTstar>
 {
   /** @brief Max motion added to tree */
@@ -208,7 +208,7 @@ struct OMPLSettings<ompl::geometric::RRTstar>
   }
 };
 
-template<>
+template <>
 struct OMPLSettings<ompl::geometric::TRRT>
 {
   /** @brief Max motion added to tree */
@@ -241,7 +241,7 @@ struct OMPLSettings<ompl::geometric::TRRT>
   }
 };
 
-template<>
+template <>
 struct OMPLSettings<ompl::geometric::PRM>
 {
   /** @brief Use k nearest neighbors. */
@@ -254,21 +254,21 @@ struct OMPLSettings<ompl::geometric::PRM>
   }
 };
 
-template<>
+template <>
 struct OMPLSettings<ompl::geometric::PRMstar>
 {
   /** @brief Apply settings to planner */
   void apply(ompl::geometric::PRMstar& /*planner*/) const {}
 };
 
-template<>
+template <>
 struct OMPLSettings<ompl::geometric::LazyPRMstar>
 {
   /** @brief Apply settings to planner */
   void apply(ompl::geometric::LazyPRMstar& /*planner*/) const {}
 };
 
-template<>
+template <>
 struct OMPLSettings<ompl::geometric::SPARS>
 {
 public:
@@ -294,6 +294,6 @@ public:
   }
 };
 
-} // namespace tesseract_motion_planners
+}  // namespace tesseract_motion_planners
 
 #endif  // TESSERACT_MOTION_PLANNERS_OMPL_SETTINGS_H

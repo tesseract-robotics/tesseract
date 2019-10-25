@@ -94,8 +94,7 @@ bool OMPLFreespacePlanner<PlannerType>::terminate()
 }
 
 template <typename PlannerType>
-tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerResponse& response,
-                                                                      const bool verbose)
+tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerResponse& response, const bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
@@ -335,8 +334,8 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
 }
 
 template <typename PlannerType>
-ompl::base::StateSamplerPtr OMPLFreespacePlanner<PlannerType>::allocWeightedRealVectorStateSampler(
-    const ompl::base::StateSpace* space) const
+ompl::base::StateSamplerPtr
+OMPLFreespacePlanner<PlannerType>::allocWeightedRealVectorStateSampler(const ompl::base::StateSpace* space) const
 {
   return std::make_shared<WeightedRealVectorStateSampler>(space, config_->weights);
 }
