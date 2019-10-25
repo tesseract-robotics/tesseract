@@ -87,14 +87,26 @@ trajopt::TermInfo::Ptr createSmoothVelocityTermInfo(const int n_steps,
                                                     const double coeff = 5.0,
                                                     const std::string& name = "joint_vel_cost");
 
+trajopt::TermInfo::Ptr createSmoothVelocityTermInfo(const int n_steps,
+                                                    const Eigen::Ref<const Eigen::VectorXd>& coeff,
+                                                    const std::string& name = "joint_vel_cost");
+
 trajopt::TermInfo::Ptr createSmoothAccelerationTermInfo(const int n_steps,
                                                         const int n_joints,
                                                         const double coeff = 1.0,
                                                         const std::string& name = "joint_accel_cost");
 
+trajopt::TermInfo::Ptr createSmoothAccelerationTermInfo(const int n_steps,
+                                                        const Eigen::Ref<const Eigen::VectorXd>& coeff,
+                                                        const std::string& name = "joint_accel_cost");
+
 trajopt::TermInfo::Ptr createSmoothJerkTermInfo(const int n_steps,
                                                 const int n_joints,
                                                 const double coeff = 1.0,
+                                                const std::string& name = "joint_jerk_cost");
+
+trajopt::TermInfo::Ptr createSmoothJerkTermInfo(const int n_steps,
+                                                const Eigen::Ref<const Eigen::VectorXd>& coeff,
                                                 const std::string& name = "joint_jerk_cost");
 
 }  // namespace tesseract_motion_planners
