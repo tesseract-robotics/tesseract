@@ -66,7 +66,8 @@ struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
    * or a separate transform for each waypoint
    */
   tesseract_common::VectorIsometry3d tcp;
-  /** @brief Vector of target waypoints given as constraints to the optimization */
+  /** @brief The QP solver used in the SQP optimization routine */
+  sco::ModelType optimizer = sco::ModelType::AUTO_SOLVER;
 
   /** @brief The target tool waypoints */
   std::vector<Waypoint::Ptr> target_waypoints;
