@@ -70,6 +70,7 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerFreespaceConfig:
   pci.basic_info.manip = manipulator;
   pci.basic_info.start_fixed = false;
   pci.basic_info.use_time = false;
+  pci.basic_info.convex_solver = optimizer;
 
   // Populate Init Info
   pci.init_info.type = init_type;
