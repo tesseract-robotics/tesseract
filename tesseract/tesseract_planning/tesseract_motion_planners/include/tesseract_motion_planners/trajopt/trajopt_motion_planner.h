@@ -54,7 +54,7 @@ public:
    * @param config The planners configuration
    * @return True if successful otherwise false
    */
-  bool setConfiguration(const TrajOptPlannerConfig::Ptr& config);
+  bool setConfiguration(const TrajOptPlannerConfig::Ptr config);
 
   /**
    * @brief Sets up the opimizer and solves a SQP problem read from json with no callbacks and dafault parameterss

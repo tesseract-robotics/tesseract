@@ -197,7 +197,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::isConfigured() const
     return tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::IsNotConfigured, status_category_);
 }
 
-bool TrajOptMotionPlanner::setConfiguration(const TrajOptPlannerConfig::Ptr& config)
+bool TrajOptMotionPlanner::setConfiguration(const TrajOptPlannerConfig::Ptr config)
 {
   config_ = config;
   return config_->generate();
