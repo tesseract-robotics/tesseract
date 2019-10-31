@@ -64,25 +64,31 @@ void computeCollisionReportThread()
 {
   while (!ros::isShuttingDown())
   {
-    boost::mutex::scoped_lock lock(modify_mutex);
-    if (!current_joint_states)
+    boost::shared_ptr<sensor_msgs::JointState> msg = nullptr;
+
+    // Limit the lock
     {
-      current_joint_states_evt.wait(lock);
+      boost::mutex::scoped_lock lock(modify_mutex);
+      if (!current_joint_states)
+      {
+        current_joint_states_evt.wait(lock);
+      }
+
+      if (!current_joint_states)
+        continue;
+
+      msg = current_joint_states;
+      current_joint_states.reset();
+
+      contacts.clear();
+      contacts_msg.contacts.clear();
+
+      tess->getEnvironment()->setState(msg->name, msg->position);
+      EnvState::ConstPtr state = tess->getEnvironment()->getCurrentState();
+
+      manager->setCollisionObjectsTransform(state->transforms);
+      manager->contactTest(contacts, type);
     }
-
-    if (!current_joint_states)
-      continue;
-    boost::shared_ptr<sensor_msgs::JointState> msg = current_joint_states;
-    current_joint_states.reset();
-
-    contacts.clear();
-    contacts_msg.contacts.clear();
-
-    tess->getEnvironment()->setState(msg->name, msg->position);
-    EnvState::ConstPtr state = tess->getEnvironment()->getCurrentState();
-
-    manager->setCollisionObjectsTransform(state->transforms);
-    manager->contactTest(contacts, type);
 
     if (publish_environment)
     {
@@ -95,9 +101,9 @@ void computeCollisionReportThread()
     tesseract_collision::flattenResults(std::move(contacts), contacts_vector);
     Eigen::VectorXd safety_distance(contacts_vector.size());
     contacts_msg.contacts.reserve(contacts_vector.size());
-    for (auto i = 0; i < contacts_vector.size(); ++i)
+    for (std::size_t i = 0; i < contacts_vector.size(); ++i)
     {
-      safety_distance[i] = contact_distance;
+      safety_distance[static_cast<long>(i)] = contact_distance;
       tesseract_msgs::ContactResult contact_msg;
       toMsg(contact_msg, contacts_vector[i], msg->header.stamp);
       contacts_msg.contacts.push_back(contact_msg);
@@ -150,18 +156,21 @@ bool callbackModifyTesseractEnv(tesseract_msgs::ModifyEnvironmentRequest& reques
 bool callbackComputeContactResultVector(tesseract_msgs::ComputeContactResultVectorRequest& request,
                                         tesseract_msgs::ComputeContactResultVectorResponse& response)
 {
-  ContactResultMap contacts;
+  ContactResultMap contact_results;
 
-  boost::mutex::scoped_lock lock(modify_mutex);
+  // Limit the lock
+  {
+    boost::mutex::scoped_lock lock(modify_mutex);
 
-  tess->getEnvironment()->setState(request.joint_states.name, request.joint_states.position);
-  EnvState::ConstPtr state = tess->getEnvironment()->getCurrentState();
+    tess->getEnvironment()->setState(request.joint_states.name, request.joint_states.position);
+    EnvState::ConstPtr state = tess->getEnvironment()->getCurrentState();
 
-  manager->setCollisionObjectsTransform(state->transforms);
-  manager->contactTest(contacts, type);
+    manager->setCollisionObjectsTransform(state->transforms);
+    manager->contactTest(contact_results, type);
+  }
 
   ContactResultVector contacts_vector;
-  tesseract_collision::flattenResults(std::move(contacts), contacts_vector);
+  tesseract_collision::flattenResults(std::move(contact_results), contacts_vector);
   response.collision_result.contacts.reserve(contacts_vector.size());
   for (const auto& contact : contacts_vector)
   {
