@@ -42,6 +42,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/geometric/planners/prm/LazyPRMstar.h>
 #include <ompl/geometric/planners/prm/SPARS.h>
 
+#include <ompl/util/RandomNumbers.h>
+
 #include <functional>
 #include <gtest/gtest.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -58,6 +60,8 @@ using namespace tesseract_environment;
 using namespace tesseract_geometry;
 using namespace tesseract_kinematics;
 using namespace tesseract_motion_planners;
+
+const static int SEED = 1;
 
 std::string locateResource(const std::string& url)
 {
@@ -127,15 +131,18 @@ typedef ::testing::Types<ompl::geometric::SBL,
                          ompl::geometric::KPIECE1,
                          ompl::geometric::RRT,
                          ompl::geometric::RRTConnect,
-                         //                         ompl::geometric::RRTstar,
-                         ompl::geometric::TRRT,
-                         ompl::geometric::SPARS>
+                         ompl::geometric::RRTstar,
+                         //                         ompl::geometric::SPARS,
+                         ompl::geometric::TRRT>
     Implementations;
 
 TYPED_TEST_CASE(OMPLTestFixture, Implementations);
 
 TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
 {
+  EXPECT_EQ(ompl::RNG::getSeed(), SEED) << "Randomization seed does not match expected: " << ompl::RNG::getSeed()
+                                        << " vs. " << SEED;
+
   // Step 1: Load scene and srdf
   ResourceLocatorFn locator = locateResource;
   Tesseract::Ptr tesseract = std::make_shared<Tesseract>();
@@ -158,9 +165,14 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   ompl_config.tesseract = tesseract;
   ompl_config.manipulator = "manipulator";
   ompl_config.collision_safety_margin = 0.01;
-  ompl_config.planning_time = 5.0;
+  ompl_config.planning_time = 10.0;
   ompl_config.num_threads = 4;
   ompl_config.max_solutions = 4;
+
+  ompl_config.collision_continuous = false;
+  ompl_config.collision_check = true;
+  ompl_config.simplify = false;
+  ompl_config.n_output_states = 50;
 
   // Set the planner configuration
   this->ompl_planner.setConfiguration(ompl_config);
@@ -169,6 +181,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   tesseract_common::StatusCode status = this->ompl_planner.solve(ompl_planning_response);
 
   EXPECT_TRUE(status);
+  EXPECT_EQ(ompl_planning_response.joint_trajectory.trajectory.rows(), ompl_config.n_output_states);
 
   // Check for start state in collision error
   swp = { 0, 0.7, 0.0, 0, 0.0, 0, 0.0 };
@@ -200,6 +213,9 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
+
+  // Set the randomization seed for the planners to get repeatable results
+  ompl::RNG::setSeed(SEED);
 
   return RUN_ALL_TESTS();
 }
