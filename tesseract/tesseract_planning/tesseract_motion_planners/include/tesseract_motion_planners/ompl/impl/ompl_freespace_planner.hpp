@@ -301,21 +301,27 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
   if (config_->svc != nullptr)
     simple_setup_->setStateValidityChecker(config_->svc);
 
-  if (config_->collision_check && config_->collision_continuous && config_->mv == nullptr)
-  {
-    ompl::base::MotionValidatorPtr mv =
-        std::make_shared<ContinuousMotionValidator>(simple_setup_->getSpaceInformation(), env, kin_);
-    simple_setup_->getSpaceInformation()->setMotionValidator(std::move(mv));
-  }
-  else if (config_->collision_check && !config_->collision_continuous && config_->mv == nullptr)
-  {
-    ompl::base::MotionValidatorPtr mv =
-        std::make_shared<DiscreteMotionValidator>(simple_setup_->getSpaceInformation(), env, kin_);
-    simple_setup_->getSpaceInformation()->setMotionValidator(std::move(mv));
-  }
-  else if (config_->mv != nullptr)
+  // Setup motion validation (i.e. collision checking)
+  if (config_->mv != nullptr)
   {
     simple_setup_->getSpaceInformation()->setMotionValidator(config_->mv);
+  }
+  else
+  {
+    if (config_->collision_check)
+    {
+      ompl::base::MotionValidatorPtr mv;
+      if(config_->collision_continuous)
+      {
+        mv = std::make_shared<ContinuousMotionValidator>(simple_setup_->getSpaceInformation(), env, kin_);
+        simple_setup_->getSpaceInformation()->setMotionValidator(std::move(mv));
+      }
+      else
+      {
+        mv = std::make_shared<DiscreteMotionValidator>(simple_setup_->getSpaceInformation(), env, kin_);
+        simple_setup_->getSpaceInformation()->setMotionValidator(std::move(mv));
+      }
+    }
   }
 
   // make sure the planners run until the time limit, and get the best possible solution
