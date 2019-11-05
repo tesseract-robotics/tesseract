@@ -102,9 +102,14 @@ public:
     }
   }
 
-  void plotContactResults(const std::vector<std::string>& link_names,
-                          const tesseract_collision::ContactResultVector& dist_results,
-                          const Eigen::Ref<const Eigen::VectorXd>& safety_distances) override
+  static visualization_msgs::MarkerArray
+  getContactResultsMarkerArrayMsg(int& id_counter,
+                                  const std::string& frame_id,
+                                  const std::string& ns,
+                                  const ros::Time& time_stamp,
+                                  const std::vector<std::string>& link_names,
+                                  const tesseract_collision::ContactResultVector& dist_results,
+                                  const Eigen::Ref<const Eigen::VectorXd>& safety_distances)
   {
     visualization_msgs::MarkerArray msg;
     for (unsigned i = 0; i < dist_results.size(); ++i)
@@ -141,20 +146,39 @@ public:
       {
         Eigen::Vector4d cc_rgba;
         cc_rgba << 0.0, 0.0, 0.0, 1.0;
-        msg.markers.push_back(getMarkerArrowMsg(ptB, dist.cc_nearest_points[1], cc_rgba, 0.01));
+        auto marker =
+            getMarkerArrowMsg(id_counter, frame_id, ns, time_stamp, ptB, dist.cc_nearest_points[1], cc_rgba, 0.01);
+        msg.markers.push_back(marker);
 
         // DEGUG: This was added to see what the original contact point was for the cast continuous
         //        collision checking. Should be removed as everything has been integrated and tested.
         Eigen::Vector4d temp_rgba;
         temp_rgba << 0.0, 0.0, 1.0, 1.0;
-        msg.markers.push_back(getMarkerArrowMsg(ptA, dist.cc_nearest_points[0], temp_rgba, 0.01));
+        marker =
+            getMarkerArrowMsg(id_counter, frame_id, ns, time_stamp, ptA, dist.cc_nearest_points[0], temp_rgba, 0.01);
+        msg.markers.push_back(marker);
 
         ptB = ((1 - dist.cc_time) * ptB + dist.cc_time * dist.cc_nearest_points[1]);
       }
 
-      msg.markers.push_back(getMarkerArrowMsg(ptA, ptB, rgba, 0.01));
+      auto marker = getMarkerArrowMsg(id_counter, frame_id, ns, time_stamp, ptA, ptB, rgba, 0.01);
+      msg.markers.push_back(marker);
     }
 
+    return msg;
+  }
+
+  void plotContactResults(const std::vector<std::string>& link_names,
+                          const tesseract_collision::ContactResultVector& dist_results,
+                          const Eigen::Ref<const Eigen::VectorXd>& safety_distances) override
+  {
+    visualization_msgs::MarkerArray msg = getContactResultsMarkerArrayMsg(marker_counter_,
+                                                                          env_->getSceneGraph()->getRoot(),
+                                                                          "trajopt",
+                                                                          ros::Time::now(),
+                                                                          link_names,
+                                                                          dist_results,
+                                                                          safety_distances);
     if (dist_results.size() > 0)
     {
       collisions_pub_.publish(msg);
@@ -167,7 +191,9 @@ public:
                  double scale) override
   {
     visualization_msgs::MarkerArray msg;
-    msg.markers.push_back(getMarkerArrowMsg(pt1, pt2, rgba, scale));
+    auto marker = getMarkerArrowMsg(
+        marker_counter_, env_->getSceneGraph()->getRoot(), "trajopt", ros::Time::now(), pt1, pt2, rgba, scale);
+    msg.markers.push_back(marker);
     arrows_pub_.publish(msg);
   }
 
@@ -179,9 +205,36 @@ public:
     Eigen::Vector3d z_axis = axis.matrix().block<3, 1>(0, 2);
     Eigen::Vector3d position = axis.matrix().block<3, 1>(0, 3);
 
-    msg.markers.push_back(getMarkerCylinderMsg(position, position + x_axis, Eigen::Vector4d(1, 0, 0, 1), scale));
-    msg.markers.push_back(getMarkerCylinderMsg(position, position + y_axis, Eigen::Vector4d(0, 1, 0, 1), scale));
-    msg.markers.push_back(getMarkerCylinderMsg(position, position + z_axis, Eigen::Vector4d(0, 0, 1, 1), scale));
+    auto marker = getMarkerCylinderMsg(marker_counter_,
+                                       env_->getSceneGraph()->getRoot(),
+                                       "trajopt",
+                                       ros::Time::now(),
+                                       position,
+                                       position + x_axis,
+                                       Eigen::Vector4d(1, 0, 0, 1),
+                                       scale);
+    msg.markers.push_back(marker);
+
+    marker = getMarkerCylinderMsg(marker_counter_,
+                                  env_->getSceneGraph()->getRoot(),
+                                  "trajopt",
+                                  ros::Time::now(),
+                                  position,
+                                  position + y_axis,
+                                  Eigen::Vector4d(0, 1, 0, 1),
+                                  scale);
+    msg.markers.push_back(marker);
+
+    marker = getMarkerCylinderMsg(marker_counter_,
+                                  env_->getSceneGraph()->getRoot(),
+                                  "trajopt",
+                                  ros::Time::now(),
+                                  position,
+                                  position + z_axis,
+                                  Eigen::Vector4d(0, 0, 1, 1),
+                                  scale);
+    msg.markers.push_back(marker);
+
     axes_pub_.publish(msg);
   }
 
@@ -211,25 +264,20 @@ public:
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
   }
 
-private:
-  tesseract_environment::Environment::ConstPtr env_; /**< The Env */
-  int marker_counter_;                               /**< Counter when plotting */
-  ros::Publisher scene_pub_;                         /**< Scene publisher */
-  ros::Publisher trajectory_pub_;                    /**< Trajectory publisher */
-  ros::Publisher collisions_pub_;                    /**< Collision Data publisher */
-  ros::Publisher arrows_pub_;                        /**< Used for publishing arrow markers */
-  ros::Publisher axes_pub_;                          /**< Used for publishing axis markers */
-
-  visualization_msgs::Marker getMarkerArrowMsg(const Eigen::Ref<const Eigen::Vector3d>& pt1,
-                                               const Eigen::Ref<const Eigen::Vector3d>& pt2,
-                                               const Eigen::Ref<const Eigen::Vector4d>& rgba,
-                                               double scale)
+  static visualization_msgs::Marker getMarkerArrowMsg(int& id_counter,
+                                                      const std::string& frame_id,
+                                                      const std::string& ns,
+                                                      const ros::Time& time_stamp,
+                                                      const Eigen::Ref<const Eigen::Vector3d>& pt1,
+                                                      const Eigen::Ref<const Eigen::Vector3d>& pt2,
+                                                      const Eigen::Ref<const Eigen::Vector4d>& rgba,
+                                                      const double scale)
   {
     visualization_msgs::Marker marker;
-    marker.header.frame_id = env_->getSceneGraph()->getRoot();
-    marker.header.stamp = ros::Time::now();
-    marker.ns = "trajopt";
-    marker.id = ++marker_counter_;
+    marker.header.frame_id = frame_id;
+    marker.header.stamp = time_stamp;
+    marker.ns = ns;
+    marker.id = ++id_counter;
     marker.type = visualization_msgs::Marker::ARROW;
     marker.action = visualization_msgs::Marker::ADD;
 
@@ -264,16 +312,20 @@ private:
     return marker;
   }
 
-  visualization_msgs::Marker getMarkerCylinderMsg(const Eigen::Ref<const Eigen::Vector3d>& pt1,
-                                                  const Eigen::Ref<const Eigen::Vector3d>& pt2,
-                                                  const Eigen::Ref<const Eigen::Vector4d>& rgba,
-                                                  double scale)
+  static visualization_msgs::Marker getMarkerCylinderMsg(int& id_counter,
+                                                         const std::string& frame_id,
+                                                         const std::string& ns,
+                                                         const ros::Time& time_stamp,
+                                                         const Eigen::Ref<const Eigen::Vector3d>& pt1,
+                                                         const Eigen::Ref<const Eigen::Vector3d>& pt2,
+                                                         const Eigen::Ref<const Eigen::Vector4d>& rgba,
+                                                         const double scale)
   {
     visualization_msgs::Marker marker;
-    marker.header.frame_id = env_->getSceneGraph()->getRoot();
-    marker.header.stamp = ros::Time::now();
-    marker.ns = "trajopt";
-    marker.id = ++marker_counter_;
+    marker.header.frame_id = frame_id;
+    marker.header.stamp = time_stamp;
+    marker.ns = ns;
+    marker.id = ++id_counter;
     marker.type = visualization_msgs::Marker::CYLINDER;
     marker.action = visualization_msgs::Marker::ADD;
 
@@ -309,6 +361,15 @@ private:
 
     return marker;
   }
+
+private:
+  tesseract_environment::Environment::ConstPtr env_; /**< The Env */
+  int marker_counter_;                               /**< Counter when plotting */
+  ros::Publisher scene_pub_;                         /**< Scene publisher */
+  ros::Publisher trajectory_pub_;                    /**< Trajectory publisher */
+  ros::Publisher collisions_pub_;                    /**< Collision Data publisher */
+  ros::Publisher arrows_pub_;                        /**< Used for publishing arrow markers */
+  ros::Publisher axes_pub_;                          /**< Used for publishing axis markers */
 };
 typedef std::shared_ptr<ROSPlotting> ROSPlottingPtr;
 typedef std::shared_ptr<const ROSPlotting> ROSPlottingConstPtr;

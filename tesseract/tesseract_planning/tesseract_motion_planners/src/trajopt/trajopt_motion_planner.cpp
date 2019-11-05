@@ -110,6 +110,12 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
     return config_status;
   }
 
+  // Set Log Level
+  if (verbose)
+    util::gLogLevel = util::LevelDebug;
+  else
+    util::gLogLevel = util::LevelInfo;
+
   // Create optimizer
   sco::BasicTrustRegionSQP opt(config_->prob);
   opt.setParameters(config_->params);
@@ -191,7 +197,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::isConfigured() const
     return tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::IsNotConfigured, status_category_);
 }
 
-bool TrajOptMotionPlanner::setConfiguration(const TrajOptPlannerConfig::Ptr& config)
+bool TrajOptMotionPlanner::setConfiguration(const TrajOptPlannerConfig::Ptr config)
 {
   config_ = config;
   return config_->generate();
