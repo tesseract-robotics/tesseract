@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/common.h>
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_scene_graph/utils.h>
+#include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_urdf/sphere.h>
 #include <tesseract_urdf/box.h>
 #include <tesseract_urdf/cylinder.h>
@@ -106,7 +107,7 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::Geometry::Ptr>& geometries,
                                                const tinyxml2::XMLElement* xml_element,
-                                               tesseract_scene_graph::ResourceLocatorFn locator,
+                                               tesseract_scene_graph::ResourceLocator::Ptr locator,
                                                const bool visual,
                                                const int version)
 {

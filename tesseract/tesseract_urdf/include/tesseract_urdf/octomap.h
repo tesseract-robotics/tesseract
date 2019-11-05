@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/octree.h>
 #include <tesseract_scene_graph/utils.h>
+#include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_urdf/utils.h>
 #include <tesseract_urdf/octree.h>
 
@@ -86,7 +87,7 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& octree,
                                                const tinyxml2::XMLElement* xml_element,
-                                               tesseract_scene_graph::ResourceLocatorFn locator,
+                                               tesseract_scene_graph::ResourceLocator::Ptr locator,
                                                const bool /*visual*/,
                                                const int version)
 {

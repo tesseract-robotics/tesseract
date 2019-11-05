@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/octree.h>
 #include <tesseract_scene_graph/utils.h>
+#include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_urdf/utils.h>
 
 namespace tesseract_urdf
@@ -82,7 +83,7 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parsePointCloud(tesseract_geometry::Octree::Ptr& octree,
                                                          const tinyxml2::XMLElement* xml_element,
-                                                         tesseract_scene_graph::ResourceLocatorFn locator,
+                                                         tesseract_scene_graph::ResourceLocator::Ptr locator,
                                                          tesseract_geometry::Octree::SubType shape_type,
                                                          const bool prune,
                                                          const int version)
@@ -101,7 +102,16 @@ inline tesseract_common::StatusCode::Ptr parsePointCloud(tesseract_geometry::Oct
 
   auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
 
-  if (pcl::io::loadPCDFile<pcl::PointXYZ>(locator(filename), *cloud) == -1)
+  tesseract_common::Resource::Ptr located_resource = locator->LocateResource(filename);
+  if (!located_resource->IsFile())
+  {
+    //TODO: Handle point clouds that are not files
+    CONSOLE_BRIDGE_logError("Point clouds can only be loaded from file");
+    return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::ErrorImportingPointCloud,
+                                                          status_cat);
+  }
+
+  if (pcl::io::loadPCDFile<pcl::PointXYZ>(located_resource->GetFilename(), *cloud) == -1)
     return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::ErrorImportingPointCloud,
                                                           status_cat);
 

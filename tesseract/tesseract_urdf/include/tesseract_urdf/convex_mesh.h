@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/utils.h>
+#include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_geometry/mesh_parser.h>
 #include <tesseract_geometry/impl/mesh.h>
 #include <tesseract_geometry/impl/convex_mesh.h>
@@ -79,7 +80,7 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::ConvexMesh::Ptr>& meshes,
                                                const tinyxml2::XMLElement* xml_element,
-                                               tesseract_scene_graph::ResourceLocatorFn locator,
+                                               tesseract_scene_graph::ResourceLocator::Ptr locator,
                                                const bool visual,
                                                const int version)
 {
@@ -121,18 +122,18 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::C
 
   if (visual)
     meshes =
-        tesseract_geometry::createMeshFromPath<tesseract_geometry::ConvexMesh>(locator(filename), scale, true, true);
+        tesseract_geometry::createMeshFromResource<tesseract_geometry::ConvexMesh>(locator->LocateResource(filename), scale, true, true);
   else
   {
     if (!convert)
     {
-      meshes = tesseract_geometry::createMeshFromPath<tesseract_geometry::ConvexMesh>(
-          locator(filename), scale, false, false);
+      meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::ConvexMesh>(
+          locator->LocateResource(filename), scale, false, false);
     }
     else
     {
       std::vector<tesseract_geometry::Mesh::Ptr> temp_meshes =
-          tesseract_geometry::createMeshFromPath<tesseract_geometry::Mesh>(locator(filename), scale, true, false);
+          tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(locator->LocateResource(filename), scale, true, false);
       for (auto& mesh : temp_meshes)
         meshes.push_back(tesseract_collision::makeConvexMesh(*mesh));
     }

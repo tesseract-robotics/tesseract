@@ -9,6 +9,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_collision)
 {
+
+   std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator=std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
+
   {
     std::string str = "<collision extra=\"0 0 0\">"
                       "  <origin xyz=\"1 2 3\" rpy=\"0 0 0\" />"
@@ -16,9 +19,9 @@ TEST(TesseractURDFUnit, parse_collision)
                       "    <box size=\"1 2 3\" />"
                       "  </geometry>"
                       "</collision>";
-    std::vector<tesseract_scene_graph::Collision::Ptr> elem;
+    std::vector<tesseract_scene_graph::Collision::Ptr> elem;    
     auto status =
-        runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", locateResource, 2);
+        runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", resource_locator, 2);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->geometry != nullptr);
@@ -33,7 +36,7 @@ TEST(TesseractURDFUnit, parse_collision)
                       "</collision>";
     std::vector<tesseract_scene_graph::Collision::Ptr> elem;
     auto status =
-        runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", locateResource, 2);
+        runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", resource_locator, 2);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->geometry != nullptr);
@@ -45,7 +48,7 @@ TEST(TesseractURDFUnit, parse_collision)
                       "</collision>";
     std::vector<tesseract_scene_graph::Collision::Ptr> elem;
     auto status =
-        runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", locateResource, 2);
+        runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", resource_locator, 2);
     EXPECT_FALSE(*status);
   }
 }

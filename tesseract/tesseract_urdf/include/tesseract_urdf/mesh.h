@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/mesh.h>
 #include <tesseract_scene_graph/utils.h>
+#include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_geometry/mesh_parser.h>
 #include <tesseract_urdf/utils.h>
 
@@ -77,7 +78,7 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::Mesh::Ptr>& meshes,
                                                const tinyxml2::XMLElement* xml_element,
-                                               tesseract_scene_graph::ResourceLocatorFn locator,
+                                               tesseract_scene_graph::ResourceLocator::Ptr locator,
                                                const bool visual,
                                                const int version)
 {
@@ -111,9 +112,9 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::M
   }
 
   if (visual)
-    meshes = tesseract_geometry::createMeshFromPath<tesseract_geometry::Mesh>(locator(filename), scale, true, true);
+    meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(locator->LocateResource(filename), scale, true, true);
   else
-    meshes = tesseract_geometry::createMeshFromPath<tesseract_geometry::Mesh>(locator(filename), scale, true, false);
+    meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(locator->LocateResource(filename), scale, true, false);
 
   if (meshes.empty())
     return std::make_shared<tesseract_common::StatusCode>(MeshStatusCategory::ErrorImportingMeshes, status_cat);

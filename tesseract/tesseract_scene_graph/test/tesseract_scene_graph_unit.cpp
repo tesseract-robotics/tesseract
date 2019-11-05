@@ -9,6 +9,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/utils.h>
+#include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_scene_graph/parser/srdf_parser.h>
 #include <tesseract_scene_graph/parser/kdl_parser.h>
 
@@ -243,7 +244,7 @@ TEST(TesseractSceneGraphUnit, LoadSRDFUnit)
 
   std::string srdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
 
-  ResourceLocatorFn locator = locateResource;
+  ResourceLocator::Ptr locator = std::make_shared<SimpleResourceLocator>(locateResource);
   SceneGraph g;
 
   g.setName("kuka_lbr_iiwa_14_r820");

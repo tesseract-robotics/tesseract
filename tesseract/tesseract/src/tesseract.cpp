@@ -89,7 +89,7 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph,
   return true;
 }
 
-bool Tesseract::init(const std::string& urdf_string, tesseract_scene_graph::ResourceLocatorFn locator)
+bool Tesseract::init(const std::string& urdf_string, tesseract_scene_graph::ResourceLocator::Ptr locator)
 {
   clear();
 
@@ -119,7 +119,7 @@ bool Tesseract::init(const std::string& urdf_string, tesseract_scene_graph::Reso
 
 bool Tesseract::init(const std::string& urdf_string,
                      const std::string& srdf_string,
-                     tesseract_scene_graph::ResourceLocatorFn locator)
+                     tesseract_scene_graph::ResourceLocator::Ptr locator)
 {
   clear();
 
@@ -159,7 +159,7 @@ bool Tesseract::init(const std::string& urdf_string,
   return true;
 }
 
-bool Tesseract::init(const boost::filesystem::path& urdf_path, tesseract_scene_graph::ResourceLocatorFn locator)
+bool Tesseract::init(const boost::filesystem::path& urdf_path, tesseract_scene_graph::ResourceLocator::Ptr locator)
 {
   clear();
 
@@ -189,7 +189,7 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path, tesseract_scene_g
 
 bool Tesseract::init(const boost::filesystem::path& urdf_path,
                      const boost::filesystem::path& srdf_path,
-                     tesseract_scene_graph::ResourceLocatorFn locator)
+                     tesseract_scene_graph::ResourceLocator::Ptr locator)
 {
   clear();
 

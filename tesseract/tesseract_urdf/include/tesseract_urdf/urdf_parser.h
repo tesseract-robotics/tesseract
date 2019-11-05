@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/utils.h>
+#include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_urdf/joint.h>
 #include <tesseract_urdf/link.h>
 #include <tesseract_urdf/utils.h>
@@ -125,7 +126,7 @@ private:
  */
 tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGraph::Ptr& scene_graph,
                                                   const std::string& urdf_xml_string,
-                                                  tesseract_scene_graph::ResourceLocatorFn locator);
+                                                  tesseract_scene_graph::ResourceLocator::Ptr locator);
 
 /**
  * @brief Parse a URDF file into a Tesseract Scene Graph
@@ -136,7 +137,7 @@ tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGr
  */
 tesseract_common::StatusCode::Ptr parseURDFFile(tesseract_scene_graph::SceneGraph::Ptr& scene_graph,
                                                 const std::string& path,
-                                                tesseract_scene_graph::ResourceLocatorFn locator);
+                                                tesseract_scene_graph::ResourceLocator::Ptr locator);
 
 /**
  * @brief Parse a URDF string into a Tesseract Scene Graph
@@ -145,7 +146,7 @@ tesseract_common::StatusCode::Ptr parseURDFFile(tesseract_scene_graph::SceneGrap
  * @return Tesseract Scene Graph, nullptr if failed to parse URDF
  */
 tesseract_scene_graph::SceneGraph::Ptr parseURDFString(const std::string& urdf_xml_string,
-                                                       tesseract_scene_graph::ResourceLocatorFn locator);
+                                                       tesseract_scene_graph::ResourceLocator::Ptr locator);
 
 /**
  * @brief Parse a URDF file into a Tesseract Scene Graph
@@ -154,7 +155,7 @@ tesseract_scene_graph::SceneGraph::Ptr parseURDFString(const std::string& urdf_x
  * @return Tesseract Scene Graph, nullptr if failed to parse URDF
  */
 tesseract_scene_graph::SceneGraph::Ptr parseURDFFile(const std::string& path,
-                                                     tesseract_scene_graph::ResourceLocatorFn locator);
+                                                     tesseract_scene_graph::ResourceLocator::Ptr locator);
 
 }  // namespace tesseract_urdf
 

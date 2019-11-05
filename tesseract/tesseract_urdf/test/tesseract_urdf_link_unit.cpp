@@ -9,6 +9,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_link)
 {
+
+  std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator=std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
+
   {
     std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
     std::string str = "<link name=\"my_link\" extra=\"0 0 0\">"
@@ -35,7 +38,7 @@ TEST(TesseractURDFUnit, parse_link)
                       "</link>";
     tesseract_scene_graph::Link::Ptr elem;
     auto status =
-        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials, 2);
+        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial != nullptr);
@@ -65,7 +68,7 @@ TEST(TesseractURDFUnit, parse_link)
                       "</link>";
     tesseract_scene_graph::Link::Ptr elem;
     auto status =
-        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials, 2);
+        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
@@ -89,7 +92,7 @@ TEST(TesseractURDFUnit, parse_link)
                       "</link>";
     tesseract_scene_graph::Link::Ptr elem;
     auto status =
-        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials, 2);
+        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
@@ -110,7 +113,7 @@ TEST(TesseractURDFUnit, parse_link)
                       "</link>";
     tesseract_scene_graph::Link::Ptr elem;
     auto status =
-        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials, 2);
+        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
@@ -124,7 +127,7 @@ TEST(TesseractURDFUnit, parse_link)
     std::string str = "<link name=\"my_link\"/>";
     tesseract_scene_graph::Link::Ptr elem;
     auto status =
-        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials, 2);
+        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
@@ -147,7 +150,7 @@ TEST(TesseractURDFUnit, parse_link)
                       "</link>";
     tesseract_scene_graph::Link::Ptr elem;
     auto status =
-        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials, 2);
+        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
     EXPECT_FALSE(*status);
   }
 
@@ -166,7 +169,7 @@ TEST(TesseractURDFUnit, parse_link)
                       "</link>";
     tesseract_scene_graph::Link::Ptr elem;
     auto status =
-        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", locateResource, empty_available_materials, 2);
+        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
     EXPECT_FALSE(*status);
   }
 }
