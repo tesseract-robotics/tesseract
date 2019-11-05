@@ -128,6 +128,10 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
 
   ompl::geometric::PathGeometric& path = simple_setup_->getSolutionPath();
 
+  // Interpolate the path if it shouldn't be simplified and there are currently fewer states than requested
+  if (!config_->simplify && path.getStateCount() < config_->n_output_states)
+    path.interpolate(config_->n_output_states);
+
   planning_response.status =
       tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::SolutionFound, status_category_);
   planning_response.joint_trajectory.trajectory = toTrajArray(path);
@@ -311,7 +315,7 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
     if (config_->collision_check)
     {
       ompl::base::MotionValidatorPtr mv;
-      if(config_->collision_continuous)
+      if (config_->collision_continuous)
       {
         mv = std::make_shared<ContinuousMotionValidator>(simple_setup_->getSpaceInformation(), env, kin_);
         simple_setup_->getSpaceInformation()->setMotionValidator(std::move(mv));

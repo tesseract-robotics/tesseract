@@ -75,6 +75,8 @@ struct OMPLFreespacePlannerConfig
   int num_threads = 1;
   /** @brief Simplify trajectory */
   bool simplify = true;
+  /** @brief Number of states in the output trajectory - note: this is ignored if the trajectory is simplified */
+  int n_output_states = 20;
   /** @brief This scales the variables search space. Must be same size as number of joints.
    *         If empty it defaults to all ones */
   Eigen::VectorXd weights;
