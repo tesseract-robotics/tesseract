@@ -109,6 +109,11 @@ trajopt::TermInfo::Ptr createSmoothJerkTermInfo(const int n_steps,
                                                 const Eigen::Ref<const Eigen::VectorXd>& coeff,
                                                 const std::string& name = "joint_jerk_cost");
 
+trajopt::TermInfo::Ptr createUserDefinedTermInfo(const int n_steps,
+                                                 const sco::VectorOfVector::func error_function,
+                                                 const sco::MatrixOfVector::func jacobian_function,
+                                                 const std::string& name = "user_defined");
+
 }  // namespace tesseract_motion_planners
 
 #endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_UTILS_H
