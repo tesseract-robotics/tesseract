@@ -106,7 +106,8 @@ bool IKFastInvKin::calcInvKin(Eigen::VectorXd& solutions,
       harmonizeTowardZero<double>(sol, ikfast_dof);  // Modifies 'sol' in place
 
       // Add solution
-      solution_set.insert(end(solution_set), sol, sol + ikfast_dof);
+      if (isWithinLimits<double>(Eigen::Map<Eigen::VectorXd>(sol, ikfast_dof), joint_limits_))
+        solution_set.insert(end(solution_set), sol, sol + ikfast_dof);
 
       // Add redundant solutions
       std::vector<double> redundant_sols = getRedundantSolutions(sol, joint_limits_);
