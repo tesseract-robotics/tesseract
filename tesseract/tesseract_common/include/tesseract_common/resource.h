@@ -21,7 +21,7 @@ namespace tesseract_common
 
         virtual std::string GetUrl() = 0;
 
-        virtual std::string GetFilename() = 0;
+        virtual std::string GetFilePath() = 0;
 
         virtual std::vector<uint8_t> GetResourceContents() = 0;
 

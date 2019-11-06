@@ -247,7 +247,7 @@ int main(int argc, char** argv)
   nh.getParam(robot_description + "_semantic", srdf_xml_string);
 
   tess = std::make_shared<tesseract::Tesseract>();
-  ResourceLocatorFn locator = tesseract_rosutils::locateResource;
+  tesseract_scene_graph::ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
   if (!tess->init(urdf_xml_string, srdf_xml_string, locator))
   {
     ROS_ERROR("Failed to initialize environment.");

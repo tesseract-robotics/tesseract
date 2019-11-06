@@ -51,7 +51,7 @@ namespace tesseract_scene_graph
 
         virtual std::string GetUrl() override;
 
-        virtual std::string GetFilename() override;
+        virtual std::string GetFilePath() override;
 
         virtual std::vector<uint8_t> GetResourceContents() override;
 

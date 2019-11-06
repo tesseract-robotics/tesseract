@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/geometry.h>
 #include <tesseract_common/types.h>
+#include <tesseract_common/resource.h>
 
 namespace tesseract_geometry
 {

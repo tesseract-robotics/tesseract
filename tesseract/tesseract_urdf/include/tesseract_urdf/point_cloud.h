@@ -111,7 +111,7 @@ inline tesseract_common::StatusCode::Ptr parsePointCloud(tesseract_geometry::Oct
                                                           status_cat);
   }
 
-  if (pcl::io::loadPCDFile<pcl::PointXYZ>(located_resource->GetFilename(), *cloud) == -1)
+  if (pcl::io::loadPCDFile<pcl::PointXYZ>(located_resource->GetFilePath(), *cloud) == -1)
     return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::ErrorImportingPointCloud,
                                                           status_cat);
 

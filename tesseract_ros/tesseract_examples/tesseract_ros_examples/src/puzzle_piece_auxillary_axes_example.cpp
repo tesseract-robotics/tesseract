@@ -206,7 +206,7 @@ bool PuzzlePieceAuxillaryAxesExample::run()
   nh_.getParam(ROBOT_DESCRIPTION_PARAM, urdf_xml_string);
   nh_.getParam(ROBOT_SEMANTIC_PARAM, srdf_xml_string);
 
-  ResourceLocatorFn locator = tesseract_rosutils::locateResource;
+  ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
   if (!tesseract_->init(urdf_xml_string, srdf_xml_string, locator))
     return false;
 

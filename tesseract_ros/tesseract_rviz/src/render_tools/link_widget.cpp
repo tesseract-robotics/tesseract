@@ -899,9 +899,9 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
     {
       const tesseract_geometry::Mesh& mesh = static_cast<const tesseract_geometry::Mesh&>(geom);
 
-      if (!mesh.getFilePath().empty())
+      if (mesh.getResource() && mesh.getResource()->IsFile())
       {
-        std::string model_name = "file://" + mesh.getFilePath();
+        std::string model_name = "file://" + mesh.getResource()->GetFilePath();
 
         const Eigen::Vector3d& mesh_scale = mesh.getScale();
         scale = Ogre::Vector3(
@@ -937,9 +937,9 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
     {
       const tesseract_geometry::ConvexMesh& mesh = static_cast<const tesseract_geometry::ConvexMesh&>(geom);
 
-      if (!mesh.getFilePath().empty())
+      if (mesh.getResource() && mesh.getResource()->IsFile())
       {
-        std::string model_name = "file://" + mesh.getFilePath();
+        std::string model_name = "file://" + mesh.getResource()->GetFilePath();
 
         const Eigen::Vector3d& mesh_scale = mesh.getScale();
         scale = Ogre::Vector3(

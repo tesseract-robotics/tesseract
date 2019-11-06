@@ -62,7 +62,7 @@ namespace tesseract_scene_graph
         return url_;
     }
 
-    std::string SimpleLocatedResource::GetFilename()
+    std::string SimpleLocatedResource::GetFilePath()
     {
         return filename_;
     }
