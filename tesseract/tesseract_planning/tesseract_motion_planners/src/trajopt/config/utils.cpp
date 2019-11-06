@@ -311,4 +311,25 @@ trajopt::TermInfo::Ptr createSmoothJerkTermInfo(const int n_steps,
   return jj;
 }
 
+trajopt::TermInfo::Ptr createUserDefinedTermInfo(const int n_steps,
+                                                 const sco::VectorOfVector::func error_function,
+                                                 const sco::MatrixOfVector::func jacobian_function,
+                                                 const std::string& name)
+{
+  if (error_function == nullptr)
+  {
+    throw std::runtime_error("TrajOpt Planner Config constraint from error function recieved nullptr!");
+  }
+
+  auto ef = std::make_shared<trajopt::UserDefinedTermInfo>();
+  ef->name = name;
+  ef->term_type = trajopt::TT_COST;
+  ef->first_step = 0;
+  ef->last_step = n_steps - 1;
+  ef->error_function = error_function;
+  ef->jacobian_function = jacobian_function;
+
+  return ef;
+}
+
 }  // namespace tesseract_motion_planners

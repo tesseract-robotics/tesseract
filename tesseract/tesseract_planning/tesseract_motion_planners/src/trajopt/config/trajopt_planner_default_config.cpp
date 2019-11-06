@@ -188,6 +188,23 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerDefaultConfig::g
     pci.cost_infos.push_back(jp);
   }
 
+  if (!constraint_error_functions.empty())
+  {
+    for (std::size_t i = 0; i < constraint_error_functions.size(); ++i)
+    {
+      auto& c = constraint_error_functions[i];
+      trajopt::TermInfo::Ptr ti = createUserDefinedTermInfo(pci.basic_info.n_steps, c.first, c.second);
+
+      // Update the term info with the (possibly) new start and end state indices for which to apply this cost
+      std::shared_ptr<trajopt::UserDefinedTermInfo> ef = std::static_pointer_cast<trajopt::UserDefinedTermInfo>(ti);
+      ef->term_type = trajopt::TT_CNT;
+      ef->first_step = cost_first_step;
+      ef->last_step = cost_last_step;
+
+      pci.cnt_infos.push_back(ef);
+    }
+  }
+
   return std::make_shared<trajopt::ProblemConstructionInfo>(pci);
 }
 
@@ -200,39 +217,6 @@ bool TrajOptPlannerDefaultConfig::generate()
     return false;
   }
   prob = trajopt::ConstructProblem(*pci);
-
-  for (std::size_t i = 0; i < constraint_error_functions.size(); ++i)
-  {
-    auto& c = constraint_error_functions[i];
-    if (c.first == nullptr)
-    {
-      CONSOLE_BRIDGE_logError("Failed to create constraint from error function, nullptr was provided!");
-      return false;
-    }
-
-    for (int s = 0; s < pci->basic_info.n_steps; ++s)
-    {
-      if (c.second == nullptr)
-      {
-        prob->addConstraint(std::make_shared<trajopt::TrajOptConstraintFromErrFunc>(
-            sco::VectorOfVector::construct(c.first),
-            prob->GetVarRow(s, 0, static_cast<int>(pci->kin->numJoints())),
-            Eigen::VectorXd::Ones(0),
-            sco::EQ,
-            "ConstraintErrFunc_" + std::to_string(i)));
-      }
-      else
-      {
-        prob->addConstraint(std::make_shared<trajopt::TrajOptConstraintFromErrFunc>(
-            sco::VectorOfVector::construct(c.first),
-            sco::MatrixOfVector::construct(c.second),
-            prob->GetVarRow(s, 0, static_cast<int>(pci->kin->numJoints())),
-            Eigen::VectorXd::Ones(0),
-            sco::EQ,
-            "ConstraintErrFunc_" + std::to_string(i)));
-      }
-    }
-  }
 
   return true;
 }
