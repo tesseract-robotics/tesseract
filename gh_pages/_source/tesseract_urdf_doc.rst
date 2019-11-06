@@ -1,6 +1,6 @@
-**************************
-Tesseract Geometry Package
-**************************
+**********************
+Tesseract URDF Package
+**********************
 
 Background
 ==========
