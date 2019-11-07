@@ -9,7 +9,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_urdf)
 {
-  std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator=std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
+  std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator =
+      std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
   {
     std::string str = "<robot name=\"test\" extra=\"0 0 0\">"
                       "  <joint name=\"j1\" type=\"fixed\">"
@@ -219,7 +220,8 @@ TEST(TesseractURDFUnit, parse_urdf)
 
 TEST(TesseractURDFUnit, parse_urdf_with_available_materials)
 {
-   std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator=std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
+  std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator =
+      std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
   {
     std::string str = "<robot name=\"test\" extra=\"0 0 0\">"
                       "  <material name=\"test_material\" extra=\"0 0 0\">"
@@ -392,7 +394,8 @@ TEST(TesseractURDFUnit, LoadURDFUnit)
 
   std::string urdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
-  tesseract_scene_graph::ResourceLocator::Ptr locator = std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
+  tesseract_scene_graph::ResourceLocator::Ptr locator =
+      std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
   SceneGraph::Ptr g = tesseract_urdf::parseURDFFile(urdf_file, locator);
 
   EXPECT_TRUE(g->getJoints().size() == 9);

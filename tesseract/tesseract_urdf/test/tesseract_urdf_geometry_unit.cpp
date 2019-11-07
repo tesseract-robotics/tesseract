@@ -9,7 +9,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_geometry)
 {
-  std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator=std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
+  std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator =
+      std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
   {
     std::string str = "<geometry extra=\"0 0 0\">"
                       "  <box size=\"1 1 1\" />"

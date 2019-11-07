@@ -34,63 +34,54 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
 {
-    SimpleResourceLocator::SimpleResourceLocator(SimpleResourceLocator::ResourceLocatorFn locator_function)
-    {
-        assert(locator_function);
-        locator_function_ = locator_function;
-    }
-
-    tesseract_common::Resource::Ptr SimpleResourceLocator::LocateResource(const std::string& url)
-    {
-        std::string filename = locator_function_(url);
-        if (filename.empty()) 
-            return nullptr;
-        return std::make_shared<SimpleLocatedResource>(url,filename);
-    }
-
-    SimpleLocatedResource::SimpleLocatedResource(const std::string& url, const std::string& filename)
-    {
-        url_ = url;
-        filename_ = filename;
-    }
-
-    bool SimpleLocatedResource::IsFile()
-    {
-        return true;
-    }
-
-    std::string SimpleLocatedResource::GetUrl()
-    {
-        return url_;
-    }
-
-    std::string SimpleLocatedResource::GetFilePath()
-    {
-        return filename_;
-    }
-
-    std::vector<uint8_t> SimpleLocatedResource::GetResourceContents()
-    {
-        // https://codereview.stackexchange.com/questions/22901/reading-all-bytes-from-a-file
-
-        std::ifstream ifs(filename_, std::ios::binary|std::ios::ate);
-        if(!ifs) 
-        {
-            return std::vector<uint8_t>();
-        }
-        std::ifstream::pos_type pos = ifs.tellg();
-
-        std::vector<uint8_t> file_contents(pos);
-
-        ifs.seekg(0, std::ios::beg);
-        ifs.read((char*)&file_contents[0],pos);
-                        
-        return file_contents;
-    }
-
-    std::shared_ptr<std::istream> SimpleLocatedResource::GetResourceContentStream()
-    {
-        std::shared_ptr<std::ifstream> f = std::make_shared<std::ifstream>(filename_, std::ios::binary);
-        return f;
-    }
+SimpleResourceLocator::SimpleResourceLocator(SimpleResourceLocator::ResourceLocatorFn locator_function)
+{
+  assert(locator_function);
+  locator_function_ = locator_function;
 }
+
+tesseract_common::Resource::Ptr SimpleResourceLocator::LocateResource(const std::string& url)
+{
+  std::string filename = locator_function_(url);
+  if (filename.empty())
+    return nullptr;
+  return std::make_shared<SimpleLocatedResource>(url, filename);
+}
+
+SimpleLocatedResource::SimpleLocatedResource(const std::string& url, const std::string& filename)
+{
+  url_ = url;
+  filename_ = filename;
+}
+
+bool SimpleLocatedResource::IsFile() { return true; }
+
+std::string SimpleLocatedResource::GetUrl() { return url_; }
+
+std::string SimpleLocatedResource::GetFilePath() { return filename_; }
+
+std::vector<uint8_t> SimpleLocatedResource::GetResourceContents()
+{
+  // https://codereview.stackexchange.com/questions/22901/reading-all-bytes-from-a-file
+
+  std::ifstream ifs(filename_, std::ios::binary | std::ios::ate);
+  if (!ifs)
+  {
+    return std::vector<uint8_t>();
+  }
+  std::ifstream::pos_type pos = ifs.tellg();
+
+  std::vector<uint8_t> file_contents(pos);
+
+  ifs.seekg(0, std::ios::beg);
+  ifs.read((char*)&file_contents[0], pos);
+
+  return file_contents;
+}
+
+std::shared_ptr<std::istream> SimpleLocatedResource::GetResourceContentStream()
+{
+  std::shared_ptr<std::ifstream> f = std::make_shared<std::ifstream>(filename_, std::ios::binary);
+  return f;
+}
+}  // namespace tesseract_scene_graph

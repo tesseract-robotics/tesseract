@@ -222,11 +222,10 @@ inline std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& pat
 
 template <class T>
 inline std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::Resource::Ptr resource,
-                                                          Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
-                                                          bool triangulate = false,
-                                                          bool flatten = false)
+                                                              Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
+                                                              bool triangulate = false,
+                                                              bool flatten = false)
 {
-
   if (!resource)
     return std::vector<std::shared_ptr<T>>();
 
@@ -235,14 +234,13 @@ inline std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::
   std::string resource_url = resource->GetUrl();
   std::regex hint_re("^.*\\.([A-Za-z0-9]{1,8})$");
   std::smatch hint_match;
-  if(std::regex_match(resource_url,hint_match,hint_re))
+  if (std::regex_match(resource_url, hint_match, hint_re))
   {
-    if(hint_match.size()==2)
+    if (hint_match.size() == 2)
     {
       hint = hint_match[1].str().c_str();
     }
   }
-
 
   std::vector<uint8_t> data = resource->GetResourceContents();
 
@@ -260,16 +258,22 @@ inline std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::
   // And have it read the given file with some post-processing
   const aiScene* scene = nullptr;
   if (triangulate)
-    scene = importer.ReadFileFromMemory(&data[0], data.size(),
-                              aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType |
-                                  aiProcess_RemoveComponent, hint);
+    scene = importer.ReadFileFromMemory(&data[0],
+                                        data.size(),
+                                        aiProcess_Triangulate | aiProcess_JoinIdenticalVertices |
+                                            aiProcess_SortByPType | aiProcess_RemoveComponent,
+                                        hint);
   else
-    scene = importer.ReadFileFromMemory(&data[0], data.size(),
-                              aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | aiProcess_RemoveComponent, hint);
+    scene =
+        importer.ReadFileFromMemory(&data[0],
+                                    data.size(),
+                                    aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | aiProcess_RemoveComponent,
+                                    hint);
 
   if (!scene)
   {
-    CONSOLE_BRIDGE_logError("Could not load mesh from \"%s\": %s", resource->GetUrl().c_str(), importer.GetErrorString());
+    CONSOLE_BRIDGE_logError(
+        "Could not load mesh from \"%s\": %s", resource->GetUrl().c_str(), importer.GetErrorString());
     return std::vector<std::shared_ptr<T>>();
   }
 

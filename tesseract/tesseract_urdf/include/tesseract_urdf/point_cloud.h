@@ -105,7 +105,7 @@ inline tesseract_common::StatusCode::Ptr parsePointCloud(tesseract_geometry::Oct
   tesseract_common::Resource::Ptr located_resource = locator->LocateResource(filename);
   if (!located_resource->IsFile())
   {
-    //TODO: Handle point clouds that are not files
+    // TODO: Handle point clouds that are not files
     CONSOLE_BRIDGE_logError("Point clouds can only be loaded from file");
     return std::make_shared<tesseract_common::StatusCode>(PointCloudStatusCategory::ErrorImportingPointCloud,
                                                           status_cat);

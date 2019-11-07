@@ -111,7 +111,7 @@ inline std::string locateResource(const std::string& url)
 class ROSResourceLocator : public tesseract_scene_graph::SimpleResourceLocator
 {
 public:
-  ROSResourceLocator() : SimpleResourceLocator(locateResource) {}   
+  ROSResourceLocator() : SimpleResourceLocator(locateResource) {}
 };
 
 inline bool isMsgEmpty(const sensor_msgs::JointState& msg)
@@ -391,7 +391,8 @@ inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract_geome
 
       if (mesh.getResource() && mesh.getResource()->IsFile())
       {
-        geometry_msgs.mesh.file_path = mesh.getResource()->GetFilePath();;
+        geometry_msgs.mesh.file_path = mesh.getResource()->GetFilePath();
+        ;
       }
       if (geometry_msgs.mesh.file_path.empty())
       {
@@ -431,7 +432,8 @@ inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract_geome
 
       if (mesh.getResource() && mesh.getResource()->IsFile())
       {
-        geometry_msgs.mesh.file_path = mesh.getResource()->GetFilePath();;
+        geometry_msgs.mesh.file_path = mesh.getResource()->GetFilePath();
+        ;
       }
       if (geometry_msgs.mesh.file_path.empty())
       {
@@ -471,7 +473,8 @@ inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract_geome
 
       if (mesh.getResource() && mesh.getResource()->IsFile())
       {
-        geometry_msgs.mesh.file_path = mesh.getResource()->GetFilePath();;
+        geometry_msgs.mesh.file_path = mesh.getResource()->GetFilePath();
+        ;
       }
       if (geometry_msgs.mesh.file_path.empty())
       {
@@ -546,7 +549,8 @@ inline bool fromMsg(tesseract_geometry::Geometry::Ptr& geometry, const tesseract
       geometry = tesseract_geometry::Mesh::Ptr(new tesseract_geometry::Mesh(
           vertices,
           faces,
-          std::make_shared<tesseract_scene_graph::SimpleLocatedResource>(geometry_msg.mesh.file_path,geometry_msg.mesh.file_path),
+          std::make_shared<tesseract_scene_graph::SimpleLocatedResource>(geometry_msg.mesh.file_path,
+                                                                         geometry_msg.mesh.file_path),
           Eigen::Vector3d(geometry_msg.mesh.scale[0], geometry_msg.mesh.scale[1], geometry_msg.mesh.scale[2])));
     else
       geometry = tesseract_geometry::Mesh::Ptr(new tesseract_geometry::Mesh(vertices, faces));
@@ -568,7 +572,8 @@ inline bool fromMsg(tesseract_geometry::Geometry::Ptr& geometry, const tesseract
       geometry = tesseract_geometry::ConvexMesh::Ptr(new tesseract_geometry::ConvexMesh(
           vertices,
           faces,
-          std::make_shared<tesseract_scene_graph::SimpleLocatedResource>(geometry_msg.mesh.file_path,geometry_msg.mesh.file_path),
+          std::make_shared<tesseract_scene_graph::SimpleLocatedResource>(geometry_msg.mesh.file_path,
+                                                                         geometry_msg.mesh.file_path),
           Eigen::Vector3d(geometry_msg.mesh.scale[0], geometry_msg.mesh.scale[1], geometry_msg.mesh.scale[2])));
     else
       geometry = tesseract_geometry::ConvexMesh::Ptr(new tesseract_geometry::ConvexMesh(vertices, faces));
@@ -590,7 +595,8 @@ inline bool fromMsg(tesseract_geometry::Geometry::Ptr& geometry, const tesseract
       geometry = tesseract_geometry::SDFMesh::Ptr(new tesseract_geometry::SDFMesh(
           vertices,
           faces,
-          std::make_shared<tesseract_scene_graph::SimpleLocatedResource>(geometry_msg.mesh.file_path,geometry_msg.mesh.file_path),
+          std::make_shared<tesseract_scene_graph::SimpleLocatedResource>(geometry_msg.mesh.file_path,
+                                                                         geometry_msg.mesh.file_path),
           Eigen::Vector3d(geometry_msg.mesh.scale[0], geometry_msg.mesh.scale[1], geometry_msg.mesh.scale[2])));
     else
       geometry = tesseract_geometry::SDFMesh::Ptr(new tesseract_geometry::SDFMesh(vertices, faces));

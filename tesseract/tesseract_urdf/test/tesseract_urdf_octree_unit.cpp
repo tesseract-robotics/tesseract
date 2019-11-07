@@ -10,7 +10,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_octree)
 {
-  std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator=std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
+  std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator =
+      std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
   //  {
   //    // Create octomap and add save it
   //    pcl::PointCloud<pcl::PointXYZ> full_cloud;

@@ -121,8 +121,8 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::C
   xml_element->QueryBoolAttribute("convert", &convert);
 
   if (visual)
-    meshes =
-        tesseract_geometry::createMeshFromResource<tesseract_geometry::ConvexMesh>(locator->LocateResource(filename), scale, true, true);
+    meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::ConvexMesh>(
+        locator->LocateResource(filename), scale, true, true);
   else
   {
     if (!convert)
@@ -133,7 +133,8 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::C
     else
     {
       std::vector<tesseract_geometry::Mesh::Ptr> temp_meshes =
-          tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(locator->LocateResource(filename), scale, true, false);
+          tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(
+              locator->LocateResource(filename), scale, true, false);
       for (auto& mesh : temp_meshes)
         meshes.push_back(tesseract_collision::makeConvexMesh(*mesh));
     }

@@ -9,59 +9,56 @@
 
 namespace tesseract_scene_graph
 {
-    // ResourceLocator abstract class
-    class ResourceLocator
-    {
-    public:
-        using Ptr = std::shared_ptr<ResourceLocator>;
-        using ConstPtr = std::shared_ptr<const ResourceLocator>;
+// ResourceLocator abstract class
+class ResourceLocator
+{
+public:
+  using Ptr = std::shared_ptr<ResourceLocator>;
+  using ConstPtr = std::shared_ptr<const ResourceLocator>;
 
-        virtual tesseract_common::Resource::Ptr LocateResource(const std::string& url) = 0;
-    };
+  virtual tesseract_common::Resource::Ptr LocateResource(const std::string& url) = 0;
+};
 
-    // SimpleResourceLocator using a function to resolve filenames
-    class SimpleResourceLocator : public ResourceLocator
-    {
-    public:
+// SimpleResourceLocator using a function to resolve filenames
+class SimpleResourceLocator : public ResourceLocator
+{
+public:
+  using Ptr = std::shared_ptr<SimpleResourceLocator>;
+  using ConstPtr = std::shared_ptr<const SimpleResourceLocator>;
 
-        using Ptr = std::shared_ptr<SimpleResourceLocator>;
-        using ConstPtr = std::shared_ptr<const SimpleResourceLocator>;
+  using ResourceLocatorFn = std::function<std::string(const std::string&)>;
 
-        using ResourceLocatorFn = std::function<std::string(const std::string&)>;
-        
-        SimpleResourceLocator(ResourceLocatorFn locator_function);
+  SimpleResourceLocator(ResourceLocatorFn locator_function);
 
-        virtual tesseract_common::Resource::Ptr LocateResource(const std::string& url) override;
+  virtual tesseract_common::Resource::Ptr LocateResource(const std::string& url) override;
 
-    protected:
-        ResourceLocatorFn locator_function_;        
-    };
+protected:
+  ResourceLocatorFn locator_function_;
+};
 
+// SimpleLocatedResource for file
+class SimpleLocatedResource : public tesseract_common::Resource
+{
+public:
+  using Ptr = std::shared_ptr<SimpleLocatedResource>;
+  using ConstPtr = std::shared_ptr<const SimpleLocatedResource>;
 
-    // SimpleLocatedResource for file
-    class SimpleLocatedResource : public tesseract_common::Resource
-    {
-    public:
-        using Ptr = std::shared_ptr<SimpleLocatedResource>;
-        using ConstPtr = std::shared_ptr<const SimpleLocatedResource>;
+  SimpleLocatedResource(const std::string& url, const std::string& filename);
 
-        SimpleLocatedResource(const std::string& url, const std::string& filename);
+  virtual bool IsFile() override;
 
-        virtual bool IsFile() override;
+  virtual std::string GetUrl() override;
 
-        virtual std::string GetUrl() override;
+  virtual std::string GetFilePath() override;
 
-        virtual std::string GetFilePath() override;
+  virtual std::vector<uint8_t> GetResourceContents() override;
 
-        virtual std::vector<uint8_t> GetResourceContents() override;
+  virtual std::shared_ptr<std::istream> GetResourceContentStream() override;
 
-        virtual std::shared_ptr<std::istream> GetResourceContentStream() override;
-
-    protected:
-        std::string url_;
-        std::string filename_;
-    };
-
+protected:
+  std::string url_;
+  std::string filename_;
+};
 
 }  // namespace tesseract_scene_graph
 

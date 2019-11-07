@@ -92,10 +92,10 @@ inline tesseract_common::StatusCode::Ptr parseOctree(tesseract_geometry::Octree:
 
   tesseract_common::Resource::Ptr resource = locator->LocateResource(filename);
   if (!resource)
-    return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::ErrorImportingOctree, status_cat);  
+    return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::ErrorImportingOctree, status_cat);
   if (!resource->IsFile())
     return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::ErrorImportingOctree, status_cat);
-  
+
   auto ot = std::make_shared<octomap::OcTree>(resource->GetFilePath());
 
   if (ot == nullptr || ot->size() == 0)

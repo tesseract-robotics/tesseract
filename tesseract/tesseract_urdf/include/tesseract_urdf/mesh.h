@@ -112,9 +112,11 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::M
   }
 
   if (visual)
-    meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(locator->LocateResource(filename), scale, true, true);
+    meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(
+        locator->LocateResource(filename), scale, true, true);
   else
-    meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(locator->LocateResource(filename), scale, true, false);
+    meshes = tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(
+        locator->LocateResource(filename), scale, true, false);
 
   if (meshes.empty())
     return std::make_shared<tesseract_common::StatusCode>(MeshStatusCategory::ErrorImportingMeshes, status_cat);
