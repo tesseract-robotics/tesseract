@@ -48,12 +48,19 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/geometric/planners/prm/LazyPRMstar.h>
 #include <ompl/geometric/planners/prm/SPARS.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#include <tesseract_motion_planners/ompl/ompl_settings.h>
 
 namespace tesseract_motion_planners
 {
-class SBLConfig
+template <typename PlannerT>
+struct OMPLSettings
 {
-public:
+  void apply(PlannerT& planner) const;
+};
+
+template <>
+struct OMPLSettings<ompl::geometric::SBL>
+{
   /** @brief Max motion added to tree */
   double range = 0;
 
@@ -61,9 +68,9 @@ public:
   void apply(ompl::geometric::SBL& planner) const { planner.setRange(range); }
 };
 
-class ESTConfig
+template <>
+struct OMPLSettings<ompl::geometric::EST>
 {
-public:
   /** @brief Max motion added to tree */
   double range = 0;
 
@@ -78,9 +85,9 @@ public:
   }
 };
 
-class LBKPIECEConfig
+template <>
+struct OMPLSettings<ompl::geometric::LBKPIECE1>
 {
-public:
   /** @brief Max motion added to tree */
   double range = 0;
 
@@ -99,9 +106,9 @@ public:
   }
 };
 
-class BKPIECEConfig
+template <>
+struct OMPLSettings<ompl::geometric::BKPIECE1>
 {
-public:
   /** @brief Max motion added to tree */
   double range = 0;
 
@@ -124,9 +131,9 @@ public:
   }
 };
 
-class KPIECEConfig
+template <>
+struct OMPLSettings<ompl::geometric::KPIECE1>
 {
-public:
   /** @brief Max motion added to tree */
   double range = 0;
 
@@ -153,9 +160,9 @@ public:
   }
 };
 
-class RRTConfig
+template <>
+struct OMPLSettings<ompl::geometric::RRT>
 {
-public:
   /** @brief Max motion added to tree */
   double range = 0;
 
@@ -170,9 +177,9 @@ public:
   }
 };
 
-class RRTConnectConfig
+template <>
+struct OMPLSettings<ompl::geometric::RRTConnect>
 {
-public:
   /** @brief Max motion added to tree */
   double range = 0;
 
@@ -180,9 +187,9 @@ public:
   void apply(ompl::geometric::RRTConnect& planner) const { planner.setRange(range); }
 };
 
-class RRTstarConfig
+template <>
+struct OMPLSettings<ompl::geometric::RRTstar>
 {
-public:
   /** @brief Max motion added to tree */
   double range = 0;
 
@@ -201,9 +208,9 @@ public:
   }
 };
 
-class TRRTConfig
+template <>
+struct OMPLSettings<ompl::geometric::TRRT>
 {
-public:
   /** @brief Max motion added to tree */
   double range = 0;
 
@@ -217,10 +224,10 @@ public:
   double init_temperature = 10e-6;
 
   /** @brief Dist new state to nearest neighbor to disqualify as frontier. */
-  double frountier_threshold = 0.0;
+  double frontier_threshold = 0.0;
 
   /** @brief 1/10, or 1 nonfrontier for every 10 frontier. */
-  double frountier_node_ratio = 0.1;
+  double frontier_node_ratio = 0.1;
 
   /** @brief Apply settings to planner */
   void apply(ompl::geometric::TRRT& planner) const
@@ -229,14 +236,14 @@ public:
     planner.setGoalBias(goal_bias);
     planner.setTempChangeFactor(temp_change_factor);
     planner.setInitTemperature(init_temperature);
-    planner.setFrontierThreshold(frountier_threshold);
-    planner.setFrontierNodeRatio(frountier_node_ratio);
+    planner.setFrontierThreshold(frontier_threshold);
+    planner.setFrontierNodeRatio(frontier_node_ratio);
   }
 };
 
-class PRMConfig
+template <>
+struct OMPLSettings<ompl::geometric::PRM>
 {
-public:
   /** @brief Use k nearest neighbors. */
   int max_nearest_neighbors = 10;
 
@@ -247,21 +254,22 @@ public:
   }
 };
 
-class PRMstarConfig
+template <>
+struct OMPLSettings<ompl::geometric::PRMstar>
 {
-public:
   /** @brief Apply settings to planner */
   void apply(ompl::geometric::PRMstar& /*planner*/) const {}
 };
 
-class LazyPRMstarConfig
+template <>
+struct OMPLSettings<ompl::geometric::LazyPRMstar>
 {
-public:
   /** @brief Apply settings to planner */
   void apply(ompl::geometric::LazyPRMstar& /*planner*/) const {}
 };
 
-class SPARSConfig
+template <>
+struct OMPLSettings<ompl::geometric::SPARS>
 {
 public:
   /** @brief The maximum number of failures before terminating the algorithm */
