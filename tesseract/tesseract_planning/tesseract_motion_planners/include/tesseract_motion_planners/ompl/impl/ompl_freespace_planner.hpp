@@ -292,12 +292,14 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
   };
 
   ompl::base::ScopedState<> start_state(simple_setup_->getStateSpace());
+  const Eigen::VectorXd sp = start_position->getPositions(kin_->getJointNames());
   for (unsigned i = 0; i < dof; ++i)
-    start_state[i] = start_position->getPositions()[i];
+    start_state[i] = sp[i];
 
   ompl::base::ScopedState<> goal_state(simple_setup_->getStateSpace());
+  const Eigen::VectorXd ep = end_position->getPositions(kin_->getJointNames());
   for (unsigned i = 0; i < dof; ++i)
-    goal_state[i] = end_position->getPositions()[i];
+    goal_state[i] = ep[i];
 
   simple_setup_->setStartAndGoalStates(start_state, goal_state);
 

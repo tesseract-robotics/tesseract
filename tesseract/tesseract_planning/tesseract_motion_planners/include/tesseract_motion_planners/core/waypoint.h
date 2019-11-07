@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Dense>
 #include <memory>
 #include <vector>
+#include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
@@ -130,6 +131,9 @@ public:
     , joint_names_(std::move(joint_names))
   {
     assert(joint_positions_.size() == static_cast<long>(joint_names_.size()));
+    for (int i = 0; i < joint_names_.size(); ++i)
+      lookup_[joint_names_[i]] = i;
+
     setCoefficients(Eigen::VectorXd::Ones(joint_positions_.size()));
   }
 
@@ -141,6 +145,9 @@ public:
       joint_positions_[i] = joint_positions[static_cast<size_t>(i)];
 
     assert(joint_positions_.size() == static_cast<long>(joint_names_.size()));
+    for (int i = 0; i < joint_names_.size(); ++i)
+      lookup_[joint_names_[i]] = i;
+
     setCoefficients(Eigen::VectorXd::Ones(joint_positions_.size()));
   }
 
@@ -151,14 +158,74 @@ public:
   const Eigen::VectorXd& getPositions() const { return joint_positions_; }
 
   /**
+   * @brief Get the joint position in the order of the provided joint names
+   * @param joint_names The joint names defining the order of the return positions
+   * @return A vector of joint positions
+   */
+  Eigen::VectorXd getPositions(const std::vector<std::string>& joint_names) const
+  {
+    assert(compare(joint_names));
+
+    Eigen::VectorXd jp(joint_positions_.size());
+    for (int i = 0; i < joint_names.size(); ++i)
+      jp(i) = joint_positions_[lookup_.at(joint_names[i])];
+
+    return jp;
+  }
+
+  /**
+   * @brief Get coefficients used to weight different terms in the waypoints
+   * @return A vector of coefficients
+   */
+  const Eigen::VectorXd& getCoefficients() const override { return coeffs_; }
+
+  /**
+   * @brief Get coefficients in the order of the provided joint names
+   * @param joint_names The joint names defining the order of the return positions
+   * @return A vector of coefficients
+   */
+  Eigen::VectorXd getCoefficients(const std::vector<std::string>& joint_names) const
+  {
+    assert(compare(joint_names));
+
+    if (coeffs_.size() == 1)
+      return coeffs_;
+
+    Eigen::VectorXd coeffs(joint_positions_.size());
+    for (int i = 0; i < joint_names.size(); ++i)
+      coeffs(i) = coeffs_[lookup_.at(joint_names[i])];
+
+    return coeffs;
+  }
+
+  /**
    * @brief Get the joint names
    * @return A vector of joint names
    */
   const std::vector<std::string>& getNames() const { return joint_names_; }
 
+  /**
+   * @brief Compare vector of joint names, order does not matter
+   * @param j1 Vector of joint names
+   * @param j2 Vector of joint names
+   * @return True if joint names are present in both vectors
+   */
+  bool compare(const std::vector<std::string>& joint_names) const
+  {
+    if (joint_names_.size() != joint_names.size())
+      return false;
+
+    for (const auto& j : joint_names)
+      if (lookup_.find(j) == lookup_.end())
+        return false;
+
+    return true;
+  }
+
 protected:
-  Eigen::VectorXd joint_positions_;      /** @brief Joint position in radians */
-  std::vector<std::string> joint_names_; /** @brief Joint names */
+  Eigen::VectorXd joint_positions_;             /** @brief Joint position in radians */
+  std::vector<std::string> joint_names_;        /** @brief Joint names */
+  std::unordered_map<std::string, int> lookup_; /** @brief Joint name lookup_ */
 };
 
 /** @brief Defines a cartesian position waypoint for use with Tesseract Planners */
@@ -236,18 +303,6 @@ public:
   }
 
   /**
-   * @brief Get the joint positions in radians
-   * @return A vector of joint positions
-   */
-  const Eigen::VectorXd& getPositions() const { return joint_positions_; }
-
-  /**
-   * @brief Get the joint names
-   * @return A vector of joint names
-   */
-  const std::vector<std::string>& getNames() const { return joint_names_; }
-
-  /**
    * @brief Set Amount over joint_positions_ that is allowed (positive radians).
    *
    * The allowed range is joint_positions-lower_tolerance_ to joint_positions_+upper_tolerance
@@ -271,6 +326,22 @@ public:
   const Eigen::VectorXd& getUpperTolerance() const { return upper_tolerance_; }
 
   /**
+   * @brief Get the upper tolerance in the order of the provided joint names
+   * @param joint_names The joint names defining the order of the return
+   * @return The upper tolerance
+   */
+  Eigen::VectorXd getUpperTolerance(const std::vector<std::string>& joint_names) const
+  {
+    assert(compare(joint_names));
+
+    Eigen::VectorXd ut(joint_positions_.size());
+    for (int i = 0; i < joint_names.size(); ++i)
+      ut(i) = upper_tolerance_[lookup_.at(joint_names[i])];
+
+    return ut;
+  }
+
+  /**
    * @brief Set Amount under joint_positions_ that is allowed (positive radians).
    *
    * The allowed range is joint_positions-lower_tolerance_ to joint_positions_+upper_tolerance
@@ -292,6 +363,22 @@ public:
    * @return The lower tolerance
    */
   const Eigen::VectorXd& getLowerTolerance() const { return lower_tolerance_; }
+
+  /**
+   * @brief Get the lower tolerance in the order of the provided joint names
+   * @param joint_names The joint names defining the order of the return
+   * @return The lower tolerance
+   */
+  Eigen::VectorXd getLowerTolerance(const std::vector<std::string>& joint_names) const
+  {
+    assert(compare(joint_names));
+
+    Eigen::VectorXd lt(joint_positions_.size());
+    for (int i = 0; i < joint_names.size(); ++i)
+      lt(i) = lower_tolerance_[lookup_.at(joint_names[i])];
+
+    return lt;
+  }
 
 protected:
   /** @brief Amount over joint_positions_ that is allowed (positive radians). */
