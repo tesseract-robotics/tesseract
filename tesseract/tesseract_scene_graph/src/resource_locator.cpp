@@ -43,6 +43,8 @@ namespace tesseract_scene_graph
     tesseract_common::Resource::Ptr SimpleResourceLocator::LocateResource(const std::string& url)
     {
         std::string filename = locator_function_(url);
+        if (filename.empty()) 
+            return nullptr;
         return std::make_shared<SimpleLocatedResource>(url,filename);
     }
 
@@ -69,10 +71,20 @@ namespace tesseract_scene_graph
 
     std::vector<uint8_t> SimpleLocatedResource::GetResourceContents()
     {
-        // https://stackoverflow.com/questions/4761529/efficient-way-of-reading-a-file-into-an-stdvectorchar
-        std::basic_ifstream<uint8_t> f(filename_, std::ios::binary);
-        std::vector<uint8_t> file_contents((std::istreambuf_iterator<uint8_t>(f)),
-                               std::istreambuf_iterator<uint8_t>());
+        // https://codereview.stackexchange.com/questions/22901/reading-all-bytes-from-a-file
+
+        std::ifstream ifs(filename_, std::ios::binary|std::ios::ate);
+        if(!ifs) 
+        {
+            return std::vector<uint8_t>();
+        }
+        std::ifstream::pos_type pos = ifs.tellg();
+
+        std::vector<uint8_t> file_contents(pos);
+
+        ifs.seekg(0, std::ios::beg);
+        ifs.read((char*)&file_contents[0],pos);
+                        
         return file_contents;
     }
 

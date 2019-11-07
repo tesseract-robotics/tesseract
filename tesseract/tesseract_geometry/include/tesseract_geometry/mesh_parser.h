@@ -50,6 +50,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/types.h>
 #include <tesseract_common/resource.h>
 
+#include <regex>
+
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
@@ -225,6 +227,23 @@ inline std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::
                                                           bool flatten = false)
 {
 
+  if (!resource)
+    return std::vector<std::shared_ptr<T>>();
+
+  const char* hint = nullptr;
+
+  std::string resource_url = resource->GetUrl();
+  std::regex hint_re("^.*\\.([A-Za-z0-9]{1,8})$");
+  std::smatch hint_match;
+  if(std::regex_match(resource_url,hint_match,hint_re))
+  {
+    if(hint_match.size()==2)
+    {
+      hint = hint_match[1].str().c_str();
+    }
+  }
+
+
   std::vector<uint8_t> data = resource->GetResourceContents();
 
   // Create an instance of the Importer class
@@ -243,13 +262,16 @@ inline std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::
   if (triangulate)
     scene = importer.ReadFileFromMemory(&data[0], data.size(),
                               aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType |
-                                  aiProcess_RemoveComponent);
+                                  aiProcess_RemoveComponent, hint);
   else
     scene = importer.ReadFileFromMemory(&data[0], data.size(),
-                              aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | aiProcess_RemoveComponent);
+                              aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | aiProcess_RemoveComponent, hint);
 
   if (!scene)
+  {
+    CONSOLE_BRIDGE_logError("Could not load mesh from \"%s\": %s", resource->GetUrl().c_str(), importer.GetErrorString());
     return std::vector<std::shared_ptr<T>>();
+  }
 
   // Assimp enforces Y_UP convention by rotating models with different conventions.
   // However, that behaviour is confusing and doesn't match the ROS convention

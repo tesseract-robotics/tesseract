@@ -90,11 +90,14 @@ inline tesseract_common::StatusCode::Ptr parseOctree(tesseract_geometry::Octree:
   if (QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
     return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::ErrorAttributeFileName, status_cat);
 
-  auto ot = std::make_shared<octomap::OcTree>(0.1);
-
-  std::shared_ptr<std::istream> resource_istream = locator->LocateResource(filename)->GetResourceContentStream();
+  tesseract_common::Resource::Ptr resource = locator->LocateResource(filename);
+  if (!resource)
+    return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::ErrorImportingOctree, status_cat);  
+  if (!resource->IsFile())
+    return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::ErrorImportingOctree, status_cat);
   
-  ot->readBinaryData(*resource_istream);
+  auto ot = std::make_shared<octomap::OcTree>(resource->GetFilePath());
+
   if (ot == nullptr || ot->size() == 0)
     return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::ErrorImportingOctree, status_cat);
 
