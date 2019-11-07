@@ -149,6 +149,7 @@ makeRobotSamplers(const std::vector<Waypoint::Ptr>& path,
                   const FloatType y_axes_sample_resolution = 60 * M_PI / 180,
                   const FloatType z_axes_sample_resolution = 60 * M_PI / 180)
 {
+  const std::vector<std::string>& joint_names = robot_kinematics->getJointNames();
   std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr> result;
   result.reserve(path.size());
 
@@ -188,9 +189,9 @@ makeRobotSamplers(const std::vector<Waypoint::Ptr>& path,
     else if (wp->getType() == WaypointType::JOINT_WAYPOINT)
     {
       JointWaypoint::ConstPtr jwp = std::static_pointer_cast<const JointWaypoint>(wp);
-      std::vector<FloatType> joint_pose(jwp->getPositions().data(),
-                                        jwp->getPositions().data() +
-                                            jwp->getPositions().rows() * jwp->getPositions().cols());
+      Eigen::Matrix<FloatType, 1, Eigen::Dynamic> jwp_positions = jwp->getPositions(joint_names).cast<FloatType>();
+      std::vector<FloatType> joint_pose(jwp_positions.data(),
+                                        jwp_positions.data() + jwp_positions.rows() * jwp_positions.cols());
       auto sampler = std::make_shared<descartes_light::FixedJointPoseSampler<FloatType>>(joint_pose);
       result.push_back(std::move(sampler));
     }
@@ -258,6 +259,12 @@ makeRobotPositionerSamplers(const std::vector<Waypoint::Ptr>& path,
   std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr> result;
   result.reserve(path.size());
 
+  std::vector<std::string> joint_names;
+  const std::vector<std::string> gantry_joint_names = positioner_kinematics->getJointNames();
+  const std::vector<std::string> robot_joint_names = robot_kinematics->getJointNames();
+  joint_names.insert(joint_names.end(), gantry_joint_names.begin(), gantry_joint_names.end());
+  joint_names.insert(joint_names.end(), robot_joint_names.begin(), robot_joint_names.end());
+
   for (const auto& wp : path)
   {
     typename descartes_light::CollisionInterface<FloatType>::Ptr ci = nullptr;
@@ -298,9 +305,9 @@ makeRobotPositionerSamplers(const std::vector<Waypoint::Ptr>& path,
     else if (wp->getType() == WaypointType::JOINT_WAYPOINT)
     {
       JointWaypoint::ConstPtr jwp = std::static_pointer_cast<const JointWaypoint>(wp);
-      std::vector<FloatType> joint_pose(jwp->getPositions().data(),
-                                        jwp->getPositions().data() +
-                                            jwp->getPositions().rows() * jwp->getPositions().cols());
+      Eigen::Matrix<FloatType, 1, Eigen::Dynamic> jwp_positions = jwp->getPositions(joint_names).cast<FloatType>();
+      std::vector<FloatType> joint_pose(jwp_positions.data(),
+                                        jwp_positions.data() + jwp_positions.rows() * jwp_positions.cols());
       auto sampler = std::make_shared<descartes_light::FixedJointPoseSampler<FloatType>>(joint_pose);
       result.push_back(std::move(sampler));
     }

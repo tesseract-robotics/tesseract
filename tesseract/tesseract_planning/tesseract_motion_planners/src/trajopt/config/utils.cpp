@@ -34,14 +34,13 @@ trajopt::TermInfo::Ptr createJointWaypointTermInfo(const JointWaypoint::ConstPtr
                                                    const std::string& name)
 {
   std::shared_ptr<trajopt::JointPosTermInfo> jv = std::make_shared<trajopt::JointPosTermInfo>();
-  const Eigen::VectorXd& coeffs = waypoint->getCoefficients();
-  assert(std::equal(joint_names.begin(), joint_names.end(), waypoint->getNames().begin()));
+  const Eigen::VectorXd& coeffs = waypoint->getCoefficients(joint_names);
+  const Eigen::VectorXd position = waypoint->getPositions(joint_names);
   if (static_cast<std::size_t>(coeffs.size()) != joint_names.size())
     jv->coeffs = std::vector<double>(joint_names.size(), coeff);  // Default value
   else
     jv->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
-  jv->targets = std::vector<double>(waypoint->getPositions().data(),
-                                    waypoint->getPositions().data() + waypoint->getPositions().size());
+  jv->targets = std::vector<double>(position.data(), position.data() + position.rows() * position.cols());
   jv->first_step = static_cast<int>(ind);
   jv->last_step = static_cast<int>(ind);
   jv->name = name + "_" + std::to_string(ind);
@@ -60,9 +59,13 @@ trajopt::TermInfo::Ptr createJointTolerancedWaypointTermInfo(const JointToleranc
   // hinge to keep the problem numerically stable.
   // Equality cost with coeffs much smaller than inequality
   std::shared_ptr<trajopt::JointPosTermInfo> jv_equal = std::make_shared<trajopt::JointPosTermInfo>();
-  jv_equal->coeffs = std::vector<double>(joint_names.size(), coeff);
-  jv_equal->targets = std::vector<double>(waypoint->getPositions().data(),
-                                          waypoint->getPositions().data() + waypoint->getPositions().size());
+  const Eigen::VectorXd& coeffs = waypoint->getCoefficients(joint_names);
+  const Eigen::VectorXd position = waypoint->getPositions(joint_names);
+  if (static_cast<std::size_t>(coeffs.size()) != joint_names.size())
+    jv_equal->coeffs = std::vector<double>(joint_names.size(), coeff);  // Default value
+  else
+    jv_equal->coeffs = std::vector<double>(coeffs.data(), coeffs.data() + coeffs.rows() * coeffs.cols());
+  jv_equal->targets = std::vector<double>(position.data(), position.data() + position.rows() * position.cols());
   jv_equal->first_step = static_cast<int>(ind);
   jv_equal->last_step = static_cast<int>(ind);
   jv_equal->name = name + "_" + std::to_string(ind);
