@@ -34,17 +34,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/planner.h>
 #include <tesseract_motion_planners/core/waypoint.h>
+#include <tesseract_motion_planners/ompl/ompl_settings.h>
 
 namespace tesseract_motion_planners
 {
 class OMPLFreespacePlannerStatusCategory;
 
-template <typename PlannerSettingsType>
+template <typename PlannerType>
 struct OMPLFreespacePlannerConfig
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  OMPLFreespacePlannerConfig() {}
   /**
    * @brief Determines the constraint placed at the start of the trajectory
    *
@@ -75,6 +75,8 @@ struct OMPLFreespacePlannerConfig
   int num_threads = 1;
   /** @brief Simplify trajectory */
   bool simplify = true;
+  /** @brief Number of states in the output trajectory - note: this is ignored if the trajectory is simplified */
+  int n_output_states = 20;
   /** @brief This scales the variables search space. Must be same size as number of joints.
    *         If empty it defaults to all ones */
   Eigen::VectorXd weights;
@@ -84,7 +86,7 @@ struct OMPLFreespacePlannerConfig
   double longest_valid_segment_fraction = 0.01;  // 1%
 
   /** @brief Planner settings */
-  PlannerSettingsType settings;
+  OMPLSettings<PlannerType> settings;
 
   /** @brief Tesseract object. ***REQUIRED*** */
   tesseract::Tesseract::ConstPtr tesseract;
@@ -104,7 +106,7 @@ struct OMPLFreespacePlannerConfig
  * @brief This planner is intended to provide an easy to use interface to OMPL for freespace planning. It is made to
  * take a start and end point and automate the generation of the OMPL problem.
  */
-template <typename PlannerType, typename PlannerSettingsType>
+template <typename PlannerType>
 class OMPLFreespacePlanner : public MotionPlanner
 {
 public:
@@ -119,7 +121,7 @@ public:
    * @param config The planners configuration
    * @return True if successful otherwise false
    */
-  bool setConfiguration(const OMPLFreespacePlannerConfig<PlannerSettingsType>& config);
+  bool setConfiguration(const OMPLFreespacePlannerConfig<PlannerType>& config);
 
   /**
    * @brief Sets up the OMPL problem then solves. It is intended to simplify setting up
@@ -151,7 +153,7 @@ private:
 
 protected:
   /** @brief The ompl planner planner */
-  std::shared_ptr<OMPLFreespacePlannerConfig<PlannerSettingsType>> config_;
+  std::shared_ptr<OMPLFreespacePlannerConfig<PlannerType>> config_;
 
   /** @brief The planners status codes */
   std::shared_ptr<const OMPLFreespacePlannerStatusCategory> status_category_;
