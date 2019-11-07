@@ -88,21 +88,44 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerDefaultConfig::g
   pci.basic_info.use_time = false;
   pci.basic_info.convex_solver = optimizer;
 
+  // Get kinematics information
+  tesseract_environment::Environment::ConstPtr env = tesseract->getEnvironmentConst();
+  tesseract_kinematics::ForwardKinematics::ConstPtr kin =
+      tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator);
+  tesseract_environment::AdjacencyMap map(
+      env->getSceneGraph(), kin->getActiveLinkNames(), env->getCurrentState()->transforms);
+  std::vector<std::string> adjacency_links = map.getActiveLinkNames();
+
   // Populate Init Info
   pci.init_info.type = init_type;
   if (init_type == trajopt::InitInfo::GIVEN_TRAJ)
+  {
     pci.init_info.data = seed_trajectory;
+
+    // Add check to make sure if starts with joint waypoint that the seed trajectory also starts at this waypoint
+    // If it does not start this causes issues in trajopt and it will never converge.
+    if (isJointWaypointType(target_waypoints.front()->getType()))
+    {
+      const auto jwp = std::static_pointer_cast<JointWaypoint>(target_waypoints.front());
+      const Eigen::VectorXd position = jwp->getPositions(kin->getJointNames());
+      for (int i = 0; i < static_cast<int>(kin->numJoints()); ++i)
+      {
+        if (std::abs(position[i] - seed_trajectory(0, i)) > static_cast<double>(std::numeric_limits<float>::epsilon()))
+        {
+          std::stringstream ss;
+          ss << "Seed trajectory start position does not match starting joint waypoint position!";
+          ss << "    waypoint: " << position.transpose().matrix() << std::endl;
+          ss << "  seed start: " << seed_trajectory.row(0).transpose().matrix() << std::endl;
+          CONSOLE_BRIDGE_logError(ss.str().c_str());
+          return nullptr;
+        }
+      }
+    }
+  }
 
   // Add constraints
   for (std::size_t ind = 0; ind < target_waypoints.size(); ind++)
   {
-    tesseract_environment::Environment::ConstPtr env = tesseract->getEnvironmentConst();
-    tesseract_kinematics::ForwardKinematics::ConstPtr kin =
-        tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator);
-    tesseract_environment::AdjacencyMap map(
-        env->getSceneGraph(), kin->getActiveLinkNames(), env->getCurrentState()->transforms);
-    std::vector<std::string> adjacency_links = map.getActiveLinkNames();
-
     WaypointTermInfo term_info;
     if (tcp.size() == target_waypoints.size())
     {
