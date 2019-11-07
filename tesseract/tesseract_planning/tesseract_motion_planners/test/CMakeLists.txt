@@ -34,3 +34,13 @@ tesseract_target_compile_options(${PROJECT_NAME}_descartes_unit PRIVATE)
 tesseract_gtest_discover_tests(${PROJECT_NAME}_descartes_unit)
 add_dependencies(${PROJECT_NAME}_trajopt_unit ${PROJECT_NAME}_descartes)
 add_dependencies(run_tests ${PROJECT_NAME}_descartes_unit)
+
+# OMPL TrajOpt Planning Test
+add_executable(${PROJECT_NAME}_ompl_trajopt_unit ompl_trajopt_planner_test.cpp)
+target_link_libraries(${PROJECT_NAME}_ompl_trajopt_unit ${Boost_LIBRARIES} GTest::GTest GTest::Main ${PROJECT_NAME}_ompl_trajopt_freespace tesseract::tesseract_support)
+tesseract_target_compile_options(${PROJECT_NAME}_ompl_trajopt_unit PRIVATE)
+target_include_directories(${PROJECT_NAME}_ompl_trajopt_unit SYSTEM PUBLIC
+    ${Boost_INCLUDE_DIRS})
+tesseract_gtest_discover_tests(${PROJECT_NAME}_ompl_trajopt_unit)
+add_dependencies(${PROJECT_NAME}_ompl_trajopt_unit ${PROJECT_NAME}_ompl_trajopt_freespace)
+add_dependencies(run_tests ${PROJECT_NAME}_ompl_trajopt_unit)
