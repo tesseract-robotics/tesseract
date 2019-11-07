@@ -60,7 +60,7 @@ public:
         return "Invalide sub shape type for octoamp attribute 'shape_type', must be 'box', 'sphere_inside', or "
                "'sphere_outside'!";
       case ErrorMissingOctreeOrPointCloudElement:
-        return "Missing octomap element 'octree' or 'pointcloud', must define one!";
+        return "Missing octomap element 'octree' or 'point_cloud', must define one!";
       case ErrorParsingOctreeElement:
         return "Failed parsing octomap element 'octree'!";
       case ErrorParsingPointCloudElement:
