@@ -1,5 +1,5 @@
 /**
- * @file graph.cpp
+ * @file resource_locator.cpp
  * @brief Resource locator functions
  *
  * @author John Wason
