@@ -111,7 +111,7 @@ inline std::string locateResource(const std::string& url)
 class ROSResourceLocator : public tesseract_scene_graph::SimpleResourceLocator
 {
 public:
-  ROSResourceLocator() : SimpleResourceLocator(locateResource) {}
+  ROSResourceLocator() : SimpleResourceLocator(::tesseract_rosutils::locateResource) {}
 };
 
 inline bool isMsgEmpty(const sensor_msgs::JointState& msg)
@@ -389,9 +389,9 @@ inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract_geome
       for (size_t i = 0; i < static_cast<size_t>(faces.size()); ++i)
         geometry_msgs.mesh.faces[i] = static_cast<unsigned>(faces[static_cast<unsigned>(i)]);
 
-      if (mesh.getResource() && mesh.getResource()->IsFile())
+      if (mesh.getResource() && mesh.getResource()->isFile())
       {
-        geometry_msgs.mesh.file_path = mesh.getResource()->GetFilePath();
+        geometry_msgs.mesh.file_path = mesh.getResource()->getFilePath();
         ;
       }
       if (geometry_msgs.mesh.file_path.empty())
@@ -430,9 +430,9 @@ inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract_geome
       for (size_t i = 0; i < static_cast<size_t>(faces.size()); ++i)
         geometry_msgs.mesh.faces[i] = static_cast<unsigned>(faces[static_cast<unsigned>(i)]);
 
-      if (mesh.getResource() && mesh.getResource()->IsFile())
+      if (mesh.getResource() && mesh.getResource()->isFile())
       {
-        geometry_msgs.mesh.file_path = mesh.getResource()->GetFilePath();
+        geometry_msgs.mesh.file_path = mesh.getResource()->getFilePath();
         ;
       }
       if (geometry_msgs.mesh.file_path.empty())
@@ -471,9 +471,9 @@ inline bool toMsg(tesseract_msgs::Geometry& geometry_msgs, const tesseract_geome
       for (size_t i = 0; i < static_cast<size_t>(faces.size()); ++i)
         geometry_msgs.mesh.faces[i] = static_cast<unsigned>(faces[static_cast<unsigned>(i)]);
 
-      if (mesh.getResource() && mesh.getResource()->IsFile())
+      if (mesh.getResource() && mesh.getResource()->isFile())
       {
-        geometry_msgs.mesh.file_path = mesh.getResource()->GetFilePath();
+        geometry_msgs.mesh.file_path = mesh.getResource()->getFilePath();
         ;
       }
       if (geometry_msgs.mesh.file_path.empty())

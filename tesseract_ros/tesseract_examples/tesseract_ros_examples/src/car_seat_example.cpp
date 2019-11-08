@@ -71,7 +71,7 @@ void CarSeatExample::addSeats()
     Visual::Ptr visual = std::make_shared<Visual>();
     visual->origin = Eigen::Isometry3d::Identity();
     visual->geometry =
-        tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(locator_->LocateResource("package://"
+        tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(locator_->locateResource("package://"
                                                                                                       "tesseract_ros_"
                                                                                                       "examples/meshes/"
                                                                                                       "car_seat/visual/"
@@ -84,7 +84,7 @@ void CarSeatExample::addSeats()
     {
       std::vector<tesseract_geometry::Mesh::Ptr> meshes =
           tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>(
-              locator_->LocateResource("package://tesseract_ros_examples/"
+              locator_->locateResource("package://tesseract_ros_examples/"
                                        "meshes/car_seat/collision/seat_" +
                                        std::to_string(m) + ".stl"));
       for (auto& mesh : meshes)

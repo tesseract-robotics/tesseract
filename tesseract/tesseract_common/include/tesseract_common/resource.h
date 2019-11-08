@@ -16,15 +16,15 @@ public:
   using Ptr = std::shared_ptr<Resource>;
   using ConstPtr = std::shared_ptr<const Resource>;
 
-  virtual bool IsFile() = 0;
+  virtual bool isFile() = 0;
 
-  virtual std::string GetUrl() = 0;
+  virtual std::string getUrl() = 0;
 
-  virtual std::string GetFilePath() = 0;
+  virtual std::string getFilePath() = 0;
 
-  virtual std::vector<uint8_t> GetResourceContents() = 0;
+  virtual std::vector<uint8_t> getResourceContents() = 0;
 
-  virtual std::shared_ptr<std::istream> GetResourceContentStream() = 0;
+  virtual std::shared_ptr<std::istream> getResourceContentStream() = 0;
 };
 
 }  // namespace tesseract_common

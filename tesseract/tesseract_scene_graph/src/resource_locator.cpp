@@ -40,7 +40,7 @@ SimpleResourceLocator::SimpleResourceLocator(SimpleResourceLocator::ResourceLoca
   locator_function_ = locator_function;
 }
 
-tesseract_common::Resource::Ptr SimpleResourceLocator::LocateResource(const std::string& url)
+tesseract_common::Resource::Ptr SimpleResourceLocator::locateResource(const std::string& url)
 {
   std::string filename = locator_function_(url);
   if (filename.empty())
@@ -54,13 +54,13 @@ SimpleLocatedResource::SimpleLocatedResource(const std::string& url, const std::
   filename_ = filename;
 }
 
-bool SimpleLocatedResource::IsFile() { return true; }
+bool SimpleLocatedResource::isFile() { return true; }
 
-std::string SimpleLocatedResource::GetUrl() { return url_; }
+std::string SimpleLocatedResource::getUrl() { return url_; }
 
-std::string SimpleLocatedResource::GetFilePath() { return filename_; }
+std::string SimpleLocatedResource::getFilePath() { return filename_; }
 
-std::vector<uint8_t> SimpleLocatedResource::GetResourceContents()
+std::vector<uint8_t> SimpleLocatedResource::getResourceContents()
 {
   // https://codereview.stackexchange.com/questions/22901/reading-all-bytes-from-a-file
 
@@ -79,7 +79,7 @@ std::vector<uint8_t> SimpleLocatedResource::GetResourceContents()
   return file_contents;
 }
 
-std::shared_ptr<std::istream> SimpleLocatedResource::GetResourceContentStream()
+std::shared_ptr<std::istream> SimpleLocatedResource::getResourceContentStream()
 {
   std::shared_ptr<std::ifstream> f = std::make_shared<std::ifstream>(filename_, std::ios::binary);
   return f;

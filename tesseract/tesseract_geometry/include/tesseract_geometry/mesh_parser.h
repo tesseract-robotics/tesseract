@@ -135,13 +135,13 @@ inline std::vector<std::shared_ptr<T>> createMeshFromAsset(const aiScene* scene,
 {
   if (!scene->HasMeshes())
   {
-    CONSOLE_BRIDGE_logWarn("Assimp reports scene in %s has no meshes", resource->GetUrl().c_str());
+    CONSOLE_BRIDGE_logWarn("Assimp reports scene in %s has no meshes", resource->getUrl().c_str());
     return std::vector<std::shared_ptr<T>>();
   }
   std::vector<std::shared_ptr<T>> meshes = extractMeshData<T>(scene, scene->mRootNode, aiMatrix4x4(), scale, resource);
   if (meshes.empty())
   {
-    CONSOLE_BRIDGE_logWarn("There are no meshes in the scene %s", resource->GetUrl().c_str());
+    CONSOLE_BRIDGE_logWarn("There are no meshes in the scene %s", resource->getUrl().c_str());
     return std::vector<std::shared_ptr<T>>();
   }
 
@@ -231,7 +231,7 @@ inline std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::
 
   const char* hint = nullptr;
 
-  std::string resource_url = resource->GetUrl();
+  std::string resource_url = resource->getUrl();
   std::regex hint_re("^.*\\.([A-Za-z0-9]{1,8})$");
   std::smatch hint_match;
   if (std::regex_match(resource_url, hint_match, hint_re))
@@ -242,7 +242,7 @@ inline std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::
     }
   }
 
-  std::vector<uint8_t> data = resource->GetResourceContents();
+  std::vector<uint8_t> data = resource->getResourceContents();
 
   // Create an instance of the Importer class
   Assimp::Importer importer;
@@ -273,7 +273,7 @@ inline std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::
   if (!scene)
   {
     CONSOLE_BRIDGE_logError(
-        "Could not load mesh from \"%s\": %s", resource->GetUrl().c_str(), importer.GetErrorString());
+        "Could not load mesh from \"%s\": %s", resource->getUrl().c_str(), importer.GetErrorString());
     return std::vector<std::shared_ptr<T>>();
   }
 
