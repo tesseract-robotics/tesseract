@@ -84,6 +84,13 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Cone::ConstPtr&
   return (new btConeShapeZ(r, l));
 }
 
+btCollisionShape* createShapePrimitive(const tesseract_geometry::Capsule::ConstPtr& geom)
+{
+  btScalar r = static_cast<btScalar>(geom->getRadius());
+  btScalar l = static_cast<btScalar>(geom->getLength());
+  return (new btCapsuleShapeZ(r, l));
+}
+
 btCollisionShape* createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr& geom,
                                        CollisionObjectWrapper* cow,
                                        int shape_index)
@@ -263,6 +270,12 @@ btCollisionShape* createShapePrimitive(const CollisionShapeConstPtr& geom, Colli
     case tesseract_geometry::GeometryType::CONE:
     {
       shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Cone>(geom));
+      shape->setUserIndex(shape_index);
+      break;
+    }
+    case tesseract_geometry::GeometryType::CAPSULE:
+    {
+      shape = createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Capsule>(geom));
       shape->setUserIndex(shape_index);
       break;
     }

@@ -868,7 +868,7 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
     case tesseract_geometry::GeometryType::SPHERE:
     {
       const tesseract_geometry::Sphere& sphere = static_cast<const tesseract_geometry::Sphere&>(geom);
-      entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Sphere, scene_manager_);
+      entity = scene_manager_->createEntity(entity_name, "tesseract_sphere.mesh");
       float diameter = static_cast<float>(sphere.getRadius()) * 2.0f;
       scale = Ogre::Vector3(diameter, diameter, diameter);
       break;
@@ -876,7 +876,7 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
     case tesseract_geometry::GeometryType::BOX:
     {
       const tesseract_geometry::Box& box = static_cast<const tesseract_geometry::Box&>(geom);
-      entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Cube, scene_manager_);
+      entity = scene_manager_->createEntity(entity_name, "tesseract_cube.mesh");
       scale =
           Ogre::Vector3(static_cast<float>(box.getX()), static_cast<float>(box.getY()), static_cast<float>(box.getZ()));
       break;
@@ -884,15 +884,28 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
     case tesseract_geometry::GeometryType::CYLINDER:
     {
       const tesseract_geometry::Cylinder& cylinder = static_cast<const tesseract_geometry::Cylinder&>(geom);
-
-      Ogre::Quaternion rotX;
-      rotX.FromAngleAxis(Ogre::Degree(90), Ogre::Vector3::UNIT_X);
-      offset_orientation = offset_orientation * rotX;
-
-      entity = rviz::Shape::createEntity(entity_name, rviz::Shape::Cylinder, scene_manager_);
+      entity = scene_manager_->createEntity(entity_name, "tesseract_cylinder.mesh");
       scale = Ogre::Vector3(static_cast<float>(cylinder.getRadius() * 2),
-                            static_cast<float>(cylinder.getLength()),
-                            static_cast<float>(cylinder.getRadius() * 2));
+                            static_cast<float>(cylinder.getRadius() * 2),
+                            static_cast<float>(cylinder.getLength()));
+      break;
+    }
+    case tesseract_geometry::GeometryType::CONE:
+    {
+      const tesseract_geometry::Cone& cone = static_cast<const tesseract_geometry::Cone&>(geom);
+      entity = scene_manager_->createEntity(entity_name, "tesseract_cone.mesh");
+      scale = Ogre::Vector3(static_cast<float>(cone.getRadius() * 2),
+                            static_cast<float>(cone.getRadius() * 2),
+                            static_cast<float>(cone.getLength()));
+      break;
+    }
+    case tesseract_geometry::GeometryType::CAPSULE:
+    {
+      const tesseract_geometry::Capsule& capsule = static_cast<const tesseract_geometry::Capsule&>(geom);
+      entity = scene_manager_->createEntity(entity_name, "tesseract_capsule.mesh");
+      scale = Ogre::Vector3(static_cast<float>(capsule.getRadius() * 2),
+                            static_cast<float>(capsule.getRadius() * 2),
+                            static_cast<float>((0.5 * capsule.getLength()) + capsule.getRadius()));
       break;
     }
     case tesseract_geometry::GeometryType::MESH:
