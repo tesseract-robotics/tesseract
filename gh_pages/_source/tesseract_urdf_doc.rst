@@ -12,6 +12,7 @@ Features
 #. New Shapes
 
    * Capsule
+   * Cone
    * Mesh
    * Convex Mesh
    * SDF Mesh
@@ -45,6 +46,15 @@ Create Capsule
    <capsule radius="1" length="2"/>
 
 The total height is the **length + 2 * radius**, so the length is just the height between the center of each sphere of the capsule caps.
+
+Create Cone
+--------------
+
+.. code-block:: xml
+
+   <cone radius="1" length="2"/>
+
+The cone is like the cylinder. It is around z-axis and centered at the origin.
 
 Create Convex Mesh
 ------------------

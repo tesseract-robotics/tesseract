@@ -285,3 +285,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 install(FILES tesseract_rviz_state_plugin_description.xml tesseract_rviz_trajectory_plugin_description.xml tesseract_rviz_manipulation_plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
+
+install(DIRECTORY ogre_media
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)

@@ -52,6 +52,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 
 #include <ros/assert.h>
 #include <ros/console.h>
+#include <ros/package.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_rviz/conversions.h>
@@ -76,6 +77,10 @@ VisualizationWidget::VisualizationWidget(Ogre::SceneNode* root_node,
   , inChangedEnableAllLinks(false)
   , name_(name)
 {
+  // Add tesseract resources to ogre
+  std::string tesseract_rviz_path = ros::package::getPath("tesseract_rviz");
+  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( tesseract_rviz_path + "/ogre_media/models", "FileSystem", "tesseract_rviz" );
+
   root_visual_node_ = root_node->createChildSceneNode();
   root_collision_node_ = root_node->createChildSceneNode();
   root_other_node_ = root_node->createChildSceneNode();
