@@ -13,6 +13,7 @@ Features
 
    * Box
    * Cone
+   * Capsule
    * Cylinder
    * Plane
    * Sphere
@@ -35,35 +36,42 @@ Example Explanation
 
    .. literalinclude:: ../../tesseract/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
-      :start-after: // Primitive Shapes
-      :end-before: auto cone = std::make_shared<tesseract_geometry::Cone>(1, 1);
+      :start-after: // Shape Box
+      :end-before: // Shape Cone
 
 #. Create a cone.
 
    .. literalinclude:: ../../tesseract/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
-      :start-after: auto box = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
-      :end-before: auto cylinder = std::make_shared<tesseract_geometry::Cylinder>(1, 1);
+      :start-after: // Shape Cone
+      :end-before: // Shape Capsule
+
+#. Create a capsule.
+
+   .. literalinclude:: ../../tesseract/tesseract_geometry/examples/create_geometries_example.cpp
+      :language: c++
+      :start-after: // Shape Capsule
+      :end-before: // Shape Cylinder
 
 #. Create a cylinder.
 
    .. literalinclude:: ../../tesseract/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
-      :start-after: auto cone = std::make_shared<tesseract_geometry::Cone>(1, 1);
-      :end-before: auto plane = std::make_shared<tesseract_geometry::Plane>(1, 1, 1, 1);
+      :start-after: // Shape Cylinder
+      :end-before: // Shape Plane
 
 #. Create a plane.
 
    .. literalinclude:: ../../tesseract/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
-      :start-after: auto cylinder = std::make_shared<tesseract_geometry::Cylinder>(1, 1);
-      :end-before: auto sphere = std::make_shared<tesseract_geometry::Sphere>(1);
+      :start-after: // Shape Plane
+      :end-before: // Shape Sphere
 
 #. Create a sphere.
 
    .. literalinclude:: ../../tesseract/tesseract_geometry/examples/create_geometries_example.cpp
       :language: c++
-      :start-after: auto plane = std::make_shared<tesseract_geometry::Plane>(1, 1, 1, 1);
+      :start-after: // Shape Sphere
       :end-before: // Manually create mesh
 
 #. Create a mesh.
