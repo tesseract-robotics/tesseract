@@ -146,7 +146,7 @@ TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxCapsuleUnit)
   runTest(checker);
 }
 
- TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxCapsuleUnit)
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxCapsuleUnit)
 {
   tesseract_collision_fcl::FCLDiscreteBVHManager checker;
   addCollisionObjects(checker);

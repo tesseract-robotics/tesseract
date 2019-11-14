@@ -79,7 +79,8 @@ VisualizationWidget::VisualizationWidget(Ogre::SceneNode* root_node,
 {
   // Add tesseract resources to ogre
   std::string tesseract_rviz_path = ros::package::getPath("tesseract_rviz");
-  Ogre::ResourceGroupManager::getSingleton().addResourceLocation( tesseract_rviz_path + "/ogre_media/models", "FileSystem", "tesseract_rviz" );
+  Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
+      tesseract_rviz_path + "/ogre_media/models", "FileSystem", "tesseract_rviz");
 
   root_visual_node_ = root_node->createChildSceneNode();
   root_collision_node_ = root_node->createChildSceneNode();
