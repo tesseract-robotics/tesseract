@@ -219,7 +219,6 @@ inline std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& pat
  * do not flatten collision meshes.
  * @return
  */
-
 template <class T>
 inline std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::Resource::Ptr resource,
                                                               Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
