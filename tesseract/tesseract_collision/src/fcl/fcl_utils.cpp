@@ -47,6 +47,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fcl/geometry/shape/plane.h>
 #include <fcl/geometry/shape/sphere.h>
 #include <fcl/geometry/shape/cone.h>
+#include <fcl/geometry/shape/capsule.h>
 #include <fcl/geometry/octree/octree.h>
 #include <boost/thread/mutex.hpp>
 #include <memory>
@@ -81,6 +82,11 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Cylinder::Co
 CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Cone::ConstPtr& geom)
 {
   return CollisionGeometryPtr(new fcl::Coned(geom->getRadius(), geom->getLength()));
+}
+
+CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Capsule::ConstPtr& geom)
+{
+  return CollisionGeometryPtr(new fcl::Capsuled(geom->getRadius(), geom->getLength()));
 }
 
 CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr& geom)
@@ -169,6 +175,10 @@ CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom)
     case tesseract_geometry::GeometryType::CONE:
     {
       return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Cone>(geom));
+    }
+    case tesseract_geometry::GeometryType::CAPSULE:
+    {
+      return createShapePrimitive(std::static_pointer_cast<const tesseract_geometry::Capsule>(geom));
     }
     case tesseract_geometry::GeometryType::MESH:
     {
