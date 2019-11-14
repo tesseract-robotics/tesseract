@@ -38,7 +38,7 @@ matrix:
     - env: ROS_DISTRO=melodic ROS_REPO=ros-shadow-fixed ROS_PARALLEL_JOBS=-j2 CATKIN_PARALLEL_JOBS=-p1
   allow_failures:
     - env: ROS_DISTRO=kinetic ROS_REPO=ros-shadow-fixed
-    - env: ROS_DISTRO=melodic ROS_REPO=ros-shadow-fixed ROS_PARALLEL_JOBS=-j2 CATKIN_PARALLEL_JOBS=-p3
+    - env: ROS_DISTRO=melodic ROS_REPO=ros-shadow-fixed ROS_PARALLEL_JOBS=-j2 CATKIN_PARALLEL_JOBS=-p1
 
 install:
   - git clone --quiet --depth=1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
