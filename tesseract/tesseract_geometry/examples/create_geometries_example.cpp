@@ -6,11 +6,17 @@ using namespace tesseract_geometry;
 
 int main(int /*argc*/, char** /*argv*/)
 {
-  // Primitive Shapes
+  // Shape Box
   auto box = std::make_shared<tesseract_geometry::Box>(1, 1, 1);
+  // Shape Cone
   auto cone = std::make_shared<tesseract_geometry::Cone>(1, 1);
+  // Shape Capsule
+  auto capsule = std::make_shared<tesseract_geometry::Capsule>(1, 1);
+  // Shape Cylinder
   auto cylinder = std::make_shared<tesseract_geometry::Cylinder>(1, 1);
+  // Shape Plane
   auto plane = std::make_shared<tesseract_geometry::Plane>(1, 1, 1, 1);
+  // Shape Sphere
   auto sphere = std::make_shared<tesseract_geometry::Sphere>(1);
 
   // Manually create mesh
