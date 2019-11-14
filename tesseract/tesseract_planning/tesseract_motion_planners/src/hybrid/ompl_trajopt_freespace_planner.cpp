@@ -1,5 +1,5 @@
 /**
- * @file ompl_freespace_planner.cpp
+ * @file ompl_trajopt_freespace_planner.cpp
  * @brief Tesseract OMPL TrajOpt Freespace Planner
  *
  * @author Michael Ripperger
@@ -7,7 +7,7 @@
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2019, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
