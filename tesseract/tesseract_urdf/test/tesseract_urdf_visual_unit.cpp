@@ -9,6 +9,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_visual)
 {
+  std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator =
+      std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
   {
     std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
     std::string str = "<visual extra=\"0 0 0\">"
@@ -22,7 +24,7 @@ TEST(TesseractURDFUnit, parse_visual)
                       "</visual>";
     std::vector<tesseract_scene_graph::Visual::Ptr> elem;
     auto status = runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
-        elem, str, "visual", locateResource, empty_available_materials, 2);
+        elem, str, "visual", resource_locator, empty_available_materials, 2);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->geometry != nullptr);
@@ -42,7 +44,7 @@ TEST(TesseractURDFUnit, parse_visual)
                       "</visual>";
     std::vector<tesseract_scene_graph::Visual::Ptr> elem;
     auto status = runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
-        elem, str, "visual", locateResource, empty_available_materials, 2);
+        elem, str, "visual", resource_locator, empty_available_materials, 2);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->geometry != nullptr);
@@ -59,7 +61,7 @@ TEST(TesseractURDFUnit, parse_visual)
                       "</visual>";
     std::vector<tesseract_scene_graph::Visual::Ptr> elem;
     auto status = runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
-        elem, str, "visual", locateResource, empty_available_materials, 2);
+        elem, str, "visual", resource_locator, empty_available_materials, 2);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->geometry != nullptr);
@@ -76,7 +78,7 @@ TEST(TesseractURDFUnit, parse_visual)
                       "</visual>";
     std::vector<tesseract_scene_graph::Visual::Ptr> elem;
     auto status = runTest<std::vector<tesseract_scene_graph::Visual::Ptr>>(
-        elem, str, "visual", locateResource, empty_available_materials, 2);
+        elem, str, "visual", resource_locator, empty_available_materials, 2);
     EXPECT_FALSE(*status);
   }
 }

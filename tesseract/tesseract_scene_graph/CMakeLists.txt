@@ -11,7 +11,7 @@ find_package(TinyXML REQUIRED)
 find_package(tesseract_geometry REQUIRED)
 find_package(tesseract_common REQUIRED)
 
-add_library(${PROJECT_NAME} SHARED src/graph.cpp)
+add_library(${PROJECT_NAME} SHARED src/graph.cpp src/resource_locator.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_geometry orocos-kdl console_bridge ${Boost_LIBRARIES} ${TinyXML_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
 target_compile_definitions(${PROJECT_NAME} PUBLIC Boost_USE_STATIC_LIBS=OFF Boost_USE_MULTITHREADED=ON Boost_USE_STATIC_RUNTIME=OFF)

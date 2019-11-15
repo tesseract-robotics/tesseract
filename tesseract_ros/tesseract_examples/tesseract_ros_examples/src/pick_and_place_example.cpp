@@ -78,7 +78,7 @@ bool PickAndPlaceExample::run()
   nh_.getParam("box_parent_link", box_parent_link);
 
   // Initialize the environment
-  ResourceLocatorFn locator = tesseract_rosutils::locateResource;
+  ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
   if (!tesseract_->init(urdf_xml_string, srdf_xml_string, locator))
     return false;
 

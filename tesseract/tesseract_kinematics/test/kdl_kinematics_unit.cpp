@@ -42,7 +42,8 @@ tesseract_scene_graph::SceneGraph::Ptr getSceneGraph()
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
-  tesseract_scene_graph::ResourceLocatorFn locator = locateResource;
+  tesseract_scene_graph::ResourceLocator::Ptr locator =
+      std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 

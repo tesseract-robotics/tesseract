@@ -9,13 +9,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 TEST(TesseractURDFUnit, parse_geometry)
 {
+  std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator =
+      std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
   {
     std::string str = "<geometry extra=\"0 0 0\">"
                       "  <box size=\"1 1 1\" />"
                       "</geometry>";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
     auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", locateResource, true, 2);
+        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, true, 2);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(elem.size() == 1);
     EXPECT_TRUE(elem[0]->getType() == tesseract_geometry::GeometryType::BOX);
@@ -26,7 +28,7 @@ TEST(TesseractURDFUnit, parse_geometry)
                       "</geometry>";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
     auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", locateResource, true, 2);
+        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, true, 2);
     EXPECT_FALSE(*status);
   }
 
@@ -36,7 +38,7 @@ TEST(TesseractURDFUnit, parse_geometry)
                       "</geometry>";
     std::vector<tesseract_geometry::Geometry::Ptr> elem;
     auto status =
-        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", locateResource, true, 2);
+        runTest<std::vector<tesseract_geometry::Geometry::Ptr>>(elem, str, "geometry", resource_locator, true, 2);
     EXPECT_FALSE(*status);
   }
 }

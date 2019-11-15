@@ -48,6 +48,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 
 #include <tesseract_common/types.h>
+#include <tesseract_common/resource.h>
+
+#include <regex>
 
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -64,7 +67,7 @@ inline std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
                                                        const aiNode* node,
                                                        const aiMatrix4x4& parent_transform,
                                                        const Eigen::Vector3d& scale,
-                                                       const std::string& path)
+                                                       tesseract_common::Resource::Ptr resource)
 {
   std::vector<std::shared_ptr<T>> meshes;
 
@@ -106,13 +109,13 @@ inline std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
     for (long i = 0; i < triangles->size(); ++i)
       (*triangles)[i] = local_triangles[static_cast<size_t>(i)];
 
-    meshes.push_back(std::make_shared<T>(vertices, triangles, static_cast<int>(triangle_count), path, scale));
+    meshes.push_back(std::make_shared<T>(vertices, triangles, static_cast<int>(triangle_count), resource, scale));
   }
 
   for (unsigned int n = 0; n < node->mNumChildren; ++n)
   {
     std::vector<std::shared_ptr<T>> child_meshes =
-        extractMeshData<T>(scene, node->mChildren[n], transform, scale, path);
+        extractMeshData<T>(scene, node->mChildren[n], transform, scale, resource);
     meshes.insert(meshes.end(), child_meshes.begin(), child_meshes.end());
   }
   return meshes;
@@ -122,23 +125,23 @@ inline std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
  * @brief Create list of meshes from the assimp scene
  * @param scene The assimp scene
  * @param scale Perform an axis scaling
- * @param path The path to the mesh file that generated the scene
+ * @param resource The mesh resource that generated the scene
  * @return A list of tesseract meshes
  */
 template <class T>
 inline std::vector<std::shared_ptr<T>> createMeshFromAsset(const aiScene* scene,
                                                            const Eigen::Vector3d& scale,
-                                                           const std::string& path)
+                                                           tesseract_common::Resource::Ptr resource)
 {
   if (!scene->HasMeshes())
   {
-    CONSOLE_BRIDGE_logWarn("Assimp reports scene in %s has no meshes", path.c_str());
+    CONSOLE_BRIDGE_logWarn("Assimp reports scene in %s has no meshes", resource->getUrl().c_str());
     return std::vector<std::shared_ptr<T>>();
   }
-  std::vector<std::shared_ptr<T>> meshes = extractMeshData<T>(scene, scene->mRootNode, aiMatrix4x4(), scale, path);
+  std::vector<std::shared_ptr<T>> meshes = extractMeshData<T>(scene, scene->mRootNode, aiMatrix4x4(), scale, resource);
   if (meshes.empty())
   {
-    CONSOLE_BRIDGE_logWarn("There are no meshes in the scene %s", path.c_str());
+    CONSOLE_BRIDGE_logWarn("There are no meshes in the scene %s", resource->getUrl().c_str());
     return std::vector<std::shared_ptr<T>>();
   }
 
@@ -203,7 +206,95 @@ inline std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& pat
     importer.ApplyPostProcessing(aiProcess_OptimizeGraph);
   }
 
-  return createMeshFromAsset<T>(scene, scale, path);
+  return createMeshFromAsset<T>(scene, scale, nullptr);
+}
+
+/**
+ * @brief Create a mesh using assimp from resource
+ * @param resource The located resource
+ * @param scale Perform an axis scaling
+ * @param trianglulate If true the mesh will be trianglulated. This should be done for visual meshes.
+ *        In the case of collision meshes do not triangulate convex hull meshes.
+ * @param flatten If true all meshes will be condensed into a single mesh. This should only be used for visual meshes,
+ * do not flatten collision meshes.
+ * @return
+ */
+template <class T>
+inline std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::Resource::Ptr resource,
+                                                              Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
+                                                              bool triangulate = false,
+                                                              bool flatten = false)
+{
+  if (!resource)
+    return std::vector<std::shared_ptr<T>>();
+
+  const char* hint = nullptr;
+
+  std::string resource_url = resource->getUrl();
+  std::regex hint_re("^.*\\.([A-Za-z0-9]{1,8})$");
+  std::smatch hint_match;
+  if (std::regex_match(resource_url, hint_match, hint_re))
+  {
+    if (hint_match.size() == 2)
+    {
+      hint = hint_match[1].str().c_str();
+    }
+  }
+
+  std::vector<uint8_t> data = resource->getResourceContents();
+
+  // Create an instance of the Importer class
+  Assimp::Importer importer;
+
+  // Issue #38 fix: as part of the post-processing, we remove all other components in file but
+  // the meshes, as anyway the resulting shapes:Mesh object just receives vertices and triangles.
+  importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS,
+                              aiComponent_NORMALS | aiComponent_TANGENTS_AND_BITANGENTS | aiComponent_COLORS |
+                                  aiComponent_TEXCOORDS | aiComponent_BONEWEIGHTS | aiComponent_ANIMATIONS |
+                                  aiComponent_TEXTURES | aiComponent_LIGHTS | aiComponent_CAMERAS |
+                                  aiComponent_MATERIALS);
+
+  // And have it read the given file with some post-processing
+  const aiScene* scene = nullptr;
+  if (triangulate)
+    scene = importer.ReadFileFromMemory(&data[0],
+                                        data.size(),
+                                        aiProcess_Triangulate | aiProcess_JoinIdenticalVertices |
+                                            aiProcess_SortByPType | aiProcess_RemoveComponent,
+                                        hint);
+  else
+    scene =
+        importer.ReadFileFromMemory(&data[0],
+                                    data.size(),
+                                    aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | aiProcess_RemoveComponent,
+                                    hint);
+
+  if (!scene)
+  {
+    CONSOLE_BRIDGE_logError(
+        "Could not load mesh from \"%s\": %s", resource->getUrl().c_str(), importer.GetErrorString());
+    return std::vector<std::shared_ptr<T>>();
+  }
+
+  // Assimp enforces Y_UP convention by rotating models with different conventions.
+  // However, that behaviour is confusing and doesn't match the ROS convention
+  // where the Z axis is pointing up.
+  // Hopefully this doesn't undo legit use of the root node transformation...
+  // Note that this is also what RViz does internally.
+  scene->mRootNode->mTransformation = aiMatrix4x4();
+
+  if (flatten)
+  {
+    // These post processing steps flatten the root node transformation into child nodes,
+    // so they must be delayed until after clearing the root node transform above.
+    importer.ApplyPostProcessing(aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
+  }
+  else
+  {
+    importer.ApplyPostProcessing(aiProcess_OptimizeGraph);
+  }
+
+  return createMeshFromAsset<T>(scene, scale, resource);
 }
 
 }  // namespace tesseract_geometry

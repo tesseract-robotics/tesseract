@@ -8,8 +8,6 @@
 
 namespace tesseract_scene_graph
 {
-using ResourceLocatorFn = std::function<std::string(const std::string&)>;
-
 inline void processSRDFAllowedCollisions(SceneGraph& scene_graph, const tesseract_scene_graph::SRDFModel& srdf_model)
 {
   for (const auto& pair : srdf_model.getDisabledCollisionPairs())

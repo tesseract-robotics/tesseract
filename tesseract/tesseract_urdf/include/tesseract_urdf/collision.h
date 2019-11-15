@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/utils.h>
+#include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_urdf/utils.h>
 #include <tesseract_urdf/origin.h>
 #include <tesseract_urdf/geometry.h>
@@ -76,7 +77,7 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_scene_graph::Collision::Ptr>& collisions,
                                                const tinyxml2::XMLElement* xml_element,
-                                               tesseract_scene_graph::ResourceLocatorFn locator,
+                                               tesseract_scene_graph::ResourceLocator::Ptr locator,
                                                const int version)
 {
   collisions.clear();

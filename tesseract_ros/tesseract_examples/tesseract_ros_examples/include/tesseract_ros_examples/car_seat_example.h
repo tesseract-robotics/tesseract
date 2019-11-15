@@ -55,7 +55,7 @@ public:
 private:
   ros::NodeHandle nh_;
   int env_current_revision_;
-  tesseract_scene_graph::ResourceLocatorFn locator_;
+  tesseract_scene_graph::ResourceLocator::Ptr locator_;
   std::unordered_map<std::string, std::unordered_map<std::string, double>> saved_positions_;
 
   std::shared_ptr<trajopt::ProblemConstructionInfo> cppMethod(const std::string& start, const std::string& finish);

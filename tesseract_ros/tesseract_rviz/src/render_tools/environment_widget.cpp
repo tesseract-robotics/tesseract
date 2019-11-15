@@ -598,7 +598,7 @@ void EnvironmentWidget::loadEnvironment()
   }
   else
   {
-    tesseract_scene_graph::ResourceLocatorFn locator = tesseract_rosutils::locateResource;
+    tesseract_scene_graph::ResourceLocator::Ptr locator = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
     if (tesseract_->init(urdf_xml_string, srdf_xml_string, locator))
     {
       visualization_->clear();

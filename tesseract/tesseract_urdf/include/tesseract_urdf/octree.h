@@ -31,10 +31,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/status_code.h>
 #include <Eigen/Geometry>
 #include <tinyxml2.h>
+#include <boost/iostreams/stream.hpp>
+#include <boost/iostreams/device/array.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/octree.h>
 #include <tesseract_scene_graph/utils.h>
+#include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_urdf/utils.h>
 
 namespace tesseract_urdf
@@ -75,7 +78,7 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parseOctree(tesseract_geometry::Octree::Ptr& octree,
                                                      const tinyxml2::XMLElement* xml_element,
-                                                     tesseract_scene_graph::ResourceLocatorFn locator,
+                                                     tesseract_scene_graph::ResourceLocator::Ptr locator,
                                                      tesseract_geometry::Octree::SubType shape_type,
                                                      const bool prune,
                                                      const int version)
@@ -87,7 +90,14 @@ inline tesseract_common::StatusCode::Ptr parseOctree(tesseract_geometry::Octree:
   if (QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
     return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::ErrorAttributeFileName, status_cat);
 
-  auto ot = std::make_shared<octomap::OcTree>(locator(filename));
+  tesseract_common::Resource::Ptr resource = locator->locateResource(filename);
+  if (!resource)
+    return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::ErrorImportingOctree, status_cat);
+  if (!resource->isFile())
+    return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::ErrorImportingOctree, status_cat);
+
+  auto ot = std::make_shared<octomap::OcTree>(resource->getFilePath());
+
   if (ot == nullptr || ot->size() == 0)
     return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::ErrorImportingOctree, status_cat);
 
