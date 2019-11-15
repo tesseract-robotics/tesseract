@@ -35,10 +35,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
-
 /**
  * @brief Represents resource data available from a file or url
- * 
+ *
  */
 class Resource
 {
@@ -48,35 +47,35 @@ public:
 
   /**
    * @brief Returns true if the located resource is a local file
-   * 
+   *
    * @return true if the resource is a local file, otherwise false
    */
   virtual bool isFile() = 0;
 
   /**
    * @brief Get the original URL used to locate the file
-   * 
+   *
    * @return The URL of the resource
    */
   virtual std::string getUrl() = 0;
 
   /**
    * @brief Get the file path of the resource. Only valid if isFile() is true.
-   * 
+   *
    * @return The file path to the resource
    */
   virtual std::string getFilePath() = 0;
 
   /**
    * @brief Get the resource as bytes. This function may block
-   * 
+   *
    * @return Resource bytes as a uint8_t vector
    */
   virtual std::vector<uint8_t> getResourceContents() = 0;
-  
+
   /**
    * @brief Get the resource as a std::istream. This function and the returned stream may block
-   * 
+   *
    * @return A std::istream shared pointer for the resource data
    */
   virtual std::shared_ptr<std::istream> getResourceContentStream() = 0;
