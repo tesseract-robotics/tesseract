@@ -38,27 +38,27 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_scene_graph
 {
 /**
- * @brief Abstract class for resource loaders 
- * 
+ * @brief Abstract class for resource loaders
+ *
  */
 class ResourceLocator
 {
 public:
   using Ptr = std::shared_ptr<ResourceLocator>;
   using ConstPtr = std::shared_ptr<const ResourceLocator>;
-  
+
   /**
    * @brief Locate a resource based on a URL
-   * 
+   *
    * @param url The URL of the resource
-   * @return A shared pointer to a Resource instance, or nullptr if not found 
+   * @return A shared pointer to a Resource instance, or nullptr if not found
    */
   virtual tesseract_common::Resource::Ptr locateResource(const std::string& url) = 0;
 };
 
 /**
  * @brief Resource locator implementation using a provided function to locate file resources
- * 
+ *
  */
 class SimpleResourceLocator : public ResourceLocator
 {
@@ -70,7 +70,7 @@ public:
 
   /**
    * @brief Construct a new Simple Resource Locator object
-   * 
+   *
    * @param locator_function Function to use to resolve resource file paths from URLs
    */
   SimpleResourceLocator(ResourceLocatorFn locator_function);
@@ -83,7 +83,7 @@ protected:
 
 /**
  * @brief Resource implementation for a local file
- * 
+ *
  */
 class SimpleLocatedResource : public tesseract_common::Resource
 {
