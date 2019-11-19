@@ -185,7 +185,7 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
         return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQString,
                                                               status_cat);
 
-      if (!tesseract_common::toNumeric<double>(tokens[1].c_str(), qz))
+      if (!tesseract_common::toNumeric<double>(tokens[1].c_str(), qx))
         return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQString,
                                                               status_cat);
 
