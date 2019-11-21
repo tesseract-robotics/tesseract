@@ -114,7 +114,15 @@ inline bool checkTrajectory(tesseract_collision::ContinuousContactManager& manag
         {
           std::stringstream ss;
           ss << "Continuous collision detected at step " << iStep << " between '" << it->first.first << "' and '"
-             << it->first.second << "'";
+             << it->first.second << "' with distance " << it->second.front().distance << std::endl;
+
+          ss << "     Names: ";
+          for (const auto& name : joint_names)
+            ss << name;
+
+          ss << std::endl
+             << "    State0: " << traj.row(iStep) << std::endl
+             << "    State1: " << traj.row(iStep + 1) << std::endl;
           CONSOLE_BRIDGE_logError(ss.str().c_str());
         }
       }
@@ -170,7 +178,14 @@ inline bool checkTrajectory(tesseract_collision::DiscreteContactManager& manager
         {
           std::stringstream ss;
           ss << "Discrete collision detected at step " << iStep << " between '" << it->first.first << "' and '"
-             << it->first.second << "'";
+             << it->first.second << "' with distance " << it->second.front().distance << std::endl;
+
+          ss << "     Names: ";
+          for (const auto& name : joint_names)
+            ss << name;
+
+          ss << std::endl << "    State0: " << traj.row(iStep) << std::endl;
+
           CONSOLE_BRIDGE_logError(ss.str().c_str());
         }
       }
