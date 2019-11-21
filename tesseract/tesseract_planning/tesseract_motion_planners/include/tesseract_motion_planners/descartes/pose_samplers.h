@@ -49,7 +49,7 @@ inline tesseract_common::VectorIsometry3d sampleToolAxis(const Eigen::Isometry3d
                                                          const Eigen::Vector3d axis)
 {
   tesseract_common::VectorIsometry3d samples;
-  int cnt = std::ceil(2.0 * M_PI / resolution);
+  int cnt = std::ceil(2.0 * M_PI / resolution) + 1;
   Eigen::VectorXd angles = Eigen::VectorXd::LinSpaced(cnt, -M_PI, M_PI);
   samples.reserve(angles.size() - 1);
   for (long i = 0; i < (angles.size() - 1); ++i)
