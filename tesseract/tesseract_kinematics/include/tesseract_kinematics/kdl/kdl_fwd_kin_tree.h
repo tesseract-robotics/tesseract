@@ -55,8 +55,14 @@ public:
   using Ptr = std::shared_ptr<KDLFwdKinTree>;
   using ConstPtr = std::shared_ptr<const KDLFwdKinTree>;
 
-  KDLFwdKinTree() : initialized_(false), solver_name_("KDLFwdKinTree") {}
-  KDLFwdKinTree(const KDLFwdKinTree& kin);
+  KDLFwdKinTree() = default;
+  ~KDLFwdKinTree() override = default;
+  KDLFwdKinTree(const KDLFwdKinTree&) = delete;
+  KDLFwdKinTree& operator=(const KDLFwdKinTree&) = delete;
+  KDLFwdKinTree(KDLFwdKinTree&&) = delete;
+  KDLFwdKinTree& operator=(KDLFwdKinTree&&) = delete;
+
+  ForwardKinematics::Ptr clone() const override;
 
   bool calcFwdKin(Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
 
@@ -94,7 +100,6 @@ public:
      // provided
   const std::string& getName() const override { return name_; }
   const std::string& getSolverName() const override { return solver_name_; }
-  ForwardKinematics::Ptr clone() const override { return std::make_shared<KDLFwdKinTree>(*this); }
 
   /**
    * @brief Initializes Forward Kinematics as tree
@@ -107,8 +112,8 @@ public:
    */
   bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
             const std::vector<std::string>& joint_names,
-            const std::string name,
-            std::unordered_map<std::string, double> start_state = std::unordered_map<std::string, double>());
+            std::string name,
+            const std::unordered_map<std::string, double>& start_state = std::unordered_map<std::string, double>());
 
   /**
    * @brief Checks if kinematics has been initialized
@@ -124,19 +129,12 @@ public:
     return initialized_;
   }
 
-  /**
-   * @brief Assigns values from another ROSKin to this
-   * @param rhs Input ROSKin object to copy from
-   * @return reference to this ROSKin object
-   */
-  KDLFwdKinTree& operator=(const KDLFwdKinTree& rhs);
-
 private:
-  bool initialized_;                                        /**< Identifies if the object has been initialized */
+  bool initialized_{ false };                               /**< Identifies if the object has been initialized */
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_; /**< Tesseract Scene Graph */
   KDL::Tree kdl_tree_;                                      /**< KDL tree object */
   std::string name_;                                        /**< Name of the kinematic chain */
-  std::string solver_name_;                                 /**< Name of this solver */
+  std::string solver_name_{ "KDLFwdKinTree" };              /**< Name of this solver */
   std::vector<std::string> joint_list_;                     /**< List of joint names */
   KDL::JntArray start_state_;  /**< Intial state of the tree. Should include all joints in the model. */
   std::vector<int> joint_qnr_; /**< The kdl segment number corrisponding to joint in joint_lists_ */
@@ -146,6 +144,12 @@ private:
   Eigen::MatrixX2d joint_limits_;             /**< Joint limits */
   std::unique_ptr<KDL::TreeFkSolverPos_recursive> fk_solver_; /**< KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::TreeJntToJacSolver> jac_solver_;       /**< KDL Jacobian Solver */
+
+  /**
+   * @brief This used by the clone method
+   * @return True if init() completes successfully
+   */
+  bool init(const KDLFwdKinTree& kin);
 
   /** @brief Set the start state for all joints in the tree. */
   void setStartState(std::unordered_map<std::string, double> start_state);

@@ -45,7 +45,12 @@ public:
   using Ptr = std::shared_ptr<DiscreteContactManager>;
   using ConstPtr = std::shared_ptr<const DiscreteContactManager>;
 
+  DiscreteContactManager() = default;
   virtual ~DiscreteContactManager() = default;
+  DiscreteContactManager(const DiscreteContactManager&) = delete;
+  DiscreteContactManager& operator=(const DiscreteContactManager&) = delete;
+  DiscreteContactManager(DiscreteContactManager&&) = delete;
+  DiscreteContactManager& operator=(DiscreteContactManager&&) = delete;
 
   /**
    * @brief Clone the manager

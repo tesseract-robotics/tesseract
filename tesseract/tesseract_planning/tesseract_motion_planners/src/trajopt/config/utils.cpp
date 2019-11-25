@@ -28,9 +28,9 @@
 namespace tesseract_motion_planners
 {
 trajopt::TermInfo::Ptr createJointWaypointTermInfo(const JointWaypoint::ConstPtr& waypoint,
-                                                   const int ind,
+                                                   int ind,
                                                    const std::vector<std::string>& joint_names,
-                                                   const double coeff,
+                                                   double coeff,
                                                    const std::string& name)
 {
   std::shared_ptr<trajopt::JointPosTermInfo> jv = std::make_shared<trajopt::JointPosTermInfo>();
@@ -50,9 +50,9 @@ trajopt::TermInfo::Ptr createJointWaypointTermInfo(const JointWaypoint::ConstPtr
 }
 
 trajopt::TermInfo::Ptr createJointTolerancedWaypointTermInfo(const JointTolerancedWaypoint::ConstPtr& waypoint,
-                                                             const int ind,
+                                                             int ind,
                                                              const std::vector<std::string>& joint_names,
-                                                             const double coeff,
+                                                             double coeff,
                                                              const std::string& name)
 {
   // For a toleranced waypoint we add an inequality term and a smaller equality term. This acts as a "leaky"
@@ -76,7 +76,7 @@ trajopt::TermInfo::Ptr createJointTolerancedWaypointTermInfo(const JointToleranc
 }
 
 trajopt::TermInfo::Ptr createCartesianWaypointTermInfo(const CartesianWaypoint::ConstPtr& waypoint,
-                                                       const int ind,
+                                                       int ind,
                                                        const std::string& link,
                                                        const Eigen::Isometry3d& tcp,
                                                        const std::string& name)
@@ -102,7 +102,7 @@ trajopt::TermInfo::Ptr createCartesianWaypointTermInfo(const CartesianWaypoint::
 }
 
 trajopt::TermInfo::Ptr createDynamicCartesianWaypointTermInfo(const CartesianWaypoint::ConstPtr& waypoint,
-                                                              const int ind,
+                                                              int ind,
                                                               const std::string& link,
                                                               const Eigen::Isometry3d& tcp,
                                                               const std::string& name)
@@ -127,7 +127,7 @@ trajopt::TermInfo::Ptr createDynamicCartesianWaypointTermInfo(const CartesianWay
 }
 
 WaypointTermInfo createWaypointTermInfo(const Waypoint::ConstPtr& waypoint,
-                                        const int ind,
+                                        int ind,
                                         const std::vector<std::string>& joint_names,
                                         const std::vector<std::string>& adjacency_map_links,
                                         const std::string& link,
@@ -193,8 +193,8 @@ WaypointTermInfo createWaypointTermInfo(const Waypoint::ConstPtr& waypoint,
 
 trajopt::TermInfo::Ptr createConfigurationTermInfo(const JointWaypoint::ConstPtr& configuration,
                                                    const std::vector<std::string>& joint_names,
-                                                   const int n_steps,
-                                                   const double coeff,
+                                                   int n_steps,
+                                                   double coeff,
                                                    const std::string& name)
 {
   assert(static_cast<std::size_t>(configuration->getPositions().size()) == joint_names.size());
@@ -216,10 +216,10 @@ trajopt::TermInfo::Ptr createConfigurationTermInfo(const JointWaypoint::ConstPtr
   return jp;
 }
 
-trajopt::TermInfo::Ptr createCollisionTermInfo(const int n_steps,
-                                               const double collision_safety_margin,
-                                               const bool collision_continuous,
-                                               const double coeff,
+trajopt::TermInfo::Ptr createCollisionTermInfo(int n_steps,
+                                               double collision_safety_margin,
+                                               bool collision_continuous,
+                                               double coeff,
                                                const std::string& name)
 {
   std::shared_ptr<trajopt::CollisionTermInfo> collision = std::make_shared<trajopt::CollisionTermInfo>();
@@ -233,8 +233,7 @@ trajopt::TermInfo::Ptr createCollisionTermInfo(const int n_steps,
   return collision;
 }
 
-trajopt::TermInfo::Ptr
-createSmoothVelocityTermInfo(const int n_steps, const int n_joints, const double coeff, const std::string& name)
+trajopt::TermInfo::Ptr createSmoothVelocityTermInfo(int n_steps, int n_joints, double coeff, const std::string& name)
 {
   std::shared_ptr<trajopt::JointVelTermInfo> jv = std::make_shared<trajopt::JointVelTermInfo>();
   jv->coeffs = std::vector<double>(static_cast<std::size_t>(n_joints), coeff);
@@ -246,7 +245,7 @@ createSmoothVelocityTermInfo(const int n_steps, const int n_joints, const double
   return jv;
 }
 
-trajopt::TermInfo::Ptr createSmoothVelocityTermInfo(const int n_steps,
+trajopt::TermInfo::Ptr createSmoothVelocityTermInfo(int n_steps,
                                                     const Eigen::Ref<const Eigen::VectorXd>& coeff,
                                                     const std::string& name)
 {
@@ -261,7 +260,7 @@ trajopt::TermInfo::Ptr createSmoothVelocityTermInfo(const int n_steps,
 }
 
 trajopt::TermInfo::Ptr
-createSmoothAccelerationTermInfo(const int n_steps, const int n_joints, const double coeff, const std::string& name)
+createSmoothAccelerationTermInfo(int n_steps, int n_joints, double coeff, const std::string& name)
 {
   std::shared_ptr<trajopt::JointAccTermInfo> ja = std::make_shared<trajopt::JointAccTermInfo>();
   ja->coeffs = std::vector<double>(static_cast<std::size_t>(n_joints), coeff);
@@ -273,7 +272,7 @@ createSmoothAccelerationTermInfo(const int n_steps, const int n_joints, const do
   return ja;
 }
 
-trajopt::TermInfo::Ptr createSmoothAccelerationTermInfo(const int n_steps,
+trajopt::TermInfo::Ptr createSmoothAccelerationTermInfo(int n_steps,
                                                         const Eigen::Ref<const Eigen::VectorXd>& coeff,
                                                         const std::string& name)
 {
@@ -287,8 +286,7 @@ trajopt::TermInfo::Ptr createSmoothAccelerationTermInfo(const int n_steps,
   return ja;
 }
 
-trajopt::TermInfo::Ptr
-createSmoothJerkTermInfo(const int n_steps, const int n_joints, const double coeff, const std::string& name)
+trajopt::TermInfo::Ptr createSmoothJerkTermInfo(int n_steps, int n_joints, double coeff, const std::string& name)
 {
   std::shared_ptr<trajopt::JointJerkTermInfo> jj = std::make_shared<trajopt::JointJerkTermInfo>();
   jj->coeffs = std::vector<double>(static_cast<std::size_t>(n_joints), coeff);
@@ -300,7 +298,7 @@ createSmoothJerkTermInfo(const int n_steps, const int n_joints, const double coe
   return jj;
 }
 
-trajopt::TermInfo::Ptr createSmoothJerkTermInfo(const int n_steps,
+trajopt::TermInfo::Ptr createSmoothJerkTermInfo(int n_steps,
                                                 const Eigen::Ref<const Eigen::VectorXd>& coeff,
                                                 const std::string& name)
 {
@@ -314,9 +312,9 @@ trajopt::TermInfo::Ptr createSmoothJerkTermInfo(const int n_steps,
   return jj;
 }
 
-trajopt::TermInfo::Ptr createUserDefinedTermInfo(const int n_steps,
-                                                 const sco::VectorOfVector::func error_function,
-                                                 const sco::MatrixOfVector::func jacobian_function,
+trajopt::TermInfo::Ptr createUserDefinedTermInfo(int n_steps,
+                                                 sco::VectorOfVector::func error_function,
+                                                 sco::MatrixOfVector::func jacobian_function,
                                                  const std::string& name)
 {
   if (error_function == nullptr)

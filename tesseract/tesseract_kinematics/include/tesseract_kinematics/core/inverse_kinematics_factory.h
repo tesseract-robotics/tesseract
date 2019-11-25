@@ -44,7 +44,12 @@ public:
   using Ptr = std::shared_ptr<InverseKinematicsFactory>;
   using ConstPtr = std::shared_ptr<const InverseKinematicsFactory>;
 
+  InverseKinematicsFactory() = default;
   virtual ~InverseKinematicsFactory() = default;
+  InverseKinematicsFactory(const InverseKinematicsFactory&) = default;
+  InverseKinematicsFactory& operator=(const InverseKinematicsFactory&) = default;
+  InverseKinematicsFactory(InverseKinematicsFactory&&) = default;
+  InverseKinematicsFactory& operator=(InverseKinematicsFactory&&) = default;
 
   /**
    * @brief Get the name of the factory
@@ -67,10 +72,10 @@ public:
    * @param name The name of the kinematic chain
    * @return True if init() completes successfully
    */
-  virtual InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-                                        const std::string& base_link,
-                                        const std::string& tip_link,
-                                        const std::string name) const
+  virtual InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,
+                                        const std::string& /*base_link*/,
+                                        const std::string& /*tip_link*/,
+                                        const std::string /*name*/) const  // NOLINT
   {
     return nullptr;
   }
@@ -84,11 +89,11 @@ public:
    * @param start_state The initial start state for the tree. This should inlclude all joints in the scene graph
    * @return True if init() completes successfully
    */
-  virtual InverseKinematics::Ptr
-  create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-         const std::vector<std::string>& joint_names,
-         const std::string name,
-         std::unordered_map<std::string, double> start_state = std::unordered_map<std::string, double>()) const
+  virtual InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,
+                                        const std::vector<std::string>& /*joint_names*/,
+                                        const std::string /*name*/,
+                                        std::unordered_map<std::string, double> /*start_state*/ =
+                                            std::unordered_map<std::string, double>()) const  // NOLINT
   {
     return nullptr;
   }

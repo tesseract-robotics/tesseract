@@ -44,7 +44,11 @@ public:
   /** @brief Construct a basic planner */
   TrajOptMotionPlanner(std::string name = "TRAJOPT");
 
-  ~TrajOptMotionPlanner() {}
+  ~TrajOptMotionPlanner() override = default;
+  TrajOptMotionPlanner(const TrajOptMotionPlanner&) = default;
+  TrajOptMotionPlanner& operator=(const TrajOptMotionPlanner&) = default;
+  TrajOptMotionPlanner(TrajOptMotionPlanner&&) = default;
+  TrajOptMotionPlanner& operator=(TrajOptMotionPlanner&&) = default;
 
   /**
    * @brief Set the configuration for the planner
@@ -54,7 +58,7 @@ public:
    * @param config The planners configuration
    * @return True if successful otherwise false
    */
-  bool setConfiguration(const TrajOptPlannerConfig::Ptr config);
+  bool setConfiguration(TrajOptPlannerConfig::Ptr config);
 
   /**
    * @brief Sets up the opimizer and solves a SQP problem read from json with no callbacks and dafault parameterss
@@ -63,7 +67,7 @@ public:
    * to console
    * @return true if optimization complete
    */
-  tesseract_common::StatusCode solve(PlannerResponse& response, const bool verbose = false) override;
+  tesseract_common::StatusCode solve(PlannerResponse& response, bool verbose = false) override;
 
   bool terminate() override;
 

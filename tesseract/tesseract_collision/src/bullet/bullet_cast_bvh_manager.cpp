@@ -50,7 +50,7 @@ static const tesseract_common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORM
 
 BulletCastBVHManager::BulletCastBVHManager()
 {
-  dispatcher_.reset(new btCollisionDispatcher(&coll_config_));
+  dispatcher_ = std::make_unique<btCollisionDispatcher>(&coll_config_);
 
   dispatcher_->registerCollisionCreateFunc(
       BOX_SHAPE_PROXYTYPE,
@@ -60,7 +60,7 @@ BulletCastBVHManager::BulletCastBVHManager()
   dispatcher_->setDispatcherFlags(dispatcher_->getDispatcherFlags() &
                                   ~btCollisionDispatcher::CD_USE_RELATIVE_CONTACT_BREAKING_THRESHOLD);
 
-  broadphase_.reset(new btDbvtBroadphase());
+  broadphase_ = std::make_unique<btDbvtBroadphase>();
 
   contact_distance_ = 0;
 }
@@ -112,10 +112,8 @@ bool BulletCastBVHManager::addCollisionObject(const std::string& name,
     addCollisionObject(new_cow);
     return true;
   }
-  else
-  {
-    return false;
-  }
+
+  return false;
 }
 
 const CollisionShapesConst& BulletCastBVHManager::getCollisionObjectGeometries(const std::string& name) const
@@ -244,7 +242,7 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
       else if (btBroadphaseProxy::isCompound(cow->getCollisionShape()->getShapeType()))
       {
         assert(dynamic_cast<btCompoundShape*>(cow->getCollisionShape()) != nullptr);
-        btCompoundShape* compound = static_cast<btCompoundShape*>(cow->getCollisionShape());
+        auto* compound = static_cast<btCompoundShape*>(cow->getCollisionShape());
         for (int i = 0; i < compound->getNumChildShapes(); ++i)
         {
           if (btBroadphaseProxy::isConvex(compound->getChildShape(i)->getShapeType()))
@@ -259,7 +257,7 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const std::string& name,
           else if (btBroadphaseProxy::isCompound(compound->getChildShape(i)->getShapeType()))
           {
             assert(dynamic_cast<btCompoundShape*>(compound->getChildShape(i)) != nullptr);
-            btCompoundShape* second_compound = static_cast<btCompoundShape*>(compound->getChildShape(i));
+            auto* second_compound = static_cast<btCompoundShape*>(compound->getChildShape(i));
 
             for (int j = 0; j < second_compound->getNumChildShapes(); ++j)
             {

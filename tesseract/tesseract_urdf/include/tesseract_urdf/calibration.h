@@ -79,7 +79,7 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointCalibration::Ptr& calibration,
                                                const tinyxml2::XMLElement* xml_element,
-                                               const int version)
+                                               const int /*version*/)
 {
   calibration = nullptr;
   auto status_cat = std::make_shared<CalibrationStatusCategory>();

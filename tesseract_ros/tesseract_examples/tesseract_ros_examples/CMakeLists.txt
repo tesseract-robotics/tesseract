@@ -20,7 +20,7 @@ find_package(PCL REQUIRED COMPONENTS core features filters io segmentation surfa
 catkin_package()
 
 add_library(${PROJECT_NAME}_basic_cartesian_example src/basic_cartesian_example.cpp)
-target_link_libraries(${PROJECT_NAME}_basic_cartesian_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${PCL_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_basic_cartesian_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${PCL_LIBRARIES} ${catkin_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_basic_cartesian_example PUBLIC)
 foreach(DEF ${PCL_DEFINITIONS})
   string(STRIP ${DEF} DEF)
@@ -53,7 +53,7 @@ target_include_directories(${PROJECT_NAME}_basic_cartesian_example_node SYSTEM P
     ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_glass_up_right_example src/glass_up_right_example.cpp)
-target_link_libraries(${PROJECT_NAME}_glass_up_right_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_glass_up_right_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_glass_up_right_example PUBLIC)
 target_include_directories(${PROJECT_NAME}_glass_up_right_example PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -89,7 +89,7 @@ target_include_directories(${PROJECT_NAME}_puzzle_piece_example_node SYSTEM PRIV
     ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_car_seat_example src/car_seat_example.cpp)
-target_link_libraries(${PROJECT_NAME}_car_seat_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_car_seat_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_car_seat_example PUBLIC)
 target_include_directories(${PROJECT_NAME}_car_seat_example PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -125,7 +125,7 @@ target_include_directories(${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_n
     ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_pick_and_place_example src/pick_and_place_example.cpp)
-target_link_libraries(${PROJECT_NAME}_pick_and_place_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_pick_and_place_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_pick_and_place_example PUBLIC)
 target_include_directories(${PROJECT_NAME}_pick_and_place_example PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"

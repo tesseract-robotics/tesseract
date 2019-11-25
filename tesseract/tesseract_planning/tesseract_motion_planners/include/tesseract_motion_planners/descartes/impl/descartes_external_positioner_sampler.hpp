@@ -40,19 +40,19 @@ namespace tesseract_motion_planners
 {
 template <typename FloatType>
 DescartesExternalPositionerSampler<FloatType>::DescartesExternalPositionerSampler(
-    const Eigen::Isometry3d target_pose,
-    const tesseract_motion_planners::PoseSamplerFn target_pose_sampler,
-    const tesseract_kinematics::ForwardKinematics::ConstPtr positioner_kinematics,
-    const tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics,
-    const typename descartes_light::CollisionInterface<FloatType>::Ptr collision,
-    const tesseract_environment::EnvState::ConstPtr current_state,
-    const Eigen::VectorXd positioner_sample_resolution,
-    const Eigen::Isometry3d robot_tcp,
-    const double robot_reach,
-    const bool allow_collision,
-    const DescartesIsValidFn<FloatType> is_valid)
-  : target_pose_(std::move(target_pose))
-  , target_pose_sampler_(target_pose_sampler)
+    const Eigen::Isometry3d& target_pose,
+    PoseSamplerFn target_pose_sampler,
+    tesseract_kinematics::ForwardKinematics::ConstPtr positioner_kinematics,
+    tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics,
+    typename descartes_light::CollisionInterface<FloatType>::Ptr collision,
+    const tesseract_environment::EnvState::ConstPtr& current_state,
+    Eigen::VectorXd positioner_sample_resolution,
+    const Eigen::Isometry3d& robot_tcp,
+    double robot_reach,
+    bool allow_collision,
+    DescartesIsValidFn<FloatType> is_valid)
+  : target_pose_(target_pose)
+  , target_pose_sampler_(std::move(target_pose_sampler))
   , positioner_kinematics_(std::move(positioner_kinematics))
   , robot_kinematics_(std::move(robot_kinematics))
   , collision_(std::move(collision))
@@ -65,7 +65,7 @@ DescartesExternalPositionerSampler<FloatType>::DescartesExternalPositionerSample
   , allow_collision_(allow_collision)
   , dof_(positioner_kinematics_->numJoints() + robot_kinematics_->numJoints())
   , ik_seed_(Eigen::VectorXd::Zero(dof_))
-  , is_valid_(is_valid)
+  , is_valid_(std::move(is_valid))
 {
 }
 
@@ -90,10 +90,10 @@ bool DescartesExternalPositionerSampler<FloatType>::sample(std::vector<FloatType
   }
 
   tesseract_common::VectorIsometry3d target_poses = target_pose_sampler_(target_pose_);
-  for (std::size_t i = 0; i < target_poses.size(); ++i)
+  for (const auto& sp : target_poses)
   {
     // Tool pose subtract robot tcp
-    Eigen::Isometry3d target_pose = target_poses[i] * robot_tcp_.inverse();
+    Eigen::Isometry3d target_pose = sp * robot_tcp_.inverse();
     Eigen::Matrix<FloatType, Eigen::Dynamic, 1> positioner_pose(num_joints);
     nested_ik(solution_set, 0, dof_range, target_pose, positioner_pose, false, distance);
   }
@@ -109,18 +109,18 @@ bool DescartesExternalPositionerSampler<FloatType>::isCollisionFree(const FloatT
 {
   if (collision_ == nullptr)
     return true;
-  else
-    return collision_->validate(vertex, dof_);
+
+  return collision_->validate(vertex, dof_);
 }
 
 template <typename FloatType>
 void DescartesExternalPositionerSampler<FloatType>::nested_ik(
     std::vector<FloatType>& solution_set,
-    const int loop_level,
+    int loop_level,
     const std::vector<Eigen::VectorXd>& dof_range,
     const Eigen::Isometry3d& target_pose,
     Eigen::Ref<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> sample_pose,
-    const bool get_best_solution,
+    bool get_best_solution,
     double& distance)
 {
   if (loop_level >= positioner_kinematics_->numJoints())
@@ -141,7 +141,7 @@ bool DescartesExternalPositionerSampler<FloatType>::ikAt(
     std::vector<FloatType>& solution_set,
     const Eigen::Isometry3d& target_pose,
     const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& positioner_pose,
-    const bool get_best_solution,
+    bool get_best_solution,
     double& distance)
 {
   Eigen::Isometry3d positioner_tf;
@@ -200,10 +200,10 @@ bool DescartesExternalPositionerSampler<FloatType>::getBestSolution(
 {
   double distance = std::numeric_limits<double>::min();
   int num_joints = static_cast<int>(positioner_kinematics_->numJoints());
-  for (std::size_t i = 0; i < target_poses.size(); ++i)
+  for (const auto& sp : target_poses)
   {
     // Tool pose subtract robot tcp
-    Eigen::Isometry3d target_pose = target_poses[i] * robot_tcp_.inverse();
+    Eigen::Isometry3d target_pose = sp * robot_tcp_.inverse();
     Eigen::Matrix<FloatType, Eigen::Dynamic, 1> positioner_pose(num_joints);
     nested_ik(solution_set, 0, dof_range, target_pose, positioner_pose, true, distance);
   }

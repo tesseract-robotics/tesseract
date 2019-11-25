@@ -51,7 +51,12 @@ public:
   using Ptr = std::shared_ptr<ForwardKinematics>;
   using ConstPtr = std::shared_ptr<const ForwardKinematics>;
 
+  ForwardKinematics() = default;
   virtual ~ForwardKinematics() = default;
+  ForwardKinematics(const ForwardKinematics&) = delete;
+  ForwardKinematics& operator=(const ForwardKinematics&) = delete;
+  ForwardKinematics(ForwardKinematics&&) = delete;
+  ForwardKinematics& operator=(ForwardKinematics&&) = delete;
 
   /**
    * @brief Calculates tool pose of robot chain

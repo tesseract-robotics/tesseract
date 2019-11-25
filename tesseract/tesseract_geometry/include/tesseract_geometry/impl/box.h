@@ -43,6 +43,10 @@ public:
 
   Box(double x, double y, double z) : Geometry(GeometryType::BOX), x_(x), y_(y), z_(z) {}
   ~Box() override = default;
+  Box(const Box&) = delete;
+  Box& operator=(const Box&) = delete;
+  Box(Box&&) = delete;
+  Box& operator=(Box&&) = delete;
 
   double getX() const { return x_; }
   double getY() const { return y_; }

@@ -96,7 +96,7 @@ inline tinyxml2::XMLError QueryStringAttribute(const tinyxml2::XMLElement* xml_e
  */
 inline std::string StringAttribute(const tinyxml2::XMLElement* xml_element, const char* name, std::string default_value)
 {
-  std::string str = default_value;
+  std::string str = std::move(default_value);
   QueryStringAttribute(xml_element, name, str);
   return str;
 }

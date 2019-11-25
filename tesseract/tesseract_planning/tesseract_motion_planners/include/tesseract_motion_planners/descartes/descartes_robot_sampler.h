@@ -58,15 +58,15 @@ public:
    * @param allow_collision If true and no valid solution was found it will return the best of the worst
    * @param is_valid This is a user defined function to filter out solution
    */
-  DescartesRobotSampler(const Eigen::Isometry3d target_pose,
-                        const tesseract_motion_planners::PoseSamplerFn target_pose_sampler,
-                        const tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics,
-                        const typename descartes_light::CollisionInterface<FloatType>::Ptr collision,
-                        const tesseract_environment::EnvState::ConstPtr current_state,
-                        const Eigen::Isometry3d robot_tcp,
-                        const double robot_reach,
-                        const bool allow_collision,
-                        const DescartesIsValidFn<FloatType>& is_valid);
+  DescartesRobotSampler(const Eigen::Isometry3d& target_pose,
+                        tesseract_motion_planners::PoseSamplerFn target_pose_sampler,
+                        tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics,
+                        typename descartes_light::CollisionInterface<FloatType>::Ptr collision,
+                        const tesseract_environment::EnvState::ConstPtr& current_state,
+                        const Eigen::Isometry3d& robot_tcp,
+                        double robot_reach,
+                        bool allow_collision,
+                        DescartesIsValidFn<FloatType> is_valid);
 
   bool sample(std::vector<FloatType>& solution_set) override;
 
@@ -108,7 +108,7 @@ private:
    */
   bool ikAt(std::vector<FloatType>& solution_set,
             const Eigen::Isometry3d& target_pose,
-            const bool get_best_solution,
+            bool get_best_solution,
             double& distance);
 };
 

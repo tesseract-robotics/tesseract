@@ -38,6 +38,13 @@ namespace tesseract_kinematics
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+InverseKinematics::Ptr KDLInvKinChainNR::clone() const
+{
+  auto cloned_invkin = std::make_shared<KDLInvKinChainNR>();
+  cloned_invkin->init(*this);
+  return std::move(cloned_invkin);
+}
+
 bool KDLInvKinChainNR::calcInvKinHelper(Eigen::VectorXd& solutions,
                                         const Eigen::Isometry3d& pose,
                                         const Eigen::Ref<const Eigen::VectorXd>& seed,
@@ -152,10 +159,10 @@ const std::vector<std::string>& KDLInvKinChainNR::getActiveLinkNames() const
 
 const Eigen::MatrixX2d& KDLInvKinChainNR::getLimits() const { return kdl_data_.joint_limits; }
 
-bool KDLInvKinChainNR::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+bool KDLInvKinChainNR::init(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
                             const std::string& base_link,
                             const std::string& tip_link,
-                            const std::string name)
+                            const std::string& name)
 {
   initialized_ = false;
 
@@ -180,38 +187,26 @@ bool KDLInvKinChainNR::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_gr
     return false;
   }
 
-  fk_solver_.reset(new KDL::ChainFkSolverPos_recursive(kdl_data_.robot_chain));
-  ik_vel_solver_.reset(new KDL::ChainIkSolverVel_pinv(kdl_data_.robot_chain));
-  ik_solver_.reset(new KDL::ChainIkSolverPos_NR(kdl_data_.robot_chain, *fk_solver_, *ik_vel_solver_));
+  fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
+  ik_vel_solver_ = std::make_unique<KDL::ChainIkSolverVel_pinv>(kdl_data_.robot_chain);
+  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_NR>(kdl_data_.robot_chain, *fk_solver_, *ik_vel_solver_);
 
   initialized_ = true;
   return initialized_;
 }
 
-KDLInvKinChainNR& KDLInvKinChainNR::operator=(const KDLInvKinChainNR& rhs)
-{
-  initialized_ = rhs.initialized_;
-  name_ = rhs.name_;
-  solver_name_ = rhs.solver_name_;
-  kdl_data_ = rhs.kdl_data_;
-  fk_solver_.reset(new KDL::ChainFkSolverPos_recursive(kdl_data_.robot_chain));
-  ik_vel_solver_.reset(new KDL::ChainIkSolverVel_pinv(kdl_data_.robot_chain));
-  ik_solver_.reset(new KDL::ChainIkSolverPos_NR(kdl_data_.robot_chain, *fk_solver_, *ik_vel_solver_));
-  scene_graph_ = rhs.scene_graph_;
-
-  return *this;
-}
-
-KDLInvKinChainNR::KDLInvKinChainNR(const KDLInvKinChainNR& kin)
+bool KDLInvKinChainNR::init(const KDLInvKinChainNR& kin)
 {
   initialized_ = kin.initialized_;
   name_ = kin.name_;
   solver_name_ = kin.solver_name_;
   kdl_data_ = kin.kdl_data_;
-  fk_solver_.reset(new KDL::ChainFkSolverPos_recursive(kdl_data_.robot_chain));
-  ik_vel_solver_.reset(new KDL::ChainIkSolverVel_pinv(kdl_data_.robot_chain));
-  ik_solver_.reset(new KDL::ChainIkSolverPos_NR(kdl_data_.robot_chain, *fk_solver_, *ik_vel_solver_));
+  fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
+  ik_vel_solver_ = std::make_unique<KDL::ChainIkSolverVel_pinv>(kdl_data_.robot_chain);
+  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_NR>(kdl_data_.robot_chain, *fk_solver_, *ik_vel_solver_);
   scene_graph_ = kin.scene_graph_;
+
+  return initialized_;
 }
 
 }  // namespace tesseract_kinematics

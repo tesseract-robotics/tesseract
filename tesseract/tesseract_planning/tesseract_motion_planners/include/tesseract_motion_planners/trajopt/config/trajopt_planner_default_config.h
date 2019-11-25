@@ -55,7 +55,7 @@ struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
   virtual std::shared_ptr<trajopt::ProblemConstructionInfo> generatePCI() const;
 
   /** @brief Generates the TrajOpt problem and saves the result internally */
-  virtual bool generate() override;
+  bool generate() override;
 
   /** @brief Tesseract object. ***REQUIRED*** */
   tesseract::Tesseract::ConstPtr tesseract;

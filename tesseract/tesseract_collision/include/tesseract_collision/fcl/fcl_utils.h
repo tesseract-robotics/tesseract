@@ -137,11 +137,11 @@ public:
   int getShapeIndex(const fcl::CollisionObjectd* co) const;
 
 protected:
-  CollisionObjectWrapper(const std::string& name,
+  CollisionObjectWrapper(std::string name,
                          const int& type_id,
-                         const CollisionShapesConst& shapes,
-                         const tesseract_common::VectorIsometry3d& shape_poses,
-                         const std::vector<CollisionGeometryPtr>& collision_geometries,
+                         CollisionShapesConst shapes,
+                         tesseract_common::VectorIsometry3d shape_poses,
+                         std::vector<CollisionGeometryPtr> collision_geometries,
                          const std::vector<CollisionObjectPtr>& collision_objects);
 
   std::string name_;             // name of the collision object

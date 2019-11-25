@@ -79,7 +79,7 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointDynamics::Ptr& dynamics,
                                                const tinyxml2::XMLElement* xml_element,
-                                               const int version)
+                                               const int /*version*/)
 {
   dynamics = nullptr;
   auto status_cat = std::make_shared<DynamicsStatusCategory>();
@@ -95,7 +95,8 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointDynam
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
     return std::make_shared<tesseract_common::StatusCode>(DynamicsStatusCategory::ErrorParsingAttributeDamping,
                                                           status_cat);
-  else if (status == tinyxml2::XML_NO_ATTRIBUTE)
+
+  if (status == tinyxml2::XML_NO_ATTRIBUTE)
     status_code =
         std::make_shared<tesseract_common::StatusCode>(DynamicsStatusCategory::MissingAttributeDamping, status_cat);
 
@@ -103,7 +104,8 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointDynam
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
     return std::make_shared<tesseract_common::StatusCode>(DynamicsStatusCategory::ErrorParsingAttributeFriction,
                                                           status_cat);
-  else if (status == tinyxml2::XML_NO_ATTRIBUTE)
+
+  if (status == tinyxml2::XML_NO_ATTRIBUTE)
     status_code =
         std::make_shared<tesseract_common::StatusCode>(DynamicsStatusCategory::MissingAttributeFriction, status_cat);
 

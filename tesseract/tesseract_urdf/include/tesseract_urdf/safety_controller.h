@@ -80,7 +80,7 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointSafety::Ptr& safety,
                                                const tinyxml2::XMLElement* xml_element,
-                                               const int version)
+                                               const int /*version*/)
 {
   safety = nullptr;
 

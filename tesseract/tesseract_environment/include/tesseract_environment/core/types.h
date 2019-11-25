@@ -113,7 +113,7 @@ public:
         assert(inv_adj_links.size() == 1);
 
         const std::string& ial = inv_adj_links[0];
-        std::vector<std::string>::const_iterator it = std::find(active_links.begin(), active_links.end(), ial);
+        auto it = std::find(active_links.begin(), active_links.end(), ial);
         if (it != active_links.end())
         {
           AdjacencyMapPair::Ptr pair = std::make_shared<AdjacencyMapPair>();
@@ -130,6 +130,10 @@ public:
   }
 
   virtual ~AdjacencyMap() = default;
+  AdjacencyMap(const AdjacencyMap&) = default;
+  AdjacencyMap& operator=(const AdjacencyMap&) = default;
+  AdjacencyMap(AdjacencyMap&&) = default;
+  AdjacencyMap& operator=(AdjacencyMap&&) = default;
 
   /**
    * @brief This is a list of all active links associated with the constructor data.

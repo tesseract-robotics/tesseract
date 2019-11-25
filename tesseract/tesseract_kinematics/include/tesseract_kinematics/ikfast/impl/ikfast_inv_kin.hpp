@@ -41,21 +41,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
-IKFastInvKin::IKFastInvKin(const std::string name,
-                           const std::string base_link_name,
-                           const std::string tip_link_name,
-                           const std::vector<std::string> joint_names,
-                           const std::vector<std::string> link_names,
-                           const std::vector<std::string> active_link_names,
-                           const Eigen::MatrixX2d joint_limits)
-  : name_(name)
-  , base_link_name_(std::move(base_link_name))
-  , tip_link_name_(std::move(tip_link_name))
-  , joint_names_(std::move(joint_names))
-  , link_names_(std::move(link_names))
-  , active_link_names_(std::move(active_link_names))
-  , joint_limits_(std::move(joint_limits))
+InverseKinematics::Ptr IKFastInvKin::clone() const
 {
+  auto cloned_invkin = std::make_shared<IKFastInvKin>();
+  cloned_invkin->init(*this);
+  return std::move(cloned_invkin);
 }
 
 bool IKFastInvKin::calcInvKin(Eigen::VectorXd& solutions,
@@ -154,6 +144,41 @@ bool IKFastInvKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) con
 }
 
 unsigned int IKFastInvKin::numJoints() const { return GetNumJoints(); }
+
+bool IKFastInvKin::init(const std::string name,
+                        const std::string base_link_name,
+                        const std::string tip_link_name,
+                        const std::vector<std::string> joint_names,
+                        const std::vector<std::string> link_names,
+                        const std::vector<std::string> active_link_names,
+                        const Eigen::MatrixX2d joint_limits)
+{
+  name_ = std::move(name);
+  base_link_name_ = std::move(base_link_name);
+  tip_link_name_ = std::move(tip_link_name);
+  joint_names_ = std::move(joint_names);
+  link_names_ = std::move(link_names);
+  active_link_names_ = std::move(active_link_names);
+  joint_limits_ = std::move(joint_limits);
+  initialized_ = true;
+
+  return initialized_;
+}
+
+bool IKFastInvKin::init(const IKFastInvKin& kin)
+{
+  initialized_ = kin.initialized_;
+  name_ = kin.name_;
+  solver_name_ = kin.solver_name_;
+  base_link_name_ = kin.base_link_name_;
+  tip_link_name_ = kin.tip_link_name_;
+  joint_names_ = kin.joint_names_;
+  link_names_ = kin.link_names_;
+  active_link_names_ = kin.active_link_names_;
+  joint_limits_ = kin.joint_limits_;
+
+  return initialized_;
+}
 
 }  // namespace tesseract_kinematics
 

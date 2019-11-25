@@ -87,13 +87,13 @@ public:
   using Ptr = std::shared_ptr<IKFastInvKin>;
   using ConstPtr = std::shared_ptr<const IKFastInvKin>;
 
-  IKFastInvKin(const std::string name,
-               const std::string base_link_name,
-               const std::string tip_link_name,
-               const std::vector<std::string> joint_names,
-               const std::vector<std::string> link_names,
-               const std::vector<std::string> active_link_names,
-               const Eigen::MatrixX2d joint_limits);
+  IKFastInvKin() : initialized_(false), solver_name_("IKFastInvKin") {}
+  IKFastInvKin(const IKFastInvKin&) = delete;
+  IKFastInvKin& operator=(const IKFastInvKin&) = delete;
+  IKFastInvKin(IKFastInvKin&&) = delete;
+  IKFastInvKin& operator=(IKFastInvKin&&) = delete;
+
+  InverseKinematics::Ptr clone() const override;
 
   bool calcInvKin(Eigen::VectorXd& solutions,
                   const Eigen::Isometry3d& pose,
@@ -115,7 +115,25 @@ public:
   const std::string& getTipLinkName() const override { return tip_link_name_; }
   const std::string& getName() const override { return name_; }
   const std::string& getSolverName() const override { return solver_name_; }
-  InverseKinematics::Ptr clone() const override { return std::make_shared<IKFastInvKin>(*this); }
+
+  /**
+   * @brief Initialize IKFast Inverse Kinematics
+   * @param name The name of the kinematic chain
+   * @param base_link_name The name of the base link for the kinematic chain
+   * @param tip_link_name The name of the tip link for the kinematic chain
+   * @param joint_names The joint names for the kinematic chain
+   * @param link_names The link names for the kinematic chain
+   * @param active_link_names The active links names for the kinematic chain
+   * @param joint_limits The joint limits for the kinematic chain
+   * @return True if successful
+   */
+  bool init(const std::string name,
+            const std::string base_link_name,
+            const std::string tip_link_name,
+            const std::vector<std::string> joint_names,
+            const std::vector<std::string> link_names,
+            const std::vector<std::string> active_link_names,
+            const Eigen::MatrixX2d joint_limits);
 
   /**
    * @brief Checks if kinematics has been initialized
@@ -132,7 +150,7 @@ public:
   }
 
 protected:
-  bool initialized_ = true;                    /**< @brief Identifies if the object has been initialized */
+  bool initialized_ = false;                   /**< @brief Identifies if the object has been initialized */
   std::string base_link_name_;                 /**< @brief Kinematic base link name */
   std::string tip_link_name_;                  /**< @brief Kinematic tip link name */
   Eigen::MatrixX2d joint_limits_;              /**< @brief Joint Limits */
@@ -140,7 +158,13 @@ protected:
   std::vector<std::string> link_names_;        /**< @brief link names */
   std::vector<std::string> active_link_names_; /**< @brief active link names */
   std::string name_;                           /**< @brief Name of the kinematic chain */
-  std::string solver_name_ = "IKFastInvKin";   /**< @brief Name of this solver */
+  std::string solver_name_;                    /**< @brief Name of this solver */
+
+  /**
+   * @brief This used by the clone method
+   * @return True if init() completes successfully
+   */
+  bool init(const IKFastInvKin& kin);
 };
 
 }  // namespace tesseract_kinematics

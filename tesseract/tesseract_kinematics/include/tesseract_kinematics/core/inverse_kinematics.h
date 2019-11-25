@@ -50,7 +50,12 @@ public:
   using Ptr = std::shared_ptr<InverseKinematics>;
   using ConstPtr = std::shared_ptr<const InverseKinematics>;
 
+  InverseKinematics() = default;
   virtual ~InverseKinematics() = default;
+  InverseKinematics(const InverseKinematics&) = delete;
+  InverseKinematics& operator=(const InverseKinematics&) = delete;
+  InverseKinematics(InverseKinematics&&) = delete;
+  InverseKinematics& operator=(InverseKinematics&&) = delete;
 
   /**
    * @brief Calculates joint solutions given a pose.

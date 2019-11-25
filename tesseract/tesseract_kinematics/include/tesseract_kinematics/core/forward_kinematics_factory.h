@@ -44,7 +44,12 @@ public:
   using Ptr = std::shared_ptr<ForwardKinematicsFactory>;
   using ConstPtr = std::shared_ptr<const ForwardKinematicsFactory>;
 
+  ForwardKinematicsFactory() = default;
   virtual ~ForwardKinematicsFactory() = default;
+  ForwardKinematicsFactory(const ForwardKinematicsFactory&) = default;
+  ForwardKinematicsFactory& operator=(const ForwardKinematicsFactory&) = default;
+  ForwardKinematicsFactory(ForwardKinematicsFactory&&) = default;
+  ForwardKinematicsFactory& operator=(ForwardKinematicsFactory&&) = default;
 
   /**
    * @brief Get the name of the factory
@@ -67,10 +72,10 @@ public:
    * @param name The name of the kinematic chain
    * @return True if init() completes successfully
    */
-  virtual ForwardKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-                                        const std::string& base_link,
-                                        const std::string& tip_link,
-                                        const std::string name) const
+  virtual ForwardKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,  // NOLINT
+                                        const std::string& /*base_link*/,                             // NOLINT
+                                        const std::string& /*tip_link*/,                              // NOLINT
+                                        const std::string /*name*/) const                             // NOLINT
   {
     return nullptr;
   }
@@ -84,11 +89,11 @@ public:
    * @param start_state The initial start state for the tree. This should inlclude all joints in the scene graph
    * @return True if init() completes successfully
    */
-  virtual ForwardKinematics::Ptr
-  create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-         const std::vector<std::string>& joint_names,
-         const std::string name,
-         std::unordered_map<std::string, double> start_state = std::unordered_map<std::string, double>()) const
+  virtual ForwardKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,  // NOLINT
+                                        const std::vector<std::string>& /*joint_names*/,              // NOLINT
+                                        const std::string /*name*/,                                   // NOLINT
+                                        std::unordered_map<std::string, double> /*start_state*/ =
+                                            std::unordered_map<std::string, double>()) const  // NOLINT
   {
     return nullptr;
   }

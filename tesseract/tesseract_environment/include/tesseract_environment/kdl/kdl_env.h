@@ -38,7 +38,12 @@ public:
   using Ptr = std::shared_ptr<KDLEnv>;
   using ConstPtr = std::shared_ptr<const KDLEnv>;
 
-  KDLEnv() : Environment() {}
+  KDLEnv() = default;
+  ~KDLEnv() override = default;
+  KDLEnv(const KDLEnv&) = delete;
+  KDLEnv& operator=(const KDLEnv&) = delete;
+  KDLEnv(KDLEnv&&) = delete;
+  KDLEnv& operator=(KDLEnv&&) = delete;
 
   bool init(tesseract_scene_graph::SceneGraph::Ptr scene_graph) override;
 };

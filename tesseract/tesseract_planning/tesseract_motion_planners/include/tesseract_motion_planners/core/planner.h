@@ -41,7 +41,12 @@ class MotionPlanner
 public:
   /** @brief Construct a basic planner */
   MotionPlanner(std::string name) : name_(std::move(name)) {}
-  virtual ~MotionPlanner() {}
+  virtual ~MotionPlanner() = default;
+  MotionPlanner(const MotionPlanner&) = default;
+  MotionPlanner& operator=(const MotionPlanner&) = default;
+  MotionPlanner(MotionPlanner&&) = default;
+  MotionPlanner& operator=(MotionPlanner&&) = default;
+
   /** @brief Get the name of this planner */
   const std::string& getName() const { return name_; }
   /** @brief Get the planner request */
@@ -50,7 +55,7 @@ public:
   void setRequest(const PlannerRequest& request) { request_ = request; }
 
   /** @brief Solve the planner request problem */
-  virtual tesseract_common::StatusCode solve(PlannerResponse& res, const bool verbose = false) = 0;
+  virtual tesseract_common::StatusCode solve(PlannerResponse& res, bool verbose = false) = 0;
 
   /**
    * @brief checks if the planner is configured for planning

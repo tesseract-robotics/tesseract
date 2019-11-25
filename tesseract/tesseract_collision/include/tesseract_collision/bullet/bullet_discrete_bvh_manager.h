@@ -56,6 +56,10 @@ public:
 
   BulletDiscreteBVHManager();
   ~BulletDiscreteBVHManager() override;
+  BulletDiscreteBVHManager(const BulletDiscreteBVHManager&) = delete;
+  BulletDiscreteBVHManager& operator=(const BulletDiscreteBVHManager&) = delete;
+  BulletDiscreteBVHManager(BulletDiscreteBVHManager&&) = delete;
+  BulletDiscreteBVHManager& operator=(BulletDiscreteBVHManager&&) = delete;
 
   static std::string name() { return "BulletDiscreteBVHManager"; }
   static DiscreteContactManager::Ptr create() { return std::make_shared<BulletDiscreteBVHManager>(); }
@@ -68,9 +72,10 @@ public:
                           const tesseract_common::VectorIsometry3d& shape_poses,
                           bool enabled = true) override;
 
-  const CollisionShapesConst& getCollisionObjectGeometries(const std::string& name) const;
+  const CollisionShapesConst& getCollisionObjectGeometries(const std::string& name) const override;
 
-  const tesseract_common::VectorIsometry3d& getCollisionObjectGeometriesTransforms(const std::string& name) const;
+  const tesseract_common::VectorIsometry3d&
+  getCollisionObjectGeometriesTransforms(const std::string& name) const override;
 
   bool hasCollisionObject(const std::string& name) const override;
 

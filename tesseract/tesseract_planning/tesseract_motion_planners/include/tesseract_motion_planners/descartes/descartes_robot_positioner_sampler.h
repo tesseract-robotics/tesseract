@@ -64,17 +64,17 @@ public:
    * @param allow_collision If true and no valid solution was found it will return the best of the worst
    * @param is_valid This is a user defined function to filter out solution
    */
-  DescartesRobotPositionerSampler(const Eigen::Isometry3d target_pose,
-                                  const tesseract_motion_planners::PoseSamplerFn target_pose_sampler,
-                                  const tesseract_kinematics::ForwardKinematics::ConstPtr positioner_kinematics,
-                                  const tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics,
-                                  const typename descartes_light::CollisionInterface<FloatType>::Ptr collision,
-                                  const tesseract_environment::EnvState::ConstPtr current_state,
-                                  const Eigen::VectorXd positioner_sample_resolution,
-                                  const Eigen::Isometry3d robot_tcp,
-                                  const double robot_reach,
-                                  const bool allow_collision,
-                                  const DescartesIsValidFn<FloatType>& is_valid);
+  DescartesRobotPositionerSampler(const Eigen::Isometry3d& target_pose,
+                                  tesseract_motion_planners::PoseSamplerFn target_pose_sampler,
+                                  tesseract_kinematics::ForwardKinematics::ConstPtr positioner_kinematics,
+                                  tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics,
+                                  typename descartes_light::CollisionInterface<FloatType>::Ptr collision,
+                                  const tesseract_environment::EnvState::ConstPtr& current_state,
+                                  Eigen::VectorXd positioner_sample_resolution,
+                                  const Eigen::Isometry3d& robot_tcp,
+                                  double robot_reach,
+                                  bool allow_collision,
+                                  DescartesIsValidFn<FloatType> is_valid);
 
   bool sample(std::vector<FloatType>& solution_set) override;
 
@@ -126,11 +126,11 @@ private:
    * @param distance The current best distance
    */
   void nested_ik(std::vector<FloatType>& solution_set,
-                 const int loop_level,
+                 int loop_level,
                  const std::vector<Eigen::VectorXd>& dof_range,
                  const Eigen::Isometry3d& target_pose,
                  Eigen::Ref<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> sample_pose,
-                 const bool get_best_solution,
+                 bool get_best_solution,
                  double& distance);
 
   /**
@@ -144,8 +144,8 @@ private:
    */
   bool ikAt(std::vector<FloatType>& solution_set,
             const Eigen::Isometry3d& target_pose,
-            const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& positoner_pose,
-            const bool get_best_solution,
+            const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>& positioner_pose,
+            bool get_best_solution,
             double& distance);
 };
 

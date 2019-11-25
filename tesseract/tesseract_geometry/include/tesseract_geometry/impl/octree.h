@@ -50,8 +50,8 @@ public:
     SPHERE_OUTSIDE
   };
 
-  Octree(const std::shared_ptr<const octomap::OcTree>& octree, const SubType sub_type)
-    : Geometry(GeometryType::OCTREE), octree_(octree), sub_type_(sub_type)
+  Octree(std::shared_ptr<const octomap::OcTree> octree, const SubType sub_type)
+    : Geometry(GeometryType::OCTREE), octree_(std::move(octree)), sub_type_(sub_type)
   {
   }
 
@@ -70,6 +70,10 @@ public:
     octree_ = ot;
   }
   ~Octree() override = default;
+  Octree(const Octree&) = delete;
+  Octree& operator=(const Octree&) = delete;
+  Octree(Octree&&) = delete;
+  Octree& operator=(Octree&&) = delete;
 
   const std::shared_ptr<const octomap::OcTree>& getOctree() const { return octree_; }
   SubType getSubType() const { return sub_type_; }

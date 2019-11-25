@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
-DiscreteMotionValidator::DiscreteMotionValidator(ompl::base::SpaceInformationPtr space_info,
+DiscreteMotionValidator::DiscreteMotionValidator(const ompl::base::SpaceInformationPtr& space_info,
                                                  tesseract_environment::Environment::ConstPtr env,
                                                  tesseract_kinematics::ForwardKinematics::ConstPtr kin)
   : MotionValidator(space_info), env_(std::move(env)), kin_(std::move(kin))
@@ -94,7 +94,7 @@ bool DiscreteMotionValidator::checkMotion(const ompl::base::State* s1,
 
 bool DiscreteMotionValidator::discreteCollisionCheck(const ompl::base::State* s2) const
 {
-  const ompl::base::RealVectorStateSpace::StateType* finish = s2->as<ompl::base::RealVectorStateSpace::StateType>();
+  const auto* finish = s2->as<ompl::base::RealVectorStateSpace::StateType>();
 
   // It was time using chronos time elapsed and it was faster to cache the contact manager
   unsigned long int hash = std::hash<std::thread::id>{}(std::this_thread::get_id());

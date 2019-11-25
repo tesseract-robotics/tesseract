@@ -37,6 +37,10 @@ public:
 
   ForwardKinematicsManager() = default;
   virtual ~ForwardKinematicsManager() = default;
+  ForwardKinematicsManager(const ForwardKinematicsManager&) = default;
+  ForwardKinematicsManager& operator=(const ForwardKinematicsManager&) = default;
+  ForwardKinematicsManager(ForwardKinematicsManager&&) = default;
+  ForwardKinematicsManager& operator=(ForwardKinematicsManager&&) = default;
 
   /**
    * @brief Register a forward kinematics factory
@@ -111,7 +115,7 @@ public:
    * @param solver The solver
    * @return
    */
-  bool addFwdKinematicSolver(tesseract_kinematics::ForwardKinematics::ConstPtr solver)
+  bool addFwdKinematicSolver(const tesseract_kinematics::ForwardKinematics::ConstPtr& solver)
   {
     auto it = fwd_kin_manipulators_.find(std::make_pair(solver->getName(), solver->getSolverName()));
     if (it != fwd_kin_manipulators_.end())

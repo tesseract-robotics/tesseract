@@ -50,7 +50,7 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
 
   // Construct Environment from Scene Graph
   environment_ = std::make_shared<tesseract_environment::KDLEnv>();
-  if (!environment_->init(scene_graph))
+  if (!environment_->init(std::move(scene_graph)))
   {
     CONSOLE_BRIDGE_logError("Failed to initialize environment.");
     return false;
@@ -70,11 +70,11 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph,
 {
   clear();
 
-  srdf_model_ = srdf_model;
+  srdf_model_ = std::move(srdf_model);
 
   // Construct Environment from Scene Graph
   environment_ = std::make_shared<tesseract_environment::KDLEnv>();
-  if (!environment_->init(scene_graph))
+  if (!environment_->init(std::move(scene_graph)))
   {
     CONSOLE_BRIDGE_logError("Failed to initialize environment.");
     return false;
@@ -159,7 +159,8 @@ bool Tesseract::init(const std::string& urdf_string,
   return true;
 }
 
-bool Tesseract::init(const boost::filesystem::path& urdf_path, tesseract_scene_graph::ResourceLocator::Ptr locator)
+bool Tesseract::init(const boost::filesystem::path& urdf_path,
+                     const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   clear();
 
@@ -189,7 +190,7 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path, tesseract_scene_g
 
 bool Tesseract::init(const boost::filesystem::path& urdf_path,
                      const boost::filesystem::path& srdf_path,
-                     tesseract_scene_graph::ResourceLocator::Ptr locator)
+                     const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   clear();
 
@@ -311,7 +312,7 @@ bool Tesseract::registerDefaultFwdKinSolvers()
 
     if (!group.joints_.empty())
     {
-      assert(group.joints_.size() > 0);
+      assert(!group.joints_.empty());
       tesseract_kinematics::ForwardKinematics::Ptr solver =
           tree_factory->create(environment_->getSceneGraph(), group.joints_, group.name_);
       if (solver != nullptr)
@@ -416,6 +417,8 @@ void Tesseract::clear()
   environment_const_ = nullptr;
   srdf_model_ = nullptr;
   inv_kin_manager_ = nullptr;
+  inv_kin_manager_const_ = nullptr;
   fwd_kin_manager_ = nullptr;
+  fwd_kin_manager_const_ = nullptr;
 }
 }  // namespace tesseract

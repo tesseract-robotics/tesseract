@@ -354,8 +354,8 @@ inline bool isValid(const FloatType* qs, int dof)
 template <typename FloatType>
 inline void harmonizeTowardZero(FloatType* qs, int dof)
 {
-  const static FloatType pi = FloatType(M_PI);
-  const static FloatType two_pi = FloatType(2.0 * M_PI);
+  const static auto pi = FloatType(M_PI);
+  const static auto two_pi = FloatType(2.0 * M_PI);
 
   for (int i = 0; i < dof; i++)
   {

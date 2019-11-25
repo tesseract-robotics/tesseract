@@ -40,17 +40,17 @@ namespace tesseract_motion_planners
 {
 template <typename FloatType>
 DescartesRobotSampler<FloatType>::DescartesRobotSampler(
-    const Eigen::Isometry3d target_pose,
-    const PoseSamplerFn target_pose_sampler,
-    const tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics,
-    const typename descartes_light::CollisionInterface<FloatType>::Ptr collision,
-    const tesseract_environment::EnvState::ConstPtr current_state,
-    const Eigen::Isometry3d robot_tcp,
-    const double robot_reach,
-    const bool allow_collision,
-    const DescartesIsValidFn<FloatType>& is_valid)
-  : target_pose_(std::move(target_pose))
-  , target_pose_sampler_(target_pose_sampler)
+    const Eigen::Isometry3d& target_pose,
+    PoseSamplerFn target_pose_sampler,
+    tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics,
+    typename descartes_light::CollisionInterface<FloatType>::Ptr collision,
+    const tesseract_environment::EnvState::ConstPtr& current_state,
+    const Eigen::Isometry3d& robot_tcp,
+    double robot_reach,
+    bool allow_collision,
+    DescartesIsValidFn<FloatType> is_valid)
+  : target_pose_(target_pose)
+  , target_pose_sampler_(std::move(target_pose_sampler))
   , robot_kinematics_(std::move(robot_kinematics))
   , collision_(std::move(collision))
   , world_to_robot_base_(current_state->transforms.at(robot_kinematics_->getBaseLinkName()))
@@ -59,7 +59,7 @@ DescartesRobotSampler<FloatType>::DescartesRobotSampler(
   , allow_collision_(allow_collision)
   , dof_(robot_kinematics_->numJoints())
   , ik_seed_(Eigen::VectorXd::Zero(dof_))
-  , is_valid_(is_valid)
+  , is_valid_(std::move(is_valid))
 {
 }
 
@@ -68,10 +68,10 @@ bool DescartesRobotSampler<FloatType>::sample(std::vector<FloatType>& solution_s
 {
   double distance = std::numeric_limits<double>::min();
   tesseract_common::VectorIsometry3d target_poses = target_pose_sampler_(target_pose_);
-  for (std::size_t i = 0; i < target_poses.size(); ++i)
+  for (const auto& sp : target_poses)
   {
     // Tool pose in rail coordinate system
-    Eigen::Isometry3d target_pose = world_to_robot_base_.inverse() * target_poses[i] * robot_tcp_.inverse();
+    Eigen::Isometry3d target_pose = world_to_robot_base_.inverse() * sp * robot_tcp_.inverse();
     ikAt(solution_set, target_pose, false, distance);
   }
 
@@ -86,14 +86,14 @@ bool DescartesRobotSampler<FloatType>::isCollisionFree(const FloatType* vertex)
 {
   if (collision_ == nullptr)
     return true;
-  else
-    return collision_->validate(vertex, dof_);
+
+  return collision_->validate(vertex, dof_);
 }
 
 template <typename FloatType>
 bool DescartesRobotSampler<FloatType>::ikAt(std::vector<FloatType>& solution_set,
                                             const Eigen::Isometry3d& target_pose,
-                                            const bool get_best_solution,
+                                            bool get_best_solution,
                                             double& distance)
 {
   if (target_pose.translation().norm() > robot_reach_)
@@ -142,10 +142,10 @@ bool DescartesRobotSampler<FloatType>::getBestSolution(std::vector<FloatType>& s
                                                        const tesseract_common::VectorIsometry3d& target_poses)
 {
   double distance = std::numeric_limits<double>::min();
-  for (std::size_t i = 0; i < target_poses.size(); ++i)
+  for (const auto& sp : target_poses)
   {
     // Tool pose in rail coordinate system
-    Eigen::Isometry3d target_pose = world_to_robot_base_.inverse() * target_poses[i] * robot_tcp_.inverse();
+    Eigen::Isometry3d target_pose = world_to_robot_base_.inverse() * sp * robot_tcp_.inverse();
     ikAt(solution_set, target_pose, false, distance);
   }
 

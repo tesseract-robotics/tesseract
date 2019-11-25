@@ -35,29 +35,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
-OPWInvKin::OPWInvKin(const std::string name,
-                     const opw_kinematics::Parameters<double> params,
-                     const std::string base_link_name,
-                     const std::string tip_link_name,
-                     const std::vector<std::string> joint_names,
-                     const std::vector<std::string> link_names,
-                     const std::vector<std::string> active_link_names,
-                     const Eigen::MatrixX2d joint_limits)
-  : name_(name)
-  , params_(std::move(params))
-  , base_link_name_(std::move(base_link_name))
-  , tip_link_name_(std::move(tip_link_name))
-  , joint_names_(std::move(joint_names))
-  , link_names_(std::move(link_names))
-  , active_link_names_(std::move(active_link_names))
-  , joint_limits_(std::move(joint_limits))
+InverseKinematics::Ptr OPWInvKin::clone() const
 {
-  assert(joint_names_.size() == 6);
+  auto cloned_invkin = std::make_shared<OPWInvKin>();
+  cloned_invkin->init(*this);
+  return std::move(cloned_invkin);
 }
 
 bool OPWInvKin::calcInvKin(Eigen::VectorXd& solutions,
                            const Eigen::Isometry3d& pose,
-                           const Eigen::Ref<const Eigen::VectorXd>& seed) const
+                           const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
 {
   std::array<double, 6 * 8> sols;
   opw_kinematics::inverse(params_, pose, sols.data());
@@ -94,10 +81,10 @@ bool OPWInvKin::calcInvKin(Eigen::VectorXd& solutions,
   return !solution_set.empty();
 }
 
-bool OPWInvKin::calcInvKin(Eigen::VectorXd& solutions,
-                           const Eigen::Isometry3d& pose,
-                           const Eigen::Ref<const Eigen::VectorXd>& seed,
-                           const std::string& link_name) const
+bool OPWInvKin::calcInvKin(Eigen::VectorXd& /*solutions*/,
+                           const Eigen::Isometry3d& /*pose*/,
+                           const Eigen::Ref<const Eigen::VectorXd>& /*seed*/,
+                           const std::string& /*link_name*/) const
 {
   throw std::runtime_error("IKFastInvKin::calcInvKin(Eigen::VectorXd&, const Eigen::Isometry3d&, const "
                            "Eigen::Ref<const Eigen::VectorXd>&, const std::string&) Not Supported!");
@@ -112,12 +99,49 @@ bool OPWInvKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const
     return false;
   }
 
-  if (!isWithinLimits<double>(vec, joint_limits_))
-    return false;
-
-  return true;
+  return isWithinLimits<double>(vec, joint_limits_);
 }
 
 unsigned int OPWInvKin::numJoints() const { return 6; }
+
+bool OPWInvKin::init(std::string name,
+                     opw_kinematics::Parameters<double> params,
+                     std::string base_link_name,
+                     std::string tip_link_name,
+                     std::vector<std::string> joint_names,
+                     std::vector<std::string> link_names,
+                     std::vector<std::string> active_link_names,
+                     Eigen::MatrixX2d joint_limits)
+{
+  assert(joint_names.size() == 6);
+
+  name_ = std::move(name);
+  params_ = params;
+  base_link_name_ = std::move(base_link_name);
+  tip_link_name_ = std::move(tip_link_name);
+  joint_names_ = std::move(joint_names);
+  link_names_ = std::move(link_names);
+  active_link_names_ = std::move(active_link_names);
+  joint_limits_ = std::move(joint_limits);
+  initialized_ = true;
+
+  return initialized_;
+}
+
+bool OPWInvKin::init(const OPWInvKin& kin)
+{
+  initialized_ = kin.initialized_;
+  name_ = kin.name_;
+  params_ = kin.params_;
+  solver_name_ = kin.solver_name_;
+  base_link_name_ = kin.base_link_name_;
+  tip_link_name_ = kin.tip_link_name_;
+  joint_names_ = kin.joint_names_;
+  link_names_ = kin.link_names_;
+  active_link_names_ = kin.active_link_names_;
+  joint_limits_ = kin.joint_limits_;
+
+  return initialized_;
+}
 
 }  // namespace tesseract_kinematics

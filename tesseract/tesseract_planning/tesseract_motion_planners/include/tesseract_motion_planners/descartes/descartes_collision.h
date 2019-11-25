@@ -48,15 +48,19 @@ public:
    * @param debug If true, this print debug information to the terminal
    */
   DescartesCollision(const tesseract_environment::Environment::ConstPtr& collision_env,
-                     const std::vector<std::string>& active_links,
-                     const std::vector<std::string>& joint_names,
-                     const bool debug = false);
+                     std::vector<std::string> active_links,
+                     std::vector<std::string> joint_names,
+                     bool debug = false);
+  ~DescartesCollision() override = default;
 
   /**
    * @brief Copy constructor that clones the object
    * @param collision_interface Object to copy/clone
    */
   DescartesCollision(const DescartesCollision& collision_interface);
+  DescartesCollision& operator=(const DescartesCollision&) = delete;
+  DescartesCollision(DescartesCollision&&) = delete;
+  DescartesCollision& operator=(DescartesCollision&&) = delete;
 
   /**
    * @brief This check is the provided solution passes the collision test defined by this class
@@ -64,7 +68,7 @@ public:
    * @param size The length of the array
    * @return True if passes collision test, otherwise false
    */
-  bool validate(const FloatType* pos, const std::size_t size) override;
+  bool validate(const FloatType* pos, std::size_t size) override;
 
   /**
    * @brief This gets the distance to the closest object
@@ -72,7 +76,7 @@ public:
    * @param size The length of the array
    * @return The distance to the closest object
    */
-  FloatType distance(const FloatType* pos, const std::size_t size) override;
+  FloatType distance(const FloatType* pos, std::size_t size) override;
 
   /**
    * @brief This should clone the object and make new instance of objects that are not safe to share across threads

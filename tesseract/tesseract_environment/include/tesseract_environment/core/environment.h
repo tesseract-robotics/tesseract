@@ -52,9 +52,12 @@ public:
   using Ptr = std::shared_ptr<Environment>;
   using ConstPtr = std::shared_ptr<const Environment>;
 
-  Environment() : initialized_(false), revision_(0) {}
-
+  Environment() = default;
   virtual ~Environment() = default;
+  Environment(const Environment&) = delete;
+  Environment& operator=(const Environment&) = delete;
+  Environment(Environment&&) = delete;
+  Environment& operator=(Environment&&) = delete;
 
   /**
    * @brief Initialize the Environment
@@ -377,10 +380,10 @@ public:
    * This method should clear the contents of the manager and reload it with the objects
    * in the environment.
    */
-  bool registerDiscreteContactManager(const std::string name,
+  bool registerDiscreteContactManager(const std::string& name,
                                       tesseract_collision::DiscreteContactManagerFactory::CreateMethod create_function)
   {
-    return discrete_factory_.registar(name, create_function);
+    return discrete_factory_.registar(name, std::move(create_function));
   }
 
   /**
@@ -390,16 +393,16 @@ public:
    * in the environment.
    */
   bool
-  registerContinuousContactManager(const std::string name,
+  registerContinuousContactManager(const std::string& name,
                                    tesseract_collision::ContinuousContactManagerFactory::CreateMethod create_function)
   {
-    return continuous_factory_.registar(name, create_function);
+    return continuous_factory_.registar(name, std::move(create_function));
   }
 
 protected:
-  bool initialized_;  /**< Identifies if the object has been initialized */
-  int revision_;      /**< This increments when the scene graph is modified */
-  Commands commands_; /**< The history of commands applied to the environment after intialization */
+  bool initialized_{ false }; /**< Identifies if the object has been initialized */
+  int revision_{ 0 };         /**< This increments when the scene graph is modified */
+  Commands commands_;         /**< The history of commands applied to the environment after intialization */
   tesseract_scene_graph::SceneGraph::Ptr scene_graph_;            /**< Tesseract Scene Graph */
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_const_; /**< Tesseract Scene Graph Const */
   EnvState::Ptr current_state_;                                   /**< Current state of the environment */

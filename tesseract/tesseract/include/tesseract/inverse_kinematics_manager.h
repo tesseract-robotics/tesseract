@@ -37,6 +37,10 @@ public:
 
   InverseKinematicsManager() = default;
   virtual ~InverseKinematicsManager() = default;
+  InverseKinematicsManager(const InverseKinematicsManager&) = default;
+  InverseKinematicsManager& operator=(const InverseKinematicsManager&) = default;
+  InverseKinematicsManager(InverseKinematicsManager&&) = default;
+  InverseKinematicsManager& operator=(InverseKinematicsManager&&) = default;
 
   /**
    * @brief Register a inverse kinematics factory
@@ -111,7 +115,7 @@ public:
    * @param solver The solver
    * @return
    */
-  bool addInvKinematicSolver(tesseract_kinematics::InverseKinematics::ConstPtr solver)
+  bool addInvKinematicSolver(const tesseract_kinematics::InverseKinematics::ConstPtr& solver)
   {
     auto it = inv_kin_manipulators_.find(std::make_pair(solver->getName(), solver->getSolverName()));
     if (it != inv_kin_manipulators_.end())

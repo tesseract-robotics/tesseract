@@ -49,7 +49,7 @@ class WeightedRealVectorStateSampler : public ompl::base::StateSampler
 {
 public:
   WeightedRealVectorStateSampler(const ompl::base::StateSpace* space, Eigen::VectorXd weights)
-    : ompl::base::StateSampler(space), weights_(weights)
+    : ompl::base::StateSampler(space), weights_(std::move(weights))
   {
   }
 

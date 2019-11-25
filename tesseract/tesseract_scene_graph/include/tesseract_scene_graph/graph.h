@@ -354,7 +354,7 @@ public:
    * @brief Saves Graph as Graph Description Language (DOT)
    * @param path The file path
    */
-  void saveDOT(std::string path) const;
+  void saveDOT(const std::string& path) const;
 
   Path getShortestPath(const std::string& root, const std::string& tip);
 
@@ -439,7 +439,6 @@ private:
     void discover_vertex(u vertex, g graph)
     {
       children_.push_back(boost::get(boost::vertex_link, graph)[vertex]->getName());
-      return;
     }
 
   protected:
@@ -456,7 +455,7 @@ private:
    */
   std::vector<std::string> getLinkChildrenHelper(Vertex start_vertex) const
   {
-    const Graph& graph = static_cast<const Graph&>(*this);
+    const auto& graph = static_cast<const Graph&>(*this);
     std::vector<std::string> child_link_names;
 
     std::map<Vertex, size_t> index_map;
@@ -478,11 +477,11 @@ private:
 inline std::ostream& operator<<(std::ostream& os, const SceneGraph::Path& path)
 {
   os << "Links:" << std::endl;
-  for (auto l : path.first)
+  for (const auto& l : path.first)
     os << "  " << l << std::endl;
 
   os << "Joints:" << std::endl;
-  for (auto j : path.second)
+  for (const auto& j : path.second)
     os << "  " << j << std::endl;
 
   return os;

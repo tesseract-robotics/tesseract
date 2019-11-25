@@ -54,8 +54,14 @@ public:
   using Ptr = std::shared_ptr<KDLInvKinChainNR>;
   using ConstPtr = std::shared_ptr<const KDLInvKinChainNR>;
 
-  KDLInvKinChainNR() : initialized_(false), solver_name_("KDLInvKinChainNR") {}
-  KDLInvKinChainNR(const KDLInvKinChainNR& kin);
+  KDLInvKinChainNR() = default;
+  ~KDLInvKinChainNR() override = default;
+  KDLInvKinChainNR(const KDLInvKinChainNR&) = delete;
+  KDLInvKinChainNR& operator=(const KDLInvKinChainNR&) = delete;
+  KDLInvKinChainNR(KDLInvKinChainNR&&) = delete;
+  KDLInvKinChainNR& operator=(KDLInvKinChainNR&&) = delete;
+
+  InverseKinematics::Ptr clone() const override;
 
   bool calcInvKin(Eigen::VectorXd& solutions,
                   const Eigen::Isometry3d& pose,
@@ -82,7 +88,6 @@ public:
   const std::string& getTipLinkName() const override { return kdl_data_.tip_name; }
   const std::string& getName() const override { return name_; }
   const std::string& getSolverName() const override { return solver_name_; }
-  InverseKinematics::Ptr clone() const override { return std::make_shared<KDLInvKinChainNR>(*this); }
 
   /**
    * @brief Initializes KDL Forward Kinematics
@@ -93,10 +98,10 @@ public:
    * @param name The name of the kinematic chain
    * @return True if init() completes successfully
    */
-  bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+  bool init(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
             const std::string& base_link,
             const std::string& tip_link,
-            const std::string name);
+            const std::string& name);
 
   /**
    * @brief Checks if kinematics has been initialized
@@ -112,22 +117,21 @@ public:
     return initialized_;
   }
 
-  /**
-   * @brief Assigns values from another ROSKin to this
-   * @param rhs Input ROSKin object to copy from
-   * @return reference to this ROSKin object
-   */
-  KDLInvKinChainNR& operator=(const KDLInvKinChainNR& rhs);
-
 private:
-  bool initialized_;                                           /**< Identifies if the object has been initialized */
+  bool initialized_{ false };                                  /**< Identifies if the object has been initialized */
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;    /**< Tesseract Scene Graph */
   KDLChainData kdl_data_;                                      /**< KDL data parsed from Scene Graph */
   std::string name_;                                           /**< Name of the kinematic chain */
-  std::string solver_name_;                                    /**< Name of this solver */
+  std::string solver_name_{ "KDLInvKinChainNR" };              /**< Name of this solver */
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> fk_solver_; /**< KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::ChainIkSolverVel_pinv> ik_vel_solver_;  /**< KDL Inverse kinematic velocity solver */
   std::unique_ptr<KDL::ChainIkSolverPos_NR> ik_solver_;        /**< KDL Inverse kinematic solver */
+
+  /**
+   * @brief This used by the clone method
+   * @return True if init() completes successfully
+   */
+  bool init(const KDLInvKinChainNR& kin);
 
   /** @brief calcFwdKin helper function */
   bool calcInvKinHelper(Eigen::VectorXd& solutions,

@@ -38,6 +38,13 @@ namespace tesseract_kinematics
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+InverseKinematics::Ptr KDLInvKinChainLMA::clone() const
+{
+  auto cloned_invkin = std::make_shared<KDLInvKinChainLMA>();
+  cloned_invkin->init(*this);
+  return std::move(cloned_invkin);
+}
+
 bool KDLInvKinChainLMA::calcInvKinHelper(Eigen::VectorXd& solutions,
                                          const Eigen::Isometry3d& pose,
                                          const Eigen::Ref<const Eigen::VectorXd>& seed,
@@ -148,7 +155,7 @@ const Eigen::MatrixX2d& KDLInvKinChainLMA::getLimits() const { return kdl_data_.
 bool KDLInvKinChainLMA::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
                              const std::string& base_link,
                              const std::string& tip_link,
-                             const std::string name)
+                             std::string name)
 {
   initialized_ = false;
 
@@ -158,8 +165,8 @@ bool KDLInvKinChainLMA::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_g
     return false;
   }
 
-  scene_graph_ = scene_graph;
-  name_ = name;
+  scene_graph_ = std::move(scene_graph);
+  name_ = std::move(name);
 
   if (!scene_graph_->getLink(scene_graph_->getRoot()))
   {
@@ -173,31 +180,21 @@ bool KDLInvKinChainLMA::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_g
     return false;
   }
 
-  ik_solver_.reset(new KDL::ChainIkSolverPos_LMA(kdl_data_.robot_chain));
+  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_LMA>(kdl_data_.robot_chain);
 
   initialized_ = true;
   return initialized_;
 }
 
-KDLInvKinChainLMA& KDLInvKinChainLMA::operator=(const KDLInvKinChainLMA& rhs)
-{
-  initialized_ = rhs.initialized_;
-  name_ = rhs.name_;
-  solver_name_ = rhs.solver_name_;
-  kdl_data_ = rhs.kdl_data_;
-  ik_solver_.reset(new KDL::ChainIkSolverPos_LMA(kdl_data_.robot_chain));
-  scene_graph_ = rhs.scene_graph_;
-
-  return *this;
-}
-
-KDLInvKinChainLMA::KDLInvKinChainLMA(const KDLInvKinChainLMA& kin)
+bool KDLInvKinChainLMA::init(const KDLInvKinChainLMA& kin)
 {
   initialized_ = kin.initialized_;
   name_ = kin.name_;
   solver_name_ = kin.solver_name_;
   kdl_data_ = kin.kdl_data_;
-  ik_solver_.reset(new KDL::ChainIkSolverPos_LMA(kdl_data_.robot_chain));
+  ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_LMA>(kdl_data_.robot_chain);
   scene_graph_ = kin.scene_graph_;
+
+  return initialized_;
 }
 }  // namespace tesseract_kinematics

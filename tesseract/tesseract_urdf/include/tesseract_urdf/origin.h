@@ -88,7 +88,7 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
                                                const tinyxml2::XMLElement* xml_element,
-                                               const int version)
+                                               const int /*version*/)
 {
   origin = Eigen::Isometry3d::Identity();
   auto status_cat = std::make_shared<OriginStatusCategory>();
@@ -104,7 +104,8 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
   {
     return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeXYZ, status_cat);
   }
-  else if (status != tinyxml2::XML_NO_ATTRIBUTE)
+
+  if (status != tinyxml2::XML_NO_ATTRIBUTE)
   {
     std::vector<std::string> tokens;
     boost::split(tokens, xyz_string, boost::is_any_of(" "), boost::token_compress_on);
@@ -113,15 +114,15 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
                                                             status_cat);
 
     double x, y, z;
-    if (!tesseract_common::toNumeric<double>(tokens[0].c_str(), x))
+    if (!tesseract_common::toNumeric<double>(tokens[0], x))
       return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeXYZString,
                                                             status_cat);
 
-    if (!tesseract_common::toNumeric<double>(tokens[1].c_str(), y))
+    if (!tesseract_common::toNumeric<double>(tokens[1], y))
       return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeXYZString,
                                                             status_cat);
 
-    if (!tesseract_common::toNumeric<double>(tokens[2].c_str(), z))
+    if (!tesseract_common::toNumeric<double>(tokens[2], z))
       return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeXYZString,
                                                             status_cat);
 
@@ -135,7 +136,8 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
     {
       return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeRPY, status_cat);
     }
-    else if (status != tinyxml2::XML_NO_ATTRIBUTE)
+
+    if (status != tinyxml2::XML_NO_ATTRIBUTE)
     {
       std::vector<std::string> tokens;
       boost::split(tokens, rpy_string, boost::is_any_of(" "), boost::token_compress_on);
@@ -144,15 +146,15 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
                                                               status_cat);
 
       double r, p, y;
-      if (!tesseract_common::toNumeric<double>(tokens[0].c_str(), r))
+      if (!tesseract_common::toNumeric<double>(tokens[0], r))
         return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeRPYString,
                                                               status_cat);
 
-      if (!tesseract_common::toNumeric<double>(tokens[1].c_str(), p))
+      if (!tesseract_common::toNumeric<double>(tokens[1], p))
         return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeRPYString,
                                                               status_cat);
 
-      if (!tesseract_common::toNumeric<double>(tokens[2].c_str(), y))
+      if (!tesseract_common::toNumeric<double>(tokens[2], y))
         return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeRPYString,
                                                               status_cat);
 
@@ -172,7 +174,8 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
     {
       return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQ, status_cat);
     }
-    else if (status != tinyxml2::XML_NO_ATTRIBUTE)
+
+    if (status != tinyxml2::XML_NO_ATTRIBUTE)
     {
       std::vector<std::string> tokens;
       boost::split(tokens, wxyz_string, boost::is_any_of(" "), boost::token_compress_on);
@@ -181,19 +184,19 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
                                                               status_cat);
 
       double qw, qx, qy, qz;
-      if (!tesseract_common::toNumeric<double>(tokens[0].c_str(), qw))
+      if (!tesseract_common::toNumeric<double>(tokens[0], qw))
         return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQString,
                                                               status_cat);
 
-      if (!tesseract_common::toNumeric<double>(tokens[1].c_str(), qx))
+      if (!tesseract_common::toNumeric<double>(tokens[1], qx))
         return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQString,
                                                               status_cat);
 
-      if (!tesseract_common::toNumeric<double>(tokens[2].c_str(), qy))
+      if (!tesseract_common::toNumeric<double>(tokens[2], qy))
         return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQString,
                                                               status_cat);
 
-      if (!tesseract_common::toNumeric<double>(tokens[3].c_str(), qz))
+      if (!tesseract_common::toNumeric<double>(tokens[3], qz))
         return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQString,
                                                               status_cat);
 

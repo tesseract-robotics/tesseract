@@ -69,7 +69,7 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Capsule::Ptr& capsule,
                                                const tinyxml2::XMLElement* xml_element,
-                                               const int version)
+                                               const int /*version*/)
 {
   capsule = nullptr;
   auto status_cat = std::make_shared<CapsuleStatusCategory>();
