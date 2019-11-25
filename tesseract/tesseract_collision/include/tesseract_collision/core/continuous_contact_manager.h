@@ -45,7 +45,12 @@ public:
   using Ptr = std::shared_ptr<ContinuousContactManager>;
   using ConstPtr = std::shared_ptr<const ContinuousContactManager>;
 
+  ContinuousContactManager() = default;
   virtual ~ContinuousContactManager() = default;
+  ContinuousContactManager(const ContinuousContactManager&) = delete;
+  ContinuousContactManager& operator=(const ContinuousContactManager&) = delete;
+  ContinuousContactManager(ContinuousContactManager&&) = delete;
+  ContinuousContactManager& operator=(ContinuousContactManager&&) = delete;
 
   /**
    * @brief Clone the manager

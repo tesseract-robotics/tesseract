@@ -59,6 +59,10 @@ public:
 
   Waypoint(WaypointType type) : waypoint_type_(type) {}
   virtual ~Waypoint() = default;
+  Waypoint(const Waypoint&) = default;
+  Waypoint& operator=(const Waypoint&) = default;
+  Waypoint(Waypoint&&) = default;
+  Waypoint& operator=(Waypoint&&) = default;
 
   /** @brief Returns the type of waypoint so that it may be cast back to the derived type */
   WaypointType getType() const { return waypoint_type_; }
@@ -131,8 +135,8 @@ public:
     , joint_names_(std::move(joint_names))
   {
     assert(joint_positions_.size() == static_cast<long>(joint_names_.size()));
-    for (int i = 0; i < joint_names_.size(); ++i)
-      lookup_[joint_names_[i]] = i;
+    for (size_t i = 0; i < joint_names_.size(); ++i)
+      lookup_[joint_names_[i]] = static_cast<int>(i);
 
     setCoefficients(Eigen::VectorXd::Ones(joint_positions_.size()));
   }
@@ -145,8 +149,8 @@ public:
       joint_positions_[i] = joint_positions[static_cast<size_t>(i)];
 
     assert(joint_positions_.size() == static_cast<long>(joint_names_.size()));
-    for (int i = 0; i < joint_names_.size(); ++i)
-      lookup_[joint_names_[i]] = i;
+    for (size_t i = 0; i < joint_names_.size(); ++i)
+      lookup_[joint_names_[i]] = static_cast<int>(i);
 
     setCoefficients(Eigen::VectorXd::Ones(joint_positions_.size()));
   }
@@ -167,8 +171,8 @@ public:
     assert(compare(joint_names));
 
     Eigen::VectorXd jp(joint_positions_.size());
-    for (int i = 0; i < joint_names.size(); ++i)
-      jp(i) = joint_positions_[lookup_.at(joint_names[i])];
+    for (size_t i = 0; i < joint_names.size(); ++i)
+      jp(static_cast<int>(i)) = joint_positions_[lookup_.at(joint_names[i])];
 
     return jp;
   }
@@ -192,8 +196,8 @@ public:
       return coeffs_;
 
     Eigen::VectorXd coeffs(joint_positions_.size());
-    for (int i = 0; i < joint_names.size(); ++i)
-      coeffs(i) = coeffs_[lookup_.at(joint_names[i])];
+    for (size_t i = 0; i < joint_names.size(); ++i)
+      coeffs(static_cast<int>(i)) = coeffs_[lookup_.at(joint_names[i])];
 
     return coeffs;
   }
@@ -237,15 +241,15 @@ public:
   using Ptr = std::shared_ptr<CartesianWaypoint>;
   using ConstPtr = std::shared_ptr<const CartesianWaypoint>;
 
-  CartesianWaypoint(Eigen::Isometry3d cartesian_position, std::string parent_link = "")
+  CartesianWaypoint(const Eigen::Isometry3d& cartesian_position, std::string parent_link = "")
     : Waypoint(WaypointType::CARTESIAN_WAYPOINT)
-    , cartesian_position_(std::move(cartesian_position))
+    , cartesian_position_(cartesian_position)
     , parent_link_(std::move(parent_link))
   {
     setCoefficients(Eigen::VectorXd::Ones(6));
   }
 
-  CartesianWaypoint(Eigen::Vector3d position, Eigen::Quaterniond orientation, std::string link = "")
+  CartesianWaypoint(const Eigen::Vector3d& position, const Eigen::Quaterniond& orientation, std::string link = "")
     : Waypoint(WaypointType::CARTESIAN_WAYPOINT), parent_link_(std::move(link))
   {
     cartesian_position_.translation() = position;
@@ -268,7 +272,7 @@ public:
   Eigen::Vector4d getOrientation() const
   {
     Eigen::Quaterniond q(cartesian_position_.rotation());
-    return Eigen::Vector4d(q.w(), q.x(), q.y(), q.z());
+    return Eigen::Vector4d{ q.w(), q.x(), q.y(), q.z() };
   }
 
   /** @brief Gets the name of the link to which this position is relative */
@@ -287,7 +291,7 @@ public:
   using ConstPtr = std::shared_ptr<const JointTolerancedWaypoint>;
 
   JointTolerancedWaypoint(Eigen::VectorXd joint_positions, std::vector<std::string> joint_names)
-    : JointWaypoint(joint_positions, joint_names)
+    : JointWaypoint(std::move(joint_positions), std::move(joint_names))
   {
     waypoint_type_ = WaypointType::JOINT_TOLERANCED_WAYPOINT;
     setUpperTolerance(Eigen::VectorXd::Zero(joint_positions_.size()));
@@ -295,7 +299,7 @@ public:
   }
 
   JointTolerancedWaypoint(std::vector<double> joint_positions, std::vector<std::string> joint_names)
-    : JointWaypoint(joint_positions, joint_names)
+    : JointWaypoint(std::move(joint_positions), std::move(joint_names))
   {
     waypoint_type_ = WaypointType::JOINT_TOLERANCED_WAYPOINT;
     setUpperTolerance(Eigen::VectorXd::Zero(joint_positions_.size()));
@@ -335,8 +339,8 @@ public:
     assert(compare(joint_names));
 
     Eigen::VectorXd ut(joint_positions_.size());
-    for (int i = 0; i < joint_names.size(); ++i)
-      ut(i) = upper_tolerance_[lookup_.at(joint_names[i])];
+    for (size_t i = 0; i < joint_names.size(); ++i)
+      ut(static_cast<int>(i)) = upper_tolerance_[lookup_.at(joint_names[i])];
 
     return ut;
   }
@@ -374,8 +378,8 @@ public:
     assert(compare(joint_names));
 
     Eigen::VectorXd lt(joint_positions_.size());
-    for (int i = 0; i < joint_names.size(); ++i)
-      lt(i) = lower_tolerance_[lookup_.at(joint_names[i])];
+    for (size_t i = 0; i < joint_names.size(); ++i)
+      lt(static_cast<int>(i)) = lower_tolerance_[lookup_.at(joint_names[i])];
 
     return lt;
   }

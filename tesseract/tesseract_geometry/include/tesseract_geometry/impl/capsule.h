@@ -43,6 +43,10 @@ public:
 
   Capsule(double r, double l) : Geometry(GeometryType::CAPSULE), r_(r), l_(l) {}
   ~Capsule() override = default;
+  Capsule(const Capsule&) = delete;
+  Capsule& operator=(const Capsule&) = delete;
+  Capsule(Capsule&&) = delete;
+  Capsule& operator=(Capsule&&) = delete;
 
   double getRadius() const { return r_; }
   double getLength() const { return l_; }

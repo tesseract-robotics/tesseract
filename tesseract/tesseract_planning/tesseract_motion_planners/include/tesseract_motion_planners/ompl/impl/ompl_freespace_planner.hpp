@@ -94,7 +94,7 @@ bool OMPLFreespacePlanner<PlannerType>::terminate()
 }
 
 template <typename PlannerType>
-tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerResponse& response, const bool verbose)
+tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerResponse& response, const bool /*verbose*/)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
@@ -114,7 +114,9 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
     op.addPlanner(planner);
   }
   // Solve problem. Results are stored in the response
-  ompl::base::PlannerStatus status = op.solve(config_->planning_time, config_->max_solutions, config_->num_threads);
+  ompl::base::PlannerStatus status = op.solve(config_->planning_time,
+                                              static_cast<unsigned>(config_->max_solutions),
+                                              static_cast<unsigned>(config_->num_threads));
 
   if (!status || !simple_setup_->haveExactSolutionPath())
   {
@@ -179,7 +181,7 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
   if (kin_ == nullptr)
   {
     CONSOLE_BRIDGE_logError("In ompl_freespace_planner: failed to get kinematics object for manipulator: %s.",
-                            config_->manipulator);
+                            config_->manipulator.c_str());
     config_ = nullptr;
     return false;
   }

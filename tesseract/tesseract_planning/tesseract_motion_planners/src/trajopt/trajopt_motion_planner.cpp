@@ -25,7 +25,6 @@
  */
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <jsoncpp/json/json.h>
 #include <console_bridge/console.h>
 #include <trajopt/plot_callback.hpp>
 #include <trajopt/problem_description.hpp>
@@ -43,7 +42,7 @@ using namespace trajopt;
 
 namespace tesseract_motion_planners
 {
-TrajOptMotionPlannerStatusCategory::TrajOptMotionPlannerStatusCategory(std::string name) : name_(name) {}
+TrajOptMotionPlannerStatusCategory::TrajOptMotionPlannerStatusCategory(std::string name) : name_(std::move(name)) {}
 const std::string& TrajOptMotionPlannerStatusCategory::name() const noexcept { return name_; }
 std::string TrajOptMotionPlannerStatusCategory::message(int code) const
 {
@@ -100,7 +99,7 @@ void TrajOptMotionPlanner::clear()
   config_ = nullptr;
 }
 
-tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& response, const bool verbose)
+tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& response, bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
@@ -193,13 +192,13 @@ tesseract_common::StatusCode TrajOptMotionPlanner::isConfigured() const
 {
   if (config_ != nullptr && config_->prob != nullptr)
     return tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::IsConfigured, status_category_);
-  else
-    return tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::IsNotConfigured, status_category_);
+
+  return tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::IsNotConfigured, status_category_);
 }
 
-bool TrajOptMotionPlanner::setConfiguration(const TrajOptPlannerConfig::Ptr config)
+bool TrajOptMotionPlanner::setConfiguration(TrajOptPlannerConfig::Ptr config)
 {
-  config_ = config;
+  config_ = std::move(config);
   return config_->generate();
 }
 

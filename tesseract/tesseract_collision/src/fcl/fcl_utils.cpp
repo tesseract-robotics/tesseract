@@ -203,13 +203,13 @@ CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom)
 
 bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data)
 {
-  ContactTestData* cdata = reinterpret_cast<ContactTestData*>(data);
+  auto* cdata = reinterpret_cast<ContactTestData*>(data);
 
   if (cdata->done)
     return true;
 
-  const CollisionObjectWrapper* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
-  const CollisionObjectWrapper* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
+  const auto* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
+  const auto* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
 
   bool needs_collision =
       cd1->m_enabled && cd2->m_enabled && (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&
@@ -260,14 +260,14 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
 
 bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data, double& min_dist)
 {
-  ContactTestData* cdata = reinterpret_cast<ContactTestData*>(data);
+  auto* cdata = reinterpret_cast<ContactTestData*>(data);
   min_dist = cdata->contact_distance;
 
   if (cdata->done)
     return true;
 
-  const CollisionObjectWrapper* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
-  const CollisionObjectWrapper* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
+  const auto* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
+  const auto* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
 
   bool needs_collision =
       cd1->m_enabled && cd2->m_enabled && (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&
@@ -328,9 +328,9 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
 
   collision_geometries_.reserve(shapes_.size());
   collision_objects_.reserve(shapes_.size());
-  for (std::size_t j = 0; j < shapes_.size(); ++j)
+  for (const auto& shape : shapes_)
   {
-    CollisionGeometryPtr subshape = createShapePrimitive(shapes_[j]);
+    CollisionGeometryPtr subshape = createShapePrimitive(shape);
     if (subshape != nullptr)
     {
       collision_geometries_.push_back(subshape);
@@ -341,17 +341,17 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
   }
 }
 
-CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
+CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
                                                const int& type_id,
-                                               const CollisionShapesConst& shapes,
-                                               const tesseract_common::VectorIsometry3d& shape_poses,
-                                               const std::vector<CollisionGeometryPtr>& collision_geometries,
+                                               CollisionShapesConst shapes,
+                                               tesseract_common::VectorIsometry3d shape_poses,
+                                               std::vector<CollisionGeometryPtr> collision_geometries,
                                                const std::vector<CollisionObjectPtr>& collision_objects)
-  : name_(name)
+  : name_(std::move(name))
   , type_id_(type_id)
-  , shapes_(shapes)
-  , shape_poses_(shape_poses)
-  , collision_geometries_(collision_geometries)
+  , shapes_(std::move(shapes))
+  , shape_poses_(std::move(shape_poses))
+  , collision_geometries_(std::move(collision_geometries))
 {
   collision_objects_.reserve(collision_objects.size());
   for (const auto& co : collision_objects)
@@ -370,8 +370,8 @@ int CollisionObjectWrapper::getShapeIndex(const fcl::CollisionObjectd* co) const
 
   if (it != collision_objects_.end())
     return static_cast<int>(std::distance(collision_objects_.begin(), it));
-  else
-    return -1;
+
+  return -1;
 }
 
 }  // namespace tesseract_collision_fcl

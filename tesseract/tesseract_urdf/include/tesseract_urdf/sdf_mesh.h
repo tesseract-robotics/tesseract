@@ -78,9 +78,9 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::SDFMesh::Ptr>& meshes,
                                                const tinyxml2::XMLElement* xml_element,
-                                               tesseract_scene_graph::ResourceLocator::Ptr locator,
+                                               const tesseract_scene_graph::ResourceLocator::Ptr& locator,
                                                const bool visual,
-                                               const int version)
+                                               const int /*version*/)
 {
   meshes.clear();
   auto status_cat = std::make_shared<SDFMeshStatusCategory>();
@@ -100,15 +100,15 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::S
                                                             status_cat);
 
     double sx, sy, sz;
-    if (!tesseract_common::toNumeric<double>(tokens[0].c_str(), sx))
+    if (!tesseract_common::toNumeric<double>(tokens[0], sx))
       return std::make_shared<tesseract_common::StatusCode>(SDFMeshStatusCategory::ErrorParsingAttributeScale,
                                                             status_cat);
 
-    if (!tesseract_common::toNumeric<double>(tokens[1].c_str(), sy))
+    if (!tesseract_common::toNumeric<double>(tokens[1], sy))
       return std::make_shared<tesseract_common::StatusCode>(SDFMeshStatusCategory::ErrorParsingAttributeScale,
                                                             status_cat);
 
-    if (!tesseract_common::toNumeric<double>(tokens[2].c_str(), sz))
+    if (!tesseract_common::toNumeric<double>(tokens[2], sz))
       return std::make_shared<tesseract_common::StatusCode>(SDFMeshStatusCategory::ErrorParsingAttributeScale,
                                                             status_cat);
 

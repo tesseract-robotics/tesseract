@@ -29,7 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
-#include <assert.h>
+#include <cassert>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/waypoint.h>
@@ -78,21 +78,21 @@ public:
    * @param index The index to check
    * @return True if associated with the approach, otherwise false.
    */
-  bool isApproach(const std::size_t index) const noexcept;
+  bool isApproach(std::size_t index) const noexcept;
 
   /**
    * @brief Given an index, check if it is part of the process
    * @param index The index to check
    * @return True if associated with the process, otherwise false.
    */
-  bool isProcess(const std::size_t index) const noexcept;
+  bool isProcess(std::size_t index) const noexcept;
 
   /**
    * @brief Given an index, check if it is part of the departure
    * @param index The index to check
    * @return True if associated with the departure, otherwise false.
    */
-  bool isDeparture(const std::size_t index) const noexcept;
+  bool isDeparture(std::size_t index) const noexcept;
 
   /**
    * @brief Get the iterator to the beginning of the process segment definition

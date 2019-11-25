@@ -58,9 +58,9 @@ namespace tesseract_collision_bullet
 {
 btCollisionShape* createShapePrimitive(const tesseract_geometry::Box::ConstPtr& geom)
 {
-  btScalar a = static_cast<btScalar>(geom->getX() / 2);
-  btScalar b = static_cast<btScalar>(geom->getY() / 2);
-  btScalar c = static_cast<btScalar>(geom->getZ() / 2);
+  auto a = static_cast<btScalar>(geom->getX() / 2);
+  auto b = static_cast<btScalar>(geom->getY() / 2);
+  auto c = static_cast<btScalar>(geom->getZ() / 2);
 
   return (new btBoxShape(btVector3(a, b, c)));
 }
@@ -72,22 +72,22 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Sphere::ConstPt
 
 btCollisionShape* createShapePrimitive(const tesseract_geometry::Cylinder::ConstPtr& geom)
 {
-  btScalar r = static_cast<btScalar>(geom->getRadius());
-  btScalar l = static_cast<btScalar>(geom->getLength() / 2);
+  auto r = static_cast<btScalar>(geom->getRadius());
+  auto l = static_cast<btScalar>(geom->getLength() / 2);
   return (new btCylinderShapeZ(btVector3(r, r, l)));
 }
 
 btCollisionShape* createShapePrimitive(const tesseract_geometry::Cone::ConstPtr& geom)
 {
-  btScalar r = static_cast<btScalar>(geom->getRadius());
-  btScalar l = static_cast<btScalar>(geom->getLength());
+  auto r = static_cast<btScalar>(geom->getRadius());
+  auto l = static_cast<btScalar>(geom->getLength());
   return (new btConeShapeZ(r, l));
 }
 
 btCollisionShape* createShapePrimitive(const tesseract_geometry::Capsule::ConstPtr& geom)
 {
-  btScalar r = static_cast<btScalar>(geom->getRadius());
-  btScalar l = static_cast<btScalar>(geom->getLength());
+  auto r = static_cast<btScalar>(geom->getRadius());
+  auto l = static_cast<btScalar>(geom->getLength());
   return (new btCapsuleShapeZ(r, l));
 }
 
@@ -102,7 +102,7 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr&
 
   if (vertice_count > 0 && triangle_count > 0)
   {
-    btCompoundShape* compound = new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(triangle_count));
+    auto* compound = new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(triangle_count));
     compound->setMargin(BULLET_MARGIN);  // margin: compound. seems to have no
                                          // effect when positive but has an
                                          // effect when negative
@@ -145,7 +145,7 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::ConvexMesh::Con
 
   if (vertice_count > 0 && triangle_count > 0)
   {
-    btConvexHullShape* subshape = new btConvexHullShape();
+    auto* subshape = new btConvexHullShape();
     for (const auto& v : vertices)
       subshape->addPoint(
           btVector3(static_cast<btScalar>(v[0]), static_cast<btScalar>(v[1]), static_cast<btScalar>(v[2])));
@@ -161,7 +161,7 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPt
                                        int shape_index)
 {
   const octomap::OcTree& octree = *(geom->getOctree());
-  btCompoundShape* subshape = new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(octree.size()));
+  auto* subshape = new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(octree.size()));
   double occupancy_threshold = octree.getOccupancyThres();
 
   switch (geom->getSubType())
@@ -178,8 +178,8 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPt
           geomTrans.setIdentity();
           geomTrans.setOrigin(btVector3(
               static_cast<btScalar>(it.getX()), static_cast<btScalar>(it.getY()), static_cast<btScalar>(it.getZ())));
-          btScalar l = static_cast<btScalar>(size / 2);
-          btBoxShape* childshape = new btBoxShape(btVector3(l, l, l));
+          auto l = static_cast<btScalar>(size / 2);
+          auto* childshape = new btBoxShape(btVector3(l, l, l));
           childshape->setUserIndex(shape_index);
           childshape->setMargin(BULLET_MARGIN);
           cow->manage(childshape);
@@ -201,7 +201,7 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPt
           geomTrans.setIdentity();
           geomTrans.setOrigin(btVector3(
               static_cast<btScalar>(it.getX()), static_cast<btScalar>(it.getY()), static_cast<btScalar>(it.getZ())));
-          btSphereShape* childshape = new btSphereShape(static_cast<btScalar>((size / 2)));
+          auto* childshape = new btSphereShape(static_cast<btScalar>((size / 2)));
           childshape->setUserIndex(shape_index);
           childshape->setMargin(BULLET_MARGIN);
           cow->manage(childshape);
@@ -223,8 +223,7 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPt
           geomTrans.setIdentity();
           geomTrans.setOrigin(btVector3(
               static_cast<btScalar>(it.getX()), static_cast<btScalar>(it.getY()), static_cast<btScalar>(it.getZ())));
-          btSphereShape* childshape =
-              new btSphereShape(static_cast<btScalar>(std::sqrt(2 * ((size / 2) * (size / 2)))));
+          auto* childshape = new btSphereShape(static_cast<btScalar>(std::sqrt(2 * ((size / 2) * (size / 2)))));
           childshape->setUserIndex(shape_index);
           childshape->setMargin(BULLET_MARGIN);
           cow->manage(childshape);
@@ -331,8 +330,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
   }
   else
   {
-    btCompoundShape* compound =
-        new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(m_shapes.size()));
+    auto* compound = new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, static_cast<int>(m_shapes.size()));
     manage(compound);
     compound->setMargin(BULLET_MARGIN);  // margin: compound. seems to have no
                                          // effect when positive but has an
@@ -357,12 +355,16 @@ CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
   setWorldTransform(trans);
 }
 
-CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
+CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
                                                const int& type_id,
-                                               const CollisionShapesConst& shapes,
-                                               const tesseract_common::VectorIsometry3d& shape_poses,
-                                               const std::vector<std::shared_ptr<void>>& data)
-  : m_name(name), m_type_id(type_id), m_shapes(shapes), m_shape_poses(shape_poses), m_data(data)
+                                               CollisionShapesConst shapes,
+                                               tesseract_common::VectorIsometry3d shape_poses,
+                                               std::vector<std::shared_ptr<void>> data)
+  : m_name(std::move(name))
+  , m_type_id(type_id)
+  , m_shapes(std::move(shapes))
+  , m_shape_poses(std::move(shape_poses))
+  , m_data(std::move(data))
 {
 }
 }  // namespace tesseract_collision_bullet

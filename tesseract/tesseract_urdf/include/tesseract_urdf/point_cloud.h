@@ -83,10 +83,10 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parsePointCloud(tesseract_geometry::Octree::Ptr& octree,
                                                          const tinyxml2::XMLElement* xml_element,
-                                                         tesseract_scene_graph::ResourceLocator::Ptr locator,
+                                                         const tesseract_scene_graph::ResourceLocator::Ptr& locator,
                                                          tesseract_geometry::Octree::SubType shape_type,
                                                          const bool prune,
-                                                         const int version)
+                                                         const int /*version*/)
 {
   octree = nullptr;
   auto status_cat = std::make_shared<PointCloudStatusCategory>();

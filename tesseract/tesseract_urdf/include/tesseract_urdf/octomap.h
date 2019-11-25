@@ -87,7 +87,7 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& octree,
                                                const tinyxml2::XMLElement* xml_element,
-                                               tesseract_scene_graph::ResourceLocator::Ptr locator,
+                                               const tesseract_scene_graph::ResourceLocator::Ptr& locator,
                                                const bool /*visual*/,
                                                const int version)
 {

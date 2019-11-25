@@ -56,6 +56,11 @@ public:
   using Ptr = std::shared_ptr<FCLDiscreteBVHManager>;
 
   FCLDiscreteBVHManager();
+  ~FCLDiscreteBVHManager() override = default;
+  FCLDiscreteBVHManager(const FCLDiscreteBVHManager&) = delete;
+  FCLDiscreteBVHManager& operator=(const FCLDiscreteBVHManager&) = delete;
+  FCLDiscreteBVHManager(FCLDiscreteBVHManager&&) = delete;
+  FCLDiscreteBVHManager& operator=(FCLDiscreteBVHManager&&) = delete;
 
   static std::string name() { return "FCLDiscreteBVHManager"; }
   static DiscreteContactManager::Ptr create() { return std::make_shared<FCLDiscreteBVHManager>(); }
@@ -68,9 +73,10 @@ public:
                           const tesseract_common::VectorIsometry3d& shape_poses,
                           bool enabled = true) override;
 
-  const CollisionShapesConst& getCollisionObjectGeometries(const std::string& name) const;
+  const CollisionShapesConst& getCollisionObjectGeometries(const std::string& name) const override;
 
-  const tesseract_common::VectorIsometry3d& getCollisionObjectGeometriesTransforms(const std::string& name) const;
+  const tesseract_common::VectorIsometry3d&
+  getCollisionObjectGeometriesTransforms(const std::string& name) const override;
 
   bool hasCollisionObject(const std::string& name) const override;
 

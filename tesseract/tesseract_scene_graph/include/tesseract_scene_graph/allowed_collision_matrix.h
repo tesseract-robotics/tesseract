@@ -32,6 +32,10 @@ public:
 
   AllowedCollisionMatrix() = default;
   virtual ~AllowedCollisionMatrix() = default;
+  AllowedCollisionMatrix(const AllowedCollisionMatrix&) = default;
+  AllowedCollisionMatrix& operator=(const AllowedCollisionMatrix&) = default;
+  AllowedCollisionMatrix(AllowedCollisionMatrix&&) = default;
+  AllowedCollisionMatrix& operator=(AllowedCollisionMatrix&&) = default;
 
   /**
    * @brief Disable collision between two collision objects
@@ -116,8 +120,8 @@ private:
   {
     if (link_name1 <= link_name2)
       return std::make_pair(link_name1, link_name2);
-    else
-      return std::make_pair(link_name2, link_name1);
+
+    return std::make_pair(link_name2, link_name1);
   }
 };
 

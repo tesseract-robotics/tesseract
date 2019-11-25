@@ -30,7 +30,7 @@ namespace tesseract_urdf
 {
 tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGraph::Ptr& scene_graph,
                                                   const std::string& urdf_xml_string,
-                                                  tesseract_scene_graph::ResourceLocator::Ptr locator)
+                                                  const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   scene_graph = nullptr;
   auto status_cat = std::make_shared<URDFStatusCategory>();
@@ -118,8 +118,8 @@ tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGr
   {
     if (sg->isAcyclic())
       return std::make_shared<tesseract_common::StatusCode>(URDFStatusCategory::ErrorIsNotTree, status_cat);
-    else
-      return std::make_shared<tesseract_common::StatusCode>(URDFStatusCategory::ErrorIsAcyclic, status_cat);
+
+    return std::make_shared<tesseract_common::StatusCode>(URDFStatusCategory::ErrorIsAcyclic, status_cat);
   }
 
   // Find root link
@@ -133,7 +133,7 @@ tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGr
 
 tesseract_common::StatusCode::Ptr parseURDFFile(tesseract_scene_graph::SceneGraph::Ptr& scene_graph,
                                                 const std::string& path,
-                                                tesseract_scene_graph::ResourceLocator::Ptr locator)
+                                                const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   scene_graph = nullptr;
   auto status_cat = std::make_shared<URDFStatusCategory>();
@@ -147,7 +147,7 @@ tesseract_common::StatusCode::Ptr parseURDFFile(tesseract_scene_graph::SceneGrap
 }
 
 tesseract_scene_graph::SceneGraph::Ptr parseURDFFile(const std::string& path,
-                                                     tesseract_scene_graph::ResourceLocator::Ptr locator)
+                                                     const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = nullptr;
 
@@ -162,7 +162,7 @@ tesseract_scene_graph::SceneGraph::Ptr parseURDFFile(const std::string& path,
 }
 
 tesseract_scene_graph::SceneGraph::Ptr parseURDFString(const std::string& urdf_xml_string,
-                                                       tesseract_scene_graph::ResourceLocator::Ptr locator)
+                                                       const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = nullptr;
 

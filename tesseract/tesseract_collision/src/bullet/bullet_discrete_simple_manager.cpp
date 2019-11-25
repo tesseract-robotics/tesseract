@@ -50,7 +50,7 @@ static const tesseract_common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORM
 
 BulletDiscreteSimpleManager::BulletDiscreteSimpleManager()
 {
-  dispatcher_.reset(new btCollisionDispatcher(&coll_config_));
+  dispatcher_ = std::make_unique<btCollisionDispatcher>(&coll_config_);
 
   dispatcher_->registerCollisionCreateFunc(
       BOX_SHAPE_PROXYTYPE,
@@ -99,10 +99,8 @@ bool BulletDiscreteSimpleManager::addCollisionObject(const std::string& name,
     addCollisionObject(new_cow);
     return true;
   }
-  else
-  {
-    return false;
-  }
+
+  return false;
 }
 
 const CollisionShapesConst& BulletDiscreteSimpleManager::getCollisionObjectGeometries(const std::string& name) const

@@ -48,7 +48,12 @@ public:
   using Ptr = std::shared_ptr<StateSolver>;
   using ConstPtr = std::shared_ptr<const StateSolver>;
 
+  StateSolver() = default;
   virtual ~StateSolver() = default;
+  StateSolver(const StateSolver&) = delete;
+  StateSolver& operator=(const StateSolver&) = delete;
+  StateSolver(StateSolver&&) = delete;
+  StateSolver& operator=(StateSolver&&) = delete;
 
   virtual bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph) = 0;
 

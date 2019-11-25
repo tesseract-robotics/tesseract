@@ -76,8 +76,10 @@ inline bool isLinkActive(const std::vector<std::string>& active, const std::stri
  * @param verbose If true print debug informaton
  * @return True if contact is allowed between the two object, otherwise false.
  */
-inline bool
-isContactAllowed(const std::string& name1, const std::string& name2, const IsContactAllowedFn acm, bool verbose = false)
+inline bool isContactAllowed(const std::string& name1,
+                             const std::string& name2,
+                             const IsContactAllowedFn& acm,
+                             bool verbose = false)
 {
   // do not distance check geoms part of the same object / link / attached body
   if (name1 == name2)
@@ -122,30 +124,29 @@ inline ContactResult* processResult(ContactTestData& cdata,
 
     return &(cdata.res.insert(std::make_pair(key, data)).first->second.back());
   }
-  else
+
+  assert(cdata.type != ContactTestType::FIRST);
+  ContactResultVector& dr = cdata.res[key];
+  if (cdata.type == ContactTestType::ALL)
   {
-    assert(cdata.type != ContactTestType::FIRST);
-    ContactResultVector& dr = cdata.res[key];
-    if (cdata.type == ContactTestType::ALL)
-    {
-      dr.emplace_back(contact);
-      return &(dr.back());
-    }
-    else if (cdata.type == ContactTestType::CLOSEST)
-    {
-      if (contact.distance < dr[0].distance)
-      {
-        dr[0] = contact;
-        return &(dr[0]);
-      }
-    }
-    //    else if (cdata.cdata.condition == DistanceRequestType::LIMITED)
-    //    {
-    //      assert(dr.size() < cdata.req->max_contacts_per_body);
-    //      dr.emplace_back(contact);
-    //      return &(dr.back());
-    //    }
+    dr.emplace_back(contact);
+    return &(dr.back());
   }
+
+  if (cdata.type == ContactTestType::CLOSEST)
+  {
+    if (contact.distance < dr[0].distance)
+    {
+      dr[0] = contact;
+      return &(dr[0]);
+    }
+  }
+  //    else if (cdata.cdata.condition == DistanceRequestType::LIMITED)
+  //    {
+  //      assert(dr.size() < cdata.req->max_contacts_per_body);
+  //      dr.emplace_back(contact);
+  //      return &(dr.back());
+  //    }
 
   return nullptr;
 }
@@ -201,7 +202,7 @@ inline int createConvexHull(tesseract_common::VectorVector3d& vertices,
 
   int num_faces = conv.faces.size();
   std::vector<int> local_faces;
-  local_faces.reserve(static_cast<size_t>(3 * num_faces));
+  local_faces.reserve(3ul * static_cast<size_t>(num_faces));
   for (int i = 0; i < num_faces; i++)
   {
     std::vector<int> face;
@@ -436,7 +437,7 @@ inline int loadSimplePlyFile(const std::string& path,
     CONSOLE_BRIDGE_logError("Failed to parse file: %s", path.c_str());
     return false;
   }
-  size_t num_vertices = static_cast<size_t>(std::stoi(tokens.back()));
+  auto num_vertices = static_cast<size_t>(std::stoi(tokens.back()));
 
   std::getline(myfile, str);
   std::getline(myfile, str);
@@ -451,7 +452,7 @@ inline int loadSimplePlyFile(const std::string& path,
     return false;
   }
 
-  size_t num_faces = static_cast<size_t>(std::stoi(tokens.back()));
+  auto num_faces = static_cast<size_t>(std::stoi(tokens.back()));
   std::getline(myfile, str);
   std::getline(myfile, str);
   if (str != "end_header")

@@ -56,6 +56,10 @@ public:
 
   Tesseract();
   virtual ~Tesseract() = default;
+  Tesseract(const Tesseract&) = default;
+  Tesseract& operator=(const Tesseract&) = default;
+  Tesseract(Tesseract&&) = default;
+  Tesseract& operator=(Tesseract&&) = default;
 
   bool isInitialized() const;
 
@@ -65,10 +69,10 @@ public:
   bool init(const std::string& urdf_string,
             const std::string& srdf_string,
             tesseract_scene_graph::ResourceLocator::Ptr locator);
-  bool init(const boost::filesystem::path& urdf_path, tesseract_scene_graph::ResourceLocator::Ptr locator);
+  bool init(const boost::filesystem::path& urdf_path, const tesseract_scene_graph::ResourceLocator::Ptr& locator);
   bool init(const boost::filesystem::path& urdf_path,
             const boost::filesystem::path& srdf_path,
-            tesseract_scene_graph::ResourceLocator::Ptr locator);
+            const tesseract_scene_graph::ResourceLocator::Ptr& locator);
 
   const tesseract_scene_graph::SRDFModel::ConstPtr& getSRDFModel() const;
 

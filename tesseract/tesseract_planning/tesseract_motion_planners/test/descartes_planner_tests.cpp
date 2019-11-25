@@ -150,14 +150,16 @@ protected:
     opw_params_.offsets[2] = -M_PI / 2.0;
 
     auto robot_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
-    auto opw_kin = std::make_shared<OPWInvKin>("manipulator",
-                                               opw_params_,
-                                               robot_kin->getBaseLinkName(),
-                                               robot_kin->getTipLinkName(),
-                                               robot_kin->getJointNames(),
-                                               robot_kin->getLinkNames(),
-                                               robot_kin->getActiveLinkNames(),
-                                               robot_kin->getLimits());
+    auto opw_kin = std::make_shared<OPWInvKin>();
+    opw_kin->init("manipulator",
+                  opw_params_,
+                  robot_kin->getBaseLinkName(),
+                  robot_kin->getTipLinkName(),
+                  robot_kin->getJointNames(),
+                  robot_kin->getLinkNames(),
+                  robot_kin->getActiveLinkNames(),
+                  robot_kin->getLimits());
+
     tesseract_ptr_->getInvKinematicsManager()->addInvKinematicSolver(opw_kin);
   }
 };

@@ -106,15 +106,15 @@ inline bool checkTrajectory(tesseract_collision::ContinuousContactManager& manag
 
     manager.contactTest(collisions, tesseract_collision::ContactTestType::FIRST);
 
-    if (collisions.size() > 0)
+    if (!collisions.empty())
     {
       if (verbose)
       {
-        for (auto it = collisions.begin(); it != collisions.end(); ++it)
+        for (auto& collision : collisions)
         {
           std::stringstream ss;
-          ss << "Continuous collision detected at step " << iStep << " between '" << it->first.first << "' and '"
-             << it->first.second << "' with distance " << it->second.front().distance << std::endl;
+          ss << "Continuous collision detected at step " << iStep << " between '" << collision.first.first << "' and '"
+             << collision.first.second << "' with distance " << collision.second.front().distance << std::endl;
 
           ss << "     Names: ";
           for (const auto& name : joint_names)
@@ -170,15 +170,15 @@ inline bool checkTrajectory(tesseract_collision::DiscreteContactManager& manager
 
     manager.contactTest(collisions, tesseract_collision::ContactTestType::FIRST);
 
-    if (collisions.size() > 0)
+    if (!collisions.empty())
     {
       if (verbose)
       {
-        for (auto it = collisions.begin(); it != collisions.end(); ++it)
+        for (auto& collision : collisions)
         {
           std::stringstream ss;
-          ss << "Discrete collision detected at step " << iStep << " between '" << it->first.first << "' and '"
-             << it->first.second << "' with distance " << it->second.front().distance << std::endl;
+          ss << "Discrete collision detected at step " << iStep << " between '" << collision.first.first << "' and '"
+             << collision.first.second << "' with distance " << collision.second.front().distance << std::endl;
 
           ss << "     Names: ";
           for (const auto& name : joint_names)

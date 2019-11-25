@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <string>
 #include <functional>
 #include <memory>
-#include <assert.h>
+#include <cassert>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
@@ -43,27 +43,30 @@ public:
   using ConstPtr = std::shared_ptr<const StatusCategory>;
 
   constexpr StatusCategory() noexcept = default;
-  StatusCategory(const StatusCategory& other) = delete;
   virtual ~StatusCategory() = default;
+  StatusCategory(const StatusCategory&) = delete;
+  StatusCategory& operator=(const StatusCategory&) = delete;
+  StatusCategory(StatusCategory&&) = delete;
+  StatusCategory& operator=(StatusCategory&&) = delete;
 
   virtual const std::string& name() const noexcept = 0;
   virtual std::string message(int code) const = 0;
 
   bool operator==(const StatusCategory& rhs) const noexcept
   {
-    return std::equal_to<const StatusCategory*>()(this, &rhs);
+    return std::equal_to<const StatusCategory*>()(this, &rhs);  // NOLINT
   }
 
   bool operator!=(const StatusCategory& rhs) const noexcept
   {
-    return std::not_equal_to<const StatusCategory*>()(this, &rhs);
+    return std::not_equal_to<const StatusCategory*>()(this, &rhs);  // NOLINT
   }
 };
 
 class GeneralStatusCategory : public StatusCategory
 {
 public:
-  GeneralStatusCategory(std::string name = "GeneralStatus") : name_(name) {}
+  GeneralStatusCategory(std::string name = "GeneralStatus") : name_(std::move(name)) {}
   const std::string& name() const noexcept override { return name_; }
   std::string message(int code) const override
   {
@@ -112,22 +115,27 @@ public:
   using ConstPtr = std::shared_ptr<const StatusCode>;
 
   StatusCode(StatusCode::ConstPtr child = nullptr)
-    : val_(0), cat_(std::make_shared<GeneralStatusCategory>()), child_(child)
+    : cat_(std::make_shared<GeneralStatusCategory>()), child_(std::move(child))
   {
   }
   StatusCode(int val, StatusCategory::ConstPtr cat, StatusCode::ConstPtr child = nullptr)
-    : val_(val), cat_(std::move(cat)), child_(child)
+    : val_(val), cat_(std::move(cat)), child_(std::move(child))
   {
   }
   ~StatusCode() = default;
+  StatusCode(const StatusCode&) = default;
+  StatusCode& operator=(const StatusCode&) = default;
+  StatusCode(StatusCode&&) = default;
+  StatusCode& operator=(StatusCode&&) = default;
+
   int value() const noexcept { return val_; }
   const StatusCategory::ConstPtr& category() const noexcept { return cat_; }
   std::string message() const
   {
     if (child_ != nullptr)
       return category()->message(value()) + child_->messageIndent("         ");
-    else
-      return category()->message(value());
+
+    return category()->message(value());
   }
 
   /**
@@ -158,17 +166,17 @@ public:
   }
 
 protected:
-  std::string messageIndent(std::string previous_indent) const
+  std::string messageIndent(const std::string& previous_indent) const
   {
     std::string indent = previous_indent + "  ";
     if (child_ != nullptr)
       return "\n" + indent + category()->message(value()) + child_->messageIndent(indent);
-    else
-      return "\n" + indent + category()->message(value());
+
+    return "\n" + indent + category()->message(value());
   }
 
 private:
-  int val_;
+  int val_{ 0 };
   StatusCategory::ConstPtr cat_;
   StatusCode::ConstPtr child_;
 };

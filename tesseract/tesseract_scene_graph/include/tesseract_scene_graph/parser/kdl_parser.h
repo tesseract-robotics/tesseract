@@ -205,8 +205,8 @@ inline bool parseSceneGraph(const SceneGraph& scene_graph, KDL::Tree& tree)
     return false;
   }
 
-  std::string root_name = scene_graph.getRoot();
-  Link::ConstPtr root_link = scene_graph.getLink(root_name);
+  const std::string& root_name = scene_graph.getRoot();
+  const Link::ConstPtr& root_link = scene_graph.getLink(root_name);
 
   tree = KDL::Tree(root_name);
 

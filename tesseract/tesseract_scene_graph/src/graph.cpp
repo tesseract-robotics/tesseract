@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
 {
-SceneGraph::SceneGraph() : Graph(), acm_(std::make_shared<AllowedCollisionMatrix>()) {}
+SceneGraph::SceneGraph() : acm_(std::make_shared<AllowedCollisionMatrix>()) {}
 
 void SceneGraph::setName(const std::string& name)
 {
@@ -349,7 +349,7 @@ std::vector<Joint::ConstPtr> SceneGraph::getOutboundJoints(const std::string& li
 
 bool SceneGraph::isAcyclic() const
 {
-  const Graph& graph = static_cast<const Graph&>(*this);
+  const auto& graph = static_cast<const Graph&>(*this);
   bool acyclic = true;
 
   std::map<Vertex, size_t> index_map;
@@ -367,7 +367,7 @@ bool SceneGraph::isAcyclic() const
 
 bool SceneGraph::isTree() const
 {
-  const Graph& graph = static_cast<const Graph&>(*this);
+  const auto& graph = static_cast<const Graph&>(*this);
   bool tree = true;
 
   std::map<Vertex, size_t> index_map;
@@ -415,13 +415,13 @@ std::vector<std::string> SceneGraph::getLinkChildrenNames(const std::string& nam
 
 std::vector<std::string> SceneGraph::getJointChildrenNames(const std::string& name) const
 {
-  const Graph& graph = static_cast<const Graph&>(*this);
+  const auto& graph = static_cast<const Graph&>(*this);
   Edge e = getEdge(name);
   Vertex v = boost::target(e, graph);
   return getLinkChildrenHelper(v);
 }
 
-void SceneGraph::saveDOT(std::string path) const
+void SceneGraph::saveDOT(const std::string& path) const
 {
   std::ofstream dot_file(path);
 
@@ -432,7 +432,7 @@ void SceneGraph::saveDOT(std::string path) const
            << "  edge[style=\"bold\"]\n"
            << "  node[shape=\"circle\"]\n";
 
-  const Graph& graph = static_cast<const Graph&>(*this);
+  const auto& graph = static_cast<const Graph&>(*this);
   Graph::edge_iterator ei, ei_end;
   for (boost::tie(ei, ei_end) = boost::edges(graph); ei != ei_end; ++ei)
   {
@@ -450,7 +450,7 @@ void SceneGraph::saveDOT(std::string path) const
 
 SceneGraph::Path SceneGraph::getShortestPath(const std::string& root, const std::string& tip)
 {
-  const Graph& graph = static_cast<const Graph&>(*this);
+  const auto& graph = static_cast<const Graph&>(*this);
   Vertex s = getVertex(root);
 
   std::map<Vertex, Vertex> predicessor_map;
@@ -479,7 +479,7 @@ SceneGraph::Path SceneGraph::getShortestPath(const std::string& root, const std:
                           prop_distance_map,
                           prop_weight_map,
                           prop_index_map,
-                          std::less<double>(),
+                          std::less<>(),
                           boost::closed_plus<double>(),
                           (std::numeric_limits<double>::max)(),
                           0,
@@ -535,7 +535,7 @@ SceneGraph::Edge SceneGraph::getEdge(const std::string& name) const
 {
   auto found = joint_map_.find(name);
   if (found == joint_map_.end())
-    return Edge();
+    return Edge{};
 
   return found->second.second;
 }

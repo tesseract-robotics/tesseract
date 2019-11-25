@@ -42,6 +42,10 @@ struct TrajOptPlannerConfig
   explicit TrajOptPlannerConfig(trajopt::TrajOptProb::Ptr problem);
 
   virtual ~TrajOptPlannerConfig() = default;
+  TrajOptPlannerConfig(const TrajOptPlannerConfig&) = default;
+  TrajOptPlannerConfig& operator=(const TrajOptPlannerConfig&) = default;
+  TrajOptPlannerConfig(TrajOptPlannerConfig&&) = default;
+  TrajOptPlannerConfig& operator=(TrajOptPlannerConfig&&) = default;
 
   /**
    * @brief Generates the TrajOpt problem and saves the result internally

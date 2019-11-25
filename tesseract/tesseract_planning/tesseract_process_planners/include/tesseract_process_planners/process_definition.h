@@ -57,7 +57,13 @@ public:
   using Ptr = std::shared_ptr<ProcessTransitionGenerator>;
   using ConstPtr = std::shared_ptr<const ProcessTransitionGenerator>;
 
+  ProcessTransitionGenerator() = default;
   virtual ~ProcessTransitionGenerator() = default;
+  ProcessTransitionGenerator(const ProcessTransitionGenerator&) = default;
+  ProcessTransitionGenerator& operator=(const ProcessTransitionGenerator&) = default;
+  ProcessTransitionGenerator(ProcessTransitionGenerator&&) = default;
+  ProcessTransitionGenerator& operator=(ProcessTransitionGenerator&&) = default;
+
   virtual std::vector<tesseract_motion_planners::Waypoint::Ptr>
   generate(const tesseract_motion_planners::Waypoint::Ptr& start_waypoint,
            const tesseract_motion_planners::Waypoint::Ptr& end_waypoint) const = 0;
@@ -112,7 +118,12 @@ public:
   using Ptr = std::shared_ptr<ProcessStepGenerator>;
   using ConstPtr = std::shared_ptr<const ProcessStepGenerator>;
 
+  ProcessStepGenerator() = default;
   virtual ~ProcessStepGenerator() = default;
+  ProcessStepGenerator(const ProcessStepGenerator&) = default;
+  ProcessStepGenerator& operator=(const ProcessStepGenerator&) = default;
+  ProcessStepGenerator(ProcessStepGenerator&&) = default;
+  ProcessStepGenerator& operator=(ProcessStepGenerator&&) = default;
 
   virtual std::vector<tesseract_motion_planners::Waypoint::Ptr>
   generate(const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints,

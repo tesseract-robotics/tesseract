@@ -96,7 +96,7 @@ parse(tesseract_scene_graph::Material::Ptr& material,
       const tinyxml2::XMLElement* xml_element,
       std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
       const bool allow_anonymous,
-      const int version)
+      const int /*version*/)
 {
   material = tesseract_scene_graph::DEFAULT_TESSERACT_MATERIAL;
   auto status_cat = std::make_shared<MaterialStatusCategory>();
@@ -134,19 +134,19 @@ parse(tesseract_scene_graph::Material::Ptr& material,
                                                               status_cat);
 
       double r, g, b, a;
-      if (!tesseract_common::toNumeric<double>(tokens[0].c_str(), r))
+      if (!tesseract_common::toNumeric<double>(tokens[0], r))
         return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA,
                                                               status_cat);
 
-      if (!tesseract_common::toNumeric<double>(tokens[1].c_str(), g))
+      if (!tesseract_common::toNumeric<double>(tokens[1], g))
         return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA,
                                                               status_cat);
 
-      if (!tesseract_common::toNumeric<double>(tokens[2].c_str(), b))
+      if (!tesseract_common::toNumeric<double>(tokens[2], b))
         return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA,
                                                               status_cat);
 
-      if (!tesseract_common::toNumeric<double>(tokens[3].c_str(), a))
+      if (!tesseract_common::toNumeric<double>(tokens[3], a))
         return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA,
                                                               status_cat);
 
@@ -166,14 +166,12 @@ parse(tesseract_scene_graph::Material::Ptr& material,
       return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorNameOnlyIsNotAllowed,
                                                             status_cat);
     }
-    else
-    {
-      auto it = available_materials.find(material_name);
-      if (it == available_materials.end())
-        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorLocatingMaterialByName,
-                                                              status_cat);
-      m = it->second;
-    }
+
+    auto it = available_materials.find(material_name);
+    if (it == available_materials.end())
+      return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorLocatingMaterialByName,
+                                                            status_cat);
+    m = it->second;
   }
   else
   {

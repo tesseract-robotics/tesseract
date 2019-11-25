@@ -43,6 +43,10 @@ public:
 
   Cone(double r, double l) : Geometry(GeometryType::CONE), r_(r), l_(l) {}
   ~Cone() override = default;
+  Cone(const Cone&) = delete;
+  Cone& operator=(const Cone&) = delete;
+  Cone(Cone&&) = delete;
+  Cone& operator=(Cone&&) = delete;
 
   double getRadius() const { return r_; }
   double getLength() const { return l_; }

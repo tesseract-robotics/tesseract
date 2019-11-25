@@ -43,6 +43,10 @@ public:
 
   Plane(double a, double b, double c, double d) : Geometry(GeometryType::PLANE), a_(a), b_(b), c_(c), d_(d) {}
   ~Plane() override = default;
+  Plane(const Plane&) = delete;
+  Plane& operator=(const Plane&) = delete;
+  Plane(Plane&&) = delete;
+  Plane& operator=(Plane&&) = delete;
 
   double getA() const { return a_; }
   double getB() const { return b_; }

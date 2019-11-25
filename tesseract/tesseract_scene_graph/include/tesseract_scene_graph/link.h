@@ -59,7 +59,7 @@ public:
   using Ptr = std::shared_ptr<Material>;
   using ConstPtr = std::shared_ptr<const Material>;
 
-  Material(const std::string& name) : name_(name) { this->clear(); }
+  Material(std::string name) : name_(std::move(name)) { this->clear(); }
 
   const std::string& getName() const { return name_; }
 
@@ -152,7 +152,7 @@ public:
   using Ptr = std::shared_ptr<Link>;
   using ConstPtr = std::shared_ptr<const Link>;
 
-  Link(std::string name) : name_(name) { this->clear(); }
+  Link(std::string name) : name_(std::move(name)) { this->clear(); }
 
   const std::string& getName() const { return name_; }
 

@@ -48,7 +48,7 @@ namespace tesseract_urdf
 class JointStatusCategory : public tesseract_common::StatusCategory
 {
 public:
-  JointStatusCategory(std::string joint_name = "") : name_("JointStatusCategory"), joint_name_(joint_name) {}
+  JointStatusCategory(std::string joint_name = "") : name_("JointStatusCategory"), joint_name_(std::move(joint_name)) {}
   const std::string& name() const noexcept override { return name_; }
   std::string message(int code) const override
   {
@@ -209,15 +209,15 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
                                                               status_cat);
 
       double ax, ay, az;
-      if (!tesseract_common::toNumeric<double>(tokens[0].c_str(), ax))
+      if (!tesseract_common::toNumeric<double>(tokens[0], ax))
         return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorParsingAxisAttributeXYZ,
                                                               status_cat);
 
-      if (!tesseract_common::toNumeric<double>(tokens[1].c_str(), ay))
+      if (!tesseract_common::toNumeric<double>(tokens[1], ay))
         return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorParsingAxisAttributeXYZ,
                                                               status_cat);
 
-      if (!tesseract_common::toNumeric<double>(tokens[2].c_str(), az))
+      if (!tesseract_common::toNumeric<double>(tokens[2], az))
         return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorParsingAxisAttributeXYZ,
                                                               status_cat);
 
@@ -234,7 +234,8 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
     {
       return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorMissingLimitsElement, status_cat);
     }
-    else if (limits == nullptr && j->type == tesseract_scene_graph::JointType::CONTINUOUS)
+
+    if (limits == nullptr && j->type == tesseract_scene_graph::JointType::CONTINUOUS)
     {
       j->limits = std::make_shared<tesseract_scene_graph::JointLimits>();
     }

@@ -76,7 +76,7 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointLimits::Ptr& limits,
                                                const tinyxml2::XMLElement* xml_element,
-                                               const int version)
+                                               const int /*version*/)
 {
   limits = nullptr;
 

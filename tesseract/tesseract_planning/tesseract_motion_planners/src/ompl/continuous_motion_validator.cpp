@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
-ContinuousMotionValidator::ContinuousMotionValidator(ompl::base::SpaceInformationPtr space_info,
+ContinuousMotionValidator::ContinuousMotionValidator(const ompl::base::SpaceInformationPtr& space_info,
                                                      tesseract_environment::Environment::ConstPtr env,
                                                      tesseract_kinematics::ForwardKinematics::ConstPtr kin)
   : MotionValidator(space_info), env_(std::move(env)), kin_(std::move(kin))
@@ -104,8 +104,8 @@ bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1,
 
 bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State* s1, const ompl::base::State* s2) const
 {
-  const ompl::base::RealVectorStateSpace::StateType* start = s1->as<ompl::base::RealVectorStateSpace::StateType>();
-  const ompl::base::RealVectorStateSpace::StateType* finish = s2->as<ompl::base::RealVectorStateSpace::StateType>();
+  const auto* start = s1->as<ompl::base::RealVectorStateSpace::StateType>();
+  const auto* finish = s2->as<ompl::base::RealVectorStateSpace::StateType>();
 
   // It was time using chronos time elapsed and it was faster to cache the contact manager
   unsigned long int hash = std::hash<std::thread::id>{}(std::this_thread::get_id());
@@ -141,7 +141,7 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
 
 bool ContinuousMotionValidator::discreteCollisionCheck(const ompl::base::State* s2) const
 {
-  const ompl::base::RealVectorStateSpace::StateType* finish = s2->as<ompl::base::RealVectorStateSpace::StateType>();
+  const auto* finish = s2->as<ompl::base::RealVectorStateSpace::StateType>();
 
   // It was time using chronos time elapsed and it was faster to cache the contact manager
   unsigned long int hash = std::hash<std::thread::id>{}(std::this_thread::get_id());

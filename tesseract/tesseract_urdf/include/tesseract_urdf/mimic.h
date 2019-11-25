@@ -83,7 +83,7 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointMimic::Ptr& mimic,
                                                const tinyxml2::XMLElement* xml_element,
-                                               const int version)
+                                               const int /*version*/)
 {
   mimic = nullptr;
   auto status_cat = std::make_shared<MimicStatusCategory>();

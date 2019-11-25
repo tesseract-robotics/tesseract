@@ -41,7 +41,7 @@ namespace tesseract_motion_planners
 class DiscreteMotionValidator : public ompl::base::MotionValidator
 {
 public:
-  DiscreteMotionValidator(ompl::base::SpaceInformationPtr space_info,
+  DiscreteMotionValidator(const ompl::base::SpaceInformationPtr& space_info,
                           tesseract_environment::Environment::ConstPtr env,
                           tesseract_kinematics::ForwardKinematics::ConstPtr kin);
 

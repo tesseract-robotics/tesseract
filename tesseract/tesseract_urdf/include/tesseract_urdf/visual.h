@@ -86,7 +86,7 @@ private:
 inline tesseract_common::StatusCode::Ptr
 parse(std::vector<tesseract_scene_graph::Visual::Ptr>& visuals,
       const tinyxml2::XMLElement* xml_element,
-      tesseract_scene_graph::ResourceLocator::Ptr locator,
+      const tesseract_scene_graph::ResourceLocator::Ptr& locator,
       std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
       const int version)
 {

@@ -26,9 +26,10 @@
 
 # This macro will add tesseract standard compiler option to a target
 # Usage: tesseract_target_compile_options(target <INTERFACE|PUBLIC|PRIVATE>)
-#    * c++11
+#    * c++14
 #    * Warning (-Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
 #    * disable avx due to eigen issues
+#    * Add Clang Tidy
 macro(tesseract_target_compile_options target)
   cmake_parse_arguments(ARG "INTERFACE;PUBLIC;PRIVATE" "" "" ${ARGN})
 
@@ -36,43 +37,64 @@ macro(tesseract_target_compile_options target)
     message(FATAL_ERROR "tesseract_target_compile_options() called with unused arguments: ${ARG_UNPARSED_ARGUMENTS}")
   endif()
 
-  list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_11 CXX_FEATURE_FOUND)
+  list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_14 CXX_FEATURE_FOUND)
 
   if (ARG_INTERFACE)
     target_compile_options(${target} INTERFACE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-    if(CXX_FEATURE_FOUND EQUAL "-1")
-        target_compile_options("${target}" INTERFACE -std=c++11)
-    else()
-        target_compile_features("${target}" INTERFACE cxx_std_11)
-    endif()
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+      if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.1)
+        if(CXX_FEATURE_FOUND EQUAL "-1")
+          target_compile_options("${target}" INTERFACE -std=c++14)
+        else()
+          target_compile_features("${target}" INTERFACE cxx_std_14)
+        endif()
+      endif()
       target_compile_options("${target}" INTERFACE -mno-avx)
     else()
       message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
     endif()
   elseif(ARG_PUBLIC)
     target_compile_options("${target}" PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-    if(CXX_FEATURE_FOUND EQUAL "-1")
-        target_compile_options("${target}" PUBLIC -std=c++11)
-    else()
-        target_compile_features("${target}" PUBLIC cxx_std_11)
-    endif()
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+      if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.1)
+        if(CXX_FEATURE_FOUND EQUAL "-1")
+          target_compile_options("${target}" PUBLIC -std=c++14)
+        else()
+          target_compile_features("${target}" PUBLIC cxx_std_14)
+        endif()
+      endif()
       target_compile_options("${target}" PUBLIC -mno-avx)
     else()
       message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
     endif()
   elseif(ARG_PRIVATE)
     target_compile_options("${target}" PRIVATE -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
-    if(CXX_FEATURE_FOUND EQUAL "-1")
-        target_compile_options("${target}" PRIVATE -std=c++11)
-    else()
-        target_compile_features("${target}" PRIVATE cxx_std_11)
-    endif()
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+      if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.1)
+        if(CXX_FEATURE_FOUND EQUAL "-1")
+          target_compile_options("${target}" PRIVATE -std=c++14)
+        else()
+          target_compile_features("${target}" PRIVATE cxx_std_14)
+        endif()
+      endif()
       target_compile_options("${target}" PRIVATE -mno-avx)
     else()
       message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
+    endif()
+  endif()
+
+# Add clang tidy
+  if (NOT ARG_INTERFACE)
+    find_program(CLANG_TIDY_EXE NAMES "clang-tidy" DOC "Path to clang-tidy executable")
+    if(NOT CLANG_TIDY_EXE)
+      message(WARNING "clang-tidy not found.")
+    else()
+      message(WARNING "clang-tidy found: ${CLANG_TIDY_EXE}")
+      set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-checks=-*,bugprone-*,cppcoreguidelines-avoid-goto,cppcoreguidelines-c-copy-assignment-signature,cppcoreguidelines-interfaces-global-init,cppcoreguidelines-narrowing-conversions,cppcoreguidelines-no-malloc,cppcoreguidelines-slicing,cppcoreguidelines-special-member-functions,misc-*,modernize-*,performance-*,readability-avoid-const-params-in-decls,readability-container-size-empty,readability-delete-null-pointer,readability-deleted-default,readability-else-after-return,readability-function-size,readability-identifier-naming,readability-inconsistent-declaration-parameter-name,readability-misleading-indentation,readability-misplaced-array-index,readability-non-const-parameter,readability-redundant-*,readability-simplify-*,readability-static-*,readability-string-compare,readability-uniqueptr-delete-release,readability-rary-objects")
+      set_target_properties("${target}" PROPERTIES CXX_CLANG_TIDY "${DO_CLANG_TIDY}")
     endif()
   endif()
 
@@ -88,7 +110,8 @@ macro(tesseract_configure_package)
   install(TARGETS ${ARGV}
           EXPORT ${PROJECT_NAME}-targets
           RUNTIME DESTINATION bin
-          LIBRARY DESTINATION lib)
+          LIBRARY DESTINATION lib
+          ARCHIVE DESTINATION lib)
   install(EXPORT ${PROJECT_NAME}-targets NAMESPACE tesseract:: DESTINATION lib/cmake/${PROJECT_NAME})
 
   install(FILES package.xml DESTINATION share/${PROJECT_NAME})
@@ -108,15 +131,15 @@ macro(tesseract_configure_package)
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
     DESTINATION lib/cmake/${PROJECT_NAME})
 
-  export(EXPORT ${PROJECT_NAME}-targets FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake)
+  export(EXPORT ${PROJECT_NAME}-targets NAMESPACE tesseract:: FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake)
 endmacro()
 
 # This macro call the appropriate gtest function to add a test based on the cmake version
 # Usage: tesseract_gtest_discover_tests(target)
 macro(tesseract_gtest_discover_tests target)
   if(${CMAKE_VERSION} VERSION_LESS "3.10.0")
-      gtest_add_tests(${target} "" AUTO)
+    gtest_add_tests(${target} "" AUTO)
   else()
-      gtest_discover_tests(${target})
+    gtest_discover_tests(${target})
   endif()
 endmacro()

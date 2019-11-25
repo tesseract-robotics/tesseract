@@ -46,13 +46,17 @@ public:
   using Ptr = std::shared_ptr<Mesh>;
   using ConstPtr = std::shared_ptr<const Mesh>;
 
-  Mesh(const std::shared_ptr<const tesseract_common::VectorVector3d>& vertices,
-       const std::shared_ptr<const Eigen::VectorXi>& triangles,
+  Mesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+       std::shared_ptr<const Eigen::VectorXi> triangles,
        tesseract_common::Resource::Ptr resource = nullptr,
        Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1))
-    : Geometry(GeometryType::MESH), vertices_(vertices), triangles_(triangles), resource_(resource), scale_(scale)
+    : Geometry(GeometryType::MESH)
+    , vertices_(std::move(vertices))
+    , triangles_(std::move(triangles))
+    , resource_(std::move(resource))
+    , scale_(std::move(scale))
   {
-    vertice_count_ = static_cast<int>(vertices->size());
+    vertice_count_ = static_cast<int>(vertices_->size());
 
     triangle_count_ = 0;
     for (int i = 0; i < triangles_->size(); ++i)
@@ -64,23 +68,27 @@ public:
     }
   }
 
-  Mesh(const std::shared_ptr<const tesseract_common::VectorVector3d>& vertices,
-       const std::shared_ptr<const Eigen::VectorXi>& triangles,
+  Mesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+       std::shared_ptr<const Eigen::VectorXi> triangles,
        int triangle_count,
        tesseract_common::Resource::Ptr resource = nullptr,
        Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1))
     : Geometry(GeometryType::MESH)
-    , vertices_(vertices)
-    , triangles_(triangles)
+    , vertices_(std::move(vertices))
+    , triangles_(std::move(triangles))
     , triangle_count_(triangle_count)
-    , resource_(resource)
-    , scale_(scale)
+    , resource_(std::move(resource))
+    , scale_(std::move(scale))
   {
-    vertice_count_ = static_cast<int>(vertices->size());
-    assert((triangle_count * 4) == triangles_->size());
+    vertice_count_ = static_cast<int>(vertices_->size());
+    assert((triangle_count_ * 4) == triangles_->size());
   }
 
   ~Mesh() override = default;
+  Mesh(const Mesh&) = delete;
+  Mesh& operator=(const Mesh&) = delete;
+  Mesh(Mesh&&) = delete;
+  Mesh& operator=(Mesh&&) = delete;
 
   const std::shared_ptr<const tesseract_common::VectorVector3d>& getVertices() const { return vertices_; }
   const std::shared_ptr<const Eigen::VectorXi>& getTriangles() const { return triangles_; }

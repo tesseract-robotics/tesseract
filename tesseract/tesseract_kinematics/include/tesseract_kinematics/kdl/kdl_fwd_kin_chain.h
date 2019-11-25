@@ -57,8 +57,14 @@ public:
   using Ptr = std::shared_ptr<KDLFwdKinChain>;
   using ConstPtr = std::shared_ptr<const KDLFwdKinChain>;
 
-  KDLFwdKinChain() : initialized_(false), solver_name_("KDLFwdKinChain") {}
-  KDLFwdKinChain(const KDLFwdKinChain& kin);
+  KDLFwdKinChain() = default;
+  ~KDLFwdKinChain() override = default;
+  KDLFwdKinChain(const KDLFwdKinChain&) = delete;
+  KDLFwdKinChain& operator=(const KDLFwdKinChain&) = delete;
+  KDLFwdKinChain(KDLFwdKinChain&&) = delete;
+  KDLFwdKinChain& operator=(KDLFwdKinChain&&) = delete;
+
+  ForwardKinematics::Ptr clone() const override;
 
   bool calcFwdKin(Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
 
@@ -92,7 +98,6 @@ public:
   const std::string& getTipLinkName() const override { return kdl_data_.tip_name; }
   const std::string& getName() const override { return name_; }
   const std::string& getSolverName() const override { return solver_name_; }
-  ForwardKinematics::Ptr clone() const override { return std::make_shared<KDLFwdKinChain>(*this); }
 
   /**
    * @brief Initializes Forward Kinematics as chain
@@ -106,7 +111,7 @@ public:
   bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
             const std::string& base_link,
             const std::string& tip_link,
-            const std::string name);
+            std::string name);
 
   /**
    * @brief Checks if kinematics has been initialized
@@ -122,21 +127,20 @@ public:
     return initialized_;
   }
 
-  /**
-   * @brief Assigns values from another ROSKin to this
-   * @param rhs Input ROSKin object to copy from
-   * @return reference to this ROSKin object
-   */
-  KDLFwdKinChain& operator=(const KDLFwdKinChain& rhs);
-
 private:
-  bool initialized_;                                           /**< Identifies if the object has been initialized */
+  bool initialized_{ false };                                  /**< Identifies if the object has been initialized */
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;    /**< Tesseract Scene Graph */
   KDLChainData kdl_data_;                                      /**< KDL data parsed from Scene Graph */
   std::string name_;                                           /**< Name of the kinematic chain */
-  std::string solver_name_;                                    /**< Name of this solver */
+  std::string solver_name_{ "KDLFwdKinChain" };                /**< Name of this solver */
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> fk_solver_; /**< KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::ChainJntToJacSolver> jac_solver_;       /**< KDL Jacobian Solver */
+
+  /**
+   * @brief This used by the clone method
+   * @return True if init() completes successfully
+   */
+  bool init(const KDLFwdKinChain& kin);
 
   /** @brief calcFwdKin helper function */
   bool calcFwdKinHelper(Eigen::Isometry3d& pose,

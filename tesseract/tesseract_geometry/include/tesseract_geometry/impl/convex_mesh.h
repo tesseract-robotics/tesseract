@@ -46,13 +46,17 @@ public:
   using Ptr = std::shared_ptr<ConvexMesh>;
   using ConstPtr = std::shared_ptr<const ConvexMesh>;
 
-  ConvexMesh(const std::shared_ptr<const tesseract_common::VectorVector3d>& vertices,
-             const std::shared_ptr<const Eigen::VectorXi>& faces,
+  ConvexMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+             std::shared_ptr<const Eigen::VectorXi> faces,
              tesseract_common::Resource::Ptr resource = nullptr,
              Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1))
-    : Geometry(GeometryType::CONVEX_MESH), vertices_(vertices), faces_(faces), resource_(resource), scale_(scale)
+    : Geometry(GeometryType::CONVEX_MESH)
+    , vertices_(std::move(vertices))
+    , faces_(std::move(faces))
+    , resource_(std::move(resource))
+    , scale_(std::move(scale))
   {
-    vertice_count_ = static_cast<int>(vertices->size());
+    vertice_count_ = static_cast<int>(vertices_->size());
 
     face_count_ = 0;
     for (int i = 0; i < faces_->size(); ++i)
@@ -63,22 +67,26 @@ public:
     }
   }
 
-  ConvexMesh(const std::shared_ptr<const tesseract_common::VectorVector3d>& vertices,
-             const std::shared_ptr<const Eigen::VectorXi>& faces,
+  ConvexMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
+             std::shared_ptr<const Eigen::VectorXi> faces,
              int face_count,
              tesseract_common::Resource::Ptr resource = nullptr,
              Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1))
     : Geometry(GeometryType::CONVEX_MESH)
-    , vertices_(vertices)
-    , faces_(faces)
+    , vertices_(std::move(vertices))
+    , faces_(std::move(faces))
     , face_count_(face_count)
-    , resource_(resource)
-    , scale_(scale)
+    , resource_(std::move(resource))
+    , scale_(std::move(scale))
   {
-    vertice_count_ = static_cast<int>(vertices->size());
+    vertice_count_ = static_cast<int>(vertices_->size());
   }
 
   ~ConvexMesh() override = default;
+  ConvexMesh(const ConvexMesh&) = delete;
+  ConvexMesh& operator=(const ConvexMesh&) = delete;
+  ConvexMesh(ConvexMesh&&) = delete;
+  ConvexMesh& operator=(ConvexMesh&&) = delete;
 
   const std::shared_ptr<const tesseract_common::VectorVector3d>& getVertices() const { return vertices_; }
   const std::shared_ptr<const Eigen::VectorXi>& getFaces() const { return faces_; }

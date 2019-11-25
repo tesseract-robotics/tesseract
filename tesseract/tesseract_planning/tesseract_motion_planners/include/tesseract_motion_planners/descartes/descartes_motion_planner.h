@@ -47,23 +47,27 @@ template <typename FloatType>
 struct DescartesMotionPlannerConfig
 {
   DescartesMotionPlannerConfig(tesseract::Tesseract::ConstPtr tesseract_ptr,
-                               const std::vector<std::string> active_link_names,
-                               const std::vector<std::string> joint_names,
+                               std::vector<std::string> active_link_names,
+                               std::vector<std::string> joint_names,
                                const typename descartes_light::EdgeEvaluator<FloatType>::Ptr& edge_evaluator,
                                std::vector<descartes_core::TimingConstraint<FloatType>> timing_constraint,
                                std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr> samplers,
-                               const std::vector<Waypoint::Ptr>& waypoints)
-    : tesseract(tesseract_ptr)
+                               std::vector<Waypoint::Ptr> waypoints)
+    : tesseract(std::move(tesseract_ptr))
     , active_link_names(std::move(active_link_names))
     , joint_names(std::move(joint_names))
     , edge_evaluator(edge_evaluator)
-    , timing_constraint(timing_constraint)
-    , samplers(samplers)
-    , waypoints(waypoints)
+    , timing_constraint(std::move(timing_constraint))
+    , samplers(std::move(samplers))
+    , waypoints(std::move(waypoints))
   {
   }
 
   virtual ~DescartesMotionPlannerConfig() = default;
+  DescartesMotionPlannerConfig(const DescartesMotionPlannerConfig&) = default;
+  DescartesMotionPlannerConfig& operator=(const DescartesMotionPlannerConfig&) = default;
+  DescartesMotionPlannerConfig(DescartesMotionPlannerConfig&&) = default;
+  DescartesMotionPlannerConfig& operator=(DescartesMotionPlannerConfig&&) = default;
 
   const tesseract::Tesseract::ConstPtr tesseract;
   const std::vector<std::string> active_link_names;
@@ -87,7 +91,11 @@ public:
   /** @brief Construct a basic planner */
   DescartesMotionPlanner(std::string name = "DESCARTES");
 
-  ~DescartesMotionPlanner() override {}
+  ~DescartesMotionPlanner() override = default;
+  DescartesMotionPlanner(const DescartesMotionPlanner&) = default;
+  DescartesMotionPlanner& operator=(const DescartesMotionPlanner&) = default;
+  DescartesMotionPlanner(DescartesMotionPlanner&&) noexcept = default;
+  DescartesMotionPlanner& operator=(DescartesMotionPlanner&&) noexcept = default;
 
   /**
    * @brief Set the configuration for the planner
@@ -106,7 +114,7 @@ public:
    * to console
    * @return true if optimization complete
    */
-  tesseract_common::StatusCode solve(PlannerResponse& response, const bool verbose = false) override;
+  tesseract_common::StatusCode solve(PlannerResponse& response, bool verbose = false) override;
 
   bool terminate() override;
 

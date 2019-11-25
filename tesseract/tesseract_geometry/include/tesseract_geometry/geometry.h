@@ -56,6 +56,10 @@ public:
 
   explicit Geometry(GeometryType type) : type_(type) {}
   virtual ~Geometry() = default;
+  Geometry(const Geometry&) = delete;
+  Geometry& operator=(const Geometry&) = delete;
+  Geometry(Geometry&&) = delete;
+  Geometry& operator=(Geometry&&) = delete;
 
   /** \brief Create a copy of this shape */
   virtual Geometry::Ptr clone() const = 0;

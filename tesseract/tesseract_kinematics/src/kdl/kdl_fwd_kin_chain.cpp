@@ -37,6 +37,13 @@ namespace tesseract_kinematics
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+ForwardKinematics::Ptr KDLFwdKinChain::clone() const
+{
+  auto cloned_fwdkin = std::make_shared<KDLFwdKinChain>();
+  cloned_fwdkin->init(*this);
+  return std::move(cloned_fwdkin);
+}
+
 bool KDLFwdKinChain::calcFwdKinHelper(Eigen::Isometry3d& pose,
                                       const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                       int segment_num) const
@@ -111,10 +118,7 @@ bool KDLFwdKinChain::calcFwdKin(Eigen::Isometry3d& pose,
   assert(kdl_data_.segment_index.find(link_name) != kdl_data_.segment_index.end());
 
   int segment_nr = kdl_data_.segment_index.at(link_name);
-  if (calcFwdKinHelper(pose, joint_angles, segment_nr))
-    return true;
-
-  return false;
+  return calcFwdKinHelper(pose, joint_angles, segment_nr);
 }
 
 bool KDLFwdKinChain::calcJacobianHelper(KDL::Jacobian& jacobian,
@@ -219,7 +223,7 @@ const Eigen::MatrixX2d& KDLFwdKinChain::getLimits() const { return kdl_data_.joi
 bool KDLFwdKinChain::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
                           const std::string& base_link,
                           const std::string& tip_link,
-                          const std::string name)
+                          std::string name)
 {
   initialized_ = false;
 
@@ -229,8 +233,8 @@ bool KDLFwdKinChain::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_grap
     return false;
   }
 
-  scene_graph_ = scene_graph;
-  name_ = name;
+  scene_graph_ = std::move(scene_graph);
+  name_ = std::move(name);
 
   if (!scene_graph_->getLink(scene_graph_->getRoot()))
   {
@@ -244,35 +248,24 @@ bool KDLFwdKinChain::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_grap
     return false;
   }
 
-  fk_solver_.reset(new KDL::ChainFkSolverPos_recursive(kdl_data_.robot_chain));
-  jac_solver_.reset(new KDL::ChainJntToJacSolver(kdl_data_.robot_chain));
+  fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
+  jac_solver_ = std::make_unique<KDL::ChainJntToJacSolver>(kdl_data_.robot_chain);
 
   initialized_ = true;
   return initialized_;
 }
 
-KDLFwdKinChain& KDLFwdKinChain::operator=(const KDLFwdKinChain& rhs)
-{
-  initialized_ = rhs.initialized_;
-  name_ = rhs.name_;
-  solver_name_ = rhs.solver_name_;
-  kdl_data_ = rhs.kdl_data_;
-  fk_solver_.reset(new KDL::ChainFkSolverPos_recursive(kdl_data_.robot_chain));
-  jac_solver_.reset(new KDL::ChainJntToJacSolver(kdl_data_.robot_chain));
-  scene_graph_ = rhs.scene_graph_;
-
-  return *this;
-}
-
-KDLFwdKinChain::KDLFwdKinChain(const KDLFwdKinChain& kin)
+bool KDLFwdKinChain::init(const KDLFwdKinChain& kin)
 {
   initialized_ = kin.initialized_;
   name_ = kin.name_;
   solver_name_ = kin.solver_name_;
   kdl_data_ = kin.kdl_data_;
-  fk_solver_.reset(new KDL::ChainFkSolverPos_recursive(kdl_data_.robot_chain));
-  jac_solver_.reset(new KDL::ChainJntToJacSolver(kdl_data_.robot_chain));
+  fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
+  jac_solver_ = std::make_unique<KDL::ChainJntToJacSolver>(kdl_data_.robot_chain);
   scene_graph_ = kin.scene_graph_;
+
+  return initialized_;
 }
 
 }  // namespace tesseract_kinematics

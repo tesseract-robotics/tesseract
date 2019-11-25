@@ -86,10 +86,8 @@ bool FCLDiscreteBVHManager::addCollisionObject(const std::string& name,
     addCollisionObject(new_cow);
     return true;
   }
-  else
-  {
-    return false;
-  }
+
+  return false;
 }
 
 const CollisionShapesConst& FCLDiscreteBVHManager::getCollisionObjectGeometries(const std::string& name) const

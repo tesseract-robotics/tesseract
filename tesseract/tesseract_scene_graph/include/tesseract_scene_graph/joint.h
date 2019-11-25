@@ -199,7 +199,7 @@ public:
   using Ptr = std::shared_ptr<Joint>;
   using ConstPtr = std::shared_ptr<const Joint>;
 
-  Joint(std::string name) : name_(name) { this->clear(); }
+  Joint(std::string name) : name_(std::move(name)) { this->clear(); }
 
   const std::string& getName() const { return name_; }
 

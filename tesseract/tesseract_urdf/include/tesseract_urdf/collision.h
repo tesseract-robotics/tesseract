@@ -77,7 +77,7 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_scene_graph::Collision::Ptr>& collisions,
                                                const tinyxml2::XMLElement* xml_element,
-                                               tesseract_scene_graph::ResourceLocator::Ptr locator,
+                                               const tesseract_scene_graph::ResourceLocator::Ptr& locator,
                                                const int version)
 {
   collisions.clear();
@@ -120,7 +120,7 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_scene_graph
   else
   {
     int i = 0;
-    for (auto g : geometries)
+    for (const auto& g : geometries)
     {
       auto collision = std::make_shared<tesseract_scene_graph::Collision>();
 

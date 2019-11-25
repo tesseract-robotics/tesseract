@@ -54,10 +54,7 @@ inline bool isNumeric(const std::string& s)
   double out;
   ss >> out;
 
-  if (ss.fail() || !ss.eof())
-    return false;
-
-  return true;
+  return !(ss.fail() || !ss.eof());
 }
 
 inline bool isNumeric(const std::vector<std::string>& sv)

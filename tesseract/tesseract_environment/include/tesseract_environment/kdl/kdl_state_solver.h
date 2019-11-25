@@ -18,12 +18,13 @@ public:
   using ConstPtr = std::shared_ptr<const KDLStateSolver>;
 
   KDLStateSolver() = default;
+  ~KDLStateSolver() override = default;
+  KDLStateSolver(const KDLStateSolver&) = delete;
+  KDLStateSolver& operator=(const KDLStateSolver&) = delete;
+  KDLStateSolver(KDLStateSolver&&) = delete;
+  KDLStateSolver& operator=(KDLStateSolver&&) = delete;
 
-  /**
-   * @brief Copy constructor which clones the object.
-   * @param solver The solver to copy/clone
-   */
-  KDLStateSolver(const KDLStateSolver& solver);
+  StateSolver::Ptr clone() const override;
 
   bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph) override;
 
@@ -55,14 +56,18 @@ public:
 
   EnvState::ConstPtr getCurrentState() const override { return current_state_; }
 
-  StateSolver::Ptr clone() const override;
-
 private:
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;    /**< Tesseract Scene Graph */
   EnvState::Ptr current_state_;                                /**< Current state of the environment */
   KDL::Tree kdl_tree_;                                         /**< KDL tree object */
   std::unordered_map<std::string, unsigned int> joint_to_qnr_; /**< Map between joint name and kdl q index */
   KDL::JntArray kdl_jnt_array_;                                /**< The kdl joint array */
+
+  /**
+   * @brief This used by the clone method
+   * @return True if init() completes successfully
+   */
+  bool init(const KDLStateSolver&);
 
   void calculateTransforms(tesseract_common::TransformMap& transforms,
                            const KDL::JntArray& q_in,

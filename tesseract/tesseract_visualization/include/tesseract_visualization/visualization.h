@@ -44,7 +44,13 @@ public:
   using Ptr = std::shared_ptr<Visualization>;
   using ConstPtr = std::shared_ptr<const Visualization>;
 
+  Visualization() = default;
   virtual ~Visualization() = default;
+  Visualization(const Visualization&) = default;
+  Visualization& operator=(const Visualization&) = default;
+  Visualization(Visualization&&) = default;
+  Visualization& operator=(Visualization&&) = default;
+
   /**
    * @brief Plot a trajectory
    * @param traj

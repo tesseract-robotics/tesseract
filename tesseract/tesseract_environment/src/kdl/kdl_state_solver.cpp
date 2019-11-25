@@ -36,19 +36,28 @@ namespace tesseract_environment
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-KDLStateSolver::KDLStateSolver(const KDLStateSolver& solver)
-  : scene_graph_(solver.scene_graph_)
-  , current_state_(std::make_shared<EnvState>(*(solver.current_state_)))
-  , kdl_tree_(solver.kdl_tree_)
-  , joint_to_qnr_(solver.joint_to_qnr_)
-  , kdl_jnt_array_(solver.kdl_jnt_array_)
+StateSolver::Ptr KDLStateSolver::clone() const
 {
+  auto cloned_solver = std::make_shared<KDLStateSolver>();
+  cloned_solver->init(*this);
+  return std::move(cloned_solver);
 }
 
 bool KDLStateSolver::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph)
 {
   scene_graph_ = std::move(scene_graph);
   return createKDETree();
+}
+
+bool KDLStateSolver::init(const KDLStateSolver& solver)
+{
+  scene_graph_ = solver.scene_graph_;
+  current_state_ = std::make_shared<EnvState>(*(solver.current_state_));
+  kdl_tree_ = solver.kdl_tree_;
+  joint_to_qnr_ = solver.joint_to_qnr_;
+  kdl_jnt_array_ = solver.kdl_jnt_array_;
+
+  return true;
 }
 
 void KDLStateSolver::setState(const std::unordered_map<std::string, double>& joints)
@@ -149,8 +158,6 @@ EnvState::Ptr KDLStateSolver::getState(const std::vector<std::string>& joint_nam
 
   return state;
 }
-
-StateSolver::Ptr KDLStateSolver::clone() const { return std::make_shared<KDLStateSolver>(*this); }
 
 bool KDLStateSolver::createKDETree()
 {

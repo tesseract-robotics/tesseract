@@ -35,9 +35,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_scene_graph
 {
 SimpleResourceLocator::SimpleResourceLocator(SimpleResourceLocator::ResourceLocatorFn locator_function)
+  : locator_function_(std::move(locator_function))
 {
-  assert(locator_function);
-  locator_function_ = locator_function;
+  assert(locator_function_);
 }
 
 tesseract_common::Resource::Ptr SimpleResourceLocator::locateResource(const std::string& url)
@@ -71,10 +71,10 @@ std::vector<uint8_t> SimpleLocatedResource::getResourceContents()
   }
   std::ifstream::pos_type pos = ifs.tellg();
 
-  std::vector<uint8_t> file_contents(pos);
+  std::vector<uint8_t> file_contents(static_cast<size_t>(pos));
 
   ifs.seekg(0, std::ios::beg);
-  ifs.read((char*)&file_contents[0], pos);
+  ifs.read(reinterpret_cast<std::ifstream::char_type*>(&file_contents[0]), pos);
 
   return file_contents;
 }

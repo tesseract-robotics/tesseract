@@ -59,6 +59,10 @@ public:
 
   explicit Command(CommandType type) : type_(type) {}
   virtual ~Command() = default;
+  Command(const Command&) = default;
+  Command& operator=(const Command&) = default;
+  Command(Command&&) = default;
+  Command& operator=(Command&&) = default;
 
   CommandType getType() const { return type_; }
 
@@ -102,8 +106,8 @@ private:
 class MoveJointCommand : public Command
 {
 public:
-  MoveJointCommand(const std::string& joint_name, const std::string& parent_link)
-    : Command(CommandType::MOVE_JOINT), joint_name_(joint_name), parent_link_(parent_link)
+  MoveJointCommand(std::string joint_name, std::string parent_link)
+    : Command(CommandType::MOVE_JOINT), joint_name_(std::move(joint_name)), parent_link_(std::move(parent_link))
   {
   }
 
@@ -118,7 +122,7 @@ private:
 class RemoveLinkCommand : public Command
 {
 public:
-  RemoveLinkCommand(const std::string& link_name) : Command(CommandType::REMOVE_LINK), link_name_(link_name) {}
+  RemoveLinkCommand(std::string link_name) : Command(CommandType::REMOVE_LINK), link_name_(std::move(link_name)) {}
 
   const std::string& getLinkName() const { return link_name_; }
 
@@ -129,7 +133,7 @@ private:
 class RemoveJointCommand : public Command
 {
 public:
-  RemoveJointCommand(const std::string& joint_name) : Command(CommandType::REMOVE_JOINT), joint_name_(joint_name) {}
+  RemoveJointCommand(std::string joint_name) : Command(CommandType::REMOVE_JOINT), joint_name_(std::move(joint_name)) {}
 
   const std::string& getJointName() const { return joint_name_; }
 
@@ -140,8 +144,8 @@ private:
 class ChangeLinkOriginCommand : public Command
 {
 public:
-  ChangeLinkOriginCommand(const std::string& link_name, const Eigen::Isometry3d& origin)
-    : Command(CommandType::CHANGE_LINK_ORIGIN), link_name_(link_name), origin_(origin)
+  ChangeLinkOriginCommand(std::string link_name, const Eigen::Isometry3d& origin)
+    : Command(CommandType::CHANGE_LINK_ORIGIN), link_name_(std::move(link_name)), origin_(origin)
   {
   }
 
@@ -156,8 +160,8 @@ private:
 class ChangeJointOriginCommand : public Command
 {
 public:
-  ChangeJointOriginCommand(const std::string& joint_name, const Eigen::Isometry3d& origin)
-    : Command(CommandType::CHANGE_JOINT_ORIGIN), joint_name_(joint_name), origin_(origin)
+  ChangeJointOriginCommand(std::string joint_name, const Eigen::Isometry3d& origin)
+    : Command(CommandType::CHANGE_JOINT_ORIGIN), joint_name_(std::move(joint_name)), origin_(origin)
   {
   }
 
@@ -172,8 +176,8 @@ private:
 class ChangeLinkCollisionEnabledCommand : public Command
 {
 public:
-  ChangeLinkCollisionEnabledCommand(const std::string& link_name, bool enabled)
-    : Command(CommandType::CHANGE_LINK_COLLISION_ENABLED), link_name_(link_name), enabled_(std::move(enabled))
+  ChangeLinkCollisionEnabledCommand(std::string link_name, bool enabled)
+    : Command(CommandType::CHANGE_LINK_COLLISION_ENABLED), link_name_(std::move(link_name)), enabled_(enabled)
   {
   }
 
@@ -188,8 +192,8 @@ private:
 class ChangeLinkVisibilityCommand : public Command
 {
 public:
-  ChangeLinkVisibilityCommand(const std::string& link_name, bool enabled)
-    : Command(CommandType::CHANGE_LINK_VISIBILITY), link_name_(link_name), enabled_(std::move(enabled))
+  ChangeLinkVisibilityCommand(std::string link_name, bool enabled)
+    : Command(CommandType::CHANGE_LINK_VISIBILITY), link_name_(std::move(link_name)), enabled_(enabled)
   {
   }
 
@@ -204,8 +208,11 @@ private:
 class AddAllowedCollisionCommand : public Command
 {
 public:
-  AddAllowedCollisionCommand(const std::string& link_name1, const std::string& link_name2, const std::string& reason)
-    : Command(CommandType::ADD_ALLOWED_COLLISION), link_name1_(link_name1), link_name2_(link_name2), reason_(reason)
+  AddAllowedCollisionCommand(std::string link_name1, std::string link_name2, std::string reason)
+    : Command(CommandType::ADD_ALLOWED_COLLISION)
+    , link_name1_(std::move(link_name1))
+    , link_name2_(std::move(link_name2))
+    , reason_(std::move(reason))
   {
   }
 
@@ -222,8 +229,10 @@ private:
 class RemoveAllowedCollisionCommand : public Command
 {
 public:
-  RemoveAllowedCollisionCommand(const std::string& link_name1, const std::string& link_name2)
-    : Command(CommandType::REMOVE_ALLOWED_COLLISION), link_name1_(link_name1), link_name2_(link_name2)
+  RemoveAllowedCollisionCommand(std::string link_name1, std::string link_name2)
+    : Command(CommandType::REMOVE_ALLOWED_COLLISION)
+    , link_name1_(std::move(link_name1))
+    , link_name2_(std::move(link_name2))
   {
   }
 
@@ -238,8 +247,8 @@ private:
 class RemoveAllowedCollisionLinkCommand : public Command
 {
 public:
-  RemoveAllowedCollisionLinkCommand(const std::string& link_name)
-    : Command(CommandType::REMOVE_ALLOWED_COLLISION_LINK), link_name_(link_name)
+  RemoveAllowedCollisionLinkCommand(std::string link_name)
+    : Command(CommandType::REMOVE_ALLOWED_COLLISION_LINK), link_name_(std::move(link_name))
   {
   }
 

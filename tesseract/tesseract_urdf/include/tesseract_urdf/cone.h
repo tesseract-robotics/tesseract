@@ -70,7 +70,7 @@ private:
 
 inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Cone::Ptr& cone,
                                                const tinyxml2::XMLElement* xml_element,
-                                               const int version)
+                                               const int /*version*/)
 {
   cone = nullptr;
   auto status_cat = std::make_shared<ConeStatusCategory>();
