@@ -1,5 +1,13 @@
 # Tesseract
 
+[![Build Status](https://travis-ci.com/ros-industrial-consortium/tesseract.svg?branch=master)](https://travis-ci.com/ros-industrial-consortium/tesseract)
+[![Github Issues](https://img.shields.io/github/issues/ros-industrial-consortium/tesseract.svg)](http://github.com/ros-industrial-consortium/tesseract/issues)
+
+[![license - apache 2.0](https://img.shields.io/:license-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
+[![license - bsd 2 clause](https://img.shields.io/:license-BSD%202--Clause-blue.svg)](https://opensource.org/licenses/BSD-2-Clause)
+
+[![support level: consortium](https://img.shields.io/badge/support%20level-consortium-brightgreen.png)](http://rosindustrial.org/news/2016/10/7/better-supporting-a-growing-ros-industrial-software-platform)
+
 The planning framework (Tesseract) was designed to be lightweight, limiting the number of dependencies, mainly only using standard library like, eigen, boost, orocos and to the packages below. The core packages are ROS agnostic and have full python support.
 
 ## Tesseract Core Packages
