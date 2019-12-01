@@ -1,12 +1,3 @@
-[submodule "tesseract_ext/bullet3_ros/bullet3"]
-	path = tesseract_ext/bullet3_ros/bullet3
-	url = https://github.com/Levi-Armstrong/bullet3.git
-    branch = master
-[submodule "tesseract_ext/fcl_ros/fcl"]
-	path = tesseract_ext/fcl_ros/fcl
-	url = https://github.com/flexible-collision-library/fcl.git
-	branch = master
-[submodule "tesseract_ext/libccd_ros/libccd"]
-	path = tesseract_ext/libccd_ros/libccd
-	url = https://github.com/danfis/libccd.git
-	branch = master
+[submodule "tesseract_ext_repo"]
+	path = tesseract_ext
+	url = https://github.com/ros-industrial-consortium/tesseract_ext.git
