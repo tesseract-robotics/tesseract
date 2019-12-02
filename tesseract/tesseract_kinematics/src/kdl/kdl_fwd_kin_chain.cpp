@@ -88,6 +88,9 @@ bool KDLFwdKinChain::calcFwdKinHelper(tesseract_common::VectorIsometry3d& poses,
 #else
   return false;
 #endif
+  UNUSED(poses);
+  UNUSED(joint_angles);
+  UNUSED(segment_num);
 }
 
 TESSERACT_COMMON_IGNORE_WARNINGS_POP

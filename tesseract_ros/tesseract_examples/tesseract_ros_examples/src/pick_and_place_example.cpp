@@ -55,6 +55,8 @@ const std::string ROBOT_SEMANTIC_PARAM = "robot_description_semantic"; /**< Defa
                                                                           description */
 const std::string GET_ENVIRONMENT_CHANGES_SERVICE = "get_tesseract_changes_rviz";
 const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
+const bool ENABLE_TIME_COST = false;
+const bool ENABLE_VELOCITY_COST = false;
 
 namespace tesseract_ros_examples
 {
@@ -179,9 +181,8 @@ bool PickAndPlaceExample::run()
   pci.init_info.dt = 0.5;
 
   // Add a collision cost
-  if (true)
   {
-    std::shared_ptr<trajopt::CollisionTermInfo> collision(new trajopt::CollisionTermInfo);
+    auto collision = std::make_shared<trajopt::CollisionTermInfo>();
     collision->name = "collision";
     collision->term_type = trajopt::TT_COST;
     collision->continuous = true;
@@ -193,7 +194,6 @@ bool PickAndPlaceExample::run()
   }
 
   // Add a velocity cost without time to penalize paths that are longer
-  if (true)
   {
     std::shared_ptr<trajopt::JointVelTermInfo> jv(new trajopt::JointVelTermInfo);
     jv->targets = std::vector<double>(7, 0.0);
@@ -206,7 +206,7 @@ bool PickAndPlaceExample::run()
   }
 
   // Add a velocity cnt with time to insure that robot dynamics are obeyed
-  if (false)
+  if (ENABLE_VELOCITY_COST)
   {
     std::shared_ptr<trajopt::JointVelTermInfo> jv(new trajopt::JointVelTermInfo);
 
@@ -228,11 +228,9 @@ bool PickAndPlaceExample::run()
   }
 
   // Add cartesian pose cnt at the approach point
-  if (true)
   {
     Eigen::Quaterniond rotation(approach_pose.linear());
-    std::shared_ptr<trajopt::CartPoseTermInfo> pose_constraint =
-        std::shared_ptr<trajopt::CartPoseTermInfo>(new trajopt::CartPoseTermInfo);
+    auto pose_constraint = std::make_shared<trajopt::CartPoseTermInfo>();
     pose_constraint->term_type = trajopt::TT_CNT;
     pose_constraint->link = end_effector;
     pose_constraint->timestep = steps_;
@@ -246,11 +244,9 @@ bool PickAndPlaceExample::run()
   }
 
   // Add cartesian pose cnt at the final point
-  if (true)
   {
     Eigen::Quaterniond rotation(final_pose.linear());
-    std::shared_ptr<trajopt::CartPoseTermInfo> pose_constraint =
-        std::shared_ptr<trajopt::CartPoseTermInfo>(new trajopt::CartPoseTermInfo);
+    auto pose_constraint = std::make_shared<trajopt::CartPoseTermInfo>();
     pose_constraint->term_type = trajopt::TT_CNT;
     pose_constraint->link = end_effector;
     pose_constraint->timestep = 2 * steps_ - 1;
@@ -264,7 +260,7 @@ bool PickAndPlaceExample::run()
   }
 
   // Add a cost on the total time to complete the pick
-  if (false)
+  if (ENABLE_TIME_COST)
   {
     std::shared_ptr<trajopt::TotalTimeTermInfo> time_cost(new trajopt::TotalTimeTermInfo);
     time_cost->name = "time_cost";
@@ -394,9 +390,8 @@ bool PickAndPlaceExample::run()
   pci_place.init_info.dt = 0.5;
 
   // Add a collision cost
-  if (true)
   {
-    std::shared_ptr<trajopt::CollisionTermInfo> collision(new trajopt::CollisionTermInfo);
+    auto collision = std::make_shared<trajopt::CollisionTermInfo>();
     collision->name = "collision";
     collision->term_type = trajopt::TT_COST;
     collision->continuous = true;
@@ -408,9 +403,8 @@ bool PickAndPlaceExample::run()
   }
 
   // Add a velocity cost without time to penalize paths that are longer
-  if (true)
   {
-    std::shared_ptr<trajopt::JointVelTermInfo> jv(new trajopt::JointVelTermInfo);
+    auto jv = std::make_shared<trajopt::JointVelTermInfo>();
     jv->targets = std::vector<double>(7, 0.0);
     jv->coeffs = std::vector<double>(7, 5.0);
     jv->term_type = trajopt::TT_COST;
@@ -419,8 +413,9 @@ bool PickAndPlaceExample::run()
     jv->name = "joint_velocity_cost";
     pci_place.cost_infos.push_back(jv);
   }
+
   // Add a velocity cnt with time to insure that robot dynamics are obeyed
-  if (false)
+  if (ENABLE_VELOCITY_COST)
   {
     std::shared_ptr<trajopt::JointVelTermInfo> jv(new trajopt::JointVelTermInfo);
 
@@ -442,30 +437,25 @@ bool PickAndPlaceExample::run()
   }
 
   // Add cartesian pose cnt at the retreat point
-  if (true)
-  {
-    Eigen::Quaterniond rotation(retreat_pose.linear());
-    std::shared_ptr<trajopt::CartPoseTermInfo> pose_constraint =
-        std::shared_ptr<trajopt::CartPoseTermInfo>(new trajopt::CartPoseTermInfo);
-    pose_constraint->term_type = trajopt::TT_CNT;
-    pose_constraint->link = end_effector;
-    pose_constraint->timestep = steps_ - 1;
-    pose_constraint->xyz = retreat_pose.translation();
+  Eigen::Quaterniond rotation(retreat_pose.linear());
+  auto pose_constraint = std::make_shared<trajopt::CartPoseTermInfo>();
+  pose_constraint->term_type = trajopt::TT_CNT;
+  pose_constraint->link = end_effector;
+  pose_constraint->timestep = steps_ - 1;
+  pose_constraint->xyz = retreat_pose.translation();
 
-    pose_constraint->wxyz = Eigen::Vector4d(rotation.w(), rotation.x(), rotation.y(), rotation.z());
-    pose_constraint->pos_coeffs = Eigen::Vector3d(10.0, 10.0, 10.0);
-    pose_constraint->rot_coeffs = Eigen::Vector3d(10.0, 10.0, 10.0);
-    pose_constraint->name = "pose_" + std::to_string(steps_ - 1);
-    pci_place.cnt_infos.push_back(pose_constraint);
-  }
+  pose_constraint->wxyz = Eigen::Vector4d(rotation.w(), rotation.x(), rotation.y(), rotation.z());
+  pose_constraint->pos_coeffs = Eigen::Vector3d(10.0, 10.0, 10.0);
+  pose_constraint->rot_coeffs = Eigen::Vector3d(10.0, 10.0, 10.0);
+  pose_constraint->name = "pose_" + std::to_string(steps_ - 1);
+  pci_place.cnt_infos.push_back(pose_constraint);
 
   // Add cartesian pose cnt at the final point
   int steps = 3 * steps_ - 2 * steps_;
   for (int index = 0; index < steps; index++)
   {
     Eigen::Quaterniond rotation(final_pose.linear());
-    std::shared_ptr<trajopt::CartPoseTermInfo> pose_constraint =
-        std::shared_ptr<trajopt::CartPoseTermInfo>(new trajopt::CartPoseTermInfo);
+    auto pose_constraint = std::make_shared<trajopt::CartPoseTermInfo>();
     pose_constraint->term_type = trajopt::TT_CNT;
     pose_constraint->link = end_effector;
     pose_constraint->timestep = 2 * steps_ + index;
@@ -480,7 +470,7 @@ bool PickAndPlaceExample::run()
   }
 
   // Add a cost on the total time to complete the pick
-  if (false)
+  if (ENABLE_TIME_COST)
   {
     std::shared_ptr<trajopt::TotalTimeTermInfo> time_cost(new trajopt::TotalTimeTermInfo);
     time_cost->name = "time_cost";

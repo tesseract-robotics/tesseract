@@ -43,7 +43,7 @@ MarkerSelectionHandler::MarkerSelectionHandler(const MarkerBase* marker, MarkerI
 {
 }
 
-MarkerSelectionHandler::~MarkerSelectionHandler() {}
+MarkerSelectionHandler::~MarkerSelectionHandler() = default;
 
 void MarkerSelectionHandler::setPosition(const Ogre::Vector3& position) { position_ = position; }
 void MarkerSelectionHandler::setOrientation(const Ogre::Quaternion& orientation) { orientation_ = orientation; }

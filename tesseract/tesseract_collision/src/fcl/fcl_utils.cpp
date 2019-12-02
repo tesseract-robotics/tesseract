@@ -315,16 +315,19 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   return cdata->done;
 }
 
-CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
+CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
                                                const int& type_id,
-                                               const CollisionShapesConst& shapes,
-                                               const tesseract_common::VectorIsometry3d& shape_poses)
-  : name_(name), type_id_(type_id), shapes_(shapes), shape_poses_(shape_poses)
+                                               CollisionShapesConst shapes,
+                                               tesseract_common::VectorIsometry3d shape_poses)
+  : name_(std::move(name))
+  , type_id_(type_id)
+  , shapes_(std::move(shapes))
+  , shape_poses_(std::move(shape_poses))
 {
-  assert(!shapes.empty());
-  assert(!shape_poses.empty());
-  assert(!name.empty());
-  assert(shapes.size() == shape_poses.size());
+  assert(!shapes_.empty());
+  assert(!shape_poses_.empty());
+  assert(!name_.empty());
+  assert(shapes_.size() == shape_poses_.size());
 
   collision_geometries_.reserve(shapes_.size());
   collision_objects_.reserve(shapes_.size());

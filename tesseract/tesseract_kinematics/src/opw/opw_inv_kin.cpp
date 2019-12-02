@@ -66,7 +66,7 @@ bool OPWInvKin::calcInvKin(Eigen::VectorXd& solutions,
       std::vector<double> redundant_sols = getRedundantSolutions(sol, joint_limits_);
       if (!redundant_sols.empty())
       {
-        int num_sol = redundant_sols.size() / 6;
+        auto num_sol = static_cast<int>(redundant_sols.size() / 6);
         for (int s = 0; s < num_sol; ++s)
         {
           double* redundant_sol = redundant_sols.data() + 6 * s;
@@ -77,7 +77,7 @@ bool OPWInvKin::calcInvKin(Eigen::VectorXd& solutions,
     }
   }
 
-  solutions = Eigen::Map<Eigen::VectorXd>(solution_set.data(), solution_set.size());
+  solutions = Eigen::Map<Eigen::VectorXd>(solution_set.data(), static_cast<long>(solution_set.size()));
   return !solution_set.empty();
 }
 

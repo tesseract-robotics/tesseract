@@ -41,10 +41,10 @@ struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  TrajOptPlannerDefaultConfig(const tesseract::Tesseract::ConstPtr& tesseract_,
-                              const std::string& manipulator_,
-                              const std::string& link_,
-                              const tesseract_common::VectorIsometry3d& tcp_);
+  TrajOptPlannerDefaultConfig(tesseract::Tesseract::ConstPtr tesseract_,
+                              std::string manipulator_,
+                              std::string link_,
+                              tesseract_common::VectorIsometry3d tcp_);
 
   TrajOptPlannerDefaultConfig(const tesseract::Tesseract::ConstPtr& tesseract_,
                               const std::string& manipulator_,

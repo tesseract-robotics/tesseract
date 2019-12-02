@@ -34,14 +34,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_rviz
 {
-TesseractManipulationDisplay::TesseractManipulationDisplay() : Display()
+TesseractManipulationDisplay::TesseractManipulationDisplay()
 {
   tesseract_ = std::make_shared<tesseract::Tesseract>();
   environment_monitor_ = std::make_shared<EnvironmentWidget>(this, this);
   manipulation_ = std::make_shared<ManipulationWidget>(this, this);
 }
 
-TesseractManipulationDisplay::~TesseractManipulationDisplay() {}
+TesseractManipulationDisplay::~TesseractManipulationDisplay() = default;
 void TesseractManipulationDisplay::onInitialize()
 {
   Display::onInitialize();

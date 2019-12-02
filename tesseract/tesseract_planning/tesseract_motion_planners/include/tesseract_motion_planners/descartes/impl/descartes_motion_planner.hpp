@@ -194,7 +194,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
   }
 
   response.joint_trajectory.joint_names = config_->joint_names;
-  response.joint_trajectory.trajectory.resize(static_cast<long>(config_->waypoints.size()), dof);
+  response.joint_trajectory.trajectory.resize(static_cast<long>(config_->waypoints.size()), static_cast<long>(dof));
   for (size_t r = 0; r < config_->waypoints.size(); ++r)
     for (size_t c = 0; c < dof; ++c)
       response.joint_trajectory.trajectory(static_cast<long>(r), static_cast<long>(c)) = solution[(r * dof) + c];

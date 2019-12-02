@@ -47,7 +47,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_rviz
 {
-TesseractTrajectoryDisplay::TesseractTrajectoryDisplay() : Display()
+TesseractTrajectoryDisplay::TesseractTrajectoryDisplay()
 {
   tesseract_ = std::make_shared<tesseract::Tesseract>();
   environment_monitor_ = std::make_shared<EnvironmentWidget>(this, this);
@@ -55,7 +55,7 @@ TesseractTrajectoryDisplay::TesseractTrajectoryDisplay() : Display()
   trajectory_monitor_ = std::make_shared<TrajectoryMonitorWidget>(this, this);
 }
 
-TesseractTrajectoryDisplay::~TesseractTrajectoryDisplay() {}
+TesseractTrajectoryDisplay::~TesseractTrajectoryDisplay() = default;
 void TesseractTrajectoryDisplay::onInitialize()
 {
   Display::onInitialize();

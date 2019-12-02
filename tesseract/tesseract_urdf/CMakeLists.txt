@@ -16,6 +16,7 @@ find_package(tesseract_collision REQUIRED)
 add_library(${PROJECT_NAME} SHARED src/urdf_parser.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_geometry tesseract::tesseract_scene_graph tesseract::tesseract_collision_core console_bridge ${Boost_LIBRARIES} ${TinyXML2_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
+tesseract_clang_tidy(${PROJECT_NAME})
 
 # PCL does not support c++11 on Xenial so cannot include point cloud parsing from urdf
 # Boost version number is in XYYYZZ format such that:

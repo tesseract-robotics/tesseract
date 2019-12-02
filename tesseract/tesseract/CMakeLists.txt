@@ -14,6 +14,7 @@ find_package(tesseract_urdf REQUIRED)
 add_library(${PROJECT_NAME} SHARED src/tesseract.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_urdf tesseract::tesseract_scene_graph tesseract::tesseract_collision_bullet tesseract::tesseract_environment_kdl tesseract::tesseract_kinematics_kdl console_bridge)
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
+tesseract_clang_tidy(${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")

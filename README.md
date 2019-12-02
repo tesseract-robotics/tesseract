@@ -8,7 +8,7 @@
 
 [![support level: consortium](https://img.shields.io/badge/support%20level-consortium-brightgreen.png)](http://rosindustrial.org/news/2016/10/7/better-supporting-a-growing-ros-industrial-software-platform)
 
-The planning framework (Tesseract) was designed to be lightweight, limiting the number of dependencies, mainly only using standard library like, eigen, boost, orocos and to the packages below. The core packages are ROS agnostic and have full python support.
+The planning framework (Tesseract) was designed to be light weight, limiting the number of dependencies, mainly only using standard libraries like, eigen, boost, orocos and to the packages below. The core packages are ROS agnostic and have full python support.
 
 ## Tesseract Core Packages
 
@@ -41,9 +41,11 @@ See [issue #66](https://github.com/ros-industrial-consortium/tesseract/issues/66
 
 ## Clone Repository
 
-This repository contains submodules so use the *--recursive* flag as shown below.
+This repository contains submodule tesseract_ext so use the *--recursive* flag as shown below.
 
 `git clone --recursive`
+
+.. NOTE: To speed up clean build you may want to add tesseract_ext to an extended workspace. If so do not clone with submodules and clone https://github.com/ros-industrial-consortium/tesseract_ext.git into your extended workspace.
 
 ## Building Tests
 

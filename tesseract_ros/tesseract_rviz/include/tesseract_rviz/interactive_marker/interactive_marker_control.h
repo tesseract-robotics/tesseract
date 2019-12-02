@@ -101,8 +101,8 @@ public:
   using Ptr = boost::shared_ptr<InteractiveMarkerControl>;
   using ConstPtr = boost::shared_ptr<const InteractiveMarkerControl>;
 
-  InteractiveMarkerControl(const std::string& name,
-                           const std::string& description,
+  InteractiveMarkerControl(std::string name,
+                           const std::string &description,
                            rviz::DisplayContext* context,
                            Ogre::SceneNode* reference_node,
                            InteractiveMarker* parent,
@@ -123,13 +123,13 @@ public:
    * @brief Add marker to the controller
    * @param marker to add to the controller
    */
-  void addMarker(MarkerBase::Ptr marker);
+  void addMarker(const MarkerBase::Ptr &marker);
 
   // called when interactive mode is globally switched on/off
-  virtual void enableInteraction(bool enable);
+  virtual void enableInteraction(bool enable) override;
 
   // will receive all mouse events while the handler has focus
-  virtual void handleMouseEvent(rviz::ViewportMouseEvent& event);
+  virtual void handleMouseEvent(rviz::ViewportMouseEvent& event) override;
 
   /**
    * This is the main entry-point for interaction using a 3D cursor.
@@ -167,7 +167,7 @@ public:
    * function on all its child controls. */
   void interactiveMarkerPoseChanged(Ogre::Vector3 int_marker_position, Ogre::Quaternion int_marker_orientation);
 
-  bool isInteractive() { return interaction_mode_ != InteractiveMode::NONE; }
+  bool isInteractive() override { return interaction_mode_ != InteractiveMode::NONE; }
 
   // Called every frame by parent's update() function.
   void update();
@@ -244,7 +244,7 @@ protected:
   // when this is called, we will face the camera
   virtual void preFindVisibleObjects(Ogre::SceneManager* source,
                                      Ogre::SceneManager::IlluminationRenderStage irs,
-                                     Ogre::Viewport* v);
+                                     Ogre::Viewport* v) override;
 
   void updateControlOrientationForViewFacing(Ogre::Viewport* v);
 
@@ -322,7 +322,7 @@ protected:
 
   /// compute intersection between mouse ray and a y-z plane.
   bool intersectSomeYzPlane(const Ogre::Ray& mouse_ray,
-                            const Ogre::Vector3& point_in_plane,
+                            const Ogre::Vector3& point_on_plane,
                             const Ogre::Quaternion& plane_orientation,
                             Ogre::Vector3& intersection_3d,
                             Ogre::Vector2& intersection_2d,
@@ -338,7 +338,7 @@ protected:
   void worldToScreen(const Ogre::Vector3& pos_rel_reference, const Ogre::Viewport* viewport, Ogre::Vector2& screen_pos);
 
   //  /// take all the materials, add a highlight pass and store a pointer to the pass for later use
-  void addHighlightPass(std::set<Ogre::MaterialPtr> materials);
+  void addHighlightPass(const std::set<Ogre::MaterialPtr> &materials);
 
   // set the highlight color to (a,a,a)
   void setHighlight(float a);
@@ -364,7 +364,7 @@ protected:
 
   void stopDragging(bool force = false);
 
-  virtual const QCursor& getCursor() const { return cursor_; }
+  virtual const QCursor& getCursor() const override { return cursor_; }
 
   bool mouse_dragging_;
   Ogre::Viewport* drag_viewport_;

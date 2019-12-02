@@ -65,7 +65,7 @@ TrajOptProb::Ptr GlassUpRightExample::jsonMethod()
 
   Json::Value root;
   Json::Reader reader;
-  bool parse_success = reader.parse(trajopt_config.c_str(), root);
+  bool parse_success = reader.parse(trajopt_config, root);
   if (!parse_success)
   {
     ROS_FATAL("Failed to load trajopt json file from ros parameter");
@@ -110,7 +110,7 @@ TrajOptProb::Ptr GlassUpRightExample::cppMethod()
   }
 
   // Populate Cost Info
-  std::shared_ptr<JointVelTermInfo> jv = std::shared_ptr<JointVelTermInfo>(new JointVelTermInfo);
+  auto jv = std::make_shared<JointVelTermInfo>();
   jv->coeffs = std::vector<double>(7, 1.0);
   jv->targets = std::vector<double>(7, 0.0);
   jv->first_step = 0;
@@ -119,7 +119,7 @@ TrajOptProb::Ptr GlassUpRightExample::cppMethod()
   jv->term_type = TT_COST;
   pci.cost_infos.push_back(jv);
 
-  std::shared_ptr<CollisionTermInfo> collision = std::shared_ptr<CollisionTermInfo>(new CollisionTermInfo);
+  auto collision = std::make_shared<CollisionTermInfo>();
   collision->name = "collision";
   collision->term_type = TT_COST;
   collision->continuous = false;
@@ -139,7 +139,7 @@ TrajOptProb::Ptr GlassUpRightExample::cppMethod()
   double delta = 0.5 / pci.basic_info.n_steps;
   for (auto i = 0; i < pci.basic_info.n_steps; ++i)
   {
-    std::shared_ptr<CartPoseTermInfo> pose = std::shared_ptr<CartPoseTermInfo>(new CartPoseTermInfo);
+    auto pose = std::make_shared<CartPoseTermInfo>();
     pose->term_type = TT_CNT;
     pose->name = "waypoint_cart_" + std::to_string(i);
     pose->link = "tool0";

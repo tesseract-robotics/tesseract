@@ -78,7 +78,7 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerFreespaceConfig:
       tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator);
   tesseract_environment::AdjacencyMap map(
       env->getSceneGraph(), kin->getActiveLinkNames(), env->getCurrentState()->transforms);
-  std::vector<std::string> adjacency_links = map.getActiveLinkNames();
+  const std::vector<std::string>& adjacency_links = map.getActiveLinkNames();
 
   // Populate Init Info
   pci.init_info.type = init_type;

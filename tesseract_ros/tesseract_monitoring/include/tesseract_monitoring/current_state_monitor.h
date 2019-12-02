@@ -69,7 +69,7 @@ public:
    * @param tf A pointer to the tf transformer to use
    */
   CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env,
-                      const tesseract::ForwardKinematicsManager::ConstPtr& kinematics_manager);
+                      tesseract::ForwardKinematicsManager::ConstPtr kinematics_manager);
 
   /** @brief Constructor.
    *  @param robot_model The current kinematic model to build on
@@ -77,8 +77,8 @@ public:
    *  @param nh A ros::NodeHandle to pass node specific options
    */
   CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env,
-                      const tesseract::ForwardKinematicsManager::ConstPtr& kinematics_manager,
-                      ros::NodeHandle nh);
+                      tesseract::ForwardKinematicsManager::ConstPtr kinematics_manager,
+                      const ros::NodeHandle &nh);
 
   ~CurrentStateMonitor();
 

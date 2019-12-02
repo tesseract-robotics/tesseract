@@ -68,7 +68,7 @@ public:
   void update(int way_point_count);
 
   // Switches between pause and play mode
-  void pauseButton(bool check);
+  void pauseButton(bool pause);
 
   void setSliderPosition(int position);
 

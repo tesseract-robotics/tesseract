@@ -131,8 +131,9 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
   ompl::geometric::PathGeometric& path = simple_setup_->getSolutionPath();
 
   // Interpolate the path if it shouldn't be simplified and there are currently fewer states than requested
-  if (!config_->simplify && path.getStateCount() < config_->n_output_states)
-    path.interpolate(config_->n_output_states);
+  unsigned num_output_states = static_cast<size_t>(config_->n_output_states);
+  if (!config_->simplify && path.getStateCount() < num_output_states)
+    path.interpolate(num_output_states);
 
   planning_response.status =
       tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::SolutionFound, status_category_);

@@ -47,9 +47,9 @@ public:
   void onInitialize(VisualizationWidget::Ptr visualization,
                     tesseract::Tesseract::Ptr tesseract,
                     rviz::DisplayContext* context,
-                    ros::NodeHandle update_nh,
+                    const ros::NodeHandle &update_nh,
                     bool update_state,
-                    QString tesseract_state_topic = "");
+                    const QString &tesseract_state_topic = "");
 
   void onEnable();
   void onDisable();
@@ -94,7 +94,7 @@ protected:
   //  void unsetLinkColor(Robot* robot, const std::string& link_name);
 
   /** @brief Callback for new tesseract state message */
-  void newTesseractStateCallback(const tesseract_msgs::TesseractStateConstPtr& state);
+  void newTesseractStateCallback(const tesseract_msgs::TesseractStateConstPtr& state_msg);
 
   /** @brief Callback for modifying the environment via service request */
   bool modifyEnvironmentCallback(tesseract_msgs::ModifyEnvironmentRequest& req,

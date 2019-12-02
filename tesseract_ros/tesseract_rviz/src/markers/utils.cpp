@@ -107,7 +107,7 @@ void makeDisc(InteractiveMarkerControl& control, float width)
   Ogre::Vector3 v1, v2;
   for (size_t i = 0; i < steps; i++)
   {
-    float a = static_cast<float>(double(i) / double(steps) * M_PI * 2.0);
+    auto a = static_cast<float>(double(i) / double(steps) * M_PI * 2.0);
     v1.x = 0;
     v1.y = (0.5f * std::cos(a));
     v1.z = (0.5f * std::sin(a));

@@ -65,7 +65,7 @@
 
 namespace tesseract_rviz
 {
-InteractiveMarkerControl::InteractiveMarkerControl(const std::string& name,
+InteractiveMarkerControl::InteractiveMarkerControl(std::string name,
                                                    const std::string& description,
                                                    rviz::DisplayContext* context,
                                                    Ogre::SceneNode* reference_node,
@@ -80,6 +80,12 @@ InteractiveMarkerControl::InteractiveMarkerControl(const std::string& name,
   , reference_node_(reference_node)
   , control_frame_node_(reference_node_->createChildSceneNode())
   , markers_node_(reference_node_->createChildSceneNode())
+  , interaction_mode_(interactive_mode)
+  , orientation_mode_(orientation_mode)
+  , control_orientation_(orientation)
+  , always_visible_(always_visible)
+  , description_(QString::fromStdString(description))
+  , name_(std::move(name))
   , parent_(parent)
   , rotation_(0)
   , grab_point_in_reference_frame_(0, 0, 0)
@@ -87,13 +93,7 @@ InteractiveMarkerControl::InteractiveMarkerControl(const std::string& name,
   , visible_(true)
   , view_facing_(false)
   , mouse_down_(false)
-  , name_(name)
-  , description_(QString::fromStdString(description))
   , show_visual_aids_(false)
-  , interaction_mode_(interactive_mode)
-  , always_visible_(always_visible)
-  , orientation_mode_(orientation_mode)
-  , control_orientation_(orientation)
 //, line_(new Line(context->getSceneManager(),control_frame_node_))
 {
   //  line_->setVisible(false);
@@ -133,7 +133,7 @@ InteractiveMarkerControl::InteractiveMarkerControl(const std::string& name,
 
   status_msg_ = description_ + " ";
 
-  Ogre::Vector3 control_dir = control_orientation_.xAxis() * 10000.0;
+  //  Ogre::Vector3 control_dir = control_orientation_.xAxis() * 10000.0;
   //  line_->setPoints( control_dir, -1*control_dir );
   //  line_->setVisible(false);
 
@@ -219,7 +219,7 @@ void InteractiveMarkerControl::updateSize()
 
 Ogre::SceneNode* InteractiveMarkerControl::getMarkerSceneNode() { return markers_node_; }
 
-void InteractiveMarkerControl::addMarker(MarkerBase::Ptr marker)
+void InteractiveMarkerControl::addMarker(const MarkerBase::Ptr& marker)
 {
   marker->setInteractiveObject(shared_from_this());
 
@@ -232,8 +232,8 @@ float InteractiveMarkerControl::getSize() { return parent_->getSize(); }
 
 // This is an Ogre::SceneManager::Listener function, and is configured
 // to be called only if this is a VIEW_FACING control.
-void InteractiveMarkerControl::preFindVisibleObjects(Ogre::SceneManager* source,
-                                                     Ogre::SceneManager::IlluminationRenderStage irs,
+void InteractiveMarkerControl::preFindVisibleObjects(Ogre::SceneManager* /*source*/,
+                                                     Ogre::SceneManager::IlluminationRenderStage /*irs*/,
                                                      Ogre::Viewport* v)
 {
   updateControlOrientationForViewFacing(v);
@@ -384,7 +384,7 @@ void InteractiveMarkerControl::rotate(Ogre::Ray& mouse_ray)
   }
 }
 
-void InteractiveMarkerControl::rotate(const Ogre::Vector3& cursor_in_reference_frame)
+void InteractiveMarkerControl::rotate(const Ogre::Vector3& cursor_position_in_reference_frame)
 {
   Ogre::Vector3 rotation_axis = control_frame_orientation_at_mouse_down_ * control_orientation_.xAxis();
 
@@ -394,7 +394,7 @@ void InteractiveMarkerControl::rotate(const Ogre::Vector3& cursor_in_reference_f
       closestPointOnLineToPoint(control_frame_node_->getPosition(), rotation_axis, grab_point_in_reference_frame_);
 
   Ogre::Vector3 grab_rel_center = grab_point_in_reference_frame_ - rotation_center;
-  Ogre::Vector3 center_to_cursor = cursor_in_reference_frame - rotation_center;
+  Ogre::Vector3 center_to_cursor = cursor_position_in_reference_frame - rotation_center;
   Ogre::Vector3 center_to_cursor_radial = center_to_cursor - center_to_cursor.dotProduct(rotation_axis) * rotation_axis;
 
   Ogre::Quaternion orientation_change_since_mouse_down =
@@ -631,7 +631,7 @@ bool InteractiveMarkerControl::findClosestPoint(const Ogre::Ray& target_ray,
   return true;
 }
 
-void InteractiveMarkerControl::moveAxis(const Ogre::Ray& mouse_ray, const rviz::ViewportMouseEvent& event)
+void InteractiveMarkerControl::moveAxis(const Ogre::Ray& /*mouse_ray*/, const rviz::ViewportMouseEvent& event)
 {
   // compute control-axis ray based on grab_point_, etc.
   Ogre::Ray control_ray;
@@ -846,7 +846,7 @@ void InteractiveMarkerControl::move3D(const Ogre::Vector3& cursor_position_in_re
   parent_->setPose(marker_position_in_reference_frame, parent_->getOrientation(), name_);
 }
 
-void InteractiveMarkerControl::rotate3D(const Ogre::Vector3& cursor_position_in_reference_frame,
+void InteractiveMarkerControl::rotate3D(const Ogre::Vector3& /*cursor_position_in_reference_frame*/,
                                         const Ogre::Quaternion& cursor_orientation_in_reference_frame)
 {
   if (orientation_mode_ == OrientationMode::VIEW_FACING && drag_viewport_)
@@ -858,19 +858,19 @@ void InteractiveMarkerControl::rotate3D(const Ogre::Vector3& cursor_position_in_
   // parent_->getPosition()); rotation_cursor_to_parent_at_grab_ =
   // cursor_3D_orientation.Inverse()*parent->getOrientation();
 
-  Ogre::Vector3 world_to_cursor_in_world_frame =
-      reference_node_->convertLocalToWorldPosition(cursor_position_in_reference_frame);
+//  Ogre::Vector3 world_to_cursor_in_world_frame =
+//      reference_node_->convertLocalToWorldPosition(cursor_position_in_reference_frame);
   Ogre::Quaternion rotation_world_to_cursor =
       reference_node_->convertLocalToWorldOrientation(cursor_orientation_in_reference_frame);
 
   // Ogre::Vector3 marker_to_cursor_in_cursor_frame =
   // orientation_world_to_cursor.Inverse()*reference_node_->getOrientation()*grab_point_in_reference_frame_;
 
-  Ogre::Vector3 world_to_cursor_in_cursor_frame = rotation_world_to_cursor.Inverse() * world_to_cursor_in_world_frame;
-  Ogre::Vector3 world_to_marker_in_world_frame =
-      rotation_world_to_cursor * (world_to_cursor_in_cursor_frame - parent_to_cursor_in_cursor_frame_at_grab_);
-  Ogre::Vector3 marker_position_in_reference_frame =
-      reference_node_->convertWorldToLocalPosition(world_to_marker_in_world_frame);
+//  Ogre::Vector3 world_to_cursor_in_cursor_frame = rotation_world_to_cursor.Inverse() * world_to_cursor_in_world_frame;
+//  Ogre::Vector3 world_to_marker_in_world_frame =
+//      rotation_world_to_cursor * (world_to_cursor_in_cursor_frame - parent_to_cursor_in_cursor_frame_at_grab_);
+//  Ogre::Vector3 marker_position_in_reference_frame =
+//      reference_node_->convertWorldToLocalPosition(world_to_marker_in_world_frame);
   Ogre::Quaternion marker_orientation_in_reference_frame =
       reference_node_->convertWorldToLocalOrientation(rotation_world_to_cursor * rotation_cursor_to_parent_at_grab_);
 
@@ -949,7 +949,7 @@ void InteractiveMarkerControl::stopDragging(bool force)
   {
     //    line_->setVisible(false);
     mouse_dragging_ = false;
-    drag_viewport_ = NULL;
+    drag_viewport_ = nullptr;
     parent_->stopDragging();
   }
 }
@@ -965,8 +965,8 @@ void InteractiveMarkerControl::handle3DCursorEvent(rviz::ViewportMouseEvent even
     case InteractiveMode::BUTTON:
       if (event.leftUp())
       {
-        Ogre::Vector3 point_rel_world = cursor_3D_pos;
-        bool got_3D_point = true;
+//        Ogre::Vector3 point_rel_world = cursor_3D_pos;
+//        bool got_3D_point = true;
 
         //      visualization_msgs::InteractiveMarkerFeedback feedback;
         //      feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK;
@@ -1128,9 +1128,9 @@ void InteractiveMarkerControl::handleMouseEvent(rviz::ViewportMouseEvent& event)
     case InteractiveMode::BUTTON:
       if (event.leftUp())
       {
-        Ogre::Vector3 point_rel_world;
-        bool got_3D_point =
-            context_->getSelectionManager()->get3DPoint(event.viewport, event.x, event.y, point_rel_world);
+//        Ogre::Vector3 point_rel_world;
+//        bool got_3D_point =
+//            context_->getSelectionManager()->get3DPoint(event.viewport, event.x, event.y, point_rel_world);
 
         //      visualization_msgs::InteractiveMarkerFeedback feedback;
         //      feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK;
@@ -1207,7 +1207,7 @@ void InteractiveMarkerControl::handleMouseEvent(rviz::ViewportMouseEvent& event)
   }
 }
 
-void InteractiveMarkerControl::beginMouseMovement(rviz::ViewportMouseEvent& event, bool line_visible)
+void InteractiveMarkerControl::beginMouseMovement(rviz::ViewportMouseEvent& event, bool /*line_visible*/)
 {
   //  line_->setVisible(line_visible);
 
@@ -1398,11 +1398,10 @@ bool InteractiveMarkerControl::intersectSomeYzPlane(const Ogre::Ray& mouse_ray,
   return false;
 }
 
-void InteractiveMarkerControl::addHighlightPass(std::set<Ogre::MaterialPtr> materials)
+void InteractiveMarkerControl::addHighlightPass(const std::set<Ogre::MaterialPtr>& materials)
 {
-  for (auto it = materials.begin(); it != materials.end(); it++)
+  for (const auto& material : materials)
   {
-    Ogre::MaterialPtr material = *it;
     Ogre::Pass* original_pass = material->getTechnique(0)->getPass(0);
     Ogre::Pass* pass = material->getTechnique(0)->createPass();
 

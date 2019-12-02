@@ -62,7 +62,7 @@ DescartesRobotPositionerSampler<FloatType>::DescartesRobotPositionerSampler(
   , robot_tcp_(robot_tcp)
   , robot_reach_(robot_reach)
   , allow_collision_(allow_collision)
-  , dof_(positioner_kinematics_->numJoints() + robot_kinematics_->numJoints())
+  , dof_(static_cast<int>(positioner_kinematics_->numJoints() + robot_kinematics_->numJoints()))
   , ik_seed_(Eigen::VectorXd::Zero(dof_))
   , is_valid_(std::move(is_valid))
 {
@@ -82,9 +82,8 @@ bool DescartesRobotPositionerSampler<FloatType>::sample(std::vector<FloatType>& 
   {
     // given the sampling resolution for the joint calculate the number of samples such that the resolution is not
     // exceeded.
-    int cnt = std::ceil(std::abs(positioner_limits_(dof, 1) - positioner_limits_(dof, 0)) /
-                        positioner_sample_resolution_(dof)) +
-              1;
+    int cnt = static_cast<int>(std::ceil(std::abs(positioner_limits_(dof, 1) - positioner_limits_(dof, 0)) /
+                        positioner_sample_resolution_(dof))) + 1;
     dof_range.push_back(Eigen::VectorXd::LinSpaced(cnt, positioner_limits_(dof, 0), positioner_limits_(dof, 1)));
   }
 
@@ -122,7 +121,7 @@ void DescartesRobotPositionerSampler<FloatType>::nested_ik(
     bool get_best_solution,
     double& distance)
 {
-  if (loop_level >= positioner_kinematics_->numJoints())
+  if (loop_level >= static_cast<int>(positioner_kinematics_->numJoints()))
   {
     ikAt(solution_set, target_pose, sample_pose, get_best_solution, distance);
     return;

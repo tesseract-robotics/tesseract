@@ -32,8 +32,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 tesseract_common::TrajArray tesseract_motion_planners::toTrajArray(const ompl::geometric::PathGeometric& path)
 {
-  const long n_points = static_cast<long>(path.getStateCount());
-  const long dof = static_cast<long>(path.getSpaceInformation()->getStateDimension());
+  const auto n_points = static_cast<long>(path.getStateCount());
+  const auto dof = static_cast<long>(path.getSpaceInformation()->getStateDimension());
 
   tesseract_common::TrajArray result(n_points, dof);
   for (long i = 0; i < n_points; ++i)

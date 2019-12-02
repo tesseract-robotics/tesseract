@@ -87,6 +87,7 @@ bool KDLFwdKinTree::calcFwdKin(Eigen::Isometry3d& /*pose*/, const Eigen::Ref<con
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
   assert(false);
+  UNUSED(joint_angles);
 
   CONSOLE_BRIDGE_logError("This method call is not supported by KDLFwdKinTree, must pass link name.");
 
@@ -99,6 +100,7 @@ bool KDLFwdKinTree::calcFwdKin(tesseract_common::VectorIsometry3d& /*poses*/,
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
   assert(false);
+  UNUSED(joint_angles);
 
   CONSOLE_BRIDGE_logError("This method call is not supported by KDLFwdKinTree, must pass link name.");
 
@@ -137,6 +139,7 @@ bool KDLFwdKinTree::calcJacobian(Eigen::Ref<Eigen::MatrixXd> /*jacobian*/,
   assert(checkInitialized());
   assert(checkJoints(joint_angles));
   assert(false);
+  UNUSED(joint_angles);
 
   CONSOLE_BRIDGE_logError("This method call is not supported by KDLFwdKinTree, must pass link name.");
 

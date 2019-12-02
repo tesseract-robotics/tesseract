@@ -79,7 +79,7 @@ JointWidget::JointWidget(VisualizationWidget* env, const tesseract_scene_graph::
                                                        joint_property_);
   orientation_property_->setReadOnly(true);
 
-  std::string type = "";
+  std::string type;
   if (joint.type == tesseract_scene_graph::JointType::UNKNOWN)
     type = "unknown";
   else if (joint.type == tesseract_scene_graph::JointType::REVOLUTE)
@@ -148,8 +148,7 @@ JointWidget::JointWidget(VisualizationWidget* env, const tesseract_scene_graph::
 JointWidget::~JointWidget()
 {
   delete axes_;
-  if (axis_)
-    delete axis_;
+  delete axis_;
   delete details_;
   delete joint_property_;
 }
@@ -197,7 +196,7 @@ void JointWidget::setJointPropertyDescription()
   joint_property_->setDescription(desc.str().c_str());
 }
 
-void JointWidget::setJointCheckbox(QVariant val)
+void JointWidget::setJointCheckbox(const QVariant& val)
 {
   // setting doing_set_checkbox_ to true prevents updateChildVisibility() from
   // updating child link enables.

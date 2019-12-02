@@ -76,7 +76,7 @@ EnvState::Ptr Environment::getState(const std::vector<std::string>& joint_names,
   return state;
 }
 
-bool Environment::addLink(tesseract_scene_graph::Link link)
+bool Environment::addLink(const tesseract_scene_graph::Link& link)
 {
   std::string joint_name = "joint_" + link.getName();
   tesseract_scene_graph::Joint joint(joint_name);
@@ -87,7 +87,7 @@ bool Environment::addLink(tesseract_scene_graph::Link link)
   return addLink(link, joint);
 }
 
-bool Environment::addLink(tesseract_scene_graph::Link link, tesseract_scene_graph::Joint joint)
+bool Environment::addLink(const tesseract_scene_graph::Link& link, const tesseract_scene_graph::Joint& joint)
 {
   std::lock_guard<std::mutex> lock(mutex_);
   if (scene_graph_->getLink(link.getName()) != nullptr)
@@ -108,7 +108,7 @@ bool Environment::addLink(tesseract_scene_graph::Link link, tesseract_scene_grap
   if (!scene_graph_->addJoint(joint))
     return false;
 
-  if (link.collision.size() > 0)
+  if (!link.collision.empty())
   {
     tesseract_collision::CollisionShapesConst shapes;
     tesseract_common::VectorIsometry3d shape_poses;
@@ -458,7 +458,7 @@ Environment::getDiscreteContactManagerHelper(const std::string& name) const
   {
     for (const auto& link : scene_graph_->getLinks())
     {
-      if (link->collision.size() > 0)
+      if (!link->collision.empty())
       {
         tesseract_collision::CollisionShapesConst shapes;
         tesseract_common::VectorIsometry3d shape_poses;
@@ -486,7 +486,7 @@ Environment::getContinuousContactManagerHelper(const std::string& name) const
   {
     for (const auto& link : scene_graph_->getLinks())
     {
-      if (link->collision.size() > 0)
+      if (!link->collision.empty())
       {
         tesseract_collision::CollisionShapesConst shapes;
         tesseract_common::VectorIsometry3d shape_poses;

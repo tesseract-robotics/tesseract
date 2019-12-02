@@ -56,7 +56,7 @@ const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
 
 namespace tesseract_ros_examples
 {
-CarSeatExample::CarSeatExample(ros::NodeHandle nh, bool plotting, bool rviz)
+CarSeatExample::CarSeatExample(const ros::NodeHandle& nh, bool plotting, bool rviz)
   : Example(plotting, rviz), nh_(nh), env_current_revision_(0)
 {
   locator_ = std::make_shared<tesseract_rosutils::ROSResourceLocator>();
@@ -262,7 +262,7 @@ std::shared_ptr<ProblemConstructionInfo> CarSeatExample::cppMethod(const std::st
         Eigen::VectorXd::LinSpaced(pci->basic_info.n_steps, start_pos[i], joint_pose[static_cast<size_t>(i)]);
 
   // Populate Cost Info
-  std::shared_ptr<JointVelTermInfo> joint_vel = std::shared_ptr<JointVelTermInfo>(new JointVelTermInfo);
+  auto joint_vel = std::make_shared<JointVelTermInfo>();
   joint_vel->coeffs = std::vector<double>(8, 1.0);
   joint_vel->targets = std::vector<double>(8, 0.0);
   joint_vel->first_step = 0;
@@ -271,7 +271,7 @@ std::shared_ptr<ProblemConstructionInfo> CarSeatExample::cppMethod(const std::st
   joint_vel->term_type = TT_COST;
   pci->cost_infos.push_back(joint_vel);
 
-  std::shared_ptr<JointAccTermInfo> joint_acc = std::shared_ptr<JointAccTermInfo>(new JointAccTermInfo);
+  auto joint_acc = std::make_shared<JointAccTermInfo>();
   joint_acc->coeffs = std::vector<double>(8, 5.0);
   joint_acc->targets = std::vector<double>(8, 0.0);
   joint_acc->first_step = 0;
@@ -280,7 +280,7 @@ std::shared_ptr<ProblemConstructionInfo> CarSeatExample::cppMethod(const std::st
   joint_acc->term_type = TT_COST;
   pci->cost_infos.push_back(joint_acc);
 
-  std::shared_ptr<JointJerkTermInfo> joint_jerk = std::shared_ptr<JointJerkTermInfo>(new JointJerkTermInfo);
+  auto joint_jerk = std::make_shared<JointJerkTermInfo>();
   joint_jerk->coeffs = std::vector<double>(8, 5.0);
   joint_jerk->targets = std::vector<double>(8, 0.0);
   joint_jerk->first_step = 0;
@@ -289,7 +289,7 @@ std::shared_ptr<ProblemConstructionInfo> CarSeatExample::cppMethod(const std::st
   joint_jerk->term_type = TT_COST;
   pci->cost_infos.push_back(joint_jerk);
 
-  std::shared_ptr<CollisionTermInfo> collision = std::shared_ptr<CollisionTermInfo>(new CollisionTermInfo);
+  auto collision = std::make_shared<CollisionTermInfo>();
   collision->name = "collision";
   collision->term_type = TT_CNT;
   collision->continuous = true;

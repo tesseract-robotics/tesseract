@@ -37,5 +37,8 @@
                           _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")
 
 #define TESSERACT_COMMON_IGNORE_WARNINGS_POP _Pragma("GCC diagnostic pop")
+
+#define UNUSED(x) (void)(x)
+
 // clang-format on
 #endif  // TESSERACT_COMMON_MACROS_H

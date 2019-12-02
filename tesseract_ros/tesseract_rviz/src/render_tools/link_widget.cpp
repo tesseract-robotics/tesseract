@@ -88,6 +88,11 @@ public:
   EnvLinkSelectionHandler(LinkWidget* link, rviz::DisplayContext* context);
   ~EnvLinkSelectionHandler() override;
 
+  EnvLinkSelectionHandler(const EnvLinkSelectionHandler&) = default;
+  EnvLinkSelectionHandler& operator=(const EnvLinkSelectionHandler&) = default;
+  EnvLinkSelectionHandler(EnvLinkSelectionHandler&&) = default;
+  EnvLinkSelectionHandler& operator=(EnvLinkSelectionHandler&&) = default;
+
   void createProperties(const rviz::Picked& /*obj*/, rviz::Property* parent_property) override;
   void updateProperties() override;
 
@@ -105,7 +110,7 @@ EnvLinkSelectionHandler::EnvLinkSelectionHandler(LinkWidget* link, rviz::Display
 {
 }
 
-EnvLinkSelectionHandler::~EnvLinkSelectionHandler() {}
+EnvLinkSelectionHandler::~EnvLinkSelectionHandler() = default;
 void EnvLinkSelectionHandler::createProperties(const rviz::Picked& /*obj*/, rviz::Property* parent_property)
 {
   rviz::Property* group =
@@ -348,95 +353,95 @@ void LinkWidget::setLinkPropertyDescription()
 
 LinkWidget::~LinkWidget()
 {
-  for (size_t i = 0; i < visual_current_meshes_.size(); i++)
+  for (auto& visual_current_mesh : visual_current_meshes_)
   {
-    scene_manager_->destroyEntity(visual_current_meshes_[i]);
+    scene_manager_->destroyEntity(visual_current_mesh);
   }
 
-  for (size_t i = 0; i < collision_current_meshes_.size(); i++)
+  for (auto& collision_current_mesh : collision_current_meshes_)
   {
-    scene_manager_->destroyEntity(collision_current_meshes_[i]);
+    scene_manager_->destroyEntity(collision_current_mesh);
   }
 
-  for (size_t i = 0; i < visual_start_meshes_.size(); i++)
+  for (auto& visual_start_mesh : visual_start_meshes_)
   {
-    scene_manager_->destroyEntity(visual_start_meshes_[i]);
+    scene_manager_->destroyEntity(visual_start_mesh);
   }
 
-  for (size_t i = 0; i < collision_start_meshes_.size(); i++)
+  for (auto& collision_start_mesh : collision_start_meshes_)
   {
-    scene_manager_->destroyEntity(collision_start_meshes_[i]);
+    scene_manager_->destroyEntity(collision_start_mesh);
   }
 
-  for (size_t i = 0; i < visual_trajectory_meshes_.size(); i++)
+  for (auto& visual_trajectory_mesh : visual_trajectory_meshes_)
   {
-    scene_manager_->destroyEntity(visual_trajectory_meshes_[i]);
+    scene_manager_->destroyEntity(visual_trajectory_mesh);
   }
 
-  for (size_t i = 0; i < collision_trajectory_meshes_.size(); i++)
+  for (auto& collision_trajectory_mesh : collision_trajectory_meshes_)
   {
-    scene_manager_->destroyEntity(collision_trajectory_meshes_[i]);
+    scene_manager_->destroyEntity(collision_trajectory_mesh);
   }
 
-  for (size_t i = 0; i < visual_end_meshes_.size(); i++)
+  for (auto& visual_end_mesh : visual_end_meshes_)
   {
-    scene_manager_->destroyEntity(visual_end_meshes_[i]);
+    scene_manager_->destroyEntity(visual_end_mesh);
   }
 
-  for (size_t i = 0; i < collision_end_meshes_.size(); i++)
+  for (auto& collision_end_mesh : collision_end_meshes_)
   {
-    scene_manager_->destroyEntity(collision_end_meshes_[i]);
+    scene_manager_->destroyEntity(collision_end_mesh);
   }
 
-  for (size_t i = 0; i < visual_current_octrees_.size(); i++)
+  for (auto& visual_current_octree : visual_current_octrees_)
   {
     //    scene_manager_->destroyMovableObject( octree_objects_[ i ]); TODO:
     //    Need to create a MovableObjectFactory for this type.
-    delete visual_current_octrees_[i].point_cloud;
+    delete visual_current_octree.point_cloud;
   }
   visual_current_octrees_.clear();
 
-  for (size_t i = 0; i < collision_current_octrees_.size(); i++)
+  for (auto& collision_current_octree : collision_current_octrees_)
   {
     //    scene_manager_->destroyMovableObject( octree_objects_[ i ]); TODO:
     //    Need to create a MovableObjectFactory for this type.
-    delete collision_current_octrees_[i].point_cloud;
+    delete collision_current_octree.point_cloud;
   }
   collision_current_octrees_.clear();
 
-  for (size_t i = 0; i < visual_start_octrees_.size(); i++)
+  for (auto& visual_start_octree : visual_start_octrees_)
   {
-    delete visual_start_octrees_[i];
+    delete visual_start_octree;
   }
   visual_start_octrees_.clear();
 
-  for (size_t i = 0; i < collision_start_octrees_.size(); i++)
+  for (auto& collision_start_octree : collision_start_octrees_)
   {
-    delete collision_start_octrees_[i];
+    delete collision_start_octree;
   }
   collision_start_octrees_.clear();
 
-  for (size_t i = 0; i < visual_trajectory_octrees_.size(); i++)
+  for (auto& visual_trajectory_octree : visual_trajectory_octrees_)
   {
-    delete visual_trajectory_octrees_[i];
+    delete visual_trajectory_octree;
   }
   visual_trajectory_octrees_.clear();
 
-  for (size_t i = 0; i < collision_trajectory_octrees_.size(); i++)
+  for (auto& collision_trajectory_octree : collision_trajectory_octrees_)
   {
-    delete collision_trajectory_octrees_[i];
+    delete collision_trajectory_octree;
   }
   collision_trajectory_octrees_.clear();
 
-  for (size_t i = 0; i < visual_end_octrees_.size(); i++)
+  for (auto& visual_end_octree : visual_end_octrees_)
   {
-    delete visual_end_octrees_[i];
+    delete visual_end_octree;
   }
   visual_end_octrees_.clear();
 
-  for (size_t i = 0; i < collision_end_octrees_.size(); i++)
+  for (auto& collision_end_octree : collision_end_octrees_)
   {
-    delete collision_end_octrees_[i];
+    delete collision_end_octree;
   }
   collision_end_octrees_.clear();
 
@@ -487,7 +492,7 @@ void LinkWidget::setRenderQueueGroup(Ogre::uint8 group)
   Ogre::SceneNode::ChildNodeIterator child_it = visual_current_node_->getChildIterator();
   while (child_it.hasMoreElements())
   {
-    Ogre::SceneNode* child = dynamic_cast<Ogre::SceneNode*>(child_it.getNext());
+    auto* child = dynamic_cast<Ogre::SceneNode*>(child_it.getNext());
     if (child)
     {
       Ogre::SceneNode::ObjectIterator object_it = child->getAttachedObjectIterator();
@@ -510,8 +515,8 @@ void LinkWidget::setOnlyRenderDepth(bool onlyRenderDepth)
 void LinkWidget::updateAlpha()
 {
   float link_alpha = alpha_property_->getFloat();
-  M_SubEntityToMaterial::iterator it = materials_.begin();
-  M_SubEntityToMaterial::iterator end = materials_.end();
+  auto it = materials_.begin();
+  auto end = materials_.end();
   for (; it != end; ++it)
   {
     const Ogre::MaterialPtr& material = it->second;
@@ -623,14 +628,14 @@ void LinkWidget::updateVisibility()
   if (visual_trajectory_node_)
   {
     visual_trajectory_node_->setVisible(enabled && env_->isVisualVisible() && env_->isTrajectoryVisible(), false);
-    for (int i = 0; i < visual_trajectory_waypoint_visibility_.size(); ++i)
+    for (size_t i = 0; i < visual_trajectory_waypoint_visibility_.size(); ++i)
       visual_trajectory_waypoint_nodes_[i]->setVisible(visual_trajectory_waypoint_visibility_[i] && enabled &&
                                                        env_->isVisualVisible() && env_->isTrajectoryVisible());
   }
   if (collision_trajectory_node_)
   {
     collision_trajectory_node_->setVisible(enabled && env_->isCollisionVisible() && env_->isTrajectoryVisible(), false);
-    for (int i = 0; i < collision_trajectory_waypoint_visibility_.size(); ++i)
+    for (size_t i = 0; i < collision_trajectory_waypoint_visibility_.size(); ++i)
       collision_trajectory_waypoint_nodes_[i]->setVisible(collision_trajectory_waypoint_visibility_[i] && enabled &&
                                                           env_->isCollisionVisible() && env_->isTrajectoryVisible());
   }
@@ -655,7 +660,7 @@ void LinkWidget::updateVisibility()
 }
 
 Ogre::MaterialPtr LinkWidget::getMaterialForLink(const tesseract_scene_graph::Link& link,
-                                                 const std::string material_name)
+                                                 const std::string& material_name)
 {
   if (link.visual.empty() || !link.visual[0]->material)
   {
@@ -740,7 +745,7 @@ Ogre::MaterialPtr LinkWidget::getMaterialForLink(const tesseract_scene_graph::Li
 
 rviz::PointCloud* createPointCloud(std::vector<rviz::PointCloud::Point>&& points, float size)
 {
-  rviz::PointCloud* cloud = new rviz::PointCloud();
+  auto* cloud = new rviz::PointCloud();
 
   cloud->setName(point_cloud_name_generator.generate());
   cloud->setRenderMode(rviz::PointCloud::RM_BOXES);
@@ -867,7 +872,7 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
   {
     case tesseract_geometry::GeometryType::SPHERE:
     {
-      const tesseract_geometry::Sphere& sphere = static_cast<const tesseract_geometry::Sphere&>(geom);
+      const auto& sphere = static_cast<const tesseract_geometry::Sphere&>(geom);
       entity = scene_manager_->createEntity(entity_name, "tesseract_sphere.mesh");
       float diameter = static_cast<float>(sphere.getRadius()) * 2.0f;
       scale = Ogre::Vector3(diameter, diameter, diameter);
@@ -875,7 +880,7 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
     }
     case tesseract_geometry::GeometryType::BOX:
     {
-      const tesseract_geometry::Box& box = static_cast<const tesseract_geometry::Box&>(geom);
+      const auto& box = static_cast<const tesseract_geometry::Box&>(geom);
       entity = scene_manager_->createEntity(entity_name, "tesseract_cube.mesh");
       scale =
           Ogre::Vector3(static_cast<float>(box.getX()), static_cast<float>(box.getY()), static_cast<float>(box.getZ()));
@@ -883,7 +888,7 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
     }
     case tesseract_geometry::GeometryType::CYLINDER:
     {
-      const tesseract_geometry::Cylinder& cylinder = static_cast<const tesseract_geometry::Cylinder&>(geom);
+      const auto& cylinder = static_cast<const tesseract_geometry::Cylinder&>(geom);
       entity = scene_manager_->createEntity(entity_name, "tesseract_cylinder.mesh");
       scale = Ogre::Vector3(static_cast<float>(cylinder.getRadius() * 2),
                             static_cast<float>(cylinder.getRadius() * 2),
@@ -892,7 +897,7 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
     }
     case tesseract_geometry::GeometryType::CONE:
     {
-      const tesseract_geometry::Cone& cone = static_cast<const tesseract_geometry::Cone&>(geom);
+      const auto& cone = static_cast<const tesseract_geometry::Cone&>(geom);
       entity = scene_manager_->createEntity(entity_name, "tesseract_cone.mesh");
       scale = Ogre::Vector3(static_cast<float>(cone.getRadius() * 2),
                             static_cast<float>(cone.getRadius() * 2),
@@ -901,7 +906,7 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
     }
     case tesseract_geometry::GeometryType::CAPSULE:
     {
-      const tesseract_geometry::Capsule& capsule = static_cast<const tesseract_geometry::Capsule&>(geom);
+      const auto& capsule = static_cast<const tesseract_geometry::Capsule&>(geom);
       entity = scene_manager_->createEntity(entity_name, "tesseract_capsule.mesh");
       scale = Ogre::Vector3(static_cast<float>(capsule.getRadius() * 2),
                             static_cast<float>(capsule.getRadius() * 2),
@@ -910,7 +915,7 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
     }
     case tesseract_geometry::GeometryType::MESH:
     {
-      const tesseract_geometry::Mesh& mesh = static_cast<const tesseract_geometry::Mesh&>(geom);
+      const auto& mesh = static_cast<const tesseract_geometry::Mesh&>(geom);
 
       if (mesh.getResource() && mesh.getResource()->isFile())
       {
@@ -948,7 +953,7 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
     }
     case tesseract_geometry::GeometryType::CONVEX_MESH:
     {
-      const tesseract_geometry::ConvexMesh& mesh = static_cast<const tesseract_geometry::ConvexMesh&>(geom);
+      const auto& mesh = static_cast<const tesseract_geometry::ConvexMesh&>(geom);
 
       if (mesh.getResource() && mesh.getResource()->isFile())
       {
@@ -1020,7 +1025,7 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
       octree->getMetricMin(minX, minY, minZ);
       octree->getMetricMax(maxX, maxY, maxZ);
 
-      unsigned int render_mode_mask = static_cast<unsigned int>(octree_voxel_rendering);
+      auto render_mode_mask = static_cast<unsigned int>(octree_voxel_rendering);
 
       size_t pointCount = 0;
       {
@@ -1108,8 +1113,6 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
 
       for (unsigned i = 0; i < octree_depth; ++i)
       {
-        float size = static_cast<float>(octree->getNodeSize(static_cast<unsigned>(i + 1)));
-
         OctreeDataContainer data;
         data.size = static_cast<float>(octree->getNodeSize(static_cast<unsigned>(i + 1)));
         data.points = std::vector<rviz::PointCloud::Point>(pointBuf[i]);
@@ -1197,8 +1200,8 @@ void LinkWidget::clone(Ogre::SceneNode* scene_node,
   Ogre::SceneNode::ObjectIterator iter = scene_node->getAttachedObjectIterator();
   while (iter.hasMoreElements())
   {
-    Ogre::MovableObject* movable = static_cast<Ogre::MovableObject*>(iter.getNext());
-    Ogre::Entity* entity = dynamic_cast<Ogre::Entity*>(movable);
+    auto* movable = static_cast<Ogre::MovableObject*>(iter.getNext());
+    auto* entity = dynamic_cast<Ogre::Entity*>(movable);
     if (entity != nullptr)
     {
       Ogre::Entity* cloned_entity = entity->clone(clone_link_name_generator.generate());
@@ -1227,15 +1230,15 @@ void LinkWidget::clone(Ogre::SceneNode* scene_node,
   Ogre::SceneNode::ChildNodeIterator nodei = scene_node->getChildIterator();
   while (nodei.hasMoreElements())
   {
-    Ogre::SceneNode* child_node = static_cast<Ogre::SceneNode*>(nodei.getNext());
+    auto* child_node = static_cast<Ogre::SceneNode*>(nodei.getNext());
 
     Ogre::SceneNode* cloned_child_scene_node = cloned_scene_node->createChildSceneNode();
 
     Ogre::SceneNode::ObjectIterator child_node_iter = child_node->getAttachedObjectIterator();
     while (child_node_iter.hasMoreElements())
     {
-      Ogre::MovableObject* movable = static_cast<Ogre::MovableObject*>(child_node_iter.getNext());
-      Ogre::Entity* entity = dynamic_cast<Ogre::Entity*>(movable);
+      auto* movable = static_cast<Ogre::MovableObject*>(child_node_iter.getNext());
+      auto* entity = dynamic_cast<Ogre::Entity*>(movable);
       if (entity != nullptr)
       {
         Ogre::Entity* cloned_entity = entity->clone(clone_link_name_generator.generate());
@@ -1377,21 +1380,21 @@ void LinkWidget::createVisual(const tesseract_scene_graph::Link& link)
 void LinkWidget::createSelection()
 {
   selection_handler_.reset(new EnvLinkSelectionHandler(this, context_));
-  for (size_t i = 0; i < visual_current_meshes_.size(); i++)
+  for (auto& visual_current_mesh : visual_current_meshes_)
   {
-    selection_handler_->addTrackedObject(visual_current_meshes_[i]);
+    selection_handler_->addTrackedObject(visual_current_mesh);
   }
-  for (size_t i = 0; i < collision_current_meshes_.size(); i++)
+  for (auto& collision_current_mesh : collision_current_meshes_)
   {
-    selection_handler_->addTrackedObject(collision_current_meshes_[i]);
+    selection_handler_->addTrackedObject(collision_current_mesh);
   }
-  for (size_t i = 0; i < visual_current_octrees_.size(); i++)
+  for (auto& visual_current_octree : visual_current_octrees_)
   {
-    selection_handler_->addTrackedObject(visual_current_octrees_[i].point_cloud);
+    selection_handler_->addTrackedObject(visual_current_octree.point_cloud);
   }
-  for (size_t i = 0; i < collision_current_octrees_.size(); i++)
+  for (auto& collision_current_octree : collision_current_octrees_)
   {
-    selection_handler_->addTrackedObject(collision_current_octrees_[i].point_cloud);
+    selection_handler_->addTrackedObject(collision_current_octree.point_cloud);
   }
 }
 
@@ -1523,11 +1526,11 @@ void LinkWidget::setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory)
 
   bool enabled = getEnabled() && env_->isVisible() && env_->isTrajectoryVisible();
 
-  int trajectory_size = trajectory.size();
-  int current_size = visual_trajectory_waypoint_nodes_.size();
+  size_t trajectory_size = trajectory.size();
+  size_t current_size = visual_trajectory_waypoint_nodes_.size();
   if (trajectory_size > current_size)
   {
-    for (int i = 0; i < trajectory_size; ++i)
+    for (size_t i = 0; i < trajectory_size; ++i)
     {
       Ogre::Vector3 position;
       Ogre::Quaternion orientation;
@@ -1581,7 +1584,7 @@ void LinkWidget::setTrajectory(const std::vector<Eigen::Isometry3d>& trajectory)
   }
   else if (current_size >= trajectory_size)
   {
-    for (int i = 0; i < current_size; ++i)
+    for (size_t i = 0; i < current_size; ++i)
     {
       if (i < trajectory_size)
       {
@@ -1631,16 +1634,17 @@ void LinkWidget::clearTrajectory()
   {
     visual_trajectory_node_->setVisible(false);
     visual_trajectory_node_->setVisible(enabled && env_->isVisualVisible(), false);
-    for (int i = 0; i < visual_trajectory_waypoint_visibility_.size(); ++i)
-      visual_trajectory_waypoint_visibility_[i] = false;
+    for (auto&& visual_trajectory_waypoint_visibility : visual_trajectory_waypoint_visibility_)
+      visual_trajectory_waypoint_visibility = false;
   }
 
   if (collision_current_node_)
   {
     collision_trajectory_node_->setVisible(false);
     collision_trajectory_node_->setVisible(enabled && env_->isCollisionVisible(), false);
-    for (int i = 0; i < collision_trajectory_waypoint_visibility_.size(); ++i)
-      collision_trajectory_waypoint_visibility_[i] = false;
+    for (size_t i = 0; i < collision_trajectory_waypoint_visibility_.size(); ++i)
+    for (auto&& collision_trajectory_waypoint_visibility : collision_trajectory_waypoint_visibility_)
+      collision_trajectory_waypoint_visibility = false;
   }
 }
 
@@ -1652,13 +1656,13 @@ void LinkWidget::showTrajectoryWaypointOnly(int waypoint)
   bool enabled = getEnabled() && env_->isVisible() && env_->isTrajectoryVisible();
   ;
 
-  if (visual_current_node_ && (visual_trajectory_waypoint_nodes_.size() > waypoint))
+  if (visual_current_node_ && (visual_trajectory_waypoint_nodes_.size() > static_cast<size_t>(waypoint)))
   {
     visual_trajectory_waypoint_nodes_[waypoint]->setVisible(enabled && env_->isVisualVisible());
     visual_trajectory_waypoint_visibility_[waypoint] = enabled;
   }
 
-  if (collision_current_node_ && (collision_trajectory_waypoint_nodes_.size() > waypoint))
+  if (collision_current_node_ && (collision_trajectory_waypoint_nodes_.size() > static_cast<size_t>(waypoint)))
   {
     collision_trajectory_waypoint_nodes_[waypoint]->setVisible(enabled && env_->isCollisionVisible());
     collision_trajectory_waypoint_visibility_[waypoint] = enabled;
@@ -1667,13 +1671,14 @@ void LinkWidget::showTrajectoryWaypointOnly(int waypoint)
 
 void LinkWidget::setToErrorMaterial()
 {
-  for (size_t i = 0; i < visual_current_meshes_.size(); i++)
+  for (auto& visual_current_mesh : visual_current_meshes_)
   {
-    visual_current_meshes_[i]->setMaterialName("BaseWhiteNoLighting");
+    visual_current_mesh->setMaterialName("BaseWhiteNoLighting");
   }
-  for (size_t i = 0; i < collision_current_meshes_.size(); i++)
+
+  for (auto& collision_current_mesh : collision_current_meshes_)
   {
-    collision_current_meshes_[i]->setMaterialName("BaseWhiteNoLighting");
+    collision_current_mesh->setMaterialName("BaseWhiteNoLighting");
   }
 
   // Currently not handling color for octree_objects_
@@ -1683,13 +1688,14 @@ void LinkWidget::setToNormalMaterial()
 {
   if (using_color_)
   {
-    for (size_t i = 0; i < visual_current_meshes_.size(); i++)
+    for (auto& visual_current_mesh : visual_current_meshes_)
     {
-      visual_current_meshes_[i]->setMaterial(color_material_);
+      visual_current_mesh->setMaterial(color_material_);
     }
-    for (size_t i = 0; i < collision_current_meshes_.size(); i++)
+
+    for (auto& collision_current_mesh : collision_current_meshes_)
     {
-      collision_current_meshes_[i]->setMaterial(color_material_);
+      collision_current_mesh->setMaterial(color_material_);
     }
 
     // Currently not handling color for octree_objects_
