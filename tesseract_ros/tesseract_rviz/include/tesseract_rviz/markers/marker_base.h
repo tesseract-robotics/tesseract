@@ -61,7 +61,7 @@ public:
   using Ptr = boost::shared_ptr<MarkerBase>;
   using ConstPtr = boost::shared_ptr<const MarkerBase>;
 
-  MarkerBase(const std::string& ns, const int id, rviz::DisplayContext* context, Ogre::SceneNode* parent_node);
+  MarkerBase(std::string ns, const int id, rviz::DisplayContext* context, Ogre::SceneNode* parent_node);
   virtual ~MarkerBase();
 
   MarkerID getID() { return MarkerID(ns_, id_); }

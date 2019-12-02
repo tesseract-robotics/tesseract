@@ -168,7 +168,7 @@ bool KDLStateSolver::createKDETree()
     return false;
   }
 
-  current_state_ = EnvState::Ptr(new EnvState());
+  current_state_ = std::make_shared<EnvState>();
   kdl_jnt_array_.resize(kdl_tree_.getNrOfJoints());
   size_t j = 0;
   for (const auto& seg : kdl_tree_.getSegments())
@@ -200,11 +200,9 @@ bool KDLStateSolver::setJointValuesHelper(KDL::JntArray& q,
     q(qnr->second) = joint_value;
     return true;
   }
-  else
-  {
-    CONSOLE_BRIDGE_logError("Tried to set joint name %s which does not exist!", joint_name.c_str());
-    return false;
-  }
+
+  CONSOLE_BRIDGE_logError("Tried to set joint name %s which does not exist!", joint_name.c_str());
+  return false;
 }
 
 void KDLStateSolver::calculateTransformsHelper(tesseract_common::TransformMap& transforms,

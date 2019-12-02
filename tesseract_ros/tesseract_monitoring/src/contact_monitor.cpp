@@ -27,8 +27,8 @@ using namespace tesseract_rosutils;
 using namespace tesseract_collision;
 using namespace tesseract_scene_graph;
 
-typedef pluginlib::ClassLoader<DiscreteContactManager> DiscreteContactManagerPluginLoader;
-typedef std::shared_ptr<DiscreteContactManagerPluginLoader> DiscreteContactManagerPluginLoaderPtr;
+using DiscreteContactManagerPluginLoader = pluginlib::ClassLoader<DiscreteContactManager>;
+using DiscreteContactManagerPluginLoaderPtr = std::shared_ptr<DiscreteContactManagerPluginLoader>;
 
 const std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
 
@@ -129,7 +129,7 @@ void computeCollisionReportThread()
 void callbackJointState(boost::shared_ptr<sensor_msgs::JointState> msg)
 {
   boost::mutex::scoped_lock lock(modify_mutex);
-  current_joint_states = msg;
+  current_joint_states = std::move(msg);
   current_joint_states_evt.notify_all();
 }
 

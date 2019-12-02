@@ -33,7 +33,7 @@ EnvironmentWidget::EnvironmentWidget(rviz::Property* widget, rviz::Display* disp
   , load_tesseract_(true)
 {
   environment_widget_counter_++;
-  if (widget_ns == std::string())
+  if (widget_ns.empty())
   {
     environment_widget_id_ = environment_widget_counter_;
     widget_ns_ = "env_widget_" + std::to_string(environment_widget_id_) + "/";
@@ -112,14 +112,14 @@ EnvironmentWidget::EnvironmentWidget(rviz::Property* widget, rviz::Display* disp
       "Show All Links", true, "Toggle all links visibility on or off.", main_property_, SLOT(changedAllLinks()), this);
 }
 
-EnvironmentWidget::~EnvironmentWidget() {}
+EnvironmentWidget::~EnvironmentWidget() = default;
 
 void EnvironmentWidget::onInitialize(VisualizationWidget::Ptr visualization,
                                      tesseract::Tesseract::Ptr tesseract,
-                                     rviz::DisplayContext* context,
-                                     ros::NodeHandle update_nh,
+                                     rviz::DisplayContext* /*context*/,
+                                     const ros::NodeHandle& update_nh,
                                      bool update_state,
-                                     QString tesseract_state_topic)
+                                     const QString& tesseract_state_topic)
 {
   visualization_ = std::move(visualization);
   tesseract_ = std::move(tesseract);
@@ -227,10 +227,10 @@ void EnvironmentWidget::changedEnableCollisionVisible()
   visualization_->setCollisionVisible(enable_collision_visible_->getBool());
 }
 
-static bool operator!=(const std_msgs::ColorRGBA& a, const std_msgs::ColorRGBA& b)
-{
-  return a.r != b.r || a.g != b.g || a.b != b.b || a.a != b.a;
-}
+//static bool operator!=(const std_msgs::ColorRGBA& a, const std_msgs::ColorRGBA& b)
+//{
+//  return a.r != b.r || a.g != b.g || a.b != b.b || a.a != b.a;
+//}
 
 void EnvironmentWidget::changedURDFDescription()
 {
@@ -393,6 +393,7 @@ bool EnvironmentWidget::applyEnvironmentCommands(const std::vector<tesseract_msg
       case tesseract_msgs::EnvironmentCommand::CHANGE_LINK_ORIGIN:
       {
         assert(false);
+        break;
       }
       case tesseract_msgs::EnvironmentCommand::CHANGE_JOINT_ORIGIN:
       {
@@ -460,28 +461,30 @@ bool EnvironmentWidget::modifyEnvironmentCallback(tesseract_msgs::ModifyEnvironm
                                                   tesseract_msgs::ModifyEnvironmentResponse& res)
 {
   if (!tesseract_->getEnvironment() || req.id != tesseract_->getEnvironment()->getName() ||
-      req.revision != tesseract_->getEnvironment()->getRevision())
+      req.revision != static_cast<std::size_t>(tesseract_->getEnvironment()->getRevision()))
     return false;
 
-  return applyEnvironmentCommands(req.commands);
+  res.success = applyEnvironmentCommands(req.commands);
+  res.revision = static_cast<std::size_t>(tesseract_->getEnvironment()->getRevision());
+  return res.success;
 }
 
 bool EnvironmentWidget::getEnvironmentChangesCallback(tesseract_msgs::GetEnvironmentChangesRequest& req,
                                                       tesseract_msgs::GetEnvironmentChangesResponse& res)
 {
-  if (req.revision > tesseract_->getEnvironment()->getRevision())
+  if (static_cast<int>(req.revision) > tesseract_->getEnvironment()->getRevision())
   {
     ROS_WARN("Requested changes for id %d greater than current change id %d",
-             req.revision,
+             static_cast<int>(req.revision),
              tesseract_->getEnvironment()->getRevision());
     res.success = false;
     return false;
   }
 
   res.id = tesseract_->getEnvironment()->getName();
-  res.revision = tesseract_->getEnvironment()->getRevision();
+  res.revision = static_cast<std::size_t>(tesseract_->getEnvironment()->getRevision());
   const tesseract_environment::Commands& commands = tesseract_->getEnvironment()->getCommandHistory();
-  for (int i = (req.revision == 0 ? 0 : req.revision - 1); i < commands.size(); ++i)
+  for (std::size_t i = (req.revision == 0 ? 0 : req.revision - 1); i < commands.size(); ++i)
   {
     tesseract_msgs::EnvironmentCommand command_msg;
     if (!tesseract_rosutils::toMsg(command_msg, *(commands[i])))
@@ -516,17 +519,17 @@ void EnvironmentWidget::newTesseractStateCallback(const tesseract_msgs::Tesserac
 
   int current_version = tesseract_->getEnvironment()->getRevision();
   if (!tesseract_->getEnvironment() || state_msg->id != tesseract_->getEnvironment()->getName() ||
-      current_version > state_msg->revision)
+      current_version > static_cast<int>(state_msg->revision))
     return;
 
   if (update_state_)
     if (tesseract_rosutils::processMsg(tesseract_->getEnvironment(), state_msg->joint_state))
       update_required_ = true;
 
-  if (state_msg->revision > current_version)
+  if (static_cast<int>(state_msg->revision) > current_version)
   {
     std::vector<tesseract_msgs::EnvironmentCommand> commands;
-    for (int i = (current_version == 0 ? 0 : current_version - 1); i < state_msg->revision; ++i)
+    for (std::size_t i = (current_version == 0 ? 0 : static_cast<std::size_t>(current_version) - 1ul); i < state_msg->revision; ++i)
       commands.push_back(state_msg->commands[i]);
 
     if (!commands.empty())

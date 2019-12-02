@@ -126,10 +126,10 @@ public:
    *  @param tf A pointer to a tf::Transformer
    *  @param name A name identifying this planning scene monitor
    */
-  EnvironmentMonitor(const std::string& robot_description,
-                     const std::string& name,
-                     const std::string& discrete_plugin = "",
-                     const std::string& continuous_plugin = "");
+  EnvironmentMonitor(const std::string &robot_description,
+                     std::string name,
+                     std::string discrete_plugin = "",
+                     std::string continuous_plugin = "");
 
   /** @brief Constructor
    *  @param rml A pointer to a kinematic model loader
@@ -137,9 +137,9 @@ public:
    *  @param name A name identifying this planning scene monitor
    */
   EnvironmentMonitor(tesseract::Tesseract::Ptr tesseract,
-                     const std::string& name,
-                     const std::string& discrete_plugin = "",
-                     const std::string& continuous_plugin = "");
+                     std::string name,
+                     std::string discrete_plugin = "",
+                     std::string continuous_plugin = "");
 
   ~EnvironmentMonitor();
 
@@ -205,7 +205,7 @@ public:
       Diffs are sent afterwards on updates specified by the \e event bitmask. For UPDATE_ENVIRONMENT, the full
      environment is always
      sent. */
-  void startPublishingEnvironment(EnvironmentUpdateType event,
+  void startPublishingEnvironment(EnvironmentUpdateType update_type,
                                   const std::string& environment_topic = MONITORED_ENVIRONMENT_TOPIC);
 
   /** \brief Stop publishing the maintained environment. */
@@ -370,7 +370,7 @@ private:
   bool saveSceneGraphCallback(tesseract_msgs::SaveSceneGraphRequest& req, tesseract_msgs::SaveSceneGraphResponse& res);
 
   // Called when new service request is called to modify the environment.
-  bool applyEnvironmentCommandsMessage(std::string id,
+  bool applyEnvironmentCommandsMessage(const std::string &id,
                                        int revision,
                                        const std::vector<tesseract_msgs::EnvironmentCommand>& commands);
 

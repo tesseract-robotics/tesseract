@@ -34,7 +34,7 @@ bool ButtonProperty::paint(QPainter* painter, const QStyleOptionViewItem& option
   return true;  // return true, since this function has done the painting.
 }
 
-QWidget* ButtonProperty::createEditor(QWidget* parent, const QStyleOptionViewItem& option)
+QWidget* ButtonProperty::createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/)
 {
   button_ = new QPushButton(parent);
   button_->setText(captions_);

@@ -79,7 +79,7 @@ bool DescartesCollision<FloatType>::validate(const FloatType* pos, std::size_t s
   // Happens in two phases:
   // 1. Compute the transform of all objects
   Eigen::VectorXd joint_angles(size);
-  for (int i = 0; i < size; ++i)
+  for (int i = 0; i < static_cast<int>(size); ++i)
     joint_angles(i) = pos[i];
 
   tesseract_environment::EnvState::Ptr env_state = state_solver_->getState(joint_names_, joint_angles);
@@ -112,7 +112,7 @@ FloatType DescartesCollision<FloatType>::distance(const FloatType* pos, std::siz
   // Happens in two phases:
   // 1. Compute the transform of all objects
   Eigen::VectorXd joint_angles(size);
-  for (int i = 0; i < size; ++i)
+  for (int i = 0; i < static_cast<int>(size); ++i)
     joint_angles(i) = pos[i];
   tesseract_environment::EnvState::Ptr env_state = state_solver_->getState(joint_names_, joint_angles);
 

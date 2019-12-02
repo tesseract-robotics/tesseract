@@ -67,13 +67,13 @@ public:
   using Ptr = boost::shared_ptr<InteractiveMarker>;
   using ConstPtr = boost::shared_ptr<const InteractiveMarker>;
 
-  InteractiveMarker(const std::string& name,
-                    const std::string& description,
-                    const std::string& reference_frame,
+  InteractiveMarker(std::string name,
+                    std::string description,
+                    std::string reference_frame,
                     Ogre::SceneNode* scene_node,
                     rviz::DisplayContext* context,
-                    const bool reference_frame_locked,
-                    const float scale = 1);
+                    bool reference_frame_locked,
+                    float scale = 1);
   virtual ~InteractiveMarker();
 
   InteractiveMarkerControl::Ptr createInteractiveControl(const std::string& name,

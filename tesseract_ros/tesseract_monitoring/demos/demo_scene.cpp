@@ -52,7 +52,7 @@ static ros::ServiceClient get_env_changes_rviz;
 static ros::ServiceClient modify_env_master;
 static ros::ServiceClient get_env_changes_master;
 
-void addSphere(const std::string& name, const std::string id, unsigned long& revision)
+void addSphere(const std::string& name, const std::string& id, unsigned long& revision)
 {
   tesseract_msgs::ModifyEnvironment update_env;
 
@@ -106,7 +106,7 @@ void addSphere(const std::string& name, const std::string id, unsigned long& rev
   }
 }
 
-void removeSphere(const std::string& name, const std::string id, unsigned long& revision)
+void removeSphere(const std::string& name, const std::string& id, unsigned long& revision)
 {
   tesseract_msgs::ModifyEnvironment update_env;
 
@@ -199,12 +199,12 @@ int main(int argc, char** argv)
   spinner.start();
 
   // These are used to keep visualization updated
-  modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", 10);
-  get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", 10);
+  modify_env_rviz = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract_rviz", true);
+  get_env_changes_rviz = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes_rviz", true);
 
   // These are used to keep master version of the environment updated
-  modify_env_master = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract", 10);
-  get_env_changes_master = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes", 10);
+  modify_env_master = nh.serviceClient<tesseract_msgs::ModifyEnvironment>("modify_tesseract", true);
+  get_env_changes_master = nh.serviceClient<tesseract_msgs::GetEnvironmentChanges>("get_tesseract_changes", true);
 
   if (!updateRViz())
     return -1;

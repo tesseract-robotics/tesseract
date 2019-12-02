@@ -31,8 +31,8 @@ JointStateMonitorWidget::~JointStateMonitorWidget() { joint_state_subscriber_.sh
 
 void JointStateMonitorWidget::onInitialize(VisualizationWidget::Ptr visualization,
                                            tesseract::Tesseract::Ptr tesseract,
-                                           rviz::DisplayContext* context,
-                                           ros::NodeHandle update_nh)
+                                           rviz::DisplayContext* /*context*/,
+                                           const ros::NodeHandle& update_nh)
 {
   visualization_ = std::move(visualization);
   tesseract_ = std::move(tesseract);

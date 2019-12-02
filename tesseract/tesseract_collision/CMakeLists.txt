@@ -20,6 +20,7 @@ list(APPEND LIBFCL_LIBRARIES ${CCD_LIBRARIES})
 add_library(${PROJECT_NAME}_core INTERFACE)
 target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract::tesseract_geometry ${Boost_LIBRARIES} ${BULLET_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_core INTERFACE)
+tesseract_clang_tidy(${PROJECT_NAME}_core)
 target_include_directories(${PROJECT_NAME}_core INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -39,6 +40,7 @@ add_library(${PROJECT_NAME}_bullet SHARED
 )
 target_link_libraries(${PROJECT_NAME}_bullet PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_geometry console_bridge ${OCTOMAP_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_bullet PUBLIC)
+tesseract_clang_tidy(${PROJECT_NAME}_bullet)
 target_include_directories(${PROJECT_NAME}_bullet PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -52,6 +54,7 @@ target_include_directories(${PROJECT_NAME}_bullet SYSTEM PUBLIC
 add_library(${PROJECT_NAME}_fcl SHARED src/fcl/fcl_discrete_managers.cpp src/fcl/fcl_utils.cpp)
 target_link_libraries(${PROJECT_NAME}_fcl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_geometry console_bridge ${OCTOMAP_LIBRARIES} ${LIBFCL_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_fcl PUBLIC)
+tesseract_clang_tidy(${PROJECT_NAME}_fcl)
 target_include_directories(${PROJECT_NAME}_fcl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -66,6 +69,7 @@ target_include_directories(${PROJECT_NAME}_fcl SYSTEM PUBLIC
 add_executable(create_convex_hull src/create_convex_hull.cpp)
 target_link_libraries(create_convex_hull PUBLIC tesseract::tesseract_geometry console_bridge ${BULLET_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES})
 tesseract_target_compile_options(create_convex_hull PUBLIC)
+tesseract_clang_tidy(create_convex_hull)
 target_include_directories(create_convex_hull PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 target_include_directories(create_convex_hull SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}

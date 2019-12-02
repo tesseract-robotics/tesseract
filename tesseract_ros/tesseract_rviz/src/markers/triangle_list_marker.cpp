@@ -57,10 +57,10 @@ TriangleListMarker::TriangleListMarker(const std::string& ns,
                                        const std::vector<Ogre::Vector3>& points,
                                        const std::vector<Ogre::ColourValue>& colors)
   : MarkerBase(ns, id, context, parent_node)
-  , manual_object_(nullptr)
   , has_vertex_colors_(false)
   , has_face_colors_(false)
   , any_vertex_has_alpha_(false)
+  , manual_object_(nullptr)
 {
   size_t num_points = points.size();
   if ((num_points % 3) != 0 || num_points == 0)
@@ -80,10 +80,8 @@ TriangleListMarker::TriangleListMarker(const std::string& ns,
     scene_node_->setVisible(false);
     return;
   }
-  else
-  {
-    scene_node_->setVisible(true);
-  }
+
+  scene_node_->setVisible(true);
 
   if (!manual_object_)
   {

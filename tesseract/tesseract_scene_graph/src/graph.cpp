@@ -313,7 +313,7 @@ std::vector<Joint::ConstPtr> SceneGraph::getInboundJoints(const std::string& lin
   Vertex vertex = getVertex(link_name);
 
   // Get incomming edges
-  int num_in_edges = static_cast<int>(boost::in_degree(vertex, *this));
+  auto num_in_edges = static_cast<int>(boost::in_degree(vertex, *this));
   if (num_in_edges == 0)  // The root of the tree will have not incoming edges
     return joints;
 
@@ -333,7 +333,7 @@ std::vector<Joint::ConstPtr> SceneGraph::getOutboundJoints(const std::string& li
   Vertex vertex = getVertex(link_name);
 
   // Get incomming edges
-  int num_out_edges = static_cast<int>(boost::out_degree(vertex, *this));
+  auto num_out_edges = static_cast<int>(boost::out_degree(vertex, *this));
   if (num_out_edges == 0)
     return joints;
 

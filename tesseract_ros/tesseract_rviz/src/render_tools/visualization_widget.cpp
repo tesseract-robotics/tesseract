@@ -61,7 +61,7 @@ namespace tesseract_rviz
 {
 VisualizationWidget::VisualizationWidget(Ogre::SceneNode* root_node,
                                          rviz::DisplayContext* context,
-                                         const std::string& name,
+                                         std::string name,
                                          rviz::Property* parent_property)
   : scene_manager_(context->getSceneManager())
   , visible_(true)
@@ -75,7 +75,7 @@ VisualizationWidget::VisualizationWidget(Ogre::SceneNode* root_node,
   , doing_set_checkbox_(false)
   , env_loaded_(false)
   , inChangedEnableAllLinks(false)
-  , name_(name)
+  , name_(std::move(name))
 {
   // Add tesseract resources to ogre
   std::string tesseract_rviz_path = ros::package::getPath("tesseract_rviz");
@@ -237,12 +237,12 @@ void VisualizationWidget::clear()
   root_other_node_->removeAndDestroyAllChildren();
 }
 
-LinkWidget* VisualizationWidget::LinkFactory::createLink(VisualizationWidget* robot,
+LinkWidget* VisualizationWidget::LinkFactory::createLink(VisualizationWidget* env,
                                                          const tesseract_scene_graph::Link& link,
                                                          bool visual,
                                                          bool collision)
 {
-  return new LinkWidget(robot, link, visual, collision);
+  return new LinkWidget(env, link, visual, collision);
 }
 
 JointWidget* VisualizationWidget::LinkFactory::createJoint(VisualizationWidget* robot,
@@ -604,7 +604,7 @@ void VisualizationWidget::changedEnableAllLinks()
   inChangedEnableAllLinks = false;
 }
 
-void VisualizationWidget::setEnableAllLinksCheckbox(QVariant val)
+void VisualizationWidget::setEnableAllLinksCheckbox(const QVariant& val)
 {
   // doing_set_checkbox_ prevents changedEnableAllLinks from turning all
   // links off when we modify the enable_all_links_ property.
@@ -686,7 +686,7 @@ void VisualizationWidget::changedLinkTreeStyle()
   if (!env_loaded_)
     return;
 
-  LinkTreeStyle style = LinkTreeStyle(link_tree_style_->getOptionInt());
+  auto style = LinkTreeStyle(link_tree_style_->getOptionInt());
 
   unparentLinkProperties();
 
@@ -764,8 +764,8 @@ void VisualizationWidget::changedLinkTreeStyle()
     case STYLE_JOINT_LIST:
     {
       useDetailProperty(false);
-      M_NameToJoint::iterator joint_it = joints_.begin();
-      M_NameToJoint::iterator joint_end = joints_.end();
+      auto joint_it = joints_.begin();
+      auto joint_end = joints_.end();
       for (; joint_it != joint_end; ++joint_it)
       {
         joint_it->second->setParentProperty(link_tree_);
@@ -829,7 +829,7 @@ void VisualizationWidget::changedLinkTreeStyle()
 
 LinkWidget* VisualizationWidget::getLink(const std::string& name)
 {
-  M_NameToLink::iterator it = links_.find(name);
+  auto it = links_.find(name);
   if (it == links_.end())
   {
     ROS_WARN("Link [%s] does not exist", name.c_str());
@@ -841,7 +841,7 @@ LinkWidget* VisualizationWidget::getLink(const std::string& name)
 
 JointWidget* VisualizationWidget::getJoint(const std::string& name)
 {
-  M_NameToJoint::iterator it = joints_.find(name);
+  auto it = joints_.find(name);
   if (it == joints_.end())
   {
     ROS_WARN("Joint [%s] does not exist", name.c_str());

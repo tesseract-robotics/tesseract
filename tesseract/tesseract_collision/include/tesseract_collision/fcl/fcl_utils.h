@@ -78,10 +78,10 @@ public:
   using Ptr = std::shared_ptr<CollisionObjectWrapper>;
   using ConstPtr = std::shared_ptr<const CollisionObjectWrapper>;
 
-  CollisionObjectWrapper(const std::string& name,
+  CollisionObjectWrapper(std::string name,
                          const int& type_id,
-                         const CollisionShapesConst& shapes,
-                         const tesseract_common::VectorIsometry3d& shape_poses);
+                         CollisionShapesConst shapes,
+                         tesseract_common::VectorIsometry3d shape_poses);
 
   short int m_collisionFilterGroup;
   short int m_collisionFilterMask;

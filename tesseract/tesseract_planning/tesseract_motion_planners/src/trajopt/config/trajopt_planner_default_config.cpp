@@ -28,11 +28,14 @@
 
 namespace tesseract_motion_planners
 {
-TrajOptPlannerDefaultConfig::TrajOptPlannerDefaultConfig(const tesseract::Tesseract::ConstPtr& tesseract_,
-                                                         const std::string& manipulator_,
-                                                         const std::string& link_,
-                                                         const tesseract_common::VectorIsometry3d& tcp_)
-  : TrajOptPlannerConfig(), tesseract(tesseract_), manipulator(manipulator_), link(link_), tcp(tcp_)
+TrajOptPlannerDefaultConfig::TrajOptPlannerDefaultConfig(tesseract::Tesseract::ConstPtr tesseract_,
+                                                         std::string manipulator_,
+                                                         std::string link_,
+                                                         tesseract_common::VectorIsometry3d tcp_)
+  : tesseract(std::move(tesseract_))
+  , manipulator(std::move(manipulator_))
+  , link(std::move(link_))
+  , tcp(std::move(tcp_))
 {
 }
 
@@ -94,7 +97,7 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerDefaultConfig::g
       tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator);
   tesseract_environment::AdjacencyMap map(
       env->getSceneGraph(), kin->getActiveLinkNames(), env->getCurrentState()->transforms);
-  std::vector<std::string> adjacency_links = map.getActiveLinkNames();
+  const std::vector<std::string>& adjacency_links = map.getActiveLinkNames();
 
   // Populate Init Info
   pci.init_info.type = init_type;

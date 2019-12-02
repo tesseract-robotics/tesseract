@@ -8,6 +8,7 @@ find_package(tesseract_common REQUIRED)
 add_library(${PROJECT_NAME} INTERFACE)
 target_link_libraries(${PROJECT_NAME} INTERFACE tesseract::tesseract_collision_fcl tesseract::tesseract_collision_bullet)
 tesseract_target_compile_options(${PROJECT_NAME} INTERFACE)
+tesseract_clang_tidy(${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")

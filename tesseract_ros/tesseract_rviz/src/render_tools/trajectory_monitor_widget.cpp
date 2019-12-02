@@ -63,14 +63,14 @@ namespace tesseract_rviz
 TrajectoryMonitorWidget::TrajectoryMonitorWidget(rviz::Property* widget, rviz::Display* display)
   : widget_(widget)
   , display_(display)
-  , tesseract_(nullptr)
   , visualization_(nullptr)
+  , tesseract_(nullptr)
+  , cached_visible_(false)
   , animating_path_(false)
   , drop_displaying_trajectory_(false)
   , current_state_(-1)
   , trajectory_slider_panel_(nullptr)
   , trajectory_slider_dock_panel_(nullptr)
-  , cached_visible_(false)
 {
   main_property_ = new rviz::Property(
       "Trajectory Monitor", "", "Monitor a joint state topic and update the visualization", widget_, nullptr, this);
@@ -124,14 +124,13 @@ TrajectoryMonitorWidget::~TrajectoryMonitorWidget()
   trajectory_message_to_display_.reset();
   displaying_trajectory_message_.reset();
 
-  if (trajectory_slider_dock_panel_)
-    delete trajectory_slider_dock_panel_;
+  delete trajectory_slider_dock_panel_;
 }
 
 void TrajectoryMonitorWidget::onInitialize(VisualizationWidget::Ptr visualization,
                                            tesseract::Tesseract::Ptr tesseract,
                                            rviz::DisplayContext* context,
-                                           ros::NodeHandle update_nh)
+                                           const ros::NodeHandle& update_nh)
 {
   // Save pointers for later use
   visualization_ = std::move(visualization);
@@ -206,7 +205,7 @@ void TrajectoryMonitorWidget::createTrajectoryTrail()
 
   int stepsize = trail_step_size_property_->getInt();
   // always include last trajectory point
-  int num_waypoints = static_cast<int>(t->joint_trajectory.points.size());
+  auto num_waypoints = static_cast<int>(t->joint_trajectory.points.size());
   num_trajectory_waypoints_ =
       static_cast<size_t>(std::ceil(static_cast<float>(num_waypoints + stepsize - 1) / static_cast<float>(stepsize)));
   std::vector<tesseract_environment::EnvState::Ptr> states_data;
@@ -304,21 +303,20 @@ float TrajectoryMonitorWidget::getStateDisplayTime()
   std::string tm = state_display_time_property_->getStdString();
   if (tm == "REALTIME")
     return -1.0;
-  else
+
+  boost::replace_all(tm, "s", "");
+  boost::trim(tm);
+  float t = 0.05f;
+  try
   {
-    boost::replace_all(tm, "s", "");
-    boost::trim(tm);
-    float t = 0.05f;
-    try
-    {
-      t = boost::lexical_cast<float>(tm);
-    }
-    catch (const boost::bad_lexical_cast& ex)
-    {
-      state_display_time_property_->setStdString("0.05 s");
-    }
-    return t;
+    t = boost::lexical_cast<float>(tm);
   }
+  catch (const boost::bad_lexical_cast& ex)
+  {
+    state_display_time_property_->setStdString("0.05 s");
+  }
+  return t;
+
 }
 
 void TrajectoryMonitorWidget::dropTrajectory() { drop_displaying_trajectory_ = true; }
@@ -423,7 +421,7 @@ void TrajectoryMonitorWidget::onUpdate(float wall_dt)
       else
         ++current_state_;
 
-      if (current_state_ < num_trajectory_waypoints_)
+      if (current_state_ < static_cast<int>(num_trajectory_waypoints_))
       {
         if (trajectory_slider_panel_)
           trajectory_slider_panel_->setSliderPosition(current_state_);

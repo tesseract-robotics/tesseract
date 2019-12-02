@@ -45,6 +45,7 @@ catkin_package(
 add_library(${PROJECT_NAME} INTERFACE)
 target_link_libraries(${PROJECT_NAME} INTERFACE tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_process_planners tesseract::tesseract_motion_planners_core ${catkin_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME} INTERFACE)
+tesseract_clang_tidy(${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -70,6 +71,7 @@ if(CATKIN_ENABLE_TESTING)
   catkin_add_gtest(${PROJECT_NAME}_unit test/tesseract_rosutils_unit.cpp)
   target_link_libraries(${PROJECT_NAME}_unit tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_process_planners tesseract::tesseract_motion_planners_core ${catkin_LIBRARIES})
   tesseract_target_compile_options(${PROJECT_NAME}_unit PRIVATE)
+  tesseract_clang_tidy(${PROJECT_NAME}_unit)
   target_include_directories(${PROJECT_NAME}_unit PRIVATE
       "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
       "$<INSTALL_INTERFACE:include>")

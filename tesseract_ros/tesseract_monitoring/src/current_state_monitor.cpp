@@ -47,19 +47,19 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_monitoring
 {
 CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env,
-                                         const tesseract::ForwardKinematicsManager::ConstPtr& kinematics_manager)
-  : CurrentStateMonitor(env, kinematics_manager, ros::NodeHandle())
+                                         tesseract::ForwardKinematicsManager::ConstPtr kinematics_manager)
+  : CurrentStateMonitor(env, std::move(kinematics_manager), ros::NodeHandle())
 {
 }
 
 CurrentStateMonitor::CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env,
-                                         const tesseract::ForwardKinematicsManager::ConstPtr& kinematics_manager,
-                                         ros::NodeHandle nh)
+                                         tesseract::ForwardKinematicsManager::ConstPtr kinematics_manager,
+                                         const ros::NodeHandle& nh)
   : nh_(nh)
   , env_(env)
   , env_state_(*env->getCurrentState())
   , last_environment_revision_(env_->getRevision())
-  , kinematics_manager_(kinematics_manager)
+  , kinematics_manager_(std::move(kinematics_manager))
   , state_monitor_started_(false)
   , copy_dynamics_(false)
   , error_(std::numeric_limits<double>::epsilon())
@@ -129,8 +129,8 @@ std::string CurrentStateMonitor::getMonitoredTopic() const
 {
   if (joint_state_subscriber_)
     return joint_state_subscriber_.getTopic();
-  else
-    return "";
+
+  return "";
 }
 
 bool CurrentStateMonitor::isPassiveOrMimicDOF(const std::string& /*dof*/) const
@@ -175,7 +175,7 @@ bool CurrentStateMonitor::haveCompleteState() const
   return result;
 }
 
-bool CurrentStateMonitor::haveCompleteState(std::vector<std::string>& missing_states) const
+bool CurrentStateMonitor::haveCompleteState(std::vector<std::string>& missing_joints) const
 {
   bool result = true;
   boost::mutex::scoped_lock slock(state_update_lock_);
@@ -184,7 +184,7 @@ bool CurrentStateMonitor::haveCompleteState(std::vector<std::string>& missing_st
       if (!isPassiveOrMimicDOF(joint.first))
       {
         ROS_DEBUG("Joint variable '%s' has never been updated", joint.first.c_str());
-        missing_states.push_back(joint.first);
+        missing_joints.push_back(joint.first);
         result = false;
       }
   return result;
@@ -200,7 +200,7 @@ bool CurrentStateMonitor::haveCompleteState(const ros::Duration& age) const
   {
     if (isPassiveOrMimicDOF(joint.first))
       continue;
-    std::map<std::string, ros::Time>::const_iterator it = joint_time_.find(joint.first);
+    auto it = joint_time_.find(joint.first);
     if (it == joint_time_.end())
     {
       ROS_DEBUG("Joint variable '%s' has never been updated", joint.first.c_str());
@@ -230,7 +230,7 @@ bool CurrentStateMonitor::haveCompleteState(const ros::Duration& age, std::vecto
   {
     if (isPassiveOrMimicDOF(joint.first))
       continue;
-    std::map<std::string, ros::Time>::const_iterator it = joint_time_.find(joint.first);
+    auto it = joint_time_.find(joint.first);
     if (it == joint_time_.end())
     {
       ROS_DEBUG("Joint variable '%s' has never been updated", joint.first.c_str());
@@ -367,8 +367,8 @@ void CurrentStateMonitor::jointStateCallback(const sensor_msgs::JointStateConstP
 
   // callbacks, if needed
   if (update)
-    for (std::size_t i = 0; i < update_callbacks_.size(); ++i)
-      update_callbacks_[i](joint_state);
+    for (auto& update_callback : update_callbacks_)
+      update_callback(joint_state);
 
   // notify waitForCurrentState() *after* potential update callbacks
   state_update_condition_.notify_all();

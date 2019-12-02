@@ -89,7 +89,7 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph,
   return true;
 }
 
-bool Tesseract::init(const std::string& urdf_string, tesseract_scene_graph::ResourceLocator::Ptr locator)
+bool Tesseract::init(const std::string& urdf_string, const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   clear();
 
@@ -119,7 +119,7 @@ bool Tesseract::init(const std::string& urdf_string, tesseract_scene_graph::Reso
 
 bool Tesseract::init(const std::string& urdf_string,
                      const std::string& srdf_string,
-                     tesseract_scene_graph::ResourceLocator::Ptr locator)
+                     const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   clear();
 

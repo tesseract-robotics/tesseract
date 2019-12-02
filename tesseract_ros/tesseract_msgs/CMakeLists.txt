@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_msgs)
 
 add_compile_options(
-  -std=c++11
+  -std=c++14
   -Wall
   -Wextra
   -Wsuggest-override

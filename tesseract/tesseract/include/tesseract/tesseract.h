@@ -65,10 +65,10 @@ public:
 
   bool init(tesseract_scene_graph::SceneGraph::Ptr scene_graph);
   bool init(tesseract_scene_graph::SceneGraph::Ptr scene_graph, tesseract_scene_graph::SRDFModel::ConstPtr srdf_model);
-  bool init(const std::string& urdf_string, tesseract_scene_graph::ResourceLocator::Ptr locator);
+  bool init(const std::string& urdf_string, const tesseract_scene_graph::ResourceLocator::Ptr &locator);
   bool init(const std::string& urdf_string,
             const std::string& srdf_string,
-            tesseract_scene_graph::ResourceLocator::Ptr locator);
+            const tesseract_scene_graph::ResourceLocator::Ptr& locator);
   bool init(const boost::filesystem::path& urdf_path, const tesseract_scene_graph::ResourceLocator::Ptr& locator);
   bool init(const boost::filesystem::path& urdf_path,
             const boost::filesystem::path& srdf_path,

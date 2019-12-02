@@ -184,8 +184,6 @@ WaypointTermInfo createWaypointTermInfo(const Waypoint::ConstPtr& waypoint,
       cart_waypoint->isCritical() ? term_info.cnt.push_back(info) : term_info.cost.push_back(info);
       break;
     }
-    default:
-      break;
   }
 
   return term_info;
@@ -327,8 +325,8 @@ trajopt::TermInfo::Ptr createUserDefinedTermInfo(int n_steps,
   ef->term_type = trajopt::TT_COST;
   ef->first_step = 0;
   ef->last_step = n_steps - 1;
-  ef->error_function = error_function;
-  ef->jacobian_function = jacobian_function;
+  ef->error_function = std::move(error_function);
+  ef->jacobian_function = std::move(jacobian_function);
 
   return ef;
 }

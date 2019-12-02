@@ -40,7 +40,7 @@ public:
   void onInitialize(VisualizationWidget::Ptr visualization,
                     tesseract::Tesseract::Ptr tesseract,
                     rviz::DisplayContext* context,
-                    ros::NodeHandle update_nh);
+                    const ros::NodeHandle &update_nh);
 
   void onEnable();
   void onDisable();
@@ -62,7 +62,7 @@ protected:
   rviz::Property* main_property_;
   rviz::RosTopicProperty* joint_state_topic_property_;
 
-  void newJointStateCallback(const sensor_msgs::JointStateConstPtr& joint_state);
+  void newJointStateCallback(const sensor_msgs::JointStateConstPtr& joint_state_msg);
 
   bool isUpdateRequired(const sensor_msgs::JointState& joint_state);
 };

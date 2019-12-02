@@ -13,6 +13,7 @@ find_package(opw_kinematics REQUIRED)
 add_library(${PROJECT_NAME}_core INTERFACE)
 target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract::tesseract_scene_graph)
 tesseract_target_compile_options(${PROJECT_NAME}_core INTERFACE)
+tesseract_clang_tidy(${PROJECT_NAME}_core)
 target_include_directories(${PROJECT_NAME}_core INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -24,6 +25,7 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
 add_library(${PROJECT_NAME}_ikfast INTERFACE)
 target_link_libraries(${PROJECT_NAME}_ikfast INTERFACE ${PROJECT_NAME}_core)
 tesseract_target_compile_options(${PROJECT_NAME}_ikfast INTERFACE)
+tesseract_clang_tidy(${PROJECT_NAME}_ikfast)
 target_include_directories(${PROJECT_NAME}_ikfast INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -39,6 +41,7 @@ add_library(${PROJECT_NAME}_kdl SHARED
 )
 target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph orocos-kdl console_bridge)
 tesseract_target_compile_options(${PROJECT_NAME}_kdl PUBLIC)
+tesseract_clang_tidy(${PROJECT_NAME}_kdl)
 if(KDL_VERSION VERSION_LESS "1.4.0")
     target_compile_definitions(${PROJECT_NAME}_kdl PUBLIC KDL_LESS_1_4_0=ON)
 endif()
@@ -53,6 +56,7 @@ target_include_directories(${PROJECT_NAME}_kdl SYSTEM PUBLIC
 add_library(${PROJECT_NAME}_opw SHARED src/opw/opw_inv_kin.cpp)
 target_link_libraries(${PROJECT_NAME}_opw PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph opw_kinematics::opw_kinematics console_bridge)
 tesseract_target_compile_options(${PROJECT_NAME}_opw PUBLIC)
+tesseract_clang_tidy(${PROJECT_NAME}_opw)
 target_include_directories(${PROJECT_NAME}_opw PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")

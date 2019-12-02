@@ -87,7 +87,7 @@ bool DescartesRobotSampler<FloatType>::isCollisionFree(const FloatType* vertex)
   if (collision_ == nullptr)
     return true;
 
-  return collision_->validate(vertex, dof_);
+  return collision_->validate(vertex, static_cast<size_t>(dof_));
 }
 
 template <typename FloatType>
@@ -100,7 +100,7 @@ bool DescartesRobotSampler<FloatType>::ikAt(std::vector<FloatType>& solution_set
     return false;
 
   Eigen::VectorXd robot_solution_set;
-  int robot_dof = robot_kinematics_->numJoints();
+  int robot_dof = static_cast<int>(robot_kinematics_->numJoints());
   if (!robot_kinematics_->calcInvKin(robot_solution_set, target_pose, ik_seed_))
     return false;
 
@@ -113,7 +113,7 @@ bool DescartesRobotSampler<FloatType>::ikAt(std::vector<FloatType>& solution_set
     full_sol.insert(end(full_sol), std::make_move_iterator(sol), std::make_move_iterator(sol + robot_dof));
 
     if ((is_valid_ != nullptr) &&
-        !is_valid_(Eigen::Map<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>(full_sol.data(), full_sol.size())))
+        !is_valid_(Eigen::Map<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>(full_sol.data(), static_cast<long>(full_sol.size()))))
       continue;
 
     if (!get_best_solution)

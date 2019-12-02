@@ -43,18 +43,18 @@
 
 namespace tesseract_rviz
 {
-MarkerBase::MarkerBase(const std::string& ns, const int id, rviz::DisplayContext* context, Ogre::SceneNode* parent_node)
-  : ns_(ns), id_(id), context_(context), scene_node_(parent_node->createChildSceneNode())
+MarkerBase::MarkerBase(std::string ns, const int id, rviz::DisplayContext* context, Ogre::SceneNode* parent_node)
+  : ns_(std::move(ns)), id_(id), context_(context), scene_node_(parent_node->createChildSceneNode())
 {
 }
 
 MarkerBase::~MarkerBase() { context_->getSceneManager()->destroySceneNode(scene_node_); }
 
-void MarkerBase::setInteractiveObject(rviz::InteractiveObjectWPtr control)
+void MarkerBase::setInteractiveObject(rviz::InteractiveObjectWPtr object)
 {
   if (handler_)
   {
-    handler_->setInteractiveObject(control);
+    handler_->setInteractiveObject(std::move(object));
   }
 }
 
@@ -72,7 +72,7 @@ void MarkerBase::extractMaterials(Ogre::Entity* entity, std::set<Ogre::MaterialP
   for (uint32_t i = 0; i < num_sub_entities; ++i)
   {
     Ogre::SubEntity* sub = entity->getSubEntity(i);
-    Ogre::MaterialPtr material = sub->getMaterial();
+    const Ogre::MaterialPtr& material = sub->getMaterial();
     materials.insert(material);
   }
 }

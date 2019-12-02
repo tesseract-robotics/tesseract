@@ -115,10 +115,13 @@ const std::string EnvironmentMonitor::DEFAULT_SAVE_SCENE_GRAPH_SERVICE = "save_s
 const std::string EnvironmentMonitor::MONITORED_ENVIRONMENT_TOPIC = "monitored_tesseract";
 
 EnvironmentMonitor::EnvironmentMonitor(const std::string& robot_description,
-                                       const std::string& name,
-                                       const std::string& discrete_plugin,
-                                       const std::string& continuous_plugin)
-  : monitor_name_(name), discrete_plugin_name_(discrete_plugin), continuous_plugin_name_(continuous_plugin), nh_("~")
+                                       std::string name,
+                                       std::string discrete_plugin,
+                                       std::string continuous_plugin)
+  : monitor_name_(std::move(name))
+  , discrete_plugin_name_(std::move(discrete_plugin))
+  , continuous_plugin_name_(std::move(continuous_plugin))
+  , nh_("~")
 {
   // Initial setup
   std::string urdf_xml_string, srdf_xml_string;
@@ -146,12 +149,12 @@ EnvironmentMonitor::EnvironmentMonitor(const std::string& robot_description,
 }
 
 EnvironmentMonitor::EnvironmentMonitor(tesseract::Tesseract::Ptr tesseract,
-                                       const std::string& name,
-                                       const std::string& discrete_plugin,
-                                       const std::string& continuous_plugin)
-  : monitor_name_(name)
-  , discrete_plugin_name_(discrete_plugin)
-  , continuous_plugin_name_(continuous_plugin)
+                                       std::string name,
+                                       std::string discrete_plugin,
+                                       std::string continuous_plugin)
+  : monitor_name_(std::move(name))
+  , discrete_plugin_name_(std::move(discrete_plugin))
+  , continuous_plugin_name_(std::move(continuous_plugin))
   , tesseract_(std::move(tesseract))
   , nh_("~")
 {
@@ -180,68 +183,67 @@ void EnvironmentMonitor::initialize()
     ROS_FATAL_NAMED(LOGNAME, "Faild to initalize environment monitor");
     return;
   }
-  else
+
+  try
   {
-    try
+    discrete_manager_loader_.reset(
+        new DiscreteContactManagerPluginLoader("tesseract_collision", "tesseract_collision::DiscreteContactManager"));
+    for (auto plugin : discrete_manager_loader_->getDeclaredClasses())
     {
-      discrete_manager_loader_.reset(
-          new DiscreteContactManagerPluginLoader("tesseract_collision", "tesseract_collision::DiscreteContactManager"));
-      for (auto plugin : discrete_manager_loader_->getDeclaredClasses())
+      auto fn = [&]() -> tesseract_collision::DiscreteContactManager::Ptr {
+        return discrete_manager_loader_->createUniqueInstance(plugin);
+      };
+      tesseract_->getEnvironment()->registerDiscreteContactManager(discrete_manager_loader_->getClassType(plugin),
+                                                                   fn);
+
+      ROS_INFO("Discrete Contact Monitor Registered: %s", discrete_manager_loader_->getClassType(plugin).c_str());
+    }
+
+    // The tesseract sets a default so it is ok if one is not provided here.
+    if (!discrete_plugin_name_.empty())
+    {
+      if (discrete_manager_loader_->isClassAvailable(discrete_plugin_name_))
       {
-        auto fn = [&]() -> tesseract_collision::DiscreteContactManager::Ptr {
-          return discrete_manager_loader_->createUniqueInstance(plugin);
-        };
-        tesseract_->getEnvironment()->registerDiscreteContactManager(discrete_manager_loader_->getClassType(plugin),
+        ROS_ERROR("Failed to set default tesseract contact checker plugin: %s.", discrete_plugin_name_.c_str());
+      }
+      else
+      {
+        tesseract_->getEnvironment()->setActiveDiscreteContactManager(discrete_plugin_name_);
+      }
+    }
+
+    continuous_manager_loader_.reset(new ContinuousContactManagerPluginLoader("tesseract_collision",
+                                                                              "tesseract_collision::"
+                                                                              "ContinuousContactManager"));
+    for (auto plugin : continuous_manager_loader_->getDeclaredClasses())
+    {
+      auto fn = [&]() -> tesseract_collision::ContinuousContactManager::Ptr {
+        return continuous_manager_loader_->createUniqueInstance(plugin);
+      };
+      tesseract_->getEnvironment()->registerContinuousContactManager(continuous_manager_loader_->getClassType(plugin),
                                                                      fn);
 
-        ROS_INFO("Discrete Contact Monitor Registered: %s", discrete_manager_loader_->getClassType(plugin).c_str());
-      }
-
-      // The tesseract sets a default so it is ok if one is not provided here.
-      if (!discrete_plugin_name_.empty())
-      {
-        if (discrete_manager_loader_->isClassAvailable(discrete_plugin_name_))
-        {
-          ROS_ERROR("Failed to set default tesseract contact checker plugin: %s.", discrete_plugin_name_.c_str());
-        }
-        else
-        {
-          tesseract_->getEnvironment()->setActiveDiscreteContactManager(discrete_plugin_name_);
-        }
-      }
-
-      continuous_manager_loader_.reset(new ContinuousContactManagerPluginLoader("tesseract_collision",
-                                                                                "tesseract_collision::"
-                                                                                "ContinuousContactManager"));
-      for (auto plugin : continuous_manager_loader_->getDeclaredClasses())
-      {
-        auto fn = [&]() -> tesseract_collision::ContinuousContactManager::Ptr {
-          return continuous_manager_loader_->createUniqueInstance(plugin);
-        };
-        tesseract_->getEnvironment()->registerContinuousContactManager(continuous_manager_loader_->getClassType(plugin),
-                                                                       fn);
-
-        ROS_INFO("Continuous Contact Monitor Registered: %s", continuous_manager_loader_->getClassType(plugin).c_str());
-      }
-
-      if (!continuous_plugin_name_.empty())
-      {
-        if (continuous_manager_loader_->isClassAvailable(continuous_plugin_name_))
-        {
-          ROS_ERROR("Failed to set default tesseract contact checker plugin: %s.", continuous_plugin_name_.c_str());
-        }
-        else
-        {
-          tesseract_->getEnvironment()->setActiveContinuousContactManager(continuous_plugin_name_);
-        }
-      }
+      ROS_INFO("Continuous Contact Monitor Registered: %s", continuous_manager_loader_->getClassType(plugin).c_str());
     }
-    catch (int& /*e*/)
+
+    if (!continuous_plugin_name_.empty())
     {
-      ROS_ERROR_NAMED(LOGNAME, "Failed to load tesseract contact managers plugin");
-      tesseract_.reset();
+      if (continuous_manager_loader_->isClassAvailable(continuous_plugin_name_))
+      {
+        ROS_ERROR("Failed to set default tesseract contact checker plugin: %s.", continuous_plugin_name_.c_str());
+      }
+      else
+      {
+        tesseract_->getEnvironment()->setActiveContinuousContactManager(continuous_plugin_name_);
+      }
     }
   }
+  catch (int& /*e*/)
+  {
+    ROS_ERROR_NAMED(LOGNAME, "Failed to load tesseract contact managers plugin");
+    tesseract_.reset();
+  }
+
 
   publish_environment_frequency_ = 2.0;
   new_environment_update_ = UPDATE_NONE;
@@ -294,7 +296,7 @@ void EnvironmentMonitor::startPublishingEnvironment(EnvironmentUpdateType update
   {
     environment_publisher_ = nh_.advertise<tesseract_msgs::TesseractState>(environment_topic, 100, false);
     ROS_INFO_NAMED(LOGNAME, "Publishing maintained environment on '%s'", environment_topic.c_str());
-    publish_environment_.reset(new boost::thread(boost::bind(&EnvironmentMonitor::environmentPublishingThread, this)));
+    publish_environment_ = std::make_unique<boost::thread>(boost::bind(&EnvironmentMonitor::environmentPublishingThread, this));
   }
 }
 
@@ -360,8 +362,8 @@ void EnvironmentMonitor::triggerEnvironmentUpdateEvent(EnvironmentUpdateType upd
   // do not modify update functions while we are calling them
   boost::recursive_mutex::scoped_lock lock(update_lock_);
 
-  for (std::size_t i = 0; i < update_callbacks_.size(); ++i)
-    update_callbacks_[i](update_type);
+  for (auto& update_callback : update_callbacks_)
+    update_callback(update_type);
   new_environment_update_ = static_cast<EnvironmentUpdateType>(new_environment_update_ | update_type);
   new_environment_update_condition_.notify_all();
 }
@@ -393,7 +395,7 @@ void EnvironmentMonitor::newStateCallback(const tesseract_msgs::TesseractStateCo
 }
 
 bool EnvironmentMonitor::applyEnvironmentCommandsMessage(
-    std::string id,
+    const std::string& id,
     int revision,
     const std::vector<tesseract_msgs::EnvironmentCommand>& commands)
 {

@@ -56,24 +56,24 @@
 
 namespace tesseract_rviz
 {
-InteractiveMarker::InteractiveMarker(const std::string& name,
-                                     const std::string& description,
-                                     const std::string& reference_frame,
+InteractiveMarker::InteractiveMarker(std::string name,
+                                     std::string description,
+                                     std::string reference_frame,
                                      Ogre::SceneNode* scene_node,
                                      rviz::DisplayContext* context,
-                                     const bool reference_frame_locked,
-                                     const float scale)
+                                     bool reference_frame_locked,
+                                     float scale)
   : visible_(true)
   , context_(context)
-  , reference_frame_(reference_frame)
+  , reference_frame_(std::move(reference_frame))
   , reference_frame_locked_(reference_frame_locked)
   , reference_node_(scene_node->createChildSceneNode())
   , position_(scene_node->getPosition())
   , orientation_(scene_node->getOrientation())
   , pose_changed_(false)
   , time_since_last_feedback_(0)
-  , name_(name)
-  , description_(description)
+  , name_(std::move(name))
+  , description_(std::move(description))
   , dragging_(false)
   , pose_update_requested_(false)
   , scale_(scale)
@@ -173,21 +173,20 @@ InteractiveMarkerControl::Ptr InteractiveMarker::createInteractiveControl(const 
     // Use existing control
     return search_iter->second;
   }
-  else
-  {
-    // Else make new control
-    auto control = boost::make_shared<InteractiveMarkerControl>(name,
-                                                                description,
-                                                                context_,
-                                                                reference_node_,
-                                                                this,
-                                                                interactive_mode,
-                                                                orientation_mode,
-                                                                always_visible,
-                                                                orientation);
-    controls_[name] = control;
-    return control;
-  }
+
+  // Else make new control
+  auto control = boost::make_shared<InteractiveMarkerControl>(name,
+                                                              description,
+                                                              context_,
+                                                              reference_node_,
+                                                              this,
+                                                              interactive_mode,
+                                                              orientation_mode,
+                                                              always_visible,
+                                                              orientation);
+  controls_[name] = control;
+  return control;
+
 }
 
 // void InteractiveMarker::processMessage( const visualization_msgs::InteractiveMarkerPose& message )
@@ -365,12 +364,11 @@ InteractiveMarkerControl::Ptr InteractiveMarker::createInteractiveControl(const 
 // Recursively append menu and submenu entries to menu, based on a
 // vector of menu entry id numbers describing the menu entries at the
 // current level.
-void InteractiveMarker::populateMenu(QMenu* menu, std::vector<uint32_t>& ids)
+void InteractiveMarker::populateMenu(QMenu* /*menu*/, std::vector<uint32_t>& ids)
 {
-  for (size_t id_index = 0; id_index < ids.size(); id_index++)
+  for (unsigned int id : ids)
   {
-    uint32_t id = ids[id_index];
-    std::map<uint32_t, MenuNode>::iterator node_it = menu_entries_.find(id);
+    auto node_it = menu_entries_.find(id);
     ROS_ASSERT_MSG(
         node_it != menu_entries_.end(), "interactive marker menu entry %u not found during populateMenu().", id);
     MenuNode node = (*node_it).second;
@@ -496,9 +494,9 @@ void InteractiveMarker::update(float wall_dt)
     updateReferencePose();
   }
 
-  for (auto it = controls_.begin(); it != controls_.end(); it++)
+  for (auto& control : controls_)
   {
-    (*it).second->update();
+    control.second->update();
   }
   if (description_control_)
   {
@@ -552,9 +550,9 @@ void InteractiveMarker::setPose(Ogre::Vector3 position, Ogre::Quaternion orienta
   axes_->setPosition(position_);
   axes_->setOrientation(orientation_);
 
-  for (auto it = controls_.begin(); it != controls_.end(); it++)
+  for (auto& control : controls_)
   {
-    (*it).second->interactiveMarkerPoseChanged(position_, orientation_);
+    control.second->interactiveMarkerPoseChanged(position_, orientation_);
   }
   if (description_control_)
   {
@@ -605,9 +603,9 @@ void InteractiveMarker::updateAxesVisibility()
 void InteractiveMarker::updateVisualAidsVisibility()
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
-  for (auto it = controls_.begin(); it != controls_.end(); it++)
+  for (auto& control : controls_)
   {
-    (*it).second->setShowVisualAids(visible_ && show_visual_aids_);
+    control.second->setShowVisualAids(visible_ && show_visual_aids_);
   }
 }
 
@@ -732,7 +730,7 @@ void InteractiveMarker::handleMenuSelect(int menu_item_id)
 {
   boost::recursive_mutex::scoped_lock lock(mutex_);
 
-  std::map<uint32_t, MenuNode>::iterator it = menu_entries_.find(menu_item_id);
+  auto it = menu_entries_.find(static_cast<unsigned>(menu_item_id));
 
   if (it != menu_entries_.end())
   {

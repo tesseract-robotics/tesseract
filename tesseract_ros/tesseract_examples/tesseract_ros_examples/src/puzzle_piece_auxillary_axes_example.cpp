@@ -141,7 +141,7 @@ ProblemConstructionInfo PuzzlePieceAuxillaryAxesExample::cppMethod()
   //  end_pos[6]);
 
   // Populate Cost Info
-  std::shared_ptr<JointVelTermInfo> joint_vel = std::shared_ptr<JointVelTermInfo>(new JointVelTermInfo);
+  auto joint_vel = std::make_shared<JointVelTermInfo>();
   joint_vel->coeffs = std::vector<double>(9, 1.0);
   joint_vel->targets = std::vector<double>(9, 0.0);
   joint_vel->first_step = 0;
@@ -150,7 +150,7 @@ ProblemConstructionInfo PuzzlePieceAuxillaryAxesExample::cppMethod()
   joint_vel->term_type = TT_COST;
   pci.cost_infos.push_back(joint_vel);
 
-  std::shared_ptr<JointAccTermInfo> joint_acc = std::shared_ptr<JointAccTermInfo>(new JointAccTermInfo);
+  auto joint_acc = std::make_shared<JointAccTermInfo>();
   joint_acc->coeffs = std::vector<double>(9, 2.0);
   joint_acc->targets = std::vector<double>(9, 0.0);
   joint_acc->first_step = 0;
@@ -159,7 +159,7 @@ ProblemConstructionInfo PuzzlePieceAuxillaryAxesExample::cppMethod()
   joint_acc->term_type = TT_COST;
   pci.cost_infos.push_back(joint_acc);
 
-  std::shared_ptr<JointJerkTermInfo> joint_jerk = std::shared_ptr<JointJerkTermInfo>(new JointJerkTermInfo);
+  auto joint_jerk = std::make_shared<JointJerkTermInfo>();
   joint_jerk->coeffs = std::vector<double>(9, 5.0);
   joint_jerk->targets = std::vector<double>(9, 0.0);
   joint_jerk->first_step = 0;
@@ -168,7 +168,7 @@ ProblemConstructionInfo PuzzlePieceAuxillaryAxesExample::cppMethod()
   joint_jerk->term_type = TT_COST;
   pci.cost_infos.push_back(joint_jerk);
 
-  std::shared_ptr<CollisionTermInfo> collision = std::shared_ptr<CollisionTermInfo>(new CollisionTermInfo);
+  auto collision = std::make_shared<CollisionTermInfo>();
   collision->name = "collision";
   collision->term_type = TT_COST;
   collision->continuous = false;
@@ -181,8 +181,7 @@ ProblemConstructionInfo PuzzlePieceAuxillaryAxesExample::cppMethod()
   // Populate Constraints
   for (auto i = 0; i < pci.basic_info.n_steps; ++i)
   {
-    std::shared_ptr<DynamicCartPoseTermInfo> pose =
-        std::shared_ptr<DynamicCartPoseTermInfo>(new DynamicCartPoseTermInfo);
+    auto pose = std::make_shared<DynamicCartPoseTermInfo>();
     pose->term_type = TT_CNT;
     pose->name = "waypoint_cart_" + std::to_string(i);
     pose->target = "grinder_frame";

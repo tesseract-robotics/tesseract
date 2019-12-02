@@ -173,7 +173,7 @@ inline int createConvexHull(tesseract_common::VectorVector3d& vertices,
 
   btConvexHullComputer conv;
   std::vector<double> points;
-  points.reserve(static_cast<int>(input.size() * 3));
+  points.reserve(input.size() * 3);
   for (const auto& v : input)
   {
     points.push_back(v[0]);
@@ -183,7 +183,7 @@ inline int createConvexHull(tesseract_common::VectorVector3d& vertices,
 
   btScalar val = conv.compute(points.data(),
                               3 * sizeof(double),
-                              input.size(),
+                              static_cast<int>(input.size()),
                               static_cast<btScalar>(shrink),
                               static_cast<btScalar>(shrinkClamp));
   if (val < 0)
@@ -197,13 +197,13 @@ inline int createConvexHull(tesseract_common::VectorVector3d& vertices,
   for (int i = 0; i < num_verts; i++)
   {
     btVector3& v = conv.vertices[i];
-    vertices.push_back(Eigen::Vector3d(v.getX(), v.getY(), v.getZ()));
+    vertices.push_back(Eigen::Vector3d(static_cast<double>(v.getX()), static_cast<double>(v.getY()), static_cast<double>(v.getZ())));
   }
 
-  int num_faces = conv.faces.size();
+  size_t num_faces = static_cast<size_t>(conv.faces.size());
   std::vector<int> local_faces;
-  local_faces.reserve(3ul * static_cast<size_t>(num_faces));
-  for (int i = 0; i < num_faces; i++)
+  local_faces.reserve(3ul * num_faces);
+  for (int i = 0; i < conv.faces.size(); i++)
   {
     std::vector<int> face;
     face.reserve(3);
@@ -236,7 +236,7 @@ inline int createConvexHull(tesseract_common::VectorVector3d& vertices,
   for (size_t i = 0; i < local_faces.size(); ++i)
     faces[static_cast<long>(i)] = local_faces[i];
 
-  return num_faces;
+  return conv.faces.size();
 }
 
 inline tesseract_geometry::ConvexMesh::Ptr makeConvexMesh(const tesseract_geometry::Mesh& mesh)

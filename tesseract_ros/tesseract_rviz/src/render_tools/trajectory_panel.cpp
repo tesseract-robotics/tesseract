@@ -44,7 +44,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_rviz
 {
 TrajectoryPanel::TrajectoryPanel(QWidget* parent) : Panel(parent) {}
-TrajectoryPanel::~TrajectoryPanel() {}
+TrajectoryPanel::~TrajectoryPanel() = default;
 void TrajectoryPanel::onInitialize()
 {
   slider_ = new QSlider(Qt::Horizontal);
@@ -65,7 +65,7 @@ void TrajectoryPanel::onInitialize()
   button_->setEnabled(false);
   connect(button_, SIGNAL(clicked()), this, SLOT(buttonClicked()));
 
-  QHBoxLayout* layout = new QHBoxLayout;
+  auto* layout = new QHBoxLayout;
   layout->addWidget(new QLabel("Waypoint:", nullptr));
   layout->addWidget(minimum_label_);
   layout->addWidget(slider_);

@@ -53,16 +53,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_rviz
 {
 ManipulationWidget::ManipulationWidget(rviz::Property* widget, rviz::Display* display)
-  : widget_(widget)
-  , root_interactive_node_(nullptr)
+  : root_interactive_node_(nullptr)
+  , widget_(widget)
   , display_(display)
   , visualization_(nullptr)
   , tesseract_(nullptr)
   , state_(ManipulatorState::START)
   , env_revision_(0)
   , env_state_(nullptr)
-  , enabled_(false)
   , tcp_(Eigen::Isometry3d::Identity())
+  , enabled_(false)
 //  , trajectory_slider_panel_(nullptr)
 //  , trajectory_slider_dock_panel_(nullptr)
 {
@@ -139,9 +139,9 @@ void ManipulationWidget::onInitialize(Ogre::SceneNode* root_node,
                                       rviz::DisplayContext* context,
                                       VisualizationWidget::Ptr visualization,
                                       tesseract::Tesseract::Ptr tesseract,
-                                      ros::NodeHandle update_nh,
+                                      const ros::NodeHandle& update_nh,
                                       ManipulatorState state,
-                                      QString joint_state_topic)
+                                      const QString& joint_state_topic)
 {
   // Save pointers for later use
   visualization_ = std::move(visualization);
@@ -239,7 +239,7 @@ void ManipulationWidget::onReset()
   available_tcp_links_.clear();
 }
 
-void ManipulationWidget::onNameChange(const QString& name)
+void ManipulationWidget::onNameChange(const QString& /*name*/)
 {
   //  if (trajectory_slider_dock_panel_)
   //    trajectory_slider_dock_panel_->setWindowTitle(name + " - Slider");
@@ -261,7 +261,7 @@ void ManipulationWidget::enableJointManipulation(bool enabled)
 
 void ManipulationWidget::resetToCurrentState() { env_state_ = nullptr; }
 
-bool ManipulationWidget::changeManipulator(QString manipulator)
+bool ManipulationWidget::changeManipulator(const QString& manipulator)
 {
   if (tesseract_->isInitialized())
   {
@@ -428,7 +428,7 @@ bool ManipulationWidget::changeManipulator(QString manipulator)
   return false;
 }
 
-bool ManipulationWidget::changeTCP(QString tcp_link)
+bool ManipulationWidget::changeTCP(const QString& tcp_link)
 {
   bool success = false;
   if (!env_state_ || tcp_link.isEmpty() || !available_tcp_links_.contains(tcp_link))
@@ -515,10 +515,10 @@ void ManipulationWidget::changedJointStateTopic()
   }
 }
 
-void ManipulationWidget::markerFeedback(std::string reference_frame,
-                                        Eigen::Isometry3d transform,
-                                        Eigen::Vector3d mouse_point,
-                                        bool mouse_point_valid)
+void ManipulationWidget::markerFeedback(const std::string &reference_frame,
+                                        const Eigen::Isometry3d &transform,
+                                        const Eigen::Vector3d &/*mouse_point*/,
+                                        bool /*mouse_point_valid*/)
 {
   if (inv_kin_ && env_state_)
   {
@@ -535,7 +535,7 @@ void ManipulationWidget::markerFeedback(std::string reference_frame,
 
       inv_seed_ = temp_seed;
       int i = 0;
-      for (auto j : inv_kin_->getJointNames())
+      for (const auto& j : inv_kin_->getJointNames())
       {
         joints_[j] = inv_seed_[i];
         joint_values_property_->childAt(i)->setValue(inv_seed_[i]);
@@ -598,11 +598,11 @@ void ManipulationWidget::markerFeedback(std::string reference_frame,
   }
 }
 
-void ManipulationWidget::jointMarkerFeedback(std::string joint_name,
-                                             std::string reference_frame,
-                                             Eigen::Isometry3d transform,
-                                             Eigen::Vector3d mouse_point,
-                                             bool mouse_point_valid)
+void ManipulationWidget::jointMarkerFeedback(const std::string& joint_name,
+                                             const std::string& /*reference_frame*/,
+                                             const Eigen::Isometry3d& transform,
+                                             const Eigen::Vector3d& /*mouse_point*/,
+                                             bool /*mouse_point_valid*/)
 {
   const auto& scene_graph = tesseract_->getEnvironmentConst()->getSceneGraph();
   const auto& joint = scene_graph->getJoint(joint_name);
@@ -652,7 +652,7 @@ void ManipulationWidget::jointMarkerFeedback(std::string joint_name,
   }
 
   int i = 0;
-  for (auto j : inv_kin_->getJointNames())
+  for (const auto& j : inv_kin_->getJointNames())
   {
     if (joint_name == j)
     {
@@ -767,7 +767,7 @@ void ManipulationWidget::onUpdate(float wall_dt)
       {
         inv_seed_.resize(inv_kin_->numJoints());
         int i = 0;
-        for (auto j : inv_kin_->getJointNames())
+        for (const auto& j : inv_kin_->getJointNames())
         {
           inv_seed_[i] = joints_[j];
           joint_values_property_->childAt(i)->setValue(inv_seed_[i]);

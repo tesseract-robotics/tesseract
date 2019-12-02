@@ -236,7 +236,7 @@ private:
   void createCollision(const tesseract_scene_graph::Link& link);
 
   void createSelection();
-  Ogre::MaterialPtr getMaterialForLink(const tesseract_scene_graph::Link& link, const std::string material_name = "");
+  Ogre::MaterialPtr getMaterialForLink(const tesseract_scene_graph::Link& link, const std::string &material_name = "");
 
   void setOctomapColor(double z_pos, double min_z, double max_z, double color_factor, rviz::PointCloud::Point* point);
 

@@ -233,13 +233,11 @@ btCollisionShape* createShapePrimitive(const tesseract_geometry::Octree::ConstPt
       }
       return subshape;
     }
-    default:
-    {
-      CONSOLE_BRIDGE_logError("This bullet shape type (%d) is not supported for geometry octree",
-                              static_cast<int>(geom->getSubType()));
-      return nullptr;
-    }
   }
+
+  CONSOLE_BRIDGE_logError("This bullet shape type (%d) is not supported for geometry octree",
+                          static_cast<int>(geom->getSubType()));
+  return nullptr;
 }
 
 btCollisionShape* createShapePrimitive(const CollisionShapeConstPtr& geom, CollisionObjectWrapper* cow, int shape_index)
@@ -307,21 +305,24 @@ btCollisionShape* createShapePrimitive(const CollisionShapeConstPtr& geom, Colli
   return shape;
 }
 
-CollisionObjectWrapper::CollisionObjectWrapper(const std::string& name,
+CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
                                                const int& type_id,
-                                               const CollisionShapesConst& shapes,
-                                               const tesseract_common::VectorIsometry3d& shape_poses)
-  : m_name(name), m_type_id(type_id), m_shapes(shapes), m_shape_poses(shape_poses)
+                                               CollisionShapesConst shapes,
+                                               tesseract_common::VectorIsometry3d shape_poses)
+  : m_name(std::move(name))
+  , m_type_id(type_id)
+  , m_shapes(std::move(shapes))
+  , m_shape_poses(std::move(shape_poses))
 {
-  assert(!shapes.empty());
-  assert(!shape_poses.empty());
-  assert(!name.empty());
-  assert(shapes.size() == shape_poses.size());
+  assert(!m_shapes.empty());
+  assert(!m_shape_poses.empty());
+  assert(!m_name.empty());
+  assert(m_shapes.size() == m_shape_poses.size());
 
   m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
   m_collisionFilterMask = btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter;
 
-  if (shapes.size() == 1 && m_shape_poses[0].matrix().isIdentity())
+  if (m_shapes.size() == 1 && m_shape_poses[0].matrix().isIdentity())
   {
     btCollisionShape* shape = createShapePrimitive(m_shapes[0], this, 0);
     shape->setMargin(BULLET_MARGIN);
