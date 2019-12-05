@@ -212,12 +212,13 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerFreespaceConfig:
     for (std::size_t i = 0; i < constraint_error_functions.size(); ++i)
     {
       auto& c = constraint_error_functions[i];
-      trajopt::TermInfo::Ptr ti =
-          createUserDefinedTermInfo(pci.basic_info.n_steps, c.first, c.second, "user_defined_" + std::to_string(i));
+      trajopt::TermInfo::Ptr ti = createUserDefinedTermInfo(pci.basic_info.n_steps, std::get<0>(c), std::get<1>(c), "user_defined_" + std::to_string(i));
 
       // Update the term info with the (possibly) new start and end state indices for which to apply this cost
       std::shared_ptr<trajopt::UserDefinedTermInfo> ef = std::static_pointer_cast<trajopt::UserDefinedTermInfo>(ti);
       ef->term_type = trajopt::TT_CNT;
+      ef->constraint_type = std::get<2>(c);
+      ef->coeff = std::get<3>(c);
       ef->first_step = cost_first_step;
       ef->last_step = cost_last_step;
 
