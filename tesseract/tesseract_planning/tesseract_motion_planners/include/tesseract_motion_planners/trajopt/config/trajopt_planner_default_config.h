@@ -94,6 +94,8 @@ struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
   bool collision_continuous = true;
   /** @brief Max distance over which collisions are checked */
   double collision_safety_margin = 0.025;
+  /** @brief The collision coeff/weight */
+  double collision_coeff = 20;
   /** @brief If true, a joint velocity cost with a target of 0 will be applied for all timesteps Default: true*/
   bool smooth_velocities = true;
   /** @brief This default to all ones, but allows you to weight different joints */
