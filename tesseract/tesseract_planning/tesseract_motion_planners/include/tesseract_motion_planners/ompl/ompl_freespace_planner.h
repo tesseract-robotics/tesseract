@@ -75,7 +75,12 @@ struct OMPLFreespacePlannerConfig
   int num_threads = 1;
   /** @brief Simplify trajectory */
   bool simplify = true;
-  /** @brief Number of states in the output trajectory - note: this is ignored if the trajectory is simplified */
+  /**
+   * @brief Number of states in the output trajectory
+   *   Note: This is ignored if the trajectory is simplified
+   *   Note: The trajectory can be longer if original trajectory is longer and reducing the number of states causes
+   *         the solution to be invalid.
+   */
   int n_output_states = 20;
   /** @brief This scales the variables search space. Must be same size as number of joints.
    *         If empty it defaults to all ones */
