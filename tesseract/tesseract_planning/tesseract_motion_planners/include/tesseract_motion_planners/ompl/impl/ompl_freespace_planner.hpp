@@ -126,18 +126,30 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
   }
 
   if (config_->simplify)
+  {
     simple_setup_->simplifySolution();
-
-  ompl::geometric::PathGeometric& path = simple_setup_->getSolutionPath();
-
-  // Interpolate the path if it shouldn't be simplified and there are currently fewer states than requested
-  unsigned num_output_states = static_cast<size_t>(config_->n_output_states);
-  if (!config_->simplify && path.getStateCount() < num_output_states)
-    path.interpolate(num_output_states);
+  }
+  else
+  {
+    // Interpolate the path if it shouldn't be simplified and there are currently fewer states than requested
+    unsigned num_output_states = static_cast<size_t>(config_->n_output_states);
+    if (simple_setup_->getSolutionPath().getStateCount() < num_output_states)
+    {
+      simple_setup_->getSolutionPath().interpolate(num_output_states);
+    }
+    else
+    {
+      // Now try to simplify the trajectory to get it under the requested number of output states
+      // The interpolate function only executes if the current number of states is less than the requested
+      simple_setup_->simplifySolution();
+      if (simple_setup_->getSolutionPath().getStateCount() < num_output_states)
+        simple_setup_->getSolutionPath().interpolate(num_output_states);
+    }
+  }
 
   planning_response.status =
       tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::SolutionFound, status_category_);
-  planning_response.joint_trajectory.trajectory = toTrajArray(path);
+  planning_response.joint_trajectory.trajectory = toTrajArray(simple_setup_->getSolutionPath());
   planning_response.joint_trajectory.joint_names = kin_->getJointNames();
 
   response = std::move(planning_response);
