@@ -193,8 +193,7 @@ void EnvironmentMonitor::initialize()
       auto fn = [&]() -> tesseract_collision::DiscreteContactManager::Ptr {
         return discrete_manager_loader_->createUniqueInstance(plugin);
       };
-      tesseract_->getEnvironment()->registerDiscreteContactManager(discrete_manager_loader_->getClassType(plugin),
-                                                                   fn);
+      tesseract_->getEnvironment()->registerDiscreteContactManager(discrete_manager_loader_->getClassType(plugin), fn);
 
       ROS_INFO("Discrete Contact Monitor Registered: %s", discrete_manager_loader_->getClassType(plugin).c_str());
     }
@@ -243,7 +242,6 @@ void EnvironmentMonitor::initialize()
     ROS_ERROR_NAMED(LOGNAME, "Failed to load tesseract contact managers plugin");
     tesseract_.reset();
   }
-
 
   publish_environment_frequency_ = 2.0;
   new_environment_update_ = UPDATE_NONE;
@@ -296,7 +294,8 @@ void EnvironmentMonitor::startPublishingEnvironment(EnvironmentUpdateType update
   {
     environment_publisher_ = nh_.advertise<tesseract_msgs::TesseractState>(environment_topic, 100, false);
     ROS_INFO_NAMED(LOGNAME, "Publishing maintained environment on '%s'", environment_topic.c_str());
-    publish_environment_ = std::make_unique<boost::thread>(boost::bind(&EnvironmentMonitor::environmentPublishingThread, this));
+    publish_environment_ =
+        std::make_unique<boost::thread>(boost::bind(&EnvironmentMonitor::environmentPublishingThread, this));
   }
 }
 

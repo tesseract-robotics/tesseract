@@ -30,7 +30,7 @@ namespace tesseract_motion_planners
 {
 template <typename FloatType>
 DescartesTrajOptArrayPlanner<FloatType>::DescartesTrajOptArrayPlanner(std::string name)
-  : MotionPlanner(std::move(name)), status_category_(std::make_shared<tesseract_common::GeneralStatusCategory>(name))
+  : MotionPlanner(std::move(name)), status_category_(std::make_shared<tesseract_common::GeneralStatusCategory>(name_))
 {
 }
 

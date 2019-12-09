@@ -117,6 +117,7 @@ void runTest(DiscreteContactManager& checker)
   // Test object is out side the contact distance
   ////////////////////////////////////////////////
   location["sphere_link"].translation() = Eigen::Vector3d(1, 0, 0);
+  result = ContactResultMap();
   result.clear();
   result_vector.clear();
   checker.setCollisionObjectsTransform(location);
@@ -129,6 +130,7 @@ void runTest(DiscreteContactManager& checker)
   /////////////////////////////////////////////
   // Test object inside the contact distance
   /////////////////////////////////////////////
+  result = ContactResultMap();
   result.clear();
   result_vector.clear();
 
@@ -194,6 +196,7 @@ void runConvexTest(DiscreteContactManager& checker)
   // Test object is out side the contact distance
   ////////////////////////////////////////////////
   location["sphere_link"].translation() = Eigen::Vector3d(1, 0, 0);
+  result = ContactResultMap();
   result.clear();
   result_vector.clear();
   checker.setCollisionObjectsTransform(location);
@@ -206,6 +209,7 @@ void runConvexTest(DiscreteContactManager& checker)
   /////////////////////////////////////////////
   // Test object inside the contact distance
   /////////////////////////////////////////////
+  result = ContactResultMap();
   result.clear();
   result_vector.clear();
 
@@ -228,42 +232,42 @@ void runConvexTest(DiscreteContactManager& checker)
   EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1, 0, 0)))), 0.00001);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionBoxSphereUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionBoxSphereUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionBoxSphereConvexHullUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionBoxSphereConvexHullUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker, true);
   runConvexTest(checker);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxSphereUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxSphereUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxSphereConvexHullUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxSphereConvexHullUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker, true);
   runConvexTest(checker);
 }
 
-TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxSphereUnit)
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxSphereUnit)  // NOLINT
 {
   tesseract_collision_fcl::FCLDiscreteBVHManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
-TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxSphereConvexHullUnit)
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxSphereConvexHullUnit)  // NOLINT
 {
   tesseract_collision_fcl::FCLDiscreteBVHManager checker;
   addCollisionObjects(checker, true);

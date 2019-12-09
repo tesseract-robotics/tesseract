@@ -203,9 +203,9 @@ void TrajectoryMonitorWidget::createTrajectoryTrail()
   if (!t)
     return;
 
-  int stepsize = trail_step_size_property_->getInt();
+  auto stepsize = static_cast<size_t>(trail_step_size_property_->getInt());
   // always include last trajectory point
-  auto num_waypoints = static_cast<int>(t->joint_trajectory.points.size());
+  size_t num_waypoints = t->joint_trajectory.points.size();
   num_trajectory_waypoints_ =
       static_cast<size_t>(std::ceil(static_cast<float>(num_waypoints + stepsize - 1) / static_cast<float>(stepsize)));
   std::vector<tesseract_environment::EnvState::Ptr> states_data;
@@ -213,7 +213,7 @@ void TrajectoryMonitorWidget::createTrajectoryTrail()
   for (std::size_t i = 0; i < num_trajectory_waypoints_; i++)
   {
     unsigned waypoint_i = static_cast<unsigned>(std::min(
-        i * static_cast<size_t>(stepsize), static_cast<size_t>(num_waypoints - 1)));  // limit to last trajectory point
+        i * stepsize, num_waypoints - 1));  // limit to last trajectory point
 
     std::unordered_map<std::string, double> joints;
     for (unsigned j = 0; j < t->joint_trajectory.joint_names.size(); ++j)
@@ -311,12 +311,11 @@ float TrajectoryMonitorWidget::getStateDisplayTime()
   {
     t = boost::lexical_cast<float>(tm);
   }
-  catch (const boost::bad_lexical_cast& ex)
+  catch (const boost::bad_lexical_cast& /*ex*/)
   {
     state_display_time_property_->setStdString("0.05 s");
   }
   return t;
-
 }
 
 void TrajectoryMonitorWidget::dropTrajectory() { drop_displaying_trajectory_ = true; }
@@ -401,7 +400,7 @@ void TrajectoryMonitorWidget::onUpdate(float wall_dt)
   if (animating_path_)
   {
     float tm = getStateDisplayTime();
-    if (tm < 0.0)  // if we should use realtime
+    if (tm < 0.0f)  // if we should use realtime
     {
       ros::Duration d = displaying_trajectory_message_->joint_trajectory.points[static_cast<size_t>(current_state_) + 1]
                             .time_from_start;

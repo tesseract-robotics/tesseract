@@ -46,7 +46,7 @@ bool ProcessSegmentDefinition::isDeparture(std::size_t index) const noexcept
           (index < (approach.size() + process.size() + departure.size())));
 }
 
-ProcessSegmentDefinition::Iterator ProcessSegmentDefinition::begin() noexcept { return Iterator{ *this, 0 }; }
+ProcessSegmentDefinition::Iterator ProcessSegmentDefinition::begin() noexcept { return Iterator{ *this, size_t(0) }; }
 
 ProcessSegmentDefinition::Iterator ProcessSegmentDefinition::end() noexcept { return Iterator{ *this, size() }; }
 
@@ -100,15 +100,15 @@ const tesseract_motion_planners::Waypoint::Ptr& ProcessSegmentDefinition::at(std
 
 ProcessSegmentDefinition::Iterator ProcessSegmentDefinition::erase(Iterator pos)
 {
-  std::size_t index = std::distance(begin(), pos);
+  long index = std::distance(begin(), pos);
   Iterator ret = ++pos;
 
-  if (index < approach.size())
-    approach.erase(approach.begin() + static_cast<long>(index));
-  else if (index < (approach.size() + process.size()))
-    process.erase(process.begin() + static_cast<long>(index - approach.size()));
-  else if (index < (approach.size() + process.size() + departure.size()))
-    departure.erase(departure.begin() + static_cast<long>(index - approach.size() - process.size()));
+  if (index < static_cast<long>(approach.size()))
+    approach.erase(approach.begin() + index);
+  else if (index < static_cast<long>(approach.size() + process.size()))
+    process.erase(process.begin() + index - static_cast<long>(approach.size()));
+  else if (index < static_cast<long>(approach.size() + process.size() + departure.size()))
+    departure.erase(departure.begin() + index - static_cast<long>(approach.size() - process.size()));
 
   return ret;
 }
@@ -133,7 +133,7 @@ ProcessSegmentDefinition::Iterator ProcessSegmentDefinition::erase(Iterator firs
   return ret;
 }
 
-ProcessSegmentDefinition::Iterator::Iterator(ProcessSegmentDefinition& container, std::size_t pos)
+ProcessSegmentDefinition::Iterator::Iterator(ProcessSegmentDefinition& container, size_t pos)
   : pos_(pos), container_(&container)
 {
 }
@@ -206,12 +206,12 @@ operator-(const Iterator& rhs) const
 
 ProcessSegmentDefinition::Iterator ProcessSegmentDefinition::Iterator::operator+(difference_type rhs) const
 {
-  return Iterator{ *container_, pos_ + rhs };
+  return Iterator{ *container_, pos_ + static_cast<size_t>(rhs) };
 }
 
 ProcessSegmentDefinition::Iterator ProcessSegmentDefinition::Iterator::operator-(difference_type rhs) const
 {
-  return Iterator{ *container_, pos_ - rhs };
+  return Iterator{ *container_, pos_ - static_cast<size_t>(rhs) };
 }
 
 bool ProcessSegmentDefinition::Iterator::operator==(const Iterator& rhs) const

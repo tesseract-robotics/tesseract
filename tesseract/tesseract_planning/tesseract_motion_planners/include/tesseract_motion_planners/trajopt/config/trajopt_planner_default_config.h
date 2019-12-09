@@ -111,8 +111,8 @@ struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
 
   /** @brief Error function that is set as a constraint for each timestep.
    *
-   * This is a vector of std::tuple<Error Function, Error Function Jacobian, Constraint Type, Coeff>, the error function,
-   * constraint type, and coeff is required, but the jacobian is optional (nullptr).
+   * This is a vector of std::tuple<Error Function, Error Function Jacobian, Constraint Type, Coeff>, the error
+   * function, constraint type, and coeff is required, but the jacobian is optional (nullptr).
    *
    * Error Function:
    *   arg: VectorXd will be all of the joint values for one timestep.
@@ -127,7 +127,8 @@ struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
    * Coefficients/Weights
    *
    */
-  std::vector<std::tuple<sco::VectorOfVector::func, sco::MatrixOfVector::func, sco::ConstraintType, Eigen::VectorXd>> constraint_error_functions;
+  std::vector<std::tuple<sco::VectorOfVector::func, sco::MatrixOfVector::func, sco::ConstraintType, Eigen::VectorXd>>
+      constraint_error_functions;
 };
 
 }  // namespace tesseract_motion_planners

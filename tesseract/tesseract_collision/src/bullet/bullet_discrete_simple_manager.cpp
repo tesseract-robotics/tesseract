@@ -232,7 +232,7 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
 
     btCollisionObjectWrapper obA(nullptr, cow1->getCollisionShape(), cow1.get(), cow1->getWorldTransform(), -1, -1);
 
-    DiscreteCollisionCollector cc(cdata, cow1, static_cast<double>(cow1->getContactProcessingThreshold()));
+    DiscreteCollisionCollector cc(cdata, cow1, cow1->getContactProcessingThreshold());
     for (auto cow2_iter = cow1_iter + 1; cow2_iter != cows_.end(); cow2_iter++)
     {
       assert(!cdata.done);

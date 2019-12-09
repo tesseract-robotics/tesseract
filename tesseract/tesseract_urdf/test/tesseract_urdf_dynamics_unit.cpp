@@ -7,10 +7,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/dynamics.h>
 #include "tesseract_urdf_common_unit.h"
 
-TEST(TesseractURDFUnit, parse_dynamics)
+TEST(TesseractURDFUnit, parse_dynamics)  // NOLINT
 {
   {
-    std::string str = "<dynamics damping=\"1\" friction=\"2\" extra=\"0 0 0\"/>";
+    std::string str = R"(<dynamics damping="1" friction="2" extra="0 0 0"/>)";
     tesseract_scene_graph::JointDynamics::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics", 2);
     EXPECT_TRUE(*status);
@@ -19,7 +19,7 @@ TEST(TesseractURDFUnit, parse_dynamics)
   }
 
   {
-    std::string str = "<dynamics damping=\"1\"/>";
+    std::string str = R"(<dynamics damping="1"/>)";
     tesseract_scene_graph::JointDynamics::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics", 2);
     EXPECT_TRUE(*status);
@@ -28,7 +28,7 @@ TEST(TesseractURDFUnit, parse_dynamics)
   }
 
   {
-    std::string str = "<dynamics friction=\"2\"/>";
+    std::string str = R"(<dynamics friction="2"/>)";
     tesseract_scene_graph::JointDynamics::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics", 2);
     EXPECT_TRUE(*status);
@@ -37,14 +37,14 @@ TEST(TesseractURDFUnit, parse_dynamics)
   }
 
   {
-    std::string str = "<dynamics damping=\"a\" friction=\"2\"/>";
+    std::string str = R"(<dynamics damping="a" friction="2"/>)";
     tesseract_scene_graph::JointDynamics::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics", 2);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<dynamics damping=\"1\" friction=\"b\"/>";
+    std::string str = R"(<dynamics damping="1" friction="b"/>)";
     tesseract_scene_graph::JointDynamics::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics", 2);
     EXPECT_FALSE(*status);

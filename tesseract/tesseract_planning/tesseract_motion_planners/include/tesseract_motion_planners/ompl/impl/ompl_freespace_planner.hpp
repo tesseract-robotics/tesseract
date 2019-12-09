@@ -82,7 +82,7 @@ template <typename PlannerType>
 OMPLFreespacePlanner<PlannerType>::OMPLFreespacePlanner(std::string name)
   : MotionPlanner(std::move(name))
   , config_(nullptr)
-  , status_category_(std::make_shared<const OMPLFreespacePlannerStatusCategory>(name))
+  , status_category_(std::make_shared<const OMPLFreespacePlannerStatusCategory>(name_))
 {
 }
 
@@ -132,7 +132,7 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
   else
   {
     // Interpolate the path if it shouldn't be simplified and there are currently fewer states than requested
-    unsigned num_output_states = static_cast<size_t>(config_->n_output_states);
+    unsigned num_output_states = static_cast<unsigned>(config_->n_output_states);
     if (simple_setup_->getSolutionPath().getStateCount() < num_output_states)
     {
       simple_setup_->getSolutionPath().interpolate(num_output_states);

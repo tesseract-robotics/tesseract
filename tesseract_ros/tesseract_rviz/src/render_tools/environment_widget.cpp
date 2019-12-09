@@ -227,7 +227,7 @@ void EnvironmentWidget::changedEnableCollisionVisible()
   visualization_->setCollisionVisible(enable_collision_visible_->getBool());
 }
 
-//static bool operator!=(const std_msgs::ColorRGBA& a, const std_msgs::ColorRGBA& b)
+// static bool operator!=(const std_msgs::ColorRGBA& a, const std_msgs::ColorRGBA& b)
 //{
 //  return a.r != b.r || a.g != b.g || a.b != b.b || a.a != b.a;
 //}
@@ -461,7 +461,7 @@ bool EnvironmentWidget::modifyEnvironmentCallback(tesseract_msgs::ModifyEnvironm
                                                   tesseract_msgs::ModifyEnvironmentResponse& res)
 {
   if (!tesseract_->getEnvironment() || req.id != tesseract_->getEnvironment()->getName() ||
-      req.revision != static_cast<std::size_t>(tesseract_->getEnvironment()->getRevision()))
+      static_cast<int>(req.revision) != tesseract_->getEnvironment()->getRevision())
     return false;
 
   res.success = applyEnvironmentCommands(req.commands);
@@ -529,7 +529,9 @@ void EnvironmentWidget::newTesseractStateCallback(const tesseract_msgs::Tesserac
   if (static_cast<int>(state_msg->revision) > current_version)
   {
     std::vector<tesseract_msgs::EnvironmentCommand> commands;
-    for (std::size_t i = (current_version == 0 ? 0 : static_cast<std::size_t>(current_version) - 1ul); i < state_msg->revision; ++i)
+    for (std::size_t i = (current_version == 0 ? 0 : static_cast<std::size_t>(current_version) - 1ul);
+         i < state_msg->revision;
+         ++i)
       commands.push_back(state_msg->commands[i]);
 
     if (!commands.empty())

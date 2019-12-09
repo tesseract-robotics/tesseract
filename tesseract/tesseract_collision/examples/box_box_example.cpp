@@ -100,6 +100,7 @@ int main(int /*argc*/, char** /*argv*/)
 
   CONSOLE_BRIDGE_logInform("Test object is out side the contact distance");
   location["box_link"].translation() = Eigen::Vector3d(1.60, 0, 0);
+  result = ContactResultMap();
   result.clear();
   result_vector.clear();
 
@@ -112,6 +113,7 @@ int main(int /*argc*/, char** /*argv*/)
   CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());
 
   CONSOLE_BRIDGE_logInform("Test object inside the contact distance");
+  result = ContactResultMap();
   result.clear();
   result_vector.clear();
 

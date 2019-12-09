@@ -7,11 +7,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/safety_controller.h>
 #include "tesseract_urdf_common_unit.h"
 
-TEST(TesseractURDFUnit, parse_safety_controller)
+TEST(TesseractURDFUnit, parse_safety_controller)  // NOLINT
 {
   {
-    std::string str = "<safety_controller soft_lower_limit=\"1\" soft_upper_limit=\"2\" k_position=\"3\" "
-                      "k_velocity=\"4\" extra=\"0 0 0\"/>";
+    std::string str =
+        R"(<safety_controller soft_lower_limit="1" soft_upper_limit="2" k_position="3" k_velocity="4" extra="0 0 0"/>)";
     tesseract_scene_graph::JointSafety::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointSafety::Ptr>(elem, str, "safety_controller", 2);
     EXPECT_TRUE(*status);
@@ -22,7 +22,7 @@ TEST(TesseractURDFUnit, parse_safety_controller)
   }
 
   {
-    std::string str = "<safety_controller soft_upper_limit=\"2\" k_position=\"3\" k_velocity=\"4\"/>";
+    std::string str = R"(<safety_controller soft_upper_limit="2" k_position="3" k_velocity="4"/>)";
     tesseract_scene_graph::JointSafety::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointSafety::Ptr>(elem, str, "safety_controller", 2);
     EXPECT_TRUE(*status);
@@ -33,7 +33,7 @@ TEST(TesseractURDFUnit, parse_safety_controller)
   }
 
   {
-    std::string str = "<safety_controller soft_lower_limit=\"1\" k_position=\"3\" k_velocity=\"4\"/>";
+    std::string str = R"(<safety_controller soft_lower_limit="1" k_position="3" k_velocity="4"/>)";
     tesseract_scene_graph::JointSafety::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointSafety::Ptr>(elem, str, "safety_controller", 2);
     EXPECT_TRUE(*status);
@@ -44,7 +44,7 @@ TEST(TesseractURDFUnit, parse_safety_controller)
   }
 
   {
-    std::string str = "<safety_controller soft_lower_limit=\"1\" soft_upper_limit=\"2\" k_velocity=\"4\"/>";
+    std::string str = R"(<safety_controller soft_lower_limit="1" soft_upper_limit="2" k_velocity="4"/>)";
     tesseract_scene_graph::JointSafety::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointSafety::Ptr>(elem, str, "safety_controller", 2);
     EXPECT_TRUE(*status);
@@ -55,7 +55,7 @@ TEST(TesseractURDFUnit, parse_safety_controller)
   }
 
   {
-    std::string str = "<safety_controller k_velocity=\"4\"/>";
+    std::string str = R"(<safety_controller k_velocity="4"/>)";
     tesseract_scene_graph::JointSafety::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointSafety::Ptr>(elem, str, "safety_controller", 2);
     EXPECT_TRUE(*status);
@@ -66,14 +66,14 @@ TEST(TesseractURDFUnit, parse_safety_controller)
   }
 
   {
-    std::string str = "<safety_controller soft_lower_limit=\"1\" soft_upper_limit=\"2\" k_position=\"3\"/>";
+    std::string str = R"(<safety_controller soft_lower_limit="1" soft_upper_limit="2" k_position="3"/>)";
     tesseract_scene_graph::JointSafety::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointSafety::Ptr>(elem, str, "safety_controller", 2);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<safety_controller />";
+    std::string str = R"(<safety_controller />)";
     tesseract_scene_graph::JointSafety::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointSafety::Ptr>(elem, str, "safety_controller", 2);
     EXPECT_FALSE(*status);

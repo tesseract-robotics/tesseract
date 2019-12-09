@@ -70,7 +70,7 @@ std::string locateResource(const std::string& url)
   if (url.find("package://tesseract_support") == 0)
   {
     mod_url.erase(0, strlen("package://tesseract_support"));
-    size_t pos = mod_url.find("/");
+    size_t pos = mod_url.find('/');
     if (pos == std::string::npos)
     {
       return std::string();
@@ -122,24 +122,23 @@ public:
   tesseract_motion_planners::OMPLTrajOptFreespacePlanner<PlannerType> planner;
 };
 
-typedef ::testing::Types<ompl::geometric::SBL,
-                         ompl::geometric::PRM,
-                         ompl::geometric::PRMstar,
-                         ompl::geometric::LazyPRMstar,
-                         ompl::geometric::EST,
-                         ompl::geometric::LBKPIECE1,
-                         ompl::geometric::BKPIECE1,
-                         ompl::geometric::KPIECE1,
-                         ompl::geometric::RRT,
-                         ompl::geometric::RRTConnect,
-                         ompl::geometric::RRTstar,
-                         //                         ompl::geometric::SPARS,
-                         ompl::geometric::TRRT>
-    Implementations;
+using Implementations = ::testing::Types<ompl::geometric::SBL,
+                                         ompl::geometric::PRM,
+                                         ompl::geometric::PRMstar,
+                                         ompl::geometric::LazyPRMstar,
+                                         ompl::geometric::EST,
+                                         ompl::geometric::LBKPIECE1,
+                                         ompl::geometric::BKPIECE1,
+                                         ompl::geometric::KPIECE1,
+                                         ompl::geometric::RRT,
+                                         ompl::geometric::RRTConnect,
+                                         ompl::geometric::RRTstar,
+                                         // ompl::geometric::SPARS,
+                                         ompl::geometric::TRRT>;
 
 TYPED_TEST_CASE(OMPLTrajOptTestFixture, Implementations);
 
-TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)
+TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit) // NOLINT
 {
   EXPECT_EQ(ompl::RNG::getSeed(), SEED) << "Randomization seed does not match expected: " << ompl::RNG::getSeed()
                                         << " vs. " << SEED;

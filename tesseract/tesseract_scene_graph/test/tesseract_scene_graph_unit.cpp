@@ -34,7 +34,7 @@ void checkSceneGraph(tesseract_scene_graph::SceneGraph& scene_graph)
   }
 }
 
-TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)
+TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   SceneGraph g;
@@ -217,7 +217,7 @@ std::string locateResource(const std::string& url)
   if (url.find("package://tesseract_support") == 0)
   {
     mod_url.erase(0, strlen("package://tesseract_support"));
-    size_t pos = mod_url.find("/");
+    size_t pos = mod_url.find('/');
     if (pos == std::string::npos)
     {
       return std::string();
@@ -238,7 +238,7 @@ std::string locateResource(const std::string& url)
   return mod_url;
 }
 
-TEST(TesseractSceneGraphUnit, LoadSRDFUnit)
+TEST(TesseractSceneGraphUnit, LoadSRDFUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
 
@@ -347,11 +347,12 @@ void printKDLTree(const KDL::SegmentMap::const_iterator& link, const std::string
 {
   std::cout << prefix << "- Segment " << GetTreeElementSegment(link->second).getName() << " has "
             << GetTreeElementChildren(link->second).size() << " children" << std::endl;
-  for (unsigned int i = 0; i < GetTreeElementChildren(link->second).size(); i++)
-    printKDLTree(GetTreeElementChildren(link->second)[i], prefix + "  ");
+
+  for (auto child : GetTreeElementChildren(link->second))
+    printKDLTree(child, prefix + "  ");
 }
 
-TEST(TesseractSceneGraphUnit, LoadKDLUnit)
+TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   SceneGraph g;
@@ -410,7 +411,7 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)
   std::cout << " ======================================" << std::endl;
   std::cout << " Tree has " << tree.getNrOfSegments() << " link(s) and a root link" << std::endl;
   std::cout << " ======================================" << std::endl;
-  KDL::SegmentMap::const_iterator root = tree.getRootSegment();
+  auto root = tree.getRootSegment();
   printKDLTree(root, "");
 
   EXPECT_TRUE(tree.getNrOfJoints() == 4);
@@ -418,7 +419,7 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)
 }
 
 /// Testing AllowedCollisionMatrix
-TEST(TesseractSceneGraphUnit, TestAllowedCollisionMatrix)
+TEST(TesseractSceneGraphUnit, TestAllowedCollisionMatrix)  // NOLINT
 {
   tesseract_scene_graph::AllowedCollisionMatrix acm;
 
@@ -438,7 +439,7 @@ TEST(TesseractSceneGraphUnit, TestAllowedCollisionMatrix)
   EXPECT_EQ(acm.getAllAllowedCollisions().size(), 0);
 }
 
-TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)
+TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)  // NOLINT
 {
   using namespace tesseract_scene_graph;
   SceneGraph g;

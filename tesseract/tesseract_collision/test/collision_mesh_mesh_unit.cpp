@@ -93,6 +93,7 @@ void runTest(DiscreteContactManager& checker)
   // Test object is out side the contact distance
   ///////////////////////////////////////////////
   location["sphere1_link"].translation() = Eigen::Vector3d(1, 0, 0);
+  result = ContactResultMap();
   result.clear();
   result_vector.clear();
   checker.setCollisionObjectsTransform(location);
@@ -105,6 +106,7 @@ void runTest(DiscreteContactManager& checker)
   /////////////////////////////////////////////////////////////////////////
   // Test object inside the contact distance (Closest Feature Edge to Edge)
   /////////////////////////////////////////////////////////////////////////
+  result = ContactResultMap();
   result.clear();
   result_vector.clear();
 
@@ -130,6 +132,7 @@ void runTest(DiscreteContactManager& checker)
   // Test object inside the contact distance (Closest Feature Vertex to Vertex)
   /////////////////////////////////////////////////////////////////////////////
   location["sphere1_link"].translation() = Eigen::Vector3d(0, 1, 0);
+  result = ContactResultMap();
   result.clear();
   result_vector.clear();
 
@@ -154,21 +157,21 @@ void runTest(DiscreteContactManager& checker)
   EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(0, 1, 0)))), 0.00001);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionMeshMeshUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionMeshMeshUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionMeshMeshUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionMeshMeshUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
-TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionMeshMeshUnit)
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionMeshMeshUnit)  // NOLINT
 {
   tesseract_collision_fcl::FCLDiscreteBVHManager checker;
   addCollisionObjects(checker);

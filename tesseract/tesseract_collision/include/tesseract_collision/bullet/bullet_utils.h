@@ -883,12 +883,12 @@ struct DiscreteCollisionCollector : public btCollisionWorld::ContactResultCallba
   double contact_distance_;
   bool verbose_;
 
-  DiscreteCollisionCollector(ContactTestData& collisions, COW::Ptr cow, double contact_distance, bool verbose = false)
+  DiscreteCollisionCollector(ContactTestData& collisions, COW::Ptr cow, btScalar contact_distance, bool verbose = false)
     : collisions_(collisions), cow_(std::move(cow)), contact_distance_(contact_distance), verbose_(verbose)
   {
-    m_closestDistanceThreshold = static_cast<btScalar>(contact_distance);
-    m_collisionFilterGroup = cow->m_collisionFilterGroup;
-    m_collisionFilterMask = cow->m_collisionFilterMask;
+    m_closestDistanceThreshold = contact_distance;
+    m_collisionFilterGroup = cow_->m_collisionFilterGroup;
+    m_collisionFilterMask = cow_->m_collisionFilterMask;
   }
 
   btScalar addSingleResult(btManifoldPoint& cp,
@@ -924,8 +924,8 @@ struct CastCollisionCollector : public btCollisionWorld::ContactResultCallback
     : collisions_(collisions), cow_(std::move(cow)), contact_distance_(contact_distance), verbose_(verbose)
   {
     m_closestDistanceThreshold = static_cast<btScalar>(contact_distance);
-    m_collisionFilterGroup = cow->m_collisionFilterGroup;
-    m_collisionFilterMask = cow->m_collisionFilterMask;
+    m_collisionFilterGroup = cow_->m_collisionFilterGroup;
+    m_collisionFilterMask = cow_->m_collisionFilterMask;
   }
 
   btScalar addSingleResult(btManifoldPoint& cp,

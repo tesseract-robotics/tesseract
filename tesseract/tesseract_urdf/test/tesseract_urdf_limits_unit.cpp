@@ -7,10 +7,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/limits.h>
 #include "tesseract_urdf_common_unit.h"
 
-TEST(TesseractURDFUnit, parse_limits)
+TEST(TesseractURDFUnit, parse_limits)  // NOLINT
 {
   {
-    std::string str = "<limit lower=\"1\" upper=\"2\" effort=\"3\" velocity=\"4\" extra=\"0 0 0\"/>";
+    std::string str = R"(<limit lower="1" upper="2" effort="3" velocity="4" extra="0 0 0"/>)";
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_TRUE(*status);
@@ -21,7 +21,7 @@ TEST(TesseractURDFUnit, parse_limits)
   }
 
   {
-    std::string str = "<limit upper=\"2\" effort=\"3\" velocity=\"4\"/>";
+    std::string str = R"(<limit upper="2" effort="3" velocity="4"/>)";
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_TRUE(*status);
@@ -32,7 +32,7 @@ TEST(TesseractURDFUnit, parse_limits)
   }
 
   {
-    std::string str = "<limit lower=\"1\" effort=\"3\" velocity=\"4\"/>";
+    std::string str = R"(<limit lower="1" effort="3" velocity="4"/>)";
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_TRUE(*status);
@@ -43,7 +43,7 @@ TEST(TesseractURDFUnit, parse_limits)
   }
 
   {
-    std::string str = "<limit effort=\"3\" velocity=\"4\"/>";
+    std::string str = R"(<limit effort="3" velocity="4"/>)";
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_TRUE(*status);
@@ -54,42 +54,42 @@ TEST(TesseractURDFUnit, parse_limits)
   }
 
   {
-    std::string str = "<limit lower=\"a\" upper=\"2\" effort=\"3\" velocity=\"4\"/>";
+    std::string str = R"(<limit lower="a" upper="2" effort="3" velocity="4"/>)";
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<limit lower=\"1\" upper=\"a\" effort=\"3\" velocity=\"4\"/>";
+    std::string str = R"(<limit lower="1" upper="a" effort="3" velocity="4"/>)";
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<limit lower=\"1\" upper=\"2\" effort=\"a\" velocity=\"4\"/>";
+    std::string str = R"(<limit lower="1" upper="2" effort="a" velocity="4"/>)";
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<limit lower=\"1\" upper=\"2\" effort=\"3\" velocity=\"a\"/>";
+    std::string str = R"(<limit lower="1" upper="2" effort="3" velocity="a"/>)";
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<limit velocity=\"4\"/>";
+    std::string str = R"(<limit velocity="4"/>)";
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<limit effort=\"3\"/>";
+    std::string str = R"(<limit effort="3"/>)";
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_FALSE(*status);

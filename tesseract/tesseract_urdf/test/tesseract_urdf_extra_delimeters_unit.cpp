@@ -7,10 +7,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/origin.h>
 #include "tesseract_urdf_common_unit.h"
 
-TEST(TesseractURDFUnit, parse_extra_delimeters)
+TEST(TesseractURDFUnit, parse_extra_delimeters)  // NOLINT
 {
   {
-    std::string str = "<origin xyz=\"0   2.5   0\" rpy=\"3.14159265359   0  0.0\"/>";
+    std::string str = R"(<origin xyz="0   2.5   0" rpy="3.14159265359   0  0.0"/>)";
     Eigen::Isometry3d origin;
     auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
     EXPECT_TRUE(*status);

@@ -8,7 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/octomap.h>
 #include "tesseract_urdf_common_unit.h"
 
-TEST(TesseractURDFUnit, parse_octree)
+TEST(TesseractURDFUnit, parse_octree)  // NOLINT
 {
   std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator =
       std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
@@ -29,11 +29,11 @@ TEST(TesseractURDFUnit, parse_octree)
   //  }
 
   {
-    std::string str = "<octomap shape_type=\"box\" extra=\"0 0 0\">"
-                      "  <octree filename=\"package://tesseract_support/meshes/box_2m.bt\" extra=\"0 0 0\"/>"
-                      "</octomap>";
+    std::string str = R"(<octomap shape_type="box" extra="0 0 0">
+                           <octree filename="package://tesseract_support/meshes/box_2m.bt" extra="0 0 0"/>
+                         </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, true, 2);
+    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(geom->getSubType() == geom->BOX);
     EXPECT_TRUE(geom->getOctree() != nullptr);
@@ -41,11 +41,11 @@ TEST(TesseractURDFUnit, parse_octree)
   }
 
   {
-    std::string str = "<octomap shape_type=\"box\" prune=\"true\">"
-                      "  <octree filename=\"package://tesseract_support/meshes/box_2m.bt\"/>"
-                      "</octomap>";
+    std::string str = R"(<octomap shape_type="box" prune="true">
+                           <octree filename="package://tesseract_support/meshes/box_2m.bt"/>
+                         </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, true, 2);
+    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(geom->getSubType() == geom->BOX);
     EXPECT_TRUE(geom->getOctree() != nullptr);
@@ -53,11 +53,11 @@ TEST(TesseractURDFUnit, parse_octree)
   }
 
   {
-    std::string str = "<octomap shape_type=\"sphere_inside\" prune=\"true\">"
-                      "  <octree filename=\"package://tesseract_support/meshes/box_2m.bt\"/>"
-                      "</octomap>";
+    std::string str = R"(<octomap shape_type="sphere_inside" prune="true">
+                           <octree filename="package://tesseract_support/meshes/box_2m.bt"/>
+                         </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, true, 2);
+    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(geom->getSubType() == geom->SPHERE_INSIDE);
     EXPECT_TRUE(geom->getOctree() != nullptr);
@@ -66,11 +66,11 @@ TEST(TesseractURDFUnit, parse_octree)
 
 #ifdef TESSERACT_PARSE_POINT_CLOUDS
   {
-    std::string str = "<octomap shape_type=\"box\">"
-                      "  <point_cloud filename=\"package://tesseract_support/meshes/box_pcd.pcd\" resolution=\"0.1\"/>"
-                      "</octomap>";
+    std::string str = R"(<octomap shape_type="box">
+                           <point_cloud filename="package://tesseract_support/meshes/box_pcd.pcd" resolution="0.1"/>
+                         </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, true, 2);
+    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(geom->getSubType() == geom->BOX);
     EXPECT_TRUE(geom->getOctree() != nullptr);
@@ -79,11 +79,11 @@ TEST(TesseractURDFUnit, parse_octree)
   }
 
   {
-    std::string str = "<octomap shape_type=\"box\" prune=\"true\">"
-                      "  <point_cloud filename=\"package://tesseract_support/meshes/box_pcd.pcd\" resolution=\"0.1\"/>"
-                      "</octomap>";
+    std::string str = R"(<octomap shape_type="box" prune="true">
+                           <point_cloud filename="package://tesseract_support/meshes/box_pcd.pcd" resolution="0.1"/>
+                         </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, true, 2);
+    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(geom->getSubType() == geom->BOX);
     EXPECT_TRUE(geom->getOctree() != nullptr);
@@ -93,11 +93,11 @@ TEST(TesseractURDFUnit, parse_octree)
 #endif
 
   {
-    std::string str = "<octomap shape_type=\"sphere_outside\" prune=\"true\">"
-                      "  <octree filename=\"package://tesseract_support/meshes/box_2m.bt\"/>"
-                      "</octomap>";
+    std::string str = R"(<octomap shape_type="sphere_outside" prune="true">
+                           <octree filename="package://tesseract_support/meshes/box_2m.bt"/>
+                         </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, true, 2);
+    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_TRUE(*status);
     EXPECT_TRUE(geom->getSubType() == geom->SPHERE_OUTSIDE);
     EXPECT_TRUE(geom->getOctree() != nullptr);
@@ -105,36 +105,36 @@ TEST(TesseractURDFUnit, parse_octree)
   }
 
   {
-    std::string str = "<octomap shape_type=\"sphere_outside\" prune=\"true\">"
-                      "  <octree filename=\"abc\"/>"
-                      "</octomap>";
+    std::string str = R"(<octomap shape_type="sphere_outside" prune="true">
+                           <octree filename="abc"/>
+                         </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, true, 2);
+    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<octomap shape_type=\"star\" prune=\"true\">"
-                      "  <octree filename=\"package://tesseract_support/meshes/box_2m.bt\"/>"
-                      "</octomap>";
+    std::string str = R"(<octomap shape_type="star" prune="true">
+                           <octree filename="package://tesseract_support/meshes/box_2m.bt"/>
+                         </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, true, 2);
+    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<octomap shape_type=\"star\" prune=\"true\">"
-                      "  <octree/>"
-                      "</octomap>";
+    std::string str = R"(<octomap shape_type="star" prune="true">
+                           <octree/>
+                         </octomap>)";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, true, 2);
+    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_FALSE(*status);
   }
 
   {
     std::string str = "<octomap />";
     tesseract_geometry::Octree::Ptr geom;
-    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, true, 2);
+    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_FALSE(*status);
   }
 }

@@ -32,10 +32,7 @@ TrajOptPlannerDefaultConfig::TrajOptPlannerDefaultConfig(tesseract::Tesseract::C
                                                          std::string manipulator_,
                                                          std::string link_,
                                                          tesseract_common::VectorIsometry3d tcp_)
-  : tesseract(std::move(tesseract_))
-  , manipulator(std::move(manipulator_))
-  , link(std::move(link_))
-  , tcp(std::move(tcp_))
+  : tesseract(std::move(tesseract_)), manipulator(std::move(manipulator_)), link(std::move(link_)), tcp(std::move(tcp_))
 {
 }
 
@@ -219,7 +216,8 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerDefaultConfig::g
     for (std::size_t i = 0; i < constraint_error_functions.size(); ++i)
     {
       auto& c = constraint_error_functions[i];
-      trajopt::TermInfo::Ptr ti = createUserDefinedTermInfo(pci.basic_info.n_steps, std::get<0>(c), std::get<1>(c), "user_defined_" + std::to_string(i));
+      trajopt::TermInfo::Ptr ti = createUserDefinedTermInfo(
+          pci.basic_info.n_steps, std::get<0>(c), std::get<1>(c), "user_defined_" + std::to_string(i));
 
       // Update the term info with the (possibly) new start and end state indices for which to apply this cost
       std::shared_ptr<trajopt::UserDefinedTermInfo> ef = std::static_pointer_cast<trajopt::UserDefinedTermInfo>(ti);

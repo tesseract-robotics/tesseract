@@ -48,7 +48,7 @@ DescartesExternalPositionerSampler<FloatType>::DescartesExternalPositionerSample
     const tesseract_environment::EnvState::ConstPtr& current_state,
     Eigen::VectorXd positioner_sample_resolution,
     const Eigen::Isometry3d& robot_tcp,
-    double robot_reach,
+    FloatType robot_reach,
     bool allow_collision,
     DescartesIsValidFn<FloatType> is_valid)
   : target_pose_(target_pose)
@@ -63,7 +63,7 @@ DescartesExternalPositionerSampler<FloatType>::DescartesExternalPositionerSample
   , robot_tcp_(robot_tcp)
   , robot_reach_(robot_reach)
   , allow_collision_(allow_collision)
-  , dof_(positioner_kinematics_->numJoints() + robot_kinematics_->numJoints())
+  , dof_(static_cast<int>(positioner_kinematics_->numJoints() + robot_kinematics_->numJoints()))
   , ik_seed_(Eigen::VectorXd::Zero(dof_))
   , is_valid_(std::move(is_valid))
 {
@@ -79,13 +79,12 @@ bool DescartesExternalPositionerSampler<FloatType>::sample(std::vector<FloatType
   // The sampled joints results are stored in dof_range[joint index] to be used by the nested_ik function
   std::vector<Eigen::VectorXd> dof_range;
   dof_range.reserve(static_cast<std::size_t>(num_joints));
-  for (int dof = 0; dof < num_joints; ++dof)
+  for (long dof = 0; dof < num_joints; ++dof)
   {
     // given the sampling resolution for the joint calculate the number of samples such that the resolution is not
     // exceeded.
-    int cnt = std::ceil(std::abs(positioner_limits_(dof, 1) - positioner_limits_(dof, 0)) /
-                        positioner_sample_resolution_(dof)) +
-              1;
+    long cnt = lround(std::abs(positioner_limits_(dof, 1) - positioner_limits_(dof, 0)) /
+                        positioner_sample_resolution_(dof)) + 1;
     dof_range.push_back(Eigen::VectorXd::LinSpaced(cnt, positioner_limits_(dof, 0), positioner_limits_(dof, 1)));
   }
 
@@ -110,7 +109,7 @@ bool DescartesExternalPositionerSampler<FloatType>::isCollisionFree(const FloatT
   if (collision_ == nullptr)
     return true;
 
-  return collision_->validate(vertex, dof_);
+  return collision_->validate(vertex, static_cast<size_t>(dof_));
 }
 
 template <typename FloatType>
@@ -131,7 +130,7 @@ void DescartesExternalPositionerSampler<FloatType>::nested_ik(
 
   for (long i = 0; i < static_cast<long>(dof_range[static_cast<std::size_t>(loop_level)].size()); ++i)
   {
-    sample_pose(loop_level) = dof_range[static_cast<std::size_t>(loop_level)][i];
+    sample_pose(loop_level) = static_cast<float>(dof_range[static_cast<std::size_t>(loop_level)][i]);
     nested_ik(solution_set, loop_level + 1, dof_range, target_pose, sample_pose, get_best_solution, distance);
   }
 }
@@ -167,8 +166,8 @@ bool DescartesExternalPositionerSampler<FloatType>::ikAt(
     full_sol.insert(end(full_sol), positioner_pose.data(), positioner_pose.data() + positioner_pose.size());
     full_sol.insert(end(full_sol), std::make_move_iterator(sol), std::make_move_iterator(sol + robot_dof));
 
-    if ((is_valid_ != nullptr) &&
-        !is_valid_(Eigen::Map<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>(full_sol.data(), static_cast<long>(full_sol.size()))))
+    if ((is_valid_ != nullptr) && !is_valid_(Eigen::Map<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>(
+                                      full_sol.data(), static_cast<long>(full_sol.size()))))
       continue;
 
     if (!get_best_solution)

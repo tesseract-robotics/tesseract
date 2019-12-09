@@ -17,7 +17,7 @@ std::string locateResource(const std::string& url)
   if (url.find("package://tesseract_support") == 0)
   {
     mod_url.erase(0, strlen("package://tesseract_support"));
-    size_t pos = mod_url.find("/");
+    size_t pos = mod_url.find('/');
     if (pos == std::string::npos)
     {
       return std::string();
@@ -267,7 +267,7 @@ void runInvKinTest(const tesseract_kinematics::InverseKinematics& inv_kin,
   EXPECT_TRUE(rot_pose.isApprox(rot_result, 1e-3));
 }
 
-TEST(TesseractKinematicsUnit, KDLKinChainActiveLinkNamesUnit)
+TEST(TesseractKinematicsUnit, KDLKinChainActiveLinkNamesUnit) // NOLINT
 {
   tesseract_kinematics::KDLFwdKinChain kin;
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
@@ -276,7 +276,7 @@ TEST(TesseractKinematicsUnit, KDLKinChainActiveLinkNamesUnit)
   runActiveLinkNamesTest(kin, false);
 }
 
-TEST(TesseractKinematicsUnit, KDLKinTreeActiveLinkNamesUnit)
+TEST(TesseractKinematicsUnit, KDLKinTreeActiveLinkNamesUnit) // NOLINT
 {
   tesseract_kinematics::KDLFwdKinTree kin;
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
@@ -297,7 +297,7 @@ TEST(TesseractKinematicsUnit, KDLKinTreeActiveLinkNamesUnit)
   runActiveLinkNamesTest(kin, true);
 }
 
-TEST(TesseractKinematicsUnit, KDLKinChainForwardKinematicUnit)
+TEST(TesseractKinematicsUnit, KDLKinChainForwardKinematicUnit) // NOLINT
 {
   tesseract_kinematics::KDLFwdKinChain kin;
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
@@ -306,7 +306,7 @@ TEST(TesseractKinematicsUnit, KDLKinChainForwardKinematicUnit)
   runFwdKinTest(kin);
 }
 
-TEST(TesseractKinematicsUnit, KDLKinTreeForwardKinematicUnit)
+TEST(TesseractKinematicsUnit, KDLKinTreeForwardKinematicUnit) // NOLINT
 {
   tesseract_kinematics::KDLFwdKinTree kin;
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
@@ -327,7 +327,7 @@ TEST(TesseractKinematicsUnit, KDLKinTreeForwardKinematicUnit)
   runFwdKinTest(kin);
 }
 
-TEST(TesseractKinematicsUnit, KDLKinChainJacobianUnit)
+TEST(TesseractKinematicsUnit, KDLKinChainJacobianUnit) // NOLINT
 {
   tesseract_kinematics::KDLFwdKinChain kin;
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
@@ -336,7 +336,7 @@ TEST(TesseractKinematicsUnit, KDLKinChainJacobianUnit)
   runJacobianTest(kin);
 }
 
-TEST(TesseractKinematicsUnit, KDLKinTreeJacobianUnit)
+TEST(TesseractKinematicsUnit, KDLKinTreeJacobianUnit) // NOLINT
 {
   tesseract_kinematics::KDLFwdKinTree kin;
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
@@ -357,7 +357,7 @@ TEST(TesseractKinematicsUnit, KDLKinTreeJacobianUnit)
   runJacobianTest(kin);
 }
 
-TEST(TesseractKinematicsUnit, KDLKinChainLMAInverseKinematicUnit)
+TEST(TesseractKinematicsUnit, KDLKinChainLMAInverseKinematicUnit) // NOLINT
 {
   tesseract_kinematics::KDLInvKinChainLMA inv_kin;
   tesseract_kinematics::KDLFwdKinChain fwd_kin;
@@ -368,7 +368,7 @@ TEST(TesseractKinematicsUnit, KDLKinChainLMAInverseKinematicUnit)
   runInvKinTest(inv_kin, fwd_kin);
 }
 
-TEST(TesseractKinematicsUnit, KDLKinChainNRInverseKinematicUnit)
+TEST(TesseractKinematicsUnit, KDLKinChainNRInverseKinematicUnit) // NOLINT
 {
   tesseract_kinematics::KDLInvKinChainNR inv_kin;
   tesseract_kinematics::KDLFwdKinChain fwd_kin;

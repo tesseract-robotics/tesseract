@@ -72,7 +72,7 @@ public:
                                      const tesseract_environment::EnvState::ConstPtr& current_state,
                                      Eigen::VectorXd positioner_sample_resolution,
                                      const Eigen::Isometry3d& robot_tcp,
-                                     double robot_reach,
+                                     FloatType robot_reach,
                                      bool allow_collision,
                                      DescartesIsValidFn<FloatType> is_valid = nullptr);
 

@@ -124,21 +124,21 @@ void runTest(DiscreteContactManager& checker, double dist_tol, double nearest_to
   EXPECT_NEAR(result_vector[0].normal[2] * idx[2], cloned_result_vector[0].normal[2] * cloned_idx[2], normal_tol);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionCloneUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionCloneUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker);
   runTest(checker, 0.001, 0.001, 0.001);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionCloneUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionCloneUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker);
   runTest(checker, 0.001, 0.001, 0.001);
 }
 
-TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionCloneUnit)
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionCloneUnit)  // NOLINT
 {
   tesseract_collision_fcl::FCLDiscreteBVHManager checker;
   addCollisionObjects(checker);

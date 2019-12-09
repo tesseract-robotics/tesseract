@@ -71,7 +71,7 @@ tesseract_common::StatusCode::Ptr runTest(ElementType& type,
   tinyxml2::XMLElement* element = xml_doc.FirstChildElement(element_name.c_str());
   EXPECT_TRUE(element != nullptr);
 
-  auto status = tesseract_urdf::parse(type, element, locator, version, visual);
+  auto status = tesseract_urdf::parse(type, element, locator, visual, version);
   if (!(*status))
   {
     CONSOLE_BRIDGE_logError(status->message().c_str());
@@ -132,8 +132,8 @@ runTest(ElementType& type,
         const std::string& xml_string,
         const std::string element_name,
         std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
-        const bool visual,
-        const int version)
+        const int version,
+        const bool visual)
 {
   tinyxml2::XMLDocument xml_doc;
   EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);

@@ -99,6 +99,7 @@ void runTest(DiscreteContactManager& checker)
   // Test object is out side the contact distance
   ////////////////////////////////////////////////
   location["cone_link"].translation() = Eigen::Vector3d(1, 0, 0);
+  result = ContactResultMap();
   result.clear();
   result_vector.clear();
 
@@ -111,6 +112,7 @@ void runTest(DiscreteContactManager& checker)
   /////////////////////////////////////////////
   // Test object inside the contact distance
   /////////////////////////////////////////////
+  result = ContactResultMap();
   result.clear();
   result_vector.clear();
 
@@ -136,21 +138,21 @@ void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].normal[2], idx[2] * 0.0, 0.001);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionBoxConeUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionBoxConeUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxConeUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxConeUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
-TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxConeUnit)
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxConeUnit)  // NOLINT
 {
   tesseract_collision_fcl::FCLDiscreteBVHManager checker;
   addCollisionObjects(checker);

@@ -99,42 +99,42 @@ void runTest(DiscreteContactManager& checker, double tol)
   EXPECT_NEAR(result_vector[0].distance, -0.25, tol);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionOctomapSphereUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionOctomapSphereUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker);
   runTest(checker, 0.001);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionOctomapSphereConvexHullUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionOctomapSphereConvexHullUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker, true);
   runTest(checker, 0.02);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionOctomapSphereUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionOctomapSphereUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker);
   runTest(checker, 0.001);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionOctomapSphereConvexHullUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionOctomapSphereConvexHullUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker, true);
   runTest(checker, 0.02);
 }
 
-TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionOctomapSphereUnit)
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionOctomapSphereUnit)  // NOLINT
 {
   tesseract_collision_fcl::FCLDiscreteBVHManager checker;
   addCollisionObjects(checker);
   runTest(checker, 0.16);  // TODO: There appears to be an issue in fcl for octomap::OcTree.
 }
 
-TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionOctomapSphereConvexHullUnit)
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionOctomapSphereConvexHullUnit)  // NOLINT
 {
   tesseract_collision_fcl::FCLDiscreteBVHManager checker;
   addCollisionObjects(checker, true);

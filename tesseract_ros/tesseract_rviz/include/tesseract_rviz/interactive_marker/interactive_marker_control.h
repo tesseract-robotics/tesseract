@@ -102,7 +102,7 @@ public:
   using ConstPtr = boost::shared_ptr<const InteractiveMarkerControl>;
 
   InteractiveMarkerControl(std::string name,
-                           const std::string &description,
+                           const std::string& description,
                            rviz::DisplayContext* context,
                            Ogre::SceneNode* reference_node,
                            InteractiveMarker* parent,
@@ -123,7 +123,7 @@ public:
    * @brief Add marker to the controller
    * @param marker to add to the controller
    */
-  void addMarker(const MarkerBase::Ptr &marker);
+  void addMarker(const MarkerBase::Ptr& marker);
 
   // called when interactive mode is globally switched on/off
   virtual void enableInteraction(bool enable) override;
@@ -338,7 +338,7 @@ protected:
   void worldToScreen(const Ogre::Vector3& pos_rel_reference, const Ogre::Viewport* viewport, Ogre::Vector2& screen_pos);
 
   //  /// take all the materials, add a highlight pass and store a pointer to the pass for later use
-  void addHighlightPass(const std::set<Ogre::MaterialPtr> &materials);
+  void addHighlightPass(const std::set<Ogre::MaterialPtr>& materials);
 
   // set the highlight color to (a,a,a)
   void setHighlight(float a);
@@ -459,7 +459,7 @@ protected:
   Ogre::Ray mouse_ray_at_drag_begin_;
 
   /* how far to move in Z when mouse moves 1 pixel. */
-  double mouse_z_scale_;
+  Ogre::Real mouse_z_scale_;
 
   /** offset of the absolute mouse position from the relative mouse position */
   int mouse_relative_to_absolute_x_;

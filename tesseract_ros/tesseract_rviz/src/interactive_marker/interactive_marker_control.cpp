@@ -59,9 +59,9 @@
 #include <tesseract_rviz/markers/marker_base.h>
 #include <tesseract_rviz/markers/utils.h>
 
-#define NO_HIGHLIGHT_VALUE 0.0
-#define ACTIVE_HIGHLIGHT_VALUE 0.5
-#define HOVER_HIGHLIGHT_VALUE 0.3
+#define NO_HIGHLIGHT_VALUE 0.0f
+#define ACTIVE_HIGHLIGHT_VALUE 0.5f
+#define HOVER_HIGHLIGHT_VALUE 0.3f
 
 namespace tesseract_rviz
 {
@@ -353,7 +353,7 @@ Ogre::Vector3 InteractiveMarkerControl::closestPointOnLineToPoint(const Ogre::Ve
   //       P + v * -------
   //                 v.v
   //       where "." is the dot product.
-  double factor = (test_point - line_start).dotProduct(line_dir) / line_dir.dotProduct(line_dir);
+  Ogre::Real factor = (test_point - line_start).dotProduct(line_dir) / line_dir.dotProduct(line_dir);
   Ogre::Vector3 closest_point = line_start + line_dir * factor;
   return closest_point;
 }
@@ -417,10 +417,10 @@ void InteractiveMarkerControl::rotate(const Ogre::Vector3& cursor_position_in_re
 
 Ogre::Ray InteractiveMarkerControl::getMouseRayInReferenceFrame(const rviz::ViewportMouseEvent& event, int x, int y)
 {
-  float width = event.viewport->getActualWidth() - 1;
-  float height = event.viewport->getActualHeight() - 1;
+  float width = static_cast<float>(event.viewport->getActualWidth() - 1);
+  float height = static_cast<float>(event.viewport->getActualHeight() - 1);
 
-  Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay((x + 0.5f) / width, (y + 0.5f) / height);
+  Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay((static_cast<float>(x) + 0.5f) / width, (static_cast<float>(y) + 0.5f) / height);
 
   // convert ray into reference frame
   mouse_ray.setOrigin(reference_node_->convertWorldToLocalPosition(mouse_ray.getOrigin()));
@@ -462,9 +462,9 @@ void InteractiveMarkerControl::rotateXYRelative(const rviz::ViewportMouseEvent& 
   if (!getRelativeMouseMotion(event, dx, dy))
     return;
 
-  static const double MOUSE_SCALE = 2 * 3.14 / 300;  // 300 pixels = 360deg
-  Ogre::Radian rx(dx * MOUSE_SCALE);
-  Ogre::Radian ry(dy * MOUSE_SCALE);
+  static const Ogre::Real MOUSE_SCALE = 2 * 3.14f / 300.0f;  // 300 pixels = 360deg
+  Ogre::Radian rx(static_cast<Ogre::Real>(dx) * MOUSE_SCALE);
+  Ogre::Radian ry(static_cast<Ogre::Real>(dy) * MOUSE_SCALE);
 
   Ogre::Quaternion up_rot(rx, event.viewport->getCamera()->getRealUp());
   Ogre::Quaternion right_rot(ry, event.viewport->getCamera()->getRealRight());
@@ -483,8 +483,8 @@ void InteractiveMarkerControl::rotateZRelative(const rviz::ViewportMouseEvent& e
   if (dx == 0)
     return;
 
-  static const double MOUSE_SCALE = 2 * 3.14 / 300;  // 300 pixels = 360deg
-  Ogre::Radian rx(dx * MOUSE_SCALE);
+  static const Ogre::Real MOUSE_SCALE = 2 * 3.14f / 300.0f;  // 300 pixels = 360deg
+  Ogre::Radian rx(static_cast<Ogre::Real>(dx) * MOUSE_SCALE);
 
   Ogre::Quaternion rot(rx, event.viewport->getCamera()->getRealDirection());
 
@@ -502,7 +502,7 @@ void InteractiveMarkerControl::moveZAxisRelative(const rviz::ViewportMouseEvent&
   if (dy == 0)
     return;
 
-  double distance = -dy * mouse_z_scale_;
+  Ogre::Real distance = -1.0f * static_cast<Ogre::Real>(dy) * mouse_z_scale_;
   Ogre::Vector3 delta = distance * mouse_ray_at_drag_begin_.getDirection();
 
   parent_->setPose(parent_->getPosition() + delta, parent_->getOrientation(), name_);
@@ -513,9 +513,9 @@ void InteractiveMarkerControl::moveZAxisRelative(const rviz::ViewportMouseEvent&
 void InteractiveMarkerControl::moveZAxisWheel(const rviz::ViewportMouseEvent& event)
 {
   // wheel_delta is in 1/8 degree and usually jumps 15 degrees at a time
-  static const double WHEEL_TO_PIXEL_SCALE = (1.0 / 8.0) * (2.0 / 15.0);  // 2 pixels per click
+  static const Ogre::Real WHEEL_TO_PIXEL_SCALE = (1.0f / 8.0f) * (2.0f / 15.0f);  // 2 pixels per click
 
-  double distance = event.wheel_delta * WHEEL_TO_PIXEL_SCALE;
+  Ogre::Real distance = static_cast<Ogre::Real>(event.wheel_delta) * WHEEL_TO_PIXEL_SCALE;
   Ogre::Vector3 delta = distance * mouse_ray_at_drag_begin_.getDirection();
 
   parent_->setPose(parent_->getPosition() + delta, parent_->getOrientation(), name_);
@@ -590,8 +590,8 @@ void InteractiveMarkerControl::worldToScreen(const Ogre::Vector3& pos_rel_refere
   const Ogre::Camera* cam = viewport->getCamera();
   Ogre::Vector3 homogeneous_screen_position = cam->getProjectionMatrix() * (cam->getViewMatrix() * world_pos);
 
-  double half_width = viewport->getActualWidth() / 2.0;
-  double half_height = viewport->getActualHeight() / 2.0;
+  Ogre::Real half_width = static_cast<Ogre::Real>(viewport->getActualWidth()) / 2.0f;
+  Ogre::Real half_height = static_cast<Ogre::Real>(viewport->getActualHeight()) / 2.0f;
 
   screen_pos.x = half_width + (half_width * homogeneous_screen_position.x) - 0.5f;
   screen_pos.y = half_height + (half_height * -homogeneous_screen_position.y) - 0.5f;
@@ -613,20 +613,20 @@ bool InteractiveMarkerControl::findClosestPoint(const Ogre::Ray& target_ray,
   Ogre::Vector3 v13 = target_ray.getOrigin() - mouse_ray.getOrigin();
   Ogre::Vector3 v43 = mouse_ray.getDirection();
   Ogre::Vector3 v21 = target_ray.getDirection();
-  double d1343 = v13.dotProduct(v43);
-  double d4321 = v43.dotProduct(v21);
-  double d1321 = v13.dotProduct(v21);
-  double d4343 = v43.dotProduct(v43);
-  double d2121 = v21.dotProduct(v21);
+  Ogre::Real d1343 = v13.dotProduct(v43);
+  Ogre::Real d4321 = v43.dotProduct(v21);
+  Ogre::Real d1321 = v13.dotProduct(v21);
+  Ogre::Real d4343 = v43.dotProduct(v43);
+  Ogre::Real d2121 = v21.dotProduct(v21);
 
-  double denom = d2121 * d4343 - d4321 * d4321;
+  Ogre::Real denom = d2121 * d4343 - d4321 * d4321;
   if (fabs(denom) <= Ogre::Matrix3::EPSILON)
   {
     return false;
   }
-  double numer = d1343 * d4321 - d1321 * d4343;
+  Ogre::Real numer = d1343 * d4321 - d1321 * d4343;
 
-  double mua = numer / denom;
+  Ogre::Real mua = numer / denom;
   closest_point = target_ray.getPoint(mua);
   return true;
 }
@@ -643,7 +643,7 @@ void InteractiveMarkerControl::moveAxis(const Ogre::Ray& /*mouse_ray*/, const rv
   worldToScreen(control_ray.getOrigin(), event.viewport, control_ray_screen_start);
   worldToScreen(control_ray.getPoint(1), event.viewport, control_ray_screen_end);
 
-  Ogre::Vector2 mouse_point(event.x, event.y);
+  Ogre::Vector2 mouse_point(static_cast<Ogre::Real>(event.x), static_cast<Ogre::Real>(event.y));
 
   // Find closest point on projected ray to mouse point
   // Math: if P is the start of the ray, v is the direction vector of
@@ -655,15 +655,15 @@ void InteractiveMarkerControl::moveAxis(const Ogre::Ray& /*mouse_ray*/, const rv
   //                 v.v
   //       where "." is the dot product.
   Ogre::Vector2 control_ray_screen_dir = control_ray_screen_end - control_ray_screen_start;
-  double denominator = control_ray_screen_dir.dotProduct(control_ray_screen_dir);
+  Ogre::Real denominator = control_ray_screen_dir.dotProduct(control_ray_screen_dir);
   if (fabs(denominator) > Ogre::Matrix3::EPSILON)  // If the control ray is not straight in line with the view.
   {
-    double factor = (mouse_point - control_ray_screen_start).dotProduct(control_ray_screen_dir) / denominator;
+    Ogre::Real factor = (mouse_point - control_ray_screen_start).dotProduct(control_ray_screen_dir) / denominator;
 
     Ogre::Vector2 closest_screen_point = control_ray_screen_start + control_ray_screen_dir * factor;
 
     // make a new "mouse ray" for the point on the projected ray
-    Ogre::Ray new_mouse_ray = getMouseRayInReferenceFrame(event, closest_screen_point.x, closest_screen_point.y);
+    Ogre::Ray new_mouse_ray = getMouseRayInReferenceFrame(event, static_cast<int>(closest_screen_point.x), static_cast<int>(closest_screen_point.y));
 
     // find closest point on control-axis ray to new mouse ray (should intersect actually)
     Ogre::Vector3 closest_point;
@@ -747,7 +747,7 @@ void InteractiveMarkerControl::moveRotate(Ogre::Ray& mouse_ray)
       // compute translation from rotated old drag point to new drag point.
       //  - pos_change = new_rel_center * (1.0 - prev_rel_center.length() / new_rel_center.length())
       //  - parent_->translate(pos_change)
-      parent_->translate(new_rel_center * (1.0 - prev_rel_center.length() / new_rel_center.length()), name_);
+      parent_->translate(new_rel_center * (1.0f - prev_rel_center.length() / new_rel_center.length()), name_);
     }
   }
 }
@@ -811,7 +811,7 @@ void InteractiveMarkerControl::moveRotate(const Ogre::Vector3& cursor_position_i
     // compute translation from rotated old drag point to new drag point.
     //  - pos_change = new_rel_center * (1.0 - prev_rel_center.length() / new_rel_center.length())
     //  - parent_->translate(pos_change)
-    parent_->translate(new_rel_center * (1.0 - prev_rel_center.length() / new_rel_center.length()), name_);
+    parent_->translate(new_rel_center * (1.0f - prev_rel_center.length() / new_rel_center.length()), name_);
   }
 }
 
@@ -858,19 +858,19 @@ void InteractiveMarkerControl::rotate3D(const Ogre::Vector3& /*cursor_position_i
   // parent_->getPosition()); rotation_cursor_to_parent_at_grab_ =
   // cursor_3D_orientation.Inverse()*parent->getOrientation();
 
-//  Ogre::Vector3 world_to_cursor_in_world_frame =
-//      reference_node_->convertLocalToWorldPosition(cursor_position_in_reference_frame);
+  //  Ogre::Vector3 world_to_cursor_in_world_frame =
+  //      reference_node_->convertLocalToWorldPosition(cursor_position_in_reference_frame);
   Ogre::Quaternion rotation_world_to_cursor =
       reference_node_->convertLocalToWorldOrientation(cursor_orientation_in_reference_frame);
 
   // Ogre::Vector3 marker_to_cursor_in_cursor_frame =
   // orientation_world_to_cursor.Inverse()*reference_node_->getOrientation()*grab_point_in_reference_frame_;
 
-//  Ogre::Vector3 world_to_cursor_in_cursor_frame = rotation_world_to_cursor.Inverse() * world_to_cursor_in_world_frame;
-//  Ogre::Vector3 world_to_marker_in_world_frame =
-//      rotation_world_to_cursor * (world_to_cursor_in_cursor_frame - parent_to_cursor_in_cursor_frame_at_grab_);
-//  Ogre::Vector3 marker_position_in_reference_frame =
-//      reference_node_->convertWorldToLocalPosition(world_to_marker_in_world_frame);
+  //  Ogre::Vector3 world_to_cursor_in_cursor_frame = rotation_world_to_cursor.Inverse() *
+  //  world_to_cursor_in_world_frame; Ogre::Vector3 world_to_marker_in_world_frame =
+  //      rotation_world_to_cursor * (world_to_cursor_in_cursor_frame - parent_to_cursor_in_cursor_frame_at_grab_);
+  //  Ogre::Vector3 marker_position_in_reference_frame =
+  //      reference_node_->convertWorldToLocalPosition(world_to_marker_in_world_frame);
   Ogre::Quaternion marker_orientation_in_reference_frame =
       reference_node_->convertWorldToLocalOrientation(rotation_world_to_cursor * rotation_cursor_to_parent_at_grab_);
 
@@ -965,8 +965,8 @@ void InteractiveMarkerControl::handle3DCursorEvent(rviz::ViewportMouseEvent even
     case InteractiveMode::BUTTON:
       if (event.leftUp())
       {
-//        Ogre::Vector3 point_rel_world = cursor_3D_pos;
-//        bool got_3D_point = true;
+        //        Ogre::Vector3 point_rel_world = cursor_3D_pos;
+        //        bool got_3D_point = true;
 
         //      visualization_msgs::InteractiveMarkerFeedback feedback;
         //      feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK;
@@ -983,7 +983,7 @@ void InteractiveMarkerControl::handle3DCursorEvent(rviz::ViewportMouseEvent even
         Ogre::Vector3 three_d_point = cursor_3D_pos;
         bool valid_point = true;
         Ogre::Vector2 mouse_pos = rviz::project3DPointToViewportXY(event.viewport, three_d_point);
-        QCursor::setPos(event.panel->mapToGlobal(QPoint(mouse_pos.x, mouse_pos.y)));
+        QCursor::setPos(event.panel->mapToGlobal(QPoint(static_cast<int>(mouse_pos.x), static_cast<int>(mouse_pos.y))));
         parent_->showMenu(event, name_, three_d_point, valid_point);
       }
       break;
@@ -1128,9 +1128,9 @@ void InteractiveMarkerControl::handleMouseEvent(rviz::ViewportMouseEvent& event)
     case InteractiveMode::BUTTON:
       if (event.leftUp())
       {
-//        Ogre::Vector3 point_rel_world;
-//        bool got_3D_point =
-//            context_->getSelectionManager()->get3DPoint(event.viewport, event.x, event.y, point_rel_world);
+        //        Ogre::Vector3 point_rel_world;
+        //        bool got_3D_point =
+        //            context_->getSelectionManager()->get3DPoint(event.viewport, event.x, event.y, point_rel_world);
 
         //      visualization_msgs::InteractiveMarkerFeedback feedback;
         //      feedback.event_type = visualization_msgs::InteractiveMarkerFeedback::BUTTON_CLICK;
@@ -1257,7 +1257,7 @@ void InteractiveMarkerControl::beginMouseMovement(rviz::ViewportMouseEvent& even
   grab_point_rel_control_ = reference_rel_control_frame * grab_point_in_reference_frame_;
 
   // find mouse_z_scale_
-  static const double DEFAULT_MOUSE_Z_SCALE = 0.001;  // default to 1mm per pixel
+  static const Ogre::Real DEFAULT_MOUSE_Z_SCALE = 0.001f;  // default to 1mm per pixel
   mouse_z_scale_ = DEFAULT_MOUSE_Z_SCALE;
 
   Ogre::Ray mouse_ray = getMouseRayInReferenceFrame(event, event.x, event.y);
@@ -1266,7 +1266,7 @@ void InteractiveMarkerControl::beginMouseMovement(rviz::ViewportMouseEvent& even
   Ogre::Vector3 intersection_3d;
   Ogre::Vector3 intersection_3d_10;
   Ogre::Vector2 intersection_2d;
-  float ray_t;
+  Ogre::Real ray_t;
 
   if (intersectSomeYzPlane(mouse_ray,
                            grab_point_in_reference_frame_,
@@ -1283,7 +1283,7 @@ void InteractiveMarkerControl::beginMouseMovement(rviz::ViewportMouseEvent& even
                              ray_t))
     {
       mouse_z_scale_ = (intersection_3d_10 - intersection_3d).length() / 10.0f;
-      if (mouse_z_scale_ < std::numeric_limits<float>::min() * 100.0f)
+      if (mouse_z_scale_ < std::numeric_limits<Ogre::Real>::min() * 100.0f)
         mouse_z_scale_ = DEFAULT_MOUSE_Z_SCALE;
     }
   }
@@ -1315,10 +1315,12 @@ void InteractiveMarkerControl::handleMouseMovement(rviz::ViewportMouseEvent& eve
     case InteractiveMode::ROTATE_3D:
       do_rotation = true;
       // fall through
+      BOOST_FALLTHROUGH;
     case InteractiveMode::MOVE_ROTATE_3D:
       if (event.control())
         do_rotation = true;
       // fall through
+      BOOST_FALLTHROUGH;
     case InteractiveMode::MOVE_3D:
       if (do_rotation)
       {

@@ -7,10 +7,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/calibration.h>
 #include "tesseract_urdf_common_unit.h"
 
-TEST(TesseractURDFUnit, parse_calibration)
+TEST(TesseractURDFUnit, parse_calibration)  // NOLINT
 {
   {
-    std::string str = "<calibration rising=\"1\" falling=\"2\" extra=\"0 0 0\"/>";
+    std::string str = R"(<calibration rising="1" falling="2" extra="0 0 0"/>)";
     tesseract_scene_graph::JointCalibration::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointCalibration::Ptr>(elem, str, "calibration", 2);
     EXPECT_TRUE(*status);
@@ -19,7 +19,7 @@ TEST(TesseractURDFUnit, parse_calibration)
   }
 
   {
-    std::string str = "<calibration rising=\"1\"/>";
+    std::string str = R"(<calibration rising="1"/>)";
     tesseract_scene_graph::JointCalibration::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointCalibration::Ptr>(elem, str, "calibration", 2);
     EXPECT_TRUE(*status);
@@ -28,7 +28,7 @@ TEST(TesseractURDFUnit, parse_calibration)
   }
 
   {
-    std::string str = "<calibration falling=\"2\"/>";
+    std::string str = R"(<calibration falling="2"/>)";
     tesseract_scene_graph::JointCalibration::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointCalibration::Ptr>(elem, str, "calibration", 2);
     EXPECT_TRUE(*status);
@@ -37,14 +37,14 @@ TEST(TesseractURDFUnit, parse_calibration)
   }
 
   {
-    std::string str = "<calibration rising=\"a\" falling=\"2\"/>";
+    std::string str = R"(<calibration rising="a" falling="2"/>)";
     tesseract_scene_graph::JointCalibration::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointCalibration::Ptr>(elem, str, "calibration", 2);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<calibration rising=\"1\" falling=\"b\"/>";
+    std::string str = R"(<calibration rising="1" falling="b"/>)";
     tesseract_scene_graph::JointCalibration::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointCalibration::Ptr>(elem, str, "calibration", 2);
     EXPECT_FALSE(*status);

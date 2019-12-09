@@ -78,7 +78,7 @@ public:
    */
   CurrentStateMonitor(const tesseract_environment::Environment::ConstPtr& env,
                       tesseract::ForwardKinematicsManager::ConstPtr kinematics_manager,
-                      const ros::NodeHandle &nh);
+                      const ros::NodeHandle& nh);
 
   ~CurrentStateMonitor();
 

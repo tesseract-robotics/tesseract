@@ -515,9 +515,9 @@ void ManipulationWidget::changedJointStateTopic()
   }
 }
 
-void ManipulationWidget::markerFeedback(const std::string &reference_frame,
-                                        const Eigen::Isometry3d &transform,
-                                        const Eigen::Vector3d &/*mouse_point*/,
+void ManipulationWidget::markerFeedback(const std::string& reference_frame,
+                                        const Eigen::Isometry3d& transform,
+                                        const Eigen::Vector3d& /*mouse_point*/,
                                         bool /*mouse_point_valid*/)
 {
   if (inv_kin_ && env_state_)

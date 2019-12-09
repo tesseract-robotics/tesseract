@@ -40,7 +40,7 @@ public:
   void onInitialize(VisualizationWidget::Ptr visualization,
                     tesseract::Tesseract::Ptr tesseract,
                     rviz::DisplayContext* context,
-                    const ros::NodeHandle &update_nh);
+                    const ros::NodeHandle& update_nh);
 
   void onEnable();
   void onDisable();
