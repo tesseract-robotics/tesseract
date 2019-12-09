@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/objectives/PathLengthOptimizationObjective.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_environment/core/utils.h>
 #include <tesseract_motion_planners/ompl/ompl_freespace_planner.h>
 #include <tesseract_motion_planners/ompl/conversions.h>
 #include <tesseract_motion_planners/ompl/continuous_motion_validator.h>
@@ -69,6 +70,10 @@ std::string OMPLFreespacePlannerStatusCategory::message(int code) const
     {
       return "Failed to find valid solution";
     }
+    case ErrorFoundValidSolutionInCollision:
+    {
+      return "Found valid solution, but is in collision";
+    }
     default:
     {
       assert(false);
@@ -94,7 +99,7 @@ bool OMPLFreespacePlanner<PlannerType>::terminate()
 }
 
 template <typename PlannerType>
-tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerResponse& response, const bool /*verbose*/)
+tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerResponse& response, const bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
@@ -103,8 +108,6 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
     CONSOLE_BRIDGE_logError("Planner %s is not configured", name_.c_str());
     return config_status;
   }
-
-  tesseract_motion_planners::PlannerResponse planning_response;
 
   ompl::tools::OptimizePlan op(simple_setup_->getProblemDefinition());
   for (auto i = 0; i < config_->num_threads; ++i)
@@ -120,9 +123,8 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
 
   if (!status || !simple_setup_->haveExactSolutionPath())
   {
-    planning_response.status = tesseract_common::StatusCode(
-        OMPLFreespacePlannerStatusCategory::ErrorFailedToFindValidSolution, status_category_);
-    return planning_response.status;
+    response.status = tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::ErrorFailedToFindValidSolution, status_category_);
+    return response.status;
   }
 
   if (config_->simplify)
@@ -147,12 +149,46 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
     }
   }
 
-  planning_response.status =
-      tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::SolutionFound, status_category_);
-  planning_response.joint_trajectory.trajectory = toTrajArray(simple_setup_->getSolutionPath());
-  planning_response.joint_trajectory.joint_names = kin_->getJointNames();
+  tesseract_common::TrajArray traj = toTrajArray(simple_setup_->getSolutionPath());
 
-  response = std::move(planning_response);
+  // Check and report collisions
+  std::vector<tesseract_collision::ContactResultMap> collisions;
+  continuous_contact_manager_->setContactDistanceThreshold(0);
+  collisions.clear();
+  bool found = tesseract_environment::checkTrajectory(*continuous_contact_manager_,
+                                                       *(config_->tesseract->getEnvironmentConst()),
+                                                       kin_->getJointNames(),
+                                                       traj,
+                                                       collisions,
+                                                       true,
+                                                       verbose);
+
+  // Do a discrete check until continuous collision checking is updated to do dynamic-dynamic checking
+  discrete_contact_manager_->setContactDistanceThreshold(0);
+  collisions.clear();
+
+  found = found || tesseract_environment::checkTrajectory(*discrete_contact_manager_,
+                                                          *(config_->tesseract->getEnvironmentConst()),
+                                                          kin_->getJointNames(),
+                                                          traj,
+                                                          collisions,
+                                                          true,
+                                                          verbose);
+
+  // Send response
+  response.joint_trajectory.trajectory = traj;
+  response.joint_trajectory.joint_names = kin_->getJointNames();
+  if (found)
+  {
+    response.status = tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::ErrorFoundValidSolutionInCollision,
+                                                   status_category_);
+  }
+  else
+  {
+    response.status = tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::SolutionFound, status_category_);
+    CONSOLE_BRIDGE_logInform("%s, final trajectory is collision free", name_);
+  }
+
   return response.status;
 }
 

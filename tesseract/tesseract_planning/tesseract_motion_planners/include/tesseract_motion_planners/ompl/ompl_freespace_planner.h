@@ -195,7 +195,8 @@ public:
     SolutionFound = 0,
     ErrorIsNotConfigured = -1,
     ErrorFailedToParseConfig = -2,
-    ErrorFailedToFindValidSolution = -3
+    ErrorFailedToFindValidSolution = -3,
+    ErrorFoundValidSolutionInCollision = -4
   };
 
 private:
