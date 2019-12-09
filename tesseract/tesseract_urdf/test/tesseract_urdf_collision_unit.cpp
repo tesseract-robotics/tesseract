@@ -7,18 +7,18 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/collision.h>
 #include "tesseract_urdf_common_unit.h"
 
-TEST(TesseractURDFUnit, parse_collision)
+TEST(TesseractURDFUnit, parse_collision)  // NOLINT
 {
   std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator =
       std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
 
   {
-    std::string str = "<collision extra=\"0 0 0\">"
-                      "  <origin xyz=\"1 2 3\" rpy=\"0 0 0\" />"
-                      "  <geometry>"
-                      "    <box size=\"1 2 3\" />"
-                      "  </geometry>"
-                      "</collision>";
+    std::string str = R"(<collision extra="0 0 0">
+                           <origin xyz="1 2 3" rpy="0 0 0" />
+                           <geometry>
+                             <box size="1 2 3" />
+                           </geometry>
+                         </collision>)";
     std::vector<tesseract_scene_graph::Collision::Ptr> elem;
     auto status =
         runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", resource_locator, 2);
@@ -29,11 +29,11 @@ TEST(TesseractURDFUnit, parse_collision)
   }
 
   {
-    std::string str = "<collision>"
-                      "  <geometry>"
-                      "    <box size=\"1 2 3\" />"
-                      "  </geometry>"
-                      "</collision>";
+    std::string str = R"(<collision>
+                           <geometry>
+                             <box size="1 2 3" />
+                           </geometry>"
+                         </collision>)";
     std::vector<tesseract_scene_graph::Collision::Ptr> elem;
     auto status =
         runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", resource_locator, 2);
@@ -44,8 +44,8 @@ TEST(TesseractURDFUnit, parse_collision)
   }
 
   {
-    std::string str = "<collision>"
-                      "</collision>";
+    std::string str = R"(<collision>
+                         </collision>)";
     std::vector<tesseract_scene_graph::Collision::Ptr> elem;
     auto status =
         runTest<std::vector<tesseract_scene_graph::Collision::Ptr>>(elem, str, "collision", resource_locator, 2);

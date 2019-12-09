@@ -9,7 +9,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_geometry/mesh_parser.h>
 
-TEST(TesseractGeometryUnit, Instantiation)
+TEST(TesseractGeometryUnit, Instantiation)  // NOLINT
 {
   std::shared_ptr<const tesseract_common::VectorVector3d> vertices =
       std::make_shared<const tesseract_common::VectorVector3d>();
@@ -44,7 +44,7 @@ TEST(TesseractGeometryUnit, Instantiation)
       std::make_shared<tesseract_geometry::Octree>(pc, 0.01, tesseract_geometry::Octree::SubType::BOX, false);
 }
 
-TEST(TesseractGeometryUnit, LoadMeshUnit)
+TEST(TesseractGeometryUnit, LoadMeshUnit)  // NOLINT
 {
   using namespace tesseract_geometry;
 

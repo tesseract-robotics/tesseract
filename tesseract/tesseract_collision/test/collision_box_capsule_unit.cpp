@@ -97,6 +97,7 @@ void runTest(DiscreteContactManager& checker)
   // Test object is out side the contact distance
   ////////////////////////////////////////////////
   location["capsule_link"].translation() = Eigen::Vector3d(0, 0, 1);
+  result = ContactResultMap();
   result.clear();
   result_vector.clear();
   checker.setCollisionObjectsTransform(location);
@@ -109,6 +110,7 @@ void runTest(DiscreteContactManager& checker)
   /////////////////////////////////////////////
   // Test object inside the contact distance
   /////////////////////////////////////////////
+  result = ContactResultMap();
   result.clear();
   result_vector.clear();
 
@@ -127,26 +129,26 @@ void runTest(DiscreteContactManager& checker)
 
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][2], 0.5, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][2], 0.625, 0.001);
-  EXPECT_NEAR(result_vector[0].normal[0], idx[2] * 0.0, 0.001);
-  EXPECT_NEAR(result_vector[0].normal[1], idx[2] * 0.0, 0.001);
-  EXPECT_NEAR(result_vector[0].normal[2], idx[2] * 1.0, 0.001);
+  EXPECT_NEAR(result_vector[0].normal[0], idx[2] * 0.0, 0.0011);  // FCL Required the bump in tolerance
+  EXPECT_NEAR(result_vector[0].normal[1], idx[2] * 0.0, 0.0011);  // FCL Required the bump in tolerance
+  EXPECT_NEAR(result_vector[0].normal[2], idx[2] * 1.0, 0.0011);  // FCL Required the bump in tolerance
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionBoxCapsuleUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionBoxCapsuleUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxCapsuleUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxCapsuleUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
-TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxCapsuleUnit)
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionBoxCapsuleUnit)  // NOLINT
 {
   tesseract_collision_fcl::FCLDiscreteBVHManager checker;
   addCollisionObjects(checker);

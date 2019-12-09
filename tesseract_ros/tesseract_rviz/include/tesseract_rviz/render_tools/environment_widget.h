@@ -47,9 +47,9 @@ public:
   void onInitialize(VisualizationWidget::Ptr visualization,
                     tesseract::Tesseract::Ptr tesseract,
                     rviz::DisplayContext* context,
-                    const ros::NodeHandle &update_nh,
+                    const ros::NodeHandle& update_nh,
                     bool update_state,
-                    const QString &tesseract_state_topic = "");
+                    const QString& tesseract_state_topic = "");
 
   void onEnable();
   void onDisable();

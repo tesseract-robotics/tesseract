@@ -86,9 +86,9 @@ public:
                     rviz::DisplayContext* context,
                     VisualizationWidget::Ptr visualization,
                     tesseract::Tesseract::Ptr tesseract,
-                    const ros::NodeHandle &update_nh,
+                    const ros::NodeHandle& update_nh,
                     ManipulatorState state,
-                    const QString &joint_state_topic);
+                    const QString& joint_state_topic);
 
   void onEnable();
   void onDisable();
@@ -105,8 +105,8 @@ public
   Q_SLOT : void enableCartesianManipulation(bool enabled);
   void enableJointManipulation(bool enabled);
   void resetToCurrentState();
-  bool changeManipulator(const QString &manipulator);
-  bool changeTCP(const QString &tcp_link);
+  bool changeManipulator(const QString& manipulator);
+  bool changeTCP(const QString& tcp_link);
 
 private Q_SLOTS:
   void changedManipulator();

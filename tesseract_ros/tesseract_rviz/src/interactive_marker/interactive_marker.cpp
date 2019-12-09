@@ -186,7 +186,6 @@ InteractiveMarkerControl::Ptr InteractiveMarker::createInteractiveControl(const 
                                                               orientation);
   controls_[name] = control;
   return control;
-
 }
 
 // void InteractiveMarker::processMessage( const visualization_msgs::InteractiveMarkerPose& message )

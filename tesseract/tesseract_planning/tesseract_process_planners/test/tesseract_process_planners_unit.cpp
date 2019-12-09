@@ -13,7 +13,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_process_planners/process_definition.h>
 #include <tesseract_process_planners/process_planner.h>
 
-TEST(TesseractProcessPlannersUnit, Instantiation)
+TEST(TesseractProcessPlannersUnit, Instantiation) // NOLINT
 {
   using namespace tesseract_process_planners;
 

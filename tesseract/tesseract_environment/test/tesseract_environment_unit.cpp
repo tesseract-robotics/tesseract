@@ -21,7 +21,7 @@ std::string locateResource(const std::string& url)
   if (url.find("package://tesseract_support") == 0)
   {
     mod_url.erase(0, strlen("package://tesseract_support"));
-    size_t pos = mod_url.find("/");
+    size_t pos = mod_url.find('/');
     if (pos == std::string::npos)
     {
       return std::string();
@@ -209,7 +209,7 @@ void runCurrentStatePreservedWhenEnvChangesTest(const tesseract_environment::Env
   }
 }
 
-TEST(TesseractEnvironmentUnit, KDLEnvCloneContactManagerUnit)
+TEST(TesseractEnvironmentUnit, KDLEnvCloneContactManagerUnit) // NOLINT
 {
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
@@ -233,7 +233,7 @@ TEST(TesseractEnvironmentUnit, KDLEnvCloneContactManagerUnit)
   runContactManagerCloneTest(env);
 }
 
-TEST(TesseractEnvironmentUnit, KDLEnvAddandRemoveLink)
+TEST(TesseractEnvironmentUnit, KDLEnvAddandRemoveLink) // NOLINT
 {
   SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
@@ -257,7 +257,7 @@ TEST(TesseractEnvironmentUnit, KDLEnvAddandRemoveLink)
   runAddandRemoveLinkTest(env);
 }
 
-TEST(TesseractEnvironmentUnit, KDLEnvMoveLinkandJoint)
+TEST(TesseractEnvironmentUnit, KDLEnvMoveLinkandJoint) // NOLINT
 {
   SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
@@ -281,7 +281,7 @@ TEST(TesseractEnvironmentUnit, KDLEnvMoveLinkandJoint)
   runMoveLinkandJointTest(env);
 }
 
-TEST(TesseractEnvironmentUnit, KDLEnvChangeJointOrigin)
+TEST(TesseractEnvironmentUnit, KDLEnvChangeJointOrigin) // NOLINT
 {
   SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
@@ -305,7 +305,7 @@ TEST(TesseractEnvironmentUnit, KDLEnvChangeJointOrigin)
   runChangeJointOriginTest(env);
 }
 
-TEST(TesseractEnvironmentUnit, KDLEnvCurrentStatePreservedWhenEnvChanges)
+TEST(TesseractEnvironmentUnit, KDLEnvCurrentStatePreservedWhenEnvChanges) // NOLINT
 {
   SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);

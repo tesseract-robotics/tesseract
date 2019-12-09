@@ -83,7 +83,8 @@ bool DescartesRobotPositionerSampler<FloatType>::sample(std::vector<FloatType>& 
     // given the sampling resolution for the joint calculate the number of samples such that the resolution is not
     // exceeded.
     int cnt = static_cast<int>(std::ceil(std::abs(positioner_limits_(dof, 1) - positioner_limits_(dof, 0)) /
-                        positioner_sample_resolution_(dof))) + 1;
+                                         positioner_sample_resolution_(dof))) +
+              1;
     dof_range.push_back(Eigen::VectorXd::LinSpaced(cnt, positioner_limits_(dof, 0), positioner_limits_(dof, 1)));
   }
 
@@ -108,7 +109,7 @@ bool DescartesRobotPositionerSampler<FloatType>::isCollisionFree(const FloatType
   if (collision_ == nullptr)
     return true;
 
-  return collision_->validate(vertex, dof_);
+  return collision_->validate(vertex, static_cast<size_t>(dof_));
 }
 
 template <typename FloatType>
@@ -129,7 +130,7 @@ void DescartesRobotPositionerSampler<FloatType>::nested_ik(
 
   for (long i = 0; i < static_cast<long>(dof_range[static_cast<std::size_t>(loop_level)].size()); ++i)
   {
-    sample_pose(loop_level) = dof_range[static_cast<std::size_t>(loop_level)][i];
+    sample_pose(loop_level) = static_cast<float>(dof_range[static_cast<std::size_t>(loop_level)][i]);
     nested_ik(solution_set, loop_level + 1, dof_range, target_pose, sample_pose, get_best_solution, distance);
   }
 }
@@ -151,7 +152,7 @@ bool DescartesRobotPositionerSampler<FloatType>::ikAt(
     return false;
 
   Eigen::VectorXd robot_solution_set;
-  int robot_dof = robot_kinematics_->numJoints();
+  int robot_dof = static_cast<int>(robot_kinematics_->numJoints());
   if (!robot_kinematics_->calcInvKin(robot_solution_set, robot_target_pose, ik_seed_))
     return false;
 
@@ -164,8 +165,8 @@ bool DescartesRobotPositionerSampler<FloatType>::ikAt(
     full_sol.insert(end(full_sol), positioner_pose.data(), positioner_pose.data() + positioner_pose.size());
     full_sol.insert(end(full_sol), std::make_move_iterator(sol), std::make_move_iterator(sol + robot_dof));
 
-    if ((is_valid_ != nullptr) &&
-        !is_valid_(Eigen::Map<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>(full_sol.data(), full_sol.size())))
+    if ((is_valid_ != nullptr) && !is_valid_(Eigen::Map<Eigen::Matrix<FloatType, Eigen::Dynamic, 1>>(
+                                      full_sol.data(), static_cast<long>(full_sol.size()))))
       continue;
 
     if (!get_best_solution)

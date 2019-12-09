@@ -339,7 +339,7 @@ protected:
   void addJointToLinkTree(LinkTreeStyle style, rviz::Property* parent, JointWidget* joint);
 
   // set the value of the EnableAllLinks property without affecting child links/joints.
-  void setEnableAllLinksCheckbox(const QVariant &val);
+  void setEnableAllLinksCheckbox(const QVariant& val);
 
   /** initialize style_name_map_ and link_tree_style_ options */
   void initLinkTreeStyle();

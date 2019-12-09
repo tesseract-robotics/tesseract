@@ -255,7 +255,7 @@ void BulletDiscreteBVHManager::contactTest(const COW::Ptr& cow, ContactTestData&
   btVector3 min_aabb, max_aabb;
   cow->getAABB(min_aabb, max_aabb);
 
-  DiscreteCollisionCollector cc(collisions, cow, static_cast<double>(cow->getContactProcessingThreshold()));
+  DiscreteCollisionCollector cc(collisions, cow, cow->getContactProcessingThreshold());
 
   TesseractSingleContactCallback contactCB(cow.get(), dispatcher_.get(), dispatch_info_, cc);
 

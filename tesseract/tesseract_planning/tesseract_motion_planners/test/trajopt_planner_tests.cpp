@@ -49,7 +49,7 @@ std::string locateResource(const std::string& url)
   if (url.find("package://tesseract_support") == 0)
   {
     mod_url.erase(0, strlen("package://tesseract_support"));
-    size_t pos = mod_url.find("/");
+    size_t pos = mod_url.find('/');
     if (pos == std::string::npos)
     {
       return std::string();
@@ -94,9 +94,9 @@ template <class Base, class Derived>
 bool vectorContainsType(std::vector<Base> vector)
 {
   bool contains_type = false;
-  for (Base unit : vector)
+  for (const Base& unit : vector)
   {
-    Derived* test = dynamic_cast<Derived*>(unit.get());
+    auto* test = dynamic_cast<Derived*>(unit.get());
     contains_type |= (test != nullptr);
   }
   return contains_type;
@@ -106,7 +106,7 @@ bool vectorContainsType(std::vector<Base> vector)
 template <class Base, class Derived>
 bool objectIsType(Base unit)
 {
-  Derived* test = dynamic_cast<Derived*>(unit.get());
+  auto* test = dynamic_cast<Derived*>(unit.get());
   bool contains_type = (test != nullptr);
 
   return contains_type;
@@ -115,7 +115,7 @@ bool objectIsType(Base unit)
 }  // namespace tesseract_tests
 
 // This test checks that the boolean flags are adding the correct costs for smoothing and collision
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner0)
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner0) // NOLINT
 {
   // Set the parameters (Most are being left as defaults)
   std::shared_ptr<TrajOptPlannerFreespaceConfig> config = std::make_shared<TrajOptPlannerFreespaceConfig>(
@@ -139,10 +139,10 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner0)
   // Loop over all combinations of these 4. 0001, 0010, 0011, ... , 1111
   for (uint8_t byte = 0; byte < 16; byte++)
   {
-    bool t1 = static_cast<bool>(byte & 0x1);
-    bool t2 = static_cast<bool>(byte & 0x2);
-    bool t3 = static_cast<bool>(byte & 0x4);
-    bool t4 = static_cast<bool>(byte & 0x8);
+    auto t1 = static_cast<bool>(byte & 0x1);
+    auto t2 = static_cast<bool>(byte & 0x2);
+    auto t3 = static_cast<bool>(byte & 0x4);
+    auto t4 = static_cast<bool>(byte & 0x8);
 
     config->smooth_velocities = t1;
     config->smooth_accelerations = t2;
@@ -162,7 +162,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner0)
 }
 
 // This test tests freespace motion b/n 2 joint waypoints
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner1)
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner1) // NOLINT
 {
   // Set the parameters (Most are being left as defaults)
   std::shared_ptr<TrajOptPlannerFreespaceConfig> config = std::make_shared<TrajOptPlannerFreespaceConfig>(
@@ -203,7 +203,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner1)
 }
 
 // This test tests freespace motion b/n 1 joint waypoint and 1 cartesian waypoint
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner2)
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner2) // NOLINT
 {
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
@@ -247,7 +247,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner2)
 }
 
 // This test tests freespace motion b/n 1 cartesian waypoint and 1 joint waypoint
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner3)
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner3) // NOLINT
 {
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
@@ -291,7 +291,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner3)
 }
 
 // This test tests freespace motion b/n 2 cartesian waypoints
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4)
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4) // NOLINT
 {
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
@@ -337,7 +337,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4)
 
 // This test checks that the boolean flags are adding the correct costs for smoothing, collision, and cartesian cnts are
 // added correctly
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0)
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0) // NOLINT
 {
   // Set the parameters (Most are being left as defaults)
   std::shared_ptr<TrajOptPlannerDefaultConfig> config = std::make_shared<TrajOptPlannerDefaultConfig>(
@@ -358,10 +358,10 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0)
   // Loop over all combinations of these 4. 0001, 0010, 0011, ... , 1111
   for (uint8_t byte = 0; byte < 16; byte++)
   {
-    bool t1 = static_cast<bool>(byte & 0x1);
-    bool t2 = static_cast<bool>(byte & 0x2);
-    bool t3 = static_cast<bool>(byte & 0x4);
-    bool t4 = static_cast<bool>(byte & 0x8);
+    auto t1 = static_cast<bool>(byte & 0x1);
+    auto t2 = static_cast<bool>(byte & 0x2);
+    auto t3 = static_cast<bool>(byte & 0x4);
+    auto t4 = static_cast<bool>(byte & 0x8);
 
     config->smooth_velocities = t1;
     config->smooth_accelerations = t2;
@@ -388,7 +388,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0)
 }
 
 // This test checks that the terms are being added correctly for cartesian costs
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner1)
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner1) // NOLINT
 {
   // Set the parameters (Most are being left as defaults)
   std::shared_ptr<TrajOptPlannerDefaultConfig> config = std::make_shared<TrajOptPlannerDefaultConfig>(
@@ -418,7 +418,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner1)
 }
 
 // This test checks that the terms are being added correctly for joint cnts
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner2)
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner2) // NOLINT
 {
   // Set the parameters (Most are being left as defaults)
   std::shared_ptr<TrajOptPlannerDefaultConfig> config = std::make_shared<TrajOptPlannerDefaultConfig>(
@@ -451,7 +451,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner2)
 }
 
 // This test checks that the terms are being added correctly for joint costs
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner3)
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner3) // NOLINT
 {
   // Set the parameters (Most are being left as defaults)
   std::shared_ptr<TrajOptPlannerDefaultConfig> config = std::make_shared<TrajOptPlannerDefaultConfig>(

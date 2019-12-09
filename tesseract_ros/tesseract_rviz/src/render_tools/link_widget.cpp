@@ -688,7 +688,7 @@ Ogre::MaterialPtr LinkWidget::getMaterialForLink(const tesseract_scene_graph::Li
 
   if (visual->material->texture_filename.empty())
   {
-    const Eigen::Vector4d& col = visual->material->color;
+    const Eigen::Vector4f& col = visual->material->color.cast<float>();
     mat->getTechnique(0)->setAmbient(col(0) * 0.5f, col(1) * 0.5f, col(2) * 0.5f);
     mat->getTechnique(0)->setDiffuse(col(0), col(1), col(2), col(3));
 
@@ -779,15 +779,15 @@ LinkWidget::createEntityForMeshData(const std::string& entity_name,
       vertexCount = 0;
     }
 
-    size_t num_verts = (*mesh_faces)[t];
+    size_t num_verts = static_cast<size_t>((*mesh_faces)[t]);
     assert(num_verts >= 3);
 
     std::vector<Ogre::Vector3> vertices(num_verts);
     std::vector<Ogre::Vector3> normals(num_verts);
     for (size_t k = 0; k < num_verts; ++k)
     {
-      Eigen::Vector3d v = (*mesh_vertices)[((*mesh_faces)[++t])];
-      vertices[k] = Ogre::Vector3(static_cast<float>(v.x()), static_cast<float>(v.y()), static_cast<float>(v.z()));
+      Eigen::Vector3f v = ((*mesh_vertices)[static_cast<size_t>((*mesh_faces)[++t])]).cast<float>();
+      vertices[k] = Ogre::Vector3(v.x(), v.y(), v.z());
     }
 
     Ogre::Vector3 side1 = vertices[0] - vertices[1];
@@ -818,11 +818,13 @@ LinkWidget::createEntityForMeshData(const std::string& entity_name,
         object->position(vertices[k]);
         object->normal(normals[k]);
 
-        object->triangle(vertexCount + 0, vertexCount + (k - 1), vertexCount + k);
+        object->triangle(vertexCount + 0,
+                         static_cast<Ogre::uint32>(vertexCount + (k - 1)),
+                         static_cast<Ogre::uint32>(vertexCount + k));
       }
     }
 
-    vertexCount += num_verts;
+    vertexCount += static_cast<Ogre::uint32>(num_verts);
   }
 
   object->end();
@@ -1004,7 +1006,7 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
       if (!max_octree_depth)
         octree_depth = octree->getTreeDepth();
       else
-        octree_depth = std::min(max_octree_depth, (std::size_t)octree->getTreeDepth());
+        octree_depth = std::min(max_octree_depth, static_cast<size_t>(octree->getTreeDepth()));
 
       if (isVisual)
       {
@@ -1092,7 +1094,7 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
             switch (octree_color_mode)
             {
               case OCTOMAP_Z_AXIS_COLOR:
-                setOctomapColor(newPoint.position.z, minZ, maxZ, color_factor, &newPoint);
+                setOctomapColor(static_cast<double>(newPoint.position.z), minZ, maxZ, color_factor, &newPoint);
                 break;
               case OCTOMAP_PROBABLILTY_COLOR:
                 cell_probability = static_cast<float>(it->getOccupancy());
@@ -1643,8 +1645,8 @@ void LinkWidget::clearTrajectory()
     collision_trajectory_node_->setVisible(false);
     collision_trajectory_node_->setVisible(enabled && env_->isCollisionVisible(), false);
     for (size_t i = 0; i < collision_trajectory_waypoint_visibility_.size(); ++i)
-    for (auto&& collision_trajectory_waypoint_visibility : collision_trajectory_waypoint_visibility_)
-      collision_trajectory_waypoint_visibility = false;
+      for (auto&& collision_trajectory_waypoint_visibility : collision_trajectory_waypoint_visibility_)
+        collision_trajectory_waypoint_visibility = false;
   }
 }
 
@@ -1653,19 +1655,19 @@ void LinkWidget::showTrajectoryWaypointOnly(int waypoint)
 {
   clearTrajectory();
 
+  size_t idx = static_cast<size_t>(waypoint);
   bool enabled = getEnabled() && env_->isVisible() && env_->isTrajectoryVisible();
-  ;
 
-  if (visual_current_node_ && (visual_trajectory_waypoint_nodes_.size() > static_cast<size_t>(waypoint)))
+  if (visual_current_node_ && (visual_trajectory_waypoint_nodes_.size() > idx))
   {
-    visual_trajectory_waypoint_nodes_[waypoint]->setVisible(enabled && env_->isVisualVisible());
-    visual_trajectory_waypoint_visibility_[waypoint] = enabled;
+    visual_trajectory_waypoint_nodes_[idx]->setVisible(enabled && env_->isVisualVisible());
+    visual_trajectory_waypoint_visibility_[idx] = enabled;
   }
 
-  if (collision_current_node_ && (collision_trajectory_waypoint_nodes_.size() > static_cast<size_t>(waypoint)))
+  if (collision_current_node_ && (collision_trajectory_waypoint_nodes_.size() > idx))
   {
-    collision_trajectory_waypoint_nodes_[waypoint]->setVisible(enabled && env_->isCollisionVisible());
-    collision_trajectory_waypoint_visibility_[waypoint] = enabled;
+    collision_trajectory_waypoint_nodes_[idx]->setVisible(enabled && env_->isCollisionVisible());
+    collision_trajectory_waypoint_visibility_[idx] = enabled;
   }
 }
 

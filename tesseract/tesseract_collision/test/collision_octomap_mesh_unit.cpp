@@ -49,7 +49,7 @@ void addCollisionObjects(DiscreteContactManager& checker)
   checker.addCollisionObject("plane_link", 0, obj2_shapes, obj2_poses);
 }
 
-void runTest(DiscreteContactManager& checker, double tol, std::string file_path)
+void runTest(DiscreteContactManager& checker, double /*tol*/, const std::string& file_path)
 {
   //////////////////////////////////////
   // Test when object is in collision
@@ -99,14 +99,14 @@ void runTest(DiscreteContactManager& checker, double tol, std::string file_path)
   EXPECT_TRUE(result_vector.size() == 2712);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionOctomapSphereMeshUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionOctomapSphereMeshUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker);
   runTest(checker, 0.001, "/tmp/BulletDiscreteSimpleCollisionOctomapSphereMeshUnit.ply");
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionOctomapSphereMeshUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionOctomapSphereMeshUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker);

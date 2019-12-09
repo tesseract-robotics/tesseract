@@ -7,10 +7,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/cylinder.h>
 #include "tesseract_urdf_common_unit.h"
 
-TEST(TesseractURDFUnit, parse_cylinder)
+TEST(TesseractURDFUnit, parse_cylinder)  // NOLINT
 {
   {
-    std::string str = "<cylinder radius=\"1\" length=\"2\" extra=\"0 0 0\"/>";
+    std::string str = R"(<cylinder radius="1" length="2" extra="0 0 0"/>)";
     tesseract_geometry::Cylinder::Ptr geom;
     auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str, "cylinder", 2);
     EXPECT_TRUE(*status);
@@ -19,28 +19,28 @@ TEST(TesseractURDFUnit, parse_cylinder)
   }
 
   {
-    std::string str = "<cylinder radius=\"-1\" length=\"2\" extra=\"0 0 0\"/>";
+    std::string str = R"(<cylinder radius="-1" length="2" extra="0 0 0"/>)";
     tesseract_geometry::Cylinder::Ptr geom;
     auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str, "cylinder", 2);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<cylinder radius=\"1\" length=\"-2\" extra=\"0 0 0\"/>";
+    std::string str = R"(<cylinder radius="1" length="-2" extra="0 0 0"/>)";
     tesseract_geometry::Cylinder::Ptr geom;
     auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str, "cylinder", 2);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<cylinder radius=\"a\" length=\"2\"/>";
+    std::string str = R"(<cylinder radius="a" length="2"/>)";
     tesseract_geometry::Cylinder::Ptr geom;
     auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str, "cylinder", 2);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<cylinder radius=\"1\" length=\"a\"/>";
+    std::string str = R"(<cylinder radius="1" length="a"/>)";
     tesseract_geometry::Cylinder::Ptr geom;
     auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str, "cylinder", 2);
     EXPECT_FALSE(*status);
@@ -48,21 +48,21 @@ TEST(TesseractURDFUnit, parse_cylinder)
 
   // TODO: I would expect this to fail but tinyxml2 still parses it so need to create an issue.
   //  {
-  //    std::string str = "<cylinder radius=\"1 2\" length=\"2 3\"/>";
+  //    std::string str = R"(<cylinder radius="1 2" length="2 3"/>)";
   //    tesseract_geometry::Cylinder::Ptr geom;
   //    auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str, "cylinder", 2);
   //    EXPECT_FALSE(*status);
   //  }
 
   {
-    std::string str = "<cylinder radius=\"1\"/>";
+    std::string str = R"(<cylinder radius="1"/>)";
     tesseract_geometry::Cylinder::Ptr geom;
     auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str, "cylinder", 2);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<cylinder length=\"2\"/>";
+    std::string str = R"(<cylinder length="2"/>)";
     tesseract_geometry::Cylinder::Ptr geom;
     auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str, "cylinder", 2);
     EXPECT_FALSE(*status);

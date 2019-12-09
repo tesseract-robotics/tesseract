@@ -85,37 +85,37 @@ void runTest(DiscreteContactManager& checker, bool use_convex_mesh = false)
   EXPECT_TRUE(result_vector.size() == 300);
 }
 
-TEST(TesseractCollisionLargeDataSetUnit, BulletDiscreteSimpleCollisionLargeDataSetConvexHullUnit)
+TEST(TesseractCollisionLargeDataSetUnit, BulletDiscreteSimpleCollisionLargeDataSetConvexHullUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   runTest(checker, true);
 }
 
-TEST(TesseractCollisionLargeDataSetUnit, BulletDiscreteSimpleCollisionLargeDataSetUnit)
+TEST(TesseractCollisionLargeDataSetUnit, BulletDiscreteSimpleCollisionLargeDataSetUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   runTest(checker);
 }
 
-TEST(TesseractCollisionLargeDataSetUnit, BulletDiscreteBVHCollisionLargeDataSetConvexHullUnit)
+TEST(TesseractCollisionLargeDataSetUnit, BulletDiscreteBVHCollisionLargeDataSetConvexHullUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   runTest(checker, true);
 }
 
-TEST(TesseractCollisionLargeDataSetUnit, BulletDiscreteBVHCollisionLargeDataSetUnit)
+TEST(TesseractCollisionLargeDataSetUnit, BulletDiscreteBVHCollisionLargeDataSetUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   runTest(checker);
 }
 
-TEST(TesseractCollisionLargeDataSetUnit, FCLDiscreteBVHCollisionLargeDataSetConvexHullUnit)
+TEST(TesseractCollisionLargeDataSetUnit, FCLDiscreteBVHCollisionLargeDataSetConvexHullUnit)  // NOLINT
 {
   tesseract_collision_fcl::FCLDiscreteBVHManager checker;
   runTest(checker, true);
 }
 
-TEST(TesseractCollisionLargeDataSetUnit, FCLDiscreteBVHCollisionLargeDataSetUnit)
+TEST(TesseractCollisionLargeDataSetUnit, FCLDiscreteBVHCollisionLargeDataSetUnit)  // NOLINT
 {
   tesseract_collision_fcl::FCLDiscreteBVHManager checker;
   runTest(checker);

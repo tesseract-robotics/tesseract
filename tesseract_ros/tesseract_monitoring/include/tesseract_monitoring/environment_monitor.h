@@ -126,7 +126,7 @@ public:
    *  @param tf A pointer to a tf::Transformer
    *  @param name A name identifying this planning scene monitor
    */
-  EnvironmentMonitor(const std::string &robot_description,
+  EnvironmentMonitor(const std::string& robot_description,
                      std::string name,
                      std::string discrete_plugin = "",
                      std::string continuous_plugin = "");
@@ -370,7 +370,7 @@ private:
   bool saveSceneGraphCallback(tesseract_msgs::SaveSceneGraphRequest& req, tesseract_msgs::SaveSceneGraphResponse& res);
 
   // Called when new service request is called to modify the environment.
-  bool applyEnvironmentCommandsMessage(const std::string &id,
+  bool applyEnvironmentCommandsMessage(const std::string& id,
                                        int revision,
                                        const std::vector<tesseract_msgs::EnvironmentCommand>& commands);
 

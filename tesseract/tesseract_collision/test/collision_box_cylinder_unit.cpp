@@ -98,6 +98,7 @@ void runTest(DiscreteContactManager& checker)
   // Test object is out side the contact distance
   ////////////////////////////////////////////////
   location["cylinder_link"].translation() = Eigen::Vector3d(1, 0, 0);
+  result = ContactResultMap();
   result.clear();
   result_vector.clear();
   checker.setCollisionObjectsTransform(location);
@@ -110,6 +111,7 @@ void runTest(DiscreteContactManager& checker)
   /////////////////////////////////////////////
   // Test object inside the contact distance
   /////////////////////////////////////////////
+  result = ContactResultMap();
   result.clear();
   result_vector.clear();
 
@@ -134,14 +136,14 @@ void runTest(DiscreteContactManager& checker)
   EXPECT_NEAR(result_vector[0].normal[2], idx[2] * 0.0, 0.001);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionBoxCylinderUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionBoxCylinderUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxCylinderUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionBoxCylinderUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects(checker);

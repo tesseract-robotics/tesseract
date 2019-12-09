@@ -27,14 +27,8 @@
 
 namespace tesseract_motion_planners
 {
-TrajOptPlannerConfig::TrajOptPlannerConfig(trajopt::TrajOptProb::Ptr problem) : prob(std::move(problem))
-{
+TrajOptPlannerConfig::TrajOptPlannerConfig(trajopt::TrajOptProb::Ptr problem) : prob(std::move(problem)) {}
 
-}
-
-bool TrajOptPlannerConfig::generate()
-{
-  return (prob != nullptr);
-}
+bool TrajOptPlannerConfig::generate() { return (prob != nullptr); }
 
 }  // namespace tesseract_motion_planners

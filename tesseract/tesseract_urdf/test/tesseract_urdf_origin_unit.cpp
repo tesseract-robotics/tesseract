@@ -29,10 +29,10 @@ Eigen::Quaterniond fromRPY(double roll, double pitch, double yaw)
   return Eigen::Quaterniond(w, x, y, z);
 }
 
-TEST(TesseractURDFUnit, parse_origin)
+TEST(TesseractURDFUnit, parse_origin)  // NOLINT
 {
   {
-    std::string str = "<origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>";
+    std::string str = R"(<origin xyz="0 0 0" rpy="0 0 0"/>)";
     Eigen::Isometry3d origin;
     auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
     EXPECT_TRUE(*status);
@@ -40,7 +40,7 @@ TEST(TesseractURDFUnit, parse_origin)
   }
 
   {
-    std::string str = "<origin xyz=\"0 0 0\" wxyz=\"1 0 0 0\"/>";
+    std::string str = R"(<origin xyz="0 0 0" wxyz="1 0 0 0"/>)";
     Eigen::Isometry3d origin;
     auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
     EXPECT_TRUE(*status);
@@ -48,7 +48,7 @@ TEST(TesseractURDFUnit, parse_origin)
   }
 
   {
-    std::string str = "<origin xyz=\"0 0 0\" wxyz=\"0.8719632 0.247934 0.177848 0.3828563\"/>";
+    std::string str = R"(<origin xyz="0 0 0" wxyz="0.8719632 0.247934 0.177848 0.3828563"/>)";
     Eigen::Isometry3d origin;
     Eigen::Isometry3d check = Eigen::Isometry3d::Identity();
     check.linear() << 0.6435823, -0.5794841, 0.5000000, 0.7558624, 0.5838996, -0.2961981, -0.1203077, 0.5685591,
@@ -59,7 +59,7 @@ TEST(TesseractURDFUnit, parse_origin)
   }
 
   {
-    std::string str = "<origin xyz=\"0 0 0\" rpy=\"0.3490659 0.5235988 0.7330383\"/>";
+    std::string str = R"(<origin xyz="0 0 0" rpy="0.3490659 0.5235988 0.7330383"/>)";
     Eigen::Isometry3d origin;
     Eigen::Isometry3d check = Eigen::Isometry3d::Identity();
     check.linear() = fromRPY(0.3490659, 0.5235988, 0.7330383).toRotationMatrix();
@@ -69,7 +69,7 @@ TEST(TesseractURDFUnit, parse_origin)
   }
 
   {
-    std::string str = "<origin xyz=\"0 2.5 0\" rpy=\"3.14159265359 0 0\"/>";
+    std::string str = R"(<origin xyz="0 2.5 0" rpy="3.14159265359 0 0"/>)";
     Eigen::Isometry3d origin;
     auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
     EXPECT_TRUE(*status);
@@ -85,7 +85,7 @@ TEST(TesseractURDFUnit, parse_origin)
   }
 
   {
-    std::string str = "<origin xyz=\"0 2.5 0\" rpy=\"3.14 0 0\" wxyz=\"1 0 0 0\"/>";
+    std::string str = R"(<origin xyz="0 2.5 0" rpy="3.14 0 0" wxyz="1 0 0 0"/>)";
     Eigen::Isometry3d origin;
     auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
     EXPECT_TRUE(*status);
@@ -94,7 +94,7 @@ TEST(TesseractURDFUnit, parse_origin)
   }
 
   {
-    std::string str = "<origin xyz=\"0 0 0\"/>";
+    std::string str = R"(<origin xyz="0 0 0"/>)";
     Eigen::Isometry3d origin;
     auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
     EXPECT_TRUE(*status);
@@ -102,7 +102,7 @@ TEST(TesseractURDFUnit, parse_origin)
   }
 
   {
-    std::string str = "<origin rpy=\"0 0 0\"/>";
+    std::string str = R"(<origin rpy="0 0 0"/>)";
     Eigen::Isometry3d origin;
     auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
     EXPECT_TRUE(*status);
@@ -110,7 +110,7 @@ TEST(TesseractURDFUnit, parse_origin)
   }
 
   {
-    std::string str = "<origin />";
+    std::string str = R"(<origin />)";
     Eigen::Isometry3d origin;
     auto status = runTest<Eigen::Isometry3d>(origin, str, "origin", 2);
     EXPECT_FALSE(*status);

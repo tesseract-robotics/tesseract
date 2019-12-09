@@ -140,7 +140,7 @@ public:
    * @param link The link to be added to the graph
    * @return Return False if a link with the same name allready exists, otherwise true
    */
-  virtual bool addLink(const tesseract_scene_graph::Link &link);
+  virtual bool addLink(const tesseract_scene_graph::Link& link);
 
   /**
    * @brief Adds a link to the environment

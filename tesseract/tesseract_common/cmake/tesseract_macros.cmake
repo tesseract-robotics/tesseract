@@ -38,7 +38,11 @@ macro(tesseract_target_compile_options target)
   endif()
 
   list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_14 CXX_FEATURE_FOUND)
-  set(warning_flags -Wall -Wextra -Wsuggest-override -Wconversion -Wsign-conversion)
+  if (NOT ENABLE_TESTS)
+    set(warning_flags -Wall -Wextra -Wconversion -Wsign-conversion -Wno-sign-compare)
+  else()
+    set(warning_flags -Wall -Wextra -Wconversion -Wsign-conversion -Wno-sign-compare) # -fsanitize=bounds)
+  endif()
 
   if (ARG_INTERFACE)
     target_compile_options("${target}" INTERFACE ${warning_flags})
@@ -154,3 +158,64 @@ macro(tesseract_gtest_discover_tests target)
     gtest_discover_tests(${target})
   endif()
 endmacro()
+
+#http://www.stablecoder.ca/2018/01/15/code-coverage.html
+#code coverage
+#if(CMAKE_BUILD_TYPE STREQUAL "coverage" OR CODE_COVERAGE)
+#    if("${CMAKE_C_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
+#        message("Building with llvm Code Coverage Tools")
+
+#        # Warning/Error messages
+#        if(NOT LLVM_COV_PATH)
+#            message(FATAL_ERROR "llvm-cov not found! Aborting.")
+#        endif()
+
+#        # set Flags
+#        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
+#        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
+
+#    elseif(CMAKE_COMPILER_IS_GNUCXX)
+#        message("Building with lcov Code Coverage Tools")
+
+#        # Warning/Error messages
+#        if(NOT (CMAKE_BUILD_TYPE STREQUAL "Debug"))
+#            message(WARNING "Code coverage results with an optimized (non-Debug) build may be misleading")
+#        endif()
+#        if(NOT LCOV_PATH)
+#            message(FATAL_ERROR "lcov not found! Aborting...")
+#        endif()
+#        if(NOT GENHTML_PATH)
+#            message(FATAL_ERROR "genhtml not found! Aborting...")
+#        endif()
+
+#        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
+#        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
+#    else()
+#        message(FATAL_ERROR "Code coverage requires Clang or GCC. Aborting.")
+#    endif()
+#endif()
+
+
+#generact code coverage report
+## llvm-cov
+#add_custom_target(${TARGET_NAME}-ccov-preprocessing
+#    COMMAND LLVM_PROFILE_FILE=${TARGET_NAME}.profraw $<TARGET_FILE:${TARGET_NAME}>
+#    COMMAND llvm-profdata merge -sparse ${TARGET_NAME}.profraw -o ${TARGET_NAME}.profdata
+#    DEPENDS ${TARGET_NAME})
+
+#add_custom_target(${TARGET_NAME}-ccov-show
+#    COMMAND llvm-cov show $<TARGET_FILE:${TARGET_NAME}> -instr-profile=${TARGET_NAME}.profdata -show-line-counts-or-regions
+#    DEPENDS ${TARGET_NAME}-ccov-preprocessing)
+
+#add_custom_target(${TARGET_NAME}-ccov-report
+#    COMMAND llvm-cov report $<TARGET_FILE:${TARGET_NAME}> -instr-profile=${TARGET_NAME}.profdata
+#    DEPENDS ${TARGET_NAME}-ccov-preprocessing)
+
+#add_custom_target(${TARGET_NAME}-ccov
+#    COMMAND llvm-cov show $<TARGET_FILE:${TARGET_NAME}> -instr-profile=${TARGET_NAME}.profdata -show-line-counts-or-regions -output-dir=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TARGET_NAME}-llvm-cov -format="html"
+#    DEPENDS ${TARGET_NAME}-ccov-preprocessing)
+
+#add_custom_command(TARGET ${TARGET_NAME}-ccov POST_BUILD
+#    COMMAND ;
+#    COMMENT "Open ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TARGET_NAME}-llvm-cov/index.html in your browser to view the coverage report."
+#)

@@ -7,26 +7,26 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/urdf_parser.h>
 #include "tesseract_urdf_common_unit.h"
 
-TEST(TesseractURDFUnit, parse_urdf)
+TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
 {
   std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator =
       std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
   {
-    std::string str = "<robot name=\"test\" extra=\"0 0 0\">"
-                      "  <joint name=\"j1\" type=\"fixed\">"
-                      "    <parent link=\"l1\"/>"
-                      "    <child link=\"l2\"/>"
-                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
-                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-                      "  </joint>"
-                      "  <link name=\"l1\"/>"
-                      "  <link name=\"l2\"/>"
-                      "</robot>";
+    std::string str =
+        R"(<robot name="test" extra="0 0 0">
+             <joint name="j1" type="fixed">
+               <parent link="l1"/>
+               <child link="l2"/>
+               <origin xyz="0 0 0" rpy="0 0 0"/>
+               <dynamics damping="87.098" friction="3.1290"/>
+               <limit lower="12.34" upper="22.999" effort="99.0" velocity="23.0"/>
+               <safety_controller soft_lower_limit="8.765" soft_upper_limit="9.003" k_position="7.0034" k_velocity="9.998"/>
+               <calibration rising="8.654" falling="0.0445"/>
+               <mimic joint="j2" multiplier="9.87" offset="0.098"/>
+             </joint>
+             <link name="l1"/>
+             <link name="l2"/>
+           </robot>)";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
     EXPECT_TRUE(*status);
@@ -39,25 +39,25 @@ TEST(TesseractURDFUnit, parse_urdf)
   }
 
   {
-    std::string str = "<robot name=\"test\">"
-                      "  <joint name=\"j1\" type=\"fixed\">"
-                      "    <parent link=\"l1\"/>"
-                      "    <child link=\"l2\"/>"
-                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
-                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-                      "  </joint>"
-                      "  <joint name=\"j2\" type=\"fixed\">"
-                      "    <parent link=\"l1\"/>"
-                      "    <child link=\"l2\"/>"
-                      "  </joint>"
-                      "  <link name=\"l1\"/>"
-                      "  <link name=\"l2\"/>"
-                      "</robot>";
+    std::string str =
+        R"(<robot name="test">
+             <joint name="j1" type="fixed">
+               <parent link="l1"/>
+               <child link="l2"/>
+               <origin xyz="0 0 0" rpy="0 0 0"/>
+               <dynamics damping="87.098" friction="3.1290"/>
+               <limit lower="12.34" upper="22.999" effort="99.0" velocity="23.0"/>
+               <safety_controller soft_lower_limit="8.765" soft_upper_limit="9.003" k_position="7.0034" k_velocity="9.998"/>
+               <calibration rising="8.654" falling="0.0445"/>
+               <mimic joint="j2" multiplier="9.87" offset="0.098"/>
+             </joint>
+             <joint name="j2" type="fixed">
+               <parent link="l1"/>
+               <child link="l2"/>
+             </joint>
+             <link name="l1"/>
+             <link name="l2"/>
+           </robot>)";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
     EXPECT_FALSE(*status);
@@ -66,21 +66,21 @@ TEST(TesseractURDFUnit, parse_urdf)
   }
 
   {
-    std::string str = "<robot name=\"test\">"
-                      "  <joint name=\"j1\" type=\"fixed\">"
-                      "    <parent link=\"l1\"/>"
-                      "    <child link=\"l2\"/>"
-                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
-                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-                      "  </joint>"
-                      "  <link name=\"l1\"/>"
-                      "  <link name=\"l3\"/>"
-                      "</robot>";
+    std::string str =
+        R"(<robot name="test">
+             <joint name="j1" type="fixed">
+               <parent link="l1"/>
+               <child link="l2"/>
+               <origin xyz="0 0 0" rpy="0 0 0"/>
+               <dynamics damping="87.098" friction="3.1290"/>
+               <limit lower="12.34" upper="22.999" effort="99.0" velocity="23.0"/>
+               <safety_controller soft_lower_limit="8.765" soft_upper_limit="9.003" k_position="7.0034" k_velocity="9.998"/>
+               <calibration rising="8.654" falling="0.0445"/>
+               <mimic joint="j2" multiplier="9.87" offset="0.098"/>
+             </joint>
+             <link name="l1"/>
+             <link name="l3"/>
+           </robot>)";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
     EXPECT_FALSE(*status);
@@ -89,22 +89,22 @@ TEST(TesseractURDFUnit, parse_urdf)
   }
 
   {
-    std::string str = "<robot name=\"test\">"
-                      "  <joint name=\"j1\" type=\"fixed\">"
-                      "    <parent link=\"l1\"/>"
-                      "    <child link=\"l2\"/>"
-                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
-                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-                      "  </joint>"
-                      "  <link name=\"l1\"/>"
-                      "  <link name=\"l2\"/>"
-                      "  <link name=\"l3\"/>"
-                      "</robot>";
+    std::string str =
+        R"(<robot name="test">
+             <joint name="j1" type="fixed">
+               <parent link="l1"/>
+               <child link="l2"/>
+               <origin xyz="0 0 0" rpy="0 0 0"/>
+               <dynamics damping="87.098" friction="3.1290"/>
+               <limit lower="12.34" upper="22.999" effort="99.0" velocity="23.0"/>
+               <safety_controller soft_lower_limit="8.765" soft_upper_limit="9.003" k_position="7.0034" k_velocity="9.998"/>
+               <calibration rising="8.654" falling="0.0445"/>
+               <mimic joint="j2" multiplier="9.87" offset="0.098"/>
+             </joint>
+             <link name="l1"/>
+             <link name="l2"/>
+             <link name="l3"/>
+           </robot>)";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
     EXPECT_FALSE(*status);
@@ -113,21 +113,21 @@ TEST(TesseractURDFUnit, parse_urdf)
   }
 
   {
-    std::string str = "<robot name=\"test\">"
-                      "  <joint name=\"j1\" type=\"fixed\">"
-                      "    <parent link=\"l1\"/>"
-                      "    <child link=\"l3\"/>"
-                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
-                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-                      "  </joint>"
-                      "  <link name=\"l1\"/>"
-                      "  <link name=\"l2\"/>"
-                      "</robot>";
+    std::string str =
+        R"(<robot name="test">
+             <joint name="j1" type="fixed">
+               <parent link="l1"/>
+               <child link="l3"/>
+               <origin xyz="0 0 0" rpy="0 0 0"/>
+               <dynamics damping="87.098" friction="3.1290"/>
+               <limit lower="12.34" upper="22.999" effort="99.0" velocity="23.0"/>
+               <safety_controller soft_lower_limit="8.765" soft_upper_limit="9.003" k_position="7.0034" k_velocity="9.998"/>
+               <calibration rising="8.654" falling="0.0445"/>
+               <mimic joint="j2" multiplier="9.87" offset="0.098"/>
+             </joint>
+             <link name="l1"/>
+             <link name="l2"/>
+           </robot>)";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
     EXPECT_FALSE(*status);
@@ -136,22 +136,22 @@ TEST(TesseractURDFUnit, parse_urdf)
   }
 
   {
-    std::string str = "<robot name=\"test\">"
-                      "  <joint name=\"j1\" type=\"fixed\">"
-                      "    <parent link=\"l1\"/>"
-                      "    <child link=\"l2\"/>"
-                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
-                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-                      "  </joint>"
-                      "  <link name=\"l1\"/>"
-                      "  <link name=\"l2\"/>"
-                      "  <link name=\"l1\"/>"
-                      "</robot>";
+    std::string str =
+        R"(<robot name="test">
+             <joint name="j1" type="fixed">
+               <parent link="l1"/>
+               <child link="l2"/>
+               <origin xyz="0 0 0" rpy="0 0 0"/>
+               <dynamics damping="87.098" friction="3.1290"/>
+               <limit lower="12.34" upper="22.999" effort="99.0" velocity="23.0"/>
+               <safety_controller soft_lower_limit="8.765" soft_upper_limit="9.003" k_position="7.0034" k_velocity="9.998"/>
+               <calibration rising="8.654" falling="0.0445"/>
+               <mimic joint="j2" multiplier="9.87" offset="0.098"/>
+             </joint>
+             <link name="l1"/>
+             <link name="l2"/>
+             <link name="l1"/>
+           </robot>)";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
     EXPECT_FALSE(*status);
@@ -160,21 +160,21 @@ TEST(TesseractURDFUnit, parse_urdf)
   }
 
   {
-    std::string str = "<robot>"
-                      "  <joint name=\"j1\" type=\"fixed\">"
-                      "    <parent link=\"l1\"/>"
-                      "    <child link=\"l2\"/>"
-                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
-                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-                      "  </joint>"
-                      "  <link name=\"l1\"/>"
-                      "  <link name=\"l2\"/>"
-                      "</robot>";
+    std::string str =
+        R"(<robot>
+             <joint name="j1" type="fixed">
+               <parent link="l1"/>
+               <child link="l2"/>
+               <origin xyz="0 0 0" rpy="0 0 0"/>
+               <dynamics damping="87.098" friction="3.1290"/>
+               <limit lower="12.34" upper="22.999" effort="99.0" velocity="23.0"/>
+               <safety_controller soft_lower_limit="8.765" soft_upper_limit="9.003" k_position="7.0034" k_velocity="9.998"/>
+               <calibration rising="8.654" falling="0.0445"/>
+               <mimic joint="j2" multiplier="9.87" offset="0.098"/>
+             </joint>
+             <link name="l1"/>
+             <link name="l2"/>
+           </robot>)";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
     EXPECT_FALSE(*status);
@@ -183,26 +183,26 @@ TEST(TesseractURDFUnit, parse_urdf)
   }
 
   {
-    std::string str = "<robot name=\"test\">"
-                      "  <joint name=\"j1\" type=\"fixed\">"
-                      "    <parent link=\"l2\"/>"
-                      "    <child link=\"l3\"/>"
-                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
-                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-                      "  </joint>"
-                      "  <joint name=\"j1\" type=\"fixed\">"
-                      "    <parent link=\"l1\"/>"
-                      "    <child link=\"l2\"/>"
-                      "  </joint>"
-                      "  <link name=\"l1\"/>"
-                      "  <link name=\"l2\"/>"
-                      "  <link name=\"l3\"/>"
-                      "</robot>";
+    std::string str =
+        R"(<robot name="test">
+             <joint name="j1" type="fixed">
+               <parent link="l2"/>
+               <child link="l3"/>
+               <origin xyz="0 0 0" rpy="0 0 0"/>
+               <dynamics damping="87.098" friction="3.1290"/>
+               <limit lower="12.34" upper="22.999" effort="99.0" velocity="23.0"/>
+               <safety_controller soft_lower_limit="8.765" soft_upper_limit="9.003" k_position="7.0034" k_velocity="9.998"/>
+               <calibration rising="8.654" falling="0.0445"/>
+               <mimic joint="j2" multiplier="9.87" offset="0.098"/>
+             </joint>
+             <joint name="j1" type="fixed">
+               <parent link="l1"/>
+               <child link="l2"/>
+             </joint>
+             <link name="l1"/>
+             <link name="l2"/>
+             <link name="l3"/>
+           </robot>)";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
     EXPECT_FALSE(*status);
@@ -218,37 +218,37 @@ TEST(TesseractURDFUnit, parse_urdf)
   }
 }
 
-TEST(TesseractURDFUnit, parse_urdf_with_available_materials)
+TEST(TesseractURDFUnit, parse_urdf_with_available_materials)  // NOLINT
 {
   std::shared_ptr<tesseract_scene_graph::SimpleResourceLocator> resource_locator =
       std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
   {
-    std::string str = "<robot name=\"test\" extra=\"0 0 0\">"
-                      "  <material name=\"test_material\" extra=\"0 0 0\">"
-                      "    <color rgba=\"1 .5 .5 1\" extra=\"0 0 0\"/>"
-                      "  </material>"
-                      "  <joint name=\"j1\" type=\"fixed\">"
-                      "    <parent link=\"l1\"/>"
-                      "    <child link=\"l2\"/>"
-                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
-                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-                      "  </joint>"
-                      "  <link name=\"l1\">"
-                      "    <visual>"
-                      "      <origin xyz=\"0 0 0\" rpy=\"0 0 0\" />"
-                      "      <geometry>"
-                      "        <box size=\"1 1 1\" />"
-                      "      </geometry>"
-                      "      <material name=\"test_material\"/>"
-                      "    </visual>"
-                      "  </link>"
-                      "  <link name=\"l2\"/>"
-                      "</robot>";
+    std::string str =
+        R"(<robot name="test" extra="0 0 0">
+             <material name="test_material" extra="0 0 0">
+               <color rgba="1 .5 .5 1" extra="0 0 0"/>
+             </material>
+             <joint name="j1" type="fixed">
+               <parent link="l1"/>
+               <child link="l2"/>
+               <origin xyz="0 0 0" rpy="0 0 0"/>
+               <dynamics damping="87.098" friction="3.1290"/>
+               <limit lower="12.34" upper="22.999" effort="99.0" velocity="23.0"/>
+               <safety_controller soft_lower_limit="8.765" soft_upper_limit="9.003" k_position="7.0034" k_velocity="9.998"/>
+               <calibration rising="8.654" falling="0.0445"/>
+               <mimic joint="j2" multiplier="9.87" offset="0.098"/>
+             </joint>
+             <link name="l1">
+               <visual>
+                 <origin xyz="0 0 0" rpy="0 0 0" />
+                 <geometry>
+                   <box size="1 1 1" />
+                 </geometry>
+                 <material name="test_material"/>
+               </visual>
+             </link>
+             <link name="l2"/>
+           </robot>)";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
     EXPECT_TRUE(*status);
@@ -262,39 +262,39 @@ TEST(TesseractURDFUnit, parse_urdf_with_available_materials)
   }
 
   {
-    std::string str = "<robot name=\"test\" extra=\"0 0 0\">"
-                      "  <joint name=\"j1\" type=\"fixed\">"
-                      "    <parent link=\"l1\"/>"
-                      "    <child link=\"l2\"/>"
-                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
-                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-                      "  </joint>"
-                      "  <link name=\"l1\">"
-                      "    <visual>"
-                      "      <origin xyz=\"0 0 0\" rpy=\"0 0 0\" />"
-                      "      <geometry>"
-                      "        <box size=\"1 1 1\" />"
-                      "      </geometry>"
-                      "      <material name=\"test_material\" extra=\"0 0 0\">"
-                      "        <color rgba=\"1 .5 .5 1\" extra=\"0 0 0\"/>"
-                      "      </material>"
-                      "    </visual>"
-                      "  </link>"
-                      "  <link name=\"l2\">"
-                      "    <visual>"
-                      "      <origin xyz=\"0 0 0\" rpy=\"0 0 0\" />"
-                      "      <geometry>"
-                      "        <box size=\"1 1 1\" />"
-                      "      </geometry>"
-                      "      <material name=\"test_material\" />"
-                      "    </visual>"
-                      "  </link>"
-                      "</robot>";
+    std::string str =
+        R"(<robot name="test" extra="0 0 0">
+             <joint name="j1" type="fixed">
+               <parent link="l1"/>
+               <child link="l2"/>
+               <origin xyz="0 0 0" rpy="0 0 0"/>
+               <dynamics damping="87.098" friction="3.1290"/>
+               <limit lower="12.34" upper="22.999" effort="99.0" velocity="23.0"/>
+               <safety_controller soft_lower_limit="8.765" soft_upper_limit="9.003" k_position="7.0034" k_velocity="9.998"/>
+               <calibration rising="8.654" falling="0.0445"/>
+               <mimic joint="j2" multiplier="9.87" offset="0.098"/>
+             </joint>
+             <link name="l1">
+               <visual>
+                 <origin xyz="0 0 0" rpy="0 0 0" />
+                 <geometry>
+                   <box size="1 1 1" />
+                 </geometry>
+                 <material name="test_material" extra="0 0 0">
+                   <color rgba="1 .5 .5 1" extra="0 0 0"/>
+                 </material>
+               </visual>
+             </link>
+             <link name="l2">
+               <visual>
+                 <origin xyz="0 0 0" rpy="0 0 0" />
+                 <geometry>
+                   <box size="1 1 1" />
+                 </geometry>
+                 <material name="test_material" />
+               </visual>
+             </link>
+           </robot>)";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
     EXPECT_TRUE(*status);
@@ -308,87 +308,87 @@ TEST(TesseractURDFUnit, parse_urdf_with_available_materials)
   }
 
   {
-    std::string str = "<robot name=\"test\" extra=\"0 0 0\">"
-                      "  <joint name=\"j1\" type=\"fixed\">"
-                      "    <parent link=\"l1\"/>"
-                      "    <child link=\"l2\"/>"
-                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
-                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-                      "  </joint>"
-                      "  <link name=\"l1\">"
-                      "    <visual>"
-                      "      <origin xyz=\"0 0 0\" rpy=\"0 0 0\" />"
-                      "      <geometry>"
-                      "        <box size=\"1 1 1\" />"
-                      "      </geometry>"
-                      "      <material name=\"test_material\" />"
-                      "    </visual>"
-                      "  </link>"
-                      "  <link name=\"l2\">"
-                      "    <visual>"
-                      "      <origin xyz=\"0 0 0\" rpy=\"0 0 0\" />"
-                      "      <geometry>"
-                      "        <box size=\"1 1 1\" />"
-                      "      </geometry>"
-                      "      <material name=\"test_material\" extra=\"0 0 0\">"
-                      "        <color rgba=\"1 .5 .5 1\" extra=\"0 0 0\"/>"
-                      "      </material>"
-                      "    </visual>"
-                      "  </link>"
-                      "</robot>";
+    std::string str =
+        R"(<robot name="test" extra="0 0 0">
+             <joint name="j1" type="fixed">
+               <parent link="l1"/>
+               <child link="l2"/>
+               <origin xyz="0 0 0" rpy="0 0 0"/>
+               <dynamics damping="87.098" friction="3.1290"/>
+               <limit lower="12.34" upper="22.999" effort="99.0" velocity="23.0"/>
+               <safety_controller soft_lower_limit="8.765" soft_upper_limit="9.003" k_position="7.0034" k_velocity="9.998"/>
+               <calibration rising="8.654" falling="0.0445"/>
+               <mimic joint="j2" multiplier="9.87" offset="0.098"/>
+             </joint>
+             <link name="l1">
+               <visual>
+                 <origin xyz="0 0 0" rpy="0 0 0" />
+                 <geometry>
+                   <box size="1 1 1" />
+                 </geometry>
+                 <material name="test_material" />
+               </visual>
+             </link>
+             <link name="l2">
+               <visual>
+                 <origin xyz="0 0 0" rpy="0 0 0" />
+                 <geometry>
+                   <box size="1 1 1" />
+                 </geometry>
+                 <material name="test_material" extra="0 0 0">
+                   <color rgba="1 .5 .5 1" extra="0 0 0"/>
+                 </material>
+               </visual>
+             </link>
+           </robot>)";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<robot name=\"test\" extra=\"0 0 0\">"
-                      "  <joint name=\"j1\" type=\"fixed\">"
-                      "    <parent link=\"l1\"/>"
-                      "    <child link=\"l2\"/>"
-                      "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
-                      "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-                      "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
-                      "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" "
-                      "k_position=\"7.0034\" k_velocity=\"9.998\"/>"
-                      "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
-                      "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
-                      "  </joint>"
-                      "  <link name=\"l1\">"
-                      "    <visual>"
-                      "      <origin xyz=\"0 0 0\" rpy=\"0 0 0\" />"
-                      "      <geometry>"
-                      "        <box size=\"1 1 1\" />"
-                      "      </geometry>"
-                      "      <material name=\"test_material\" extra=\"0 0 0\">"
-                      "        <color rgba=\"1 .5 .5 1\" extra=\"0 0 0\"/>"
-                      "      </material>"
-                      "    </visual>"
-                      "  </link>"
-                      "  <link name=\"l2\">"
-                      "    <visual>"
-                      "      <origin xyz=\"0 0 0\" rpy=\"0 0 0\" />"
-                      "      <geometry>"
-                      "        <box size=\"1 1 1\" />"
-                      "      </geometry>"
-                      "      <material name=\"test_material\" extra=\"0 0 0\">"
-                      "        <color rgba=\"1 .5 .5 1\" extra=\"0 0 0\"/>"
-                      "      </material>"
-                      "    </visual>"
-                      "  </link>"
-                      "</robot>";
+    std::string str =
+        R"(<robot name="test" extra="0 0 0">
+             <joint name="j1" type="fixed">
+               <parent link="l1"/>
+               <child link="l2"/>
+               <origin xyz="0 0 0" rpy="0 0 0"/>
+               <dynamics damping="87.098" friction="3.1290"/>
+               <limit lower="12.34" upper="22.999" effort="99.0" velocity="23.0"/>
+               <safety_controller soft_lower_limit="8.765" soft_upper_limit="9.003" k_position="7.0034" k_velocity="9.998"/>
+               <calibration rising="8.654" falling="0.0445"/>
+               <mimic joint="j2" multiplier="9.87" offset="0.098"/>
+             </joint>
+             <link name="l1">
+               <visual>
+                 <origin xyz="0 0 0" rpy="0 0 0" />
+                 <geometry>
+                   <box size="1 1 1" />
+                 </geometry>
+                 <material name="test_material" extra="0 0 0">
+                   <color rgba="1 .5 .5 1" extra="0 0 0"/>
+                 </material>
+               </visual>
+             </link>
+             <link name="l2">
+               <visual>
+                 <origin xyz="0 0 0" rpy="0 0 0" />
+                 <geometry>
+                   <box size="1 1 1" />
+                 </geometry>
+                 <material name="test_material" extra="0 0 0">
+                   <color rgba="1 .5 .5 1" extra="0 0 0"/>
+                 </material>
+               </visual>
+             </link>
+           </robot>)";
     tesseract_scene_graph::SceneGraph::Ptr sg;
     auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
     EXPECT_TRUE(*status);
   }
 }
 
-TEST(TesseractURDFUnit, LoadURDFUnit)
+TEST(TesseractURDFUnit, LoadURDFUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
 

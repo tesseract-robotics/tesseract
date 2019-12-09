@@ -18,7 +18,7 @@ std::string locateResource(const std::string& url)
   if (url.find("package://tesseract_support") == 0)
   {
     mod_url.erase(0, strlen("package://tesseract_support"));
-    size_t pos = mod_url.find("/");
+    size_t pos = mod_url.find('/');
     if (pos == std::string::npos)
     {
       return std::string();
@@ -41,21 +41,21 @@ std::string locateResource(const std::string& url)
 
 /** @brief Always returns false */
 template <typename FloatType>
-inline bool isNotValid(const FloatType* vertex)
+inline bool isNotValid(const FloatType* /*vertex*/)
 {
   return false;
 }
 
 /** @brief Always returns true */
 template <typename FloatType>
-inline bool isCompletelyValid(const FloatType* vertex)
+inline bool isCompletelyValid(const FloatType* /*vertex*/)
 {
   return true;
 }
 
 /** @brief Returns an empty vector corresponding to no redundant solutions*/
 template <typename FloatType>
-inline std::vector<FloatType> noRedundantSolutions(const FloatType* sol, unsigned int& dof)
+inline std::vector<FloatType> noRedundantSolutions(const FloatType* /*sol*/, unsigned int& /*dof*/)
 {
   std::vector<FloatType> redundant_sols;
   redundant_sols.clear();
@@ -116,7 +116,7 @@ protected:
  * number of solutions matches the user defined expected number and that ik returns false when no solutions are found*/
 static void testIKDouble(tesseract_motion_planners::DescartesTesseractKinematics<double> kin,
                          Eigen::Isometry3d pose_d,
-                         Eigen::VectorXd seed_d,
+                         const Eigen::VectorXd& seed_d,
                          int expected_sols)
 {
   int dof = kin.dof();
@@ -125,7 +125,7 @@ static void testIKDouble(tesseract_motion_planners::DescartesTesseractKinematics
   // IK should fail if there are no solutions
   EXPECT_EQ(kin.ik(pose_d, ik_solutions), static_cast<bool>(expected_sols));
 
-  int num_sols = ik_solutions.size() / dof;
+  int num_sols = static_cast<int>(ik_solutions.size()) / dof;
   EXPECT_EQ(num_sols, expected_sols);
 
   // Passing each solution through FK should yield the input to IK
@@ -145,7 +145,7 @@ static void testIKDouble(tesseract_motion_planners::DescartesTesseractKinematics
  * number of solutions matches the user defined expected number and that ik returns false when no solutions are found*/
 static void testIKFloat(tesseract_motion_planners::DescartesTesseractKinematics<float> kin,
                         Eigen::Isometry3f pose_f,
-                        Eigen::VectorXf seed_f,
+                        const Eigen::VectorXf& seed_f,
                         int expected_sols)
 {
   int dof = kin.dof();
@@ -154,7 +154,7 @@ static void testIKFloat(tesseract_motion_planners::DescartesTesseractKinematics<
   // IK should fail if there are no solutions
   EXPECT_EQ(kin.ik(pose_f, ik_solutions), static_cast<bool>(expected_sols));
 
-  int num_sols = ik_solutions.size() / dof;
+  int num_sols = static_cast<int>(ik_solutions.size()) / dof;
   EXPECT_EQ(num_sols, expected_sols);
 
   // Passing each solution through FK should yield the input to IK
@@ -162,11 +162,11 @@ static void testIKFloat(tesseract_motion_planners::DescartesTesseractKinematics<
   {
     Eigen::Isometry3f fk_result;
     EXPECT_TRUE(kin.fk(ik_solutions.data() + i * dof, fk_result));
-    EXPECT_TRUE(pose_f.translation().isApprox(fk_result.translation(), 1e-4));
+    EXPECT_TRUE(pose_f.translation().isApprox(fk_result.translation(), 1e-4f));
 
     Eigen::Quaternionf rot_pose(pose_f.rotation());
     Eigen::Quaternionf rot_result(fk_result.rotation());
-    EXPECT_TRUE(rot_pose.isApprox(rot_result, 1e-3));
+    EXPECT_TRUE(rot_pose.isApprox(rot_result, 1e-3f));
   }
 }
 
@@ -174,7 +174,7 @@ static void testIKFloat(tesseract_motion_planners::DescartesTesseractKinematics<
  *
  * Note that these tests assume that the default IK solver only returns one solution
  */
-TEST_F(DescartesTesseractKinematicsUnit, IKTest)
+TEST_F(DescartesTesseractKinematicsUnit, IKTest) // NOLINT
 {
   unsigned int dof = kdl_ik_->numJoints();
   Eigen::Isometry3d pose_d;
@@ -276,7 +276,7 @@ TEST_F(DescartesTesseractKinematicsUnit, IKTest)
 }
 
 /** @brief This checks fk() against calling the tesseract kinematics object directly */
-TEST_F(DescartesTesseractKinematicsUnit, FKTest)
+TEST_F(DescartesTesseractKinematicsUnit, FKTest) // NOLINT
 {
   Eigen::VectorXd joints_d(7);
   Eigen::VectorXf joints_f(7);
@@ -296,7 +296,7 @@ TEST_F(DescartesTesseractKinematicsUnit, FKTest)
 }
 
 /** @brief This checks that that dof() returns the correct value*/
-TEST_F(DescartesTesseractKinematicsUnit, DOFTest)
+TEST_F(DescartesTesseractKinematicsUnit, DOFTest) // NOLINT
 {
   // Sanity Check that urdf has 7 joints
   EXPECT_EQ(kdl_fk_->numJoints(), 7);
@@ -306,7 +306,7 @@ TEST_F(DescartesTesseractKinematicsUnit, DOFTest)
 }
 
 /** @brief Since analyzeIK() does not have any results, this just checkst that it doesn't crash */
-TEST_F(DescartesTesseractKinematicsUnit, AnalyzeIKTest)
+TEST_F(DescartesTesseractKinematicsUnit, AnalyzeIKTest) // NOLINT
 {
   // Check that this doesn't crash
   descartes_tesseract_kinematics_d_->analyzeIK(Eigen::Isometry3d::Identity());
@@ -315,7 +315,7 @@ TEST_F(DescartesTesseractKinematicsUnit, AnalyzeIKTest)
 }
 
 /** @brief This tests that the ik seed is set correctly */
-TEST_F(DescartesTesseractKinematicsUnit, SetIKSeedTest)
+TEST_F(DescartesTesseractKinematicsUnit, SetIKSeedTest) // NOLINT
 {
   auto kin_d = DescartesTesseractKinematicsTest<double>(kdl_fk_, kdl_ik_);
   auto kin_f = DescartesTesseractKinematicsTest<float>(kdl_fk_, kdl_ik_);

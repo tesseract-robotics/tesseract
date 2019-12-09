@@ -70,6 +70,9 @@ getPoseSampler(const Waypoint::ConstPtr& wp,
                const FloatType y_axes_sample_resolution = 60 * M_PI / 180,
                const FloatType z_axes_sample_resolution = 60 * M_PI / 180)
 {
+  UNUSED(x_sample_resolution);
+  UNUSED(y_sample_resolution);
+  UNUSED(z_sample_resolution);
   tesseract_motion_planners::PoseSamplerFn tool_pose_sampler = nullptr;
   if (wp->getType() == WaypointType::CARTESIAN_WAYPOINT)
   {

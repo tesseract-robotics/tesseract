@@ -319,10 +319,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
                                                const int& type_id,
                                                CollisionShapesConst shapes,
                                                tesseract_common::VectorIsometry3d shape_poses)
-  : name_(std::move(name))
-  , type_id_(type_id)
-  , shapes_(std::move(shapes))
-  , shape_poses_(std::move(shape_poses))
+  : name_(std::move(name)), type_id_(type_id), shapes_(std::move(shapes)), shape_poses_(std::move(shape_poses))
 {
   assert(!shapes_.empty());
   assert(!shape_poses_.empty());

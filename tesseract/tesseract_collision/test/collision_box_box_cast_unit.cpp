@@ -90,14 +90,14 @@ void runTest(ContinuousContactManager& checker)
   EXPECT_NEAR(result_vector[0].cc_nearest_points[1][2], 0.0, 0.001);
 }
 
-TEST(TesseractCollisionUnit, BulletCastSimpleCollisionBoxBoxUnit)
+TEST(TesseractCollisionUnit, BulletCastSimpleCollisionBoxBoxUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletCastSimpleManager checker;
   addCollisionObjects(checker);
   runTest(checker);
 }
 
-TEST(TesseractCollisionUnit, BulletCastBVHCollisionBoxBoxUnit)
+TEST(TesseractCollisionUnit, BulletCastBVHCollisionBoxBoxUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletCastBVHManager checker;
   addCollisionObjects(checker);

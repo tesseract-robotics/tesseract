@@ -83,7 +83,7 @@ std::string TrajOptMotionPlannerStatusCategory::message(int code) const
 TrajOptMotionPlanner::TrajOptMotionPlanner(std::string name)
   : MotionPlanner(std::move(name))
   , config_(nullptr)
-  , status_category_(std::make_shared<const TrajOptMotionPlannerStatusCategory>(name))
+  , status_category_(std::make_shared<const TrajOptMotionPlannerStatusCategory>(name_))
 {
 }
 

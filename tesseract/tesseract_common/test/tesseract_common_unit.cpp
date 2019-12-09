@@ -5,7 +5,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
 
-TEST(TesseractCommonUnit, isNumeric)
+TEST(TesseractCommonUnit, isNumeric)  // NOLINT
 {
   std::vector<std::string> true_test = { "1",     "1.5",  "-1",     "-1.5",  "1e-5",    "1e5",
                                          "-1e-5", "-1e5", "1.0e-5", "1.0e5", "-1.0e-5", "-1.0e5" };
@@ -24,7 +24,7 @@ TEST(TesseractCommonUnit, isNumeric)
   }
 }
 
-TEST(TesseractCommonUnit, toNumeric)
+TEST(TesseractCommonUnit, toNumeric)  // NOLINT
 {
   std::vector<std::string> true_test = { "1",     "1.5",  "-1",     "-1.5",  "1e-5",    "1e5",
                                          "-1e-5", "-1e5", "1.0e-5", "1.0e5", "-1.0e-5", "-1.0e5" };

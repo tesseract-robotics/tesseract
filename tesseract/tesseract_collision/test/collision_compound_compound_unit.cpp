@@ -109,7 +109,7 @@ void runCastTest(ContinuousContactManager& checker)
   }
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionCompoundCompoundUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionCompoundCompoundUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   addCollisionObjects<DiscreteContactManager>(checker);
@@ -119,7 +119,7 @@ TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionCompoundCompoundUnit)
   runTest(*cloned_checker);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionCompoundCompoundUnit)
+TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionCompoundCompoundUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   addCollisionObjects<DiscreteContactManager>(checker);
@@ -129,7 +129,7 @@ TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionCompoundCompoundUnit)
   runTest(*cloned_checker);
 }
 
-TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionCompoundCompoundUnit)
+TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionCompoundCompoundUnit)  // NOLINT
 {
   tesseract_collision_fcl::FCLDiscreteBVHManager checker;
   addCollisionObjects<DiscreteContactManager>(checker);
@@ -139,7 +139,7 @@ TEST(TesseractCollisionUnit, FCLDiscreteBVHCollisionCompoundCompoundUnit)
   runTest(*cloned_checker);
 }
 
-TEST(TesseractCollisionUnit, BulletContinuousSimpleCollisionCompoundCompoundUnit)
+TEST(TesseractCollisionUnit, BulletContinuousSimpleCollisionCompoundCompoundUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletCastSimpleManager checker;
   addCollisionObjects<ContinuousContactManager>(checker);
@@ -149,7 +149,7 @@ TEST(TesseractCollisionUnit, BulletContinuousSimpleCollisionCompoundCompoundUnit
   runCastTest(*cloned_checker);
 }
 
-TEST(TesseractCollisionUnit, BulletContinuousBVHCollisionCompoundCompoundUnit)
+TEST(TesseractCollisionUnit, BulletContinuousBVHCollisionCompoundCompoundUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletCastBVHManager checker;
   addCollisionObjects<ContinuousContactManager>(checker);

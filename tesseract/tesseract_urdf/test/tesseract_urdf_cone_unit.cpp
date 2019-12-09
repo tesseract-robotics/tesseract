@@ -7,10 +7,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/cone.h>
 #include "tesseract_urdf_common_unit.h"
 
-TEST(TesseractURDFUnit, parse_cone)
+TEST(TesseractURDFUnit, parse_cone)  // NOLINT
 {
   {
-    std::string str = "<cone radius=\"1\" length=\"2\" extra=\"0 0 0\"/>";
+    std::string str = R"(<cone radius="1" length="2" extra="0 0 0"/>)";
     tesseract_geometry::Cone::Ptr geom;
     auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone", 2);
     EXPECT_TRUE(*status);
@@ -19,28 +19,28 @@ TEST(TesseractURDFUnit, parse_cone)
   }
 
   {
-    std::string str = "<cone radius=\"-1\" length=\"2\" extra=\"0 0 0\"/>";
+    std::string str = R"(<cone radius="-1" length="2" extra="0 0 0"/>)";
     tesseract_geometry::Cone::Ptr geom;
     auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone", 2);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<cone radius=\"1\" length=\"-2\" extra=\"0 0 0\"/>";
+    std::string str = R"(<cone radius="1" length="-2" extra="0 0 0"/>)";
     tesseract_geometry::Cone::Ptr geom;
     auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone", 2);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<cone radius=\"a\" length=\"2\"/>";
+    std::string str = R"(<cone radius="a" length="2"/>)";
     tesseract_geometry::Cone::Ptr geom;
     auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone", 2);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<cone radius=\"1\" length=\"a\"/>";
+    std::string str = R"(<cone radius="1" length="a"/>)";
     tesseract_geometry::Cone::Ptr geom;
     auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone", 2);
     EXPECT_FALSE(*status);
@@ -48,21 +48,21 @@ TEST(TesseractURDFUnit, parse_cone)
 
   // TODO: I would expect this to fail but tinyxml2 still parses it so need to create an issue.
   //  {
-  //    std::string str = "<cone radius=\"1 2\" length=\"2 3\"/>";
+  //    std::string str = R"(<cone radius="1 2" length="2 3"/>)";
   //    tesseract_geometry::Cone::Ptr geom;
   //    auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone");
   //    EXPECT_FALSE(*status);
   //  }
 
   {
-    std::string str = "<cone radius=\"1\"/>";
+    std::string str = R"(<cone radius="1"/>)";
     tesseract_geometry::Cone::Ptr geom;
     auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone", 2);
     EXPECT_FALSE(*status);
   }
 
   {
-    std::string str = "<cone length=\"2\"/>";
+    std::string str = R"(<cone length="2"/>)";
     tesseract_geometry::Cone::Ptr geom;
     auto status = runTest<tesseract_geometry::Cone::Ptr>(geom, str, "cone", 2);
     EXPECT_FALSE(*status);

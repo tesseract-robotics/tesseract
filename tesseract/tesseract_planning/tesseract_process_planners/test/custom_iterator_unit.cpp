@@ -8,7 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_planners/process_segment_definition.h>
 
-TEST(CustomIteratorUnit, ProcessSegementDefinitionIterator)
+TEST(CustomIteratorUnit, ProcessSegementDefinitionIterator) // NOLINT
 {
   using namespace tesseract_process_planners;
   using namespace tesseract_motion_planners;
@@ -63,13 +63,19 @@ TEST(CustomIteratorUnit, ProcessSegementDefinitionIterator)
 
   int cnt = 0;
   for (auto& a : psd)
+  {
     ++cnt;
+    UNUSED(a);
+  }
 
   EXPECT_TRUE(cnt == 15);
 
   cnt = 0;
   for (const auto& a : psd)
+  {
     ++cnt;
+    UNUSED(a);
+  }
 
   EXPECT_TRUE(cnt == 15);
 
