@@ -99,6 +99,12 @@ void runAddandRemoveLinkTest(const tesseract_environment::Environment::Ptr& env)
   EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_1.getName()) == joint_names.end());
 
   env->getSceneGraph()->saveDOT("/tmp/after_remove_link_unit.dot");
+
+  // Test against double removing
+  EXPECT_FALSE(env->removeLink(link_1.getName()));
+  EXPECT_FALSE(env->removeLink(link_2.getName()));
+  EXPECT_FALSE(env->removeJoint(joint_1.getName()));
+  EXPECT_FALSE(env->removeJoint("joint_" + link_1.getName()));
 }
 
 void runMoveLinkandJointTest(const tesseract_environment::Environment::Ptr& env)
