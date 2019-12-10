@@ -164,7 +164,7 @@ protected:
   }
 };
 
-TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses) // NOLINT
+TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
 {
   // These specify the series of points to be optimized
   std::vector<tesseract_motion_planners::Waypoint::Ptr> waypoints;
@@ -204,7 +204,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses) // NOLINT
   }
 }
 
-TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric) // NOLINT
+TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
 {
   // These specify the series of points to be optimized
   std::vector<tesseract_motion_planners::Waypoint::Ptr> waypoints;
@@ -247,7 +247,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric) // NOLINT
   }
 }
 
-TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerMakeRobotSampler) // NOLINT
+TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerMakeRobotSampler)  // NOLINT
 {
   auto robot_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator", "OPWInvKin");
   auto current_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();

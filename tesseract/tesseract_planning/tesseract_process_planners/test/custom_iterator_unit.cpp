@@ -8,7 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_planners/process_segment_definition.h>
 
-TEST(CustomIteratorUnit, ProcessSegementDefinitionIterator) // NOLINT
+TEST(CustomIteratorUnit, ProcessSegementDefinitionIterator)  // NOLINT
 {
   using namespace tesseract_process_planners;
   using namespace tesseract_motion_planners;

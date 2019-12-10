@@ -115,7 +115,7 @@ bool objectIsType(Base unit)
 }  // namespace tesseract_tests
 
 // This test checks that the boolean flags are adding the correct costs for smoothing and collision
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner0) // NOLINT
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner0)  // NOLINT
 {
   // Set the parameters (Most are being left as defaults)
   std::shared_ptr<TrajOptPlannerFreespaceConfig> config = std::make_shared<TrajOptPlannerFreespaceConfig>(
@@ -162,7 +162,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner0) // NOLINT
 }
 
 // This test tests freespace motion b/n 2 joint waypoints
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner1) // NOLINT
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner1)  // NOLINT
 {
   // Set the parameters (Most are being left as defaults)
   std::shared_ptr<TrajOptPlannerFreespaceConfig> config = std::make_shared<TrajOptPlannerFreespaceConfig>(
@@ -203,7 +203,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner1) // NOLINT
 }
 
 // This test tests freespace motion b/n 1 joint waypoint and 1 cartesian waypoint
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner2) // NOLINT
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner2)  // NOLINT
 {
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
@@ -247,7 +247,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner2) // NOLINT
 }
 
 // This test tests freespace motion b/n 1 cartesian waypoint and 1 joint waypoint
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner3) // NOLINT
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner3)  // NOLINT
 {
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
@@ -291,7 +291,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner3) // NOLINT
 }
 
 // This test tests freespace motion b/n 2 cartesian waypoints
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4) // NOLINT
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4)  // NOLINT
 {
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
@@ -337,7 +337,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4) // NOLINT
 
 // This test checks that the boolean flags are adding the correct costs for smoothing, collision, and cartesian cnts are
 // added correctly
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0) // NOLINT
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0)  // NOLINT
 {
   // Set the parameters (Most are being left as defaults)
   std::shared_ptr<TrajOptPlannerDefaultConfig> config = std::make_shared<TrajOptPlannerDefaultConfig>(
@@ -388,7 +388,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0) // NOLINT
 }
 
 // This test checks that the terms are being added correctly for cartesian costs
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner1) // NOLINT
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner1)  // NOLINT
 {
   // Set the parameters (Most are being left as defaults)
   std::shared_ptr<TrajOptPlannerDefaultConfig> config = std::make_shared<TrajOptPlannerDefaultConfig>(
@@ -418,7 +418,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner1) // NOLINT
 }
 
 // This test checks that the terms are being added correctly for joint cnts
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner2) // NOLINT
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner2)  // NOLINT
 {
   // Set the parameters (Most are being left as defaults)
   std::shared_ptr<TrajOptPlannerDefaultConfig> config = std::make_shared<TrajOptPlannerDefaultConfig>(
@@ -451,7 +451,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner2) // NOLINT
 }
 
 // This test checks that the terms are being added correctly for joint costs
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner3) // NOLINT
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner3)  // NOLINT
 {
   // Set the parameters (Most are being left as defaults)
   std::shared_ptr<TrajOptPlannerDefaultConfig> config = std::make_shared<TrajOptPlannerDefaultConfig>(

@@ -123,7 +123,8 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
 
   if (!status || !simple_setup_->haveExactSolutionPath())
   {
-    response.status = tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::ErrorFailedToFindValidSolution, status_category_);
+    response.status = tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::ErrorFailedToFindValidSolution,
+                                                   status_category_);
     return response.status;
   }
 
@@ -156,12 +157,12 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
   continuous_contact_manager_->setContactDistanceThreshold(0);
   collisions.clear();
   bool found = tesseract_environment::checkTrajectory(*continuous_contact_manager_,
-                                                       *(config_->tesseract->getEnvironmentConst()),
-                                                       kin_->getJointNames(),
-                                                       traj,
-                                                       collisions,
-                                                       true,
-                                                       verbose);
+                                                      *(config_->tesseract->getEnvironmentConst()),
+                                                      kin_->getJointNames(),
+                                                      traj,
+                                                      collisions,
+                                                      true,
+                                                      verbose);
 
   // Do a discrete check until continuous collision checking is updated to do dynamic-dynamic checking
   discrete_contact_manager_->setContactDistanceThreshold(0);
@@ -180,8 +181,8 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
   response.joint_trajectory.joint_names = kin_->getJointNames();
   if (found)
   {
-    response.status = tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::ErrorFoundValidSolutionInCollision,
-                                                   status_category_);
+    response.status = tesseract_common::StatusCode(
+        OMPLFreespacePlannerStatusCategory::ErrorFoundValidSolutionInCollision, status_category_);
   }
   else
   {

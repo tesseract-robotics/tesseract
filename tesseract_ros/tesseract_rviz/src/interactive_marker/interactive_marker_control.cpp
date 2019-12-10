@@ -420,7 +420,8 @@ Ogre::Ray InteractiveMarkerControl::getMouseRayInReferenceFrame(const rviz::View
   float width = static_cast<float>(event.viewport->getActualWidth() - 1);
   float height = static_cast<float>(event.viewport->getActualHeight() - 1);
 
-  Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay((static_cast<float>(x) + 0.5f) / width, (static_cast<float>(y) + 0.5f) / height);
+  Ogre::Ray mouse_ray = event.viewport->getCamera()->getCameraToViewportRay((static_cast<float>(x) + 0.5f) / width,
+                                                                            (static_cast<float>(y) + 0.5f) / height);
 
   // convert ray into reference frame
   mouse_ray.setOrigin(reference_node_->convertWorldToLocalPosition(mouse_ray.getOrigin()));
@@ -663,7 +664,8 @@ void InteractiveMarkerControl::moveAxis(const Ogre::Ray& /*mouse_ray*/, const rv
     Ogre::Vector2 closest_screen_point = control_ray_screen_start + control_ray_screen_dir * factor;
 
     // make a new "mouse ray" for the point on the projected ray
-    Ogre::Ray new_mouse_ray = getMouseRayInReferenceFrame(event, static_cast<int>(closest_screen_point.x), static_cast<int>(closest_screen_point.y));
+    Ogre::Ray new_mouse_ray = getMouseRayInReferenceFrame(
+        event, static_cast<int>(closest_screen_point.x), static_cast<int>(closest_screen_point.y));
 
     // find closest point on control-axis ray to new mouse ray (should intersect actually)
     Ogre::Vector3 closest_point;

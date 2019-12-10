@@ -138,7 +138,7 @@ using Implementations = ::testing::Types<ompl::geometric::SBL,
 
 TYPED_TEST_CASE(OMPLTrajOptTestFixture, Implementations);
 
-TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit) // NOLINT
+TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
 {
   EXPECT_EQ(ompl::RNG::getSeed(), SEED) << "Randomization seed does not match expected: " << ompl::RNG::getSeed()
                                         << " vs. " << SEED;

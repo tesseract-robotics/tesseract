@@ -83,8 +83,9 @@ bool DescartesExternalPositionerSampler<FloatType>::sample(std::vector<FloatType
   {
     // given the sampling resolution for the joint calculate the number of samples such that the resolution is not
     // exceeded.
-    long cnt = lround(std::abs(positioner_limits_(dof, 1) - positioner_limits_(dof, 0)) /
-                        positioner_sample_resolution_(dof)) + 1;
+    long cnt =
+        lround(std::abs(positioner_limits_(dof, 1) - positioner_limits_(dof, 0)) / positioner_sample_resolution_(dof)) +
+        1;
     dof_range.push_back(Eigen::VectorXd::LinSpaced(cnt, positioner_limits_(dof, 0), positioner_limits_(dof, 1)));
   }
 

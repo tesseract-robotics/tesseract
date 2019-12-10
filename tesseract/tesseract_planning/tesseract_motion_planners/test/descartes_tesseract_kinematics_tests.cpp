@@ -174,7 +174,7 @@ static void testIKFloat(tesseract_motion_planners::DescartesTesseractKinematics<
  *
  * Note that these tests assume that the default IK solver only returns one solution
  */
-TEST_F(DescartesTesseractKinematicsUnit, IKTest) // NOLINT
+TEST_F(DescartesTesseractKinematicsUnit, IKTest)  // NOLINT
 {
   unsigned int dof = kdl_ik_->numJoints();
   Eigen::Isometry3d pose_d;
@@ -276,7 +276,7 @@ TEST_F(DescartesTesseractKinematicsUnit, IKTest) // NOLINT
 }
 
 /** @brief This checks fk() against calling the tesseract kinematics object directly */
-TEST_F(DescartesTesseractKinematicsUnit, FKTest) // NOLINT
+TEST_F(DescartesTesseractKinematicsUnit, FKTest)  // NOLINT
 {
   Eigen::VectorXd joints_d(7);
   Eigen::VectorXf joints_f(7);
@@ -296,7 +296,7 @@ TEST_F(DescartesTesseractKinematicsUnit, FKTest) // NOLINT
 }
 
 /** @brief This checks that that dof() returns the correct value*/
-TEST_F(DescartesTesseractKinematicsUnit, DOFTest) // NOLINT
+TEST_F(DescartesTesseractKinematicsUnit, DOFTest)  // NOLINT
 {
   // Sanity Check that urdf has 7 joints
   EXPECT_EQ(kdl_fk_->numJoints(), 7);
@@ -306,7 +306,7 @@ TEST_F(DescartesTesseractKinematicsUnit, DOFTest) // NOLINT
 }
 
 /** @brief Since analyzeIK() does not have any results, this just checkst that it doesn't crash */
-TEST_F(DescartesTesseractKinematicsUnit, AnalyzeIKTest) // NOLINT
+TEST_F(DescartesTesseractKinematicsUnit, AnalyzeIKTest)  // NOLINT
 {
   // Check that this doesn't crash
   descartes_tesseract_kinematics_d_->analyzeIK(Eigen::Isometry3d::Identity());
@@ -315,7 +315,7 @@ TEST_F(DescartesTesseractKinematicsUnit, AnalyzeIKTest) // NOLINT
 }
 
 /** @brief This tests that the ik seed is set correctly */
-TEST_F(DescartesTesseractKinematicsUnit, SetIKSeedTest) // NOLINT
+TEST_F(DescartesTesseractKinematicsUnit, SetIKSeedTest)  // NOLINT
 {
   auto kin_d = DescartesTesseractKinematicsTest<double>(kdl_fk_, kdl_ik_);
   auto kin_f = DescartesTesseractKinematicsTest<float>(kdl_fk_, kdl_ik_);

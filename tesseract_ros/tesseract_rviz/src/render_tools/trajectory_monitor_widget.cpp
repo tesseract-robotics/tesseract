@@ -212,8 +212,8 @@ void TrajectoryMonitorWidget::createTrajectoryTrail()
   states_data.reserve(num_trajectory_waypoints_);
   for (std::size_t i = 0; i < num_trajectory_waypoints_; i++)
   {
-    unsigned waypoint_i = static_cast<unsigned>(std::min(
-        i * stepsize, num_waypoints - 1));  // limit to last trajectory point
+    unsigned waypoint_i =
+        static_cast<unsigned>(std::min(i * stepsize, num_waypoints - 1));  // limit to last trajectory point
 
     std::unordered_map<std::string, double> joints;
     for (unsigned j = 0; j < t->joint_trajectory.joint_names.size(); ++j)

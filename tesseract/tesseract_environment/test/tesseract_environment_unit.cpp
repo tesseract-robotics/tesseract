@@ -203,7 +203,7 @@ void runCurrentStatePreservedWhenEnvChangesTest(const tesseract_environment::Env
   }
 }
 
-TEST(TesseractEnvironmentUnit, KDLEnvCloneContactManagerUnit) // NOLINT
+TEST(TesseractEnvironmentUnit, KDLEnvCloneContactManagerUnit)  // NOLINT
 {
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
@@ -227,7 +227,7 @@ TEST(TesseractEnvironmentUnit, KDLEnvCloneContactManagerUnit) // NOLINT
   runContactManagerCloneTest(env);
 }
 
-TEST(TesseractEnvironmentUnit, KDLEnvAddandRemoveLink) // NOLINT
+TEST(TesseractEnvironmentUnit, KDLEnvAddandRemoveLink)  // NOLINT
 {
   SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
@@ -251,7 +251,7 @@ TEST(TesseractEnvironmentUnit, KDLEnvAddandRemoveLink) // NOLINT
   runAddandRemoveLinkTest(env);
 }
 
-TEST(TesseractEnvironmentUnit, KDLEnvMoveLinkandJoint) // NOLINT
+TEST(TesseractEnvironmentUnit, KDLEnvMoveLinkandJoint)  // NOLINT
 {
   SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
@@ -275,7 +275,7 @@ TEST(TesseractEnvironmentUnit, KDLEnvMoveLinkandJoint) // NOLINT
   runMoveLinkandJointTest(env);
 }
 
-TEST(TesseractEnvironmentUnit, KDLEnvChangeJointOrigin) // NOLINT
+TEST(TesseractEnvironmentUnit, KDLEnvChangeJointOrigin)  // NOLINT
 {
   SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
@@ -299,7 +299,7 @@ TEST(TesseractEnvironmentUnit, KDLEnvChangeJointOrigin) // NOLINT
   runChangeJointOriginTest(env);
 }
 
-TEST(TesseractEnvironmentUnit, KDLEnvCurrentStatePreservedWhenEnvChanges) // NOLINT
+TEST(TesseractEnvironmentUnit, KDLEnvCurrentStatePreservedWhenEnvChanges)  // NOLINT
 {
   SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
