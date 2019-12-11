@@ -61,6 +61,23 @@ struct TrajOptPlannerConfig
 
   /** @brief Trajopt problem to be solved (Required) */
   trajopt::TrajOptProb::Ptr prob;
+
+  /** @brief Set the resolution at which state validity needs to be verified in order for a motion between two states
+   * to be considered valid in post checking of trajectory returned by trajopt.
+   *
+   * The resolution is equal to longest_valid_segment_fraction * state_space.getMaximumExtent()
+   *
+   * Note: The planner takes the conservative of either longest_valid_segment_fraction or longest_valid_segment_length.
+   */
+  double longest_valid_segment_fraction = 0.01;  // 1%
+
+  /** @brief Set the resolution at which state validity needs to be verified in order for a motion between two states
+   * to be considered valid. If norm(state1 - state0) > longest_valid_segment_length.
+   *
+   * Note: This gets converted to longest_valid_segment_fraction.
+   *       longest_valid_segment_fraction = longest_valid_segment_length / state_space.getMaximumExtent()
+   */
+  double longest_valid_segment_length = 0.5;
 };
 
 }  // namespace tesseract_motion_planners

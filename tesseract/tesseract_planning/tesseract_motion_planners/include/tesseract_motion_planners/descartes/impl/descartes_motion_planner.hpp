@@ -205,11 +205,11 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
   manager->setActiveCollisionObjects(config_->active_link_names);
   manager->setContactDistanceThreshold(0);
   collisions.clear();
-  bool found = tesseract_environment::checkTrajectory(*manager,
+  bool found = tesseract_environment::checkTrajectory(collisions,
+                                                      *manager,
                                                       *config_->tesseract->getEnvironmentConst(),
                                                       response.joint_trajectory.joint_names,
                                                       response.joint_trajectory.trajectory,
-                                                      collisions,
                                                       true,
                                                       verbose);
 

@@ -260,7 +260,7 @@ bool BasicCartesianExample::run()
   manager->setContactDistanceThreshold(0);
   collisions.clear();
   bool found =
-      checkTrajectory(*manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), prob->GetInitTraj(), collisions);
+      checkTrajectory(collisions, *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), prob->GetInitTraj());
 
   ROS_INFO((found) ? ("Initial trajectory is in collision") : ("Initial trajectory is collision free"));
 
@@ -280,7 +280,7 @@ bool BasicCartesianExample::run()
 
   collisions.clear();
   found = checkTrajectory(
-      *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()), collisions);
+      collisions, *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()));
 
   ROS_INFO((found) ? ("Final trajectory is in collision") : ("Final trajectory is collision free"));
 

@@ -40,6 +40,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace trajopt;
 
+static const double LONGEST_VALID_SEGMENT_FRACTION_DEFAULT = 0.01;
+
 namespace tesseract_motion_planners
 {
 TrajOptMotionPlannerStatusCategory::TrajOptMotionPlannerStatusCategory(std::string name) : name_(std::move(name)) {}
@@ -132,6 +134,25 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
   CONSOLE_BRIDGE_logInform("planning time: %.3f", (boost::posix_time::second_clock::local_time() - tStart).seconds());
 
   // Check and report collisions
+  const Eigen::MatrixX2d& limits = config_->prob->GetKin()->getLimits();
+  double length = 0;
+  double extent = (limits.col(1) - limits.col(0)).norm();
+  if (config_->longest_valid_segment_fraction > 0 && config_->longest_valid_segment_length > 0)
+  {
+    length = std::min(config_->longest_valid_segment_fraction * extent, config_->longest_valid_segment_length);
+  }
+  else if (config_->longest_valid_segment_fraction > 0)
+  {
+    length = config_->longest_valid_segment_fraction * extent;
+  }
+  else if (config_->longest_valid_segment_length > 0)
+  {
+    length = config_->longest_valid_segment_length;
+  }
+  else
+  {
+    length = LONGEST_VALID_SEGMENT_FRACTION_DEFAULT * extent;
+  }
   std::vector<tesseract_collision::ContactResultMap> collisions;
   tesseract_collision::ContinuousContactManager::Ptr continuous_manager =
       config_->prob->GetEnv()->getContinuousContactManager();
@@ -143,11 +164,12 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
   continuous_manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
   continuous_manager->setContactDistanceThreshold(0);
   collisions.clear();
-  bool found = checkTrajectory(*continuous_manager,
+  bool found = checkTrajectory(collisions,
+                               *continuous_manager,
                                *(config_->prob->GetEnv()),
                                config_->prob->GetKin()->getJointNames(),
                                getTraj(opt.x(), config_->prob->GetVars()),
-                               collisions,
+                               length,
                                true,
                                verbose);
 
@@ -158,11 +180,12 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
   discrete_manager->setContactDistanceThreshold(0);
   collisions.clear();
 
-  found = found || checkTrajectory(*discrete_manager,
+  found = found || checkTrajectory(collisions,
+                                   *discrete_manager,
                                    *(config_->prob->GetEnv()),
                                    config_->prob->GetKin()->getJointNames(),
                                    getTraj(opt.x(), config_->prob->GetVars()),
-                                   collisions,
+                                   length,
                                    true,
                                    verbose);
 
