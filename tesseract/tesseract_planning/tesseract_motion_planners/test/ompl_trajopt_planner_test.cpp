@@ -98,7 +98,7 @@ static void addBox(tesseract_environment::Environment& env)
   Visual::Ptr visual = std::make_shared<Visual>();
   visual->origin = Eigen::Isometry3d::Identity();
   visual->origin.translation() = Eigen::Vector3d(0.4, 0, 0.55);
-  visual->geometry = std::make_shared<tesseract_geometry::Box>(0.5, 0.001, 0.5);
+  visual->geometry = std::make_shared<tesseract_geometry::Box>(0.4, 0.001, 0.4);
   link_1.visual.push_back(visual);
 
   Collision::Ptr collision = std::make_shared<Collision>();
@@ -125,16 +125,16 @@ public:
 using Implementations = ::testing::Types<ompl::geometric::SBL,
                                          ompl::geometric::PRM,
                                          ompl::geometric::PRMstar,
-                                         ompl::geometric::LazyPRMstar,
                                          ompl::geometric::EST,
-                                         ompl::geometric::LBKPIECE1,
-                                         ompl::geometric::BKPIECE1,
-                                         ompl::geometric::KPIECE1,
                                          ompl::geometric::RRT,
                                          ompl::geometric::RRTConnect,
                                          ompl::geometric::RRTstar,
                                          // ompl::geometric::SPARS,
-                                         ompl::geometric::TRRT>;
+                                         ompl::geometric::LazyPRMstar,
+                                         ompl::geometric::TRRT,
+                                         ompl::geometric::LBKPIECE1,
+                                         ompl::geometric::BKPIECE1,
+                                         ompl::geometric::KPIECE1>;
 
 TYPED_TEST_CASE(OMPLTrajOptTestFixture, Implementations);
 
@@ -169,12 +169,13 @@ TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
     ompl_config.end_waypoint = end;
     ompl_config.tesseract = tesseract;
     ompl_config.manipulator = "manipulator";
-    ompl_config.collision_safety_margin = 0.01;
-    ompl_config.planning_time = 10.0;
+    ompl_config.collision_safety_margin = 0.025;
+    ompl_config.planning_time = 20.0;
     ompl_config.num_threads = 4;
     ompl_config.max_solutions = 4;
+    ompl_config.longest_valid_segment_fraction = 0.005;
 
-    ompl_config.collision_continuous = false;
+    ompl_config.collision_continuous = true;
     ompl_config.collision_check = true;
     ompl_config.simplify = false;
     ompl_config.n_output_states = 50;
@@ -188,14 +189,14 @@ TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
     trajopt_config.target_waypoints.push_back(end);
 
     trajopt_config.collision_check = true;
-    trajopt_config.collision_continuous = false;
-    trajopt_config.collision_safety_margin = 0.01;
+    trajopt_config.collision_continuous = true;
+    trajopt_config.collision_safety_margin = 0.015;
 
     trajopt_config.smooth_velocities = true;
     trajopt_config.smooth_jerks = true;
     trajopt_config.smooth_accelerations = true;
 
-    trajopt_config.num_steps = 30;
+    trajopt_config.num_steps = 50;
   }
 
   // Set the planner configuration
@@ -203,9 +204,13 @@ TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
       ompl_config, std::make_shared<tesseract_motion_planners::TrajOptPlannerFreespaceConfig>(trajopt_config));
 
   tesseract_motion_planners::PlannerResponse planning_response;
-  tesseract_common::StatusCode status = this->planner.solve(planning_response);
+  tesseract_common::StatusCode status = this->planner.solve(planning_response, true);
 
   // Expect the planning to succeed
+  if (!status)
+  {
+    CONSOLE_BRIDGE_logError("CI Error: %s", status.message().c_str());
+  }
   EXPECT_TRUE(status);
 
   // Expect that the trajectory has the same number of states as the config with the highest number of states

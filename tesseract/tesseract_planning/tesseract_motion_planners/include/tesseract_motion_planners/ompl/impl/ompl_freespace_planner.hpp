@@ -156,11 +156,12 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
   std::vector<tesseract_collision::ContactResultMap> collisions;
   continuous_contact_manager_->setContactDistanceThreshold(0);
   collisions.clear();
-  bool found = tesseract_environment::checkTrajectory(*continuous_contact_manager_,
+  bool found = tesseract_environment::checkTrajectory(collisions,
+                                                      *continuous_contact_manager_,
                                                       *(config_->tesseract->getEnvironmentConst()),
                                                       kin_->getJointNames(),
                                                       traj,
-                                                      collisions,
+                                                      config_->longest_valid_segment_length,
                                                       true,
                                                       verbose);
 
@@ -168,13 +169,18 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
   discrete_contact_manager_->setContactDistanceThreshold(0);
   collisions.clear();
 
-  found = found || tesseract_environment::checkTrajectory(*discrete_contact_manager_,
+  found = found || tesseract_environment::checkTrajectory(collisions,
+                                                          *discrete_contact_manager_,
                                                           *(config_->tesseract->getEnvironmentConst()),
                                                           kin_->getJointNames(),
                                                           traj,
-                                                          collisions,
+                                                          config_->longest_valid_segment_length,
                                                           true,
                                                           verbose);
+
+  // Set the contact distance back to original incase solve was called again.
+  discrete_contact_manager_->setContactDistanceThreshold(config_->collision_safety_margin);
+  continuous_contact_manager_->setContactDistanceThreshold(config_->collision_safety_margin);
 
   // Send response
   response.joint_trajectory.trajectory = traj;
@@ -187,7 +193,7 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
   else
   {
     response.status = tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::SolutionFound, status_category_);
-    CONSOLE_BRIDGE_logInform("%s, final trajectory is collision free", name_);
+    CONSOLE_BRIDGE_logInform("%s, final trajectory is collision free", name_.c_str());
   }
 
   return response.status;
@@ -267,6 +273,29 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
       std::bind(&OMPLFreespacePlanner::allocWeightedRealVectorStateSampler, this, std::placeholders::_1));
 
   ompl::base::StateSpacePtr state_space_ptr(space);
+  if (config_->longest_valid_segment_fraction > 0 && config_->longest_valid_segment_length > 0)
+  {
+    double val = std::min(config_->longest_valid_segment_fraction,
+                          config_->longest_valid_segment_length / state_space_ptr->getMaximumExtent());
+    config_->longest_valid_segment_fraction = val;
+    config_->longest_valid_segment_length = val * state_space_ptr->getMaximumExtent();
+    state_space_ptr->setLongestValidSegmentFraction(val);
+  }
+  else if (config_->longest_valid_segment_fraction > 0)
+  {
+    config_->longest_valid_segment_length =
+        config_->longest_valid_segment_fraction * state_space_ptr->getMaximumExtent();
+  }
+  else if (config_->longest_valid_segment_length > 0)
+  {
+    config_->longest_valid_segment_fraction =
+        config_->longest_valid_segment_length / state_space_ptr->getMaximumExtent();
+  }
+  else
+  {
+    config_->longest_valid_segment_fraction = 0.01;
+    config_->longest_valid_segment_length = 0.01 * state_space_ptr->getMaximumExtent();
+  }
   state_space_ptr->setLongestValidSegmentFraction(config_->longest_valid_segment_fraction);
   simple_setup_ = std::make_shared<ompl::geometric::SimpleSetup>(state_space_ptr);
 

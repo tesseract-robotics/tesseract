@@ -189,14 +189,14 @@ template <typename FloatType>
 void DescartesTesseractKinematics<FloatType>::setIKSeed(
     const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1> >& seed)
 {
-  assert(seed.size() == dof());
+  assert(static_cast<int>(seed.size()) == dof());
   ik_seed_ = seed.template cast<double>();
 }
 
 template <typename FloatType>
 void DescartesTesseractKinematics<FloatType>::setIKSeed(const std::vector<FloatType>& seed)
 {
-  assert(seed.size() == dof());
+  assert(static_cast<int>(seed.size()) == dof());
   std::vector<double> seed_copy;
   for (auto& i : seed)
     seed_copy.push_back(static_cast<double>(i));

@@ -398,7 +398,7 @@ bool CarSeatExample::run()
   manager->setContactDistanceThreshold(0);
 
   bool found = checkTrajectory(
-      *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(pick1_opt.x(), prob->GetVars()), collisions);
+      collisions, *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(pick1_opt.x(), prob->GetVars()));
 
   ROS_INFO((found) ? ("Pick seat #1 trajectory is in collision") : ("Pick seat #1 trajectory is collision free"));
 
@@ -458,7 +458,7 @@ bool CarSeatExample::run()
   manager->setContactDistanceThreshold(0);
   collisions.clear();
   found = checkTrajectory(
-      *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(place1_opt.x(), prob->GetVars()), collisions);
+      collisions, *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(place1_opt.x(), prob->GetVars()));
 
   ROS_INFO((found) ? ("Place seat #1 trajectory is in collision") : ("Place seat #1 trajectory is collision free"));
 
@@ -511,7 +511,7 @@ bool CarSeatExample::run()
   manager->setContactDistanceThreshold(0);
   collisions.clear();
   found = checkTrajectory(
-      *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(pick2_opt.x(), prob->GetVars()), collisions);
+      collisions, *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(pick2_opt.x(), prob->GetVars()));
 
   ROS_INFO((found) ? ("Pick seat #2 trajectory is in collision") : ("Pick seat #2 trajectory is collision free"));
 

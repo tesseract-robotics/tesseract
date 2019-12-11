@@ -97,7 +97,7 @@ static void addBox(tesseract_environment::Environment& env)
   Visual::Ptr visual = std::make_shared<Visual>();
   visual->origin = Eigen::Isometry3d::Identity();
   visual->origin.translation() = Eigen::Vector3d(0.4, 0, 0.55);
-  visual->geometry = std::make_shared<tesseract_geometry::Box>(0.5, 0.001, 0.5);
+  visual->geometry = std::make_shared<tesseract_geometry::Box>(0.4, 0.001, 0.4);
   link_1.visual.push_back(visual);
 
   Collision::Ptr collision = std::make_shared<Collision>();
@@ -164,12 +164,13 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   ompl_config.end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
   ompl_config.tesseract = tesseract;
   ompl_config.manipulator = "manipulator";
-  ompl_config.collision_safety_margin = 0.01;
-  ompl_config.planning_time = 10.0;
+  ompl_config.collision_safety_margin = 0.025;
+  ompl_config.planning_time = 20.0;
   ompl_config.num_threads = 4;
   ompl_config.max_solutions = 4;
+  ompl_config.longest_valid_segment_fraction = 0.005;
 
-  ompl_config.collision_continuous = false;
+  ompl_config.collision_continuous = true;
   ompl_config.collision_check = true;
   ompl_config.simplify = false;
   ompl_config.n_output_states = 50;
@@ -178,8 +179,12 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   this->ompl_planner.setConfiguration(ompl_config);
 
   tesseract_motion_planners::PlannerResponse ompl_planning_response;
-  tesseract_common::StatusCode status = this->ompl_planner.solve(ompl_planning_response);
+  tesseract_common::StatusCode status = this->ompl_planner.solve(ompl_planning_response, true);
 
+  if (!status)
+  {
+    CONSOLE_BRIDGE_logError("CI Error: %s", status.message().c_str());
+  }
   EXPECT_TRUE(status);
   EXPECT_EQ(ompl_planning_response.joint_trajectory.trajectory.rows(), ompl_config.n_output_states);
 
@@ -188,7 +193,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   ompl_config.start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
 
   this->ompl_planner.setConfiguration(ompl_config);
-  status = this->ompl_planner.solve(ompl_planning_response);
+  status = this->ompl_planner.solve(ompl_planning_response, true);
 
   EXPECT_FALSE(status);
 
@@ -199,7 +204,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   ompl_config.end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
 
   this->ompl_planner.setConfiguration(ompl_config);
-  status = this->ompl_planner.solve(ompl_planning_response);
+  status = this->ompl_planner.solve(ompl_planning_response, true);
 
   EXPECT_FALSE(status);
 

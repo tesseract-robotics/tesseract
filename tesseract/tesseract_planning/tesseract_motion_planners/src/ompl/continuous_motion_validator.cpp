@@ -69,36 +69,50 @@ bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1,
   const ompl::base::StateSpace& state_space = *si_->getStateSpace();
 
   unsigned n_steps = state_space.validSegmentCount(s1, s2);
+  bool is_valid = true;
 
   ompl::base::State* start_interp = si_->allocState();
-  ompl::base::State* end_interp = si_->allocState();
-
-  bool is_valid = true;
-  unsigned i = 1;
-  for (i = 1; i <= n_steps; ++i)
+  if (n_steps > 1)
   {
-    state_space.interpolate(s1, s2, static_cast<double>(i - 1) / n_steps, start_interp);
-    state_space.interpolate(s1, s2, static_cast<double>(i) / n_steps, end_interp);
+    ompl::base::State* end_interp = si_->allocState();
 
-    // Currently we must perform both continuous and discrete because continuous does not perform
-    // self collision checking.
-    if (!si_->isValid(end_interp) || !continuousCollisionCheck(start_interp, end_interp) ||
-        !discreteCollisionCheck(end_interp))
+    for (unsigned i = 1; i < n_steps; ++i)
     {
+      state_space.interpolate(s1, s2, static_cast<double>(i - 1) / static_cast<double>(n_steps), start_interp);
+      state_space.interpolate(s1, s2, static_cast<double>(i) / static_cast<double>(n_steps), end_interp);
+
+      // Currently we must perform both continuous and discrete because continuous does not perform
+      // self collision checking.
+      if (!si_->isValid(end_interp) || !continuousCollisionCheck(start_interp, end_interp) ||
+          !discreteCollisionCheck(end_interp))
+      {
+        lastValid.second = static_cast<double>(i - 1) / static_cast<double>(n_steps);
+        if (lastValid.first != nullptr)
+          state_space.interpolate(s1, s2, lastValid.second, lastValid.first);
+
+        is_valid = false;
+        break;
+      }
+    }
+
+    si_->freeState(end_interp);
+  }
+
+  if (is_valid)
+  {
+    state_space.interpolate(s1, s2, static_cast<double>(n_steps - 1) / static_cast<double>(n_steps), start_interp);
+    if (!si_->isValid(s2) || !continuousCollisionCheck(start_interp, s2) || !discreteCollisionCheck(s2))
+    {
+      lastValid.second = static_cast<double>(n_steps - 1) / static_cast<double>(n_steps);
+      if (lastValid.first != nullptr)
+        state_space.interpolate(s1, s2, lastValid.second, lastValid.first);
+
       is_valid = false;
-      break;
     }
   }
 
-  if (!is_valid)
-  {
-    lastValid.second = static_cast<double>(i - 1) / n_steps;
-    if (lastValid.first != nullptr)
-      state_space.interpolate(s1, s2, lastValid.second, lastValid.first);
-  }
-
   si_->freeState(start_interp);
-  si_->freeState(end_interp);
+
   return is_valid;
 }
 
