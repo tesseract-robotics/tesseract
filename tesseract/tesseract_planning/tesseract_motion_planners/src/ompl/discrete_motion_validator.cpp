@@ -36,7 +36,8 @@ namespace tesseract_motion_planners
 {
 DiscreteMotionValidator::DiscreteMotionValidator(const ompl::base::SpaceInformationPtr& space_info,
                                                  tesseract_environment::Environment::ConstPtr env,
-                                                 tesseract_kinematics::ForwardKinematics::ConstPtr kin)
+                                                 tesseract_kinematics::ForwardKinematics::ConstPtr kin,
+                                                 double collision_safety_margin)
   : MotionValidator(space_info), env_(std::move(env)), kin_(std::move(kin))
 {
   joints_ = kin_->getJointNames();
@@ -49,7 +50,7 @@ DiscreteMotionValidator::DiscreteMotionValidator(const ompl::base::SpaceInformat
 
   contact_manager_ = env_->getDiscreteContactManager();
   contact_manager_->setActiveCollisionObjects(links_);
-  contact_manager_->setContactDistanceThreshold(0);
+  contact_manager_->setContactDistanceThreshold(collision_safety_margin);
 }
 
 bool DiscreteMotionValidator::checkMotion(const ompl::base::State* s1, const ompl::base::State* s2) const
