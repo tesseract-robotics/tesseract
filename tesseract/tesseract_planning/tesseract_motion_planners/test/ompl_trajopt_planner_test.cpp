@@ -63,6 +63,8 @@ using namespace tesseract_kinematics;
 using namespace tesseract_motion_planners;
 
 const static int SEED = 1;
+const static std::vector<double> start_state = { -0.5, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
+const static std::vector<double> end_state = { 0.5, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
 
 std::string locateResource(const std::string& url)
 {
@@ -97,7 +99,7 @@ static void addBox(tesseract_environment::Environment& env)
 
   Visual::Ptr visual = std::make_shared<Visual>();
   visual->origin = Eigen::Isometry3d::Identity();
-  visual->origin.translation() = Eigen::Vector3d(0.4, 0, 0.55);
+  visual->origin.translation() = Eigen::Vector3d(0.5, 0, 0.55);
   visual->geometry = std::make_shared<tesseract_geometry::Box>(0.4, 0.001, 0.4);
   link_1.visual.push_back(visual);
 
@@ -125,16 +127,16 @@ public:
 using Implementations = ::testing::Types<ompl::geometric::SBL,
                                          ompl::geometric::PRM,
                                          ompl::geometric::PRMstar,
-                                         ompl::geometric::EST,
-                                         ompl::geometric::RRT,
-                                         ompl::geometric::RRTConnect,
-                                         ompl::geometric::RRTstar,
-                                         // ompl::geometric::SPARS,
                                          ompl::geometric::LazyPRMstar,
-                                         ompl::geometric::TRRT,
+                                         ompl::geometric::EST,
                                          ompl::geometric::LBKPIECE1,
                                          ompl::geometric::BKPIECE1,
-                                         ompl::geometric::KPIECE1>;
+                                         ompl::geometric::KPIECE1,
+                                         // ompl::geometric::RRT,
+                                         // ompl::geometric::RRTstar,
+                                         // ompl::geometric::SPARS,
+                                         // ompl::geometric::TRRT,
+                                         ompl::geometric::RRTConnect>;
 
 TYPED_TEST_CASE(OMPLTrajOptTestFixture, Implementations);
 
@@ -156,8 +158,8 @@ TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
 
   // Step 3: Create ompl planner config and populate it
   auto kin = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
-  std::vector<double> swp = { -1.2, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
-  std::vector<double> ewp = { 1.2, 0.2762, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
+  std::vector<double> swp = start_state;
+  std::vector<double> ewp = end_state;
 
   auto start = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
   auto end = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
@@ -169,11 +171,11 @@ TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
     ompl_config.end_waypoint = end;
     ompl_config.tesseract = tesseract;
     ompl_config.manipulator = "manipulator";
-    ompl_config.collision_safety_margin = 0.025;
-    ompl_config.planning_time = 20.0;
-    ompl_config.num_threads = 4;
-    ompl_config.max_solutions = 4;
-    ompl_config.longest_valid_segment_fraction = 0.005;
+    ompl_config.collision_safety_margin = 0.02;
+    ompl_config.planning_time = 5.0;
+    ompl_config.num_threads = 2;
+    ompl_config.max_solutions = 2;
+    ompl_config.longest_valid_segment_fraction = 0.01;
 
     ompl_config.collision_continuous = true;
     ompl_config.collision_check = true;
@@ -190,7 +192,7 @@ TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
 
     trajopt_config.collision_check = true;
     trajopt_config.collision_continuous = true;
-    trajopt_config.collision_safety_margin = 0.015;
+    trajopt_config.collision_safety_margin = 0.02;
 
     trajopt_config.smooth_velocities = true;
     trajopt_config.smooth_jerks = true;

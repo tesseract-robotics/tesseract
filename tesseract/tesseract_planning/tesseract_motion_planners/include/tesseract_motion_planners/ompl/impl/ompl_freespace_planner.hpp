@@ -400,12 +400,14 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
       ompl::base::MotionValidatorPtr mv;
       if (config_->collision_continuous)
       {
-        mv = std::make_shared<ContinuousMotionValidator>(simple_setup_->getSpaceInformation(), env, kin_);
+        mv = std::make_shared<ContinuousMotionValidator>(
+            simple_setup_->getSpaceInformation(), env, kin_, config_->collision_safety_margin);
         simple_setup_->getSpaceInformation()->setMotionValidator(std::move(mv));
       }
       else
       {
-        mv = std::make_shared<DiscreteMotionValidator>(simple_setup_->getSpaceInformation(), env, kin_);
+        mv = std::make_shared<DiscreteMotionValidator>(
+            simple_setup_->getSpaceInformation(), env, kin_, config_->collision_safety_margin);
         simple_setup_->getSpaceInformation()->setMotionValidator(std::move(mv));
       }
     }

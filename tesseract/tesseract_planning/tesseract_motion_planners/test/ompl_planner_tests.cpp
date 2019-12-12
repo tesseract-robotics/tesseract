@@ -62,6 +62,8 @@ using namespace tesseract_kinematics;
 using namespace tesseract_motion_planners;
 
 const static int SEED = 1;
+const static std::vector<double> start_state = { -0.5, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
+const static std::vector<double> end_state = { 0.5, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
 
 std::string locateResource(const std::string& url)
 {
@@ -96,7 +98,7 @@ static void addBox(tesseract_environment::Environment& env)
 
   Visual::Ptr visual = std::make_shared<Visual>();
   visual->origin = Eigen::Isometry3d::Identity();
-  visual->origin.translation() = Eigen::Vector3d(0.4, 0, 0.55);
+  visual->origin.translation() = Eigen::Vector3d(0.5, 0, 0.55);
   visual->geometry = std::make_shared<tesseract_geometry::Box>(0.4, 0.001, 0.4);
   link_1.visual.push_back(visual);
 
@@ -129,11 +131,11 @@ using Implementations = ::testing::Types<ompl::geometric::SBL,
                                          ompl::geometric::LBKPIECE1,
                                          ompl::geometric::BKPIECE1,
                                          ompl::geometric::KPIECE1,
-                                         ompl::geometric::RRT,
-                                         ompl::geometric::RRTConnect,
-                                         ompl::geometric::RRTstar,
+                                         // ompl::geometric::RRT,
+                                         // ompl::geometric::RRTstar,
                                          // ompl::geometric::SPARS,
-                                         ompl::geometric::TRRT>;
+                                         // ompl::geometric::TRRT,
+                                         ompl::geometric::RRTConnect>;
 
 TYPED_TEST_CASE(OMPLTestFixture, Implementations);
 
@@ -155,8 +157,8 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
 
   // Step 3: Create ompl planner config and populate it
   auto kin = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
-  std::vector<double> swp = { -1.2, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
-  std::vector<double> ewp = { 1.2, 0.2762, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
+  std::vector<double> swp = start_state;
+  std::vector<double> ewp = end_state;
 
   tesseract_motion_planners::OMPLFreespacePlannerConfig<TypeParam> ompl_config;
 
@@ -164,11 +166,11 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   ompl_config.end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
   ompl_config.tesseract = tesseract;
   ompl_config.manipulator = "manipulator";
-  ompl_config.collision_safety_margin = 0.025;
-  ompl_config.planning_time = 20.0;
-  ompl_config.num_threads = 4;
-  ompl_config.max_solutions = 4;
-  ompl_config.longest_valid_segment_fraction = 0.005;
+  ompl_config.collision_safety_margin = 0.02;
+  ompl_config.planning_time = 5.0;
+  ompl_config.num_threads = 2;
+  ompl_config.max_solutions = 2;
+  ompl_config.longest_valid_segment_fraction = 0.01;
 
   ompl_config.collision_continuous = true;
   ompl_config.collision_check = true;
@@ -198,7 +200,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   EXPECT_FALSE(status);
 
   // Check for start state in collision error
-  swp = { -1.2, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
+  swp = start_state;
   ewp = { 0, 0.7, 0.0, 0, 0.0, 0, 0.0 };
   ompl_config.start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
   ompl_config.end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
@@ -209,8 +211,8 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   EXPECT_FALSE(status);
 
   // Reset start and end waypoints
-  swp = { -1.2, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
-  ewp = { 1.2, 0.2762, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
+  swp = start_state;
+  ewp = end_state;
   ompl_config.start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
   ompl_config.end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
 }
