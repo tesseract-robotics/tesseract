@@ -237,7 +237,7 @@ bool BasicCartesianExample::run()
   tesseract_->getEnvironment()->setState(ipos);
 
   // Set Log Level
-  util::gLogLevel = util::LevelInfo;
+  util::gLogLevel = util::LevelError;
 
   // Setup Problem
   TrajOptProb::Ptr prob;
