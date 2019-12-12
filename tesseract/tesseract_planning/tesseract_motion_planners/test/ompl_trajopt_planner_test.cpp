@@ -206,7 +206,7 @@ TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
       ompl_config, std::make_shared<tesseract_motion_planners::TrajOptPlannerFreespaceConfig>(trajopt_config));
 
   tesseract_motion_planners::PlannerResponse planning_response;
-  tesseract_common::StatusCode status = this->planner.solve(planning_response, true);
+  tesseract_common::StatusCode status = this->planner.solve(planning_response);
 
   // Expect the planning to succeed
   if (!status)

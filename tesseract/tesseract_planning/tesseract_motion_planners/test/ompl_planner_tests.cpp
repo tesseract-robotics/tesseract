@@ -181,7 +181,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   this->ompl_planner.setConfiguration(ompl_config);
 
   tesseract_motion_planners::PlannerResponse ompl_planning_response;
-  tesseract_common::StatusCode status = this->ompl_planner.solve(ompl_planning_response, true);
+  tesseract_common::StatusCode status = this->ompl_planner.solve(ompl_planning_response);
 
   if (!status)
   {
@@ -195,7 +195,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   ompl_config.start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
 
   this->ompl_planner.setConfiguration(ompl_config);
-  status = this->ompl_planner.solve(ompl_planning_response, true);
+  status = this->ompl_planner.solve(ompl_planning_response);
 
   EXPECT_FALSE(status);
 
@@ -206,7 +206,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   ompl_config.end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
 
   this->ompl_planner.setConfiguration(ompl_config);
-  status = this->ompl_planner.solve(ompl_planning_response, true);
+  status = this->ompl_planner.solve(ompl_planning_response);
 
   EXPECT_FALSE(status);
 

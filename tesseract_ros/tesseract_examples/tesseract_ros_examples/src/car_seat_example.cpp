@@ -360,7 +360,7 @@ bool CarSeatExample::run()
   tesseract_->getEnvironment()->setState(saved_positions_["Home"]);
 
   // Set Log Level
-  util::gLogLevel = util::LevelInfo;
+  util::gLogLevel = util::LevelError;
 
   // Solve Trajectory
   ROS_INFO("Car Seat Demo Started");

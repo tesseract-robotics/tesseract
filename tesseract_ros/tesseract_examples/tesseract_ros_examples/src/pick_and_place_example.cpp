@@ -63,7 +63,7 @@ namespace tesseract_ros_examples
 bool PickAndPlaceExample::run()
 {
   // Set Log Level
-  util::gLogLevel = util::LevelInfo;
+  util::gLogLevel = util::LevelError;
 
   /////////////
   /// SETUP ///
