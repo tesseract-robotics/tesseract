@@ -117,6 +117,7 @@ private Q_SLOTS:
   void changedJointMarkerScale();
   void changedJointManipulationEnabled();
   void clickedResetToCurrentState();
+  void userInputJointValuesChanged();
   void markerFeedback(const std::string& reference_frame,
                       const Eigen::Isometry3d& transform,
                       const Eigen::Vector3d& mouse_point,
@@ -165,6 +166,11 @@ protected:
   rviz::FloatProperty* joint_marker_scale_property_;
   rviz::EnumProperty* tcp_property_;
   rviz::Property* joint_values_property_;
+
+  void updateEnvironmentVisualization();
+  void updateCartesianMarkerVisualization();
+  void udpateJointMarkerVisualization();
+  void publishJointStates();
 };
 }  // namespace tesseract_rviz
 
