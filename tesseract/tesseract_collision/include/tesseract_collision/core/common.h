@@ -306,9 +306,12 @@ inline bool writeSimplePlyFile(const std::string& path,
   myfile << "property double x\n";
   myfile << "property double y\n";
   myfile << "property double z\n";
-  myfile << "property uchar red\n";
-  myfile << "property uchar green\n";
-  myfile << "property uchar blue\n";
+  if (!vectices_color.empty())
+  {
+    myfile << "property uchar red\n";
+    myfile << "property uchar green\n";
+    myfile << "property uchar blue\n";
+  }
   myfile << "element face " << num_faces << "\n";
   myfile << "property list uchar uint vertex_indices\n";
   myfile << "end_header\n";
@@ -316,11 +319,10 @@ inline bool writeSimplePlyFile(const std::string& path,
   // Add vertices
   if (vectices_color.empty())
   {
-    Eigen::Vector3i default_color(100, 100, 100);
     for (const auto& v : vertices)
     {
       myfile << std::fixed << std::setprecision(std::numeric_limits<double>::digits10 + 1) << v[0] << " " << v[1] << " "
-             << v[2] << " " << default_color[0] << " " << default_color[1] << " " << default_color[2] << "\n";
+             << v[2] << "\n";
     }
   }
   else if (vectices_color.size() == 1)
