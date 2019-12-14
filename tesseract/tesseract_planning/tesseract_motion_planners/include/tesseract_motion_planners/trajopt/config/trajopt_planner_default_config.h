@@ -110,6 +110,10 @@ struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
   bool smooth_jerks = true;
   /** @brief This default to all ones, but allows you to weight different joints */
   Eigen::VectorXd jerk_coeff;
+  /** @brief If true, applies a cost to avoid kinematic singularities */
+  bool avoid_singularity = true;
+  /** @brief Optimization weight associated with kinematic singularity avoidance */
+  double avoid_singularity_coeff = 5.0;
 
   /** @brief Error function that is set as a constraint for each timestep.
    *
