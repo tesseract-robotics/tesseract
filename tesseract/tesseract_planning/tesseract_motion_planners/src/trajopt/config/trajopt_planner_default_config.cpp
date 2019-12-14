@@ -258,6 +258,13 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerDefaultConfig::g
     }
   }
 
+  // Avoid singularity
+  if (avoid_singularity)
+  {
+    trajopt::TermInfo::Ptr ti = createAvoidSingularityTermInfo(pci.basic_info.n_steps, link, avoid_singularity_coeff);
+    pci.cost_infos.push_back(ti);
+  }
+
   return std::make_shared<trajopt::ProblemConstructionInfo>(pci);
 }
 

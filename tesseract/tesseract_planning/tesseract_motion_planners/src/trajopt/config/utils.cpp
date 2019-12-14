@@ -334,4 +334,18 @@ trajopt::TermInfo::Ptr createUserDefinedTermInfo(int n_steps,
   return ef;
 }
 
+trajopt::TermInfo::Ptr
+createAvoidSingularityTermInfo(const int n_steps, const std::string& link, const double coeff, const std::string& name)
+{
+  auto as = std::make_shared<trajopt::AvoidSingularityTermInfo>();
+  as->term_type = trajopt::TT_COST;
+  as->link = link;
+  as->first_step = 0;
+  as->last_step = n_steps - 1;
+  as->coeffs = std::vector<double>(1, coeff);
+  as->name = name;
+
+  return as;
+}
+
 }  // namespace tesseract_motion_planners
