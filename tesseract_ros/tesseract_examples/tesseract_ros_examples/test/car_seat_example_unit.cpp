@@ -8,7 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract_ros_examples;
 
-TEST(TesseractROSExamples, CarSeatCppExampleUnit)
+TEST(TesseractROSExamples, CarSeatCppExampleUnit)  // NOLINT
 {
   ros::NodeHandle nh;
   CarSeatExample example(nh, false, false);

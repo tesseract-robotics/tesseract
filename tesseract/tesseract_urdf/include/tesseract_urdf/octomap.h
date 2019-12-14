@@ -111,9 +111,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& 
   bool prune = false;
   xml_element->QueryBoolAttribute("prune", &prune);
 
-  const tinyxml2::XMLElement* pcd_element = xml_element->FirstChildElement("point_cloud");
   const tinyxml2::XMLElement* octree_element = xml_element->FirstChildElement("octree");
-
   if (octree_element != nullptr)
   {
     auto status = parseOctree(octree, octree_element, locator, sub_type, prune, version);
@@ -123,7 +121,9 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Octree::Ptr& 
 
     return std::make_shared<tesseract_common::StatusCode>(OctomapStatusCategory::Success, status_cat);
   }
+
 #ifdef TESSERACT_PARSE_POINT_CLOUDS
+  const tinyxml2::XMLElement* pcd_element = xml_element->FirstChildElement("point_cloud");
   if (pcd_element != nullptr)
   {
     auto status = parsePointCloud(octree, pcd_element, locator, sub_type, prune, version);

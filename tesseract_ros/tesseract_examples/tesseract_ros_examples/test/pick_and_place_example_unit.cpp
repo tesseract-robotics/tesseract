@@ -8,7 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract_ros_examples;
 
-TEST(TesseractROSExamples, PickAndPlaceCppExampleUnit)
+TEST(TesseractROSExamples, PickAndPlaceCppExampleUnit)  // NOLINT
 {
   ros::NodeHandle nh;
   PickAndPlaceExample example(nh, false, false, 5, false);

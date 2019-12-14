@@ -30,13 +30,3 @@ install(DIRECTORY include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
  )
-
-#option(ENABLE_TESTS "Enable tests" OFF)
-#if (${ENABLE_TESTS})
-#  enable_testing()
-#  add_custom_target(run_tests ALL
-#      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-#      COMMAND ${CMAKE_CTEST_COMMAND} -V -O "/tmp/${PROJECT_NAME}_ctest.log" -C $<CONFIGURATION>)
-
-#  add_subdirectory(test)
-#endif()

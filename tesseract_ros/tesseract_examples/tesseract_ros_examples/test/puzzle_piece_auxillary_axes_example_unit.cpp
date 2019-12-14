@@ -8,7 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract_ros_examples;
 
-TEST(TesseractROSExamples, PuzzlePieceAuxillaryAxesCppExampleUnit)
+TEST(TesseractROSExamples, PuzzlePieceAuxillaryAxesCppExampleUnit)  // NOLINT
 {
   ros::NodeHandle nh;
   PuzzlePieceAuxillaryAxesExample example(nh, false, false);

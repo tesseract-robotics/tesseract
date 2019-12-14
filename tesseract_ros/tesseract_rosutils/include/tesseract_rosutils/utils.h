@@ -1397,7 +1397,7 @@ inline bool processMsg(tesseract_environment::Environment& env, const tesseract_
     return false;
 
   // Only add new commands to environment
-  if (env.getRevision() < state_msg.revision)
+  if (env.getRevision() < static_cast<int>(state_msg.revision))
   {
     std::vector<tesseract_msgs::EnvironmentCommand> new_commands;
     new_commands.insert(new_commands.end(),
@@ -1427,10 +1427,10 @@ inline void toMsg(tesseract_msgs::ContactResult& contact_result_msg,
   contact_result_msg.distance = contact_result.distance;
   contact_result_msg.link_names[0] = contact_result.link_names[0];
   contact_result_msg.link_names[1] = contact_result.link_names[1];
-  contact_result_msg.shape_id[0] = contact_result.shape_id[0];
-  contact_result_msg.shape_id[1] = contact_result.shape_id[1];
-  contact_result_msg.subshape_id[0] = contact_result.subshape_id[0];
-  contact_result_msg.subshape_id[1] = contact_result.subshape_id[1];
+  contact_result_msg.shape_id[0] = static_cast<size_t>(contact_result.shape_id[0]);
+  contact_result_msg.shape_id[1] = static_cast<size_t>(contact_result.shape_id[1]);
+  contact_result_msg.subshape_id[0] = static_cast<size_t>(contact_result.subshape_id[0]);
+  contact_result_msg.subshape_id[1] = static_cast<size_t>(contact_result.subshape_id[1]);
   contact_result_msg.normal.x = contact_result.normal[0];
   contact_result_msg.normal.y = contact_result.normal[1];
   contact_result_msg.normal.z = contact_result.normal[2];
@@ -1500,10 +1500,10 @@ inline bool toMsg(sensor_msgs::JointState& joint_state, const tesseract_motion_p
     {
       const tesseract_motion_planners::JointWaypoint& joint_wp =
           static_cast<const tesseract_motion_planners::JointWaypoint&>(waypoint);
-      assert(joint_wp.getNames().size() == joint_wp.getPositions().size());
+      assert(static_cast<long>(joint_wp.getNames().size()) == joint_wp.getPositions().size());
       for (int i = 0; i < joint_wp.getPositions().size(); ++i)
       {
-        joint_state.name.push_back(joint_wp.getNames()[i]);
+        joint_state.name.push_back(joint_wp.getNames()[static_cast<size_t>(i)]);
         joint_state.position.push_back(joint_wp.getPositions()[i]);
       }
       return true;
@@ -1512,10 +1512,10 @@ inline bool toMsg(sensor_msgs::JointState& joint_state, const tesseract_motion_p
     {
       const tesseract_motion_planners::JointTolerancedWaypoint& joint_wp =
           static_cast<const tesseract_motion_planners::JointTolerancedWaypoint&>(waypoint);
-      assert(joint_wp.getNames().size() == joint_wp.getPositions().size());
+      assert(static_cast<long>(joint_wp.getNames().size()) == joint_wp.getPositions().size());
       for (int i = 0; i < joint_wp.getPositions().size(); ++i)
       {
-        joint_state.name.push_back(joint_wp.getNames()[i]);
+        joint_state.name.push_back(joint_wp.getNames()[static_cast<size_t>(i)]);
         joint_state.position.push_back(joint_wp.getPositions()[i]);
       }
       return true;
