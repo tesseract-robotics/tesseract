@@ -8,14 +8,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract_ros_examples;
 
-TEST(TesseractROSExamples, BasicCartesianCppExampleUnit)
+TEST(TesseractROSExamples, BasicCartesianCppExampleUnit)  // NOLINT
 {
   ros::NodeHandle nh;
   BasicCartesianExample example(nh, false, false, 5, "cpp");
   EXPECT_TRUE(example.run());
 }
 
-TEST(TesseractROSExamples, BasicCartesianJsonExampleUnit)
+TEST(TesseractROSExamples, BasicCartesianJsonExampleUnit)  // NOLINT
 {
   ros::NodeHandle nh;
   BasicCartesianExample example(nh, false, false, 5, "json");

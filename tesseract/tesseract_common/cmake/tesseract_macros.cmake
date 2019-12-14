@@ -38,21 +38,19 @@ macro(tesseract_target_compile_options target)
   endif()
 
   list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_14 CXX_FEATURE_FOUND)
-  if (NOT ENABLE_TESTS)
+  if (NOT TESSERACT_ENABLE_TESTING)
     set(warning_flags -Wall -Wextra -Wconversion -Wsign-conversion -Wno-sign-compare)
   else()
-    set(warning_flags -Wall -Wextra -Wconversion -Wsign-conversion -Wno-sign-compare) # -fsanitize=bounds)
+    set(warning_flags -Werror=all -Werror=extra -Werror=conversion -Werror=sign-conversion -Wno-sign-compare)
   endif()
 
   if (ARG_INTERFACE)
-    target_compile_options("${target}" INTERFACE ${warning_flags})
-
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
       if(CXX_FEATURE_FOUND EQUAL "-1")
-        target_compile_options("${target}" INTERFACE -std=c++14 -mno-avx)
+        target_compile_options("${target}" INTERFACE -std=c++14 -mno-avx ${warning_flags})
       else()
         target_compile_features("${target}" INTERFACE cxx_std_14)
-        target_compile_options("${target}" INTERFACE -mno-avx)
+        target_compile_options("${target}" INTERFACE -mno-avx ${warning_flags})
       endif()
     else()
       message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
@@ -71,14 +69,12 @@ macro(tesseract_target_compile_options target)
       message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
     endif()
   elseif(ARG_PRIVATE)
-    target_compile_options("${target}" PRIVATE ${warning_flags})
-
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
       if(CXX_FEATURE_FOUND EQUAL "-1")
-        target_compile_options("${target}" PRIVATE -std=c++14 -mno-avx)
+        target_compile_options("${target}" PRIVATE -std=c++14 -mno-avx ${warning_flags})
       else()
         target_compile_features("${target}" PRIVATE cxx_std_14)
-        target_compile_options("${target}" PRIVATE -mno-avx)
+        target_compile_options("${target}" PRIVATE -mno-avx ${warning_flags})
       endif()
     else()
       message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
@@ -86,7 +82,7 @@ macro(tesseract_target_compile_options target)
   endif()
 endmacro()
 
-# Add clang-tidy to a target if ENABLE_CLANG_TIDY or ENABLE_TESTS is enabled
+# Add clang-tidy to a target if TESSERACT_ENABLE_CLANG_TIDY or TESSERACT_ENABLE_TESTING is enabled
 # Usage: tesseract_clang_tidy(Target) or tesseract_clang_tidy(Target true) or tesseract_clang_tidy(Target false)
 #    * tesseract_clang_tidy(Target) adds clang tidy with warnings as errors
 #    * tesseract_clang_tidy(Target true) adds clang tidy with warnings as errors
@@ -98,7 +94,7 @@ macro(tesseract_clang_tidy target)
 
   # Add clang tidy
   if (NOT ${${target}_type} STREQUAL "INTERFACE_LIBRARY")
-    if (ENABLE_CLANG_TIDY OR ENABLE_TESTS)
+    if (TESSERACT_ENABLE_CLANG_TIDY OR TESSERACT_ENABLE_TESTING)
       find_program(CLANG_TIDY_EXE NAMES "clang-tidy" DOC "Path to clang-tidy executable")
       if(NOT CLANG_TIDY_EXE)
         message(WARNING "clang-tidy not found.")
@@ -156,6 +152,18 @@ macro(tesseract_gtest_discover_tests target)
     gtest_add_tests(${target} "" AUTO)
   else()
     gtest_discover_tests(${target})
+  endif()
+endmacro()
+
+# This macro add a custom target that will run the tests after they are finished building.
+# This is added to allow ability do disable the running of tests as part of the build for CI which calls make test
+macro(tesseract_add_run_tests_target)
+  if(TESSERACT_ENABLE_RUN_TESTING)
+    add_custom_target(run_tests ALL
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMAND ${CMAKE_CTEST_COMMAND} -V -O "/tmp/${PROJECT_NAME}_ctest.log" -C $<CONFIGURATION>)
+  else()
+    add_custom_target(run_tests)
   endif()
 endmacro()
 

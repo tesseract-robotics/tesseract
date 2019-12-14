@@ -50,6 +50,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/conversions.h>
 #include <tesseract/tesseract.h>
 #include <tesseract_environment/core/utils.h>
+#include <trajopt_utils/logging.hpp>
 
 #include <tesseract_motion_planners/hybrid/ompl_trajopt_freespace_planner.h>
 #include <tesseract_motion_planners/trajopt/config/trajopt_planner_freespace_config.h>
@@ -144,6 +145,7 @@ TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
 {
   EXPECT_EQ(ompl::RNG::getSeed(), SEED) << "Randomization seed does not match expected: " << ompl::RNG::getSeed()
                                         << " vs. " << SEED;
+  util::gLogLevel = util::LevelDebug;
 
   // Step 1: Load scene and srdf
   tesseract_scene_graph::ResourceLocator::Ptr locator =

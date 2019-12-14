@@ -59,7 +59,7 @@ void makeArrow(InteractiveMarkerControl& control, float pos)
   scale.y = control.getSize() * 0.25f;  // aleeper: changed from 0.5 due to Rviz fix
   scale.z = control.getSize() * 0.2f;
 
-  float dist = fabs(pos);
+  float dist = std::abs(pos);
   float dir = pos > 0 ? 1 : -1;
 
   float inner = dist;
