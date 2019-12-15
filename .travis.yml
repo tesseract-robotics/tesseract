@@ -1,14 +1,8 @@
 # This config file for Travis CI
 sudo: required
-dist: trusty
-language: generic
 
 services:
   - docker
-
-cache:
-  directories:
-    - $HOME/.ccache
 
 git:
   quiet: true
@@ -31,16 +25,70 @@ env:
     - AFTER_SCRIPT='catkin test -w $CATKIN_WORKSPACE --no-deps tesseract_collision tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf'
     - PKGS_DOWNSTREAM='tesseract_ros_examples tesseract_rosutils'
 
-matrix:
+jobs:
   include:
-    - env: ROS_DISTRO=melodic CLANG_FORMAT_CHECK=file CLANG_FORMAT_VERSION=8 AFTER_SCRIPT=""
-    - env: ROS_DISTRO=kinetic DOCKER_IMAGE=lharmstrong/tesseract:kinetic
-    - env: ROS_DISTRO=melodic DOCKER_IMAGE=lharmstrong/tesseract:melodic ROS_PARALLEL_JOBS=-j4 ROS_PARALLEL_TEST_JOBS=-j4
-    - env: ROS_DISTRO=kinetic ROS_REPO=ros-shadow-fixed DOCKER_IMAGE=lharmstrong/tesseract:kinetic
-    - env: ROS_DISTRO=melodic ROS_REPO=ros-shadow-fixed DOCKER_IMAGE=lharmstrong/tesseract:melodic ROS_PARALLEL_JOBS=-j4 ROS_PARALLEL_TEST_JOBS=-j4
+    - os: linux
+      dist: xenial
+      language: cpp
+      env:
+      - ROS_DISTRO="melodic"
+      - CLANG_FORMAT_CHECK=file
+      - CLANG_FORMAT_VERSION=8
+      - DOCKER_IMAGE=lharmstrong/tesseract:melodic
+      - AFTER_SCRIPT=""
+      - BADGE=clang-format
+      cache:
+        directories:
+          - $HOME/.ccache
+    - os: linux
+      dist: trusty
+      language: cpp
+      env:
+      - ROS_DISTRO="kinetic"
+      - DOCKER_IMAGE=lharmstrong/tesseract:kinetic
+      - BADGE=trusty
+      cache:
+        directories:
+          - $HOME/.ccache
+    - os: linux
+      dist: xenial
+      language: cpp
+      env:
+      - ROS_DISTRO="melodic"
+      - DOCKER_IMAGE=lharmstrong/tesseract:melodic
+      - ROS_PARALLEL_JOBS=-j4
+      - ROS_PARALLEL_TEST_JOBS=-j4
+      - BADGE=xenial
+      cache:
+        directories:
+          - $HOME/.ccache
+    - os: linux
+      dist: trusty
+      language: cpp
+      env:
+      - ROS_DISTRO="kinetic"
+      - ROS_REPO=ros-shadow-fixed
+      - DOCKER_IMAGE=lharmstrong/tesseract:kinetic
+      - BADGE=trusty-shadow
+      cache:
+        directories:
+          - $HOME/.ccache
+    - os: linux
+      dist: xenial
+      language: cpp
+      env:
+      - ROS_DISTRO="melodic"
+      - ROS_REPO=ros-shadow-fixed
+      - DOCKER_IMAGE=lharmstrong/tesseract:melodic
+      - BADGE=xenial-shadow
+      - ROS_PARALLEL_JOBS=-j4
+      - ROS_PARALLEL_TEST_JOBS=-j4
+      cache:
+        directories:
+          - $HOME/.ccache
   allow_failures:
-    - env: ROS_DISTRO=kinetic ROS_REPO=ros-shadow-fixed DOCKER_IMAGE=lharmstrong/tesseract:kinetic
-    - env: ROS_DISTRO=melodic ROS_REPO=ros-shadow-fixed DOCKER_IMAGE=lharmstrong/tesseract:melodic ROS_PARALLEL_JOBS=-j4 ROS_PARALLEL_TEST_JOBS=-j4
+    - env: ROS_DISTRO=kinetic ROS_REPO=ros-shadow-fixed DOCKER_IMAGE=lharmstrong/tesseract:kinetic BADGE=trusty-shadow
+    - env: ROS_DISTRO=melodic ROS_REPO=ros-shadow-fixed DOCKER_IMAGE=lharmstrong/tesseract:melodic ROS_PARALLEL_JOBS=-j4 ROS_PARALLEL_TEST_JOBS=-j4 BADGE=xenial-shadow
 
 install:
   - git clone --quiet --depth=1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
