@@ -14,7 +14,11 @@ public:
   /** @brief Construct a basic planner */
   DescartesTrajOptArrayPlanner(std::string name = "DESCARTES_TRAJOPT_ARRAY");
 
-  ~DescartesTrajOptArrayPlanner() {}
+  ~DescartesTrajOptArrayPlanner() override = default;
+  DescartesTrajOptArrayPlanner(const DescartesTrajOptArrayPlanner&) = default;
+  DescartesTrajOptArrayPlanner& operator=(const DescartesTrajOptArrayPlanner&) = default;
+  DescartesTrajOptArrayPlanner(DescartesTrajOptArrayPlanner&&) noexcept = default;
+  DescartesTrajOptArrayPlanner& operator=(DescartesTrajOptArrayPlanner&&) noexcept = default;
 
   /**
    * @brief Set the configuration for the planner
@@ -34,7 +38,7 @@ public:
    * to console
    * @return true if optimization complete
    */
-  tesseract_common::StatusCode solve(PlannerResponse& response, const bool verbose = false) override;
+  tesseract_common::StatusCode solve(PlannerResponse& response, bool verbose = false) override;
 
   bool terminate() override;
 

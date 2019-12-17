@@ -33,3 +33,4 @@ tesseract_msgs/Mesh mesh
 
 # OCTREE
 octomap_msgs/Octomap octomap
+tesseract_msgs/OctreeSubType octomap_sub_type

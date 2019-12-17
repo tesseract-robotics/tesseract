@@ -57,6 +57,10 @@ public:
   using ConstPtr = std::shared_ptr<const ProcessPlanner>;
 
   virtual ~ProcessPlanner() = default;
+  ProcessPlanner(const ProcessPlanner&) = default;
+  ProcessPlanner& operator=(const ProcessPlanner&) = default;
+  ProcessPlanner(ProcessPlanner&&) = default;
+  ProcessPlanner& operator=(ProcessPlanner&&) = default;
 
   /**
    * @brief Given a tool path generate process specific plan

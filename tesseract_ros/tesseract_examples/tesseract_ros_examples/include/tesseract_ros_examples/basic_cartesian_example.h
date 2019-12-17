@@ -43,11 +43,15 @@ namespace tesseract_ros_examples
 class BasicCartesianExample : public Example
 {
 public:
-  BasicCartesianExample(ros::NodeHandle nh, bool plotting, bool rviz, int steps, std::string method)
-    : Example(plotting, rviz), nh_(nh), steps_(steps), method_(method)
+  BasicCartesianExample(const ros::NodeHandle& nh, bool plotting, bool rviz, int steps, std::string method)
+    : Example(plotting, rviz), nh_(nh), steps_(steps), method_(std::move(method))
   {
   }
-  ~BasicCartesianExample() = default;
+  ~BasicCartesianExample() override = default;
+  BasicCartesianExample(const BasicCartesianExample&) = default;
+  BasicCartesianExample& operator=(const BasicCartesianExample&) = default;
+  BasicCartesianExample(BasicCartesianExample&&) = default;
+  BasicCartesianExample& operator=(BasicCartesianExample&&) = default;
 
   bool run() override;
 

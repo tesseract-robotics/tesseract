@@ -100,7 +100,7 @@ bool DescartesRobotSampler<FloatType>::ikAt(std::vector<FloatType>& solution_set
     return false;
 
   Eigen::VectorXd robot_solution_set;
-  int robot_dof = static_cast<int>(robot_kinematics_->numJoints());
+  auto robot_dof = static_cast<int>(robot_kinematics_->numJoints());
   if (!robot_kinematics_->calcInvKin(robot_solution_set, target_pose, ik_seed_))
     return false;
 

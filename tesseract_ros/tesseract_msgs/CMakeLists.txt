@@ -47,6 +47,7 @@ add_message_files(
     ProcessPlanPath.msg
     ProcessPlanSegment.msg
     ProcessPlanTransitionPair.msg
+    OctreeSubType.msg
 )
 
 add_service_files(

@@ -405,7 +405,7 @@ private:
     template <class u, class g>
     void discover_vertex(u vertex, g graph)
     {
-      int num_in_edges = static_cast<int>(boost::in_degree(vertex, graph));
+      auto num_in_edges = static_cast<int>(boost::in_degree(vertex, graph));
 
       if (num_in_edges > 1)
       {

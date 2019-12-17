@@ -142,7 +142,7 @@ parse(std::vector<tesseract_scene_graph::Visual::Ptr>& visuals,
   else
   {
     int i = 0;
-    for (auto g : geometries)
+    for (const auto& g : geometries)
     {
       auto visual = std::make_shared<tesseract_scene_graph::Visual>();
 

@@ -179,7 +179,7 @@ public:
                                                                           link_names,
                                                                           dist_results,
                                                                           safety_distances);
-    if (dist_results.size() > 0)
+    if (!dist_results.empty())
     {
       collisions_pub_.publish(msg);
     }
@@ -371,8 +371,8 @@ private:
   ros::Publisher arrows_pub_;                        /**< Used for publishing arrow markers */
   ros::Publisher axes_pub_;                          /**< Used for publishing axis markers */
 };
-typedef std::shared_ptr<ROSPlotting> ROSPlottingPtr;
-typedef std::shared_ptr<const ROSPlotting> ROSPlottingConstPtr;
+using ROSPlottingPtr = std::shared_ptr<ROSPlotting>;
+using ROSPlottingConstPtr = std::shared_ptr<const ROSPlotting>;
 }  // namespace tesseract_rosutils
 
 #endif

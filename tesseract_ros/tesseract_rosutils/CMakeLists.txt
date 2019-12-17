@@ -68,8 +68,9 @@ install(DIRECTORY include/${PROJECT_NAME}/
  )
 
 if(CATKIN_ENABLE_TESTING)
+  find_package(GTest REQUIRED)
   catkin_add_gtest(${PROJECT_NAME}_unit test/tesseract_rosutils_unit.cpp)
-  target_link_libraries(${PROJECT_NAME}_unit tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_process_planners tesseract::tesseract_motion_planners_core ${catkin_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME}_unit GTest::GTest GTest::Main tesseract::tesseract_scene_graph tesseract::tesseract_geometry tesseract::tesseract_collision_core tesseract::tesseract_visualization tesseract::tesseract_common tesseract::tesseract_process_planners tesseract::tesseract_motion_planners_core ${catkin_LIBRARIES})
   tesseract_target_compile_options(${PROJECT_NAME}_unit PRIVATE)
   tesseract_clang_tidy(${PROJECT_NAME}_unit)
   target_include_directories(${PROJECT_NAME}_unit PRIVATE

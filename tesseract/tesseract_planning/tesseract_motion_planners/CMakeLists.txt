@@ -48,6 +48,7 @@ add_library(${PROJECT_NAME}_ompl_freespace SHARED
   src/ompl/continuous_motion_validator.cpp
   src/ompl/discrete_motion_validator.cpp
   src/ompl/weighted_real_vector_state_sampler.cpp
+  src/ompl/ompl_freespace_planner_status_category.cpp
 )
 target_link_libraries(${PROJECT_NAME}_ompl_freespace PUBLIC ${PROJECT_NAME}_core ${OMPL_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_ompl_freespace PUBLIC)
@@ -73,7 +74,8 @@ add_library(${PROJECT_NAME}_descartes SHARED
   src/descartes/descartes_collision.cpp
   src/descartes/descartes_robot_sampler.cpp
   src/descartes/descartes_robot_positioner_sampler.cpp
-  src/descartes/descartes_external_positioner_sampler.cpp)
+  src/descartes/descartes_external_positioner_sampler.cpp
+  src/descartes/descartes_motion_planner_status_category.cpp)
 target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME}_core descartes::descartes_light descartes::descartes_samplers descartes::descartes_opw)
 tesseract_target_compile_options(${PROJECT_NAME}_descartes PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_descartes)

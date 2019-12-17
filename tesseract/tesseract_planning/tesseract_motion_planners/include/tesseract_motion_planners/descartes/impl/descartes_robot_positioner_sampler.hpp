@@ -72,7 +72,7 @@ template <typename FloatType>
 bool DescartesRobotPositionerSampler<FloatType>::sample(std::vector<FloatType>& solution_set)
 {
   double distance = std::numeric_limits<double>::min();
-  int num_joints = static_cast<int>(positioner_kinematics_->numJoints());
+  auto num_joints = static_cast<int>(positioner_kinematics_->numJoints());
 
   // For the kinematics object to be sampled we need to create the joint values at the sampling resolution
   // The sampled joints results are stored in dof_range[joint index] to be used by the nested_ik function
@@ -152,7 +152,7 @@ bool DescartesRobotPositionerSampler<FloatType>::ikAt(
     return false;
 
   Eigen::VectorXd robot_solution_set;
-  int robot_dof = static_cast<int>(robot_kinematics_->numJoints());
+  auto robot_dof = static_cast<int>(robot_kinematics_->numJoints());
   if (!robot_kinematics_->calcInvKin(robot_solution_set, robot_target_pose, ik_seed_))
     return false;
 
@@ -196,7 +196,7 @@ bool DescartesRobotPositionerSampler<FloatType>::getBestSolution(std::vector<Flo
                                                                  const std::vector<Eigen::VectorXd>& dof_range)
 {
   double distance = std::numeric_limits<double>::min();
-  int num_joints = static_cast<int>(positioner_kinematics_->numJoints());
+  auto num_joints = static_cast<int>(positioner_kinematics_->numJoints());
   for (const auto& sp : target_poses)
   {
     // Tool pose in rail coordinate system

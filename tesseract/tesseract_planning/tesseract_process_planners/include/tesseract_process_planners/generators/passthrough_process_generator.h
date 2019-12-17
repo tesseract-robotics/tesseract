@@ -8,8 +8,12 @@ namespace tesseract_process_planners
 class PassthroughProcessGenerator : public ProcessStepGenerator
 {
 public:
-  PassthroughProcessGenerator() {}
-  ~PassthroughProcessGenerator() = default;
+  PassthroughProcessGenerator() = default;
+  ~PassthroughProcessGenerator() override = default;
+  PassthroughProcessGenerator(const PassthroughProcessGenerator&) = default;
+  PassthroughProcessGenerator& operator=(const PassthroughProcessGenerator&) = default;
+  PassthroughProcessGenerator(PassthroughProcessGenerator&&) = default;
+  PassthroughProcessGenerator& operator=(PassthroughProcessGenerator&&) = default;
 
   std::vector<tesseract_motion_planners::Waypoint::Ptr>
   generate(const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints,

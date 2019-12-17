@@ -9,8 +9,12 @@ namespace tesseract_process_planners
 class PassthroughTransitionGenerator : public ProcessTransitionGenerator
 {
 public:
-  PassthroughTransitionGenerator() {}
+  PassthroughTransitionGenerator() = default;
   ~PassthroughTransitionGenerator() override = default;
+  PassthroughTransitionGenerator(const PassthroughTransitionGenerator&) = default;
+  PassthroughTransitionGenerator& operator=(const PassthroughTransitionGenerator&) = default;
+  PassthroughTransitionGenerator(PassthroughTransitionGenerator&&) = default;
+  PassthroughTransitionGenerator& operator=(PassthroughTransitionGenerator&&) = default;
 
   std::vector<tesseract_motion_planners::Waypoint::Ptr>
   generate(const tesseract_motion_planners::Waypoint::Ptr& start_waypoint,

@@ -251,7 +251,7 @@ bool CurrentStateMonitor::haveCompleteState(const ros::Duration& age, std::vecto
   return result;
 }
 
-bool CurrentStateMonitor::waitForCurrentState(const ros::Time t, double wait_time) const
+bool CurrentStateMonitor::waitForCurrentState(ros::Time t, double wait_time) const
 {
   ros::WallTime start = ros::WallTime::now();
   ros::WallDuration elapsed(0, 0);
