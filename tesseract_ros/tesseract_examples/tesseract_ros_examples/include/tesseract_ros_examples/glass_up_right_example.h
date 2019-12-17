@@ -44,11 +44,20 @@ namespace tesseract_ros_examples
 class GlassUpRightExample : public Example
 {
 public:
-  GlassUpRightExample(ros::NodeHandle nh, bool plotting, bool rviz, int steps, bool write_to_file, std::string method)
-    : Example(plotting, rviz), nh_(nh), steps_(steps), write_to_file_(write_to_file), method_(method)
+  GlassUpRightExample(const ros::NodeHandle& nh,
+                      bool plotting,
+                      bool rviz,
+                      int steps,
+                      bool write_to_file,
+                      std::string method)
+    : Example(plotting, rviz), nh_(nh), steps_(steps), write_to_file_(write_to_file), method_(std::move(method))
   {
   }
-  ~GlassUpRightExample() = default;
+  ~GlassUpRightExample() override = default;
+  GlassUpRightExample(const GlassUpRightExample&) = default;
+  GlassUpRightExample& operator=(const GlassUpRightExample&) = default;
+  GlassUpRightExample(GlassUpRightExample&&) = default;
+  GlassUpRightExample& operator=(GlassUpRightExample&&) = default;
 
   bool run() override;
 

@@ -56,7 +56,7 @@ public:
    * to console
    * @return true if optimization complete
    */
-  tesseract_common::StatusCode solve(PlannerResponse& response, const bool verbose = false) override;
+  tesseract_common::StatusCode solve(PlannerResponse& response, bool verbose = false) override;
 
   bool terminate() override;
 

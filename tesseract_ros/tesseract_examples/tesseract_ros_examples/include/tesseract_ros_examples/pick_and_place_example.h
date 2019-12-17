@@ -45,11 +45,15 @@ namespace tesseract_ros_examples
 class PickAndPlaceExample : public Example
 {
 public:
-  PickAndPlaceExample(ros::NodeHandle nh, bool plotting, bool rviz, int steps, bool write_to_file)
+  PickAndPlaceExample(const ros::NodeHandle& nh, bool plotting, bool rviz, int steps, bool write_to_file)
     : Example(plotting, rviz), nh_(nh), steps_(steps), write_to_file_(write_to_file)
   {
   }
-  ~PickAndPlaceExample() = default;
+  ~PickAndPlaceExample() override = default;
+  PickAndPlaceExample(const PickAndPlaceExample&) = default;
+  PickAndPlaceExample& operator=(const PickAndPlaceExample&) = default;
+  PickAndPlaceExample(PickAndPlaceExample&&) = default;
+  PickAndPlaceExample& operator=(PickAndPlaceExample&&) = default;
 
   bool run() override;
 

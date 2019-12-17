@@ -302,7 +302,7 @@ inline static bool isWithinLimits(const Eigen::Ref<const Eigen::Matrix<FloatType
 template <typename FloatType>
 inline std::vector<FloatType> getRedundantSolutions(const FloatType* sol, const Eigen::MatrixX2d& limits)
 {
-  int dof = static_cast<int>(limits.rows());
+  auto dof = static_cast<int>(limits.rows());
   FloatType val;
   std::vector<FloatType> redundant_sols;
   for (int i = 0; i < dof; ++i)

@@ -17,7 +17,7 @@ inline std::string locateResource(const std::string& url)
   if (url.find("package://tesseract_support") == 0)
   {
     mod_url.erase(0, strlen("package://tesseract_support"));
-    size_t pos = mod_url.find("/");
+    size_t pos = mod_url.find('/');
     if (pos == std::string::npos)
     {
       return std::string();
@@ -40,7 +40,7 @@ inline std::string locateResource(const std::string& url)
 
 template <typename ElementType>
 tesseract_common::StatusCode::Ptr
-runTest(ElementType& type, const std::string& xml_string, const std::string element_name, const int version)
+runTest(ElementType& type, const std::string& xml_string, const std::string& element_name, const int version)
 {
   tinyxml2::XMLDocument xml_doc;
   EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
@@ -60,8 +60,8 @@ runTest(ElementType& type, const std::string& xml_string, const std::string elem
 template <typename ElementType>
 tesseract_common::StatusCode::Ptr runTest(ElementType& type,
                                           const std::string& xml_string,
-                                          const std::string element_name,
-                                          tesseract_scene_graph::ResourceLocator::Ptr locator,
+                                          const std::string& element_name,
+                                          const tesseract_scene_graph::ResourceLocator::Ptr& locator,
                                           const int version,
                                           bool visual)
 {
@@ -83,8 +83,8 @@ tesseract_common::StatusCode::Ptr runTest(ElementType& type,
 template <typename ElementType>
 tesseract_common::StatusCode::Ptr runTest(ElementType& type,
                                           const std::string& xml_string,
-                                          const std::string element_name,
-                                          tesseract_scene_graph::ResourceLocator::Ptr locator,
+                                          const std::string& element_name,
+                                          const tesseract_scene_graph::ResourceLocator::Ptr& locator,
                                           const int version)
 {
   tinyxml2::XMLDocument xml_doc;
@@ -106,8 +106,8 @@ template <typename ElementType>
 tesseract_common::StatusCode::Ptr
 runTest(ElementType& type,
         const std::string& xml_string,
-        const std::string element_name,
-        tesseract_scene_graph::ResourceLocator::Ptr locator,
+        const std::string& element_name,
+        const tesseract_scene_graph::ResourceLocator::Ptr& locator,
         std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
         const int version)
 {
@@ -130,7 +130,7 @@ template <typename ElementType>
 tesseract_common::StatusCode::Ptr
 runTest(ElementType& type,
         const std::string& xml_string,
-        const std::string element_name,
+        const std::string& element_name,
         std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr>& available_materials,
         const int version,
         const bool visual)

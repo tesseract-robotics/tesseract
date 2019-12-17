@@ -47,7 +47,12 @@ public:
   using Ptr = std::shared_ptr<ResourceLocator>;
   using ConstPtr = std::shared_ptr<const ResourceLocator>;
 
+  ResourceLocator() = default;
   virtual ~ResourceLocator() = default;
+  ResourceLocator(const ResourceLocator&) = default;
+  ResourceLocator& operator=(const ResourceLocator&) = default;
+  ResourceLocator(ResourceLocator&&) = default;
+  ResourceLocator& operator=(ResourceLocator&&) = default;
 
   /**
    * @brief Locate a resource based on a URL

@@ -44,44 +44,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
-OMPLFreespacePlannerStatusCategory::OMPLFreespacePlannerStatusCategory(std::string name) : name_(name) {}
-const std::string& OMPLFreespacePlannerStatusCategory::name() const noexcept { return name_; }
-std::string OMPLFreespacePlannerStatusCategory::message(int code) const
-{
-  switch (code)
-  {
-    case IsConfigured:
-    {
-      return "Is Configured";
-    }
-    case SolutionFound:
-    {
-      return "Found valid solution";
-    }
-    case ErrorIsNotConfigured:
-    {
-      return "Planner is not configured, must call setConfiguration prior to calling solve.";
-    }
-    case ErrorFailedToParseConfig:
-    {
-      return "Failed to parse config data";
-    }
-    case ErrorFailedToFindValidSolution:
-    {
-      return "Failed to find valid solution";
-    }
-    case ErrorFoundValidSolutionInCollision:
-    {
-      return "Found valid solution, but is in collision";
-    }
-    default:
-    {
-      assert(false);
-      return "";
-    }
-  }
-}
-
 /** @brief Construct a basic planner */
 template <typename PlannerType>
 OMPLFreespacePlanner<PlannerType>::OMPLFreespacePlanner(std::string name)
@@ -99,7 +61,7 @@ bool OMPLFreespacePlanner<PlannerType>::terminate()
 }
 
 template <typename PlannerType>
-tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerResponse& response, const bool verbose)
+tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerResponse& response, bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
@@ -135,7 +97,7 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
   else
   {
     // Interpolate the path if it shouldn't be simplified and there are currently fewer states than requested
-    unsigned num_output_states = static_cast<unsigned>(config_->n_output_states);
+    auto num_output_states = static_cast<unsigned>(config_->n_output_states);
     if (simple_setup_->getSolutionPath().getStateCount() < num_output_states)
     {
       simple_setup_->getSolutionPath().interpolate(num_output_states);
@@ -265,7 +227,7 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
   const auto& limits = kin_->getLimits();
 
   // Construct the OMPL state space for this manipulator
-  ompl::base::RealVectorStateSpace* space = new ompl::base::RealVectorStateSpace();
+  auto* space = new ompl::base::RealVectorStateSpace();
   for (unsigned i = 0; i < dof; ++i)
     space->addDimension(joint_names[i], limits(i, 0), limits(i, 1));
 
@@ -402,13 +364,13 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
       {
         mv = std::make_shared<ContinuousMotionValidator>(
             simple_setup_->getSpaceInformation(), env, kin_, config_->collision_safety_margin);
-        simple_setup_->getSpaceInformation()->setMotionValidator(std::move(mv));
+        simple_setup_->getSpaceInformation()->setMotionValidator(mv);
       }
       else
       {
         mv = std::make_shared<DiscreteMotionValidator>(
             simple_setup_->getSpaceInformation(), env, kin_, config_->collision_safety_margin);
-        simple_setup_->getSpaceInformation()->setMotionValidator(std::move(mv));
+        simple_setup_->getSpaceInformation()->setMotionValidator(mv);
       }
     }
   }

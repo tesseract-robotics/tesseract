@@ -48,8 +48,15 @@ namespace tesseract_ros_examples
 class PuzzlePieceAuxillaryAxesExample : public Example
 {
 public:
-  PuzzlePieceAuxillaryAxesExample(ros::NodeHandle nh, bool plotting, bool rviz) : Example(plotting, rviz), nh_(nh) {}
-  ~PuzzlePieceAuxillaryAxesExample() = default;
+  PuzzlePieceAuxillaryAxesExample(const ros::NodeHandle& nh, bool plotting, bool rviz)
+    : Example(plotting, rviz), nh_(nh)
+  {
+  }
+  ~PuzzlePieceAuxillaryAxesExample() override = default;
+  PuzzlePieceAuxillaryAxesExample(const PuzzlePieceAuxillaryAxesExample&) = default;
+  PuzzlePieceAuxillaryAxesExample& operator=(const PuzzlePieceAuxillaryAxesExample&) = default;
+  PuzzlePieceAuxillaryAxesExample(PuzzlePieceAuxillaryAxesExample&&) = default;
+  PuzzlePieceAuxillaryAxesExample& operator=(PuzzlePieceAuxillaryAxesExample&&) = default;
 
   bool run() override;
 

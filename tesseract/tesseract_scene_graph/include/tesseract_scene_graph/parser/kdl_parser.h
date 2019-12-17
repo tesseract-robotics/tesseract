@@ -169,7 +169,7 @@ struct kdl_tree_builder : public boost::dfs_visitor<>
       inert = convert(link->inertial);
 
     // Get incomming edges
-    int num_in_edges = static_cast<int>(boost::in_degree(vertex, graph));
+    auto num_in_edges = static_cast<int>(boost::in_degree(vertex, graph));
     if (num_in_edges == 0)  // The root of the tree will have not incoming edges
       return;
 

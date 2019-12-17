@@ -46,8 +46,12 @@ namespace tesseract_ros_examples
 class PuzzlePieceExample : public Example
 {
 public:
-  PuzzlePieceExample(ros::NodeHandle nh, bool plotting, bool rviz) : Example(plotting, rviz), nh_(nh) {}
-  ~PuzzlePieceExample() = default;
+  PuzzlePieceExample(const ros::NodeHandle& nh, bool plotting, bool rviz) : Example(plotting, rviz), nh_(nh) {}
+  ~PuzzlePieceExample() override = default;
+  PuzzlePieceExample(const PuzzlePieceExample&) = default;
+  PuzzlePieceExample& operator=(const PuzzlePieceExample&) = default;
+  PuzzlePieceExample(PuzzlePieceExample&&) = default;
+  PuzzlePieceExample& operator=(PuzzlePieceExample&&) = default;
 
   bool run() override;
 

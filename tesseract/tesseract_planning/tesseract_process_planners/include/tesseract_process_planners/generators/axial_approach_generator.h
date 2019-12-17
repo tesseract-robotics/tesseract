@@ -14,6 +14,10 @@ public:
   {
   }
   ~AxialApproachGenerator() override = default;
+  AxialApproachGenerator(const AxialApproachGenerator&) = default;
+  AxialApproachGenerator& operator=(const AxialApproachGenerator&) = default;
+  AxialApproachGenerator(AxialApproachGenerator&&) = default;
+  AxialApproachGenerator& operator=(AxialApproachGenerator&&) = default;
 
   std::vector<tesseract_motion_planners::Waypoint::Ptr>
   generate(const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints,

@@ -56,7 +56,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_monitoring
 {
-typedef std::function<void(const sensor_msgs::JointStateConstPtr& joint_state)> JointStateUpdateCallback;
+using JointStateUpdateCallback = std::function<void(const sensor_msgs::JointStateConstPtr& joint_state)>;
 
 /** @class CurrentStateMonitor
     @brief Monitors the joint_states topic and tf to maintain the current state of the robot. */
@@ -81,6 +81,10 @@ public:
                       const ros::NodeHandle& nh);
 
   ~CurrentStateMonitor();
+  CurrentStateMonitor(const CurrentStateMonitor&) = delete;
+  CurrentStateMonitor& operator=(const CurrentStateMonitor&) = delete;
+  CurrentStateMonitor(CurrentStateMonitor&&) = delete;
+  CurrentStateMonitor& operator=(CurrentStateMonitor&&) = delete;
 
   /** @brief Start monitoring joint states on a particular topic
    *  @param joint_states_topic The topic name for joint states (defaults to "joint_states")
@@ -141,7 +145,7 @@ public:
   /** @brief Wait for at most \e wait_time seconds (default 1s) for a robot state more recent than t
    *  @return true on success, false if up-to-date robot state wasn't received within \e wait_time
    */
-  bool waitForCurrentState(const ros::Time t = ros::Time::now(), double wait_time = 1.0) const;
+  bool waitForCurrentState(ros::Time t = ros::Time::now(), double wait_time = 1.0) const;
 
   /** @brief Wait for at most \e wait_time seconds until the complete robot state is known.
       @return true if the full state is known */
@@ -197,8 +201,8 @@ private:
   mutable boost::condition_variable state_update_condition_;
   std::vector<JointStateUpdateCallback> update_callbacks_;
 };
-typedef std::shared_ptr<CurrentStateMonitor> CurrentStateMonitorPtr;
-typedef std::shared_ptr<const CurrentStateMonitor> CurrentStateMonitorConstPtr;
+using CurrentStateMonitorPtr = std::shared_ptr<CurrentStateMonitor>;
+using CurrentStateMonitorConstPtr = std::shared_ptr<const CurrentStateMonitor>;
 }  // namespace tesseract_monitoring
 
 #endif

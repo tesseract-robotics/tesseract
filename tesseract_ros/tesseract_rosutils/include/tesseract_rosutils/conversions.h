@@ -66,7 +66,7 @@ inline Eigen::VectorXd toEigen(const sensor_msgs::JointState& joint_state, const
  * @return WaypointPtr
  */
 inline tesseract_motion_planners::Waypoint::Ptr
-toWaypoint(const geometry_msgs::Pose& pose, Eigen::Isometry3d change_base = Eigen::Isometry3d::Identity())
+toWaypoint(const geometry_msgs::Pose& pose, const Eigen::Isometry3d& change_base = Eigen::Isometry3d::Identity())
 {
   Eigen::Isometry3d pose_eigen;
   tf::poseMsgToEigen(pose, pose_eigen);
@@ -80,7 +80,8 @@ toWaypoint(const geometry_msgs::Pose& pose, Eigen::Isometry3d change_base = Eige
  * @return std::vector<WaypointPtr>
  */
 inline std::vector<tesseract_motion_planners::Waypoint::Ptr>
-toWaypoint(const std::vector<geometry_msgs::Pose>& poses, Eigen::Isometry3d change_base = Eigen::Isometry3d::Identity())
+toWaypoint(const std::vector<geometry_msgs::Pose>& poses,
+           const Eigen::Isometry3d& change_base = Eigen::Isometry3d::Identity())
 {
   std::vector<tesseract_motion_planners::Waypoint::Ptr> waypoints;
   waypoints.reserve(poses.size());
@@ -98,7 +99,7 @@ toWaypoint(const std::vector<geometry_msgs::Pose>& poses, Eigen::Isometry3d chan
  */
 inline std::vector<std::vector<tesseract_motion_planners::Waypoint::Ptr>>
 toWaypoint(const std::vector<geometry_msgs::PoseArray>& pose_arrays,
-           Eigen::Isometry3d change_base = Eigen::Isometry3d::Identity())
+           const Eigen::Isometry3d& change_base = Eigen::Isometry3d::Identity())
 {
   std::vector<std::vector<tesseract_motion_planners::Waypoint::Ptr>> paths;
   paths.reserve(pose_arrays.size());

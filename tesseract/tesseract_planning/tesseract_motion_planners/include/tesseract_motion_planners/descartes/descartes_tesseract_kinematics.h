@@ -74,14 +74,14 @@ public:
    * @param is_valid_fn Function that is used to determine if a vertex is valid
    * @param redundant_sol_fn Function called to get redundant solutions beyond what tesseract_ik returns
    */
-  DescartesTesseractKinematics(const tesseract_kinematics::ForwardKinematics::ConstPtr tesseract_fk,
-                               const tesseract_kinematics::InverseKinematics::ConstPtr tesseract_ik,
-                               const descartes_light::IsValidFn<FloatType>& is_valid_fn,
-                               const descartes_light::GetRedundantSolutionsFn<FloatType>& redundant_sol_fn)
-    : tesseract_fk_(tesseract_fk)
-    , tesseract_ik_(tesseract_ik)
-    , is_valid_fn_(is_valid_fn)
-    , redundant_sol_fn_(redundant_sol_fn)
+  DescartesTesseractKinematics(tesseract_kinematics::ForwardKinematics::ConstPtr tesseract_fk,
+                               tesseract_kinematics::InverseKinematics::ConstPtr tesseract_ik,
+                               descartes_light::IsValidFn<FloatType> is_valid_fn,
+                               descartes_light::GetRedundantSolutionsFn<FloatType> redundant_sol_fn)
+    : tesseract_fk_(std::move(tesseract_fk))
+    , tesseract_ik_(std::move(tesseract_ik))
+    , is_valid_fn_(std::move(is_valid_fn))
+    , redundant_sol_fn_(std::move(redundant_sol_fn))
   {
     ik_seed_ = Eigen::VectorXd::Zero(dof());
   }

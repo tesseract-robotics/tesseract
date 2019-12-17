@@ -12,6 +12,10 @@ class LinearTransitionGenerator : public ProcessTransitionGenerator
 public:
   LinearTransitionGenerator(int step_count) : step_count_(step_count) {}
   ~LinearTransitionGenerator() override = default;
+  LinearTransitionGenerator(const LinearTransitionGenerator&) = default;
+  LinearTransitionGenerator& operator=(const LinearTransitionGenerator&) = default;
+  LinearTransitionGenerator(LinearTransitionGenerator&&) = default;
+  LinearTransitionGenerator& operator=(LinearTransitionGenerator&&) = default;
 
   std::vector<tesseract_motion_planners::Waypoint::Ptr>
   generate(const tesseract_motion_planners::Waypoint::Ptr& start_waypoint,

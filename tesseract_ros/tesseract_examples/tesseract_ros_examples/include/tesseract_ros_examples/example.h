@@ -57,6 +57,10 @@ public:
   {
   }
   virtual ~Example() = default;
+  Example(const Example&) = default;
+  Example& operator=(const Example&) = default;
+  Example(Example&&) = default;
+  Example& operator=(Example&&) = default;
 
   virtual bool run() = 0;
 

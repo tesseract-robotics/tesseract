@@ -35,11 +35,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/core/planner.h>
 #include <tesseract_motion_planners/core/waypoint.h>
 #include <tesseract_motion_planners/ompl/ompl_settings.h>
+#include <tesseract_motion_planners/ompl/ompl_freespace_planner_status_category.h>
 
 namespace tesseract_motion_planners
 {
-class OMPLFreespacePlannerStatusCategory;
-
 template <typename PlannerType>
 struct OMPLFreespacePlannerConfig
 {
@@ -152,7 +151,7 @@ public:
    * @param response The results of OMPL.
    * @return true if valid solution was found
    */
-  tesseract_common::StatusCode solve(PlannerResponse& response, const bool verbose = false) override;
+  tesseract_common::StatusCode solve(PlannerResponse& response, bool verbose = false) override;
 
   bool terminate() override;
 
@@ -191,27 +190,6 @@ protected:
 
   /** @brief The continuous contact manager */
   tesseract_collision::ContinuousContactManager::Ptr continuous_contact_manager_;
-};
-
-class OMPLFreespacePlannerStatusCategory : public tesseract_common::StatusCategory
-{
-public:
-  OMPLFreespacePlannerStatusCategory(std::string name);
-  const std::string& name() const noexcept override;
-  std::string message(int code) const override;
-
-  enum
-  {
-    IsConfigured = 1,
-    SolutionFound = 0,
-    ErrorIsNotConfigured = -1,
-    ErrorFailedToParseConfig = -2,
-    ErrorFailedToFindValidSolution = -3,
-    ErrorFoundValidSolutionInCollision = -4
-  };
-
-private:
-  std::string name_;
 };
 
 }  // namespace tesseract_motion_planners

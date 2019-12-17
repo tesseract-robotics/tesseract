@@ -201,7 +201,7 @@ inline int createConvexHull(tesseract_common::VectorVector3d& vertices,
         Eigen::Vector3d(static_cast<double>(v.getX()), static_cast<double>(v.getY()), static_cast<double>(v.getZ())));
   }
 
-  size_t num_faces = static_cast<size_t>(conv.faces.size());
+  auto num_faces = static_cast<size_t>(conv.faces.size());
   std::vector<int> local_faces;
   local_faces.reserve(3ul * num_faces);
   for (int i = 0; i < conv.faces.size(); i++)
@@ -491,7 +491,7 @@ inline int loadSimplePlyFile(const std::string& path,
       return false;
     }
 
-    int num_verts = static_cast<int>(tokens.size());
+    auto num_verts = static_cast<int>(tokens.size());
     assert(num_verts >= 3);
     if (triangles_only && num_verts > 3)
     {

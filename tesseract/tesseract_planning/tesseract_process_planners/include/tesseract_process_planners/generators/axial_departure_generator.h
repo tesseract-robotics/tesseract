@@ -14,6 +14,10 @@ public:
   {
   }
   ~AxialDepartureGenerator() override = default;
+  AxialDepartureGenerator(const AxialDepartureGenerator&) = default;
+  AxialDepartureGenerator& operator=(const AxialDepartureGenerator&) = default;
+  AxialDepartureGenerator(AxialDepartureGenerator&&) = default;
+  AxialDepartureGenerator& operator=(AxialDepartureGenerator&&) = default;
 
   std::vector<tesseract_motion_planners::Waypoint::Ptr>
   generate(const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints,

@@ -49,7 +49,7 @@ bool DescartesTesseractKinematics<FloatType>::ik(
     const descartes_light::GetRedundantSolutionsFn<FloatType>& redundant_sol_fn,
     std::vector<FloatType>& solution_set) const
 {
-  int dof = static_cast<int>(tesseract_ik_->numJoints());
+  auto dof = static_cast<int>(tesseract_ik_->numJoints());
 
   // Convert to appropriate Eigen types
   Eigen::Isometry3d p_double;
@@ -198,6 +198,7 @@ void DescartesTesseractKinematics<FloatType>::setIKSeed(const std::vector<FloatT
 {
   assert(static_cast<int>(seed.size()) == dof());
   std::vector<double> seed_copy;
+  seed_copy.reserve(seed.size());
   for (auto& i : seed)
     seed_copy.push_back(static_cast<double>(i));
   ik_seed_ = Eigen::Map<Eigen::VectorXd>(seed_copy.data(), static_cast<long>(seed_copy.size()));

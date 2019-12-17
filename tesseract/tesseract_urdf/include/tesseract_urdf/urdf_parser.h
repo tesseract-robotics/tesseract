@@ -46,7 +46,7 @@ namespace tesseract_urdf
 class URDFStatusCategory : public tesseract_common::StatusCategory
 {
 public:
-  URDFStatusCategory(std::string desc = "") : name_("URDFStatusCategory"), desc_(desc) {}
+  URDFStatusCategory(std::string desc = "") : name_("URDFStatusCategory"), desc_(std::move(desc)) {}
   const std::string& name() const noexcept override { return name_; }
   std::string message(int code) const override
   {

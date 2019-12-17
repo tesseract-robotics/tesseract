@@ -69,7 +69,7 @@ inline tesseract_common::VectorIsometry3d interpolate(const Eigen::Isometry3d& s
   Eigen::Vector3d trans;
   Eigen::Quaterniond q;
   Eigen::Isometry3d pose;
-  result.reserve(static_cast<size_t>(steps + 1));
+  result.reserve(static_cast<size_t>(steps) + 1);
   for (unsigned i = 0; i <= static_cast<unsigned>(steps); ++i)
   {
     trans = start_pos + step * i;
@@ -93,8 +93,8 @@ inline std::vector<Waypoint::Ptr> interpolate(const Waypoint& start, const Waypo
   {
     case WaypointType::CARTESIAN_WAYPOINT:
     {
-      const CartesianWaypoint& w1 = static_cast<const CartesianWaypoint&>(start);
-      const CartesianWaypoint& w2 = static_cast<const CartesianWaypoint&>(stop);
+      const auto& w1 = static_cast<const CartesianWaypoint&>(start);
+      const auto& w2 = static_cast<const CartesianWaypoint&>(stop);
       tesseract_common::VectorIsometry3d eigen_poses = interpolate(w1.getTransform(), w2.getTransform(), steps);
 
       std::vector<Waypoint::Ptr> result;
