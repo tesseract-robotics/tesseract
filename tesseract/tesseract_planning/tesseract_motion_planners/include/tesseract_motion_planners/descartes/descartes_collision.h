@@ -50,6 +50,7 @@ public:
   DescartesCollision(const tesseract_environment::Environment::ConstPtr& collision_env,
                      std::vector<std::string> active_links,
                      std::vector<std::string> joint_names,
+                     double contact_dist_threshold = 0.025,
                      bool debug = false);
   ~DescartesCollision() override = default;
 
@@ -98,6 +99,7 @@ private:
   std::vector<std::string> active_link_names_;                       /**< @brief A vector of active link names */
   std::vector<std::string> joint_names_;                             /**< @brief A vector of joint names */
   tesseract_collision::DiscreteContactManager::Ptr contact_manager_; /**< @brief The discrete contact manager */
+  double contact_dist_threshold_;
   bool debug_; /**< @brief Enable debug information to be printed to the terminal */
 };
 

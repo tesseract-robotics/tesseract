@@ -40,15 +40,18 @@ template <typename FloatType>
 DescartesCollision<FloatType>::DescartesCollision(const tesseract_environment::Environment::ConstPtr& collision_env,
                                                   std::vector<std::string> active_links,
                                                   std::vector<std::string> joint_names,
+                                                  double contact_dist_threshold,
                                                   bool debug)
   : state_solver_(collision_env->getStateSolver())
   , acm_(*(collision_env->getAllowedCollisionMatrix()))
   , active_link_names_(std::move(active_links))
   , joint_names_(std::move(joint_names))
   , contact_manager_(collision_env->getDiscreteContactManager())
+  , contact_dist_threshold_(contact_dist_threshold)
   , debug_(debug)
 {
   contact_manager_->setActiveCollisionObjects(active_link_names_);
+  contact_manager_->setContactDistanceThreshold(contact_dist_threshold_);
   contact_manager_->setIsContactAllowedFn(
       std::bind(&tesseract_motion_planners::DescartesCollision<FloatType>::isContactAllowed,
                 this,
@@ -63,9 +66,11 @@ DescartesCollision<FloatType>::DescartesCollision(const DescartesCollision& coll
   , active_link_names_(collision_interface.active_link_names_)
   , joint_names_(collision_interface.joint_names_)
   , contact_manager_(collision_interface.contact_manager_->clone())
+  , contact_dist_threshold_(collision_interface.contact_dist_threshold_)
   , debug_(collision_interface.debug_)
 {
   contact_manager_->setActiveCollisionObjects(active_link_names_);
+  contact_manager_->setContactDistanceThreshold(contact_dist_threshold_);
   contact_manager_->setIsContactAllowedFn(
       std::bind(&tesseract_motion_planners::DescartesCollision<FloatType>::isContactAllowed,
                 this,
