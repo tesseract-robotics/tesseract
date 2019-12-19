@@ -99,8 +99,8 @@ private:
   std::vector<std::string> active_link_names_;                       /**< @brief A vector of active link names */
   std::vector<std::string> joint_names_;                             /**< @brief A vector of joint names */
   tesseract_collision::DiscreteContactManager::Ptr contact_manager_; /**< @brief The discrete contact manager */
-  double contact_dist_threshold_;
-  bool debug_; /**< @brief Enable debug information to be printed to the terminal */
+  double contact_dist_threshold_; /**< @brief Distance in meters for evaluating collisions */
+  bool debug_;                    /**< @brief Enable debug information to be printed to the terminal */
 };
 
 using DescartesCollisionF = DescartesCollision<float>;
