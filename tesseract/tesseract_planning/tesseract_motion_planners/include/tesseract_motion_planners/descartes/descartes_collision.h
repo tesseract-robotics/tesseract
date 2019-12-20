@@ -47,7 +47,7 @@ public:
    * @param joint_names The list of joint names in the order that the data will be provided to the validate function.
    * @param collision_safety_margin The minimum distance allowed from a collision object
    * @param longest_valid_segment_length Used to check collisions between two state if norm(state0-state1) >
-    * longest_valid_segment_length.
+   * longest_valid_segment_length.
    * @param debug If true, this print debug information to the terminal
    */
   DescartesCollision(const tesseract_environment::Environment::ConstPtr& collision_env,
@@ -103,7 +103,7 @@ private:
   std::vector<std::string> joint_names_;                             /**< @brief A vector of joint names */
   tesseract_collision::DiscreteContactManager::Ptr contact_manager_; /**< @brief The discrete contact manager */
   double collision_safety_margin_; /**< @brief The minimum allowed collision distance */
-  bool debug_; /**< @brief Enable debug information to be printed to the terminal */
+  bool debug_;                     /**< @brief Enable debug information to be printed to the terminal */
 };
 
 using DescartesCollisionF = DescartesCollision<float>;

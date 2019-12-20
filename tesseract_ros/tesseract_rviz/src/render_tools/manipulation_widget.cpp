@@ -279,8 +279,8 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
     {
       inv_seed_[i] = joints_[j];
       const auto& joint = scene_graph->getJoint(j);
-      QString joint_description = QString("Limits: [%1, %2]")
-                                .arg(QString("%1").arg(limits(i, 0)), QString("%1").arg(limits(i, 1)));
+      QString joint_description =
+          QString("Limits: [%1, %2]").arg(QString("%1").arg(limits(i, 0)), QString("%1").arg(limits(i, 1)));
 
       rviz::FloatProperty* joint_value_property = new rviz::FloatProperty(QString::fromStdString(j),
                                                                           static_cast<float>(joints_[j]),
@@ -288,7 +288,6 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
                                                                           nullptr,
                                                                           SLOT(userInputJointValuesChanged()),
                                                                           this);
-
 
       joint_value_property->setMin(static_cast<float>(limits(i, 0)));
       joint_value_property->setMax(static_cast<float>(limits(i, 1)));

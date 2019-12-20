@@ -36,15 +36,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
-
 template <typename FloatType>
-DescartesCollisionEdgeEvaluator<FloatType>::DescartesCollisionEdgeEvaluator(const tesseract_environment::Environment::ConstPtr& collision_env,
-                                                                            std::vector<std::string> active_links,
-                                                                            std::vector<std::string> joint_names,
-                                                                            double collision_safety_margin,
-                                                                            double longest_valid_segment_length,
-                                                                            bool allow_collision,
-                                                                            bool debug)
+DescartesCollisionEdgeEvaluator<FloatType>::DescartesCollisionEdgeEvaluator(
+    const tesseract_environment::Environment::ConstPtr& collision_env,
+    std::vector<std::string> active_links,
+    std::vector<std::string> joint_names,
+    double collision_safety_margin,
+    double longest_valid_segment_length,
+    bool allow_collision,
+    bool debug)
   : state_solver_(collision_env->getStateSolver())
   , acm_(*(collision_env->getAllowedCollisionMatrix()))
   , active_link_names_(std::move(active_links))
@@ -75,9 +75,10 @@ DescartesCollisionEdgeEvaluator<FloatType>::DescartesCollisionEdgeEvaluator(cons
 }
 
 template <typename FloatType>
-bool DescartesCollisionEdgeEvaluator<FloatType>::evaluate(const descartes_light::Rung_<FloatType>& from,
-                                                          const descartes_light::Rung_<FloatType>& to,
-                                                          std::vector<typename descartes_light::LadderGraph<FloatType>::EdgeList>& edges)
+bool DescartesCollisionEdgeEvaluator<FloatType>::evaluate(
+    const descartes_light::Rung_<FloatType>& from,
+    const descartes_light::Rung_<FloatType>& to,
+    std::vector<typename descartes_light::LadderGraph<FloatType>::EdgeList>& edges)
 {
   const auto n_start = from.data.size() / dof_;
   const auto n_end = to.data.size() / dof_;
@@ -105,11 +106,12 @@ bool DescartesCollisionEdgeEvaluator<FloatType>::evaluate(const descartes_light:
 }
 
 template <typename FloatType>
-void DescartesCollisionEdgeEvaluator<FloatType>::considerEdge(typename descartes_light::LadderGraph<FloatType>::EdgeList& out,
-                                                              const FloatType* start,
-                                                              const FloatType* end,
-                                                              std::size_t next_idx,
-                                                              bool find_best)
+void DescartesCollisionEdgeEvaluator<FloatType>::considerEdge(
+    typename descartes_light::LadderGraph<FloatType>::EdgeList& out,
+    const FloatType* start,
+    const FloatType* end,
+    std::size_t next_idx,
+    bool find_best)
 {
   // Happens in two phases:
   // 1. Compute the transform of all objects
@@ -122,23 +124,25 @@ void DescartesCollisionEdgeEvaluator<FloatType>::considerEdge(typename descartes
 
   std::vector<tesseract_collision::ContactResultMap> discrete_results;
   std::vector<tesseract_collision::ContactResultMap> continuous_results;
-  bool discrete_in_contact = tesseract_environment::checkTrajectory(discrete_results,
-                                              *discrete_contact_manager_,
-                                              *state_solver_,
-                                              joint_names_,
-                                              segment,
-                                              longest_valid_segment_length_,
-                                              (find_best) ? tesseract_collision::ContactTestType::CLOSEST : tesseract_collision::ContactTestType::FIRST,
-                                              debug_);
+  bool discrete_in_contact = tesseract_environment::checkTrajectory(
+      discrete_results,
+      *discrete_contact_manager_,
+      *state_solver_,
+      joint_names_,
+      segment,
+      longest_valid_segment_length_,
+      (find_best) ? tesseract_collision::ContactTestType::CLOSEST : tesseract_collision::ContactTestType::FIRST,
+      debug_);
 
-  bool continuous_in_contact = tesseract_environment::checkTrajectory(continuous_results,
-                                              *continuous_contact_manager_,
-                                              *state_solver_,
-                                              joint_names_,
-                                              segment,
-                                              longest_valid_segment_length_,
-                                              (find_best) ? tesseract_collision::ContactTestType::CLOSEST : tesseract_collision::ContactTestType::FIRST,
-                                              debug_);
+  bool continuous_in_contact = tesseract_environment::checkTrajectory(
+      continuous_results,
+      *continuous_contact_manager_,
+      *state_solver_,
+      joint_names_,
+      segment,
+      longest_valid_segment_length_,
+      (find_best) ? tesseract_collision::ContactTestType::CLOSEST : tesseract_collision::ContactTestType::FIRST,
+      debug_);
 
   if (!discrete_in_contact && !continuous_in_contact)
     out.emplace_back(0, next_idx);
@@ -152,7 +156,6 @@ void DescartesCollisionEdgeEvaluator<FloatType>::considerEdge(typename descartes
     double c = collision_safety_margin_ - continuous_results.begin()->begin()->second[0].distance;
     out.emplace_back(std::max(d, c), next_idx);
   }
-
 }
 
 template <typename FloatType>
@@ -161,6 +164,6 @@ bool DescartesCollisionEdgeEvaluator<FloatType>::isContactAllowed(const std::str
   return acm_.isCollisionAllowed(a, b);
 }
 
-}  // namespace descartes_light
+}  // namespace tesseract_motion_planners
 
-#endif // TESSERACT_MOTION_PLANNERS_IMPL_DESCARTES_COLLISION_EDGE_EVALUATOR_HPP
+#endif  // TESSERACT_MOTION_PLANNERS_IMPL_DESCARTES_COLLISION_EDGE_EVALUATOR_HPP
