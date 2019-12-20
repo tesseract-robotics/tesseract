@@ -26,7 +26,7 @@
 #ifndef TESSERACT_MOTION_PLANNERS_DESCARTES_COLLISION_H
 #define TESSERACT_MOTION_PLANNERS_DESCARTES_COLLISION_H
 
-#include <tesseract/tesseract.h>
+#include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <descartes_light/interface/collision_interface.h>
@@ -45,12 +45,15 @@ public:
    * @param collision_env The collision Environment
    * @param active_links The list of active links
    * @param joint_names The list of joint names in the order that the data will be provided to the validate function.
+   * @param collision_safety_margin The minimum distance allowed from a collision object
+   * @param longest_valid_segment_length Used to check collisions between two state if norm(state0-state1) >
+    * longest_valid_segment_length.
    * @param debug If true, this print debug information to the terminal
    */
   DescartesCollision(const tesseract_environment::Environment::ConstPtr& collision_env,
                      std::vector<std::string> active_links,
                      std::vector<std::string> joint_names,
-                     double contact_dist_threshold = 0.025,
+                     double collision_safety_margin = 0.025,
                      bool debug = false);
   ~DescartesCollision() override = default;
 
@@ -99,8 +102,8 @@ private:
   std::vector<std::string> active_link_names_;                       /**< @brief A vector of active link names */
   std::vector<std::string> joint_names_;                             /**< @brief A vector of joint names */
   tesseract_collision::DiscreteContactManager::Ptr contact_manager_; /**< @brief The discrete contact manager */
-  double contact_dist_threshold_; /**< @brief Distance in meters for evaluating collisions */
-  bool debug_;                    /**< @brief Enable debug information to be printed to the terminal */
+  double collision_safety_margin_; /**< @brief The minimum allowed collision distance */
+  bool debug_; /**< @brief Enable debug information to be printed to the terminal */
 };
 
 using DescartesCollisionF = DescartesCollision<float>;

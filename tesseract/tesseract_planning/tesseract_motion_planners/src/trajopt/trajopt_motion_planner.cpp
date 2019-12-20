@@ -154,6 +154,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
     length = LONGEST_VALID_SEGMENT_FRACTION_DEFAULT * extent;
   }
   std::vector<tesseract_collision::ContactResultMap> collisions;
+  tesseract_environment::StateSolver::Ptr state_solver = config_->prob->GetEnv()->getStateSolver();
   tesseract_collision::ContinuousContactManager::Ptr continuous_manager =
       config_->prob->GetEnv()->getContinuousContactManager();
   tesseract_environment::AdjacencyMap::Ptr adjacency_map =
@@ -166,11 +167,11 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
   collisions.clear();
   bool found = checkTrajectory(collisions,
                                *continuous_manager,
-                               *(config_->prob->GetEnv()),
+                               *state_solver,
                                config_->prob->GetKin()->getJointNames(),
                                getTraj(opt.x(), config_->prob->GetVars()),
                                length,
-                               true,
+                               tesseract_collision::ContactTestType::FIRST,
                                verbose);
 
   // Do a discrete check until continuous collision checking is updated to do dynamic-dynamic checking
@@ -182,11 +183,11 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
 
   found = found || checkTrajectory(collisions,
                                    *discrete_manager,
-                                   *(config_->prob->GetEnv()),
+                                   *state_solver,
                                    config_->prob->GetKin()->getJointNames(),
                                    getTraj(opt.x(), config_->prob->GetVars()),
                                    length,
-                                   true,
+                                   tesseract_collision::ContactTestType::FIRST,
                                    verbose);
 
   // Send response

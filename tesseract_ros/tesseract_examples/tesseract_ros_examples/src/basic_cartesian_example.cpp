@@ -250,6 +250,7 @@ bool BasicCartesianExample::run()
   ROS_INFO("basic cartesian plan example");
 
   std::vector<ContactResultMap> collisions;
+  tesseract_environment::StateSolver::Ptr state_solver = prob->GetEnv()->getStateSolver();
   ContinuousContactManager::Ptr manager = prob->GetEnv()->getContinuousContactManager();
   AdjacencyMap::Ptr adjacency_map =
       std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
@@ -260,7 +261,7 @@ bool BasicCartesianExample::run()
   manager->setContactDistanceThreshold(0);
   collisions.clear();
   bool found =
-      checkTrajectory(collisions, *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), prob->GetInitTraj());
+      checkTrajectory(collisions, *manager, *state_solver, prob->GetKin()->getJointNames(), prob->GetInitTraj());
 
   ROS_INFO((found) ? ("Initial trajectory is in collision") : ("Initial trajectory is collision free"));
 
@@ -280,7 +281,7 @@ bool BasicCartesianExample::run()
 
   collisions.clear();
   found = checkTrajectory(
-      collisions, *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()));
+      collisions, *manager, *state_solver, prob->GetKin()->getJointNames(), getTraj(opt.x(), prob->GetVars()));
 
   ROS_INFO((found) ? ("Final trajectory is in collision") : ("Final trajectory is collision free"));
 

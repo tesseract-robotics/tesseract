@@ -27,6 +27,7 @@
 #define TESSERACT_MOTION_PLANNERS_IMPL_DESCARTES_COLLISION_HPP
 
 #include <tesseract_motion_planners/descartes/descartes_collision.h>
+#include <tesseract_environment/core/utils.h>
 
 namespace tesseract_motion_planners
 {
@@ -40,23 +41,24 @@ template <typename FloatType>
 DescartesCollision<FloatType>::DescartesCollision(const tesseract_environment::Environment::ConstPtr& collision_env,
                                                   std::vector<std::string> active_links,
                                                   std::vector<std::string> joint_names,
-                                                  double contact_dist_threshold,
+                                                  double collision_safety_margin,
                                                   bool debug)
   : state_solver_(collision_env->getStateSolver())
   , acm_(*(collision_env->getAllowedCollisionMatrix()))
   , active_link_names_(std::move(active_links))
   , joint_names_(std::move(joint_names))
   , contact_manager_(collision_env->getDiscreteContactManager())
-  , contact_dist_threshold_(contact_dist_threshold)
+  , collision_safety_margin_(collision_safety_margin)
   , debug_(debug)
 {
   contact_manager_->setActiveCollisionObjects(active_link_names_);
-  contact_manager_->setContactDistanceThreshold(contact_dist_threshold_);
+  contact_manager_->setContactDistanceThreshold(collision_safety_margin_);
   contact_manager_->setIsContactAllowedFn(
       std::bind(&tesseract_motion_planners::DescartesCollision<FloatType>::isContactAllowed,
                 this,
                 std::placeholders::_1,
                 std::placeholders::_2));
+  contact_manager_->setContactDistanceThreshold(collision_safety_margin_);
 }
 
 template <typename FloatType>
@@ -66,11 +68,11 @@ DescartesCollision<FloatType>::DescartesCollision(const DescartesCollision& coll
   , active_link_names_(collision_interface.active_link_names_)
   , joint_names_(collision_interface.joint_names_)
   , contact_manager_(collision_interface.contact_manager_->clone())
-  , contact_dist_threshold_(collision_interface.contact_dist_threshold_)
+  , collision_safety_margin_(collision_interface.collision_safety_margin_)
   , debug_(collision_interface.debug_)
 {
   contact_manager_->setActiveCollisionObjects(active_link_names_);
-  contact_manager_->setContactDistanceThreshold(contact_dist_threshold_);
+  contact_manager_->setContactDistanceThreshold(collision_safety_margin_);
   contact_manager_->setIsContactAllowedFn(
       std::bind(&tesseract_motion_planners::DescartesCollision<FloatType>::isContactAllowed,
                 this,
@@ -89,26 +91,9 @@ bool DescartesCollision<FloatType>::validate(const FloatType* pos, std::size_t s
 
   tesseract_environment::EnvState::Ptr env_state = state_solver_->getState(joint_names_, joint_angles);
 
-  // 2. Update the scene
-  contact_manager_->setCollisionObjectsTransform(env_state->transforms);
-
-  // 3. Ask the contact manager to go nuts
-  tesseract_collision::ContactResultMap results;
-  contact_manager_->contactTest(results, tesseract_collision::ContactTestType::FIRST);
-
-  // 4. Analyze results
-  const bool no_contacts = results.empty();
-
-  if (debug_)
-  {
-    for (const auto& contact : results)
-    {
-      std::cout << "Contact: " << contact.first.first << " - " << contact.first.second
-                << " Distance: " << contact.second[0].distance << "\n";
-    }
-  }
-
-  return no_contacts;
+  std::vector<tesseract_collision::ContactResultMap> results;
+  bool in_contact = checkTrajectoryState(results, *contact_manager_, env_state, tesseract_collision::ContactTestType::FIRST, debug_);
+  return (!in_contact);
 }
 
 template <typename FloatType>
@@ -121,27 +106,13 @@ FloatType DescartesCollision<FloatType>::distance(const FloatType* pos, std::siz
     joint_angles(i) = pos[i];
   tesseract_environment::EnvState::Ptr env_state = state_solver_->getState(joint_names_, joint_angles);
 
-  // 2. Update the scene
-  contact_manager_->setCollisionObjectsTransform(env_state->transforms);
+  std::vector<tesseract_collision::ContactResultMap> results;
+  bool in_contact = checkTrajectoryState(results, *contact_manager_, env_state, tesseract_collision::ContactTestType::CLOSEST, debug_);
 
-  // 3. Ask the contact manager to go nuts
-  tesseract_collision::ContactResultMap results;
-  contact_manager_->contactTest(results, tesseract_collision::ContactTestType::CLOSEST);
-
-  if (debug_)
-  {
-    std::cout << "Called descartes_light::TesseractCollision::distance\n";
-    for (const auto& contact : results)
-    {
-      std::cout << "Contact: " << contact.first.first << " - " << contact.first.second
-                << " Distance: " << contact.second[0].distance << "\n";
-    }
-  }
-
-  if (results.empty())
+  if (!in_contact)
     return static_cast<FloatType>(contact_manager_->getContactDistanceThreshold());
 
-  return static_cast<FloatType>(results.begin()->second[0].distance);
+  return static_cast<FloatType>(results.begin()->begin()->second[0].distance);
 }
 
 template <typename FloatType>
