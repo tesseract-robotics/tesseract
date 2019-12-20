@@ -271,17 +271,16 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
 
     const auto& scene_graph = tesseract_->getEnvironmentConst()->getSceneGraph();
     std::vector<std::string> joint_names = inv_kin_->getJointNames();
+    const Eigen::MatrixX2d& limits = inv_kin_->getLimits();
     inv_seed_.resize(inv_kin_->numJoints());
     int i = 0;
     joint_values_property_->removeChildren();
     for (auto& j : joint_names)
     {
-      inv_seed_[i++] = joints_[j];
+      inv_seed_[i] = joints_[j];
       const auto& joint = scene_graph->getJoint(j);
-      QString joint_description = "Limits: [inf, inf]";
-      if (joint->limits)
-        joint_description = QString("Limits: [%1, %2]")
-                                .arg(QString("%1").arg(joint->limits->lower), QString("%1").arg(joint->limits->upper));
+      QString joint_description = QString("Limits: [%1, %2]")
+                                .arg(QString("%1").arg(limits(i, 0)), QString("%1").arg(limits(i, 1)));
 
       rviz::FloatProperty* joint_value_property = new rviz::FloatProperty(QString::fromStdString(j),
                                                                           static_cast<float>(joints_[j]),
@@ -289,9 +288,12 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
                                                                           nullptr,
                                                                           SLOT(userInputJointValuesChanged()),
                                                                           this);
-      joint_value_property->setMin(static_cast<float>(joint->limits->lower));
-      joint_value_property->setMax(static_cast<float>(joint->limits->upper));
+
+
+      joint_value_property->setMin(static_cast<float>(limits(i, 0)));
+      joint_value_property->setMax(static_cast<float>(limits(i, 1)));
       joint_values_property_->addChild(joint_value_property);
+      ++i;
     }
 
     // Need to update state information (transforms) because manipulator changes and
@@ -387,6 +389,21 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
           break;
         }
         case tesseract_scene_graph::JointType::REVOLUTE:
+        {
+          Eigen::Vector3d disc_axis(1, 0, 0);
+          Eigen::Quaternionf q = Eigen::Quaterniond::FromTwoVectors(disc_axis, joint->axis).cast<float>();
+          InteractiveMarkerControl::Ptr control =
+              interactive_marker->createInteractiveControl("rotate_x",
+                                                           "Rotate around X Axis",
+                                                           InteractiveMode::ROTATE_AXIS,
+                                                           OrientationMode::INHERIT,
+                                                           true,
+                                                           Ogre::Quaternion(q.w(), q.x(), q.y(), q.z()));
+          makeDisc(*control, 0.3f);
+          joint_interactive_markers_[joint_name] = interactive_marker;
+          break;
+        }
+        case tesseract_scene_graph::JointType::CONTINUOUS:
         {
           Eigen::Vector3d disc_axis(1, 0, 0);
           Eigen::Quaternionf q = Eigen::Quaterniond::FromTwoVectors(disc_axis, joint->axis).cast<float>();
@@ -550,6 +567,10 @@ void ManipulationWidget::markerFeedback(const std::string& reference_frame,
       udpateJointMarkerVisualization();
       publishJointStates();
     }
+    else
+    {
+      updateCartesianMarkerVisualization();
+    }
   }
 }
 
@@ -584,6 +605,15 @@ void ManipulationWidget::jointMarkerFeedback(const std::string& joint_name,
       delta_joint_value = delta_rotation.angle();
       break;
     }
+    case tesseract_scene_graph::JointType::CONTINUOUS:
+    {
+      Eigen::AngleAxisd delta_rotation;
+      delta_rotation.fromRotationMatrix(delta_pose.rotation());
+
+      delta_axis = delta_rotation.axis();
+      delta_joint_value = delta_rotation.angle();
+      break;
+    }
     default:
       assert(false);
   }
@@ -594,23 +624,21 @@ void ManipulationWidget::jointMarkerFeedback(const std::string& joint_name,
   else
     new_joint_value = current_joint_value - delta_joint_value;
 
-  if (joint->limits)
-  {
-    if (new_joint_value > joint->limits->upper)
-    {
-      new_joint_value = joint->limits->upper;
-    }
-    else if (new_joint_value < joint->limits->lower)
-    {
-      new_joint_value = joint->limits->lower;
-    }
-  }
-
+  const Eigen::MatrixX2d& limits = inv_kin_->getLimits();
   int i = 0;
   for (const auto& j : inv_kin_->getJointNames())
   {
     if (joint_name == j)
     {
+      if (new_joint_value > limits(i, 1))
+      {
+        new_joint_value = limits(i, 1);
+      }
+      else if (new_joint_value < limits(i, 0))
+      {
+        new_joint_value = limits(i, 0);
+      }
+
       joints_[j] = new_joint_value;
       inv_seed_[i] = new_joint_value;
 
@@ -632,6 +660,9 @@ void ManipulationWidget::jointMarkerFeedback(const std::string& joint_name,
 
 void ManipulationWidget::userInputJointValuesChanged()
 {
+  if (joint_values_property_->numChildren() != static_cast<int>(inv_kin_->numJoints()))
+    return;
+
   int i = 0;
   for (const auto& j : inv_kin_->getJointNames())
   {
