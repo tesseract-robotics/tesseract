@@ -72,6 +72,7 @@ target_include_directories(${PROJECT_NAME}_ompl_trajopt_freespace PUBLIC
 add_library(${PROJECT_NAME}_descartes SHARED
   src/descartes/descartes_motion_planner.cpp
   src/descartes/descartes_collision.cpp
+  src/descartes/descartes_collision_edge_evaluator.cpp
   src/descartes/descartes_robot_sampler.cpp
   src/descartes/descartes_robot_positioner_sampler.cpp
   src/descartes/descartes_external_positioner_sampler.cpp
