@@ -116,15 +116,16 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
 
   // Check and report collisions
   std::vector<tesseract_collision::ContactResultMap> collisions;
+  tesseract_environment::StateSolver::Ptr state_solver = config_->tesseract->getEnvironmentConst()->getStateSolver();
   continuous_contact_manager_->setContactDistanceThreshold(0);
   collisions.clear();
   bool found = tesseract_environment::checkTrajectory(collisions,
                                                       *continuous_contact_manager_,
-                                                      *(config_->tesseract->getEnvironmentConst()),
+                                                      *state_solver,
                                                       kin_->getJointNames(),
                                                       traj,
                                                       config_->longest_valid_segment_length,
-                                                      true,
+                                                      tesseract_collision::ContactTestType::FIRST,
                                                       verbose);
 
   // Do a discrete check until continuous collision checking is updated to do dynamic-dynamic checking
@@ -133,11 +134,11 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
 
   found = found || tesseract_environment::checkTrajectory(collisions,
                                                           *discrete_contact_manager_,
-                                                          *(config_->tesseract->getEnvironmentConst()),
+                                                          *state_solver,
                                                           kin_->getJointNames(),
                                                           traj,
                                                           config_->longest_valid_segment_length,
-                                                          true,
+                                                          tesseract_collision::ContactTestType::FIRST,
                                                           verbose);
 
   // Set the contact distance back to original incase solve was called again.

@@ -388,6 +388,7 @@ bool CarSeatExample::run()
   plotter->plotTrajectory(prob->GetKin()->getJointNames(), getTraj(pick1_opt.x(), prob->GetVars()));
 
   std::vector<ContactResultMap> collisions;
+  tesseract_environment::StateSolver::Ptr state_solver = prob->GetEnv()->getStateSolver();
   ContinuousContactManager::Ptr manager = prob->GetEnv()->getContinuousContactManager();
   AdjacencyMap::Ptr adjacency_map =
       std::make_shared<tesseract_environment::AdjacencyMap>(prob->GetEnv()->getSceneGraph(),
@@ -398,7 +399,7 @@ bool CarSeatExample::run()
   manager->setContactDistanceThreshold(0);
 
   bool found = checkTrajectory(
-      collisions, *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(pick1_opt.x(), prob->GetVars()));
+      collisions, *manager, *state_solver, prob->GetKin()->getJointNames(), getTraj(pick1_opt.x(), prob->GetVars()));
 
   ROS_INFO((found) ? ("Pick seat #1 trajectory is in collision") : ("Pick seat #1 trajectory is collision free"));
 
@@ -458,7 +459,7 @@ bool CarSeatExample::run()
   manager->setContactDistanceThreshold(0);
   collisions.clear();
   found = checkTrajectory(
-      collisions, *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(place1_opt.x(), prob->GetVars()));
+      collisions, *manager, *state_solver, prob->GetKin()->getJointNames(), getTraj(place1_opt.x(), prob->GetVars()));
 
   ROS_INFO((found) ? ("Place seat #1 trajectory is in collision") : ("Place seat #1 trajectory is collision free"));
 
@@ -511,7 +512,7 @@ bool CarSeatExample::run()
   manager->setContactDistanceThreshold(0);
   collisions.clear();
   found = checkTrajectory(
-      collisions, *manager, *prob->GetEnv(), prob->GetKin()->getJointNames(), getTraj(pick2_opt.x(), prob->GetVars()));
+      collisions, *manager, *state_solver, prob->GetKin()->getJointNames(), getTraj(pick2_opt.x(), prob->GetVars()));
 
   ROS_INFO((found) ? ("Pick seat #2 trajectory is in collision") : ("Pick seat #2 trajectory is collision free"));
 

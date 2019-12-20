@@ -165,10 +165,10 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
   collisions.clear();
   bool found = tesseract_environment::checkTrajectory(collisions,
                                                       *manager,
-                                                      *config_->tesseract->getEnvironmentConst(),
+                                                      *config_->tesseract->getEnvironmentConst()->getStateSolver(),
                                                       response.joint_trajectory.joint_names,
                                                       response.joint_trajectory.trajectory,
-                                                      true,
+                                                      tesseract_collision::ContactTestType::FIRST,
                                                       verbose);
 
   CONSOLE_BRIDGE_logInform("Descartes planning time: %.3f",
