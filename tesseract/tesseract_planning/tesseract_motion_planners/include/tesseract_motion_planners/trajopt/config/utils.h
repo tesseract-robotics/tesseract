@@ -35,26 +35,26 @@ trajopt::TermInfo::Ptr createJointWaypointTermInfo(const JointWaypoint::ConstPtr
                                                    int ind,
                                                    const std::vector<std::string>& joint_names,
                                                    double coeff = 1.0,
-                                                   const std::string& name = "joint_position");
+                                                   const std::string& name = "joint_waypoint");
 
 trajopt::TermInfo::Ptr createJointTolerancedWaypointTermInfo(const JointTolerancedWaypoint::ConstPtr& waypoint,
                                                              int ind,
                                                              const std::vector<std::string>& joint_names,
                                                              double coeff = 0.1,
-                                                             const std::string& name = "joint_toleranced_position");
+                                                             const std::string& name = "joint_tol_waypoint");
 
 trajopt::TermInfo::Ptr createCartesianWaypointTermInfo(const CartesianWaypoint::ConstPtr& waypoint,
                                                        int ind,
                                                        const std::string& link,
                                                        const Eigen::Isometry3d& tcp = Eigen::Isometry3d::Identity(),
-                                                       const std::string& name = "cartesian_position_position");
+                                                       const std::string& name = "cart_waypoint");
 
 trajopt::TermInfo::Ptr
 createDynamicCartesianWaypointTermInfo(const CartesianWaypoint::ConstPtr& waypoint,
                                        int ind,
                                        const std::string& link,
                                        const Eigen::Isometry3d& tcp = Eigen::Isometry3d::Identity(),
-                                       const std::string& name = "dynamic_cartesian_position");
+                                       const std::string& name = "dyn_cart_waypoint");
 
 struct WaypointTermInfo
 {
