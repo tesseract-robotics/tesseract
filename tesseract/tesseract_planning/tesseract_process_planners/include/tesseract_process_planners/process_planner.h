@@ -55,7 +55,7 @@ class ProcessPlanner
 public:
   using Ptr = std::shared_ptr<ProcessPlanner>;
   using ConstPtr = std::shared_ptr<const ProcessPlanner>;
-
+  ProcessPlanner() = default;
   virtual ~ProcessPlanner() = default;
   ProcessPlanner(const ProcessPlanner&) = default;
   ProcessPlanner& operator=(const ProcessPlanner&) = default;
