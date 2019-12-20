@@ -83,12 +83,13 @@ inline void getActiveLinkNamesRecursive(std::vector<std::string>& active_links,
  * @param verbose Print out found collisions
  * @return True if collision was found, otherwise false.
  */
-inline bool checkTrajectorySegment(std::vector<tesseract_collision::ContactResultMap>& contacts,
-                                   tesseract_collision::ContinuousContactManager& manager,
-                                   const tesseract_environment::EnvState::Ptr& state0,
-                                   const tesseract_environment::EnvState::Ptr& state1,
-                                   tesseract_collision::ContactTestType type = tesseract_collision::ContactTestType::FIRST,
-                                   bool verbose = false)
+inline bool
+checkTrajectorySegment(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                       tesseract_collision::ContinuousContactManager& manager,
+                       const tesseract_environment::EnvState::Ptr& state0,
+                       const tesseract_environment::EnvState::Ptr& state1,
+                       tesseract_collision::ContactTestType type = tesseract_collision::ContactTestType::FIRST,
+                       bool verbose = false)
 {
   for (const auto& link_name : manager.getActiveCollisionObjects())
     manager.setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
@@ -126,11 +127,12 @@ inline bool checkTrajectorySegment(std::vector<tesseract_collision::ContactResul
  * @param verbose Print out found collisions
  * @return True if collision was found, otherwise false.
  */
-inline bool checkTrajectoryState(std::vector<tesseract_collision::ContactResultMap>& contacts,
-                                 tesseract_collision::DiscreteContactManager& manager,
-                                 const tesseract_environment::EnvState::Ptr& state,
-                                 tesseract_collision::ContactTestType type = tesseract_collision::ContactTestType::FIRST,
-                                 bool verbose = false)
+inline bool
+checkTrajectoryState(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                     tesseract_collision::DiscreteContactManager& manager,
+                     const tesseract_environment::EnvState::Ptr& state,
+                     tesseract_collision::ContactTestType type = tesseract_collision::ContactTestType::FIRST,
+                     bool verbose = false)
 {
   tesseract_collision::ContactResultMap collisions;
 
