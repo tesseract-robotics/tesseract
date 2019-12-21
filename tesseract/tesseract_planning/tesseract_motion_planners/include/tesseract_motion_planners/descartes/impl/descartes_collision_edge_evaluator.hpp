@@ -3,7 +3,7 @@
  * @brief Tesseract Descartes Collision Edge Evaluator Implementation
  *
  * @author Levi Armstrong
- * @date April 18, 2018
+ * @date December 18, 2019
  * @version TODO
  * @bug No known bugs
  *
@@ -80,6 +80,8 @@ bool DescartesCollisionEdgeEvaluator<FloatType>::evaluate(
     const descartes_light::Rung_<FloatType>& to,
     std::vector<typename descartes_light::LadderGraph<FloatType>::EdgeList>& edges)
 {
+  assert(from.data.size() % dof_ == 0);
+  assert(to.data.size() % dof_ == 0);
   const auto n_start = from.data.size() / dof_;
   const auto n_end = to.data.size() / dof_;
 
