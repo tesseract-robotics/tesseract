@@ -3,11 +3,11 @@
  * @brief Tesseract Descartes Collision Edge Evaluator Implementation
  *
  * @author Levi Armstrong
- * @date April 18, 2018
+ * @date December 18, 2019
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2019, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
