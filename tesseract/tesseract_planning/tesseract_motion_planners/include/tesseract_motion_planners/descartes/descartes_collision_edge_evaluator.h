@@ -91,6 +91,40 @@ protected:
    * @return True if allowed to be in collision, otherwise false
    */
   bool isContactAllowed(const std::string& a, const std::string& b) const;
+
+  // The member variables below are to cache the contact manager based on thread ID. Currently descartes is multi
+  // threaded but the methods used to implement collision checking are not thread safe. To prevent
+  // reconstructing the collision environment for every check this will cache a contact manager
+  // based on its thread ID.
+
+  /** @brief Contact manager caching mutex */
+  mutable std::mutex mutex_;
+
+  /** @brief The continuous contact manager cache */
+  mutable std::map<unsigned long int, tesseract_collision::ContinuousContactManager::Ptr> continuous_contact_managers_;
+
+  /** @brief The discrete contact manager cache */
+  mutable std::map<unsigned long int, tesseract_collision::DiscreteContactManager::Ptr> discrete_contact_managers_;
+
+  /**
+   * @brief Perform a continuous collision check between two states
+   * @param segment Trajectory containing two states
+   * @param results Store results from collision check.
+   * @return True if in collision otherwise false
+   */
+  bool continuousCollisionCheck(std::vector<tesseract_collision::ContactResultMap>& results,
+                                const tesseract_common::TrajArray& segment,
+                                bool find_best);
+
+  /**
+   * @brief Perform a continuous discrete check between two states
+   * @param segment Trajectory containing two states
+   * @param results Store results from collision check.
+   * @return True if in collision otherwise false
+   */
+  bool discreteCollisionCheck(std::vector<tesseract_collision::ContactResultMap>& results,
+                              const tesseract_common::TrajArray& segment,
+                              bool find_best);
 };
 
 using DescartesCollisionEdgeEvaluatorF = DescartesCollisionEdgeEvaluator<float>;

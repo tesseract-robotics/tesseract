@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/descartes/descartes_motion_planner.h>
+#include <tesseract_motion_planners/descartes/descartes_collision_edge_evaluator.h>
 #include <tesseract_motion_planners/descartes/utils.h>
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/core/utils.h>
@@ -85,7 +86,8 @@ createDescartesPlannerConfig(const tesseract::Tesseract::ConstPtr& tesseract_ptr
                              const Eigen::Isometry3d& tcp,
                              const double robot_reach,
                              const tesseract_environment::EnvState::ConstPtr& current_state,
-                             const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints)
+                             const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints,
+                             bool use_collision_edge_evaluator = false)
 {
   const std::vector<std::string>& joint_names = kin->getJointNames();
   const std::vector<std::string>& active_link_names = kin->getActiveLinkNames();
@@ -103,8 +105,16 @@ createDescartesPlannerConfig(const tesseract::Tesseract::ConstPtr& tesseract_ptr
       makeTiming<double>(waypoints, std::numeric_limits<double>::max());
 
   // Create Edge Evaluator
-  typename descartes_light::EdgeEvaluator<double>::Ptr edge_computer =
-      std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<double>>(kin->numJoints());
+  descartes_light::EdgeEvaluator<double>::Ptr edge_computer;
+  if (!use_collision_edge_evaluator)
+  {
+    edge_computer = std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<double>>(kin->numJoints());
+  }
+  else
+  {
+    edge_computer = std::make_shared<tesseract_motion_planners::DescartesCollisionEdgeEvaluator<double>>(
+        tesseract_ptr->getEnvironmentConst(), adjacency_map->getActiveLinkNames(), joint_names);
+  }
 
   // Create is valid function
   tesseract_motion_planners::DescartesIsValidFn<double> is_valid_fn =
@@ -224,6 +234,49 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
   auto current_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
   DescartesMotionPlannerConfigD config = createDescartesPlannerConfig(
       tesseract_ptr_, "manipulator", robot_kin, Eigen::Isometry3d::Identity(), 1.5, current_state, waypoints);
+  config.num_threads = 1;
+  DescartesMotionPlanner<double> single_descartes_planner;
+  PlannerResponse single_planner_response;
+  single_descartes_planner.setConfiguration(config);
+  auto single_status = single_descartes_planner.solve(single_planner_response);
+  EXPECT_TRUE(single_status);
+
+  for (int i = 0; i < 10; ++i)
+  {
+    config.num_threads = descartes_light::SolverD::getMaxThreads();
+    DescartesMotionPlanner<double> descartes_planner;
+    PlannerResponse planner_response;
+    descartes_planner.setConfiguration(config);
+    auto status = descartes_planner.solve(planner_response);
+    EXPECT_TRUE(status);
+    for (int j = 0; j < static_cast<int>(waypoints.size()); ++j)
+    {
+      EXPECT_TRUE(single_planner_response.joint_trajectory.trajectory.row(j).isApprox(
+          planner_response.joint_trajectory.trajectory.row(j), 1e-5));
+    }
+  }
+}
+
+TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  // NOLINT
+{
+  // These specify the series of points to be optimized
+  std::vector<tesseract_motion_planners::Waypoint::Ptr> waypoints;
+  Eigen::VectorXd x = Eigen::VectorXd::LinSpaced(4, -0.1, 0.1);  // Reduced num of steps because test takes to long
+  for (int i = 0; i < x.size(); ++i)
+  {
+    CartesianWaypoint::Ptr waypoint =
+        std::make_shared<CartesianWaypoint>(Eigen::Vector3d(0.8, x[i], 0.8), Eigen::Quaterniond(0, 0, -1.0, 0));
+    waypoint->setIsCritical(true);
+    Eigen::VectorXd c(6);
+    c << 1, 1, 1, 1, 1, 0;
+    waypoint->setCoefficients(c);
+    waypoints.push_back(waypoint);
+  }
+
+  auto robot_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator", "OPWInvKin");
+  auto current_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
+  DescartesMotionPlannerConfigD config = createDescartesPlannerConfig(
+      tesseract_ptr_, "manipulator", robot_kin, Eigen::Isometry3d::Identity(), 1.5, current_state, waypoints, true);
   config.num_threads = 1;
   DescartesMotionPlanner<double> single_descartes_planner;
   PlannerResponse single_planner_response;

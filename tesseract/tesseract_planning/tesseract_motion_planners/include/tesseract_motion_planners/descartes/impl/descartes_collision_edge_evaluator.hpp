@@ -29,6 +29,7 @@
 #include <tesseract/tesseract.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <numeric>
+#include <thread>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/descartes/descartes_collision_edge_evaluator.h>
@@ -126,25 +127,8 @@ void DescartesCollisionEdgeEvaluator<FloatType>::considerEdge(
 
   std::vector<tesseract_collision::ContactResultMap> discrete_results;
   std::vector<tesseract_collision::ContactResultMap> continuous_results;
-  bool discrete_in_contact = tesseract_environment::checkTrajectory(
-      discrete_results,
-      *discrete_contact_manager_,
-      *state_solver_,
-      joint_names_,
-      segment,
-      longest_valid_segment_length_,
-      (find_best) ? tesseract_collision::ContactTestType::CLOSEST : tesseract_collision::ContactTestType::FIRST,
-      debug_);
-
-  bool continuous_in_contact = tesseract_environment::checkTrajectory(
-      continuous_results,
-      *continuous_contact_manager_,
-      *state_solver_,
-      joint_names_,
-      segment,
-      longest_valid_segment_length_,
-      (find_best) ? tesseract_collision::ContactTestType::CLOSEST : tesseract_collision::ContactTestType::FIRST,
-      debug_);
+  bool discrete_in_contact = discreteCollisionCheck(discrete_results, segment, find_best);
+  bool continuous_in_contact = continuousCollisionCheck(continuous_results, segment, find_best);
 
   if (!discrete_in_contact && !continuous_in_contact)
     out.emplace_back(0, next_idx);
@@ -164,6 +148,72 @@ template <typename FloatType>
 bool DescartesCollisionEdgeEvaluator<FloatType>::isContactAllowed(const std::string& a, const std::string& b) const
 {
   return acm_.isCollisionAllowed(a, b);
+}
+
+template <typename FloatType>
+bool DescartesCollisionEdgeEvaluator<FloatType>::continuousCollisionCheck(
+    std::vector<tesseract_collision::ContactResultMap>& results,
+    const tesseract_common::TrajArray& segment,
+    bool find_best)
+{
+  // It was time using chronos time elapsed and it was faster to cache the contact manager
+  unsigned long int hash = std::hash<std::thread::id>{}(std::this_thread::get_id());
+  tesseract_collision::ContinuousContactManager::Ptr cm;
+  mutex_.lock();
+  auto it = continuous_contact_managers_.find(hash);
+  if (it == continuous_contact_managers_.end())
+  {
+    cm = continuous_contact_manager_->clone();
+    continuous_contact_managers_[hash] = cm;
+  }
+  else
+  {
+    cm = it->second;
+  }
+  mutex_.unlock();
+
+  return tesseract_environment::checkTrajectory(results,
+                                                *cm,
+                                                *state_solver_,
+                                                joint_names_,
+                                                segment,
+                                                longest_valid_segment_length_,
+                                                (find_best) ? tesseract_collision::ContactTestType::CLOSEST :
+                                                              tesseract_collision::ContactTestType::FIRST,
+                                                debug_);
+}
+
+template <typename FloatType>
+bool DescartesCollisionEdgeEvaluator<FloatType>::discreteCollisionCheck(
+    std::vector<tesseract_collision::ContactResultMap>& results,
+    const tesseract_common::TrajArray& segment,
+    bool find_best)
+{
+  // It was time using chronos time elapsed and it was faster to cache the contact manager
+  unsigned long int hash = std::hash<std::thread::id>{}(std::this_thread::get_id());
+  tesseract_collision::DiscreteContactManager::Ptr cm;
+  mutex_.lock();
+  auto it = discrete_contact_managers_.find(hash);
+  if (it == discrete_contact_managers_.end())
+  {
+    cm = discrete_contact_manager_->clone();
+    discrete_contact_managers_[hash] = cm;
+  }
+  else
+  {
+    cm = it->second;
+  }
+  mutex_.unlock();
+
+  return tesseract_environment::checkTrajectory(results,
+                                                *cm,
+                                                *state_solver_,
+                                                joint_names_,
+                                                segment,
+                                                longest_valid_segment_length_,
+                                                (find_best) ? tesseract_collision::ContactTestType::CLOSEST :
+                                                              tesseract_collision::ContactTestType::FIRST,
+                                                debug_);
 }
 
 }  // namespace tesseract_motion_planners
