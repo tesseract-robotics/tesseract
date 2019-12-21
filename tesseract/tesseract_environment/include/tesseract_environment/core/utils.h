@@ -267,8 +267,8 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
               ss << " " << name;
 
             ss << std::endl
-               << "    State0: " << subtraj.row(iStep) << std::endl
-               << "    State1: " << subtraj.row(iStep + 1) << std::endl;
+               << "    State0: " << subtraj.row(iSubStep) << std::endl
+               << "    State1: " << subtraj.row(iSubStep + 1) << std::endl;
 
             CONSOLE_BRIDGE_logError(ss.str().c_str());
           }
