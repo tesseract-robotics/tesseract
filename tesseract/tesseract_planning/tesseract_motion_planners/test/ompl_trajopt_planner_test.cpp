@@ -66,6 +66,7 @@ using namespace tesseract_motion_planners;
 const static int SEED = 1;
 const static std::vector<double> start_state = { -0.5, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
 const static std::vector<double> end_state = { 0.5, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
+const static bool PLANNER_VERBOSE = false;
 
 std::string locateResource(const std::string& url)
 {
@@ -208,7 +209,7 @@ TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
       ompl_config, std::make_shared<tesseract_motion_planners::TrajOptPlannerFreespaceConfig>(trajopt_config));
 
   tesseract_motion_planners::PlannerResponse planning_response;
-  tesseract_common::StatusCode status = this->planner.solve(planning_response);
+  tesseract_common::StatusCode status = this->planner.solve(planning_response, PLANNER_VERBOSE);
 
   // Expect the planning to succeed
   if (!status)

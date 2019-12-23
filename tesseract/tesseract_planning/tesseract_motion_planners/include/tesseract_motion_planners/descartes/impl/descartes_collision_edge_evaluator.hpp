@@ -159,22 +159,27 @@ bool DescartesCollisionEdgeEvaluator<FloatType>::continuousCollisionCheck(
   // It was time using chronos time elapsed and it was faster to cache the contact manager
   unsigned long int hash = std::hash<std::thread::id>{}(std::this_thread::get_id());
   tesseract_collision::ContinuousContactManager::Ptr cm;
+  tesseract_environment::StateSolver::Ptr ss;
   mutex_.lock();
   auto it = continuous_contact_managers_.find(hash);
   if (it == continuous_contact_managers_.end())
   {
     cm = continuous_contact_manager_->clone();
     continuous_contact_managers_[hash] = cm;
+
+    ss = state_solver_->clone();
+    state_solver_managers_[hash] = ss;
   }
   else
   {
     cm = it->second;
+    ss = state_solver_managers_[hash];
   }
   mutex_.unlock();
 
   return tesseract_environment::checkTrajectory(results,
                                                 *cm,
-                                                *state_solver_,
+                                                *ss,
                                                 joint_names_,
                                                 segment,
                                                 longest_valid_segment_length_,
@@ -192,22 +197,27 @@ bool DescartesCollisionEdgeEvaluator<FloatType>::discreteCollisionCheck(
   // It was time using chronos time elapsed and it was faster to cache the contact manager
   unsigned long int hash = std::hash<std::thread::id>{}(std::this_thread::get_id());
   tesseract_collision::DiscreteContactManager::Ptr cm;
+  tesseract_environment::StateSolver::Ptr ss;
   mutex_.lock();
   auto it = discrete_contact_managers_.find(hash);
   if (it == discrete_contact_managers_.end())
   {
     cm = discrete_contact_manager_->clone();
     discrete_contact_managers_[hash] = cm;
+
+    ss = state_solver_->clone();
+    state_solver_managers_[hash] = ss;
   }
   else
   {
     cm = it->second;
+    ss = state_solver_managers_[hash];
   }
   mutex_.unlock();
 
   return tesseract_environment::checkTrajectory(results,
                                                 *cm,
-                                                *state_solver_,
+                                                *ss,
                                                 joint_names_,
                                                 segment,
                                                 longest_valid_segment_length_,
