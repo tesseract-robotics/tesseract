@@ -114,9 +114,9 @@ trajopt::TermInfo::Ptr createUserDefinedTermInfo(int n_steps,
                                                  sco::MatrixOfVector::func jacobian_function,
                                                  const std::string& name = "user_defined");
 
-trajopt::TermInfo::Ptr createAvoidSingularityTermInfo(const int n_steps,
+trajopt::TermInfo::Ptr createAvoidSingularityTermInfo(int n_steps,
                                                       const std::string& link,
-                                                      const double coeff = 5.0,
+                                                      double coeff = 5.0,
                                                       const std::string& name = "avoid_singularity");
 
 }  // namespace tesseract_motion_planners
