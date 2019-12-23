@@ -335,7 +335,7 @@ trajopt::TermInfo::Ptr createUserDefinedTermInfo(int n_steps,
 }
 
 trajopt::TermInfo::Ptr
-createAvoidSingularityTermInfo(const int n_steps, const std::string& link, const double coeff, const std::string& name)
+createAvoidSingularityTermInfo(int n_steps, const std::string& link, double coeff, const std::string& name)
 {
   auto as = std::make_shared<trajopt::AvoidSingularityTermInfo>();
   as->term_type = trajopt::TT_COST;
