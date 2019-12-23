@@ -55,20 +55,28 @@ public:
                 std::vector<typename descartes_light::LadderGraph<FloatType>::EdgeList>& edges) override;
 
 protected:
-  tesseract_environment::StateSolver::Ptr state_solver_; /**< @brief The tesseract state solver */
-  tesseract_scene_graph::AllowedCollisionMatrix acm_;    /**< @brief The allowed collision matrix */
-  std::vector<std::string> active_link_names_;           /**< @brief A vector of active link names */
-  std::vector<std::string> joint_names_;                 /**< @brief A vector of joint names */
-  tesseract_collision::DiscreteContactManager::Ptr discrete_contact_manager_; /**< @brief The discrete contact manager
-                                                                               */
-  tesseract_collision::ContinuousContactManager::Ptr continuous_contact_manager_; /**< @brief The discrete contact
-                                                                                     manager */
-  double collision_safety_margin_;      /**< @brief The minimum allowed collision distance */
-  double longest_valid_segment_length_; /**< @brief Used to check collisions between two state if norm(state0-state1) >
-                                           longest_valid_segment_length. */
-  bool allow_collision_; /**< @brief If true and no valid edges are found it will return the one with the lowest cost */
-  bool debug_;           /**< @brief Enable debug information to be printed to the terminal */
-  std::size_t dof_;      /**< @brief The number of joints */
+  /** @brief The tesseract state solver */
+  tesseract_environment::StateSolver::ConstPtr state_solver_;
+  /** @brief The allowed collision matrix */
+  tesseract_scene_graph::AllowedCollisionMatrix acm_;
+  /** @brief A vector of active link names */
+  std::vector<std::string> active_link_names_;
+  /** @brief A vector of joint names */
+  std::vector<std::string> joint_names_;
+  /** @brief The discrete contact manager */
+  tesseract_collision::DiscreteContactManager::Ptr discrete_contact_manager_;
+  /** @brief The discrete contact manager */
+  tesseract_collision::ContinuousContactManager::Ptr continuous_contact_manager_;
+  /** @brief The minimum allowed collision distance */
+  double collision_safety_margin_;
+  /** @brief Used to check collisions between two state if norm(state0-state1) > longest_valid_segment_length. */
+  double longest_valid_segment_length_;
+  /** @brief If true and no valid edges are found it will return the one with the lowest cost */
+  bool allow_collision_;
+  /** @brief Enable debug information to be printed to the terminal */
+  bool debug_;
+  /** @brief The number of joints */
+  std::size_t dof_;
 
   /**
    * @brief Check continuous and discrete collision between two states
@@ -105,6 +113,9 @@ protected:
 
   /** @brief The discrete contact manager cache */
   mutable std::map<unsigned long int, tesseract_collision::DiscreteContactManager::Ptr> discrete_contact_managers_;
+
+  /** @brief The state solver manager cache */
+  mutable std::map<unsigned long int, tesseract_environment::StateSolver::Ptr> state_solver_managers_;
 
   /**
    * @brief Perform a continuous collision check between two states

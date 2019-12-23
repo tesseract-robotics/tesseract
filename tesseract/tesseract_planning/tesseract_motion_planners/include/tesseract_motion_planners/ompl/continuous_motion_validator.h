@@ -42,7 +42,7 @@ class ContinuousMotionValidator : public ompl::base::MotionValidator
 {
 public:
   ContinuousMotionValidator(const ompl::base::SpaceInformationPtr& space_info,
-                            tesseract_environment::Environment::ConstPtr env,
+                            const tesseract_environment::Environment::ConstPtr& env,
                             tesseract_kinematics::ForwardKinematics::ConstPtr kin,
                             double collision_safety_margin);
 
@@ -70,6 +70,9 @@ private:
 
   /** @brief The Tesseract Environment */
   tesseract_environment::Environment::ConstPtr env_;
+
+  /**< @brief The tesseract state solver */
+  tesseract_environment::StateSolver::ConstPtr state_solver_;
 
   /** @brief The Tesseract Forward Kinematics */
   tesseract_kinematics::ForwardKinematics::ConstPtr kin_;
@@ -99,6 +102,9 @@ private:
 
   /** @brief The discrete contact manager cache */
   mutable std::map<unsigned long int, tesseract_collision::DiscreteContactManager::Ptr> discrete_contact_managers_;
+
+  /** @brief The state solver manager cache */
+  mutable std::map<unsigned long int, tesseract_environment::StateSolver::Ptr> state_solver_managers_;
 };
 }  // namespace tesseract_motion_planners
 
