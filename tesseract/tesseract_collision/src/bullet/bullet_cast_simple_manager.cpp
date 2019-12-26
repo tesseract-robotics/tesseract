@@ -295,13 +295,13 @@ void BulletCastSimpleManager::setActiveCollisionObjects(const std::vector<std::s
     COW::Ptr& cow = co.second;
 
     // Update with request
-    updateCollisionObjectFilters(active_, *cow, false);
+    updateCollisionObjectFilters(active_, *cow);
 
     // Get the cast collision object
     COW::Ptr cast_cow = link2castcow_[cow->getName()];
 
     // Update with request
-    updateCollisionObjectFilters(active_, *cast_cow, true);
+    updateCollisionObjectFilters(active_, *cast_cow);
 
     // Add to collision object vector
     if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)

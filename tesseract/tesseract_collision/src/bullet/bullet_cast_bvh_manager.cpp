@@ -325,13 +325,13 @@ void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<std::stri
     if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
     {
       // Update with active
-      updateCollisionObjectFilters(active_, *cow, false);
+      updateCollisionObjectFilters(active_, *cow);
 
       // Get the active collision object
       COW::Ptr& active_cow = link2castcow_[cow->getName()];
 
       // Update with active
-      updateCollisionObjectFilters(active_, *active_cow, true);
+      updateCollisionObjectFilters(active_, *active_cow);
 
       // Check if the link is still active.
       if (!isLinkActive(active_, cow->getName()))
@@ -346,13 +346,13 @@ void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<std::stri
     else
     {
       // Update with active
-      updateCollisionObjectFilters(active_, *cow, false);
+      updateCollisionObjectFilters(active_, *cow);
 
       // Get the active collision object
       COW::Ptr& active_cow = link2castcow_[cow->getName()];
 
       // Update with active
-      updateCollisionObjectFilters(active_, *active_cow, true);
+      updateCollisionObjectFilters(active_, *active_cow);
 
       // Check if link is now active
       if (isLinkActive(active_, cow->getName()))

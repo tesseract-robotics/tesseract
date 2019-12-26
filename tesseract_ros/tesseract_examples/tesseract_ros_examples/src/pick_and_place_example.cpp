@@ -57,6 +57,7 @@ const std::string GET_ENVIRONMENT_CHANGES_SERVICE = "get_tesseract_changes_rviz"
 const std::string MODIFY_ENVIRONMENT_SERVICE = "modify_tesseract_rviz";
 const bool ENABLE_TIME_COST = false;
 const bool ENABLE_VELOCITY_COST = false;
+const double OFFSET = 0.005;
 
 namespace tesseract_ros_examples
 {
@@ -129,7 +130,7 @@ bool PickAndPlaceExample::run()
   joint_box.child_link_name = link_box.getName();
   joint_box.type = JointType::FIXED;
   joint_box.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
-  joint_box.parent_to_joint_origin_transform.translation() += Eigen::Vector3d(box_x, box_y, box_side / 2.0);
+  joint_box.parent_to_joint_origin_transform.translation() += Eigen::Vector3d(box_x, box_y, (box_side / 2.0) + OFFSET);
 
   tesseract_->getEnvironment()->addLink(link_box, joint_box);
 
@@ -158,7 +159,7 @@ bool PickAndPlaceExample::run()
   Eigen::Isometry3d final_pose;
   Eigen::Quaterniond orientation(0.0, 0.0, 1.0, 0.0);
   final_pose.linear() = orientation.matrix();
-  final_pose.translation() += Eigen::Vector3d(box_x, box_y, box_side + 0.77153);  // Offset for the table
+  final_pose.translation() += Eigen::Vector3d(box_x, box_y, box_side + 0.77153 + OFFSET);  // Offset for the table
 
   // Define the approach pose
   Eigen::Isometry3d approach_pose = final_pose;
@@ -189,7 +190,7 @@ bool PickAndPlaceExample::run()
     collision->first_step = 1;
     collision->last_step = pci.basic_info.n_steps - 1;
     collision->gap = 1;
-    collision->info = trajopt::createSafetyMarginDataVector(pci.basic_info.n_steps, 0.025, 40);
+    collision->info = trajopt::createSafetyMarginDataVector(pci.basic_info.n_steps, 0.005, 50);
     pci.cost_infos.push_back(collision);
   }
 
@@ -334,6 +335,8 @@ bool PickAndPlaceExample::run()
 
   tesseract_->getEnvironment()->moveLink(joint_box2);
   tesseract_->getEnvironment()->addAllowedCollision(link_box.getName(), "iiwa_link_ee", "Never");
+  tesseract_->getEnvironment()->addAllowedCollision(link_box.getName(), "iiwa_link_7", "Never");
+  tesseract_->getEnvironment()->addAllowedCollision(link_box.getName(), "iiwa_link_6", "Never");
   tesseract_->getEnvironment()->addAllowedCollision(link_box.getName(), end_effector, "Adjacent");
 
   if (rviz_)
@@ -398,7 +401,7 @@ bool PickAndPlaceExample::run()
     collision->first_step = 1;
     collision->last_step = pci_place.basic_info.n_steps - 1;
     collision->gap = 1;
-    collision->info = trajopt::createSafetyMarginDataVector(pci_place.basic_info.n_steps, 0.025, 40);
+    collision->info = trajopt::createSafetyMarginDataVector(pci_place.basic_info.n_steps, 0.005, 50);
     pci_place.cost_infos.push_back(collision);
   }
 

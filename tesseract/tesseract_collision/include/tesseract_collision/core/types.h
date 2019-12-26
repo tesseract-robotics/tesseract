@@ -73,25 +73,47 @@ struct ContactResult
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  double distance;           /**< @brief The distance between two links */
-  int type_id[2];            /**< @brief A user defined type id that is added to the contact shapes */
-  std::string link_names[2]; /**< @brief The two links that are in contact */
-  int shape_id[2];           /**< @brief A link can be made up of multiple shapes */
-  int subshape_id[2];        /**< @brief Some shapes linke octomap and mesh have subshape (boxes and triangles) */
-  Eigen::Vector3d nearest_points[2];    /**< @brief The nearest point on both links */
-  Eigen::Vector3d normal;               /**< @brief The normal vector to move the two objects out of contact */
-  Eigen::Vector3d cc_nearest_points[2]; /**< @brief When using continuous contact checking this is the nearest point on
-                                           the object */
-  double cc_time;                       /**< @brief This is between 0 and 1 indicating the point of contact */
-  ContinouseCollisionType cc_type;      /**< @brief The type of continuous contact */
+  /** @brief The distance between two links */
+  double distance;
+  /** @brief A user defined type id that is added to the contact shapes */
+  int type_id[2];
+  /** @brief The two links that are in contact */
+  std::string link_names[2];
+  /** @brief A link can be made up of multiple shapes */
+  int shape_id[2];
+  /** @brief Some shapes linke octomap and mesh have subshape (boxes and triangles) */
+  int subshape_id[2];
+  /** @brief The nearest point on both links in world coordinates */
+  Eigen::Vector3d nearest_points[2];
+  /** @brief The nearest point on both links in local coordinates */
+  Eigen::Vector3d nearest_points_local[2];
+  /** @brief The transfrom of link in world coordinates */
+  Eigen::Isometry3d transform[2];
+  /** @brief The normal vector to move the two objects out of contact in world coordinates */
+  Eigen::Vector3d normal;
+  /** @brief This is between 0 and 1 indicating the point of contact */
+  double cc_time[2];
+  /** @brief The type of continuous contact */
+  std::array<ContinouseCollisionType, 2> cc_type;
+  /** @brief The transform of link in world coordinates at its desired final location.
+   * Note: This is not the location of the link at the point of contact but the final location the link when performing
+   *       continuous collision checking. If you desire the location of contact use cc_time and interpolate between
+   *       transform and cc_transform;
+   */
+  Eigen::Isometry3d cc_transform[2];
 
   ContactResult() { clear(); }
-  /// Clear structure data
+
+  /** @brief reset to default values */
   void clear()
   {
     distance = std::numeric_limits<double>::max();
     nearest_points[0].setZero();
     nearest_points[1].setZero();
+    nearest_points_local[0].setZero();
+    nearest_points_local[1].setZero();
+    transform[0] = Eigen::Isometry3d::Identity();
+    transform[1] = Eigen::Isometry3d::Identity();
     link_names[0] = "";
     link_names[1] = "";
     shape_id[0] = -1;
@@ -101,10 +123,12 @@ struct ContactResult
     type_id[0] = 0;
     type_id[1] = 0;
     normal.setZero();
-    cc_nearest_points[0].setZero();
-    cc_nearest_points[1].setZero();
-    cc_time = -1;
-    cc_type = ContinouseCollisionType::CCType_None;
+    cc_time[0] = -1;
+    cc_time[1] = -1;
+    cc_type[0] = ContinouseCollisionType::CCType_None;
+    cc_type[1] = ContinouseCollisionType::CCType_None;
+    cc_transform[0] = Eigen::Isometry3d::Identity();
+    cc_transform[1] = Eigen::Isometry3d::Identity();
   }
 };
 

@@ -40,10 +40,10 @@
     <disable_collisions link1="ee_base" link2="link_6" reason="Never" />
     <disable_collisions link1="ee_base" link2="link_7" reason="Adjacent" />
     <disable_collisions link1="ee_base" link2="part" reason="Adjacent" />
-    <disable_collisions link1="grinder_frame" link2="link_1" reason="Never" />
-    <disable_collisions link1="grinder_frame" link2="link_2" reason="Never" />
-    <disable_collisions link1="grinder_frame" link2="link_3" reason="Never" />
-    <disable_collisions link1="grinder_frame" link2="table" reason="Adjacent" />
+    <disable_collisions link1="grinder_base" link2="link_1" reason="Never" />
+    <disable_collisions link1="grinder_base" link2="link_2" reason="Never" />
+    <disable_collisions link1="grinder_base" link2="link_3" reason="Never" />
+    <disable_collisions link1="grinder_base" link2="table" reason="Adjacent" />
     <disable_collisions link1="link_1" link2="link_2" reason="Adjacent" />
     <disable_collisions link1="link_1" link2="link_3" reason="Never" />
     <disable_collisions link1="link_1" link2="link_4" reason="Never" />

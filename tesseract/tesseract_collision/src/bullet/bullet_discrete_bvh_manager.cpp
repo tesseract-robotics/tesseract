@@ -205,7 +205,7 @@ void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::
   {
     COW::Ptr& cow = co.second;
 
-    updateCollisionObjectFilters(active_, *cow, false);
+    updateCollisionObjectFilters(active_, *cow);
   }
 }
 
