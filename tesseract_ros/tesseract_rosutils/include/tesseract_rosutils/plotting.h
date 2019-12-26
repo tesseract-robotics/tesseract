@@ -131,38 +131,61 @@ public:
         rgba << 0.0, 1.0, 0.0, 1.0;
       }
 
-      Eigen::Vector3d ptA, ptB;
-      ptA = dist.nearest_points[0];
-      ptB = dist.nearest_points[1];
-
-      auto it = std::find(link_names.begin(), link_names.end(), dist.link_names[0]);
-      if (it != link_names.end())
-      {
-        ptA = dist.nearest_points[1];
-        ptB = dist.nearest_points[0];
-      }
-
-      if (dist.cc_type == tesseract_collision::ContinouseCollisionType::CCType_Between)
+      if (dist.cc_type[0] == tesseract_collision::ContinouseCollisionType::CCType_Between)
       {
         Eigen::Vector4d cc_rgba;
-        cc_rgba << 0.0, 0.0, 0.0, 1.0;
-        auto marker =
-            getMarkerArrowMsg(id_counter, frame_id, ns, time_stamp, ptB, dist.cc_nearest_points[1], cc_rgba, 0.01);
+        cc_rgba << 0.0, 0.0, 1.0, 1.0;
+        auto marker = getMarkerArrowMsg(id_counter,
+                                        frame_id,
+                                        ns,
+                                        time_stamp,
+                                        dist.transform[0] * dist.nearest_points_local[0],
+                                        dist.cc_transform[0] * dist.nearest_points_local[0],
+                                        cc_rgba,
+                                        0.01);
         msg.markers.push_back(marker);
-
-        // DEGUG: This was added to see what the original contact point was for the cast continuous
-        //        collision checking. Should be removed as everything has been integrated and tested.
-        Eigen::Vector4d temp_rgba;
-        temp_rgba << 0.0, 0.0, 1.0, 1.0;
-        marker =
-            getMarkerArrowMsg(id_counter, frame_id, ns, time_stamp, ptA, dist.cc_nearest_points[0], temp_rgba, 0.01);
-        msg.markers.push_back(marker);
-
-        ptB = ((1 - dist.cc_time) * ptB + dist.cc_time * dist.cc_nearest_points[1]);
       }
 
-      auto marker = getMarkerArrowMsg(id_counter, frame_id, ns, time_stamp, ptA, ptB, rgba, 0.01);
-      msg.markers.push_back(marker);
+      if (dist.cc_type[1] == tesseract_collision::ContinouseCollisionType::CCType_Between)
+      {
+        Eigen::Vector4d cc_rgba;
+        cc_rgba << 0.0, 0.0, 0.5, 1.0;
+        auto marker = getMarkerArrowMsg(id_counter,
+                                        frame_id,
+                                        ns,
+                                        time_stamp,
+                                        dist.transform[1] * dist.nearest_points_local[1],
+                                        dist.cc_transform[1] * dist.nearest_points_local[1],
+                                        cc_rgba,
+                                        0.01);
+        msg.markers.push_back(marker);
+      }
+
+      auto it0 = std::find(link_names.begin(), link_names.end(), dist.link_names[0]);
+      auto it1 = std::find(link_names.begin(), link_names.end(), dist.link_names[1]);
+
+      if (it0 != link_names.end() && it1 != link_names.end())
+      {
+        auto marker0 = getMarkerArrowMsg(
+            id_counter, frame_id, ns, time_stamp, dist.nearest_points[0], dist.nearest_points[1], rgba, 0.01);
+        msg.markers.push_back(marker0);
+
+        auto marker1 = getMarkerArrowMsg(
+            id_counter, frame_id, ns, time_stamp, dist.nearest_points[1], dist.nearest_points[0], rgba, 0.01);
+        msg.markers.push_back(marker1);
+      }
+      else if (it0 != link_names.end())
+      {
+        auto marker = getMarkerArrowMsg(
+            id_counter, frame_id, ns, time_stamp, dist.nearest_points[1], dist.nearest_points[0], rgba, 0.01);
+        msg.markers.push_back(marker);
+      }
+      else
+      {
+        auto marker = getMarkerArrowMsg(
+            id_counter, frame_id, ns, time_stamp, dist.nearest_points[0], dist.nearest_points[1], rgba, 0.01);
+        msg.markers.push_back(marker);
+      }
     }
 
     return msg;

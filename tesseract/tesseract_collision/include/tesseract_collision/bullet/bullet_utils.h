@@ -90,12 +90,30 @@ inline btMatrix3x3 convertEigenToBt(const Eigen::Matrix3d& r)
                       static_cast<btScalar>(r(2, 0)), static_cast<btScalar>(r(2, 1)), static_cast<btScalar>(r(2, 2)) };
 }
 
+inline Eigen::Matrix3d convertBtToEigen(const btMatrix3x3& r)
+{
+  Eigen::Matrix3d m;
+  m << static_cast<double>(r[0][0]), static_cast<double>(r[0][1]), static_cast<double>(r[0][2]),
+      static_cast<double>(r[1][0]), static_cast<double>(r[1][1]), static_cast<double>(r[1][2]),
+      static_cast<double>(r[2][0]), static_cast<double>(r[2][1]), static_cast<double>(r[2][2]);
+  return m;
+}
+
 inline btTransform convertEigenToBt(const Eigen::Isometry3d& t)
 {
   const Eigen::Matrix3d& rot = t.matrix().block<3, 3>(0, 0);
   const Eigen::Vector3d& tran = t.translation();
 
   return btTransform{ convertEigenToBt(rot), convertEigenToBt(tran) };
+}
+
+inline Eigen::Isometry3d convertBtToEigen(const btTransform& t)
+{
+  Eigen::Isometry3d i = Eigen::Isometry3d::Identity();
+  i.linear() = convertBtToEigen(t.getBasis());
+  i.translation() = convertBtToEigen(t.getOrigin());
+
+  return i;
 }
 
 /**
@@ -308,7 +326,9 @@ GetAverageSupport(const btConvexShape* shape, const btVector3& localNormal, floa
   }
   else
   {
-    outpt = shape->localGetSupportingVertexWithoutMargin(localNormal);
+    // The margins are set to zero for most shapes, but for a sphere the margin is used so must use
+    // localGetSupportingVertex instead of localGetSupportingVertexWithoutMargin.
+    outpt = shape->localGetSupportingVertex(localNormal);
     outsupport = localNormal.dot(outpt);
   }
 }
@@ -352,6 +372,39 @@ inline btScalar addDiscreteSingleResult(btManifoldPoint& cp,
 
   //    }
 
+  btTransform tf0, tf1, tf0_inv, tf1_inv;
+  tf0 = colObj0Wrap->getWorldTransform();
+  tf1 = colObj1Wrap->getWorldTransform();
+
+  if (colObj0Wrap->m_parent)
+  {
+    if (colObj0Wrap->m_parent->m_parent)
+    {
+      tf0 = colObj0Wrap->m_parent->m_parent->getWorldTransform();
+      assert(colObj0Wrap->m_parent->m_parent->m_parent == nullptr);
+    }
+    else
+    {
+      tf0 = colObj0Wrap->m_parent->getWorldTransform();
+    }
+  }
+
+  if (colObj1Wrap->m_parent)
+  {
+    if (colObj1Wrap->m_parent->m_parent)
+    {
+      tf1 = colObj1Wrap->m_parent->m_parent->getWorldTransform();
+      assert(colObj1Wrap->m_parent->m_parent->m_parent == nullptr);
+    }
+    else
+    {
+      tf1 = colObj1Wrap->m_parent->getWorldTransform();
+    }
+  }
+
+  tf0_inv = tf0.inverse();
+  tf1_inv = tf1.inverse();
+
   ContactResult contact;
   contact.link_names[0] = cd0->getName();
   contact.link_names[1] = cd1->getName();
@@ -361,6 +414,10 @@ inline btScalar addDiscreteSingleResult(btManifoldPoint& cp,
   contact.subshape_id[1] = colObj1Wrap->m_index;
   contact.nearest_points[0] = convertBtToEigen(cp.m_positionWorldOnA);
   contact.nearest_points[1] = convertBtToEigen(cp.m_positionWorldOnB);
+  contact.nearest_points_local[0] = convertBtToEigen(tf0_inv * cp.m_positionWorldOnA);
+  contact.nearest_points_local[1] = convertBtToEigen(tf1_inv * cp.m_positionWorldOnB);
+  contact.transform[0] = convertBtToEigen(tf0);
+  contact.transform[1] = convertBtToEigen(tf1);
   contact.type_id[0] = cd0->getTypeID();
   contact.type_id[1] = cd1->getTypeID();
   contact.distance = static_cast<double>(cp.m_distance1);
@@ -401,6 +458,39 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
   //          return 0;
   //    }
 
+  btTransform tf0, tf1, tf0_inv, tf1_inv;
+  tf0 = colObj0Wrap->getWorldTransform();
+  tf1 = colObj1Wrap->getWorldTransform();
+
+  if (colObj0Wrap->m_parent)
+  {
+    if (colObj0Wrap->m_parent->m_parent)
+    {
+      tf0 = colObj0Wrap->m_parent->m_parent->getWorldTransform();
+      assert(colObj0Wrap->m_parent->m_parent->m_parent == nullptr);
+    }
+    else
+    {
+      tf0 = colObj0Wrap->m_parent->getWorldTransform();
+    }
+  }
+
+  if (colObj1Wrap->m_parent)
+  {
+    if (colObj1Wrap->m_parent->m_parent)
+    {
+      tf1 = colObj1Wrap->m_parent->m_parent->getWorldTransform();
+      assert(colObj1Wrap->m_parent->m_parent->m_parent == nullptr);
+    }
+    else
+    {
+      tf1 = colObj1Wrap->m_parent->getWorldTransform();
+    }
+  }
+
+  tf0_inv = tf0.inverse();
+  tf1_inv = tf1.inverse();
+
   ContactResult contact;
   contact.link_names[0] = cd0->getName();
   contact.link_names[1] = cd1->getName();
@@ -410,6 +500,10 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
   contact.subshape_id[1] = colObj1Wrap->m_index;
   contact.nearest_points[0] = convertBtToEigen(cp.m_positionWorldOnA);
   contact.nearest_points[1] = convertBtToEigen(cp.m_positionWorldOnB);
+  contact.nearest_points_local[0] = convertBtToEigen(tf0_inv * cp.m_positionWorldOnA);
+  contact.nearest_points_local[1] = convertBtToEigen(tf1_inv * cp.m_positionWorldOnB);
+  contact.transform[0] = convertBtToEigen(tf0);
+  contact.transform[1] = convertBtToEigen(tf1);
   contact.type_id[0] = cd0->getTypeID();
   contact.type_id[1] = cd1->getTypeID();
   contact.distance = static_cast<double>(cp.m_distance1);
@@ -421,76 +515,192 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
     return 0;
   }
 
-  assert(!((cd0->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter) &&
-           (cd1->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)));
-  bool castShapeIsFirst = (cd0->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter) ? true : false;
-
-  btVector3 normalWorldFromCast = -(castShapeIsFirst ? 1 : -1) * cp.m_normalWorldOnB;
-  const btCollisionObjectWrapper* firstColObjWrap = (castShapeIsFirst ? colObj0Wrap : colObj1Wrap);
-
-  if (castShapeIsFirst)
+  if (cd0->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter &&
+      cd1->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
   {
-    std::swap(col->nearest_points[0], col->nearest_points[1]);
-    std::swap(col->link_names[0], col->link_names[1]);
-    std::swap(col->type_id[0], col->type_id[1]);
-    std::swap(col->shape_id[0], col->shape_id[1]);
-    std::swap(col->subshape_id[0], col->subshape_id[1]);
-    col->normal *= -1;
-  }
+    assert(dynamic_cast<const CastHullShape*>(colObj0Wrap->getCollisionShape()) != nullptr);
+    const auto* shape0 = static_cast<const CastHullShape*>(colObj0Wrap->getCollisionShape());
+    assert(shape0 != nullptr);
 
-  btTransform tfWorld0, tfWorld1;
-  assert(dynamic_cast<const CastHullShape*>(firstColObjWrap->getCollisionShape()) != nullptr);
-  const auto* shape = static_cast<const CastHullShape*>(firstColObjWrap->getCollisionShape());
-  assert(shape != nullptr);
+    assert(dynamic_cast<const CastHullShape*>(colObj1Wrap->getCollisionShape()) != nullptr);
+    const auto* shape1 = static_cast<const CastHullShape*>(colObj1Wrap->getCollisionShape());
+    assert(shape1 != nullptr);
 
-  tfWorld0 = firstColObjWrap->getWorldTransform();
-  tfWorld1 = firstColObjWrap->getWorldTransform() * shape->m_t01;
+    btVector3 shape0_normalWorld = -1 * cp.m_normalWorldOnB;
+    btTransform shape0_tfWorld0 = colObj0Wrap->getWorldTransform();
+    btTransform shape0_tfWorld1 = colObj0Wrap->getWorldTransform() * shape0->m_t01;
+    btVector3 shape1_normalWorld = cp.m_normalWorldOnB;
+    btTransform shape1_tfWorld0 = colObj1Wrap->getWorldTransform();
+    btTransform shape1_tfWorld1 = colObj1Wrap->getWorldTransform() * shape1->m_t01;
 
-  btVector3 normalLocal0 = normalWorldFromCast * tfWorld0.getBasis();
-  btVector3 normalLocal1 = normalWorldFromCast * tfWorld1.getBasis();
+    Eigen::Isometry3d s0 = col->transform[0].inverse() * convertBtToEigen(shape0_tfWorld0);
+    Eigen::Isometry3d s1 = col->transform[1].inverse() * convertBtToEigen(shape1_tfWorld0);
+    col->cc_transform[0] = convertBtToEigen(shape0_tfWorld1) * s0.inverse();
+    col->cc_transform[1] = convertBtToEigen(shape1_tfWorld1) * s1.inverse();
 
-  btVector3 ptLocal0;
-  float localsup0;
-  GetAverageSupport(shape->m_shape, normalLocal0, localsup0, ptLocal0);
-  btVector3 ptWorld0 = tfWorld0 * ptLocal0;
-  btVector3 ptLocal1;
-  float localsup1;
-  GetAverageSupport(shape->m_shape, normalLocal1, localsup1, ptLocal1);
-  btVector3 ptWorld1 = tfWorld1 * ptLocal1;
+    btVector3 shape0_normalLocal0 = shape0_normalWorld * shape0_tfWorld0.getBasis();
+    btVector3 shape0_normalLocal1 = shape0_normalWorld * shape0_tfWorld1.getBasis();
+    btVector3 shape1_normalLocal0 = shape1_normalWorld * shape1_tfWorld0.getBasis();
+    btVector3 shape1_normalLocal1 = shape1_normalWorld * shape1_tfWorld1.getBasis();
 
-  float sup0 = normalWorldFromCast.dot(ptWorld0);
-  float sup1 = normalWorldFromCast.dot(ptWorld1);
+    btVector3 shape0_ptLocal0;
+    float shape0_localsup0;
+    GetAverageSupport(shape0->m_shape, shape0_normalLocal0, shape0_localsup0, shape0_ptLocal0);
+    btVector3 shape0_ptWorld0 = shape0_tfWorld0 * shape0_ptLocal0;
+    btVector3 shape0_ptLocal1;
+    float shape0_localsup1;
+    GetAverageSupport(shape0->m_shape, shape0_normalLocal1, shape0_localsup1, shape0_ptLocal1);
+    btVector3 shape0_ptWorld1 = shape0_tfWorld1 * shape0_ptLocal1;
 
-  // TODO: this section is potentially problematic. think hard about the math
-  if (sup0 - sup1 > BULLET_SUPPORT_FUNC_TOLERANCE)
-  {
-    col->cc_time = 0;
-    col->cc_type = ContinouseCollisionType::CCType_Time0;
-  }
-  else if (sup1 - sup0 > BULLET_SUPPORT_FUNC_TOLERANCE)
-  {
-    col->cc_time = 1;
-    col->cc_type = ContinouseCollisionType::CCType_Time1;
-  }
-  else
-  {
-    const btVector3& ptOnCast = castShapeIsFirst ? cp.m_positionWorldOnA : cp.m_positionWorldOnB;
-    float l0c = (ptOnCast - ptWorld0).length();
-    float l1c = (ptOnCast - ptWorld1).length();
+    btVector3 shape1_ptLocal0;
+    float shape1_localsup0;
+    GetAverageSupport(shape1->m_shape, shape1_normalLocal0, shape1_localsup0, shape1_ptLocal0);
+    btVector3 shape1_ptWorld0 = shape1_tfWorld0 * shape1_ptLocal0;
+    btVector3 shape1_ptLocal1;
+    float shape1_localsup1;
+    GetAverageSupport(shape1->m_shape, shape1_normalLocal1, shape1_localsup1, shape1_ptLocal1);
+    btVector3 shape1_ptWorld1 = shape1_tfWorld1 * shape1_ptLocal1;
 
-    col->cc_nearest_points[0] = col->nearest_points[1];
-    col->nearest_points[1] = convertBtToEigen(ptWorld0);
+    float shape0_sup0 = shape0_normalWorld.dot(shape0_ptWorld0);
+    float shape0_sup1 = shape0_normalWorld.dot(shape0_ptWorld1);
+    float shape1_sup0 = shape1_normalWorld.dot(shape1_ptWorld0);
+    float shape1_sup1 = shape1_normalWorld.dot(shape1_ptWorld1);
 
-    col->cc_nearest_points[1] = convertBtToEigen(ptWorld1);
-    col->cc_type = ContinouseCollisionType::CCType_Between;
-
-    if (l0c + l1c < BULLET_LENGTH_TOLERANCE)
+    // TODO: this section is potentially problematic. think hard about the math
+    if (shape0_sup0 - shape0_sup1 > BULLET_SUPPORT_FUNC_TOLERANCE)
     {
-      col->cc_time = .5;
+      col->cc_time[0] = 0;
+      col->cc_type[0] = ContinouseCollisionType::CCType_Time0;
+    }
+    else if (shape0_sup1 - shape0_sup0 > BULLET_SUPPORT_FUNC_TOLERANCE)
+    {
+      col->cc_time[0] = 1;
+      col->cc_type[0] = ContinouseCollisionType::CCType_Time1;
     }
     else
     {
-      col->cc_time = static_cast<double>(l0c / (l0c + l1c));
+      float l0c = (cp.m_positionWorldOnA - shape0_ptWorld0).length();
+      float l1c = (cp.m_positionWorldOnA - shape0_ptWorld1).length();
+
+      col->nearest_points_local[0] =
+          convertBtToEigen(tf0_inv * (shape0_tfWorld0 * ((shape0_ptLocal0 + shape0_ptLocal1) / 2.0)));
+      col->cc_type[0] = ContinouseCollisionType::CCType_Between;
+
+      if (l0c + l1c < BULLET_LENGTH_TOLERANCE)
+      {
+        col->cc_time[0] = .5;
+      }
+      else
+      {
+        col->cc_time[0] = static_cast<double>(l0c / (l0c + l1c));
+      }
+    }
+
+    // TODO: this section is potentially problematic. think hard about the math
+    if (shape1_sup0 - shape1_sup1 > BULLET_SUPPORT_FUNC_TOLERANCE)
+    {
+      col->cc_time[1] = 0;
+      col->cc_type[1] = ContinouseCollisionType::CCType_Time0;
+    }
+    else if (shape1_sup1 - shape1_sup0 > BULLET_SUPPORT_FUNC_TOLERANCE)
+    {
+      col->cc_time[1] = 1;
+      col->cc_type[1] = ContinouseCollisionType::CCType_Time1;
+    }
+    else
+    {
+      float l0c = (cp.m_positionWorldOnB - shape1_ptWorld0).length();
+      float l1c = (cp.m_positionWorldOnB - shape1_ptWorld1).length();
+
+      // Get local in the links frame
+      col->nearest_points_local[1] =
+          convertBtToEigen(tf1_inv * (shape1_tfWorld0 * ((shape1_ptLocal0 + shape1_ptLocal1) / 2.0)));
+      col->cc_type[1] = ContinouseCollisionType::CCType_Between;
+
+      if (l0c + l1c < BULLET_LENGTH_TOLERANCE)
+      {
+        col->cc_time[1] = .5;
+      }
+      else
+      {
+        col->cc_time[1] = static_cast<double>(l0c / (l0c + l1c));
+      }
+    }
+  }
+  else
+  {
+    bool castShapeIsFirst = (cd0->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter) ? true : false;
+    btVector3 normalWorldFromCast = -(castShapeIsFirst ? 1 : -1) * cp.m_normalWorldOnB;
+    const btCollisionObjectWrapper* firstColObjWrap = (castShapeIsFirst ? colObj0Wrap : colObj1Wrap);
+    const btTransform& first_tf_inv = (castShapeIsFirst ? tf0_inv : tf1_inv);
+
+    if (castShapeIsFirst)
+    {
+      std::swap(col->nearest_points[0], col->nearest_points[1]);
+      std::swap(col->nearest_points_local[0], col->nearest_points_local[1]);
+      std::swap(col->transform[0], col->transform[1]);
+      std::swap(col->link_names[0], col->link_names[1]);
+      std::swap(col->type_id[0], col->type_id[1]);
+      std::swap(col->shape_id[0], col->shape_id[1]);
+      std::swap(col->subshape_id[0], col->subshape_id[1]);
+      col->normal *= -1;
+    }
+
+    btTransform tfWorld0, tfWorld1;
+    assert(dynamic_cast<const CastHullShape*>(firstColObjWrap->getCollisionShape()) != nullptr);
+    const auto* shape = static_cast<const CastHullShape*>(firstColObjWrap->getCollisionShape());
+    assert(shape != nullptr);
+
+    tfWorld0 = firstColObjWrap->getWorldTransform();
+    tfWorld1 = firstColObjWrap->getWorldTransform() * shape->m_t01;
+
+    Eigen::Isometry3d s1 = col->transform[1].inverse() * convertBtToEigen(tfWorld0);
+    col->cc_transform[0] = col->transform[0];
+    col->cc_transform[1] = convertBtToEigen(tfWorld1) * s1.inverse();
+
+    btVector3 normalLocal0 = normalWorldFromCast * tfWorld0.getBasis();
+    btVector3 normalLocal1 = normalWorldFromCast * tfWorld1.getBasis();
+
+    btVector3 ptLocal0;
+    float localsup0;
+    GetAverageSupport(shape->m_shape, normalLocal0, localsup0, ptLocal0);
+    btVector3 ptWorld0 = tfWorld0 * ptLocal0;
+    btVector3 ptLocal1;
+    float localsup1;
+    GetAverageSupport(shape->m_shape, normalLocal1, localsup1, ptLocal1);
+    btVector3 ptWorld1 = tfWorld1 * ptLocal1;
+
+    float sup0 = normalWorldFromCast.dot(ptWorld0);
+    float sup1 = normalWorldFromCast.dot(ptWorld1);
+
+    // TODO: this section is potentially problematic. think hard about the math
+    if (sup0 - sup1 > BULLET_SUPPORT_FUNC_TOLERANCE)
+    {
+      col->cc_time[1] = 0;
+      col->cc_type[1] = ContinouseCollisionType::CCType_Time0;
+    }
+    else if (sup1 - sup0 > BULLET_SUPPORT_FUNC_TOLERANCE)
+    {
+      col->cc_time[1] = 1;
+      col->cc_type[1] = ContinouseCollisionType::CCType_Time1;
+    }
+    else
+    {
+      const btVector3& ptOnCast = castShapeIsFirst ? cp.m_positionWorldOnA : cp.m_positionWorldOnB;
+      float l0c = (ptOnCast - ptWorld0).length();
+      float l1c = (ptOnCast - ptWorld1).length();
+
+      col->nearest_points_local[1] = convertBtToEigen(first_tf_inv * (tfWorld0 * ((ptLocal0 + ptLocal1) / 2.0)));
+      col->cc_type[1] = ContinouseCollisionType::CCType_Between;
+
+      if (l0c + l1c < BULLET_LENGTH_TOLERANCE)
+      {
+        col->cc_time[1] = .5;
+      }
+      else
+      {
+        col->cc_time[1] = static_cast<double>(l0c / (l0c + l1c));
+      }
     }
   }
 
@@ -828,7 +1038,7 @@ btCollisionShape* createShapePrimitive(const CollisionShapeConstPtr& geom,
  * Currently continuous collision objects can only be checked against static objects. Continuous to Continuous
  * collision checking is currently not supports. TODO LEVI: Add support for Continuous to Continuous collision checking.
  */
-inline void updateCollisionObjectFilters(const std::vector<std::string>& active, COW& cow, bool continuous)
+inline void updateCollisionObjectFilters(const std::vector<std::string>& active, COW& cow)
 {
   cow.m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
 
@@ -843,8 +1053,7 @@ inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
   }
   else
   {
-    (continuous) ? (cow.m_collisionFilterMask = btBroadphaseProxy::StaticFilter) :
-                   (cow.m_collisionFilterMask = btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter);
+    cow.m_collisionFilterMask = btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter;
   }
 
   if (cow.getBroadphaseHandle())

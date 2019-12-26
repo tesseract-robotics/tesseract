@@ -191,7 +191,7 @@ void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::vector<st
   {
     COW::Ptr& cow = co.second;
 
-    updateCollisionObjectFilters(active_, *cow, false);
+    updateCollisionObjectFilters(active_, *cow);
 
     // Update collision object vector
     if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)

@@ -1401,55 +1401,6 @@ inline bool processMsg(const tesseract_environment::Environment::Ptr& env,
   return processMsg(*env, state_msg);
 }
 
-inline void toMsg(tesseract_msgs::ContactResult& contact_result_msg,
-                  const tesseract_collision::ContactResult& contact_result,
-                  const ros::Time& stamp = ros::Time::now())
-{
-  contact_result_msg.stamp = stamp;
-  contact_result_msg.distance = contact_result.distance;
-  contact_result_msg.link_names[0] = contact_result.link_names[0];
-  contact_result_msg.link_names[1] = contact_result.link_names[1];
-  contact_result_msg.shape_id[0] = static_cast<size_t>(contact_result.shape_id[0]);
-  contact_result_msg.shape_id[1] = static_cast<size_t>(contact_result.shape_id[1]);
-  contact_result_msg.subshape_id[0] = static_cast<size_t>(contact_result.subshape_id[0]);
-  contact_result_msg.subshape_id[1] = static_cast<size_t>(contact_result.subshape_id[1]);
-  contact_result_msg.normal.x = contact_result.normal[0];
-  contact_result_msg.normal.y = contact_result.normal[1];
-  contact_result_msg.normal.z = contact_result.normal[2];
-  contact_result_msg.nearest_points[0].x = contact_result.nearest_points[0][0];
-  contact_result_msg.nearest_points[0].y = contact_result.nearest_points[0][1];
-  contact_result_msg.nearest_points[0].z = contact_result.nearest_points[0][2];
-  contact_result_msg.nearest_points[1].x = contact_result.nearest_points[1][0];
-  contact_result_msg.nearest_points[1].y = contact_result.nearest_points[1][1];
-  contact_result_msg.nearest_points[1].z = contact_result.nearest_points[1][2];
-  contact_result_msg.cc_time = contact_result.cc_time;
-  contact_result_msg.cc_nearest_points[0].x = contact_result.cc_nearest_points[0][0];
-  contact_result_msg.cc_nearest_points[0].y = contact_result.cc_nearest_points[0][1];
-  contact_result_msg.cc_nearest_points[0].z = contact_result.cc_nearest_points[0][2];
-  contact_result_msg.cc_nearest_points[1].x = contact_result.cc_nearest_points[1][0];
-  contact_result_msg.cc_nearest_points[1].y = contact_result.cc_nearest_points[1][1];
-  contact_result_msg.cc_nearest_points[1].z = contact_result.cc_nearest_points[1][2];
-
-  contact_result_msg.type_id[0] = static_cast<char>(contact_result.type_id[0]);
-  contact_result_msg.type_id[1] = static_cast<char>(contact_result.type_id[1]);
-
-  if (contact_result.cc_type == tesseract_collision::ContinouseCollisionType::CCType_Time0)
-    contact_result_msg.cc_type = 1;
-  else if (contact_result.cc_type == tesseract_collision::ContinouseCollisionType::CCType_Time1)
-    contact_result_msg.cc_type = 2;
-  else if (contact_result.cc_type == tesseract_collision::ContinouseCollisionType::CCType_Between)
-    contact_result_msg.cc_type = 3;
-  else
-    contact_result_msg.cc_type = 0;
-}
-
-inline void toMsg(const tesseract_msgs::ContactResultPtr& contact_result_msg,
-                  const tesseract_collision::ContactResult& contact_result,
-                  const ros::Time& stamp = ros::Time::now())
-{
-  toMsg(*contact_result_msg, contact_result, stamp);
-}
-
 /**
  * @brief Convert Geometry Pose Message to Eigen
  * @param pose Eigen type to filled out
@@ -1472,6 +1423,68 @@ inline bool toMsg(geometry_msgs::Pose& pose_msg, const Eigen::Isometry3d& pose)
 {
   tf::poseEigenToMsg(pose, pose_msg);
   return true;
+}
+
+inline void toMsg(tesseract_msgs::ContactResult& contact_result_msg,
+                  const tesseract_collision::ContactResult& contact_result,
+                  const ros::Time& stamp = ros::Time::now())
+{
+  contact_result_msg.stamp = stamp;
+  contact_result_msg.distance = contact_result.distance;
+  contact_result_msg.type_id[0] = static_cast<char>(contact_result.type_id[0]);
+  contact_result_msg.type_id[1] = static_cast<char>(contact_result.type_id[1]);
+  contact_result_msg.link_names[0] = contact_result.link_names[0];
+  contact_result_msg.link_names[1] = contact_result.link_names[1];
+  contact_result_msg.shape_id[0] = static_cast<size_t>(contact_result.shape_id[0]);
+  contact_result_msg.shape_id[1] = static_cast<size_t>(contact_result.shape_id[1]);
+  contact_result_msg.subshape_id[0] = static_cast<size_t>(contact_result.subshape_id[0]);
+  contact_result_msg.subshape_id[1] = static_cast<size_t>(contact_result.subshape_id[1]);
+  contact_result_msg.normal.x = contact_result.normal[0];
+  contact_result_msg.normal.y = contact_result.normal[1];
+  contact_result_msg.normal.z = contact_result.normal[2];
+  contact_result_msg.nearest_points[0].x = contact_result.nearest_points[0][0];
+  contact_result_msg.nearest_points[0].y = contact_result.nearest_points[0][1];
+  contact_result_msg.nearest_points[0].z = contact_result.nearest_points[0][2];
+  contact_result_msg.nearest_points[1].x = contact_result.nearest_points[1][0];
+  contact_result_msg.nearest_points[1].y = contact_result.nearest_points[1][1];
+  contact_result_msg.nearest_points[1].z = contact_result.nearest_points[1][2];
+  contact_result_msg.nearest_points_local[0].x = contact_result.nearest_points_local[0][0];
+  contact_result_msg.nearest_points_local[0].y = contact_result.nearest_points_local[0][1];
+  contact_result_msg.nearest_points_local[0].z = contact_result.nearest_points_local[0][2];
+  contact_result_msg.nearest_points_local[1].x = contact_result.nearest_points_local[1][0];
+  contact_result_msg.nearest_points_local[1].y = contact_result.nearest_points_local[1][1];
+  contact_result_msg.nearest_points_local[1].z = contact_result.nearest_points_local[1][2];
+  toMsg(contact_result_msg.transform[0], contact_result.transform[0]);
+  toMsg(contact_result_msg.transform[1], contact_result.transform[1]);
+  contact_result_msg.cc_time[0] = contact_result.cc_time[0];
+  contact_result_msg.cc_time[1] = contact_result.cc_time[1];
+  toMsg(contact_result_msg.cc_transform[0], contact_result.cc_transform[0]);
+  toMsg(contact_result_msg.cc_transform[1], contact_result.cc_transform[1]);
+
+  if (contact_result.cc_type[0] == tesseract_collision::ContinouseCollisionType::CCType_Time0)
+    contact_result_msg.cc_type[0] = 1;
+  else if (contact_result.cc_type[0] == tesseract_collision::ContinouseCollisionType::CCType_Time1)
+    contact_result_msg.cc_type[0] = 2;
+  else if (contact_result.cc_type[0] == tesseract_collision::ContinouseCollisionType::CCType_Between)
+    contact_result_msg.cc_type[0] = 3;
+  else
+    contact_result_msg.cc_type[0] = 0;
+
+  if (contact_result.cc_type[1] == tesseract_collision::ContinouseCollisionType::CCType_Time0)
+    contact_result_msg.cc_type[1] = 1;
+  else if (contact_result.cc_type[1] == tesseract_collision::ContinouseCollisionType::CCType_Time1)
+    contact_result_msg.cc_type[1] = 2;
+  else if (contact_result.cc_type[1] == tesseract_collision::ContinouseCollisionType::CCType_Between)
+    contact_result_msg.cc_type[1] = 3;
+  else
+    contact_result_msg.cc_type[1] = 0;
+}
+
+inline void toMsg(const tesseract_msgs::ContactResultPtr& contact_result_msg,
+                  const tesseract_collision::ContactResult& contact_result,
+                  const ros::Time& stamp = ros::Time::now())
+{
+  toMsg(*contact_result_msg, contact_result, stamp);
 }
 
 inline bool toMsg(sensor_msgs::JointState& joint_state, const tesseract_motion_planners::Waypoint& waypoint)
