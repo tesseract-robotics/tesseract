@@ -181,9 +181,6 @@ inline bool parseSceneGraph(KDLChainData& results,
 
   results.joint_list.resize(results.robot_chain.getNrOfJoints());
   results.joint_limits.resize(results.robot_chain.getNrOfJoints(), 2);
-  std::vector<int> joint_too_segment;
-  joint_too_segment.resize(results.robot_chain.getNrOfJoints());
-  joint_too_segment.back() = -1;
 
   results.segment_index[results.base_name] = 0;
   results.link_list.push_back(results.base_name);
@@ -194,6 +191,9 @@ inline bool parseSceneGraph(KDLChainData& results,
     const KDL::Segment& seg = results.robot_chain.getSegment(i);
     const KDL::Joint& jnt = seg.getJoint();
     results.link_list.push_back(seg.getName());
+
+    // When requesting forward kin for link_name it is index + 1
+    results.segment_index[seg.getName()] = static_cast<int>(i + 1);
 
     if (found)
       results.active_link_list.push_back(seg.getName());
@@ -211,8 +211,6 @@ inline bool parseSceneGraph(KDLChainData& results,
     const tesseract_scene_graph::Joint::ConstPtr& joint = scene_graph.getJoint(jnt.getName());
     results.joint_limits(j, 0) = joint->limits->lower;
     results.joint_limits(j, 1) = joint->limits->upper;
-    if (j > 0)
-      joint_too_segment[j - 1] = static_cast<int>(i);
 
     // Need to set limits for continuous joints. TODO: This may not be required
     // by the optization library but may be nice to have
@@ -224,38 +222,6 @@ inline bool parseSceneGraph(KDLChainData& results,
       results.joint_limits(j, 1) = +4 * M_PI;
     }
     ++j;
-  }
-
-  for (unsigned i = 0; i < results.robot_chain.getNrOfSegments(); ++i)
-  {
-    bool found = false;
-    const KDL::Segment& seg = results.robot_chain.getSegment(i);
-    tesseract_scene_graph::Link::ConstPtr link_model = scene_graph.getLink(seg.getName());
-    while (!found)
-    {
-      // Check if the link is the root
-      std::vector<tesseract_scene_graph::Joint::ConstPtr> parent_joints =
-          scene_graph.getInboundJoints(link_model->getName());
-      if (parent_joints.empty())
-      {
-        results.segment_index[seg.getName()] = 0;
-        break;
-      }
-
-      std::string joint_name = parent_joints[0]->getName();
-      std::vector<std::string>::const_iterator it =
-          std::find(results.joint_list.begin(), results.joint_list.end(), joint_name);
-      if (it != results.joint_list.end())
-      {
-        unsigned joint_index = static_cast<unsigned>(it - results.joint_list.begin());
-        results.segment_index[seg.getName()] = joint_too_segment[joint_index];
-        found = true;
-      }
-      else
-      {
-        link_model = scene_graph.getSourceLink(joint_name);
-      }
-    }
   }
 
   return true;
