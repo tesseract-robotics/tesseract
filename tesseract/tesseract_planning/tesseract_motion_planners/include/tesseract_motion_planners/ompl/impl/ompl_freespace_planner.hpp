@@ -128,21 +128,7 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
                                                       tesseract_collision::ContactTestType::FIRST,
                                                       verbose);
 
-  // Do a discrete check until continuous collision checking is updated to do dynamic-dynamic checking
-  discrete_contact_manager_->setContactDistanceThreshold(0);
-  collisions.clear();
-
-  found = found || tesseract_environment::checkTrajectory(collisions,
-                                                          *discrete_contact_manager_,
-                                                          *state_solver,
-                                                          kin_->getJointNames(),
-                                                          traj,
-                                                          config_->longest_valid_segment_length,
-                                                          tesseract_collision::ContactTestType::FIRST,
-                                                          verbose);
-
   // Set the contact distance back to original incase solve was called again.
-  discrete_contact_manager_->setContactDistanceThreshold(config_->collision_safety_margin);
   continuous_contact_manager_->setContactDistanceThreshold(config_->collision_safety_margin);
 
   // Send response
