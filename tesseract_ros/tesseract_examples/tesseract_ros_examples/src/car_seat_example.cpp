@@ -295,7 +295,6 @@ std::shared_ptr<ProblemConstructionInfo> CarSeatExample::cppMethod(const std::st
   collision->continuous = true;
   collision->first_step = 0;
   collision->last_step = pci->basic_info.n_steps - 2;
-  collision->gap = 1;
   collision->info = createSafetyMarginDataVector(pci->basic_info.n_steps, 0.0001, 40);
   pci->cnt_infos.push_back(collision);
 

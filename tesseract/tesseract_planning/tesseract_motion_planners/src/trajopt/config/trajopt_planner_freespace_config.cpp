@@ -26,6 +26,8 @@
 #include <tesseract_motion_planners/trajopt/config/trajopt_planner_freespace_config.h>
 #include <tesseract_motion_planners/trajopt/config/utils.h>
 
+static const double LONGEST_VALID_SEGMENT_FRACTION_DEFAULT = 0.01;
+
 namespace tesseract_motion_planners
 {
 std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerFreespaceConfig::generatePCI() const
@@ -159,9 +161,34 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerFreespaceConfig:
   // Set costs for the rest of the points
   if (collision_check)
   {
+    // Calculate longest valid segment length
+    const Eigen::MatrixX2d& limits = kin->getLimits();
+    double length = 0;
+    double extent = (limits.col(1) - limits.col(0)).norm();
+    if (longest_valid_segment_fraction > 0 && longest_valid_segment_length > 0)
+    {
+      length = std::min(longest_valid_segment_fraction * extent, longest_valid_segment_length);
+    }
+    else if (longest_valid_segment_fraction > 0)
+    {
+      length = longest_valid_segment_fraction * extent;
+    }
+    else if (longest_valid_segment_length > 0)
+    {
+      length = longest_valid_segment_length;
+    }
+    else
+    {
+      length = LONGEST_VALID_SEGMENT_FRACTION_DEFAULT * extent;
+    }
+
     // Create a default collision term info
-    trajopt::TermInfo::Ptr ti =
-        createCollisionTermInfo(pci.basic_info.n_steps, collision_safety_margin, collision_continuous, collision_coeff);
+    trajopt::TermInfo::Ptr ti = createCollisionTermInfo(pci.basic_info.n_steps,
+                                                        collision_safety_margin,
+                                                        collision_continuous,
+                                                        collision_coeff,
+                                                        contact_test_type,
+                                                        length);
 
     // Update the term info with the (possibly) new start and end state indices for which to apply this cost
     std::shared_ptr<trajopt::CollisionTermInfo> ct = std::static_pointer_cast<trajopt::CollisionTermInfo>(ti);

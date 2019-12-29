@@ -189,7 +189,6 @@ bool PickAndPlaceExample::run()
     collision->continuous = true;
     collision->first_step = 1;
     collision->last_step = pci.basic_info.n_steps - 1;
-    collision->gap = 1;
     collision->info = trajopt::createSafetyMarginDataVector(pci.basic_info.n_steps, 0.005, 50);
     pci.cost_infos.push_back(collision);
   }
@@ -400,7 +399,6 @@ bool PickAndPlaceExample::run()
     collision->continuous = true;
     collision->first_step = 1;
     collision->last_step = pci_place.basic_info.n_steps - 1;
-    collision->gap = 1;
     collision->info = trajopt::createSafetyMarginDataVector(pci_place.basic_info.n_steps, 0.005, 50);
     pci_place.cost_infos.push_back(collision);
   }

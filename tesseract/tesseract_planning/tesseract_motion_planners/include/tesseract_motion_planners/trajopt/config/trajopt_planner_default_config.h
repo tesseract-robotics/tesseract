@@ -88,6 +88,8 @@ struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
    * singularities */
   JointWaypoint::ConstPtr configuration = nullptr;
 
+  /** @brief The type of contact test to perform: FIRST, CLOSEST, ALL */
+  tesseract_collision::ContactTestType contact_test_type = tesseract_collision::ContactTestType::ALL;
   /** @brief If true, collision checking will be enabled. Default: true*/
   bool collision_check = true;
   /** @brief If true, use continuous collision checking */

@@ -77,11 +77,14 @@ trajopt::TermInfo::Ptr createConfigurationTermInfo(const JointWaypoint::ConstPtr
                                                    double coeff = 1.0,
                                                    const std::string& name = "configuration_cost");
 
-trajopt::TermInfo::Ptr createCollisionTermInfo(int n_steps,
-                                               double collision_safety_margin,
-                                               bool collision_continuous = true,
-                                               double coeff = 20.0,
-                                               const std::string& name = "collision_cost");
+trajopt::TermInfo::Ptr createCollisionTermInfo(
+    int n_steps,
+    double collision_safety_margin,
+    bool collision_continuous = true,
+    double coeff = 20.0,
+    tesseract_collision::ContactTestType contact_test_type = tesseract_collision::ContactTestType::ALL,
+    double longest_valid_segment_length = 0.5,
+    const std::string& name = "collision_cost");
 
 trajopt::TermInfo::Ptr
 createSmoothVelocityTermInfo(int n_steps, int n_joints, double coeff = 5.0, const std::string& name = "joint_vel_cost");
