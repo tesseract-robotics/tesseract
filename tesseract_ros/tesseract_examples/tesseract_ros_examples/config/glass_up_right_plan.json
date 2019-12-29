@@ -22,6 +22,7 @@
         "coeffs" : [20],
         "dist_pen" : [0.025],
         "continuous" : true,
+        "longest_valid_segment_length" : 0.1,
         "pairs" :
         [
           {

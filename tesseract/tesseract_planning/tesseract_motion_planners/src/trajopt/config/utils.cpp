@@ -218,6 +218,8 @@ trajopt::TermInfo::Ptr createCollisionTermInfo(int n_steps,
                                                double collision_safety_margin,
                                                bool collision_continuous,
                                                double coeff,
+                                               tesseract_collision::ContactTestType contact_test_type,
+                                               double longest_valid_segment_length,
                                                const std::string& name)
 {
   std::shared_ptr<trajopt::CollisionTermInfo> collision = std::make_shared<trajopt::CollisionTermInfo>();
@@ -226,7 +228,8 @@ trajopt::TermInfo::Ptr createCollisionTermInfo(int n_steps,
   collision->continuous = collision_continuous;
   collision->first_step = 0;
   collision->last_step = n_steps - 1;
-  collision->gap = 1;
+  collision->contact_test_type = contact_test_type;
+  collision->longest_valid_segment_length = longest_valid_segment_length;
   collision->info = trajopt::createSafetyMarginDataVector(n_steps, collision_safety_margin, coeff);
   return collision;
 }
