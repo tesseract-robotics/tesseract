@@ -1431,8 +1431,8 @@ inline void toMsg(tesseract_msgs::ContactResult& contact_result_msg,
 {
   contact_result_msg.stamp = stamp;
   contact_result_msg.distance = contact_result.distance;
-  contact_result_msg.type_id[0] = static_cast<char>(contact_result.type_id[0]);
-  contact_result_msg.type_id[1] = static_cast<char>(contact_result.type_id[1]);
+  contact_result_msg.type_id[0] = static_cast<unsigned char>(contact_result.type_id[0]);
+  contact_result_msg.type_id[1] = static_cast<unsigned char>(contact_result.type_id[1]);
   contact_result_msg.link_names[0] = contact_result.link_names[0];
   contact_result_msg.link_names[1] = contact_result.link_names[1];
   contact_result_msg.shape_id[0] = static_cast<size_t>(contact_result.shape_id[0]);
@@ -1461,23 +1461,23 @@ inline void toMsg(tesseract_msgs::ContactResult& contact_result_msg,
   toMsg(contact_result_msg.cc_transform[0], contact_result.cc_transform[0]);
   toMsg(contact_result_msg.cc_transform[1], contact_result.cc_transform[1]);
 
-  if (contact_result.cc_type[0] == tesseract_collision::ContinouseCollisionType::CCType_Time0)
-    contact_result_msg.cc_type[0] = 1;
-  else if (contact_result.cc_type[0] == tesseract_collision::ContinouseCollisionType::CCType_Time1)
-    contact_result_msg.cc_type[0] = 2;
-  else if (contact_result.cc_type[0] == tesseract_collision::ContinouseCollisionType::CCType_Between)
-    contact_result_msg.cc_type[0] = 3;
+  if (contact_result.cc_type[0] == tesseract_collision::ContinuousCollisionType::CCType_Time0)
+    contact_result_msg.cc_type[0] = tesseract_msgs::ContactResult::CCType_Time0;
+  else if (contact_result.cc_type[0] == tesseract_collision::ContinuousCollisionType::CCType_Time1)
+    contact_result_msg.cc_type[0] = tesseract_msgs::ContactResult::CCType_Time1;
+  else if (contact_result.cc_type[0] == tesseract_collision::ContinuousCollisionType::CCType_Between)
+    contact_result_msg.cc_type[0] = tesseract_msgs::ContactResult::CCType_Between;
   else
-    contact_result_msg.cc_type[0] = 0;
+    contact_result_msg.cc_type[0] = tesseract_msgs::ContactResult::CCType_None;
 
-  if (contact_result.cc_type[1] == tesseract_collision::ContinouseCollisionType::CCType_Time0)
-    contact_result_msg.cc_type[1] = 1;
-  else if (contact_result.cc_type[1] == tesseract_collision::ContinouseCollisionType::CCType_Time1)
-    contact_result_msg.cc_type[1] = 2;
-  else if (contact_result.cc_type[1] == tesseract_collision::ContinouseCollisionType::CCType_Between)
-    contact_result_msg.cc_type[1] = 3;
+  if (contact_result.cc_type[1] == tesseract_collision::ContinuousCollisionType::CCType_Time0)
+    contact_result_msg.cc_type[1] = tesseract_msgs::ContactResult::CCType_Time0;
+  else if (contact_result.cc_type[1] == tesseract_collision::ContinuousCollisionType::CCType_Time1)
+    contact_result_msg.cc_type[1] = tesseract_msgs::ContactResult::CCType_Time1;
+  else if (contact_result.cc_type[1] == tesseract_collision::ContinuousCollisionType::CCType_Between)
+    contact_result_msg.cc_type[1] = tesseract_msgs::ContactResult::CCType_Between;
   else
-    contact_result_msg.cc_type[1] = 0;
+    contact_result_msg.cc_type[1] = tesseract_msgs::ContactResult::CCType_None;
 }
 
 inline void toMsg(const tesseract_msgs::ContactResultPtr& contact_result_msg,

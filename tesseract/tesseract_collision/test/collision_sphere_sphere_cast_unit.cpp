@@ -22,10 +22,10 @@ void addCollisionObjects(ContinuousContactManager& checker, bool use_convex_mesh
     EXPECT_GT(loadSimplePlyFile(std::string(DATA_DIR) + "/sphere_p25m.ply", mesh_vertices, mesh_faces), 0);
 
     // This is required because convex hull cannot have multiple faces on the same plane.
-    auto ch_verticies = std::make_shared<tesseract_common::VectorVector3d>();
+    auto ch_vertices = std::make_shared<tesseract_common::VectorVector3d>();
     auto ch_faces = std::make_shared<Eigen::VectorXi>();
-    int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
-    sphere = std::make_shared<ConvexMesh>(ch_verticies, ch_faces, ch_num_faces);
+    int ch_num_faces = createConvexHull(*ch_vertices, *ch_faces, mesh_vertices);
+    sphere = std::make_shared<ConvexMesh>(ch_vertices, ch_faces, ch_num_faces);
   }
   else
   {
@@ -125,8 +125,8 @@ void runTest(ContinuousContactManager& checker)
   EXPECT_NEAR(result_vector[0].cc_time[idx[0]], 0.5, 0.001);
   EXPECT_NEAR(result_vector[0].cc_time[idx[1]], 0.5, 0.001);
 
-  EXPECT_TRUE(result_vector[0].cc_type[static_cast<size_t>(idx[0])] == ContinouseCollisionType::CCType_Between);
-  EXPECT_TRUE(result_vector[0].cc_type[static_cast<size_t>(idx[0])] == ContinouseCollisionType::CCType_Between);
+  EXPECT_TRUE(result_vector[0].cc_type[static_cast<size_t>(idx[0])] == ContinuousCollisionType::CCType_Between);
+  EXPECT_TRUE(result_vector[0].cc_type[static_cast<size_t>(idx[0])] == ContinuousCollisionType::CCType_Between);
 
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.05, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.0, 0.001);
@@ -193,8 +193,8 @@ void runTest(ContinuousContactManager& checker)
   EXPECT_NEAR(result_vector[0].cc_time[idx[0]], 0.3333, 0.001);
   EXPECT_NEAR(result_vector[0].cc_time[idx[1]], 0.5, 0.001);
 
-  EXPECT_TRUE(result_vector[0].cc_type[static_cast<size_t>(idx[0])] == ContinouseCollisionType::CCType_Between);
-  EXPECT_TRUE(result_vector[0].cc_type[static_cast<size_t>(idx[1])] == ContinouseCollisionType::CCType_Between);
+  EXPECT_TRUE(result_vector[0].cc_type[static_cast<size_t>(idx[0])] == ContinuousCollisionType::CCType_Between);
+  EXPECT_TRUE(result_vector[0].cc_type[static_cast<size_t>(idx[1])] == ContinuousCollisionType::CCType_Between);
 
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.05, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.0, 0.001);
@@ -268,8 +268,8 @@ void runConvexTest(ContinuousContactManager& checker)
   EXPECT_NEAR(result_vector[0].cc_time[idx[0]], 0.5, 0.001);
   EXPECT_NEAR(result_vector[0].cc_time[idx[1]], 0.5, 0.001);
 
-  EXPECT_TRUE(result_vector[0].cc_type[static_cast<size_t>(idx[0])] == ContinouseCollisionType::CCType_Between);
-  EXPECT_TRUE(result_vector[0].cc_type[static_cast<size_t>(idx[0])] == ContinouseCollisionType::CCType_Between);
+  EXPECT_TRUE(result_vector[0].cc_type[static_cast<size_t>(idx[0])] == ContinuousCollisionType::CCType_Between);
+  EXPECT_TRUE(result_vector[0].cc_type[static_cast<size_t>(idx[0])] == ContinuousCollisionType::CCType_Between);
 
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.0377, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.0, 0.001);
@@ -336,8 +336,8 @@ void runConvexTest(ContinuousContactManager& checker)
   EXPECT_NEAR(result_vector[0].cc_time[idx[0]], 0.3848, 0.001);
   EXPECT_NEAR(result_vector[0].cc_time[idx[1]], 0.5, 0.001);
 
-  EXPECT_TRUE(result_vector[0].cc_type[static_cast<size_t>(idx[0])] == ContinouseCollisionType::CCType_Between);
-  EXPECT_TRUE(result_vector[0].cc_type[static_cast<size_t>(idx[1])] == ContinouseCollisionType::CCType_Between);
+  EXPECT_TRUE(result_vector[0].cc_type[static_cast<size_t>(idx[0])] == ContinuousCollisionType::CCType_Between);
+  EXPECT_TRUE(result_vector[0].cc_type[static_cast<size_t>(idx[1])] == ContinuousCollisionType::CCType_Between);
 
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.0377, 0.001);
   EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.0772, 0.001);

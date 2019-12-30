@@ -131,7 +131,7 @@ public:
         rgba << 0.0, 1.0, 0.0, 1.0;
       }
 
-      if (dist.cc_type[0] == tesseract_collision::ContinouseCollisionType::CCType_Between)
+      if (dist.cc_type[0] == tesseract_collision::ContinuousCollisionType::CCType_Between)
       {
         Eigen::Vector4d cc_rgba;
         cc_rgba << 0.0, 0.0, 1.0, 1.0;
@@ -146,7 +146,7 @@ public:
         msg.markers.push_back(marker);
       }
 
-      if (dist.cc_type[1] == tesseract_collision::ContinouseCollisionType::CCType_Between)
+      if (dist.cc_type[1] == tesseract_collision::ContinuousCollisionType::CCType_Between)
       {
         Eigen::Vector4d cc_rgba;
         cc_rgba << 0.0, 0.0, 0.5, 1.0;
