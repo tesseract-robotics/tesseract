@@ -8,7 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
   tesseract_rosutils
   rviz
   pluginlib
-  interactive_markers
 )
 
 ## System dependencies are found with CMake's conventions
@@ -64,7 +63,6 @@ catkin_package(
     tesseract_rosutils
     rviz
     pluginlib
-    interactive_markers
   DEPENDS
     Boost
     OGRE

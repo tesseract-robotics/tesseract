@@ -22,7 +22,7 @@ env:
     - NOT_TEST_INSTALL=true
     - CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_ENABLE_RUN_TESTING=OFF"
     - ROSDEP_SKIP_KEYS="bullet3 fcl"
-    - AFTER_SCRIPT='catkin test -w $CATKIN_WORKSPACE --no-deps tesseract_collision tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf'
+    - AFTER_SCRIPT='catkin test -w $CATKIN_WORKSPACE --no-deps tesseract_common tesseract_collision tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf'
     - PKGS_DOWNSTREAM='tesseract_ros_examples tesseract_rosutils'
 
 jobs:
@@ -126,5 +126,5 @@ script:
   - if [ "$TRAVIS_OS_NAME" != "windows" ]; then .ci_config/travis.sh; fi
   - |
     if [ "$TRAVIS_OS_NAME" = "windows" ]; then
-        catkin_make_isolated --cmake-args -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_ENABLE_RUN_TESTING=ON
+        catkin_make_isolated --install --only-pkg-with-deps tesseract tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_support tesseract_urdf tesseract_visualization --cmake-args -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=OFF -DTESSERACT_ENABLE_RUN_TESTING=OFF
     fi
