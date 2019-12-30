@@ -63,7 +63,7 @@ struct AdjacencyMapPair
   using ConstPtr = std::shared_ptr<const AdjacencyMapPair>;
 
   std::string link_name;       /**< @brief The kinematic link associated with the adjacent link */
-  Eigen::Isometry3d transform; /**< @breif A transform from the kinematic link (link_name) to the adjacent link */
+  Eigen::Isometry3d transform; /**< @brief A transform from the kinematic link (link_name) to the adjacent link */
 };
 
 class AdjacencyMap

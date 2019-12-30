@@ -53,7 +53,7 @@ using CollisionShapePtr = tesseract_geometry::Geometry::Ptr;
  */
 using IsContactAllowedFn = std::function<bool(const std::string&, const std::string&)>;
 
-enum class ContinouseCollisionType
+enum class ContinuousCollisionType
 {
   CCType_None,
   CCType_Time0,
@@ -79,22 +79,22 @@ struct ContactResult
   int type_id[2];
   /** @brief The two links that are in contact */
   std::string link_names[2];
-  /** @brief A link can be made up of multiple shapes */
+  /** @brief The two shapes that are in contact. Each link can be made up of multiple shapes */
   int shape_id[2];
-  /** @brief Some shapes linke octomap and mesh have subshape (boxes and triangles) */
+  /** @brief Some shapes like octomap and mesh have subshape (boxes and triangles) */
   int subshape_id[2];
   /** @brief The nearest point on both links in world coordinates */
   Eigen::Vector3d nearest_points[2];
-  /** @brief The nearest point on both links in local coordinates */
+  /** @brief The nearest point on both links in local(link) coordinates */
   Eigen::Vector3d nearest_points_local[2];
-  /** @brief The transfrom of link in world coordinates */
+  /** @brief The transform of link in world coordinates */
   Eigen::Isometry3d transform[2];
   /** @brief The normal vector to move the two objects out of contact in world coordinates */
   Eigen::Vector3d normal;
   /** @brief This is between 0 and 1 indicating the point of contact */
   double cc_time[2];
   /** @brief The type of continuous contact */
-  std::array<ContinouseCollisionType, 2> cc_type;
+  std::array<ContinuousCollisionType, 2> cc_type;
   /** @brief The transform of link in world coordinates at its desired final location.
    * Note: This is not the location of the link at the point of contact but the final location the link when performing
    *       continuous collision checking. If you desire the location of contact use cc_time and interpolate between
@@ -125,8 +125,8 @@ struct ContactResult
     normal.setZero();
     cc_time[0] = -1;
     cc_time[1] = -1;
-    cc_type[0] = ContinouseCollisionType::CCType_None;
-    cc_type[1] = ContinouseCollisionType::CCType_None;
+    cc_type[0] = ContinuousCollisionType::CCType_None;
+    cc_type[1] = ContinuousCollisionType::CCType_None;
     cc_transform[0] = Eigen::Isometry3d::Identity();
     cc_transform[1] = Eigen::Isometry3d::Identity();
   }

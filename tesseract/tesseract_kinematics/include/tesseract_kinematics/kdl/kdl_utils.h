@@ -192,7 +192,9 @@ inline bool parseSceneGraph(KDLChainData& results,
     const KDL::Joint& jnt = seg.getJoint();
     results.link_list.push_back(seg.getName());
 
-    // When requesting forward kin for link_name it is index + 1
+    // KDL segments does not contain the the base link in this list. When calling function that take segmentNr, like
+    // JntToCart to get the base link transform you would pass an index of zero and for subsequent links it is
+    // index + 1. This was determined through testing which is captured in this packages unit tests.
     results.segment_index[seg.getName()] = static_cast<int>(i + 1);
 
     if (found)
@@ -213,7 +215,7 @@ inline bool parseSceneGraph(KDLChainData& results,
     results.joint_limits(j, 1) = joint->limits->upper;
 
     // Need to set limits for continuous joints. TODO: This may not be required
-    // by the optization library but may be nice to have
+    // by the optimization library but may be nice to have
     if (joint->type == tesseract_scene_graph::JointType::CONTINUOUS &&
         std::abs(results.joint_limits(j, 0) - results.joint_limits(j, 1)) <=
             static_cast<double>(std::numeric_limits<float>::epsilon()))
