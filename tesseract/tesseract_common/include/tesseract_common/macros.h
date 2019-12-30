@@ -29,6 +29,10 @@
 #include <tesseract_common/visibility_control.h>
 
 // clang-format off
+#if defined(__GNUC__) || defined(__clang__)
+
+#define DEPRECATED(X) __attribute__((deprecated(X)))
+
 #define TESSERACT_COMMON_IGNORE_WARNINGS_PUSH                                                                          \
   _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wall\"")                                           \
       _Pragma("GCC diagnostic ignored \"-Wint-to-pointer-cast\"")                                                      \
@@ -39,6 +43,17 @@
                           _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")
 
 #define TESSERACT_COMMON_IGNORE_WARNINGS_POP _Pragma("GCC diagnostic pop")
+
+#elif defined(_MSC_VER)
+#define DEPRECATED(X) __declspec(deprecated(X))
+#define TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#define TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#else
+#pragma message("WARNING: You need to implement MACROS for this compiler")
+#define DEPRECATED(X)
+#define TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#define TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#endif
 
 #define UNUSED(x) (void)(x)
 
