@@ -103,7 +103,7 @@ macro(tesseract_clang_tidy target)
   get_target_property(${target}_type ${target} TYPE)
 
   # Add clang tidy
-  if (NOT ${${target}_type} STREQUAL "INTERFACE_LIBRARY")
+  if (NOT ${${target}_type} STREQUAL "INTERFACE_LIBRARY" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if (TESSERACT_ENABLE_CLANG_TIDY OR TESSERACT_ENABLE_TESTING)
       find_program(CLANG_TIDY_EXE NAMES "clang-tidy" DOC "Path to clang-tidy executable")
       if(NOT CLANG_TIDY_EXE)
