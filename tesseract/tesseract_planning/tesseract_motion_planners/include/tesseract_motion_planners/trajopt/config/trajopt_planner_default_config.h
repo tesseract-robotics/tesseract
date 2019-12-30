@@ -37,7 +37,7 @@ namespace tesseract_motion_planners
  * problems. These are always required: tesseract_, maninpulator_, link_, tcp_
  *
  */
-struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
+struct TESSERACT_PUBLIC TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

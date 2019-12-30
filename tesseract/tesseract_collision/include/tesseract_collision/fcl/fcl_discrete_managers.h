@@ -42,6 +42,7 @@
 #ifndef TESSERACT_COLLISION_FCL_DISCRETE_MANAGERS_H
 #define TESSERACT_COLLISION_FCL_DISCRETE_MANAGERS_H
 
+#include <tesseract_common/macros.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/fcl/fcl_utils.h>
 
@@ -50,7 +51,7 @@ namespace tesseract_collision
 namespace tesseract_collision_fcl
 {
 /** @brief A FCL implementation of the discrete contact manager */
-class FCLDiscreteBVHManager : public DiscreteContactManager
+class TESSERACT_PUBLIC FCLDiscreteBVHManager : public DiscreteContactManager
 {
 public:
   using Ptr = std::shared_ptr<FCLDiscreteBVHManager>;

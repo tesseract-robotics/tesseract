@@ -1,7 +1,11 @@
 #ifndef TESSERACT_PLANNING_PROCESS_DEFINITION_H
 #define TESSERACT_PLANNING_PROCESS_DEFINITION_H
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract_motion_planners/core/waypoint.h>
 #include <tesseract_process_planners/process_segment_definition.h>
 
@@ -11,7 +15,7 @@ namespace tesseract_process_planners
  * @brief The ProcessTransitionDefinition struct which contains the waypoint data to allow moving between adjacent
  * process segments
  */
-struct ProcessTransitionDefinition
+struct TESSERACT_PUBLIC ProcessTransitionDefinition
 {
   std::vector<tesseract_motion_planners::Waypoint::Ptr> transition_from_start; /**< A transition plans from the start of
                                                                                   segment[i] to the end of segment[i+1],
@@ -40,7 +44,7 @@ struct ProcessTransitionDefinition
  * Given the process described the user is only required to define two objects. The start position of
  * the robot and a vector of Process Segment Definitions.
  */
-struct ProcessDefinition
+struct TESSERACT_PUBLIC ProcessDefinition
 {
   tesseract_motion_planners::Waypoint::Ptr start; /**< The start position of the robot */
   std::vector<ProcessSegmentDefinition> segments; /**< All of the raster segments with approaches and departures */
@@ -51,7 +55,7 @@ struct ProcessDefinition
 /**definition
  * @class tesseract_process_planners::ProcessTransitionGenerator
  */
-class ProcessTransitionGenerator
+class TESSERACT_PUBLIC ProcessTransitionGenerator
 {
 public:
   using Ptr = std::shared_ptr<ProcessTransitionGenerator>;
@@ -81,7 +85,7 @@ public:
  * Also, other operations that are nice to have is the ability to offset the process. Particularly useful
  * when wanting to verify the process without making contact with a surface in the case of sanding.
  */
-struct ProcessDefinitionConfig
+struct TESSERACT_PUBLIC ProcessDefinitionConfig
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -112,7 +116,7 @@ struct ProcessDefinitionConfig
  * modified poses that accommodate the angle of attack. This class aims to bridge the gap between surface rastering
  * libraries and the planners so neither of these library need to know anything about the particular process.
  */
-class ProcessStepGenerator
+class TESSERACT_PUBLIC ProcessStepGenerator
 {
 public:
   using Ptr = std::shared_ptr<ProcessStepGenerator>;
@@ -139,18 +143,19 @@ public:
  * Example: In the case of painting, when approaching the part you may want to take a specific trajectory
  * and the same for when leaving the part.
  */
-struct ProcessSegmentDefinitionConfig
+struct TESSERACT_PUBLIC ProcessSegmentDefinitionConfig
 {
   ProcessStepGenerator::ConstPtr approach;
   ProcessStepGenerator::ConstPtr process;
   ProcessStepGenerator::ConstPtr departure;
 };
 
-ProcessDefinition generateProcessDefinition(const ProcessDefinitionConfig& process_config,
-                                            const ProcessSegmentDefinitionConfig& segment_config);
+ProcessDefinition TESSERACT_PUBLIC generateProcessDefinition(const ProcessDefinitionConfig& process_config,
+                                                             const ProcessSegmentDefinitionConfig& segment_config);
 
-ProcessDefinition generateProcessDefinition(const ProcessDefinitionConfig& process_config,
-                                            const std::vector<ProcessSegmentDefinitionConfig>& segment_config);
+ProcessDefinition TESSERACT_PUBLIC
+generateProcessDefinition(const ProcessDefinitionConfig& process_config,
+                          const std::vector<ProcessSegmentDefinitionConfig>& segment_config);
 
 }  // namespace tesseract_process_planners
 

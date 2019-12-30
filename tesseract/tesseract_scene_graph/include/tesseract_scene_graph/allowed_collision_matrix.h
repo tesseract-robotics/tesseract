@@ -12,7 +12,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
 {
-class AllowedCollisionMatrix
+class TESSERACT_PUBLIC AllowedCollisionMatrix
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

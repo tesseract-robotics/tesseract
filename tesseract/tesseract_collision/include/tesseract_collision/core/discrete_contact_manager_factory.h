@@ -26,11 +26,12 @@
 #ifndef TESSERACT_COLLISION_DISCRETE_CONTACT_MANAGER_FACTORY_H
 #define TESSERACT_COLLISION_DISCRETE_CONTACT_MANAGER_FACTORY_H
 
+#include <tesseract_common/macros.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
 
 namespace tesseract_collision
 {
-class DiscreteContactManagerFactory
+class TESSERACT_PUBLIC DiscreteContactManagerFactory
 {
 public:
   using CreateMethod = std::function<DiscreteContactManager::Ptr()>;

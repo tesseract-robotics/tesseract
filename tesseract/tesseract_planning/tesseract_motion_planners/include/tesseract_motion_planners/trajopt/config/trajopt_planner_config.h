@@ -26,6 +26,7 @@
 #ifndef TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_CONFIG_H
 #define TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_CONFIG_H
 
+#include <tesseract_common/macros.h>
 #include <trajopt/problem_description.hpp>
 #include <tesseract_motion_planners/core/waypoint.h>
 
@@ -34,7 +35,7 @@ namespace tesseract_motion_planners
 /**
  * @brief The TrajOptPlannerConfigBase struct
  */
-struct TrajOptPlannerConfig
+struct TESSERACT_PUBLIC TrajOptPlannerConfig
 {
   using Ptr = std::shared_ptr<TrajOptPlannerConfig>;
 

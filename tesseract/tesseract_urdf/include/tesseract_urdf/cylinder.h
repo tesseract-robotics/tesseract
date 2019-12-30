@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class CylinderStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC CylinderStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   CylinderStatusCategory() : name_("CylinderStatusCategory") {}

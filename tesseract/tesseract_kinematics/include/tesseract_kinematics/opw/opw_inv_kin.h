@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_kinematics
 {
 /**@brief OPW Inverse Kinematics Implmentation. */
-class OPWInvKin : public InverseKinematics
+class TESSERACT_PUBLIC OPWInvKin : public InverseKinematics
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

@@ -46,7 +46,7 @@ namespace tesseract_kinematics
 /**
  * @brief KDL Inverse kinematic chain implementation.
  */
-class KDLInvKinChainNR : public InverseKinematics
+class TESSERACT_PUBLIC KDLInvKinChainNR : public InverseKinematics
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

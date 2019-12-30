@@ -41,7 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class PointCloudStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC PointCloudStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   PointCloudStatusCategory() : name_("PointCloudStatusCategory") {}

@@ -4,6 +4,9 @@ include(cmake/tesseract_macros.cmake)
 
 find_package(Eigen3 REQUIRED)
 
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+
 add_library(${PROJECT_NAME} INTERFACE)
 target_link_libraries(${PROJECT_NAME} INTERFACE)
 tesseract_target_compile_options(${PROJECT_NAME} INTERFACE)

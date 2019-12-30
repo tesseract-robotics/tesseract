@@ -38,7 +38,7 @@ namespace tesseract_motion_planners
 {
 class TrajOptMotionPlannerStatusCategory;
 
-class TrajOptMotionPlanner : public MotionPlanner
+class TESSERACT_PUBLIC TrajOptMotionPlanner : public MotionPlanner
 {
 public:
   /** @brief Construct a basic planner */
@@ -84,7 +84,7 @@ protected:
   std::shared_ptr<const TrajOptMotionPlannerStatusCategory> status_category_; /** @brief The plannsers status codes */
 };
 
-class TrajOptMotionPlannerStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC TrajOptMotionPlannerStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   TrajOptMotionPlannerStatusCategory(std::string name);

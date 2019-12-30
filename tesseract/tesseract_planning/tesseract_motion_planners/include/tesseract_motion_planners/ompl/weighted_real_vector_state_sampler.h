@@ -45,7 +45,7 @@ namespace tesseract_motion_planners
  * gantry with two linear axis with a robot attached. When
  * sampling near you may want to scale down the rail sampling.
  */
-class WeightedRealVectorStateSampler : public ompl::base::StateSampler
+class TESSERACT_PUBLIC WeightedRealVectorStateSampler : public ompl::base::StateSampler
 {
 public:
   WeightedRealVectorStateSampler(const ompl::base::StateSpace* space, Eigen::VectorXd weights)

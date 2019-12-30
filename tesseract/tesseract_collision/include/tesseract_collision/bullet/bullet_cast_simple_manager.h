@@ -38,19 +38,18 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef TESSERACT_COLLISION_BULLET_CAST_SIMPLE_MANAGERS_H
+#define TESSERACT_COLLISION_BULLET_CAST_SIMPLE_MANAGERS_H
 
 #include <tesseract_collision/bullet/bullet_utils.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
-
-#ifndef TESSERACT_COLLISION_BULLET_CAST_SIMPLE_MANAGERS_H
-#define TESSERACT_COLLISION_BULLET_CAST_SIMPLE_MANAGERS_H
 
 namespace tesseract_collision
 {
 namespace tesseract_collision_bullet
 {
 /** @brief A simple implementaiton of a tesseract manager which does not use BHV */
-class BulletCastSimpleManager : public ContinuousContactManager
+class TESSERACT_PUBLIC BulletCastSimpleManager : public ContinuousContactManager
 {
 public:
   using Ptr = std::shared_ptr<BulletCastSimpleManager>;

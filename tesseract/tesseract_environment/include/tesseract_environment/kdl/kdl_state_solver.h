@@ -11,7 +11,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-class KDLStateSolver : public StateSolver
+class TESSERACT_PUBLIC KDLStateSolver : public StateSolver
 {
 public:
   using Ptr = std::shared_ptr<KDLStateSolver>;

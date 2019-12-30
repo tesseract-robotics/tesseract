@@ -45,7 +45,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class JointStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC JointStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   JointStatusCategory(std::string joint_name = "") : name_("JointStatusCategory"), joint_name_(std::move(joint_name)) {}

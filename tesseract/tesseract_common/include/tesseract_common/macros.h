@@ -26,6 +26,8 @@
 #ifndef TESSERACT_COMMON_MACROS_H
 #define TESSERACT_COMMON_MACROS_H
 
+#include <tesseract_common/visibility_control.h>
+
 // clang-format off
 #define TESSERACT_COMMON_IGNORE_WARNINGS_PUSH                                                                          \
   _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wall\"")                                           \

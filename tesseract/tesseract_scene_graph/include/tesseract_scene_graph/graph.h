@@ -93,7 +93,7 @@ using EdgeProperty = boost::property<boost::edge_joint_t, Joint::Ptr, boost::pro
 
 using Graph = boost::
     adjacency_list<boost::listS, boost::listS, boost::bidirectionalS, VertexProperty, EdgeProperty, GraphProperty>;
-class SceneGraph : private boost::noncopyable, public Graph
+class TESSERACT_PUBLIC SceneGraph : private boost::noncopyable, public Graph
 {
 public:
   /**

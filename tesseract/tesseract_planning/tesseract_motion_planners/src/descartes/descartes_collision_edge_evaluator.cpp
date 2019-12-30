@@ -28,7 +28,7 @@
 namespace tesseract_motion_planners
 {
 // Explicit template instantiation
-template class DescartesCollisionEdgeEvaluator<float>;
-template class DescartesCollisionEdgeEvaluator<double>;
+template class TESSERACT_PUBLIC DescartesCollisionEdgeEvaluator<float>;
+template class TESSERACT_PUBLIC DescartesCollisionEdgeEvaluator<double>;
 
 }  // namespace tesseract_motion_planners

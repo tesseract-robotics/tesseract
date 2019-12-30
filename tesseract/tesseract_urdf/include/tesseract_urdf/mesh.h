@@ -42,7 +42,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class MeshStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC MeshStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   MeshStatusCategory() : name_("MeshStatusCategory") {}

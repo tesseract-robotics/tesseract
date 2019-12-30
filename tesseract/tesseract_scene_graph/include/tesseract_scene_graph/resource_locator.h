@@ -41,7 +41,7 @@ namespace tesseract_scene_graph
  * @brief Abstract class for resource loaders
  *
  */
-class ResourceLocator
+class TESSERACT_PUBLIC ResourceLocator
 {
 public:
   using Ptr = std::shared_ptr<ResourceLocator>;
@@ -67,7 +67,7 @@ public:
  * @brief Resource locator implementation using a provided function to locate file resources
  *
  */
-class SimpleResourceLocator : public ResourceLocator
+class TESSERACT_PUBLIC SimpleResourceLocator : public ResourceLocator
 {
 public:
   using Ptr = std::shared_ptr<SimpleResourceLocator>;
@@ -92,7 +92,7 @@ protected:
  * @brief Resource implementation for a local file
  *
  */
-class SimpleLocatedResource : public tesseract_common::Resource
+class TESSERACT_PUBLIC SimpleLocatedResource : public tesseract_common::Resource
 {
 public:
   using Ptr = std::shared_ptr<SimpleLocatedResource>;

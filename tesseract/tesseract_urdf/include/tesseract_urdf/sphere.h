@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class SphereStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC SphereStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   SphereStatusCategory() : name_("SphereStatusCategory") {}

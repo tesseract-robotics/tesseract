@@ -44,7 +44,7 @@ namespace tesseract_kinematics
  * @param jacobian The current Jacobian which gets modified in place
  * @param change_base The transform from the desired frame to the current base frame of the jacobian
  */
-inline static void jacobianChangeBase(Eigen::Ref<Eigen::MatrixXd> jacobian, const Eigen::Isometry3d& change_base)
+inline void jacobianChangeBase(Eigen::Ref<Eigen::MatrixXd> jacobian, const Eigen::Isometry3d& change_base)
 {
   assert(jacobian.rows() == 6);
   for (int i = 0; i < jacobian.cols(); i++)
@@ -60,8 +60,8 @@ inline static void jacobianChangeBase(Eigen::Ref<Eigen::MatrixXd> jacobian, cons
  * @param ref_point Is expressed in the same base frame of the jacobian
  *                  and is a vector from the old point to the new point.
  */
-inline static void jacobianChangeRefPoint(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                                          const Eigen::Ref<const Eigen::Vector3d>& ref_point)
+inline void jacobianChangeRefPoint(Eigen::Ref<Eigen::MatrixXd> jacobian,
+                                   const Eigen::Ref<const Eigen::Vector3d>& ref_point)
 {
   assert(jacobian.rows() == 6);
   for (int i = 0; i < jacobian.cols(); i++)
@@ -80,12 +80,12 @@ inline static void jacobianChangeRefPoint(Eigen::Ref<Eigen::MatrixXd> jacobian,
  * @param link_name    The link_name for which the jacobian should be calculated
  * @param link_point   The point on the link for which to calculate the jacobian
  */
-inline static void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                                     const Eigen::Isometry3d& change_base,
-                                     const tesseract_kinematics::ForwardKinematics& kin,
-                                     const Eigen::Ref<const Eigen::VectorXd>& joint_values,
-                                     const std::string& link_name,
-                                     const Eigen::Ref<const Eigen::Vector3d>& link_point)
+inline void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
+                              const Eigen::Isometry3d& change_base,
+                              const tesseract_kinematics::ForwardKinematics& kin,
+                              const Eigen::Ref<const Eigen::VectorXd>& joint_values,
+                              const std::string& link_name,
+                              const Eigen::Ref<const Eigen::Vector3d>& link_point)
 {
   Eigen::VectorXd njvals;
   double delta = 0.001;
@@ -129,9 +129,9 @@ inline static void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
  * @param x Output vector (represents joint values)
  * @return True if solver completes properly
  */
-inline static bool solvePInv(const Eigen::Ref<const Eigen::MatrixXd>& A,
-                             const Eigen::Ref<const Eigen::VectorXd>& b,
-                             Eigen::Ref<Eigen::VectorXd> x)
+inline bool solvePInv(const Eigen::Ref<const Eigen::MatrixXd>& A,
+                      const Eigen::Ref<const Eigen::VectorXd>& b,
+                      Eigen::Ref<Eigen::VectorXd> x)
 {
   const double eps = 0.00001;  // TODO: Turn into class member var
   const double lambda = 0.01;  // TODO: Turn into class member var
@@ -180,10 +180,10 @@ inline static bool solvePInv(const Eigen::Ref<const Eigen::MatrixXd>& A,
  * @param lambda Damping factor
  * @return True if Pseudoinverse completes properly
  */
-inline static bool dampedPInv(const Eigen::Ref<const Eigen::MatrixXd>& A,
-                              Eigen::Ref<Eigen::MatrixXd> P,
-                              const double eps = 0.011,
-                              const double lambda = 0.01)
+inline bool dampedPInv(const Eigen::Ref<const Eigen::MatrixXd>& A,
+                       Eigen::Ref<Eigen::MatrixXd> P,
+                       const double eps = 0.011,
+                       const double lambda = 0.01)
 {
   if ((A.rows() == 0) || (A.cols() == 0))
   {
@@ -284,8 +284,8 @@ ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::Sc
  * @return True if joint values are within the joint limits, otherwise false
  */
 template <typename FloatType>
-inline static bool isWithinLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1> >& joint_values,
-                                  const Eigen::MatrixX2d& limits)
+bool isWithinLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1> >& joint_values,
+                    const Eigen::MatrixX2d& limits)
 {
   for (int i = 0; i < limits.rows(); ++i)
     if ((joint_values[i] < limits(i, 0)) || (joint_values[i] > limits(i, 1)))
@@ -300,7 +300,7 @@ inline static bool isWithinLimits(const Eigen::Ref<const Eigen::Matrix<FloatType
  * @param limits The joint limits of the robot
  */
 template <typename FloatType>
-inline std::vector<FloatType> getRedundantSolutions(const FloatType* sol, const Eigen::MatrixX2d& limits)
+std::vector<FloatType> getRedundantSolutions(const FloatType* sol, const Eigen::MatrixX2d& limits)
 {
   auto dof = static_cast<int>(limits.rows());
   FloatType val;
@@ -337,7 +337,7 @@ inline std::vector<FloatType> getRedundantSolutions(const FloatType* sol, const 
  * @return True if the array is valid, otherwise false
  */
 template <typename FloatType>
-inline bool isValid(const FloatType* qs, int dof)
+bool isValid(const FloatType* qs, int dof)
 {
   for (int i = 0; i < dof; ++i)
     if (!std::isfinite(qs[i]))
@@ -352,7 +352,7 @@ inline bool isValid(const FloatType* qs, int dof)
  * @param dof The length of the float array
  */
 template <typename FloatType>
-inline void harmonizeTowardZero(FloatType* qs, int dof)
+void harmonizeTowardZero(FloatType* qs, int dof)
 {
   const static auto pi = FloatType(M_PI);
   const static auto two_pi = FloatType(2.0 * M_PI);

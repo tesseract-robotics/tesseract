@@ -40,7 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class BoxStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC BoxStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   BoxStatusCategory() : name_("BoxStatusCategory") {}

@@ -6,6 +6,9 @@ find_package(console_bridge REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(octomap REQUIRED)
 
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+
 find_package(ASSIMP QUIET)
 if (NOT ASSIMP_FOUND)
   find_package(PkgConfig REQUIRED)

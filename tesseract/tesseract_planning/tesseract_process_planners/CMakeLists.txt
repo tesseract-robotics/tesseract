@@ -5,6 +5,9 @@ find_package(tesseract_common REQUIRED)
 find_package(tesseract_motion_planners REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+
 add_library(${PROJECT_NAME} SHARED
   src/${PROJECT_NAME}/process_definition.cpp
   src/${PROJECT_NAME}/process_segment_definition.cpp)

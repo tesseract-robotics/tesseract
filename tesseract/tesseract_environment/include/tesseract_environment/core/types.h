@@ -43,7 +43,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_environment
 {
 /** @brief This holds a state of the environment */
-struct EnvState
+struct TESSERACT_PUBLIC EnvState
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -57,7 +57,7 @@ struct EnvState
 /**
  * @brief The AdjacencyMapPair struct
  */
-struct AdjacencyMapPair
+struct TESSERACT_PUBLIC AdjacencyMapPair
 {
   using Ptr = std::shared_ptr<AdjacencyMapPair>;
   using ConstPtr = std::shared_ptr<const AdjacencyMapPair>;
@@ -66,7 +66,7 @@ struct AdjacencyMapPair
   Eigen::Isometry3d transform; /**< @brief A transform from the kinematic link (link_name) to the adjacent link */
 };
 
-class AdjacencyMap
+class TESSERACT_PUBLIC AdjacencyMap
 {
 public:
   using Ptr = std::shared_ptr<AdjacencyMap>;

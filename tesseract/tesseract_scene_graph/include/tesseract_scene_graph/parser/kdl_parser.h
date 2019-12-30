@@ -154,7 +154,7 @@ inline KDL::RigidBodyInertia convert(const Inertial::ConstPtr& inertial)
  * @brief Everytime a vertex is visited for the first time add a new
  *        segment to the KDL Tree;
  */
-struct kdl_tree_builder : public boost::dfs_visitor<>
+struct TESSERACT_LOCAL kdl_tree_builder : public boost::dfs_visitor<>
 {
   kdl_tree_builder(KDL::Tree& tree) : tree_(tree) {}
 

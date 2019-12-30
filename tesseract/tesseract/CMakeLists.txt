@@ -10,8 +10,11 @@ find_package(tesseract_kinematics REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_urdf REQUIRED)
 
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+
 # Create target
-add_library(${PROJECT_NAME} SHARED src/tesseract.cpp)
+add_library(${PROJECT_NAME} SHARED src/tesseract.cpp src/forward_kinematics_manager.cpp src/inverse_kinematics_manager.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_urdf tesseract::tesseract_scene_graph tesseract::tesseract_collision_bullet tesseract::tesseract_environment_kdl tesseract::tesseract_kinematics_kdl console_bridge)
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME})

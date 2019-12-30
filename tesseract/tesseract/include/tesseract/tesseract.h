@@ -48,7 +48,7 @@ namespace tesseract
  * It also provides several construction methods for loading from urdf, srdf
  *
  */
-class Tesseract
+class TESSERACT_PUBLIC Tesseract
 {
 public:
   using Ptr = std::shared_ptr<Tesseract>;

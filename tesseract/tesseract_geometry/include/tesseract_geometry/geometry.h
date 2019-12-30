@@ -48,7 +48,7 @@ enum GeometryType
   OCTREE
 };
 
-class Geometry
+class TESSERACT_PUBLIC Geometry
 {
 public:
   using Ptr = std::shared_ptr<Geometry>;

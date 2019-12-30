@@ -30,7 +30,7 @@
 
 namespace tesseract_kinematics
 {
-class KDLInvKinChainLMAFactory : public InverseKinematicsFactory
+class TESSERACT_PUBLIC KDLInvKinChainLMAFactory : public InverseKinematicsFactory
 {
 public:
   KDLInvKinChainLMAFactory() : name_(KDLInvKinChainLMA().getSolverName()) {}

@@ -31,32 +31,34 @@
 
 namespace tesseract_motion_planners
 {
-trajopt::TermInfo::Ptr createJointWaypointTermInfo(const JointWaypoint::ConstPtr& waypoint,
-                                                   int ind,
-                                                   const std::vector<std::string>& joint_names,
-                                                   double coeff = 1.0,
-                                                   const std::string& name = "joint_position");
+trajopt::TermInfo::Ptr TESSERACT_PUBLIC createJointWaypointTermInfo(const JointWaypoint::ConstPtr& waypoint,
+                                                                    int ind,
+                                                                    const std::vector<std::string>& joint_names,
+                                                                    double coeff = 1.0,
+                                                                    const std::string& name = "joint_position");
 
-trajopt::TermInfo::Ptr createJointTolerancedWaypointTermInfo(const JointTolerancedWaypoint::ConstPtr& waypoint,
-                                                             int ind,
-                                                             const std::vector<std::string>& joint_names,
-                                                             double coeff = 0.1,
-                                                             const std::string& name = "joint_toleranced_position");
+trajopt::TermInfo::Ptr TESSERACT_PUBLIC
+createJointTolerancedWaypointTermInfo(const JointTolerancedWaypoint::ConstPtr& waypoint,
+                                      int ind,
+                                      const std::vector<std::string>& joint_names,
+                                      double coeff = 0.1,
+                                      const std::string& name = "joint_toleranced_position");
 
-trajopt::TermInfo::Ptr createCartesianWaypointTermInfo(const CartesianWaypoint::ConstPtr& waypoint,
-                                                       int ind,
-                                                       const std::string& link,
-                                                       const Eigen::Isometry3d& tcp = Eigen::Isometry3d::Identity(),
-                                                       const std::string& name = "cartesian_position_position");
+trajopt::TermInfo::Ptr TESSERACT_PUBLIC
+createCartesianWaypointTermInfo(const CartesianWaypoint::ConstPtr& waypoint,
+                                int ind,
+                                const std::string& link,
+                                const Eigen::Isometry3d& tcp = Eigen::Isometry3d::Identity(),
+                                const std::string& name = "cartesian_position_position");
 
-trajopt::TermInfo::Ptr
+trajopt::TermInfo::Ptr TESSERACT_PUBLIC
 createDynamicCartesianWaypointTermInfo(const CartesianWaypoint::ConstPtr& waypoint,
                                        int ind,
                                        const std::string& link,
                                        const Eigen::Isometry3d& tcp = Eigen::Isometry3d::Identity(),
                                        const std::string& name = "dynamic_cartesian_position");
 
-struct WaypointTermInfo
+struct TESSERACT_PUBLIC WaypointTermInfo
 {
   using TermInfoVec = typename std::vector<trajopt::TermInfo::Ptr>;
 
@@ -64,20 +66,20 @@ struct WaypointTermInfo
   TermInfoVec cost;
 };
 
-WaypointTermInfo createWaypointTermInfo(const Waypoint::ConstPtr& waypoint,
-                                        int ind,
-                                        const std::vector<std::string>& joint_names,
-                                        const std::vector<std::string>& adjacency_map_links,
-                                        const std::string& link,
-                                        const Eigen::Isometry3d& tcp = Eigen::Isometry3d::Identity());
+WaypointTermInfo TESSERACT_PUBLIC createWaypointTermInfo(const Waypoint::ConstPtr& waypoint,
+                                                         int ind,
+                                                         const std::vector<std::string>& joint_names,
+                                                         const std::vector<std::string>& adjacency_map_links,
+                                                         const std::string& link,
+                                                         const Eigen::Isometry3d& tcp = Eigen::Isometry3d::Identity());
 
-trajopt::TermInfo::Ptr createConfigurationTermInfo(const JointWaypoint::ConstPtr& configuration,
-                                                   const std::vector<std::string>& joint_names,
-                                                   int n_steps,
-                                                   double coeff = 1.0,
-                                                   const std::string& name = "configuration_cost");
+trajopt::TermInfo::Ptr TESSERACT_PUBLIC createConfigurationTermInfo(const JointWaypoint::ConstPtr& configuration,
+                                                                    const std::vector<std::string>& joint_names,
+                                                                    int n_steps,
+                                                                    double coeff = 1.0,
+                                                                    const std::string& name = "configuration_cost");
 
-trajopt::TermInfo::Ptr createCollisionTermInfo(
+trajopt::TermInfo::Ptr TESSERACT_PUBLIC createCollisionTermInfo(
     int n_steps,
     double collision_safety_margin,
     bool collision_continuous = true,
@@ -86,33 +88,37 @@ trajopt::TermInfo::Ptr createCollisionTermInfo(
     double longest_valid_segment_length = 0.5,
     const std::string& name = "collision_cost");
 
-trajopt::TermInfo::Ptr
-createSmoothVelocityTermInfo(int n_steps, int n_joints, double coeff = 5.0, const std::string& name = "joint_vel_cost");
+trajopt::TermInfo::Ptr TESSERACT_PUBLIC createSmoothVelocityTermInfo(int n_steps,
+                                                                     int n_joints,
+                                                                     double coeff = 5.0,
+                                                                     const std::string& name = "joint_vel_cost");
 
-trajopt::TermInfo::Ptr createSmoothVelocityTermInfo(int n_steps,
-                                                    const Eigen::Ref<const Eigen::VectorXd>& coeff,
-                                                    const std::string& name = "joint_vel_cost");
+trajopt::TermInfo::Ptr TESSERACT_PUBLIC createSmoothVelocityTermInfo(int n_steps,
+                                                                     const Eigen::Ref<const Eigen::VectorXd>& coeff,
+                                                                     const std::string& name = "joint_vel_cost");
 
-trajopt::TermInfo::Ptr createSmoothAccelerationTermInfo(int n_steps,
-                                                        int n_joints,
-                                                        double coeff = 1.0,
-                                                        const std::string& name = "joint_accel_cost");
+trajopt::TermInfo::Ptr TESSERACT_PUBLIC createSmoothAccelerationTermInfo(int n_steps,
+                                                                         int n_joints,
+                                                                         double coeff = 1.0,
+                                                                         const std::string& name = "joint_accel_cost");
 
-trajopt::TermInfo::Ptr createSmoothAccelerationTermInfo(int n_steps,
-                                                        const Eigen::Ref<const Eigen::VectorXd>& coeff,
-                                                        const std::string& name = "joint_accel_cost");
+trajopt::TermInfo::Ptr TESSERACT_PUBLIC createSmoothAccelerationTermInfo(int n_steps,
+                                                                         const Eigen::Ref<const Eigen::VectorXd>& coeff,
+                                                                         const std::string& name = "joint_accel_cost");
 
-trajopt::TermInfo::Ptr
-createSmoothJerkTermInfo(int n_steps, int n_joints, double coeff = 1.0, const std::string& name = "joint_jerk_cost");
+trajopt::TermInfo::Ptr TESSERACT_PUBLIC createSmoothJerkTermInfo(int n_steps,
+                                                                 int n_joints,
+                                                                 double coeff = 1.0,
+                                                                 const std::string& name = "joint_jerk_cost");
 
-trajopt::TermInfo::Ptr createSmoothJerkTermInfo(int n_steps,
-                                                const Eigen::Ref<const Eigen::VectorXd>& coeff,
-                                                const std::string& name = "joint_jerk_cost");
+trajopt::TermInfo::Ptr TESSERACT_PUBLIC createSmoothJerkTermInfo(int n_steps,
+                                                                 const Eigen::Ref<const Eigen::VectorXd>& coeff,
+                                                                 const std::string& name = "joint_jerk_cost");
 
-trajopt::TermInfo::Ptr createUserDefinedTermInfo(int n_steps,
-                                                 sco::VectorOfVector::func error_function,
-                                                 sco::MatrixOfVector::func jacobian_function,
-                                                 const std::string& name = "user_defined");
+trajopt::TermInfo::Ptr TESSERACT_PUBLIC createUserDefinedTermInfo(int n_steps,
+                                                                  sco::VectorOfVector::func error_function,
+                                                                  sco::MatrixOfVector::func jacobian_function,
+                                                                  const std::string& name = "user_defined");
 
 }  // namespace tesseract_motion_planners
 

@@ -122,7 +122,7 @@ inline Eigen::Isometry3d convertBtToEigen(const btTransform& t)
  * It is a wrapper around bullet's collision object which
  * contains specific information related to tesseract
  */
-class CollisionObjectWrapper : public btCollisionObject
+class TESSERACT_LOCAL CollisionObjectWrapper : public btCollisionObject
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -223,7 +223,7 @@ using Link2Cow = std::map<std::string, COW::Ptr>;
 using Link2ConstCow = std::map<std::string, COW::ConstPtr>;
 
 /** @brief This is a casted collision shape used for checking if an object is collision free between two transforms */
-struct CastHullShape : public btConvexShape
+struct TESSERACT_LOCAL CastHullShape : public btConvexShape
 {
 public:
   btConvexShape* m_shape;
@@ -595,7 +595,7 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
 }
 
 /** @brief This is copied directly out of BulletWorld */
-struct TesseractBridgedManifoldResult : public btManifoldResult
+struct TESSERACT_LOCAL TesseractBridgedManifoldResult : public btManifoldResult
 {
   btCollisionWorld::ContactResultCallback& m_resultCallback;
 
@@ -652,7 +652,7 @@ struct TesseractBridgedManifoldResult : public btManifoldResult
 };
 
 /** @brief The BroadphaseContactResultCallback is used to report contact points */
-struct BroadphaseContactResultCallback
+struct TESSERACT_LOCAL BroadphaseContactResultCallback
 {
   ContactTestData& collisions_;
   double contact_distance_;
@@ -683,7 +683,7 @@ struct BroadphaseContactResultCallback
                                    int index1) = 0;
 };
 
-struct DiscreteBroadphaseContactResultCallback : public BroadphaseContactResultCallback
+struct TESSERACT_LOCAL DiscreteBroadphaseContactResultCallback : public BroadphaseContactResultCallback
 {
   DiscreteBroadphaseContactResultCallback(ContactTestData& collisions, double contact_distance, bool verbose = false)
     : BroadphaseContactResultCallback(collisions, contact_distance, verbose)
@@ -705,7 +705,7 @@ struct DiscreteBroadphaseContactResultCallback : public BroadphaseContactResultC
   }
 };
 
-struct CastBroadphaseContactResultCallback : public BroadphaseContactResultCallback
+struct TESSERACT_LOCAL CastBroadphaseContactResultCallback : public BroadphaseContactResultCallback
 {
   CastBroadphaseContactResultCallback(ContactTestData& collisions, double contact_distance, bool verbose = false)
     : BroadphaseContactResultCallback(collisions, contact_distance, verbose)
@@ -727,7 +727,7 @@ struct CastBroadphaseContactResultCallback : public BroadphaseContactResultCallb
   }
 };
 
-struct TesseractBroadphaseBridgedManifoldResult : public btManifoldResult
+struct TESSERACT_LOCAL TesseractBroadphaseBridgedManifoldResult : public btManifoldResult
 {
   BroadphaseContactResultCallback& result_callback_;
 
@@ -793,7 +793,7 @@ struct TesseractBroadphaseBridgedManifoldResult : public btManifoldResult
  * to check a collision object not in the broadphase to the broadphase
  * which may eventually be exposed.
  */
-struct TesseractSingleContactCallback : public btBroadphaseAabbCallback
+struct TESSERACT_LOCAL TesseractSingleContactCallback : public btBroadphaseAabbCallback
 {
   btCollisionObject* m_collisionObject;    /**< @brief The bullet collision object */
   btCollisionDispatcher* m_dispatcher;     /**< @brief The bullet collision dispatcher used for getting object to object
@@ -852,7 +852,7 @@ struct TesseractSingleContactCallback : public btBroadphaseAabbCallback
  * If the AABB of two collision objects are overlapping the processOverlap method is called
  * and they are checked for collision/distance and the results are stored in collision_.
  */
-class TesseractCollisionPairCallback : public btOverlapCallback
+class TESSERACT_LOCAL TesseractCollisionPairCallback : public btOverlapCallback
 {
   const btDispatcherInfo& dispatch_info_;
   btCollisionDispatcher* dispatcher_;
@@ -972,7 +972,7 @@ inline COW::Ptr createCollisionObject(const std::string& name,
   return new_cow;
 }
 
-struct DiscreteCollisionCollector : public btCollisionWorld::ContactResultCallback
+struct TESSERACT_LOCAL DiscreteCollisionCollector : public btCollisionWorld::ContactResultCallback
 {
   ContactTestData& collisions_;
   const COW::Ptr cow_;
@@ -1009,7 +1009,7 @@ struct DiscreteCollisionCollector : public btCollisionWorld::ContactResultCallba
   }
 };
 
-struct CastCollisionCollector : public btCollisionWorld::ContactResultCallback
+struct TESSERACT_LOCAL CastCollisionCollector : public btCollisionWorld::ContactResultCallback
 {
   ContactTestData& collisions_;
   const COW::Ptr cow_;

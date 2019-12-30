@@ -27,11 +27,12 @@
 #ifndef TESSERACT_COLLISION_CONTINUOUS_CONTACT_MANAGER_FACTORY_H
 #define TESSERACT_COLLISION_CONTINUOUS_CONTACT_MANAGER_FACTORY_H
 
+#include <tesseract_common/macros.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
 
 namespace tesseract_collision
 {
-class ContinuousContactManagerFactory
+class TESSERACT_PUBLIC ContinuousContactManagerFactory
 {
 public:
   using CreateMethod = std::function<ContinuousContactManager::Ptr()>;

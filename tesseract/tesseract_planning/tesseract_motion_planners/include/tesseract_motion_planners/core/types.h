@@ -26,6 +26,7 @@
 #ifndef TESSERACT_MOTION_PLANNERS_PLANNER_TYPES_H
 #define TESSERACT_MOTION_PLANNERS_PLANNER_TYPES_H
 
+#include <tesseract_common/macros.h>
 #include <tesseract/tesseract.h>
 #include <tesseract_common/status_code.h>
 #include <tesseract_common/types.h>
@@ -33,7 +34,7 @@
 
 namespace tesseract_motion_planners
 {
-struct PlannerRequest
+struct TESSERACT_PUBLIC PlannerRequest
 {
   std::string name;                                      /**< @brief The name of the planner to use */
   tesseract::Tesseract::ConstPtr tesseract;              /**< @brief Tesseract */
@@ -42,7 +43,7 @@ struct PlannerRequest
   std::string config_format;                             /**< @brief The file extension used to parse config */
 };
 
-struct PlannerResponse
+struct TESSERACT_PUBLIC PlannerResponse
 {
   tesseract_common::JointTrajectory joint_trajectory; /**< @brief The joint trajectory */
   tesseract_common::StatusCode status;                /**< @brief The status information */

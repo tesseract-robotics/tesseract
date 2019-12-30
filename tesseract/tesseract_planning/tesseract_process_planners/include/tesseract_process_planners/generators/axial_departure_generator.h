@@ -1,12 +1,16 @@
 #ifndef TESSERACT_PLANNING_AXIAL_DEPARTURE_GENERATOR_H
 #define TESSERACT_PLANNING_AXIAL_DEPARTURE_GENERATOR_H
 
-#include <tesseract_process_planners/process_definition.h>
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_process_planners/process_definition.h>
 
 namespace tesseract_process_planners
 {
-class AxialDepartureGenerator : public ProcessStepGenerator
+class TESSERACT_PUBLIC AxialDepartureGenerator : public ProcessStepGenerator
 {
 public:
   AxialDepartureGenerator(const Eigen::Isometry3d& departure, int step_count)

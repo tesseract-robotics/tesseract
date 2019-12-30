@@ -28,7 +28,7 @@
 namespace tesseract_motion_planners
 {
 // Explicit template instantiation
-template class DescartesRobotSampler<float>;
-template class DescartesRobotSampler<double>;
+template class TESSERACT_PUBLIC DescartesRobotSampler<float>;
+template class TESSERACT_PUBLIC DescartesRobotSampler<double>;
 
 }  // namespace tesseract_motion_planners

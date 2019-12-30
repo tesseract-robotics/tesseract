@@ -42,7 +42,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class LinkStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC LinkStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   LinkStatusCategory(std::string link_name = "") : name_("LinkStatusCategory"), link_name_(std::move(link_name)) {}

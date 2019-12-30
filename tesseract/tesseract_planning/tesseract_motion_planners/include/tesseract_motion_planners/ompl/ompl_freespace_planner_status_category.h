@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
-class OMPLFreespacePlannerStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC OMPLFreespacePlannerStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   OMPLFreespacePlannerStatusCategory(std::string name);

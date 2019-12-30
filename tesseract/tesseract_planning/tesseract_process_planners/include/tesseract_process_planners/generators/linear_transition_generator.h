@@ -1,13 +1,17 @@
 #ifndef TESSERACT_PLANNING_LINEAR_TRANSITION_GENERATOR_H
 #define TESSERACT_PLANNING_LINEAR_TRANSITION_GENERATOR_H
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <Eigen/Core>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract_process_planners/process_definition.h>
 #include <tesseract_motion_planners/core/utils.h>
-#include <Eigen/Core>
 
 namespace tesseract_process_planners
 {
-class LinearTransitionGenerator : public ProcessTransitionGenerator
+class TESSERACT_PUBLIC LinearTransitionGenerator : public ProcessTransitionGenerator
 {
 public:
   LinearTransitionGenerator(int step_count) : step_count_(step_count) {}

@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
-class MotionPlanner
+class TESSERACT_PUBLIC MotionPlanner
 {
 public:
   /** @brief Construct a basic planner */

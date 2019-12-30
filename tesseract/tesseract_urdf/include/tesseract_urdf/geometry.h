@@ -49,7 +49,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class GeometryStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC GeometryStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   GeometryStatusCategory() : name_("GeometryStatusCategory") {}

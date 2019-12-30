@@ -26,6 +26,7 @@
 #ifndef TESSERACT_KINEMATICS_FORWARD_KINEMATICS_FACTORY_H
 #define TESSERACT_KINEMATICS_FORWARD_KINEMATICS_FACTORY_H
 
+#include <tesseract_common/macros.h>
 #include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_scene_graph/graph.h>
 
@@ -38,7 +39,7 @@ enum class ForwardKinematicsFactoryType
   GRAPH = 2
 };
 
-class ForwardKinematicsFactory
+class TESSERACT_PUBLIC ForwardKinematicsFactory
 {
 public:
   using Ptr = std::shared_ptr<ForwardKinematicsFactory>;

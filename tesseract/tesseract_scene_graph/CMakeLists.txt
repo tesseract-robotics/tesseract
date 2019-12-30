@@ -11,6 +11,9 @@ find_package(TinyXML REQUIRED)
 find_package(tesseract_geometry REQUIRED)
 find_package(tesseract_common REQUIRED)
 
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+
 add_library(${PROJECT_NAME} SHARED src/graph.cpp src/resource_locator.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_geometry orocos-kdl console_bridge ${Boost_LIBRARIES} ${TinyXML_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)

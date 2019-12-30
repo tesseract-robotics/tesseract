@@ -28,7 +28,7 @@
 namespace tesseract_motion_planners
 {
 // Explicit template instantiation
-template class DescartesCollision<float>;
-template class DescartesCollision<double>;
+template class TESSERACT_PUBLIC DescartesCollision<float>;
+template class TESSERACT_PUBLIC DescartesCollision<double>;
 
 }  // namespace tesseract_motion_planners

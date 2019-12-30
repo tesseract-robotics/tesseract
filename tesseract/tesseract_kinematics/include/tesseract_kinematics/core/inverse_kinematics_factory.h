@@ -26,6 +26,7 @@
 #ifndef TESSERACT_KINEMATICS_INVERSE_KINEMATICS_FACTORY_H
 #define TESSERACT_KINEMATICS_INVERSE_KINEMATICS_FACTORY_H
 
+#include <tesseract_common/macros.h>
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_scene_graph/graph.h>
 
@@ -38,7 +39,7 @@ enum class InverseKinematicsFactoryType
   GRAPH = 2
 };
 
-class InverseKinematicsFactory
+class TESSERACT_PUBLIC InverseKinematicsFactory
 {
 public:
   using Ptr = std::shared_ptr<InverseKinematicsFactory>;

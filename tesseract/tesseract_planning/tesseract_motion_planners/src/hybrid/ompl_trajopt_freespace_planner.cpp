@@ -48,18 +48,18 @@ class SPARS;
 namespace tesseract_motion_planners
 {
 // Explicit template instantiation
-template class OMPLTrajOptFreespacePlanner<ompl::geometric::SBL>;
-template class OMPLTrajOptFreespacePlanner<ompl::geometric::EST>;
-template class OMPLTrajOptFreespacePlanner<ompl::geometric::LBKPIECE1>;
-template class OMPLTrajOptFreespacePlanner<ompl::geometric::BKPIECE1>;
-template class OMPLTrajOptFreespacePlanner<ompl::geometric::KPIECE1>;
-template class OMPLTrajOptFreespacePlanner<ompl::geometric::RRT>;
-template class OMPLTrajOptFreespacePlanner<ompl::geometric::RRTConnect>;
-template class OMPLTrajOptFreespacePlanner<ompl::geometric::RRTstar>;
-template class OMPLTrajOptFreespacePlanner<ompl::geometric::TRRT>;
-template class OMPLTrajOptFreespacePlanner<ompl::geometric::PRM>;
-template class OMPLTrajOptFreespacePlanner<ompl::geometric::PRMstar>;
-template class OMPLTrajOptFreespacePlanner<ompl::geometric::LazyPRMstar>;
-template class OMPLTrajOptFreespacePlanner<ompl::geometric::SPARS>;
+template class TESSERACT_PUBLIC OMPLTrajOptFreespacePlanner<ompl::geometric::SBL>;
+template class TESSERACT_PUBLIC OMPLTrajOptFreespacePlanner<ompl::geometric::EST>;
+template class TESSERACT_PUBLIC OMPLTrajOptFreespacePlanner<ompl::geometric::LBKPIECE1>;
+template class TESSERACT_PUBLIC OMPLTrajOptFreespacePlanner<ompl::geometric::BKPIECE1>;
+template class TESSERACT_PUBLIC OMPLTrajOptFreespacePlanner<ompl::geometric::KPIECE1>;
+template class TESSERACT_PUBLIC OMPLTrajOptFreespacePlanner<ompl::geometric::RRT>;
+template class TESSERACT_PUBLIC OMPLTrajOptFreespacePlanner<ompl::geometric::RRTConnect>;
+template class TESSERACT_PUBLIC OMPLTrajOptFreespacePlanner<ompl::geometric::RRTstar>;
+template class TESSERACT_PUBLIC OMPLTrajOptFreespacePlanner<ompl::geometric::TRRT>;
+template class TESSERACT_PUBLIC OMPLTrajOptFreespacePlanner<ompl::geometric::PRM>;
+template class TESSERACT_PUBLIC OMPLTrajOptFreespacePlanner<ompl::geometric::PRMstar>;
+template class TESSERACT_PUBLIC OMPLTrajOptFreespacePlanner<ompl::geometric::LazyPRMstar>;
+template class TESSERACT_PUBLIC OMPLTrajOptFreespacePlanner<ompl::geometric::SPARS>;
 
 }  // namespace tesseract_motion_planners

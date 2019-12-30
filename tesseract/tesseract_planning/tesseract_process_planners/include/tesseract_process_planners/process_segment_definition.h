@@ -42,7 +42,7 @@ namespace tesseract_process_planners
  * A process segment definition is assumed to have three components, an approach, process and departure.
  *
  */
-class ProcessSegmentDefinition
+class TESSERACT_PUBLIC ProcessSegmentDefinition
 {
 public:
   class Iterator;
@@ -159,7 +159,8 @@ public:
   Iterator erase(Iterator first, Iterator last);
 
   /** @brief The Iterator class ProcessSegmentDefinition */
-  class Iterator : public std::iterator<std::random_access_iterator_tag, tesseract_motion_planners::Waypoint::Ptr>
+  class TESSERACT_PUBLIC Iterator
+    : public std::iterator<std::random_access_iterator_tag, tesseract_motion_planners::Waypoint::Ptr>
   {
   public:
     Iterator(ProcessSegmentDefinition& container, std::size_t pos);

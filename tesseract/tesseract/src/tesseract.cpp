@@ -1,6 +1,6 @@
 /**
- * @file common.h
- * @brief This is a collection of common methods
+ * @file tesseract.cpp
+ * @brief This is a manager for all of tesseracts components
  *
  * @author Levi Armstrong
  * @date Dec 18, 2017

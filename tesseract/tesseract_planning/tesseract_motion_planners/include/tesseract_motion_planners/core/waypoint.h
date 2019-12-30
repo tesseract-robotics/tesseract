@@ -49,7 +49,7 @@ inline bool isCartesianWaypointType(WaypointType type) { return (type >= Waypoin
 inline bool isJointWaypointType(WaypointType type) { return (type < WaypointType::CARTESIAN_WAYPOINT); }
 
 /** @brief Defines a generic way of sending waypoints to a Tesseract Planner */
-class Waypoint
+class TESSERACT_PUBLIC Waypoint
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -121,7 +121,7 @@ protected:
 };
 
 /** @brief Defines a joint position waypoint for use with Tesseract Planners*/
-class JointWaypoint : public Waypoint
+class TESSERACT_PUBLIC JointWaypoint : public Waypoint
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -233,7 +233,7 @@ protected:
 };
 
 /** @brief Defines a cartesian position waypoint for use with Tesseract Planners */
-class CartesianWaypoint : public Waypoint
+class TESSERACT_PUBLIC CartesianWaypoint : public Waypoint
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -284,7 +284,7 @@ protected:
 };
 
 /** @brief Defines a joint toleranced position waypoint for use with Tesseract Planners*/
-class JointTolerancedWaypoint : public JointWaypoint
+class TESSERACT_PUBLIC JointTolerancedWaypoint : public JointWaypoint
 {
 public:
   using Ptr = std::shared_ptr<JointTolerancedWaypoint>;

@@ -25,11 +25,12 @@
  */
 #ifndef TESSERACT_FORWARD_KINEMATICS_MANAGER_H
 #define TESSERACT_FORWARD_KINEMATICS_MANAGER_H
+#include <tesseract_common/macros.h>
 #include <tesseract_kinematics/core/forward_kinematics_factory.h>
 
 namespace tesseract
 {
-class ForwardKinematicsManager
+class TESSERACT_PUBLIC ForwardKinematicsManager
 {
 public:
   using Ptr = std::shared_ptr<ForwardKinematicsManager>;
@@ -47,36 +48,19 @@ public:
    * @param factory The factory to register
    * @return False if factory already exists, otherwise true.
    */
-  bool registerFwdKinematicsFactory(tesseract_kinematics::ForwardKinematicsFactory::Ptr factory)
-  {
-    std::string name = factory->getName();
-    if (fwd_kin_factories_.find(name) == fwd_kin_factories_.end())
-    {
-      fwd_kin_factories_[name] = std::move(factory);
-      return true;
-    }
-    return false;
-  }
+  bool registerFwdKinematicsFactory(tesseract_kinematics::ForwardKinematicsFactory::Ptr factory);
 
   /**
    * @brief Removes a registered forward kinematics factory
    * @param name The name of the factory to remove
    */
-  void removeFwdKinematicsFactory(const std::string& name) { fwd_kin_factories_.erase(name); }
+  void removeFwdKinematicsFactory(const std::string& name);
 
   /**
    * @brief Get a list of all available forward kinematics solvers
    * @return Vector of names
    */
-  std::vector<std::string> getAvailableFwdKinematicsSolvers() const
-  {
-    std::vector<std::string> names;
-    names.reserve(fwd_kin_factories_.size());
-    for (const auto& factory : fwd_kin_factories_)
-      names.push_back(factory.first);
-
-    return names;
-  }
+  std::vector<std::string> getAvailableFwdKinematicsSolvers() const;
 
   /**
    * @brief Get a list of forward kinematics solver for a specific type {CHAIN, TREE, GRAPH}
@@ -84,30 +68,14 @@ public:
    * @return Vector of names
    */
   std::vector<std::string>
-  getAvailableFwdKinematicsSolvers(tesseract_kinematics::ForwardKinematicsFactoryType type) const
-  {
-    std::vector<std::string> names;
-    names.reserve(fwd_kin_factories_.size());
-    for (const auto& factory : fwd_kin_factories_)
-      if (factory.second->getType() == type)
-        names.push_back(factory.first);
-
-    return names;
-  }
+  getAvailableFwdKinematicsSolvers(tesseract_kinematics::ForwardKinematicsFactoryType type) const;
 
   /**
    * @brief This will return the forward kinematics solver factory
    * @param name The name of the solver
    * @return If not found it returns a nullptr, otherwise a new instance of the solver.
    */
-  tesseract_kinematics::ForwardKinematicsFactory::ConstPtr getFwdKinematicFactory(const std::string& name) const
-  {
-    auto it = fwd_kin_factories_.find(name);
-    if (it != fwd_kin_factories_.end())
-      return it->second;
-
-    return nullptr;
-  }
+  tesseract_kinematics::ForwardKinematicsFactory::ConstPtr getFwdKinematicFactory(const std::string& name) const;
 
   /**
    * @brief Add a manipulator forward kinematics solver
@@ -115,45 +83,20 @@ public:
    * @param solver The solver
    * @return
    */
-  bool addFwdKinematicSolver(const tesseract_kinematics::ForwardKinematics::ConstPtr& solver)
-  {
-    auto it = fwd_kin_manipulators_.find(std::make_pair(solver->getName(), solver->getSolverName()));
-    if (it != fwd_kin_manipulators_.end())
-      return false;
-
-    fwd_kin_manipulators_[std::make_pair(solver->getName(), solver->getSolverName())] = solver;
-
-    // If default solver does not exist for this manipulator set this solver as the default.
-    auto it2 = fwd_kin_manipulators_default_.find(solver->getName());
-    if (it2 == fwd_kin_manipulators_default_.end())
-      fwd_kin_manipulators_default_[solver->getName()] = solver;
-
-    return true;
-  }
+  bool addFwdKinematicSolver(const tesseract_kinematics::ForwardKinematics::ConstPtr& solver);
 
   /**
    * @brief Remove a forward kinematic solver for a given manipulator
    * @param manipulator The name of the manipulator
    * @param name The name of the solver
    */
-  void removeFwdKinematicSolver(const std::string& manipulator, const std::string& name)
-  {
-    fwd_kin_manipulators_.erase(std::make_pair(manipulator, name));
-  }
+  void removeFwdKinematicSolver(const std::string& manipulator, const std::string& name);
 
   /**
    * @brief Get a list of all available forward kinematics manipulators
    * @return Vector of names
    */
-  std::vector<std::string> getAvailableFwdKinematicsManipulators() const
-  {
-    std::vector<std::string> names;
-    names.reserve(fwd_kin_manipulators_default_.size());
-    for (const auto& manip : fwd_kin_manipulators_default_)
-      names.push_back(manip.first);
-
-    return names;
-  }
+  std::vector<std::string> getAvailableFwdKinematicsManipulators() const;
 
   /**
    * @brief Set default forward kinematic solver for manipulator
@@ -161,16 +104,7 @@ public:
    * @param name The name of the solver
    * @return True if manipulator solver pair exist, otherwise false
    */
-  bool setDefaultFwdKinematicSolver(const std::string& manipulator, const std::string& name)
-  {
-    auto it = fwd_kin_manipulators_.find(std::make_pair(manipulator, name));
-    if (it == fwd_kin_manipulators_.end())
-      return false;
-
-    fwd_kin_manipulators_default_[manipulator] = it->second;
-
-    return true;
-  }
+  bool setDefaultFwdKinematicSolver(const std::string& manipulator, const std::string& name);
 
   /**
    * @brief Get forward kinematic solver for manipulator
@@ -179,28 +113,14 @@ public:
    * @return If not found returns a nullptr, otherwise a instance of the solver.
    */
   tesseract_kinematics::ForwardKinematics::Ptr getFwdKinematicSolver(const std::string& manipulator,
-                                                                     const std::string& name) const
-  {
-    auto it = fwd_kin_manipulators_.find(std::make_pair(manipulator, name));
-    if (it != fwd_kin_manipulators_.end())
-      return it->second->clone();
-
-    return nullptr;
-  }
+                                                                     const std::string& name) const;
 
   /**
    * @brief Get default forward kinematic solver for manipulator
    * @param manipulator The name of the manipulator
    * @return If not found returns a nullptr, otherwise a instance of the solver.
    */
-  tesseract_kinematics::ForwardKinematics::Ptr getFwdKinematicSolver(const std::string& manipulator) const
-  {
-    auto it = fwd_kin_manipulators_default_.find(manipulator);
-    if (it != fwd_kin_manipulators_default_.end())
-      return it->second->clone();
-
-    return nullptr;
-  }
+  tesseract_kinematics::ForwardKinematics::Ptr getFwdKinematicSolver(const std::string& manipulator) const;
 
 private:
   std::unordered_map<std::string, tesseract_kinematics::ForwardKinematicsFactory::ConstPtr> fwd_kin_factories_;

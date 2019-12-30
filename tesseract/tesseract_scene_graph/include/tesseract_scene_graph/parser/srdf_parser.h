@@ -55,7 +55,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_scene_graph
 {
 /** \brief Representation of semantic information about the robot */
-class SRDFModel
+class TESSERACT_PUBLIC SRDFModel
 {
 public:
   using Ptr = std::shared_ptr<SRDFModel>;

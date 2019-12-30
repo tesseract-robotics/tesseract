@@ -49,7 +49,7 @@ namespace tesseract_kinematics
  * Typically, just wrappers around the equivalent KDL calls.
  *
  */
-class KDLFwdKinChain : public ForwardKinematics
+class TESSERACT_PUBLIC KDLFwdKinChain : public ForwardKinematics
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

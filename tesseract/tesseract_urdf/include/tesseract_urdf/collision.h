@@ -41,7 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class CollisionStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC CollisionStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   CollisionStatusCategory() : name_("CollisionStatusCategory") {}

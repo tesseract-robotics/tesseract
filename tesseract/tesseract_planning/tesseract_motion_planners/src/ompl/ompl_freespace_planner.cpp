@@ -47,18 +47,18 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_motion_planners
 {
 // Explicit template instantiation
-template class OMPLFreespacePlanner<ompl::geometric::SBL>;
-template class OMPLFreespacePlanner<ompl::geometric::EST>;
-template class OMPLFreespacePlanner<ompl::geometric::LBKPIECE1>;
-template class OMPLFreespacePlanner<ompl::geometric::BKPIECE1>;
-template class OMPLFreespacePlanner<ompl::geometric::KPIECE1>;
-template class OMPLFreespacePlanner<ompl::geometric::RRT>;
-template class OMPLFreespacePlanner<ompl::geometric::RRTConnect>;
-template class OMPLFreespacePlanner<ompl::geometric::RRTstar>;
-template class OMPLFreespacePlanner<ompl::geometric::TRRT>;
-template class OMPLFreespacePlanner<ompl::geometric::PRM>;
-template class OMPLFreespacePlanner<ompl::geometric::PRMstar>;
-template class OMPLFreespacePlanner<ompl::geometric::LazyPRMstar>;
-template class OMPLFreespacePlanner<ompl::geometric::SPARS>;
+template class TESSERACT_PUBLIC OMPLFreespacePlanner<ompl::geometric::SBL>;
+template class TESSERACT_PUBLIC OMPLFreespacePlanner<ompl::geometric::EST>;
+template class TESSERACT_PUBLIC OMPLFreespacePlanner<ompl::geometric::LBKPIECE1>;
+template class TESSERACT_PUBLIC OMPLFreespacePlanner<ompl::geometric::BKPIECE1>;
+template class TESSERACT_PUBLIC OMPLFreespacePlanner<ompl::geometric::KPIECE1>;
+template class TESSERACT_PUBLIC OMPLFreespacePlanner<ompl::geometric::RRT>;
+template class TESSERACT_PUBLIC OMPLFreespacePlanner<ompl::geometric::RRTConnect>;
+template class TESSERACT_PUBLIC OMPLFreespacePlanner<ompl::geometric::RRTstar>;
+template class TESSERACT_PUBLIC OMPLFreespacePlanner<ompl::geometric::TRRT>;
+template class TESSERACT_PUBLIC OMPLFreespacePlanner<ompl::geometric::PRM>;
+template class TESSERACT_PUBLIC OMPLFreespacePlanner<ompl::geometric::PRMstar>;
+template class TESSERACT_PUBLIC OMPLFreespacePlanner<ompl::geometric::LazyPRMstar>;
+template class TESSERACT_PUBLIC OMPLFreespacePlanner<ompl::geometric::SPARS>;
 
 }  // namespace tesseract_motion_planners

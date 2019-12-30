@@ -43,7 +43,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class VisualStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC VisualStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   VisualStatusCategory() : name_("VisualStatusCategory") {}

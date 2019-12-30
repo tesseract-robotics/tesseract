@@ -14,7 +14,7 @@ namespace tesseract_process_planners
  * TODO: Should we store the planner response for each?
  *
  */
-struct ProcessSegmentPlan
+struct TESSERACT_PUBLIC ProcessSegmentPlan
 {
   tesseract_common::JointTrajectory approach;  /**< The generated approach trajectory generated based on the Process
                                                   Segment Definition */
@@ -32,7 +32,7 @@ struct ProcessSegmentPlan
  * Note: An empty trajectory for any process step indicates that it is to be omitted.
  *
  */
-struct ProcessPlan
+struct TESSERACT_PUBLIC ProcessPlan
 {
   tesseract_common::JointTrajectory from_start; /**< A trajectory from the start position to the first point in the
                                                    first segment */
@@ -50,7 +50,7 @@ struct ProcessPlan
 /**
  * @brief An abstract class for implementing process planners
  */
-class ProcessPlanner
+class TESSERACT_PUBLIC ProcessPlanner
 {
 public:
   using Ptr = std::shared_ptr<ProcessPlanner>;

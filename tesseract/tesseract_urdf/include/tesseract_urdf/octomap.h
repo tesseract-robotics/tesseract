@@ -44,7 +44,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class OctomapStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC OctomapStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   OctomapStatusCategory() : name_("OctomapStatusCategory") {}

@@ -59,7 +59,7 @@ using TransformMap = AlignedMap<std::string, Eigen::Isometry3d>;
 using TrajArray = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
 /** @brief Represents a joint trajectory */
-struct JointTrajectory
+struct TESSERACT_PUBLIC JointTrajectory
 {
   std::vector<std::string> joint_names;   /**< @brief The joint names */
   tesseract_common::TrajArray trajectory; /**< @brief The generated trajectory */

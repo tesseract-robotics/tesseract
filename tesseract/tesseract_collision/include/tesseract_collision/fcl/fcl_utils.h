@@ -70,7 +70,7 @@ enum CollisionFilterGroups
   AllFilter = -1  // all bits sets: DefaultFilter | StaticFilter | KinematicFilter
 };
 
-class CollisionObjectWrapper
+class TESSERACT_LOCAL CollisionObjectWrapper
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -204,9 +204,12 @@ inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
   }
 }
 
-bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data);
+bool TESSERACT_LOCAL collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data);
 
-bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data, double& min_dist);
+bool TESSERACT_LOCAL distanceCallback(fcl::CollisionObjectd* o1,
+                                      fcl::CollisionObjectd* o2,
+                                      void* data,
+                                      double& min_dist);
 }  // namespace tesseract_collision_fcl
 }  // namespace tesseract_collision
 #endif  // TESSERACT_COLLISION_FCL_UTILS_H

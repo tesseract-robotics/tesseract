@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class LimitsStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC LimitsStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   LimitsStatusCategory() : name_("LimitsStatusCategory") {}

@@ -41,6 +41,7 @@
 #ifndef TESSERACT_COLLISION_BULLET_DISCRETE_SIMPLE_MANAGERS_H
 #define TESSERACT_COLLISION_BULLET_DISCRETE_SIMPLE_MANAGERS_H
 
+#include <tesseract_common/macros.h>
 #include <tesseract_collision/bullet/bullet_utils.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
 namespace tesseract_collision
@@ -48,7 +49,7 @@ namespace tesseract_collision
 namespace tesseract_collision_bullet
 {
 /** @brief A simple implementaiton of a bullet manager which does not use BHV */
-class BulletDiscreteSimpleManager : public DiscreteContactManager
+class TESSERACT_PUBLIC BulletDiscreteSimpleManager : public DiscreteContactManager
 {
 public:
   using Ptr = std::shared_ptr<BulletDiscreteSimpleManager>;

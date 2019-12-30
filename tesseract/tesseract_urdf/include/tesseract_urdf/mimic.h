@@ -38,7 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class MimicStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC MimicStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   MimicStatusCategory() : name_("MimicStatusCategory") {}

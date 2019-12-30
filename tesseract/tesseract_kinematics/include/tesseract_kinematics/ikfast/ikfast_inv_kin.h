@@ -79,7 +79,7 @@ namespace tesseract_kinematics
  * }
  *
 */
-class IKFastInvKin : public InverseKinematics
+class TESSERACT_PUBLIC IKFastInvKin : public InverseKinematics
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

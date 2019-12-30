@@ -51,7 +51,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
 {
-class Material
+class TESSERACT_PUBLIC Material
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -78,7 +78,7 @@ private:
 
 static auto DEFAULT_TESSERACT_MATERIAL = std::make_shared<Material>("default_tesseract_material");
 
-class Inertial
+class TESSERACT_PUBLIC Inertial
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -99,7 +99,7 @@ public:
   }
 };
 
-class Visual
+class TESSERACT_PUBLIC Visual
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -124,7 +124,7 @@ public:
   std::string name;
 };
 
-class Collision
+class TESSERACT_PUBLIC Collision
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -146,7 +146,7 @@ public:
   std::string name;
 };
 
-class Link
+class TESSERACT_PUBLIC Link
 {
 public:
   using Ptr = std::shared_ptr<Link>;

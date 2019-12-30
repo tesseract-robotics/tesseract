@@ -30,7 +30,7 @@
 
 namespace tesseract_environment
 {
-class KDLEnv : public Environment
+class TESSERACT_PUBLIC KDLEnv : public Environment
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

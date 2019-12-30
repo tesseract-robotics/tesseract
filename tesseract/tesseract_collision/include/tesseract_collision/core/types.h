@@ -69,7 +69,7 @@ enum class ContactTestType
   LIMITED = 3  /**< Return limited set of contacts for a pair of objects */
 };
 
-struct ContactResult
+struct TESSERACT_PUBLIC ContactResult
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -150,7 +150,7 @@ inline std::size_t flattenResults(ContactResultMap&& m, ContactResultVector& v)
 }
 
 /// Contact test data and query results information
-struct ContactTestData
+struct TESSERACT_LOCAL ContactTestData
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

@@ -41,7 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class MaterialStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC MaterialStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   MaterialStatusCategory() : name_("MaterialStatusCategory") {}

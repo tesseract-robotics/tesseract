@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class SafetyStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC SafetyStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   SafetyStatusCategory() : name_("SafetyStatusCategory") {}

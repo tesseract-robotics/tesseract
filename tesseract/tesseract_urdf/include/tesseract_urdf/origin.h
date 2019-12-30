@@ -40,7 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class OriginStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC OriginStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   OriginStatusCategory() : name_("OriginStatusCategory") {}

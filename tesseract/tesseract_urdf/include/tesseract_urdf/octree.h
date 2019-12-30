@@ -42,7 +42,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class OctreeStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC OctreeStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   OctreeStatusCategory() : name_("OctreeStatusCategory") {}

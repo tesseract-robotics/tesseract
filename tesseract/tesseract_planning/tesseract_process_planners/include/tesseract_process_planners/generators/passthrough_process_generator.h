@@ -5,7 +5,7 @@
 
 namespace tesseract_process_planners
 {
-class PassthroughProcessGenerator : public ProcessStepGenerator
+class TESSERACT_PUBLIC PassthroughProcessGenerator : public ProcessStepGenerator
 {
 public:
   PassthroughProcessGenerator() = default;

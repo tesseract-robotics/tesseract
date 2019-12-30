@@ -86,12 +86,45 @@ jobs:
       cache:
         directories:
           - $HOME/.ccache
+    - os: windows
+      language: cpp
+      git:
+        quiet: true
+        submodules: true
+      env: BADGE=windows
   allow_failures:
     - env: ROS_DISTRO=kinetic ROS_REPO=ros-shadow-fixed DOCKER_IMAGE=lharmstrong/tesseract:kinetic BADGE=trusty-shadow
     - env: ROS_DISTRO=melodic ROS_REPO=ros-shadow-fixed DOCKER_IMAGE=lharmstrong/tesseract:melodic ROS_PARALLEL_JOBS=-j4 ROS_PARALLEL_TEST_JOBS=-j4 BADGE=xenial-shadow
 
 install:
-  - git clone --quiet --depth=1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
-
+  - if [ "$TRAVIS_OS_NAME" != "windows" ]; then git clone --quiet --depth=1 https://github.com/ros-industrial/industrial_ci.git .ci_config; fi
+  - |
+    if [ "$TRAVIS_OS_NAME" = "windows" ]; then
+        unset CXX CXX_FOR_BUILD CC CC_FOR_BUILD
+        choco feature disable -n=showDownloadProgress
+        cd ..
+        mkdir -p catkin_ws/src
+        mv tesseract catkin_ws/src/
+        cd catkin_ws
+        choco uninstall mingw
+        wget https://raw.githubusercontent.com/johnwason/source_bat/master/source_bat.bash
+        source source_bat.bash 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat'
+        choco source add -n=ros-win -s="https://roswin.azurewebsites.net/api/v2" --priority=1
+        choco install ros-melodic-ros_base -y --execution-timeout=0
+        choco install clapack
+        choco install openblas
+        choco install console_bridge
+        source source_bat.bash 'c:\opt\ros\melodic\x64\setup.bat'
+        python -m pip install --upgrade pip
+        rosdep install --from-paths src --ignore-src -r -y
+        /c/opt/vcpkg/vcpkg.exe install jsoncpp:x64-windows
+        wstool init src
+        wstool merge -t src ./src/tesseract/dependencies.rosinstall
+        wstool update -t src
+    fi
 script:
-  - .industrial_ci/travis.sh
+  - if [ "$TRAVIS_OS_NAME" != "windows" ]; then .ci_config/travis.sh; fi
+  - |
+    if [ "$TRAVIS_OS_NAME" = "windows" ]; then
+        catkin_make_isolated --cmake-args -DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_ENABLE_RUN_TESTING=ON
+    fi

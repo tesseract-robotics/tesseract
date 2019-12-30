@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class DynamicsStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC DynamicsStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   DynamicsStatusCategory() : name_("DynamicsStatusCategory") {}

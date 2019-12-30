@@ -38,7 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_motion_planners
 {
 /** @brief Continuous collision check between two states */
-class DiscreteMotionValidator : public ompl::base::MotionValidator
+class TESSERACT_PUBLIC DiscreteMotionValidator : public ompl::base::MotionValidator
 {
 public:
   DiscreteMotionValidator(const ompl::base::SpaceInformationPtr& space_info,

@@ -38,7 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_visualization
 {
 /** @brief The Vizualization class */
-class Visualization
+class TESSERACT_PUBLIC Visualization
 {
 public:
   using Ptr = std::shared_ptr<Visualization>;

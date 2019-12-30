@@ -41,7 +41,7 @@ namespace tesseract_motion_planners
  * It contains both successfull and error status codes.
 
  */
-class DescartesMotionPlannerStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC DescartesMotionPlannerStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   DescartesMotionPlannerStatusCategory(std::string name);

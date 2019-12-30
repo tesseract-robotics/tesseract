@@ -44,7 +44,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-class Environment
+class TESSERACT_PUBLIC Environment
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

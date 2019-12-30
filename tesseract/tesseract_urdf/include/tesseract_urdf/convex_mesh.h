@@ -44,7 +44,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class ConvexMeshStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_PUBLIC ConvexMeshStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   ConvexMeshStatusCategory() : name_("ConvexMeshStatusCategory") {}

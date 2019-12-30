@@ -30,7 +30,7 @@
 
 namespace tesseract_kinematics
 {
-class KDLFwdKinTreeFactory : public ForwardKinematicsFactory
+class TESSERACT_PUBLIC KDLFwdKinTreeFactory : public ForwardKinematicsFactory
 {
 public:
   KDLFwdKinTreeFactory() : name_(KDLFwdKinTree().getSolverName()) {}

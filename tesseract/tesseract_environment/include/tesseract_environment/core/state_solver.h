@@ -42,7 +42,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-class StateSolver
+class TESSERACT_PUBLIC StateSolver
 {
 public:
   using Ptr = std::shared_ptr<StateSolver>;

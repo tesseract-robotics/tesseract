@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_collision
 {
-class DiscreteContactManager
+class TESSERACT_PUBLIC DiscreteContactManager
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
