@@ -232,6 +232,7 @@ public:
   CastHullShape(btConvexShape* shape, const btTransform& t01) : m_shape(shape), m_t01(t01)
   {
     m_shapeType = CUSTOM_CONVEX_SHAPE_TYPE;
+    setUserIndex(m_shape->getUserIndex());
   }
 
   void updateCastTransform(const btTransform& t01) { m_t01 = t01; }
