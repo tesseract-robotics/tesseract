@@ -113,7 +113,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
 
   // Set Log Level
   if (verbose)
-    util::gLogLevel = util::LevelDebug;
+    util::gLogLevel = util::LevelInfo;
   else
     util::gLogLevel = util::LevelWarn;
 
