@@ -10,6 +10,9 @@ find_package(tesseract_common REQUIRED)
 find_package(Bullet REQUIRED)
 find_package(fcl REQUIRED)
 
+# We need to find ccd ourselves because FCL doesn't do it in their fclConfig.cmake
+find_package(ccd REQUIRED)
+
 # Create interface for core
 add_library(${PROJECT_NAME}_core INTERFACE)
 target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract::tesseract_geometry ${Boost_LIBRARIES} ${BULLET_LIBRARIES})

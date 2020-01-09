@@ -17,5 +17,6 @@ find_dependency(tesseract_geometry)
 find_dependency(tesseract_common)
 find_dependency(Bullet)
 find_dependency(fcl)
+find_dependency(ccd)
 
 include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-targets.cmake")
