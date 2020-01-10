@@ -186,7 +186,7 @@ bool PickAndPlaceExample::run()
     auto collision = std::make_shared<trajopt::CollisionTermInfo>();
     collision->name = "collision";
     collision->term_type = trajopt::TT_COST;
-    collision->continuous = true;
+    collision->evaluator_type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
     collision->first_step = 1;
     collision->last_step = pci.basic_info.n_steps - 1;
     collision->info = trajopt::createSafetyMarginDataVector(pci.basic_info.n_steps, 0.005, 50);
@@ -396,7 +396,7 @@ bool PickAndPlaceExample::run()
     auto collision = std::make_shared<trajopt::CollisionTermInfo>();
     collision->name = "collision";
     collision->term_type = trajopt::TT_COST;
-    collision->continuous = true;
+    collision->evaluator_type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
     collision->first_step = 1;
     collision->last_step = pci_place.basic_info.n_steps - 1;
     collision->info = trajopt::createSafetyMarginDataVector(pci_place.basic_info.n_steps, 0.005, 50);

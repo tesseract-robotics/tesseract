@@ -93,7 +93,7 @@ struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
   /** @brief If true, collision checking will be enabled. Default: true*/
   bool collision_check = true;
   /** @brief If true, use continuous collision checking */
-  bool collision_continuous = true;
+  trajopt::CollisionEvaluatorType collision_type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
   /** @brief Max distance over which collisions are checked */
   double collision_safety_margin = 0.025;
   /** @brief The collision coeff/weight */

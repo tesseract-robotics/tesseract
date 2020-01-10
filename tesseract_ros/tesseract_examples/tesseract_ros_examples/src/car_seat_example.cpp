@@ -292,7 +292,7 @@ std::shared_ptr<ProblemConstructionInfo> CarSeatExample::cppMethod(const std::st
   auto collision = std::make_shared<CollisionTermInfo>();
   collision->name = "collision";
   collision->term_type = TT_CNT;
-  collision->continuous = true;
+  collision->evaluator_type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
   collision->first_step = 0;
   collision->last_step = pci->basic_info.n_steps - 2;
   collision->info = createSafetyMarginDataVector(pci->basic_info.n_steps, 0.0001, 40);
