@@ -1,0 +1,23 @@
+# Based on https://github.com/robotraconteur/robotraconteur/blob/master/RobotRaconteurPython/setup.py.in
+
+from setuptools import setup, Distribution
+
+# Suggested at https://stackoverflow.com/questions/24071491/how-can-i-make-a-python-wheel-from-an-existing-native-library
+class BinaryDistribution(Distribution):
+    def has_ext_modules(foo):
+        return True
+
+setup(name='tesseract',
+      version='@tesseract_python_version@',
+      description='Tesseract Python Library',
+      author='John Wason',
+      author_email='wason@wasontech.com',
+      url='http://robotraconteur.com/',
+      packages=['tesseract','tesseract_ros'],
+      package_data={'tesseract': ['_tesseract_python.pyd', '_tesseract_python.so'], \
+          'tesseract_ros': ['_tesseract_ros_python.pyd', '_tesseract_ros_python.so']},
+	  distclass=BinaryDistribution,
+	  license='Apache-2.0',
+	  install_requires=['numpy'],
+	  long_description='Tesseract package for Python'
+     )

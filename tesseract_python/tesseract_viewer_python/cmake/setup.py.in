@@ -1,0 +1,16 @@
+# Based on https://github.com/robotraconteur/robotraconteur/blob/master/RobotRaconteurPython/setup.py.in
+
+from setuptools import setup, Distribution
+
+setup(name='tesseract_viewer',
+      version='@tesseract_viewer_python_version@',
+      description='Tesseract Viewer Python Library',
+      author='John Wason',
+      author_email='wason@wasontech.com',
+      url='http://robotraconteur.com/',
+      packages=['tesseract_viewer','tesseract_viewer.resources'],
+      package_data={'tesseract_viewer.resources':['static/index.html','static/tesseract_viewer.js']},
+	  license='Apache-2.0',
+	  install_requires=['numpy','tesseract_python'],
+	  long_description='Tesseract viewer package for Python'
+     )
