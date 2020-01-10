@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>tesseract_python</name>
+  <version>0.1.0</version>
+  <description>The tesseract_python package</description>
+  <maintainer email="wason@wasontech.com">John Wason</maintainer>
+  <license>Apache 2.0</license>
+  <author >John Wason</author>
+  
+  <depend>trajopt</depend>
+  <depend>tesseract_collision</depend>
+  <depend>tesseract_motion_planners</depend>
+  <depend>tesseract_kinematics</depend>
+  <depend>tesseract_environment</depend>
+  <depend>tesseract_scene_graph</depend>
+  <depend>tesseract_rosutils</depend>
+  <depend>tesseract_common</depend>
+  <depend>tesseract_visualization</depend>
+  <depend>octomap_ros</depend>
+  <depend>pcl_conversions</depend>
+
+  <depend>python</depend>
+  <depend>python-numpy</depend>  
+  <build_depend>swig</build_depend>
+  <build_depend>python-dev</build_depend>
+  <test_depend>python-pytest</test_depend>
+
+  <export>    
+    <build_type>cmake</build_type>
+  </export>
+
+</package>

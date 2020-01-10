@@ -31,6 +31,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <memory>
+#include <sstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
@@ -44,6 +45,8 @@ class Resource
 public:
   using Ptr = std::shared_ptr<Resource>;
   using ConstPtr = std::shared_ptr<const Resource>;
+
+  virtual ~Resource() = default;
 
   /**
    * @brief Returns true if the located resource is a local file
@@ -79,6 +82,37 @@ public:
    * @return A std::istream shared pointer for the resource data
    */
   virtual std::shared_ptr<std::istream> getResourceContentStream() = 0;
+};
+
+class BytesResource : public tesseract_common::Resource
+{
+public:
+  BytesResource(std::string url, std::vector<uint8_t> bytes)
+  {
+    url_ = std::move(url);
+    bytes_ = std::move(bytes);
+  }
+
+  BytesResource(std::string url, const uint8_t* bytes, size_t bytes_len)
+  {
+    url_ = std::move(url);
+    bytes_ = std::vector<uint8_t>(bytes, bytes + bytes_len);
+  }
+  virtual bool isFile() override { return false; }
+  virtual std::string getUrl() override { return url_; }
+  virtual std::string getFilePath() override { return ""; }
+  virtual std::vector<uint8_t> getResourceContents() override { return bytes_; }
+  virtual std::shared_ptr<std::istream> getResourceContentStream() override
+  {
+    std::shared_ptr<std::stringstream> o = std::make_shared<std::stringstream>();
+    o->write((const char*)&bytes_.at(0), bytes_.size());
+    o->seekg(0, o->beg);
+    return o;
+  }
+
+protected:
+  std::string url_;
+  std::vector<uint8_t> bytes_;
 };
 
 }  // namespace tesseract_common
