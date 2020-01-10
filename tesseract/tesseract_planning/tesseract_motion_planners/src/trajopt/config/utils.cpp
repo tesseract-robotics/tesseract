@@ -216,7 +216,7 @@ trajopt::TermInfo::Ptr createConfigurationTermInfo(const JointWaypoint::ConstPtr
 
 trajopt::TermInfo::Ptr createCollisionTermInfo(int n_steps,
                                                double collision_safety_margin,
-                                               bool collision_continuous,
+                                               trajopt::CollisionEvaluatorType evaluator_type,
                                                double coeff,
                                                tesseract_collision::ContactTestType contact_test_type,
                                                double longest_valid_segment_length,
@@ -225,7 +225,7 @@ trajopt::TermInfo::Ptr createCollisionTermInfo(int n_steps,
   std::shared_ptr<trajopt::CollisionTermInfo> collision = std::make_shared<trajopt::CollisionTermInfo>();
   collision->name = name;
   collision->term_type = trajopt::TT_COST;
-  collision->continuous = collision_continuous;
+  collision->evaluator_type = evaluator_type;
   collision->first_step = 0;
   collision->last_step = n_steps - 1;
   collision->contact_test_type = contact_test_type;

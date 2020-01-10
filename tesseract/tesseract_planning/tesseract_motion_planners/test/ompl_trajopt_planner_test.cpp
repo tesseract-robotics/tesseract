@@ -194,7 +194,7 @@ TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
     trajopt_config.target_waypoints.push_back(end);
 
     trajopt_config.collision_check = true;
-    trajopt_config.collision_continuous = true;
+    trajopt_config.collision_type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
     trajopt_config.collision_safety_margin = 0.02;
 
     trajopt_config.smooth_velocities = true;

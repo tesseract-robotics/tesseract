@@ -319,12 +319,8 @@ void TrajOptPlannerDefaultConfig::addCollision(trajopt::ProblemConstructionInfo&
   }
 
   // Create a default collision term info
-  trajopt::TermInfo::Ptr ti = createCollisionTermInfo(pci.basic_info.n_steps,
-                                                      collision_safety_margin,
-                                                      collision_continuous,
-                                                      collision_coeff,
-                                                      contact_test_type,
-                                                      length);
+  trajopt::TermInfo::Ptr ti = createCollisionTermInfo(
+      pci.basic_info.n_steps, collision_safety_margin, collision_type, collision_coeff, contact_test_type, length);
 
   // Update the term info with the (possibly) new start and end state indices for which to apply this cost
   std::shared_ptr<trajopt::CollisionTermInfo> ct = std::static_pointer_cast<trajopt::CollisionTermInfo>(ti);

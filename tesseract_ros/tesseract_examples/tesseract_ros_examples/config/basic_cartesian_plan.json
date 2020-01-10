@@ -21,7 +21,7 @@
       {
         "coeffs" : [20],
         "dist_pen" : [0.025],
-        "continuous" : false
+        "evaluator_type" : 0
       }
     }
   ],
