@@ -743,15 +743,30 @@ Ogre::MaterialPtr LinkWidget::getMaterialForLink(const tesseract_scene_graph::Li
   return mat;
 }
 
-rviz::PointCloud* createPointCloud(std::vector<rviz::PointCloud::Point>&& points, float size)
+rviz::PointCloud* createPointCloud(std::vector<rviz::PointCloud::Point>&& points,
+                                   float size,
+                                   tesseract_geometry::Octree::SubType subtype)
 {
   auto* cloud = new rviz::PointCloud();
+  cloud->clear();
 
   cloud->setName(point_cloud_name_generator.generate());
-  cloud->setRenderMode(rviz::PointCloud::RM_BOXES);
-  cloud->clear();
-  cloud->setDimensions(size, size, size);
+  float new_size = size;
+  if (subtype == tesseract_geometry::Octree::SubType::BOX)
+  {
+    cloud->setRenderMode(rviz::PointCloud::RM_BOXES);
+  }
+  else if (subtype == tesseract_geometry::Octree::SubType::SPHERE_INSIDE)
+  {
+    cloud->setRenderMode(rviz::PointCloud::RM_SPHERES);
+  }
+  else if (subtype == tesseract_geometry::Octree::SubType::SPHERE_OUTSIDE)
+  {
+    cloud->setRenderMode(rviz::PointCloud::RM_SPHERES);
+    new_size = std::sqrt(float(2) * size * size);
+  }
 
+  cloud->setDimensions(new_size, new_size, new_size);
   cloud->addPoints(&points.front(), static_cast<unsigned>(points.size()));
   points.clear();
   return cloud;
@@ -1000,8 +1015,8 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
       Ogre::SceneNode* offset_node;
       std::vector<OctreeDataContainer>* octree_objects;
 
-      const std::shared_ptr<const octomap::OcTree>& octree =
-          static_cast<const tesseract_geometry::Octree&>(geom).getOctree();
+      const auto& octomap = static_cast<const tesseract_geometry::Octree&>(geom);
+      const std::shared_ptr<const octomap::OcTree>& octree = octomap.getOctree();
 
       if (!max_octree_depth)
         octree_depth = octree->getTreeDepth();
@@ -1118,7 +1133,8 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
         OctreeDataContainer data;
         data.size = static_cast<float>(octree->getNodeSize(static_cast<unsigned>(i + 1)));
         data.points = std::vector<rviz::PointCloud::Point>(pointBuf[i]);
-        data.point_cloud = createPointCloud(std::move(pointBuf[i]), data.size);
+        data.point_cloud = createPointCloud(std::move(pointBuf[i]), data.size, octomap.getSubType());
+        data.shape_type = octomap.getSubType();
 
         offset_node->attachObject(data.point_cloud);
         octree_objects->push_back(data);
@@ -1271,7 +1287,7 @@ void LinkWidget::clone(Ogre::SceneNode* scene_node,
 rviz::PointCloud* LinkWidget::OctreeDataContainer::clone()
 {
   std::vector<rviz::PointCloud::Point> copy_points(points);
-  return createPointCloud(std::move(copy_points), size);
+  return createPointCloud(std::move(copy_points), size, shape_type);
 }
 
 void LinkWidget::setOctomapColor(double z_pos,
