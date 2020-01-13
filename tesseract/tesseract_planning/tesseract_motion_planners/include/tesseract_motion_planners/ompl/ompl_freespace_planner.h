@@ -30,6 +30,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/geometric/SimpleSetup.h>
 #include <ompl/base/OptimizationObjective.h>
+#include <ompl/tools/multiplan/ParallelPlan.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/planner.h>
@@ -142,6 +143,10 @@ public:
    * @brief Sets up the OMPL problem then solves. It is intended to simplify setting up
    * and solving freespace motion problems.
    *
+   * This planner leverages OMPL ParallelPlan which supports being called multiple times. So you are able to
+   * setConfiguration and keep calling solve and with each solve it will continue to build the existing planner graph.
+   * If you want to start with a clean graph you must call setConfiguration() before calling solve again.
+   *
    * This planner (and the associated config passed to the setConfiguration) does not expose all of the available
    * configuration data in OMPL. This is done to simplify the interface. However, many problems may require more
    * specific setups. In that case, the source code for this planner may be used as an example.
@@ -173,6 +178,9 @@ protected:
   /** @brief The planners status codes */
   std::shared_ptr<const OMPLFreespacePlannerStatusCategory> status_category_;
 
+  /** @brief OMPL Parallel planner */
+  std::shared_ptr<ompl::tools::ParallelPlan> parallel_plan_;
+
   /** @brief The ompl planner motion validator */
   ompl::base::MotionValidatorPtr motion_validator_;
 
@@ -184,9 +192,6 @@ protected:
 
   /** @brief The mapping of environment links to kinematics links */
   tesseract_environment::AdjacencyMap::ConstPtr adj_map_;
-
-  /** @brief The discrete contact manager */
-  tesseract_collision::DiscreteContactManager::Ptr discrete_contact_manager_;
 
   /** @brief The continuous contact manager */
   tesseract_collision::ContinuousContactManager::Ptr continuous_contact_manager_;
