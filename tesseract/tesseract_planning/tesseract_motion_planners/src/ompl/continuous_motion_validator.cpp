@@ -42,7 +42,6 @@ ContinuousMotionValidator::ContinuousMotionValidator(const ompl::base::SpaceInfo
   , state_solver_(env->getStateSolver())
   , kin_(std::move(kin))
   , continuous_contact_manager_(env->getContinuousContactManager())
-  , discrete_contact_manager_(env->getDiscreteContactManager())
 {
   joints_ = kin_->getJointNames();
 
@@ -54,9 +53,6 @@ ContinuousMotionValidator::ContinuousMotionValidator(const ompl::base::SpaceInfo
 
   continuous_contact_manager_->setActiveCollisionObjects(links_);
   continuous_contact_manager_->setContactDistanceThreshold(collision_safety_margin);
-
-  discrete_contact_manager_->setActiveCollisionObjects(links_);
-  discrete_contact_manager_->setContactDistanceThreshold(collision_safety_margin);
 }
 
 bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1, const ompl::base::State* s2) const
@@ -84,10 +80,7 @@ bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1,
       state_space.interpolate(s1, s2, static_cast<double>(i - 1) / static_cast<double>(n_steps), start_interp);
       state_space.interpolate(s1, s2, static_cast<double>(i) / static_cast<double>(n_steps), end_interp);
 
-      // Currently we must perform both continuous and discrete because continuous does not perform
-      // self collision checking.
-      if (!si_->isValid(end_interp) || !continuousCollisionCheck(start_interp, end_interp) ||
-          !discreteCollisionCheck(end_interp))
+      if (!si_->isValid(end_interp) || !continuousCollisionCheck(start_interp, end_interp))
       {
         lastValid.second = static_cast<double>(i - 1) / static_cast<double>(n_steps);
         if (lastValid.first != nullptr)
@@ -104,7 +97,7 @@ bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1,
   if (is_valid)
   {
     state_space.interpolate(s1, s2, static_cast<double>(n_steps - 1) / static_cast<double>(n_steps), start_interp);
-    if (!si_->isValid(s2) || !continuousCollisionCheck(start_interp, s2) || !discreteCollisionCheck(s2))
+    if (!si_->isValid(s2) || !continuousCollisionCheck(start_interp, s2))
     {
       lastValid.second = static_cast<double>(n_steps - 1) / static_cast<double>(n_steps);
       if (lastValid.first != nullptr)
@@ -154,45 +147,6 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
 
   for (const auto& link_name : links_)
     cm->setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
-
-  tesseract_collision::ContactResultMap contact_map;
-  cm->contactTest(contact_map, tesseract_collision::ContactTestType::FIRST);
-
-  return contact_map.empty();
-}
-
-bool ContinuousMotionValidator::discreteCollisionCheck(const ompl::base::State* s2) const
-{
-  const auto* finish = s2->as<ompl::base::RealVectorStateSpace::StateType>();
-
-  // It was time using chronos time elapsed and it was faster to cache the contact manager
-  unsigned long int hash = std::hash<std::thread::id>{}(std::this_thread::get_id());
-  tesseract_collision::DiscreteContactManager::Ptr cm;
-  tesseract_environment::StateSolver::Ptr ss;
-  mutex_.lock();
-  auto it = discrete_contact_managers_.find(hash);
-  if (it == discrete_contact_managers_.end())
-  {
-    cm = discrete_contact_manager_->clone();
-    discrete_contact_managers_[hash] = cm;
-
-    ss = state_solver_->clone();
-    state_solver_managers_[hash] = ss;
-  }
-  else
-  {
-    cm = it->second;
-    ss = state_solver_managers_[hash];
-  }
-  mutex_.unlock();
-
-  const auto dof = si_->getStateDimension();
-  Eigen::Map<Eigen::VectorXd> finish_joints(finish->values, dof);
-
-  tesseract_environment::EnvState::Ptr state1 = ss->getState(joints_, finish_joints);
-
-  for (const auto& link_name : links_)
-    cm->setCollisionObjectsTransform(link_name, state1->transforms[link_name]);
 
   tesseract_collision::ContactResultMap contact_map;
   cm->contactTest(contact_map, tesseract_collision::ContactTestType::FIRST);
