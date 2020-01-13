@@ -259,7 +259,7 @@ void runConvexTest(ContinuousContactManager& checker)
   flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
-  EXPECT_NEAR(result_vector[0].distance, -0.0754, 0.0001);
+  EXPECT_NEAR(result_vector[0].distance, -0.0754, 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
   if (result_vector[0].link_names[0] != "sphere_link")
@@ -327,7 +327,7 @@ void runConvexTest(ContinuousContactManager& checker)
   flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
-  EXPECT_NEAR(result_vector[0].distance, -0.0754, 0.0001);
+  EXPECT_NEAR(result_vector[0].distance, -0.0754, 0.001);
 
   idx = { 0, 1, 1 };
   if (result_vector[0].link_names[0] != "sphere_link")
