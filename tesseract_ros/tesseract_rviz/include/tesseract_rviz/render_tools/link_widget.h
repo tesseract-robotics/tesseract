@@ -301,6 +301,7 @@ private:
     rviz::PointCloud* point_cloud;
     std::vector<rviz::PointCloud::Point> points;
     float size;
+    tesseract_geometry::Octree::SubType shape_type;
 
     rviz::PointCloud* clone();
   };
