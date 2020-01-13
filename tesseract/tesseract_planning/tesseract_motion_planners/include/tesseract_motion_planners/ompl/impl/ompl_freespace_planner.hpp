@@ -30,8 +30,6 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
-#include <ompl/tools/multiplan/ParallelPlan.h>
-#include <ompl/tools/multiplan/OptimizePlan.h>
 #include <ompl/base/objectives/PathLengthOptimizationObjective.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -71,19 +69,13 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
     return config_status;
   }
 
-  ompl::tools::OptimizePlan op(simple_setup_->getProblemDefinition());
-  for (auto i = 0; i < config_->num_threads; ++i)
-  {
-    std::shared_ptr<PlannerType> planner = std::make_shared<PlannerType>(simple_setup_->getSpaceInformation());
-    config_->settings.apply(*planner);
-    op.addPlanner(planner);
-  }
   // Solve problem. Results are stored in the response
-  ompl::base::PlannerStatus status = op.solve(config_->planning_time,
-                                              static_cast<unsigned>(config_->max_solutions),
-                                              static_cast<unsigned>(config_->num_threads));
+  // Disabling hybridization because there is a bug which will return a trajector that starts at the end state
+  // and finishes at the end state.
+  ompl::base::PlannerStatus status =
+      parallel_plan_->solve(config_->planning_time, 1, static_cast<unsigned>(config_->max_solutions), false);
 
-  if (!status || !simple_setup_->haveExactSolutionPath())
+  if (status != ompl::base::PlannerStatus::EXACT_SOLUTION)
   {
     response.status = tesseract_common::StatusCode(OMPLFreespacePlannerStatusCategory::ErrorFailedToFindValidSolution,
                                                    status_category_);
@@ -155,9 +147,9 @@ void OMPLFreespacePlanner<PlannerType>::clear()
   config_ = nullptr;
   kin_ = nullptr;
   adj_map_ = nullptr;
-  discrete_contact_manager_ = nullptr;
   continuous_contact_manager_ = nullptr;
   simple_setup_ = nullptr;
+  parallel_plan_ = nullptr;
 }
 
 template <typename PlannerType>
@@ -172,6 +164,10 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::isConfigured() c
 template <typename PlannerType>
 bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlannerConfig<PlannerType>& config)
 {
+  // Clear the planner contents
+  clear();
+
+  // Store the config locally
   config_ = std::make_shared<OMPLFreespacePlannerConfig<PlannerType>>(config);
 
   // Check that parameters are valid
@@ -366,13 +362,17 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
   simple_setup_->getProblemDefinition()->setOptimizationObjective(
       std::make_shared<ompl::base::PathLengthOptimizationObjective>(simple_setup_->getSpaceInformation()));
 
-  discrete_contact_manager_ = env->getDiscreteContactManager();
-  discrete_contact_manager_->setActiveCollisionObjects(adj_map_->getActiveLinkNames());
-  discrete_contact_manager_->setContactDistanceThreshold(config_->collision_safety_margin);
-
   continuous_contact_manager_ = env->getContinuousContactManager();
   continuous_contact_manager_->setActiveCollisionObjects(adj_map_->getActiveLinkNames());
   continuous_contact_manager_->setContactDistanceThreshold(config_->collision_safety_margin);
+
+  parallel_plan_ = std::make_shared<ompl::tools::ParallelPlan>(simple_setup_->getProblemDefinition());
+  for (auto i = 0; i < config_->num_threads; ++i)
+  {
+    std::shared_ptr<PlannerType> planner = std::make_shared<PlannerType>(simple_setup_->getSpaceInformation());
+    config_->settings.apply(*planner);
+    parallel_plan_->addPlanner(planner);
+  }
 
   return true;
 }
