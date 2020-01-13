@@ -290,11 +290,11 @@ public:
 };
 
 inline void
-GetAverageSupport(const btConvexShape* shape, const btVector3& localNormal, float& outsupport, btVector3& outpt)
+GetAverageSupport(const btConvexShape* shape, const btVector3& localNormal, btScalar& outsupport, btVector3& outpt)
 {
   btVector3 ptSum(0, 0, 0);
-  float ptCount = 0;
-  float maxSupport = -1000;
+  btScalar ptCount = 0;
+  btScalar maxSupport = -1000;
 
   const auto* pshape = dynamic_cast<const btPolyhedralConvexShape*>(shape);
   if (pshape)
@@ -306,7 +306,7 @@ GetAverageSupport(const btConvexShape* shape, const btVector3& localNormal, floa
       btVector3 pt;
       pshape->getVertex(i, pt);
 
-      float sup = pt.dot(localNormal);
+      btScalar sup = pt.dot(localNormal);
       if (sup > maxSupport + BULLET_EPSILON)
       {
         ptCount = 1;
@@ -460,18 +460,18 @@ inline void calculateContinuousData(ContactResult* col,
 
   // Calculate the contact point at the start location using the casted normal vector in thapes local coordinate system
   btVector3 shape_ptLocal0;
-  float shape_localsup0;
+  btScalar shape_localsup0;
   GetAverageSupport(shape->m_shape, shape_normalLocal0, shape_localsup0, shape_ptLocal0);
   btVector3 shape_ptWorld0 = shape_tfWorld0 * shape_ptLocal0;
 
   // Calculate the contact point at the final location using the casted normal vector in thapes local coordinate system
   btVector3 shape_ptLocal1;
-  float shape_localsup1;
+  btScalar shape_localsup1;
   GetAverageSupport(shape->m_shape, shape_normalLocal1, shape_localsup1, shape_ptLocal1);
   btVector3 shape_ptWorld1 = shape_tfWorld1 * shape_ptLocal1;
 
-  float shape_sup0 = normal_world.dot(shape_ptWorld0);
-  float shape_sup1 = normal_world.dot(shape_ptWorld1);
+  btScalar shape_sup0 = normal_world.dot(shape_ptWorld0);
+  btScalar shape_sup1 = normal_world.dot(shape_ptWorld1);
 
   // TODO: this section is potentially problematic. think hard about the math
   if (shape_sup0 - shape_sup1 > BULLET_SUPPORT_FUNC_TOLERANCE)
@@ -488,8 +488,8 @@ inline void calculateContinuousData(ContactResult* col,
   {
     // Given the contact point at the start and final location along with the casted contact point
     // the time between 0 and 1 can be calculated along the path between the start and final location contact occurs.
-    float l0c = (pt_world - shape_ptWorld0).length();
-    float l1c = (pt_world - shape_ptWorld1).length();
+    btScalar l0c = (pt_world - shape_ptWorld0).length();
+    btScalar l1c = (pt_world - shape_ptWorld1).length();
 
     col->nearest_points_local[link_index] =
         convertBtToEigen(link_tf_inv * (shape_tfWorld0 * ((shape_ptLocal0 + shape_ptLocal1) / 2.0)));
