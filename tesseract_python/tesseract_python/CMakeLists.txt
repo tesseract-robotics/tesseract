@@ -1,5 +1,7 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_python)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 # Read version
 FILE (STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/package.xml" tesseract_python_version1 REGEX "<version>[0-9]+\\.[0-9]+\\.[0-9]+</version>")
@@ -51,7 +53,7 @@ message(STATUS "NumPy Include Directory: ${NUMPY_INCLUDE_DIR}")
 # End Find NumPy
 
 include(FindSWIG)
-find_package(SWIG 4.0.0 REQUIRED)
+find_package(SWIG 4.0 REQUIRED)
 include(UseSWIG)
 
 # Primary tesseract_python library
