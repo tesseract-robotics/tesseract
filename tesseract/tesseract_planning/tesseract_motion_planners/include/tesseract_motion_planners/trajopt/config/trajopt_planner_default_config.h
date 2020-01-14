@@ -141,7 +141,7 @@ protected:
   bool addBasicInfo(trajopt::ProblemConstructionInfo& pci) const;
   bool addInitTrajectory(trajopt::ProblemConstructionInfo& pci) const;
   void addWaypoints(trajopt::ProblemConstructionInfo& pci, std::vector<int>& fixed_steps) const;
-  void addConfiguration(trajopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;
+  void addKinematicConfiguration(trajopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;
   void addCollision(trajopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;
   void addVelocitySmoothing(trajopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;
   void addAccelerationSmoothing(trajopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;

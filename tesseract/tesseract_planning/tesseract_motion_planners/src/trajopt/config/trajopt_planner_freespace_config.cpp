@@ -113,7 +113,7 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerFreespaceConfig:
     addJerkSmoothing(pci, fixed_steps);
 
   if (configuration != nullptr)
-    addConfiguration(pci, fixed_steps);
+    addKinematicConfiguration(pci, fixed_steps);
 
   if (!constraint_error_functions.empty())
     addConstraintErrorFunctions(pci, fixed_steps);
