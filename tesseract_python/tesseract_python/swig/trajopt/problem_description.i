@@ -346,11 +346,19 @@ std::vector<std::shared_ptr<SafetyMarginData> > createSafetyMarginDataVector(int
                                                                 const double& default_safety_margin,
                                                                 const double& default_safety_margin_coeff);
 
+enum class CollisionEvaluatorType
+{
+  SINGLE_TIMESTEP = 0,
+  DISCRETE_CONTINUOUS = 1,
+  CAST_CONTINUOUS = 2,
+};
+
 class CollisionTermInfo : public TermInfo
 {
 public:
   int first_step, last_step;
-  bool continuous;
+  CollisionEvaluatorType evaluator_type;
+  std::vector<int> fixed_steps;
   double longest_valid_segment_length = 0.5;
   std::vector<std::shared_ptr<SafetyMarginData> > info;
   tesseract_collision::ContactTestType contact_test_type;

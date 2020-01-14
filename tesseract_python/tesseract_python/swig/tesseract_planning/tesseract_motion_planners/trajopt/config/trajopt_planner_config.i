@@ -43,13 +43,16 @@ struct TrajOptPlannerConfig
 
   virtual bool generate();
 
-  //TODO: ?
-  //sco::BasicTrustRegionSQPParameters params;
+  sco::BasicTrustRegionSQPParameters params;
 
   //TODO: ?
   //std::vector<sco::Optimizer::Callback> callbacks;
   
   trajopt::TrajOptProb::Ptr prob;
+
+  double longest_valid_segment_fraction = 0.01;
+
+  double longest_valid_segment_length = 0.5;
 };
 
 }  // namespace tesseract_motion_planners
