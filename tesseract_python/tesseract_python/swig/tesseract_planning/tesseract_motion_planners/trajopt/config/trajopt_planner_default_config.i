@@ -67,9 +67,11 @@ struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
   
   JointWaypoint::ConstPtr configuration;
 
+  tesseract_collision::ContactTestType contact_test_type = tesseract_collision::ContactTestType::ALL;
+
   bool collision_check = true;
   
-  bool collision_continuous = true;
+  trajopt::CollisionEvaluatorType collision_type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
   
   double collision_safety_margin = 0.025;
   
@@ -84,6 +86,10 @@ struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
   bool smooth_jerks = true;
   
   Eigen::VectorXd jerk_coeff;
+
+  bool avoid_singularity = false;
+
+  double avoid_singularity_coeff = 5.0;
 
   // std::vector<std::pair<sco::VectorOfVector::func, sco::MatrixOfVector::func>> constraint_error_functions;
 };
