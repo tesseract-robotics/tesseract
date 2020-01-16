@@ -8,6 +8,8 @@ def test_trajopt_motion_planner_default_config():
 
     config = tesseract.TrajOptPlannerDefaultConfig(t,"manipulator", "tool0", np.eye(4))
 
+    config.params.cnt_tolerance = 1e-5
+
     for ind in range(10):
         tcp_pose = np.array([[0,0,1,0],[0,1,0,0],[-1,0,0, 0],[0,0,0,1]],dtype=np.float64)
         tcp_pose[0,3] = 0.5
