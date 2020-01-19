@@ -209,6 +209,26 @@ public:
   const std::vector<std::string>& getNames() const { return joint_names_; }
 
   /**
+   * @brief Operator to add vector of data to current position
+   * @param delta Vector to add to current position
+   */
+  JointWaypoint& operator+=(const Eigen::Ref<const Eigen::VectorXd>& delta)
+  {
+    joint_positions_ += delta;
+    return *this;  // return the result by reference
+  }
+
+  /**
+   * @brief Operator to subtract vector of data from current position
+   * @param delta Vector to subtract from current position
+   */
+  JointWaypoint& operator-=(const Eigen::Ref<const Eigen::VectorXd>& delta)
+  {
+    joint_positions_ -= delta;
+    return *this;  // return the result by reference
+  }
+
+  /**
    * @brief Compare vector of joint names, order does not matter
    * @param j1 Vector of joint names
    * @param j2 Vector of joint names
@@ -277,6 +297,16 @@ public:
 
   /** @brief Gets the name of the link to which this position is relative */
   std::string getParentLinkName() const { return parent_link_; }
+
+  /**
+   * @brief Operator to multiply matrix to the current transform
+   * @param delta Matrix to add to current transform
+   */
+  CartesianWaypoint& operator*=(const Eigen::Isometry3d& delta)
+  {
+    cartesian_position_ = cartesian_position_ * delta;
+    return *this;
+  }
 
 protected:
   Eigen::Isometry3d cartesian_position_; /** @brief Pose of this waypoint */
