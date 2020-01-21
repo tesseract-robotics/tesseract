@@ -220,11 +220,12 @@ trajopt::TermInfo::Ptr createCollisionTermInfo(int n_steps,
                                                double coeff,
                                                tesseract_collision::ContactTestType contact_test_type,
                                                double longest_valid_segment_length,
-                                               const std::string& name)
+                                               const std::string& name,
+                                               bool is_constraint)
 {
   std::shared_ptr<trajopt::CollisionTermInfo> collision = std::make_shared<trajopt::CollisionTermInfo>();
   collision->name = name;
-  collision->term_type = trajopt::TT_COST;
+  collision->term_type = is_constraint ? trajopt::TT_CNT : trajopt::TT_COST;
   collision->evaluator_type = evaluator_type;
   collision->first_step = 0;
   collision->last_step = n_steps - 1;

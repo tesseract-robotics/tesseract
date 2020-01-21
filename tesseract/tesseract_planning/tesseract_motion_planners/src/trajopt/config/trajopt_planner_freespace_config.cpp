@@ -101,7 +101,10 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerFreespaceConfig:
   }
 
   if (collision_check)
-    addCollision(pci, fixed_steps);
+    addCollisionConstraint(pci, fixed_steps);
+
+  if (collision_check && use_collision_cost_term)
+    addCollisionCost(pci, fixed_steps);
 
   if (smooth_velocities)
     addVelocitySmoothing(pci, fixed_steps);

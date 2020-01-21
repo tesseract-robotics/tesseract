@@ -65,7 +65,10 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerDefaultConfig::g
   addWaypoints(pci, fixed_steps);
 
   if (collision_check)
-    addCollision(pci, fixed_steps);
+    addCollisionConstraint(pci, fixed_steps);
+
+  if (collision_check && use_collision_cost_term)
+    addCollisionCost(pci, fixed_steps);
 
   if (smooth_velocities)
     addVelocitySmoothing(pci, fixed_steps);
@@ -294,8 +297,9 @@ void TrajOptPlannerDefaultConfig::addKinematicConfiguration(trajopt::ProblemCons
     }
   }
 }
-void TrajOptPlannerDefaultConfig::addCollision(trajopt::ProblemConstructionInfo& pci,
-                                               const std::vector<int>& fixed_steps) const
+
+void TrajOptPlannerDefaultConfig::addCollisionCost(trajopt::ProblemConstructionInfo& pci,
+                                                   const std::vector<int>& fixed_steps) const
 {
   // Calculate longest valid segment length
   const Eigen::MatrixX2d& limits = pci.kin->getLimits();
@@ -320,13 +324,48 @@ void TrajOptPlannerDefaultConfig::addCollision(trajopt::ProblemConstructionInfo&
 
   // Create a default collision term info
   trajopt::TermInfo::Ptr ti = createCollisionTermInfo(
-      pci.basic_info.n_steps, collision_safety_margin, collision_type, collision_coeff, contact_test_type, length);
+      pci.basic_info.n_steps, collision_buffer_margin, collision_type, collision_coeff, contact_test_type, length, "collision_cost", false);
 
   // Update the term info with the (possibly) new start and end state indices for which to apply this cost
   std::shared_ptr<trajopt::CollisionTermInfo> ct = std::static_pointer_cast<trajopt::CollisionTermInfo>(ti);
   ct->fixed_steps = fixed_steps;
 
   pci.cost_infos.push_back(ct);
+}
+
+void TrajOptPlannerDefaultConfig::addCollisionConstraint(trajopt::ProblemConstructionInfo& pci,
+                                                         const std::vector<int>& fixed_steps) const
+{
+  // Calculate longest valid segment length
+  const Eigen::MatrixX2d& limits = pci.kin->getLimits();
+  double length = 0;
+  double extent = (limits.col(1) - limits.col(0)).norm();
+  if (longest_valid_segment_fraction > 0 && longest_valid_segment_length > 0)
+  {
+    length = std::min(longest_valid_segment_fraction * extent, longest_valid_segment_length);
+  }
+  else if (longest_valid_segment_fraction > 0)
+  {
+    length = longest_valid_segment_fraction * extent;
+  }
+  else if (longest_valid_segment_length > 0)
+  {
+    length = longest_valid_segment_length;
+  }
+  else
+  {
+    length = LONGEST_VALID_SEGMENT_FRACTION_DEFAULT * extent;
+  }
+
+  // Create a default collision term info
+  trajopt::TermInfo::Ptr ti = createCollisionTermInfo(
+      pci.basic_info.n_steps, collision_safety_margin, collision_type, collision_coeff, contact_test_type, length, "collision_cnt", true);
+
+  // Update the term info with the (possibly) new start and end state indices for which to apply this cost
+  std::shared_ptr<trajopt::CollisionTermInfo> ct = std::static_pointer_cast<trajopt::CollisionTermInfo>(ti);
+  ct->fixed_steps = fixed_steps;
+
+  pci.cnt_infos.push_back(ct);
 }
 
 void TrajOptPlannerDefaultConfig::addVelocitySmoothing(trajopt::ProblemConstructionInfo& pci,
