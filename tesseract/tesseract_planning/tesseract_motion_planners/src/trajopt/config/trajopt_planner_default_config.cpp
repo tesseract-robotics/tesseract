@@ -373,7 +373,7 @@ void TrajOptPlannerDefaultConfig::addConstraintErrorFunctions(trajopt::ProblemCo
     ef->constraint_type = std::get<2>(c);
     ef->coeff = std::get<3>(c);
     ef->first_step = 0;
-    ef->last_step = prob->GetNumSteps() - 1;
+    ef->last_step = pci.basic_info.n_steps - 1;
     ef->fixed_steps = fixed_steps;
 
     pci.cnt_infos.push_back(ef);
