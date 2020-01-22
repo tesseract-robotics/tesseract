@@ -64,10 +64,10 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerDefaultConfig::g
   std::vector<int> fixed_steps;
   addWaypoints(pci, fixed_steps);
 
-  if (collision_check)
+  if (collision_constraint_config.check)
     addCollisionConstraint(pci, fixed_steps);
 
-  if (collision_check && use_collision_cost_term)
+  if (collision_cost_config.check)
     addCollisionCost(pci, fixed_steps);
 
   if (smooth_velocities)
@@ -324,7 +324,7 @@ void TrajOptPlannerDefaultConfig::addCollisionCost(trajopt::ProblemConstructionI
 
   // Create a default collision term info
   trajopt::TermInfo::Ptr ti = createCollisionTermInfo(
-      pci.basic_info.n_steps, collision_buffer_margin, collision_type, collision_coeff, contact_test_type, length, "collision_cost", false);
+      pci.basic_info.n_steps, collision_cost_config.buffer_margin, collision_cost_config.type, collision_cost_config.coeff, contact_test_type, length, "collision_cost", false);
 
   // Update the term info with the (possibly) new start and end state indices for which to apply this cost
   std::shared_ptr<trajopt::CollisionTermInfo> ct = std::static_pointer_cast<trajopt::CollisionTermInfo>(ti);
@@ -359,7 +359,7 @@ void TrajOptPlannerDefaultConfig::addCollisionConstraint(trajopt::ProblemConstru
 
   // Create a default collision term info
   trajopt::TermInfo::Ptr ti = createCollisionTermInfo(
-      pci.basic_info.n_steps, collision_safety_margin, collision_type, collision_coeff, contact_test_type, length, "collision_cnt", true);
+      pci.basic_info.n_steps, collision_constraint_config.safety_margin, collision_constraint_config.type, collision_constraint_config.coeff, contact_test_type, length, "collision_cnt", true);
 
   // Update the term info with the (possibly) new start and end state indices for which to apply this cost
   std::shared_ptr<trajopt::CollisionTermInfo> ct = std::static_pointer_cast<trajopt::CollisionTermInfo>(ti);

@@ -27,6 +27,7 @@
 #define TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_DEFAULT_CONFIG_H
 
 #include <tesseract_motion_planners/trajopt/config/trajopt_planner_config.h>
+#include <tesseract_motion_planners/trajopt/config/trajopt_collision_config.h>
 
 namespace tesseract_motion_planners
 {
@@ -90,18 +91,10 @@ struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
 
   /** @brief The type of contact test to perform: FIRST, CLOSEST, ALL */
   tesseract_collision::ContactTestType contact_test_type = tesseract_collision::ContactTestType::ALL;
-  /** @brief If true, collision checking will be enabled and a collision constraint term will be added to the problem. Default: true*/
-  bool collision_check = true;
-  /** @brief If true, a collision cost term will be added to the problem. Default: false*/
-  bool use_collision_cost_term = false;
-  /** @brief If true, use continuous collision checking */
-  trajopt::CollisionEvaluatorType collision_type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
-  /** @brief Max distance in which collisions will be evaluated as constraints */
-  double collision_safety_margin = 0.025;
-  /** @brief Max distance in which collisions will be evaluated as costs if use_collision_cost_term is true */
-  double collision_buffer_margin = 0.05;
-  /** @brief The collision coeff/weight */
-  double collision_coeff = 20;
+  /** @brief Configuration info for collisions that are modeled as costs */
+  tesseract_motion_planners::CollisionCostConfig collision_cost_config;
+  /** @brief Configuration info for collisions that are modeled as constraints */
+  tesseract_motion_planners::CollisionConstraintConfig collision_constraint_config;
   /** @brief If true, a joint velocity cost with a target of 0 will be applied for all timesteps Default: true*/
   bool smooth_velocities = true;
   /** @brief This default to all ones, but allows you to weight different joints */
