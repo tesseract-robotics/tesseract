@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/geometric/SimpleSetup.h>
 #include <ompl/base/OptimizationObjective.h>
 #include <ompl/tools/multiplan/ParallelPlan.h>
+#include <ompl/base/objectives/PathLengthOptimizationObjective.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/planner.h>
@@ -40,6 +41,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
+using OptimizationObjectiveAllocator =
+    std::function<ompl::base::OptimizationObjectivePtr(const ompl::base::SpaceInformationPtr&)>;
+
 template <typename PlannerType>
 struct OMPLFreespacePlannerConfig
 {
@@ -100,6 +104,18 @@ struct OMPLFreespacePlannerConfig
    *       longest_valid_segment_fraction = longest_valid_segment_length / state_space.getMaximumExtent()
    */
   double longest_valid_segment_length = 0.5;
+
+  /**
+   * @brief This use all available planning time to create the most optimized trajectory given the objective function.
+   *
+   * Note: Even with this set to false it will use the objective function to find the best path
+   */
+  bool optimize = false;
+
+  /** @brief Set the optimization objective function allocator. Default is to minimize path length */
+  OptimizationObjectiveAllocator optimization_objective_allocator = [](const ompl::base::SpaceInformationPtr& si) {
+    return std::make_shared<ompl::base::PathLengthOptimizationObjective>(si);
+  };
 
   /** @brief Planner settings */
   OMPLSettings<PlannerType> settings;
