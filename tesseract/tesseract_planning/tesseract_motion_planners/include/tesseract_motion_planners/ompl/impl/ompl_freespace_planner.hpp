@@ -30,7 +30,6 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 #include <ompl/base/spaces/RealVectorStateSpace.h>
-#include <ompl/base/objectives/PathLengthOptimizationObjective.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/utils.h>
@@ -69,11 +68,54 @@ tesseract_common::StatusCode OMPLFreespacePlanner<PlannerType>::solve(PlannerRes
     return config_status;
   }
 
-  // Solve problem. Results are stored in the response
-  // Disabling hybridization because there is a bug which will return a trajector that starts at the end state
-  // and finishes at the end state.
-  ompl::base::PlannerStatus status =
-      parallel_plan_->solve(config_->planning_time, 1, static_cast<unsigned>(config_->max_solutions), false);
+  ompl::base::PlannerStatus status;
+  if (!config_->optimize)
+  {
+    // Solve problem. Results are stored in the response
+    // Disabling hybridization because there is a bug which will return a trajector that starts at the end state
+    // and finishes at the end state.
+    status = parallel_plan_->solve(config_->planning_time, 1, static_cast<unsigned>(config_->max_solutions), false);
+  }
+  else
+  {
+    ompl::time::point end = ompl::time::now() + ompl::time::seconds(config_->planning_time);
+    const ompl::base::ProblemDefinitionPtr& pdef = simple_setup_->getProblemDefinition();
+    while (ompl::time::now() < end)
+    {
+      // Solve problem. Results are stored in the response
+      // Disabling hybridization because there is a bug which will return a trajector that starts at the end state
+      // and finishes at the end state.
+      ompl::base::PlannerStatus localResult =
+          parallel_plan_->solve(std::max(ompl::time::seconds(end - ompl::time::now()), 0.0),
+                                static_cast<unsigned>(config_->max_solutions),
+                                false);
+      if (localResult)
+      {
+        if (status != ompl::base::PlannerStatus::EXACT_SOLUTION)
+          status = localResult;
+
+        if (!pdef->hasOptimizationObjective())
+        {
+          CONSOLE_BRIDGE_logDebug("Terminating early since there is no optimization objective specified");
+          break;
+        }
+
+        ompl::base::Cost obj_cost = pdef->getSolutionPath()->cost(pdef->getOptimizationObjective());
+
+        if (pdef->getOptimizationObjective()->isSatisfied(obj_cost))
+        {
+          CONSOLE_BRIDGE_logDebug("Terminating early since solution path satisfies the optimization objective");
+          break;
+        }
+
+        if (pdef->getSolutionCount() >= static_cast<std::size_t>(config_->max_solutions))
+        {
+          CONSOLE_BRIDGE_logDebug("Terminating early since %u solutions were generated", config_->max_solutions);
+          break;
+        }
+      }
+    }
+  }
 
   if (status != ompl::base::PlannerStatus::EXACT_SOLUTION)
   {
@@ -359,8 +401,11 @@ bool OMPLFreespacePlanner<PlannerType>::setConfiguration(const OMPLFreespacePlan
   }
 
   // make sure the planners run until the time limit, and get the best possible solution
-  simple_setup_->getProblemDefinition()->setOptimizationObjective(
-      std::make_shared<ompl::base::PathLengthOptimizationObjective>(simple_setup_->getSpaceInformation()));
+  if (config_->optimization_objective_allocator)
+  {
+    simple_setup_->getProblemDefinition()->setOptimizationObjective(
+        config_->optimization_objective_allocator(simple_setup_->getSpaceInformation()));
+  }
 
   continuous_contact_manager_ = env->getContinuousContactManager();
   continuous_contact_manager_->setActiveCollisionObjects(adj_map_->getActiveLinkNames());
