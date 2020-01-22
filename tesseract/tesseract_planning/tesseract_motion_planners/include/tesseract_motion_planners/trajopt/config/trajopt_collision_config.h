@@ -11,7 +11,7 @@ namespace tesseract_motion_planners
 struct CollisionCostConfig
 {
   /** @brief If true, a collision cost term will be added to the problem. Default: true*/
-  bool check = true;
+  bool enabled = true;
   /** @brief The evaluator type that will be used for collision checking. */
   trajopt::CollisionEvaluatorType type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
   /** @brief Max distance in which collision costs will be evaluated. */
@@ -26,7 +26,7 @@ struct CollisionCostConfig
 struct CollisionConstraintConfig
 {
   /** @brief If true, a collision cost term will be added to the problem. Default: true*/
-  bool check = true;
+  bool enabled = true;
   /** @brief The evaluator type that will be used for collision checking. */
   trajopt::CollisionEvaluatorType type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
   /** @brief Max distance in which collision constraints will be evaluated. */

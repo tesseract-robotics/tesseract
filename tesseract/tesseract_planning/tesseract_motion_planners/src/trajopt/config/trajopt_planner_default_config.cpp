@@ -64,10 +64,10 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerDefaultConfig::g
   std::vector<int> fixed_steps;
   addWaypoints(pci, fixed_steps);
 
-  if (collision_constraint_config.check)
+  if (collision_constraint_config.enabled)
     addCollisionConstraint(pci, fixed_steps);
 
-  if (collision_cost_config.check)
+  if (collision_cost_config.enabled)
     addCollisionCost(pci, fixed_steps);
 
   if (smooth_velocities)
