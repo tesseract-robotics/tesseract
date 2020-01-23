@@ -41,6 +41,8 @@ struct CollisionCostConfig
   trajopt::CollisionEvaluatorType type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
   /** @brief Max distance in which collision costs will be evaluated. */
   double buffer_margin = 0.025;
+  /** @brief Distance beyond buffer_margin in which collision optimization will be evaluated. */
+  double safety_margin_buffer = 0.05;
   /** @brief The collision coeff/weight */
   double coeff = 20;
 };
@@ -56,6 +58,8 @@ struct CollisionConstraintConfig
   trajopt::CollisionEvaluatorType type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
   /** @brief Max distance in which collision constraints will be evaluated. */
   double safety_margin = 0.01;
+  /** @brief Distance beyond safety_margin in which collision optimization will be evaluated. */
+  double safety_margin_buffer = 0.05;
   /** @brief The collision coeff/weight */
   double coeff = 20;
 };

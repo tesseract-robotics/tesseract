@@ -216,6 +216,7 @@ trajopt::TermInfo::Ptr createConfigurationTermInfo(const JointWaypoint::ConstPtr
 
 trajopt::TermInfo::Ptr createCollisionTermInfo(int n_steps,
                                                double collision_safety_margin,
+                                               double collision_safety_margin_buffer,
                                                trajopt::CollisionEvaluatorType evaluator_type,
                                                double coeff,
                                                tesseract_collision::ContactTestType contact_test_type,
@@ -232,6 +233,7 @@ trajopt::TermInfo::Ptr createCollisionTermInfo(int n_steps,
   collision->contact_test_type = contact_test_type;
   collision->longest_valid_segment_length = longest_valid_segment_length;
   collision->info = trajopt::createSafetyMarginDataVector(n_steps, collision_safety_margin, coeff);
+  collision->safety_margin_buffer = collision_safety_margin_buffer;
   return collision;
 }
 

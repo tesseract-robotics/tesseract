@@ -325,6 +325,7 @@ void TrajOptPlannerDefaultConfig::addCollisionCost(trajopt::ProblemConstructionI
   // Create a default collision term info
   trajopt::TermInfo::Ptr ti = createCollisionTermInfo(pci.basic_info.n_steps,
                                                       collision_cost_config.buffer_margin,
+                                                      collision_constraint_config.safety_margin_buffer,
                                                       collision_cost_config.type,
                                                       collision_cost_config.coeff,
                                                       contact_test_type,
@@ -366,6 +367,7 @@ void TrajOptPlannerDefaultConfig::addCollisionConstraint(trajopt::ProblemConstru
   // Create a default collision term info
   trajopt::TermInfo::Ptr ti = createCollisionTermInfo(pci.basic_info.n_steps,
                                                       collision_constraint_config.safety_margin,
+                                                      collision_constraint_config.safety_margin_buffer,
                                                       collision_constraint_config.type,
                                                       collision_constraint_config.coeff,
                                                       contact_test_type,
