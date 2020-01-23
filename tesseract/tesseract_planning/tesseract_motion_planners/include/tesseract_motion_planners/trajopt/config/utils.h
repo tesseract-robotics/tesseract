@@ -80,6 +80,7 @@ trajopt::TermInfo::Ptr createConfigurationTermInfo(const JointWaypoint::ConstPtr
 trajopt::TermInfo::Ptr createCollisionTermInfo(
     int n_steps,
     double collision_safety_margin,
+    double collision_safety_margin_buffer,
     trajopt::CollisionEvaluatorType evaluator_type,
     double coeff = 20.0,
     tesseract_collision::ContactTestType contact_test_type = tesseract_collision::ContactTestType::ALL,
