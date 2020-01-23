@@ -37,6 +37,7 @@ namespace tesseract_motion_planners
 struct TrajOptPlannerConfig
 {
   using Ptr = std::shared_ptr<TrajOptPlannerConfig>;
+  using ConstPtr = std::shared_ptr<const TrajOptPlannerConfig>;
 
   explicit TrajOptPlannerConfig() = default;
   explicit TrajOptPlannerConfig(trajopt::TrajOptProb::Ptr problem);

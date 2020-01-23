@@ -1,13 +1,13 @@
 /**
- * @file ompl_freespace_planner.cpp
- * @brief Tesseract OMPL planner
+ * @file ompl_planner_config.cpp
+ * @brief Tesseract OMPL planner config
  *
  * @author Levi Armstrong
- * @date April 18, 2018
+ * @date January 22, 2020
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2020, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -41,24 +41,23 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/geometric/planners/prm/SPARS.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_motion_planners/ompl/impl/ompl_freespace_planner.hpp>
-#include <tesseract_motion_planners/ompl/ompl_settings.h>
+#include <tesseract_motion_planners/ompl/impl/config/ompl_planner_config.hpp>
 
 namespace tesseract_motion_planners
 {
 // Explicit template instantiation
-template class OMPLFreespacePlanner<ompl::geometric::SBL>;
-template class OMPLFreespacePlanner<ompl::geometric::EST>;
-template class OMPLFreespacePlanner<ompl::geometric::LBKPIECE1>;
-template class OMPLFreespacePlanner<ompl::geometric::BKPIECE1>;
-template class OMPLFreespacePlanner<ompl::geometric::KPIECE1>;
-template class OMPLFreespacePlanner<ompl::geometric::RRT>;
-template class OMPLFreespacePlanner<ompl::geometric::RRTConnect>;
-template class OMPLFreespacePlanner<ompl::geometric::RRTstar>;
-template class OMPLFreespacePlanner<ompl::geometric::TRRT>;
-template class OMPLFreespacePlanner<ompl::geometric::PRM>;
-template class OMPLFreespacePlanner<ompl::geometric::PRMstar>;
-template class OMPLFreespacePlanner<ompl::geometric::LazyPRMstar>;
-template class OMPLFreespacePlanner<ompl::geometric::SPARS>;
+template struct OMPLPlannerConfig<ompl::geometric::SBL>;
+template struct OMPLPlannerConfig<ompl::geometric::EST>;
+template struct OMPLPlannerConfig<ompl::geometric::LBKPIECE1>;
+template struct OMPLPlannerConfig<ompl::geometric::BKPIECE1>;
+template struct OMPLPlannerConfig<ompl::geometric::KPIECE1>;
+template struct OMPLPlannerConfig<ompl::geometric::RRT>;
+template struct OMPLPlannerConfig<ompl::geometric::RRTConnect>;
+template struct OMPLPlannerConfig<ompl::geometric::RRTstar>;
+template struct OMPLPlannerConfig<ompl::geometric::TRRT>;
+template struct OMPLPlannerConfig<ompl::geometric::PRM>;
+template struct OMPLPlannerConfig<ompl::geometric::PRMstar>;
+template struct OMPLPlannerConfig<ompl::geometric::LazyPRMstar>;
+template struct OMPLPlannerConfig<ompl::geometric::SPARS>;
 
 }  // namespace tesseract_motion_planners

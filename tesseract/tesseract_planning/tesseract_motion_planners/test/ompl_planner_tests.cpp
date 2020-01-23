@@ -51,7 +51,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/conversions.h>
 #include <tesseract/tesseract.h>
 #include <tesseract_environment/core/utils.h>
-#include <tesseract_motion_planners/ompl/ompl_freespace_planner.h>
+#include <tesseract_motion_planners/ompl/ompl_motion_planner.h>
+#include <tesseract_motion_planners/ompl/config/ompl_planner_freespace_config.h>
 
 using namespace tesseract;
 using namespace tesseract_scene_graph;
@@ -120,7 +121,7 @@ class OMPLTestFixture : public ::testing::Test
 {
 public:
   using ::testing::Test::Test;
-  tesseract_motion_planners::OMPLFreespacePlanner<PlannerType> ompl_planner;
+  tesseract_motion_planners::OMPLMotionPlanner<PlannerType> ompl_planner;
 };
 
 using Implementations = ::testing::Types<ompl::geometric::SBL,
@@ -160,25 +161,25 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   std::vector<double> swp = start_state;
   std::vector<double> ewp = end_state;
 
-  tesseract_motion_planners::OMPLFreespacePlannerConfig<TypeParam> ompl_config;
+  auto ompl_config =
+      std::make_shared<tesseract_motion_planners::OMPLPlannerFreespaceConfig<TypeParam>>(tesseract, "manipulator");
 
-  ompl_config.start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
-  ompl_config.end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
-  ompl_config.tesseract = tesseract;
-  ompl_config.manipulator = "manipulator";
-  ompl_config.collision_safety_margin = 0.02;
-  ompl_config.planning_time = 5.0;
-  ompl_config.num_threads = 2;
-  ompl_config.max_solutions = 2;
-  ompl_config.longest_valid_segment_fraction = 0.01;
+  ompl_config->start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+  ompl_config->end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
+  ompl_config->collision_safety_margin = 0.02;
+  ompl_config->planning_time = 5.0;
+  ompl_config->num_threads = 2;
+  ompl_config->max_solutions = 2;
+  ompl_config->longest_valid_segment_fraction = 0.01;
 
-  ompl_config.collision_continuous = true;
-  ompl_config.collision_check = true;
-  ompl_config.simplify = false;
-  ompl_config.n_output_states = 50;
+  ompl_config->collision_continuous = true;
+  ompl_config->collision_check = true;
+  ompl_config->simplify = false;
+  ompl_config->n_output_states = 50;
 
   // Set the planner configuration
-  this->ompl_planner.setConfiguration(ompl_config);
+  this->ompl_planner.setConfiguration(
+      std::static_pointer_cast<tesseract_motion_planners::OMPLPlannerConfig<TypeParam>>(ompl_config));
 
   tesseract_motion_planners::PlannerResponse ompl_planning_response;
   tesseract_common::StatusCode status = this->ompl_planner.solve(ompl_planning_response);
@@ -188,13 +189,14 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
     CONSOLE_BRIDGE_logError("CI Error: %s", status.message().c_str());
   }
   EXPECT_TRUE(status);
-  EXPECT_EQ(ompl_planning_response.joint_trajectory.trajectory.rows(), ompl_config.n_output_states);
+  EXPECT_EQ(ompl_planning_response.joint_trajectory.trajectory.rows(), ompl_config->n_output_states);
 
   // Check for start state in collision error
   swp = { 0, 0.7, 0.0, 0, 0.0, 0, 0.0 };
-  ompl_config.start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+  ompl_config->start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
 
-  this->ompl_planner.setConfiguration(ompl_config);
+  this->ompl_planner.setConfiguration(
+      std::static_pointer_cast<tesseract_motion_planners::OMPLPlannerConfig<TypeParam>>(ompl_config));
   status = this->ompl_planner.solve(ompl_planning_response);
 
   EXPECT_FALSE(status);
@@ -202,10 +204,11 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   // Check for start state in collision error
   swp = start_state;
   ewp = { 0, 0.7, 0.0, 0, 0.0, 0, 0.0 };
-  ompl_config.start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
-  ompl_config.end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
+  ompl_config->start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+  ompl_config->end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
 
-  this->ompl_planner.setConfiguration(ompl_config);
+  this->ompl_planner.setConfiguration(
+      std::static_pointer_cast<tesseract_motion_planners::OMPLPlannerConfig<TypeParam>>(ompl_config));
   status = this->ompl_planner.solve(ompl_planning_response);
 
   EXPECT_FALSE(status);
@@ -213,8 +216,8 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   // Reset start and end waypoints
   swp = start_state;
   ewp = end_state;
-  ompl_config.start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
-  ompl_config.end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
+  ompl_config->start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+  ompl_config->end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
 }
 
 int main(int argc, char** argv)

@@ -26,7 +26,7 @@
 #ifndef TESSERACT_MOTION_PLANNERS_HYBRID_OMPL_TRAJOPT_FREESPACE_PLANNER_H
 #define TESSERACT_MOTION_PLANNERS_HYBRID_OMPL_TRAJOPT_FREESPACE_PLANNER_H
 
-#include <tesseract_motion_planners/ompl/ompl_freespace_planner.h>
+#include <tesseract_motion_planners/ompl/ompl_motion_planner.h>
 #include <tesseract_motion_planners/trajopt/trajopt_motion_planner.h>
 #include <tesseract_motion_planners/trajopt/config/trajopt_planner_freespace_config.h>
 
@@ -46,8 +46,8 @@ public:
    * @param config The planners configuration
    * @return True if successful otherwise false
    */
-  bool setConfiguration(OMPLFreespacePlannerConfig<PlannerType> ompl_config,
-                        std::shared_ptr<TrajOptPlannerFreespaceConfig> trajopt_config);
+  bool setConfiguration(typename OMPLPlannerConfig<PlannerType>::Ptr ompl_config,
+                        TrajOptPlannerFreespaceConfig::Ptr trajopt_config);
 
   /**
    * @brief Sets up the opimizer and solves a SQP problem read from json with no callbacks and dafault parameterss
@@ -69,10 +69,11 @@ public:
   tesseract_common::StatusCode isConfigured() const override;
 
 private:
-  std::shared_ptr<TrajOptPlannerFreespaceConfig> trajopt_config_;
+  TrajOptPlannerFreespaceConfig::Ptr trajopt_config_;
   TrajOptMotionPlanner trajopt_planner_;
 
-  OMPLFreespacePlanner<PlannerType> ompl_planner_;
+  typename OMPLPlannerConfig<PlannerType>::Ptr ompl_config_;
+  OMPLMotionPlanner<PlannerType> ompl_planner_;
 
   std::shared_ptr<const tesseract_common::GeneralStatusCategory> status_category_;
 };

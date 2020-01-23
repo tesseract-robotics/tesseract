@@ -1,6 +1,6 @@
 /**
- * @file ompl_freespace_planner_status_category.h
- * @brief Tesseract OMPL freespace planner status category.
+ * @file ompl_motion_planner_status_category.h
+ * @brief Tesseract OMPL motion planner status category.
  *
  * @author Levi Armstrong
  * @date April 18, 2018
@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_MOTION_PLANNERS_OMPL_FREESPACE_PLANNER_STATUS_CATEGORY_H
-#define TESSERACT_MOTION_PLANNERS_OMPL_FREESPACE_PLANNER_STATUS_CATEGORY_H
+#ifndef TESSERACT_MOTION_PLANNERS_OMPL_MOTION_PLANNER_STATUS_CATEGORY_H
+#define TESSERACT_MOTION_PLANNERS_OMPL_MOTION_PLANNER_STATUS_CATEGORY_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -35,10 +35,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_motion_planners
 {
-class OMPLFreespacePlannerStatusCategory : public tesseract_common::StatusCategory
+class OMPLMotionPlannerStatusCategory : public tesseract_common::StatusCategory
 {
 public:
-  OMPLFreespacePlannerStatusCategory(std::string name);
+  OMPLMotionPlannerStatusCategory(std::string name);
   const std::string& name() const noexcept override;
   std::string message(int code) const override;
 
@@ -57,4 +57,4 @@ private:
 };
 }  // namespace tesseract_motion_planners
 
-#endif  // TESSERACT_MOTION_PLANNERS_OMPL_FREESPACE_PLANNER_STATUS_CATEGORY_H
+#endif  // TESSERACT_MOTION_PLANNERS_OMPL_MOTION_PLANNER_STATUS_CATEGORY_H

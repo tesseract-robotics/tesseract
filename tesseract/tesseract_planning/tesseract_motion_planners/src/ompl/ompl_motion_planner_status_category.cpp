@@ -1,6 +1,6 @@
 /**
- * @file ompl_freespace_planner_status_category.cpp
- * @brief Tesseract OMPL freespace planner status category.
+ * @file ompl_motion_planner_status_category.cpp
+ * @brief Tesseract OMPL motion planner status category.
  *
  * @author Levi Armstrong
  * @date April 18, 2018
@@ -29,13 +29,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cassert>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_motion_planners/ompl/ompl_freespace_planner_status_category.h>
+#include <tesseract_motion_planners/ompl/ompl_motion_planner_status_category.h>
 
 namespace tesseract_motion_planners
 {
-OMPLFreespacePlannerStatusCategory::OMPLFreespacePlannerStatusCategory(std::string name) : name_(std::move(name)) {}
-const std::string& OMPLFreespacePlannerStatusCategory::name() const noexcept { return name_; }
-std::string OMPLFreespacePlannerStatusCategory::message(int code) const
+OMPLMotionPlannerStatusCategory::OMPLMotionPlannerStatusCategory(std::string name) : name_(std::move(name)) {}
+const std::string& OMPLMotionPlannerStatusCategory::name() const noexcept { return name_; }
+std::string OMPLMotionPlannerStatusCategory::message(int code) const
 {
   switch (code)
   {

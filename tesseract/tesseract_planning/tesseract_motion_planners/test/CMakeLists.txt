@@ -12,13 +12,13 @@ add_dependencies(run_tests ${PROJECT_NAME}_descartes_kin_unit)
 
 # OMPL Planning Test/Example Program
 add_executable(${PROJECT_NAME}_ompl_unit ompl_planner_tests.cpp)
-target_link_libraries(${PROJECT_NAME}_ompl_unit ${Boost_LIBRARIES} GTest::GTest GTest::Main ${PROJECT_NAME}_ompl_freespace tesseract::tesseract_support)
+target_link_libraries(${PROJECT_NAME}_ompl_unit ${Boost_LIBRARIES} GTest::GTest GTest::Main ${PROJECT_NAME}_ompl tesseract::tesseract_support)
 tesseract_target_compile_options(${PROJECT_NAME}_ompl_unit PRIVATE)
 tesseract_clang_tidy(${PROJECT_NAME}_ompl_unit)
 target_include_directories(${PROJECT_NAME}_ompl_unit SYSTEM PUBLIC
     ${Boost_INCLUDE_DIRS})
 tesseract_gtest_discover_tests(${PROJECT_NAME}_ompl_unit)
-add_dependencies(${PROJECT_NAME}_ompl_unit ${PROJECT_NAME}_ompl_freespace)
+add_dependencies(${PROJECT_NAME}_ompl_unit ${PROJECT_NAME}_ompl)
 add_dependencies(run_tests ${PROJECT_NAME}_ompl_unit)
 
 # TrajOpt Planner Tests
