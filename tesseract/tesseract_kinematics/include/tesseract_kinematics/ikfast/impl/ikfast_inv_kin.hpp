@@ -151,7 +151,7 @@ bool IKFastInvKin::init(const std::string name,
                         const std::vector<std::string> joint_names,
                         const std::vector<std::string> link_names,
                         const std::vector<std::string> active_link_names,
-                        const Eigen::MatrixX2d joint_limits)
+                        const Eigen::MatrixX2d& joint_limits)
 {
   name_ = std::move(name);
   base_link_name_ = std::move(base_link_name);
@@ -159,7 +159,7 @@ bool IKFastInvKin::init(const std::string name,
   joint_names_ = std::move(joint_names);
   link_names_ = std::move(link_names);
   active_link_names_ = std::move(active_link_names);
-  joint_limits_ = std::move(joint_limits);
+  joint_limits_ = joint_limits;
   initialized_ = true;
 
   return initialized_;

@@ -70,7 +70,7 @@ public:
                                      tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics,
                                      typename descartes_light::CollisionInterface<FloatType>::Ptr collision,
                                      const tesseract_environment::EnvState::ConstPtr& current_state,
-                                     Eigen::VectorXd positioner_sample_resolution,
+                                     const Eigen::Ref<const Eigen::VectorXd>& positioner_sample_resolution,
                                      const Eigen::Isometry3d& robot_tcp,
                                      FloatType robot_reach,
                                      bool allow_collision,

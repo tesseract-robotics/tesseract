@@ -93,7 +93,7 @@ public:
             std::vector<std::string> joint_names,
             std::vector<std::string> link_names,
             std::vector<std::string> active_link_names,
-            Eigen::MatrixX2d joint_limits);
+            const Eigen::MatrixX2d& joint_limits);
 
   /**
    * @brief Checks if kinematics has been initialized

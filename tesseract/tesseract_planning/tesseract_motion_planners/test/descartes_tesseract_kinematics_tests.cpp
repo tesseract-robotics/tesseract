@@ -115,7 +115,7 @@ protected:
 /** @brief Used to test IK by running the IK results through FK to check that they match up. This also checks that the
  * number of solutions matches the user defined expected number and that ik returns false when no solutions are found*/
 static void testIKDouble(tesseract_motion_planners::DescartesTesseractKinematics<double> kin,
-                         Eigen::Isometry3d pose_d,
+                         const Eigen::Isometry3d& pose_d,
                          const Eigen::VectorXd& seed_d,
                          int expected_sols)
 {
