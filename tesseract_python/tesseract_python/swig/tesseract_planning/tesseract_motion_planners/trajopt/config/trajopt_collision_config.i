@@ -39,6 +39,8 @@ struct CollisionCostConfig
 
   double buffer_margin = 0.025;
 
+  double safety_margin_buffer = 0.05;
+
   double coeff = 20;
 };
 
@@ -50,6 +52,8 @@ struct CollisionConstraintConfig
   trajopt::CollisionEvaluatorType type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
 
   double safety_margin = 0.01;
+
+  double safety_margin_buffer = 0.05;
 
   double coeff = 20;
 };
