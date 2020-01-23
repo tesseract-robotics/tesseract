@@ -35,6 +35,8 @@
 %template(GroupStateVector) std::vector<tesseract_scene_graph::SRDFModel::GroupState>;
 %template(DoubleVector) std::vector<double>;
 %template(StringDoubleVectorMap) std::map<std::string, std::vector<double> >;
+%template(PairString) std::pair<std::string, std::string>;
+%template(PairStringVector) std::vector<std::pair<std::string, std::string> >;
 
 namespace tesseract_scene_graph
 {
