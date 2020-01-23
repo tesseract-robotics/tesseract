@@ -54,6 +54,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/hybrid/ompl_trajopt_freespace_planner.h>
 #include <tesseract_motion_planners/trajopt/config/trajopt_planner_freespace_config.h>
+#include <tesseract_motion_planners/ompl/config/ompl_planner_freespace_config.h>
 
 using namespace tesseract;
 using namespace tesseract_scene_graph;
@@ -168,47 +169,42 @@ TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
   auto end = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
 
   // Create the OMPL config
-  tesseract_motion_planners::OMPLFreespacePlannerConfig<TypeParam> ompl_config;
+  auto ompl_config =
+      std::make_shared<tesseract_motion_planners::OMPLPlannerFreespaceConfig<TypeParam>>(tesseract, "manipulator");
   {
-    ompl_config.start_waypoint = start;
-    ompl_config.end_waypoint = end;
-    ompl_config.tesseract = tesseract;
-    ompl_config.manipulator = "manipulator";
-    ompl_config.collision_safety_margin = 0.02;
-    ompl_config.planning_time = 5.0;
-    ompl_config.num_threads = 2;
-    ompl_config.max_solutions = 2;
-    ompl_config.longest_valid_segment_fraction = 0.01;
+    ompl_config->start_waypoint = start;
+    ompl_config->end_waypoint = end;
+    ompl_config->collision_safety_margin = 0.02;
+    ompl_config->planning_time = 5.0;
+    ompl_config->num_threads = 2;
+    ompl_config->max_solutions = 2;
+    ompl_config->longest_valid_segment_fraction = 0.01;
 
-    ompl_config.collision_continuous = true;
-    ompl_config.collision_check = true;
-    ompl_config.simplify = false;
-    ompl_config.n_output_states = 50;
+    ompl_config->collision_continuous = true;
+    ompl_config->collision_check = true;
+    ompl_config->simplify = false;
+    ompl_config->n_output_states = 50;
   }
 
   // Create the TrajOpt config
-  tesseract_motion_planners::TrajOptPlannerFreespaceConfig trajopt_config(
+  auto trajopt_config = std::make_shared<tesseract_motion_planners::TrajOptPlannerFreespaceConfig>(
       tesseract, "manipulator", "tool0", Eigen::Isometry3d::Identity());
   {
-    trajopt_config.target_waypoints.push_back(start);
-    trajopt_config.target_waypoints.push_back(end);
+    trajopt_config->target_waypoints.push_back(start);
+    trajopt_config->target_waypoints.push_back(end);
 
-    tesseract_motion_planners::CollisionConstraintConfig collision_constraint_cfg;
-    collision_constraint_cfg.enabled = true;
-    collision_constraint_cfg.safety_margin = 0.02;
-    collision_constraint_cfg.type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
-    trajopt_config.collision_constraint_config = collision_constraint_cfg;
+    trajopt_config->collision_constraint_config.enabled = true;
+    trajopt_config->collision_constraint_config.safety_margin = 0.02;
+    trajopt_config->collision_constraint_config.type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
+    trajopt_config->smooth_velocities = true;
+    trajopt_config->smooth_jerks = true;
+    trajopt_config->smooth_accelerations = true;
 
-    trajopt_config.smooth_velocities = true;
-    trajopt_config.smooth_jerks = true;
-    trajopt_config.smooth_accelerations = true;
-
-    trajopt_config.num_steps = 50;
+    trajopt_config->num_steps = 50;
   }
 
   // Set the planner configuration
-  this->planner.setConfiguration(
-      ompl_config, std::make_shared<tesseract_motion_planners::TrajOptPlannerFreespaceConfig>(trajopt_config));
+  this->planner.setConfiguration(ompl_config, trajopt_config);
 
   tesseract_motion_planners::PlannerResponse planning_response;
   tesseract_common::StatusCode status = this->planner.solve(planning_response, PLANNER_VERBOSE);
@@ -222,7 +218,7 @@ TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
 
   // Expect that the trajectory has the same number of states as the config with the highest number of states
   EXPECT_EQ(planning_response.joint_trajectory.trajectory.rows(),
-            std::max(ompl_config.n_output_states, trajopt_config.num_steps));
+            std::max(ompl_config->n_output_states, trajopt_config->num_steps));
 }
 
 int main(int argc, char** argv)

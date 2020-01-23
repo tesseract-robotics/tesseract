@@ -41,6 +41,9 @@ struct TrajOptPlannerFreespaceConfig : public TrajOptPlannerDefaultConfig
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  using Ptr = std::shared_ptr<TrajOptPlannerFreespaceConfig>;
+  using ConstPtr = std::shared_ptr<const TrajOptPlannerFreespaceConfig>;
+
   using TrajOptPlannerDefaultConfig::TrajOptPlannerDefaultConfig;
 
   std::shared_ptr<trajopt::ProblemConstructionInfo> generatePCI() const override;

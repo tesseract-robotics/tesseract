@@ -42,6 +42,9 @@ struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  using Ptr = std::shared_ptr<TrajOptPlannerDefaultConfig>;
+  using ConstPtr = std::shared_ptr<const TrajOptPlannerDefaultConfig>;
+
   TrajOptPlannerDefaultConfig(tesseract::Tesseract::ConstPtr tesseract_,
                               std::string manipulator_,
                               std::string link_,

@@ -1,5 +1,5 @@
 /**
- * @file ompl_freespace_planner.hpp
+ * @file ompl_trajopt_freespace_planner.hpp
  * @brief Tesseract OMPL TrajOpt Freespace Planner Implementation
  *
  * @author Michael Ripperger
@@ -35,17 +35,17 @@ OMPLTrajOptFreespacePlanner<PlannerType>::OMPLTrajOptFreespacePlanner(std::strin
 
 template <typename PlannerType>
 bool OMPLTrajOptFreespacePlanner<PlannerType>::setConfiguration(
-    OMPLFreespacePlannerConfig<PlannerType> ompl_config,
-    std::shared_ptr<TrajOptPlannerFreespaceConfig> trajopt_config)
+    typename OMPLPlannerConfig<PlannerType>::Ptr ompl_config,
+    TrajOptPlannerFreespaceConfig::Ptr trajopt_config)
 {
   // Set the number of states to be equal for the OMPL and trajopt planner configurations
-  if (ompl_config.n_output_states > trajopt_config->num_steps)
+  if (ompl_config->n_output_states > trajopt_config->num_steps)
   {
-    trajopt_config->num_steps = ompl_config.n_output_states;
+    trajopt_config->num_steps = ompl_config->n_output_states;
   }
   else
   {
-    ompl_config.n_output_states = trajopt_config->num_steps;
+    ompl_config->n_output_states = trajopt_config->num_steps;
   }
 
   bool success = true;
