@@ -167,8 +167,8 @@ public:
 Q_SIGNALS:
 
   void userFeedback(std::string reference_frame,
-                    Eigen::Isometry3d transform,
-                    Eigen::Vector3d mouse_point,
+                    const Eigen::Isometry3d& transform,
+                    const Eigen::Vector3d& mouse_point,
                     bool mouse_point_valid);
   void statusUpdate(rviz::StatusProperty::Level level, const std::string& name, const std::string& text);
 

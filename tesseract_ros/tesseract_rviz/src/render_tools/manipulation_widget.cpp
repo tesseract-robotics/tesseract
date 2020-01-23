@@ -348,9 +348,9 @@ bool ManipulationWidget::changeManipulator(const QString& manipulator)
     interactive_marker_->setVisible(enabled_ && cartesian_manipulation_property_->getBool());
 
     connect(interactive_marker_.get(),
-            SIGNAL(userFeedback(std::string, Eigen::Isometry3d, Eigen::Vector3d, bool)),
+            SIGNAL(userFeedback(std::string, const Eigen::Isometry3d&, const Eigen::Vector3d&, bool)),
             this,
-            SLOT(markerFeedback(std::string, Eigen::Isometry3d, Eigen::Vector3d, bool)));
+            SLOT(markerFeedback(std::string, const Eigen::Isometry3d&, const Eigen::Vector3d&, bool)));
 
     // Add joint specific interactive marker
     joint_interactive_markers_.clear();

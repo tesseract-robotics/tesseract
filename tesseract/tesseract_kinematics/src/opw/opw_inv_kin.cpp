@@ -111,7 +111,7 @@ bool OPWInvKin::init(std::string name,
                      std::vector<std::string> joint_names,
                      std::vector<std::string> link_names,
                      std::vector<std::string> active_link_names,
-                     Eigen::MatrixX2d joint_limits)
+                     const Eigen::MatrixX2d& joint_limits)
 {
   assert(joint_names.size() == 6);
 
@@ -122,7 +122,7 @@ bool OPWInvKin::init(std::string name,
   joint_names_ = std::move(joint_names);
   link_names_ = std::move(link_names);
   active_link_names_ = std::move(active_link_names);
-  joint_limits_ = std::move(joint_limits);
+  joint_limits_ = joint_limits;
   initialized_ = true;
 
   return initialized_;

@@ -72,7 +72,7 @@ namespace tesseract_kinematics
  *                                                    const std::vector<std::string> joint_names,
  *                                                    const std::vector<std::string> link_names,
  *                                                    const std::vector<std::string> active_link_names,
- *                                                    const Eigen::MatrixX2d joint_limits)
+ *                                                    const Eigen::MatrixX2d& joint_limits)
  *   : FanucP50iBInvKinematics(name, base_link_name, tip_link_name, joint_names, link_names, active_link_names,
  joint_limits)
  *   {}
@@ -133,7 +133,7 @@ public:
             const std::vector<std::string> joint_names,
             const std::vector<std::string> link_names,
             const std::vector<std::string> active_link_names,
-            const Eigen::MatrixX2d joint_limits);
+            const Eigen::MatrixX2d& joint_limits);
 
   /**
    * @brief Checks if kinematics has been initialized

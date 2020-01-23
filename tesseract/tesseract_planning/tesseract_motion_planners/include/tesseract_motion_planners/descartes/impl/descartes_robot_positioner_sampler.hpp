@@ -46,7 +46,7 @@ DescartesRobotPositionerSampler<FloatType>::DescartesRobotPositionerSampler(
     tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics,
     typename descartes_light::CollisionInterface<FloatType>::Ptr collision,
     const tesseract_environment::EnvState::ConstPtr& current_state,
-    Eigen::VectorXd positioner_sample_resolution,
+    const Eigen::Ref<const Eigen::VectorXd>& positioner_sample_resolution,
     const Eigen::Isometry3d& robot_tcp,
     double robot_reach,
     bool allow_collision,
@@ -58,7 +58,7 @@ DescartesRobotPositionerSampler<FloatType>::DescartesRobotPositionerSampler(
   , collision_(std::move(collision))
   , world_to_positioner_base_(current_state->transforms.at(positioner_kinematics_->getBaseLinkName()))
   , positioner_limits_(positioner_kinematics_->getLimits())
-  , positioner_sample_resolution_(std::move(positioner_sample_resolution))
+  , positioner_sample_resolution_(positioner_sample_resolution)
   , robot_tcp_(robot_tcp)
   , robot_reach_(robot_reach)
   , allow_collision_(allow_collision)
