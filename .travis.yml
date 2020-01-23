@@ -24,6 +24,8 @@ env:
     - ROSDEP_SKIP_KEYS="bullet3 fcl"
     - AFTER_SCRIPT='catkin test -w $CATKIN_WORKSPACE --no-deps tesseract_collision tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python --make-args CTEST_OUTPUT_ON_FAILURE=TRUE'
     - PKGS_DOWNSTREAM='tesseract_ros_examples tesseract_rosutils'
+    - ROS_PARALLEL_JOBS=-j2
+    - ROS_PARALLEL_TEST_JOBS=-j2
 
 jobs:
   include:
@@ -56,8 +58,6 @@ jobs:
       env:
       - ROS_DISTRO="melodic"
       - DOCKER_IMAGE=lharmstrong/tesseract:melodic
-      - ROS_PARALLEL_JOBS=-j4
-      - ROS_PARALLEL_TEST_JOBS=-j4
       - BADGE=bionic
       cache:
         directories:
@@ -69,8 +69,6 @@ jobs:
       - ROS_DISTRO="kinetic"
       - ROS_REPO=ros-shadow-fixed
       - DOCKER_IMAGE=lharmstrong/tesseract:kinetic
-      - ROS_PARALLEL_JOBS=-j4
-      - ROS_PARALLEL_TEST_JOBS=-j4
       - BADGE=xenial-shadow
       cache:
         directories:
@@ -82,15 +80,13 @@ jobs:
       - ROS_DISTRO="melodic"
       - ROS_REPO=ros-shadow-fixed
       - DOCKER_IMAGE=lharmstrong/tesseract:melodic
-      - ROS_PARALLEL_JOBS=-j2
-      - ROS_PARALLEL_TEST_JOBS=-j2
       - BADGE=bionic-shadow
       cache:
         directories:
           - $HOME/.ccache
   allow_failures:
-    - env: ROS_DISTRO=kinetic ROS_REPO=ros-shadow-fixed DOCKER_IMAGE=lharmstrong/tesseract:kinetic BADGE=xenial-shadow
-    - env: ROS_DISTRO=melodic ROS_REPO=ros-shadow-fixed DOCKER_IMAGE=lharmstrong/tesseract:melodic ROS_PARALLEL_JOBS=-j4 ROS_PARALLEL_TEST_JOBS=-j4 BADGE=bionic-shadow
+    - env: ROS_DISTRO=kinetic ROS_REPO=ros-shadow-fixed DOCKER_IMAGE=lharmstrong/tesseract:kinetic ROS_PARALLEL_JOBS=-j2 ROS_PARALLEL_TEST_JOBS=-j2 BADGE=xenial-shadow
+    - env: ROS_DISTRO=melodic ROS_REPO=ros-shadow-fixed DOCKER_IMAGE=lharmstrong/tesseract:melodic ROS_PARALLEL_JOBS=-j2 ROS_PARALLEL_TEST_JOBS=-j2 BADGE=bionic-shadow
 
 install:
   - git clone --quiet --depth=1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
