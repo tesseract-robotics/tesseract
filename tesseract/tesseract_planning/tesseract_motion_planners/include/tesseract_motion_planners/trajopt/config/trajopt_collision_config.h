@@ -1,5 +1,5 @@
 /**
- * @file trajopt_collision_config_base.h
+ * @file trajopt_collision_config.h
  * @brief TrajOpt collision configuration settings
  *
  * @author Joseph Schornak
