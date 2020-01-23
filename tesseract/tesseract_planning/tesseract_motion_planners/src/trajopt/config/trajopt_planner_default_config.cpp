@@ -323,8 +323,14 @@ void TrajOptPlannerDefaultConfig::addCollisionCost(trajopt::ProblemConstructionI
   }
 
   // Create a default collision term info
-  trajopt::TermInfo::Ptr ti = createCollisionTermInfo(
-      pci.basic_info.n_steps, collision_cost_config.buffer_margin, collision_cost_config.type, collision_cost_config.coeff, contact_test_type, length, "collision_cost", false);
+  trajopt::TermInfo::Ptr ti = createCollisionTermInfo(pci.basic_info.n_steps,
+                                                      collision_cost_config.buffer_margin,
+                                                      collision_cost_config.type,
+                                                      collision_cost_config.coeff,
+                                                      contact_test_type,
+                                                      length,
+                                                      "collision_cost",
+                                                      false);
 
   // Update the term info with the (possibly) new start and end state indices for which to apply this cost
   std::shared_ptr<trajopt::CollisionTermInfo> ct = std::static_pointer_cast<trajopt::CollisionTermInfo>(ti);
@@ -358,8 +364,14 @@ void TrajOptPlannerDefaultConfig::addCollisionConstraint(trajopt::ProblemConstru
   }
 
   // Create a default collision term info
-  trajopt::TermInfo::Ptr ti = createCollisionTermInfo(
-      pci.basic_info.n_steps, collision_constraint_config.safety_margin, collision_constraint_config.type, collision_constraint_config.coeff, contact_test_type, length, "collision_cnt", true);
+  trajopt::TermInfo::Ptr ti = createCollisionTermInfo(pci.basic_info.n_steps,
+                                                      collision_constraint_config.safety_margin,
+                                                      collision_constraint_config.type,
+                                                      collision_constraint_config.coeff,
+                                                      contact_test_type,
+                                                      length,
+                                                      "collision_cnt",
+                                                      true);
 
   // Update the term info with the (possibly) new start and end state indices for which to apply this cost
   std::shared_ptr<trajopt::CollisionTermInfo> ct = std::static_pointer_cast<trajopt::CollisionTermInfo>(ti);

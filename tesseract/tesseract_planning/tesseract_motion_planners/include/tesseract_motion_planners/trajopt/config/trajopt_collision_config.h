@@ -59,6 +59,6 @@ struct CollisionConstraintConfig
   /** @brief The collision coeff/weight */
   double coeff = 20;
 };
-}
+}  // namespace tesseract_motion_planners
 
-#endif // TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_COLLISION_CONFIG_H
+#endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_COLLISION_CONFIG_H
