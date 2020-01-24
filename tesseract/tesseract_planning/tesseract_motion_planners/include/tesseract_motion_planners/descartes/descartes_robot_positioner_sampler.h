@@ -87,7 +87,7 @@ private:
   typename descartes_light::CollisionInterface<FloatType>::Ptr collision_;  /**< @brief The collision interface */
   Eigen::Isometry3d world_to_positioner_base_;   /**< @brief The transform from world to the base of the base positioner
                                                     kinematic */
-  Eigen::Matrix2d positioner_limits_;            /**< @brief The joint limits for the base positioner kinematics */
+  Eigen::MatrixX2d positioner_limits_;           /**< @brief The joint limits for the base positioner kinematics */
   Eigen::VectorXd positioner_sample_resolution_; /**< @brief The joint sampling resolution for the base positioner
                                                     kinematics */
   Eigen::Isometry3d robot_tcp_;                  /**< @brief The robot tool center point */
