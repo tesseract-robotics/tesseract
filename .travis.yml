@@ -20,13 +20,13 @@ env:
     - ROSINSTALL_FILENAME=dependencies.rosinstall
     - ROS_REPO=ros
     - NOT_TEST_INSTALL=true
-    - CATKIN_CONFIG="--make-args CTEST_OUTPUT_ON_FAILURE=TRUE CTEST_PARALLEL_LEVEL=2"
+    - CATKIN_CONFIG="--make-args CTEST_OUTPUT_ON_FAILURE=TRUE CTEST_PARALLEL_LEVEL=1"
     - CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON"
     - ROSDEP_SKIP_KEYS="bullet3 fcl"
     - AFTER_SCRIPT='catkin test -w $CATKIN_WORKSPACE --no-deps tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python'
     - PKGS_DOWNSTREAM='tesseract_ros_examples tesseract_rosutils'
-    - ROS_PARALLEL_JOBS=-j2
-    - ROS_PARALLEL_TEST_JOBS=-j2
+    - ROS_PARALLEL_JOBS=-j1
+    - ROS_PARALLEL_TEST_JOBS=-j1
 
 jobs:
   include:
