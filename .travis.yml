@@ -31,7 +31,7 @@ jobs:
   include:
     - os: linux
       dist: bionic
-      language: cpp
+      language: minimal
       env:
       - ROS_DISTRO="melodic"
       - CLANG_FORMAT_CHECK=file
@@ -44,7 +44,7 @@ jobs:
           - $HOME/.ccache
     - os: linux
       dist: xenial
-      language: cpp
+      language: minimal
       env:
       - ROS_DISTRO="kinetic"
       - DOCKER_IMAGE=lharmstrong/tesseract:kinetic
@@ -54,7 +54,7 @@ jobs:
           - $HOME/.ccache
     - os: linux
       dist: bionic
-      language: cpp
+      language: minimal
       env:
       - ROS_DISTRO="melodic"
       - DOCKER_IMAGE=lharmstrong/tesseract:melodic
@@ -64,7 +64,7 @@ jobs:
           - $HOME/.ccache
     - os: linux
       dist: xenial
-      language: cpp
+      language: minimal
       env:
       - ROS_DISTRO="kinetic"
       - ROS_REPO=ros-shadow-fixed
@@ -75,7 +75,7 @@ jobs:
           - $HOME/.ccache
     - os: linux
       dist: bionic
-      language: cpp
+      language: minimal
       env:
       - ROS_DISTRO="melodic"
       - ROS_REPO=ros-shadow-fixed
