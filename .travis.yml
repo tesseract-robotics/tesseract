@@ -20,16 +20,19 @@ env:
     - ROSINSTALL_FILENAME=dependencies.rosinstall
     - ROS_REPO=ros
     - NOT_TEST_INSTALL=true
-    - CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_ENABLE_RUN_TESTING=OFF"
+    - CATKIN_CONFIG="--make-args CTEST_OUTPUT_ON_FAILURE=TRUE CTEST_PARALLEL_LEVEL=1"
+    - CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON"
     - ROSDEP_SKIP_KEYS="bullet3 fcl"
-    - AFTER_SCRIPT='catkin test -w $CATKIN_WORKSPACE --no-deps tesseract_collision tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python --make-args CTEST_OUTPUT_ON_FAILURE=TRUE'
+    - AFTER_SCRIPT='catkin test -w $CATKIN_WORKSPACE --no-deps tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python'
     - PKGS_DOWNSTREAM='tesseract_ros_examples tesseract_rosutils'
+    - ROS_PARALLEL_JOBS=-j1
+    - ROS_PARALLEL_TEST_JOBS=-j1
 
 jobs:
   include:
     - os: linux
       dist: bionic
-      language: cpp
+      language: minimal
       env:
       - ROS_DISTRO="melodic"
       - CLANG_FORMAT_CHECK=file
@@ -42,7 +45,7 @@ jobs:
           - $HOME/.ccache
     - os: linux
       dist: xenial
-      language: cpp
+      language: minimal
       env:
       - ROS_DISTRO="kinetic"
       - DOCKER_IMAGE=lharmstrong/tesseract:kinetic
@@ -52,19 +55,17 @@ jobs:
           - $HOME/.ccache
     - os: linux
       dist: bionic
-      language: cpp
+      language: minimal
       env:
       - ROS_DISTRO="melodic"
       - DOCKER_IMAGE=lharmstrong/tesseract:melodic
-      - ROS_PARALLEL_JOBS=-j4
-      - ROS_PARALLEL_TEST_JOBS=-j4
       - BADGE=bionic
       cache:
         directories:
           - $HOME/.ccache
     - os: linux
       dist: xenial
-      language: cpp
+      language: minimal
       env:
       - ROS_DISTRO="kinetic"
       - ROS_REPO=ros-shadow-fixed
@@ -75,20 +76,18 @@ jobs:
           - $HOME/.ccache
     - os: linux
       dist: bionic
-      language: cpp
+      language: minimal
       env:
       - ROS_DISTRO="melodic"
       - ROS_REPO=ros-shadow-fixed
       - DOCKER_IMAGE=lharmstrong/tesseract:melodic
-      - ROS_PARALLEL_JOBS=-j4
-      - ROS_PARALLEL_TEST_JOBS=-j4
       - BADGE=bionic-shadow
       cache:
         directories:
           - $HOME/.ccache
   allow_failures:
-    - env: ROS_DISTRO=kinetic ROS_REPO=ros-shadow-fixed DOCKER_IMAGE=lharmstrong/tesseract:kinetic BADGE=xenial-shadow
-    - env: ROS_DISTRO=melodic ROS_REPO=ros-shadow-fixed DOCKER_IMAGE=lharmstrong/tesseract:melodic ROS_PARALLEL_JOBS=-j4 ROS_PARALLEL_TEST_JOBS=-j4 BADGE=bionic-shadow
+    - env: ROS_DISTRO=kinetic ROS_REPO=ros-shadow-fixed DOCKER_IMAGE=lharmstrong/tesseract:kinetic ROS_PARALLEL_JOBS=-j2 ROS_PARALLEL_TEST_JOBS=-j2 BADGE=xenial-shadow
+    - env: ROS_DISTRO=melodic ROS_REPO=ros-shadow-fixed DOCKER_IMAGE=lharmstrong/tesseract:melodic ROS_PARALLEL_JOBS=-j2 ROS_PARALLEL_TEST_JOBS=-j2 BADGE=bionic-shadow
 
 install:
   - git clone --quiet --depth=1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
