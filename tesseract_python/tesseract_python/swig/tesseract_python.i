@@ -69,6 +69,11 @@
 %include "eigen_types.i"
 
 %template(vector_string) std::vector<std::string>;
+%template(pair_string) std::pair<std::string, std::string>;
+%template(vector_pair_string) std::vector<std::pair<std::string, std::string> >;
+
+%template(vector_double) std::vector<double>;
+%template(map_string_vector_double) std::map<std::string, std::vector<double> >;
 
 %include "tesseract_common/types.i"
 %include "tesseract_common/status_code.i"
