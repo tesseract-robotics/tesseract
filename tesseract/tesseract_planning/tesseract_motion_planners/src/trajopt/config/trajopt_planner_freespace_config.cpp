@@ -100,8 +100,11 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerFreespaceConfig:
     fixed_steps.push_back(num_steps - 1);
   }
 
-  if (collision_check)
-    addCollision(pci, fixed_steps);
+  if (collision_constraint_config.enabled)
+    addCollisionConstraint(pci, fixed_steps);
+
+  if (collision_cost_config.enabled)
+    addCollisionCost(pci, fixed_steps);
 
   if (smooth_velocities)
     addVelocitySmoothing(pci, fixed_steps);

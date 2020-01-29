@@ -27,6 +27,7 @@
 #define TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_DEFAULT_CONFIG_H
 
 #include <tesseract_motion_planners/trajopt/config/trajopt_planner_config.h>
+#include <tesseract_motion_planners/trajopt/config/trajopt_collision_config.h>
 
 namespace tesseract_motion_planners
 {
@@ -90,14 +91,10 @@ struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
 
   /** @brief The type of contact test to perform: FIRST, CLOSEST, ALL */
   tesseract_collision::ContactTestType contact_test_type = tesseract_collision::ContactTestType::ALL;
-  /** @brief If true, collision checking will be enabled. Default: true*/
-  bool collision_check = true;
-  /** @brief If true, use continuous collision checking */
-  trajopt::CollisionEvaluatorType collision_type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
-  /** @brief Max distance over which collisions are checked */
-  double collision_safety_margin = 0.025;
-  /** @brief The collision coeff/weight */
-  double collision_coeff = 20;
+  /** @brief Configuration info for collisions that are modeled as costs */
+  tesseract_motion_planners::CollisionCostConfig collision_cost_config;
+  /** @brief Configuration info for collisions that are modeled as constraints */
+  tesseract_motion_planners::CollisionConstraintConfig collision_constraint_config;
   /** @brief If true, a joint velocity cost with a target of 0 will be applied for all timesteps Default: true*/
   bool smooth_velocities = true;
   /** @brief This default to all ones, but allows you to weight different joints */
@@ -142,7 +139,8 @@ protected:
   bool addInitTrajectory(trajopt::ProblemConstructionInfo& pci) const;
   void addWaypoints(trajopt::ProblemConstructionInfo& pci, std::vector<int>& fixed_steps) const;
   void addKinematicConfiguration(trajopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;
-  void addCollision(trajopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;
+  void addCollisionCost(trajopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;
+  void addCollisionConstraint(trajopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;
   void addVelocitySmoothing(trajopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;
   void addAccelerationSmoothing(trajopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;
   void addJerkSmoothing(trajopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;

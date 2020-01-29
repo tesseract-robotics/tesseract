@@ -147,7 +147,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner0)  // NOLINT
     config->smooth_velocities = t1;
     config->smooth_accelerations = t2;
     config->smooth_jerks = t3;
-    config->collision_check = t4;
+    config->collision_constraint_config.enabled = t4;
+    config->collision_cost_config.enabled = t4;
     test_planner.setConfiguration(config);
 
     EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointVelEqCost>(config->prob->getCosts())),
@@ -366,7 +367,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0)  // NOLINT
     config->smooth_velocities = t1;
     config->smooth_accelerations = t2;
     config->smooth_jerks = t3;
-    config->collision_check = t4;
+    config->collision_constraint_config.enabled = t4;
+    config->collision_cost_config.enabled = t4;
     test_planner.setConfiguration(config);
     EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointVelEqCost>(config->prob->getCosts())),
               t1);

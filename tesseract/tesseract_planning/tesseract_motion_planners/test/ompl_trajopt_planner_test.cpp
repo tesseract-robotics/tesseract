@@ -193,9 +193,11 @@ TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
     trajopt_config.target_waypoints.push_back(start);
     trajopt_config.target_waypoints.push_back(end);
 
-    trajopt_config.collision_check = true;
-    trajopt_config.collision_type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
-    trajopt_config.collision_safety_margin = 0.02;
+    tesseract_motion_planners::CollisionConstraintConfig collision_constraint_cfg;
+    collision_constraint_cfg.enabled = true;
+    collision_constraint_cfg.safety_margin = 0.02;
+    collision_constraint_cfg.type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
+    trajopt_config.collision_constraint_config = collision_constraint_cfg;
 
     trajopt_config.smooth_velocities = true;
     trajopt_config.smooth_jerks = true;

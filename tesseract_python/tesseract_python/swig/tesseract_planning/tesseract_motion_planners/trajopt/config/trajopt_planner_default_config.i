@@ -69,12 +69,10 @@ struct TrajOptPlannerDefaultConfig : public TrajOptPlannerConfig
 
   tesseract_collision::ContactTestType contact_test_type = tesseract_collision::ContactTestType::ALL;
 
-  bool collision_check = true;
-  
-  trajopt::CollisionEvaluatorType collision_type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
-  
-  double collision_safety_margin = 0.025;
-  
+  tesseract_motion_planners::CollisionCostConfig collision_cost_config;
+
+  tesseract_motion_planners::CollisionConstraintConfig collision_constraint_config;
+
   bool smooth_velocities = true;
   
   Eigen::VectorXd velocity_coeff;
