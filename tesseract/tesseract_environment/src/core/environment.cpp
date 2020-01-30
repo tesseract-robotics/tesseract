@@ -28,6 +28,8 @@
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_collision/core/common.h>
 
+#include <queue>
+
 namespace tesseract_environment
 {
 void Environment::setState(const std::unordered_map<std::string, double>& joints)
@@ -592,4 +594,62 @@ bool Environment::removeLinkHelper(const std::string& name)
   return true;
 }
 
+bool Environment::addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& prefix)
+{
+  // Connect root of subgraph to graph
+  tesseract_scene_graph::Joint::Ptr root_joint =
+      std::make_shared<tesseract_scene_graph::Joint>(scene_graph.getName() + "_joint");
+  root_joint->type = tesseract_scene_graph::JointType::FIXED;
+  root_joint->parent_link_name = getRootLinkName();
+  root_joint->child_link_name = scene_graph.getRoot();
+  root_joint->parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
+
+  return addSceneGraph(scene_graph, root_joint, prefix);
+}
+
+bool Environment::addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
+                                tesseract_scene_graph::Joint::ConstPtr root_joint,
+                                const std::string& prefix)
+{
+  auto link = scene_graph.getLink(scene_graph.getRoot());
+  if (!link)
+  {
+    return true;
+  }
+  auto new_link = std::make_shared<tesseract_scene_graph::Link>(link->prefix(prefix));
+
+  auto new_joint = std::make_shared<tesseract_scene_graph::Joint>(root_joint->prefix(prefix));
+  // Preserve reference to common ancestor
+  new_joint->parent_link_name = root_joint->parent_link_name;
+
+  bool res = addLink(*new_link, *new_joint);
+  if (!res)
+  {
+    CONSOLE_BRIDGE_logError("Could not add the root joint");
+    return false;
+  }
+
+  std::queue<std::string> work_links;
+  work_links.push(link->getName());
+  while (!work_links.empty())
+  {
+    auto joints = scene_graph.getOutboundJoints(work_links.front());
+    work_links.pop();
+    for (const auto& joint : joints)
+    {
+      auto new_joint = std::make_shared<tesseract_scene_graph::Joint>(joint->prefix(prefix));
+      link = scene_graph.getLink(joint->child_link_name);
+      auto new_link = std::make_shared<tesseract_scene_graph::Link>(link->prefix(prefix));
+      res = addLink(*new_link, *new_joint);
+      if (!res)
+      {
+        CONSOLE_BRIDGE_logError("Could not add link (%s)", new_link->getName().c_str());
+        return false;
+      }
+      work_links.push(link->getName());
+    }
+  }
+  environmentChanged();
+  return res;
+}
 }  // namespace tesseract_environment

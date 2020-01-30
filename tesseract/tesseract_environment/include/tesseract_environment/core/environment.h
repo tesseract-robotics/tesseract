@@ -399,6 +399,14 @@ public:
     return continuous_factory_.registar(name, std::move(create_function));
   }
 
+  /** Add a subgraph to the current environment. NB: the subgraph will be copied
+   * into the environment graph */
+  virtual bool addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& prefix = "");
+
+  virtual bool addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
+                             tesseract_scene_graph::Joint::ConstPtr root_joint,
+                             const std::string& prefix = "");
+
 protected:
   bool initialized_{ false }; /**< Identifies if the object has been initialized */
   int revision_{ 0 };         /**< This increments when the scene graph is modified */

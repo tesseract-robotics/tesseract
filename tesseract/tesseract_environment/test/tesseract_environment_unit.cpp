@@ -319,6 +319,38 @@ TEST(TesseractEnvironmentUnit, KDLEnvCurrentStatePreservedWhenEnvChanges)  // NO
   runCurrentStatePreservedWhenEnvChangesTest(env);
 }
 
+TEST(TesseractEnvironmentUnit, addSceneGraph)
+{
+  SceneGraph::Ptr scene_graph = getSceneGraph();
+  EXPECT_TRUE(scene_graph != nullptr);
+
+  SceneGraph::Ptr subgraph = std::make_shared<SceneGraph>();
+  subgraph->setName("subgraph");
+
+  KDLEnv env;
+
+  bool success = env.init(scene_graph);
+  EXPECT_TRUE(success);
+
+  // Adding an empty environment will work, however many times
+  EXPECT_TRUE(env.addSceneGraph(*subgraph));
+  EXPECT_TRUE(env.addSceneGraph(*subgraph));
+
+  // Now add a link to empty environment
+  Link link("subgraph_base_link");
+  subgraph->addLink(link);
+
+  EXPECT_TRUE(env.addSceneGraph(*subgraph));
+  EXPECT_TRUE(env.getJoint("subgraph_joint") != nullptr);
+  EXPECT_TRUE(env.getLink("subgraph_base_link") != nullptr);
+
+  // Adding twice with the same name should fail
+  EXPECT_FALSE(env.addSceneGraph(*subgraph));
+  EXPECT_TRUE(env.addSceneGraph(*subgraph, "prefix_"));
+  EXPECT_TRUE(env.getJoint("prefix_subgraph_joint") != nullptr);
+  EXPECT_TRUE(env.getLink("prefix_subgraph_base_link") != nullptr);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

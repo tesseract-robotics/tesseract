@@ -172,6 +172,16 @@ public:
     this->visual.clear();
   }
 
+  /** Perform a shallow copy of link, prepending prefix to the name **/
+  Link prefix(const std::string& prefix) const
+  {
+    Link ret(prefix + this->getName());
+    ret.inertial = this->inertial;
+    ret.collision = this->collision;
+    ret.visual = this->visual;
+    return ret;
+  }
+
 private:
   const std::string name_;
 };

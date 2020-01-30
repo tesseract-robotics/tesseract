@@ -256,6 +256,24 @@ public:
     this->type = JointType::UNKNOWN;
   }
 
+  /* Create a shallow copy of current joint, with prefix prepended to its name, child link name and parent link name.
+   * Shallow means that underlying properties, such as dynamics, limits... are shared with the original object.*/
+  Joint prefix(const std::string& prefix) const
+  {
+    Joint ret(prefix + this->getName());
+    ret.axis = this->axis;
+    ret.child_link_name = prefix + this->child_link_name;
+    ret.parent_link_name = prefix + this->parent_link_name;
+    ret.parent_to_joint_origin_transform = this->parent_to_joint_origin_transform;
+    ret.dynamics = this->dynamics;
+    ret.limits = this->limits;
+    ret.safety = this->safety;
+    ret.calibration = this->calibration;
+    ret.mimic = this->mimic;
+    ret.type = this->type;
+    return ret;
+  }
+
 private:
   const std::string name_;
 };
