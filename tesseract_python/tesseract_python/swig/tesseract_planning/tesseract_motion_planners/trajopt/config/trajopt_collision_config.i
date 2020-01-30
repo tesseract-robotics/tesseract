@@ -39,7 +39,7 @@ struct CollisionCostConfig
 
   double buffer_margin = 0.025;
 
-  double safety_margin_buffer = 0.05;
+  double safety_margin_buffer = 0.0;
 
   double coeff = 20;
 };
