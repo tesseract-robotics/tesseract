@@ -87,6 +87,7 @@ tesseract_common::StatusCode OMPLMotionPlanner<PlannerType>::solve(PlannerRespon
       // and finishes at the end state.
       ompl::base::PlannerStatus localResult =
           parallel_plan_->solve(std::max(ompl::time::seconds(end - ompl::time::now()), 0.0),
+                                1,
                                 static_cast<unsigned>(config_->max_solutions),
                                 false);
       if (localResult)
