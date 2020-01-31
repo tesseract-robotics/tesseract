@@ -30,10 +30,16 @@ public:
 
     const tesseract_motion_planners::CartesianWaypoint::Ptr& cur_waypoint =
         std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(waypoints.front());
-    for (int i = step_count_; i >= 0; i--)
+    for (int i = step_count_; i-- > 0;)
     {
       Eigen::Isometry3d scaled = approach_;
-      scaled.translation() = (i * 1.0 / step_count_) * approach_.translation();
+
+      // Interpolate the transform
+      const double progress = static_cast<double>(i + 1) / static_cast<double>(step_count_);
+      scaled.translation() = progress * approach_.translation();
+      scaled.linear() = Eigen::Quaterniond(1.0, 0.0, 0.0, 0.0)
+                            .slerp(progress, Eigen::Quaterniond(approach_.rotation()))
+                            .toRotationMatrix();
 
       tesseract_motion_planners::CartesianWaypoint::Ptr new_waypoint =
           std::make_shared<tesseract_motion_planners::CartesianWaypoint>(
