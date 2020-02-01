@@ -147,7 +147,7 @@ tesseract_common::StatusCode OMPLMotionPlanner<PlannerType...>::solve(PlannerRes
     }
   }
 
-  tesseract_common::TrajArray traj = toTrajArray(config_->simple_setup->getSolutionPath());
+  tesseract_common::TrajArray traj = config_->getTrajectory();
 
   // Check and report collisions
   std::vector<tesseract_collision::ContactResultMap> collisions;

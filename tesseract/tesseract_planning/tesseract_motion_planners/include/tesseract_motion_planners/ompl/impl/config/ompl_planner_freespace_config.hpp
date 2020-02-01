@@ -32,6 +32,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/tools/multiplan/ParallelPlan.h>
 #include <ompl/base/objectives/PathLengthOptimizationObjective.h>
+
+#ifndef OMPL_LESS_1_4_0
+#include <ompl/base/spaces/constraint/ProjectedStateSpace.h>
+#include <ompl/base/ConstrainedSpaceInformation.h>
+#endif
+
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/continuous_motion_validator.h>
@@ -39,6 +45,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/weighted_real_vector_state_sampler.h>
 #include <tesseract_motion_planners/ompl/config/ompl_planner_freespace_config.h>
 #include <tesseract_motion_planners/ompl/impl/config/ompl_planner_config.hpp>
+#include <tesseract_motion_planners/ompl/impl/conversions.hpp>
 
 namespace tesseract_motion_planners
 {
@@ -92,14 +99,24 @@ bool OMPLPlannerFreespaceConfig<PlannerType...>::generate()
   const auto& limits = kin->getLimits();
 
   // Construct the OMPL state space for this manipulator
-  auto* space = new ompl::base::RealVectorStateSpace();
+  ompl::base::StateSpacePtr state_space_ptr;
+
+  auto rss = std::make_shared<ompl::base::RealVectorStateSpace>();
   for (unsigned i = 0; i < dof; ++i)
-    space->addDimension(joint_names[i], limits(i, 0), limits(i, 1));
+    rss->addDimension(joint_names[i], limits(i, 0), limits(i, 1));
 
   if (state_sampler_allocator)
-    space->setStateSamplerAllocator(state_sampler_allocator);
+    rss->setStateSamplerAllocator(state_sampler_allocator);
 
-  ompl::base::StateSpacePtr state_space_ptr(space);
+#ifndef OMPL_LESS_1_4_0
+  if (constraint)
+    state_space_ptr = std::make_shared<ompl::base::ProjectedStateSpace>(rss, constraint);
+  else
+    state_space_ptr = rss;
+#else
+  state_space_ptr = rss;
+#endif
+
   if (this->longest_valid_segment_fraction > 0 && this->longest_valid_segment_length > 0)
   {
     double val = std::min(this->longest_valid_segment_fraction,
@@ -122,7 +139,16 @@ bool OMPLPlannerFreespaceConfig<PlannerType...>::generate()
     this->longest_valid_segment_length = 0.01 * state_space_ptr->getMaximumExtent();
   }
   state_space_ptr->setLongestValidSegmentFraction(this->longest_valid_segment_fraction);
-  this->simple_setup = std::make_shared<ompl::geometric::SimpleSetup>(state_space_ptr);
+
+  if (constraint)
+  {
+    auto csi = std::make_shared<ompl::base::ConstrainedSpaceInformation>(state_space_ptr);
+    this->simple_setup = std::make_shared<ompl::geometric::SimpleSetup>(csi);
+  }
+  else
+  {
+    this->simple_setup = std::make_shared<ompl::geometric::SimpleSetup>(state_space_ptr);
+  }
 
   JointWaypoint::Ptr start_position;
   JointWaypoint::Ptr end_position;
@@ -249,6 +275,40 @@ ompl::base::StateSamplerPtr OMPLPlannerFreespaceConfig<PlannerType...>::allocWei
     const ompl::base::StateSpace* space) const
 {
   return std::make_shared<WeightedRealVectorStateSampler>(space, weights);
+}
+
+template <typename... PlannerType>
+tesseract_common::TrajArray OMPLPlannerFreespaceConfig<PlannerType...>::getTrajectory() const
+{
+  const auto& path = this->simple_setup->getSolutionPath();
+  const auto n_points = static_cast<long>(path.getStateCount());
+  const auto dof = static_cast<long>(path.getSpaceInformation()->getStateDimension());
+
+  tesseract_common::TrajArray result(n_points, dof);
+  for (long i = 0; i < n_points; ++i)
+  {
+#ifndef OMPL_LESS_1_4_0
+    if (constraint)
+    {
+      const Eigen::Map<Eigen::VectorXd>& x =
+          *path.getState(static_cast<unsigned>(i))->template as<ompl::base::ConstrainedStateSpace::StateType>();
+      result.row(i) = x;
+    }
+    else
+    {
+      const auto& s =
+          path.getState(static_cast<unsigned>(i))->template as<ompl::base::RealVectorStateSpace::StateType>();
+      for (long j = 0; j < dof; ++j)
+        result(i, j) = s->values[j];
+    }
+#else
+    const auto& s = path.getState(static_cast<unsigned>(i))->as<ompl::base::RealVectorStateSpace::StateType>();
+    for (long j = 0; j < dof; ++j)
+      result(i, j) = s->values[j];
+#endif
+  }
+
+  return result;
 }
 
 }  // namespace tesseract_motion_planners

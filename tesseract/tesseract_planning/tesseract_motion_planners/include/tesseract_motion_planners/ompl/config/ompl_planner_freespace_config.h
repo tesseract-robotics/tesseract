@@ -30,6 +30,11 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/OptimizationObjective.h>
 #include <ompl/base/objectives/PathLengthOptimizationObjective.h>
+
+#ifndef OMPL_LESS_1_4_0
+#include <ompl/base/Constraint.h>
+#endif
+
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/config/ompl_planner_config.h>
@@ -52,6 +57,8 @@ struct OMPLPlannerFreespaceConfig : public OMPLPlannerConfig<PlannerType...>
   OMPLPlannerFreespaceConfig(tesseract::Tesseract::ConstPtr tesseract_, std::string manipulator_);
   /** @brief Generates the OMPL problem and saves the result internally */
   bool generate() override;
+  /** @brief Convert this problems path to tesseract trajectory */
+  tesseract_common::TrajArray getTrajectory() const override;
 
   /**
    * @brief Determines the constraint placed at the start of the trajectory
@@ -89,6 +96,11 @@ struct OMPLPlannerFreespaceConfig : public OMPLPlannerConfig<PlannerType...>
    * ContinuousMotionValidator */
   ompl::base::MotionValidatorPtr mv;
 
+#ifndef OMPL_LESS_1_4_0
+  /** @brief The constraints on the problem */
+  ompl::base::ConstraintPtr constraint{ nullptr };
+#endif
+
   /**
    * @brief Default State sampler which uses the weights information to scale the sampled state. This is use full
    * when you state space has mixed units like meters and radian.
@@ -97,5 +109,6 @@ struct OMPLPlannerFreespaceConfig : public OMPLPlannerConfig<PlannerType...>
    */
   ompl::base::StateSamplerPtr allocWeightedRealVectorStateSampler(const ompl::base::StateSpace* space) const;
 };
+
 }  // namespace tesseract_motion_planners
 #endif  // TESSERACT_MOTION_PLANNERS_OMPL_PLANNER_FREESPACE_CONFIG_H
