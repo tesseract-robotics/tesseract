@@ -49,6 +49,7 @@ add_library(${PROJECT_NAME}_ompl SHARED
   src/ompl/discrete_motion_validator.cpp
   src/ompl/weighted_real_vector_state_sampler.cpp
   src/ompl/ompl_motion_planner_status_category.cpp
+  src/ompl/ompl_planner_configurator.cpp
   src/ompl/config/ompl_planner_config.cpp
   src/ompl/config/ompl_planner_freespace_config.cpp
 )

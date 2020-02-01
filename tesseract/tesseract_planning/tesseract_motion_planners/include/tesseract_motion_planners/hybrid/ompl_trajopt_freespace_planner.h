@@ -32,7 +32,6 @@
 
 namespace tesseract_motion_planners
 {
-template <typename PlannerType>
 class OMPLTrajOptFreespacePlanner : public MotionPlanner
 {
 public:
@@ -46,8 +45,7 @@ public:
    * @param config The planners configuration
    * @return True if successful otherwise false
    */
-  bool setConfiguration(typename OMPLPlannerConfig<PlannerType>::Ptr ompl_config,
-                        TrajOptPlannerFreespaceConfig::Ptr trajopt_config);
+  bool setConfiguration(OMPLPlannerConfig::Ptr ompl_config, TrajOptPlannerFreespaceConfig::Ptr trajopt_config);
 
   /**
    * @brief Sets up the opimizer and solves a SQP problem read from json with no callbacks and dafault parameterss
@@ -72,8 +70,8 @@ private:
   TrajOptPlannerFreespaceConfig::Ptr trajopt_config_;
   TrajOptMotionPlanner trajopt_planner_;
 
-  typename OMPLPlannerConfig<PlannerType>::Ptr ompl_config_;
-  OMPLMotionPlanner<PlannerType> ompl_planner_;
+  OMPLPlannerConfig::Ptr ompl_config_;
+  OMPLMotionPlanner ompl_planner_;
 
   std::shared_ptr<const tesseract_common::GeneralStatusCategory> status_category_;
 };
