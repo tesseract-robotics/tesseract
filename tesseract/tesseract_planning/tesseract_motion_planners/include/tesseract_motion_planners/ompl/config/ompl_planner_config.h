@@ -34,25 +34,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/objectives/PathLengthOptimizationObjective.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_motion_planners/ompl/ompl_settings.h>
+#include <tesseract_motion_planners/ompl/ompl_planner_configurator.h>
 #include <tesseract/tesseract.h>
 
 namespace tesseract_motion_planners
 {
-/**
- * @brief The OMPLPlannerConfig struct
- */
-
-template <typename PlannerType>
+/** @brief The OMPLPlannerConfig struct */
 struct OMPLPlannerConfig
 {
-  using Ptr = std::shared_ptr<OMPLPlannerConfig<PlannerType>>;
-  using ConstPtr = std::shared_ptr<const OMPLPlannerConfig<PlannerType>>;
-
-  explicit OMPLPlannerConfig(tesseract::Tesseract::ConstPtr tesseract_, std::string manipulator_);
+  using Ptr = std::shared_ptr<OMPLPlannerConfig>;
+  using ConstPtr = std::shared_ptr<const OMPLPlannerConfig>;
 
   explicit OMPLPlannerConfig(tesseract::Tesseract::ConstPtr tesseract_,
                              std::string manipulator_,
+                             std::vector<OMPLPlannerConfigurator::ConstPtr> planners);
+
+  explicit OMPLPlannerConfig(tesseract::Tesseract::ConstPtr tesseract_,
+                             std::string manipulator_,
+                             std::vector<OMPLPlannerConfigurator::ConstPtr> planners,
                              ompl::geometric::SimpleSetupPtr simple_setup);
 
   virtual ~OMPLPlannerConfig() = default;
@@ -71,8 +70,6 @@ struct OMPLPlannerConfig
   double planning_time = 5.0;
   /** @brief The max number of solutions. If max solutions are hit it will exit even if other threads are running. */
   int max_solutions = 10;
-  /** @brief The number of threads to use */
-  int num_threads = 1;
   /**
    * @brief Simplify trajectory.
    *
@@ -105,11 +102,15 @@ struct OMPLPlannerConfig
   /** @brief Tesseract object. ***REQUIRED*** */
   tesseract::Tesseract::ConstPtr tesseract;
 
-  /** @brief Manipulator used for pathplanning ***REQUIRED*** */
+  /** @brief Manipulator used for path planning ***REQUIRED*** */
   std::string manipulator;
 
-  /** @brief Planner settings */
-  OMPLSettings<PlannerType> settings;
+  /**
+   * @brief The planner configurators ***REQUIRED***
+   *
+   * This will create a new thead for each planner configurator provided. T
+   */
+  std::vector<OMPLPlannerConfigurator::ConstPtr> planners;
 
   /** @brief If true, collision checking will be enabled. Default: true*/
   bool collision_check = true;

@@ -33,7 +33,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/config/ompl_planner_config.h>
-#include <tesseract_motion_planners/ompl/ompl_settings.h>
 #include <tesseract_motion_planners/core/waypoint.h>
 
 namespace tesseract_motion_planners
@@ -41,15 +40,16 @@ namespace tesseract_motion_planners
 using OptimizationObjectiveAllocator =
     std::function<ompl::base::OptimizationObjectivePtr(const ompl::base::SpaceInformationPtr&)>;
 
-template <typename PlannerType>
-struct OMPLPlannerFreespaceConfig : public OMPLPlannerConfig<PlannerType>
+struct OMPLPlannerFreespaceConfig : public OMPLPlannerConfig
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  using Ptr = std::shared_ptr<OMPLPlannerFreespaceConfig<PlannerType>>;
-  using ConstPtr = std::shared_ptr<const OMPLPlannerFreespaceConfig<PlannerType>>;
+  using Ptr = std::shared_ptr<OMPLPlannerFreespaceConfig>;
+  using ConstPtr = std::shared_ptr<const OMPLPlannerFreespaceConfig>;
 
-  OMPLPlannerFreespaceConfig(tesseract::Tesseract::ConstPtr tesseract_, std::string manipulator_);
+  OMPLPlannerFreespaceConfig(tesseract::Tesseract::ConstPtr tesseract,
+                             std::string manipulator,
+                             std::vector<OMPLPlannerConfigurator::ConstPtr> planners);
   /** @brief Generates the OMPL problem and saves the result internally */
   bool generate() override;
 

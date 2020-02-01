@@ -1,6 +1,6 @@
 /**
  * @file ompl_planner_config.cpp
- * @brief Tesseract OMPL planner config
+ * @brief Tesseract OMPL planner config implementation.
  *
  * @author Levi Armstrong
  * @date January 22, 2020
@@ -24,40 +24,32 @@
  * limitations under the License.
  */
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ompl/geometric/planners/sbl/SBL.h>
-#include <ompl/geometric/planners/est/EST.h>
-#include <ompl/geometric/planners/kpiece/LBKPIECE1.h>
-#include <ompl/geometric/planners/kpiece/BKPIECE1.h>
-#include <ompl/geometric/planners/kpiece/KPIECE1.h>
-#include <ompl/geometric/planners/rrt/RRT.h>
-#include <ompl/geometric/planners/rrt/RRTConnect.h>
-#include <ompl/geometric/planners/rrt/RRTstar.h>
-#include <ompl/geometric/planners/rrt/TRRT.h>
-#include <ompl/geometric/planners/prm/PRM.h>
-#include <ompl/geometric/planners/prm/PRMstar.h>
-#include <ompl/geometric/planners/prm/LazyPRMstar.h>
-#include <ompl/geometric/planners/prm/SPARS.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
-#include <tesseract_motion_planners/ompl/impl/config/ompl_planner_config.hpp>
+#include <tesseract_motion_planners/ompl/config/ompl_planner_config.h>
+#include <tesseract/tesseract.h>
 
 namespace tesseract_motion_planners
 {
-// Explicit template instantiation
-template struct OMPLPlannerConfig<ompl::geometric::SBL>;
-template struct OMPLPlannerConfig<ompl::geometric::EST>;
-template struct OMPLPlannerConfig<ompl::geometric::LBKPIECE1>;
-template struct OMPLPlannerConfig<ompl::geometric::BKPIECE1>;
-template struct OMPLPlannerConfig<ompl::geometric::KPIECE1>;
-template struct OMPLPlannerConfig<ompl::geometric::RRT>;
-template struct OMPLPlannerConfig<ompl::geometric::RRTConnect>;
-template struct OMPLPlannerConfig<ompl::geometric::RRTstar>;
-template struct OMPLPlannerConfig<ompl::geometric::TRRT>;
-template struct OMPLPlannerConfig<ompl::geometric::PRM>;
-template struct OMPLPlannerConfig<ompl::geometric::PRMstar>;
-template struct OMPLPlannerConfig<ompl::geometric::LazyPRMstar>;
-template struct OMPLPlannerConfig<ompl::geometric::SPARS>;
+OMPLPlannerConfig::OMPLPlannerConfig(tesseract::Tesseract::ConstPtr tesseract,
+                                     std::string manipulator,
+                                     std::vector<OMPLPlannerConfigurator::ConstPtr> planners)
+  : tesseract(std::move(tesseract)), manipulator(std::move(manipulator)), planners(std::move(planners))
+{
+}
+
+OMPLPlannerConfig::OMPLPlannerConfig(tesseract::Tesseract::ConstPtr tesseract,
+                                     std::string manipulator,
+                                     std::vector<OMPLPlannerConfigurator::ConstPtr> planners,
+                                     ompl::geometric::SimpleSetupPtr simple_setup)
+  : simple_setup(std::move(simple_setup))
+  , tesseract(std::move(tesseract))
+  , manipulator(std::move(manipulator))
+  , planners(std::move(planners))
+{
+}
+
+bool OMPLPlannerConfig::generate()
+{
+  return ((simple_setup != nullptr) && (tesseract != nullptr) && (!manipulator.empty()) && (!planners.empty()));
+}
 
 }  // namespace tesseract_motion_planners
