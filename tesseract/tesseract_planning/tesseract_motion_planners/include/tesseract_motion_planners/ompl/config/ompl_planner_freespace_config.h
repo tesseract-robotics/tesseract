@@ -41,13 +41,13 @@ namespace tesseract_motion_planners
 using OptimizationObjectiveAllocator =
     std::function<ompl::base::OptimizationObjectivePtr(const ompl::base::SpaceInformationPtr&)>;
 
-template <typename PlannerType>
-struct OMPLPlannerFreespaceConfig : public OMPLPlannerConfig<PlannerType>
+template <typename... PlannerType>
+struct OMPLPlannerFreespaceConfig : public OMPLPlannerConfig<PlannerType...>
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  using Ptr = std::shared_ptr<OMPLPlannerFreespaceConfig<PlannerType>>;
-  using ConstPtr = std::shared_ptr<const OMPLPlannerFreespaceConfig<PlannerType>>;
+  using Ptr = std::shared_ptr<OMPLPlannerFreespaceConfig<PlannerType...>>;
+  using ConstPtr = std::shared_ptr<const OMPLPlannerFreespaceConfig<PlannerType...>>;
 
   OMPLPlannerFreespaceConfig(tesseract::Tesseract::ConstPtr tesseract_, std::string manipulator_);
   /** @brief Generates the OMPL problem and saves the result internally */

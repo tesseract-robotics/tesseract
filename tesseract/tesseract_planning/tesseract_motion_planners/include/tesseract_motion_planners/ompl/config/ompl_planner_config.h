@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/OptimizationObjective.h>
 #include <ompl/tools/multiplan/ParallelPlan.h>
 #include <ompl/base/objectives/PathLengthOptimizationObjective.h>
+#include <tuple>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/ompl_settings.h>
@@ -43,11 +44,11 @@ namespace tesseract_motion_planners
  * @brief The OMPLPlannerConfig struct
  */
 
-template <typename PlannerType>
+template <typename... PlannerType>
 struct OMPLPlannerConfig
 {
-  using Ptr = std::shared_ptr<OMPLPlannerConfig<PlannerType>>;
-  using ConstPtr = std::shared_ptr<const OMPLPlannerConfig<PlannerType>>;
+  using Ptr = std::shared_ptr<OMPLPlannerConfig<PlannerType...>>;
+  using ConstPtr = std::shared_ptr<const OMPLPlannerConfig<PlannerType...>>;
 
   explicit OMPLPlannerConfig(tesseract::Tesseract::ConstPtr tesseract_, std::string manipulator_);
 
@@ -109,7 +110,7 @@ struct OMPLPlannerConfig
   std::string manipulator;
 
   /** @brief Planner settings */
-  OMPLSettings<PlannerType> settings;
+  std::tuple<OMPLSettings<PlannerType>...> settings;
 
   /** @brief If true, collision checking will be enabled. Default: true*/
   bool collision_check = true;

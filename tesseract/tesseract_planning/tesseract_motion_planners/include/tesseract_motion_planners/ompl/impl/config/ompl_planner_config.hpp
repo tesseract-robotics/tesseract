@@ -31,22 +31,23 @@
 
 namespace tesseract_motion_planners
 {
-template <typename PlannerType>
-OMPLPlannerConfig<PlannerType>::OMPLPlannerConfig(tesseract::Tesseract::ConstPtr tesseract_, std::string manipulator_)
+template <typename... PlannerType>
+OMPLPlannerConfig<PlannerType...>::OMPLPlannerConfig(tesseract::Tesseract::ConstPtr tesseract_,
+                                                     std::string manipulator_)
   : tesseract(std::move(tesseract_)), manipulator(std::move(manipulator_))
 {
 }
 
-template <typename PlannerType>
-OMPLPlannerConfig<PlannerType>::OMPLPlannerConfig(tesseract::Tesseract::ConstPtr tesseract_,
-                                                  std::string manipulator_,
-                                                  ompl::geometric::SimpleSetupPtr simple_setup)
+template <typename... PlannerType>
+OMPLPlannerConfig<PlannerType...>::OMPLPlannerConfig(tesseract::Tesseract::ConstPtr tesseract_,
+                                                     std::string manipulator_,
+                                                     ompl::geometric::SimpleSetupPtr simple_setup)
   : simple_setup(std::move(simple_setup)), tesseract(std::move(tesseract_)), manipulator(std::move(manipulator_))
 {
 }
 
-template <typename PlannerType>
-bool OMPLPlannerConfig<PlannerType>::generate()
+template <typename... PlannerType>
+bool OMPLPlannerConfig<PlannerType...>::generate()
 {
   return ((simple_setup != nullptr) && (tesseract != nullptr) && (!manipulator.empty()));
 }

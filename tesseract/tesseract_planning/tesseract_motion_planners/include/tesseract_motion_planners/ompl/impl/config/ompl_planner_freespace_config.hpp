@@ -43,15 +43,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_motion_planners
 {
 /** @brief Construct a basic planner */
-template <typename PlannerType>
-OMPLPlannerFreespaceConfig<PlannerType>::OMPLPlannerFreespaceConfig(tesseract::Tesseract::ConstPtr tesseract_,
-                                                                    std::string manipulator_)
-  : OMPLPlannerConfig<PlannerType>(std::move(tesseract_), std::move(manipulator_))
+template <typename... PlannerType>
+OMPLPlannerFreespaceConfig<PlannerType...>::OMPLPlannerFreespaceConfig(tesseract::Tesseract::ConstPtr tesseract_,
+                                                                       std::string manipulator_)
+  : OMPLPlannerConfig<PlannerType...>(std::move(tesseract_), std::move(manipulator_))
 {
 }
 
-template <typename PlannerType>
-bool OMPLPlannerFreespaceConfig<PlannerType>::generate()
+template <typename... PlannerType>
+bool OMPLPlannerFreespaceConfig<PlannerType...>::generate()
 {
   // Check that parameters are valid
   if (this->tesseract == nullptr)
@@ -244,9 +244,9 @@ bool OMPLPlannerFreespaceConfig<PlannerType>::generate()
   return true;
 }
 
-template <typename PlannerType>
-ompl::base::StateSamplerPtr
-OMPLPlannerFreespaceConfig<PlannerType>::allocWeightedRealVectorStateSampler(const ompl::base::StateSpace* space) const
+template <typename... PlannerType>
+ompl::base::StateSamplerPtr OMPLPlannerFreespaceConfig<PlannerType...>::allocWeightedRealVectorStateSampler(
+    const ompl::base::StateSpace* space) const
 {
   return std::make_shared<WeightedRealVectorStateSampler>(space, weights);
 }

@@ -42,23 +42,23 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_motion_planners
 {
 /** @brief Construct a basic planner */
-template <typename PlannerType>
-OMPLMotionPlanner<PlannerType>::OMPLMotionPlanner(std::string name)
+template <typename... PlannerType>
+OMPLMotionPlanner<PlannerType...>::OMPLMotionPlanner(std::string name)
   : MotionPlanner(std::move(name))
   , config_(nullptr)
   , status_category_(std::make_shared<const OMPLMotionPlannerStatusCategory>(name_))
 {
 }
 
-template <typename PlannerType>
-bool OMPLMotionPlanner<PlannerType>::terminate()
+template <typename... PlannerType>
+bool OMPLMotionPlanner<PlannerType...>::terminate()
 {
   CONSOLE_BRIDGE_logWarn("Termination of ongoing optimization is not implemented yet");
   return false;
 }
 
-template <typename PlannerType>
-tesseract_common::StatusCode OMPLMotionPlanner<PlannerType>::solve(PlannerResponse& response, bool verbose)
+template <typename... PlannerType>
+tesseract_common::StatusCode OMPLMotionPlanner<PlannerType...>::solve(PlannerResponse& response, bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
@@ -183,8 +183,8 @@ tesseract_common::StatusCode OMPLMotionPlanner<PlannerType>::solve(PlannerRespon
   return response.status;
 }
 
-template <typename PlannerType>
-void OMPLMotionPlanner<PlannerType>::clear()
+template <typename... PlannerType>
+void OMPLMotionPlanner<PlannerType...>::clear()
 {
   request_ = PlannerRequest();
   config_ = nullptr;
@@ -193,8 +193,8 @@ void OMPLMotionPlanner<PlannerType>::clear()
   parallel_plan_ = nullptr;
 }
 
-template <typename PlannerType>
-tesseract_common::StatusCode OMPLMotionPlanner<PlannerType>::isConfigured() const
+template <typename... PlannerType>
+tesseract_common::StatusCode OMPLMotionPlanner<PlannerType...>::isConfigured() const
 {
   if (config_ == nullptr || kin_ == nullptr || continuous_contact_manager_ == nullptr || parallel_plan_ == nullptr)
     return tesseract_common::StatusCode(OMPLMotionPlannerStatusCategory::ErrorIsNotConfigured, status_category_);
@@ -202,8 +202,8 @@ tesseract_common::StatusCode OMPLMotionPlanner<PlannerType>::isConfigured() cons
   return tesseract_common::StatusCode(OMPLMotionPlannerStatusCategory::IsConfigured, status_category_);
 }
 
-template <typename PlannerType>
-bool OMPLMotionPlanner<PlannerType>::setConfiguration(typename OMPLPlannerConfig<PlannerType>::Ptr config)
+template <typename... PlannerType>
+bool OMPLMotionPlanner<PlannerType...>::setConfiguration(typename OMPLPlannerConfig<PlannerType...>::Ptr config)
 {
   // Reset state
   clear();
@@ -227,11 +227,16 @@ bool OMPLMotionPlanner<PlannerType>::setConfiguration(typename OMPLPlannerConfig
   continuous_contact_manager_->setContactDistanceThreshold(config_->collision_safety_margin);
 
   parallel_plan_ = std::make_shared<ompl::tools::ParallelPlan>(config_->simple_setup->getProblemDefinition());
-  for (auto i = 0; i < config_->num_threads; ++i)
+
+  auto seq = std::index_sequence_for<PlannerType...>{};
+  if (seq.size() == 1)
   {
-    std::shared_ptr<PlannerType> planner = std::make_shared<PlannerType>(config_->simple_setup->getSpaceInformation());
-    config_->settings.apply(*planner);
-    parallel_plan_->addPlanner(planner);
+    for (auto i = 0; i < config_->num_threads; ++i)
+      addPlanner(std::get<0>(planners_), std::get<0>(config_->settings));
+  }
+  else
+  {
+    addPlanners(seq);
   }
 
   return true;

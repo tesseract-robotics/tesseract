@@ -53,6 +53,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_motion_planners/ompl/ompl_motion_planner.h>
 #include <tesseract_motion_planners/ompl/config/ompl_planner_freespace_config.h>
+#include <tesseract_motion_planners/ompl/impl/config/ompl_planner_freespace_config.hpp>
+#include <tesseract_motion_planners/ompl/impl/ompl_motion_planner.hpp>
 
 using namespace tesseract;
 using namespace tesseract_scene_graph;
@@ -210,6 +212,94 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   this->ompl_planner.setConfiguration(
       std::static_pointer_cast<tesseract_motion_planners::OMPLPlannerConfig<TypeParam>>(ompl_config));
   status = this->ompl_planner.solve(ompl_planning_response);
+
+  EXPECT_FALSE(status);
+
+  // Reset start and end waypoints
+  swp = start_state;
+  ewp = end_state;
+  ompl_config->start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+  ompl_config->end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
+}
+
+TEST(OMPLMultiPlanner, OMPLMultiPlannerUnit)  // NOLINT
+{
+  EXPECT_EQ(ompl::RNG::getSeed(), SEED) << "Randomization seed does not match expected: " << ompl::RNG::getSeed()
+                                        << " vs. " << SEED;
+
+  // Step 1: Load scene and srdf
+  tesseract_scene_graph::ResourceLocator::Ptr locator =
+      std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
+  Tesseract::Ptr tesseract = std::make_shared<Tesseract>();
+  boost::filesystem::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
+  boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
+  EXPECT_TRUE(tesseract->init(urdf_path, srdf_path, locator));
+
+  // Step 2: Add box to environment
+  addBox(*(tesseract->getEnvironment()));
+
+  // Step 3: Create ompl planner config and populate it
+  auto kin = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
+  std::vector<double> swp = start_state;
+  std::vector<double> ewp = end_state;
+
+  tesseract_motion_planners::OMPLMotionPlanner<ompl::geometric::SBL, ompl::geometric::RRTConnect> ompl_planner;
+  auto ompl_config = std::make_shared<
+      tesseract_motion_planners::OMPLPlannerFreespaceConfig<ompl::geometric::SBL, ompl::geometric::RRTConnect>>(
+      tesseract, "manipulator");
+
+  ompl_config->start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+  ompl_config->end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
+  ompl_config->collision_safety_margin = 0.02;
+  ompl_config->planning_time = 5.0;
+  ompl_config->num_threads = 2;
+  ompl_config->max_solutions = 2;
+  ompl_config->longest_valid_segment_fraction = 0.01;
+
+  ompl_config->collision_continuous = true;
+  ompl_config->collision_check = true;
+  ompl_config->simplify = false;
+  ompl_config->n_output_states = 50;
+
+  // Set the planner configuration
+  ompl_planner.setConfiguration(
+      std::static_pointer_cast<
+          tesseract_motion_planners::OMPLPlannerConfig<ompl::geometric::SBL, ompl::geometric::RRTConnect>>(
+          ompl_config));
+
+  tesseract_motion_planners::PlannerResponse ompl_planning_response;
+  tesseract_common::StatusCode status = ompl_planner.solve(ompl_planning_response);
+
+  if (!status)
+  {
+    CONSOLE_BRIDGE_logError("CI Error: %s", status.message().c_str());
+  }
+  EXPECT_TRUE(status);
+  EXPECT_EQ(ompl_planning_response.joint_trajectory.trajectory.rows(), ompl_config->n_output_states);
+
+  // Check for start state in collision error
+  swp = { 0, 0.7, 0.0, 0, 0.0, 0, 0.0 };
+  ompl_config->start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+
+  ompl_planner.setConfiguration(
+      std::static_pointer_cast<
+          tesseract_motion_planners::OMPLPlannerConfig<ompl::geometric::SBL, ompl::geometric::RRTConnect>>(
+          ompl_config));
+  status = ompl_planner.solve(ompl_planning_response);
+
+  EXPECT_FALSE(status);
+
+  // Check for start state in collision error
+  swp = start_state;
+  ewp = { 0, 0.7, 0.0, 0, 0.0, 0, 0.0 };
+  ompl_config->start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
+  ompl_config->end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
+
+  ompl_planner.setConfiguration(
+      std::static_pointer_cast<
+          tesseract_motion_planners::OMPLPlannerConfig<ompl::geometric::SBL, ompl::geometric::RRTConnect>>(
+          ompl_config));
+  status = ompl_planner.solve(ompl_planning_response);
 
   EXPECT_FALSE(status);
 

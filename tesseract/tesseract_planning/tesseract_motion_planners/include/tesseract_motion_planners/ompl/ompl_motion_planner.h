@@ -29,6 +29,8 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/tools/multiplan/ParallelPlan.h>
+#include <utility>
+#include <type_traits>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/planner.h>
@@ -42,7 +44,7 @@ namespace tesseract_motion_planners
  * @brief This planner is intended to provide an easy to use interface to OMPL for freespace planning. It is made to
  * take a start and end point and automate the generation of the OMPL problem.
  */
-template <typename PlannerType>
+template <typename... PlannerType>
 class OMPLMotionPlanner : public MotionPlanner
 {
 public:
@@ -57,7 +59,7 @@ public:
    * @param config The planners configuration
    * @return True if successful otherwise false
    */
-  bool setConfiguration(typename OMPLPlannerConfig<PlannerType>::Ptr config);
+  bool setConfiguration(typename OMPLPlannerConfig<PlannerType...>::Ptr config);
 
   /**
    * @brief Sets up the OMPL problem then solves. It is intended to simplify setting up
@@ -90,7 +92,10 @@ public:
 
 protected:
   /** @brief The ompl planner planner */
-  typename OMPLPlannerConfig<PlannerType>::Ptr config_;
+  typename OMPLPlannerConfig<PlannerType...>::Ptr config_;
+
+  /** @brief The planners to use */
+  std::tuple<std::shared_ptr<PlannerType>...> planners_;
 
   /** @brief The planners status codes */
   std::shared_ptr<const OMPLMotionPlannerStatusCategory> status_category_;
@@ -103,6 +108,24 @@ protected:
 
   /** @brief The continuous contact manager */
   tesseract_collision::ContinuousContactManager::Ptr continuous_contact_manager_;
+
+  // https://codereview.stackexchange.com/questions/51407/stdtuple-foreach-implementation
+  template <typename Planner, typename Config>
+  void addPlanner(Planner&& p, Config&& c)
+  {
+    auto planner =
+        std::make_shared<std::remove_reference_t<decltype(*(p))>>(config_->simple_setup->getSpaceInformation());
+    c.apply(*planner);
+    parallel_plan_->addPlanner(planner);
+  }
+
+  template <std::size_t... Indices>
+  void addPlanners(std::index_sequence<Indices...>)
+  {
+    using swallow = int[];
+    (void)swallow{ 1,
+                   (addPlanner(std::get<Indices>(planners_), std::get<Indices>(config_->settings)), void(), int{})... };
+  }
 };
 
 }  // namespace tesseract_motion_planners
