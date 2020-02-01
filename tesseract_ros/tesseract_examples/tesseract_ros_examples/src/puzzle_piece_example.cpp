@@ -124,6 +124,7 @@ ProblemConstructionInfo PuzzlePieceExample::cppMethod()
   pci.basic_info.manip = "manipulator";
   pci.basic_info.start_fixed = false;
   pci.basic_info.use_time = false;
+  pci.basic_info.convex_solver = sco::ModelType::BPMPD;
 
   pci.opt_info.max_iter = 200;
   pci.opt_info.min_approx_improve = 1e-3;
