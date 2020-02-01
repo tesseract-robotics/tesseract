@@ -124,6 +124,7 @@ ProblemConstructionInfo PuzzlePieceAuxillaryAxesExample::cppMethod()
   pci.basic_info.manip = "manipulator_aux";
   pci.basic_info.start_fixed = false;
   pci.basic_info.use_time = false;
+  pci.basic_info.convex_solver = sco::ModelType::BPMPD;
 
   // Create Kinematic Object
   pci.kin = pci.getManipulator(pci.basic_info.manip);
