@@ -200,6 +200,12 @@ public:
   using ConstPtr = std::shared_ptr<const Joint>;
 
   Joint(std::string name) : name_(std::move(name)) { this->clear(); }
+  // Joints are non-copyable as their name must be unique
+  Joint(const Joint& other) = delete;
+  Joint& operator=(const Joint& other) = delete;
+
+  Joint(Joint&& other) = default;
+  Joint& operator=(Joint&& other) = default;
 
   const std::string& getName() const { return name_; }
 
@@ -256,21 +262,36 @@ public:
     this->type = JointType::UNKNOWN;
   }
 
-  /* Create a shallow copy of current joint, with prefix prepended to its name, child link name and parent link name.
-   * Shallow means that underlying properties, such as dynamics, limits... are shared with the original object.*/
-  Joint prefix(const std::string& prefix) const
+  /* Create a clone of current joint, with a new name. Child link name and parent link name are unchanged.
+   * All underlying properties, such as dynamics, limits... are copied as well.*/
+  Joint clone(const std::string& name) const
   {
-    Joint ret(prefix + this->getName());
+    Joint ret(name);
     ret.axis = this->axis;
-    ret.child_link_name = prefix + this->child_link_name;
-    ret.parent_link_name = prefix + this->parent_link_name;
+    ret.child_link_name = this->child_link_name;
+    ret.parent_link_name = this->parent_link_name;
     ret.parent_to_joint_origin_transform = this->parent_to_joint_origin_transform;
-    ret.dynamics = this->dynamics;
-    ret.limits = this->limits;
-    ret.safety = this->safety;
-    ret.calibration = this->calibration;
-    ret.mimic = this->mimic;
     ret.type = this->type;
+    if (this->dynamics)
+    {
+      ret.dynamics = std::make_shared<JointDynamics>(*(this->dynamics));
+    }
+    if (this->limits)
+    {
+      ret.limits = std::make_shared<JointLimits>(*(this->limits));
+    }
+    if (this->safety)
+    {
+      ret.safety = std::make_shared<JointSafety>(*(this->safety));
+    }
+    if (this->calibration)
+    {
+      ret.calibration = std::make_shared<JointCalibration>(*(this->calibration));
+    }
+    if (this->mimic)
+    {
+      ret.mimic = std::make_shared<JointMimic>(*(this->mimic));
+    }
     return ret;
   }
 
