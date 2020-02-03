@@ -61,3 +61,7 @@ class TesseractSupportResourceLocator(tesseract.ResourceLocator):
         resource = tesseract.BytesResource(url, resource_bytes)
 
         return resource
+
+
+if __name__ == "__main__":
+    test_environment()
