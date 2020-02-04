@@ -1287,13 +1287,13 @@ inline bool processMsg(tesseract_environment::Environment& env,
       {
         tesseract_scene_graph::Link link = tesseract_rosutils::fromMsg(command.add_link);
         tesseract_scene_graph::Joint joint = tesseract_rosutils::fromMsg(command.add_joint);
-        success &= env.addLink(link, joint);
+        success &= env.addLink(std::move(link), std::move(joint));
         break;
       }
       case tesseract_msgs::EnvironmentCommand::MOVE_LINK:
       {
         tesseract_scene_graph::Joint joint = tesseract_rosutils::fromMsg(command.move_link_joint);
-        success &= env.moveLink(joint);
+        success &= env.moveLink(std::move(joint));
         break;
       }
       case tesseract_msgs::EnvironmentCommand::MOVE_JOINT:
