@@ -75,8 +75,7 @@ void runAddandRemoveLinkTest(const tesseract_environment::Environment::Ptr& env)
   joint_1.child_link_name = "link_n2";
   joint_1.type = JointType::FIXED;
 
-  Link link_3 = std::move(link_1);
-  EXPECT_TRUE(env->addLink(std::move(link_3)));
+  EXPECT_TRUE(env->addLink(std::move(link_1)));
 
   std::vector<std::string> link_names = env->getLinkNames();
   std::vector<std::string> joint_names = env->getJointNames();
