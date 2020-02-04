@@ -54,7 +54,7 @@ public:
   //          const boost::filesystem::path& srdf_path,
   //          tesseract_scene_graph::ResourceLocator::Ptr locator);
 
-  //const tesseract_scene_graph::SRDFModel::ConstPtr& getSRDFModel() const;
+  const tesseract_scene_graph::SRDFModel::ConstPtr& getSRDFModel() const;
 
   const tesseract_environment::Environment::Ptr getEnvironment();
   const tesseract_environment::Environment::ConstPtr getEnvironmentConst() const;

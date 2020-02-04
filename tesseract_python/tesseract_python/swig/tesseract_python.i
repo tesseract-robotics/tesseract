@@ -69,6 +69,11 @@
 %include "eigen_types.i"
 
 %template(vector_string) std::vector<std::string>;
+%template(pair_string) std::pair<std::string, std::string>;
+%template(vector_pair_string) std::vector<std::pair<std::string, std::string> >;
+
+%template(vector_double) std::vector<double>;
+%template(map_string_vector_double) std::map<std::string, std::vector<double> >;
 
 %include "tesseract_common/types.i"
 %include "tesseract_common/status_code.i"
@@ -78,6 +83,7 @@
 %include "tesseract_geometry/geometry_loaders.i"
 %include "tesseract_scene_graph/graph.i"
 %include "tesseract_scene_graph/resource_locator.i"
+%include "tesseract_scene_graph/srdf_parser.i"
 %include "tesseract_kinematics/core/forward_kinematics.i"
 %include "tesseract_kinematics/core/forward_kinematics_factory.i"
 %include "tesseract_kinematics/core/inverse_kinematics.i"
