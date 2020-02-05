@@ -82,6 +82,7 @@ trajopt::TermInfo::Ptr createCollisionTermInfo(
     double collision_safety_margin,
     double collision_safety_margin_buffer,
     trajopt::CollisionEvaluatorType evaluator_type,
+    bool use_weighted_sum = false,
     double coeff = 20.0,
     tesseract_collision::ContactTestType contact_test_type = tesseract_collision::ContactTestType::ALL,
     double longest_valid_segment_length = 0.5,

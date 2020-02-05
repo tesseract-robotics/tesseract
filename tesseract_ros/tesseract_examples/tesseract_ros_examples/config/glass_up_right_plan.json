@@ -19,9 +19,10 @@
       "type" : "collision",
       "params" :
       {
-        "coeffs" : [20],
+        "coeffs" : [1],
         "dist_pen" : [0.025],
         "evaluator_type" : 2,
+        "use_weighted_sum" : true,
         "longest_valid_segment_length" : 0.1,
         "pairs" :
         [

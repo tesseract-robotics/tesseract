@@ -135,18 +135,30 @@ struct ContactResult
 using ContactResultVector = tesseract_common::AlignedVector<ContactResult>;
 using ContactResultMap = tesseract_common::AlignedMap<std::pair<std::string, std::string>, ContactResultVector>;
 
-inline std::size_t flattenResults(ContactResultMap&& m, ContactResultVector& v)
+inline std::size_t flattenMoveResults(ContactResultMap&& m, ContactResultVector& v)
 {
   v.clear();
-  size_t l = 0;
-  for (const auto& mv : m)
-    l += mv.second.size();
-
-  v.reserve(l);
+  v.reserve(m.size());
   for (const auto& mv : m)
     std::move(mv.second.begin(), mv.second.end(), std::back_inserter(v));
 
   return v.size();
+}
+
+inline std::size_t flattenCopyResults(const ContactResultMap& m, ContactResultVector& v)
+{
+  v.clear();
+  v.reserve(m.size());
+  for (const auto& mv : m)
+    std::copy(mv.second.begin(), mv.second.end(), std::back_inserter(v));
+
+  return v.size();
+}
+
+// Need to mark depricated
+inline std::size_t flattenResults(ContactResultMap&& m, ContactResultVector& v)
+{
+  return flattenMoveResults(std::move(m), v);
 }
 
 /// Contact test data and query results information
