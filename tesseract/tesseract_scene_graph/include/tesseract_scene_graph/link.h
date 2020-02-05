@@ -153,12 +153,14 @@ public:
   using ConstPtr = std::shared_ptr<const Link>;
 
   Link(std::string name) : name_(std::move(name)) { this->clear(); }
+  ~Link() = default;
   // Links are non-copyable as their name must be unique
   Link(const Link& other) = delete;
   Link& operator=(const Link& other) = delete;
 
   Link(Link&& other) = default;
-  Link& operator=(Link&& other) = default;
+  // Link has a const member so can't have assignment operator
+  Link& operator=(Link&& other) = delete;
 
   const std::string& getName() const { return name_; }
 

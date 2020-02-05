@@ -154,7 +154,7 @@ public:
    * @param link_ptr Shared pointer to the link to be added to the graph
    * @return Return False if a link with the same name allready exists, otherwise true
    */
-  bool addLink(Link::Ptr link);
+  bool addLink(Link::Ptr link_ptr);
 
   /**
    * @brief Get a link in the graph
@@ -217,7 +217,7 @@ public:
    * @return Return False if parent or child link does not exists and if joint name already exists in the graph,
    * otherwise true
    */
-  bool addJoint(Joint::Ptr joint);
+  bool addJoint(Joint::Ptr joint_ptr);
 
   /**
    * @brief Get a joint in the graph
