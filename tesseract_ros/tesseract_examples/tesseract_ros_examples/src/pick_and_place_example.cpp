@@ -132,7 +132,7 @@ bool PickAndPlaceExample::run()
   joint_box.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
   joint_box.parent_to_joint_origin_transform.translation() += Eigen::Vector3d(box_x, box_y, (box_side / 2.0) + OFFSET);
 
-  tesseract_->getEnvironment()->addLink(link_box, joint_box);
+  tesseract_->getEnvironment()->addLink(std::move(link_box), std::move(joint_box));
 
   if (rviz_)
   {
@@ -332,7 +332,7 @@ bool PickAndPlaceExample::run()
   joint_box2.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
   joint_box2.parent_to_joint_origin_transform.translation() += Eigen::Vector3d(0, 0, box_side / 2.0);
 
-  tesseract_->getEnvironment()->moveLink(joint_box2);
+  tesseract_->getEnvironment()->moveLink(std::move(joint_box2));
   tesseract_->getEnvironment()->addAllowedCollision(link_box.getName(), "iiwa_link_ee", "Never");
   tesseract_->getEnvironment()->addAllowedCollision(link_box.getName(), "iiwa_link_7", "Never");
   tesseract_->getEnvironment()->addAllowedCollision(link_box.getName(), "iiwa_link_6", "Never");
