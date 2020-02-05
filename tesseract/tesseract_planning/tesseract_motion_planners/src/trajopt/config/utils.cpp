@@ -218,6 +218,7 @@ trajopt::TermInfo::Ptr createCollisionTermInfo(int n_steps,
                                                double collision_safety_margin,
                                                double collision_safety_margin_buffer,
                                                trajopt::CollisionEvaluatorType evaluator_type,
+                                               bool use_weighted_sum,
                                                double coeff,
                                                tesseract_collision::ContactTestType contact_test_type,
                                                double longest_valid_segment_length,
@@ -228,6 +229,7 @@ trajopt::TermInfo::Ptr createCollisionTermInfo(int n_steps,
   collision->name = name;
   collision->term_type = is_constraint ? trajopt::TT_CNT : trajopt::TT_COST;
   collision->evaluator_type = evaluator_type;
+  collision->use_weighted_sum = use_weighted_sum;
   collision->first_step = 0;
   collision->last_step = n_steps - 1;
   collision->contact_test_type = contact_test_type;

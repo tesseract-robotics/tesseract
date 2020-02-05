@@ -125,12 +125,13 @@ TrajOptProb::Ptr GlassUpRightExample::cppMethod()
   collision->evaluator_type = trajopt::CollisionEvaluatorType::SINGLE_TIMESTEP;
   collision->first_step = 0;
   collision->last_step = pci.basic_info.n_steps - 1;
-  collision->info = createSafetyMarginDataVector(pci.basic_info.n_steps, 0.025, 20);
+  collision->info = createSafetyMarginDataVector(pci.basic_info.n_steps, 0.025, 1);
+  collision->use_weighted_sum = true;
   for (auto& info : collision->info)
   {
-    info->setPairSafetyMarginData("base_link", "link_5", 0.05, 10);
-    info->setPairSafetyMarginData("link_3", "link_5", 0.01, 10);
-    info->setPairSafetyMarginData("link_3", "link_6", 0.01, 10);
+    info->setPairSafetyMarginData("base_link", "link_5", 0.05, 1);
+    info->setPairSafetyMarginData("link_3", "link_5", 0.01, 1);
+    info->setPairSafetyMarginData("link_3", "link_6", 0.01, 1);
   }
   pci.cost_infos.push_back(collision);
 

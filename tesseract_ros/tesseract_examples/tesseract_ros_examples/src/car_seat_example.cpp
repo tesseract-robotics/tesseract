@@ -294,8 +294,10 @@ std::shared_ptr<ProblemConstructionInfo> CarSeatExample::cppMethod(const std::st
   collision->term_type = TT_CNT;
   collision->evaluator_type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
   collision->first_step = 0;
-  collision->last_step = pci->basic_info.n_steps - 2;
-  collision->info = createSafetyMarginDataVector(pci->basic_info.n_steps, 0.0001, 40);
+  collision->last_step = pci->basic_info.n_steps - 1;
+  collision->info = createSafetyMarginDataVector(pci->basic_info.n_steps, 0.0001, 1);
+  collision->use_weighted_sum = true;
+  collision->longest_valid_segment_length = 0.05;
   pci->cnt_infos.push_back(collision);
 
   // Create place pose constraint
