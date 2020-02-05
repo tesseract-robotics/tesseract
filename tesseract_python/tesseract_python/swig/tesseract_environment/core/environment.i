@@ -75,13 +75,8 @@ public:
 
   virtual EnvState::ConstPtr getCurrentState() const;
 
-  virtual bool addLink(tesseract_scene_graph::Link link);
-
-  virtual bool addLink(tesseract_scene_graph::Link link, tesseract_scene_graph::Joint joint);
 
    virtual bool removeLink(const std::string& name);
-
-  virtual bool moveLink(tesseract_scene_graph::Joint joint);
 
   virtual tesseract_scene_graph::Link::ConstPtr getLink(const std::string& name) const;
 
@@ -150,5 +145,28 @@ public:
   registerContinuousContactManager(const std::string& name,
                                    tesseract_collision::ContinuousContactManagerFactory::CreateMethod create_function);
 
+  %extend
+  {
+    // Links and joints are move-only, so the wrappers need to clone them!
+    bool addLink(tesseract_scene_graph::Link::ConstPtr link)
+    {
+      auto new_link = link->clone(link->getName());
+      return $self->addLink(std::move(new_link));
+    }
+
+    bool addLink(tesseract_scene_graph::Link::ConstPtr link,
+                 tesseract_scene_graph::Joint::ConstPtr joint)
+    {
+      auto new_joint = joint->clone(joint->getName());
+      auto new_link = link->clone(link->getName());
+      return $self->addLink(std::move(new_link), std::move(new_joint));
+    }
+
+    bool moveLink(tesseract_scene_graph::Joint::ConstPtr joint)
+    {
+      auto new_joint = joint->clone(joint->getName());
+      return $self->moveLink(std::move(new_joint));
+    }
+  }
 };
 }  // namespace tesseract_environment

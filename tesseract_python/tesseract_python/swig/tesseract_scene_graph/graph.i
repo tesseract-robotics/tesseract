@@ -59,7 +59,7 @@ bool setRoot(const std::string& name);
 
 const std::string& getRoot() const;
 
-bool addLink(Link link);
+bool addLink(Link::Ptr link);
 
 Link::ConstPtr getLink(const std::string& name) const;
 
@@ -75,7 +75,7 @@ void setLinkCollisionEnabled(const std::string& name, bool enabled);
 
 bool getLinkCollisionEnabled(const std::string& name) const;
 
-bool addJoint(Joint joint);
+bool addJoint(Joint::Ptr joint);
 
 Joint::ConstPtr getJoint(const std::string& name) const;
 
