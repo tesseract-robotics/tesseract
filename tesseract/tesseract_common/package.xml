@@ -7,6 +7,9 @@
   <license>Apache 2.0</license>
   <author>Levi Armstrong</author>
 
+  <build_depend>eigen</build_depend>
+  <build_export_depend>eigen</build_export_depend>
+
   <test_depend>gtest</test_depend>
 
   <export>

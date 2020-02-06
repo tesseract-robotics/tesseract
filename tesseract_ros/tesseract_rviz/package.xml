@@ -8,15 +8,19 @@
   <author >Levi Armstrong</author>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>roscpp</depend>
-  <depend>rviz</depend>
-  <depend>message_generation</depend>
-  <depend>pluginlib</depend>
-  <depend>interactive_markers</depend>
+
   <depend>tesseract_msgs</depend>
   <depend>tesseract</depend>
   <depend>tesseract_rosutils</depend>
   <depend>tesseract_common</depend>
+
+  <build_depend>eigen</build_depend>
+  <build_export_depend>eigen</build_export_depend>
+  <depend>interactive_markers</depend>
+  <depend>message_generation</depend>
+  <depend>pluginlib</depend>
+  <depend>roscpp</depend>
+  <depend>rviz</depend>
 
   <export>
     <rviz plugin="${prefix}/tesseract_rviz_state_plugin_description.xml"/>
