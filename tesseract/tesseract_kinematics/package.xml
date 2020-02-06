@@ -7,11 +7,14 @@
   <license>Apache 2.0</license>
   <author >Levi Armstrong</author>
 
-  <depend>tesseract_scene_graph</depend>
   <depend>tesseract_common</depend>
+  <depend>tesseract_scene_graph</depend>
+
+  <build_depend>eigen</build_depend>
+  <build_export_depend>eigen</build_export_depend>
   <depend>libconsole-bridge-dev</depend>
-  <depend>orocos_kdl</depend>
   <depend>opw_kinematics</depend>
+  <depend>orocos_kdl</depend>
 
   <test_depend>gtest</test_depend>
   <test_depend>tesseract_support</test_depend>

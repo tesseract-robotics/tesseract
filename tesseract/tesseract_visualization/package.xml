@@ -10,6 +10,9 @@
   <depend>tesseract_collision</depend>
   <depend>tesseract_common</depend>
 
+  <build_depend>eigen</build_depend>
+  <build_export_depend>eigen</build_export_depend>
+
   <export>
     <build_type>cmake</build_type>
   </export>

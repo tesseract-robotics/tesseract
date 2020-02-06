@@ -9,7 +9,10 @@
 
   <depend>tesseract_geometry</depend>
   <depend>tesseract_common</depend>
+
   <depend>bullet3</depend>
+  <build_depend>eigen</build_depend>
+  <build_export_depend>eigen</build_export_depend>
   <depend>fcl</depend>
   <depend>libconsole-bridge-dev</depend>
 
