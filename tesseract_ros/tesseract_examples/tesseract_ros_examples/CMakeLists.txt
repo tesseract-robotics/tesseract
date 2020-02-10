@@ -4,6 +4,7 @@ project(tesseract_ros_examples)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   roslib
+  tesseract_monitoring
   tesseract_rosutils
   octomap_ros
   pcl_conversions
@@ -152,6 +153,26 @@ target_include_directories(${PROJECT_NAME}_pick_and_place_example_node PRIVATE
 target_include_directories(${PROJECT_NAME}_pick_and_place_example_node SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})
 
+add_library(${PROJECT_NAME}_scene_graph_example src/scene_graph_example.cpp)
+target_link_libraries(${PROJECT_NAME}_scene_graph_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
+tesseract_target_compile_options(${PROJECT_NAME}_scene_graph_example PUBLIC)
+tesseract_clang_tidy(${PROJECT_NAME}_scene_graph_example)
+target_include_directories(${PROJECT_NAME}_scene_graph_example PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_scene_graph_example SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS})
+
+add_executable(${PROJECT_NAME}_scene_graph_example_node src/scene_graph_example_node.cpp)
+target_link_libraries(${PROJECT_NAME}_scene_graph_example_node ${PROJECT_NAME}_scene_graph_example ${catkin_LIBRARIES})
+tesseract_target_compile_options(${PROJECT_NAME}_scene_graph_example_node PRIVATE)
+tesseract_clang_tidy(${PROJECT_NAME}_scene_graph_example_node)
+target_include_directories(${PROJECT_NAME}_scene_graph_example_node PRIVATE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_scene_graph_example_node SYSTEM PRIVATE
+    ${catkin_INCLUDE_DIRS})
+
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
@@ -174,6 +195,8 @@ install(
     ${PROJECT_NAME}_pick_and_place_example_node
     ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example
     ${PROJECT_NAME}_puzzle_piece_auxillary_axes_example_node
+    ${PROJECT_NAME}_scene_graph_example
+    ${PROJECT_NAME}_scene_graph_example_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -252,6 +275,16 @@ if(CATKIN_ENABLE_TESTING)
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
         "$<INSTALL_INTERFACE:include>")
     target_include_directories(${PROJECT_NAME}_pick_and_place_example_unit SYSTEM PRIVATE
+        ${catkin_INCLUDE_DIRS})
+
+    add_rostest_gtest(${PROJECT_NAME}_scene_graph_example_unit test/scene_graph_example_unit.test test/scene_graph_example_unit.cpp)
+    target_link_libraries(${PROJECT_NAME}_scene_graph_example_unit GTest::GTest GTest::Main ${PROJECT_NAME}_scene_graph_example ${catkin_LIBRARIES})
+    tesseract_target_compile_options(${PROJECT_NAME}_scene_graph_example_unit PRIVATE)
+    tesseract_clang_tidy(${PROJECT_NAME}_scene_graph_example_unit)
+    target_include_directories(${PROJECT_NAME}_scene_graph_example_unit PRIVATE
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:include>")
+    target_include_directories(${PROJECT_NAME}_scene_graph_example_unit SYSTEM PRIVATE
         ${catkin_INCLUDE_DIRS})
 endif()
 
