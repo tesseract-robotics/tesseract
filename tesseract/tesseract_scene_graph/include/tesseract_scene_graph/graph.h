@@ -147,16 +147,6 @@ public:
   bool addLink(Link link);
 
   /**
-   * @brief Adds a link to the graph
-   *
-   * The first link added to the graph is set as the root by default. Use setRoot to change the root link of the graph.
-   *
-   * @param link_ptr Shared pointer to the link to be added to the graph
-   * @return Return False if a link with the same name allready exists, otherwise true
-   */
-  bool addLink(Link::Ptr link_ptr);
-
-  /**
    * @brief Get a link in the graph
    * @param name The name of the link
    * @return Return nullptr if link name does not exists, otherwise a pointer to the link
@@ -210,14 +200,6 @@ public:
    * otherwise true
    */
   bool addJoint(Joint joint);
-
-  /**
-   * @brief Adds joint to the graph
-   * @param joint_ptr Shared pointer to the joint to be added
-   * @return Return False if parent or child link does not exists and if joint name already exists in the graph,
-   * otherwise true
-   */
-  bool addJoint(Joint::Ptr joint_ptr);
 
   /**
    * @brief Get a joint in the graph
@@ -396,6 +378,25 @@ public:
    * @return Graph Edge
    */
   Edge getEdge(const std::string& name) const;
+
+protected:
+  /**
+   * @brief Adds a link to the graph
+   *
+   * The first link added to the graph is set as the root by default. Use setRoot to change the root link of the graph.
+   *
+   * @param link_ptr Shared pointer to the link to be added to the graph
+   * @return Return False if a link with the same name allready exists, otherwise true
+   */
+  bool addLink(Link::Ptr link_ptr);
+
+  /**
+   * @brief Adds joint to the graph
+   * @param joint_ptr Shared pointer to the joint to be added
+   * @return Return False if parent or child link does not exists and if joint name already exists in the graph,
+   * otherwise true
+   */
+  bool addJoint(Joint::Ptr joint_ptr);
 
 private:
   std::unordered_map<std::string, std::pair<Link::Ptr, Vertex>> link_map_;
