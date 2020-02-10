@@ -24,43 +24,21 @@ public:
            const ProcessDefinitionConfig& config) const override
   {
     assert(waypoints.back()->getType() == tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT);
-    const tesseract_motion_planners::CartesianWaypoint::Ptr& cur_waypoint =
-        std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(waypoints.back());
-
-    Eigen::Isometry3d alt_departure = departure_;
-    // Ensure that negative x/y 'double back' and positive x/y move in the direction of the path
-    if (waypoints.size() >= 2)
-    {
-      assert(waypoints[waypoints.end() - 2].getType() == tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT);
-      const tesseract_motion_planners::CartesianWaypoint::Ptr& prev_waypoint =
-          std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(*(waypoints.end() - 2));
-      Eigen::Isometry3d penultimate_in_final = cur_waypoint->getTransform().inverse() * prev_waypoint->getTransform();
-
-      // If the final waypoint x-axis is pointing 'towards' the previous waypoint,
-      // reverse the requested x-translation.  Likewise for y.
-
-      if (penultimate_in_final.translation().x() > 0)
-      {
-        alt_departure.translation().x() *= -1;
-      }
-      if (penultimate_in_final.translation().y() > 0)
-      {
-        alt_departure.translation().y() *= -1;
-      }
-    }
 
     std::vector<tesseract_motion_planners::Waypoint::Ptr> departure;
     departure.reserve(static_cast<size_t>(step_count_) + 1);
 
+    const tesseract_motion_planners::CartesianWaypoint::Ptr& cur_waypoint =
+        std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(waypoints.back());
     for (int i = 0; i < step_count_; i++)
     {
-      Eigen::Isometry3d scaled = alt_departure;
+      Eigen::Isometry3d scaled = departure_;
 
       // Interpolate the transform
       double progress = static_cast<double>(i + 1) / static_cast<double>(step_count_);
-      scaled.translation() = progress * alt_departure.translation();
+      scaled.translation() = progress * departure_.translation();
       scaled.linear() = Eigen::Quaterniond(1.0, 0.0, 0.0, 0.0)
-                            .slerp(progress, Eigen::Quaterniond(alt_departure.rotation()))
+                            .slerp(progress, Eigen::Quaterniond(departure_.rotation()))
                             .toRotationMatrix();
 
       tesseract_motion_planners::CartesianWaypoint::Ptr new_waypoint =
