@@ -206,8 +206,7 @@ public:
   Joint& operator=(const Joint& other) = delete;
 
   Joint(Joint&& other) = default;
-  // Joint has a const-member, so no move assignment operator
-  Joint& operator=(Joint&& other) = delete;
+  Joint& operator=(Joint&& other) = default;
 
   const std::string& getName() const { return name_; }
 
@@ -298,7 +297,7 @@ public:
   }
 
 private:
-  const std::string name_;
+  std::string name_;
 };
 
 inline std::ostream& operator<<(std::ostream& os, const JointType& type)

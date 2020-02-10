@@ -159,8 +159,7 @@ public:
   Link& operator=(const Link& other) = delete;
 
   Link(Link&& other) = default;
-  // Link has a const member so can't have assignment operator
-  Link& operator=(Link&& other) = delete;
+  Link& operator=(Link&& other) = default;
 
   const std::string& getName() const { return name_; }
 
@@ -200,7 +199,7 @@ public:
   }
 
 private:
-  const std::string name_;
+  std::string name_;
 };
 
 }  // namespace tesseract_scene_graph
