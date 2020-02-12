@@ -113,7 +113,8 @@ bool PickAndPlaceExample::run()
   tesseract_->getEnvironment()->setState(joint_states);
 
   // Add simulated box to environment
-  Link link_box("box");
+  const std::string link_box_name = "box";
+  Link link_box(link_box_name);
 
   Visual::Ptr visual = std::make_shared<Visual>();
   visual->origin = Eigen::Isometry3d::Identity();
@@ -127,12 +128,12 @@ bool PickAndPlaceExample::run()
 
   Joint joint_box("joint_box");
   joint_box.parent_link_name = box_parent_link;
-  joint_box.child_link_name = link_box.getName();
+  joint_box.child_link_name = link_box_name;
   joint_box.type = JointType::FIXED;
   joint_box.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
   joint_box.parent_to_joint_origin_transform.translation() += Eigen::Vector3d(box_x, box_y, (box_side / 2.0) + OFFSET);
 
-  tesseract_->getEnvironment()->addLink(link_box, joint_box);
+  tesseract_->getEnvironment()->addLink(std::move(link_box), std::move(joint_box));
 
   if (rviz_)
   {
@@ -327,16 +328,16 @@ bool PickAndPlaceExample::run()
   // Detach the simulated box from the world and attach to the end effector
   Joint joint_box2("joint_box2");
   joint_box2.parent_link_name = end_effector;
-  joint_box2.child_link_name = link_box.getName();
+  joint_box2.child_link_name = link_box_name;
   joint_box2.type = JointType::FIXED;
   joint_box2.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
   joint_box2.parent_to_joint_origin_transform.translation() += Eigen::Vector3d(0, 0, box_side / 2.0);
 
-  tesseract_->getEnvironment()->moveLink(joint_box2);
-  tesseract_->getEnvironment()->addAllowedCollision(link_box.getName(), "iiwa_link_ee", "Never");
-  tesseract_->getEnvironment()->addAllowedCollision(link_box.getName(), "iiwa_link_7", "Never");
-  tesseract_->getEnvironment()->addAllowedCollision(link_box.getName(), "iiwa_link_6", "Never");
-  tesseract_->getEnvironment()->addAllowedCollision(link_box.getName(), end_effector, "Adjacent");
+  tesseract_->getEnvironment()->moveLink(std::move(joint_box2));
+  tesseract_->getEnvironment()->addAllowedCollision(link_box_name, "iiwa_link_ee", "Never");
+  tesseract_->getEnvironment()->addAllowedCollision(link_box_name, "iiwa_link_7", "Never");
+  tesseract_->getEnvironment()->addAllowedCollision(link_box_name, "iiwa_link_6", "Never");
+  tesseract_->getEnvironment()->addAllowedCollision(link_box_name, end_effector, "Adjacent");
 
   if (rviz_)
   {

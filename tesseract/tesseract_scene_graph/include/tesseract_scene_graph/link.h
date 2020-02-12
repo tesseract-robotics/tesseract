@@ -153,6 +153,13 @@ public:
   using ConstPtr = std::shared_ptr<const Link>;
 
   Link(std::string name) : name_(std::move(name)) { this->clear(); }
+  ~Link() = default;
+  // Links are non-copyable as their name must be unique
+  Link(const Link& other) = delete;
+  Link& operator=(const Link& other) = delete;
+
+  Link(Link&& other) = default;
+  Link& operator=(Link&& other) = default;
 
   const std::string& getName() const { return name_; }
 
@@ -172,8 +179,27 @@ public:
     this->visual.clear();
   }
 
+  /** Perform a copy of link, changing its name **/
+  Link clone(const std::string& name) const
+  {
+    Link ret(name);
+    if (this->inertial)
+    {
+      ret.inertial = std::make_shared<Inertial>(*(this->inertial));
+    }
+    for (const auto& c : this->collision)
+    {
+      ret.collision.push_back(std::make_shared<Collision>(*c));
+    }
+    for (const auto& v : this->visual)
+    {
+      ret.visual.push_back(std::make_shared<Visual>(*v));
+    }
+    return ret;
+  }
+
 private:
-  const std::string name_;
+  std::string name_;
 };
 
 }  // namespace tesseract_scene_graph

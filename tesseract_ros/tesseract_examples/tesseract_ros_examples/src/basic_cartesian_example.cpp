@@ -118,7 +118,7 @@ bool BasicCartesianExample::addPointCloud()
   joint_octomap.child_link_name = link_octomap.getName();
   joint_octomap.type = JointType::FIXED;
 
-  return tesseract_->getEnvironment()->addLink(link_octomap, joint_octomap);
+  return tesseract_->getEnvironment()->addLink(std::move(link_octomap), std::move(joint_octomap));
 }
 
 TrajOptProb::Ptr BasicCartesianExample::cppMethod()

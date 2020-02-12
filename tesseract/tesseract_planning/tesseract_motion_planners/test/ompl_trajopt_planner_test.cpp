@@ -116,7 +116,7 @@ static void addBox(tesseract_environment::Environment& env)
   joint_1.child_link_name = link_1.getName();
   joint_1.type = JointType::FIXED;
 
-  env.addLink(link_1, joint_1);
+  env.addLink(std::move(link_1), std::move(joint_1));
 }
 
 template <typename PlannerType>

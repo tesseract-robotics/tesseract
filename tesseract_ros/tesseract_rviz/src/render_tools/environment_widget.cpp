@@ -281,7 +281,7 @@ bool EnvironmentWidget::applyEnvironmentCommands(const std::vector<tesseract_msg
         if (!visualization_->addLink(link) || !visualization_->addJoint(joint))
           return false;
 
-        if (!tesseract_->getEnvironment()->addLink(link, joint))
+        if (!tesseract_->getEnvironment()->addLink(std::move(link), std::move(joint)))
           return false;
 
         break;
@@ -297,7 +297,7 @@ bool EnvironmentWidget::applyEnvironmentCommands(const std::vector<tesseract_msg
         if (!visualization_->removeJoint(joints[0]->getName()) || !visualization_->addJoint(joint))
           return false;
 
-        if (!tesseract_->getEnvironment()->moveLink(joint))
+        if (!tesseract_->getEnvironment()->moveLink(std::move(joint)))
           return false;
 
         break;

@@ -28,6 +28,10 @@
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_collision/core/common.h>
 
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <queue>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 namespace tesseract_environment
 {
 void Environment::setState(const std::unordered_map<std::string, double>& joints)
@@ -76,7 +80,7 @@ EnvState::Ptr Environment::getState(const std::vector<std::string>& joint_names,
   return state;
 }
 
-bool Environment::addLink(const tesseract_scene_graph::Link& link)
+bool Environment::addLink(tesseract_scene_graph::Link link)
 {
   std::string joint_name = "joint_" + link.getName();
   tesseract_scene_graph::Joint joint(joint_name);
@@ -84,10 +88,10 @@ bool Environment::addLink(const tesseract_scene_graph::Link& link)
   joint.child_link_name = link.getName();
   joint.parent_link_name = getRootLinkName();
 
-  return addLink(link, joint);
+  return addLink(std::move(link), std::move(joint));
 }
 
-bool Environment::addLink(const tesseract_scene_graph::Link& link, const tesseract_scene_graph::Joint& joint)
+bool Environment::addLink(tesseract_scene_graph::Link link, tesseract_scene_graph::Joint joint)
 {
   std::lock_guard<std::mutex> lock(mutex_);
   if (scene_graph_->getLink(link.getName()) != nullptr)
@@ -102,27 +106,32 @@ bool Environment::addLink(const tesseract_scene_graph::Link& link, const tessera
     return false;
   }
 
-  if (!scene_graph_->addLink(link))
+  std::string link_name = link.getName();
+  std::string joint_name = joint.getName();
+
+  if (!scene_graph_->addLink(std::move(link)))
     return false;
 
-  if (!scene_graph_->addJoint(joint))
+  if (!scene_graph_->addJoint(std::move(joint)))
     return false;
 
-  if (!link.collision.empty())
+  // We have moved the original objects, get a pointer to them from scene_graph
+  auto link_ptr = scene_graph_->getLink(link_name);
+  auto joint_ptr = scene_graph_->getJoint(joint_name);
+  if (!link_ptr->collision.empty())
   {
     tesseract_collision::CollisionShapesConst shapes;
     tesseract_common::VectorIsometry3d shape_poses;
-    getCollisionObject(shapes, shape_poses, link);
+    getCollisionObject(shapes, shape_poses, *link_ptr);
 
     if (discrete_manager_ != nullptr)
-      discrete_manager_->addCollisionObject(link.getName(), 0, shapes, shape_poses, true);
+      discrete_manager_->addCollisionObject(link_name, 0, shapes, shape_poses, true);
     if (continuous_manager_ != nullptr)
-      continuous_manager_->addCollisionObject(link.getName(), 0, shapes, shape_poses, true);
+      continuous_manager_->addCollisionObject(link_name, 0, shapes, shape_poses, true);
   }
 
   ++revision_;
-  commands_.push_back(
-      std::make_shared<AddCommand>(scene_graph_->getLink(link.getName()), scene_graph_->getJoint(joint.getName())));
+  commands_.push_back(std::make_shared<AddCommand>(link_ptr, joint_ptr));
 
   environmentChanged();
 
@@ -151,11 +160,12 @@ bool Environment::moveLink(tesseract_scene_graph::Joint joint)
   if (!scene_graph_->removeJoint(joints[0]->getName()))
     return false;
 
-  if (!scene_graph_->addJoint(joint))
+  std::string joint_name = joint.getName();
+  if (!scene_graph_->addJoint(std::move(joint)))
     return false;
 
   ++revision_;
-  commands_.push_back(std::make_shared<MoveLinkCommand>(scene_graph_->getJoint(joint.getName())));
+  commands_.push_back(std::make_shared<MoveLinkCommand>(scene_graph_->getJoint(joint_name)));
 
   environmentChanged();
 
@@ -592,4 +602,77 @@ bool Environment::removeLinkHelper(const std::string& name)
   return true;
 }
 
+/** addSceneGraph needs a couple helpers to handle prefixing, we hide them in an anonymous namespace here **/
+namespace
+{
+tesseract_scene_graph::Link clone_prefix(tesseract_scene_graph::Link::ConstPtr link, const std::string& prefix)
+{
+  return link->clone(prefix + link->getName());
+}
+tesseract_scene_graph::Joint clone_prefix(tesseract_scene_graph::Joint::ConstPtr joint, const std::string& prefix)
+{
+  auto ret = joint->clone(prefix + joint->getName());
+  ret.child_link_name = prefix + joint->child_link_name;
+  ret.parent_link_name = prefix + joint->parent_link_name;
+  return ret;
+}
+}  // namespace
+
+bool Environment::addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& prefix)
+{
+  // Connect root of subgraph to graph
+  tesseract_scene_graph::Joint::Ptr root_joint =
+      std::make_shared<tesseract_scene_graph::Joint>(scene_graph.getName() + "_joint");
+  root_joint->type = tesseract_scene_graph::JointType::FIXED;
+  root_joint->parent_link_name = getRootLinkName();
+  root_joint->child_link_name = scene_graph.getRoot();
+  root_joint->parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
+
+  return addSceneGraph(scene_graph, root_joint, prefix);
+}
+
+bool Environment::addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
+                                tesseract_scene_graph::Joint::ConstPtr root_joint,
+                                const std::string& prefix)
+{
+  auto link = scene_graph.getLink(scene_graph.getRoot());
+  if (!link)
+  {
+    return true;
+  }
+  auto new_link = clone_prefix(link, prefix);
+  auto new_joint = clone_prefix(root_joint, prefix);
+  // Preserve reference to common ancestor
+  new_joint.parent_link_name = root_joint->parent_link_name;
+
+  bool res = addLink(std::move(new_link), std::move(new_joint));
+  if (!res)
+  {
+    CONSOLE_BRIDGE_logError("Could not add the root joint");
+    return false;
+  }
+
+  std::queue<std::string> work_links;
+  work_links.push(link->getName());
+  while (!work_links.empty())
+  {
+    auto joints = scene_graph.getOutboundJoints(work_links.front());
+    work_links.pop();
+    for (const auto& joint : joints)
+    {
+      auto new_joint = clone_prefix(joint, prefix);
+      link = scene_graph.getLink(joint->child_link_name);
+      auto new_link = clone_prefix(link, prefix);
+      res = addLink(std::move(new_link), std::move(new_joint));
+      if (!res)
+      {
+        CONSOLE_BRIDGE_logError("Could not add link (%s) with prefix (%s)", link->getName().c_str(), prefix.c_str());
+        return false;
+      }
+      work_links.push(link->getName());
+    }
+  }
+  environmentChanged();
+  return res;
+}
 }  // namespace tesseract_environment

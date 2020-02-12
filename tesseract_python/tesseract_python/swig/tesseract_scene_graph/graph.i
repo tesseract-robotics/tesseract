@@ -59,7 +59,6 @@ bool setRoot(const std::string& name);
 
 const std::string& getRoot() const;
 
-bool addLink(Link link);
 
 Link::ConstPtr getLink(const std::string& name) const;
 
@@ -74,8 +73,6 @@ bool getLinkVisibility(const std::string& name) const;
 void setLinkCollisionEnabled(const std::string& name, bool enabled);
 
 bool getLinkCollisionEnabled(const std::string& name) const;
-
-bool addJoint(Joint joint);
 
 Joint::ConstPtr getJoint(const std::string& name) const;
 
@@ -125,6 +122,21 @@ void saveDOT(const std::string& path) const;
 // Path getShortestPath(const std::string& root, const std::string& tip);
 // Vertex getVertex(const std::string& name) const;
 // Edge getEdge(const std::string& name) const;
+
+%extend {
+  bool addLink(Link::ConstPtr link)
+  {
+    auto new_link = link->clone(link->getName());
+    return $self->addLink(std::move(new_link));
+  }
+
+  bool addJoint(Joint::ConstPtr joint)
+  {
+    auto new_joint = joint->clone(joint->getName());
+    return $self->addJoint(std::move(new_joint));
+  }
+}
+
 };
 
 } // namespace tesseract_scene_graph

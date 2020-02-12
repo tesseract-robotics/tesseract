@@ -67,6 +67,11 @@ const std::string& SceneGraph::getRoot() const
 bool SceneGraph::addLink(Link link)
 {
   auto link_ptr = std::make_shared<tesseract_scene_graph::Link>(std::move(link));
+  return addLink(link_ptr);
+}
+
+bool SceneGraph::addLink(Link::Ptr link_ptr)
+{
   auto found = link_map_.find(link_ptr->getName());
   if (found != link_map_.end())
     return false;
@@ -165,6 +170,11 @@ bool SceneGraph::getLinkCollisionEnabled(const std::string& name) const
 bool SceneGraph::addJoint(tesseract_scene_graph::Joint joint)
 {
   auto joint_ptr = std::make_shared<tesseract_scene_graph::Joint>(std::move(joint));
+  return addJoint(joint_ptr);
+}
+
+bool SceneGraph::addJoint(tesseract_scene_graph::Joint::Ptr joint_ptr)
+{
   auto parent = link_map_.find(joint_ptr->parent_link_name);
   auto child = link_map_.find(joint_ptr->child_link_name);
   auto found = joint_map_.find(joint_ptr->getName());
@@ -234,7 +244,7 @@ bool SceneGraph::moveJoint(const std::string& name, const std::string& parent_li
     return false;
 
   joint->parent_link_name = parent_link;
-  return addJoint(*joint);
+  return addJoint(std::move(joint));
 }
 
 std::vector<Joint::ConstPtr> SceneGraph::getJoints() const

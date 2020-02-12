@@ -105,7 +105,7 @@ void CarSeatExample::addSeats()
                                                   Eigen::AngleAxisd(3.14159, Eigen::Vector3d::UnitZ());
     joint_seat.parent_to_joint_origin_transform.translation() = Eigen::Vector3d(0.5 + i, 2.15, 0.45);
 
-    tesseract_->getEnvironment()->addLink(link_seat, joint_seat);
+    tesseract_->getEnvironment()->addLink(std::move(link_seat), std::move(joint_seat));
   }
 }
 
@@ -416,7 +416,7 @@ bool CarSeatExample::run()
   joint_seat_1_robot.parent_to_joint_origin_transform =
       state->transforms["end_effector"].inverse() * state->transforms["seat_1"];
 
-  tesseract_->getEnvironment()->moveLink(joint_seat_1_robot);
+  tesseract_->getEnvironment()->moveLink(std::move(joint_seat_1_robot));
   tesseract_->getEnvironment()->addAllowedCollision("seat_1", "end_effector", "Adjacent");
   tesseract_->getEnvironment()->addAllowedCollision("seat_1", "cell_logo", "Never");
   tesseract_->getEnvironment()->addAllowedCollision("seat_1", "fence", "Never");
@@ -475,7 +475,7 @@ bool CarSeatExample::run()
   joint_seat_1_car.type = JointType::FIXED;
   joint_seat_1_car.parent_to_joint_origin_transform = state->transforms["car"].inverse() * state->transforms["seat_1"];
 
-  tesseract_->getEnvironment()->moveLink(joint_seat_1_car);
+  tesseract_->getEnvironment()->moveLink(std::move(joint_seat_1_car));
 
   if (rviz_)
   {
@@ -528,7 +528,7 @@ bool CarSeatExample::run()
   joint_seat_2_robot.parent_to_joint_origin_transform =
       state->transforms["end_effector"].inverse() * state->transforms["seat_2"];
 
-  tesseract_->getEnvironment()->moveLink(joint_seat_2_robot);
+  tesseract_->getEnvironment()->moveLink(std::move(joint_seat_2_robot));
 
   if (rviz_)
   {

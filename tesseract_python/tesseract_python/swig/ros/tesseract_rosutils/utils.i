@@ -144,6 +144,26 @@ tesseract_type name ## FromMsg(const msg_type& msg)
 %}
 %enddef
 
+// Macro to convert messages with move-only semantics
+%define CONVERT_MSG_TYPE7(name, tesseract_type, msg_type)
+%inline %{
+void name ## ToMsg(msg_type& msg, const tesseract_type& t)
+{
+  if (!tesseract_rosutils::toMsg(msg, t))
+  {
+    throw std::runtime_error(#name "ToMsg failed");
+  }
+}
+
+tesseract_type::Ptr name ## FromMsg(const msg_type& msg)
+{
+  tesseract_type::Ptr t = std::make_shared<tesseract_type>(std::move(tesseract_rosutils::fromMsg(msg)));
+  return t;
+}
+%}
+%enddef
+
+
 %define PROCESS_MSG(name, tesseract_type, msg_type)
 %inline %{
 void name ## ProcessMsg(tesseract_type& t, const msg_type& msg)
@@ -184,13 +204,13 @@ CONVERT_MSG_TYPE2(materials, tesseract_scene_graph::Material, tesseract_msgs::Ma
 CONVERT_MSG_TYPE2(inertial, tesseract_scene_graph::Inertial, tesseract_msgs::Inertial)
 CONVERT_MSG_TYPE(visualGeometry, tesseract_scene_graph::Visual, tesseract_msgs::VisualGeometry)
 CONVERT_MSG_TYPE(collisionGeometry, tesseract_scene_graph::Collision, tesseract_msgs::CollisionGeometry)
-CONVERT_MSG_TYPE3(link, tesseract_scene_graph::Link, tesseract_msgs::Link)
+CONVERT_MSG_TYPE7(link, tesseract_scene_graph::Link, tesseract_msgs::Link)
 CONVERT_MSG_TYPE2(jointCalibration, tesseract_scene_graph::JointCalibration, tesseract_msgs::JointCalibration)
 CONVERT_MSG_TYPE2(jointDynamics, tesseract_scene_graph::JointDynamics, tesseract_msgs::JointDynamics)
 CONVERT_MSG_TYPE2(jointLimits, tesseract_scene_graph::JointLimits, tesseract_msgs::JointLimits)
 CONVERT_MSG_TYPE2(jointMimic, tesseract_scene_graph::JointMimic, tesseract_msgs::JointMimic)
 CONVERT_MSG_TYPE2(jointSafety, tesseract_scene_graph::JointSafety, tesseract_msgs::JointSafety)
-CONVERT_MSG_TYPE3(joint, tesseract_scene_graph::Joint, tesseract_msgs::Joint)
+CONVERT_MSG_TYPE7(joint, tesseract_scene_graph::Joint, tesseract_msgs::Joint)
 
 // tesseract_environment
 CONVERT_MSG_TYPE5(tesseractEnvStateJoints, tesseract_environment::EnvState, sensor_msgs::JointState)

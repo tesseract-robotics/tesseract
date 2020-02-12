@@ -84,7 +84,11 @@ tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGr
       return std::make_shared<tesseract_common::StatusCode>(
           URDFStatusCategory::ErrorLinkNamesNotUnique, status_cat, status);
 
-    if (!sg->addLink(tesseract_scene_graph::Link(*l)))
+    /** NB: Moving the pointed data is only ok here because we are the only owners
+     * of said link, and it's reset to nullptr at every loop iteration.
+     * TODO: Move to a unique_ptr interface?
+     */
+    if (!sg->addLink(std::move(*l)))
       return std::make_shared<tesseract_common::StatusCode>(
           URDFStatusCategory::ErrorAddingLinkToSceneGraph, status_cat, status);
   }
@@ -106,7 +110,11 @@ tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGr
       return std::make_shared<tesseract_common::StatusCode>(
           URDFStatusCategory::ErrorJointNamesNotUnique, status_cat, status);
 
-    if (!sg->addJoint(tesseract_scene_graph::Joint(*j)))
+    /** NB: Moving the pointed data is only ok here because we are the only owners
+     * of said link, and it's reset to nullptr at every loop iteration.
+     * TODO: Move to a unique_ptr interface?
+     */
+    if (!sg->addJoint(std::move(*j)))
       return std::make_shared<tesseract_common::StatusCode>(
           URDFStatusCategory::ErrorAddingJointToSceneGraph, status_cat, status);
   }
