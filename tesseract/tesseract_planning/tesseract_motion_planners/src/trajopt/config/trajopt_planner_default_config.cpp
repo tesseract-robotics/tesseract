@@ -215,7 +215,7 @@ void TrajOptPlannerDefaultConfig::addWaypoints(trajopt::ProblemConstructionInfo&
      * that are incapable of changing (i.e. joint positions). Therefore, the first and last indices of these
      * costs (which equal 0 and num_steps-1 by default) should be changed to exclude those states
      */
-    if (target_waypoints[ind]->getType() == WaypointType::JOINT_WAYPOINT)
+    if (target_waypoints[ind]->getType() == WaypointType::JOINT_WAYPOINT && target_waypoints[ind]->isCritical())
     {
       fixed_steps.push_back(static_cast<int>(ind));
     }
