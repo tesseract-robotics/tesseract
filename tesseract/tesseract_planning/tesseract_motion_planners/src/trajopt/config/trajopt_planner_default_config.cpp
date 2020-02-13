@@ -179,6 +179,16 @@ bool TrajOptPlannerDefaultConfig::addInitTrajectory(trajopt::ProblemConstruction
       }
     }
   }
+  if (init_type == trajopt::InitInfo::JOINT_INTERPOLATED)
+  {
+    if (seed_trajectory.size() != pci.kin->numJoints())
+    {
+      CONSOLE_BRIDGE_logError("Init type is set to JOINT_INTERPOLATED but seed_trajectory.size() != "
+                              "pci.kin->numJoints().");
+      return false;
+    }
+    pci.init_info.data = seed_trajectory;
+  }
 
   return true;
 }
