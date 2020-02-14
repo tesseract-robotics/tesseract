@@ -6,7 +6,6 @@
 
 namespace tesseract_process_planners
 {
-
 /**
  * @brief The ExtensionDepartureGenerator class
  * For a series of waypoints that progresses along either the positive or
