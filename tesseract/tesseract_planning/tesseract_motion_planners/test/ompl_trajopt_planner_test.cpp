@@ -172,8 +172,9 @@ TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
   auto start = std::make_shared<JointWaypoint>(swp, kin->getJointNames());
   auto end = std::make_shared<JointWaypoint>(ewp, kin->getJointNames());
 
+  // This will create two planners of the same time and will run them on there own thread
+  std::vector<OMPLPlannerConfigurator::ConstPtr> planners = { this->configurator, this->configurator };
   // Create the OMPL config
-  std::vector<OMPLPlannerConfigurator::ConstPtr> planners = { std::make_shared<SBLConfigurator>() };
   auto ompl_config = std::make_shared<OMPLPlannerFreespaceConfig>(tesseract, "manipulator", planners);
   {
     ompl_config->start_waypoint = start;
@@ -187,10 +188,6 @@ TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
     ompl_config->collision_check = true;
     ompl_config->simplify = false;
     ompl_config->n_output_states = 50;
-
-    // This will create two planners of the same time and will run them on there own thread
-    ompl_config->planners.push_back(this->configurator);
-    ompl_config->planners.push_back(this->configurator);
   }
 
   // Create the TrajOpt config

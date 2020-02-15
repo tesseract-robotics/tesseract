@@ -165,7 +165,8 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   std::vector<double> swp = start_state;
   std::vector<double> ewp = end_state;
 
-  std::vector<OMPLPlannerConfigurator::ConstPtr> planners = { std::make_shared<SBLConfigurator>() };
+  // This will create two planners of the same type and run them in different threads
+  std::vector<OMPLPlannerConfigurator::ConstPtr> planners = { this->configurator, this->configurator };
   auto ompl_config = std::make_shared<OMPLPlannerFreespaceConfig>(tesseract, "manipulator", planners);
 
   ompl_config->start_waypoint = std::make_shared<JointWaypoint>(swp, kin->getJointNames());
@@ -179,10 +180,6 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   ompl_config->collision_check = true;
   ompl_config->simplify = false;
   ompl_config->n_output_states = 50;
-
-  // This will create two planners of the same type and run them in different threads
-  ompl_config->planners.push_back(this->configurator);
-  ompl_config->planners.push_back(this->configurator);
 
   // Set the planner configuration
   this->ompl_planner.setConfiguration(ompl_config);

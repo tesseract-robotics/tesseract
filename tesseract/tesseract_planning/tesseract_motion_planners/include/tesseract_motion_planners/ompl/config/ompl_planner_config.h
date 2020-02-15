@@ -45,12 +45,12 @@ struct OMPLPlannerConfig
   using Ptr = std::shared_ptr<OMPLPlannerConfig>;
   using ConstPtr = std::shared_ptr<const OMPLPlannerConfig>;
 
-  explicit OMPLPlannerConfig(tesseract::Tesseract::ConstPtr tesseract_,
-                             std::string manipulator_,
+  explicit OMPLPlannerConfig(tesseract::Tesseract::ConstPtr tesseract,
+                             std::string manipulator,
                              std::vector<OMPLPlannerConfigurator::ConstPtr> planners);
 
-  explicit OMPLPlannerConfig(tesseract::Tesseract::ConstPtr tesseract_,
-                             std::string manipulator_,
+  explicit OMPLPlannerConfig(tesseract::Tesseract::ConstPtr tesseract,
+                             std::string manipulator,
                              std::vector<OMPLPlannerConfigurator::ConstPtr> planners,
                              ompl::geometric::SimpleSetupPtr simple_setup);
 
