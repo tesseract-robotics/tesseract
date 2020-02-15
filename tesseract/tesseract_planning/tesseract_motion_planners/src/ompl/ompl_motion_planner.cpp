@@ -32,7 +32,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_motion_planners/ompl/ompl_motion_planner.h>
-#include <tesseract_motion_planners/ompl/conversions.h>
 #include <tesseract_motion_planners/ompl/continuous_motion_validator.h>
 #include <tesseract_motion_planners/ompl/discrete_motion_validator.h>
 #include <tesseract_motion_planners/ompl/weighted_real_vector_state_sampler.h>
@@ -142,7 +141,7 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
     }
   }
 
-  tesseract_common::TrajArray traj = toTrajArray(config_->simple_setup->getSolutionPath());
+  tesseract_common::TrajArray traj = config_->getTrajectory();
 
   // Check and report collisions
   std::vector<tesseract_collision::ContactResultMap> collisions;

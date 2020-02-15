@@ -66,6 +66,13 @@ struct OMPLPlannerConfig
    */
   virtual bool generate();
 
+  /**
+   * @brief Convert the path stored in simple_setup to tesseract trajectory
+   * This is required because the motion planner is not aware of the state space type.
+   * @return Tesseract Trajectory
+   */
+  virtual tesseract_common::TrajArray getTrajectory() const = 0;
+
   /** @brief Max planning time allowed in seconds */
   double planning_time = 5.0;
   /** @brief The max number of solutions. If max solutions are hit it will exit even if other threads are running. */
