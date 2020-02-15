@@ -44,7 +44,6 @@ target_include_directories(${PROJECT_NAME}_trajopt SYSTEM PUBLIC
 # OMPL Freespace Planning Interface
 add_library(${PROJECT_NAME}_ompl SHARED
   src/ompl/ompl_motion_planner.cpp
-  src/ompl/conversions.cpp
   src/ompl/continuous_motion_validator.cpp
   src/ompl/discrete_motion_validator.cpp
   src/ompl/weighted_real_vector_state_sampler.cpp
@@ -54,6 +53,9 @@ add_library(${PROJECT_NAME}_ompl SHARED
   src/ompl/config/ompl_planner_freespace_config.cpp
 )
 target_link_libraries(${PROJECT_NAME}_ompl PUBLIC ${PROJECT_NAME}_core ${OMPL_LIBRARIES})
+if(OMPL_VERSION VERSION_LESS "1.4.0")
+    target_compile_definitions(${PROJECT_NAME}_ompl PUBLIC OMPL_LESS_1_4_0=ON)
+endif()
 tesseract_target_compile_options(${PROJECT_NAME}_ompl PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_ompl)
 target_include_directories(${PROJECT_NAME}_ompl PUBLIC

@@ -30,6 +30,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/tools/multiplan/ParallelPlan.h>
 #include <ompl/base/objectives/PathLengthOptimizationObjective.h>
+
+#ifndef OMPL_LESS_1_4_0
+#include <ompl/base/spaces/constraint/ProjectedStateSpace.h>
+#include <ompl/base/ConstrainedSpaceInformation.h>
+#endif
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/continuous_motion_validator.h>
@@ -97,7 +102,14 @@ bool OMPLPlannerFreespaceConfig::generate()
   if (state_sampler_allocator)
     rss->setStateSamplerAllocator(state_sampler_allocator);
 
+#ifndef OMPL_LESS_1_4_0
+  if (constraint)
+    state_space_ptr = std::make_shared<ompl::base::ProjectedStateSpace>(rss, constraint);
+  else
+    state_space_ptr = rss;
+#else
   state_space_ptr = rss;
+#endif
 
   if (longest_valid_segment_fraction > 0 && longest_valid_segment_length > 0)
   {
@@ -122,7 +134,19 @@ bool OMPLPlannerFreespaceConfig::generate()
   }
   state_space_ptr->setLongestValidSegmentFraction(longest_valid_segment_fraction);
 
-  simple_setup = std::make_shared<ompl::geometric::SimpleSetup>(state_space_ptr);
+#ifndef OMPL_LESS_1_4_0
+  if (constraint)
+  {
+    auto csi = std::make_shared<ompl::base::ConstrainedSpaceInformation>(state_space_ptr);
+    this->simple_setup = std::make_shared<ompl::geometric::SimpleSetup>(csi);
+  }
+  else
+  {
+    this->simple_setup = std::make_shared<ompl::geometric::SimpleSetup>(state_space_ptr);
+  }
+#else
+  this->simple_setup = std::make_shared<ompl::geometric::SimpleSetup>(state_space_ptr);
+#endif
 
   JointWaypoint::Ptr start_position;
   JointWaypoint::Ptr end_position;
@@ -242,6 +266,39 @@ bool OMPLPlannerFreespaceConfig::generate()
   }
 
   return true;
+}
+
+tesseract_common::TrajArray OMPLPlannerFreespaceConfig::getTrajectory() const
+{
+  const auto& path = this->simple_setup->getSolutionPath();
+  const auto n_points = static_cast<long>(path.getStateCount());
+  const auto dof = static_cast<long>(path.getSpaceInformation()->getStateDimension());
+
+  tesseract_common::TrajArray result(n_points, dof);
+  for (long i = 0; i < n_points; ++i)
+  {
+#ifndef OMPL_LESS_1_4_0
+    if (constraint)
+    {
+      const Eigen::Map<Eigen::VectorXd>& x =
+          *path.getState(static_cast<unsigned>(i))->template as<ompl::base::ConstrainedStateSpace::StateType>();
+      result.row(i) = x;
+    }
+    else
+    {
+      const auto& s =
+          path.getState(static_cast<unsigned>(i))->template as<ompl::base::RealVectorStateSpace::StateType>();
+      for (long j = 0; j < dof; ++j)
+        result(i, j) = s->values[j];
+    }
+#else
+    const auto& s = path.getState(static_cast<unsigned>(i))->as<ompl::base::RealVectorStateSpace::StateType>();
+    for (long j = 0; j < dof; ++j)
+      result(i, j) = s->values[j];
+#endif
+  }
+
+  return result;
 }
 
 ompl::base::StateSamplerPtr
