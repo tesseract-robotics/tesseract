@@ -55,7 +55,7 @@ add_library(${PROJECT_NAME}_ompl SHARED
 )
 target_link_libraries(${PROJECT_NAME}_ompl PUBLIC ${PROJECT_NAME}_core ${OMPL_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_ompl PUBLIC)
-#tesseract_clang_tidy(${PROJECT_NAME}_ompl)
+tesseract_clang_tidy(${PROJECT_NAME}_ompl)
 target_include_directories(${PROJECT_NAME}_ompl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
