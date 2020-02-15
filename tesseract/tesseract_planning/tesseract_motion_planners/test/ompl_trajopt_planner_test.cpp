@@ -47,7 +47,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_motion_planners/ompl/conversions.h>
 #include <tesseract/tesseract.h>
 #include <tesseract_environment/core/utils.h>
 #include <trajopt_utils/logging.hpp>
