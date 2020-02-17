@@ -48,12 +48,20 @@ include_directories(
 )
 
 # Tesseract ROS Nodes
-add_executable(${PROJECT_NAME}_contacts_node src/contact_monitor.cpp)
-target_link_libraries(${PROJECT_NAME}_contacts_node PRIVATE tesseract::tesseract ${catkin_LIBRARIES})
+add_executable(${PROJECT_NAME}_contacts_node src/contact_monitor_node.cpp)
+target_link_libraries(${PROJECT_NAME}_contacts_node PRIVATE tesseract::tesseract ${PROJECT_NAME}_contacts ${catkin_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_contacts_node PRIVATE)
 tesseract_clang_tidy(${PROJECT_NAME}_contacts_node)
 target_include_directories(${PROJECT_NAME}_contacts_node PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 target_include_directories(${PROJECT_NAME}_contacts_node SYSTEM PRIVATE ${catkin_INCLUDE_DIRS})
+
+add_library(${PROJECT_NAME}_contacts src/contact_monitor.cpp)
+target_link_libraries(${PROJECT_NAME}_contacts PRIVATE tesseract::tesseract ${catkin_LIBRARIES})
+tesseract_target_compile_options(${PROJECT_NAME}_contacts PRIVATE)
+tesseract_clang_tidy(${PROJECT_NAME}_contacts)
+target_include_directories(${PROJECT_NAME}_contacts PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
+target_include_directories(${PROJECT_NAME}_contacts SYSTEM PRIVATE ${catkin_INCLUDE_DIRS})
+add_dependencies(${PROJECT_NAME}_contacts ${PROJECT_NAME}_gencfg)
 
 add_library(${PROJECT_NAME}_environment SHARED src/environment_monitor.cpp src/current_state_monitor.cpp)
 target_link_libraries(${PROJECT_NAME}_environment PUBLIC tesseract::tesseract ${catkin_LIBRARIES} ${Boost_LIBRARIES})
