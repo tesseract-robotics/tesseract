@@ -86,7 +86,7 @@ target_include_directories(${PROJECT_NAME}_environment_node PUBLIC "$<BUILD_INTE
 target_include_directories(${PROJECT_NAME}_environment_node SYSTEM PUBLIC ${catkin_INCLUDE_DIRS})
 
 # Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME}_environment ${PROJECT_NAME}_contacts_node ${PROJECT_NAME}_environment_node demo_scene
+install(TARGETS ${PROJECT_NAME}_environment ${PROJECT_NAME}_contacts ${PROJECT_NAME}_contacts_node ${PROJECT_NAME}_environment_node demo_scene
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
