@@ -1,6 +1,6 @@
 /**
  * @file process_definition.h
- * @brief
+ * @brief describes the basic definition of a process, as expected by the process planners
  *
  * @author Levi Armstrong
  * @version TODO

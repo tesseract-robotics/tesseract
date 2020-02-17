@@ -1,6 +1,7 @@
 /**
  * @file process_definition.cpp
- * @brief
+ * @brief defines the basic structure of a process, as expected by the
+ * process planners
  *
  * @author Levi Armstrong
  * @version TODO

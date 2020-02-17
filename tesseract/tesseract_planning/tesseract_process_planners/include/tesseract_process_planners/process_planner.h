@@ -1,6 +1,6 @@
 /**
  * @file process_planner.h
- * @brief
+ * @brief defines the basic structure of a process planner
  *
  * @author Levi Armstrong
  * @version TODO

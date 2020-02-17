@@ -1,6 +1,6 @@
 /**
  * @file descartes_tesseract_kinematics.cpp
- * @brief
+ * @brief This contains unit test for the tesseract descartes kinematics
  *
  * @author Levi Armstrong
  * @version TODO

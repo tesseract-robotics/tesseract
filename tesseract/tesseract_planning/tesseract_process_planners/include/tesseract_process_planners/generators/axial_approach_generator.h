@@ -1,6 +1,6 @@
 /**
  * @file axial_approach_generator.h
- * @brief
+ * @brief generator for an approach along the tool z direction
  *
  * @author Levi Armstrong
  * @version TODO

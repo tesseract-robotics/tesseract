@@ -1,6 +1,6 @@
 /**
  * @file passthrough_transition_generator.h
- * @brief
+ * @brief generator for transitions that pass through a list of supplied points
  *
  * @author Levi Armstrong
  * @version TODO

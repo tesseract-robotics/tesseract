@@ -1,6 +1,7 @@
 /**
  * @file passthrough_process_generator.h
- * @brief
+ * @brief generator for processing strokes that pass through each of a
+ * list of supplied points
  *
  * @author Levi Armstrong
  * @version TODO

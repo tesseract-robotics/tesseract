@@ -1,6 +1,6 @@
 /**
  * @file custom_iterator_unit.cpp
- * @brief
+ * @brief tests for a custom iterator over the process definitions
  *
  * @author Levi Armstrong
  * @version TODO

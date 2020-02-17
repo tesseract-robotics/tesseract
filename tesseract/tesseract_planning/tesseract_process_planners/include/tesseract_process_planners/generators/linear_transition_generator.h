@@ -1,6 +1,6 @@
 /**
  * @file linear_transition_generator.h
- * @brief
+ * @brief generator for a linear transition
  *
  * @author Levi Armstrong
  * @version TODO

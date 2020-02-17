@@ -1,6 +1,7 @@
 /**
  * @file tesseract_process_planners_unit.cpp
- * @brief
+ * @brief tests for the process planner generators. Several of the
+ * generators are instantiated.
  *
  * @author Levi Armstrong
  * @version TODO

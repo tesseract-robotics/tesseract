@@ -1,6 +1,6 @@
 /**
  * @file axial_departure_generator.h
- * @brief
+ * @brief generator for a departure along the tool z direction
  *
  * @author Levi Armstrong
  * @version TODO

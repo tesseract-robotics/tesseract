@@ -1,6 +1,6 @@
 /**
  * @file descartes_trajopt_array_planner.h
- * @brief
+ * @brief a planner utilizing a descartes seed and trajopt optimization
  *
  * @author Levi Armstrong
  * @version TODO
