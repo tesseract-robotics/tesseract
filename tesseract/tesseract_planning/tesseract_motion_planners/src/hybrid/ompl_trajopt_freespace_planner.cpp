@@ -123,6 +123,7 @@ tesseract_common::StatusCode OMPLTrajOptFreespacePlanner::solve(PlannerResponse&
     // The trajectory from OMPL may not be the same size as the number of steps requested in the TrajOpt config
     trajopt_config_->init_type = trajopt::InitInfo::GIVEN_TRAJ;
     trajopt_config_->seed_trajectory = ompl_planning_response.joint_trajectory.trajectory;
+    trajopt_config_->num_steps = static_cast<int>(ompl_planning_response.joint_trajectory.trajectory.rows());
   }
   else
   {
