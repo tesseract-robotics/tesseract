@@ -268,43 +268,11 @@ bool OMPLPlannerFreespaceConfig::generate()
   return true;
 }
 
-tesseract_common::TrajArray OMPLPlannerFreespaceConfig::getTrajectory() const
-{
-  const auto& path = this->simple_setup->getSolutionPath();
-  const auto n_points = static_cast<long>(path.getStateCount());
-  const auto dof = static_cast<long>(path.getSpaceInformation()->getStateDimension());
-
-  tesseract_common::TrajArray result(n_points, dof);
-  for (long i = 0; i < n_points; ++i)
-  {
-#ifndef OMPL_LESS_1_4_0
-    if (constraint)
-    {
-      const Eigen::Map<Eigen::VectorXd>& x =
-          *path.getState(static_cast<unsigned>(i))->template as<ompl::base::ConstrainedStateSpace::StateType>();
-      result.row(i) = x;
-    }
-    else
-    {
-      const auto& s =
-          path.getState(static_cast<unsigned>(i))->template as<ompl::base::RealVectorStateSpace::StateType>();
-      for (long j = 0; j < dof; ++j)
-        result(i, j) = s->values[j];
-    }
-#else
-    const auto& s = path.getState(static_cast<unsigned>(i))->as<ompl::base::RealVectorStateSpace::StateType>();
-    for (long j = 0; j < dof; ++j)
-      result(i, j) = s->values[j];
-#endif
-  }
-
-  return result;
-}
-
 ompl::base::StateSamplerPtr
 OMPLPlannerFreespaceConfig::allocWeightedRealVectorStateSampler(const ompl::base::StateSpace* space) const
 {
-  return std::make_shared<WeightedRealVectorStateSampler>(space, weights);
+  const auto& limits = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator)->getLimits();
+  return std::make_shared<WeightedRealVectorStateSampler>(space, weights, limits);
 }
 
 }  // namespace tesseract_motion_planners

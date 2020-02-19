@@ -57,9 +57,6 @@ struct OMPLPlannerFreespaceConfig : public OMPLPlannerConfig
   /** @brief Generates the OMPL problem and saves the result internally */
   bool generate() override;
 
-  /** @brief Convert this problems path to tesseract trajectory */
-  tesseract_common::TrajArray getTrajectory() const override;
-
   /**
    * @brief Determines the constraint placed at the start of the trajectory
    *

@@ -71,7 +71,7 @@ struct OMPLPlannerConfig
    * This is required because the motion planner is not aware of the state space type.
    * @return Tesseract Trajectory
    */
-  virtual tesseract_common::TrajArray getTrajectory() const = 0;
+  tesseract_common::TrajArray getTrajectory() const;
 
   /** @brief Max planning time allowed in seconds */
   double planning_time = 5.0;

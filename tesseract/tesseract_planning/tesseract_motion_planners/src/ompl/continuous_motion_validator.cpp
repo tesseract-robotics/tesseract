@@ -25,7 +25,6 @@
  */
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/base/SpaceInformation.h>
 #include <thread>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -114,8 +113,10 @@ bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1,
 
 bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State* s1, const ompl::base::State* s2) const
 {
-  const auto* start = s1->as<ompl::base::RealVectorStateSpace::StateType>();
-  const auto* finish = s2->as<ompl::base::RealVectorStateSpace::StateType>();
+  const auto dof = si_->getStateDimension();
+  std::vector<double> start(dof), finish(dof);
+  si_->getStateSpace()->copyToReals(start, s1);
+  si_->getStateSpace()->copyToReals(finish, s2);
 
   // It was time using chronos time elapsed and it was faster to cache the contact manager
   unsigned long int hash = std::hash<std::thread::id>{}(std::this_thread::get_id());
@@ -138,9 +139,8 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
   }
   mutex_.unlock();
 
-  const auto dof = si_->getStateDimension();
-  Eigen::Map<Eigen::VectorXd> start_joints(start->values, dof);
-  Eigen::Map<Eigen::VectorXd> finish_joints(finish->values, dof);
+  Eigen::Map<Eigen::VectorXd> start_joints(start.data(), dof);
+  Eigen::Map<Eigen::VectorXd> finish_joints(finish.data(), dof);
 
   tesseract_environment::EnvState::Ptr state0 = ss->getState(joints_, start_joints);
   tesseract_environment::EnvState::Ptr state1 = ss->getState(joints_, finish_joints);
