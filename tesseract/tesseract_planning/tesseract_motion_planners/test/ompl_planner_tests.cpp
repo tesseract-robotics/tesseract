@@ -45,6 +45,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/util/RandomNumbers.h>
 
 #include <functional>
+#include <cmath>
 #include <gtest/gtest.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -65,6 +66,8 @@ using namespace tesseract_motion_planners;
 const static int SEED = 1;
 const static std::vector<double> start_state = { -0.5, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
 const static std::vector<double> end_state = { 0.5, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
+const static std::vector<double> start_state_constrained = { -0.1, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
+const static std::vector<double> end_state_constrained = { 0.1, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
 
 std::string locateResource(const std::string& url)
 {
@@ -319,7 +322,7 @@ public:
 
     Eigen::Vector3d z_axis = pose.matrix().col(2).template head<3>().normalized();
 
-    out[0] = z_axis.dot(normal_);
+    out[0] = std::atan2(z_axis.cross(normal_).norm(), z_axis.dot(normal_));
   }
 
 private:
@@ -348,11 +351,14 @@ TEST(OMPLConstraintPlanner, OMPLConstraintPlannerUnit)  // NOLINT
   std::vector<double> swp = start_state;
   std::vector<double> ewp = end_state;
 
+  Eigen::Vector3d normal = -1.0 * Eigen::Vector3d::UnitZ();
   tesseract_motion_planners::OMPLMotionPlanner ompl_planner;
 
   std::vector<tesseract_motion_planners::OMPLPlannerConfigurator::ConstPtr> planners;
-  planners.push_back(std::make_shared<tesseract_motion_planners::SBLConfigurator>());
-  planners.push_back(std::make_shared<tesseract_motion_planners::RRTConnectConfigurator>());
+
+  auto rrtconnect_planner = std::make_shared<tesseract_motion_planners::KPIECE1Configurator>();
+  rrtconnect_planner->range = 0.5;
+  planners.push_back(rrtconnect_planner);
 
   auto ompl_config =
       std::make_shared<tesseract_motion_planners::OMPLPlannerFreespaceConfig>(tesseract, "manipulator", planners);
@@ -360,7 +366,7 @@ TEST(OMPLConstraintPlanner, OMPLConstraintPlannerUnit)  // NOLINT
   ompl_config->start_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(swp, kin->getJointNames());
   ompl_config->end_waypoint = std::make_shared<tesseract_motion_planners::JointWaypoint>(ewp, kin->getJointNames());
   ompl_config->collision_safety_margin = 0.02;
-  ompl_config->planning_time = 5.0;
+  ompl_config->planning_time = 400.0;
   ompl_config->max_solutions = 2;
   ompl_config->longest_valid_segment_fraction = 0.01;
 
@@ -368,7 +374,7 @@ TEST(OMPLConstraintPlanner, OMPLConstraintPlannerUnit)  // NOLINT
   ompl_config->collision_check = true;
   ompl_config->simplify = false;
   ompl_config->n_output_states = 50;
-  ompl_config->constraint = std::make_shared<GlassUprightConstraint>(Eigen::Vector3d::UnitZ(), kin);
+  ompl_config->constraint = std::make_shared<GlassUprightConstraint>(normal, kin);
 
   // Set the planner configuration
   ompl_planner.setConfiguration(ompl_config);
@@ -382,6 +388,35 @@ TEST(OMPLConstraintPlanner, OMPLConstraintPlannerUnit)  // NOLINT
   }
   EXPECT_TRUE(status);
   EXPECT_TRUE(ompl_planning_response.joint_trajectory.trajectory.rows() >= ompl_config->n_output_states);
+
+  long cnt = 0;
+  double max_angle = 0;
+  for (long r = 0; r < ompl_planning_response.joint_trajectory.trajectory.rows(); ++r)
+  {
+    Eigen::Isometry3d pose;
+    kin->calcFwdKin(pose, ompl_planning_response.joint_trajectory.trajectory.row(r));
+
+    Eigen::Vector3d z_axis = pose.matrix().col(2).template head<3>().normalized();
+
+    double angle = std::abs(std::atan2(z_axis.cross(normal).norm(), z_axis.dot(normal)));
+
+    if (angle > max_angle)
+      max_angle = angle;
+
+    if (angle > 0.2)
+      ++cnt;
+  }
+
+  CONSOLE_BRIDGE_logWarn("CI Warn: Max error found: %d radians", cnt, max_angle);
+
+  if (cnt != 0)
+  {
+    CONSOLE_BRIDGE_logError("CI Error: %d out of %d did not satisfy constraint",
+                            cnt,
+                            ompl_planning_response.joint_trajectory.trajectory.rows());
+  }
+
+  EXPECT_TRUE(cnt == 0);
 }
 #endif
 
