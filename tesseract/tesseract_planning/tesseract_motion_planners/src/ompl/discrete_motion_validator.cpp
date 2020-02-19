@@ -25,7 +25,6 @@
  */
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/base/SpaceInformation.h>
 #include <thread>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -105,7 +104,9 @@ bool DiscreteMotionValidator::checkMotion(const ompl::base::State* s1,
 
 bool DiscreteMotionValidator::discreteCollisionCheck(const ompl::base::State* s2) const
 {
-  const auto* finish = s2->as<ompl::base::RealVectorStateSpace::StateType>();
+  const auto dof = si_->getStateDimension();
+  std::vector<double> finish(dof);
+  si_->getStateSpace()->copyToReals(finish, s2);
 
   // It was time using chronos time elapsed and it was faster to cache the contact manager
   unsigned long int hash = std::hash<std::thread::id>{}(std::this_thread::get_id());
@@ -123,9 +124,7 @@ bool DiscreteMotionValidator::discreteCollisionCheck(const ompl::base::State* s2
   }
   mutex_.unlock();
 
-  const auto dof = si_->getStateDimension();
-  Eigen::Map<Eigen::VectorXd> finish_joints(finish->values, dof);
-
+  Eigen::Map<Eigen::VectorXd> finish_joints(finish.data(), dof);
   tesseract_environment::EnvState::Ptr state1 = env_->getState(joints_, finish_joints);
 
   for (const auto& link_name : links_)

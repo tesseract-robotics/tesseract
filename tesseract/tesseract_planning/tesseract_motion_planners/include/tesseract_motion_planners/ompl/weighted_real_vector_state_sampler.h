@@ -48,10 +48,9 @@ namespace tesseract_motion_planners
 class WeightedRealVectorStateSampler : public ompl::base::StateSampler
 {
 public:
-  WeightedRealVectorStateSampler(const ompl::base::StateSpace* space, const Eigen::Ref<const Eigen::VectorXd>& weights)
-    : ompl::base::StateSampler(space), weights_(weights)
-  {
-  }
+  WeightedRealVectorStateSampler(const ompl::base::StateSpace* space,
+                                 const Eigen::Ref<const Eigen::VectorXd>& weights,
+                                 const Eigen::Ref<const Eigen::MatrixX2d>& bounds);
 
   void sampleUniform(ompl::base::State* state) override;
 
@@ -69,6 +68,7 @@ public:
 
 protected:
   Eigen::VectorXd weights_;
+  Eigen::MatrixX2d bounds_;
 };
 
 }  // namespace tesseract_motion_planners
