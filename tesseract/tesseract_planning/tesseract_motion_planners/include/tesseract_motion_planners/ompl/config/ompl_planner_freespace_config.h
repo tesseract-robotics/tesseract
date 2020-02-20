@@ -38,7 +38,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_motion_planners
 {
 using OptimizationObjectiveAllocator =
-    std::function<ompl::base::OptimizationObjectivePtr(const ompl::base::SpaceInformationPtr&)>;
+    std::function<ompl::base::OptimizationObjectivePtr(const ompl::base::SpaceInformationPtr&,
+                                                       tesseract_environment::Environment::ConstPtr,
+                                                       tesseract_kinematics::ForwardKinematics::ConstPtr)>;
 
 struct OMPLPlannerFreespaceConfig : public OMPLPlannerConfig
 {
@@ -78,7 +80,9 @@ struct OMPLPlannerFreespaceConfig : public OMPLPlannerConfig
       std::bind(&OMPLPlannerFreespaceConfig::allocWeightedRealVectorStateSampler, this, std::placeholders::_1);
 
   /** @brief Set the optimization objective function allocator. Default is to minimize path length */
-  OptimizationObjectiveAllocator optimization_objective_allocator = [](const ompl::base::SpaceInformationPtr& si) {
+  OptimizationObjectiveAllocator optimization_objective_allocator = [](const ompl::base::SpaceInformationPtr& si,
+                                                                       tesseract_environment::Environment::ConstPtr env,
+                                                                       tesseract_kinematics::ForwardKinematics::ConstPtr kin) {
     return std::make_shared<ompl::base::PathLengthOptimizationObjective>(si);
   };
 
