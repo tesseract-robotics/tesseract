@@ -26,30 +26,15 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/SpaceInformation.h>
-#include <thread>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/discrete_motion_validator.h>
 
 namespace tesseract_motion_planners
 {
-DiscreteMotionValidator::DiscreteMotionValidator(const ompl::base::SpaceInformationPtr& space_info,
-                                                 tesseract_environment::Environment::ConstPtr env,
-                                                 tesseract_kinematics::ForwardKinematics::ConstPtr kin,
-                                                 double collision_safety_margin)
-  : MotionValidator(space_info), env_(std::move(env)), kin_(std::move(kin))
+DiscreteMotionValidator::DiscreteMotionValidator(const ompl::base::SpaceInformationPtr& space_info)
+  : MotionValidator(space_info)
 {
-  joints_ = kin_->getJointNames();
-
-  // kinematics objects does not know of every link affected by its motion so must compute adjacency map
-  // to determine all active links.
-  tesseract_environment::AdjacencyMap adj_map(
-      env_->getSceneGraph(), kin_->getActiveLinkNames(), env_->getCurrentState()->transforms);
-  links_ = adj_map.getActiveLinkNames();
-
-  contact_manager_ = env_->getDiscreteContactManager();
-  contact_manager_->setActiveCollisionObjects(links_);
-  contact_manager_->setContactDistanceThreshold(collision_safety_margin);
 }
 
 bool DiscreteMotionValidator::checkMotion(const ompl::base::State* s1, const ompl::base::State* s2) const
@@ -74,7 +59,7 @@ bool DiscreteMotionValidator::checkMotion(const ompl::base::State* s1,
     {
       state_space.interpolate(s1, s2, static_cast<double>(i) / static_cast<double>(n_steps), end_interp);
 
-      if (!si_->isValid(end_interp) || !discreteCollisionCheck(end_interp))
+      if (!si_->isValid(end_interp))
       {
         lastValid.second = static_cast<double>(i - 1) / static_cast<double>(n_steps);
         if (lastValid.first != nullptr)
@@ -89,7 +74,7 @@ bool DiscreteMotionValidator::checkMotion(const ompl::base::State* s1,
 
   if (is_valid)
   {
-    if (!si_->isValid(s2) || !discreteCollisionCheck(s2))
+    if (!si_->isValid(s2))
     {
       lastValid.second = static_cast<double>(n_steps - 1) / static_cast<double>(n_steps);
       if (lastValid.first != nullptr)
@@ -100,39 +85,5 @@ bool DiscreteMotionValidator::checkMotion(const ompl::base::State* s1,
   }
 
   return is_valid;
-}
-
-bool DiscreteMotionValidator::discreteCollisionCheck(const ompl::base::State* s2) const
-{
-  const auto dof = si_->getStateDimension();
-  std::vector<double> finish(dof);
-  si_->getStateSpace()->copyToReals(finish, s2);
-
-  // It was time using chronos time elapsed and it was faster to cache the contact manager
-  unsigned long int hash = std::hash<std::thread::id>{}(std::this_thread::get_id());
-  tesseract_collision::DiscreteContactManager::Ptr cm;
-  mutex_.lock();
-  auto it = contact_managers_.find(hash);
-  if (it == contact_managers_.end())
-  {
-    cm = contact_manager_->clone();
-    contact_managers_[hash] = cm;
-  }
-  else
-  {
-    cm = it->second;
-  }
-  mutex_.unlock();
-
-  Eigen::Map<Eigen::VectorXd> finish_joints(finish.data(), dof);
-  tesseract_environment::EnvState::Ptr state1 = env_->getState(joints_, finish_joints);
-
-  for (const auto& link_name : links_)
-    cm->setCollisionObjectsTransform(link_name, state1->transforms[link_name]);
-
-  tesseract_collision::ContactResultMap contact_map;
-  cm->contactTest(contact_map, tesseract_collision::ContactTestType::FIRST);
-
-  return contact_map.empty();
 }
 }  // namespace tesseract_motion_planners
