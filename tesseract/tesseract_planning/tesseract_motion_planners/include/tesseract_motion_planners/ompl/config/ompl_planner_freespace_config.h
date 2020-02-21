@@ -79,11 +79,10 @@ struct OMPLPlannerFreespaceConfig : public OMPLPlannerConfig
       std::bind(&OMPLPlannerFreespaceConfig::allocWeightedRealVectorStateSampler, this, std::placeholders::_1);
 
   /** @brief Set the optimization objective function allocator. Default is to minimize path length */
-  OptimizationObjectiveAllocator optimization_objective_allocator =
-      [](const ompl::base::SpaceInformationPtr& si,
-         const OMPLPlannerConfig& config) {
-        return std::make_shared<ompl::base::PathLengthOptimizationObjective>(si);
-      };
+  OptimizationObjectiveAllocator optimization_objective_allocator = [](const ompl::base::SpaceInformationPtr& si,
+                                                                       const OMPLPlannerConfig& /*config*/) {
+    return std::make_shared<ompl::base::PathLengthOptimizationObjective>(si);
+  };
 
   /** @brief The ompl state validity checker. If nullptr it uses OMPLFreespacePlanner::isStateValid. */
   ompl::base::StateValidityCheckerFn svc;
