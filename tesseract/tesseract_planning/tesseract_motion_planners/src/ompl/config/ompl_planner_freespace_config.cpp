@@ -238,7 +238,7 @@ bool OMPLPlannerFreespaceConfig::generate()
   if (optimization_objective_allocator)
   {
     simple_setup->getProblemDefinition()->setOptimizationObjective(
-        optimization_objective_allocator(simple_setup->getSpaceInformation()));
+        optimization_objective_allocator(simple_setup->getSpaceInformation(), env, kin));
   }
 
   return true;
