@@ -34,13 +34,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_motion_planners
 {
 ContinuousMotionValidator::ContinuousMotionValidator(const ompl::base::SpaceInformationPtr& space_info,
+                                                     ompl::base::StateValidityCheckerPtr state_validator,
                                                      const tesseract_environment::Environment::ConstPtr& env,
                                                      tesseract_kinematics::ForwardKinematics::ConstPtr kin,
-                                                     double collision_safety_margin)
+                                                     double collision_safety_margin,
+                                                     OMPLStateExtractor extractor)
   : MotionValidator(space_info)
+  , state_validator_(std::move(state_validator))
   , state_solver_(env->getStateSolver())
   , kin_(std::move(kin))
   , continuous_contact_manager_(env->getContinuousContactManager())
+  , extractor_(extractor)
 {
   joints_ = kin_->getJointNames();
 
@@ -78,8 +82,16 @@ bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1,
     {
       state_space.interpolate(s1, s2, static_cast<double>(i - 1) / static_cast<double>(n_steps), start_interp);
       state_space.interpolate(s1, s2, static_cast<double>(i) / static_cast<double>(n_steps), end_interp);
+      if (state_validator_ && !state_validator_->isValid(end_interp))
+      {
+        lastValid.second = static_cast<double>(i - 1) / static_cast<double>(n_steps);
+        if (lastValid.first != nullptr)
+          state_space.interpolate(s1, s2, lastValid.second, lastValid.first);
 
-      if (!si_->isValid(end_interp) || !continuousCollisionCheck(start_interp, end_interp))
+        is_valid = false;
+        break;
+      }
+      else if (!continuousCollisionCheck(start_interp, end_interp))
       {
         lastValid.second = static_cast<double>(i - 1) / static_cast<double>(n_steps);
         if (lastValid.first != nullptr)
@@ -96,7 +108,15 @@ bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1,
   if (is_valid)
   {
     state_space.interpolate(s1, s2, static_cast<double>(n_steps - 1) / static_cast<double>(n_steps), start_interp);
-    if (!si_->isValid(s2) || !continuousCollisionCheck(start_interp, s2))
+    if (state_validator_ && !state_validator_->isValid(s2))
+    {
+      lastValid.second = static_cast<double>(n_steps - 1) / static_cast<double>(n_steps);
+      if (lastValid.first != nullptr)
+        state_space.interpolate(s1, s2, lastValid.second, lastValid.first);
+
+      is_valid = false;
+    }
+    else if (!continuousCollisionCheck(start_interp, s2))
     {
       lastValid.second = static_cast<double>(n_steps - 1) / static_cast<double>(n_steps);
       if (lastValid.first != nullptr)
@@ -113,11 +133,6 @@ bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1,
 
 bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State* s1, const ompl::base::State* s2) const
 {
-  const auto dof = si_->getStateDimension();
-  std::vector<double> start(dof), finish(dof);
-  si_->getStateSpace()->copyToReals(start, s1);
-  si_->getStateSpace()->copyToReals(finish, s2);
-
   // It was time using chronos time elapsed and it was faster to cache the contact manager
   unsigned long int hash = std::hash<std::thread::id>{}(std::this_thread::get_id());
   tesseract_collision::ContinuousContactManager::Ptr cm;
@@ -139,8 +154,8 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
   }
   mutex_.unlock();
 
-  Eigen::Map<Eigen::VectorXd> start_joints(start.data(), dof);
-  Eigen::Map<Eigen::VectorXd> finish_joints(finish.data(), dof);
+  Eigen::Map<Eigen::VectorXd> start_joints = extractor_(s1);
+  Eigen::Map<Eigen::VectorXd> finish_joints = extractor_(s2);
 
   tesseract_environment::EnvState::Ptr state0 = ss->getState(joints_, start_joints);
   tesseract_environment::EnvState::Ptr state1 = ss->getState(joints_, finish_joints);

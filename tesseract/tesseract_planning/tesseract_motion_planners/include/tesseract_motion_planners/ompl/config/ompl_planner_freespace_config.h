@@ -42,7 +42,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_motion_planners
 {
 using OptimizationObjectiveAllocator =
-    std::function<ompl::base::OptimizationObjectivePtr(const ompl::base::SpaceInformationPtr&)>;
+    std::function<ompl::base::OptimizationObjectivePtr(const ompl::base::SpaceInformationPtr&,
+                                                       const OMPLPlannerConfig&)>;
+
+using StateValidityCheckerAllocator =
+    std::function<ompl::base::StateValidityCheckerPtr(const ompl::base::SpaceInformationPtr&,
+                                                      const OMPLPlannerConfig&)>;
+
+using MotionValidatorAllocator =
+    std::function<ompl::base::MotionValidatorPtr(const ompl::base::SpaceInformationPtr&, const OMPLPlannerConfig&)>;
 
 struct OMPLPlannerFreespaceConfig : public OMPLPlannerConfig
 {
@@ -50,6 +58,8 @@ struct OMPLPlannerFreespaceConfig : public OMPLPlannerConfig
 
   using Ptr = std::shared_ptr<OMPLPlannerFreespaceConfig>;
   using ConstPtr = std::shared_ptr<const OMPLPlannerFreespaceConfig>;
+
+  OMPLPlannerFreespaceConfig(tesseract::Tesseract::ConstPtr tesseract, std::string manipulator);
 
   OMPLPlannerFreespaceConfig(tesseract::Tesseract::ConstPtr tesseract,
                              std::string manipulator,
@@ -82,19 +92,25 @@ struct OMPLPlannerFreespaceConfig : public OMPLPlannerConfig
       std::bind(&OMPLPlannerFreespaceConfig::allocWeightedRealVectorStateSampler, this, std::placeholders::_1);
 
   /** @brief Set the optimization objective function allocator. Default is to minimize path length */
-  OptimizationObjectiveAllocator optimization_objective_allocator = [](const ompl::base::SpaceInformationPtr& si) {
+  OptimizationObjectiveAllocator optimization_objective_allocator = [](const ompl::base::SpaceInformationPtr& si,
+                                                                       const OMPLPlannerConfig&) {
     return std::make_shared<ompl::base::PathLengthOptimizationObjective>(si);
   };
 
-  /** @brief The ompl state validity checker. If nullptr it uses OMPLFreespacePlanner::isStateValid. */
-  ompl::base::StateValidityCheckerFn svc;
+  /** @brief The ompl state validity checker. If nullptr and collision checking enabled it uses
+   * StateCollisionValidator */
+  StateValidityCheckerAllocator svc_allocator;
 
   /** @brief The ompl motion validator. If nullptr and continuous collision checking enabled it used
    * ContinuousMotionValidator */
-  ompl::base::MotionValidatorPtr mv;
+  MotionValidatorAllocator mv_allocator;
 
 #ifndef OMPL_LESS_1_4_0
-  /** @brief The constraints on the problem */
+  /**
+   * @brief The constraints on the problem
+   *
+   * When using constraints the set number of output state may not be achieved.
+   */
   ompl::base::ConstraintPtr constraint{ nullptr };
 #endif
 

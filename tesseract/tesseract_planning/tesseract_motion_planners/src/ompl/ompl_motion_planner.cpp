@@ -61,6 +61,10 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
     return config_status;
   }
 
+  // If the verbose set the log level to debug.
+  if (verbose)
+    console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
+
   ompl::base::PlannerStatus status;
   if (!config_->optimize)
   {
@@ -95,6 +99,7 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
         }
 
         ompl::base::Cost obj_cost = pdef->getSolutionPath()->cost(pdef->getOptimizationObjective());
+        CONSOLE_BRIDGE_logDebug("Motion Objective Cost: %f", obj_cost.value());
 
         if (pdef->getOptimizationObjective()->isSatisfied(obj_cost))
         {

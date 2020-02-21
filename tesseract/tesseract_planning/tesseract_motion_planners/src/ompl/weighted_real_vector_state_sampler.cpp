@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/StateSpace.h>
+#include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/base/ScopedState.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -41,55 +42,61 @@ WeightedRealVectorStateSampler::WeightedRealVectorStateSampler(const ompl::base:
                                                                const Eigen::Ref<const Eigen::MatrixX2d>& bounds)
   : ompl::base::StateSampler(space), weights_(weights), bounds_(bounds)
 {
+  assert(bounds_.rows() == weights_.size());
 }
 
 void WeightedRealVectorStateSampler::sampleUniform(ompl::base::State* state)
 {
+  assert(dynamic_cast<ompl::base::RealVectorStateSpace::StateType*>(state) != nullptr);
+
   const unsigned int dim = space_->getDimension();
-  std::vector<double> ss(dim), ns(dim);
-  space_->copyToReals(ss, state);
+  auto* rstate = state->template as<ompl::base::RealVectorStateSpace::StateType>();
 
   for (unsigned int i = 0; i < dim; ++i)
-    ns[i] = rng_.uniformReal(bounds_(i, 0), bounds_(i, 1));
-
-  space_->copyFromReals(state, ns);
+    rstate->values[i] = rng_.uniformReal(bounds_(i, 0), bounds_(i, 1));
 }
 
 void WeightedRealVectorStateSampler::sampleUniformNear(ompl::base::State* state,
                                                        const ompl::base::State* near,
                                                        const double distance)
 {
+  assert(dynamic_cast<ompl::base::RealVectorStateSpace::StateType*>(state) != nullptr);
+  assert(dynamic_cast<const ompl::base::RealVectorStateSpace::StateType*>(near) != nullptr);
+
   const unsigned int dim = space_->getDimension();
-  std::vector<double> ss(dim), ns(dim), rnear(dim);
-  space_->copyToReals(ss, state);
-  space_->copyToReals(rnear, near);
+  auto* rstate = state->template as<ompl::base::RealVectorStateSpace::StateType>();
+  auto* rnear = near->template as<ompl::base::RealVectorStateSpace::StateType>();
 
   for (unsigned int i = 0; i < dim; ++i)
-    ns[i] = rng_.uniformReal(std::max(bounds_(i, 0), rnear[i] - (distance * weights_[i])),
-                             std::min(bounds_(i, 1), rnear[i] + (distance * weights_[i])));
-
-  space_->copyFromReals(state, ns);
+  {
+    double lb = std::max(bounds_(i, 0), rnear->values[i] - (distance * weights_[i]));
+    double ub = std::min(bounds_(i, 1), rnear->values[i] + (distance * weights_[i]));
+    if (std::abs(ub - lb) < 1e-6 || ub < lb)
+      rstate->values[i] = lb;
+    else
+      rstate->values[i] = rng_.uniformReal(lb, ub);
+  }
 }
 
 void WeightedRealVectorStateSampler::sampleGaussian(ompl::base::State* state,
                                                     const ompl::base::State* mean,
                                                     const double stdDev)
 {
+  assert(dynamic_cast<ompl::base::RealVectorStateSpace::StateType*>(state) != nullptr);
+  assert(dynamic_cast<const ompl::base::RealVectorStateSpace::StateType*>(mean) != nullptr);
+
   const unsigned int dim = space_->getDimension();
-  std::vector<double> ss(dim), ns(dim), rmean(dim);
-  space_->copyToReals(ss, state);
-  space_->copyToReals(rmean, mean);
+  auto* rstate = state->template as<ompl::base::RealVectorStateSpace::StateType>();
+  auto* rmean = mean->template as<ompl::base::RealVectorStateSpace::StateType>();
 
   for (unsigned int i = 0; i < dim; ++i)
   {
-    double v = rng_.gaussian(rmean[i], stdDev * weights_[i]);
+    double v = rng_.gaussian(rmean->values[i], stdDev * weights_[i]);
     if (v < bounds_(i, 0))
       v = bounds_(i, 0);
     else if (v > bounds_(i, 1))
       v = bounds_(i, 1);
-    ns[i] = v;
+    rstate->values[i] = v;
   }
-
-  space_->copyFromReals(state, ns);
 }
 }  // namespace tesseract_motion_planners

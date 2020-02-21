@@ -51,6 +51,9 @@ add_library(${PROJECT_NAME}_ompl SHARED
   src/ompl/ompl_planner_configurator.cpp
   src/ompl/config/ompl_planner_config.cpp
   src/ompl/config/ompl_planner_freespace_config.cpp
+  src/ompl/utils.cpp
+  src/ompl/state_collision_validator.cpp
+  src/ompl/compound_state_validator.cpp
 )
 target_link_libraries(${PROJECT_NAME}_ompl PUBLIC ${PROJECT_NAME}_core ${OMPL_LIBRARIES})
 if(OMPL_VERSION VERSION_LESS "1.4.0")
