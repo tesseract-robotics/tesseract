@@ -1,13 +1,13 @@
 /**
- * @file continuous_motion_validator.h
- * @brief Tesseract OMPL planner continuous collision check between two states
+ * @file state_collision_validator.h
+ * @brief Tesseract OMPL planner OMPL state collision check
  *
- * @author Jonathan Meyer
- * @date April 18, 2018
+ * @author Levi Armstrong
+ * @date February 17, 2020
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2020, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -23,12 +23,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_MOTION_PLANNERS_CONTINUOUS_MOTION_VALIDATOR_H
-#define TESSERACT_MOTION_PLANNERS_CONTINUOUS_MOTION_VALIDATOR_H
+#ifndef TESSERACT_MOTION_PLANNERS_STATE_COLLISION_VALIDATOR_H
+#define TESSERACT_MOTION_PLANNERS_STATE_COLLISION_VALIDATOR_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ompl/base/MotionValidator.h>
 #include <ompl/base/StateValidityChecker.h>
 #include <mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -40,37 +39,20 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_motion_planners
 {
 /** @brief Continuous collision check between two states */
-class ContinuousMotionValidator : public ompl::base::MotionValidator
+class StateCollisionValidator : public ompl::base::StateValidityChecker
 {
 public:
-  ContinuousMotionValidator(const ompl::base::SpaceInformationPtr& space_info,
-                            ompl::base::StateValidityCheckerPtr state_validator,
-                            const tesseract_environment::Environment::ConstPtr& env,
-                            tesseract_kinematics::ForwardKinematics::ConstPtr kin,
-                            double collision_safety_margin,
-                            OMPLStateExtractor extractor);
+  StateCollisionValidator(const ompl::base::SpaceInformationPtr& space_info,
+                          tesseract_environment::Environment::ConstPtr env,
+                          tesseract_kinematics::ForwardKinematics::ConstPtr kin,
+                          double collision_safety_margin,
+                          OMPLStateExtractor extractor);
 
-  bool checkMotion(const ompl::base::State* s1, const ompl::base::State* s2) const override;
-
-  bool checkMotion(const ompl::base::State* s1,
-                   const ompl::base::State* s2,
-                   std::pair<ompl::base::State*, double>& lastValid) const override;
+  bool isValid(const ompl::base::State* state) const override;
 
 private:
-  /**
-   * @brief Perform a continuous collision check between two ompl states
-   * @param s1 First OMPL State
-   * @param s2 Second OMPL State
-   * @return True if not in collision, otherwise false.
-   */
-  bool continuousCollisionCheck(const ompl::base::State* s1, const ompl::base::State* s2) const;
-
-  /**
-   * @brief The state validator without collision checking
-   *
-   * Since this performs collision checking we only want to use state validator without collision checking.
-   */
-  ompl::base::StateValidityCheckerPtr state_validator_;
+  /** @brief The Tesseract Environment */
+  tesseract_environment::Environment::ConstPtr env_;
 
   /**< @brief The tesseract state solver */
   tesseract_environment::StateSolver::ConstPtr state_solver_;
@@ -79,7 +61,7 @@ private:
   tesseract_kinematics::ForwardKinematics::ConstPtr kin_;
 
   /** @brief The continuous contact manager used for creating cached continuous contact managers. */
-  tesseract_collision::ContinuousContactManager::Ptr continuous_contact_manager_;
+  tesseract_collision::DiscreteContactManager::Ptr contact_manager_;
 
   /** @brief A list of active links */
   std::vector<std::string> links_;
@@ -99,11 +81,11 @@ private:
   mutable std::mutex mutex_;
 
   /** @brief The continuous contact manager cache */
-  mutable std::map<unsigned long int, tesseract_collision::ContinuousContactManager::Ptr> continuous_contact_managers_;
+  mutable std::map<unsigned long int, tesseract_collision::DiscreteContactManager::Ptr> contact_managers_;
 
   /** @brief The state solver manager cache */
   mutable std::map<unsigned long int, tesseract_environment::StateSolver::Ptr> state_solver_managers_;
 };
-}  // namespace tesseract_motion_planners
 
-#endif  // TESSERACT_MOTION_PLANNERS_CONTINUOUS_MOTION_VALIDATOR_H
+}  // namespace tesseract_motion_planners
+#endif  // TESSERACT_MOTION_PLANNERS_STATE_COLLISION_VALIDATOR_H

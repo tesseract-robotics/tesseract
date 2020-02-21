@@ -343,9 +343,6 @@ TEST(OMPLConstraintPlanner, OMPLConstraintPlannerUnit)  // NOLINT
   boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
   EXPECT_TRUE(tesseract->init(urdf_path, srdf_path, locator));
 
-  // Step 2: Add box to environment
-  addBox(*(tesseract->getEnvironment()));
-
   // Step 3: Create ompl planner config and populate it
   auto kin = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
   std::vector<double> swp = start_state;
@@ -356,8 +353,7 @@ TEST(OMPLConstraintPlanner, OMPLConstraintPlannerUnit)  // NOLINT
 
   std::vector<tesseract_motion_planners::OMPLPlannerConfigurator::ConstPtr> planners;
 
-  auto rrtconnect_planner = std::make_shared<tesseract_motion_planners::KPIECE1Configurator>();
-  rrtconnect_planner->range = 0.5;
+  auto rrtconnect_planner = std::make_shared<tesseract_motion_planners::RRTConnectConfigurator>();
   planners.push_back(rrtconnect_planner);
 
   auto ompl_config =
@@ -387,7 +383,9 @@ TEST(OMPLConstraintPlanner, OMPLConstraintPlannerUnit)  // NOLINT
     CONSOLE_BRIDGE_logError("CI Error: %s", status.message().c_str());
   }
   EXPECT_TRUE(status);
-  EXPECT_TRUE(ompl_planning_response.joint_trajectory.trajectory.rows() >= ompl_config->n_output_states);
+  CONSOLE_BRIDGE_logInform("Number of states: %d", ompl_planning_response.joint_trajectory.trajectory.rows());
+
+  EXPECT_TRUE(ompl_planning_response.joint_trajectory.trajectory.rows() > 2);
 
   long cnt = 0;
   double max_angle = 0;
@@ -407,7 +405,7 @@ TEST(OMPLConstraintPlanner, OMPLConstraintPlannerUnit)  // NOLINT
       ++cnt;
   }
 
-  CONSOLE_BRIDGE_logWarn("CI Warn: Max error found: %d radians", cnt, max_angle);
+  CONSOLE_BRIDGE_logWarn("CI Warn: Max error found: %f radians", max_angle);
 
   if (cnt != 0)
   {

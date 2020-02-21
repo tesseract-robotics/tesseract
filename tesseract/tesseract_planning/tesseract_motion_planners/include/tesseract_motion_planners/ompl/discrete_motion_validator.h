@@ -29,11 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/MotionValidator.h>
-#include <mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
-#include <tesseract_environment/core/environment.h>
-#include <tesseract_kinematics/core/forward_kinematics.h>
 
 namespace tesseract_motion_planners
 {
@@ -41,50 +37,13 @@ namespace tesseract_motion_planners
 class DiscreteMotionValidator : public ompl::base::MotionValidator
 {
 public:
-  DiscreteMotionValidator(const ompl::base::SpaceInformationPtr& space_info,
-                          tesseract_environment::Environment::ConstPtr env,
-                          tesseract_kinematics::ForwardKinematics::ConstPtr kin,
-                          double collision_safety_margin);
+  DiscreteMotionValidator(const ompl::base::SpaceInformationPtr& space_info);
 
   bool checkMotion(const ompl::base::State* s1, const ompl::base::State* s2) const override;
 
   bool checkMotion(const ompl::base::State* s1,
                    const ompl::base::State* s2,
                    std::pair<ompl::base::State*, double>& lastValid) const override;
-
-private:
-  /**
-   * @brief Perform a discrete collision for a given ompl state
-   * @param s2 OMPL State
-   * @return True if not in collision, otherwise false.
-   */
-  bool discreteCollisionCheck(const ompl::base::State* s2) const;
-
-  /** @brief The Tesseract Environment */
-  tesseract_environment::Environment::ConstPtr env_;
-
-  /** @brief The Tesseract Forward Kinematics */
-  tesseract_kinematics::ForwardKinematics::ConstPtr kin_;
-
-  /** @brief The discrete contact manager used for creating cached discrete contact managers. */
-  tesseract_collision::DiscreteContactManager::Ptr contact_manager_;
-
-  /** @brief A list of active links */
-  std::vector<std::string> links_;
-
-  /** @brief A list of active joints */
-  std::vector<std::string> joints_;
-
-  // The items below are to cache the contact manager based on thread ID. Currently ompl is multi
-  // threaded but the methods used to implement collision checking are not thread safe. To prevent
-  // reconstructing the collision environment for every check this will cache a contact manager
-  // based on its thread ID.
-
-  /** @brief Contact manager caching mutex */
-  mutable std::mutex mutex_;
-
-  /** @brief The discrete contact manager cache */
-  mutable std::map<unsigned long int, tesseract_collision::DiscreteContactManager::Ptr> contact_managers_;
 };
 }  // namespace tesseract_motion_planners
 

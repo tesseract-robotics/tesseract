@@ -41,10 +41,18 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/discrete_motion_validator.h>
 #include <tesseract_motion_planners/ompl/weighted_real_vector_state_sampler.h>
 #include <tesseract_motion_planners/ompl/config/ompl_planner_freespace_config.h>
+#include <tesseract_motion_planners/ompl/state_collision_validator.h>
+#include <tesseract_motion_planners/ompl/compound_state_validator.h>
 
 namespace tesseract_motion_planners
 {
 /** @brief Construct a basic planner */
+OMPLPlannerFreespaceConfig::OMPLPlannerFreespaceConfig(tesseract::Tesseract::ConstPtr tesseract,
+                                                       std::string manipulator)
+  : OMPLPlannerConfig(std::move(tesseract), std::move(manipulator))
+{
+}
+
 OMPLPlannerFreespaceConfig::OMPLPlannerFreespaceConfig(tesseract::Tesseract::ConstPtr tesseract,
                                                        std::string manipulator,
                                                        std::vector<OMPLPlannerConfigurator::ConstPtr> planners)
@@ -104,11 +112,20 @@ bool OMPLPlannerFreespaceConfig::generate()
 
 #ifndef OMPL_LESS_1_4_0
   if (constraint)
+  {
     state_space_ptr = std::make_shared<ompl::base::ProjectedStateSpace>(rss, constraint);
+    extractor = tesseract_motion_planners::ConstrainedStateSpaceExtractor;
+  }
   else
+  {
     state_space_ptr = rss;
+    extractor =
+        std::bind(&tesseract_motion_planners::RealVectorStateSpaceExtractor, std::placeholders::_1, kin->numJoints());
+  }
 #else
   state_space_ptr = rss;
+  extractor =
+      std::bind(&tesseract_motion_planners::RealVectorStateSpaceExtractor, std::placeholders::_1, kin->numJoints());
 #endif
 
   if (longest_valid_segment_fraction > 0 && longest_valid_segment_length > 0)
@@ -230,12 +247,30 @@ bool OMPLPlannerFreespaceConfig::generate()
   simple_setup->setStartAndGoalStates(start_state, goal_state);
 
   // Setup state checking functionality
-  if (svc != nullptr)
+  ompl::base::StateValidityCheckerPtr svc_without_collision;
+  if (svc_allocator != nullptr)
+  {
+    svc_without_collision = svc_allocator(simple_setup->getSpaceInformation(), *this);
+    auto csvc = std::make_shared<CompoundStateValidator>(svc_without_collision);
+    if (collision_check)
+    {
+      auto svc = std::make_shared<StateCollisionValidator>(
+          simple_setup->getSpaceInformation(), env, kin, collision_safety_margin, extractor);
+      csvc->addStateValidator(svc);
+    }
+    simple_setup->setStateValidityChecker(csvc);
+  }
+  else if (collision_check)
+  {
+    auto svc = std::make_shared<StateCollisionValidator>(
+        simple_setup->getSpaceInformation(), env, kin, collision_safety_margin, extractor);
     simple_setup->setStateValidityChecker(svc);
+  }
 
   // Setup motion validation (i.e. collision checking)
-  if (mv != nullptr)
+  if (mv_allocator != nullptr)
   {
+    auto mv = mv_allocator(simple_setup->getSpaceInformation(), *this);
     simple_setup->getSpaceInformation()->setMotionValidator(mv);
   }
   else
@@ -246,15 +281,14 @@ bool OMPLPlannerFreespaceConfig::generate()
       if (collision_continuous)
       {
         mv = std::make_shared<ContinuousMotionValidator>(
-            simple_setup->getSpaceInformation(), env, kin, collision_safety_margin);
-        simple_setup->getSpaceInformation()->setMotionValidator(mv);
+            simple_setup->getSpaceInformation(), svc_without_collision, env, kin, collision_safety_margin, extractor);
       }
       else
       {
-        mv = std::make_shared<DiscreteMotionValidator>(
-            simple_setup->getSpaceInformation(), env, kin, collision_safety_margin);
-        simple_setup->getSpaceInformation()->setMotionValidator(mv);
+        // Collision checking is preformed using the state validator which this calles.
+        mv = std::make_shared<DiscreteMotionValidator>(simple_setup->getSpaceInformation());
       }
+      simple_setup->getSpaceInformation()->setMotionValidator(mv);
     }
   }
 
@@ -262,7 +296,7 @@ bool OMPLPlannerFreespaceConfig::generate()
   if (optimization_objective_allocator)
   {
     simple_setup->getProblemDefinition()->setOptimizationObjective(
-        optimization_objective_allocator(simple_setup->getSpaceInformation()));
+        optimization_objective_allocator(simple_setup->getSpaceInformation(), *this));
   }
 
   return true;

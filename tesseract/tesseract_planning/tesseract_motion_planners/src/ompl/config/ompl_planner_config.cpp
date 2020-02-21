@@ -29,6 +29,11 @@
 
 namespace tesseract_motion_planners
 {
+OMPLPlannerConfig::OMPLPlannerConfig(tesseract::Tesseract::ConstPtr tesseract, std::string manipulator)
+  : tesseract(std::move(tesseract)), manipulator(std::move(manipulator))
+{
+}
+
 OMPLPlannerConfig::OMPLPlannerConfig(tesseract::Tesseract::ConstPtr tesseract,
                                      std::string manipulator,
                                      std::vector<OMPLPlannerConfigurator::ConstPtr> planners)
@@ -49,24 +54,14 @@ OMPLPlannerConfig::OMPLPlannerConfig(tesseract::Tesseract::ConstPtr tesseract,
 
 bool OMPLPlannerConfig::generate()
 {
-  return ((simple_setup != nullptr) && (tesseract != nullptr) && (!manipulator.empty()) && (!planners.empty()));
+  return ((simple_setup != nullptr) && (tesseract != nullptr) && (!manipulator.empty()) && (!planners.empty()) &&
+          (extractor != nullptr));
 }
 
 tesseract_common::TrajArray OMPLPlannerConfig::getTrajectory() const
 {
-  const auto& path = this->simple_setup->getSolutionPath();
-  const auto n_points = static_cast<long>(path.getStateCount());
-  const auto dof = static_cast<long>(path.getSpaceInformation()->getStateDimension());
-
-  tesseract_common::TrajArray result(n_points, dof);
-  std::vector<double> state(static_cast<std::size_t>(dof));
-  for (long i = 0; i < n_points; ++i)
-  {
-    simple_setup->getStateSpace()->copyToReals(state, path.getState(static_cast<unsigned>(i)));
-    result.row(i) = Eigen::Map<Eigen::VectorXd>(state.data(), dof);
-  }
-
-  return result;
+  assert(extractor != nullptr);
+  return toTrajArray(this->simple_setup->getSolutionPath(), extractor);
 }
 
 }  // namespace tesseract_motion_planners
