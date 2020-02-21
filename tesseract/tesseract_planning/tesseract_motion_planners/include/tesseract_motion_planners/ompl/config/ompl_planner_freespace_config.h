@@ -39,8 +39,7 @@ namespace tesseract_motion_planners
 {
 using OptimizationObjectiveAllocator =
     std::function<ompl::base::OptimizationObjectivePtr(const ompl::base::SpaceInformationPtr&,
-                                                       tesseract_environment::Environment::ConstPtr,
-                                                       tesseract_kinematics::ForwardKinematics::ConstPtr)>;
+                                                       const OMPLPlannerConfig& config)>;
 
 struct OMPLPlannerFreespaceConfig : public OMPLPlannerConfig
 {
@@ -82,8 +81,7 @@ struct OMPLPlannerFreespaceConfig : public OMPLPlannerConfig
   /** @brief Set the optimization objective function allocator. Default is to minimize path length */
   OptimizationObjectiveAllocator optimization_objective_allocator =
       [](const ompl::base::SpaceInformationPtr& si,
-         tesseract_environment::Environment::ConstPtr env,
-         tesseract_kinematics::ForwardKinematics::ConstPtr kin) {
+         const OMPLPlannerConfig& config) {
         return std::make_shared<ompl::base::PathLengthOptimizationObjective>(si);
       };
 
