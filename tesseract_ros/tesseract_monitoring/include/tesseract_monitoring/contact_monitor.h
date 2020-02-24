@@ -53,11 +53,21 @@ public:
                  ros::NodeHandle& pnh,
                  const std::vector<std::string>& monitored_link_names,
                  const tesseract_collision::ContactTestType& type,
-                 const double contact_distance = 0.1,
-                 const bool publish_environment = false,
-                 const bool publish_markers = false);
-
+                 double contact_distance = 0.1,
+                 bool publish_environment = false,
+                 bool publish_markers = false);
   ~ContactMonitor();
+  /**
+   * @brief Custom copy constructor, copy assignment, move constructor, and move
+   * assignment.  Because the condition vairable current_joint_states_evt_
+   * requires a 'cleanup' function call, a custom destructor is required.
+   * When a custom destructor is required, it is best to explicitly create
+   * these functions.  Here, we do so by assigning them to default values.
+   */
+  ContactMonitor(const ContactMonitor&) = delete;
+  ContactMonitor& operator=(const ContactMonitor&) = delete;
+  ContactMonitor(ContactMonitor&&) = delete;
+  ContactMonitor& operator=(ContactMonitor&&) = delete;
 
   /**
    * @brief Compute collision results and publish results.

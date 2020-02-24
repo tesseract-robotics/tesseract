@@ -43,9 +43,9 @@ ContactMonitor::ContactMonitor(const tesseract::Tesseract::Ptr& tess,
                                ros::NodeHandle& pnh,
                                const std::vector<std::string>& monitored_link_names,
                                const tesseract_collision::ContactTestType& type,
-                               const double contact_distance,
-                               const bool publish_environment,
-                               const bool publish_markers)
+                               double contact_distance,
+                               bool publish_environment,
+                               bool publish_markers)
   : tess_(tess)
   , monitored_link_names_(monitored_link_names)
   , type_(type)
