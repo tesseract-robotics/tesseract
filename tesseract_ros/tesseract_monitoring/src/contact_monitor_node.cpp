@@ -40,7 +40,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_rosutils/utils.h>
 
 // Stuff for the contact monitor
-const static std::string ROBOT_DESCRIPTION_PARAM = "robot_description"; /**< Default ROS parameter for robot description */
+const static std::string ROBOT_DESCRIPTION_PARAM =
+    "robot_description"; /**< Default ROS parameter for robot description */
 const static double DEFAULT_CONTACT_DISTANCE = 0.1;
 
 int main(int argc, char** argv)
@@ -106,16 +107,10 @@ int main(int argc, char** argv)
   }
   tesseract_collision::ContactTestType type = static_cast<tesseract_collision::ContactTestType>(contact_test_type);
 
-  contact_monitor::ContactMonitor cm(tess,
-                                     nh,
-                                     pnh,
-                                     monitored_link_names,
-                                     type,
-                                     contact_distance,
-                                     publish_environment,
-                                     publish_markers);
+  contact_monitor::ContactMonitor cm(
+      tess, nh, pnh, monitored_link_names, type, contact_distance, publish_environment, publish_markers);
 
-  boost::thread t (&contact_monitor::ContactMonitor::computeCollisionReportThread, &cm);
+  boost::thread t(&contact_monitor::ContactMonitor::computeCollisionReportThread, &cm);
 
   ROS_INFO("Contact Monitor Running!");
 

@@ -38,65 +38,64 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace contact_monitor
 {
-  ContactMonitor::ContactMonitor(const tesseract::Tesseract::Ptr& tess,
-                 ros::NodeHandle& nh,
-                 ros::NodeHandle& pnh,
-                 const std::vector<std::string>& monitored_link_names,
-                 const tesseract_collision::ContactTestType& type,
-                 const double contact_distance,
-                 const bool publish_environment,
-                 const bool publish_markers
-      )
-    : tess_ (tess)
-    , monitored_link_names_ (monitored_link_names)
-    , type_ (type)
-    , contact_distance_ (contact_distance)
-    , publish_environment_ (publish_environment)
-    , publish_markers_ (publish_markers)
+ContactMonitor::ContactMonitor(const tesseract::Tesseract::Ptr& tess,
+                               ros::NodeHandle& nh,
+                               ros::NodeHandle& pnh,
+                               const std::vector<std::string>& monitored_link_names,
+                               const tesseract_collision::ContactTestType& type,
+                               const double contact_distance,
+                               const bool publish_environment,
+                               const bool publish_markers)
+  : tess_(tess)
+  , monitored_link_names_(monitored_link_names)
+  , type_(type)
+  , contact_distance_(contact_distance)
+  , publish_environment_(publish_environment)
+  , publish_markers_(publish_markers)
+{
+  if (tess_ == nullptr)
   {
-    if (tess_ == nullptr)
-    {
-      ROS_ERROR("Null pointer passed for tesseract object.  Not setting up contact monitor.");
-      return;
-    }
-    manager_ = tess->getEnvironment()->getDiscreteContactManager();
-    if (manager_ == nullptr)
-    {
-      ROS_ERROR("Discrete contact manager is a null pointer.  Not setting up contact monitor.");
-      return;
-    }
-    manager_->setActiveCollisionObjects(monitored_link_names);
-    manager_->setContactDistanceThreshold(contact_distance);
-
-    joint_states_sub_ = nh.subscribe("joint_states", 1, &ContactMonitor::callbackJointState, this);
-    contact_results_pub_ = pnh.advertise<tesseract_msgs::ContactResultVector>("contact_results", 1, true);
-    modify_env_service_ = pnh.advertiseService("modify_environment", &ContactMonitor::callbackModifyTesseractEnv, this);
-
-    if (publish_environment_)
-      environment_pub_ = pnh.advertise<tesseract_msgs::TesseractState>("tesseract", 100, false);
-
-    if (publish_markers_)
-      contact_marker_pub_ = pnh.advertise<visualization_msgs::MarkerArray>("contact_results_markers", 1, true);
-
-    compute_contact_results_ = pnh.advertiseService("compute_contact_results", &ContactMonitor::callbackComputeContactResultVector, this);
-
-    environment_diff_sub_ = pnh.subscribe("tesseract_diff", 100, &ContactMonitor::callbackTesseractEnvDiff, this);
-
+    ROS_ERROR("Null pointer passed for tesseract object.  Not setting up contact monitor.");
     return;
   }
-
-  ContactMonitor::~ContactMonitor()
+  manager_ = tess->getEnvironment()->getDiscreteContactManager();
+  if (manager_ == nullptr)
   {
-    current_joint_states_evt_.notify_all();
+    ROS_ERROR("Discrete contact manager is a null pointer.  Not setting up contact monitor.");
     return;
   }
+  manager_->setActiveCollisionObjects(monitored_link_names);
+  manager_->setContactDistanceThreshold(contact_distance);
 
+  joint_states_sub_ = nh.subscribe("joint_states", 1, &ContactMonitor::callbackJointState, this);
+  contact_results_pub_ = pnh.advertise<tesseract_msgs::ContactResultVector>("contact_results", 1, true);
+  modify_env_service_ = pnh.advertiseService("modify_environment", &ContactMonitor::callbackModifyTesseractEnv, this);
+
+  if (publish_environment_)
+    environment_pub_ = pnh.advertise<tesseract_msgs::TesseractState>("tesseract", 100, false);
+
+  if (publish_markers_)
+    contact_marker_pub_ = pnh.advertise<visualization_msgs::MarkerArray>("contact_results_markers", 1, true);
+
+  compute_contact_results_ =
+      pnh.advertiseService("compute_contact_results", &ContactMonitor::callbackComputeContactResultVector, this);
+
+  environment_diff_sub_ = pnh.subscribe("tesseract_diff", 100, &ContactMonitor::callbackTesseractEnvDiff, this);
+
+  return;
+}
+
+ContactMonitor::~ContactMonitor()
+{
+  current_joint_states_evt_.notify_all();
+  return;
+}
 
 /**
-* @brief Compute collision results and publish results.
-*
-* This also publishes environment and contact markers if correct flags are enabled for visualization and debuging.
-*/
+ * @brief Compute collision results and publish results.
+ *
+ * This also publishes environment and contact markers if correct flags are enabled for visualization and debuging.
+ */
 void ContactMonitor::computeCollisionReportThread()
 {
   while (!ros::isShuttingDown())
@@ -151,14 +150,14 @@ void ContactMonitor::computeCollisionReportThread()
     if (publish_markers_)
     {
       int id_counter = 0;
-      visualization_msgs::MarkerArray marker_msg =
-          tesseract_rosutils::ROSPlotting::getContactResultsMarkerArrayMsg(id_counter,
-                                                                           tess_->getEnvironment()->getSceneGraph()->getRoot(),
-                                                                           "contact_monitor",
-                                                                           msg->header.stamp,
-                                                                           monitored_link_names_,
-                                                                           contacts_vector,
-                                                                           safety_distance);
+      visualization_msgs::MarkerArray marker_msg = tesseract_rosutils::ROSPlotting::getContactResultsMarkerArrayMsg(
+          id_counter,
+          tess_->getEnvironment()->getSceneGraph()->getRoot(),
+          "contact_monitor",
+          msg->header.stamp,
+          monitored_link_names_,
+          contacts_vector,
+          safety_distance);
       contact_marker_pub_.publish(marker_msg);
     }
   }
@@ -172,7 +171,7 @@ void ContactMonitor::callbackJointState(boost::shared_ptr<sensor_msgs::JointStat
 }
 
 bool ContactMonitor::callbackModifyTesseractEnv(tesseract_msgs::ModifyEnvironmentRequest& request,
-                                tesseract_msgs::ModifyEnvironmentResponse& response)
+                                                tesseract_msgs::ModifyEnvironmentResponse& response)
 {
   boost::mutex::scoped_lock lock(modify_mutex_);
   response.success = tesseract_rosutils::processMsg(*(tess_->getEnvironment()), request.commands);
@@ -192,7 +191,7 @@ bool ContactMonitor::callbackModifyTesseractEnv(tesseract_msgs::ModifyEnvironmen
 }
 
 bool ContactMonitor::callbackComputeContactResultVector(tesseract_msgs::ComputeContactResultVectorRequest& request,
-                                        tesseract_msgs::ComputeContactResultVectorResponse& response)
+                                                        tesseract_msgs::ComputeContactResultVectorResponse& response)
 {
   tesseract_collision::ContactResultMap contact_results;
 
@@ -241,10 +240,4 @@ void ContactMonitor::callbackTesseractEnvDiff(const tesseract_msgs::TesseractSta
 
   return;
 }
-
-
-
-} // end namespace contact monitor
-
-
-
+}  // namespace contact_monitor

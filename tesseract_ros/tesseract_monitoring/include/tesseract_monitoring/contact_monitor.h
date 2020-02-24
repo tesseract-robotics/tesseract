@@ -38,14 +38,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp> // boost::thread and boost::condition_variable
+#include <boost/thread/thread.hpp>  // boost::thread and boost::condition_variable
 
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract/tesseract.h>
 
 namespace contact_monitor
 {
-
 class ContactMonitor
 {
 public:
@@ -95,9 +94,8 @@ private:
   boost::mutex modify_mutex_;
   boost::shared_ptr<sensor_msgs::JointState> current_joint_states_;
   boost::condition_variable current_joint_states_evt_;
-
 };
 
-} // end namespace contact_monitor
+}  // end namespace contact_monitor
 
-#endif // CONTACT_MONITOR_H
+#endif  // CONTACT_MONITOR_H
