@@ -54,7 +54,7 @@ set(OMPL_SRC src/ompl/ompl_motion_planner.cpp
   src/ompl/state_collision_validator.cpp
   src/ompl/compound_state_validator.cpp)
 
-if(OMPL_VERSION VERSION_GREATER_EQUAL "1.4.0")
+if(NOT OMPL_VERSION VERSION_LESS "1.4.0")
   list(APPEND OMPL_SRC src/ompl/config/ompl_planner_constrained_config.cpp)
 endif()
 
@@ -73,6 +73,9 @@ add_library(${PROJECT_NAME}_ompl_trajopt_freespace SHARED src/hybrid/ompl_trajop
 target_link_libraries(${PROJECT_NAME}_ompl_trajopt_freespace PUBLIC ${PROJECT_NAME}_ompl ${PROJECT_NAME}_trajopt)
 tesseract_target_compile_options(${PROJECT_NAME}_ompl_trajopt_freespace PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_ompl_trajopt_freespace)
+if(OMPL_VERSION VERSION_LESS "1.4.0")
+    target_compile_definitions(${PROJECT_NAME}_ompl PUBLIC OMPL_LESS_1_4_0=ON)
+endif()
 target_include_directories(${PROJECT_NAME}_ompl_trajopt_freespace PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
