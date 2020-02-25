@@ -84,7 +84,7 @@ public:
     // Ensure that negative x/y 'double back' and positive x/y move in the direction of the path
     if (waypoints.size() >= 2)
     {
-      assert(waypoints[waypoints.end() - 2].getType() == tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT);
+      assert(waypoints[waypoints.size() - 2]->getType() == tesseract_motion_planners::WaypointType::CARTESIAN_WAYPOINT);
       const tesseract_motion_planners::CartesianWaypoint::Ptr& prev_waypoint =
           std::static_pointer_cast<tesseract_motion_planners::CartesianWaypoint>(*(waypoints.end() - 2));
       Eigen::Isometry3d penultimate_in_final = cur_waypoint->getTransform().inverse() * prev_waypoint->getTransform();
