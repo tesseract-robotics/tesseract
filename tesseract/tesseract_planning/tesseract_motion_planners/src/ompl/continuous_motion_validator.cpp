@@ -80,8 +80,8 @@ bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1,
 
     for (unsigned i = 1; i < n_steps; ++i)
     {
-      state_space.interpolate(s1, s2, static_cast<double>(i - 1) / static_cast<double>(n_steps), start_interp);
-      state_space.interpolate(s1, s2, static_cast<double>(i) / static_cast<double>(n_steps), end_interp);
+      state_space.interpolate(s1, s2, (i - 1) / static_cast<double>(n_steps), start_interp);
+      state_space.interpolate(s1, s2, (i) / static_cast<double>(n_steps), end_interp);
       if (state_validator_ && !state_validator_->isValid(end_interp))
       {
         lastValid.second = static_cast<double>(i - 1) / static_cast<double>(n_steps);
@@ -93,7 +93,7 @@ bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1,
       }
       else if (!continuousCollisionCheck(start_interp, end_interp))
       {
-        lastValid.second = static_cast<double>(i - 1) / static_cast<double>(n_steps);
+        lastValid.second = (i - 1) / static_cast<double>(n_steps);
         if (lastValid.first != nullptr)
           state_space.interpolate(s1, s2, lastValid.second, lastValid.first);
 
@@ -107,7 +107,7 @@ bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1,
 
   if (is_valid)
   {
-    state_space.interpolate(s1, s2, static_cast<double>(n_steps - 1) / static_cast<double>(n_steps), start_interp);
+    state_space.interpolate(s1, s2, (n_steps - 1) / static_cast<double>(n_steps), start_interp);
     if (state_validator_ && !state_validator_->isValid(s2))
     {
       lastValid.second = static_cast<double>(n_steps - 1) / static_cast<double>(n_steps);
