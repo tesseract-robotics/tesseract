@@ -30,11 +30,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/tools/multiplan/ParallelPlan.h>
 #include <ompl/base/objectives/PathLengthOptimizationObjective.h>
-
-#ifndef OMPL_LESS_1_4_0
-#include <ompl/base/spaces/constraint/ProjectedStateSpace.h>
-#include <ompl/base/ConstrainedSpaceInformation.h>
-#endif
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/continuous_motion_validator.h>
@@ -91,10 +86,6 @@ bool OMPLPlannerFreespaceConfig::generate()
   }
 
   const tesseract_environment::Environment::ConstPtr& env = tesseract->getEnvironmentConst();
-  // kinematics objects does not know of every link affected by its motion so must compute adjacency map
-  // to determine all active links.
-  auto adj_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-      env->getSceneGraph(), kin->getActiveLinkNames(), env->getCurrentState()->transforms);
 
   const std::vector<std::string>& joint_names = kin->getJointNames();
   const auto dof = kin->numJoints();
@@ -110,24 +101,34 @@ bool OMPLPlannerFreespaceConfig::generate()
   if (state_sampler_allocator)
     rss->setStateSamplerAllocator(state_sampler_allocator);
 
-#ifndef OMPL_LESS_1_4_0
-  if (constraint)
-  {
-    state_space_ptr = std::make_shared<ompl::base::ProjectedStateSpace>(rss, constraint);
-    extractor = tesseract_motion_planners::ConstrainedStateSpaceExtractor;
-  }
-  else
-  {
-    state_space_ptr = rss;
-    extractor =
-        std::bind(&tesseract_motion_planners::RealVectorStateSpaceExtractor, std::placeholders::_1, kin->numJoints());
-  }
-#else
   state_space_ptr = rss;
   extractor =
       std::bind(&tesseract_motion_planners::RealVectorStateSpaceExtractor, std::placeholders::_1, kin->numJoints());
-#endif
 
+  // Setup Longest Valid Segment
+  processLongestValidSegment(state_space_ptr);
+
+  // Create Simple Setup from state space
+  simple_setup = std::make_shared<ompl::geometric::SimpleSetup>(state_space_ptr);
+
+  // Setup start and goal state
+  if (!processStartAndGoalState(env, kin))
+    return false;
+
+  // Setup state checking functionality
+  ompl::base::StateValidityCheckerPtr svc_without_collision = processStateValidator(env, kin);
+
+  // Setup motion validation (i.e. collision checking)
+  processMotionValidator(svc_without_collision, env, kin);
+
+  // make sure the planners run until the time limit, and get the best possible solution
+  processOptimizationObjective();
+
+  return true;
+}
+
+void OMPLPlannerFreespaceConfig::processLongestValidSegment(const ompl::base::StateSpacePtr& state_space_ptr)
+{
   if (longest_valid_segment_fraction > 0 && longest_valid_segment_length > 0)
   {
     double val =
@@ -150,23 +151,18 @@ bool OMPLPlannerFreespaceConfig::generate()
     longest_valid_segment_length = 0.01 * state_space_ptr->getMaximumExtent();
   }
   state_space_ptr->setLongestValidSegmentFraction(longest_valid_segment_fraction);
+}
 
-#ifndef OMPL_LESS_1_4_0
-  if (constraint)
-  {
-    auto csi = std::make_shared<ompl::base::ConstrainedSpaceInformation>(state_space_ptr);
-    this->simple_setup = std::make_shared<ompl::geometric::SimpleSetup>(csi);
-  }
-  else
-  {
-    this->simple_setup = std::make_shared<ompl::geometric::SimpleSetup>(state_space_ptr);
-  }
-#else
-  this->simple_setup = std::make_shared<ompl::geometric::SimpleSetup>(state_space_ptr);
-#endif
-
+bool OMPLPlannerFreespaceConfig::processStartAndGoalState(const tesseract_environment::Environment::ConstPtr& env,
+                                                          const tesseract_kinematics::ForwardKinematics::Ptr& kin)
+{
   JointWaypoint::Ptr start_position;
   JointWaypoint::Ptr end_position;
+
+  // kinematics objects does not know of every link affected by its motion so must compute adjacency map
+  // to determine all active links.
+  auto adj_map = std::make_shared<tesseract_environment::AdjacencyMap>(
+      env->getSceneGraph(), kin->getActiveLinkNames(), env->getCurrentState()->transforms);
 
   // Get descrete contact manager for testing provided start and end position
   // This is required because collision checking happens in motion validators now
@@ -234,6 +230,7 @@ bool OMPLPlannerFreespaceConfig::generate()
     }
   };
 
+  const auto dof = kin->numJoints();
   ompl::base::ScopedState<> start_state(simple_setup->getStateSpace());
   const Eigen::VectorXd sp = start_position->getPositions(kin->getJointNames());
   for (unsigned i = 0; i < dof; ++i)
@@ -245,8 +242,13 @@ bool OMPLPlannerFreespaceConfig::generate()
     goal_state[i] = ep[i];
 
   simple_setup->setStartAndGoalStates(start_state, goal_state);
+  return true;
+}
 
-  // Setup state checking functionality
+ompl::base::StateValidityCheckerPtr
+OMPLPlannerFreespaceConfig::processStateValidator(const tesseract_environment::Environment::ConstPtr& env,
+                                                  const tesseract_kinematics::ForwardKinematics::Ptr& kin)
+{
   ompl::base::StateValidityCheckerPtr svc_without_collision;
   if (svc_allocator != nullptr)
   {
@@ -266,8 +268,12 @@ bool OMPLPlannerFreespaceConfig::generate()
         simple_setup->getSpaceInformation(), env, kin, collision_safety_margin, extractor);
     simple_setup->setStateValidityChecker(svc);
   }
-
-  // Setup motion validation (i.e. collision checking)
+  return svc_without_collision;
+}
+void OMPLPlannerFreespaceConfig::processMotionValidator(ompl::base::StateValidityCheckerPtr svc_without_collision,
+                                                        const tesseract_environment::Environment::ConstPtr& env,
+                                                        const tesseract_kinematics::ForwardKinematics::Ptr& kin)
+{
   if (mv_allocator != nullptr)
   {
     auto mv = mv_allocator(simple_setup->getSpaceInformation(), *this);
@@ -291,15 +297,15 @@ bool OMPLPlannerFreespaceConfig::generate()
       simple_setup->getSpaceInformation()->setMotionValidator(mv);
     }
   }
+}
 
-  // make sure the planners run until the time limit, and get the best possible solution
+void OMPLPlannerFreespaceConfig::processOptimizationObjective()
+{
   if (optimization_objective_allocator)
   {
     simple_setup->getProblemDefinition()->setOptimizationObjective(
         optimization_objective_allocator(simple_setup->getSpaceInformation(), *this));
   }
-
-  return true;
 }
 
 ompl::base::StateSamplerPtr
