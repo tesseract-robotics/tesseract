@@ -42,8 +42,7 @@ target_include_directories(${PROJECT_NAME}_trajopt SYSTEM PUBLIC
     ${Boost_INCLUDE_DIRS})
 
 # OMPL Freespace Planning Interface
-add_library(${PROJECT_NAME}_ompl SHARED
-  src/ompl/ompl_motion_planner.cpp
+set(OMPL_SRC src/ompl/ompl_motion_planner.cpp
   src/ompl/continuous_motion_validator.cpp
   src/ompl/discrete_motion_validator.cpp
   src/ompl/weighted_real_vector_state_sampler.cpp
@@ -53,12 +52,14 @@ add_library(${PROJECT_NAME}_ompl SHARED
   src/ompl/config/ompl_planner_freespace_config.cpp
   src/ompl/utils.cpp
   src/ompl/state_collision_validator.cpp
-  src/ompl/compound_state_validator.cpp
-)
-target_link_libraries(${PROJECT_NAME}_ompl PUBLIC ${PROJECT_NAME}_core ${OMPL_LIBRARIES})
-if(OMPL_VERSION VERSION_LESS "1.4.0")
-    target_compile_definitions(${PROJECT_NAME}_ompl PUBLIC OMPL_LESS_1_4_0=ON)
+  src/ompl/compound_state_validator.cpp)
+
+if(OMPL_VERSION VERSION_GREATER_EQUAL "1.4.0")
+  list(APPEND OMPL_SRC src/ompl/config/ompl_planner_constrained_config.cpp)
 endif()
+
+add_library(${PROJECT_NAME}_ompl SHARED ${OMPL_SRC})
+target_link_libraries(${PROJECT_NAME}_ompl PUBLIC ${PROJECT_NAME}_core ${OMPL_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_ompl PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_ompl)
 target_include_directories(${PROJECT_NAME}_ompl PUBLIC

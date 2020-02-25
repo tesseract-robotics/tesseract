@@ -30,10 +30,6 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/OptimizationObjective.h>
 #include <ompl/base/objectives/PathLengthOptimizationObjective.h>
-
-#ifndef OMPL_LESS_1_4_0
-#include <ompl/base/Constraint.h>
-#endif
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/config/ompl_planner_config.h>
@@ -105,15 +101,6 @@ struct OMPLPlannerFreespaceConfig : public OMPLPlannerConfig
    * ContinuousMotionValidator */
   MotionValidatorAllocator mv_allocator;
 
-#ifndef OMPL_LESS_1_4_0
-  /**
-   * @brief The constraints on the problem
-   *
-   * When using constraints the set number of output state may not be achieved.
-   */
-  ompl::base::ConstraintPtr constraint{ nullptr };
-#endif
-
   /**
    * @brief Default State sampler which uses the weights information to scale the sampled state. This is use full
    * when you state space has mixed units like meters and radian.
@@ -121,6 +108,17 @@ struct OMPLPlannerFreespaceConfig : public OMPLPlannerConfig
    * @return OMPL state sampler shared pointer
    */
   ompl::base::StateSamplerPtr allocWeightedRealVectorStateSampler(const ompl::base::StateSpace* space) const;
+
+protected:
+  void processLongestValidSegment(const ompl::base::StateSpacePtr& state_space_ptr);
+  bool processStartAndGoalState(const tesseract_environment::Environment::ConstPtr& env,
+                                const tesseract_kinematics::ForwardKinematics::Ptr& kin);
+  ompl::base::StateValidityCheckerPtr processStateValidator(const tesseract_environment::Environment::ConstPtr& env,
+                                                            const tesseract_kinematics::ForwardKinematics::Ptr& kin);
+  void processMotionValidator(ompl::base::StateValidityCheckerPtr svc_without_collision,
+                              const tesseract_environment::Environment::ConstPtr& env,
+                              const tesseract_kinematics::ForwardKinematics::Ptr& kin);
+  void processOptimizationObjective();
 };
 }  // namespace tesseract_motion_planners
 #endif  // TESSERACT_MOTION_PLANNERS_OMPL_PLANNER_FREESPACE_CONFIG_H
