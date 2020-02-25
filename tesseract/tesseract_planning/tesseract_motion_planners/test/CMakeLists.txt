@@ -22,7 +22,7 @@ add_dependencies(${PROJECT_NAME}_ompl_unit ${PROJECT_NAME}_ompl)
 add_dependencies(run_tests ${PROJECT_NAME}_ompl_unit)
 
 # OMPL Constrained Planning Test/Example Program
-if(OMPL_VERSION VERSION_GREATER_EQUAL "1.4.0")
+if(NOT OMPL_VERSION VERSION_LESS "1.4.0")
   add_executable(${PROJECT_NAME}_ompl_constrained_unit ompl_constrained_planner_tests.cpp)
   target_link_libraries(${PROJECT_NAME}_ompl_constrained_unit ${Boost_LIBRARIES} GTest::GTest GTest::Main ${PROJECT_NAME}_ompl tesseract::tesseract_support trajopt::trajopt)
   tesseract_target_compile_options(${PROJECT_NAME}_ompl_constrained_unit PRIVATE)

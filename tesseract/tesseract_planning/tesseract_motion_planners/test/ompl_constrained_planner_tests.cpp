@@ -100,7 +100,7 @@ class GlassUprightConstraint : public ompl::base::Constraint
 {
 public:
   GlassUprightConstraint(const Eigen::Vector3d& normal, tesseract_kinematics::ForwardKinematics::Ptr fwd_kin)
-    : ompl::base::Constraint(fwd_kin->numJoints(), 1), normal_(normal), fwd_kin_(std::move(fwd_kin))
+    : ompl::base::Constraint(fwd_kin->numJoints(), 1), normal_(normal.normalized()), fwd_kin_(std::move(fwd_kin))
   {
   }
 

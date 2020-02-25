@@ -73,6 +73,26 @@ target_include_directories(${PROJECT_NAME}_glass_up_right_example_node PRIVATE
 target_include_directories(${PROJECT_NAME}_glass_up_right_example_node SYSTEM PRIVATE
     ${catkin_INCLUDE_DIRS})
 
+add_library(${PROJECT_NAME}_glass_up_right_ompl_example src/glass_up_right_ompl_example.cpp)
+target_link_libraries(${PROJECT_NAME}_glass_up_right_ompl_example tesseract::tesseract trajopt::trajopt tesseract::tesseract_motion_planners_ompl tesseract::tesseract_motion_planners_trajopt jsoncpp_lib ${catkin_LIBRARIES})
+tesseract_target_compile_options(${PROJECT_NAME}_glass_up_right_ompl_example PUBLIC)
+tesseract_clang_tidy(${PROJECT_NAME}_glass_up_right_ompl_example)
+target_include_directories(${PROJECT_NAME}_glass_up_right_ompl_example PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_glass_up_right_ompl_example SYSTEM PUBLIC
+    ${catkin_INCLUDE_DIRS})
+
+add_executable(${PROJECT_NAME}_glass_up_right_ompl_example_node src/glass_up_right_ompl_example_node.cpp)
+target_link_libraries(${PROJECT_NAME}_glass_up_right_ompl_example_node ${PROJECT_NAME}_glass_up_right_ompl_example ${catkin_LIBRARIES})
+tesseract_target_compile_options(${PROJECT_NAME}_glass_up_right_ompl_example_node )
+tesseract_clang_tidy(${PROJECT_NAME}_glass_up_right_ompl_example_node)
+target_include_directories(${PROJECT_NAME}_glass_up_right_ompl_example_node PRIVATE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_glass_up_right_ompl_example_node SYSTEM PRIVATE
+    ${catkin_INCLUDE_DIRS})
+
 add_library(${PROJECT_NAME}_puzzle_piece_example src/puzzle_piece_example.cpp)
 target_link_libraries(${PROJECT_NAME}_puzzle_piece_example tesseract::tesseract tesseract::tesseract_motion_planners_trajopt ${catkin_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_puzzle_piece_example PUBLIC)

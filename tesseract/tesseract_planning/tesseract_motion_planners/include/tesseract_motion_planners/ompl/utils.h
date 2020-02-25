@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_MOTION_PLANNERS_UTILS_H
-#define TESSERACT_MOTION_PLANNERS_UTILS_H
+#ifndef TESSERACT_MOTION_PLANNERS_OMPL_UTILS_H
+#define TESSERACT_MOTION_PLANNERS_OMPL_UTILS_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -41,7 +41,10 @@ namespace tesseract_motion_planners
 using OMPLStateExtractor = std::function<Eigen::Map<Eigen::VectorXd>(const ompl::base::State*)>;
 
 Eigen::Map<Eigen::VectorXd> RealVectorStateSpaceExtractor(const ompl::base::State* s1, unsigned dimension);
+
+#ifndef OMPL_LESS_1_4_0
 Eigen::Map<Eigen::VectorXd> ConstrainedStateSpaceExtractor(const ompl::base::State* s1);
+#endif
 
 /**
  * @brief Convert an ompl path to tesseract TrajArray
@@ -52,4 +55,4 @@ Eigen::Map<Eigen::VectorXd> ConstrainedStateSpaceExtractor(const ompl::base::Sta
 tesseract_common::TrajArray toTrajArray(const ompl::geometric::PathGeometric& path, OMPLStateExtractor extractor);
 }  // namespace tesseract_motion_planners
 
-#endif  // TESSERACT_MOTION_PLANNERS_UTILS_H
+#endif  // TESSERACT_MOTION_PLANNERS_OMPL_UTILS_H

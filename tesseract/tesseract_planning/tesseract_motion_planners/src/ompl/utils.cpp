@@ -27,8 +27,12 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/spaces/RealVectorStateSpace.h>
-#include <ompl/base/spaces/constraint/ProjectedStateSpace.h>
 #include <memory>
+
+#ifndef OMPL_LESS_1_4_0
+#include <ompl/base/spaces/constraint/ProjectedStateSpace.h>
+#endif
+
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/utils.h>
@@ -42,12 +46,14 @@ Eigen::Map<Eigen::VectorXd> RealVectorStateSpaceExtractor(const ompl::base::Stat
   return Eigen::Map<Eigen::VectorXd>(s->values, dimension);
 }
 
+#ifndef OMPL_LESS_1_4_0
 Eigen::Map<Eigen::VectorXd> ConstrainedStateSpaceExtractor(const ompl::base::State* s1)
 {
   assert(dynamic_cast<const ompl::base::ProjectedStateSpace::StateType*>(s1) != nullptr);
   const Eigen::Map<Eigen::VectorXd>& s = *(s1->template as<ompl::base::ProjectedStateSpace::StateType>());
   return s;
 }
+#endif
 
 tesseract_common::TrajArray toTrajArray(const ompl::geometric::PathGeometric& path, OMPLStateExtractor extractor)
 {
