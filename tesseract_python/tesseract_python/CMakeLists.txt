@@ -27,7 +27,9 @@ find_package(tesseract_visualization REQUIRED)
 find_package(PCL REQUIRED COMPONENTS core features filters io segmentation surface)
 find_package(trajopt REQUIRED)
 
-find_package(PythonInterp REQUIRED)
+set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4 3.3 3.2 3.1 3.0)
+
+find_package(PythonInterp ${ROS_PYTHON_VERSION} REQUIRED)
 find_package(PythonLibs REQUIRED)
 
 # Find NumPy
