@@ -114,6 +114,18 @@ public:
             std::string name);
 
   /**
+   * @brief Initializes Forward Kinematics as chain
+   * Creates a forward kinematic chain object from sequential chains
+   * @param scene_graph The Tesseract Scene Graph
+   * @param chains A vector of kinematics chains <base_link, tip_link> that get concatenated
+   * @param name The name of the kinematic chain
+   * @return True if init() completes successfully
+   */
+  bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+            const std::vector<std::pair<std::string, std::string> >& chains,
+            std::string name);
+
+  /**
    * @brief Checks if kinematics has been initialized
    * @return True if init() has completed successfully
    */

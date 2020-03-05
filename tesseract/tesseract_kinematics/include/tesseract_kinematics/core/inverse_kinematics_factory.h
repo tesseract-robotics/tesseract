@@ -70,7 +70,7 @@ public:
    * @param base_link The name of the base link for the kinematic chain
    * @param tip_link The name of the tip link for the kinematic chain
    * @param name The name of the kinematic chain
-   * @return True if init() completes successfully
+   * @return If failed to create, nullptr is returned.
    */
   virtual InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,
                                         const std::string& /*base_link*/,
@@ -87,7 +87,7 @@ public:
    * @param joint_names The list of active joints to be considered
    * @param name The name of the kinematic chain
    * @param start_state The initial start state for the tree. This should inlclude all joints in the scene graph
-   * @return True if init() completes successfully
+   * @return If failed to create, nullptr is returned.
    */
   virtual InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,
                                         const std::vector<std::string>& /*joint_names*/,

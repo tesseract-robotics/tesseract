@@ -148,36 +148,41 @@ struct KDLChainData
   std::vector<std::string> active_link_list; /**< List of link names that move with changes in joint values */
   Eigen::MatrixX2d joint_limits;             /**< Joint limits */
   std::map<std::string, int> segment_index;  /**< A map from chain link name to kdl chain segment number */
+  std::vector<std::pair<std::string, std::string>> chains; /**< The chains used to create the object */
 };
 
 /**
  * @brief Parse KDL chain data from the scene graph
  * @param results KDL Chain data
  * @param scene_graph The Scene Graph
- * @param base_name The base link name of chain
- * @param tip_name The tip link name of chain
+ * @param chains A vector of link pairs that represent a chain which all get concatenated together. The firts link
+ *        should be the base link and the second link should the tip link of the chain.
  * @return True if successful otherwise false
  */
 inline bool parseSceneGraph(KDLChainData& results,
                             const tesseract_scene_graph::SceneGraph& scene_graph,
-                            const std::string& base_name,
-                            const std::string& tip_name)
+                            const std::vector<std::pair<std::string, std::string>>& chains)
 {
-  results.base_name = base_name;
-  results.tip_name = tip_name;
-
   if (!tesseract_scene_graph::parseSceneGraph(scene_graph, results.kdl_tree))
   {
     CONSOLE_BRIDGE_logError("Failed to parse KDL tree from Scene Graph");
     return false;
   }
 
-  if (!results.kdl_tree.getChain(results.base_name, results.tip_name, results.robot_chain))
+  results.chains = chains;
+  results.base_name = chains.front().first;
+  for (const auto& chain : chains)
   {
-    CONSOLE_BRIDGE_logError(
-        "Failed to initialize KDL between links: '%s' and '%s'", results.base_name.c_str(), results.tip_name.c_str());
-    return false;
+    KDL::Chain sub_chain;
+    if (!results.kdl_tree.getChain(chain.first, chain.second, sub_chain))
+    {
+      CONSOLE_BRIDGE_logError(
+          "Failed to initialize KDL between links: '%s' and '%s'", chain.first.c_str(), chain.second.c_str());
+      return false;
+    }
+    results.robot_chain.addChain(sub_chain);
   }
+  results.tip_name = chains.back().second;
 
   results.joint_list.resize(results.robot_chain.getNrOfJoints());
   results.joint_limits.resize(results.robot_chain.getNrOfJoints(), 2);
@@ -227,6 +232,24 @@ inline bool parseSceneGraph(KDLChainData& results,
   }
 
   return true;
+}
+
+/**
+ * @brief Parse KDL chain data from the scene graph
+ * @param results KDL Chain data
+ * @param scene_graph The Scene Graph
+ * @param base_name The base link name of chain
+ * @param tip_name The tip link name of chain
+ * @return True if successful otherwise false
+ */
+inline bool parseSceneGraph(KDLChainData& results,
+                            const tesseract_scene_graph::SceneGraph& scene_graph,
+                            const std::string& base_name,
+                            const std::string& tip_name)
+{
+  std::vector<std::pair<std::string, std::string>> chains;
+  chains.emplace_back(base_name, tip_name);
+  return parseSceneGraph(results, scene_graph, chains);
 }
 }  // namespace tesseract_kinematics
 #endif  // TESSERACT_KINEMATICS_KDL_UTILS_H
