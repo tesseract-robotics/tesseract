@@ -70,12 +70,27 @@ public:
    * @param base_link The name of the base link for the kinematic chain
    * @param tip_link The name of the tip link for the kinematic chain
    * @param name The name of the kinematic chain
-   * @return True if init() completes successfully
+   * @return If failed to create, nullptr is returned.
    */
   virtual ForwardKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,  // NOLINT
                                         const std::string& /*base_link*/,                             // NOLINT
                                         const std::string& /*tip_link*/,                              // NOLINT
                                         const std::string /*name*/) const                             // NOLINT
+  {
+    return nullptr;
+  }
+
+  /**
+   * @brief Create Forward Kinematics Chain Object
+   * This only need to be implemented if of type chain
+   * @param scene_graph The Tesseract Scene Graph
+   * @param chains The chains that make up the kinematic chain
+   * @param name The name of the kinematic chain
+   * @return If failed to create, nullptr is returned.
+   */
+  virtual ForwardKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,         // NOLINT
+                                        const std::vector<std::pair<std::string, std::string>>& /*chains*/,  // NOLINT
+                                        const std::string /*name*/) const                                    // NOLINT
   {
     return nullptr;
   }
@@ -87,7 +102,7 @@ public:
    * @param joint_names The list of active joints to be considered
    * @param name The name of the kinematic chain
    * @param start_state The initial start state for the tree. This should inlclude all joints in the scene graph
-   * @return True if init() completes successfully
+   * @return If failed to create, nullptr is returned.
    */
   virtual ForwardKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,  // NOLINT
                                         const std::vector<std::string>& /*joint_names*/,              // NOLINT

@@ -288,9 +288,8 @@ bool Tesseract::registerDefaultFwdKinSolvers()
   {
     if (!group.chains_.empty())
     {
-      assert(group.chains_.size() == 1);
-      tesseract_kinematics::ForwardKinematics::Ptr solver = chain_factory->create(
-          environment_->getSceneGraph(), group.chains_.front().first, group.chains_.front().second, group.name_);
+      tesseract_kinematics::ForwardKinematics::Ptr solver =
+          chain_factory->create(environment_->getSceneGraph(), group.chains_, group.name_);
       if (solver != nullptr)
       {
         if (!fwd_kin_manager_->addFwdKinematicSolver(solver))
@@ -365,9 +364,8 @@ bool Tesseract::registerDefaultInvKinSolvers()
   {
     if (!group.chains_.empty())
     {
-      assert(group.chains_.size() == 1);
-      tesseract_kinematics::InverseKinematics::Ptr solver = factory->create(
-          environment_->getSceneGraph(), group.chains_.front().first, group.chains_.front().second, group.name_);
+      tesseract_kinematics::InverseKinematics::Ptr solver =
+          factory->create(environment_->getSceneGraph(), group.chains_, group.name_);
       if (solver != nullptr)
       {
         if (!inv_kin_manager_->addInvKinematicSolver(solver))
