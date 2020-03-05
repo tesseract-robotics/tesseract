@@ -33,6 +33,7 @@ ProcessDefinition generateProcessDefinition(const ProcessDefinitionConfig& proce
 {
   ProcessDefinition process_definition;
   process_definition.start = process_config.start;
+  process_definition.end = process_config.end;
   process_definition.segments.reserve(process_config.tool_paths.size());
   process_definition.transitions.reserve(process_config.tool_paths.size() - 1);
 
@@ -131,6 +132,7 @@ ProcessDefinition generateProcessDefinition(const ProcessDefinitionConfig& proce
 {
   ProcessDefinition process_definition;
   process_definition.start = process_config.start;
+  process_definition.end = process_config.end;
   process_definition.segments.reserve(process_config.tool_paths.size());
   process_definition.transitions.reserve(process_config.tool_paths.size() - 1);
 
