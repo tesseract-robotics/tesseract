@@ -27,7 +27,14 @@ find_package(tesseract_visualization REQUIRED)
 find_package(PCL REQUIRED COMPONENTS core features filters io segmentation surface)
 find_package(trajopt REQUIRED)
 
-find_package(PythonInterp REQUIRED)
+if(PYTHON_VERSION STREQUAL "")
+  set(PYTHON_VERSION  $ENV{ROS_PYTHON_VERSION})
+endif()
+message(STATUS "Building Python Version: " ${PYTHON_VERSION})
+
+set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4 3.3 3.2 3.1 3.0)
+
+find_package(PythonInterp ${PYTHON_VERSION} REQUIRED)
 find_package(PythonLibs REQUIRED)
 
 # Find NumPy
@@ -68,7 +75,7 @@ endif()
 
 set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/python/tesseract)
 set(SWIG_OUTFILE_DIR ${CMAKE_CURRENT_BINARY_DIR})
-swig_add_module(tesseract_python python swig/tesseract_python.i)
+swig_add_library(tesseract_python LANGUAGE python SOURCES swig/tesseract_python.i)
 swig_link_libraries(tesseract_python tesseract::tesseract_motion_planners_trajopt tesseract::tesseract_motion_planners_core tesseract::tesseract_visualization tesseract::tesseract trajopt::trajopt ${PYTHON_LIBRARIES} ${EIGEN3_LIBRARIES} ${PYTHON_LIBRARIES})
 target_include_directories(${SWIG_MODULE_tesseract_python_REAL_NAME} PUBLIC 
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -106,9 +113,15 @@ if(SETUPTOOLS_DEB_LAYOUT)
   set(SETUPTOOLS_ARG_EXTRA "--install-layout=deb")
 endif()
 
-install(CODE "message(STATUS \"Running setup.py in ${CMAKE_CURRENT_BINARY_DIR}/python\")
-execute_process(COMMAND python setup.py install -f
+if (${PYTHON_VERSION_MAJOR} LESS 3)
+    install(CODE "message(STATUS \"Running setup.py in ${CMAKE_CURRENT_BINARY_DIR}/python\")
+    execute_process(COMMAND python setup.py install -f
 --root=/ --prefix=${CMAKE_INSTALL_PREFIX} ${SETUPTOOLS_ARG_EXTRA} --single-version-externally-managed WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python)")
+else()
+  install(CODE "message(STATUS \"Running setup.py in ${CMAKE_CURRENT_BINARY_DIR}/python\")
+  execute_process(COMMAND python3 setup.py install -f
+  --root=/ --prefix=${CMAKE_INSTALL_PREFIX} ${SETUPTOOLS_ARG_EXTRA} --single-version-externally-managed WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python)")
+endif()
 
 if(TESSERACT_ENABLE_TESTING)
   enable_testing()
