@@ -934,7 +934,7 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
     {
       const auto& mesh = static_cast<const tesseract_geometry::Mesh&>(geom);
 
-      if (mesh.getResource() && mesh.getResource()->isFile())
+      if (mesh.getResource() && mesh.getResource()->isFile() && isVisual)
       {
         std::string model_name = "file://" + mesh.getResource()->getFilePath();
 
@@ -972,7 +972,7 @@ bool LinkWidget::createEntityForGeometryElement(const tesseract_scene_graph::Lin
     {
       const auto& mesh = static_cast<const tesseract_geometry::ConvexMesh&>(geom);
 
-      if (mesh.getResource() && mesh.getResource()->isFile())
+      if (mesh.getResource() && mesh.getResource()->isFile() && isVisual)
       {
         std::string model_name = "file://" + mesh.getResource()->getFilePath();
 
