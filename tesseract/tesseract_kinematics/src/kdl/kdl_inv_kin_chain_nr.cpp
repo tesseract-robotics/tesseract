@@ -159,10 +159,9 @@ const std::vector<std::string>& KDLInvKinChainNR::getActiveLinkNames() const
 
 const Eigen::MatrixX2d& KDLInvKinChainNR::getLimits() const { return kdl_data_.joint_limits; }
 
-bool KDLInvKinChainNR::init(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
-                            const std::string& base_link,
-                            const std::string& tip_link,
-                            const std::string& name)
+bool KDLInvKinChainNR::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+                            const std::vector<std::pair<std::string, std::string>>& chains,
+                            std::string name)
 {
   initialized_ = false;
 
@@ -181,7 +180,7 @@ bool KDLInvKinChainNR::init(const tesseract_scene_graph::SceneGraph::ConstPtr& s
     return false;
   }
 
-  if (!parseSceneGraph(kdl_data_, *scene_graph_, base_link, tip_link))
+  if (!parseSceneGraph(kdl_data_, *scene_graph_, chains))
   {
     CONSOLE_BRIDGE_logError("Failed to parse KDL data from Scene Graph");
     return false;
@@ -193,6 +192,16 @@ bool KDLInvKinChainNR::init(const tesseract_scene_graph::SceneGraph::ConstPtr& s
 
   initialized_ = true;
   return initialized_;
+}
+
+bool KDLInvKinChainNR::init(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
+                            const std::string& base_link,
+                            const std::string& tip_link,
+                            const std::string& name)
+{
+  std::vector<std::pair<std::string, std::string>> chains;
+  chains.push_back(std::make_pair(base_link, tip_link));
+  return init(scene_graph, chains, name);
 }
 
 bool KDLInvKinChainNR::init(const KDLInvKinChainNR& kin)

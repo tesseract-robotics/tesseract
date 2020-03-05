@@ -81,6 +81,23 @@ public:
   }
 
   /**
+   * @brief Create Forward Kinematics Chain Object
+   * This only need to be implemented if of type chain
+   * @param scene_graph The Tesseract Scene Graph
+   * @param chains The chains that make up the kinematic chain
+   * @param name The name of the kinematic chain
+   * @return True if init() completes successfully
+   */
+  virtual ForwardKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,         // NOLINT
+                                        const std::vector<std::pair<std::string, std::string>>& /*chains*/,  // NOLINT
+                                                                                                             // //
+                                                                                                             // NOLINT
+                                        const std::string /*name*/) const                                    // NOLINT
+  {
+    return nullptr;
+  }
+
+  /**
    * @brief Create Forward Kinematics Tree Object
    * This only need to be implemented if of type chain
    * @param scene_graph The tesseract scene graph
