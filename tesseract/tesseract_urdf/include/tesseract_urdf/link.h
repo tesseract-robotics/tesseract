@@ -109,7 +109,7 @@ parse(tesseract_scene_graph::Link::Ptr& link,
 
   // get visual if it exists
   for (const tinyxml2::XMLElement* visual = xml_element->FirstChildElement("visual"); visual;
-       visual = xml_element->NextSiblingElement("visual"))
+       visual = visual->NextSiblingElement("visual"))
   {
     std::vector<tesseract_scene_graph::Visual::Ptr> temp_visual;
     auto status = parse(temp_visual, visual, locator, available_materials, version);
