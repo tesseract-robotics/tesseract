@@ -26,6 +26,7 @@ catkin_package(
     include
   LIBRARIES
     ${PROJECT_NAME}_environment
+    ${PROJECT_NAME}_contacts
   CATKIN_DEPENDS
     roscpp
     tesseract_msgs
