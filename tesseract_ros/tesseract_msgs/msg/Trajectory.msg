@@ -1,5 +1,0 @@
-TesseractState tesseract_state
-
-trajectory_msgs/JointTrajectory joint_trajectory
-
-trajectory_msgs/MultiDOFJointTrajectory multi_dof_joint_trajectory

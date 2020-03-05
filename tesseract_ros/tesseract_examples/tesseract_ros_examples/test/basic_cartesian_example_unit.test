@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-  <arg name="plotting" default="false"/>
-  <arg name="rviz" default="false"/>
-  <arg name="testing" default="true"/>
-
-  <include file="$(find tesseract_ros_examples)/launch/basic_cartesian_example.launch" pass_all_args="true"/>
-  <test pkg="tesseract_ros_examples" type="tesseract_ros_examples_basic_cartesian_example_unit" test-name="basic_cartesian_example_unit" time-limit="120.0"/>
-</launch>
