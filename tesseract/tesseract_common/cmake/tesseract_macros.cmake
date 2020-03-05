@@ -38,7 +38,7 @@ macro(tesseract_target_compile_options target)
   endif()
 
   list(FIND CMAKE_CXX_COMPILE_FEATURES cxx_std_14 CXX_FEATURE_FOUND)
-  if (NOT TESSERACT_ENABLE_TESTING)
+  if (NOT TESSERACT_ENABLE_TESTING AND NOT TESSERACT_ENABLE_TESTING_ALL)
     set(warning_flags -Wall -Wextra -Wconversion -Wsign-conversion -Wno-sign-compare)
   else()
     set(warning_flags -Werror=all -Werror=extra -Werror=conversion -Werror=sign-conversion -Wno-sign-compare)
@@ -82,7 +82,7 @@ macro(tesseract_target_compile_options target)
   endif()
 endmacro()
 
-# Add clang-tidy to a target if TESSERACT_ENABLE_CLANG_TIDY or TESSERACT_ENABLE_TESTING is enabled
+# Add clang-tidy to a target if TESSERACT_ENABLE_CLANG_TIDY or TESSERACT_ENABLE_TESTING_ALL is enabled
 # Usage: tesseract_clang_tidy(Target) or tesseract_clang_tidy(Target true) or tesseract_clang_tidy(Target false)
 #    * tesseract_clang_tidy(Target) adds clang tidy with warnings as errors
 #    * tesseract_clang_tidy(Target true) adds clang tidy with warnings as errors
@@ -94,7 +94,7 @@ macro(tesseract_clang_tidy target)
 
   # Add clang tidy
   if (NOT ${${target}_type} STREQUAL "INTERFACE_LIBRARY")
-    if (TESSERACT_ENABLE_CLANG_TIDY OR TESSERACT_ENABLE_TESTING)
+    if (TESSERACT_ENABLE_CLANG_TIDY OR TESSERACT_ENABLE_TESTING_ALL)
       find_program(CLANG_TIDY_EXE NAMES "clang-tidy" DOC "Path to clang-tidy executable")
       if(NOT CLANG_TIDY_EXE)
         message(WARNING "clang-tidy not found.")
@@ -155,7 +155,8 @@ macro(tesseract_gtest_discover_tests target)
   endif()
 endmacro()
 
-# This macro add a custom target that will run the tests after they are finished building.
+# This macro add a custom target that will run the tests after they are finished building when
+# TESSERACT_ENABLE_RUN_TESTING OR TESSERACT_ENABLE_TESTING_ALL are enabled
 # This is added to allow ability do disable the running of tests as part of the build for CI which calls make test
 macro(tesseract_add_run_tests_target)
   if(TESSERACT_ENABLE_RUN_TESTING)

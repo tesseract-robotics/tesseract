@@ -20,10 +20,7 @@ env:
     - ROSINSTALL_FILENAME=dependencies.rosinstall
     - ROS_REPO=ros
     - NOT_TEST_INSTALL=true
-    - CATKIN_CONFIG="--make-args CTEST_OUTPUT_ON_FAILURE=TRUE CTEST_PARALLEL_LEVEL=1"
-    - CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON"
     - ROSDEP_SKIP_KEYS="bullet3 fcl"
-    - AFTER_SCRIPT='catkin build -w $CATKIN_WORKSPACE --no-deps tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python --make-args test -j1'
     - PKGS_DOWNSTREAM='tesseract_ros_examples tesseract_rosutils'
     - ROS_PARALLEL_JOBS=-j1
     - ROS_PARALLEL_TEST_JOBS=-j1
@@ -44,12 +41,26 @@ jobs:
         directories:
           - $HOME/.ccache
     - os: linux
+      dist: bionic
+      language: minimal
+      env:
+      - ROS_DISTRO="melodic"
+      - DOCKER_IMAGE=lharmstrong/tesseract:melodic
+      - BADGE=clang-tidy
+      - CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_CLANG_TIDY=ON -DTESSERACT_ENABLE_TESTING=ON"
+      cache:
+        directories:
+          - $HOME/.ccache
+    - os: linux
       dist: xenial
       language: minimal
       env:
       - ROS_DISTRO="kinetic"
       - DOCKER_IMAGE=lharmstrong/tesseract:kinetic
       - BADGE=xenial
+      - CATKIN_CONFIG="--make-args CTEST_OUTPUT_ON_FAILURE=TRUE CTEST_PARALLEL_LEVEL=1"
+      - CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON"
+      - AFTER_SCRIPT='catkin build -w $CATKIN_WORKSPACE --no-deps tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python --make-args test -j1'
       cache:
         directories:
           - $HOME/.ccache
@@ -60,34 +71,12 @@ jobs:
       - ROS_DISTRO="melodic"
       - DOCKER_IMAGE=lharmstrong/tesseract:melodic
       - BADGE=bionic
+      - CATKIN_CONFIG="--make-args CTEST_OUTPUT_ON_FAILURE=TRUE CTEST_PARALLEL_LEVEL=1"
+      - CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON"
+      - AFTER_SCRIPT='catkin build -w $CATKIN_WORKSPACE --no-deps tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python --make-args test -j1'
       cache:
         directories:
           - $HOME/.ccache
-    - os: linux
-      dist: xenial
-      language: minimal
-      env:
-      - ROS_DISTRO="kinetic"
-      - ROS_REPO=ros-shadow-fixed
-      - DOCKER_IMAGE=lharmstrong/tesseract:kinetic
-      - BADGE=xenial-shadow
-      cache:
-        directories:
-          - $HOME/.ccache
-    - os: linux
-      dist: bionic
-      language: minimal
-      env:
-      - ROS_DISTRO="melodic"
-      - ROS_REPO=ros-shadow-fixed
-      - DOCKER_IMAGE=lharmstrong/tesseract:melodic
-      - BADGE=bionic-shadow
-      cache:
-        directories:
-          - $HOME/.ccache
-  allow_failures:
-    - env: ROS_DISTRO=kinetic ROS_REPO=ros-shadow-fixed DOCKER_IMAGE=lharmstrong/tesseract:kinetic ROS_PARALLEL_JOBS=-j2 ROS_PARALLEL_TEST_JOBS=-j2 BADGE=xenial-shadow
-    - env: ROS_DISTRO=melodic ROS_REPO=ros-shadow-fixed DOCKER_IMAGE=lharmstrong/tesseract:melodic ROS_PARALLEL_JOBS=-j2 ROS_PARALLEL_TEST_JOBS=-j2 BADGE=bionic-shadow
 
 install:
   - git clone --quiet --depth=1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
