@@ -94,68 +94,6 @@ add_custom_command(TARGET ${SWIG_MODULE_tesseract_python_REAL_NAME} POST_BUILD C
 ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/swig/__init__.py
 $<SHELL_PATH:$<TARGET_FILE_DIR:${SWIG_MODULE_tesseract_python_REAL_NAME}>>/__init__.py)
 
-# Check for ROS support
-find_package(tesseract_msgs)
-find_package(tesseract_rosutils)
-find_package(geometry_msgs)
-find_package(std_msgs)
-find_package(roscpp)
-find_package(roslib)
-find_package(rosconsole)
-
-# This is not working on WIN32 for some reason?
-if(NOT WIN32 AND tesseract_msgs_FOUND AND tesseract_rosutils_FOUND AND geometry_msgs_FOUND AND std_msgs_FOUND AND roscpp_FOUND AND roslib_FOUND AND rosconsole_FOUND)
-message(STATUS "Found Tesseract ROS support, building tesseract_ros_python")
-set (BUILD_TESSERACT_ROS_PYTHON ON CACHE BOOL "Build tesseract_ros_python module")
-else()
-set (BUILD_TESSERACT_ROS_PYTHON OFF CACHE BOOL "Build tesseract_ros_python module")
-endif()
-
-if(BUILD_TESSERACT_ROS_PYTHON)
-  set(SWIG_CXX_EXTENSION cxx)
-  set_property(SOURCE swig/ros/tesseract_ros_python.i PROPERTY CPLUSPLUS ON)
-  set_property(SOURCE swig/tesseract_ros_python.i PROPERTY SWIG_FLAGS -relativeimport -threads)
-
-  set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/python/tesseract_ros)
-  set(SWIG_OUTFILE_DIR ${CMAKE_CURRENT_BINARY_DIR})
-  swig_add_module(tesseract_ros_python python swig/ros/tesseract_ros_python.i)
-  swig_link_libraries(tesseract_ros_python 
-    ${tesseract_rosutils_LIBRARIES}
-    ${tesseract_msgs_LIBRARIES}
-    tesseract::tesseract_motion_planners_trajopt 
-    tesseract::tesseract_motion_planners_core 
-    tesseract::tesseract_visualization 
-    tesseract::tesseract trajopt::trajopt 
-    ${PYTHON_LIBRARIES} 
-    ${EIGEN3_LIBRARIES}
-	${roscpp_LIBRARIES}
-    ${roslib_LIBRARIES}
-	${rosconsole_LIBRARIES}
-	)
-	
-  target_include_directories(${SWIG_MODULE_tesseract_ros_python_REAL_NAME} PUBLIC 
-      "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-      "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/swig>"
-      "$<INSTALL_INTERFACE:include>")
-  target_include_directories(${SWIG_MODULE_tesseract_ros_python_REAL_NAME}  SYSTEM PUBLIC
-      ${tesseract_rosutils_INCLUDE_DIRS}
-      ${EIGEN3_INCLUDE_DIRS}
-      ${console_bridge_INCLUDE_DIRS}
-      ${Boost_INCLUDE_DIRS}
-      ${TinyXML2_INCLUDE_DIRS}
-	  ${PYTHON_INCLUDE_DIRS}
-	  ${NUMPY_INCLUDE_DIR}
-      $<TARGET_PROPERTY:tesseract::tesseract,INTERFACE_INCLUDE_DIRECTORIES>)
-
-  set_target_properties(${SWIG_MODULE_tesseract_ros_python_REAL_NAME}
-    PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python/tesseract_ros)
-
-  add_custom_command(TARGET ${SWIG_MODULE_tesseract_ros_python_REAL_NAME} POST_BUILD COMMAND 
-    ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/swig/ros/__init__.py
-    $<SHELL_PATH:$<TARGET_FILE_DIR:${SWIG_MODULE_tesseract_ros_python_REAL_NAME}>>/__init__.py)
-
-endif()
-
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup.py.in" "${CMAKE_CURRENT_BINARY_DIR}/python/setup.py" @ONLY)
 
 set(enable_setuptools_deb_layout OFF)
