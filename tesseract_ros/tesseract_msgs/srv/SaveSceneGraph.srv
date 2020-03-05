@@ -1,7 +1,0 @@
-# This service saves the scene graph as a DOT file that can be viewed with Graphviz or similar
-
-string filepath   # Path to which the DOT file is saved
----
-bool success
-string id # Name/Id of the environment which contained this scene graph
-uint64 revision # Revision number of the environment that contained this scene graph

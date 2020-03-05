@@ -1,7 +1,0 @@
-<library path="libtesseract_collision_fcl_plugin">
-  <class name="FCLDiscreteBVHManager" type="tesseract_collision::tesseract_collision_fcl::FCLDiscreteBVHManager" base_class_type="tesseract_collision::DiscreteContactManager">
-    <description>
-      FCL Discrete BVH implementation of the tesseract discrete contact manager.
-    </description>
-  </class>
-</library>
