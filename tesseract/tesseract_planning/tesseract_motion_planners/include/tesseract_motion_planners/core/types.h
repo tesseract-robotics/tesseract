@@ -44,10 +44,10 @@ struct PlannerRequest
 
 struct PlannerResponse
 {
-  tesseract_common::JointTrajectory joint_trajectory; /**< @brief The joint trajectory */
-  tesseract_common::StatusCode status;                /**< @brief The status information */
-  std::vector<Waypoint::Ptr> succeeded_waypoints;     /**< @brief Waypoints for which the planner succeeded */
-  std::vector<Waypoint::Ptr> failed_waypoints;        /**< @brief Waypoints for which the planner failed */
+  tesseract_common::JointTrajectory joint_trajectory;  /**< @brief The joint trajectory */
+  tesseract_common::StatusCode status;                 /**< @brief The status information */
+  std::vector<Waypoint::ConstPtr> succeeded_waypoints; /**< @brief Waypoints for which the planner succeeded */
+  std::vector<Waypoint::ConstPtr> failed_waypoints;    /**< @brief Waypoints for which the planner failed */
 };
 
 }  // namespace tesseract_motion_planners

@@ -137,7 +137,7 @@ getPoseSampler(const Waypoint::ConstPtr& wp,
  */
 template <typename FloatType>
 std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr>
-makeRobotSamplers(const std::vector<Waypoint::Ptr>& path,
+makeRobotSamplers(const std::vector<Waypoint::ConstPtr>& path,
                   const tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics,
                   const typename descartes_light::CollisionInterface<FloatType>::Ptr& collision_interface,
                   const tesseract_environment::EnvState::ConstPtr current_state,
@@ -242,7 +242,7 @@ makeRobotSamplers(const std::vector<Waypoint::Ptr>& path,
  */
 template <typename FloatType>
 std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr>
-makeRobotPositionerSamplers(const std::vector<Waypoint::Ptr>& path,
+makeRobotPositionerSamplers(const std::vector<Waypoint::ConstPtr>& path,
                             const tesseract_kinematics::ForwardKinematics::ConstPtr positioner_kinematics,
                             const tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics,
                             const typename descartes_light::CollisionInterface<FloatType>::Ptr& collision_interface,
@@ -332,7 +332,7 @@ makeRobotPositionerSamplers(const std::vector<Waypoint::Ptr>& path,
  * @return A vector of Descartes timing constraints
  */
 template <typename FloatType>
-std::vector<descartes_core::TimingConstraint<FloatType>> makeTiming(const std::vector<Waypoint::Ptr>& path,
+std::vector<descartes_core::TimingConstraint<FloatType>> makeTiming(const std::vector<Waypoint::ConstPtr>& path,
                                                                     const double dt)
 {
   std::vector<descartes_core::TimingConstraint<FloatType>> timing(path.size(), dt);

@@ -86,7 +86,7 @@ createDescartesPlannerConfig(const tesseract::Tesseract::ConstPtr& tesseract_ptr
                              const Eigen::Isometry3d& tcp,
                              const double robot_reach,
                              const tesseract_environment::EnvState::ConstPtr& current_state,
-                             const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints,
+                             const std::vector<tesseract_motion_planners::Waypoint::ConstPtr>& waypoints,
                              bool use_collision_edge_evaluator = false)
 {
   const std::vector<std::string>& joint_names = kin->getJointNames();

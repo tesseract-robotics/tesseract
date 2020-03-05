@@ -51,7 +51,7 @@ struct DescartesMotionPlannerConfig
                                typename descartes_light::EdgeEvaluator<FloatType>::Ptr edge_evaluator,
                                std::vector<descartes_core::TimingConstraint<FloatType>> timing_constraint,
                                std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr> samplers,
-                               std::vector<Waypoint::Ptr> waypoints)
+                               std::vector<Waypoint::ConstPtr> waypoints)
     : tesseract(std::move(tesseract_ptr))
     , active_link_names(std::move(active_link_names))
     , joint_names(std::move(joint_names))
@@ -74,7 +74,7 @@ struct DescartesMotionPlannerConfig
   const typename descartes_light::EdgeEvaluator<FloatType>::Ptr edge_evaluator;
   const std::vector<descartes_core::TimingConstraint<FloatType>> timing_constraint;
   const std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr> samplers;
-  const std::vector<Waypoint::Ptr> waypoints;
+  const std::vector<Waypoint::ConstPtr> waypoints;
   Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
   Eigen::Isometry3d world_to_base = Eigen::Isometry3d::Identity();
   int num_threads = descartes_light::Solver<double>::getMaxThreads();
