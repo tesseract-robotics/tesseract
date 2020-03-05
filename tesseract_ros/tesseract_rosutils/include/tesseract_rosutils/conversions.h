@@ -66,11 +66,13 @@ inline Eigen::VectorXd toEigen(const sensor_msgs::JointState& joint_state, const
  * @return WaypointPtr
  */
 inline tesseract_motion_planners::Waypoint::Ptr
-toWaypoint(const geometry_msgs::Pose& pose, const Eigen::Isometry3d& change_base = Eigen::Isometry3d::Identity())
+toWaypoint(const geometry_msgs::Pose& pose,
+           const Eigen::Isometry3d& change_base = Eigen::Isometry3d::Identity(),
+           const std::string& parent_link = "")
 {
   Eigen::Isometry3d pose_eigen;
   tf::poseMsgToEigen(pose, pose_eigen);
-  return std::make_shared<tesseract_motion_planners::CartesianWaypoint>(change_base * pose_eigen);
+  return std::make_shared<tesseract_motion_planners::CartesianWaypoint>(change_base * pose_eigen, parent_link);
 }
 
 /**
@@ -81,12 +83,13 @@ toWaypoint(const geometry_msgs::Pose& pose, const Eigen::Isometry3d& change_base
  */
 inline std::vector<tesseract_motion_planners::Waypoint::Ptr>
 toWaypoint(const std::vector<geometry_msgs::Pose>& poses,
-           const Eigen::Isometry3d& change_base = Eigen::Isometry3d::Identity())
+           const Eigen::Isometry3d& change_base = Eigen::Isometry3d::Identity(),
+           const std::string& parent_link = "")
 {
   std::vector<tesseract_motion_planners::Waypoint::Ptr> waypoints;
   waypoints.reserve(poses.size());
   for (const auto& pose : poses)
-    waypoints.push_back(toWaypoint(pose, change_base));
+    waypoints.push_back(toWaypoint(pose, change_base, parent_link));
 
   return waypoints;
 }
@@ -99,12 +102,13 @@ toWaypoint(const std::vector<geometry_msgs::Pose>& poses,
  */
 inline std::vector<std::vector<tesseract_motion_planners::Waypoint::Ptr>>
 toWaypoint(const std::vector<geometry_msgs::PoseArray>& pose_arrays,
-           const Eigen::Isometry3d& change_base = Eigen::Isometry3d::Identity())
+           const Eigen::Isometry3d& change_base = Eigen::Isometry3d::Identity(),
+           const std::string& parent_link = "")
 {
   std::vector<std::vector<tesseract_motion_planners::Waypoint::Ptr>> paths;
   paths.reserve(pose_arrays.size());
   for (const auto& pose_array : pose_arrays)
-    paths.push_back(toWaypoint(pose_array.poses, change_base));
+    paths.push_back(toWaypoint(pose_array.poses, change_base, parent_link));
 
   return paths;
 }
