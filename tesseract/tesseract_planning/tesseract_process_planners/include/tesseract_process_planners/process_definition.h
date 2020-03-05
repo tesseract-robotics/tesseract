@@ -67,8 +67,9 @@ struct ProcessTransitionDefinition
  */
 struct ProcessDefinition
 {
-  tesseract_motion_planners::Waypoint::Ptr start; /**< The start position of the robot */
-  std::vector<ProcessSegmentDefinition> segments; /**< All of the raster segments with approaches and departures */
+  tesseract_motion_planners::Waypoint::ConstPtr start; /**< The start position of the robot */
+  tesseract_motion_planners::Waypoint::ConstPtr end;   /**< The end position of the robot */
+  std::vector<ProcessSegmentDefinition> segments;      /**< All of the raster segments with approaches and departures */
   std::vector<ProcessTransitionDefinition> transitions; /**< All of the transition to/from a given segment. Must be same
                                                            length as segments */
 };
@@ -110,7 +111,8 @@ struct ProcessDefinitionConfig
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  tesseract_motion_planners::Waypoint::Ptr start;
+  tesseract_motion_planners::Waypoint::ConstPtr start;
+  tesseract_motion_planners::Waypoint::ConstPtr end;
   std::vector<std::vector<tesseract_motion_planners::Waypoint::Ptr>> tool_paths;
 
   std::vector<ProcessTransitionGenerator::ConstPtr> transition_generator;
