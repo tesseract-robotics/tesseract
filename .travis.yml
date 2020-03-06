@@ -21,9 +21,8 @@ env:
     - ROS_REPO=ros
     - NOT_TEST_INSTALL=true
     - ROSDEP_SKIP_KEYS="bullet3 fcl"
-    - AFTER_SCRIPT='catkin build -w $CATKIN_WORKSPACE --no-deps tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python --make-args test -j1'
-    - ROS_PARALLEL_JOBS=-j1
-    - ROS_PARALLEL_TEST_JOBS=-j1
+    - ROS_PARALLEL_JOBS=-j2
+    - ROS_PARALLEL_TEST_JOBS=-j2
 
 jobs:
   include:
