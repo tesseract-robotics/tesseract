@@ -13,11 +13,8 @@
   <depend>tesseract_kinematics</depend>
   <depend>tesseract_environment</depend>
   <depend>tesseract_scene_graph</depend>
-  <depend>tesseract_rosutils</depend>
   <depend>tesseract_common</depend>
   <depend>tesseract_visualization</depend>
-  <depend>octomap_ros</depend>
-  <depend>pcl_conversions</depend>
   <depend>tesseract_python</depend>
 
   <depend>python</depend>
