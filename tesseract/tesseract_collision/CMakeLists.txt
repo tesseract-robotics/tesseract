@@ -76,7 +76,14 @@ target_include_directories(create_convex_hull SYSTEM PUBLIC
     ${Boost_INCLUDE_DIRS}
     ${OCTOMAP_INCLUDE_DIRS})
 
-tesseract_configure_package(${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl create_convex_hull)
+# Create target that profiles the collision checkers.
+add_executable(${PROJECT_NAME}_profile src/collision_profile.cpp)
+target_link_libraries(${PROJECT_NAME}_profile ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl tesseract::tesseract_geometry ${BULLET_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_LIBRARIES})
+tesseract_target_compile_options(${PROJECT_NAME}_profile PRIVATE)
+tesseract_clang_tidy(${PROJECT_NAME}_profile)
+target_compile_definitions(${PROJECT_NAME}_profile PRIVATE DATA_DIR="${CMAKE_SOURCE_DIR}/test")
+
+tesseract_configure_package(${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl create_convex_hull ${PROJECT_NAME}_profile)
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
