@@ -24,7 +24,6 @@ env:
     - CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON"
     - ROSDEP_SKIP_KEYS="bullet3 fcl"
     - AFTER_SCRIPT='catkin build -w $CATKIN_WORKSPACE --no-deps tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python --make-args test -j1'
-    - PKGS_DOWNSTREAM='tesseract_ros_examples tesseract_rosutils'
     - ROS_PARALLEL_JOBS=-j1
     - ROS_PARALLEL_TEST_JOBS=-j1
 
