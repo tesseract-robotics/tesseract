@@ -131,7 +131,7 @@ using Implementations = ::testing::Types<tesseract_motion_planners::SBLConfigura
                                          tesseract_motion_planners::PRMConfigurator,
                                          tesseract_motion_planners::PRMstarConfigurator,
                                          tesseract_motion_planners::LazyPRMstarConfigurator,
-                                         tesseract_motion_planners::ESTConfigurator,
+                                         // tesseract_motion_planners::ESTConfigurator,
                                          tesseract_motion_planners::LBKPIECE1Configurator,
                                          tesseract_motion_planners::BKPIECE1Configurator,
                                          tesseract_motion_planners::KPIECE1Configurator,
