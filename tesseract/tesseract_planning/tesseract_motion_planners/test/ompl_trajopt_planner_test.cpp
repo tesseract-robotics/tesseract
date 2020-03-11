@@ -130,19 +130,20 @@ public:
   tesseract_motion_planners::OMPLTrajOptFreespacePlanner planner;
 };
 
-using Implementations = ::testing::Types<tesseract_motion_planners::SBLConfigurator,
-                                         tesseract_motion_planners::PRMConfigurator,
-                                         tesseract_motion_planners::PRMstarConfigurator,
-                                         tesseract_motion_planners::LazyPRMstarConfigurator,
-                                         tesseract_motion_planners::ESTConfigurator,
-                                         tesseract_motion_planners::LBKPIECE1Configurator,
-                                         tesseract_motion_planners::BKPIECE1Configurator,
-                                         tesseract_motion_planners::KPIECE1Configurator,
-                                         // tesseract_motion_planners::RRTConfigurator,
-                                         // tesseract_motion_planners::RRTstarConfigurator,
-                                         // tesseract_motion_planners::SPARSConfigurator,
-                                         // tesseract_motion_planners::TRRTConfigurator,
-                                         tesseract_motion_planners::RRTConnectConfigurator>;
+using Implementations =
+    ::testing::Types<tesseract_motion_planners::SBLConfigurator,
+                     tesseract_motion_planners::PRMConfigurator,
+                     tesseract_motion_planners::PRMstarConfigurator,
+                     tesseract_motion_planners::LazyPRMstarConfigurator,
+                     //                                         tesseract_motion_planners::ESTConfigurator,
+                     tesseract_motion_planners::LBKPIECE1Configurator,
+                     tesseract_motion_planners::BKPIECE1Configurator,
+                     tesseract_motion_planners::KPIECE1Configurator,
+                     // tesseract_motion_planners::RRTConfigurator,
+                     // tesseract_motion_planners::RRTstarConfigurator,
+                     // tesseract_motion_planners::SPARSConfigurator,
+                     // tesseract_motion_planners::TRRTConfigurator,
+                     tesseract_motion_planners::RRTConnectConfigurator>;
 
 TYPED_TEST_CASE(OMPLTrajOptTestFixture, Implementations);
 
