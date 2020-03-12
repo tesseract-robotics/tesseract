@@ -39,6 +39,7 @@ namespace tesseract_motion_planners
 class CompoundStateValidator : public ompl::base::StateValidityChecker
 {
 public:
+  CompoundStateValidator();
   CompoundStateValidator(ompl::base::StateValidityCheckerPtr validator);
   CompoundStateValidator(ompl::base::StateValidityCheckerFn validator);
 
