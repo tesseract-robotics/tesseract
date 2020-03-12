@@ -193,6 +193,12 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   }
   EXPECT_TRUE(status);
   EXPECT_EQ(ompl_planning_response.joint_trajectory.trajectory.rows(), ompl_config->n_output_states);
+  EXPECT_TRUE(Eigen::Map<Eigen::VectorXd>(swp.data(), static_cast<Eigen::Index>(swp.size()))
+                  .transpose()
+                  .isApprox(ompl_planning_response.joint_trajectory.trajectory.row(0), 1e-5));
+  EXPECT_TRUE(Eigen::Map<Eigen::VectorXd>(ewp.data(), static_cast<Eigen::Index>(ewp.size()))
+                  .transpose()
+                  .isApprox(ompl_planning_response.joint_trajectory.trajectory.bottomRows(1), 1e-5));
 
   // Check for start state in collision error
   swp = { 0, 0.7, 0.0, 0, 0.0, 0, 0.0 };

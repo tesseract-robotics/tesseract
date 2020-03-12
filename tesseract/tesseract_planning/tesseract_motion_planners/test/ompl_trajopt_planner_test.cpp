@@ -67,7 +67,7 @@ using namespace tesseract_motion_planners;
 const static int SEED = 1;
 const static std::vector<double> start_state = { -0.5, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
 const static std::vector<double> end_state = { 0.5, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
-const static bool PLANNER_VERBOSE = false;
+const static bool PLANNER_VERBOSE = true;
 
 std::string locateResource(const std::string& url)
 {
@@ -203,6 +203,7 @@ TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
     trajopt_config->smooth_velocities = true;
     trajopt_config->smooth_jerks = true;
     trajopt_config->smooth_accelerations = true;
+    trajopt_config->acceleration_coeff = 0.1 * Eigen::VectorXd::Ones(kin->numJoints());
 
     trajopt_config->num_steps = 50;
   }
