@@ -27,18 +27,24 @@ find_package(tesseract_visualization REQUIRED)
 find_package(PCL REQUIRED COMPONENTS core features filters io segmentation surface)
 find_package(trajopt REQUIRED)
 
-if(PYTHON_VERSION STREQUAL "")
+if(NOT PYTHON_VERSION)
   set(PYTHON_VERSION  $ENV{ROS_PYTHON_VERSION})
+  message(STATUS "Setting Python Version: " ${PYTHON_VERSION})
 endif()
-message(STATUS "Building Python Version: " ${PYTHON_VERSION})
 
-set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4 3.3 3.2 3.1 3.0)
+if(PYTHON_VERSION)
+  if(${PYTHON_VERSION} LESS 3)
+    set(Python_ADDITIONAL_VERSIONS 2.7 2.6 2.5 2.4 2.3 2.2 2.1 2.0)
+  else()
+    set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5 3.4 3.3 3.2 3.1 3.0)
+  endif()
+endif()
 
 find_package(PythonInterp ${PYTHON_VERSION} REQUIRED)
 find_package(PythonLibs REQUIRED)
+message(STATUS "Building Python Version: " ${PYTHON_VERSION_MAJOR})
 
 # Find NumPy
-
 find_path(NUMPY_INCLUDE_NDARRAYOBJECT_DIR numpy/ndarrayobject.h PATHS ${PYTHON_INCLUDE_DIRS} NO_DEFAULT_PATH)
 if (NUMPY_INCLUDE_NDARRAYOBJECT_DIR)
 set(NUMPY_INCLUDE_DIR ${NUMPY_INCLUDE_NDARRAYOBJECT_DIR})
@@ -115,7 +121,7 @@ endif()
 
 if (${PYTHON_VERSION_MAJOR} LESS 3)
     install(CODE "message(STATUS \"Running setup.py in ${CMAKE_CURRENT_BINARY_DIR}/python\")
-    execute_process(COMMAND python setup.py install -f
+    execute_process(COMMAND python2 setup.py install -f
 --root=/ --prefix=${CMAKE_INSTALL_PREFIX} ${SETUPTOOLS_ARG_EXTRA} --single-version-externally-managed WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/python)")
 else()
   install(CODE "message(STATUS \"Running setup.py in ${CMAKE_CURRENT_BINARY_DIR}/python\")
