@@ -27,6 +27,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
+#include <ompl/base/goals/GoalState.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/utils.h>
@@ -146,6 +147,16 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
   }
 
   tesseract_common::TrajArray traj = config_->getTrajectory();
+
+  assert(config_->simple_setup->getProblemDefinition()->getStartStateCount() == 1);
+  assert(config_->extractor(config_->simple_setup->getProblemDefinition()->getStartState(0))
+             .transpose()
+             .isApprox(traj.row(0), 1e-5));
+  assert(
+      config_
+          ->extractor(config_->simple_setup->getProblemDefinition()->getGoal()->as<ompl::base::GoalState>()->getState())
+          .transpose()
+          .isApprox(traj.bottomRows(1), 1e-5));
 
   // Check and report collisions
   std::vector<tesseract_collision::ContactResultMap> collisions;
