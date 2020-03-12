@@ -250,24 +250,21 @@ OMPLPlannerFreespaceConfig::processStateValidator(const tesseract_environment::E
                                                   const tesseract_kinematics::ForwardKinematics::Ptr& kin)
 {
   ompl::base::StateValidityCheckerPtr svc_without_collision;
+  auto csvc = std::make_shared<CompoundStateValidator>();
   if (svc_allocator != nullptr)
   {
     svc_without_collision = svc_allocator(simple_setup->getSpaceInformation(), *this);
-    auto csvc = std::make_shared<CompoundStateValidator>(svc_without_collision);
-    if (collision_check)
-    {
-      auto svc = std::make_shared<StateCollisionValidator>(
-          simple_setup->getSpaceInformation(), env, kin, collision_safety_margin, extractor);
-      csvc->addStateValidator(svc);
-    }
-    simple_setup->setStateValidityChecker(csvc);
+    csvc->addStateValidator(svc_without_collision);
   }
-  else if (collision_check)
+
+  if (collision_check && !collision_continuous)
   {
     auto svc = std::make_shared<StateCollisionValidator>(
         simple_setup->getSpaceInformation(), env, kin, collision_safety_margin, extractor);
-    simple_setup->setStateValidityChecker(svc);
+    csvc->addStateValidator(svc);
   }
+  simple_setup->setStateValidityChecker(csvc);
+
   return svc_without_collision;
 }
 void OMPLPlannerFreespaceConfig::processMotionValidator(ompl::base::StateValidityCheckerPtr svc_without_collision,
