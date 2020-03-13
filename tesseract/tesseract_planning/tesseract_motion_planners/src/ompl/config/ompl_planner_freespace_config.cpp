@@ -308,7 +308,7 @@ void OMPLPlannerFreespaceConfig::processOptimizationObjective()
 ompl::base::StateSamplerPtr
 OMPLPlannerFreespaceConfig::allocWeightedRealVectorStateSampler(const ompl::base::StateSpace* space) const
 {
-  const auto& limits = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator)->getLimits();
+  Eigen::MatrixX2d limits = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator)->getLimits();
   return std::make_shared<WeightedRealVectorStateSampler>(space, weights, limits);
 }
 

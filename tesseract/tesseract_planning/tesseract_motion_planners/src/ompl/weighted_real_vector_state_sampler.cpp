@@ -65,7 +65,7 @@ void WeightedRealVectorStateSampler::sampleUniformNear(ompl::base::State* state,
 
   const unsigned int dim = space_->getDimension();
   auto* rstate = state->template as<ompl::base::RealVectorStateSpace::StateType>();
-  auto* rnear = near->template as<ompl::base::RealVectorStateSpace::StateType>();
+  const auto* rnear = near->template as<ompl::base::RealVectorStateSpace::StateType>();
 
   for (unsigned int i = 0; i < dim; ++i)
   {
@@ -87,7 +87,7 @@ void WeightedRealVectorStateSampler::sampleGaussian(ompl::base::State* state,
 
   const unsigned int dim = space_->getDimension();
   auto* rstate = state->template as<ompl::base::RealVectorStateSpace::StateType>();
-  auto* rmean = mean->template as<ompl::base::RealVectorStateSpace::StateType>();
+  const auto* rmean = mean->template as<ompl::base::RealVectorStateSpace::StateType>();
 
   for (unsigned int i = 0; i < dim; ++i)
   {
