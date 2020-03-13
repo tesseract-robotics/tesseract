@@ -120,110 +120,129 @@ static void addBox(tesseract_environment::Environment& env)
 }
 
 template <typename Configurator>
-class OMPLTrajOptTestFixture : public ::testing::Test
+class OMPLTrajOptTestFixtureNoRange : public ::testing::Test
 {
 public:
-  OMPLTrajOptTestFixture() { configurator = std::make_shared<Configurator>(); }
+  OMPLTrajOptTestFixtureNoRange() { configurator = std::make_shared<Configurator>(); }
   using ::testing::Test::Test;
   std::shared_ptr<Configurator> configurator;
   tesseract_motion_planners::OMPLTrajOptFreespacePlanner planner;
+
+  void runTest()
+  {
+    using namespace tesseract_motion_planners;
+    EXPECT_EQ(ompl::RNG::getSeed(), SEED)
+        << "Randomization seed does not match expected: " << ompl::RNG::getSeed() << " vs. " << SEED;
+    util::gLogLevel = util::LevelDebug;
+
+    // Step 1: Load scene and srdf
+    tesseract_scene_graph::ResourceLocator::Ptr locator =
+        std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
+    Tesseract::Ptr tesseract = std::make_shared<Tesseract>();
+    boost::filesystem::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
+    boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
+    EXPECT_TRUE(tesseract->init(urdf_path, srdf_path, locator));
+
+    // Step 2: Add box to environment
+    addBox(*(tesseract->getEnvironment()));
+
+    // Step 3: Create ompl planner config and populate it
+    auto kin = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
+    std::vector<double> swp = start_state;
+    std::vector<double> ewp = end_state;
+
+    auto start = std::make_shared<JointWaypoint>(swp, kin->getJointNames());
+    auto end = std::make_shared<JointWaypoint>(ewp, kin->getJointNames());
+
+    // This will create two planners of the same time and will run them on there own thread
+    std::vector<OMPLPlannerConfigurator::ConstPtr> planners = { this->configurator, this->configurator };
+    // Create the OMPL config
+    auto ompl_config = std::make_shared<OMPLPlannerFreespaceConfig>(tesseract, "manipulator", planners);
+    {
+      ompl_config->start_waypoint = start;
+      ompl_config->end_waypoint = end;
+      ompl_config->collision_safety_margin = 0.02;
+      ompl_config->planning_time = 10;
+      ompl_config->max_solutions = 2;
+      ompl_config->longest_valid_segment_fraction = 0.01;
+
+      ompl_config->collision_continuous = true;
+      ompl_config->collision_check = true;
+      ompl_config->simplify = false;
+      ompl_config->n_output_states = 50;
+    }
+
+    // Create the TrajOpt config
+    auto trajopt_config = std::make_shared<TrajOptPlannerFreespaceConfig>(
+        tesseract, "manipulator", "tool0", Eigen::Isometry3d::Identity());
+    {
+      trajopt_config->target_waypoints.push_back(start);
+      trajopt_config->target_waypoints.push_back(end);
+
+      trajopt_config->collision_cost_config.enabled = false;
+      trajopt_config->collision_constraint_config.enabled = true;
+      trajopt_config->collision_constraint_config.safety_margin = 0.02;
+      trajopt_config->collision_constraint_config.type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
+      trajopt_config->smooth_velocities = true;
+      trajopt_config->smooth_jerks = true;
+      trajopt_config->smooth_accelerations = true;
+      trajopt_config->acceleration_coeff = 0.1 * Eigen::VectorXd::Ones(kin->numJoints());
+
+      trajopt_config->num_steps = 50;
+    }
+
+    // Set the planner configuration
+    this->planner.setConfiguration(ompl_config, trajopt_config);
+
+    tesseract_motion_planners::PlannerResponse planning_response;
+    tesseract_common::StatusCode status = this->planner.solve(planning_response, PLANNER_VERBOSE);
+
+    // Expect the planning to succeed
+    if (!status)
+    {
+      CONSOLE_BRIDGE_logError("CI Error: %s - %s", status.category()->name().c_str(), status.message().c_str());
+    }
+    EXPECT_TRUE(status);
+
+    // Expect that the trajectory has the same number of states as the config with the highest number of states
+    EXPECT_EQ(planning_response.joint_trajectory.trajectory.rows(),
+              std::max(ompl_config->n_output_states, trajopt_config->num_steps));
+  }
+};
+
+template <typename Configurator>
+class OMPLTrajOptTestFixture : public OMPLTrajOptTestFixtureNoRange<Configurator>
+{
+public:
+  OMPLTrajOptTestFixture() : OMPLTrajOptTestFixtureNoRange<Configurator>() { this->configurator->range = 0.1; }
 };
 
 using Implementations = ::testing::Types<tesseract_motion_planners::SBLConfigurator,
-                                         tesseract_motion_planners::PRMConfigurator,
-                                         tesseract_motion_planners::PRMstarConfigurator,
-                                         tesseract_motion_planners::LazyPRMstarConfigurator,
                                          // tesseract_motion_planners::ESTConfigurator,
                                          // tesseract_motion_planners::LBKPIECE1Configurator,
                                          // tesseract_motion_planners::BKPIECE1Configurator,
                                          // tesseract_motion_planners::KPIECE1Configurator,
                                          // tesseract_motion_planners::RRTConfigurator,
                                          // tesseract_motion_planners::RRTstarConfigurator,
-                                         // tesseract_motion_planners::SPARSConfigurator,
                                          // tesseract_motion_planners::TRRTConfigurator,
                                          tesseract_motion_planners::RRTConnectConfigurator>;
 
+using ImplementationsNoRange = ::testing::Types<tesseract_motion_planners::PRMConfigurator,
+                                                tesseract_motion_planners::PRMstarConfigurator,
+                                                // tesseract_motion_planners::SPARSConfigurator,
+                                                tesseract_motion_planners::LazyPRMstarConfigurator>;
+
 TYPED_TEST_CASE(OMPLTrajOptTestFixture, Implementations);
+TYPED_TEST_CASE(OMPLTrajOptTestFixtureNoRange, ImplementationsNoRange);
+
+TYPED_TEST(OMPLTrajOptTestFixtureNoRange, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
+{
+  this->runTest();
+}
 
 TYPED_TEST(OMPLTrajOptTestFixture, OMPLTrajOptFreespacePlannerUnit)  // NOLINT
 {
-  using namespace tesseract_motion_planners;
-  EXPECT_EQ(ompl::RNG::getSeed(), SEED) << "Randomization seed does not match expected: " << ompl::RNG::getSeed()
-                                        << " vs. " << SEED;
-  util::gLogLevel = util::LevelDebug;
-
-  // Step 1: Load scene and srdf
-  tesseract_scene_graph::ResourceLocator::Ptr locator =
-      std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
-  Tesseract::Ptr tesseract = std::make_shared<Tesseract>();
-  boost::filesystem::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
-  boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
-  EXPECT_TRUE(tesseract->init(urdf_path, srdf_path, locator));
-
-  // Step 2: Add box to environment
-  addBox(*(tesseract->getEnvironment()));
-
-  // Step 3: Create ompl planner config and populate it
-  auto kin = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
-  std::vector<double> swp = start_state;
-  std::vector<double> ewp = end_state;
-
-  auto start = std::make_shared<JointWaypoint>(swp, kin->getJointNames());
-  auto end = std::make_shared<JointWaypoint>(ewp, kin->getJointNames());
-
-  // This will create two planners of the same time and will run them on there own thread
-  std::vector<OMPLPlannerConfigurator::ConstPtr> planners = { this->configurator, this->configurator };
-  // Create the OMPL config
-  auto ompl_config = std::make_shared<OMPLPlannerFreespaceConfig>(tesseract, "manipulator", planners);
-  {
-    ompl_config->start_waypoint = start;
-    ompl_config->end_waypoint = end;
-    ompl_config->collision_safety_margin = 0.02;
-    ompl_config->planning_time = 5.0;
-    ompl_config->max_solutions = 2;
-    ompl_config->longest_valid_segment_fraction = 0.01;
-
-    ompl_config->collision_continuous = true;
-    ompl_config->collision_check = true;
-    ompl_config->simplify = false;
-    ompl_config->n_output_states = 50;
-  }
-
-  // Create the TrajOpt config
-  auto trajopt_config =
-      std::make_shared<TrajOptPlannerFreespaceConfig>(tesseract, "manipulator", "tool0", Eigen::Isometry3d::Identity());
-  {
-    trajopt_config->target_waypoints.push_back(start);
-    trajopt_config->target_waypoints.push_back(end);
-
-    trajopt_config->collision_cost_config.enabled = false;
-    trajopt_config->collision_constraint_config.enabled = true;
-    trajopt_config->collision_constraint_config.safety_margin = 0.02;
-    trajopt_config->collision_constraint_config.type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
-    trajopt_config->smooth_velocities = true;
-    trajopt_config->smooth_jerks = true;
-    trajopt_config->smooth_accelerations = true;
-    trajopt_config->acceleration_coeff = 0.1 * Eigen::VectorXd::Ones(kin->numJoints());
-
-    trajopt_config->num_steps = 50;
-  }
-
-  // Set the planner configuration
-  this->planner.setConfiguration(ompl_config, trajopt_config);
-
-  tesseract_motion_planners::PlannerResponse planning_response;
-  tesseract_common::StatusCode status = this->planner.solve(planning_response, PLANNER_VERBOSE);
-
-  // Expect the planning to succeed
-  if (!status)
-  {
-    CONSOLE_BRIDGE_logError("CI Error: %s", status.message().c_str());
-  }
-  EXPECT_TRUE(status);
-
-  // Expect that the trajectory has the same number of states as the config with the highest number of states
-  EXPECT_EQ(planning_response.joint_trajectory.trajectory.rows(),
-            std::max(ompl_config->n_output_states, trajopt_config->num_steps));
+  this->runTest();
 }
 
 int main(int argc, char** argv)
