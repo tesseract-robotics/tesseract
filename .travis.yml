@@ -47,7 +47,10 @@ jobs:
       - ROS_DISTRO="melodic"
       - DOCKER_IMAGE=lharmstrong/tesseract:melodic
       - BADGE=clang-tidy
-      - CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_CLANG_TIDY=ON -DTESSERACT_ENABLE_TESTING=ON"
+      - NOT_TEST_BUILD=true
+      - NOT_TEST_INSTALL=true
+      - CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug"
+      - AFTER_SCRIPT='catkin build -w $CATKIN_WORKSPACE --no-deps --force-cmake tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python --cmake-args -DTESSERACT_ENABLE_CLANG_TIDY=ON -DTESSERACT_ENABLE_TESTING=ON'
       cache:
         directories:
           - $HOME/.ccache
