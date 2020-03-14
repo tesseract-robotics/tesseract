@@ -1,8 +1,4 @@
 - git:
-    local-name: tesseract_ros
-    uri: https://github.com/ros-industrial-consortium/tesseract_ros.git
-    version: master
-- git:
     local-name: trajopt
     uri: https://github.com/ros-industrial-consortium/trajopt_ros.git
     version: master

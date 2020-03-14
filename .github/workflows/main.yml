@@ -1,0 +1,63 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  industrial_ci:
+    strategy:
+      matrix:
+        env:
+          - {OS_NAME: ubuntu,
+             OS_CODE_NAME: bionic,
+             ROS_DISTRO: melodic,
+             ROS_REPO: main,
+             ROSDEP_SKIP_KEYS: "bullet3 fcl",
+             CLANG_FORMAT_CHECK: file,
+             CLANG_FORMAT_VERSION: 8,
+             DOCKER_IMAGE: "lharmstrong/tesseract:melodic",
+             BADGE: clang-format}
+          - {OS_NAME: ubuntu,
+             OS_CODE_NAME: bionic,
+             ROS_DISTRO: melodic,
+             ROS_REPO: main,
+             UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#master github:Jmeyer1292/opw_kinematics#master',
+             TARGET_WORKSPACE: '. github:ros-industrial-consortium/trajopt_ros#master',
+             ROSDEP_SKIP_KEYS: "bullet3 fcl",
+             DOCKER_IMAGE: "lharmstrong/tesseract:melodic",
+             BADGE: clang-tidy,
+             NOT_TEST_BUILD: true,
+             UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug",
+             TARGET_CMAKE_ARGS: "-DTESSERACT_ENABLE_CLANG_TIDY=ON -DTESSERACT_ENABLE_TESTING=ON"}
+          - {OS_NAME: ubuntu,
+             OS_CODE_NAME: bionic,
+             ROS_DISTRO: melodic,
+             ROS_REPO: main,
+             UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#master github:Jmeyer1292/opw_kinematics#master',
+             DOWNSTREAM_WORKSPACE: 'github:ros-industrial-consortium/tesseract_ros#master',
+             TARGET_WORKSPACE: '. github:ros-industrial-consortium/trajopt_ros#master',
+             ROSDEP_SKIP_KEYS: "bullet3 fcl",
+             DOCKER_IMAGE: "lharmstrong/tesseract:melodic",
+             BADGE: bionic,
+             UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug",
+             TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON",
+             DOWNSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug",
+             AFTER_SCRIPT: 'catkin build -w $target_ws --no-deps --verbose tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python --make-args test'}
+          - {OS_NAME: ubuntu,
+             OS_CODE_NAME: xenial,
+             ROS_DISTRO: kinetic,
+             ROS_REPO: main,
+             UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#master github:Jmeyer1292/opw_kinematics#master',
+             DOWNSTREAM_WORKSPACE: 'github:ros-industrial-consortium/tesseract_ros#master',
+             TARGET_WORKSPACE: '. github:ros-industrial-consortium/trajopt_ros#master',
+             ROSDEP_SKIP_KEYS: "bullet3 fcl",
+             DOCKER_IMAGE: "lharmstrong/tesseract:kinetic",
+             BADGE: xenial,
+             UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug",
+             TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON",
+             DOWNSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug",
+             AFTER_SCRIPT: 'catkin build -w $target_ws --no-deps --verbose tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python --make-args test'}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: 'ros-industrial/industrial_ci@master'
+        env: ${{matrix.env}}
