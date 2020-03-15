@@ -1,13 +1,19 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_common VERSION 0.1.0 LANGUAGES CXX)
 include(cmake/tesseract_macros.cmake)
+include(cmake/tesseract_code_coverage.cmake)
 
 find_package(Eigen3 REQUIRED)
+
+set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/*)
+
+add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 
 add_library(${PROJECT_NAME} INTERFACE)
 target_link_libraries(${PROJECT_NAME} INTERFACE)
 tesseract_target_compile_options(${PROJECT_NAME} INTERFACE)
 tesseract_clang_tidy(${PROJECT_NAME})
+tesseract_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE})
 target_include_directories(${PROJECT_NAME} INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -25,6 +31,7 @@ install(DIRECTORY include/${PROJECT_NAME}
 
 install(FILES
   "${CMAKE_CURRENT_LIST_DIR}/cmake/tesseract_macros.cmake"
+  "${CMAKE_CURRENT_LIST_DIR}/cmake/tesseract_code_coverage.cmake"
   DESTINATION lib/cmake/${PROJECT_NAME})
 
 if (TESSERACT_ENABLE_TESTING)

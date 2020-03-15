@@ -12,11 +12,16 @@ find_package(tesseract_common REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(Boost REQUIRED)
 
+set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/* /*/include/descartes_light/* /*/include/opw_kinematics/* /*/include/trajopt/* /*/include/trajopt_sco/*)
+
+add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
+
 # Create interface for core
 add_library(${PROJECT_NAME}_core INTERFACE)
 target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract::tesseract tesseract::tesseract_common console_bridge)
 tesseract_target_compile_options(${PROJECT_NAME}_core INTERFACE)
 tesseract_clang_tidy(${PROJECT_NAME}_core)
+tesseract_code_coverage(${PROJECT_NAME}_core ALL EXCLUDE ${COVERAGE_EXCLUDE})
 target_include_directories(${PROJECT_NAME}_core INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -35,6 +40,7 @@ add_library(${PROJECT_NAME}_trajopt
 target_link_libraries(${PROJECT_NAME}_trajopt PUBLIC ${Boost_LIBRARIES} ${PROJECT_NAME}_core trajopt::trajopt trajopt::trajopt_utils trajopt::trajopt_sco)
 tesseract_target_compile_options(${PROJECT_NAME}_trajopt PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_trajopt)
+tesseract_code_coverage(${PROJECT_NAME}_trajopt ALL EXCLUDE ${COVERAGE_EXCLUDE})
 target_include_directories(${PROJECT_NAME}_trajopt PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -62,6 +68,7 @@ add_library(${PROJECT_NAME}_ompl SHARED ${OMPL_SRC})
 target_link_libraries(${PROJECT_NAME}_ompl PUBLIC ${PROJECT_NAME}_core ${OMPL_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_ompl PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_ompl)
+tesseract_code_coverage(${PROJECT_NAME}_ompl ALL EXCLUDE ${COVERAGE_EXCLUDE})
 target_include_directories(${PROJECT_NAME}_ompl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -73,6 +80,7 @@ add_library(${PROJECT_NAME}_ompl_trajopt_freespace SHARED src/hybrid/ompl_trajop
 target_link_libraries(${PROJECT_NAME}_ompl_trajopt_freespace PUBLIC ${PROJECT_NAME}_ompl ${PROJECT_NAME}_trajopt)
 tesseract_target_compile_options(${PROJECT_NAME}_ompl_trajopt_freespace PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_ompl_trajopt_freespace)
+tesseract_code_coverage(${PROJECT_NAME}_ompl_trajopt_freespace ALL EXCLUDE ${COVERAGE_EXCLUDE})
 if(OMPL_VERSION VERSION_LESS "1.4.0")
     target_compile_definitions(${PROJECT_NAME}_ompl PUBLIC OMPL_LESS_1_4_0=ON)
 endif()
@@ -92,6 +100,7 @@ add_library(${PROJECT_NAME}_descartes SHARED
 target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME}_core descartes::descartes_light descartes::descartes_samplers descartes::descartes_opw)
 tesseract_target_compile_options(${PROJECT_NAME}_descartes PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_descartes)
+tesseract_code_coverage(${PROJECT_NAME}_descartes ALL EXCLUDE ${COVERAGE_EXCLUDE})
 target_include_directories(${PROJECT_NAME}_descartes PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -101,6 +110,7 @@ add_library(${PROJECT_NAME}_descartes_trajopt_array SHARED src/hybrid/descartes_
 target_link_libraries(${PROJECT_NAME}_descartes_trajopt_array PUBLIC ${PROJECT_NAME}_descartes ${PROJECT_NAME}_trajopt)
 tesseract_target_compile_options(${PROJECT_NAME}_descartes_trajopt_array PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_descartes_trajopt_array)
+tesseract_code_coverage(${PROJECT_NAME}_descartes_trajopt_array ALL EXCLUDE ${COVERAGE_EXCLUDE})
 target_include_directories(${PROJECT_NAME}_descartes_trajopt_array PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
