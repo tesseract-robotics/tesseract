@@ -6,6 +6,10 @@ find_package(console_bridge REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(octomap REQUIRED)
 
+set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/*)
+
+add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
+
 find_package(ASSIMP QUIET)
 if (NOT ASSIMP_FOUND)
   find_package(PkgConfig REQUIRED)
@@ -17,6 +21,7 @@ add_library(${PROJECT_NAME} INTERFACE)
 target_link_libraries(${PROJECT_NAME} INTERFACE console_bridge ${OCTOMAP_LIBRARIES} ${ASSIMP_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME} INTERFACE)
 tesseract_clang_tidy(${PROJECT_NAME})
+tesseract_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE})
 target_include_directories(${PROJECT_NAME} INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")

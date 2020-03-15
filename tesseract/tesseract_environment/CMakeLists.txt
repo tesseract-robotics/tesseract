@@ -9,11 +9,16 @@ find_package(tesseract_collision REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_common REQUIRED)
 
+set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/* /*/bullet/LinearMath/* /*/bullet/BulletCollision/*)
+
+add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
+
 # Create interface for core
 add_library(${PROJECT_NAME}_core SHARED src/core/environment.cpp)
 target_link_libraries(${PROJECT_NAME}_core PUBLIC tesseract::tesseract_collision_core tesseract::tesseract_scene_graph)
 tesseract_target_compile_options(${PROJECT_NAME}_core PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_core)
+tesseract_code_coverage(${PROJECT_NAME}_core ALL EXCLUDE ${COVERAGE_EXCLUDE})
 target_include_directories(${PROJECT_NAME}_core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -25,6 +30,7 @@ add_library(${PROJECT_NAME}_kdl SHARED src/kdl/kdl_env.cpp src/kdl/kdl_state_sol
 target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_collision_fcl tesseract::tesseract_collision_bullet tesseract::tesseract_scene_graph orocos-kdl console_bridge ${BULLET_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_kdl PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_kdl)
+tesseract_code_coverage(${PROJECT_NAME}_kdl ALL EXCLUDE ${COVERAGE_EXCLUDE})
 target_include_directories(${PROJECT_NAME}_kdl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")

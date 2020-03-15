@@ -56,6 +56,19 @@ jobs:
              TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON",
              DOWNSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug",
              AFTER_SCRIPT: 'catkin build -w $target_ws --no-deps --verbose tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python --make-args test'}
+          - {OS_NAME: ubuntu,
+             OS_CODE_NAME: bionic,
+             ROS_DISTRO: melodic,
+             ROS_REPO: main,
+             UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#master github:Jmeyer1292/opw_kinematics#master',
+             TARGET_WORKSPACE: '. github:ros-industrial-consortium/trajopt_ros#master',
+             ROSDEP_SKIP_KEYS: "bullet3 fcl",
+             DOCKER_IMAGE: "lharmstrong/tesseract:melodic",
+             BADGE: CodeCov,
+             UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug",
+             TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_CODE_COVERAGE=ON",
+             AFTER_SCRIPT: 'catkin build -w $target_ws --no-deps --verbose tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_scene_graph tesseract_urdf --make-args ccov-all
+                            && bash <(curl -s https://codecov.io/bash) -t c4af0da7-9fc3-4d3c-bb2e-6b2523ddd382 -s $target_ws/build -f *all-merged.info'}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1

@@ -13,11 +13,16 @@ find_package(fcl REQUIRED)
 # We need to find ccd ourselves because FCL doesn't do it in their fclConfig.cmake
 find_package(ccd REQUIRED)
 
+set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/* /*/bullet/LinearMath/* /*/bullet/BulletCollision/* /*/include/ccd/* /*/include/fcl/*)
+
+add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
+
 # Create interface for core
 add_library(${PROJECT_NAME}_core INTERFACE)
 target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract::tesseract_geometry ${Boost_LIBRARIES} ${BULLET_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_core INTERFACE)
 tesseract_clang_tidy(${PROJECT_NAME}_core)
+tesseract_code_coverage(${PROJECT_NAME}_core ALL EXCLUDE ${COVERAGE_EXCLUDE})
 target_compile_definitions(${PROJECT_NAME}_core INTERFACE "-DBT_USE_DOUBLE_PRECISION")
 target_include_directories(${PROJECT_NAME}_core INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -39,6 +44,7 @@ add_library(${PROJECT_NAME}_bullet SHARED
 target_link_libraries(${PROJECT_NAME}_bullet PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_geometry console_bridge ${OCTOMAP_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_bullet PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_bullet)
+tesseract_code_coverage(${PROJECT_NAME}_bullet ALL EXCLUDE ${COVERAGE_EXCLUDE})
 target_include_directories(${PROJECT_NAME}_bullet PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -53,6 +59,7 @@ add_library(${PROJECT_NAME}_fcl SHARED src/fcl/fcl_discrete_managers.cpp src/fcl
 target_link_libraries(${PROJECT_NAME}_fcl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_geometry console_bridge ${OCTOMAP_LIBRARIES} fcl)
 tesseract_target_compile_options(${PROJECT_NAME}_fcl PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_fcl)
+tesseract_code_coverage(${PROJECT_NAME}_fcl ALL EXCLUDE ${COVERAGE_EXCLUDE})
 target_include_directories(${PROJECT_NAME}_fcl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
