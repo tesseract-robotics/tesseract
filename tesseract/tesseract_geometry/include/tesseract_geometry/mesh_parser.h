@@ -101,7 +101,7 @@ inline std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
       }
       else
       {
-        CONSOLE_BRIDGE_logDebug("Mesh had a face with less than three verticies");
+        CONSOLE_BRIDGE_logDebug("Mesh had a face with less than three verticies: %s", resource->getUrl().c_str());
       }
     }
 
