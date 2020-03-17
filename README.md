@@ -1,6 +1,7 @@
 # Tesseract
 
 [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/CI/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions?query=branch%3Amaster+)
+[![codecov](https://codecov.io/gh/ros-industrial-consortium/tesseract/branch/master/graph/badge.svg)](https://codecov.io/gh/ros-industrial-consortium/tesseract)
 [![Github Issues](https://img.shields.io/github/issues/ros-industrial-consortium/tesseract.svg)](http://github.com/ros-industrial-consortium/tesseract/issues)
 
 [![license - apache 2.0](https://img.shields.io/:license-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
