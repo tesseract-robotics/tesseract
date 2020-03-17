@@ -93,7 +93,7 @@ using EdgeProperty = boost::property<boost::edge_joint_t, Joint::Ptr, boost::pro
 
 using Graph = boost::
     adjacency_list<boost::listS, boost::listS, boost::bidirectionalS, VertexProperty, EdgeProperty, GraphProperty>;
-class SceneGraph : private boost::noncopyable, public Graph
+class SceneGraph : public Graph
 {
 public:
   /**
@@ -110,6 +110,13 @@ public:
   using ConstPtr = std::shared_ptr<const SceneGraph>;
 
   SceneGraph();
+  ~SceneGraph() = default;
+  // SceneGraphs are non-copyable
+  SceneGraph(const SceneGraph& other) = delete;
+  SceneGraph& operator=(const SceneGraph& other) = delete;
+
+  SceneGraph(SceneGraph&& other) = default;
+  SceneGraph& operator=(SceneGraph&& other) = default;
 
   /**
    * @brief Sets the graph name
