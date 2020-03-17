@@ -103,7 +103,9 @@ bool DescartesMotionPlanner<FloatType>::setConfiguration(const DescartesMotionPl
 }
 
 template <typename FloatType>
-tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerResponse& response, const bool verbose)
+tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerResponse& response,
+                                                                      PostPlanCheckType check_type,
+                                                                      const bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
@@ -158,23 +160,21 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
       response.joint_trajectory.trajectory(static_cast<long>(r), static_cast<long>(c)) = solution[(r * dof) + c];
 
   // Check and report collisions
-  std::vector<tesseract_collision::ContactResultMap> collisions;
-  auto manager = config_->tesseract->getEnvironmentConst()->getContinuousContactManager();
-  manager->setActiveCollisionObjects(config_->active_link_names);
-  manager->setContactDistanceThreshold(0);
-  collisions.clear();
-  bool found = tesseract_environment::checkTrajectory(collisions,
-                                                      *manager,
-                                                      *config_->tesseract->getEnvironmentConst()->getStateSolver(),
-                                                      response.joint_trajectory.joint_names,
-                                                      response.joint_trajectory.trajectory,
-                                                      tesseract_collision::ContactTestType::FIRST,
-                                                      verbose);
+  validator_ =
+      std::make_shared<TrajectoryValidator>(config_->tesseract->getEnvironmentConst()->getContinuousContactManager(),
+                                            config_->tesseract->getEnvironmentConst()->getDiscreteContactManager(),
+                                            0.01,
+                                            verbose);
+
+  bool valid = validator_->trajectoryValid(response.joint_trajectory.trajectory,
+                                           check_type,
+                                           *(config_->tesseract->getEnvironmentConst()->getStateSolver()),
+                                           response.joint_trajectory.joint_names);
 
   CONSOLE_BRIDGE_logInform("Descartes planning time: %.3f",
                            (boost::posix_time::second_clock::local_time() - tStart).seconds());
 
-  if (found)
+  if (!valid)
   {
     response.status = tesseract_common::StatusCode(
         DescartesMotionPlannerStatusCategory::ErrorFoundValidSolutionInCollision, status_category_);

@@ -32,20 +32,22 @@ namespace tesseract_motion_planners
 {
 class MotionPlanner
 {
-public:  
+public:
   MotionPlanner(std::string name);
   virtual ~MotionPlanner();
-  
+
   const std::string& getName();
-  
+
   const PlannerRequest& getRequest() const;
-  
+
   void setRequest(const PlannerRequest& request);
-  
+
   %rename(_solve) solve;
-  virtual tesseract_common::StatusCode solve(PlannerResponse& res, bool verbose = false) = 0;
+  virtual tesseract_common::StatusCode solve(PlannerResponse& res,
+                                             PostPlanCheckType check_type = PostPlanCheckType::DISCRETE_CONTINUOUS_COLLISION,
+                                             bool verbose = false) = 0;
   %pythoncode %{
-  def solve(self, verbose=False):
+  def solve(self, check_type=PostPlanCheckType_DISCRETE_CONTINUOUS_COLLISION, verbose=False):
       response = PlannerResponse()
       status_code = self._solve(response, verbose)
       return status_code, response
@@ -53,7 +55,7 @@ public:
   virtual tesseract_common::StatusCode isConfigured() const = 0;
 
   virtual bool terminate() = 0;
-  
+
   virtual void clear() = 0;
 
 };

@@ -28,12 +28,12 @@
 
 #pragma SWIG nowarn=473
 
-%{ 
-//#define SWIG_PYTHON_EXTRA_NATIVE_CONTAINERS 
-%} 
+%{
+//#define SWIG_PYTHON_EXTRA_NATIVE_CONTAINERS
+%}
 
 %{
-#include <boost/graph/adjacency_list.hpp>  
+#include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/directed_graph.hpp>
 #include <boost/graph/properties.hpp>
 #include <boost/graph/depth_first_search.hpp>
@@ -53,8 +53,8 @@
 %exception {
   try {
     $action
-  } 
-  SWIG_CATCH_STDEXCEPT  
+  }
+  SWIG_CATCH_STDEXCEPT
 }
 
 %feature("director:except") {
@@ -104,6 +104,7 @@
 %include "tesseract_planning/tesseract_motion_planners/core/waypoint.i"
 %include "tesseract_planning/tesseract_motion_planners/core/utils.i"
 %include "tesseract_planning/tesseract_motion_planners/core/types.i"
+%include "tesseract_planning/tesseract_motion_planners/core/trajectory_validator.i"
 %include "tesseract_planning/tesseract_motion_planners/core/planner.i"
 %include "trajopt/problem_description.i"
 %include "tesseract_planning/tesseract_motion_planners/trajopt/config/trajopt_planner_config.i"

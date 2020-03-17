@@ -52,7 +52,9 @@ bool OMPLMotionPlanner::terminate()
   return false;
 }
 
-tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response, bool verbose)
+tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
+                                                      PostPlanCheckType check_type,
+                                                      bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
@@ -159,18 +161,23 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
           .isApprox(traj.bottomRows(1), 1e-5));
 
   // Check and report collisions
-  std::vector<tesseract_collision::ContactResultMap> collisions;
-  tesseract_environment::StateSolver::Ptr state_solver = config_->tesseract->getEnvironmentConst()->getStateSolver();
-  continuous_contact_manager_->setContactDistanceThreshold(0);
-  collisions.clear();
-  bool found = tesseract_environment::checkTrajectory(collisions,
-                                                      *continuous_contact_manager_,
-                                                      *state_solver,
-                                                      kin_->getJointNames(),
-                                                      traj,
-                                                      config_->longest_valid_segment_length,
-                                                      tesseract_collision::ContactTestType::FIRST,
-                                                      verbose);
+  continuous_contact_manager_->setContactDistanceThreshold(0.0);
+
+  bool valid = true;
+  {
+    auto env = config_->tesseract->getEnvironmentConst();
+    auto adj_map = std::make_shared<tesseract_environment::AdjacencyMap>(
+        env->getSceneGraph(), kin_->getActiveLinkNames(), env->getCurrentState()->transforms);
+    auto discrete_contact_manager = env->getDiscreteContactManager();
+    discrete_contact_manager->setActiveCollisionObjects(adj_map->getActiveLinkNames());
+    discrete_contact_manager->setContactDistanceThreshold(0.0);
+
+    tesseract_environment::StateSolver::Ptr state_solver = env->getStateSolver();
+
+    validator_ = std::make_shared<TrajectoryValidator>(
+        continuous_contact_manager_, discrete_contact_manager, config_->longest_valid_segment_length, verbose);
+    valid = validator_->trajectoryValid(traj, check_type, *state_solver, kin_->getJointNames());
+  }
 
   // Set the contact distance back to original incase solve was called again.
   continuous_contact_manager_->setContactDistanceThreshold(config_->collision_safety_margin);
@@ -178,7 +185,7 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
   // Send response
   response.joint_trajectory.trajectory = traj;
   response.joint_trajectory.joint_names = kin_->getJointNames();
-  if (found)
+  if (!valid)
   {
     response.status = tesseract_common::StatusCode(OMPLMotionPlannerStatusCategory::ErrorFoundValidSolutionInCollision,
                                                    status_category_);

@@ -191,7 +191,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   {
     CONSOLE_BRIDGE_logError("CI Error: %s", status.message().c_str());
   }
-  EXPECT_TRUE(status);
+  EXPECT_TRUE(&status);
   EXPECT_EQ(ompl_planning_response.joint_trajectory.trajectory.rows(), ompl_config->n_output_states);
   EXPECT_TRUE(Eigen::Map<Eigen::VectorXd>(swp.data(), static_cast<Eigen::Index>(swp.size()))
                   .transpose()
@@ -277,7 +277,7 @@ TEST(OMPLMultiPlanner, OMPLMultiPlannerUnit)  // NOLINT
   {
     CONSOLE_BRIDGE_logError("CI Error: %s", status.message().c_str());
   }
-  EXPECT_TRUE(status);
+  EXPECT_TRUE(&status);
   EXPECT_EQ(ompl_planning_response.joint_trajectory.trajectory.rows(), ompl_config->n_output_states);
 
   // Check for start state in collision error

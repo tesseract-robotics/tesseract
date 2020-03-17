@@ -101,7 +101,9 @@ void TrajOptMotionPlanner::clear()
   config_ = nullptr;
 }
 
-tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& response, bool verbose)
+tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& response,
+                                                         PostPlanCheckType check_type,
+                                                         bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
@@ -163,17 +165,13 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
                                                             config_->prob->GetKin()->getActiveLinkNames(),
                                                             config_->prob->GetEnv()->getCurrentState()->transforms);
 
-  continuous_manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
-  continuous_manager->setContactDistanceThreshold(0);
-  collisions.clear();
-  bool found = checkTrajectory(collisions,
-                               *continuous_manager,
-                               *state_solver,
-                               config_->prob->GetKin()->getJointNames(),
-                               getTraj(opt.x(), config_->prob->GetVars()),
-                               length,
-                               tesseract_collision::ContactTestType::FIRST,
-                               verbose);
+  validator_ = std::make_shared<TrajectoryValidator>(config_->prob->GetEnv()->getContinuousContactManager(),
+                                                     config_->prob->GetEnv()->getDiscreteContactManager(),
+                                                     length,
+                                                     verbose);
+
+  bool valid = validator_->trajectoryValid(
+      getTraj(opt.x(), config_->prob->GetVars()), check_type, *state_solver, config_->prob->GetKin()->getJointNames());
 
   // Send response
   response.joint_trajectory.trajectory = getTraj(opt.x(), config_->prob->GetVars());
@@ -183,7 +181,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
     response.status =
         tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::FailedToFindValidSolution, status_category_);
   }
-  else if (found)
+  else if (!valid)
   {
     response.status = tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::FoundValidSolutionInCollision,
                                                    status_category_);

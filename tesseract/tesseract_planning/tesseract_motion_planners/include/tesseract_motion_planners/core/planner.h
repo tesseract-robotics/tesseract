@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/status_code.h>
 #include <tesseract_motion_planners/core/types.h>
+#include <tesseract_motion_planners/core/trajectory_validator.h>
 
 namespace tesseract_motion_planners
 {
@@ -54,8 +55,17 @@ public:
   /** @brief Set the planner request for this context */
   void setRequest(const PlannerRequest& request) { request_ = request; }
 
-  /** @brief Solve the planner request problem */
-  virtual tesseract_common::StatusCode solve(PlannerResponse& res, bool verbose = false) = 0;
+  /**
+   * @brief Solve the planner request problem
+   * @param res The results from the planner
+   * @param check_type The type of validation check to be performed on the planned trajectory
+   * @param verbose Flag for printing more detailed planning information
+   * @return A code indicating the status of the planned trajectory
+   */
+  virtual tesseract_common::StatusCode
+  solve(PlannerResponse& res,
+        PostPlanCheckType collision_check_type = PostPlanCheckType::DISCRETE_CONTINUOUS_COLLISION,
+        bool verbose = false) = 0;
 
   /**
    * @brief checks if the planner is configured for planning
@@ -73,8 +83,9 @@ public:
   virtual void clear() = 0;
 
 protected:
-  std::string name_;       /**< @brief The name of this planner */
-  PlannerRequest request_; /**< @brief The planner request information */
+  std::string name_;                   /**< @brief The name of this planner */
+  PlannerRequest request_;             /**< @brief The planner request information */
+  TrajectoryValidator::Ptr validator_; /**< @brief The trajectory validator class */
 };
 }  // namespace tesseract_motion_planners
 #endif  // TESSERACT_PLANNING_PLANNER_H

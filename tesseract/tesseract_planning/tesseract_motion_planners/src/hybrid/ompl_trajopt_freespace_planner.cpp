@@ -98,7 +98,9 @@ tesseract_common::StatusCode OMPLTrajOptFreespacePlanner::isConfigured() const
   return tesseract_common::StatusCode(status_category_->IsConfigured, status_category_);
 }
 
-tesseract_common::StatusCode OMPLTrajOptFreespacePlanner::solve(PlannerResponse& response, bool verbose)
+tesseract_common::StatusCode OMPLTrajOptFreespacePlanner::solve(PlannerResponse& response,
+                                                                PostPlanCheckType check_type,
+                                                                bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
@@ -109,8 +111,8 @@ tesseract_common::StatusCode OMPLTrajOptFreespacePlanner::solve(PlannerResponse&
   }
 
   // Solve problem using OMPL. Results are stored in the response
-  tesseract_motion_planners::PlannerResponse ompl_planning_response;
-  tesseract_common::StatusCode ompl_status = ompl_planner_.solve(ompl_planning_response, verbose);
+  PlannerResponse ompl_planning_response;
+  tesseract_common::StatusCode ompl_status = ompl_planner_.solve(ompl_planning_response, check_type, verbose);
   if (!ompl_status)
   {
     response = std::move(ompl_planning_response);
@@ -134,8 +136,8 @@ tesseract_common::StatusCode OMPLTrajOptFreespacePlanner::solve(PlannerResponse&
 
   trajopt_planner_.setConfiguration(trajopt_config_);
 
-  tesseract_motion_planners::PlannerResponse trajopt_planning_response;
-  tesseract_common::StatusCode trajopt_status = trajopt_planner_.solve(trajopt_planning_response, verbose);
+  PlannerResponse trajopt_planning_response;
+  tesseract_common::StatusCode trajopt_status = trajopt_planner_.solve(trajopt_planning_response, check_type, verbose);
   response = std::move(trajopt_planning_response);
   response.status = trajopt_status;
 
