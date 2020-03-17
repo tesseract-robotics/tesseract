@@ -196,7 +196,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
   PlannerResponse single_planner_response;
   single_descartes_planner.setConfiguration(config);
   auto single_status = single_descartes_planner.solve(single_planner_response);
-  EXPECT_TRUE(single_status);
+  EXPECT_TRUE(&single_status);
 
   for (int i = 0; i < 10; ++i)
   {
@@ -205,7 +205,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
     PlannerResponse planner_response;
     descartes_planner.setConfiguration(config);
     auto status = descartes_planner.solve(planner_response);
-    EXPECT_TRUE(status);
+    EXPECT_TRUE(&status);
     for (int j = 0; j < static_cast<int>(waypoints.size()); ++j)
     {
       EXPECT_TRUE(single_planner_response.joint_trajectory.trajectory.row(j).isApprox(
@@ -239,7 +239,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
   PlannerResponse single_planner_response;
   single_descartes_planner.setConfiguration(config);
   auto single_status = single_descartes_planner.solve(single_planner_response);
-  EXPECT_TRUE(single_status);
+  EXPECT_TRUE(&single_status);
 
   for (int i = 0; i < 10; ++i)
   {
@@ -248,7 +248,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
     PlannerResponse planner_response;
     descartes_planner.setConfiguration(config);
     auto status = descartes_planner.solve(planner_response);
-    EXPECT_TRUE(status);
+    EXPECT_TRUE(&status);
     for (int j = 0; j < static_cast<int>(waypoints.size()); ++j)
     {
       EXPECT_TRUE(single_planner_response.joint_trajectory.trajectory.row(j).isApprox(
@@ -282,7 +282,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   PlannerResponse single_planner_response;
   single_descartes_planner.setConfiguration(config);
   auto single_status = single_descartes_planner.solve(single_planner_response);
-  EXPECT_TRUE(single_status);
+  EXPECT_TRUE(&single_status);
 
   for (int i = 0; i < 10; ++i)
   {
@@ -291,7 +291,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
     PlannerResponse planner_response;
     descartes_planner.setConfiguration(config);
     auto status = descartes_planner.solve(planner_response);
-    EXPECT_TRUE(status);
+    EXPECT_TRUE(&status);
     for (int j = 0; j < static_cast<int>(waypoints.size()); ++j)
     {
       EXPECT_TRUE(single_planner_response.joint_trajectory.trajectory.row(j).isApprox(

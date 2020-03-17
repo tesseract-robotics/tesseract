@@ -101,7 +101,9 @@ void TrajOptMotionPlanner::clear()
   config_ = nullptr;
 }
 
-tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& response, PostPlanCheckType check_type, bool verbose)
+tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& response,
+                                                         PostPlanCheckType check_type,
+                                                         bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)

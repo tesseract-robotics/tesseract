@@ -98,7 +98,9 @@ tesseract_common::StatusCode OMPLTrajOptFreespacePlanner::isConfigured() const
   return tesseract_common::StatusCode(status_category_->IsConfigured, status_category_);
 }
 
-tesseract_common::StatusCode OMPLTrajOptFreespacePlanner::solve(PlannerResponse& response, PostPlanCheckType check_type, bool verbose)
+tesseract_common::StatusCode OMPLTrajOptFreespacePlanner::solve(PlannerResponse& response,
+                                                                PostPlanCheckType check_type,
+                                                                bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
   if (!config_status)
