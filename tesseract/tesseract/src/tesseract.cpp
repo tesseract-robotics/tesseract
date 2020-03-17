@@ -40,13 +40,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract
 {
-Tesseract::Tesseract() { clear(); }
+Tesseract::Tesseract() : init_info_(new TesseractInitInfo()) { clear(); }
 
 bool Tesseract::isInitialized() const { return initialized_; }
 
 bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
 {
   clear();
+  init_info_->type = TesseractInitType::SCENE_GRAPH;
+  init_info_->scene_graph = scene_graph;
 
   // Construct Environment from Scene Graph
   environment_ = std::make_shared<tesseract_environment::KDLEnv>();
@@ -69,6 +71,9 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph,
                      tesseract_scene_graph::SRDFModel::ConstPtr srdf_model)
 {
   clear();
+  init_info_->type = TesseractInitType::SCENE_GRAPH_SRDF_MODEL;
+  init_info_->scene_graph = scene_graph;
+  init_info_->srdf_model_ = srdf_model;
 
   srdf_model_ = std::move(srdf_model);
 
@@ -92,6 +97,9 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph,
 bool Tesseract::init(const std::string& urdf_string, const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   clear();
+  init_info_->type = TesseractInitType::URDF_STRING;
+  init_info_->urdf_string = urdf_string;
+  init_info_->resource_locator = locator;
 
   // Parse urdf string into Scene Graph
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_urdf::parseURDFString(urdf_string, locator);
@@ -122,6 +130,10 @@ bool Tesseract::init(const std::string& urdf_string,
                      const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   clear();
+  init_info_->type = TesseractInitType::URDF_STRING_SRDF_STRING;
+  init_info_->urdf_string = urdf_string;
+  init_info_->srdf_string = srdf_string;
+  init_info_->resource_locator = locator;
 
   // Parse urdf string into Scene Graph
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_urdf::parseURDFString(urdf_string, locator);
@@ -163,6 +175,9 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
                      const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   clear();
+  init_info_->type = TesseractInitType::URDF_PATH;
+  init_info_->urdf_path = urdf_path;
+  init_info_->resource_locator = locator;
 
   // Parse urdf file into Scene Graph
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_urdf::parseURDFFile(urdf_path.string(), locator);
@@ -193,6 +208,10 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
                      const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   clear();
+  init_info_->type = TesseractInitType::URDF_PATH_SRDF_PATH;
+  init_info_->urdf_path = urdf_path;
+  init_info_->srdf_path = srdf_path;
+  init_info_->resource_locator = locator;
 
   // Parse urdf file into Scene Graph
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = tesseract_urdf::parseURDFFile(urdf_path.string(), locator);
@@ -227,6 +246,36 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
   registerDefaultInvKinSolvers();
 
   initialized_ = true;
+  return true;
+}
+
+bool Tesseract::init(const TesseractInitInfo::Ptr& init_info)
+{
+  switch (init_info->type)
+  {
+    case TesseractInitType::SCENE_GRAPH:
+      init(init_info->scene_graph);
+      break;
+    case TesseractInitType::SCENE_GRAPH_SRDF_MODEL:
+      init(init_info->scene_graph, init_info->srdf_model_);
+      break;
+    case TesseractInitType::URDF_STRING:
+      init(init_info->urdf_string, init_info->resource_locator);
+      break;
+    case TesseractInitType::URDF_STRING_SRDF_STRING:
+      init(init_info->urdf_string, init_info->srdf_string, init_info->resource_locator);
+      break;
+    case TesseractInitType::URDF_PATH:
+      init(init_info->urdf_path, init_info->resource_locator);
+      break;
+    case TesseractInitType::URDF_PATH_SRDF_PATH:
+      init(init_info->urdf_path, init_info->srdf_path, init_info->resource_locator);
+      break;
+    default:
+      CONSOLE_BRIDGE_logError("Unsupported TesseractInitInfo type.");
+      return false;
+      break;
+  }
   return true;
 }
 
