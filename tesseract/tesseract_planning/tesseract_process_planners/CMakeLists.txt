@@ -5,12 +5,17 @@ find_package(tesseract_common REQUIRED)
 find_package(tesseract_motion_planners REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/*)
+
+add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
+
 add_library(${PROJECT_NAME} SHARED
   src/${PROJECT_NAME}/process_definition.cpp
   src/${PROJECT_NAME}/process_segment_definition.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_common tesseract::tesseract_motion_planners_core)
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME})
+tesseract_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE})
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
