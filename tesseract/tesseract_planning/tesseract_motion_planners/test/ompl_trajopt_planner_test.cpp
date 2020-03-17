@@ -68,6 +68,7 @@ const static int SEED = 1;
 const static std::vector<double> start_state = { -0.5, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
 const static std::vector<double> end_state = { 0.5, 0.5, 0.0, -1.3348, 0.0, 1.4959, 0.0 };
 const static bool PLANNER_VERBOSE = true;
+const static PostPlanCheckType PLANNER_COLLISION_CHECK_TYPE = PostPlanCheckType::DISCRETE_CONTINUOUS_COLLISION;
 
 std::string locateResource(const std::string& url)
 {
