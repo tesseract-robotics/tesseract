@@ -350,7 +350,10 @@ void TrajOptPlannerDefaultConfig::addCollisionCost(trajopt::ProblemConstructionI
   {
     for (auto& collision_pair : special_collision_cost)
     {
-      info->setPairSafetyMarginData(std::get<0>(collision_pair), std::get<1>(collision_pair), std::get<2>(collision_pair), std::get<3>(collision_pair));
+      info->setPairSafetyMarginData(std::get<0>(collision_pair),
+                                    std::get<1>(collision_pair),
+                                    std::get<2>(collision_pair),
+                                    std::get<3>(collision_pair));
     }
   }
   ct->fixed_steps = fixed_steps;
@@ -400,7 +403,10 @@ void TrajOptPlannerDefaultConfig::addCollisionConstraint(trajopt::ProblemConstru
   {
     for (auto& collision_pair : special_collision_constraint)
     {
-      info->setPairSafetyMarginData(std::get<0>(collision_pair), std::get<1>(collision_pair), std::get<2>(collision_pair), std::get<3>(collision_pair));
+      info->setPairSafetyMarginData(std::get<0>(collision_pair),
+                                    std::get<1>(collision_pair),
+                                    std::get<2>(collision_pair),
+                                    std::get<3>(collision_pair));
     }
   }
   ct->fixed_steps = fixed_steps;

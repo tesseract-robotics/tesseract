@@ -192,7 +192,11 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
   if (!valid && allowable_collision)
   {
     std::vector<tesseract_collision::ContactResultMap> contacts;
-    validator_->getContacts(getTraj(opt.x(), config_->prob->GetVars()), check_type, *state_solver, config_->prob->GetKin()->getJointNames(), contacts);
+    validator_->getContacts(getTraj(opt.x(), config_->prob->GetVars()),
+                            check_type,
+                            *state_solver,
+                            config_->prob->GetKin()->getJointNames(),
+                            contacts);
     valid = false;
     for (auto contact_state : contacts)
     {
@@ -211,17 +215,19 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
           {
             if (coll_dist <= std::get<2>(special_collision))
             {
-              std::cout << "Found unallowed collision between " << std::get<0>(special_collision) <<
-                           " and " << std::get<1>(special_collision) << " at a distance of " <<
-                           coll_dist << std::endl;
+              CONSOLE_BRIDGE_logInform("Found unallowed collision between %s and %s at a distance of %f",
+                                       first_link.c_str(),
+                                       second_link.c_str(),
+                                       coll_dist);
               valid = false;
               break;
             }
             else
             {
-              std::cout << "Found ALLOWED collision between " << std::get<0>(special_collision) <<
-                           " and " << std::get<1>(special_collision) << " at a distance of " <<
-                           coll_dist << std::endl;
+              CONSOLE_BRIDGE_logInform("Found ALLOWED collision between %s and %s at a distance of %f",
+                                       first_link.c_str(),
+                                       second_link.c_str(),
+                                       coll_dist);
               valid = true;
               break;
             }
