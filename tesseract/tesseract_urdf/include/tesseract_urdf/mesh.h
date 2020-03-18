@@ -99,14 +99,10 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::M
       return std::make_shared<tesseract_common::StatusCode>(MeshStatusCategory::ErrorParsingAttributeScale, status_cat);
 
     double sx, sy, sz;
-    if (!tesseract_common::toNumeric<double>(tokens[0], sx))
-      return std::make_shared<tesseract_common::StatusCode>(MeshStatusCategory::ErrorParsingAttributeScale, status_cat);
-
-    if (!tesseract_common::toNumeric<double>(tokens[1], sy))
-      return std::make_shared<tesseract_common::StatusCode>(MeshStatusCategory::ErrorParsingAttributeScale, status_cat);
-
-    if (!tesseract_common::toNumeric<double>(tokens[2], sz))
-      return std::make_shared<tesseract_common::StatusCode>(MeshStatusCategory::ErrorParsingAttributeScale, status_cat);
+    // No need to check return values because the tokens are verified above
+    tesseract_common::toNumeric<double>(tokens[0], sx);
+    tesseract_common::toNumeric<double>(tokens[1], sy);
+    tesseract_common::toNumeric<double>(tokens[2], sz);
 
     scale = Eigen::Vector3d(sx, sy, sz);
   }

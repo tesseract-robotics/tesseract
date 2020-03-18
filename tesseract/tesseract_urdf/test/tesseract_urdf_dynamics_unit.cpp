@@ -14,6 +14,9 @@ TEST(TesseractURDFUnit, parse_dynamics)  // NOLINT
     tesseract_scene_graph::JointDynamics::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics", 2);
     EXPECT_TRUE(*status);
+    EXPECT_EQ(status->category()->name(), "DynamicsStatusCategory");
+    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
+    EXPECT_FALSE(status->message().empty());
     EXPECT_NEAR(elem->damping, 1, 1e-8);
     EXPECT_NEAR(elem->friction, 2, 1e-8);
   }
@@ -23,6 +26,7 @@ TEST(TesseractURDFUnit, parse_dynamics)  // NOLINT
     tesseract_scene_graph::JointDynamics::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics", 2);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_NEAR(elem->damping, 1, 1e-8);
     EXPECT_NEAR(elem->friction, 0, 1e-8);
   }
@@ -32,6 +36,7 @@ TEST(TesseractURDFUnit, parse_dynamics)  // NOLINT
     tesseract_scene_graph::JointDynamics::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics", 2);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_NEAR(elem->damping, 0, 1e-8);
     EXPECT_NEAR(elem->friction, 2, 1e-8);
   }
@@ -41,6 +46,7 @@ TEST(TesseractURDFUnit, parse_dynamics)  // NOLINT
     tesseract_scene_graph::JointDynamics::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -48,6 +54,7 @@ TEST(TesseractURDFUnit, parse_dynamics)  // NOLINT
     tesseract_scene_graph::JointDynamics::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -55,5 +62,6 @@ TEST(TesseractURDFUnit, parse_dynamics)  // NOLINT
     tesseract_scene_graph::JointDynamics::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointDynamics::Ptr>(elem, str, "dynamics", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 }

@@ -58,8 +58,6 @@ public:
         return "Sucessfully parsed joint '" + joint_name_ + "'!";
       case ErrorMissingAttributeName:
         return "Missing or failed to parse joint attribute 'name' for joint '" + joint_name_ + "'!";
-      case ErrorMissingOriginElement:
-        return "Missing joint element 'origin' for joint '" + joint_name_ + "'!";
       case ErrorParsingOrigin:
         return "Failed parsing joint element 'origin' for joint '" + joint_name_ + "'!";
       case ErrorMissingParentElement:
@@ -99,22 +97,21 @@ public:
   {
     Success = 0,
     ErrorMissingAttributeName = -1,
-    ErrorMissingOriginElement = -2,
-    ErrorParsingOrigin = -3,
-    ErrorMissingParentElement = -4,
-    ErrorParsingParentAttributeLink = -5,
-    ErrorMissingChildElement = -6,
-    ErrorParsingChildAttributeLink = -7,
-    ErrorMissingTypeElement = -8,
-    ErrorInvalidType = -9,
-    ErrorMissingAxisElement = -10,
-    ErrorParsingAxisAttributeXYZ = -11,
-    ErrorMissingLimitsElement = -12,
-    ErrorParsingLimits = -13,
-    ErrorParsingSafetyController = -14,
-    ErrorParsingCalibration = -15,
-    ErrorParsingMimic = -16,
-    ErrorParsingDynamics = -17
+    ErrorParsingOrigin = -2,
+    ErrorMissingParentElement = -3,
+    ErrorParsingParentAttributeLink = -4,
+    ErrorMissingChildElement = -5,
+    ErrorParsingChildAttributeLink = -6,
+    ErrorMissingTypeElement = -7,
+    ErrorInvalidType = -8,
+    ErrorMissingAxisElement = -9,
+    ErrorParsingAxisAttributeXYZ = -10,
+    ErrorMissingLimitsElement = -11,
+    ErrorParsingLimits = -12,
+    ErrorParsingSafetyController = -13,
+    ErrorParsingCalibration = -14,
+    ErrorParsingMimic = -15,
+    ErrorParsingDynamics = -16
   };
 
 private:
@@ -128,11 +125,12 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
 {
   joint = nullptr;
   auto status_cat = std::make_shared<JointStatusCategory>();
+  using SC = tesseract_common::StatusCode;
 
   // get joint name
   std::string joint_name;
   if (QueryStringAttribute(xml_element, "name", joint_name) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorMissingAttributeName, status_cat);
+    return std::make_shared<SC>(JointStatusCategory::ErrorMissingAttributeName, status_cat);
 
   status_cat = std::make_shared<JointStatusCategory>(joint_name);
 
@@ -145,32 +143,29 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
   {
     auto status = parse(j->parent_to_joint_origin_transform, origin, version);
     if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(
-          JointStatusCategory::ErrorParsingOrigin, status_cat, status);
+      return std::make_shared<SC>(JointStatusCategory::ErrorParsingOrigin, status_cat, status);
   }
 
   // get parent link
   const tinyxml2::XMLElement* parent = xml_element->FirstChildElement("parent");
   if (parent == nullptr)
-    return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorMissingParentElement, status_cat);
+    return std::make_shared<SC>(JointStatusCategory::ErrorMissingParentElement, status_cat);
 
   if (QueryStringAttribute(parent, "link", j->parent_link_name) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorParsingParentAttributeLink,
-                                                          status_cat);
+    return std::make_shared<SC>(JointStatusCategory::ErrorParsingParentAttributeLink, status_cat);
 
   // get child link
   const tinyxml2::XMLElement* child = xml_element->FirstChildElement("child");
   if (child == nullptr)
-    return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorMissingChildElement, status_cat);
+    return std::make_shared<SC>(JointStatusCategory::ErrorMissingChildElement, status_cat);
 
   if (QueryStringAttribute(child, "link", j->child_link_name) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorParsingChildAttributeLink,
-                                                          status_cat);
+    return std::make_shared<SC>(JointStatusCategory::ErrorParsingChildAttributeLink, status_cat);
 
   // get joint type
   std::string joint_type;
   if (QueryStringAttribute(xml_element, "type", joint_type) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorMissingTypeElement, status_cat);
+    return std::make_shared<SC>(JointStatusCategory::ErrorMissingTypeElement, status_cat);
 
   if (joint_type == "planar")
     j->type = tesseract_scene_graph::JointType::PLANAR;
@@ -185,7 +180,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
   else if (joint_type == "fixed")
     j->type = tesseract_scene_graph::JointType::FIXED;
   else
-    return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorInvalidType, status_cat);
+    return std::make_shared<SC>(JointStatusCategory::ErrorInvalidType, status_cat);
 
   // get joint axis
   if (j->type != tesseract_scene_graph::JointType::FLOATING && j->type != tesseract_scene_graph::JointType::FIXED)
@@ -199,27 +194,18 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
     {
       std::string axis_str;
       if (QueryStringAttribute(axis, "xyz", axis_str) != tinyxml2::XML_SUCCESS)
-        return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorParsingAxisAttributeXYZ,
-                                                              status_cat);
+        return std::make_shared<SC>(JointStatusCategory::ErrorParsingAxisAttributeXYZ, status_cat);
 
       std::vector<std::string> tokens;
       boost::split(tokens, axis_str, boost::is_any_of(" "), boost::token_compress_on);
       if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
-        return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorParsingAxisAttributeXYZ,
-                                                              status_cat);
+        return std::make_shared<SC>(JointStatusCategory::ErrorParsingAxisAttributeXYZ, status_cat);
 
       double ax, ay, az;
-      if (!tesseract_common::toNumeric<double>(tokens[0], ax))
-        return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorParsingAxisAttributeXYZ,
-                                                              status_cat);
-
-      if (!tesseract_common::toNumeric<double>(tokens[1], ay))
-        return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorParsingAxisAttributeXYZ,
-                                                              status_cat);
-
-      if (!tesseract_common::toNumeric<double>(tokens[2], az))
-        return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorParsingAxisAttributeXYZ,
-                                                              status_cat);
+      // No need to check return values because the tokens are verified above
+      tesseract_common::toNumeric<double>(tokens[0], ax);
+      tesseract_common::toNumeric<double>(tokens[1], ay);
+      tesseract_common::toNumeric<double>(tokens[2], az);
 
       j->axis = Eigen::Vector3d(ax, ay, az);
     }
@@ -232,7 +218,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
     const tinyxml2::XMLElement* limits = xml_element->FirstChildElement("limit");
     if (limits == nullptr && j->type != tesseract_scene_graph::JointType::CONTINUOUS)
     {
-      return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorMissingLimitsElement, status_cat);
+      return std::make_shared<SC>(JointStatusCategory::ErrorMissingLimitsElement, status_cat);
     }
 
     if (limits == nullptr && j->type == tesseract_scene_graph::JointType::CONTINUOUS)
@@ -243,8 +229,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
     {
       auto status = parse(j->limits, limits, version);
       if (!(*status))
-        return std::make_shared<tesseract_common::StatusCode>(
-            JointStatusCategory::ErrorParsingLimits, status_cat, status);
+        return std::make_shared<SC>(JointStatusCategory::ErrorParsingLimits, status_cat, status);
     }
   }
 
@@ -254,8 +239,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
   {
     auto status = parse(j->safety, safety, version);
     if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(
-          JointStatusCategory::ErrorParsingSafetyController, status_cat, status);
+      return std::make_shared<SC>(JointStatusCategory::ErrorParsingSafetyController, status_cat, status);
   }
 
   // get joint calibration if exists
@@ -264,8 +248,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
   {
     auto status = parse(j->calibration, calibration, version);
     if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(
-          JointStatusCategory::ErrorParsingCalibration, status_cat, status);
+      return std::make_shared<SC>(JointStatusCategory::ErrorParsingCalibration, status_cat, status);
   }
 
   // get mimic joint if exists
@@ -274,7 +257,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
   {
     auto status = parse(j->mimic, mimic, version);
     if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::ErrorParsingMimic, status_cat, status);
+      return std::make_shared<SC>(JointStatusCategory::ErrorParsingMimic, status_cat, status);
   }
 
   // get dynamics if exists
@@ -283,12 +266,11 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
   {
     auto status = parse(j->dynamics, dynamics, version);
     if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(
-          JointStatusCategory::ErrorParsingDynamics, status_cat, status);
+      return std::make_shared<SC>(JointStatusCategory::ErrorParsingDynamics, status_cat, status);
   }
 
   joint = std::move(j);
-  return std::make_shared<tesseract_common::StatusCode>(JointStatusCategory::Success, status_cat);
+  return std::make_shared<SC>(JointStatusCategory::Success, status_cat);
 }
 }  // namespace tesseract_urdf
 #endif  // TESSERACT_URDF_JOINT_H

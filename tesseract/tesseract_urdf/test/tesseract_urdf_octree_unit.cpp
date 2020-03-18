@@ -35,6 +35,9 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
     tesseract_geometry::Octree::Ptr geom;
     auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_TRUE(*status);
+    EXPECT_EQ(status->category()->name(), "OctomapStatusCategory");
+    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(geom->getSubType() == geom->BOX);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 8);
@@ -47,6 +50,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
     tesseract_geometry::Octree::Ptr geom;
     auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(geom->getSubType() == geom->BOX);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 8);
@@ -59,6 +63,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
     tesseract_geometry::Octree::Ptr geom;
     auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(geom->getSubType() == geom->SPHERE_INSIDE);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 8);
@@ -72,6 +77,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
     tesseract_geometry::Octree::Ptr geom;
     auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(geom->getSubType() == geom->BOX);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 944);
@@ -85,10 +91,21 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
     tesseract_geometry::Octree::Ptr geom;
     auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(geom->getSubType() == geom->BOX);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 496);
     EXPECT_NEAR(geom->getOctree()->getResolution(), 0.1, 1e-5);
+  }
+
+  {
+    std::string str = R"(<octomap shape_type="box" prune="true">
+                           <point_cloud />
+                         </octomap>)";
+    tesseract_geometry::Octree::Ptr geom;
+    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
+    EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 #endif
 
@@ -99,9 +116,20 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
     tesseract_geometry::Octree::Ptr geom;
     auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(geom->getSubType() == geom->SPHERE_OUTSIDE);
     EXPECT_TRUE(geom->getOctree() != nullptr);
     EXPECT_EQ(geom->calcNumSubShapes(), 8);
+  }
+
+  {
+    std::string str = R"(<octomap shape_type="sphere_outside" prune="true">
+                           <octree />
+                         </octomap>)";
+    tesseract_geometry::Octree::Ptr geom;
+    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
+    EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -111,6 +139,17 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
     tesseract_geometry::Octree::Ptr geom;
     auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
+  }
+
+  {
+    std::string str = R"(<octomap shape_type="sphere_outside" prune="true">
+                           <octree />
+                         </octomap>)";
+    tesseract_geometry::Octree::Ptr geom;
+    auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
+    EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -120,6 +159,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
     tesseract_geometry::Octree::Ptr geom;
     auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -129,6 +169,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
     tesseract_geometry::Octree::Ptr geom;
     auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -136,5 +177,6 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
     tesseract_geometry::Octree::Ptr geom;
     auto status = runTest<tesseract_geometry::Octree::Ptr>(geom, str, "octomap", resource_locator, 2, true);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 }

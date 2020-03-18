@@ -15,7 +15,9 @@ TEST(TesseractURDFUnit, parse_box)  // NOLINT
     tesseract_geometry::Box::Ptr geom;
     auto status = runTest<tesseract_geometry::Box::Ptr>(geom, str, "box", 2);
     EXPECT_TRUE(*status);
-
+    EXPECT_EQ(status->category()->name(), "BoxStatusCategory");
+    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
+    EXPECT_FALSE(status->message().empty());
     EXPECT_NEAR(geom->getX(), 1, 1e-8);
     EXPECT_NEAR(geom->getY(), 2, 1e-8);
     EXPECT_NEAR(geom->getZ(), 3, 1e-8);
@@ -26,6 +28,23 @@ TEST(TesseractURDFUnit, parse_box)  // NOLINT
     tesseract_geometry::Box::Ptr geom;
     auto status = runTest<tesseract_geometry::Box::Ptr>(geom, str, "box", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
+  }
+
+  {
+    std::string str = R"(<box size="1 -2.0 3" extra="0 0 0"/>)";
+    tesseract_geometry::Box::Ptr geom;
+    auto status = runTest<tesseract_geometry::Box::Ptr>(geom, str, "box", 2);
+    EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
+  }
+
+  {
+    std::string str = R"(<box size="1 2.0 -3" extra="0 0 0"/>)";
+    tesseract_geometry::Box::Ptr geom;
+    auto status = runTest<tesseract_geometry::Box::Ptr>(geom, str, "box", 2);
+    EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -33,6 +52,7 @@ TEST(TesseractURDFUnit, parse_box)  // NOLINT
     tesseract_geometry::Box::Ptr geom;
     auto status = runTest<tesseract_geometry::Box::Ptr>(geom, str, "box", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -40,6 +60,7 @@ TEST(TesseractURDFUnit, parse_box)  // NOLINT
     tesseract_geometry::Box::Ptr geom;
     auto status = runTest<tesseract_geometry::Box::Ptr>(geom, str, "box", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -47,5 +68,6 @@ TEST(TesseractURDFUnit, parse_box)  // NOLINT
     tesseract_geometry::Box::Ptr geom;
     auto status = runTest<tesseract_geometry::Box::Ptr>(geom, str, "box", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 }

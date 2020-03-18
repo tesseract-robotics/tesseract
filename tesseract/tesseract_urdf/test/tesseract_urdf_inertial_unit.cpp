@@ -18,6 +18,9 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_TRUE(*status);
+    EXPECT_EQ(status->category()->name(), "InertialStatusCategory");
+    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
+    EXPECT_FALSE(status->message().empty());
     EXPECT_NEAR(elem->mass, 1, 1e-8);
     EXPECT_NEAR(elem->ixx, 1, 1e-8);
     EXPECT_NEAR(elem->ixy, 2, 1e-8);
@@ -35,6 +38,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_NEAR(elem->mass, 1, 1e-8);
     EXPECT_NEAR(elem->ixx, 1, 1e-8);
     EXPECT_NEAR(elem->ixy, 2, 1e-8);
@@ -45,12 +49,25 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
   }
 
   {
+    std::string str = R"(<inertial extra="0 0 0">
+                           <origin xyz="0 0 0 4" rpy="0 0 0"/>
+                           <mass value="1.0" extra="0 0 0"/>
+                           <inertia ixx="1.0" ixy="2.0" ixz="3.0" iyy="4.0" iyz="5.0" izz="6.0" extra="0 0 0"/>
+                         </inertial>)";
+    tesseract_scene_graph::Inertial::Ptr elem;
+    auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
+    EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
+  }
+
+  {
     std::string str = R"(<inertial>
                            <inertia ixx="1.0" ixy="2.0" ixz="3.0" iyy="4.0" iyz="5.0" izz="6.0"/>
                          </inertial>)";
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -60,6 +77,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -70,6 +88,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -80,6 +99,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -90,6 +110,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -100,6 +121,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -110,6 +132,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -120,6 +143,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -130,6 +154,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -140,6 +165,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -150,6 +176,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -160,6 +187,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -170,6 +198,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -180,6 +209,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -190,6 +220,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -200,6 +231,7 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -210,5 +242,6 @@ TEST(TesseractURDFUnit, parse_inertial)  // NOLINT
     tesseract_scene_graph::Inertial::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Inertial::Ptr>(elem, str, "inertial", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 }

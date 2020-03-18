@@ -15,6 +15,9 @@ TEST(TesseractURDFUnit, parse_safety_controller)  // NOLINT
     tesseract_scene_graph::JointSafety::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointSafety::Ptr>(elem, str, "safety_controller", 2);
     EXPECT_TRUE(*status);
+    EXPECT_EQ(status->category()->name(), "SafetyStatusCategory");
+    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
+    EXPECT_FALSE(status->message().empty());
     EXPECT_NEAR(elem->soft_lower_limit, 1, 1e-8);
     EXPECT_NEAR(elem->soft_upper_limit, 2, 1e-8);
     EXPECT_NEAR(elem->k_position, 3, 1e-8);
@@ -26,6 +29,7 @@ TEST(TesseractURDFUnit, parse_safety_controller)  // NOLINT
     tesseract_scene_graph::JointSafety::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointSafety::Ptr>(elem, str, "safety_controller", 2);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_NEAR(elem->soft_lower_limit, 0, 1e-8);
     EXPECT_NEAR(elem->soft_upper_limit, 2, 1e-8);
     EXPECT_NEAR(elem->k_position, 3, 1e-8);
@@ -37,6 +41,7 @@ TEST(TesseractURDFUnit, parse_safety_controller)  // NOLINT
     tesseract_scene_graph::JointSafety::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointSafety::Ptr>(elem, str, "safety_controller", 2);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_NEAR(elem->soft_lower_limit, 1, 1e-8);
     EXPECT_NEAR(elem->soft_upper_limit, 0, 1e-8);
     EXPECT_NEAR(elem->k_position, 3, 1e-8);
@@ -48,6 +53,7 @@ TEST(TesseractURDFUnit, parse_safety_controller)  // NOLINT
     tesseract_scene_graph::JointSafety::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointSafety::Ptr>(elem, str, "safety_controller", 2);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_NEAR(elem->soft_lower_limit, 1, 1e-8);
     EXPECT_NEAR(elem->soft_upper_limit, 2, 1e-8);
     EXPECT_NEAR(elem->k_position, 0, 1e-8);
@@ -59,6 +65,7 @@ TEST(TesseractURDFUnit, parse_safety_controller)  // NOLINT
     tesseract_scene_graph::JointSafety::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointSafety::Ptr>(elem, str, "safety_controller", 2);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_NEAR(elem->soft_lower_limit, 0, 1e-8);
     EXPECT_NEAR(elem->soft_upper_limit, 0, 1e-8);
     EXPECT_NEAR(elem->k_position, 0, 1e-8);
@@ -70,6 +77,7 @@ TEST(TesseractURDFUnit, parse_safety_controller)  // NOLINT
     tesseract_scene_graph::JointSafety::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointSafety::Ptr>(elem, str, "safety_controller", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -77,5 +85,6 @@ TEST(TesseractURDFUnit, parse_safety_controller)  // NOLINT
     tesseract_scene_graph::JointSafety::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointSafety::Ptr>(elem, str, "safety_controller", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 }

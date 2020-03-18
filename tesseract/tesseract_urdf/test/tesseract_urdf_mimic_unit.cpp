@@ -14,6 +14,9 @@ TEST(TesseractURDFUnit, parse_mimic)  // NOLINT
     tesseract_scene_graph::JointMimic::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, str, "mimic", 2);
     EXPECT_TRUE(*status);
+    EXPECT_EQ(status->category()->name(), "MimicStatusCategory");
+    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(elem->joint_name == "joint_1");
     EXPECT_NEAR(elem->multiplier, 1, 1e-8);
     EXPECT_NEAR(elem->offset, 2, 1e-8);
@@ -24,6 +27,7 @@ TEST(TesseractURDFUnit, parse_mimic)  // NOLINT
     tesseract_scene_graph::JointMimic::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, str, "mimic", 2);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(elem->joint_name == "joint_1");
     EXPECT_NEAR(elem->multiplier, 1, 1e-8);
     EXPECT_NEAR(elem->offset, 0, 1e-8);
@@ -34,6 +38,7 @@ TEST(TesseractURDFUnit, parse_mimic)  // NOLINT
     tesseract_scene_graph::JointMimic::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, str, "mimic", 2);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(elem->joint_name == "joint_1");
     EXPECT_NEAR(elem->multiplier, 1, 1e-8);
     EXPECT_NEAR(elem->offset, 2, 1e-8);
@@ -44,6 +49,7 @@ TEST(TesseractURDFUnit, parse_mimic)  // NOLINT
     tesseract_scene_graph::JointMimic::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, str, "mimic", 2);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(elem->joint_name == "joint_1");
     EXPECT_NEAR(elem->multiplier, 1, 1e-8);
     EXPECT_NEAR(elem->offset, 0, 1e-8);
@@ -54,6 +60,7 @@ TEST(TesseractURDFUnit, parse_mimic)  // NOLINT
     tesseract_scene_graph::JointMimic::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, str, "mimic", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -61,6 +68,7 @@ TEST(TesseractURDFUnit, parse_mimic)  // NOLINT
     tesseract_scene_graph::JointMimic::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, str, "mimic", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -68,5 +76,6 @@ TEST(TesseractURDFUnit, parse_mimic)  // NOLINT
     tesseract_scene_graph::JointMimic::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointMimic::Ptr>(elem, str, "mimic", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 }

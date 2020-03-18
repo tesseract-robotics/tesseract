@@ -17,6 +17,9 @@ TEST(TesseractURDFUnit, parse_mesh)  // NOLINT
     std::vector<tesseract_geometry::Mesh::Ptr> geom;
     auto status = runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(geom, str, "mesh", resource_locator, 2, true);
     EXPECT_TRUE(*status);
+    EXPECT_EQ(status->category()->name(), "MeshStatusCategory");
+    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getTriangleCount() == 80);
     EXPECT_TRUE(geom[0]->getVerticeCount() == 42);
@@ -30,6 +33,7 @@ TEST(TesseractURDFUnit, parse_mesh)  // NOLINT
     std::vector<tesseract_geometry::Mesh::Ptr> geom;
     auto status = runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(geom, str, "mesh", resource_locator, 2, true);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(geom.size() == 1);
     EXPECT_TRUE(geom[0]->getTriangleCount() == 80);
     EXPECT_TRUE(geom[0]->getVerticeCount() == 42);
@@ -43,6 +47,7 @@ TEST(TesseractURDFUnit, parse_mesh)  // NOLINT
     std::vector<tesseract_geometry::Mesh::Ptr> geom;
     auto status = runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(geom, str, "mesh", resource_locator, 2, true);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -50,6 +55,23 @@ TEST(TesseractURDFUnit, parse_mesh)  // NOLINT
     std::vector<tesseract_geometry::Mesh::Ptr> geom;
     auto status = runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(geom, str, "mesh", resource_locator, 2, true);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
+  }
+
+  {
+    std::string str = R"(<mesh filename="package://tesseract_support/meshes/sphere_p25m.stl" scale="a 1 1"/>)";
+    std::vector<tesseract_geometry::Mesh::Ptr> geom;
+    auto status = runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(geom, str, "mesh", resource_locator, 2, true);
+    EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
+  }
+
+  {
+    std::string str = R"(<mesh filename="package://tesseract_support/meshes/sphere_p25m.stl" scale="1 1 a"/>)";
+    std::vector<tesseract_geometry::Mesh::Ptr> geom;
+    auto status = runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(geom, str, "mesh", resource_locator, 2, true);
+    EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -57,6 +79,7 @@ TEST(TesseractURDFUnit, parse_mesh)  // NOLINT
     std::vector<tesseract_geometry::Mesh::Ptr> geom;
     auto status = runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(geom, str, "mesh", resource_locator, 2, true);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -64,6 +87,7 @@ TEST(TesseractURDFUnit, parse_mesh)  // NOLINT
     std::vector<tesseract_geometry::Mesh::Ptr> geom;
     auto status = runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(geom, str, "mesh", resource_locator, 2, true);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -71,5 +95,6 @@ TEST(TesseractURDFUnit, parse_mesh)  // NOLINT
     std::vector<tesseract_geometry::Mesh::Ptr> geom;
     auto status = runTest<std::vector<tesseract_geometry::Mesh::Ptr>>(geom, str, "mesh", resource_locator, 2, true);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 }
