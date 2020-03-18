@@ -11,6 +11,7 @@
   <build_export_depend>eigen</build_export_depend>
 
   <test_depend>gtest</test_depend>
+  <test_depend>lcov</test_depend>
   <test_depend>libclang-dev</test_depend>
 
   <export>
