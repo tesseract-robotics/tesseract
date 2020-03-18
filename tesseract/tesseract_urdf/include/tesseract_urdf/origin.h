@@ -114,17 +114,10 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
                                                             status_cat);
 
     double x, y, z;
-    if (!tesseract_common::toNumeric<double>(tokens[0], x))
-      return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeXYZString,
-                                                            status_cat);
-
-    if (!tesseract_common::toNumeric<double>(tokens[1], y))
-      return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeXYZString,
-                                                            status_cat);
-
-    if (!tesseract_common::toNumeric<double>(tokens[2], z))
-      return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeXYZString,
-                                                            status_cat);
+    // No need to check return values because the tokens are verified above
+    tesseract_common::toNumeric<double>(tokens[0], x);
+    tesseract_common::toNumeric<double>(tokens[1], y);
+    tesseract_common::toNumeric<double>(tokens[2], z);
 
     origin.translation() = Eigen::Vector3d(x, y, z);
   }
@@ -146,17 +139,10 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
                                                               status_cat);
 
       double r, p, y;
-      if (!tesseract_common::toNumeric<double>(tokens[0], r))
-        return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeRPYString,
-                                                              status_cat);
-
-      if (!tesseract_common::toNumeric<double>(tokens[1], p))
-        return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeRPYString,
-                                                              status_cat);
-
-      if (!tesseract_common::toNumeric<double>(tokens[2], y))
-        return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeRPYString,
-                                                              status_cat);
+      // No need to check return values because the tokens are verified above
+      tesseract_common::toNumeric<double>(tokens[0], r);
+      tesseract_common::toNumeric<double>(tokens[1], p);
+      tesseract_common::toNumeric<double>(tokens[2], y);
 
       Eigen::AngleAxisd rollAngle(r, Eigen::Vector3d::UnitX());
       Eigen::AngleAxisd pitchAngle(p, Eigen::Vector3d::UnitY());
@@ -184,21 +170,11 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
                                                               status_cat);
 
       double qw, qx, qy, qz;
-      if (!tesseract_common::toNumeric<double>(tokens[0], qw))
-        return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQString,
-                                                              status_cat);
-
-      if (!tesseract_common::toNumeric<double>(tokens[1], qx))
-        return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQString,
-                                                              status_cat);
-
-      if (!tesseract_common::toNumeric<double>(tokens[2], qy))
-        return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQString,
-                                                              status_cat);
-
-      if (!tesseract_common::toNumeric<double>(tokens[3], qz))
-        return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQString,
-                                                              status_cat);
+      // No need to check return values because the tokens are verified above
+      tesseract_common::toNumeric<double>(tokens[0], qw);
+      tesseract_common::toNumeric<double>(tokens[1], qx);
+      tesseract_common::toNumeric<double>(tokens[2], qy);
+      tesseract_common::toNumeric<double>(tokens[3], qz);
 
       Eigen::Quaterniond q(qw, qx, qy, qz);
       q.normalize();

@@ -88,13 +88,18 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Box::Ptr& box
     return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSizeConversion, status_cat);
 
   double l, w, h;
-  if (!tesseract_common::toNumeric<double>(tokens[0], l) || !(l > 0))
+  // No need to check return values because the tokens are verified above
+  tesseract_common::toNumeric<double>(tokens[0], l);
+  tesseract_common::toNumeric<double>(tokens[1], w);
+  tesseract_common::toNumeric<double>(tokens[2], h);
+
+  if (!(l > 0))
     return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSizeConversion, status_cat);
 
-  if (!tesseract_common::toNumeric<double>(tokens[1], w) || !(w > 0))
+  if (!(w > 0))
     return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSizeConversion, status_cat);
 
-  if (!tesseract_common::toNumeric<double>(tokens[2], h) || !(h > 0))
+  if (!(h > 0))
     return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSizeConversion, status_cat);
 
   box = std::make_shared<tesseract_geometry::Box>(l, w, h);

@@ -26,6 +26,9 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
     auto status =
         runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials, 2, true);
     EXPECT_TRUE(*status);
+    EXPECT_EQ(status->category()->name(), "MaterialStatusCategory");
+    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(elem->getName() == "test_material");
     EXPECT_TRUE(elem->color.isApprox(Eigen::Vector4d(1, .5, .5, 1), 1e-8));
     EXPECT_TRUE(elem->texture_filename == "/tmp/texture.txt");
@@ -43,6 +46,7 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
     auto status =
         runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials, 2, true);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(elem->getName() == "test_material");
     EXPECT_TRUE(elem->color.isApprox(Eigen::Vector4d(1, .5, .5, 1), 1e-8));
     EXPECT_TRUE(elem->texture_filename.empty());
@@ -57,9 +61,53 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
     tesseract_scene_graph::Material::Ptr elem;
     auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", available_materials, 2, true);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(elem->getName() == "test_material");
     EXPECT_TRUE(elem->color.isApprox(Eigen::Vector4d(1, .5, .5, 1), 1e-8));
     EXPECT_TRUE(elem->texture_filename == "/tmp/texture.txt");
+  }
+
+  {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
+    available_materials["test_material"] = m;
+
+    std::string str = R"(<material name="test_material" extra="0 0 0">
+                           <color rgba="1 .5 .5 1" extra="0 0 0"/>
+                           <texture />
+                         </material>)";
+    tesseract_scene_graph::Material::Ptr elem;
+    auto status =
+        runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials, 2, true);
+    EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
+  }
+
+  {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
+    available_materials["test_material"] = m;
+
+    std::string str = R"(<material name="test_material">
+                           <color />
+                         </material>)";
+    tesseract_scene_graph::Material::Ptr elem;
+    auto status =
+        runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials, 2, true);
+    EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
+  }
+
+  {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
+    available_materials["test_material"] = m;
+
+    std::string str = R"(<material />)";
+    tesseract_scene_graph::Material::Ptr elem;
+    auto status = runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", available_materials, 2, true);
+    EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -72,6 +120,7 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
     auto status =
         runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials, 2, true);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -87,6 +136,55 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
     auto status =
         runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials, 2, true);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
+  }
+
+  {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
+    available_materials["test_material"] = m;
+
+    std::string str = R"(<material name="test_material">
+                           <color rgba="1 .5 a 1"/>
+                           <texture filename="/tmp/texture.txt"/>
+                         </material>)";
+    tesseract_scene_graph::Material::Ptr elem;
+    auto status =
+        runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials, 2, true);
+    EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
+  }
+
+  {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
+    available_materials["test_material"] = m;
+
+    std::string str = R"(<material name="test_material">
+                           <color rgba="1 a .5 1"/>
+                           <texture filename="/tmp/texture.txt"/>
+                         </material>)";
+    tesseract_scene_graph::Material::Ptr elem;
+    auto status =
+        runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials, 2, true);
+    EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
+  }
+
+  {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
+    available_materials["test_material"] = m;
+
+    std::string str = R"(<material name="test_material">
+                           <color rgba="a .5 .5 1"/>
+                           <texture filename="/tmp/texture.txt"/>
+                         </material>)";
+    tesseract_scene_graph::Material::Ptr elem;
+    auto status =
+        runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials, 2, true);
+    EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -102,5 +200,22 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
     auto status =
         runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials, 2, true);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
+  }
+
+  {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> available_materials;
+    available_materials["test_material"] = m;
+
+    std::string str = R"(<material name="test_material">
+                           <color rgba=""/>
+                           <texture filename="/tmp/texture.txt"/>
+                         </material>)";
+    tesseract_scene_graph::Material::Ptr elem;
+    auto status =
+        runTest<tesseract_scene_graph::Material::Ptr>(elem, str, "material", empty_available_materials, 2, true);
+    EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 }

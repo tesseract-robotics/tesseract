@@ -100,11 +100,12 @@ parse(tesseract_scene_graph::Material::Ptr& material,
 {
   material = tesseract_scene_graph::DEFAULT_TESSERACT_MATERIAL;
   auto status_cat = std::make_shared<MaterialStatusCategory>();
-  auto success_status = std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::Success, status_cat);
+  using SC = tesseract_common::StatusCode;
+  auto success_status = std::make_shared<SC>(MaterialStatusCategory::Success, status_cat);
 
   std::string material_name;
   if (QueryStringAttribute(xml_element, "name", material_name) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorAttributeName, status_cat);
+    return std::make_shared<SC>(MaterialStatusCategory::ErrorAttributeName, status_cat);
 
   auto m = std::make_shared<tesseract_scene_graph::Material>(material_name);
 
@@ -113,8 +114,7 @@ parse(tesseract_scene_graph::Material::Ptr& material,
   if (texture != nullptr)
   {
     if (QueryStringAttribute(texture, "filename", m->texture_filename) != tinyxml2::XML_SUCCESS)
-      return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorTextureAttributeFilename,
-                                                            status_cat);
+      return std::make_shared<SC>(MaterialStatusCategory::ErrorTextureAttributeFilename, status_cat);
   }
 
   const tinyxml2::XMLElement* color = xml_element->FirstChildElement("color");
@@ -122,40 +122,27 @@ parse(tesseract_scene_graph::Material::Ptr& material,
   {
     std::string color_string;
     if (QueryStringAttribute(color, "rgba", color_string) != tinyxml2::XML_SUCCESS)
-      return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorColorAttributeRGBA,
-                                                            status_cat);
+      return std::make_shared<SC>(MaterialStatusCategory::ErrorColorAttributeRGBA, status_cat);
 
     if (!color_string.empty())
     {
       std::vector<std::string> tokens;
       boost::split(tokens, color_string, boost::is_any_of(" "), boost::token_compress_on);
       if (tokens.size() != 4 || !tesseract_common::isNumeric(tokens))
-        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA,
-                                                              status_cat);
+        return std::make_shared<SC>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA, status_cat);
 
       double r, g, b, a;
-      if (!tesseract_common::toNumeric<double>(tokens[0], r))
-        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA,
-                                                              status_cat);
-
-      if (!tesseract_common::toNumeric<double>(tokens[1], g))
-        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA,
-                                                              status_cat);
-
-      if (!tesseract_common::toNumeric<double>(tokens[2], b))
-        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA,
-                                                              status_cat);
-
-      if (!tesseract_common::toNumeric<double>(tokens[3], a))
-        return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorParsingColorAttributeRGBA,
-                                                              status_cat);
+      // No need to check return values because the tokens are verified above
+      tesseract_common::toNumeric<double>(tokens[0], r);
+      tesseract_common::toNumeric<double>(tokens[1], g);
+      tesseract_common::toNumeric<double>(tokens[2], b);
+      tesseract_common::toNumeric<double>(tokens[3], a);
 
       m->color = Eigen::Vector4d(r, g, b, a);
     }
     else
     {
-      return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorColorAttributeRGBA,
-                                                            status_cat);
+      return std::make_shared<SC>(MaterialStatusCategory::ErrorColorAttributeRGBA, status_cat);
     }
   }
 
@@ -163,14 +150,12 @@ parse(tesseract_scene_graph::Material::Ptr& material,
   {
     if (available_materials.empty())
     {
-      return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorNameOnlyIsNotAllowed,
-                                                            status_cat);
+      return std::make_shared<SC>(MaterialStatusCategory::ErrorNameOnlyIsNotAllowed, status_cat);
     }
 
     auto it = available_materials.find(material_name);
     if (it == available_materials.end())
-      return std::make_shared<tesseract_common::StatusCode>(MaterialStatusCategory::ErrorLocatingMaterialByName,
-                                                            status_cat);
+      return std::make_shared<SC>(MaterialStatusCategory::ErrorLocatingMaterialByName, status_cat);
     m = it->second;
   }
   else
@@ -179,15 +164,14 @@ parse(tesseract_scene_graph::Material::Ptr& material,
     {
       auto it = available_materials.find(material_name);
       if (it != available_materials.end())
-        success_status->setChild(std::make_shared<tesseract_common::StatusCode>(
-            MaterialStatusCategory::MultipleMaterialsWithSameName, status_cat));
+        success_status->setChild(
+            std::make_shared<SC>(MaterialStatusCategory::MultipleMaterialsWithSameName, status_cat));
 
       available_materials[material_name] = m;
     }
     else if (!allow_anonymous)
     {
-      return std::make_shared<tesseract_common::StatusCode>(
-          MaterialStatusCategory::ErrorAnonymousMaterialNamesNotAllowed, status_cat);
+      return std::make_shared<SC>(MaterialStatusCategory::ErrorAnonymousMaterialNamesNotAllowed, status_cat);
     }
   }
 

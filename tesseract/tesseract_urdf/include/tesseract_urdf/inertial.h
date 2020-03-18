@@ -49,8 +49,6 @@ public:
     {
       case Success:
         return "Sucessfully parssed inertial!";
-      case MissingOriginElement:
-        return "Missing optional inertial element 'origin'!";
       case ErrorParsingOrigin:
         return "Failed parsing inertial element 'origin'!";
       case ErrorMissingMassElement:
@@ -78,7 +76,6 @@ public:
 
   enum
   {
-    MissingOriginElement = 1,
     Success = 0,
     ErrorParsingOrigin = -1,
     ErrorMissingMassElement = -2,

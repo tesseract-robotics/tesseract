@@ -86,10 +86,11 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::C
 {
   meshes.clear();
   auto status_cat = std::make_shared<ConvexMeshStatusCategory>();
+  using SC = tesseract_common::StatusCode;
 
   std::string filename;
   if (QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::ErrorAttributeFileName, status_cat);
+    return std::make_shared<SC>(ConvexMeshStatusCategory::ErrorAttributeFileName, status_cat);
 
   std::string scale_string;
   Eigen::Vector3d scale(1, 1, 1);
@@ -98,21 +99,13 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::C
     std::vector<std::string> tokens;
     boost::split(tokens, scale_string, boost::is_any_of(" "), boost::token_compress_on);
     if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
-      return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::ErrorParsingAttributeScale,
-                                                            status_cat);
+      return std::make_shared<SC>(ConvexMeshStatusCategory::ErrorParsingAttributeScale, status_cat);
 
     double sx, sy, sz;
-    if (!tesseract_common::toNumeric<double>(tokens[0], sx))
-      return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::ErrorParsingAttributeScale,
-                                                            status_cat);
-
-    if (!tesseract_common::toNumeric<double>(tokens[1], sy))
-      return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::ErrorParsingAttributeScale,
-                                                            status_cat);
-
-    if (!tesseract_common::toNumeric<double>(tokens[2], sz))
-      return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::ErrorParsingAttributeScale,
-                                                            status_cat);
+    // No need to check return values because the tokens are verified above
+    tesseract_common::toNumeric<double>(tokens[0], sx);
+    tesseract_common::toNumeric<double>(tokens[1], sy);
+    tesseract_common::toNumeric<double>(tokens[2], sz);
 
     scale = Eigen::Vector3d(sx, sy, sz);
   }
@@ -141,9 +134,9 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::C
   }
 
   if (meshes.empty())
-    return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::ErrorImportingMeshes, status_cat);
+    return std::make_shared<SC>(ConvexMeshStatusCategory::ErrorImportingMeshes, status_cat);
 
-  return std::make_shared<tesseract_common::StatusCode>(ConvexMeshStatusCategory::Success, status_cat);
+  return std::make_shared<SC>(ConvexMeshStatusCategory::Success, status_cat);
   ;
 }
 

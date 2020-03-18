@@ -14,6 +14,9 @@ TEST(TesseractURDFUnit, parse_cylinder)  // NOLINT
     tesseract_geometry::Cylinder::Ptr geom;
     auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str, "cylinder", 2);
     EXPECT_TRUE(*status);
+    EXPECT_EQ(status->category()->name(), "CylinderStatusCategory");
+    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
+    EXPECT_FALSE(status->message().empty());
     EXPECT_NEAR(geom->getRadius(), 1, 1e-8);
     EXPECT_NEAR(geom->getLength(), 2, 1e-8);
   }
@@ -23,6 +26,7 @@ TEST(TesseractURDFUnit, parse_cylinder)  // NOLINT
     tesseract_geometry::Cylinder::Ptr geom;
     auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str, "cylinder", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -30,6 +34,7 @@ TEST(TesseractURDFUnit, parse_cylinder)  // NOLINT
     tesseract_geometry::Cylinder::Ptr geom;
     auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str, "cylinder", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -37,6 +42,7 @@ TEST(TesseractURDFUnit, parse_cylinder)  // NOLINT
     tesseract_geometry::Cylinder::Ptr geom;
     auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str, "cylinder", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -44,6 +50,7 @@ TEST(TesseractURDFUnit, parse_cylinder)  // NOLINT
     tesseract_geometry::Cylinder::Ptr geom;
     auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str, "cylinder", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   // TODO: I would expect this to fail but tinyxml2 still parses it so need to create an issue.
@@ -52,6 +59,7 @@ TEST(TesseractURDFUnit, parse_cylinder)  // NOLINT
   //    tesseract_geometry::Cylinder::Ptr geom;
   //    auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str, "cylinder", 2);
   //    EXPECT_FALSE(*status);
+  //    EXPECT_FALSE(status->message().empty());
   //  }
 
   {
@@ -59,6 +67,7 @@ TEST(TesseractURDFUnit, parse_cylinder)  // NOLINT
     tesseract_geometry::Cylinder::Ptr geom;
     auto status = runTest<tesseract_geometry::Cylinder::Ptr>(geom, str, "cylinder", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {

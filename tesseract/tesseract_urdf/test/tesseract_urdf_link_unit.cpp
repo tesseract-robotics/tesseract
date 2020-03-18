@@ -40,6 +40,9 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
     auto status =
         runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
     EXPECT_TRUE(*status);
+    EXPECT_EQ(status->category()->name(), "LinkStatusCategory");
+    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial != nullptr);
     EXPECT_TRUE(elem->visual.size() == 1);
@@ -90,6 +93,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
     auto status =
         runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial != nullptr);
     EXPECT_TRUE(elem->visual.size() == 2);
@@ -120,6 +124,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
     auto status =
         runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.size() == 1);
@@ -144,6 +149,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
     auto status =
         runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.size() == 1);
@@ -165,6 +171,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
     auto status =
         runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.empty());
@@ -179,6 +186,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
     auto status =
         runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(elem->getName() == "my_link");
     EXPECT_TRUE(elem->inertial == nullptr);
     EXPECT_TRUE(elem->visual.empty());
@@ -202,6 +210,7 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
     auto status =
         runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -221,5 +230,44 @@ TEST(TesseractURDFUnit, parse_link)  // NOLINT
     auto status =
         runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
+  }
+
+  {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
+    std::string str = R"(<link name="my_link">
+                           <inertial>
+                             <mass value="a"/>
+                             <inertia ixx="1.0" ixy="2.0" ixz="3.0" iyy="4.0" iyz="5.0" izz="6.0"/>
+                           </inertial>
+                           <collision>
+                             <origin xyz="0 0 0" rpy="0 0 0" />
+                             <geometry>
+                               <cylinder radius="1" length="0.5" />
+                             </geometry>
+                           </collision>
+                         </link>)";
+    tesseract_scene_graph::Link::Ptr elem;
+    auto status =
+        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
+    EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
+  }
+
+  {
+    std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
+    std::string str = R"(<link name="my_link">
+                           <collision>
+                             <origin xyz="a 0 0" rpy="0 0 0" />
+                             <geometry>
+                               <cylinder radius="1" length="0.5" />
+                             </geometry>
+                           </collision>
+                         </link>)";
+    tesseract_scene_graph::Link::Ptr elem;
+    auto status =
+        runTest<tesseract_scene_graph::Link::Ptr>(elem, str, "link", resource_locator, empty_available_materials, 2);
+    EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 }

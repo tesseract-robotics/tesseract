@@ -14,6 +14,9 @@ TEST(TesseractURDFUnit, parse_limits)  // NOLINT
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_TRUE(*status);
+    EXPECT_EQ(status->category()->name(), "LimitsStatusCategory");
+    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
+    EXPECT_FALSE(status->message().empty());
     EXPECT_NEAR(elem->lower, 1, 1e-8);
     EXPECT_NEAR(elem->upper, 2, 1e-8);
     EXPECT_NEAR(elem->effort, 3, 1e-8);
@@ -25,6 +28,7 @@ TEST(TesseractURDFUnit, parse_limits)  // NOLINT
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_NEAR(elem->lower, 0, 1e-8);
     EXPECT_NEAR(elem->upper, 2, 1e-8);
     EXPECT_NEAR(elem->effort, 3, 1e-8);
@@ -36,6 +40,7 @@ TEST(TesseractURDFUnit, parse_limits)  // NOLINT
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_NEAR(elem->lower, 1, 1e-8);
     EXPECT_NEAR(elem->upper, 0, 1e-8);
     EXPECT_NEAR(elem->effort, 3, 1e-8);
@@ -47,6 +52,7 @@ TEST(TesseractURDFUnit, parse_limits)  // NOLINT
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_TRUE(*status);
+    EXPECT_FALSE(status->message().empty());
     EXPECT_NEAR(elem->lower, 0, 1e-8);
     EXPECT_NEAR(elem->upper, 0, 1e-8);
     EXPECT_NEAR(elem->effort, 3, 1e-8);
@@ -58,6 +64,7 @@ TEST(TesseractURDFUnit, parse_limits)  // NOLINT
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -65,6 +72,7 @@ TEST(TesseractURDFUnit, parse_limits)  // NOLINT
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -72,6 +80,7 @@ TEST(TesseractURDFUnit, parse_limits)  // NOLINT
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -79,6 +88,7 @@ TEST(TesseractURDFUnit, parse_limits)  // NOLINT
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -86,6 +96,7 @@ TEST(TesseractURDFUnit, parse_limits)  // NOLINT
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -93,6 +104,7 @@ TEST(TesseractURDFUnit, parse_limits)  // NOLINT
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 
   {
@@ -100,5 +112,6 @@ TEST(TesseractURDFUnit, parse_limits)  // NOLINT
     tesseract_scene_graph::JointLimits::Ptr elem;
     auto status = runTest<tesseract_scene_graph::JointLimits::Ptr>(elem, str, "limit", 2);
     EXPECT_FALSE(*status);
+    EXPECT_FALSE(status->message().empty());
   }
 }
