@@ -203,12 +203,10 @@ public:
                                                                    trajectory,
                                                                    tesseract_collision::ContactTestType::ALL,
                                                                    verbose_);
-        valid &= !in_collision;
       }
       else
       {
         CONSOLE_BRIDGE_logError("Discrete contact manager not initialized!");
-        valid = false;
       }
     }
 
@@ -227,12 +225,10 @@ public:
                                                                    longest_valid_segment_length_,
                                                                    tesseract_collision::ContactTestType::ALL,
                                                                    verbose_);
-        valid &= !in_collision;
       }
       else
       {
         CONSOLE_BRIDGE_logError("Discrete contact manager not initialized!");
-        valid = false;
       }
     }
 
@@ -251,15 +247,12 @@ public:
                                                                    longest_valid_segment_length_,
                                                                    tesseract_collision::ContactTestType::ALL,
                                                                    verbose_);
-        valid &= !in_collision;
       }
       else
       {
         CONSOLE_BRIDGE_logError("Continuous contact manager not initialized!");
-        valid = false;
       }
     }
-    return;
   }
 
 protected:
