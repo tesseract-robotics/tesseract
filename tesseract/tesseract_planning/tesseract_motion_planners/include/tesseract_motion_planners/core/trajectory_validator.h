@@ -183,7 +183,6 @@ public:
                            const std::vector<std::string>& joint_names,
                            std::vector<tesseract_collision::ContactResultMap>& contacts)
   {
-    bool valid = true;
     using T = std::underlying_type<PostPlanCheckType>::type;
     if (static_cast<T>(check_type & PostPlanCheckType::NONE) > 0)
     {
@@ -196,13 +195,13 @@ public:
       CONSOLE_BRIDGE_logInform("Performing discrete, single timestep collision check");
       if (discrete_contact_manager_)
       {
-        bool in_collision = tesseract_environment::checkTrajectory(contacts,
-                                                                   *discrete_contact_manager_,
-                                                                   state_solver,
-                                                                   joint_names,
-                                                                   trajectory,
-                                                                   tesseract_collision::ContactTestType::ALL,
-                                                                   verbose_);
+        tesseract_environment::checkTrajectory(contacts,
+                                               *discrete_contact_manager_,
+                                               state_solver,
+                                               joint_names,
+                                               trajectory,
+                                               tesseract_collision::ContactTestType::ALL,
+                                               verbose_);
       }
       else
       {
@@ -217,14 +216,14 @@ public:
       CONSOLE_BRIDGE_logInform("Performing discrete continuous collision check");
       if (discrete_contact_manager_)
       {
-        bool in_collision = tesseract_environment::checkTrajectory(contacts,
-                                                                   *discrete_contact_manager_,
-                                                                   state_solver,
-                                                                   joint_names,
-                                                                   trajectory,
-                                                                   longest_valid_segment_length_,
-                                                                   tesseract_collision::ContactTestType::ALL,
-                                                                   verbose_);
+        tesseract_environment::checkTrajectory(contacts,
+                                               *discrete_contact_manager_,
+                                               state_solver,
+                                               joint_names,
+                                               trajectory,
+                                               longest_valid_segment_length_,
+                                               tesseract_collision::ContactTestType::ALL,
+                                               verbose_);
       }
       else
       {
@@ -239,14 +238,14 @@ public:
       CONSOLE_BRIDGE_logInform("Performing cast continuous collision check");
       if (continuous_contact_manager_)
       {
-        bool in_collision = tesseract_environment::checkTrajectory(contacts,
-                                                                   *continuous_contact_manager_,
-                                                                   state_solver,
-                                                                   joint_names,
-                                                                   trajectory,
-                                                                   longest_valid_segment_length_,
-                                                                   tesseract_collision::ContactTestType::ALL,
-                                                                   verbose_);
+        tesseract_environment::checkTrajectory(contacts,
+                                               *continuous_contact_manager_,
+                                               state_solver,
+                                               joint_names,
+                                               trajectory,
+                                               longest_valid_segment_length_,
+                                               tesseract_collision::ContactTestType::ALL,
+                                               verbose_);
       }
       else
       {
