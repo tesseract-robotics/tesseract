@@ -46,6 +46,16 @@ public:
   using Ptr = std::shared_ptr<Mesh>;
   using ConstPtr = std::shared_ptr<const Mesh>;
 
+  /**
+   * @brief Mesh geometry
+   * @param vertices A vector of vertices associated with the mesh
+   * @param triangles A vector of face indices where the first indice indicates the number of vertices associated
+   *                  with the face followed by the vertice index in parameter vertices. For example a triangle
+   *                  has three vertices so there should be four inputs where the first should be 3 indicating there are
+   *                  three vertices that define this face followed by three indices.
+   * @param resource A resource locator for locating resource
+   * @param scale Scale the mesh
+   */
   Mesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
        std::shared_ptr<const Eigen::VectorXi> triangles,
        tesseract_common::Resource::Ptr resource = nullptr,
@@ -68,6 +78,17 @@ public:
     }
   }
 
+  /**
+   * @brief Mesh geometry
+   * @param vertices A vector of vertices associated with the mesh
+   * @param triangles A vector of face indices where the first indice indicates the number of vertices associated
+   *                  with the face followed by the vertice index in parameter vertices. For example a triangle
+   *                  has three vertices so there should be four inputs where the first should be 3 indicating there are
+   *                  three vertices that define this face followed by three indices.
+   * @param triangle_count Provide the number of faces. This is faster because it does not need to loop over triangles.
+   * @param resource A resource locator for locating resource
+   * @param scale Scale the mesh
+   */
   Mesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
        std::shared_ptr<const Eigen::VectorXi> triangles,
        int triangle_count,
@@ -90,10 +111,28 @@ public:
   Mesh(Mesh&&) = delete;
   Mesh& operator=(Mesh&&) = delete;
 
+  /**
+   * @brief Get mesh vertices
+   * @return A vector of vertices
+   */
   const std::shared_ptr<const tesseract_common::VectorVector3d>& getVertices() const { return vertices_; }
+
+  /**
+   * @brief Get mesh Triangles
+   * @return A vector of triangle indices
+   */
   const std::shared_ptr<const Eigen::VectorXi>& getTriangles() const { return triangles_; }
 
+  /**
+   * @brief Get vertice count
+   * @return Number of vertices
+   */
   int getVerticeCount() const { return vertice_count_; }
+
+  /**
+   * @brief Get triangle count
+   * @return Number of triangles
+   */
   int getTriangleCount() const { return triangle_count_; }
 
   /**

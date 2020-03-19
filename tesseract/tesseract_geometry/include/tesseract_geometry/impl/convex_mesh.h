@@ -46,6 +46,16 @@ public:
   using Ptr = std::shared_ptr<ConvexMesh>;
   using ConstPtr = std::shared_ptr<const ConvexMesh>;
 
+  /**
+   * @brief Convex Mesh geometry
+   * @param vertices A vector of vertices associated with the mesh
+   * @param faces A vector of face indices where the first indice indicates the number of vertices associated
+   *              with the face followed by the vertice index in parameter vertices. For example a triangle
+   *              has three vertices so there should be four inputs where the first should be 3 indicating there are
+   *              three vertices that define this face followed by three indices.
+   * @param resource A resource locator for locating resource
+   * @param scale Scale the mesh
+   */
   ConvexMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
              std::shared_ptr<const Eigen::VectorXi> faces,
              tesseract_common::Resource::Ptr resource = nullptr,
@@ -67,6 +77,17 @@ public:
     }
   }
 
+  /**
+   * @brief Convex Mesh geometry
+   * @param vertices A vector of vertices associated with the mesh
+   * @param faces A vector of face indices where the first indice indicates the number of vertices associated
+   *              with the face followed by the vertice index in parameter vertices. For example a triangle
+   *              has three vertices so there should be four inputs where the first should be 3 indicating there are
+   *              three vertices that define this face followed by three indices.
+   * @param face_count Provide the number of faces. This is faster because it does not need to loop over triangles.
+   * @param resource A resource locator for locating resource
+   * @param scale Scale the mesh
+   */
   ConvexMesh(std::shared_ptr<const tesseract_common::VectorVector3d> vertices,
              std::shared_ptr<const Eigen::VectorXi> faces,
              int face_count,
@@ -88,10 +109,28 @@ public:
   ConvexMesh(ConvexMesh&&) = delete;
   ConvexMesh& operator=(ConvexMesh&&) = delete;
 
+  /**
+   * @brief Get convex mesh vertices
+   * @return A vector of vertices
+   */
   const std::shared_ptr<const tesseract_common::VectorVector3d>& getVertices() const { return vertices_; }
+
+  /**
+   * @brief Get convex mesh faces
+   * @return A vector of face indices
+   */
   const std::shared_ptr<const Eigen::VectorXi>& getFaces() const { return faces_; }
 
+  /**
+   * @brief Get vertice count
+   * @return Number of vertices
+   */
   int getVerticeCount() const { return vertice_count_; }
+
+  /**
+   * @brief Get face count
+   * @return Number of triangles
+   */
   int getFaceCount() const { return face_count_; }
 
   /**
