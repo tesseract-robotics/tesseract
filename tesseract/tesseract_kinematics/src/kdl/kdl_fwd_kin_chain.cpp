@@ -37,11 +37,75 @@ namespace tesseract_kinematics
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-ForwardKinematics::Ptr KDLFwdKinChain::clone() const
+KDLFwdKinChain::KDLFwdKinChain(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+                               const std::string& base_link,
+                               const std::string& tip_link,
+                               std::string name)
 {
-  auto cloned_fwdkin = std::make_shared<KDLFwdKinChain>();
-  cloned_fwdkin->init(*this);
-  return std::move(cloned_fwdkin);
+  init(scene_graph, base_link, tip_link, name);
+}
+
+KDLFwdKinChain::KDLFwdKinChain(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+                               const std::vector<std::pair<std::string, std::string>>& chains,
+                               std::string name)
+{
+  init(scene_graph, chains, name);
+}
+
+KDLFwdKinChain::KDLFwdKinChain(const KDLFwdKinChain& kin)
+{
+  initialized_ = kin.initialized_;
+  name_ = kin.name_;
+  solver_name_ = kin.solver_name_;
+  kdl_data_ = kin.kdl_data_;
+  fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
+  jac_solver_ = std::make_unique<KDL::ChainJntToJacSolver>(kdl_data_.robot_chain);
+  scene_graph_ = kin.scene_graph_;
+}
+
+KDLFwdKinChain& KDLFwdKinChain::operator=(const KDLFwdKinChain& kin)
+{
+  initialized_ = kin.initialized_;
+  name_ = kin.name_;
+  solver_name_ = kin.solver_name_;
+  kdl_data_ = kin.kdl_data_;
+  fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
+  jac_solver_ = std::make_unique<KDL::ChainJntToJacSolver>(kdl_data_.robot_chain);
+  scene_graph_ = kin.scene_graph_;
+
+  return (*this);
+}
+
+KDLFwdKinChain::KDLFwdKinChain(KDLFwdKinChain&& kin) noexcept
+{
+  initialized_ = std::move(kin.initialized_);
+  name_ = std::move(kin.name_);
+  solver_name_ = std::move(kin.solver_name_);
+  kdl_data_ = std::move(kin.kdl_data_);
+  // Not sure why this does not work. It looks like the contents of kdl_data_ are not moved but copied which breaks
+  // the kdl solvers because they store a reference to the chain which is in kdl_data_.
+  //  fk_solver_.swap(kin.fk_solver_);
+  //  jac_solver_.swap(kin.jac_solver_);
+  fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
+  jac_solver_ = std::make_unique<KDL::ChainJntToJacSolver>(kdl_data_.robot_chain);
+  scene_graph_.swap(kin.scene_graph_);
+}
+
+KDLFwdKinChain& KDLFwdKinChain::operator=(KDLFwdKinChain&& kin) noexcept
+{
+  initialized_ = std::move(kin.initialized_);
+  name_ = std::move(kin.name_);
+  solver_name_ = std::move(kin.solver_name_);
+  kdl_data_ = std::move(kin.kdl_data_);
+  // Not sure why this does not work. It looks like the contents of kdl_data_ are not moved but copied which breaks
+  // the kdl solvers because they store a reference to the chain which is in kdl_data_.
+  //  fk_solver_.swap(kin.fk_solver_);
+  //  jac_solver_.swap(kin.jac_solver_);
+  fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
+  jac_solver_ = std::make_unique<KDL::ChainJntToJacSolver>(kdl_data_.robot_chain);
+  scene_graph_.swap(kin.scene_graph_);
+
+  return (*this);
 }
 
 bool KDLFwdKinChain::calcFwdKinHelper(Eigen::Isometry3d& pose,
@@ -265,19 +329,6 @@ bool KDLFwdKinChain::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_grap
   std::vector<std::pair<std::string, std::string>> chains;
   chains.push_back(std::make_pair(base_link, tip_link));
   return init(scene_graph, chains, name);
-}
-
-bool KDLFwdKinChain::init(const KDLFwdKinChain& kin)
-{
-  initialized_ = kin.initialized_;
-  name_ = kin.name_;
-  solver_name_ = kin.solver_name_;
-  kdl_data_ = kin.kdl_data_;
-  fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_data_.robot_chain);
-  jac_solver_ = std::make_unique<KDL::ChainJntToJacSolver>(kdl_data_.robot_chain);
-  scene_graph_ = kin.scene_graph_;
-
-  return initialized_;
 }
 
 }  // namespace tesseract_kinematics

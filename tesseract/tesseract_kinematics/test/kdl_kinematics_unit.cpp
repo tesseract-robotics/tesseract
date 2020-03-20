@@ -5,6 +5,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_urdf/urdf_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_kinematics/core/forward_kinematics.h>
 #include "tesseract_kinematics/kdl/kdl_fwd_kin_chain.h"
 #include "tesseract_kinematics/kdl/kdl_fwd_kin_tree.h"
 #include "tesseract_kinematics/kdl/kdl_inv_kin_chain_lma.h"
@@ -363,11 +364,15 @@ void runInvKinTest(const tesseract_kinematics::InverseKinematics& inv_kin,
 
 TEST(TesseractKinematicsUnit, KDLKinChainActiveLinkNamesUnit)  // NOLINT
 {
-  tesseract_kinematics::KDLFwdKinChain kin;
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
-  EXPECT_TRUE(kin.init(scene_graph, "base_link", "tool0", "manip"));
-
-  runActiveLinkNamesTest(kin, false);
+  tesseract_kinematics::KDLFwdKinChain kin(scene_graph, "base_link", "tool0", "manip");
+  tesseract_kinematics::ForwardKinematics fwd_kin1 = kin;
+  tesseract_kinematics::ForwardKinematics fwd_kin2(
+      tesseract_kinematics::KDLFwdKinChain(scene_graph, "base_link", "tool0", "manip"));
+  tesseract_kinematics::ForwardKinematics fwd_kin3(fwd_kin2);
+  runActiveLinkNamesTest(fwd_kin1, false);
+  runActiveLinkNamesTest(fwd_kin2, false);
+  runActiveLinkNamesTest(fwd_kin3, false);
 }
 
 TEST(TesseractKinematicsUnit, KDLKinTreeActiveLinkNamesUnit)  // NOLINT
@@ -388,21 +393,28 @@ TEST(TesseractKinematicsUnit, KDLKinTreeActiveLinkNamesUnit)  // NOLINT
 
   EXPECT_TRUE(kin.init(scene_graph, joint_names, "manip", start_state));
 
-  runActiveLinkNamesTest(kin, true);
+  tesseract_kinematics::ForwardKinematics fwd_kin = kin;
+  runActiveLinkNamesTest(fwd_kin, true);
 }
 
 TEST(TesseractKinematicsUnit, KDLKinChainForwardKinematicUnit)  // NOLINT
 {
-  tesseract_kinematics::KDLFwdKinChain kin;
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
-  EXPECT_TRUE(kin.init(scene_graph, "base_link", "tool0", "manip"));
+  tesseract_kinematics::KDLFwdKinChain kin(scene_graph, "base_link", "tool0", "manip");
+  tesseract_kinematics::ForwardKinematics fwd_kin1 = kin;
+  tesseract_kinematics::ForwardKinematics fwd_kin2(
+      tesseract_kinematics::KDLFwdKinChain(scene_graph, "base_link", "tool0", "manip"));
+  tesseract_kinematics::ForwardKinematics fwd_kin3(kin);
+  tesseract_kinematics::ForwardKinematics fwd_kin4(fwd_kin2);
 
-  runFwdKinTest(kin);
+  runFwdKinTest(fwd_kin1);
+  runFwdKinTest(fwd_kin2);
+  runFwdKinTest(fwd_kin3);
+  runFwdKinTest(fwd_kin4);
 }
 
 TEST(TesseractKinematicsUnit, KDLKinTreeForwardKinematicUnit)  // NOLINT
 {
-  tesseract_kinematics::KDLFwdKinTree kin;
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   std::vector<std::string> joint_names = { "joint_a1", "joint_a2", "joint_a3", "joint_a4",
                                            "joint_a5", "joint_a6", "joint_a7" };
@@ -416,9 +428,17 @@ TEST(TesseractKinematicsUnit, KDLKinTreeForwardKinematicUnit)  // NOLINT
   start_state["joint_a6"] = 0;
   start_state["joint_a7"] = 0;
 
-  EXPECT_TRUE(kin.init(scene_graph, joint_names, "manip", start_state));
+  tesseract_kinematics::KDLFwdKinTree kin(scene_graph, joint_names, "manip", start_state);
+  tesseract_kinematics::ForwardKinematics fwd_kin1 = kin;
+  tesseract_kinematics::ForwardKinematics fwd_kin2(
+      tesseract_kinematics::KDLFwdKinTree(scene_graph, joint_names, "manip", start_state));
+  tesseract_kinematics::ForwardKinematics fwd_kin3(kin);
+  tesseract_kinematics::ForwardKinematics fwd_kin4(fwd_kin2);
 
-  runFwdKinTest(kin);
+  runFwdKinTest(fwd_kin1);
+  runFwdKinTest(fwd_kin2);
+  runFwdKinTest(fwd_kin3);
+  runFwdKinTest(fwd_kin4);
 }
 
 TEST(TesseractKinematicsUnit, KDLKinChainJacobianUnit)  // NOLINT
@@ -427,7 +447,8 @@ TEST(TesseractKinematicsUnit, KDLKinChainJacobianUnit)  // NOLINT
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(kin.init(scene_graph, "base_link", "tool0", "manip"));
 
-  runJacobianTest(kin);
+  tesseract_kinematics::ForwardKinematics fwd_kin = kin;
+  runJacobianTest(fwd_kin);
 }
 
 TEST(TesseractKinematicsUnit, KDLKinTreeJacobianUnit)  // NOLINT
@@ -448,7 +469,8 @@ TEST(TesseractKinematicsUnit, KDLKinTreeJacobianUnit)  // NOLINT
 
   EXPECT_TRUE(kin.init(scene_graph, joint_names, "manip", start_state));
 
-  runJacobianTest(kin);
+  tesseract_kinematics::ForwardKinematics fwd_kin = kin;
+  runJacobianTest(fwd_kin);
 }
 
 TEST(TesseractKinematicsUnit, KDLKinChainLMAInverseKinematicUnit)  // NOLINT
@@ -459,7 +481,8 @@ TEST(TesseractKinematicsUnit, KDLKinChainLMAInverseKinematicUnit)  // NOLINT
   EXPECT_TRUE(inv_kin.init(scene_graph, "base_link", "tool0", "manip"));
   EXPECT_TRUE(fwd_kin.init(scene_graph, "base_link", "tool0", "manip"));
 
-  runInvKinTest(inv_kin, fwd_kin);
+  tesseract_kinematics::ForwardKinematics fkin = fwd_kin;
+  runInvKinTest(inv_kin, fkin);
 }
 
 TEST(TesseractKinematicsUnit, KDLKinChainNRInverseKinematicUnit)  // NOLINT
@@ -470,7 +493,8 @@ TEST(TesseractKinematicsUnit, KDLKinChainNRInverseKinematicUnit)  // NOLINT
   EXPECT_TRUE(inv_kin.init(scene_graph, "base_link", "tool0", "manip"));
   EXPECT_TRUE(fwd_kin.init(scene_graph, "base_link", "tool0", "manip"));
 
-  runInvKinTest(inv_kin, fwd_kin);
+  tesseract_kinematics::ForwardKinematics fkin = fwd_kin;
+  runInvKinTest(inv_kin, fkin);
 }
 
 int main(int argc, char** argv)

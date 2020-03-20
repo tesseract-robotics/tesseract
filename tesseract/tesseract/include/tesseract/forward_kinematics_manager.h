@@ -183,7 +183,7 @@ public:
   {
     auto it = fwd_kin_manipulators_.find(std::make_pair(manipulator, name));
     if (it != fwd_kin_manipulators_.end())
-      return it->second->clone();
+      return std::make_shared<tesseract_kinematics::ForwardKinematics>(*(it->second));
 
     return nullptr;
   }
@@ -197,7 +197,7 @@ public:
   {
     auto it = fwd_kin_manipulators_default_.find(manipulator);
     if (it != fwd_kin_manipulators_default_.end())
-      return it->second->clone();
+      return std::make_shared<tesseract_kinematics::ForwardKinematics>(*(it->second));
 
     return nullptr;
   }

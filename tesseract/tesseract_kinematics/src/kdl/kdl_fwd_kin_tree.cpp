@@ -37,11 +37,50 @@ namespace tesseract_kinematics
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-ForwardKinematics::Ptr KDLFwdKinTree::clone() const
+KDLFwdKinTree::KDLFwdKinTree(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+                             const std::vector<std::string>& joint_names,
+                             std::string name,
+                             const std::unordered_map<std::string, double>& start_state)
 {
-  auto cloned_fwdkin = std::make_shared<KDLFwdKinTree>();
-  cloned_fwdkin->init(*this);
-  return std::move(cloned_fwdkin);
+  init(scene_graph, joint_names, name, start_state);
+}
+
+KDLFwdKinTree::KDLFwdKinTree(const KDLFwdKinTree& kin)
+{
+  initialized_ = kin.initialized_;
+  name_ = kin.name_;
+  solver_name_ = kin.solver_name_;
+  kdl_tree_ = kin.kdl_tree_;
+  joint_limits_ = kin.joint_limits_;
+  joint_list_ = kin.joint_list_;
+  link_list_ = kin.link_list_;
+  active_link_list_ = kin.active_link_list_;
+  fk_solver_ = std::make_unique<KDL::TreeFkSolverPos_recursive>(kdl_tree_);
+  jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(kdl_tree_);
+  scene_graph_ = kin.scene_graph_;
+  start_state_ = kin.start_state_;
+  joint_qnr_ = kin.joint_qnr_;
+  joint_to_qnr_ = kin.joint_to_qnr_;
+}
+
+KDLFwdKinTree& KDLFwdKinTree::operator=(const KDLFwdKinTree& kin)
+{
+  initialized_ = kin.initialized_;
+  name_ = kin.name_;
+  solver_name_ = kin.solver_name_;
+  kdl_tree_ = kin.kdl_tree_;
+  joint_limits_ = kin.joint_limits_;
+  joint_list_ = kin.joint_list_;
+  link_list_ = kin.link_list_;
+  active_link_list_ = kin.active_link_list_;
+  fk_solver_ = std::make_unique<KDL::TreeFkSolverPos_recursive>(kdl_tree_);
+  jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(kdl_tree_);
+  scene_graph_ = kin.scene_graph_;
+  start_state_ = kin.start_state_;
+  joint_qnr_ = kin.joint_qnr_;
+  joint_to_qnr_ = kin.joint_to_qnr_;
+
+  return (*this);
 }
 
 KDL::JntArray KDLFwdKinTree::getKDLJntArray(const std::vector<std::string>& joint_names,
@@ -310,26 +349,6 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph
 
   initialized_ = true;
   return initialized_;
-}
-
-bool KDLFwdKinTree::init(const KDLFwdKinTree& kin)
-{
-  initialized_ = kin.initialized_;
-  name_ = kin.name_;
-  solver_name_ = kin.solver_name_;
-  kdl_tree_ = kin.kdl_tree_;
-  joint_limits_ = kin.joint_limits_;
-  joint_list_ = kin.joint_list_;
-  link_list_ = kin.link_list_;
-  active_link_list_ = kin.active_link_list_;
-  fk_solver_ = std::make_unique<KDL::TreeFkSolverPos_recursive>(kdl_tree_);
-  jac_solver_ = std::make_unique<KDL::TreeJntToJacSolver>(kdl_tree_);
-  scene_graph_ = kin.scene_graph_;
-  start_state_ = kin.start_state_;
-  joint_qnr_ = kin.joint_qnr_;
-  joint_to_qnr_ = kin.joint_to_qnr_;
-
-  return true;
 }
 
 }  // namespace tesseract_kinematics

@@ -45,11 +45,7 @@ public:
          const std::string name,
          std::unordered_map<std::string, double> start_state = std::unordered_map<std::string, double>()) const override
   {
-    auto kin = std::make_shared<KDLFwdKinTree>();
-    if (!kin->init(scene_graph, joint_names, name, start_state))
-      return nullptr;
-
-    return kin;
+    return std::make_shared<ForwardKinematics>(KDLFwdKinTree(scene_graph, joint_names, name, start_state));
   }
 
 private:

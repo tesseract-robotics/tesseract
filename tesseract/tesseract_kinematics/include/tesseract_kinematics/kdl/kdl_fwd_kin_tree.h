@@ -33,11 +33,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <kdl/treejnttojacsolver.hpp>
 #include <unordered_map>
 #include <console_bridge/console.h>
-
-#include <tesseract_scene_graph/graph.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include "tesseract_kinematics/core/forward_kinematics.h"
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_common/types.h>
 
 namespace tesseract_kinematics
 {
@@ -47,7 +46,7 @@ namespace tesseract_kinematics
  * Typically, just wrappers around the equivalent KDL calls.
  *
  */
-class KDLFwdKinTree : public ForwardKinematics
+class KDLFwdKinTree
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -56,50 +55,62 @@ public:
   using ConstPtr = std::shared_ptr<const KDLFwdKinTree>;
 
   KDLFwdKinTree() = default;
-  ~KDLFwdKinTree() override = default;
-  KDLFwdKinTree(const KDLFwdKinTree&) = delete;
-  KDLFwdKinTree& operator=(const KDLFwdKinTree&) = delete;
-  KDLFwdKinTree(KDLFwdKinTree&&) = delete;
-  KDLFwdKinTree& operator=(KDLFwdKinTree&&) = delete;
 
-  ForwardKinematics::Ptr clone() const override;
+  /**
+   * @brief Initializes Forward Kinematics as tree
+   * Creates a forward kinematics tree object
+   * @param scene_graph The tesseract scene graph
+   * @param joint_names The list of active joints to be considered
+   * @param name The name of the kinematic chain
+   * @param start_state The initial start state for the tree. This should inlclude all joints in the scene graph
+   * @return True if init() completes successfully
+   */
+  KDLFwdKinTree(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+                const std::vector<std::string>& joint_names,
+                std::string name,
+                const std::unordered_map<std::string, double>& start_state = std::unordered_map<std::string, double>());
 
-  bool calcFwdKin(Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
+  virtual ~KDLFwdKinTree() = default;
+  KDLFwdKinTree(const KDLFwdKinTree&);
+  KDLFwdKinTree& operator=(const KDLFwdKinTree&);
+  KDLFwdKinTree(KDLFwdKinTree&&) = default;
+  KDLFwdKinTree& operator=(KDLFwdKinTree&&) = default;
+
+  bool calcFwdKin(Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   bool calcFwdKin(tesseract_common::VectorIsometry3d& poses,
-                  const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
+                  const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   bool calcFwdKin(Eigen::Isometry3d& pose,
                   const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                  const std::string& link_name) const override;
+                  const std::string& link_name) const;
 
-  bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
-                    const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
+  bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian, const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const;
 
   bool calcJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
                     const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
-                    const std::string& link_name) const override;
+                    const std::string& link_name) const;
 
-  bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const override;
+  bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const;
 
-  const std::vector<std::string>& getJointNames() const override;
+  const std::vector<std::string>& getJointNames() const;
 
-  const std::vector<std::string>& getLinkNames() const override;
+  const std::vector<std::string>& getLinkNames() const;
 
-  const std::vector<std::string>& getActiveLinkNames() const override;
+  const std::vector<std::string>& getActiveLinkNames() const;
 
-  const Eigen::MatrixX2d& getLimits() const override;
+  const Eigen::MatrixX2d& getLimits() const;
 
   tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const { return scene_graph_; }
-  unsigned int numJoints() const override { return static_cast<unsigned>(joint_list_.size()); }
-  const std::string& getBaseLinkName() const override { return scene_graph_->getRoot(); }
-  const std::string& getTipLinkName() const override
+  unsigned int numJoints() const { return static_cast<unsigned>(joint_list_.size()); }
+  const std::string& getBaseLinkName() const { return scene_graph_->getRoot(); }
+  const std::string& getTipLinkName() const
   {
     return link_list_.back();
   }  // TODO: Should make this be
      // provided
-  const std::string& getName() const override { return name_; }
-  const std::string& getSolverName() const override { return solver_name_; }
+  const std::string& getName() const { return name_; }
+  const std::string& getSolverName() const { return solver_name_; }
 
   /**
    * @brief Initializes Forward Kinematics as tree
@@ -144,12 +155,6 @@ private:
   Eigen::MatrixX2d joint_limits_;             /**< Joint limits */
   std::unique_ptr<KDL::TreeFkSolverPos_recursive> fk_solver_; /**< KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::TreeJntToJacSolver> jac_solver_;       /**< KDL Jacobian Solver */
-
-  /**
-   * @brief This used by the clone method
-   * @return True if init() completes successfully
-   */
-  bool init(const KDLFwdKinTree& kin);
 
   /** @brief Set the start state for all joints in the tree. */
   void setStartState(std::unordered_map<std::string, double> start_state);

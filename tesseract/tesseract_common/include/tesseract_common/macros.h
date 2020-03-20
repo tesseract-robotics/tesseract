@@ -34,7 +34,8 @@
               _Pragma("GCC diagnostic ignored \"-Wsuggest-override\"")                                                 \
                   _Pragma("GCC diagnostic ignored \"-Wconversion\"")                                                   \
                       _Pragma("GCC diagnostic ignored \"-Wfloat-conversion\"")                                         \
-                          _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")
+                          _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")                                      \
+                              _Pragma("GCC diagnostic ignored \"-Wreturn-type\"")
 
 #define TESSERACT_COMMON_IGNORE_WARNINGS_POP _Pragma("GCC diagnostic pop")
 

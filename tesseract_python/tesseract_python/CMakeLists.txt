@@ -13,7 +13,7 @@ MESSAGE(STATUS "tesseract_python version: ${tesseract_python_version}")
 
 if (NOT MSVC)
   #add_compile_options(-std=c++11 -Wall -Wextra -Wno-write-strings -Wno-unused-paramete -Wno-suggest-override)
-  add_compile_options(-std=c++11 -w)
+  add_compile_options(-std=c++14 -w)
 else()
   add_compile_options(/bigobj)
 endif()

@@ -34,12 +34,46 @@ namespace tesseract_kinematics
 {
 class ForwardKinematics
 {
+  template <typename T>
+  using uncvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
+
+  template <typename T>
+  using generic_ctor_enabler = std::enable_if_t<!std::is_same<ForwardKinematics, uncvref_t<T>>::value, int>;
 public:
   
   using Ptr = std::shared_ptr<ForwardKinematics>;
   using ConstPtr = std::shared_ptr<const ForwardKinematics>;
 
-  virtual ~ForwardKinematics() = default;
+  template <typename T, generic_ctor_enabler<T> = 0>
+  ForwardKinematics(T &&kin)
+    : fwd_kin_(std::make_unique<detail::ForwardKinematicsInner<uncvref_t<T>>>(kin))
+  {
+  }
+
+  // Destructor
+  ~ForwardKinematics() = default;
+
+  // Copy constructor
+  ForwardKinematics(const ForwardKinematics &other) : fwd_kin_(other.fwd_kin_->clone()) {}
+
+  // Move ctor.
+  ForwardKinematics(ForwardKinematics &&other) noexcept { fwd_kin_.swap(other.fwd_kin_); }
+  // Move assignment.
+  ForwardKinematics &operator=(ForwardKinematics &&other) noexcept { fwd_kin_.swap(other.fwd_kin_); return (*this); }
+
+  // Copy assignment.
+  ForwardKinematics &operator=(const ForwardKinematics &other)
+  {
+    (*this) = ForwardKinematics(other);
+    return (*this);
+  }
+
+  template <typename T, generic_ctor_enabler<T> = 0>
+  ForwardKinematics &operator=(T &&other)
+  {
+    (*this) = ForwardKinematics(std::forward<T>(other));
+    return (*this);
+  }
 
 %extend {
 
@@ -129,8 +163,6 @@ public:
   virtual const std::string& getName() const = 0;
 
   virtual const std::string& getSolverName() const = 0;
-
-  virtual std::shared_ptr<ForwardKinematics> clone() const = 0;
 };
 
 }  // namespace tesseract_kinematics
