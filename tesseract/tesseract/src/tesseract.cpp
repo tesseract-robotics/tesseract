@@ -274,7 +274,6 @@ bool Tesseract::init(const TesseractInitInfo::Ptr& init_info)
     default:
       CONSOLE_BRIDGE_logError("Unsupported TesseractInitInfo type.");
       return false;
-      break;
   }
   return true;
 }
