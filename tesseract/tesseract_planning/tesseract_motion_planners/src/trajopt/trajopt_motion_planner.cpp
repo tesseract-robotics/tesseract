@@ -179,17 +179,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
   bool valid = validator_->trajectoryValid(
       getTraj(opt.x(), config_->prob->GetVars()), check_type, *state_solver, config_->prob->GetKin()->getJointNames());
 
-  bool allowable_collision = false;
-  for (auto special_collision : config_->special_collision_constraint)
-  {
-    if (std::get<2>(special_collision) < 0)
-    {
-      allowable_collision = true;
-      break;
-    }
-  }
-
-  if (!valid && allowable_collision)
+  if (!valid && config_->special_collision_constraint)
   {
     std::vector<tesseract_collision::ContactResultMap> contacts;
     validator_->getContacts(getTraj(opt.x(), config_->prob->GetVars()),
@@ -202,39 +192,27 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
     {
       for (auto collision : contact_state)
       {
-        for (auto special_collision : config_->special_collision_constraint)
+        std::string first_link, second_link;
+        first_link = collision.first.first;
+        second_link = collision.first.second;
+        Eigen::Vector2d coll_info =
+            config_->special_collision_constraint->getPairSafetyMarginData(first_link, second_link);
+        if (collision.second.front().distance <= coll_info.x())
         {
-          std::string first_link, second_link;
-          first_link = collision.first.first;
-          second_link = collision.first.second;
-          double coll_dist = collision.second.front().distance;
-          if ((first_link.compare(std::get<0>(special_collision)) == 0 &&
-               second_link.compare(std::get<1>(special_collision)) == 0) ||
-              (first_link.compare(std::get<1>(special_collision)) == 0 &&
-               second_link.compare(std::get<0>(special_collision)) == 0))
-          {
-            if (coll_dist <= std::get<2>(special_collision))
-            {
-              CONSOLE_BRIDGE_logInform("Found unallowed collision between %s and %s at a distance of %f",
-                                       first_link.c_str(),
-                                       second_link.c_str(),
-                                       coll_dist);
-              valid = false;
-              break;
-            }
-            else
-            {
-              CONSOLE_BRIDGE_logInform("Found ALLOWED collision between %s and %s at a distance of %f",
-                                       first_link.c_str(),
-                                       second_link.c_str(),
-                                       coll_dist);
-              valid = true;
-              break;
-            }
-          }
+          CONSOLE_BRIDGE_logInform("Found unallowed collision between %s and %s at a distance of %f",
+                                   first_link.c_str(),
+                                   second_link.c_str(),
+                                   collision.second.front().distance);
+          valid = false;
         }
-        if (!valid)
-          break;
+        else
+        {
+          CONSOLE_BRIDGE_logInform("Found allowed collision between %s and %s at a distance of %f",
+                                   first_link.c_str(),
+                                   second_link.c_str(),
+                                   collision.second.front().distance);
+          valid = true;
+        }
       }
       if (!valid)
         break;

@@ -63,12 +63,10 @@ struct TrajOptPlannerConfig
   /** @brief Trajopt problem to be solved (Required) */
   trajopt::TrajOptProb::Ptr prob;
 
-  /**@brief Special link collision cost distances
-   * This is a vector of std::tuple<link1, link2, collision distance, collision coefficient */
-  std::vector<std::tuple<std::string, std::string, double, double>> special_collision_cost;
-  /**@brief Special link collision constraint distances
-   * This is a vector of std::tuple<link1, link2, collision distance, collision coefficient */
-  std::vector<std::tuple<std::string, std::string, double, double>> special_collision_constraint;
+  /**@brief Special link collision cost distances */
+  trajopt::SafetyMarginData::Ptr special_collision_cost = nullptr;
+  /**@brief Special link collision constraint distances */
+  trajopt::SafetyMarginData::Ptr special_collision_constraint = nullptr;
 
   /** @brief Set the resolution at which state validity needs to be verified in order for a motion between two states
    * to be considered valid in post checking of trajectory returned by trajopt.

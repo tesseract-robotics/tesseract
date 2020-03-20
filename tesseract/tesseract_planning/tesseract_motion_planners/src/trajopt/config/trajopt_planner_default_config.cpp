@@ -346,14 +346,11 @@ void TrajOptPlannerDefaultConfig::addCollisionCost(trajopt::ProblemConstructionI
 
   // Update the term info with the (possibly) new start and end state indices for which to apply this cost
   std::shared_ptr<trajopt::CollisionTermInfo> ct = std::static_pointer_cast<trajopt::CollisionTermInfo>(ti);
-  for (auto& info : ct->info)
+  if (special_collision_cost)
   {
-    for (auto& collision_pair : special_collision_cost)
+    for (auto& info : ct->info)
     {
-      info->setPairSafetyMarginData(std::get<0>(collision_pair),
-                                    std::get<1>(collision_pair),
-                                    std::get<2>(collision_pair),
-                                    std::get<3>(collision_pair));
+      info = special_collision_cost;
     }
   }
   ct->fixed_steps = fixed_steps;
@@ -399,14 +396,11 @@ void TrajOptPlannerDefaultConfig::addCollisionConstraint(trajopt::ProblemConstru
 
   // Update the term info with the (possibly) new start and end state indices for which to apply this cost
   std::shared_ptr<trajopt::CollisionTermInfo> ct = std::static_pointer_cast<trajopt::CollisionTermInfo>(ti);
-  for (auto& info : ct->info)
+  if (special_collision_constraint)
   {
-    for (auto& collision_pair : special_collision_constraint)
+    for (auto& info : ct->info)
     {
-      info->setPairSafetyMarginData(std::get<0>(collision_pair),
-                                    std::get<1>(collision_pair),
-                                    std::get<2>(collision_pair),
-                                    std::get<3>(collision_pair));
+      info = special_collision_constraint;
     }
   }
   ct->fixed_steps = fixed_steps;
