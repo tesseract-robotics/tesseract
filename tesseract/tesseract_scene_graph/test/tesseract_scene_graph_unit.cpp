@@ -209,6 +209,9 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
   EXPECT_TRUE(std::find(path.second.begin(), path.second.end(), "joint_3") != path.second.end());
 
   std::cout << (g.getName().c_str()) << std::endl;
+
+  // Should throw since this is a directory and not a file
+  EXPECT_ANY_THROW(g.saveDOT("/tmp/"));
 }
 
 std::string locateResource(const std::string& url)
