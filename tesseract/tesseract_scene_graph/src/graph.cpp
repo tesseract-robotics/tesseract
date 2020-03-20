@@ -434,6 +434,10 @@ std::vector<std::string> SceneGraph::getJointChildrenNames(const std::string& na
 void SceneGraph::saveDOT(const std::string& path) const
 {
   std::ofstream dot_file(path);
+  if (!dot_file.is_open())
+  {
+    throw std::runtime_error("Failed to open file: " + path);
+  }
 
   dot_file << "digraph D {\n"
            << "  rankdir=LR\n"
