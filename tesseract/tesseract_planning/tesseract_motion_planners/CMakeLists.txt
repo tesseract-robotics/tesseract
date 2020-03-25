@@ -18,7 +18,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core INTERFACE)
-target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract::tesseract tesseract::tesseract_common console_bridge)
+target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract::tesseract tesseract::tesseract_common trajopt::trajopt console_bridge)
 tesseract_target_compile_options(${PROJECT_NAME}_core INTERFACE)
 tesseract_clang_tidy(${PROJECT_NAME}_core)
 tesseract_code_coverage(${PROJECT_NAME}_core ALL EXCLUDE ${COVERAGE_EXCLUDE})

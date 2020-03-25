@@ -177,47 +177,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
                                                      verbose);
 
   bool valid = validator_->trajectoryValid(
-      getTraj(opt.x(), config_->prob->GetVars()), check_type, *state_solver, config_->prob->GetKin()->getJointNames());
-
-  if (!valid && config_->special_collision_constraint)
-  {
-    std::vector<tesseract_collision::ContactResultMap> contacts;
-    validator_->getContacts(getTraj(opt.x(), config_->prob->GetVars()),
-                            check_type,
-                            *state_solver,
-                            config_->prob->GetKin()->getJointNames(),
-                            contacts);
-    valid = false;
-    for (auto contact_state : contacts)
-    {
-      for (auto collision : contact_state)
-      {
-        std::string first_link, second_link;
-        first_link = collision.first.first;
-        second_link = collision.first.second;
-        Eigen::Vector2d coll_info =
-            config_->special_collision_constraint->getPairSafetyMarginData(first_link, second_link);
-        if (collision.second.front().distance <= coll_info.x())
-        {
-          CONSOLE_BRIDGE_logInform("Found unallowed collision between %s and %s at a distance of %f",
-                                   first_link.c_str(),
-                                   second_link.c_str(),
-                                   collision.second.front().distance);
-          valid = false;
-        }
-        else
-        {
-          CONSOLE_BRIDGE_logInform("Found allowed collision between %s and %s at a distance of %f",
-                                   first_link.c_str(),
-                                   second_link.c_str(),
-                                   collision.second.front().distance);
-          valid = true;
-        }
-      }
-      if (!valid)
-        break;
-    }
-  }
+      getTraj(opt.x(), config_->prob->GetVars()), check_type, *state_solver, config_->prob->GetKin()->getJointNames(), config_->special_collision_constraint);
 
   // Send response
   response.joint_trajectory.trajectory = getTraj(opt.x(), config_->prob->GetVars());

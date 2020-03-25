@@ -31,6 +31,7 @@
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_environment/core/utils.h>
 #include <console_bridge/console.h>
+#include <trajopt/utils.hpp>
 
 namespace tesseract_motion_planners
 {
@@ -85,7 +86,8 @@ public:
   virtual bool trajectoryValid(const tesseract_common::TrajArray& trajectory,
                                const PostPlanCheckType& check_type,
                                const tesseract_environment::StateSolver& state_solver,
-                               const std::vector<std::string>& joint_names)
+                               const std::vector<std::string>& joint_names,
+                               const trajopt::SafetyMarginData::Ptr collision_pairs = nullptr)
   {
     bool valid = true;
     using T = std::underlying_type<PostPlanCheckType>::type;
@@ -93,6 +95,14 @@ public:
     {
       CONSOLE_BRIDGE_logWarn("No post-plan trajectory validator specified; this is not advised");
     }
+    tesseract_collision::ContactTestType type = tesseract_collision::ContactTestType::FIRST;
+    bool requires_post_check = false;
+    if (collision_pairs && collision_pairs->getNegativeCollisions())
+    {
+      requires_post_check = true;
+      type = tesseract_collision::ContactTestType::ALL;
+    }
+    std::vector<tesseract_collision::ContactResultMap> contacts;
 
     // Check discrete collision at only the defined trajectory waypoints
     if (static_cast<T>(check_type & PostPlanCheckType::SINGLE_TIMESTEP_COLLISION) > 0)
@@ -100,13 +110,12 @@ public:
       CONSOLE_BRIDGE_logInform("Performing discrete, single timestep collision check");
       if (discrete_contact_manager_)
       {
-        std::vector<tesseract_collision::ContactResultMap> contacts;
         bool in_collision = tesseract_environment::checkTrajectory(contacts,
                                                                    *discrete_contact_manager_,
                                                                    state_solver,
                                                                    joint_names,
                                                                    trajectory,
-                                                                   tesseract_collision::ContactTestType::FIRST,
+                                                                   type,
                                                                    verbose_);
         valid &= !in_collision;
       }
@@ -124,14 +133,13 @@ public:
       CONSOLE_BRIDGE_logInform("Performing discrete continuous collision check");
       if (discrete_contact_manager_)
       {
-        std::vector<tesseract_collision::ContactResultMap> contacts;
         bool in_collision = tesseract_environment::checkTrajectory(contacts,
                                                                    *discrete_contact_manager_,
                                                                    state_solver,
                                                                    joint_names,
                                                                    trajectory,
                                                                    longest_valid_segment_length_,
-                                                                   tesseract_collision::ContactTestType::FIRST,
+                                                                   type,
                                                                    verbose_);
         valid &= !in_collision;
       }
@@ -149,14 +157,13 @@ public:
       CONSOLE_BRIDGE_logInform("Performing cast continuous collision check");
       if (continuous_contact_manager_)
       {
-        std::vector<tesseract_collision::ContactResultMap> contacts;
         bool in_collision = tesseract_environment::checkTrajectory(contacts,
                                                                    *continuous_contact_manager_,
                                                                    state_solver,
                                                                    joint_names,
                                                                    trajectory,
                                                                    longest_valid_segment_length_,
-                                                                   tesseract_collision::ContactTestType::FIRST,
+                                                                   type,
                                                                    verbose_);
         valid &= !in_collision;
       }
@@ -167,91 +174,40 @@ public:
       }
     }
 
+    if (!valid && requires_post_check)
+    {
+      valid = false;
+      for (auto contact_state : contacts)
+      {
+        for (auto collision : contact_state)
+        {
+          std::string first_link, second_link;
+          first_link = collision.first.first;
+          second_link = collision.first.second;
+          Eigen::Vector2d coll_info = collision_pairs->getPairSafetyMarginData(first_link, second_link);
+          if (collision.second.front().distance <= coll_info.x())
+          {
+            CONSOLE_BRIDGE_logInform("Found unallowed collision between %s and %s at a distance of %f",
+                                     first_link.c_str(),
+                                     second_link.c_str(),
+                                     collision.second.front().distance);
+            valid = false;
+          }
+          else
+          {
+            CONSOLE_BRIDGE_logInform("Found allowed collision between %s and %s at a distance of %f",
+                                     first_link.c_str(),
+                                     second_link.c_str(),
+                                     collision.second.front().distance);
+            valid = true;
+          }
+        }
+        if (!valid)
+          break;
+      }
+    }
+
     return valid;
-  }
-
-  /**
-   * @brief Performs checks on a planned trajectory and returns all contacts
-   * @param trajectory - the planned trajectory
-   * @param check_type - the type of validation check to be performed
-   * @param state_solver
-   * @param joint_names
-   */
-  virtual void getContacts(const tesseract_common::TrajArray& trajectory,
-                           const PostPlanCheckType& check_type,
-                           const tesseract_environment::StateSolver& state_solver,
-                           const std::vector<std::string>& joint_names,
-                           std::vector<tesseract_collision::ContactResultMap>& contacts)
-  {
-    using T = std::underlying_type<PostPlanCheckType>::type;
-    if (static_cast<T>(check_type & PostPlanCheckType::NONE) > 0)
-    {
-      CONSOLE_BRIDGE_logWarn("No post-plan trajectory validator specified; this is not advised");
-    }
-
-    // Check discrete collision at only the defined trajectory waypoints
-    if (static_cast<T>(check_type & PostPlanCheckType::SINGLE_TIMESTEP_COLLISION) > 0)
-    {
-      CONSOLE_BRIDGE_logInform("Performing discrete, single timestep collision check");
-      if (discrete_contact_manager_)
-      {
-        tesseract_environment::checkTrajectory(contacts,
-                                               *discrete_contact_manager_,
-                                               state_solver,
-                                               joint_names,
-                                               trajectory,
-                                               tesseract_collision::ContactTestType::ALL,
-                                               verbose_);
-      }
-      else
-      {
-        CONSOLE_BRIDGE_logError("Discrete contact manager not initialized!");
-      }
-    }
-
-    // Check discrete collision at waypoints generated by joint-interpolating the input trajectory at a specified
-    // resolution
-    if (static_cast<T>(check_type & PostPlanCheckType::DISCRETE_CONTINUOUS_COLLISION) > 0)
-    {
-      CONSOLE_BRIDGE_logInform("Performing discrete continuous collision check");
-      if (discrete_contact_manager_)
-      {
-        tesseract_environment::checkTrajectory(contacts,
-                                               *discrete_contact_manager_,
-                                               state_solver,
-                                               joint_names,
-                                               trajectory,
-                                               longest_valid_segment_length_,
-                                               tesseract_collision::ContactTestType::ALL,
-                                               verbose_);
-      }
-      else
-      {
-        CONSOLE_BRIDGE_logError("Discrete contact manager not initialized!");
-      }
-    }
-
-    // Check continuous collision between waypoints generated by joint-interpolating the input trajectory at a specified
-    // resolution
-    if (static_cast<T>(check_type & PostPlanCheckType::CAST_CONTINUOUS_COLLISION) > 0)
-    {
-      CONSOLE_BRIDGE_logInform("Performing cast continuous collision check");
-      if (continuous_contact_manager_)
-      {
-        tesseract_environment::checkTrajectory(contacts,
-                                               *continuous_contact_manager_,
-                                               state_solver,
-                                               joint_names,
-                                               trajectory,
-                                               longest_valid_segment_length_,
-                                               tesseract_collision::ContactTestType::ALL,
-                                               verbose_);
-      }
-      else
-      {
-        CONSOLE_BRIDGE_logError("Continuous contact manager not initialized!");
-      }
-    }
   }
 
 protected:
