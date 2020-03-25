@@ -87,7 +87,7 @@ public:
                                const PostPlanCheckType& check_type,
                                const tesseract_environment::StateSolver& state_solver,
                                const std::vector<std::string>& joint_names,
-                               const trajopt::SafetyMarginData::Ptr collision_pairs = nullptr)
+                               const trajopt::SafetyMarginData::Ptr& collision_pairs = nullptr)
   {
     bool valid = true;
     using T = std::underlying_type<PostPlanCheckType>::type;
