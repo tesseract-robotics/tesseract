@@ -64,9 +64,9 @@ struct TrajOptPlannerConfig
   trajopt::TrajOptProb::Ptr prob;
 
   /**@brief Special link collision cost distances */
-  trajopt::SafetyMarginData::Ptr special_collision_cost { nullptr };
+  trajopt::SafetyMarginData::Ptr special_collision_cost{ nullptr };
   /**@brief Special link collision constraint distances */
-  trajopt::SafetyMarginData::Ptr special_collision_constraint { nullptr };
+  trajopt::SafetyMarginData::Ptr special_collision_constraint{ nullptr };
 
   /** @brief Set the resolution at which state validity needs to be verified in order for a motion between two states
    * to be considered valid in post checking of trajectory returned by trajopt.

@@ -176,8 +176,11 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
                                                      length,
                                                      verbose);
 
-  bool valid = validator_->trajectoryValid(
-      getTraj(opt.x(), config_->prob->GetVars()), check_type, *state_solver, config_->prob->GetKin()->getJointNames(), config_->special_collision_constraint);
+  bool valid = validator_->trajectoryValid(getTraj(opt.x(), config_->prob->GetVars()),
+                                           check_type,
+                                           *state_solver,
+                                           config_->prob->GetKin()->getJointNames(),
+                                           config_->special_collision_constraint);
 
   // Send response
   response.joint_trajectory.trajectory = getTraj(opt.x(), config_->prob->GetVars());

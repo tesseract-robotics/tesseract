@@ -110,13 +110,8 @@ public:
       CONSOLE_BRIDGE_logInform("Performing discrete, single timestep collision check");
       if (discrete_contact_manager_)
       {
-        bool in_collision = tesseract_environment::checkTrajectory(contacts,
-                                                                   *discrete_contact_manager_,
-                                                                   state_solver,
-                                                                   joint_names,
-                                                                   trajectory,
-                                                                   type,
-                                                                   verbose_);
+        bool in_collision = tesseract_environment::checkTrajectory(
+            contacts, *discrete_contact_manager_, state_solver, joint_names, trajectory, type, verbose_);
         valid &= !in_collision;
       }
       else
