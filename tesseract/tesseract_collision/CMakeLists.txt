@@ -13,7 +13,7 @@ find_package(fcl REQUIRED)
 # We need to find ccd ourselves because FCL doesn't do it in their fclConfig.cmake
 find_package(ccd REQUIRED)
 
-set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/* /*/bullet/LinearMath/* /*/bullet/BulletCollision/* /*/include/ccd/* /*/include/fcl/*)
+set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* ${CMAKE_CURRENT_LIST_DIR}/include/tesseract_collision/test_suite/* /*/gtest/* /*/bullet/LinearMath/* /*/bullet/BulletCollision/* /*/include/ccd/* /*/include/fcl/*)
 
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 
@@ -83,14 +83,31 @@ target_include_directories(create_convex_hull SYSTEM PUBLIC
     ${Boost_INCLUDE_DIRS}
     ${OCTOMAP_INCLUDE_DIRS})
 
-tesseract_configure_package(${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl create_convex_hull)
+# Create test suite interface
+add_library(${PROJECT_NAME}_test_suite INTERFACE)
+target_link_libraries(${PROJECT_NAME}_test_suite INTERFACE tesseract::tesseract_geometry)
+tesseract_target_compile_options(${PROJECT_NAME}_test_suite INTERFACE)
+tesseract_clang_tidy(${PROJECT_NAME}_test_suite)
+tesseract_code_coverage(${PROJECT_NAME}_test_suite ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_compile_definitions(${PROJECT_NAME}_test_suite INTERFACE TEST_SUITE_DATA_DIR="${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/test_suite/data")
+target_include_directories(${PROJECT_NAME}_test_suite INTERFACE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_test_suite SYSTEM INTERFACE
+    ${EIGEN3_INCLUDE_DIRS}
+    $<TARGET_PROPERTY:tesseract::tesseract_common,INTERFACE_INCLUDE_DIRECTORIES>) #tesseract::tesseract_common Due to bug in catkin, there is an open PR
+
+tesseract_configure_package(${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${PROJECT_NAME}_test_suite create_convex_hull)
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
   DESTINATION include
-  FILES_MATCHING PATTERN "*.h"
+  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
   PATTERN ".svn" EXCLUDE
  )
+
+install(DIRECTORY include/${PROJECT_NAME}/test_suite/data/
+    DESTINATION share/${PROJECT_NAME}/test_suite/data)
 
 # Create an ament_index resource file to allow ROS2 ament_index_cpp to locate the installed path to this package.
 # This is a workaround to let the ROS2 version of pluginlib find tesseract_collision's plugins, since tesseract_collision is a non-ROS CMake package.
