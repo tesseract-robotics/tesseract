@@ -161,30 +161,41 @@ inline std::size_t flattenResults(ContactResultMap&& m, ContactResultVector& v)
   return flattenMoveResults(std::move(m), v);
 }
 
-/// Contact test data and query results information
+/**
+ * @brief This data is intended only to be used internal to the collision checkers as a container and should not
+ *        be externally used by other libraries or packages.
+ */
 struct ContactTestData
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  ContactTestData() = default;
   ContactTestData(const std::vector<std::string>& active,
-                  const double& contact_distance,
-                  const IsContactAllowedFn& fn,
-                  const ContactTestType& type,
+                  double contact_distance,
+                  IsContactAllowedFn fn,
+                  ContactTestType type,
                   ContactResultMap& res)
-    : active(active), contact_distance(contact_distance), fn(fn), type(type), res(res), done(false)
+    : active(&active), contact_distance(contact_distance), fn(std::move(fn)), type(type), res(&res)
   {
   }
 
-  const std::vector<std::string>& active;
-  const double& contact_distance;
-  const IsContactAllowedFn& fn;
-  const ContactTestType& type;
+  /** @brief A vector of active links */
+  const std::vector<std::string>* active{ nullptr };
 
-  /// Destance query results information
-  ContactResultMap& res;
+  /** @brief The current contact_distance threshold */
+  double contact_distance{ 0 };
 
-  /// Indicate if search is finished
-  bool done;
+  /** @brief The allowed collision function used to check if two links should be excluded from collision checking */
+  IsContactAllowedFn fn{ nullptr };
+
+  /** @brief The type of contact test to perform */
+  ContactTestType type{ ContactTestType::ALL };
+
+  /** @brief Destance query results information */
+  ContactResultMap* res{ nullptr };
+
+  /** @brief Indicate if search is finished */
+  bool done{ false };
 };
 }  // namespace tesseract_collision
 

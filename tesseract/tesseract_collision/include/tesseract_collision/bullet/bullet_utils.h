@@ -383,8 +383,8 @@ inline btScalar addDiscreteSingleResult(btManifoldPoint& cp,
 
   ObjectPairKey pc = getObjectPairKey(cd0->getName(), cd1->getName());
 
-  const auto& it = collisions.res.find(pc);
-  bool found = (it != collisions.res.end());
+  const auto& it = collisions.res->find(pc);
+  bool found = (it != collisions.res->end());
 
   //    size_t l = 0;
   //    if (found)
@@ -522,8 +522,8 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
                                                       std::make_pair(cd0->getName(), cd1->getName()) :
                                                       std::make_pair(cd1->getName(), cd0->getName());
 
-  auto it = collisions.res.find(pc);
-  bool found = it != collisions.res.end();
+  auto it = collisions.res->find(pc);
+  bool found = it != collisions.res->end();
 
   //    size_t l = 0;
   //    if (found)
