@@ -122,11 +122,11 @@ inline ContactResult* processResult(ContactTestData& cdata,
       data.emplace_back(contact);
     }
 
-    return &(cdata.res.insert(std::make_pair(key, data)).first->second.back());
+    return &(cdata.res->insert(std::make_pair(key, data)).first->second.back());
   }
 
   assert(cdata.type != ContactTestType::FIRST);
-  ContactResultVector& dr = cdata.res[key];
+  ContactResultVector& dr = (*cdata.res)[key];
   if (cdata.type == ContactTestType::ALL)
   {
     dr.emplace_back(contact);
