@@ -357,7 +357,7 @@ tesseract_common::VectorIsometry3d Environment::getLinkTransforms() const
   link_tfs.resize(link_names_.size());
   for (const auto& link_name : link_names_)
   {
-    link_tfs.push_back(current_state_->transforms[link_name]);
+    link_tfs.push_back(current_state_->link_transforms[link_name]);
   }
 
   return link_tfs;
@@ -366,7 +366,7 @@ tesseract_common::VectorIsometry3d Environment::getLinkTransforms() const
 const Eigen::Isometry3d& Environment::getLinkTransform(const std::string& link_name) const
 {
   std::lock_guard<std::mutex> lock(mutex_);
-  const Eigen::Isometry3d& tf = current_state_->transforms[link_name];
+  const Eigen::Isometry3d& tf = current_state_->link_transforms[link_name];
 
   return tf;
 }

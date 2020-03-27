@@ -92,7 +92,8 @@ checkTrajectorySegment(std::vector<tesseract_collision::ContactResultMap>& conta
                        bool verbose = false)
 {
   for (const auto& link_name : manager.getActiveCollisionObjects())
-    manager.setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
+    manager.setCollisionObjectsTransform(
+        link_name, state0->link_transforms[link_name], state1->link_transforms[link_name]);
 
   tesseract_collision::ContactResultMap collisions;
   manager.contactTest(collisions, type);
@@ -137,7 +138,7 @@ checkTrajectoryState(std::vector<tesseract_collision::ContactResultMap>& contact
   tesseract_collision::ContactResultMap collisions;
 
   for (const auto& link_name : manager.getActiveCollisionObjects())
-    manager.setCollisionObjectsTransform(link_name, state->transforms[link_name]);
+    manager.setCollisionObjectsTransform(link_name, state->link_transforms[link_name]);
 
   manager.contactTest(collisions, type);
 

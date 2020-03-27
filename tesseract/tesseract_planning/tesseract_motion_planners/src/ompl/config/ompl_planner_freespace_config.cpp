@@ -182,7 +182,7 @@ bool OMPLPlannerFreespaceConfig::processStartAndGoalState(const tesseract_enviro
           env->getState(start_position->getNames(), start_position->getPositions());
 
       for (const auto& link_name : adj_map->getActiveLinkNames())
-        cm->setCollisionObjectsTransform(link_name, s->transforms[link_name]);
+        cm->setCollisionObjectsTransform(link_name, s->link_transforms[link_name]);
 
       tesseract_collision::ContactResultMap contact_map;
       cm->contactTest(contact_map, tesseract_collision::ContactTestType::FIRST);
@@ -211,7 +211,7 @@ bool OMPLPlannerFreespaceConfig::processStartAndGoalState(const tesseract_enviro
       tesseract_environment::EnvState::Ptr s = env->getState(end_position->getNames(), end_position->getPositions());
 
       for (const auto& link_name : adj_map->getActiveLinkNames())
-        cm->setCollisionObjectsTransform(link_name, s->transforms[link_name]);
+        cm->setCollisionObjectsTransform(link_name, s->link_transforms[link_name]);
 
       tesseract_collision::ContactResultMap contact_map;
       cm->contactTest(contact_map, tesseract_collision::ContactTestType::FIRST);

@@ -80,7 +80,7 @@ bool StateCollisionValidator::isValid(const ompl::base::State* state) const
   tesseract_environment::EnvState::Ptr state1 = env_->getState(joints_, finish_joints);
 
   for (const auto& link_name : links_)
-    cm->setCollisionObjectsTransform(link_name, state1->transforms[link_name]);
+    cm->setCollisionObjectsTransform(link_name, state1->link_transforms[link_name]);
 
   tesseract_collision::ContactResultMap contact_map;
   cm->contactTest(contact_map, tesseract_collision::ContactTestType::FIRST);
