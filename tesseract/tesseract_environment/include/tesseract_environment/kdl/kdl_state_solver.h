@@ -69,12 +69,12 @@ private:
    */
   bool init(const KDLStateSolver&);
 
-  void calculateTransforms(tesseract_common::TransformMap& transforms,
+  void calculateTransforms(EnvState& state,
                            const KDL::JntArray& q_in,
                            const KDL::SegmentMap::const_iterator& it,
                            const Eigen::Isometry3d& parent_frame) const;
 
-  void calculateTransformsHelper(tesseract_common::TransformMap& transforms,
+  void calculateTransformsHelper(EnvState& state,
                                  const KDL::JntArray& q_in,
                                  const KDL::SegmentMap::const_iterator& it,
                                  const Eigen::Isometry3d& parent_frame) const;

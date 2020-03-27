@@ -27,6 +27,16 @@
 #define TESSERACT_COMMON_MACROS_H
 
 // clang-format off
+
+#if defined(__GNUC__) || defined(__clang__)
+#define DEPRECATED(X) __attribute__((deprecated(X)))
+#elif defined(_MSC_VER)
+#define DEPRECATED(X) __declspec(deprecated(X))
+#else
+#pragma message("WARNING: You need to implement DEPRECATED for this compiler")
+#define DEPRECATED(X)
+#endif
+
 #define TESSERACT_COMMON_IGNORE_WARNINGS_PUSH                                                                          \
   _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wall\"")                                           \
       _Pragma("GCC diagnostic ignored \"-Wint-to-pointer-cast\"")                                                      \
