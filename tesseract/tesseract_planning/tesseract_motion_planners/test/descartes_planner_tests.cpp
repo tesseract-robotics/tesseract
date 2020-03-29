@@ -93,7 +93,7 @@ createDescartesPlannerConfig(const tesseract::Tesseract::ConstPtr& tesseract_ptr
   const std::vector<std::string>& active_link_names = kin->getActiveLinkNames();
 
   tesseract_environment::AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-      tesseract_ptr->getEnvironmentConst()->getSceneGraph(), active_link_names, current_state->transforms);
+      tesseract_ptr->getEnvironmentConst()->getSceneGraph(), active_link_names, current_state->link_transforms);
 
   // Create Collision Interface
   typename descartes_light::CollisionInterface<double>::Ptr coll_interface =

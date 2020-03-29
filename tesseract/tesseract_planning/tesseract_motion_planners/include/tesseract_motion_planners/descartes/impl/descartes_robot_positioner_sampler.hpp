@@ -56,7 +56,7 @@ DescartesRobotPositionerSampler<FloatType>::DescartesRobotPositionerSampler(
   , positioner_kinematics_(std::move(positioner_kinematics))
   , robot_kinematics_(std::move(robot_kinematics))
   , collision_(std::move(collision))
-  , world_to_positioner_base_(current_state->transforms.at(positioner_kinematics_->getBaseLinkName()))
+  , world_to_positioner_base_(current_state->link_transforms.at(positioner_kinematics_->getBaseLinkName()))
   , positioner_limits_(positioner_kinematics_->getLimits())
   , positioner_sample_resolution_(positioner_sample_resolution)
   , robot_tcp_(robot_tcp)

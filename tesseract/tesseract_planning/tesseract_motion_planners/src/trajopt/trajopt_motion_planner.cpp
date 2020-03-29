@@ -160,10 +160,10 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
   tesseract_environment::StateSolver::Ptr state_solver = config_->prob->GetEnv()->getStateSolver();
   tesseract_collision::ContinuousContactManager::Ptr continuous_manager =
       config_->prob->GetEnv()->getContinuousContactManager();
-  tesseract_environment::AdjacencyMap::Ptr adjacency_map =
-      std::make_shared<tesseract_environment::AdjacencyMap>(config_->prob->GetEnv()->getSceneGraph(),
-                                                            config_->prob->GetKin()->getActiveLinkNames(),
-                                                            config_->prob->GetEnv()->getCurrentState()->transforms);
+  tesseract_environment::AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
+      config_->prob->GetEnv()->getSceneGraph(),
+      config_->prob->GetKin()->getActiveLinkNames(),
+      config_->prob->GetEnv()->getCurrentState()->link_transforms);
 
   validator_ = std::make_shared<TrajectoryValidator>(config_->prob->GetEnv()->getContinuousContactManager(),
                                                      config_->prob->GetEnv()->getDiscreteContactManager(),

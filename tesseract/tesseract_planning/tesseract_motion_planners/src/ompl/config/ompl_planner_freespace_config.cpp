@@ -162,7 +162,7 @@ bool OMPLPlannerFreespaceConfig::processStartAndGoalState(const tesseract_enviro
   // kinematics objects does not know of every link affected by its motion so must compute adjacency map
   // to determine all active links.
   auto adj_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-      env->getSceneGraph(), kin->getActiveLinkNames(), env->getCurrentState()->transforms);
+      env->getSceneGraph(), kin->getActiveLinkNames(), env->getCurrentState()->link_transforms);
 
   // Get descrete contact manager for testing provided start and end position
   // This is required because collision checking happens in motion validators now

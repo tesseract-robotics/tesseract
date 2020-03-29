@@ -515,10 +515,10 @@ void Environment::currentStateChanged()
 {
   current_state_ = std::make_shared<EnvState>(*(state_solver_->getCurrentState()));
   if (discrete_manager_ != nullptr)
-    discrete_manager_->setCollisionObjectsTransform(current_state_->transforms);
+    discrete_manager_->setCollisionObjectsTransform(current_state_->link_transforms);
   if (continuous_manager_ != nullptr)
   {
-    for (const auto& tf : current_state_->transforms)
+    for (const auto& tf : current_state_->link_transforms)
     {
       if (std::find(active_link_names_.begin(), active_link_names_.end(), tf.first) != active_link_names_.end())
       {

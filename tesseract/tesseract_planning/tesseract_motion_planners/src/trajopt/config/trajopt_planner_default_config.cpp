@@ -199,7 +199,7 @@ void TrajOptPlannerDefaultConfig::addWaypoints(trajopt::ProblemConstructionInfo&
   // Get kinematics information
   tesseract_environment::Environment::ConstPtr env = tesseract->getEnvironmentConst();
   tesseract_environment::AdjacencyMap map(
-      env->getSceneGraph(), pci.kin->getActiveLinkNames(), env->getCurrentState()->transforms);
+      env->getSceneGraph(), pci.kin->getActiveLinkNames(), env->getCurrentState()->link_transforms);
   const std::vector<std::string>& adjacency_links = map.getActiveLinkNames();
 
   // Add constraints

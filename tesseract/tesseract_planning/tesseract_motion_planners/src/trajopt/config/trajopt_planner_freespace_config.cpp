@@ -49,7 +49,7 @@ std::shared_ptr<trajopt::ProblemConstructionInfo> TrajOptPlannerFreespaceConfig:
   // Get kinematics information
   tesseract_environment::Environment::ConstPtr env = tesseract->getEnvironmentConst();
   tesseract_environment::AdjacencyMap map(
-      env->getSceneGraph(), pci.kin->getActiveLinkNames(), env->getCurrentState()->transforms);
+      env->getSceneGraph(), pci.kin->getActiveLinkNames(), env->getCurrentState()->link_transforms);
   const std::vector<std::string>& adjacency_links = map.getActiveLinkNames();
 
   // Add the first waypoint

@@ -176,7 +176,7 @@ makeRobotSamplers(const std::vector<Waypoint::Ptr>& path,
       // Check if the waypoint is not relative to the world coordinate system
       Eigen::Isometry3d world_to_waypoint = Eigen::Isometry3d::Identity();
       if (!cwp->getParentLinkName().empty())
-        world_to_waypoint = current_state->transforms.at(cwp->getParentLinkName());
+        world_to_waypoint = current_state->link_transforms.at(cwp->getParentLinkName());
 
       auto sampler = std::make_shared<DescartesRobotSampler<FloatType>>(world_to_waypoint * cwp->getTransform(),
                                                                         target_pose_sampler,
@@ -289,7 +289,7 @@ makeRobotPositionerSamplers(const std::vector<Waypoint::Ptr>& path,
       // Check if the waypoint is not relative to the world coordinate system
       Eigen::Isometry3d world_to_waypoint = Eigen::Isometry3d::Identity();
       if (!cwp->getParentLinkName().empty())
-        world_to_waypoint = current_state->transforms.at(cwp->getParentLinkName());
+        world_to_waypoint = current_state->link_transforms.at(cwp->getParentLinkName());
 
       auto sampler =
           std::make_shared<DescartesRobotPositionerSampler<FloatType>>(world_to_waypoint * cwp->getTransform(),

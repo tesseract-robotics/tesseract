@@ -29,7 +29,7 @@ def test_environment():
     manager.setContactDistanceThreshold(contact_distance)
 
     env_state = t_env.getCurrentState()
-    manager.setCollisionObjectsTransform(env_state.transforms)
+    manager.setCollisionObjectsTransform(env_state.link_transforms)
     contacts = manager.contactTest(2)
     contact_vector = tesseract.flattenResults(contacts)
 
