@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file types.i
  * @brief SWIG interface file for tesseract_environment/core/types.h
  *
@@ -42,50 +42,11 @@ struct EnvState
   using Ptr = std::shared_ptr<EnvState>;
   using ConstPtr = std::shared_ptr<const EnvState>;
 
-  EnvState() : transforms(link_transforms) {}
-  virtual ~EnvState() = default;
-  EnvState(const EnvState& other)
-    : joints(other.joints)
-    , link_transforms(other.link_transforms)
-    , transforms(link_transforms)
-    , joint_transforms(other.joint_transforms)
-  {
-  }
-
-  EnvState& operator=(const EnvState& other)
-  {
-    joints = other.joints;
-    link_transforms = other.link_transforms;
-    transforms = link_transforms;
-    joint_transforms = other.joint_transforms;
-    return (*this);
-  }
-
-  EnvState(EnvState&& other) noexcept
-    : joints(std::move(other.joints))
-    , link_transforms(std::move(other.link_transforms))
-    , transforms(link_transforms)
-    , joint_transforms(std::move(other.joint_transforms))
-  {
-  }
-
-  EnvState& operator=(EnvState&& other) noexcept
-  {
-    joints = std::move(other.joints);
-    link_transforms = std::move(other.link_transforms);
-    transforms = link_transforms;
-    joint_transforms = std::move(other.joint_transforms);
-    return (*this);
-  }
-
   /**  @brief The joint values used for calculating the joint and link transforms */
   std::unordered_map<std::string, double> joints;
 
   /** @brief The link transforms in world coordinate system */
   tesseract_common::TransformMap link_transforms;
-
-  /** @brief (DEPRECATED) The link transforms in world coordinate system */
-  DEPRECATED("Use member variable link_transforms.") tesseract_common::TransformMap& transforms;
 
   /** @brief The joint transforms in world coordinate system */
   tesseract_common::TransformMap joint_transforms;

@@ -42,7 +42,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-/** @brief This holds a state of the environment */
+/**
+ * @brief This holds a state of the environment
+ *
+ * It provides a way to look up the location of a link/joint in world coordinates system by link/joint name. It is
+ * possible to get the joint transform using the child link transfrom of the joint, but they are both provided for
+ * convience. Also the joint values used to calculated the link/joint transfroms is provided.
+ */
 struct EnvState
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -50,50 +56,11 @@ struct EnvState
   using Ptr = std::shared_ptr<EnvState>;
   using ConstPtr = std::shared_ptr<const EnvState>;
 
-  EnvState() : transforms(link_transforms) {}
-  virtual ~EnvState() = default;
-  EnvState(const EnvState& other)
-    : joints(other.joints)
-    , link_transforms(other.link_transforms)
-    , transforms(link_transforms)
-    , joint_transforms(other.joint_transforms)
-  {
-  }
-
-  EnvState& operator=(const EnvState& other)
-  {
-    joints = other.joints;
-    link_transforms = other.link_transforms;
-    transforms = link_transforms;
-    joint_transforms = other.joint_transforms;
-    return (*this);
-  }
-
-  EnvState(EnvState&& other) noexcept
-    : joints(std::move(other.joints))
-    , link_transforms(std::move(other.link_transforms))
-    , transforms(link_transforms)
-    , joint_transforms(std::move(other.joint_transforms))
-  {
-  }
-
-  EnvState& operator=(EnvState&& other) noexcept
-  {
-    joints = std::move(other.joints);
-    link_transforms = std::move(other.link_transforms);
-    transforms = link_transforms;
-    joint_transforms = std::move(other.joint_transforms);
-    return (*this);
-  }
-
   /**  @brief The joint values used for calculating the joint and link transforms */
   std::unordered_map<std::string, double> joints;
 
   /** @brief The link transforms in world coordinate system */
   tesseract_common::TransformMap link_transforms;
-
-  /** @brief (DEPRECATED) The link transforms in world coordinate system */
-  DEPRECATED("Use member variable link_transforms.") tesseract_common::TransformMap& transforms;
 
   /** @brief The joint transforms in world coordinate system */
   tesseract_common::TransformMap joint_transforms;
