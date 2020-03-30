@@ -357,7 +357,7 @@ tesseract_common::VectorIsometry3d Environment::getLinkTransforms() const
   link_tfs.resize(link_names_.size());
   for (const auto& link_name : link_names_)
   {
-    link_tfs.push_back(current_state_->transforms[link_name]);
+    link_tfs.push_back(current_state_->link_transforms[link_name]);
   }
 
   return link_tfs;
@@ -366,7 +366,7 @@ tesseract_common::VectorIsometry3d Environment::getLinkTransforms() const
 const Eigen::Isometry3d& Environment::getLinkTransform(const std::string& link_name) const
 {
   std::lock_guard<std::mutex> lock(mutex_);
-  const Eigen::Isometry3d& tf = current_state_->transforms[link_name];
+  const Eigen::Isometry3d& tf = current_state_->link_transforms[link_name];
 
   return tf;
 }
@@ -515,10 +515,10 @@ void Environment::currentStateChanged()
 {
   current_state_ = std::make_shared<EnvState>(*(state_solver_->getCurrentState()));
   if (discrete_manager_ != nullptr)
-    discrete_manager_->setCollisionObjectsTransform(current_state_->transforms);
+    discrete_manager_->setCollisionObjectsTransform(current_state_->link_transforms);
   if (continuous_manager_ != nullptr)
   {
-    for (const auto& tf : current_state_->transforms)
+    for (const auto& tf : current_state_->link_transforms)
     {
       if (std::find(active_link_names_.begin(), active_link_names_.end(), tf.first) != active_link_names_.end())
       {

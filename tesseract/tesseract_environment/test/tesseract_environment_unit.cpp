@@ -132,7 +132,7 @@ void runMoveLinkandJointTest(const tesseract_environment::Environment::Ptr& env)
 
   env->addLink(std::move(link_1), std::move(joint_1));
   EnvState::ConstPtr state = env->getCurrentState();
-  EXPECT_TRUE(state->transforms.find(link_name1) != state->transforms.end());
+  EXPECT_TRUE(state->link_transforms.find(link_name1) != state->link_transforms.end());
 
   env->addLink(std::move(link_2), std::move(joint_2));
   std::vector<std::string> link_names = env->getLinkNames();
@@ -169,7 +169,7 @@ void runChangeJointOriginTest(const tesseract_environment::Environment::Ptr& env
 
   env->addLink(std::move(link_1), std::move(joint_1));
   EnvState::ConstPtr state = env->getCurrentState();
-  ASSERT_TRUE(state->transforms.find(link_name1) != state->transforms.end());
+  ASSERT_TRUE(state->link_transforms.find(link_name1) != state->link_transforms.end());
 
   env->getSceneGraph()->saveDOT("/tmp/before_change_joint_origin_unit.dot");
 

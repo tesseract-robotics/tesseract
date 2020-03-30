@@ -51,7 +51,7 @@ ContinuousMotionValidator::ContinuousMotionValidator(const ompl::base::SpaceInfo
   // kinematics objects does not know of every link affected by its motion so must compute adjacency map
   // to determine all active links.
   tesseract_environment::AdjacencyMap adj_map(
-      env->getSceneGraph(), kin_->getActiveLinkNames(), env->getCurrentState()->transforms);
+      env->getSceneGraph(), kin_->getActiveLinkNames(), env->getCurrentState()->link_transforms);
   links_ = adj_map.getActiveLinkNames();
 
   continuous_contact_manager_->setActiveCollisionObjects(links_);
@@ -161,7 +161,7 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
   tesseract_environment::EnvState::Ptr state1 = ss->getState(joints_, finish_joints);
 
   for (const auto& link_name : links_)
-    cm->setCollisionObjectsTransform(link_name, state0->transforms[link_name], state1->transforms[link_name]);
+    cm->setCollisionObjectsTransform(link_name, state0->link_transforms[link_name], state1->link_transforms[link_name]);
 
   tesseract_collision::ContactResultMap contact_map;
   cm->contactTest(contact_map, tesseract_collision::ContactTestType::FIRST);

@@ -42,7 +42,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
-/** @brief This holds a state of the environment */
+/**
+ * @brief This holds a state of the environment
+ *
+ * It provides a way to look up the location of a link/joint in world coordinates system by link/joint name. It is
+ * possible to get the joint transform using the child link transfrom of the joint, but they are both provided for
+ * convience. Also the joint values used to calculated the link/joint transfroms is provided.
+ */
 struct EnvState
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -50,8 +56,14 @@ struct EnvState
   using Ptr = std::shared_ptr<EnvState>;
   using ConstPtr = std::shared_ptr<const EnvState>;
 
+  /**  @brief The joint values used for calculating the joint and link transforms */
   std::unordered_map<std::string, double> joints;
-  tesseract_common::TransformMap transforms;
+
+  /** @brief The link transforms in world coordinate system */
+  tesseract_common::TransformMap link_transforms;
+
+  /** @brief The joint transforms in world coordinate system */
+  tesseract_common::TransformMap joint_transforms;
 };
 
 /**

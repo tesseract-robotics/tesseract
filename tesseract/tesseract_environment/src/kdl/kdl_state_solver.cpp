@@ -70,8 +70,7 @@ void KDLStateSolver::setState(const std::unordered_map<std::string, double>& joi
     }
   }
 
-  calculateTransforms(
-      current_state_->transforms, kdl_jnt_array_, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
+  calculateTransforms(*current_state_, kdl_jnt_array_, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
 }
 
 void KDLStateSolver::setState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values)
@@ -84,8 +83,7 @@ void KDLStateSolver::setState(const std::vector<std::string>& joint_names, const
     }
   }
 
-  calculateTransforms(
-      current_state_->transforms, kdl_jnt_array_, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
+  calculateTransforms(*current_state_, kdl_jnt_array_, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
 }
 
 void KDLStateSolver::setState(const std::vector<std::string>& joint_names,
@@ -99,8 +97,7 @@ void KDLStateSolver::setState(const std::vector<std::string>& joint_names,
     }
   }
 
-  calculateTransforms(
-      current_state_->transforms, kdl_jnt_array_, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
+  calculateTransforms(*current_state_, kdl_jnt_array_, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
 }
 
 EnvState::Ptr KDLStateSolver::getState(const std::unordered_map<std::string, double>& joints) const
@@ -116,7 +113,7 @@ EnvState::Ptr KDLStateSolver::getState(const std::unordered_map<std::string, dou
     }
   }
 
-  calculateTransforms(state->transforms, jnt_array, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
+  calculateTransforms(*state, jnt_array, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
 
   return state;
 }
@@ -135,7 +132,7 @@ EnvState::Ptr KDLStateSolver::getState(const std::vector<std::string>& joint_nam
     }
   }
 
-  calculateTransforms(state->transforms, jnt_array, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
+  calculateTransforms(*state, jnt_array, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
 
   return state;
 }
@@ -154,7 +151,7 @@ EnvState::Ptr KDLStateSolver::getState(const std::vector<std::string>& joint_nam
     }
   }
 
-  calculateTransforms(state->transforms, jnt_array, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
+  calculateTransforms(*state, jnt_array, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
 
   return state;
 }
@@ -185,8 +182,7 @@ bool KDLStateSolver::createKDETree()
     j++;
   }
 
-  calculateTransforms(
-      current_state_->transforms, kdl_jnt_array_, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
+  calculateTransforms(*current_state_, kdl_jnt_array_, kdl_tree_.getRootSegment(), Eigen::Isometry3d::Identity());
   return true;
 }
 
@@ -205,7 +201,7 @@ bool KDLStateSolver::setJointValuesHelper(KDL::JntArray& q,
   return false;
 }
 
-void KDLStateSolver::calculateTransformsHelper(tesseract_common::TransformMap& transforms,
+void KDLStateSolver::calculateTransformsHelper(EnvState& state,
                                                const KDL::JntArray& q_in,
                                                const KDL::SegmentMap::const_iterator& it,
                                                const Eigen::Isometry3d& parent_frame) const
@@ -218,21 +214,23 @@ void KDLStateSolver::calculateTransformsHelper(tesseract_common::TransformMap& t
     Eigen::Isometry3d local_frame, global_frame;
     KDLToEigen(current_frame, local_frame);
     global_frame = parent_frame * local_frame;
-    transforms[current_element.segment.getName()] = global_frame;
+    state.link_transforms[current_element.segment.getName()] = global_frame;
+    if (current_element.segment.getName() != scene_graph_->getRoot())
+      state.joint_transforms[current_element.segment.getJoint().getName()] = global_frame;
 
     for (auto& child : current_element.children)
     {
-      calculateTransformsHelper(transforms, q_in, child, global_frame);
+      calculateTransformsHelper(state, q_in, child, global_frame);
     }
   }
 }
 
-void KDLStateSolver::calculateTransforms(tesseract_common::TransformMap& transforms,
+void KDLStateSolver::calculateTransforms(EnvState& state,
                                          const KDL::JntArray& q_in,
                                          const KDL::SegmentMap::const_iterator& it,
                                          const Eigen::Isometry3d& parent_frame) const
 {
-  calculateTransformsHelper(transforms, q_in, it, parent_frame);
+  calculateTransformsHelper(state, q_in, it, parent_frame);
 }
 
 }  // namespace tesseract_environment

@@ -53,7 +53,7 @@ DescartesRobotSampler<FloatType>::DescartesRobotSampler(
   , target_pose_sampler_(std::move(target_pose_sampler))
   , robot_kinematics_(std::move(robot_kinematics))
   , collision_(std::move(collision))
-  , world_to_robot_base_(current_state->transforms.at(robot_kinematics_->getBaseLinkName()))
+  , world_to_robot_base_(current_state->link_transforms.at(robot_kinematics_->getBaseLinkName()))
   , robot_tcp_(robot_tcp)
   , robot_reach_(robot_reach)
   , allow_collision_(allow_collision)

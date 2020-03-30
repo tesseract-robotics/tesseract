@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file types.i
  * @brief SWIG interface file for tesseract_environment/core/types.h
  *
@@ -37,11 +37,19 @@ namespace tesseract_environment
 
 struct EnvState
 {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   using Ptr = std::shared_ptr<EnvState>;
   using ConstPtr = std::shared_ptr<const EnvState>;
 
+  /**  @brief The joint values used for calculating the joint and link transforms */
   std::unordered_map<std::string, double> joints;
-  tesseract_common::TransformMap transforms;
+
+  /** @brief The link transforms in world coordinate system */
+  tesseract_common::TransformMap link_transforms;
+
+  /** @brief The joint transforms in world coordinate system */
+  tesseract_common::TransformMap joint_transforms;
 };
 
 struct AdjacencyMapPair

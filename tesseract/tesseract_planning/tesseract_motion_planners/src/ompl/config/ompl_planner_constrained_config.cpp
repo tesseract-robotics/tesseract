@@ -99,7 +99,7 @@ bool OMPLPlannerConstrainedConfig::generate()
   // kinematics objects does not know of every link affected by its motion so must compute adjacency map
   // to determine all active links.
   auto adj_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-      env->getSceneGraph(), kin->getActiveLinkNames(), env->getCurrentState()->transforms);
+      env->getSceneGraph(), kin->getActiveLinkNames(), env->getCurrentState()->link_transforms);
 
   const std::vector<std::string>& joint_names = kin->getJointNames();
   const auto dof = kin->numJoints();

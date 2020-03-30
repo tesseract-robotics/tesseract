@@ -167,7 +167,7 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
   {
     auto env = config_->tesseract->getEnvironmentConst();
     auto adj_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-        env->getSceneGraph(), kin_->getActiveLinkNames(), env->getCurrentState()->transforms);
+        env->getSceneGraph(), kin_->getActiveLinkNames(), env->getCurrentState()->link_transforms);
     auto discrete_contact_manager = env->getDiscreteContactManager();
     discrete_contact_manager->setActiveCollisionObjects(adj_map->getActiveLinkNames());
     discrete_contact_manager->setContactDistanceThreshold(0.0);
@@ -233,7 +233,7 @@ bool OMPLMotionPlanner::setConfiguration(OMPLPlannerConfig::Ptr config)
   // kinematics objects does not know of every link affected by its motion so must compute adjacency map
   // to determine all active links.
   auto adj_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-      env->getSceneGraph(), kin_->getActiveLinkNames(), env->getCurrentState()->transforms);
+      env->getSceneGraph(), kin_->getActiveLinkNames(), env->getCurrentState()->link_transforms);
 
   continuous_contact_manager_ = env->getContinuousContactManager();
   continuous_contact_manager_->setActiveCollisionObjects(adj_map->getActiveLinkNames());
