@@ -130,4 +130,8 @@ bool DescartesTrajOptArrayPlanner<FloatType>::setConfiguration(
 
   return success;
 }
+
+template class DescartesTrajOptArrayPlanner<double>;
+template class DescartesTrajOptArrayPlanner<float>;
+
 }  // namespace tesseract_motion_planners
