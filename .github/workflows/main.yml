@@ -50,7 +50,6 @@ jobs:
              UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug",
              TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON",
              DOWNSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug",
-             VERBOSE_OUTPUT: true,
              AFTER_SCRIPT: 'catkin build -w $target_ws --no-deps --verbose tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python --make-args test'}
           - {CI_NAME: Xenial-Build,
              OS_NAME: ubuntu,
