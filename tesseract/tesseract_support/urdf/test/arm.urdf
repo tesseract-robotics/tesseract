@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.5.1-0-g916b5db  Build Version: 1.5.7152.31018
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="arm">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.0299669720529937 -0.0822769203263411 -0.0109155393278129"
+        rpy="0 0 0" />
+      <mass
+        value="0.0536128315516283" />
+      <inertia
+        ixx="4.21997065454412E-05"
+        ixy="4.88058986178293E-39"
+        ixz="-5.78241158658936E-21"
+        iyy="8.38147431375879E-05"
+        iyz="2.12859934851484E-38"
+        izz="4.21997065454412E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tesseract_support/urdf/test/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tesseract_support/urdf/test/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="first">
+    <inertial>
+      <origin
+        xyz="5.20417042793042E-17 -0.0168090857412277 -0.0153678670286469"
+        rpy="0 0 0" />
+      <mass
+        value="0.00786909844959806" />
+      <inertia
+        ixx="1.05977495132376E-06"
+        ixy="-1.05879118406788E-22"
+        ixz="-2.97785020519088E-23"
+        iyy="1.08043445593965E-06"
+        iyz="1.10987669635039E-07"
+        izz="1.02789786379305E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tesseract_support/urdf/test/meshes/first.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tesseract_support/urdf/test/meshes/first.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="first"
+    type="continuous">
+    <origin
+      xyz="0.048479 0.026841 -0.024132"
+      rpy="0 0 -0.8654" />
+    <parent
+      link="base_link" />
+    <child
+      link="first" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="second">
+    <inertial>
+      <origin
+        xyz="-6.76542155630955E-17 0.0129047951693301 -0.0384236925590345"
+        rpy="0 0 0" />
+      <mass
+        value="0.0157381968991961" />
+      <inertia
+        ixx="2.11954990264751E-06"
+        ixy="2.11758236813575E-22"
+        ixz="-4.5665165497789E-24"
+        iyy="2.1083323197327E-06"
+        iyz="2.59889342527268E-23"
+        izz="2.1083323197327E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tesseract_support/urdf/test/meshes/second.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tesseract_support/urdf/test/meshes/second.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="second"
+    type="continuous">
+    <origin
+      xyz="0 -0.03996 -0.012906"
+      rpy="-3.1416 0 0" />
+    <parent
+      link="first" />
+    <child
+      link="second" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="third">
+    <inertial>
+      <origin
+        xyz="4.49293380277993E-16 -0.0384236925590342 0.0303244184662838"
+        rpy="0 0 0" />
+      <mass
+        value="0.0157381968991961" />
+      <inertia
+        ixx="2.11954990264751E-06"
+        ixy="4.30684994025578E-22"
+        ixz="2.11758236813575E-22"
+        iyy="2.1083323197327E-06"
+        iyz="-6.57581199563027E-22"
+        izz="2.1083323197327E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tesseract_support/urdf/test/meshes/third.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tesseract_support/urdf/test/meshes/third.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="third"
+    type="continuous">
+    <origin
+      xyz="0 0 -0.0625"
+      rpy="1.5708 0 0" />
+    <parent
+      link="second" />
+    <child
+      link="third" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="fourth">
+    <inertial>
+      <origin
+        xyz="1.73472347597681E-18 0.0200784877283646 -0.0168090857412276"
+        rpy="0 0 0" />
+      <mass
+        value="0.00786909844959807" />
+      <inertia
+        ixx="1.05977495132376E-06"
+        ixy="0"
+        ixz="-1.32348898008494E-23"
+        iyy="1.02789786379305E-06"
+        iyz="1.10987669635039E-07"
+        izz="1.08043445593965E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tesseract_support/urdf/test/meshes/fourth.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tesseract_support/urdf/test/meshes/fourth.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="fourth"
+    type="continuous">
+    <origin
+      xyz="0 -0.0625 0"
+      rpy="-1.5708 0 0" />
+    <parent
+      link="third" />
+    <child
+      link="fourth" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="end_effector">
+    <inertial>
+      <origin
+        xyz="-4.16333634234434E-17 0.0147741508524035 -9.71445146547012E-17"
+        rpy="0 0 0" />
+      <mass
+        value="0.0241768252295753" />
+      <inertia
+        ixx="3.48343363903212E-06"
+        ixy="-5.31956330610258E-22"
+        ixz="-1.05879118406788E-22"
+        iyy="3.63688903717576E-06"
+        iyz="-5.52354749241335E-21"
+        izz="4.75198363903212E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tesseract_support/urdf/test/meshes/end_effector.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://tesseract_support/urdf/test/meshes/end_effector.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="end_effector"
+    type="continuous">
+    <origin
+      xyz="0 0.02254 -0.04375"
+      rpy="-1.5708 0 3.1416" />
+    <parent
+      link="fourth" />
+    <child
+      link="end_effector" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+</robot>

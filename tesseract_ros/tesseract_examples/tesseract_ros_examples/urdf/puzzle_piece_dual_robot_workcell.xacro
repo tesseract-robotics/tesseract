@@ -1,0 +1,60 @@
+<?xml version="1.0" ?>
+<robot name="puzzle_piece_dual_robot_workcell" xmlns:xacro="http://wiki.ros.org/xacro">
+  <xacro:include filename="$(find tesseract_ros_examples)/urdf/lbr_iiwa_14_r820_macro.xacro" />
+
+  <!-- This contains the macro "ses_part_macro" that places the clip wrt the tool tip -->
+  <xacro:include filename="$(find tesseract_ros_examples)/urdf/puzzle_mount.xacro" />
+  <xacro:include filename="$(find tesseract_ros_examples)/urdf/grinder.xacro" />
+
+  <link name="world"/>
+
+  <link name="table">
+    <visual>
+      <geometry>
+        <box size="1.0 1.0 0.05"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="1.0 1.0 0.05"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <xacro:kuka_lbr_iiwa_14_r820 prefix="left"/>
+  <xacro:kuka_lbr_iiwa_14_r820 prefix="right"/>
+  <xacro:grinder prefix=""/>
+  <xacro:puzzle_piece prefix=""/>
+
+  <joint name="world_to_table" type="fixed">
+    <parent link="world"/>
+    <child link="table"/>
+    <origin xyz="0 0 0.5" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="left_robot_to_grinder" type="fixed">
+    <parent link="left_tool0"/>
+    <child link="grinder_base"/>
+    <origin xyz="0.35 -0.35 0.6" rpy="0 0 0"/>
+  </joint>
+
+
+  <joint name="table_to_left_robot" type="fixed">
+    <parent link="table"/>
+    <child link="left_base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="table_to_right_robot" type="fixed">
+    <parent link="table"/>
+    <child link="left_base_link"/>
+    <origin xyz="0.5 0.5 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="right_robot_tool" type="fixed">
+    <parent link="right_tool0"/>
+    <child link="ee_mount"/>
+    <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+  </joint>
+
+</robot>

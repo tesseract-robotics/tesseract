@@ -1,0 +1,429 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Tesseract Geometry Package &mdash; Industrial Training  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/override.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tesseract ROS Package" href="tesseract_ros_doc.html" />
+    <link rel="prev" title="Tesseract Collision Package" href="tesseract_collision_doc.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+  
+  <script src="../_static/clipboard.min.js"></script>
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Industrial Training
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tesseract_scene_graph_doc.html">tesseract_scene_graph</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_collision_doc.html">tesseract_collision</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">tesseract_geometry</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#background">Background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-geometry-shapes">Creating Geometry Shapes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#example-explanation">Example Explanation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_ros_doc.html">tesseract_ros</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_msgs_doc.html">tesseract_msgs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_rviz_doc.html">tesseract_rviz</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_monitoring_doc.html">tesseract_monitoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_planning_doc.html">tesseract_planning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_urdf_doc.html">tesseract_urdf</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="FAQ.html">Questions?</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Industrial Training</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+      
+  <div class="header-override">
+    <a href="http://rosindustrial.org">
+      <img src="../_static/logo.jpg"/>
+    </a>
+    <p>
+      <a href="http://rosindustrial.org">ROS-Industrial Website</a>|<a href="http://rosindustrial.org/news">Blog</a>
+    </p>
+  </div>
+
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Tesseract Geometry Package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/ros-industrial-consortium/tesseract/blob/gh_pages/_source/tesseract_geometry_doc.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="tesseract-geometry-package">
+<h1>Tesseract Geometry Package<a class="headerlink" href="#tesseract-geometry-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="background">
+<h2>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
+<p>This package contains geometries used by Tesseract</p>
+</div>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Primitive Shapes<ul>
+<li>Box</li>
+<li>Cone</li>
+<li>Cylinder</li>
+<li>Plane</li>
+<li>Sphere</li>
+</ul>
+</li>
+<li>Mesh</li>
+<li>Convex Mesh</li>
+<li>SDF Mesh</li>
+<li>Octree</li>
+</ol>
+</div>
+<div class="section" id="creating-geometry-shapes">
+<h2>Creating Geometry Shapes<a class="headerlink" href="#creating-geometry-shapes" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#include &lt;console_bridge/console.h&gt;</span>
+<span class="c1">#include &lt;tesseract_geometry/geometries.h&gt;</span>
+<span class="c1">#include &lt;iostream&gt;</span>
+
+<span class="n">using</span> <span class="n">namespace</span> <span class="n">tesseract_geometry</span><span class="p">;</span>
+
+<span class="nb">int</span> <span class="n">main</span><span class="p">(</span><span class="nb">int</span> <span class="o">/*</span><span class="n">argc</span><span class="o">*/</span><span class="p">,</span> <span class="n">char</span><span class="o">**</span> <span class="o">/*</span><span class="n">argv</span><span class="o">*/</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="o">//</span> <span class="n">Primitive</span> <span class="n">Shapes</span>
+  <span class="n">auto</span> <span class="n">box</span> <span class="o">=</span> <span class="n">std</span><span class="p">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">tesseract_geometry</span><span class="p">::</span><span class="n">Box</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+  <span class="n">auto</span> <span class="n">cone</span> <span class="o">=</span> <span class="n">std</span><span class="p">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">tesseract_geometry</span><span class="p">::</span><span class="n">Cone</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+  <span class="n">auto</span> <span class="n">cylinder</span> <span class="o">=</span> <span class="n">std</span><span class="p">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">tesseract_geometry</span><span class="p">::</span><span class="n">Cylinder</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+  <span class="n">auto</span> <span class="n">plane</span> <span class="o">=</span> <span class="n">std</span><span class="p">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">tesseract_geometry</span><span class="p">::</span><span class="n">Plane</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+  <span class="n">auto</span> <span class="n">sphere</span> <span class="o">=</span> <span class="n">std</span><span class="p">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">tesseract_geometry</span><span class="p">::</span><span class="n">Sphere</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+  <span class="o">//</span> <span class="n">Manually</span> <span class="n">create</span> <span class="n">mesh</span>
+  <span class="n">std</span><span class="p">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">const</span> <span class="n">tesseract_common</span><span class="p">::</span><span class="n">VectorVector3d</span><span class="o">&gt;</span> <span class="n">mesh_vertices</span> <span class="o">=</span>
+      <span class="n">std</span><span class="p">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">const</span> <span class="n">tesseract_common</span><span class="p">::</span><span class="n">VectorVector3d</span><span class="o">&gt;</span><span class="p">();</span>
+  <span class="n">std</span><span class="p">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">const</span> <span class="n">Eigen</span><span class="p">::</span><span class="n">VectorXi</span><span class="o">&gt;</span> <span class="n">mesh_faces</span> <span class="o">=</span> <span class="n">std</span><span class="p">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">const</span> <span class="n">Eigen</span><span class="p">::</span><span class="n">VectorXi</span><span class="o">&gt;</span><span class="p">();</span>
+  <span class="o">//</span> <span class="n">Next</span> <span class="n">fill</span> <span class="n">out</span> <span class="n">vertices</span> <span class="ow">and</span> <span class="n">triangles</span>
+  <span class="n">auto</span> <span class="n">mesh</span> <span class="o">=</span> <span class="n">std</span><span class="p">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">tesseract_geometry</span><span class="p">::</span><span class="n">Mesh</span><span class="o">&gt;</span><span class="p">(</span><span class="n">mesh_vertices</span><span class="p">,</span> <span class="n">mesh_faces</span><span class="p">);</span>
+
+  <span class="o">//</span> <span class="n">Manually</span> <span class="n">create</span> <span class="n">mesh</span>
+  <span class="n">std</span><span class="p">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">const</span> <span class="n">tesseract_common</span><span class="p">::</span><span class="n">VectorVector3d</span><span class="o">&gt;</span> <span class="n">sdf_vertices</span> <span class="o">=</span>
+      <span class="n">std</span><span class="p">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">const</span> <span class="n">tesseract_common</span><span class="p">::</span><span class="n">VectorVector3d</span><span class="o">&gt;</span><span class="p">();</span>
+  <span class="n">std</span><span class="p">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">const</span> <span class="n">Eigen</span><span class="p">::</span><span class="n">VectorXi</span><span class="o">&gt;</span> <span class="n">sdf_faces</span> <span class="o">=</span> <span class="n">std</span><span class="p">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">const</span> <span class="n">Eigen</span><span class="p">::</span><span class="n">VectorXi</span><span class="o">&gt;</span><span class="p">();</span>
+  <span class="o">//</span> <span class="n">Next</span> <span class="n">fill</span> <span class="n">out</span> <span class="n">vertices</span> <span class="ow">and</span> <span class="n">triangles</span>
+  <span class="n">auto</span> <span class="n">sdf_mesh</span> <span class="o">=</span> <span class="n">std</span><span class="p">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">tesseract_geometry</span><span class="p">::</span><span class="n">SDFMesh</span><span class="o">&gt;</span><span class="p">(</span><span class="n">sdf_vertices</span><span class="p">,</span> <span class="n">sdf_faces</span><span class="p">);</span>
+
+  <span class="o">//</span> <span class="n">Manually</span> <span class="n">create</span> <span class="n">convex</span> <span class="n">mesh</span>
+  <span class="n">std</span><span class="p">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">const</span> <span class="n">tesseract_common</span><span class="p">::</span><span class="n">VectorVector3d</span><span class="o">&gt;</span> <span class="n">convex_vertices</span> <span class="o">=</span>
+      <span class="n">std</span><span class="p">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">const</span> <span class="n">tesseract_common</span><span class="p">::</span><span class="n">VectorVector3d</span><span class="o">&gt;</span><span class="p">();</span>
+  <span class="n">std</span><span class="p">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">const</span> <span class="n">Eigen</span><span class="p">::</span><span class="n">VectorXi</span><span class="o">&gt;</span> <span class="n">convex_faces</span> <span class="o">=</span> <span class="n">std</span><span class="p">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">const</span> <span class="n">Eigen</span><span class="p">::</span><span class="n">VectorXi</span><span class="o">&gt;</span><span class="p">();</span>
+  <span class="o">//</span> <span class="n">Next</span> <span class="n">fill</span> <span class="n">out</span> <span class="n">vertices</span> <span class="ow">and</span> <span class="n">triangles</span>
+  <span class="n">auto</span> <span class="n">convex_mesh</span> <span class="o">=</span> <span class="n">std</span><span class="p">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">tesseract_geometry</span><span class="p">::</span><span class="n">ConvexMesh</span><span class="o">&gt;</span><span class="p">(</span><span class="n">convex_vertices</span><span class="p">,</span> <span class="n">convex_faces</span><span class="p">);</span>
+
+  <span class="n">std</span><span class="p">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">const</span> <span class="n">octomap</span><span class="p">::</span><span class="n">OcTree</span><span class="o">&gt;</span> <span class="n">octree</span><span class="p">;</span>
+  <span class="o">//</span> <span class="n">Next</span> <span class="n">populate</span> <span class="n">octree</span>
+  <span class="n">auto</span> <span class="n">octree_t</span> <span class="o">=</span> <span class="n">std</span><span class="p">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">tesseract_geometry</span><span class="p">::</span><span class="n">Octree</span><span class="o">&gt;</span><span class="p">(</span><span class="n">octree</span><span class="p">,</span> <span class="n">tesseract_geometry</span><span class="p">::</span><span class="n">Octree</span><span class="p">::</span><span class="n">SubType</span><span class="p">::</span><span class="n">BOX</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="section" id="example-explanation">
+<h3>Example Explanation<a class="headerlink" href="#example-explanation" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic">
+<li><p class="first">Create a box.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="k">auto</span> <span class="n">cone</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">tesseract_geometry</span><span class="o">::</span><span class="n">Cone</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Create a cone.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="k">auto</span> <span class="n">cylinder</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">tesseract_geometry</span><span class="o">::</span><span class="n">Cylinder</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Create a cylinder.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="k">auto</span> <span class="n">plane</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">tesseract_geometry</span><span class="o">::</span><span class="n">Plane</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Create a plane.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="k">auto</span> <span class="n">sphere</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">tesseract_geometry</span><span class="o">::</span><span class="n">Sphere</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Create a sphere.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Create a mesh.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="c1">// Manually create mesh</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">tesseract_common</span><span class="o">::</span><span class="n">VectorVector3d</span><span class="o">&gt;</span> <span class="n">mesh_vertices</span> <span class="o">=</span>
+      <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">tesseract_common</span><span class="o">::</span><span class="n">VectorVector3d</span><span class="o">&gt;</span><span class="p">();</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXi</span><span class="o">&gt;</span> <span class="n">mesh_faces</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXi</span><span class="o">&gt;</span><span class="p">();</span>
+  <span class="c1">// Next fill out vertices and triangles</span>
+  <span class="k">auto</span> <span class="n">mesh</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">tesseract_geometry</span><span class="o">::</span><span class="n">Mesh</span><span class="o">&gt;</span><span class="p">(</span><span class="n">mesh_vertices</span><span class="p">,</span> <span class="n">mesh_faces</span><span class="p">);</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This shows how to create a mesh provided vertices and faces. You may also use utilities in tesseract_scene_graph mesh parser to load meshes from file.</p>
+</div>
+</li>
+<li><p class="first">Create a signed distance field mesh.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This should be the same as a mesh, but when interperated as the collision object it will be encoded as a signed distance field.</p>
+</div>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">tesseract_common</span><span class="o">::</span><span class="n">VectorVector3d</span><span class="o">&gt;</span> <span class="n">sdf_vertices</span> <span class="o">=</span>
+      <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">tesseract_common</span><span class="o">::</span><span class="n">VectorVector3d</span><span class="o">&gt;</span><span class="p">();</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXi</span><span class="o">&gt;</span> <span class="n">sdf_faces</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXi</span><span class="o">&gt;</span><span class="p">();</span>
+  <span class="c1">// Next fill out vertices and triangles</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This shows how to create a SDF mesh provided vertices and faces. You may also use utilities in tesseract_scene_graph mesh parser to load meshes from file.</p>
+</div>
+</li>
+<li><p class="first">Create a convex mesh.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This expects the data to already represent a convex mesh. If yours does not load as a mesh and then use tesseract utility to convert to a convex mesh.</p>
+</div>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="c1">// Manually create convex mesh</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">tesseract_common</span><span class="o">::</span><span class="n">VectorVector3d</span><span class="o">&gt;</span> <span class="n">convex_vertices</span> <span class="o">=</span>
+      <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">tesseract_common</span><span class="o">::</span><span class="n">VectorVector3d</span><span class="o">&gt;</span><span class="p">();</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXi</span><span class="o">&gt;</span> <span class="n">convex_faces</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXi</span><span class="o">&gt;</span><span class="p">();</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This shows how to create a convex mesh provided vertices and faces. You may also use utilities in tesseract_scene_graph mesh parser to load meshes from file.</p>
+</div>
+</li>
+<li><p class="first">Create a octree.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="k">auto</span> <span class="n">convex_mesh</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">tesseract_geometry</span><span class="o">::</span><span class="n">ConvexMesh</span><span class="o">&gt;</span><span class="p">(</span><span class="n">convex_vertices</span><span class="p">,</span> <span class="n">convex_faces</span><span class="p">);</span>
+
+  <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">octomap</span><span class="o">::</span><span class="n">OcTree</span><span class="o">&gt;</span> <span class="n">octree</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It is benificial to prune the octree prior to creating the tesseract octree shap to simplify</p>
+</div>
+<p>Octree support multiple shape types to represent a cell in the octree.</p>
+<ul class="simple">
+<li>BOX <strong>tesseract_geometry::Octree::SubType::BOX</strong></li>
+<li>SPHERE_INSIDE <strong>tesseract_geometry::Octree::SubType::SPHERE_INSIDE</strong></li>
+<li>SPHERE_OUTSIDE <strong>tesseract_geometry::Octree::SubType::SPHERE_OUTSIDE</strong></li>
+</ul>
+</li>
+</ol>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tesseract_ros_doc.html" class="btn btn-neutral float-right" title="Tesseract ROS Package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tesseract_collision_doc.html" class="btn btn-neutral" title="Tesseract Collision Package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div class="footer-override">
+    <a href="http://rosindustrial.org/ric">
+      <img src="../_static/footer.jpg"/>
+    </a>
+  </div>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, ROS-Industrial
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(false);
+      });
+  </script>
+  <script>
+  var pre = document.getElementsByTagName('pre');
+  for (var i = 0; i < pre.length; i++) {
+    var button = document.createElement('button');
+    button.className = 'btn-copyboard fa fa-copy btn';
+    pre[i].before(button);
+  }
+  var clipboard = new Clipboard('.btn-copyboard', {
+    target: function(trigger) {return trigger.nextElementSibling;}
+  });
+  function showSuccess(elem){elem.setAttribute('class','btn-copyboard fa fa-check btn');}
+  function sleep (time) {
+    return new Promise((resolve) => setTimeout(resolve, time));
+  }
+  clipboard.on('success',function(e){
+    showSuccess(e.trigger);
+    sleep(350).then(() => {e.clearSelection();
+      e.trigger.setAttribute('class','btn-copyboard fa fa-copy btn');})
+  });
+  </script>
+
+
+</body>
+</html>

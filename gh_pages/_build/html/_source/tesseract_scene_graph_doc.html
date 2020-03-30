@@ -1,0 +1,829 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Tesseract Scene Graph Package &mdash; Industrial Training  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/override.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tesseract Collision Package" href="tesseract_collision_doc.html" />
+    <link rel="prev" title="Welcome to the Tesseract wiki" href="../index.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+  
+  <script src="../_static/clipboard.min.js"></script>
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Industrial Training
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">tesseract_scene_graph</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#background">Background</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#scene-graph-tree">Scene Graph (Tree)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scene-graph-acyclic">Scene Graph (Acyclic)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#building-a-scene-graph">Building A Scene Graph</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#example-explanation">Example Explanation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#create-scene-graph">Create Scene Graph</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#add-links">Add Links</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#add-joints">Add Joints</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#inspect-scene-graph">Inspect Scene Graph</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#detect-unused-links">Detect Unused Links</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#create-acyclic-graph">Create Acyclic Graph</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#get-shortest-path">Get Shortest Path</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#create-scene-graph-from-urdf">Create Scene Graph from URDF</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Example Explanation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#create-resource-locator">Create Resource Locator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#load-urdf">Load URDF</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#parse-srdf-adding-allowed-collision-matrix-to-graph">Parse SRDF adding Allowed Collision Matrix to Graph</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Example Explanation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id3">Create Resource Locator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#load-urdf-and-srdf">Load URDF and SRDF</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#parse-mesh-from-file">Parse Mesh from file</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Example Explanation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id5">Parse Mesh from File</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#print-mesh-information-to-terminal">Print Mesh Information to Terminal</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_collision_doc.html">tesseract_collision</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_geometry_doc.html">tesseract_geometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_ros_doc.html">tesseract_ros</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_msgs_doc.html">tesseract_msgs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_rviz_doc.html">tesseract_rviz</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_monitoring_doc.html">tesseract_monitoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_planning_doc.html">tesseract_planning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_urdf_doc.html">tesseract_urdf</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="FAQ.html">Questions?</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Industrial Training</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+      
+  <div class="header-override">
+    <a href="http://rosindustrial.org">
+      <img src="../_static/logo.jpg"/>
+    </a>
+    <p>
+      <a href="http://rosindustrial.org">ROS-Industrial Website</a>|<a href="http://rosindustrial.org/news">Blog</a>
+    </p>
+  </div>
+
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Tesseract Scene Graph Package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/ros-industrial-consortium/tesseract/blob/gh_pages/_source/tesseract_scene_graph_doc.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="tesseract-scene-graph-package">
+<h1>Tesseract Scene Graph Package<a class="headerlink" href="#tesseract-scene-graph-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="background">
+<h2>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
+<p>This package contains the scene graph and parsers. The scene graph is used to manage the connectivity of the environment. The scene graph inherits from boost graph so you are able to leverage boost graph utilities for searching.</p>
+<div class="section" id="scene-graph-tree">
+<h3>Scene Graph (Tree)<a class="headerlink" href="#scene-graph-tree" title="Permalink to this headline">¶</a></h3>
+<img alt="Scene Graph (Tree)" src="../_images/tesseract_scene_graph_tree.png" />
+</div>
+<div class="section" id="scene-graph-acyclic">
+<h3>Scene Graph (Acyclic)<a class="headerlink" href="#scene-graph-acyclic" title="Permalink to this headline">¶</a></h3>
+<img alt="Scene Graph (Acyclic)" src="../_images/tesseract_scene_graph_graph.png" />
+</div>
+</div>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Links - Get, Add, Remove, Modify, Show/Hide, and Enable/Disable Collision</li>
+<li>Joints - Get, Add, Remove, Move and Modify</li>
+<li>Allowed Collision Matrix - Get, Add, Remove</li>
+<li>Graph Functions<ul>
+<li>Get Inbound/Outbound Joints for Link</li>
+<li>Check if acyclic</li>
+<li>Check if tree</li>
+<li>Get Adjacent/InvAdjacent Links for Joint</li>
+</ul>
+</li>
+<li>Utility Functions<ul>
+<li>Save to Graph to Graph Description Language (DOT)</li>
+<li>Get shortest path between two Links</li>
+</ul>
+</li>
+<li>Parsers<ul>
+<li>URDF Parser</li>
+<li>SRDF Parser</li>
+<li>KDL Parser</li>
+<li>Mesh Parser</li>
+</ul>
+</li>
+</ol>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li><a class="reference internal" href="#ex1"><span class="std std-ref">Building A Scene Graph</span></a></li>
+<li><a class="reference internal" href="#ex2"><span class="std std-ref">Create Scene Graph from URDF</span></a></li>
+<li><a class="reference internal" href="#ex3"><span class="std std-ref">Parse SRDF adding ACM to Scene Graph</span></a></li>
+<li><a class="reference internal" href="#ex4"><span class="std std-ref">Parse Mesh</span></a></li>
+</ol>
+</div>
+<div class="section" id="building-a-scene-graph">
+<h2>Building A Scene Graph<a class="headerlink" href="#building-a-scene-graph" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#include &lt;console_bridge/console.h&gt;
+#include &lt;tesseract_scene_graph/graph.h&gt;
+#include &lt;iostream&gt;
+
+using namespace tesseract_scene_graph;
+
+std::string toString(const SceneGraph::Path&amp; path)
+{
+  std::stringstream ss;
+  ss &lt;&lt; path;
+  return ss.str();
+}
+
+std::string toString(bool b) { return b ? &quot;true&quot; : &quot;false&quot;; }
+
+int main(int /*argc*/, char** /*argv*/)
+{
+  console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO);
+
+  SceneGraph g;
+
+  Link link_1(&quot;link_1&quot;);
+  Link link_2(&quot;link_2&quot;);
+  Link link_3(&quot;link_3&quot;);
+  Link link_4(&quot;link_4&quot;);
+  Link link_5(&quot;link_5&quot;);
+
+  g.addLink(link_1);
+  g.addLink(link_2);
+  g.addLink(link_3);
+  g.addLink(link_4);
+  g.addLink(link_5);
+
+  Joint joint_1(&quot;joint_1&quot;);
+  joint_1.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_1.parent_link_name = &quot;link_1&quot;;
+  joint_1.child_link_name = &quot;link_2&quot;;
+  joint_1.type = JointType::FIXED;
+
+  Joint joint_2(&quot;joint_2&quot;);
+  joint_2.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_2.parent_link_name = &quot;link_2&quot;;
+  joint_2.child_link_name = &quot;link_3&quot;;
+  joint_2.type = JointType::PLANAR;
+
+  Joint joint_3(&quot;joint_3&quot;);
+  joint_3.parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_3.parent_link_name = &quot;link_3&quot;;
+  joint_3.child_link_name = &quot;link_4&quot;;
+  joint_3.type = JointType::FLOATING;
+
+  Joint joint_4(&quot;joint_4&quot;);
+  joint_4.parent_to_joint_origin_transform.translation()(1) = 1.25;
+  joint_4.parent_link_name = &quot;link_2&quot;;
+  joint_4.child_link_name = &quot;link_5&quot;;
+  joint_4.type = JointType::REVOLUTE;
+
+  g.addJoint(joint_1);
+  g.addJoint(joint_2);
+  g.addJoint(joint_3);
+  g.addJoint(joint_4);
+
+  // Check getAdjacentLinkNames Method
+  std::vector&lt;std::string&gt; adjacent_links = g.getAdjacentLinkNames(&quot;link_3&quot;);
+  for (const auto&amp; adj : adjacent_links)
+    CONSOLE_BRIDGE_logInform(adj.c_str());
+
+  // Check getInvAdjacentLinkNames Method
+  std::vector&lt;std::string&gt; inv_adjacent_links = g.getInvAdjacentLinkNames(&quot;link_3&quot;);
+  for (const auto&amp; inv_adj : inv_adjacent_links)
+    CONSOLE_BRIDGE_logInform(inv_adj.c_str());
+
+  // Check getLinkChildrenNames
+  std::vector&lt;std::string&gt; child_link_names = g.getLinkChildrenNames(&quot;link_2&quot;);
+  for (const auto&amp; child_link : child_link_names)
+    CONSOLE_BRIDGE_logInform(child_link.c_str());
+
+  // Check getJointChildrenNames
+  child_link_names = g.getJointChildrenNames(&quot;joint_1&quot;);
+  for (const auto&amp; child_link : child_link_names)
+    CONSOLE_BRIDGE_logInform(child_link.c_str());
+
+  // Save Graph
+  g.saveDOT(&quot;/tmp/graph_acyclic_tree_example.dot&quot;);
+
+  // Test if the graph is Acyclic
+  bool is_acyclic = g.isAcyclic();
+  CONSOLE_BRIDGE_logInform(toString(is_acyclic).c_str());
+
+  // Test if the graph is Tree
+  bool is_tree = g.isTree();
+  CONSOLE_BRIDGE_logInform(toString(is_tree).c_str());
+
+  // Test for unused links
+  Link link_6(&quot;link_6&quot;);
+  g.addLink(link_6);
+  is_tree = g.isTree();
+  CONSOLE_BRIDGE_logInform(toString(is_tree).c_str());
+
+  g.removeLink(link_6.getName());
+  is_tree = g.isTree();
+  CONSOLE_BRIDGE_logInform(toString(is_tree).c_str());
+
+  Joint joint_5(&quot;joint_5&quot;);
+  joint_5.parent_to_joint_origin_transform.translation()(1) = 1.25;
+  joint_5.parent_link_name = &quot;link_5&quot;;
+  joint_5.child_link_name = &quot;link_4&quot;;
+  joint_5.type = JointType::CONTINUOUS;
+  g.addJoint(joint_5);
+
+  // Save Graph
+  g.saveDOT(&quot;/tmp/graph_acyclic_not_tree_example.dot&quot;);
+
+  // Test if the graph is Acyclic
+  is_acyclic = g.isAcyclic();
+  std::cout &lt;&lt; toString(is_acyclic).c_str();
+
+  // Test if the graph is Tree
+  is_tree = g.isTree();
+  CONSOLE_BRIDGE_logInform(toString(is_tree).c_str());
+
+  // Get Shortest Path
+  SceneGraph::Path path = g.getShortestPath(&quot;link_1&quot;, &quot;link_4&quot;);
+  CONSOLE_BRIDGE_logInform(toString(path).c_str());
+}
+</pre></div>
+</div>
+<div class="section" id="example-explanation">
+<h3>Example Explanation<a class="headerlink" href="#example-explanation" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="create-scene-graph">
+<h4>Create Scene Graph<a class="headerlink" href="#create-scene-graph" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">Link</span> <span class="nf">link_2</span><span class="p">(</span><span class="s">&quot;link_2&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="add-links">
+<h4>Add Links<a class="headerlink" href="#add-links" title="Permalink to this headline">¶</a></h4>
+<p>Create the links. The links are able to be configured see Link documentation.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">Link</span> <span class="nf">link_4</span><span class="p">(</span><span class="s">&quot;link_4&quot;</span><span class="p">);</span>
+  <span class="n">Link</span> <span class="nf">link_5</span><span class="p">(</span><span class="s">&quot;link_5&quot;</span><span class="p">);</span>
+
+  <span class="n">g</span><span class="p">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">link_1</span><span class="p">);</span>
+  <span class="n">g</span><span class="p">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">link_2</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Add the links to the scene graph</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">g</span><span class="p">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">link_4</span><span class="p">);</span>
+  <span class="n">g</span><span class="p">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">link_5</span><span class="p">);</span>
+
+  <span class="n">Joint</span> <span class="nf">joint_1</span><span class="p">(</span><span class="s">&quot;joint_1&quot;</span><span class="p">);</span>
+  <span class="n">joint_1</span><span class="p">.</span><span class="n">parent_to_joint_origin_transform</span><span class="p">.</span><span class="n">translation</span><span class="p">()(</span><span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="mf">1.25</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="add-joints">
+<h4>Add Joints<a class="headerlink" href="#add-joints" title="Permalink to this headline">¶</a></h4>
+<p>Create the joints. The links are able to be configured see Joint documentation.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">joint_1</span><span class="p">.</span><span class="n">child_link_name</span> <span class="o">=</span> <span class="s">&quot;link_2&quot;</span><span class="p">;</span>
+  <span class="n">joint_1</span><span class="p">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">JointType</span><span class="o">::</span><span class="n">FIXED</span><span class="p">;</span>
+
+  <span class="n">Joint</span> <span class="nf">joint_2</span><span class="p">(</span><span class="s">&quot;joint_2&quot;</span><span class="p">);</span>
+  <span class="n">joint_2</span><span class="p">.</span><span class="n">parent_to_joint_origin_transform</span><span class="p">.</span><span class="n">translation</span><span class="p">()(</span><span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="mf">1.25</span><span class="p">;</span>
+  <span class="n">joint_2</span><span class="p">.</span><span class="n">parent_link_name</span> <span class="o">=</span> <span class="s">&quot;link_2&quot;</span><span class="p">;</span>
+  <span class="n">joint_2</span><span class="p">.</span><span class="n">child_link_name</span> <span class="o">=</span> <span class="s">&quot;link_3&quot;</span><span class="p">;</span>
+  <span class="n">joint_2</span><span class="p">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">JointType</span><span class="o">::</span><span class="n">PLANAR</span><span class="p">;</span>
+
+  <span class="n">Joint</span> <span class="nf">joint_3</span><span class="p">(</span><span class="s">&quot;joint_3&quot;</span><span class="p">);</span>
+  <span class="n">joint_3</span><span class="p">.</span><span class="n">parent_to_joint_origin_transform</span><span class="p">.</span><span class="n">translation</span><span class="p">()(</span><span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="mf">1.25</span><span class="p">;</span>
+  <span class="n">joint_3</span><span class="p">.</span><span class="n">parent_link_name</span> <span class="o">=</span> <span class="s">&quot;link_3&quot;</span><span class="p">;</span>
+  <span class="n">joint_3</span><span class="p">.</span><span class="n">child_link_name</span> <span class="o">=</span> <span class="s">&quot;link_4&quot;</span><span class="p">;</span>
+  <span class="n">joint_3</span><span class="p">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">JointType</span><span class="o">::</span><span class="n">FLOATING</span><span class="p">;</span>
+
+  <span class="n">Joint</span> <span class="nf">joint_4</span><span class="p">(</span><span class="s">&quot;joint_4&quot;</span><span class="p">);</span>
+  <span class="n">joint_4</span><span class="p">.</span><span class="n">parent_to_joint_origin_transform</span><span class="p">.</span><span class="n">translation</span><span class="p">()(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="mf">1.25</span><span class="p">;</span>
+  <span class="n">joint_4</span><span class="p">.</span><span class="n">parent_link_name</span> <span class="o">=</span> <span class="s">&quot;link_2&quot;</span><span class="p">;</span>
+  <span class="n">joint_4</span><span class="p">.</span><span class="n">child_link_name</span> <span class="o">=</span> <span class="s">&quot;link_5&quot;</span><span class="p">;</span>
+  <span class="n">joint_4</span><span class="p">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">JointType</span><span class="o">::</span><span class="n">REVOLUTE</span><span class="p">;</span>
+
+  <span class="n">g</span><span class="p">.</span><span class="n">addJoint</span><span class="p">(</span><span class="n">joint_1</span><span class="p">);</span>
+  <span class="n">g</span><span class="p">.</span><span class="n">addJoint</span><span class="p">(</span><span class="n">joint_2</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Add the joints to the scene graph_acyclic_tree_example</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">g</span><span class="p">.</span><span class="n">addJoint</span><span class="p">(</span><span class="n">joint_4</span><span class="p">);</span>
+
+  <span class="c1">// Check getAdjacentLinkNames Method</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">adjacent_links</span> <span class="o">=</span> <span class="n">g</span><span class="p">.</span><span class="n">getAdjacentLinkNames</span><span class="p">(</span><span class="s">&quot;link_3&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="inspect-scene-graph">
+<h4>Inspect Scene Graph<a class="headerlink" href="#inspect-scene-graph" title="Permalink to this headline">¶</a></h4>
+<p>Get the adjacent links for <strong>link_3</strong> and print to terminal</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="c1">// Check getInvAdjacentLinkNames Method</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">inv_adjacent_links</span> <span class="o">=</span> <span class="n">g</span><span class="p">.</span><span class="n">getInvAdjacentLinkNames</span><span class="p">(</span><span class="s">&quot;link_3&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Get the inverse adjacent links for <strong>link_3</strong> and print to terminal</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="c1">// Check getLinkChildrenNames</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">child_link_names</span> <span class="o">=</span> <span class="n">g</span><span class="p">.</span><span class="n">getLinkChildrenNames</span><span class="p">(</span><span class="s">&quot;link_2&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Get child link names for link <strong>link_3</strong> and print to terminal</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="c1">// Check getJointChildrenNames</span>
+  <span class="n">child_link_names</span> <span class="o">=</span> <span class="n">g</span><span class="p">.</span><span class="n">getJointChildrenNames</span><span class="p">(</span><span class="s">&quot;joint_1&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Get child link names for joint <strong>joint_1</strong> and print to terminal</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="c1">// Save Graph</span>
+  <span class="n">g</span><span class="p">.</span><span class="n">saveDOT</span><span class="p">(</span><span class="s">&quot;/tmp/graph_acyclic_tree_example.dot&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Save the graph to a file for visualization</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="kt">bool</span> <span class="n">is_acyclic</span> <span class="o">=</span> <span class="n">g</span><span class="p">.</span><span class="n">isAcyclic</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>Test if the graph is Acyclic and print to terminal</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="c1">// Test if the graph is Tree</span>
+  <span class="kt">bool</span> <span class="n">is_tree</span> <span class="o">=</span> <span class="n">g</span><span class="p">.</span><span class="n">isTree</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>Test if the graph is a tree and print to terminal</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="c1">// Test for unused links</span>
+  <span class="n">Link</span> <span class="nf">link_6</span><span class="p">(</span><span class="s">&quot;link_6&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="detect-unused-links">
+<h4>Detect Unused Links<a class="headerlink" href="#detect-unused-links" title="Permalink to this headline">¶</a></h4>
+<p>First add a link but do not create joint and check if it is a tree. It should return false because the link is not associated with a joint.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">CONSOLE_BRIDGE_logInform</span><span class="p">(</span><span class="n">toString</span><span class="p">(</span><span class="n">is_tree</span><span class="p">).</span><span class="n">c_str</span><span class="p">());</span>
+
+  <span class="n">g</span><span class="p">.</span><span class="n">removeLink</span><span class="p">(</span><span class="n">link_6</span><span class="p">.</span><span class="n">getName</span><span class="p">());</span>
+  <span class="n">is_tree</span> <span class="o">=</span> <span class="n">g</span><span class="p">.</span><span class="n">isTree</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>Remove link and check if it is a tree. It should return true.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">Joint</span> <span class="nf">joint_5</span><span class="p">(</span><span class="s">&quot;joint_5&quot;</span><span class="p">);</span>
+  <span class="n">joint_5</span><span class="p">.</span><span class="n">parent_to_joint_origin_transform</span><span class="p">.</span><span class="n">translation</span><span class="p">()(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="mf">1.25</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="create-acyclic-graph">
+<h4>Create Acyclic Graph<a class="headerlink" href="#create-acyclic-graph" title="Permalink to this headline">¶</a></h4>
+<p>Add joint connecting <strong>link_5</strong> and <strong>link_4</strong> to create an Acyclic graph_acyclic_tree_example</p>
+<img alt="../_images/tesseract_scene_graph_graph.png" src="../_images/tesseract_scene_graph_graph.png" />
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">joint_5</span><span class="p">.</span><span class="n">child_link_name</span> <span class="o">=</span> <span class="s">&quot;link_4&quot;</span><span class="p">;</span>
+  <span class="n">joint_5</span><span class="p">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">JointType</span><span class="o">::</span><span class="n">CONTINUOUS</span><span class="p">;</span>
+  <span class="n">g</span><span class="p">.</span><span class="n">addJoint</span><span class="p">(</span><span class="n">joint_5</span><span class="p">);</span>
+
+  <span class="c1">// Save Graph</span>
+  <span class="n">g</span><span class="p">.</span><span class="n">saveDOT</span><span class="p">(</span><span class="s">&quot;/tmp/graph_acyclic_not_tree_example.dot&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Save the Acyclic graph</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">is_acyclic</span> <span class="o">=</span> <span class="n">g</span><span class="p">.</span><span class="n">isAcyclic</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>Test to confirm it is acyclic, should return true.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="c1">// Test if the graph is Tree</span>
+  <span class="n">is_tree</span> <span class="o">=</span> <span class="n">g</span><span class="p">.</span><span class="n">isTree</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>Test if it is a tree, should return false.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="c1">// Get Shortest Path</span>
+  <span class="n">SceneGraph</span><span class="o">::</span><span class="n">Path</span> <span class="n">path</span> <span class="o">=</span> <span class="n">g</span><span class="p">.</span><span class="n">getShortestPath</span><span class="p">(</span><span class="s">&quot;link_1&quot;</span><span class="p">,</span> <span class="s">&quot;link_4&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-shortest-path">
+<h4>Get Shortest Path<a class="headerlink" href="#get-shortest-path" title="Permalink to this headline">¶</a></h4>
+</div>
+</div>
+</div>
+<div class="section" id="create-scene-graph-from-urdf">
+<h2>Create Scene Graph from URDF<a class="headerlink" href="#create-scene-graph-from-urdf" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Example Explanation<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="create-resource-locator">
+<h4>Create Resource Locator<a class="headerlink" href="#create-resource-locator" title="Permalink to this headline">¶</a></h4>
+<p>Because this is ROS agnostic you need to provide a resource locator for interpreting <strong>package:/</strong>.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">SceneGraph</span> <span class="n">g</span><span class="p">;</span>
+
+  <span class="n">Link</span> <span class="nf">link_1</span><span class="p">(</span><span class="s">&quot;link_1&quot;</span><span class="p">);</span>
+  <span class="n">Link</span> <span class="nf">link_2</span><span class="p">(</span><span class="s">&quot;link_2&quot;</span><span class="p">);</span>
+  <span class="n">Link</span> <span class="nf">link_3</span><span class="p">(</span><span class="s">&quot;link_3&quot;</span><span class="p">);</span>
+  <span class="n">Link</span> <span class="nf">link_4</span><span class="p">(</span><span class="s">&quot;link_4&quot;</span><span class="p">);</span>
+  <span class="n">Link</span> <span class="nf">link_5</span><span class="p">(</span><span class="s">&quot;link_5&quot;</span><span class="p">);</span>
+
+  <span class="n">g</span><span class="p">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">link_1</span><span class="p">);</span>
+  <span class="n">g</span><span class="p">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">link_2</span><span class="p">);</span>
+  <span class="n">g</span><span class="p">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">link_3</span><span class="p">);</span>
+  <span class="n">g</span><span class="p">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">link_4</span><span class="p">);</span>
+  <span class="n">g</span><span class="p">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">link_5</span><span class="p">);</span>
+
+  <span class="n">Joint</span> <span class="nf">joint_1</span><span class="p">(</span><span class="s">&quot;joint_1&quot;</span><span class="p">);</span>
+  <span class="n">joint_1</span><span class="p">.</span><span class="n">parent_to_joint_origin_transform</span><span class="p">.</span><span class="n">translation</span><span class="p">()(</span><span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="mf">1.25</span><span class="p">;</span>
+  <span class="n">joint_1</span><span class="p">.</span><span class="n">parent_link_name</span> <span class="o">=</span> <span class="s">&quot;link_1&quot;</span><span class="p">;</span>
+  <span class="n">joint_1</span><span class="p">.</span><span class="n">child_link_name</span> <span class="o">=</span> <span class="s">&quot;link_2&quot;</span><span class="p">;</span>
+  <span class="n">joint_1</span><span class="p">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">JointType</span><span class="o">::</span><span class="n">FIXED</span><span class="p">;</span>
+
+  <span class="n">Joint</span> <span class="nf">joint_2</span><span class="p">(</span><span class="s">&quot;joint_2&quot;</span><span class="p">);</span>
+  <span class="n">joint_2</span><span class="p">.</span><span class="n">parent_to_joint_origin_transform</span><span class="p">.</span><span class="n">translation</span><span class="p">()(</span><span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="mf">1.25</span><span class="p">;</span>
+  <span class="n">joint_2</span><span class="p">.</span><span class="n">parent_link_name</span> <span class="o">=</span> <span class="s">&quot;link_2&quot;</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="load-urdf">
+<h4>Load URDF<a class="headerlink" href="#load-urdf" title="Permalink to this headline">¶</a></h4>
+<p>Get the file path to the urdf file</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">joint_3</span><span class="p">.</span><span class="n">child_link_name</span> <span class="o">=</span> <span class="s">&quot;link_4&quot;</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Create scene graph from urdf</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">Joint</span> <span class="nf">joint_4</span><span class="p">(</span><span class="s">&quot;joint_4&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Print information about the scene graph to the terminal</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">joint_4</span><span class="p">.</span><span class="n">parent_link_name</span> <span class="o">=</span> <span class="s">&quot;link_2&quot;</span><span class="p">;</span>
+  <span class="n">joint_4</span><span class="p">.</span><span class="n">child_link_name</span> <span class="o">=</span> <span class="s">&quot;link_5&quot;</span><span class="p">;</span>
+  <span class="n">joint_4</span><span class="p">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">JointType</span><span class="o">::</span><span class="n">REVOLUTE</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Save the graph to a file.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">g</span><span class="p">.</span><span class="n">addJoint</span><span class="p">(</span><span class="n">joint_3</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="parse-srdf-adding-allowed-collision-matrix-to-graph">
+<h2>Parse SRDF adding Allowed Collision Matrix to Graph<a class="headerlink" href="#parse-srdf-adding-allowed-collision-matrix-to-graph" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#include &lt;console_bridge/console.h&gt;
+#include &lt;tesseract_scene_graph/graph.h&gt;
+#include &lt;tesseract_scene_graph/parser/urdf_parser.h&gt;
+#include &lt;tesseract_scene_graph/parser/srdf_parser.h&gt;
+#include &lt;tesseract_scene_graph/utils.h&gt;
+#include &lt;iostream&gt;
+
+using namespace tesseract_scene_graph;
+
+std::string toString(const SceneGraph::Path&amp; path)
+{
+  std::stringstream ss;
+  ss &lt;&lt; path;
+  return ss.str();
+}
+
+std::string toString(bool b) { return b ? &quot;true&quot; : &quot;false&quot;; }
+
+std::string locateResource(const std::string&amp; url)
+{
+  std::string mod_url = url;
+  if (url.find(&quot;package://tesseract_support&quot;) == 0)
+  {
+    mod_url.erase(0, strlen(&quot;package://tesseract_support&quot;));
+    size_t pos = mod_url.find(&quot;/&quot;);
+    if (pos == std::string::npos)
+    {
+      return std::string();
+    }
+
+    std::string package = mod_url.substr(0, pos);
+    mod_url.erase(0, pos);
+    std::string package_path = std::string(TESSERACT_SUPPORT_DIR);
+
+    if (package_path.empty())
+    {
+      return std::string();
+    }
+
+    mod_url = package_path + mod_url;
+  }
+
+  return mod_url;
+}
+
+int main(int /*argc*/, char** /*argv*/)
+{
+  std::string urdf_file = std::string(TESSERACT_SUPPORT_DIR) + &quot;/urdf/lbr_iiwa_14_r820.urdf&quot;;
+  std::string srdf_file = std::string(TESSERACT_SUPPORT_DIR) + &quot;/urdf/lbr_iiwa_14_r820.srdf&quot;;
+
+  ResourceLocatorFn locator = locateResource;
+  SceneGraph::Ptr g = parseURDFFile(urdf_file, locator);
+
+  SRDFModel srdf;
+  bool success = srdf.initFile(*g, srdf_file);
+  CONSOLE_BRIDGE_logInform(&quot;SRDF loaded: %s&quot;, toString(success).c_str());
+
+  processSRDFAllowedCollisions(*g, srdf);
+
+  AllowedCollisionMatrix::ConstPtr acm = g-&gt;getAllowedCollisionMatrix();
+  const AllowedCollisionMatrix::AllowedCollisionEntries&amp; acm_entries = acm-&gt;getAllAllowedCollisions();
+  CONSOLE_BRIDGE_logInform(&quot;ACM Number of entries: %d&quot;, acm_entries.size());
+}
+</pre></div>
+</div>
+<div class="section" id="id2">
+<h3>Example Explanation<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id3">
+<h4>Create Resource Locator<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<p>Because this is ROS agnostic you need to provide a resource locator for interpreting <strong>package:/</strong>.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="k">if</span> <span class="p">(</span><span class="n">url</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;package://tesseract_support&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+  <span class="p">{</span>
+    <span class="n">mod_url</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">strlen</span><span class="p">(</span><span class="s">&quot;package://tesseract_support&quot;</span><span class="p">));</span>
+    <span class="kt">size_t</span> <span class="n">pos</span> <span class="o">=</span> <span class="n">mod_url</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">pos</span> <span class="o">==</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">::</span><span class="n">npos</span><span class="p">)</span>
+    <span class="p">{</span>
+      <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">package</span> <span class="o">=</span> <span class="n">mod_url</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pos</span><span class="p">);</span>
+    <span class="n">mod_url</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pos</span><span class="p">);</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">package_path</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">TESSERACT_SUPPORT_DIR</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">package_path</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+    <span class="p">{</span>
+      <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="n">mod_url</span> <span class="o">=</span> <span class="n">package_path</span> <span class="o">+</span> <span class="n">mod_url</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="n">mod_url</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="n">main</span><span class="p">(</span><span class="kt">int</span> <span class="cm">/*argc*/</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="cm">/*argv*/</span><span class="p">)</span>
+<span class="p">{</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="load-urdf-and-srdf">
+<h4>Load URDF and SRDF<a class="headerlink" href="#load-urdf-and-srdf" title="Permalink to this headline">¶</a></h4>
+<p>Get the file path to the URDF and SRDF file</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">ResourceLocatorFn</span> <span class="n">locator</span> <span class="o">=</span> <span class="n">locateResource</span><span class="p">;</span>
+  <span class="n">SceneGraph</span><span class="o">::</span><span class="n">Ptr</span> <span class="n">g</span> <span class="o">=</span> <span class="n">parseURDFFile</span><span class="p">(</span><span class="n">urdf_file</span><span class="p">,</span> <span class="n">locator</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Create Scene Graph from URDF</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">SRDFModel</span> <span class="n">srdf</span><span class="p">;</span>
+  <span class="kt">bool</span> <span class="n">success</span> <span class="o">=</span> <span class="n">srdf</span><span class="p">.</span><span class="n">initFile</span><span class="p">(</span><span class="o">*</span><span class="n">g</span><span class="p">,</span> <span class="n">srdf_file</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parse SRDF</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">processSRDFAllowedCollisions</span><span class="p">(</span><span class="o">*</span><span class="n">g</span><span class="p">,</span> <span class="n">srdf</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Add Allowed Collision Matrix to Scene Graph</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="k">const</span> <span class="n">AllowedCollisionMatrix</span><span class="o">::</span><span class="n">AllowedCollisionEntries</span><span class="o">&amp;</span> <span class="n">acm_entries</span> <span class="o">=</span> <span class="n">acm</span><span class="o">-&gt;</span><span class="n">getAllAllowedCollisions</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>Methods for getting Allowed Collision Matrix from Scene Graph</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="parse-mesh-from-file">
+<h2>Parse Mesh from file<a class="headerlink" href="#parse-mesh-from-file" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id4">
+<h3>Example Explanation<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id5">
+<h4>Parse Mesh from File<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
+<p>Mesh files can contain multiple meshes. This is a critical difference between MoveIt which merges all shapes in to a single triangle list for collision checking. By keeping each mesh independent, each will have its own bounding box and if you want to convert to a convex hull you will get a closer representation of the geometry.</p>
+</div>
+<div class="section" id="print-mesh-information-to-terminal">
+<h4>Print Mesh Information to Terminal<a class="headerlink" href="#print-mesh-information-to-terminal" title="Permalink to this headline">¶</a></h4>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tesseract_collision_doc.html" class="btn btn-neutral float-right" title="Tesseract Collision Package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../index.html" class="btn btn-neutral" title="Welcome to the Tesseract wiki" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div class="footer-override">
+    <a href="http://rosindustrial.org/ric">
+      <img src="../_static/footer.jpg"/>
+    </a>
+  </div>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, ROS-Industrial
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(false);
+      });
+  </script>
+  <script>
+  var pre = document.getElementsByTagName('pre');
+  for (var i = 0; i < pre.length; i++) {
+    var button = document.createElement('button');
+    button.className = 'btn-copyboard fa fa-copy btn';
+    pre[i].before(button);
+  }
+  var clipboard = new Clipboard('.btn-copyboard', {
+    target: function(trigger) {return trigger.nextElementSibling;}
+  });
+  function showSuccess(elem){elem.setAttribute('class','btn-copyboard fa fa-check btn');}
+  function sleep (time) {
+    return new Promise((resolve) => setTimeout(resolve, time));
+  }
+  clipboard.on('success',function(e){
+    showSuccess(e.trigger);
+    sleep(350).then(() => {e.clearSelection();
+      e.trigger.setAttribute('class','btn-copyboard fa fa-copy btn');})
+  });
+  </script>
+
+
+</body>
+</html>

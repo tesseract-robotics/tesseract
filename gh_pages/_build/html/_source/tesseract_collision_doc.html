@@ -1,0 +1,599 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Tesseract Collision Package &mdash; Industrial Training  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/override.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tesseract Geometry Package" href="tesseract_geometry_doc.html" />
+    <link rel="prev" title="Tesseract Scene Graph Package" href="tesseract_scene_graph_doc.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+  
+  <script src="../_static/clipboard.min.js"></script>
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Industrial Training
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tesseract_scene_graph_doc.html">tesseract_scene_graph</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">tesseract_collision</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#background">Background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#discrete-collision-checker-example">Discrete Collision Checker Example</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#example-explanation">Example Explanation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#create-contact-checker">Create Contact Checker</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#add-collision-objects-to-contact-checker">Add Collision Objects to Contact Checker</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#set-the-active-collision-object-s">Set the active collision object’s</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#set-the-contact-distance-threshold">Set the contact distance threshold</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#set-the-collision-object-s-transform">Set the collision object’s transform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#perform-collision-check">Perform collision check</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Set the collision object’s transform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Perform collision check</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#change-contact-distance-threshold">Change contact distance threshold</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">Perform collision check</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_geometry_doc.html">tesseract_geometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_ros_doc.html">tesseract_ros</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_msgs_doc.html">tesseract_msgs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_rviz_doc.html">tesseract_rviz</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_monitoring_doc.html">tesseract_monitoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_planning_doc.html">tesseract_planning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tesseract_urdf_doc.html">tesseract_urdf</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="FAQ.html">Questions?</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Industrial Training</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+      
+  <div class="header-override">
+    <a href="http://rosindustrial.org">
+      <img src="../_static/logo.jpg"/>
+    </a>
+    <p>
+      <a href="http://rosindustrial.org">ROS-Industrial Website</a>|<a href="http://rosindustrial.org/news">Blog</a>
+    </p>
+  </div>
+
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Tesseract Collision Package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/ros-industrial-consortium/tesseract/blob/gh_pages/_source/tesseract_collision_doc.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="tesseract-collision-package">
+<h1>Tesseract Collision Package<a class="headerlink" href="#tesseract-collision-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="background">
+<h2>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
+<p>This package is a used for performing both discrete and continuous collision checking. It understands nothing about connectivity of the object within. It purely allows for the user to add objects to the checker, set object transforms, enable/disable objects, set contact distance per objects and perform collision checks.</p>
+<img alt="../_images/continuous_first.gif" src="../_images/continuous_first.gif" />
+</div>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Add/Remove collision objects consisting of multiple collision shapes.</li>
+<li>Enable/Disable collision objects</li>
+<li>Set collision objects transformation</li>
+<li>Set contact distance threshold. If two objects are further than this distance they are ignored.</li>
+<li>Perform Contact Test with various exit conditions<ul>
+<li>Exit on first <strong>tesseract::ContactTestType::FIRST</strong></li>
+<li>Store only closets for each collision object <strong>tesseract::ContactTestType::CLOSEST</strong></li>
+<li>Store all contacts for each collision object <strong>tesseract::ContactTestType::ALL</strong></li>
+</ul>
+</li>
+</ol>
+</div>
+<div class="section" id="discrete-collision-checker-example">
+<h2>Discrete Collision Checker Example<a class="headerlink" href="#discrete-collision-checker-example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#include &lt;console_bridge/console.h&gt;
+#include &quot;tesseract_collision/bullet/bullet_discrete_bvh_manager.h&quot;
+
+using namespace tesseract_collision;
+using namespace tesseract_geometry;
+
+std::string toString(const Eigen::MatrixXd&amp; a)
+{
+  std::stringstream ss;
+  ss &lt;&lt; a;
+  return ss.str();
+}
+
+std::string toString(bool b) { return b ? &quot;true&quot; : &quot;false&quot;; }
+
+int main(int /*argc*/, char** /*argv*/)
+{
+  // Create Collision Manager
+  tesseract_collision_bullet::BulletDiscreteBVHManager checker;
+
+  // Add box to checker
+  CollisionShapePtr box(new Box(1, 1, 1));
+  Eigen::Isometry3d box_pose;
+  box_pose.setIdentity();
+
+  CollisionShapesConst obj1_shapes;
+  tesseract_common::VectorIsometry3d obj1_poses;
+  obj1_shapes.push_back(box);
+  obj1_poses.push_back(box_pose);
+
+  checker.addCollisionObject(&quot;box_link&quot;, 0, obj1_shapes, obj1_poses);
+
+  // Add thin box to checker which is disabled
+  CollisionShapePtr thin_box(new Box(0.1, 1, 1));
+  Eigen::Isometry3d thin_box_pose;
+  thin_box_pose.setIdentity();
+
+  CollisionShapesConst obj2_shapes;
+  tesseract_common::VectorIsometry3d obj2_poses;
+  obj2_shapes.push_back(thin_box);
+  obj2_poses.push_back(thin_box_pose);
+
+  checker.addCollisionObject(&quot;thin_box_link&quot;, 0, obj2_shapes, obj2_poses, false);
+
+  // Add second box to checker, but convert to convex hull mesh.
+  CollisionShapePtr second_box;
+
+  tesseract_common::VectorVector3d mesh_vertices;
+  Eigen::VectorXi mesh_faces;
+  loadSimplePlyFile(std::string(DATA_DIR) + &quot;/box_2m.ply&quot;, mesh_vertices, mesh_faces);
+
+  // This is required because convex hull cannot have multiple faces on the same plane.
+  std::shared_ptr&lt;tesseract_common::VectorVector3d&gt; ch_verticies(new tesseract_common::VectorVector3d());
+  std::shared_ptr&lt;Eigen::VectorXi&gt; ch_faces(new Eigen::VectorXi());
+  int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
+  second_box.reset(new ConvexMesh(ch_verticies, ch_faces, ch_num_faces));
+
+  Eigen::Isometry3d second_box_pose;
+  second_box_pose.setIdentity();
+
+  CollisionShapesConst obj3_shapes;
+  tesseract_common::VectorIsometry3d obj3_poses;
+  obj3_shapes.push_back(second_box);
+  obj3_poses.push_back(second_box_pose);
+
+  checker.addCollisionObject(&quot;second_box_link&quot;, 0, obj3_shapes, obj3_poses);
+
+  CONSOLE_BRIDGE_logInform(&quot;Test when object is inside another&quot;);
+  checker.setActiveCollisionObjects({ &quot;box_link&quot;, &quot;second_box_link&quot; });
+  checker.setContactDistanceThreshold(0.1);
+
+  // Set the collision object transforms
+  tesseract_common::TransformMap location;
+  location[&quot;box_link&quot;] = Eigen::Isometry3d::Identity();
+  location[&quot;box_link&quot;].translation()(0) = 0.2;
+  location[&quot;box_link&quot;].translation()(1) = 0.1;
+  location[&quot;second_box_link&quot;] = Eigen::Isometry3d::Identity();
+
+  checker.setCollisionObjectsTransform(location);
+
+  // Perform collision check
+  ContactResultMap result;
+  checker.contactTest(result, ContactTestType::CLOSEST);
+
+  ContactResultVector result_vector;
+  flattenResults(std::move(result), result_vector);
+
+  CONSOLE_BRIDGE_logInform(&quot;Has collision: %s&quot;, toString(result_vector.empty()).c_str());
+  CONSOLE_BRIDGE_logInform(&quot;Distance: %f&quot;, result_vector[0].distance);
+  CONSOLE_BRIDGE_logInform(&quot;Link %s nearest point: %s&quot;,
+                           result_vector[0].link_names[0].c_str(),
+                           toString(result_vector[0].nearest_points[0]).c_str());
+  CONSOLE_BRIDGE_logInform(&quot;Link %s nearest point: %s&quot;,
+                           result_vector[0].link_names[1].c_str(),
+                           toString(result_vector[0].nearest_points[1]).c_str());
+  CONSOLE_BRIDGE_logInform(&quot;Direction to move Link %s out of collision with Link %s: %s&quot;,
+                           result_vector[0].link_names[0].c_str(),
+                           result_vector[0].link_names[1].c_str(),
+                           toString(result_vector[0].normal).c_str());
+
+  CONSOLE_BRIDGE_logInform(&quot;Test object is out side the contact distance&quot;);
+  location[&quot;box_link&quot;].translation() = Eigen::Vector3d(1.60, 0, 0);
+  result.clear();
+  result_vector.clear();
+
+  checker.setCollisionObjectsTransform(location);
+  checker.contactTest(result, ContactTestType::CLOSEST);
+  flattenResults(std::move(result), result_vector);
+
+  CONSOLE_BRIDGE_logInform(&quot;Has collision: %s&quot;, toString(result_vector.empty()).c_str());
+
+  CONSOLE_BRIDGE_logInform(&quot;Test object inside the contact distance&quot;);
+  result.clear();
+  result_vector.clear();
+
+  checker.setContactDistanceThreshold(0.25);
+  checker.contactTest(result, ContactTestType::CLOSEST);
+  flattenResults(std::move(result), result_vector);
+
+  CONSOLE_BRIDGE_logInform(&quot;Has collision: %s&quot;, toString(result_vector.empty()).c_str());
+  CONSOLE_BRIDGE_logInform(&quot;Distance: %f&quot;, result_vector[0].distance);
+  CONSOLE_BRIDGE_logInform(&quot;Link %s nearest point: %s&quot;,
+                           result_vector[0].link_names[0].c_str(),
+                           toString(result_vector[0].nearest_points[0]).c_str());
+  CONSOLE_BRIDGE_logInform(&quot;Link %s nearest point: %s&quot;,
+                           result_vector[0].link_names[1].c_str(),
+                           toString(result_vector[0].nearest_points[1]).c_str());
+  CONSOLE_BRIDGE_logInform(&quot;Direction to move Link %s further from Link %s: %s&quot;,
+                           result_vector[0].link_names[0].c_str(),
+                           result_vector[0].link_names[1].c_str(),
+                           toString(result_vector[0].normal).c_str());
+}
+</pre></div>
+</div>
+<div class="section" id="example-explanation">
+<h3>Example Explanation<a class="headerlink" href="#example-explanation" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="create-contact-checker">
+<h4>Create Contact Checker<a class="headerlink" href="#create-contact-checker" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">CollisionShapePtr</span> <span class="nf">box</span><span class="p">(</span><span class="k">new</span> <span class="n">Box</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
+</pre></div>
+</div>
+<p>There are several available contact checkers.</p>
+<blockquote>
+<div><ul class="simple">
+<li>Recommended<ul>
+<li>BulletDiscreteBVHManager</li>
+<li>BulletCastBVHManager</li>
+</ul>
+</li>
+<li>Alternative<ul>
+<li>BulletDiscreteSimpleManager</li>
+<li>BulletCastSimpleManager</li>
+</ul>
+</li>
+<li>Beta<ul>
+<li>FCLDiscreteBVHManager</li>
+</ul>
+</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="add-collision-objects-to-contact-checker">
+<h4>Add Collision Objects to Contact Checker<a class="headerlink" href="#add-collision-objects-to-contact-checker" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="add-collision-object-in-a-enabled-state">
+<h5>Add collision object in a enabled state<a class="headerlink" href="#add-collision-object-in-a-enabled-state" title="Permalink to this headline">¶</a></h5>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A collision object can consist of multiple collision shape.</p>
+</div>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">CollisionShapesConst</span> <span class="n">obj1_shapes</span><span class="p">;</span>
+  <span class="n">tesseract_common</span><span class="o">::</span><span class="n">VectorIsometry3d</span> <span class="n">obj1_poses</span><span class="p">;</span>
+  <span class="n">obj1_shapes</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">box</span><span class="p">);</span>
+  <span class="n">obj1_poses</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">box_pose</span><span class="p">);</span>
+
+  <span class="n">checker</span><span class="p">.</span><span class="n">addCollisionObject</span><span class="p">(</span><span class="s">&quot;box_link&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">obj1_shapes</span><span class="p">,</span> <span class="n">obj1_poses</span><span class="p">);</span>
+
+  <span class="c1">// Add thin box to checker which is disabled</span>
+  <span class="n">CollisionShapePtr</span> <span class="nf">thin_box</span><span class="p">(</span><span class="k">new</span> <span class="n">Box</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="add-collision-object-in-a-disabled-state">
+<h5>Add collision object in a disabled state<a class="headerlink" href="#add-collision-object-in-a-disabled-state" title="Permalink to this headline">¶</a></h5>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">CollisionShapesConst</span> <span class="n">obj2_shapes</span><span class="p">;</span>
+  <span class="n">tesseract_common</span><span class="o">::</span><span class="n">VectorIsometry3d</span> <span class="n">obj2_poses</span><span class="p">;</span>
+  <span class="n">obj2_shapes</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">thin_box</span><span class="p">);</span>
+  <span class="n">obj2_poses</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">thin_box_pose</span><span class="p">);</span>
+
+  <span class="n">checker</span><span class="p">.</span><span class="n">addCollisionObject</span><span class="p">(</span><span class="s">&quot;thin_box_link&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">obj2_shapes</span><span class="p">,</span> <span class="n">obj2_poses</span><span class="p">,</span> <span class="nb">false</span><span class="p">);</span>
+
+  <span class="c1">// Add second box to checker, but convert to convex hull mesh.</span>
+  <span class="n">CollisionShapePtr</span> <span class="n">second_box</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="add-another-collision-object">
+<h5>Add another collision object<a class="headerlink" href="#add-another-collision-object" title="Permalink to this headline">¶</a></h5>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXi</span> <span class="n">mesh_faces</span><span class="p">;</span>
+  <span class="n">loadSimplePlyFile</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">DATA_DIR</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;/box_2m.ply&quot;</span><span class="p">,</span> <span class="n">mesh_vertices</span><span class="p">,</span> <span class="n">mesh_faces</span><span class="p">);</span>
+
+  <span class="c1">// This is required because convex hull cannot have multiple faces on the same plane.</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">tesseract_common</span><span class="o">::</span><span class="n">VectorVector3d</span><span class="o">&gt;</span> <span class="n">ch_verticies</span><span class="p">(</span><span class="k">new</span> <span class="n">tesseract_common</span><span class="o">::</span><span class="n">VectorVector3d</span><span class="p">());</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXi</span><span class="o">&gt;</span> <span class="n">ch_faces</span><span class="p">(</span><span class="k">new</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXi</span><span class="p">());</span>
+  <span class="kt">int</span> <span class="n">ch_num_faces</span> <span class="o">=</span> <span class="n">createConvexHull</span><span class="p">(</span><span class="o">*</span><span class="n">ch_verticies</span><span class="p">,</span> <span class="o">*</span><span class="n">ch_faces</span><span class="p">,</span> <span class="n">mesh_vertices</span><span class="p">);</span>
+  <span class="n">second_box</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span><span class="k">new</span> <span class="n">ConvexMesh</span><span class="p">(</span><span class="n">ch_verticies</span><span class="p">,</span> <span class="n">ch_faces</span><span class="p">,</span> <span class="n">ch_num_faces</span><span class="p">));</span>
+
+  <span class="n">Eigen</span><span class="o">::</span><span class="n">Isometry3d</span> <span class="n">second_box_pose</span><span class="p">;</span>
+  <span class="n">second_box_pose</span><span class="p">.</span><span class="n">setIdentity</span><span class="p">();</span>
+
+  <span class="n">CollisionShapesConst</span> <span class="n">obj3_shapes</span><span class="p">;</span>
+  <span class="n">tesseract_common</span><span class="o">::</span><span class="n">VectorIsometry3d</span> <span class="n">obj3_poses</span><span class="p">;</span>
+  <span class="n">obj3_shapes</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">second_box</span><span class="p">);</span>
+  <span class="n">obj3_poses</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">second_box_pose</span><span class="p">);</span>
+
+  <span class="n">checker</span><span class="p">.</span><span class="n">addCollisionObject</span><span class="p">(</span><span class="s">&quot;second_box_link&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">obj3_shapes</span><span class="p">,</span> <span class="n">obj3_poses</span><span class="p">);</span>
+
+  <span class="n">CONSOLE_BRIDGE_logInform</span><span class="p">(</span><span class="s">&quot;Test when object is inside another&quot;</span><span class="p">);</span>
+  <span class="n">checker</span><span class="p">.</span><span class="n">setActiveCollisionObjects</span><span class="p">({</span> <span class="s">&quot;box_link&quot;</span><span class="p">,</span> <span class="s">&quot;second_box_link&quot;</span> <span class="p">});</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="set-the-active-collision-object-s">
+<h4>Set the active collision object’s<a class="headerlink" href="#set-the-active-collision-object-s" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="c1">// Set the collision object transforms</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="set-the-contact-distance-threshold">
+<h4>Set the contact distance threshold<a class="headerlink" href="#set-the-contact-distance-threshold" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">tesseract_common</span><span class="o">::</span><span class="n">TransformMap</span> <span class="n">location</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="set-the-collision-object-s-transform">
+<h4>Set the collision object’s transform<a class="headerlink" href="#set-the-collision-object-s-transform" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">location</span><span class="p">[</span><span class="s">&quot;box_link&quot;</span><span class="p">].</span><span class="n">translation</span><span class="p">()(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">;</span>
+  <span class="n">location</span><span class="p">[</span><span class="s">&quot;second_box_link&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Isometry3d</span><span class="o">::</span><span class="n">Identity</span><span class="p">();</span>
+
+  <span class="n">checker</span><span class="p">.</span><span class="n">setCollisionObjectsTransform</span><span class="p">(</span><span class="n">location</span><span class="p">);</span>
+
+  <span class="c1">// Perform collision check</span>
+  <span class="n">ContactResultMap</span> <span class="n">result</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="perform-collision-check">
+<h4>Perform collision check<a class="headerlink" href="#perform-collision-check" title="Permalink to this headline">¶</a></h4>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">One object is inside another object</p>
+</div>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">ContactResultVector</span> <span class="n">result_vector</span><span class="p">;</span>
+  <span class="n">flattenResults</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">result</span><span class="p">),</span> <span class="n">result_vector</span><span class="p">);</span>
+
+  <span class="n">CONSOLE_BRIDGE_logInform</span><span class="p">(</span><span class="s">&quot;Has collision: %s&quot;</span><span class="p">,</span> <span class="n">toString</span><span class="p">(</span><span class="n">result_vector</span><span class="p">.</span><span class="n">empty</span><span class="p">()).</span><span class="n">c_str</span><span class="p">());</span>
+  <span class="n">CONSOLE_BRIDGE_logInform</span><span class="p">(</span><span class="s">&quot;Distance: %f&quot;</span><span class="p">,</span> <span class="n">result_vector</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">distance</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id1">
+<h4>Set the collision object’s transform<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>                           <span class="n">result_vector</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">link_names</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">c_str</span><span class="p">(),</span>
+  <span class="n">location</span><span class="p">[</span><span class="s">&quot;box_link&quot;</span><span class="p">].</span><span class="n">translation</span><span class="p">()</span> <span class="o">=</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="mf">1.60</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id2">
+<h4>Perform collision check<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The objects are outside the contact threshold</p>
+</div>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">result</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="change-contact-distance-threshold">
+<h4>Change contact distance threshold<a class="headerlink" href="#change-contact-distance-threshold" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">CONSOLE_BRIDGE_logInform</span><span class="p">(</span><span class="s">&quot;Test object inside the contact distance&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h4>Perform collision check<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The objects are inside the contact threshold</p>
+</div>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">result</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tesseract_geometry_doc.html" class="btn btn-neutral float-right" title="Tesseract Geometry Package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tesseract_scene_graph_doc.html" class="btn btn-neutral" title="Tesseract Scene Graph Package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div class="footer-override">
+    <a href="http://rosindustrial.org/ric">
+      <img src="../_static/footer.jpg"/>
+    </a>
+  </div>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, ROS-Industrial
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(false);
+      });
+  </script>
+  <script>
+  var pre = document.getElementsByTagName('pre');
+  for (var i = 0; i < pre.length; i++) {
+    var button = document.createElement('button');
+    button.className = 'btn-copyboard fa fa-copy btn';
+    pre[i].before(button);
+  }
+  var clipboard = new Clipboard('.btn-copyboard', {
+    target: function(trigger) {return trigger.nextElementSibling;}
+  });
+  function showSuccess(elem){elem.setAttribute('class','btn-copyboard fa fa-check btn');}
+  function sleep (time) {
+    return new Promise((resolve) => setTimeout(resolve, time));
+  }
+  clipboard.on('success',function(e){
+    showSuccess(e.trigger);
+    sleep(350).then(() => {e.clearSelection();
+      e.trigger.setAttribute('class','btn-copyboard fa fa-copy btn');})
+  });
+  </script>
+
+
+</body>
+</html>

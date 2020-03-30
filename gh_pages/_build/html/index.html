@@ -1,0 +1,319 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Welcome to the Tesseract wiki &mdash; Industrial Training  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/override.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Tesseract Scene Graph Package" href="_source/tesseract_scene_graph_doc.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+  
+  <script src="_static/clipboard.min.js"></script>
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> Industrial Training
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="_source/tesseract_scene_graph_doc.html">tesseract_scene_graph</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_source/tesseract_collision_doc.html">tesseract_collision</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_source/tesseract_geometry_doc.html">tesseract_geometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_source/tesseract_ros_doc.html">tesseract_ros</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_source/tesseract_msgs_doc.html">tesseract_msgs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_source/tesseract_rviz_doc.html">tesseract_rviz</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_source/tesseract_monitoring_doc.html">tesseract_monitoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_source/tesseract_planning_doc.html">tesseract_planning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_source/tesseract_urdf_doc.html">tesseract_urdf</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="_source/FAQ.html">Questions?</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Industrial Training</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+      
+  <div class="header-override">
+    <a href="http://rosindustrial.org">
+      <img src="_static/logo.jpg"/>
+    </a>
+    <p>
+      <a href="http://rosindustrial.org">ROS-Industrial Website</a>|<a href="http://rosindustrial.org/news">Blog</a>
+    </p>
+  </div>
+
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>Welcome to the Tesseract wiki</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/ros-industrial-consortium/tesseract/blob/gh_pages/index.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="welcome-to-the-tesseract-wiki">
+<h1>Welcome to the Tesseract wiki<a class="headerlink" href="#welcome-to-the-tesseract-wiki" title="Permalink to this headline">¶</a></h1>
+<p>The new planning framework (Tesseract) was designed to be lightweight, limiting the number of dependencies, mainly to only used standard library, eigen, boost, orocos and to the core packages below are ROS agnostic and have full python support.</p>
+<div class="section" id="tesseract-core-packages">
+<h2>Tesseract Core Packages<a class="headerlink" href="#tesseract-core-packages" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><strong>tesseract</strong> – This is the main class that manages the major component Environment, Forward Kinematics, Inverse Kinematics and loading from various data.</li>
+<li><strong>tesseract_collision</strong> – This package contains privides a common interface for collision checking prividing several implementation of a Bullet collision library and FCL collision library. It includes both continuous and discrete collision checking for convex-convex, convex-concave and concave-concave shapes.</li>
+<li><strong>tesseract_common</strong> – This package contains common functionality needed by the majority of the packages.</li>
+<li><strong>tesseract_environment</strong> – This package contains the Tesseract Environment which provides functionality to add,remove,move and modify links and joint. It also manages adding object to the contact managers and provides the ability.</li>
+<li><strong>tesseract_geometry</strong> – This package contains geometry types used by Tesseract including primitive shapes, mesh, convex hull mesh, octomap and signed distance field.</li>
+<li><strong>tesseract_kinematics</strong> –  This package contains a common interface for Forward and Inverse kinematics for Chain, Tree’s and Graphs including implementation using KDL and OPW Kinematics.</li>
+<li><strong>tesseract_planners</strong> – This package contains a common interface for Planners and includes implementation for OMPL, TrajOpt and Descartes.</li>
+<li><strong>tesseract_scene_graph</strong> – This package contains the scene graph which is the data structure used to manage the connectivity of objects in the environment. It inherits from boost graph and provides addition functionality for adding,removing and modifying Links and Joints along with search implementation.</li>
+<li><strong>tesseract_support</strong> – This package contains support data used for unit tests and examples throughout Tesseract.</li>
+<li><strong>tesseract_visualization</strong> – This package contains visualization utilities and libraries.</li>
+<li><strong>tesseract_urdf</strong> - This package contains a custom urdf parser supporting addition shapes and features currently not supported by urdfdom.</li>
+</ul>
+</div>
+<div class="section" id="tesseract-ros-packages">
+<h2>Tesseract ROS Packages<a class="headerlink" href="#tesseract-ros-packages" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><strong>tesseract_examples</strong> – This package contains examples using tesseract and tesseract_ros for motion planning and collision checking.</li>
+<li><strong>tesseract_plugins</strong> – This contains plugins for collision and kinematics which are automatically loaded by the monitors.</li>
+<li><strong>tesseract_rosutils</strong> – This package contains the utilities like converting from ROS message types to native Tesseract types and the reverse.</li>
+<li><strong>tesseract_msgs</strong> – This package contains the ROS message types used by Tesseract ROS.</li>
+<li><strong>tesseract_rviz</strong> – This package contains the ROS visualization plugins for Rviz to visualize Tesseract. All of the features have been composed in libraries to enable to the ability to create custom displays quickly.</li>
+<li><strong>tesseract_monitoring</strong> – This package contains different types of environment monitors. It currently contains a contact monitor and environment monitor. The contact monitor will monitor the active environment state and publish contact information. This is useful if the robot is being controlled outside of ROS, but you want to make sure it does not collide with objects in the environment. The second is the environment monitor, which is the main environment which facilitates requests to add, remove, disable and enable collision objects, while publishing its current state to keep other ROS nodes updated with the latest environment.</li>
+</ul>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">These packages are under heavy development and are subject to change.</p>
+</div>
+</div>
+<div class="section" id="packages">
+<h2>Packages<a class="headerlink" href="#packages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="_source/tesseract_scene_graph_doc.html">tesseract_scene_graph</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_source/tesseract_collision_doc.html">tesseract_collision</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_source/tesseract_geometry_doc.html">tesseract_geometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_source/tesseract_ros_doc.html">tesseract_ros</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_source/tesseract_msgs_doc.html">tesseract_msgs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_source/tesseract_rviz_doc.html">tesseract_rviz</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_source/tesseract_monitoring_doc.html">tesseract_monitoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_source/tesseract_planning_doc.html">tesseract_planning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_source/tesseract_urdf_doc.html">tesseract_urdf</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="faq">
+<h2>FAQ<a class="headerlink" href="#faq" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="_source/FAQ.html">Questions?</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="_source/FAQ.html#place-holder-1">Place Holder 1?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_source/FAQ.html#place-holder-2">Place Holder 2?</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="_source/tesseract_scene_graph_doc.html" class="btn btn-neutral float-right" title="Tesseract Scene Graph Package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div class="footer-override">
+    <a href="http://rosindustrial.org/ric">
+      <img src="_static/footer.jpg"/>
+    </a>
+  </div>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, ROS-Industrial
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(false);
+      });
+  </script>
+  <script>
+  var pre = document.getElementsByTagName('pre');
+  for (var i = 0; i < pre.length; i++) {
+    var button = document.createElement('button');
+    button.className = 'btn-copyboard fa fa-copy btn';
+    pre[i].before(button);
+  }
+  var clipboard = new Clipboard('.btn-copyboard', {
+    target: function(trigger) {return trigger.nextElementSibling;}
+  });
+  function showSuccess(elem){elem.setAttribute('class','btn-copyboard fa fa-check btn');}
+  function sleep (time) {
+    return new Promise((resolve) => setTimeout(resolve, time));
+  }
+  clipboard.on('success',function(e){
+    showSuccess(e.trigger);
+    sleep(350).then(() => {e.clearSelection();
+      e.trigger.setAttribute('class','btn-copyboard fa fa-copy btn');})
+  });
+  </script>
+
+
+</body>
+</html>

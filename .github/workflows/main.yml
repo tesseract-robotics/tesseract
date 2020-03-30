@@ -4,20 +4,23 @@ on: [push, pull_request]
 
 jobs:
   industrial_ci:
+    name: ${{ matrix.env.CI_NAME }}
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         env:
-          - {OS_NAME: ubuntu,
+          - {CI_NAME: Clang-Format,
+             OS_NAME: ubuntu,
              OS_CODE_NAME: bionic,
              ROS_DISTRO: melodic,
              ROS_REPO: main,
              ROSDEP_SKIP_KEYS: "bullet3 fcl",
              CLANG_FORMAT_CHECK: file,
              CLANG_FORMAT_VERSION: 8,
-             DOCKER_IMAGE: "lharmstrong/tesseract:melodic",
-             BADGE: clang-format}
-          - {OS_NAME: ubuntu,
+             DOCKER_IMAGE: "lharmstrong/tesseract:melodic"}
+          - {CI_NAME: Clang-Tidy,
+             OS_NAME: ubuntu,
              OS_CODE_NAME: bionic,
              ROS_DISTRO: melodic,
              ROS_REPO: main,
@@ -25,11 +28,12 @@ jobs:
              TARGET_WORKSPACE: '. github:ros-industrial-consortium/trajopt_ros#master',
              ROSDEP_SKIP_KEYS: "bullet3 fcl",
              DOCKER_IMAGE: "lharmstrong/tesseract:melodic",
-             BADGE: clang-tidy,
+             CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Clang-Tidy/.ccache",
              NOT_TEST_BUILD: true,
              UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug",
              TARGET_CMAKE_ARGS: "-DTESSERACT_ENABLE_CLANG_TIDY=ON -DTESSERACT_ENABLE_TESTING=ON"}
-          - {OS_NAME: ubuntu,
+          - {CI_NAME: Bionic-Build,
+             OS_NAME: ubuntu,
              OS_CODE_NAME: bionic,
              ROS_DISTRO: melodic,
              ROS_REPO: main,
@@ -38,12 +42,13 @@ jobs:
              TARGET_WORKSPACE: '. github:ros-industrial-consortium/trajopt_ros#master',
              ROSDEP_SKIP_KEYS: "bullet3 fcl",
              DOCKER_IMAGE: "lharmstrong/tesseract:melodic",
-             BADGE: bionic,
+             CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Bionic-Build/.ccache",
              UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug",
              TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON",
              DOWNSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug",
              AFTER_SCRIPT: 'catkin build -w $target_ws --no-deps --verbose tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python --make-args test'}
-          - {OS_NAME: ubuntu,
+          - {CI_NAME: Xenial-Build,
+             OS_NAME: ubuntu,
              OS_CODE_NAME: xenial,
              ROS_DISTRO: kinetic,
              ROS_REPO: main,
@@ -52,12 +57,13 @@ jobs:
              TARGET_WORKSPACE: '. github:ros-industrial-consortium/trajopt_ros#master',
              ROSDEP_SKIP_KEYS: "bullet3 fcl",
              DOCKER_IMAGE: "lharmstrong/tesseract:kinetic",
-             BADGE: xenial,
+             CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Xenial-Build/.ccache",
              UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug",
              TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON",
              DOWNSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug",
              AFTER_SCRIPT: 'catkin build -w $target_ws --no-deps --verbose tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python --make-args test'}
-          - {OS_NAME: ubuntu,
+          - {CI_NAME: CodeCov,
+             OS_NAME: ubuntu,
              OS_CODE_NAME: bionic,
              ROS_DISTRO: melodic,
              ROS_REPO: main,
@@ -65,13 +71,28 @@ jobs:
              TARGET_WORKSPACE: '. github:ros-industrial-consortium/trajopt_ros#master',
              ROSDEP_SKIP_KEYS: "bullet3 fcl",
              DOCKER_IMAGE: "lharmstrong/tesseract:melodic",
-             BADGE: CodeCov,
+             CCACHE_DIR: "/home/runner/work/tesseract/tesseract/CodeCov/.ccache",
              UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug",
              TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_CODE_COVERAGE=ON",
              AFTER_SCRIPT: 'catkin build -w $target_ws --no-deps --verbose tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_scene_graph tesseract_urdf --make-args ccov-all
                             && bash <(curl -s https://codecov.io/bash) -t c4af0da7-9fc3-4d3c-bb2e-6b2523ddd382 -s $target_ws/build -f *all-merged.info'}
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+
+      - name: Prepare ccache timestamp
+        id: ccache_cache_timestamp
+        shell: cmake -P {0}
+        run: |
+          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
+          message("::set-output name=timestamp::${current_date}")
+
+      - name: ccache cache files
+        uses: actions/cache@v1.1.0
+        with:
+          path: ${{ matrix.env.CI_NAME }}/.ccache
+          key: ${{ matrix.env.CI_NAME }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: |
+            ${{ matrix.env.CI_NAME }}-ccache-
+
       - uses: 'ros-industrial/industrial_ci@master'
         env: ${{matrix.env}}
