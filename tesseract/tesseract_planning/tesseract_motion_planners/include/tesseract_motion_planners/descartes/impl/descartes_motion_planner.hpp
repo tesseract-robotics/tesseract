@@ -87,7 +87,7 @@ bool DescartesMotionPlanner<FloatType>::setConfiguration(const DescartesMotionPl
 
   if (config.samplers.empty())
   {
-    CONSOLE_BRIDGE_logError("In %s: waypoints is a required parameter and has not been set", name_.c_str());
+    CONSOLE_BRIDGE_logError("In %s: samplers is a required parameter and has not been set", name_.c_str());
     return false;
   }
 
