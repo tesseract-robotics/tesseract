@@ -1,3 +1,0 @@
-[submodule "tesseract_ext_repo"]
-	path = tesseract_ext
-	url = https://github.com/ros-industrial-consortium/tesseract_ext.git

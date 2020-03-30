@@ -31,13 +31,13 @@ The planning framework (Tesseract) was designed to be light weight, limiting the
 
 See [issue #66](https://github.com/ros-industrial-consortium/tesseract/issues/66)
 
-## Clone Repository
+## Build Instructions
 
-This repository contains submodule tesseract_ext so use the *--recursive* flag as shown below.
+1) Clone repository into your workspace
+2) Clone the repositories in the dependencies.rosinstall file using wstool or some other method (e.g. manually git cloning them)
+3) Build the workspace using catkin tools, colcon, or a similar tool
 
-`git clone --recursive`
-
-.. NOTE: To speed up clean build you may want to add tesseract_ext to an extended workspace. If so do not clone with submodules and clone https://github.com/ros-industrial-consortium/tesseract_ext.git into your extended workspace.
+.. NOTE: To speed up clean build you may want to add tesseract_ext to an extended workspace.
 
 ## Building with Clang-Tidy Enabled
 
