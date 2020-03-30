@@ -37,8 +37,6 @@ namespace tesseract_environment
 
 struct EnvState
 {
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   using Ptr = std::shared_ptr<EnvState>;
   using ConstPtr = std::shared_ptr<const EnvState>;
 
