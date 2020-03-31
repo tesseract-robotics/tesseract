@@ -281,19 +281,11 @@ public:
     return out;
   }
 
-  void setMargin(btScalar /*margin*/) override { throw std::runtime_error("shouldn't happen"); }
+  void setMargin(btScalar /*margin*/) override {}
 
-  btScalar getMargin() const override
-  {
-    throw std::runtime_error("shouldn't happen");
-    return 0;
-  }
+  btScalar getMargin() const override { return 0; }
 
-  int getNumPreferredPenetrationDirections() const override
-  {
-    throw std::runtime_error("shouldn't happen");
-    return 0;
-  }
+  int getNumPreferredPenetrationDirections() const override { return 0; }
 
   void getPreferredPenetrationDirection(int /*index*/, btVector3& /*penetrationVector*/) const override
   {

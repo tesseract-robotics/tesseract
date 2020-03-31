@@ -43,7 +43,23 @@ inline void addCollisionObjects(ContinuousContactManager& checker, bool use_conv
   obj1_shapes.push_back(sphere);
   obj1_poses.push_back(sphere_pose);
 
-  checker.addCollisionObject("sphere_link", 0, obj1_shapes, obj1_poses);
+  checker.addCollisionObject("sphere_link", 0, obj1_shapes, obj1_poses, false);
+  checker.enableCollisionObject("sphere_link");
+
+  /////////////////////////////////////////////
+  // Add thin box to checker which is disabled
+  /////////////////////////////////////////////
+  CollisionShapePtr thin_box = std::make_shared<tesseract_geometry::Box>(0.1, 1, 1);
+  Eigen::Isometry3d thin_box_pose;
+  thin_box_pose.setIdentity();
+
+  CollisionShapesConst obj2_shapes;
+  tesseract_common::VectorIsometry3d obj2_poses;
+  obj2_shapes.push_back(thin_box);
+  obj2_poses.push_back(thin_box_pose);
+
+  checker.addCollisionObject("thin_box_link", 0, obj2_shapes, obj2_poses);
+  checker.disableCollisionObject("thin_box_link");
 
   /////////////////////////////////////////////////////////////////
   // Add second sphere to checker. If use_convex_mesh = true
@@ -78,6 +94,39 @@ inline void addCollisionObjects(ContinuousContactManager& checker, bool use_conv
   obj3_poses.push_back(sphere1_pose);
 
   checker.addCollisionObject("sphere1_link", 0, obj3_shapes, obj3_poses);
+
+  /////////////////////////////////////////////
+  // Add box and remove
+  /////////////////////////////////////////////
+  CollisionShapePtr remove_box = std::make_shared<tesseract_geometry::Box>(0.1, 1, 1);
+  Eigen::Isometry3d remove_box_pose;
+  thin_box_pose.setIdentity();
+
+  CollisionShapesConst obj4_shapes;
+  tesseract_common::VectorIsometry3d obj4_poses;
+  obj4_shapes.push_back(remove_box);
+  obj4_poses.push_back(remove_box_pose);
+
+  checker.addCollisionObject("remove_box_link", 0, obj4_shapes, obj4_poses);
+  EXPECT_TRUE(checker.getCollisionObjects().size() == 4);
+  EXPECT_TRUE(checker.hasCollisionObject("remove_box_link"));
+  checker.removeCollisionObject("remove_box_link");
+  EXPECT_FALSE(checker.hasCollisionObject("remove_box_link"));
+  EXPECT_TRUE(checker.getCollisionObjects().size() == 3);
+
+  /////////////////////////////////////////////
+  // Try functions on a link that does not exist
+  /////////////////////////////////////////////
+  EXPECT_FALSE(checker.removeCollisionObject("link_does_not_exist"));
+  EXPECT_FALSE(checker.enableCollisionObject("link_does_not_exist"));
+  EXPECT_FALSE(checker.disableCollisionObject("link_does_not_exist"));
+
+  /////////////////////////////////////////////
+  // Try to add empty Collision Object
+  /////////////////////////////////////////////
+  EXPECT_FALSE(
+      checker.addCollisionObject("empty_link", 0, CollisionShapesConst(), tesseract_common::VectorIsometry3d()));
+  EXPECT_TRUE(checker.getCollisionObjects().size() == 3);
 }
 
 inline void runTestPrimitive(ContinuousContactManager& checker)
@@ -87,6 +136,7 @@ inline void runTestPrimitive(ContinuousContactManager& checker)
   ///////////////////////////////////////////////////
   checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
   checker.setContactDistanceThreshold(0.1);
+  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.1, 1e-5);
 
   // Set the start location
   tesseract_common::TransformMap location_start;
@@ -230,6 +280,7 @@ inline void runTestConvex(ContinuousContactManager& checker)
   ///////////////////////////////////////////////////
   checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
   checker.setContactDistanceThreshold(0.1);
+  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.1, 1e-5);
 
   // Set the start location
   tesseract_common::TransformMap location_start;

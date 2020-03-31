@@ -1,5 +1,5 @@
-#ifndef TESSERACT_COLLISION_COLLISION_COMPOUND_COMPOUND_UNIT_HPP
-#define TESSERACT_COLLISION_COLLISION_COMPOUND_COMPOUND_UNIT_HPP
+#ifndef TESSERACT_COLLISION_COLLISION_OCTOMAP_OCTOMAP_UNIT_HPP
+#define TESSERACT_COLLISION_COLLISION_OCTOMAP_OCTOMAP_UNIT_HPP
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -24,7 +24,8 @@ inline void addCollisionObjects(T& checker)
   /////////////////////////////////////////////////////////////////
   std::string path = std::string(TEST_SUITE_DATA_DIR) + "/box_2m.bt";
   auto ot = std::make_shared<octomap::OcTree>(path);
-  CollisionShapePtr dense_octomap = std::make_shared<tesseract_geometry::Octree>(ot, tesseract_geometry::Octree::BOX);
+  CollisionShapePtr dense_octomap =
+      std::make_shared<tesseract_geometry::Octree>(ot, tesseract_geometry::Octree::SPHERE_OUTSIDE);
   Eigen::Isometry3d octomap_pose;
   octomap_pose.setIdentity();
   octomap_pose.translation() = Eigen::Vector3d(1.1, 0, 0);
@@ -41,7 +42,7 @@ inline void addCollisionObjects(T& checker)
   /////////////////////////////////////////////////////////////////
   auto ot_b = std::make_shared<octomap::OcTree>(path);
   CollisionShapePtr dense_octomap_b =
-      std::make_shared<tesseract_geometry::Octree>(ot_b, tesseract_geometry::Octree::BOX);
+      std::make_shared<tesseract_geometry::Octree>(ot_b, tesseract_geometry::Octree::SPHERE_INSIDE);
   Eigen::Isometry3d octomap_pose_b;
   octomap_pose_b.setIdentity();
   octomap_pose_b.translation() = Eigen::Vector3d(-1.1, 0, 0);
@@ -71,7 +72,7 @@ inline void addCollisionObjects(T& checker)
   }
 }
 
-inline void runTestCompound(DiscreteContactManager& checker)
+inline void runTestOctomap(DiscreteContactManager& checker)
 {
   //////////////////////////////////////
   // Test when object is in collision
@@ -96,11 +97,11 @@ inline void runTestCompound(DiscreteContactManager& checker)
   EXPECT_TRUE(!result_vector.empty());
   for (const auto& cr : result_vector)
   {
-    EXPECT_NEAR(cr.distance, 0.20, 0.001);
+    EXPECT_NEAR(cr.distance, -0.0071, 0.001);
   }
 }
 
-inline void runTestCompound(ContinuousContactManager& checker)
+inline void runTestOctomap(ContinuousContactManager& checker)
 {
   //////////////////////////////////////
   // Test when object is in collision
@@ -127,7 +128,7 @@ inline void runTestCompound(ContinuousContactManager& checker)
   EXPECT_TRUE(!result_vector.empty());
   for (const auto& cr : result_vector)
   {
-    EXPECT_NEAR(cr.distance, 0.20, 0.001);
+    EXPECT_NEAR(cr.distance, -0.0071, 0.001);
   }
 }
 }  // namespace detail
@@ -135,20 +136,20 @@ inline void runTestCompound(ContinuousContactManager& checker)
 inline void runTest(ContinuousContactManager& checker)
 {
   detail::addCollisionObjects<ContinuousContactManager>(checker);
-  detail::runTestCompound(checker);
+  detail::runTestOctomap(checker);
 
   ContinuousContactManager::Ptr cloned_checker = checker.clone();
-  detail::runTestCompound(*cloned_checker);
+  detail::runTestOctomap(*cloned_checker);
 }
 
 inline void runTest(DiscreteContactManager& checker)
 {
   detail::addCollisionObjects<DiscreteContactManager>(checker);
-  detail::runTestCompound(checker);
+  detail::runTestOctomap(checker);
 
   DiscreteContactManager::Ptr cloned_checker = checker.clone();
-  detail::runTestCompound(*cloned_checker);
+  detail::runTestOctomap(*cloned_checker);
 }
 }  // namespace test_suite
 }  // namespace tesseract_collision
-#endif  // TESSERACT_COLLISION_COLLISION_COMPOUND_COMPOUND_UNIT_HPP
+#endif  // TESSERACT_COLLISION_COLLISION_OCTOMAP_OCTOMAP_UNIT_HPP

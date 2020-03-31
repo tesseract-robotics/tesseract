@@ -129,6 +129,7 @@ bool BulletDiscreteSimpleManager::removeCollisionObject(const std::string& name)
   if (it != link2cow_.end())
   {
     cows_.erase(std::find(cows_.begin(), cows_.end(), it->second));
+    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), name));
     link2cow_.erase(name);
     return true;
   }
@@ -180,6 +181,8 @@ void BulletDiscreteSimpleManager::setCollisionObjectsTransform(const tesseract_c
   for (const auto& transform : transforms)
     setCollisionObjectsTransform(transform.first, transform.second);
 }
+
+const std::vector<std::string>& BulletDiscreteSimpleManager::getCollisionObjects() const { return collision_objects_; }
 
 void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
@@ -279,6 +282,7 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
 void BulletDiscreteSimpleManager::addCollisionObject(const COW::Ptr& cow)
 {
   link2cow_[cow->getName()] = cow;
+  collision_objects_.push_back(cow->getName());
 
   if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
     cows_.insert(cows_.begin(), cow);

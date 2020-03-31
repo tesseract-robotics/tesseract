@@ -186,6 +186,12 @@ public:
                                             const tesseract_common::TransformMap& pose2) = 0;
 
   /**
+   * @brief Get all collision objects
+   * @return A list of collision object names
+   */
+  virtual const std::vector<std::string>& getCollisionObjects() const = 0;
+
+  /**
    * @brief Set which collision objects can move
    * @param names A vector of collision object names
    */

@@ -51,6 +51,17 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   obj2_poses.push_back(sphere_pose);
 
   checker.addCollisionObject("plane_link", 0, obj2_shapes, obj2_poses);
+
+  EXPECT_TRUE(checker.getCollisionObjects().size() == 2);
+  for (const auto& co : checker.getCollisionObjects())
+  {
+    EXPECT_TRUE(checker.getCollisionObjectGeometries(co).size() == 1);
+    EXPECT_TRUE(checker.getCollisionObjectGeometriesTransforms(co).size() == 1);
+    for (const auto& cgt : checker.getCollisionObjectGeometriesTransforms(co))
+    {
+      EXPECT_TRUE(cgt.isApprox(Eigen::Isometry3d::Identity(), 1e-5));
+    }
+  }
 }
 }  // namespace detail
 
@@ -64,6 +75,7 @@ inline void runTest(DiscreteContactManager& checker, const std::string& file_pat
   //////////////////////////////////////
   checker.setActiveCollisionObjects({ "octomap_link", "plane_link" });
   checker.setContactDistanceThreshold(0.1);
+  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.1, 1e-5);
 
   // Set the collision object transforms
   tesseract_common::TransformMap location;

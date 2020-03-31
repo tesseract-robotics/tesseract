@@ -137,6 +137,7 @@ bool BulletDiscreteBVHManager::removeCollisionObject(const std::string& name)
   auto it = link2cow_.find(name);  // Levi TODO: Should these check be removed?
   if (it != link2cow_.end())
   {
+    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), name));
     removeCollisionObjectFromBroadphase(it->second, broadphase_, dispatcher_);
     link2cow_.erase(name);
     return true;
@@ -196,6 +197,8 @@ void BulletDiscreteBVHManager::setCollisionObjectsTransform(const tesseract_comm
     setCollisionObjectsTransform(transform.first, transform.second);
 }
 
+const std::vector<std::string>& BulletDiscreteBVHManager::getCollisionObjects() const { return collision_objects_; }
+
 void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
   active_ = names;
@@ -244,6 +247,7 @@ void BulletDiscreteBVHManager::contactTest(ContactResultMap& collisions, const C
 void BulletDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
 {
   link2cow_[cow->getName()] = cow;
+  collision_objects_.push_back(cow->getName());
 
   // Add collision object to broadphase
   addCollisionObjectToBroadphase(cow, broadphase_, dispatcher_);

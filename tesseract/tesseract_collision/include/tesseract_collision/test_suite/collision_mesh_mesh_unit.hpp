@@ -34,7 +34,8 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   obj1_shapes.push_back(sphere);
   obj1_poses.push_back(sphere_pose);
 
-  checker.addCollisionObject("sphere_link", 0, obj1_shapes, obj1_poses);
+  checker.addCollisionObject("sphere_link", 0, obj1_shapes, obj1_poses, false);
+  checker.enableCollisionObject("sphere_link");
 
   /////////////////////////////////////////////
   // Add thin box to checker which is disabled
@@ -48,7 +49,8 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   obj2_shapes.push_back(thin_box);
   obj2_poses.push_back(thin_box_pose);
 
-  checker.addCollisionObject("thin_box_link", 0, obj2_shapes, obj2_poses, false);
+  checker.addCollisionObject("thin_box_link", 0, obj2_shapes, obj2_poses);
+  checker.disableCollisionObject("thin_box_link");
 
   /////////////////////////////////////////////////////////////////
   // Add second sphere to checker. If use_convex_mesh = true
@@ -64,6 +66,51 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   obj3_poses.push_back(sphere1_pose);
 
   checker.addCollisionObject("sphere1_link", 0, obj3_shapes, obj3_poses);
+
+  /////////////////////////////////////////////
+  // Add box and remove
+  /////////////////////////////////////////////
+  CollisionShapePtr remove_box = std::make_shared<tesseract_geometry::Box>(0.1, 1, 1);
+  Eigen::Isometry3d remove_box_pose;
+  thin_box_pose.setIdentity();
+
+  CollisionShapesConst obj4_shapes;
+  tesseract_common::VectorIsometry3d obj4_poses;
+  obj4_shapes.push_back(remove_box);
+  obj4_poses.push_back(remove_box_pose);
+
+  checker.addCollisionObject("remove_box_link", 0, obj4_shapes, obj4_poses);
+  EXPECT_TRUE(checker.getCollisionObjects().size() == 4);
+  EXPECT_TRUE(checker.hasCollisionObject("remove_box_link"));
+  checker.removeCollisionObject("remove_box_link");
+  EXPECT_FALSE(checker.hasCollisionObject("remove_box_link"));
+
+  /////////////////////////////////////////////
+  // Try functions on a link that does not exist
+  /////////////////////////////////////////////
+  EXPECT_FALSE(checker.removeCollisionObject("link_does_not_exist"));
+  EXPECT_FALSE(checker.enableCollisionObject("link_does_not_exist"));
+  EXPECT_FALSE(checker.disableCollisionObject("link_does_not_exist"));
+
+  /////////////////////////////////////////////
+  // Try to add empty Collision Object
+  /////////////////////////////////////////////
+  EXPECT_FALSE(
+      checker.addCollisionObject("empty_link", 0, CollisionShapesConst(), tesseract_common::VectorIsometry3d()));
+
+  /////////////////////////////////////////////
+  // Check sizes
+  /////////////////////////////////////////////
+  EXPECT_TRUE(checker.getCollisionObjects().size() == 3);
+  for (const auto& co : checker.getCollisionObjects())
+  {
+    EXPECT_TRUE(checker.getCollisionObjectGeometries(co).size() == 1);
+    EXPECT_TRUE(checker.getCollisionObjectGeometriesTransforms(co).size() == 1);
+    for (const auto& cgt : checker.getCollisionObjectGeometriesTransforms(co))
+    {
+      EXPECT_TRUE(cgt.isApprox(Eigen::Isometry3d::Identity(), 1e-5));
+    }
+  }
 }
 }  // namespace detail
 
@@ -77,6 +124,7 @@ inline void runTest(DiscreteContactManager& checker)
   ///////////////////////////////////////////////////////////////////
   checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
   checker.setContactDistanceThreshold(0);
+  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.0, 1e-5);
 
   // Test when object is inside another
   tesseract_common::TransformMap location;
@@ -116,6 +164,7 @@ inline void runTest(DiscreteContactManager& checker)
   result_vector.clear();
 
   checker.setContactDistanceThreshold(0.55);
+  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.55, 1e-5);
   checker.contactTest(result, ContactTestType::CLOSEST);
   flattenResults(std::move(result), result_vector);
 
@@ -142,8 +191,10 @@ inline void runTest(DiscreteContactManager& checker)
   result_vector.clear();
 
   // The closest feature of the mesh should be edge to edge
-  checker.setCollisionObjectsTransform(location);
+  // Use different method for setting transforms
+  checker.setCollisionObjectsTransform("sphere1_link", location["sphere1_link"]);
   checker.setContactDistanceThreshold(0.55);
+  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.55, 1e-5);
   checker.contactTest(result, ContactTestType::CLOSEST);
   flattenResults(std::move(result), result_vector);
 

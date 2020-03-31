@@ -119,6 +119,7 @@ bool FCLDiscreteBVHManager::removeCollisionObject(const std::string& name)
     for (auto& co : objects)
       manager_->unregisterObject(co.get());
 
+    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), name));
     link2cow_.erase(name);
     return true;
   }
@@ -168,6 +169,8 @@ void FCLDiscreteBVHManager::setCollisionObjectsTransform(const tesseract_common:
     setCollisionObjectsTransform(transform.first, transform.second);
 }
 
+const std::vector<std::string>& FCLDiscreteBVHManager::getCollisionObjects() const { return collision_objects_; }
+
 void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
   active_ = names;
@@ -205,12 +208,11 @@ void FCLDiscreteBVHManager::contactTest(ContactResultMap& collisions, const Cont
 void FCLDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
 {
   link2cow_[cow->getName()] = cow;
+  collision_objects_.push_back(cow->getName());
 
   std::vector<CollisionObjectPtr>& objects = cow->getCollisionObjects();
   for (auto& co : objects)
     manager_->registerObject(co.get());
 }
-
-const Link2COW& FCLDiscreteBVHManager::getCollisionObjects() const { return link2cow_; }
 }  // namespace tesseract_collision_fcl
 }  // namespace tesseract_collision
