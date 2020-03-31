@@ -285,7 +285,5 @@ void BulletDiscreteSimpleManager::addCollisionObject(const COW::Ptr& cow)
   else
     cows_.push_back(cow);
 }
-
-const Link2Cow& BulletDiscreteSimpleManager::getCollisionObjects() const { return link2cow_; }
 }  // namespace tesseract_collision_bullet
 }  // namespace tesseract_collision

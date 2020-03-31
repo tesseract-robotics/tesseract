@@ -112,12 +112,6 @@ public:
    */
   void addCollisionObject(const COW::Ptr& cow);
 
-  /**
-   * @brief Return collision objects
-   * @return A map of collision objects <name, collision object>
-   */
-  const Link2Cow& getCollisionObjects() const;
-
 private:
   std::vector<std::string> active_; /**< @brief A list of the active collision objects */
   double contact_distance_;         /**< @brief The contact distance threshold */

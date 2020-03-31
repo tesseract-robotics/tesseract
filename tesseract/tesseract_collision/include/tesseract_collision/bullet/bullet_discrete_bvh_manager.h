@@ -112,12 +112,6 @@ public:
    */
   void addCollisionObject(const COW::Ptr& cow);
 
-  /**
-   * @brief Return collision objects
-   * @return A map of collision objects <name, collision object>
-   */
-  const Link2Cow& getCollisionObjects() const;
-
 private:
   std::vector<std::string> active_; /**< @brief A list of the active collision objects */
   double contact_distance_;         /**< @brief The contact distance threshold */
@@ -129,13 +123,6 @@ private:
   btDefaultCollisionConfiguration coll_config_; /**< @brief The bullet collision configuration */
   std::unique_ptr<btBroadphaseInterface> broadphase_; /**< @brief The bullet broadphase interface */
   Link2Cow link2cow_; /**< @brief A map of all (static and active) collision objects being managed */
-
-  /**
-   * @brief Perform a contact test for the provided object which is not part of the manager
-   * @param cow The Collision object
-   * @param collisions The collision results
-   */
-  void contactTest(const COW::Ptr& cow, ContactTestData& collisions);
 };
 
 }  // namespace tesseract_collision_bullet

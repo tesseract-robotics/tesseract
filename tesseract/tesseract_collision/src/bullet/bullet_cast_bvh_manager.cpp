@@ -431,17 +431,5 @@ void BulletCastBVHManager::addCollisionObject(const COW::Ptr& cow)
                                                              selected_cow->m_collisionFilterMask,
                                                              dispatcher_.get()));
 }
-
-void BulletCastBVHManager::contactTest(const COW::Ptr& cow, ContactTestData& collisions)
-{
-  btVector3 aabb_min, aabb_max;
-  cow->getAABB(aabb_min, aabb_max);
-
-  CastCollisionCollector cc(collisions, cow, static_cast<double>(cow->getContactProcessingThreshold()));
-
-  TesseractSingleContactCallback contactCB(cow.get(), dispatcher_.get(), dispatch_info_, cc);
-
-  broadphase_->aabbTest(aabb_min, aabb_max, contactCB);
-}
 }  // namespace tesseract_collision_bullet
 }  // namespace tesseract_collision

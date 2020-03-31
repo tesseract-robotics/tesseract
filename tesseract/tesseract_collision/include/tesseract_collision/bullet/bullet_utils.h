@@ -243,14 +243,6 @@ public:
     return (vec.dot(sv0) > vec.dot(sv1)) ? sv0 : sv1;
   }
 
-  // notice that the vectors should be unit length
-  void batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* /*vectors*/,
-                                                         btVector3* /*supportVerticesOut*/,
-                                                         int /*numVectors*/) const override
-  {
-    throw std::runtime_error("not implemented");
-  }
-
   /// getAabb's default implementation is brute force, expected derived classes to implement a fast dedicated version
   void getAabb(const btTransform& t_w0, btVector3& aabbMin, btVector3& aabbMax) const override
   {
@@ -261,32 +253,55 @@ public:
     aabbMax.setMax(max1);
   }
 
+  const char* getName() const override { return "CastHull"; }
+  btVector3 localGetSupportingVertexWithoutMargin(const btVector3& v) const override
+  {
+    return localGetSupportingVertex(v);
+  }
+
+  // LCOV_EXCL_START
+  // notice that the vectors should be unit length
+  void batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* /*vectors*/,
+                                                         btVector3* /*supportVerticesOut*/,
+                                                         int /*numVectors*/) const override
+  {
+    throw std::runtime_error("not implemented");
+  }
+
   void getAabbSlow(const btTransform& /*t*/, btVector3& /*aabbMin*/, btVector3& /*aabbMax*/) const override
   {
     throw std::runtime_error("shouldn't happen");
   }
 
-  void setLocalScaling(const btVector3& /*scaling*/) override {}
+  void setLocalScaling(const btVector3& /*scaling*/) override { throw std::runtime_error("shouldn't happen"); }
+
   const btVector3& getLocalScaling() const override
   {
     static btVector3 out(1, 1, 1);
     return out;
   }
 
-  void setMargin(btScalar /*margin*/) override {}
-  btScalar getMargin() const override { return 0; }
-  int getNumPreferredPenetrationDirections() const override { return 0; }
+  void setMargin(btScalar /*margin*/) override { throw std::runtime_error("shouldn't happen"); }
+
+  btScalar getMargin() const override
+  {
+    throw std::runtime_error("shouldn't happen");
+    return 0;
+  }
+
+  int getNumPreferredPenetrationDirections() const override
+  {
+    throw std::runtime_error("shouldn't happen");
+    return 0;
+  }
+
   void getPreferredPenetrationDirection(int /*index*/, btVector3& /*penetrationVector*/) const override
   {
     throw std::runtime_error("not implemented");
   }
 
   void calculateLocalInertia(btScalar, btVector3&) const override { throw std::runtime_error("not implemented"); }
-  const char* getName() const override { return "CastHull"; }
-  btVector3 localGetSupportingVertexWithoutMargin(const btVector3& v) const override
-  {
-    return localGetSupportingVertex(v);
-  }
+  // LCOV_EXCL_STOP
 };
 
 inline void
@@ -476,13 +491,17 @@ inline void calculateContinuousData(ContactResult* col,
   // TODO: this section is potentially problematic. think hard about the math
   if (shape_sup0 - shape_sup1 > BULLET_SUPPORT_FUNC_TOLERANCE)
   {
+    // LCOV_EXCL_START
     col->cc_time[link_index] = 0;
     col->cc_type[link_index] = ContinuousCollisionType::CCType_Time0;
+    // LCOV_EXCL_STOP
   }
   else if (shape_sup1 - shape_sup0 > BULLET_SUPPORT_FUNC_TOLERANCE)
   {
+    // LCOV_EXCL_START
     col->cc_time[link_index] = 1;
     col->cc_type[link_index] = ContinuousCollisionType::CCType_Time1;
+    // LCOV_EXCL_STOP
   }
   else
   {
@@ -497,7 +516,7 @@ inline void calculateContinuousData(ContactResult* col,
 
     if (l0c + l1c < BULLET_LENGTH_TOLERANCE)
     {
-      col->cc_time[link_index] = .5;
+      col->cc_time[link_index] = .5;  // LCOV_EXCL_LINE
     }
     else
     {
@@ -559,7 +578,7 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
   ContactResult* col = processResult(collisions, contact, pc, found);
   if (!col)
   {
-    return 0;
+    return 0;  // LCOV_EXCL_LINE
   }
 
   if (cd0->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter &&
@@ -699,7 +718,7 @@ struct DiscreteBroadphaseContactResultCallback : public BroadphaseContactResultC
                            int /*index1*/) override
   {
     if (cp.m_distance1 > static_cast<btScalar>(contact_distance_))
-      return 0;
+      return 0;  // LCOV_EXCL_LINE
 
     return addDiscreteSingleResult(cp, colObj0Wrap, colObj1Wrap, collisions_);
   }
@@ -783,66 +802,6 @@ struct TesseractBroadphaseBridgedManifoldResult : public btManifoldResult
     const btCollisionObjectWrapper* obj1Wrap = isSwapped ? m_body0Wrap : m_body1Wrap;
     result_callback_.addSingleResult(
         newPt, obj0Wrap, newPt.m_partId0, newPt.m_index0, obj1Wrap, newPt.m_partId1, newPt.m_index1);
-  }
-};
-
-/**
- * @brief This is copied directly out of BulletWorld
- *
- * This is currently not used but will remain because it is needed
- * to check a collision object not in the broadphase to the broadphase
- * which may eventually be exposed.
- */
-struct TesseractSingleContactCallback : public btBroadphaseAabbCallback
-{
-  btCollisionObject* m_collisionObject;    /**< @brief The bullet collision object */
-  btCollisionDispatcher* m_dispatcher;     /**< @brief The bullet collision dispatcher used for getting object to object
-                                              collison algorithm */
-  const btDispatcherInfo& m_dispatch_info; /**< @brief The bullet collision dispatcher configuration information */
-  btCollisionWorld::ContactResultCallback& m_resultCallback;
-
-  TesseractSingleContactCallback(btCollisionObject* collisionObject,
-                                 btCollisionDispatcher* dispatcher,
-                                 const btDispatcherInfo& dispatch_info,
-                                 btCollisionWorld::ContactResultCallback& resultCallback)
-    : m_collisionObject(collisionObject)
-    , m_dispatcher(dispatcher)
-    , m_dispatch_info(dispatch_info)
-    , m_resultCallback(resultCallback)
-  {
-  }
-
-  bool process(const btBroadphaseProxy* proxy) override
-  {
-    auto* collisionObject = static_cast<btCollisionObject*>(proxy->m_clientObject);
-    if (collisionObject == m_collisionObject)
-      return true;
-
-    if (m_resultCallback.needsCollision(collisionObject->getBroadphaseHandle()))
-    {
-      btCollisionObjectWrapper ob0(nullptr,
-                                   m_collisionObject->getCollisionShape(),
-                                   m_collisionObject,
-                                   m_collisionObject->getWorldTransform(),
-                                   -1,
-                                   -1);
-      btCollisionObjectWrapper ob1(
-          nullptr, collisionObject->getCollisionShape(), collisionObject, collisionObject->getWorldTransform(), -1, -1);
-
-      btCollisionAlgorithm* algorithm = m_dispatcher->findAlgorithm(&ob0, &ob1, nullptr, BT_CLOSEST_POINT_ALGORITHMS);
-      if (algorithm)
-      {
-        TesseractBridgedManifoldResult contactPointResult(&ob0, &ob1, m_resultCallback);
-        contactPointResult.m_closestPointDistanceThreshold = m_resultCallback.m_closestDistanceThreshold;
-
-        // discrete collision detection query
-        algorithm->processCollision(&ob0, &ob1, m_dispatch_info, &contactPointResult);
-
-        algorithm->~btCollisionAlgorithm();
-        m_dispatcher->freeCollisionAlgorithm(algorithm);
-      }
-    }
-    return true;
   }
 };
 
@@ -996,7 +955,7 @@ struct DiscreteCollisionCollector : public btCollisionWorld::ContactResultCallba
                            int /*index1*/) override
   {
     if (cp.m_distance1 > static_cast<btScalar>(contact_distance_))
-      return 0;
+      return 0;  // LCOV_EXCL_LINE
 
     return addDiscreteSingleResult(cp, colObj0Wrap, colObj1Wrap, collisions_);
   }
@@ -1033,7 +992,7 @@ struct CastCollisionCollector : public btCollisionWorld::ContactResultCallback
                            int index1) override
   {
     if (cp.m_distance1 > static_cast<btScalar>(contact_distance_))
-      return 0;
+      return 0;  // LCOV_EXCL_LINE
 
     return addCastSingleResult(cp, colObj0Wrap, index0, colObj1Wrap, index1, collisions_);
   }
