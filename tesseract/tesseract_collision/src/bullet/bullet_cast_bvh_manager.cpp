@@ -142,6 +142,7 @@ bool BulletCastBVHManager::removeCollisionObject(const std::string& name)
   if (it != link2cow_.end())
   {
     COW::Ptr& cow1 = it->second;
+    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), name));
     removeCollisionObjectFromBroadphase(cow1, broadphase_, dispatcher_);
     link2cow_.erase(name);
 
@@ -312,6 +313,8 @@ void BulletCastBVHManager::setCollisionObjectsTransform(const tesseract_common::
   }
 }
 
+const std::vector<std::string>& BulletCastBVHManager::getCollisionObjects() const { return collision_objects_; }
+
 void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
   active_ = names;
@@ -410,6 +413,7 @@ void BulletCastBVHManager::contactTest(ContactResultMap& collisions, const Conta
 void BulletCastBVHManager::addCollisionObject(const COW::Ptr& cow)
 {
   link2cow_[cow->getName()] = cow;
+  collision_objects_.push_back(cow->getName());
 
   // Create cast collision object
   COW::Ptr cast_cow = makeCastCollisionObject(cow);

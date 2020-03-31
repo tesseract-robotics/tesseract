@@ -105,6 +105,8 @@ public:
   void setCollisionObjectsTransform(const tesseract_common::TransformMap& pose1,
                                     const tesseract_common::TransformMap& pose2) override;
 
+  const std::vector<std::string>& getCollisionObjects() const override;
+
   void setActiveCollisionObjects(const std::vector<std::string>& names) override;
 
   const std::vector<std::string>& getActiveCollisionObjects() const override;
@@ -126,9 +128,10 @@ public:
   void addCollisionObject(const COW::Ptr& cow);
 
 private:
-  std::vector<std::string> active_; /**< @brief A list of the active collision objects */
-  double contact_distance_;         /**< @brief The contact distance threshold */
-  IsContactAllowedFn fn_;           /**< @brief The is allowed collision function */
+  std::vector<std::string> active_;            /**< @brief A list of the active collision objects */
+  std::vector<std::string> collision_objects_; /**< @brief A list of the collision objects */
+  double contact_distance_;                    /**< @brief The contact distance threshold */
+  IsContactAllowedFn fn_;                      /**< @brief The is allowed collision function */
 
   std::unique_ptr<btCollisionDispatcher> dispatcher_; /**< @brief The bullet collision dispatcher used for getting
                                                          object to object collison algorithm */

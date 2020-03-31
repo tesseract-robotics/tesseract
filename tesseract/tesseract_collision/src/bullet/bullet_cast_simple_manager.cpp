@@ -128,6 +128,7 @@ bool BulletCastSimpleManager::removeCollisionObject(const std::string& name)
   if (it != link2cow_.end())
   {
     cows_.erase(std::find(cows_.begin(), cows_.end(), it->second));
+    collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), name));
     link2cow_.erase(name);
     link2castcow_.erase(name);
     return true;
@@ -283,6 +284,8 @@ void BulletCastSimpleManager::setCollisionObjectsTransform(const tesseract_commo
   }
 }
 
+const std::vector<std::string>& BulletCastSimpleManager::getCollisionObjects() const { return collision_objects_; }
+
 void BulletCastSimpleManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
   active_ = names;
@@ -399,6 +402,7 @@ void BulletCastSimpleManager::contactTest(ContactResultMap& collisions, const Co
 void BulletCastSimpleManager::addCollisionObject(const COW::Ptr& cow)
 {
   link2cow_[cow->getName()] = cow;
+  collision_objects_.push_back(cow->getName());
 
   // Create cast collision object
   COW::Ptr cast_cow = makeCastCollisionObject(cow);

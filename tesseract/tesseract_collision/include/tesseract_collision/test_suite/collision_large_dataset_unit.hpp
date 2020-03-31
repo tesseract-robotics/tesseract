@@ -69,6 +69,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
   // Check if they are in collision
   checker.setActiveCollisionObjects(link_names);
   checker.setContactDistanceThreshold(0.1);
+  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.1, 1e-5);
   checker.setCollisionObjectsTransform(location);
 
   ContactResultVector result_vector;

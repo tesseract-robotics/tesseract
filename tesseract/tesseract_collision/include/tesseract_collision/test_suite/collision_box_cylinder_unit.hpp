@@ -54,6 +54,51 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   obj3_poses.push_back(cylinder_pose);
 
   checker.addCollisionObject("cylinder_link", 0, obj3_shapes, obj3_poses);
+
+  /////////////////////////////////////////////
+  // Add box and remove
+  /////////////////////////////////////////////
+  CollisionShapePtr remove_box = std::make_shared<tesseract_geometry::Box>(0.1, 1, 1);
+  Eigen::Isometry3d remove_box_pose;
+  thin_box_pose.setIdentity();
+
+  CollisionShapesConst obj4_shapes;
+  tesseract_common::VectorIsometry3d obj4_poses;
+  obj4_shapes.push_back(remove_box);
+  obj4_poses.push_back(remove_box_pose);
+
+  checker.addCollisionObject("remove_box_link", 0, obj4_shapes, obj4_poses);
+  EXPECT_TRUE(checker.getCollisionObjects().size() == 4);
+  EXPECT_TRUE(checker.hasCollisionObject("remove_box_link"));
+  checker.removeCollisionObject("remove_box_link");
+  EXPECT_FALSE(checker.hasCollisionObject("remove_box_link"));
+
+  /////////////////////////////////////////////
+  // Try functions on a link that does not exist
+  /////////////////////////////////////////////
+  EXPECT_FALSE(checker.removeCollisionObject("link_does_not_exist"));
+  EXPECT_FALSE(checker.enableCollisionObject("link_does_not_exist"));
+  EXPECT_FALSE(checker.disableCollisionObject("link_does_not_exist"));
+
+  /////////////////////////////////////////////
+  // Try to add empty Collision Object
+  /////////////////////////////////////////////
+  EXPECT_FALSE(
+      checker.addCollisionObject("empty_link", 0, CollisionShapesConst(), tesseract_common::VectorIsometry3d()));
+
+  /////////////////////////////////////////////
+  // Check sizes
+  /////////////////////////////////////////////
+  EXPECT_TRUE(checker.getCollisionObjects().size() == 3);
+  for (const auto& co : checker.getCollisionObjects())
+  {
+    EXPECT_TRUE(checker.getCollisionObjectGeometries(co).size() == 1);
+    EXPECT_TRUE(checker.getCollisionObjectGeometriesTransforms(co).size() == 1);
+    for (const auto& cgt : checker.getCollisionObjectGeometriesTransforms(co))
+    {
+      EXPECT_TRUE(cgt.isApprox(Eigen::Isometry3d::Identity(), 1e-5));
+    }
+  }
 }
 }  // namespace detail
 
@@ -67,6 +112,7 @@ inline void runTest(DiscreteContactManager& checker)
   //////////////////////////////////////
   checker.setActiveCollisionObjects({ "box_link", "cylinder_link" });
   checker.setContactDistanceThreshold(0.1);
+  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.1, 1e-5);
 
   // Set the collision object transforms
   tesseract_common::TransformMap location;
@@ -105,8 +151,9 @@ inline void runTest(DiscreteContactManager& checker)
   result = ContactResultMap();
   result.clear();
   result_vector.clear();
-  checker.setCollisionObjectsTransform(location);
 
+  // Use different method for setting transforms
+  checker.setCollisionObjectsTransform("cylinder_link", location["cylinder_link"]);
   checker.contactTest(result, ContactTestType::CLOSEST);
   flattenResults(std::move(result), result_vector);
 
@@ -120,6 +167,7 @@ inline void runTest(DiscreteContactManager& checker)
   result_vector.clear();
 
   checker.setContactDistanceThreshold(0.251);
+  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.251, 1e-5);
   checker.contactTest(result, ContactTestType::CLOSEST);
   flattenResults(std::move(result), result_vector);
 

@@ -137,6 +137,12 @@ public:
   virtual void setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms) = 0;
 
   /**
+   * @brief Get all collision objects
+   * @return A list of collision object names
+   */
+  virtual const std::vector<std::string>& getCollisionObjects() const = 0;
+
+  /**
    * @brief Set which collision objects can move
    * @param names A vector of collision object names
    */
