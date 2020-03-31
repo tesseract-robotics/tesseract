@@ -59,6 +59,17 @@ Must pass the -DTESSERACT_CODE_COVERAGE=ON to cmake when wanting to build code c
 
 .. NOTE: Must be a clean build when generating a code coverage report. Also must build in debug.
 
+### Exclude Code From Code Coverage
+
+- LCOV_EXCL_LINE
+  - Lines containing this marker will be excluded.
+- LCOV_EXCL_START
+  - Marks the beginning of an excluded section. The current line is part of this section.
+- LCOV_EXCL_STOP
+  - Marks the end of an excluded section. The current line not part of this section.
+
+.. NOTE: You can replace **LCOV** above with **GCOV** or **GCOVR**.
+
 ## Build Branch Sphinx Documentation
 
 ```
