@@ -85,7 +85,7 @@ target_include_directories(create_convex_hull SYSTEM PUBLIC
 
 # Create test suite interface
 add_library(${PROJECT_NAME}_test_suite INTERFACE)
-target_link_libraries(${PROJECT_NAME}_test_suite INTERFACE tesseract::tesseract_geometry)
+target_link_libraries(${PROJECT_NAME}_test_suite INTERFACE tesseract::tesseract_geometry ${PROJECT_NAME}_core)
 tesseract_target_compile_options(${PROJECT_NAME}_test_suite INTERFACE)
 tesseract_clang_tidy(${PROJECT_NAME}_test_suite)
 tesseract_code_coverage(${PROJECT_NAME}_test_suite ALL EXCLUDE ${COVERAGE_EXCLUDE})

@@ -137,13 +137,6 @@ private:
   std::unique_ptr<btBroadphaseInterface> broadphase_; /**< @brief The bullet broadphase interface */
   Link2Cow link2cow_;                                 /**< @brief A map of collision objects being managed */
   Link2Cow link2castcow_;                             /**< @brief A map of cast collision objects being managed. */
-
-  /**
-   * @brief Perform a contact test for the provided object which is not part of the manager
-   * @param cow The Collision object
-   * @param collisions The collision results
-   */
-  void contactTest(const COW::Ptr& cow, ContactTestData& collisions);
 };
 }  // namespace tesseract_collision_bullet
 }  // namespace tesseract_collision

@@ -248,18 +248,5 @@ void BulletDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
   // Add collision object to broadphase
   addCollisionObjectToBroadphase(cow, broadphase_, dispatcher_);
 }
-
-const Link2Cow& BulletDiscreteBVHManager::getCollisionObjects() const { return link2cow_; }
-void BulletDiscreteBVHManager::contactTest(const COW::Ptr& cow, ContactTestData& collisions)
-{
-  btVector3 min_aabb, max_aabb;
-  cow->getAABB(min_aabb, max_aabb);
-
-  DiscreteCollisionCollector cc(collisions, cow, cow->getContactProcessingThreshold());
-
-  TesseractSingleContactCallback contactCB(cow.get(), dispatcher_.get(), dispatch_info_, cc);
-
-  broadphase_->aabbTest(min_aabb, max_aabb, contactCB);
-}
 }  // namespace tesseract_collision_bullet
 }  // namespace tesseract_collision
