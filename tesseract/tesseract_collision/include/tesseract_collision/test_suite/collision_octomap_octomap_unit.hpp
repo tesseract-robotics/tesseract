@@ -72,7 +72,7 @@ inline void addCollisionObjects(T& checker)
   }
 }
 
-inline void runTestOctomap(DiscreteContactManager& checker)
+inline void runTestOctomap(DiscreteContactManager& checker, ContactTestType test_type)
 {
   //////////////////////////////////////
   // Test when object is in collision
@@ -89,7 +89,7 @@ inline void runTestOctomap(DiscreteContactManager& checker)
 
   // Perform collision check
   ContactResultMap result;
-  checker.contactTest(result, ContactTestType::ALL);
+  checker.contactTest(result, test_type);
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);
@@ -101,7 +101,7 @@ inline void runTestOctomap(DiscreteContactManager& checker)
   }
 }
 
-inline void runTestOctomap(ContinuousContactManager& checker)
+inline void runTestOctomap(ContinuousContactManager& checker, ContactTestType test_type)
 {
   //////////////////////////////////////
   // Test when object is in collision
@@ -120,7 +120,7 @@ inline void runTestOctomap(ContinuousContactManager& checker)
 
   // Perform collision check
   ContactResultMap result;
-  checker.contactTest(result, ContactTestType::ALL);
+  checker.contactTest(result, test_type);
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);
@@ -136,20 +136,25 @@ inline void runTestOctomap(ContinuousContactManager& checker)
 inline void runTest(ContinuousContactManager& checker)
 {
   detail::addCollisionObjects<ContinuousContactManager>(checker);
-  detail::runTestOctomap(checker);
+  detail::runTestOctomap(checker, ContactTestType::FIRST);
+  detail::runTestOctomap(checker, ContactTestType::CLOSEST);
+  detail::runTestOctomap(checker, ContactTestType::ALL);
 
   ContinuousContactManager::Ptr cloned_checker = checker.clone();
-  detail::runTestOctomap(*cloned_checker);
+  detail::runTestOctomap(*cloned_checker, ContactTestType::FIRST);
 }
 
 inline void runTest(DiscreteContactManager& checker)
 {
   detail::addCollisionObjects<DiscreteContactManager>(checker);
-  detail::runTestOctomap(checker);
+  detail::runTestOctomap(checker, ContactTestType::FIRST);
+  detail::runTestOctomap(checker, ContactTestType::CLOSEST);
+  detail::runTestOctomap(checker, ContactTestType::ALL);
 
   DiscreteContactManager::Ptr cloned_checker = checker.clone();
-  detail::runTestOctomap(*cloned_checker);
+  detail::runTestOctomap(*cloned_checker, ContactTestType::FIRST);
 }
+
 }  // namespace test_suite
 }  // namespace tesseract_collision
 #endif  // TESSERACT_COLLISION_COLLISION_OCTOMAP_OCTOMAP_UNIT_HPP
