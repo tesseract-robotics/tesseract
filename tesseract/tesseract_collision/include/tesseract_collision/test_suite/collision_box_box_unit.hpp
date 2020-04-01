@@ -122,13 +122,9 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
     }
   }
 }
-}  // namespace detail
 
-inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = false)
+inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_type)
 {
-  // Add collision objects
-  detail::addCollisionObjects(checker, use_convex_mesh);
-
   //////////////////////////////////////
   // Test when object is inside another
   //////////////////////////////////////
@@ -147,7 +143,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 
   // Perform collision check
   ContactResultMap result;
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, test_type);
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);
@@ -177,7 +173,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 
   // Use different method for setting transforms
   checker.setCollisionObjectsTransform("box_link", location["box_link"]);
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, test_type);
   flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(result_vector.empty());
@@ -191,7 +187,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 
   checker.setContactDistanceThreshold(0.25);
   EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.25, 1e-5);
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, test_type);
   flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
@@ -209,6 +205,18 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
   EXPECT_NEAR(result_vector[0].normal[1], idx[2] * 0.0, 0.001);
   EXPECT_NEAR(result_vector[0].normal[2], idx[2] * 0.0, 0.001);
 }
+}  // namespace detail
+
+inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = false)
+{
+  // Add collision objects
+  detail::addCollisionObjects(checker, use_convex_mesh);
+
+  detail::runTestTyped(checker, ContactTestType::FIRST);
+  detail::runTestTyped(checker, ContactTestType::CLOSEST);
+  detail::runTestTyped(checker, ContactTestType::ALL);
+}
+
 }  // namespace test_suite
 }  // namespace tesseract_collision
 #endif  // COLLISION_BOX_BOX_UNIT_HPP

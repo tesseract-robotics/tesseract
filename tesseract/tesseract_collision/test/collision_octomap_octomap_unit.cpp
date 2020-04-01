@@ -11,25 +11,25 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract_collision;
 
-TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionCompoundCompoundUnit)  // NOLINT
+TEST(TesseractCollisionUnit, BulletDiscreteSimpleCollisionOctomapOctomapUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteSimpleManager checker;
   test_suite::runTest(checker);
 }
 
-TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionCompoundCompoundUnit)  // NOLINT
+TEST(TesseractCollisionUnit, BulletDiscreteBVHCollisionOctomapOctomapUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletDiscreteBVHManager checker;
   test_suite::runTest(checker);
 }
 
-TEST(TesseractCollisionUnit, BulletContinuousSimpleCollisionCompoundCompoundUnit)  // NOLINT
+TEST(TesseractCollisionUnit, BulletContinuousSimpleCollisionOctomapOctomapUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletCastSimpleManager checker;
   test_suite::runTest(checker);
 }
 
-TEST(TesseractCollisionUnit, BulletContinuousBVHCollisionCompoundCompoundUnit)  // NOLINT
+TEST(TesseractCollisionUnit, BulletContinuousBVHCollisionOctomapOctomapUnit)  // NOLINT
 {
   tesseract_collision_bullet::BulletCastBVHManager checker;
   test_suite::runTest(checker);

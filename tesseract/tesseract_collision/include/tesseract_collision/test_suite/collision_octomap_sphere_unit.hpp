@@ -80,13 +80,9 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
     }
   }
 }
-}  // namespace detail
 
-inline void runTest(DiscreteContactManager& checker, double tol, bool use_convex_mesh)
+inline void runTestTyped(DiscreteContactManager& checker, double tol, ContactTestType test_type)
 {
-  // Add collision objects
-  detail::addCollisionObjects(checker, use_convex_mesh);
-
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
@@ -102,23 +98,41 @@ inline void runTest(DiscreteContactManager& checker, double tol, bool use_convex
   checker.setCollisionObjectsTransform(location);
 
   // Perform collision check
-  auto start_time = std::chrono::high_resolution_clock::now();
   ContactResultMap result;
-  for (auto i = 0; i < 10; ++i)
-  {
-    result.clear();
-    checker.contactTest(result, ContactTestType::CLOSEST);
-  }
-  auto end_time = std::chrono::high_resolution_clock::now();
-
-  CONSOLE_BRIDGE_logInform("DT: %f ms", std::chrono::duration<double, std::milli>(end_time - start_time).count());
+  checker.contactTest(result, test_type);
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
-  EXPECT_NEAR(result_vector[0].distance, -0.25, tol);
+  if (test_type == ContactTestType::CLOSEST)
+  {
+    EXPECT_TRUE(result_vector.size() == 1);
+    EXPECT_NEAR(result_vector[0].distance, -0.25, tol);
+  }
+  else if (test_type == ContactTestType::FIRST)
+  {
+    EXPECT_TRUE(result_vector.size() == 1);
+    EXPECT_TRUE(result_vector[0].distance < 0.1);
+  }
+  else
+  {
+    EXPECT_TRUE(result_vector.size() >= 1);
+    EXPECT_TRUE(result_vector[0].distance < 0.1);
+  }
 }
+}  // namespace detail
+
+inline void runTest(DiscreteContactManager& checker, double tol, bool use_convex_mesh)
+{
+  // Add collision objects
+  detail::addCollisionObjects(checker, use_convex_mesh);
+
+  detail::runTestTyped(checker, tol, ContactTestType::FIRST);
+  detail::runTestTyped(checker, tol, ContactTestType::CLOSEST);
+  detail::runTestTyped(checker, tol, ContactTestType::ALL);
+}
+
 }  // namespace test_suite
 }  // namespace tesseract_collision
 
