@@ -40,6 +40,9 @@ add_library(${PROJECT_NAME}_bullet SHARED
   src/bullet/bullet_discrete_bvh_manager.cpp
   src/bullet/bullet_discrete_simple_manager.cpp
   src/bullet/bullet_utils.cpp
+  src/bullet/tesseract_compound_collision_algorithm.cpp
+  src/bullet/tesseract_compound_compound_collision_algorithm.cpp
+  src/bullet/tesseract_collision_configuration.cpp
 )
 target_link_libraries(${PROJECT_NAME}_bullet PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_geometry console_bridge ${OCTOMAP_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_bullet PUBLIC)

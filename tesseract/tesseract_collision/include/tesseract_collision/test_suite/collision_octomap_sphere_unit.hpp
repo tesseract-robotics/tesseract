@@ -117,7 +117,7 @@ inline void runTestTyped(DiscreteContactManager& checker, double tol, ContactTes
   }
   else
   {
-    EXPECT_TRUE(result_vector.size() >= 1);
+    EXPECT_FALSE(result_vector.empty());
     EXPECT_TRUE(result_vector[0].distance < 0.1);
   }
 }
