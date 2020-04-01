@@ -62,7 +62,7 @@ BulletDiscreteBVHManager::BulletDiscreteBVHManager()
 
   broadphase_ = std::make_unique<btDbvtBroadphase>();
 
-  contact_distance_ = 0;
+  contact_test_data_.contact_distance = 0;
 }
 
 BulletDiscreteBVHManager::~BulletDiscreteBVHManager()
@@ -85,13 +85,13 @@ DiscreteContactManager::Ptr BulletDiscreteBVHManager::clone() const
 
     new_cow->setWorldTransform(cow.second->getWorldTransform());
 
-    new_cow->setContactProcessingThreshold(static_cast<btScalar>(contact_distance_));
+    new_cow->setContactProcessingThreshold(static_cast<btScalar>(contact_test_data_.contact_distance));
     manager->addCollisionObject(new_cow);
   }
 
   manager->setActiveCollisionObjects(active_);
-  manager->setContactDistanceThreshold(contact_distance_);
-  manager->setIsContactAllowedFn(fn_);
+  manager->setContactDistanceThreshold(contact_test_data_.contact_distance);
+  manager->setIsContactAllowedFn(contact_test_data_.fn);
 
   return std::move(manager);
 }
@@ -202,6 +202,7 @@ const std::vector<std::string>& BulletDiscreteBVHManager::getCollisionObjects() 
 void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::string>& names)
 {
   active_ = names;
+  contact_test_data_.active = &active_;
 
   // Now need to update the broadphase with correct aabb
   for (auto& co : link2cow_)
@@ -215,7 +216,7 @@ void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::
 const std::vector<std::string>& BulletDiscreteBVHManager::getActiveCollisionObjects() const { return active_; }
 void BulletDiscreteBVHManager::setContactDistanceThreshold(double contact_distance)
 {
-  contact_distance_ = contact_distance;
+  contact_test_data_.contact_distance = contact_distance;
 
   for (auto& co : link2cow_)
   {
@@ -226,18 +227,20 @@ void BulletDiscreteBVHManager::setContactDistanceThreshold(double contact_distan
   }
 }
 
-double BulletDiscreteBVHManager::getContactDistanceThreshold() const { return contact_distance_; }
-void BulletDiscreteBVHManager::setIsContactAllowedFn(IsContactAllowedFn fn) { fn_ = fn; }
-IsContactAllowedFn BulletDiscreteBVHManager::getIsContactAllowedFn() const { return fn_; }
+double BulletDiscreteBVHManager::getContactDistanceThreshold() const { return contact_test_data_.contact_distance; }
+void BulletDiscreteBVHManager::setIsContactAllowedFn(IsContactAllowedFn fn) { contact_test_data_.fn = fn; }
+IsContactAllowedFn BulletDiscreteBVHManager::getIsContactAllowedFn() const { return contact_test_data_.fn; }
 void BulletDiscreteBVHManager::contactTest(ContactResultMap& collisions, const ContactTestType& type)
 {
-  ContactTestData cdata(active_, contact_distance_, fn_, type, collisions);
+  contact_test_data_.res = &collisions;
+  contact_test_data_.type = type;
+  contact_test_data_.done = false;
 
   broadphase_->calculateOverlappingPairs(dispatcher_.get());
 
   btOverlappingPairCache* pairCache = broadphase_->getOverlappingPairCache();
 
-  DiscreteBroadphaseContactResultCallback cc(cdata, contact_distance_);
+  DiscreteBroadphaseContactResultCallback cc(contact_test_data_, contact_test_data_.contact_distance);
 
   TesseractCollisionPairCallback collisionCallback(dispatch_info_, dispatcher_.get(), cc);
 
@@ -246,6 +249,7 @@ void BulletDiscreteBVHManager::contactTest(ContactResultMap& collisions, const C
 
 void BulletDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
 {
+  cow->setUserPointer(&contact_test_data_);
   link2cow_[cow->getName()] = cow;
   collision_objects_.push_back(cow->getName());
 

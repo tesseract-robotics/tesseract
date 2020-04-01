@@ -265,15 +265,24 @@ public:
                                                          btVector3* /*supportVerticesOut*/,
                                                          int /*numVectors*/) const override
   {
-    throw std::runtime_error("not implemented");
+    throw std::runtime_error("If you are seeing this error message then something in Bullet must have changed. Attach "
+                             "a debugger and inspect the call stack to find the function in Bullet calling this "
+                             "function, then review commit history to determine what change.");
   }
 
   void getAabbSlow(const btTransform& /*t*/, btVector3& /*aabbMin*/, btVector3& /*aabbMax*/) const override
   {
-    throw std::runtime_error("shouldn't happen");
+    throw std::runtime_error("If you are seeing this error message then something in Bullet must have changed. Attach "
+                             "a debugger and inspect the call stack to find the function in Bullet calling this "
+                             "function, then review commit history to determine what change.");
   }
 
-  void setLocalScaling(const btVector3& /*scaling*/) override { throw std::runtime_error("shouldn't happen"); }
+  void setLocalScaling(const btVector3& /*scaling*/) override
+  {
+    throw std::runtime_error("If you are seeing this error message then something in Bullet must have changed. Attach "
+                             "a debugger and inspect the call stack to find the function in Bullet calling this "
+                             "function, then review commit history to determine what change.");
+  }
 
   const btVector3& getLocalScaling() const override
   {
@@ -289,10 +298,17 @@ public:
 
   void getPreferredPenetrationDirection(int /*index*/, btVector3& /*penetrationVector*/) const override
   {
-    throw std::runtime_error("not implemented");
+    throw std::runtime_error("If you are seeing this error message then something in Bullet must have changed. Attach "
+                             "a debugger and inspect the call stack to find the function in Bullet calling this "
+                             "function, then review commit history to determine what change.");
   }
 
-  void calculateLocalInertia(btScalar, btVector3&) const override { throw std::runtime_error("not implemented"); }
+  void calculateLocalInertia(btScalar, btVector3&) const override
+  {
+    throw std::runtime_error("If you are seeing this error message then something in Bullet must have changed. Attach "
+                             "a debugger and inspect the call stack to find the function in Bullet calling this "
+                             "function, then review commit history to determine what change.");
+  }
   // LCOV_EXCL_STOP
 };
 
@@ -569,9 +585,7 @@ inline btScalar addCastSingleResult(btManifoldPoint& cp,
 
   ContactResult* col = processResult(collisions, contact, pc, found);
   if (!col)
-  {
-    return 0;  // LCOV_EXCL_LINE
-  }
+    return 0;
 
   if (cd0->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter &&
       cd1->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
@@ -710,7 +724,7 @@ struct DiscreteBroadphaseContactResultCallback : public BroadphaseContactResultC
                            int /*index1*/) override
   {
     if (cp.m_distance1 > static_cast<btScalar>(contact_distance_))
-      return 0;  // LCOV_EXCL_LINE
+      return 0;
 
     return addDiscreteSingleResult(cp, colObj0Wrap, colObj1Wrap, collisions_);
   }
@@ -947,7 +961,7 @@ struct DiscreteCollisionCollector : public btCollisionWorld::ContactResultCallba
                            int /*index1*/) override
   {
     if (cp.m_distance1 > static_cast<btScalar>(contact_distance_))
-      return 0;  // LCOV_EXCL_LINE
+      return 0;
 
     return addDiscreteSingleResult(cp, colObj0Wrap, colObj1Wrap, collisions_);
   }
@@ -984,7 +998,7 @@ struct CastCollisionCollector : public btCollisionWorld::ContactResultCallback
                            int index1) override
   {
     if (cp.m_distance1 > static_cast<btScalar>(contact_distance_))
-      return 0;  // LCOV_EXCL_LINE
+      return 0;
 
     return addCastSingleResult(cp, colObj0Wrap, index0, colObj1Wrap, index1, collisions_);
   }
