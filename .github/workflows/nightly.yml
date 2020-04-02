@@ -1,0 +1,76 @@
+name: Nightly
+
+on:
+  pull_request:
+    - labeled:
+  schedule:
+    - cron: '0 5 * * *'
+
+jobs:
+  industrial_ci:
+    if: contains(github.event.pull_request.labels.*.name, 'check-tesseract-ros') || github.event.schedule == true
+    name: ${{ matrix.env.CI_NAME }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        env:
+          - {CI_NAME: Bionic-Build-Nightly,
+             OS_NAME: ubuntu,
+             OS_CODE_NAME: bionic,
+             ROS_DISTRO: melodic,
+             ROS_REPO: main,
+             UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#master github:Jmeyer1292/opw_kinematics#master',
+             DOWNSTREAM_WORKSPACE: 'github:ros-industrial-consortium/tesseract_ros#master',
+             TARGET_WORKSPACE: '. github:ros-industrial-consortium/trajopt_ros#master',
+             ROSDEP_SKIP_KEYS: "bullet3 fcl",
+             DOCKER_IMAGE: "lharmstrong/tesseract:melodic",
+             CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Bionic-Build-Nightly/.ccache",
+             PARALLEL_TESTS: false,
+             UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
+             TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
+             DOWNSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"}
+          - {CI_NAME: Xenial-Build-Nightly,
+             OS_NAME: ubuntu,
+             OS_CODE_NAME: xenial,
+             ROS_DISTRO: kinetic,
+             ROS_REPO: main,
+             UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#master github:Jmeyer1292/opw_kinematics#master',
+             DOWNSTREAM_WORKSPACE: 'github:ros-industrial-consortium/tesseract_ros#master',
+             TARGET_WORKSPACE: '. github:ros-industrial-consortium/trajopt_ros#master',
+             ROSDEP_SKIP_KEYS: "bullet3 fcl",
+             DOCKER_IMAGE: "lharmstrong/tesseract:kinetic",
+             CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Xenial-Build-Nightly/.ccache",
+             UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
+             TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
+             DOWNSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"}
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Free Disk Space
+        run: |
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          sudo apt clean
+          docker rmi $(docker image ls -aq)
+          df -h
+
+      - name: Prepare ccache timestamp
+        id: ccache_cache_timestamp
+        shell: cmake -P {0}
+        run: |
+          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
+          message("::set-output name=timestamp::${current_date}")
+
+      - name: ccache cache files
+        uses: actions/cache@v1.1.0
+        with:
+          path: ${{ matrix.env.CI_NAME }}/.ccache
+          key: ${{ matrix.env.CI_NAME }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: |
+            ${{ matrix.env.CI_NAME }}-ccache-
+
+      - uses: 'ros-industrial/industrial_ci@master'
+        env: ${{matrix.env}}
+
