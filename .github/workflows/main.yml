@@ -42,14 +42,13 @@ jobs:
              ROS_DISTRO: melodic,
              ROS_REPO: main,
              UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#master github:Jmeyer1292/opw_kinematics#master',
-             DOWNSTREAM_WORKSPACE: 'github:ros-industrial-consortium/tesseract_ros#master',
              TARGET_WORKSPACE: '. github:ros-industrial-consortium/trajopt_ros#master',
              ROSDEP_SKIP_KEYS: "bullet3 fcl",
              DOCKER_IMAGE: "lharmstrong/tesseract:melodic",
              CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Bionic-Build/.ccache",
+             PARALLEL_TESTS: false,
              UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
              TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON",
-             DOWNSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
              AFTER_SCRIPT: 'catkin build -w $target_ws --no-deps --verbose tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python --make-args test'}
           - {CI_NAME: Xenial-Build,
              OS_NAME: ubuntu,
@@ -57,15 +56,13 @@ jobs:
              ROS_DISTRO: kinetic,
              ROS_REPO: main,
              UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#master github:Jmeyer1292/opw_kinematics#master',
-             DOWNSTREAM_WORKSPACE: 'github:ros-industrial-consortium/tesseract_ros#master',
              TARGET_WORKSPACE: '. github:ros-industrial-consortium/trajopt_ros#master',
              ROSDEP_SKIP_KEYS: "bullet3 fcl",
              DOCKER_IMAGE: "lharmstrong/tesseract:kinetic",
              CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Xenial-Build/.ccache",
+             PARALLEL_TESTS: false,
              UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
              TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON",
-             DOWNSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
-             PARALLEL_TESTS: false,
              AFTER_SCRIPT: 'catkin build -w $target_ws --no-deps --verbose tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python --make-args test'}
           - {CI_NAME: CodeCov,
              OS_NAME: ubuntu,
@@ -109,4 +106,3 @@ jobs:
 
       - uses: 'ros-industrial/industrial_ci@master'
         env: ${{matrix.env}}
-
