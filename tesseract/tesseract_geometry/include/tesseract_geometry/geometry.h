@@ -47,6 +47,9 @@ enum GeometryType
   SDF_MESH,
   OCTREE
 };
+static const std::vector<std::string> GeometryTypeStrings = {
+  "SPHERE", "CYLINDER", "CAPSULE", "CONE", "BOX", "PLANE", "MESH", "CONVEX_MESH", "SDF_MESH", "OCTREE"
+};
 
 class Geometry
 {
