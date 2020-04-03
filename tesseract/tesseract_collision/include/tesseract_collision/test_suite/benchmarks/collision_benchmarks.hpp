@@ -15,7 +15,7 @@ namespace test_suite
  */
 struct DiscreteBenchmarkInfo
 {
-  DiscreteBenchmarkInfo(const DiscreteContactManager::Ptr& contact_manager,
+  DiscreteBenchmarkInfo(const DiscreteContactManager::ConstPtr& contact_manager,
                         const tesseract_geometry::Geometry::ConstPtr& geom1,
                         const Eigen::Isometry3d& pose1,
                         const tesseract_geometry::Geometry::ConstPtr& geom2,
@@ -36,6 +36,26 @@ struct DiscreteBenchmarkInfo
   CollisionShapesConst geom2_;
   tesseract_common::VectorIsometry3d obj2_poses;
   ContactTestType contact_test_type_;
+};
+
+/** @brief Benchmark that checks the clone method in discrete contact managers*/
+static void BM_CLONE(benchmark::State& state, DiscreteBenchmarkInfo info, int num_obj)
+{
+  std::vector<std::string> active_obj(num_obj);
+  for (int ind = 0; ind < num_obj; ind++)
+  {
+    std::string name = "geom_" + std::to_string(ind);
+    active_obj.push_back(name);
+    info.contact_manager_->addCollisionObject(name, 0, info.geom1_, info.obj1_poses);
+  }
+  info.contact_manager_->setActiveCollisionObjects(active_obj);
+  info.contact_manager_->setContactDistanceThreshold(0.5);
+
+  DiscreteContactManager::Ptr clone;
+  for (auto _ : state)
+  {
+    benchmark::DoNotOptimize(clone = info.contact_manager_->clone());
+  }
 };
 
 /** @brief Benchmark that checks the contactTest function in discrete contact managers*/
