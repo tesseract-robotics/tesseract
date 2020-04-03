@@ -100,6 +100,20 @@ target_include_directories(${PROJECT_NAME}_test_suite SYSTEM INTERFACE
     ${EIGEN3_INCLUDE_DIRS}
     $<TARGET_PROPERTY:tesseract::tesseract_common,INTERFACE_INCLUDE_DIRECTORIES>) #tesseract::tesseract_common Due to bug in catkin, there is an open PR
 
+# Create test suite interface
+add_library(${PROJECT_NAME}_test_suite_benchmarks INTERFACE)
+target_link_libraries(${PROJECT_NAME}_test_suite_benchmarks INTERFACE tesseract::tesseract_geometry)
+tesseract_target_compile_options(${PROJECT_NAME}_test_suite_benchmarks INTERFACE)
+tesseract_clang_tidy(${PROJECT_NAME}_test_suite_benchmarks)
+tesseract_code_coverage(${PROJECT_NAME}_test_suite_benchmarks ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_compile_definitions(${PROJECT_NAME}_test_suite_benchmarks INTERFACE TEST_SUITE_DATA_DIR="${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/test_suite/data")
+target_include_directories(${PROJECT_NAME}_test_suite_benchmarks INTERFACE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_test_suite_benchmarks SYSTEM INTERFACE
+    ${EIGEN3_INCLUDE_DIRS}
+    $<TARGET_PROPERTY:tesseract::tesseract_common,INTERFACE_INCLUDE_DIRECTORIES>) #tesseract::tesseract_common Due to bug in catkin, there is an open PR
+
 tesseract_configure_package(${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${PROJECT_NAME}_test_suite create_convex_hull)
 
 # Mark cpp header files for installation
@@ -125,3 +139,8 @@ if (TESSERACT_ENABLE_TESTING)
   tesseract_add_run_tests_target()
   add_subdirectory(test)
 endif()
+
+if (TESSERACT_ENABLE_BENCHMARKING)
+  add_subdirectory(test/benchmarks)
+endif()
+

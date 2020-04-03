@@ -168,6 +168,20 @@ macro(tesseract_add_run_tests_target)
   endif()
 endmacro()
 
+# This macro add a custom target that will run the benchmarks after they are finished building.
+# Usage: tesseract_add_run_benchmark_target(benchmark_name)
+# Results are saved to /test/benchmarks/${benchmark_name}_results.json in the build directory
+macro(tesseract_add_run_benchmark_target benchmark_name)
+  if(TESSERACT_ENABLE_RUN_BENCHMARKING)
+    add_custom_target(run_benchmark_${benchmark_name} ALL
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMAND ./test/benchmarks/${benchmark_name} --benchmark_out_format=json --benchmark_out="./test/benchmarks/${benchmark_name}_results.json")
+  else()
+    add_custom_target(run_benchmark_${benchmark_name})
+  endif()
+  add_dependencies(run_benchmark_${benchmark_name} ${benchmark_name})
+endmacro()
+
 #http://www.stablecoder.ca/2018/01/15/code-coverage.html
 #code coverage
 #if(CMAKE_BUILD_TYPE STREQUAL "coverage" OR CODE_COVERAGE)

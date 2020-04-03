@@ -69,6 +69,13 @@ enum class ContactTestType
   LIMITED = 3  /**< Return limited set of contacts for a pair of objects */
 };
 
+static const std::vector<std::string> ContactTestTypeStrings = {
+  "FIRST",
+  "CLOSEST",
+  "ALL",
+  "LIMITED",
+};
+
 struct ContactResult
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
