@@ -74,6 +74,44 @@ static void BM_CONTACT_TEST(benchmark::State& state, DiscreteBenchmarkInfo info)
   }
 };
 
+/** @brief Benchmark that checks how long it takes to select a random object so that number can be subtracted from other
+ * benchmarks if that is important*/
+static void BM_SELECT_RANDOM_OBJECT(benchmark::State& state, int num_obj)
+{
+  int selected_link;
+  for (auto _ : state)
+  {
+    benchmark::DoNotOptimize(selected_link = rand() % static_cast<int>(num_obj));
+  }
+};
+
+/** @brief Benchmark that checks the setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d&
+ * pose) method in discrete contact managers*/
+static void BM_SET_COLLISION_OBJECTS_TRANSFORM_SINGLE(benchmark::State& state, DiscreteBenchmarkInfo info, int num_obj)
+{
+  // Setting up collision objects
+  std::vector<std::string> active_obj(num_obj);
+  for (int ind = 0; ind < num_obj; ind++)
+  {
+    std::string name = "geom_" + std::to_string(ind);
+    active_obj.push_back(name);
+    info.contact_manager_->addCollisionObject(name, 0, info.geom1_, info.obj1_poses);
+  }
+  info.contact_manager_->setActiveCollisionObjects(active_obj);
+  info.contact_manager_->setContactDistanceThreshold(0.5);
+
+  for (auto _ : state)
+  {
+    // Including this seems necessary to insure that a distribution of links is used rather than always searching for
+    // the same one. Subtract off approximately BM_SELECT_RANDOM_OBJECT if you need absolute numbers rather than
+    // relative.
+    int selected_link = rand() % num_obj;
+    info.contact_manager_->setCollisionObjectsTransform(active_obj[selected_link], info.obj2_poses[0]);
+  }
+};
+
+// TODO: BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR, BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP
+
 }  // namespace test_suite
 }  // namespace tesseract_collision
 
