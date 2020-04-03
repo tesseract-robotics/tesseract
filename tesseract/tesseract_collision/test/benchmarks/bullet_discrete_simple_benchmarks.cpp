@@ -11,7 +11,37 @@ using namespace tesseract_geometry;
 
 int main(int argc, char** argv)
 {
-  std::function<void(benchmark::State & state, DiscreteBenchmarkInfo info)> BM_CONTACT_TEST_FUNC = BM_CONTACT_TEST;
+  const tesseract_collision_bullet::BulletDiscreteSimpleManager::ConstPtr checker =
+      std::make_shared<tesseract_collision_bullet::BulletDiscreteSimpleManager>();
+
+  //////////////////////////////////////
+  // Clone
+  //////////////////////////////////////
+
+  {
+    std::vector<int> num_links = { 0, 2, 4, 8, 16, 32, 64, 128, 256, 512 };
+    std::function<void(benchmark::State&, DiscreteBenchmarkInfo, int)> BM_CLONE_FUNC = BM_CLONE;
+    for (const auto& num_link : num_links)
+    {
+      std::string name = "BM_CLONE_" + checker->name() + "_ACTIVE_OBJ_" + std::to_string(num_link);
+      benchmark::RegisterBenchmark(name.c_str(),
+                                   BM_CLONE_FUNC,
+                                   DiscreteBenchmarkInfo(checker,
+                                                         CreateUnitPrimative(GeometryType::BOX),
+                                                         Eigen::Isometry3d::Identity(),
+                                                         CreateUnitPrimative(GeometryType::BOX),
+                                                         Eigen::Isometry3d::Identity(),
+                                                         ContactTestType::ALL),
+                                   num_link)
+          ->UseRealTime()
+          ->Unit(benchmark::TimeUnit::kMicrosecond);
+    }
+  }
+
+  //////////////////////////////////////
+  // contactTest
+  //////////////////////////////////////
+  std::function<void(benchmark::State&, DiscreteBenchmarkInfo)> BM_CONTACT_TEST_FUNC = BM_CONTACT_TEST;
 
   // Make vector of all shapes to try
   std::vector<tesseract_geometry::GeometryType> geometry_types = {
@@ -24,7 +54,6 @@ int main(int argc, char** argv)
 
   // BulletDiscreteSimpleManager - In Collision
   {
-    auto checker = std::make_shared<tesseract_collision_bullet::BulletDiscreteSimpleManager>();
     for (const auto& test_type : test_types)
     {
       // Loop over all primative combinations
@@ -51,7 +80,6 @@ int main(int argc, char** argv)
   }
   // BulletDiscreteSimpleManager - Not in collision. Within contact threshold
   {
-    auto checker = std::make_shared<tesseract_collision_bullet::BulletDiscreteSimpleManager>();
     for (const auto& test_type : test_types)
     {
       // Loop over all primative combinations
@@ -80,7 +108,6 @@ int main(int argc, char** argv)
 
   // BulletDiscreteSimpleManager - Not in collision. Outside contact threshold
   {
-    auto checker = std::make_shared<tesseract_collision_bullet::BulletDiscreteSimpleManager>();
     for (const auto& test_type : test_types)
     {
       // Loop over all primative combinations
