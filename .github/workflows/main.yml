@@ -57,7 +57,7 @@ jobs:
              ROS_REPO: main,
              UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#master github:Jmeyer1292/opw_kinematics#master',
              TARGET_WORKSPACE: '. github:ros-industrial-consortium/trajopt_ros#master',
-             ROSDEP_SKIP_KEYS: "bullet3 fcl",
+             ROSDEP_SKIP_KEYS: "bullet3 fcl benchmark",
              DOCKER_IMAGE: "lharmstrong/tesseract:kinetic",
              CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Xenial-Build/.ccache",
              PARALLEL_TESTS: false,
