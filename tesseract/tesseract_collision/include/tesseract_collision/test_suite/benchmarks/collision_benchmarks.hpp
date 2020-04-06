@@ -70,6 +70,7 @@ static void BM_CONTACT_TEST(benchmark::State& state, DiscreteBenchmarkInfo info)
   ContactResultMap result;
   for (auto _ : state)
   {
+    result.clear();
     info.contact_manager_->contactTest(result, info.contact_test_type_);
   }
 };
@@ -94,7 +95,7 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_SINGLE(benchmark::State& state, D
   for (int ind = 0; ind < num_obj; ind++)
   {
     std::string name = "geom_" + std::to_string(ind);
-    active_obj.push_back(name);
+    active_obj[ind] = name;
     info.contact_manager_->addCollisionObject(name, 0, info.geom1_, info.obj1_poses);
   }
   info.contact_manager_->setActiveCollisionObjects(active_obj);
@@ -110,7 +111,60 @@ static void BM_SET_COLLISION_OBJECTS_TRANSFORM_SINGLE(benchmark::State& state, D
   }
 };
 
-// TODO: BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR, BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP
+/** @brief Benchmark that checks the setCollisionObjectsTransform(const std::vector<std::string>& names, const
+   tesseract_common::VectorIsometry3d& poses) method in discrete contact managers. Moves only a single random link*/
+static void BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR(benchmark::State& state,
+                                                      DiscreteBenchmarkInfo info,
+                                                      std::size_t num_obj)
+{
+  // Setting up collision objects
+  std::vector<std::string> active_obj(num_obj);
+  for (std::size_t ind = 0; ind < num_obj; ind++)
+  {
+    std::string name = "geom_" + std::to_string(ind);
+    active_obj[ind] = name;
+    info.contact_manager_->addCollisionObject(name, 0, info.geom1_, info.obj1_poses);
+  }
+  info.contact_manager_->setActiveCollisionObjects(active_obj);
+  info.contact_manager_->setContactDistanceThreshold(0.5);
+
+  std::vector<std::string> selected_links(1);
+  for (auto _ : state)
+  {
+    // Including this seems necessary to insure that a distribution of links is used rather than always searching for
+    // the same one. Subtract off approximately BM_SELECT_RANDOM_OBJECT if you need absolute numbers rather than
+    // relative.
+    selected_links[0] = active_obj[rand() % num_obj];
+    info.contact_manager_->setCollisionObjectsTransform(selected_links, info.obj2_poses);
+  }
+};
+
+/** @brief Benchmark that checks the setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms)
+ * method in discrete contact managers. Moves only a single random link*/
+static void BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP(benchmark::State& state,
+                                                   DiscreteBenchmarkInfo info,
+                                                   std::size_t num_obj)
+{
+  // Setting up collision objects
+  std::vector<std::string> active_obj(num_obj);
+  for (std::size_t ind = 0; ind < num_obj; ind++)
+  {
+    std::string name = "geom_" + std::to_string(ind);
+    active_obj[ind] = name;
+    info.contact_manager_->addCollisionObject(name, 0, info.geom1_, info.obj1_poses);
+  }
+  info.contact_manager_->setActiveCollisionObjects(active_obj);
+  info.contact_manager_->setContactDistanceThreshold(0.5);
+
+  tesseract_common::TransformMap selected_link;
+  for (auto _ : state)
+  {
+    // Including this seems necessary to insure that a distribution of links is used rather than always searching for
+    // the same one. It might be worth it to manually time these as well if it's really important
+    selected_link[active_obj[rand() % num_obj]] = info.obj2_poses[0];
+    info.contact_manager_->setCollisionObjectsTransform(selected_link);
+  }
+};
 
 }  // namespace test_suite
 }  // namespace tesseract_collision
