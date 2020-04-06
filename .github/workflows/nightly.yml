@@ -2,7 +2,7 @@ name: Nightly
 
 on:
   pull_request:
-    - labeled:
+    types: [labeled]
   schedule:
     - cron: '0 5 * * *'
 
