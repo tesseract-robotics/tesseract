@@ -141,7 +141,7 @@ int main(int argc, char** argv)
     std::function<void(benchmark::State&, int)> BM_SELECT_RANDOM_OBJECT_FUNC = BM_SELECT_RANDOM_OBJECT;
     benchmark::RegisterBenchmark("BM_SELECT_RANDOM_OBJECT", BM_SELECT_RANDOM_OBJECT_FUNC, 256)
         ->UseRealTime()
-        ->Unit(benchmark::TimeUnit::kMicrosecond);
+        ->Unit(benchmark::TimeUnit::kNanosecond);
   }
   {
     std::function<void(benchmark::State&, DiscreteBenchmarkInfo, int)> BM_SET_COLLISION_OBJECTS_TRANSFORM_SINGLE_FUNC =
@@ -163,7 +163,53 @@ int main(int argc, char** argv)
                                                          ContactTestType::ALL),
                                    num_link)
           ->UseRealTime()
-          ->Unit(benchmark::TimeUnit::kMicrosecond);
+          ->Unit(benchmark::TimeUnit::kNanosecond);
+    }
+  }
+  {
+    std::function<void(benchmark::State&, DiscreteBenchmarkInfo, int)> BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR_FUNC =
+        BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR;
+    std::vector<std::size_t> num_links = { 2, 4, 8, 16, 32, 64, 128, 256, 512 };
+
+    for (const auto& num_link : num_links)
+    {
+      auto tf = Eigen::Isometry3d::Identity();
+      std::string name =
+          "BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR_" + checker->name() + "_ACTIVE_OBJ_" + std::to_string(num_link);
+      benchmark::RegisterBenchmark(name.c_str(),
+                                   BM_SET_COLLISION_OBJECTS_TRANSFORM_VECTOR_FUNC,
+                                   DiscreteBenchmarkInfo(checker,
+                                                         CreateUnitPrimative(GeometryType::BOX),
+                                                         Eigen::Isometry3d::Identity(),
+                                                         CreateUnitPrimative(GeometryType::BOX),
+                                                         tf.translate(Eigen::Vector3d(2, 0, 0)),
+                                                         ContactTestType::ALL),
+                                   num_link)
+          ->UseRealTime()
+          ->Unit(benchmark::TimeUnit::kNanosecond);
+    }
+  }
+  {
+    std::function<void(benchmark::State&, DiscreteBenchmarkInfo, int)> BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP_FUNC =
+        BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP;
+    std::vector<std::size_t> num_links = { 2, 4, 8, 16, 32, 64, 128, 256, 512 };
+
+    for (const auto& num_link : num_links)
+    {
+      auto tf = Eigen::Isometry3d::Identity();
+      std::string name =
+          "BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP_" + checker->name() + "_ACTIVE_OBJ_" + std::to_string(num_link);
+      benchmark::RegisterBenchmark(name.c_str(),
+                                   BM_SET_COLLISION_OBJECTS_TRANSFORM_MAP_FUNC,
+                                   DiscreteBenchmarkInfo(checker,
+                                                         CreateUnitPrimative(GeometryType::BOX),
+                                                         Eigen::Isometry3d::Identity(),
+                                                         CreateUnitPrimative(GeometryType::BOX),
+                                                         tf.translate(Eigen::Vector3d(2, 0, 0)),
+                                                         ContactTestType::ALL),
+                                   num_link)
+          ->UseRealTime()
+          ->Unit(benchmark::TimeUnit::kNanosecond);
     }
   }
 
