@@ -110,7 +110,7 @@ target_include_directories(${PROJECT_NAME}_test_suite_benchmarks INTERFACE
 target_include_directories(${PROJECT_NAME}_test_suite_benchmarks SYSTEM INTERFACE
     ${EIGEN3_INCLUDE_DIRS})
 
-tesseract_configure_package(${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${PROJECT_NAME}_test_suite create_convex_hull)
+tesseract_configure_package(${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${PROJECT_NAME}_test_suite ${PROJECT_NAME}_test_suite_benchmarks create_convex_hull)
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
