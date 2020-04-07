@@ -54,6 +54,7 @@ class FCLDiscreteBVHManager : public DiscreteContactManager
 {
 public:
   using Ptr = std::shared_ptr<FCLDiscreteBVHManager>;
+  using ConstPtr = std::shared_ptr<const FCLDiscreteBVHManager>;
 
   FCLDiscreteBVHManager();
   ~FCLDiscreteBVHManager() override = default;
