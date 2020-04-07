@@ -52,11 +52,11 @@ static void BM_LARGE_DATASET(benchmark::State& state,
 
   std::vector<std::string> link_names;
   tesseract_common::TransformMap location;
-  for (std::size_t x = 0; x < edge_size; ++x)
+  for (int x = 0; x < edge_size; ++x)
   {
-    for (std::size_t y = 0; y < edge_size; ++y)
+    for (int y = 0; y < edge_size; ++y)
     {
-      for (std::size_t z = 0; z < edge_size; ++z)
+      for (int z = 0; z < edge_size; ++z)
       {
         CollisionShapesConst obj3_shapes;
         tesseract_common::VectorIsometry3d obj3_poses;
@@ -79,7 +79,6 @@ static void BM_LARGE_DATASET(benchmark::State& state,
   // Check if they are in collision
   checker->setActiveCollisionObjects(link_names);
   checker->setContactDistanceThreshold(0.1);
-  checker->getContactDistanceThreshold(), 0.1, 1e-5;
   checker->setCollisionObjectsTransform(location);
 
   ContactResultVector result_vector;
