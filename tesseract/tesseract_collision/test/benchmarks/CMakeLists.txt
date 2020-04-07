@@ -29,3 +29,4 @@ endmacro()
 
 add_benchmark(${PROJECT_NAME}_bullet_discrete_simple_benchmarks bullet_discrete_simple_benchmarks.cpp)
 add_benchmark(${PROJECT_NAME}_bullet_discrete_bvh_benchmarks bullet_discrete_bvh_benchmarks.cpp)
+add_benchmark(${PROJECT_NAME}_fcl_discrete_bvh_benchmarks fcl_discrete_bvh_benchmarks.cpp)
