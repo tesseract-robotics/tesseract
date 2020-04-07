@@ -56,14 +56,16 @@ jobs:
           tool: 'googlecpp'
           output-file-path: /home/runner/work/tesseract/tesseract/Bionic-Benchmark/.ccache/benchmarks/tesseract_collision_bullet_discrete_simple_benchmarks_results.json
           # Use personal access token instead of GITHUB_TOKEN due to https://github.community/t5/GitHub-Actions/Github-action-not-triggering-gh-pages-upon-push/td-p/26869/highlight/false
-          github-token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }} # GitHub API token to make a commit comment
           auto-push: false
           # Show alert with commit comment on detecting possible performance regression
           alert-threshold: '200%'
           comment-on-alert: true
           fail-on-alert: false
           alert-comment-cc-users: '@mpowelson'
+          max-items-in-chart: 20
 
+      # PERSONAL_GITHUB_TOKEN needed here since we are pushing to a branch
       - name: Push benchmark result
         run: git push 'https://ros-industrial-consortium:${{ secrets.PERSONAL_GITHUB_TOKEN }}@github.com/ros-industrial-consortium/tesseract.git' gh-pages:gh-pages
         if: github.event_name != 'pull_request'
