@@ -1,5 +1,5 @@
-#ifndef TESSERACT_COLLISION_BENCHMARKS_HPP
-#define TESSERACT_COLLISION_BENCHMARKS_HPP
+#ifndef TESSERACT_COLLISION_PRIMATIVES_BENCHMARKS_HPP
+#define TESSERACT_COLLISION_PRIMATIVES_BENCHMARKS_HPP
 
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_geometry/geometries.h>
