@@ -28,3 +28,4 @@ macro(add_benchmark benchmark_name benchmark_file)
 endmacro()
 
 add_benchmark(${PROJECT_NAME}_bullet_discrete_simple_benchmarks bullet_discrete_simple_benchmarks.cpp)
+add_benchmark(${PROJECT_NAME}_bullet_discrete_bvh_benchmarks bullet_discrete_bvh_benchmarks.cpp)

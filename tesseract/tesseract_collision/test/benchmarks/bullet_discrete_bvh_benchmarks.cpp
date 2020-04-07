@@ -4,7 +4,7 @@
 #include <tesseract_collision/test_suite/benchmarks/primatives_benchmarks.hpp>
 #include <tesseract_collision/test_suite/benchmarks/large_dataset_benchmarks.hpp>
 #include <tesseract_collision/test_suite/benchmarks/benchmark_utils.hpp>
-#include <tesseract_collision/bullet/bullet_discrete_simple_manager.h>
+#include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 
 using namespace tesseract_collision;
 using namespace test_suite;
@@ -12,8 +12,8 @@ using namespace tesseract_geometry;
 
 int main(int argc, char** argv)
 {
-  const tesseract_collision_bullet::BulletDiscreteSimpleManager::ConstPtr checker =
-      std::make_shared<tesseract_collision_bullet::BulletDiscreteSimpleManager>();
+  const tesseract_collision_bullet::BulletDiscreteBVHManager::ConstPtr checker =
+      std::make_shared<tesseract_collision_bullet::BulletDiscreteBVHManager>();
 
   //////////////////////////////////////
   // Clone
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     ContactTestType::ALL, ContactTestType::FIRST, ContactTestType::CLOSEST, ContactTestType::LIMITED
   };
 
-  // BulletDiscreteSimpleManager - In Collision
+  // In Collision
   {
     for (const auto& test_type : test_types)
     {
@@ -62,6 +62,7 @@ int main(int argc, char** argv)
       {
         for (const auto& type2 : geometry_types)
         {
+          auto tf = Eigen::Isometry3d::Identity();
           std::string name = "BM_CONTACT_TEST_0_" + checker->name() + "_" +
                              ContactTestTypeStrings[static_cast<std::size_t>(test_type)] + "_" +
                              GeometryTypeStrings[type1] + "_" + GeometryTypeStrings[type2];
@@ -71,7 +72,7 @@ int main(int argc, char** argv)
                                                              CreateUnitPrimative(type1),
                                                              Eigen::Isometry3d::Identity(),
                                                              CreateUnitPrimative(type2),
-                                                             Eigen::Isometry3d::Identity(),
+                                                             tf.translate(Eigen::Vector3d(0.0001, 0, 0)),
                                                              test_type))
               ->UseRealTime()
               ->Unit(benchmark::TimeUnit::kMicrosecond);
@@ -79,7 +80,7 @@ int main(int argc, char** argv)
       }
     }
   }
-  // BulletDiscreteSimpleManager - Not in collision. Within contact threshold
+  // Not in collision. Within contact threshold
   {
     for (const auto& test_type : test_types)
     {
@@ -107,7 +108,7 @@ int main(int argc, char** argv)
     }
   }
 
-  // BulletDiscreteSimpleManager - Not in collision. Outside contact threshold
+  //  Not in collision. Outside contact threshold
   {
     for (const auto& test_type : test_types)
     {
