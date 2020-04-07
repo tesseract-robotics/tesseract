@@ -106,6 +106,9 @@ bool BulletCastBVHManager::addCollisionObject(const std::string& name,
                                               const tesseract_common::VectorIsometry3d& shape_poses,
                                               bool enabled)
 {
+  if (link2cow_.find(name) != link2cow_.end())
+    removeCollisionObject(name);
+
   COW::Ptr new_cow = createCollisionObject(name, mask_id, shapes, shape_poses, enabled);
   if (new_cow != nullptr)
   {
