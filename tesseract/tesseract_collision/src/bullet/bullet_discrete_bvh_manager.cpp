@@ -48,7 +48,7 @@ namespace tesseract_collision_bullet
 static const CollisionShapesConst EMPTY_COLLISION_SHAPES_CONST;
 static const tesseract_common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORMS;
 
-BulletDiscreteBVHManager::BulletDiscreteBVHManager()
+BulletDiscreteBVHManager::BulletDiscreteBVHManager() : broadphase_overlap_cb_(contact_test_data_)
 {
   dispatcher_ = std::make_unique<btCollisionDispatcher>(&coll_config_);
 
@@ -61,6 +61,7 @@ BulletDiscreteBVHManager::BulletDiscreteBVHManager()
                                   ~btCollisionDispatcher::CD_USE_RELATIVE_CONTACT_BREAKING_THRESHOLD);
 
   broadphase_ = std::make_unique<btDbvtBroadphase>();
+  broadphase_->getOverlappingPairCache()->setOverlapFilterCallback(&broadphase_overlap_cb_);
 
   contact_test_data_.contact_distance = 0;
 }
