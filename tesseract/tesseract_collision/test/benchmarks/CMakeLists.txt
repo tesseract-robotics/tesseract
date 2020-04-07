@@ -6,9 +6,8 @@ macro(add_benchmark benchmark_name benchmark_file)
   tesseract_target_compile_options(${benchmark_name} PRIVATE)
   tesseract_clang_tidy(${benchmark_name})
   target_link_libraries(${benchmark_name}
-
       benchmark::benchmark
-      ${PROJECT_NAME}_test_suite
+      ${PROJECT_NAME}_test_suite_benchmarks
       ${PROJECT_NAME}_bullet
       ${PROJECT_NAME}_fcl
       tesseract::tesseract_geometry
@@ -22,6 +21,7 @@ macro(add_benchmark benchmark_name benchmark_file)
   target_include_directories(${benchmark_name} PRIVATE
       "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
   add_dependencies(${benchmark_name}
+    ${PROJECT_NAME}_test_suite_benchmarks
     ${PROJECT_NAME}_bullet
     ${PROJECT_NAME}_fcl)
   tesseract_add_run_benchmark_target(${benchmark_name})
