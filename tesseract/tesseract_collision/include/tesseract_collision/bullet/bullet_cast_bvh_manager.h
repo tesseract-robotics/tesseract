@@ -144,6 +144,9 @@ private:
    * so it can be used to exit collision checking for compound shapes.
    */
   ContactTestData contact_test_data_;
+
+  /** @brief Filter collision objects before broadphase check */
+  TesseractOverlapFilterCallback broadphase_overlap_cb_;
 };
 }  // namespace tesseract_collision_bullet
 }  // namespace tesseract_collision

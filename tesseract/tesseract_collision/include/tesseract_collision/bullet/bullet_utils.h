@@ -869,6 +869,28 @@ public:
   }
 };
 
+/** @brief This class is used to filter broadphase */
+class TesseractOverlapFilterCallback : public btOverlapFilterCallback
+{
+public:
+  TesseractOverlapFilterCallback(ContactTestData& contact_data, bool verbose = false)
+    : contact_data_(contact_data), verbose_(verbose)
+  {
+  }
+
+  bool needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) const override
+  {
+    return !contact_data_.done && needsCollisionCheck(*(static_cast<CollisionObjectWrapper*>(proxy0->m_clientObject)),
+                                                      *(static_cast<CollisionObjectWrapper*>(proxy1->m_clientObject)),
+                                                      contact_data_.fn,
+                                                      verbose_);
+  }
+
+private:
+  ContactTestData& contact_data_;
+  bool verbose_{ false };
+};
+
 /**
  * @brief Create a bullet collision shape from tesseract collision shape
  * @param geom Tesseract collision shape
