@@ -1,7 +1,8 @@
 #include <benchmark/benchmark.h>
 #include <Eigen/Eigen>
 
-#include <tesseract_collision/test_suite/benchmarks/collision_benchmarks.hpp>
+#include <tesseract_collision/test_suite/benchmarks/primatives_benchmarks.hpp>
+#include <tesseract_collision/test_suite/benchmarks/large_dataset_benchmarks.hpp>
 #include <tesseract_collision/test_suite/benchmarks/benchmark_utils.hpp>
 #include <tesseract_collision/bullet/bullet_discrete_simple_manager.h>
 
@@ -210,6 +211,44 @@ int main(int argc, char** argv)
                                    num_link)
           ->UseRealTime()
           ->Unit(benchmark::TimeUnit::kNanosecond);
+    }
+  }
+  //////////////////////////////////////
+  // Large Dataset contactTest
+  //////////////////////////////////////
+  {
+    std::function<void(benchmark::State&, DiscreteContactManager::Ptr, int, tesseract_geometry::GeometryType)>
+        BM_LARGE_DATASET_FUNC = BM_LARGE_DATASET;
+    std::vector<int> edge_sizes = { 2, 4, 6, 8, 10, 12 };
+
+    for (const auto& edge_size : edge_sizes)
+    {
+      DiscreteContactManager::Ptr clone = checker->clone();
+      std::string name = "BM_LARGE_DATASET_" + checker->name() + "_CONVEX_MESH_EDGE_SIZE_" + std::to_string(edge_size);
+      benchmark::RegisterBenchmark(
+          name.c_str(), BM_LARGE_DATASET_FUNC, clone, edge_size, tesseract_geometry::GeometryType::CONVEX_MESH)
+          ->UseRealTime()
+          ->Unit(benchmark::TimeUnit::kMillisecond);
+    }
+    for (const auto& edge_size : edge_sizes)
+    {
+      DiscreteContactManager::Ptr clone = checker->clone();
+      std::string name =
+          "BM_LARGE_DATASET_" + checker->name() + "_PRIMATIVE_EDGE_SIZE_" + std::to_string(edge_size);
+      benchmark::RegisterBenchmark(
+          name.c_str(), BM_LARGE_DATASET_FUNC, clone, edge_size, tesseract_geometry::GeometryType::SPHERE)
+          ->UseRealTime()
+          ->Unit(benchmark::TimeUnit::kMillisecond);
+    }
+    for (const auto& edge_size : edge_sizes)
+    {
+      DiscreteContactManager::Ptr clone = checker->clone();
+      std::string name =
+          "BM_LARGE_DATASET_" + checker->name() + "_DETAILED_MESH_EDGE_SIZE_" + std::to_string(edge_size);
+      benchmark::RegisterBenchmark(
+          name.c_str(), BM_LARGE_DATASET_FUNC, clone, edge_size, tesseract_geometry::GeometryType::MESH)
+          ->UseRealTime()
+          ->Unit(benchmark::TimeUnit::kMillisecond);
     }
   }
 
