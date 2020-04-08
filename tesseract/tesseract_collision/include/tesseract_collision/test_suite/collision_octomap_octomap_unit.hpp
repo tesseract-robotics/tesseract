@@ -22,7 +22,7 @@ inline void addCollisionObjects(T& checker)
   /////////////////////////////////////////////////////////////////
   // Add Octomap
   /////////////////////////////////////////////////////////////////
-  std::string path = std::string(TEST_SUITE_DATA_DIR) + "/box_2m.bt";
+  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.bt";
   auto ot = std::make_shared<octomap::OcTree>(path);
   CollisionShapePtr dense_octomap =
       std::make_shared<tesseract_geometry::Octree>(ot, tesseract_geometry::Octree::SPHERE_OUTSIDE);

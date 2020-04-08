@@ -21,7 +21,9 @@ inline void addCollisionObjects(ContinuousContactManager& checker, bool use_conv
   {
     tesseract_common::VectorVector3d mesh_vertices;
     Eigen::VectorXi mesh_faces;
-    EXPECT_GT(loadSimplePlyFile(std::string(TEST_SUITE_DATA_DIR) + "/sphere_p25m.ply", mesh_vertices, mesh_faces), 0);
+    EXPECT_GT(
+        loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", mesh_vertices, mesh_faces),
+        0);
 
     // This is required because convex hull cannot have multiple faces on the same plane.
     auto ch_vertices = std::make_shared<tesseract_common::VectorVector3d>();
@@ -71,7 +73,9 @@ inline void addCollisionObjects(ContinuousContactManager& checker, bool use_conv
   {
     tesseract_common::VectorVector3d mesh_vertices;
     Eigen::VectorXi mesh_faces;
-    EXPECT_GT(loadSimplePlyFile(std::string(TEST_SUITE_DATA_DIR) + "/sphere_p25m.ply", mesh_vertices, mesh_faces), 0);
+    EXPECT_GT(
+        loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", mesh_vertices, mesh_faces),
+        0);
 
     // This is required because convex hull cannot have multiple faces on the same plane.
     auto ch_verticies = std::make_shared<tesseract_common::VectorVector3d>();

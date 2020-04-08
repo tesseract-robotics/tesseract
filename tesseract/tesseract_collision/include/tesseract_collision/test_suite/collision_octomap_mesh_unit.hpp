@@ -23,7 +23,7 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   /////////////////////////////////////////////////////////////////
   // Add Octomap
   /////////////////////////////////////////////////////////////////
-  std::string path = std::string(TEST_SUITE_DATA_DIR) + "/box_2m.bt";
+  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.bt";
   auto ot = std::make_shared<octomap::OcTree>(path);
   CollisionShapePtr dense_octomap = std::make_shared<tesseract_geometry::Octree>(ot, tesseract_geometry::Octree::BOX);
   Eigen::Isometry3d octomap_pose;
@@ -40,7 +40,7 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
   // Add plane mesh to checker.
   /////////////////////////////////////////////////////////////////
   CollisionShapePtr sphere = tesseract_geometry::createMeshFromPath<tesseract_geometry::Mesh>(
-      std::string(TEST_SUITE_DATA_DIR) + "/plane_4m.stl", Eigen::Vector3d(1, 1, 1), true)[0];
+      std::string(TESSERACT_SUPPORT_DIR) + "/meshes/plane_4m.stl", Eigen::Vector3d(1, 1, 1), true)[0];
 
   Eigen::Isometry3d sphere_pose;
   sphere_pose.setIdentity();
