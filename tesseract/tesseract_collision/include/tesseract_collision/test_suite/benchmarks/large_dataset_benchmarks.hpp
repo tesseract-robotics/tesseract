@@ -14,11 +14,12 @@ namespace tesseract_collision
 {
 namespace test_suite
 {
-/** @brief Benchmark that checks collisions between a lot of objects. In this case it is a grid of spheres*/
-static void BM_LARGE_DATASET(benchmark::State& state,
-                             DiscreteContactManager::Ptr checker,
-                             int edge_size,
-                             tesseract_geometry::GeometryType type)
+/** @brief Benchmark that checks collisions between a lot of objects. In this case it is a grid of spheres - each as its
+ * own link*/
+static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
+                                       DiscreteContactManager::Ptr checker,
+                                       int edge_size,
+                                       tesseract_geometry::GeometryType type)
 {
   // Add Meshed Sphere to checker
   CollisionShapePtr sphere;
@@ -80,6 +81,96 @@ static void BM_LARGE_DATASET(benchmark::State& state,
   checker->setActiveCollisionObjects(link_names);
   checker->setContactDistanceThreshold(0.1);
   checker->setCollisionObjectsTransform(location);
+
+  ContactResultVector result_vector;
+
+  for (auto _ : state)
+  {
+    ContactResultMap result;
+    result_vector.clear();
+    checker->contactTest(result, ContactTestType::ALL);
+    flattenResults(std::move(result), result_vector);
+  }
+};
+
+/** @brief Benchmark that checks collisions between a lot of objects. In this case it is a grid of spheres in one link
+ * and a single sphere in another link*/
+static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
+                                        DiscreteContactManager::Ptr checker,
+                                        int edge_size,
+                                        tesseract_geometry::GeometryType type)
+{
+  // Add Meshed Sphere to checker
+  CollisionShapePtr sphere;
+
+  tesseract_common::VectorVector3d mesh_vertices;
+  Eigen::VectorXi mesh_faces;
+  loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", mesh_vertices, mesh_faces);
+
+  // This is required because convex hull cannot have multiple faces on the same plane.
+  auto ch_verticies = std::make_shared<tesseract_common::VectorVector3d>();
+  auto ch_faces = std::make_shared<Eigen::VectorXi>();
+  int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
+
+  switch (type)
+  {
+    case tesseract_geometry::GeometryType::CONVEX_MESH:
+      sphere = std::make_shared<tesseract_geometry::ConvexMesh>(ch_verticies, ch_faces, ch_num_faces);
+      break;
+    case tesseract_geometry::GeometryType::MESH:
+      sphere = std::make_shared<tesseract_geometry::Mesh>(ch_verticies, ch_faces, ch_num_faces);
+      break;
+    case tesseract_geometry::GeometryType::SPHERE:
+      sphere = std::make_shared<tesseract_geometry::Sphere>(0.25);
+      break;
+    default:
+      throw(std::runtime_error("Invalid geometry type"));
+      break;
+  }
+
+  // Add Grid of spheres
+  double delta = 0.55;
+
+  std::vector<std::string> link_names;
+  //  tesseract_common::TransformMap location;
+  CollisionShapesConst obj3_shapes;
+  tesseract_common::VectorIsometry3d obj3_poses;
+  for (int x = 0; x < edge_size; ++x)
+  {
+    for (int y = 0; y < edge_size; ++y)
+    {
+      for (int z = 0; z < edge_size; ++z)
+      {
+        Eigen::Isometry3d sphere_pose;
+        sphere_pose.setIdentity();
+        sphere_pose.translation() = Eigen::Vector3d(
+            static_cast<double>(x) * delta, static_cast<double>(y) * delta, static_cast<double>(z) * delta);
+
+        obj3_shapes.push_back(CollisionShapePtr(sphere->clone()));
+        obj3_poses.push_back(sphere_pose);
+      }
+    }
+  }
+  link_names.push_back("grid_link");
+  checker->addCollisionObject(link_names.back(), 0, obj3_shapes, obj3_poses);
+
+  // Add Single Sphere Link
+  Eigen::Isometry3d sphere_pose;
+  sphere_pose.setIdentity();
+  sphere_pose.translation() = Eigen::Vector3d(static_cast<double>(edge_size) / 2.0 * delta,
+                                              static_cast<double>(edge_size) / 2.0 * delta,
+                                              static_cast<double>(edge_size) / 2.0 * delta);
+  CollisionShapesConst single_shapes;
+  tesseract_common::VectorIsometry3d single_poses;
+  single_shapes.push_back(CollisionShapePtr(sphere->clone()));
+  single_poses.push_back(sphere_pose);
+  link_names.push_back("single_link");
+  checker->addCollisionObject(link_names.back(), 0, single_shapes, single_poses);
+
+  // Check if they are in collision
+  checker->setActiveCollisionObjects(link_names);
+  checker->setContactDistanceThreshold(0.1);
+  //  checker->setCollisionObjectsTransform(location);
 
   ContactResultVector result_vector;
 
