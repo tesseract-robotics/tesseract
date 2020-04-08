@@ -23,7 +23,7 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
   /////////////////////////////////////////////////////////////////
   // Add Octomap
   /////////////////////////////////////////////////////////////////
-  std::string path = std::string(TEST_SUITE_DATA_DIR) + "/blender_monkey.bt";
+  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/meshes/blender_monkey.bt";
   auto ot = std::make_shared<octomap::OcTree>(path);
   CollisionShapePtr dense_octomap = std::make_shared<tesseract_geometry::Octree>(ot, tesseract_geometry::Octree::BOX);
   Eigen::Isometry3d octomap_pose;
@@ -46,7 +46,9 @@ inline void addCollisionObjects(DiscreteContactManager& checker, bool use_convex
   {
     tesseract_common::VectorVector3d mesh_vertices;
     Eigen::VectorXi mesh_faces;
-    EXPECT_GT(loadSimplePlyFile(std::string(TEST_SUITE_DATA_DIR) + "/sphere_p25m.ply", mesh_vertices, mesh_faces), 0);
+    EXPECT_GT(
+        loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", mesh_vertices, mesh_faces),
+        0);
 
     // This is required because convex hull cannot have multiple faces on the same plane.
     auto ch_verticies = std::make_shared<tesseract_common::VectorVector3d>();

@@ -20,7 +20,8 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
 
   auto vertices = std::make_shared<tesseract_common::VectorVector3d>();
   auto faces = std::make_shared<Eigen::VectorXi>();
-  int num_faces = loadSimplePlyFile(std::string(TEST_SUITE_DATA_DIR) + "/sphere_p25m.ply", *vertices, *faces, true);
+  int num_faces =
+      loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", *vertices, *faces, true);
   EXPECT_GT(num_faces, 0);
 
   sphere = std::make_shared<tesseract_geometry::Mesh>(vertices, faces);
