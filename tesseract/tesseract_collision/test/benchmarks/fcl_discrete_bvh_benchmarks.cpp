@@ -226,10 +226,11 @@ int main(int argc, char** argv)
   //////////////////////////////////////
   // Large Dataset contactTest
   //////////////////////////////////////
+  if (std::string(BENCHMARK_ARGS).compare("CI_ONLY") != 0)
   {
     std::function<void(benchmark::State&, DiscreteContactManager::Ptr, int, tesseract_geometry::GeometryType)>
         BM_LARGE_DATASET_MULTILINK_FUNC = BM_LARGE_DATASET_MULTILINK;
-    std::vector<int> edge_sizes = { 2, 4, 6, 8, 10, 12 };
+    std::vector<int> edge_sizes = { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
 
     for (const auto& edge_size : edge_sizes)
     {
@@ -270,11 +271,8 @@ int main(int argc, char** argv)
           ->UseRealTime()
           ->Unit(benchmark::TimeUnit::kMillisecond);
     }
-  }
-  {
     std::function<void(benchmark::State&, DiscreteContactManager::Ptr, int, tesseract_geometry::GeometryType)>
         BM_LARGE_DATASET_SINGLELINK_FUNC = BM_LARGE_DATASET_SINGLELINK;
-    std::vector<int> edge_sizes = { 2, 4, 6, 8, 10, 12 };
 
     for (const auto& edge_size : edge_sizes)
     {
