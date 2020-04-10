@@ -25,6 +25,7 @@ macro(add_benchmark benchmark_name benchmark_file)
     ${PROJECT_NAME}_bullet
     ${PROJECT_NAME}_fcl)
   tesseract_add_run_benchmark_target(${benchmark_name})
+  target_compile_definitions(${benchmark_name} PRIVATE BENCHMARK_ARGS="${BENCHMARK_ARGS}")
 endmacro()
 
 add_benchmark(${PROJECT_NAME}_bullet_discrete_simple_benchmarks bullet_discrete_simple_benchmarks.cpp)
