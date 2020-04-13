@@ -108,7 +108,7 @@ public:
 
   IsContactAllowedFn getIsContactAllowedFn() const override;
 
-  void contactTest(ContactResultMap& collisions, const ContactTestType& type) override;
+  void contactTest(ContactResultMap& collisions, const ContactRequest& request) override;
 
   /**
    * @brief Add a fcl collision object to the manager
@@ -117,13 +117,23 @@ public:
   void addCollisionObject(const COW::Ptr& cow);
 
 private:
-  std::unique_ptr<fcl::BroadPhaseCollisionManagerd> manager_; /**< @brief FCL Broad Phase Collision Manager */
-  Link2COW link2cow_; /**< @brief A map of all (static and active) collision objects being managed */
+  /** @brief Broadphase Collision Manager for active collision objects */
+  std::unique_ptr<fcl::BroadPhaseCollisionManagerd> static_manager_;
 
-  std::vector<std::string> active_;            /**< @brief A list of the active collision objects */
+  /** @brief Broadphase Collision Manager for active collision objects */
+  std::unique_ptr<fcl::BroadPhaseCollisionManagerd> dynamic_manager_;
+
+  Link2COW link2cow_;               /**< @brief A map of all (static and active) collision objects being managed */
+  std::vector<std::string> active_; /**< @brief A list of the active collision objects */
   std::vector<std::string> collision_objects_; /**< @brief A list of the collision objects */
   double contact_distance_;                    /**< @brief The contact distance threshold */
   IsContactAllowedFn fn_;                      /**< @brief The is allowed collision function */
+
+  /** @brief This is used to store static collision objects to update */
+  std::vector<CollisionObjectRawPtr> static_update_;
+
+  /** @brief This is used to store dynamic collision objects to update */
+  std::vector<CollisionObjectRawPtr> dynamic_update_;
 };
 
 }  // namespace tesseract_collision_fcl
