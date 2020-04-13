@@ -111,7 +111,7 @@ inline ContactResult* processResult(ContactTestData& cdata,
   if (!found)
   {
     ContactResultVector data;
-    if (cdata.type == ContactTestType::FIRST)
+    if (cdata.req.type == ContactTestType::FIRST)
     {
       data.emplace_back(contact);
       cdata.done = true;
@@ -125,15 +125,15 @@ inline ContactResult* processResult(ContactTestData& cdata,
     return &(cdata.res->insert(std::make_pair(key, data)).first->second.back());
   }
 
-  assert(cdata.type != ContactTestType::FIRST);
+  assert(cdata.req.type != ContactTestType::FIRST);
   ContactResultVector& dr = (*cdata.res)[key];
-  if (cdata.type == ContactTestType::ALL)
+  if (cdata.req.type == ContactTestType::ALL)
   {
     dr.emplace_back(contact);
     return &(dr.back());
   }
 
-  if (cdata.type == ContactTestType::CLOSEST)
+  if (cdata.req.type == ContactTestType::CLOSEST)
   {
     if (contact.distance < dr[0].distance)
     {

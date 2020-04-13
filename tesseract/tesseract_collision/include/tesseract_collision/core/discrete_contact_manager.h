@@ -174,9 +174,10 @@ public:
 
   /**
    * @brief Perform a contact test for all objects based
-   * @param collisions The Contact results data
+   * @param collisions The contact results data
+   * @param request The contact request data
    */
-  virtual void contactTest(ContactResultMap& collisions, const ContactTestType& type) = 0;
+  virtual void contactTest(ContactResultMap& collisions, const ContactRequest& request) = 0;
 };
 
 }  // namespace tesseract_collision

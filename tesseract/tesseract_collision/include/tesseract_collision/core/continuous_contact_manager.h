@@ -226,7 +226,7 @@ public:
    * @param collisions The Contact results data
    * @param type The type of contact test
    */
-  virtual void contactTest(ContactResultMap& collisions, const ContactTestType& type) = 0;
+  virtual void contactTest(ContactResultMap& collisions, const ContactRequest& request) = 0;
 };
 
 }  // namespace tesseract_collision
