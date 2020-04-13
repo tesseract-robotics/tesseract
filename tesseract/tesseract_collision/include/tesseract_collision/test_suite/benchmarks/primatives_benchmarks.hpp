@@ -71,7 +71,7 @@ static void BM_CONTACT_TEST(benchmark::State& state, DiscreteBenchmarkInfo info)
   for (auto _ : state)
   {
     result.clear();
-    info.contact_manager_->contactTest(result, info.contact_test_type_);
+    info.contact_manager_->contactTest(result, ContactRequest(info.contact_test_type_));
   }
 };
 

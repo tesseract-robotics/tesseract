@@ -89,7 +89,7 @@ inline void runTestOctomap(DiscreteContactManager& checker, ContactTestType test
 
   // Perform collision check
   ContactResultMap result;
-  checker.contactTest(result, test_type);
+  checker.contactTest(result, ContactRequest(test_type));
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);
@@ -120,7 +120,7 @@ inline void runTestOctomap(ContinuousContactManager& checker, ContactTestType te
 
   // Perform collision check
   ContactResultMap result;
-  checker.contactTest(result, test_type);
+  checker.contactTest(result, ContactRequest(test_type));
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);

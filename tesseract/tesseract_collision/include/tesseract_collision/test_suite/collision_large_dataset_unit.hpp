@@ -81,7 +81,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
   {
     ContactResultMap result;
     result_vector.clear();
-    checker.contactTest(result, ContactTestType::ALL);
+    checker.contactTest(result, ContactRequest(ContactTestType::ALL));
     flattenResults(std::move(result), result_vector);
   }
   auto end_time = std::chrono::high_resolution_clock::now();

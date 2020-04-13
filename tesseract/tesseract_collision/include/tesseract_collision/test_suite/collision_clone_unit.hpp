@@ -126,7 +126,7 @@ runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest
 
   // Perform collision check
   ContactResultMap result;
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);
@@ -139,7 +139,7 @@ runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest
   ContactResultMap cloned_result;
   DiscreteContactManager::Ptr cloned_checker = checker.clone();
 
-  cloned_checker->contactTest(cloned_result, ContactTestType::CLOSEST);
+  cloned_checker->contactTest(cloned_result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector cloned_result_vector;
   flattenResults(std::move(cloned_result), cloned_result_vector);

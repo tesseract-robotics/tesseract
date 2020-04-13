@@ -125,7 +125,7 @@ inline void runTest(DiscreteContactManager& checker)
 
   // Perform collision check
   ContactResultMap result;
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);
@@ -157,7 +157,7 @@ inline void runTest(DiscreteContactManager& checker)
 
   // Use different method for setting transforms
   checker.setCollisionObjectsTransform("cone_link", location["cone_link"]);
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(result_vector.empty());
@@ -171,7 +171,7 @@ inline void runTest(DiscreteContactManager& checker)
 
   checker.setContactDistanceThreshold(0.251);
   EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.251, 1e-5);
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());

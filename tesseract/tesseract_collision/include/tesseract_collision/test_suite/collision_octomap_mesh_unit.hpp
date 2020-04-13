@@ -86,7 +86,7 @@ inline void runTest(DiscreteContactManager& checker, const std::string& file_pat
 
   // Perform collision check
   ContactResultMap result;
-  checker.contactTest(result, ContactTestType::ALL);
+  checker.contactTest(result, ContactRequest(ContactTestType::ALL));
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);
