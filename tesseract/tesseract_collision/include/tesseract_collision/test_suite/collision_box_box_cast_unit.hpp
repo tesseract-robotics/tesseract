@@ -140,7 +140,7 @@ inline void runTest(ContinuousContactManager& checker)
   for (const auto& t : test_types)
   {
     ContactResultMap result;
-    checker.contactTest(result, t);
+    checker.contactTest(result, ContactRequest(t));
 
     ContactResultVector result_vector;
     flattenResults(std::move(result), result_vector);

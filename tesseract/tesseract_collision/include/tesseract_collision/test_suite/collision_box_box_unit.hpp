@@ -145,7 +145,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
 
   // Perform collision check
   ContactResultMap result;
-  checker.contactTest(result, test_type);
+  checker.contactTest(result, ContactRequest(test_type));
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);
@@ -189,7 +189,7 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
 
   checker.setContactDistanceThreshold(0.25);
   EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.25, 1e-5);
-  checker.contactTest(result, test_type);
+  checker.contactTest(result, ContactRequest(test_type));
   flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());

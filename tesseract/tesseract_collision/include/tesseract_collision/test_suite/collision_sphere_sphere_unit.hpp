@@ -147,7 +147,7 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
 
   // Perform collision check
   ContactResultMap result;
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);
@@ -179,7 +179,7 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   result_vector.clear();
   checker.setCollisionObjectsTransform("sphere1_link", location["sphere1_link"]);
 
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(result_vector.empty());
@@ -193,7 +193,7 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
 
   checker.setContactDistanceThreshold(0.52);
   EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.52, 1e-5);
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(!result_vector.empty());
@@ -232,7 +232,7 @@ inline void runTestConvex1(DiscreteContactManager& checker)
 
   // Perform collision check
   ContactResultMap result;
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);
@@ -264,7 +264,7 @@ inline void runTestConvex1(DiscreteContactManager& checker)
   result_vector.clear();
   checker.setCollisionObjectsTransform(location);
 
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   flattenResults(std::move(result), result_vector);
 
   EXPECT_TRUE(result_vector.empty());
@@ -280,7 +280,7 @@ inline void runTestConvex2(DiscreteContactManager& checker)
 
   checker.setContactDistanceThreshold(0.55);
   EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.55, 1e-5);
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   flattenResults(std::move(result), result_vector);
 
   // Bullet: 0.524565 {0.237717,0,0} {0.7622825,0,0} Using blender this appears to be the correct result
@@ -313,7 +313,7 @@ inline void runTestConvex3(DiscreteContactManager& checker)
   // Perform collision check
   ContactResultMap result;
   ContactResultVector result_vector;
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   flattenResults(std::move(result), result_vector);
 
   // Bullet: -0.280223 {0.0425563,0.2308753,-0.0263040} {-0.0425563, -0.0308753, 0.0263040}

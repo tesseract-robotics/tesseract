@@ -166,7 +166,7 @@ inline void runTestPrimitive(ContinuousContactManager& checker)
 
   // Perform collision check
   ContactResultMap result;
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);
@@ -234,7 +234,7 @@ inline void runTestPrimitive(ContinuousContactManager& checker)
 
   // Perform collision check
   result = ContactResultMap();
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   result_vector = ContactResultVector();
   flattenResults(std::move(result), result_vector);
@@ -310,7 +310,7 @@ inline void runTestConvex(ContinuousContactManager& checker)
 
   // Perform collision check
   ContactResultMap result;
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);
@@ -378,7 +378,7 @@ inline void runTestConvex(ContinuousContactManager& checker)
 
   // Perform collision check
   result = ContactResultMap();
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   result_vector = ContactResultVector();
   flattenResults(std::move(result), result_vector);

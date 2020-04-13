@@ -101,7 +101,7 @@ inline void runTestTyped(DiscreteContactManager& checker, double tol, ContactTes
 
   // Perform collision check
   ContactResultMap result;
-  checker.contactTest(result, test_type);
+  checker.contactTest(result, ContactRequest(test_type));
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);
