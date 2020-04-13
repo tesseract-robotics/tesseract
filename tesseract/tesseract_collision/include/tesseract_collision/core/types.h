@@ -76,6 +76,26 @@ static const std::vector<std::string> ContactTestTypeStrings = {
   "LIMITED",
 };
 
+/** @brief The ContactRequest struct */
+struct ContactRequest
+{
+  /** @brief This controls the exit condition for the contact test type */
+  ContactTestType type{ ContactTestType::ALL };
+
+  /** @brief This enables the calculation of penetration contact data if two objects are in collision */
+  bool calculate_penetration{ true };
+
+  /** @brief This enables the calculation of distance data if two objects are within the contact threshold */
+  bool calculate_distance{ true };
+
+  /** @brief This is used if the ContactTestType is set to LIMITED, where the test will exit when number of contacts
+   * reach this limit */
+  long contact_limit{ 0 };
+
+  ContactRequest(ContactTestType type = ContactTestType::ALL) : type(type) {}
+  virtual ~ContactRequest() = default;
+};
+
 struct ContactResult
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -180,9 +200,9 @@ struct ContactTestData
   ContactTestData(const std::vector<std::string>& active,
                   double contact_distance,
                   IsContactAllowedFn fn,
-                  ContactTestType type,
+                  ContactRequest req,
                   ContactResultMap& res)
-    : active(&active), contact_distance(contact_distance), fn(std::move(fn)), type(type), res(&res)
+    : active(&active), contact_distance(contact_distance), fn(std::move(fn)), req(req), res(&res)
   {
   }
 
@@ -195,8 +215,8 @@ struct ContactTestData
   /** @brief The allowed collision function used to check if two links should be excluded from collision checking */
   IsContactAllowedFn fn{ nullptr };
 
-  /** @brief The type of contact test to perform */
-  ContactTestType type{ ContactTestType::ALL };
+  /** @brief The type of contact request data */
+  ContactRequest req;
 
   /** @brief Destance query results information */
   ContactResultMap* res{ nullptr };
