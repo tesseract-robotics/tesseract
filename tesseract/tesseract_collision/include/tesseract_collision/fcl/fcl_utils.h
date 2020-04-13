@@ -60,6 +60,7 @@ namespace tesseract_collision_fcl
 {
 using CollisionGeometryPtr = std::shared_ptr<fcl::CollisionGeometryd>;
 using CollisionObjectPtr = std::shared_ptr<fcl::CollisionObjectd>;
+using CollisionObjectRawPtr = fcl::CollisionObjectd*;
 using CollisionObjectConstPtr = std::shared_ptr<const fcl::CollisionObjectd>;
 
 enum CollisionFilterGroups
@@ -119,9 +120,11 @@ public:
   const Eigen::Isometry3d& getCollisionObjectsTransform() const { return world_pose_; }
   const std::vector<CollisionObjectPtr>& getCollisionObjects() const { return collision_objects_; }
   std::vector<CollisionObjectPtr>& getCollisionObjects() { return collision_objects_; }
+  const std::vector<CollisionObjectRawPtr>& getCollisionObjectsRaw() const { return collision_objects_raw_; }
+  std::vector<CollisionObjectRawPtr>& getCollisionObjectsRaw() { return collision_objects_raw_; }
   std::shared_ptr<CollisionObjectWrapper> clone() const
   {
-    std::shared_ptr<CollisionObjectWrapper> clone_cow(
+    CollisionObjectWrapper::Ptr clone_cow(
         new CollisionObjectWrapper(name_, type_id_, shapes_, shape_poses_, collision_geometries_, collision_objects_));
     clone_cow->m_collisionFilterGroup = m_collisionFilterGroup;
     clone_cow->m_collisionFilterMask = m_collisionFilterMask;
@@ -151,6 +154,11 @@ protected:
   tesseract_common::VectorIsometry3d shape_poses_;
   std::vector<CollisionGeometryPtr> collision_geometries_;
   std::vector<CollisionObjectPtr> collision_objects_;
+  /**
+   * @brief The raw pointer is also stored because FCL accepts vectors for batch process.
+   * Note: They are updating the API to Shared Pointers but the broadphase has not been updated yet.
+   */
+  std::vector<CollisionObjectRawPtr> collision_objects_raw_;
 };
 
 CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom);
@@ -172,7 +180,7 @@ inline COW::Ptr createFCLCollisionObject(const std::string& name,
     return nullptr;
   }
 
-  COW::Ptr new_cow(new COW(name, type_id, shapes, shape_poses));
+  auto new_cow = std::make_shared<COW>(name, type_id, shapes, shape_poses);
 
   new_cow->m_enabled = enabled;
   CONSOLE_BRIDGE_logDebug("Created collision object for link %s", new_cow->getName().c_str());
@@ -183,24 +191,52 @@ inline COW::Ptr createFCLCollisionObject(const std::string& name,
  * @brief Update collision objects filters
  * @param active The active collision objects
  * @param cow The collision object to update
+ * @param static_manager Broadphasse manager for static objects
+ * @param dynamic_manager Broadphase manager for dynamic objects
  */
-inline void updateCollisionObjectFilters(const std::vector<std::string>& active, COW& cow)
+inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
+                                         const COW::Ptr& cow,
+                                         const std::unique_ptr<fcl::BroadPhaseCollisionManagerd>& static_manager,
+                                         const std::unique_ptr<fcl::BroadPhaseCollisionManagerd>& dynamic_manager)
 {
   // For descrete checks we can check static to kinematic and kinematic to
   // kinematic
-  cow.m_collisionFilterGroup = CollisionFilterGroups::KinematicFilter;
-  if (!isLinkActive(active, cow.getName()))
+  if (!isLinkActive(active, cow->getName()))
   {
-    cow.m_collisionFilterGroup = CollisionFilterGroups::StaticFilter;
-  }
+    if (cow->m_collisionFilterGroup != CollisionFilterGroups::StaticFilter)
+    {
+      std::vector<CollisionObjectPtr>& objects = cow->getCollisionObjects();
+      // This link was dynamic but is now static
+      for (auto& co : objects)
+        dynamic_manager->unregisterObject(co.get());
 
-  if (cow.m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
-  {
-    cow.m_collisionFilterMask = CollisionFilterGroups::KinematicFilter;
+      for (auto& co : objects)
+        static_manager->registerObject(co.get());
+    }
+    cow->m_collisionFilterGroup = CollisionFilterGroups::StaticFilter;
   }
   else
   {
-    cow.m_collisionFilterMask = CollisionFilterGroups::StaticFilter | CollisionFilterGroups::KinematicFilter;
+    if (cow->m_collisionFilterGroup != CollisionFilterGroups::KinematicFilter)
+    {
+      std::vector<CollisionObjectPtr>& objects = cow->getCollisionObjects();
+      // This link was static but is now dynamic
+      for (auto& co : objects)
+        static_manager->unregisterObject(co.get());
+
+      for (auto& co : objects)
+        dynamic_manager->registerObject(co.get());
+    }
+    cow->m_collisionFilterGroup = CollisionFilterGroups::KinematicFilter;
+  }
+
+  if (cow->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
+  {
+    cow->m_collisionFilterMask = CollisionFilterGroups::KinematicFilter;
+  }
+  else
+  {
+    cow->m_collisionFilterMask = CollisionFilterGroups::StaticFilter | CollisionFilterGroups::KinematicFilter;
   }
 }
 

@@ -61,32 +61,32 @@ namespace tesseract_collision_fcl
 {
 CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Plane::ConstPtr& geom)
 {
-  return CollisionGeometryPtr(new fcl::Planed(geom->getA(), geom->getB(), geom->getC(), geom->getD()));
+  return std::make_shared<fcl::Planed>(geom->getA(), geom->getB(), geom->getC(), geom->getD());
 }
 
 CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Box::ConstPtr& geom)
 {
-  return CollisionGeometryPtr(new fcl::Boxd(geom->getX(), geom->getY(), geom->getZ()));
+  return std::make_shared<fcl::Boxd>(geom->getX(), geom->getY(), geom->getZ());
 }
 
 CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Sphere::ConstPtr& geom)
 {
-  return CollisionGeometryPtr(new fcl::Sphered(geom->getRadius()));
+  return std::make_shared<fcl::Sphered>(geom->getRadius());
 }
 
 CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Cylinder::ConstPtr& geom)
 {
-  return CollisionGeometryPtr(new fcl::Cylinderd(geom->getRadius(), geom->getLength()));
+  return std::make_shared<fcl::Cylinderd>(geom->getRadius(), geom->getLength());
 }
 
 CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Cone::ConstPtr& geom)
 {
-  return CollisionGeometryPtr(new fcl::Coned(geom->getRadius(), geom->getLength()));
+  return std::make_shared<fcl::Coned>(geom->getRadius(), geom->getLength());
 }
 
 CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Capsule::ConstPtr& geom)
 {
-  return CollisionGeometryPtr(new fcl::Capsuled(geom->getRadius(), geom->getLength()));
+  return std::make_shared<fcl::Capsuled>(geom->getRadius(), geom->getLength());
 }
 
 CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Mesh::ConstPtr& geom)
@@ -96,7 +96,7 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Mesh::ConstP
   const tesseract_common::VectorVector3d& vertices = *(geom->getVertices());
   const Eigen::VectorXi& triangles = *(geom->getTriangles());
 
-  auto g = new fcl::BVHModel<fcl::OBBRSSd>();
+  auto g = std::make_shared<fcl::BVHModel<fcl::OBBRSSd>>();
   if (vertice_count > 0 && triangle_count > 0)
   {
     std::vector<fcl::Triangle> tri_indices(static_cast<size_t>(triangle_count));
@@ -112,7 +112,7 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Mesh::ConstP
     g->addSubModel(vertices, tri_indices);
     g->endModel();
 
-    return CollisionGeometryPtr(g);
+    return g;
   }
 
   CONSOLE_BRIDGE_logError("The mesh is empty!");
@@ -126,9 +126,9 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::ConvexMesh::
 
   if (vertice_count > 0 && face_count > 0)
   {
-    std::shared_ptr<std::vector<int>> faces(
-        new std::vector<int>(geom->getFaces()->data(), geom->getFaces()->data() + geom->getFaces()->size()));
-    return CollisionGeometryPtr(new fcl::Convexd(geom->getVertices(), face_count, faces));
+    auto faces = std::make_shared<std::vector<int>>(geom->getFaces()->data(),
+                                                    geom->getFaces()->data() + geom->getFaces()->size());
+    return std::make_shared<fcl::Convexd>(geom->getVertices(), face_count, faces);
   }
 
   CONSOLE_BRIDGE_logError("The mesh is empty!");
@@ -141,7 +141,7 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::Octree::Cons
   {
     case tesseract_geometry::Octree::SubType::BOX:
     {
-      return CollisionGeometryPtr(new fcl::OcTreed(geom->getOctree()));
+      return std::make_shared<fcl::OcTreed>(geom->getOctree());
     }
     default:
     {
@@ -210,23 +210,26 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
 
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
   const auto* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
+  assert(cd1->getName() != cd2->getName());
 
-  bool needs_collision =
-      cd1->m_enabled && cd2->m_enabled && (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&
-      (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&
-      !isContactAllowed(cd1->getName(), cd2->getName(), cdata->fn, false) &&
-      (std::find(cdata->active->begin(), cdata->active->end(), cd1->getName()) != cdata->active->end() ||
-       std::find(cdata->active->begin(), cdata->active->end(), cd2->getName()) != cdata->active->end());
+  bool needs_collision = cd1->m_enabled && cd2->m_enabled &&
+                         (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&
+                         (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&
+                         !isContactAllowed(cd1->getName(), cd2->getName(), cdata->fn, false);
+
+  assert(std::find(cdata->active->begin(), cdata->active->end(), cd1->getName()) != cdata->active->end() ||
+         std::find(cdata->active->begin(), cdata->active->end(), cd2->getName()) != cdata->active->end());
 
   if (!needs_collision)
     return false;
 
-  size_t num_contacts = std::numeric_limits<size_t>::max();
-  if (cdata->type == ContactTestType::FIRST)
+  std::size_t num_contacts = (cdata->req.contact_limit > 0) ? static_cast<std::size_t>(cdata->req.contact_limit) :
+                                                              std::numeric_limits<std::size_t>::max();
+  if (cdata->req.type == ContactTestType::FIRST)
     num_contacts = 1;
 
   fcl::CollisionResultd col_result;
-  fcl::collide(o1, o2, fcl::CollisionRequestd(num_contacts, true, 1, false), col_result);
+  fcl::collide(o1, o2, fcl::CollisionRequestd(num_contacts, cdata->req.calculate_penetration, 1, false), col_result);
 
   if (col_result.isCollision())
   {
@@ -268,13 +271,15 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
 
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
   const auto* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
+  assert(cd1->getName() != cd2->getName());
 
-  bool needs_collision =
-      cd1->m_enabled && cd2->m_enabled && (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&
-      (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&
-      !isContactAllowed(cd1->getName(), cd2->getName(), cdata->fn, false) &&
-      (std::find(cdata->active->begin(), cdata->active->end(), cd1->getName()) != cdata->active->end() ||
-       std::find(cdata->active->begin(), cdata->active->end(), cd2->getName()) != cdata->active->end());
+  bool needs_collision = cd1->m_enabled && cd2->m_enabled &&
+                         (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&
+                         (cd2->m_collisionFilterGroup & cd1->m_collisionFilterMask) &&
+                         !isContactAllowed(cd1->getName(), cd2->getName(), cdata->fn, false);
+
+  assert(std::find(cdata->active->begin(), cdata->active->end(), cd1->getName()) != cdata->active->end() ||
+         std::find(cdata->active->begin(), cdata->active->end(), cd2->getName()) != cdata->active->end());
 
   if (!needs_collision)
     return false;
@@ -326,17 +331,24 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
   assert(!name_.empty());
   assert(shapes_.size() == shape_poses_.size());
 
+  m_collisionFilterGroup = CollisionFilterGroups::KinematicFilter;
+  m_collisionFilterMask = CollisionFilterGroups::StaticFilter | CollisionFilterGroups::KinematicFilter;
+
   collision_geometries_.reserve(shapes_.size());
   collision_objects_.reserve(shapes_.size());
-  for (const auto& shape : shapes_)
+  collision_objects_raw_.reserve(shapes_.size());
+  for (std::size_t i = 0; i < shapes_.size(); ++i)
   {
-    CollisionGeometryPtr subshape = createShapePrimitive(shape);
+    CollisionGeometryPtr subshape = createShapePrimitive(shapes_[i]);
     if (subshape != nullptr)
     {
       collision_geometries_.push_back(subshape);
-      CollisionObjectPtr co(new fcl::CollisionObjectd(subshape));
+      auto co = std::make_shared<fcl::CollisionObjectd>(subshape);
       co->setUserData(this);
+      co->setTransform(shape_poses_[i]);
+      co->computeAABB();
       collision_objects_.push_back(co);
+      collision_objects_raw_.push_back(co.get());
     }
   }
 }
@@ -356,9 +368,10 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
   collision_objects_.reserve(collision_objects.size());
   for (const auto& co : collision_objects)
   {
-    CollisionObjectPtr collObj(new fcl::CollisionObjectd(*co));
+    auto collObj = std::make_shared<fcl::CollisionObjectd>(*co);
     collObj->setUserData(this);
     collision_objects_.push_back(collObj);
+    collision_objects_raw_.push_back(collObj.get());
   }
 }
 
