@@ -120,6 +120,7 @@ bool FCLDiscreteBVHManager::removeCollisionObject(const std::string& name)
   if (it != link2cow_.end())
   {
     std::vector<CollisionObjectPtr>& objects = it->second->getCollisionObjects();
+    fcl_co_count_ -= objects.size();
     for (auto& co : objects)
     {
       static_manager_->unregisterObject(co.get());
@@ -267,6 +268,28 @@ const std::vector<std::string>& FCLDiscreteBVHManager::getActiveCollisionObjects
 void FCLDiscreteBVHManager::setContactDistanceThreshold(double contact_distance)
 {
   contact_distance_ = contact_distance;
+  static_update_.clear();
+  dynamic_update_.clear();
+
+  for (auto& cow : link2cow_)
+  {
+    cow.second->setContactDistanceThreshold(contact_distance_ / 2.0);
+    std::vector<CollisionObjectRawPtr>& co = cow.second->getCollisionObjectsRaw();
+    if (cow.second->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
+    {
+      static_update_.insert(static_update_.end(), co.begin(), co.end());
+    }
+    else
+    {
+      dynamic_update_.insert(dynamic_update_.end(), co.begin(), co.end());
+    }
+  }
+
+  if (!static_update_.empty())
+    static_manager_->update(static_update_);
+
+  if (!dynamic_update_.empty())
+    dynamic_manager_->update(dynamic_update_);
 }
 
 double FCLDiscreteBVHManager::getContactDistanceThreshold() const { return contact_distance_; }
@@ -301,36 +324,6 @@ void selfCollisionContactTest(ContactTestData& cdata,
   }
 }
 
-/**
- * @brief This is used to perform self check for fcl. The AABB Tree self check is N^2 which is slow and it is faster
- *        to loop over the shapes and check bounding boxes.
- * @param cdata The contact test data passed to the callback
- * @param dynamic_manager The dynamics manager to perform self check on
- * @param callback The callback function to call if bounding boxes overlap
- * @param min_dist The minimum distance that triggers the callback
- */
-void selfDistanceContactTest(ContactTestData& cdata,
-                             const std::unique_ptr<fcl::BroadPhaseCollisionManagerd>& dynamic_manager,
-                             fcl::DistanceCallBack<double> callback,
-                             double& min_dist)
-{
-  std::vector<fcl::CollisionObjectd*> co;
-  dynamic_manager->getObjects(co);
-  for (std::vector<fcl::CollisionObjectd*>::const_iterator it1 = co.begin(), end = co.end(); it1 != end; ++it1)
-  {
-    std::vector<fcl::CollisionObjectd*>::const_iterator it2 = it1;
-    it2++;
-    for (; it2 != end; ++it2)
-    {
-      if ((*it1)->getAABB().overlap((*it2)->getAABB()))
-      {
-        if (callback(*it1, *it2, &cdata, min_dist))
-          return;
-      }
-    }
-  }
-}
-
 void FCLDiscreteBVHManager::contactTest(ContactResultMap& collisions, const ContactRequest& request)
 {
   ContactTestData cdata(active_, contact_distance_, fn_, request, collisions);
@@ -338,12 +331,11 @@ void FCLDiscreteBVHManager::contactTest(ContactResultMap& collisions, const Cont
   {
     // TODO: Should the order be flipped?
     if (!static_manager_->empty())
-      static_manager_->distance(dynamic_manager_.get(), &cdata, &distanceCallback);
+      static_manager_->collide(dynamic_manager_.get(), &cdata, &distanceCallback);
 
     // It looks like the self check is as fast as selfDistanceContactTest even though it is N^2
     if (!cdata.done && !dynamic_manager_->empty())
-      dynamic_manager_->distance(&cdata, &distanceCallback);  // selfDistanceContactTest(cdata, dynamic_manager_,
-                                                              // &distanceCallback, contact_distance_);
+      dynamic_manager_->collide(&cdata, &distanceCallback);
   }
   else
   {
@@ -353,15 +345,16 @@ void FCLDiscreteBVHManager::contactTest(ContactResultMap& collisions, const Cont
 
     // It looks like the self check is as fast as selfDistanceContactTest even though it is N^2
     if (!cdata.done && !dynamic_manager_->empty())
-      dynamic_manager_->collide(&cdata, &collisionCallback);  // selfCollisionContactTest(cdata, dynamic_manager_,
-                                                              // &collisionCallback);
+      dynamic_manager_->collide(&cdata, &collisionCallback);
   }
 }
 
 void FCLDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
 {
-  static_update_.reserve(link2cow_.size() + cow->getCollisionObjectsRaw().size());
-  dynamic_update_.reserve(link2cow_.size() + cow->getCollisionObjectsRaw().size());
+  std::size_t cnt = cow->getCollisionObjectsRaw().size();
+  fcl_co_count_ += cnt;
+  static_update_.reserve(fcl_co_count_);
+  dynamic_update_.reserve(fcl_co_count_);
   link2cow_[cow->getName()] = cow;
   collision_objects_.push_back(cow->getName());
 

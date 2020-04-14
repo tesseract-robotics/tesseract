@@ -128,6 +128,7 @@ private:
   std::vector<std::string> collision_objects_; /**< @brief A list of the collision objects */
   double contact_distance_;                    /**< @brief The contact distance threshold */
   IsContactAllowedFn fn_;                      /**< @brief The is allowed collision function */
+  std::size_t fcl_co_count_{ 0 };              /**< @brief The number fcl collision objects */
 
   /** @brief This is used to store static collision objects to update */
   std::vector<CollisionObjectRawPtr> static_update_;
