@@ -261,10 +261,9 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   return cdata->done;
 }
 
-bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data, double& min_dist)
+bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data)
 {
   auto* cdata = reinterpret_cast<ContactTestData*>(data);
-  min_dist = cdata->contact_distance;
 
   if (cdata->done)
     return true;
@@ -343,10 +342,10 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
     if (subshape != nullptr)
     {
       collision_geometries_.push_back(subshape);
-      auto co = std::make_shared<fcl::CollisionObjectd>(subshape);
+      auto co = std::make_shared<FCLCollisionObjectWrapper>(subshape);
       co->setUserData(this);
       co->setTransform(shape_poses_[i]);
-      co->computeAABB();
+      co->updateAABB();
       collision_objects_.push_back(co);
       collision_objects_raw_.push_back(co.get());
     }
@@ -368,7 +367,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
   collision_objects_.reserve(collision_objects.size());
   for (const auto& co : collision_objects)
   {
-    auto collObj = std::make_shared<fcl::CollisionObjectd>(*co);
+    auto collObj = std::make_shared<FCLCollisionObjectWrapper>(*co);
     collObj->setUserData(this);
     collision_objects_.push_back(collObj);
     collision_objects_raw_.push_back(collObj.get());

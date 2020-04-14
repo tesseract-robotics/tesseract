@@ -58,7 +58,10 @@ target_include_directories(${PROJECT_NAME}_bullet SYSTEM PUBLIC
     ${OCTOMAP_INCLUDE_DIRS})
 
 # Create target for FCL implementation
-add_library(${PROJECT_NAME}_fcl SHARED src/fcl/fcl_discrete_managers.cpp src/fcl/fcl_utils.cpp)
+add_library(${PROJECT_NAME}_fcl SHARED
+  src/fcl/fcl_discrete_managers.cpp
+  src/fcl/fcl_utils.cpp
+  src/fcl/fcl_collision_object_wrapper.cpp)
 target_link_libraries(${PROJECT_NAME}_fcl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_geometry console_bridge ${OCTOMAP_LIBRARIES} fcl)
 tesseract_target_compile_options(${PROJECT_NAME}_fcl PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_fcl)

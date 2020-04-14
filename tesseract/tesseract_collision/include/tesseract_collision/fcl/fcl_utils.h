@@ -53,13 +53,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
 #include <tesseract_collision/core/common.h>
+#include <tesseract_collision/fcl/fcl_collision_object_wrapper.h>
 
 namespace tesseract_collision
 {
 namespace tesseract_collision_fcl
 {
 using CollisionGeometryPtr = std::shared_ptr<fcl::CollisionGeometryd>;
-using CollisionObjectPtr = std::shared_ptr<fcl::CollisionObjectd>;
+using CollisionObjectPtr = std::shared_ptr<FCLCollisionObjectWrapper>;
 using CollisionObjectRawPtr = fcl::CollisionObjectd*;
 using CollisionObjectConstPtr = std::shared_ptr<const fcl::CollisionObjectd>;
 
@@ -113,10 +114,18 @@ public:
     {
       CollisionObjectPtr& co = collision_objects_[i];
       co->setTransform(pose * shape_poses_[i]);
-      co->computeAABB();
+      co->updateAABB();  // This a tesseract function that updates abb to take into account contact distance
     }
   }
 
+  void setContactDistanceThreshold(double contact_distance)
+  {
+    contact_distance_ = contact_distance;
+    for (auto& co : collision_objects_)
+      co->setContactDistanceThreshold(contact_distance_);
+  }
+
+  double getContactDistanceThreshold() const { return contact_distance_; }
   const Eigen::Isometry3d& getCollisionObjectsTransform() const { return world_pose_; }
   const std::vector<CollisionObjectPtr>& getCollisionObjects() const { return collision_objects_; }
   std::vector<CollisionObjectPtr>& getCollisionObjects() { return collision_objects_; }
@@ -159,6 +168,8 @@ protected:
    * Note: They are updating the API to Shared Pointers but the broadphase has not been updated yet.
    */
   std::vector<CollisionObjectRawPtr> collision_objects_raw_;
+
+  double contact_distance_{ 0 }; /**< @brief The contact distance threshold */
 };
 
 CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom);
@@ -242,7 +253,8 @@ inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
 
 bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data);
 
-bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data, double& min_dist);
+bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data);
+
 }  // namespace tesseract_collision_fcl
 }  // namespace tesseract_collision
 #endif  // TESSERACT_COLLISION_FCL_UTILS_H
