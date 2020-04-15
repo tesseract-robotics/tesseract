@@ -60,13 +60,7 @@ DiscreteContactManager::Ptr FCLDiscreteBVHManager::clone() const
   auto manager = std::make_shared<FCLDiscreteBVHManager>();
 
   for (const auto& cow : link2cow_)
-  {
-    COW::Ptr new_cow = cow.second->clone();
-
-    // TODO LEVI: Should this happen as part of the clone?
-    new_cow->setCollisionObjectsTransform(cow.second->getCollisionObjectsTransform());
-    manager->addCollisionObject(new_cow);
-  }
+    manager->addCollisionObject(cow.second->clone());
 
   manager->setActiveCollisionObjects(active_);
   manager->setContactDistanceThreshold(contact_distance_);

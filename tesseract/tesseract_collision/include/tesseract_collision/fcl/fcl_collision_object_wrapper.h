@@ -62,6 +62,12 @@ public:
   void setContactDistanceThreshold(double contact_distance);
 
   /**
+   * @brief Get the collision objects contact distance threshold.
+   * @return The contact distance threshold.
+   */
+  double getContactDistanceThreshold() const;
+
+  /**
    * @brief Update the internal AABB. This must be called instead of the base class computeAABB().
    *
    * After setting the collision objects transform this must be called.

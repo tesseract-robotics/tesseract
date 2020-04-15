@@ -54,11 +54,16 @@ void FCLCollisionObjectWrapper::setContactDistanceThreshold(double contact_dista
   updateAABB();
 }
 
+double FCLCollisionObjectWrapper::getContactDistanceThreshold() const { return contact_distance_; }
+
 void FCLCollisionObjectWrapper::updateAABB()
 {
   if (t.linear().isIdentity())
   {
     aabb = translate(cgeom->aabb_local, t.translation());
+    fcl::Vector3<double> delta = fcl::Vector3<double>::Constant(contact_distance_);
+    aabb.min_ -= delta;
+    aabb.max_ += delta;
   }
   else
   {
