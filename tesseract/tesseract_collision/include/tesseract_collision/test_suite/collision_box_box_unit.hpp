@@ -174,7 +174,9 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
   result_vector.clear();
 
   // Use different method for setting transforms
-  checker.setCollisionObjectsTransform("box_link", location["box_link"]);
+  std::vector<std::string> names = { "box_link" };
+  tesseract_common::VectorIsometry3d transforms = { location["box_link"] };
+  checker.setCollisionObjectsTransform(names, transforms);
   checker.contactTest(result, test_type);
   flattenResults(std::move(result), result_vector);
 
