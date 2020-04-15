@@ -80,19 +80,23 @@ public:
                                  int numPerturbationIterations,
                                  int minimumPointsPerturbationThreshold);
 
-  virtual ~TesseractConvexConvexAlgorithm();
+  ~TesseractConvexConvexAlgorithm() override;
+  TesseractConvexConvexAlgorithm(const TesseractConvexConvexAlgorithm&) = delete;
+  TesseractConvexConvexAlgorithm& operator=(const TesseractConvexConvexAlgorithm&) = delete;
+  TesseractConvexConvexAlgorithm(TesseractConvexConvexAlgorithm&&) = delete;
+  TesseractConvexConvexAlgorithm& operator=(TesseractConvexConvexAlgorithm&&) = delete;
 
-  virtual void processCollision(const btCollisionObjectWrapper* body0Wrap,
-                                const btCollisionObjectWrapper* body1Wrap,
-                                const btDispatcherInfo& dispatchInfo,
-                                btManifoldResult* resultOut);
+  void processCollision(const btCollisionObjectWrapper* body0Wrap,
+                        const btCollisionObjectWrapper* body1Wrap,
+                        const btDispatcherInfo& dispatchInfo,
+                        btManifoldResult* resultOut) override;
 
-  virtual btScalar calculateTimeOfImpact(btCollisionObject* body0,
-                                         btCollisionObject* body1,
-                                         const btDispatcherInfo& dispatchInfo,
-                                         btManifoldResult* resultOut);
+  btScalar calculateTimeOfImpact(btCollisionObject* body0,
+                                 btCollisionObject* body1,
+                                 const btDispatcherInfo& dispatchInfo,
+                                 btManifoldResult* resultOut) override;
 
-  virtual void getAllContactManifolds(btManifoldArray& manifoldArray)
+  void getAllContactManifolds(btManifoldArray& manifoldArray) override
   {
     /// should we use m_ownManifold to avoid adding duplicates?
     if (m_manifoldPtr && m_ownManifold)
@@ -111,11 +115,9 @@ public:
 
     CreateFunc(btConvexPenetrationDepthSolver* pdSolver);
 
-    virtual ~CreateFunc();
-
-    virtual btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci,
-                                                           const btCollisionObjectWrapper* body0Wrap,
-                                                           const btCollisionObjectWrapper* body1Wrap)
+    btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci,
+                                                   const btCollisionObjectWrapper* body0Wrap,
+                                                   const btCollisionObjectWrapper* body1Wrap) override
     {
       void* mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(TesseractConvexConvexAlgorithm));
       return new (mem) TesseractConvexConvexAlgorithm(ci.m_manifold,

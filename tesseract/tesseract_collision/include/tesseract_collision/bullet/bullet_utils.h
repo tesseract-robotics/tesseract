@@ -52,8 +52,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/types.h>
 #include <tesseract_collision/core/common.h>
 
-extern btScalar gDbvtMargin;
-
 namespace tesseract_collision
 {
 namespace tesseract_collision_bullet

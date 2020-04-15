@@ -188,8 +188,6 @@ TesseractConvexConvexAlgorithm::CreateFunc::CreateFunc(btConvexPenetrationDepthS
   m_pdSolver = pdSolver;
 }
 
-TesseractConvexConvexAlgorithm::CreateFunc::~CreateFunc() {}
-
 TesseractConvexConvexAlgorithm::TesseractConvexConvexAlgorithm(btPersistentManifold* mf,
                                                                const btCollisionAlgorithmConstructionInfo& ci,
                                                                const btCollisionObjectWrapper* body0Wrap,
@@ -864,8 +862,8 @@ void TesseractConvexConvexAlgorithm::processCollision(const btCollisionObjectWra
 }
 
 bool disableCcd = false;
-btScalar TesseractConvexConvexAlgorithm::calculateTimeOfImpact(btCollisionObject* col0,
-                                                               btCollisionObject* col1,
+btScalar TesseractConvexConvexAlgorithm::calculateTimeOfImpact(btCollisionObject* body0,
+                                                               btCollisionObject* body1,
                                                                const btDispatcherInfo& dispatchInfo,
                                                                btManifoldResult* resultOut)
 {
@@ -878,11 +876,11 @@ btScalar TesseractConvexConvexAlgorithm::calculateTimeOfImpact(btCollisionObject
   btScalar resultFraction = btScalar(1.);
 
   btScalar squareMot0 =
-      (col0->getInterpolationWorldTransform().getOrigin() - col0->getWorldTransform().getOrigin()).length2();
+      (body0->getInterpolationWorldTransform().getOrigin() - body0->getWorldTransform().getOrigin()).length2();
   btScalar squareMot1 =
-      (col1->getInterpolationWorldTransform().getOrigin() - col1->getWorldTransform().getOrigin()).length2();
+      (body1->getInterpolationWorldTransform().getOrigin() - body1->getWorldTransform().getOrigin()).length2();
 
-  if (squareMot0 < col0->getCcdSquareMotionThreshold() && squareMot1 < col1->getCcdSquareMotionThreshold())
+  if (squareMot0 < body0->getCcdSquareMotionThreshold() && squareMot1 < body1->getCcdSquareMotionThreshold())
     return resultFraction;
 
   if (disableCcd)
@@ -897,29 +895,29 @@ btScalar TesseractConvexConvexAlgorithm::calculateTimeOfImpact(btCollisionObject
 
   /// Convex0 against sphere for Convex1
   {
-    btConvexShape* convex0 = static_cast<btConvexShape*>(col0->getCollisionShape());
+    btConvexShape* convex0 = static_cast<btConvexShape*>(body0->getCollisionShape());
 
-    btSphereShape sphere1(col1->getCcdSweptSphereRadius());  // todo: allow non-zero sphere sizes, for better
-                                                             // approximation
+    btSphereShape sphere1(body1->getCcdSweptSphereRadius());  // todo: allow non-zero sphere sizes, for better
+                                                              // approximation
     btConvexCast::CastResult result;
     btVoronoiSimplexSolver voronoiSimplex;
     // SubsimplexConvexCast ccd0(&sphere,min0,&voronoiSimplex);
     /// Simplification, one object is simplified as a sphere
     btGjkConvexCast ccd1(convex0, &sphere1, &voronoiSimplex);
     // ContinuousConvexCollision ccd(min0,min1,&voronoiSimplex,0);
-    if (ccd1.calcTimeOfImpact(col0->getWorldTransform(),
-                              col0->getInterpolationWorldTransform(),
-                              col1->getWorldTransform(),
-                              col1->getInterpolationWorldTransform(),
+    if (ccd1.calcTimeOfImpact(body0->getWorldTransform(),
+                              body0->getInterpolationWorldTransform(),
+                              body1->getWorldTransform(),
+                              body1->getInterpolationWorldTransform(),
                               result))
     {
       // store result.m_fraction in both bodies
 
-      if (col0->getHitFraction() > result.m_fraction)
-        col0->setHitFraction(result.m_fraction);
+      if (body0->getHitFraction() > result.m_fraction)
+        body0->setHitFraction(result.m_fraction);
 
-      if (col1->getHitFraction() > result.m_fraction)
-        col1->setHitFraction(result.m_fraction);
+      if (body1->getHitFraction() > result.m_fraction)
+        body1->setHitFraction(result.m_fraction);
 
       if (resultFraction > result.m_fraction)
         resultFraction = result.m_fraction;
@@ -928,29 +926,29 @@ btScalar TesseractConvexConvexAlgorithm::calculateTimeOfImpact(btCollisionObject
 
   /// Sphere (for convex0) against Convex1
   {
-    btConvexShape* convex1 = static_cast<btConvexShape*>(col1->getCollisionShape());
+    btConvexShape* convex1 = static_cast<btConvexShape*>(body1->getCollisionShape());
 
-    btSphereShape sphere0(col0->getCcdSweptSphereRadius());  // todo: allow non-zero sphere sizes, for better
-                                                             // approximation
+    btSphereShape sphere0(body0->getCcdSweptSphereRadius());  // todo: allow non-zero sphere sizes, for better
+                                                              // approximation
     btConvexCast::CastResult result;
     btVoronoiSimplexSolver voronoiSimplex;
     // SubsimplexConvexCast ccd0(&sphere,min0,&voronoiSimplex);
     /// Simplification, one object is simplified as a sphere
     btGjkConvexCast ccd1(&sphere0, convex1, &voronoiSimplex);
     // ContinuousConvexCollision ccd(min0,min1,&voronoiSimplex,0);
-    if (ccd1.calcTimeOfImpact(col0->getWorldTransform(),
-                              col0->getInterpolationWorldTransform(),
-                              col1->getWorldTransform(),
-                              col1->getInterpolationWorldTransform(),
+    if (ccd1.calcTimeOfImpact(body0->getWorldTransform(),
+                              body0->getInterpolationWorldTransform(),
+                              body1->getWorldTransform(),
+                              body1->getInterpolationWorldTransform(),
                               result))
     {
       // store result.m_fraction in both bodies
 
-      if (col0->getHitFraction() > result.m_fraction)
-        col0->setHitFraction(result.m_fraction);
+      if (body0->getHitFraction() > result.m_fraction)
+        body0->setHitFraction(result.m_fraction);
 
-      if (col1->getHitFraction() > result.m_fraction)
-        col1->setHitFraction(result.m_fraction);
+      if (body1->getHitFraction() > result.m_fraction)
+        body1->setHitFraction(result.m_fraction);
 
       if (resultFraction > result.m_fraction)
         resultFraction = result.m_fraction;

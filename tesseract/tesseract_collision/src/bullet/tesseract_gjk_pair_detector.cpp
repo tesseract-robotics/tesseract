@@ -1031,7 +1031,7 @@ void TesseractGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInpu
                                                                tmpPointOnB,
                                                                debugDraw);
 
-        if (m_cachedSeparatingAxis.length2())
+        if (m_cachedSeparatingAxis.length2() > 0)
         {
           if (isValid2)
           {
@@ -1166,7 +1166,7 @@ void TesseractGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInpu
         normalInB *= -1;
       }
 
-      if (orgNormalInB.length2())
+      if (orgNormalInB.length2() > 0)
       {
         if (d2 > d0 && d2 > d1 && d2 > distance)
         {

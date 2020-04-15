@@ -93,7 +93,6 @@ struct ContactRequest
   long contact_limit{ 0 };
 
   ContactRequest(ContactTestType type = ContactTestType::ALL) : type(type) {}
-  virtual ~ContactRequest() = default;
 };
 
 struct ContactResult
