@@ -365,10 +365,13 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
   , collision_geometries_(std::move(collision_geometries))
 {
   collision_objects_.reserve(collision_objects.size());
+  collision_objects_raw_.reserve(collision_objects.size());
   for (const auto& co : collision_objects)
   {
     auto collObj = std::make_shared<FCLCollisionObjectWrapper>(*co);
     collObj->setUserData(this);
+    collObj->setTransform(co->getTransform());
+    collObj->updateAABB();
     collision_objects_.push_back(collObj);
     collision_objects_raw_.push_back(collObj.get());
   }
