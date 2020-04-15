@@ -80,7 +80,8 @@ int main(int /*argc*/, char** /*argv*/)
 
   // Perform collision check
   ContactResultMap result;
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  ContactRequest request(ContactTestType::CLOSEST);
+  checker.contactTest(result, request);
 
   ContactResultVector result_vector;
   flattenResults(std::move(result), result_vector);
@@ -107,7 +108,7 @@ int main(int /*argc*/, char** /*argv*/)
   checker.setCollisionObjectsTransform(location);
 
   // Check for collision after moving object
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, request);
   flattenResults(std::move(result), result_vector);
 
   CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());
@@ -121,7 +122,7 @@ int main(int /*argc*/, char** /*argv*/)
   checker.setContactDistanceThreshold(0.25);
 
   // Check for contact with new threshold
-  checker.contactTest(result, ContactTestType::CLOSEST);
+  checker.contactTest(result, request);
   flattenResults(std::move(result), result_vector);
 
   CONSOLE_BRIDGE_logInform("Has collision: %s", toString(result_vector.empty()).c_str());

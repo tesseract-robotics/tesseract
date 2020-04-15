@@ -198,7 +198,7 @@ void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::vector<st
   {
     COW::Ptr& cow = co.second;
 
-    updateCollisionObjectFilters(active_, *cow);
+    updateCollisionObjectFilters(active_, cow);
 
     // Update collision object vector
     if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
@@ -220,10 +220,10 @@ void BulletDiscreteSimpleManager::setContactDistanceThreshold(double contact_dis
 double BulletDiscreteSimpleManager::getContactDistanceThreshold() const { return contact_test_data_.contact_distance; }
 void BulletDiscreteSimpleManager::setIsContactAllowedFn(IsContactAllowedFn fn) { contact_test_data_.fn = fn; }
 IsContactAllowedFn BulletDiscreteSimpleManager::getIsContactAllowedFn() const { return contact_test_data_.fn; }
-void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, const ContactTestType& type)
+void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, const ContactRequest& request)
 {
   contact_test_data_.res = &collisions;
-  contact_test_data_.type = type;
+  contact_test_data_.req = request;
   contact_test_data_.done = false;
 
   for (auto cow1_iter = cows_.begin(); cow1_iter != (cows_.end() - 1); cow1_iter++)

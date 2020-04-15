@@ -39,7 +39,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "tesseract_collision/bullet/bullet_discrete_bvh_manager.h"
+#include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 
 namespace tesseract_collision
 {
@@ -156,6 +156,7 @@ bool BulletDiscreteBVHManager::enableCollisionObject(const std::string& name)
   if (it != link2cow_.end())
   {
     it->second->m_enabled = true;
+    broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(it->second->getBroadphaseHandle(), dispatcher_.get());
     return true;
   }
   return false;
@@ -167,6 +168,7 @@ bool BulletDiscreteBVHManager::disableCollisionObject(const std::string& name)
   if (it != link2cow_.end())
   {
     it->second->m_enabled = false;
+    broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(it->second->getBroadphaseHandle(), dispatcher_.get());
     return true;
   }
   return false;
@@ -213,7 +215,7 @@ void BulletDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::
   {
     COW::Ptr& cow = co.second;
 
-    updateCollisionObjectFilters(active_, *cow);
+    updateCollisionObjectFilters(active_, cow, broadphase_, dispatcher_);
   }
 }
 
@@ -234,15 +236,15 @@ void BulletDiscreteBVHManager::setContactDistanceThreshold(double contact_distan
 double BulletDiscreteBVHManager::getContactDistanceThreshold() const { return contact_test_data_.contact_distance; }
 void BulletDiscreteBVHManager::setIsContactAllowedFn(IsContactAllowedFn fn) { contact_test_data_.fn = fn; }
 IsContactAllowedFn BulletDiscreteBVHManager::getIsContactAllowedFn() const { return contact_test_data_.fn; }
-void BulletDiscreteBVHManager::contactTest(ContactResultMap& collisions, const ContactTestType& type)
+void BulletDiscreteBVHManager::contactTest(ContactResultMap& collisions, const ContactRequest& request)
 {
   contact_test_data_.res = &collisions;
-  contact_test_data_.type = type;
+  contact_test_data_.req = request;
   contact_test_data_.done = false;
 
-  broadphase_->calculateOverlappingPairs(dispatcher_.get());
-
   btOverlappingPairCache* pairCache = broadphase_->getOverlappingPairCache();
+
+  broadphase_->calculateOverlappingPairs(dispatcher_.get());
 
   DiscreteBroadphaseContactResultCallback cc(contact_test_data_, contact_test_data_.contact_distance);
 

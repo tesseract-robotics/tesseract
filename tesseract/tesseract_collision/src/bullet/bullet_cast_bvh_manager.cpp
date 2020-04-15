@@ -166,7 +166,14 @@ bool BulletCastBVHManager::enableCollisionObject(const std::string& name)
   if (it != link2cow_.end())
   {
     it->second->m_enabled = true;
-    link2castcow_[name]->m_enabled = true;
+    if (it->second->getBroadphaseHandle())
+      broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(it->second->getBroadphaseHandle(), dispatcher_.get());
+
+    auto cast_cow = link2castcow_[name];
+    cast_cow->m_enabled = true;
+    if (cast_cow->getBroadphaseHandle())
+      broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(cast_cow->getBroadphaseHandle(), dispatcher_.get());
+
     return true;
   }
 
@@ -179,7 +186,14 @@ bool BulletCastBVHManager::disableCollisionObject(const std::string& name)
   if (it != link2cow_.end())
   {
     it->second->m_enabled = false;
-    link2castcow_[name]->m_enabled = false;
+    if (it->second->getBroadphaseHandle())
+      broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(it->second->getBroadphaseHandle(), dispatcher_.get());
+
+    auto cast_cow = link2castcow_[name];
+    cast_cow->m_enabled = false;
+    if (cast_cow->getBroadphaseHandle())
+      broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(cast_cow->getBroadphaseHandle(), dispatcher_.get());
+
     return true;
   }
 
@@ -333,13 +347,13 @@ void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<std::stri
     if (cow->m_collisionFilterGroup == btBroadphaseProxy::KinematicFilter)
     {
       // Update with active
-      updateCollisionObjectFilters(active_, *cow);
+      updateCollisionObjectFilters(active_, cow, broadphase_, dispatcher_);
 
       // Get the active collision object
       COW::Ptr& active_cow = link2castcow_[cow->getName()];
 
       // Update with active
-      updateCollisionObjectFilters(active_, *active_cow);
+      updateCollisionObjectFilters(active_, active_cow, broadphase_, dispatcher_);
 
       // Check if the link is still active.
       if (!isLinkActive(active_, cow->getName()))
@@ -354,13 +368,13 @@ void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<std::stri
     else
     {
       // Update with active
-      updateCollisionObjectFilters(active_, *cow);
+      updateCollisionObjectFilters(active_, cow, broadphase_, dispatcher_);
 
       // Get the active collision object
       COW::Ptr& active_cow = link2castcow_[cow->getName()];
 
       // Update with active
-      updateCollisionObjectFilters(active_, *active_cow);
+      updateCollisionObjectFilters(active_, active_cow, broadphase_, dispatcher_);
 
       // Check if link is now active
       if (isLinkActive(active_, cow->getName()))
@@ -400,10 +414,10 @@ void BulletCastBVHManager::setContactDistanceThreshold(double contact_distance)
 double BulletCastBVHManager::getContactDistanceThreshold() const { return contact_test_data_.contact_distance; }
 void BulletCastBVHManager::setIsContactAllowedFn(IsContactAllowedFn fn) { contact_test_data_.fn = fn; }
 IsContactAllowedFn BulletCastBVHManager::getIsContactAllowedFn() const { return contact_test_data_.fn; }
-void BulletCastBVHManager::contactTest(ContactResultMap& collisions, const ContactTestType& type)
+void BulletCastBVHManager::contactTest(ContactResultMap& collisions, const ContactRequest& request)
 {
   contact_test_data_.res = &collisions;
-  contact_test_data_.type = type;
+  contact_test_data_.req = request;
   contact_test_data_.done = false;
 
   broadphase_->calculateOverlappingPairs(dispatcher_.get());

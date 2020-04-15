@@ -43,6 +43,8 @@ add_library(${PROJECT_NAME}_bullet SHARED
   src/bullet/tesseract_compound_collision_algorithm.cpp
   src/bullet/tesseract_compound_compound_collision_algorithm.cpp
   src/bullet/tesseract_collision_configuration.cpp
+  src/bullet/tesseract_convex_convex_algorithm.cpp
+  src/bullet/tesseract_gjk_pair_detector.cpp
 )
 target_link_libraries(${PROJECT_NAME}_bullet PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_geometry console_bridge ${OCTOMAP_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_bullet PUBLIC)
