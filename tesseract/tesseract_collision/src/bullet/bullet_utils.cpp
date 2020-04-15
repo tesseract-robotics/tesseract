@@ -52,6 +52,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <octomap/octomap.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+btScalar gDbvtMargin = 0;
+
 namespace tesseract_collision
 {
 namespace tesseract_collision_bullet

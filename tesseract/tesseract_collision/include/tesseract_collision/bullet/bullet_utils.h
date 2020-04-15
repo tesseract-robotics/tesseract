@@ -52,6 +52,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/types.h>
 #include <tesseract_collision/core/common.h>
 
+extern btScalar gDbvtMargin;
+
 namespace tesseract_collision
 {
 namespace tesseract_collision_bullet
@@ -907,33 +909,23 @@ btCollisionShape* createShapePrimitive(const CollisionShapeConstPtr& geom,
  * @brief Update a collision objects filters
  * @param active A list of active collision objects
  * @param cow The collision object to update.
- * @param continuous Indicate if the object is a continuous collision object.
- *
- * Currently continuous collision objects can only be checked against static objects. Continuous to Continuous
- * collision checking is currently not supports. TODO LEVI: Add support for Continuous to Continuous collision checking.
  */
-inline void updateCollisionObjectFilters(const std::vector<std::string>& active, COW& cow)
+inline void updateCollisionObjectFilters(const std::vector<std::string>& active, const COW::Ptr& cow)
 {
-  cow.m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
+  cow->m_collisionFilterGroup = btBroadphaseProxy::KinematicFilter;
 
-  if (!isLinkActive(active, cow.getName()))
+  if (!isLinkActive(active, cow->getName()))
   {
-    cow.m_collisionFilterGroup = btBroadphaseProxy::StaticFilter;
+    cow->m_collisionFilterGroup = btBroadphaseProxy::StaticFilter;
   }
 
-  if (cow.m_collisionFilterGroup == btBroadphaseProxy::StaticFilter)
+  if (cow->m_collisionFilterGroup == btBroadphaseProxy::StaticFilter)
   {
-    cow.m_collisionFilterMask = btBroadphaseProxy::KinematicFilter;
+    cow->m_collisionFilterMask = btBroadphaseProxy::KinematicFilter;
   }
   else
   {
-    cow.m_collisionFilterMask = btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter;
-  }
-
-  if (cow.getBroadphaseHandle())
-  {
-    cow.getBroadphaseHandle()->m_collisionFilterGroup = cow.m_collisionFilterGroup;
-    cow.getBroadphaseHandle()->m_collisionFilterMask = cow.m_collisionFilterMask;
+    cow->m_collisionFilterMask = btBroadphaseProxy::StaticFilter | btBroadphaseProxy::KinematicFilter;
   }
 }
 
@@ -1144,6 +1136,11 @@ inline void updateBroadphaseAABB(const COW::Ptr& cow,
   btVector3 aabb_min, aabb_max;
   cow->getAABB(aabb_min, aabb_max);
 
+  //  // Bullet Double Broadphase interface add 0.05 margin so lets remove it.
+  //  btVector3 remove_bullet_buffer(0.05, 0.05, 0.05);
+  //  aabb_min += remove_bullet_buffer;
+  //  aabb_max -= remove_bullet_buffer;
+
   // Update the broadphase aabb
   assert(cow->getBroadphaseHandle() != nullptr);
   broadphase->setAabb(cow->getBroadphaseHandle(), aabb_min, aabb_max, dispatcher.get());
@@ -1187,6 +1184,23 @@ inline void addCollisionObjectToBroadphase(const COW::Ptr& cow,
   cow->setBroadphaseHandle(broadphase->createProxy(
       aabb_min, aabb_max, type, cow.get(), cow->m_collisionFilterGroup, cow->m_collisionFilterMask, dispatcher.get()));
 }
+
+/**
+ * @brief Update a collision objects filters broadphase
+ * @param active A list of active collision objects
+ * @param cow The collision object to update.
+ */
+inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
+                                         const COW::Ptr& cow,
+                                         const std::unique_ptr<btBroadphaseInterface>& broadphase,
+                                         const std::unique_ptr<btCollisionDispatcher>& dispatcher)
+{
+  updateCollisionObjectFilters(active, cow);
+
+  // Need to clean the proxy from broadphase so BroadPhaseFilter gets called again.
+  broadphase->getOverlappingPairCache()->cleanProxyFromPairs(cow->getBroadphaseHandle(), dispatcher.get());
+}
+
 }  // namespace tesseract_collision_bullet
 }  // namespace tesseract_collision
 #endif  // TESSERACT_COLLISION_BULLET_UTILS_H

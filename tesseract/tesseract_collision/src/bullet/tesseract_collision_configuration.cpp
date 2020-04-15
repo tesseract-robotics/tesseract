@@ -41,7 +41,6 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <BulletCollision/CollisionDispatch/btConvexConvexAlgorithm.h>
 #include <BulletCollision/CollisionDispatch/btConvexConcaveCollisionAlgorithm.h>
 #include <LinearMath/btPoolAllocator.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -49,6 +48,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/bullet/tesseract_collision_configuration.h>
 #include <tesseract_collision/bullet/tesseract_compound_collision_algorithm.h>
 #include <tesseract_collision/bullet/tesseract_compound_compound_collision_algorithm.h>
+#include <tesseract_collision/bullet/tesseract_convex_convex_algorithm.h>
 
 namespace tesseract_collision
 {
@@ -69,6 +69,9 @@ TesseractCollisionConfiguration::TesseractCollisionConfiguration(
   m_swappedCompoundCreateFunc->~btCollisionAlgorithmCreateFunc();
   btAlignedFree(m_swappedCompoundCreateFunc);
 
+  m_convexConvexCreateFunc->~btCollisionAlgorithmCreateFunc();
+  btAlignedFree(m_convexConvexCreateFunc);
+
   if (m_ownsCollisionAlgorithmPool)
   {
     m_collisionAlgorithmPool->~btPoolAllocator();
@@ -80,6 +83,9 @@ TesseractCollisionConfiguration::TesseractCollisionConfiguration(
     btAlignedFree(m_persistentManifoldPool);
   }
 
+  mem = btAlignedAlloc(sizeof(TesseractConvexConvexAlgorithm::CreateFunc), 16);
+  m_convexConvexCreateFunc = new (mem) TesseractConvexConvexAlgorithm::CreateFunc(m_pdSolver);
+
   mem = btAlignedAlloc(sizeof(TesseractCompoundCollisionAlgorithm::CreateFunc), 16);
   m_compoundCreateFunc = new (mem) TesseractCompoundCollisionAlgorithm::CreateFunc;
 
@@ -90,7 +96,7 @@ TesseractCollisionConfiguration::TesseractCollisionConfiguration(
   m_swappedCompoundCreateFunc = new (mem) TesseractCompoundCollisionAlgorithm::SwappedCreateFunc;
 
   /// calculate maximum element size, big enough to fit any collision algorithm in the memory pool
-  int maxSize = sizeof(btConvexConvexAlgorithm);
+  int maxSize = sizeof(TesseractConvexConvexAlgorithm);
   int maxSize2 = sizeof(btConvexConcaveCollisionAlgorithm);
   int maxSize3 = sizeof(TesseractCompoundCollisionAlgorithm);
   int maxSize4 = sizeof(TesseractCompoundCompoundCollisionAlgorithm);
