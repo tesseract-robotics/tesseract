@@ -101,7 +101,9 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
       {
         Eigen::Isometry3d pose = co.second;
         pose.translation()[1] += 0.1;
-        manager->setCollisionObjectsTransform(co.first, pose);
+        std::vector<std::string> names = { co.first };
+        tesseract_common::VectorIsometry3d transforms = { pose };
+        manager->setCollisionObjectsTransform(names, transforms);
       }
       else if (tn == 2)
       {
@@ -113,7 +115,9 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
       {
         Eigen::Isometry3d pose = co.second;
         pose.translation()[0] -= 0.1;
-        manager->setCollisionObjectsTransform(co.first, pose);
+        std::vector<std::string> names = { co.first };
+        tesseract_common::VectorIsometry3d transforms = { pose };
+        manager->setCollisionObjectsTransform(names, transforms);
       }
     }
 

@@ -123,7 +123,9 @@ inline void runTest(ContinuousContactManager& checker)
   EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.1, 1e-5);
 
   // Set the collision object transforms
-  checker.setCollisionObjectsTransform("static_box_link", Eigen::Isometry3d::Identity());
+  std::vector<std::string> names = { "static_box_link" };
+  tesseract_common::VectorIsometry3d transforms = { Eigen::Isometry3d::Identity() };
+  checker.setCollisionObjectsTransform(names, transforms);
 
   Eigen::Isometry3d start_pos, end_pos;
   start_pos.setIdentity();
