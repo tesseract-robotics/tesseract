@@ -52,6 +52,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <octomap/octomap.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+// Bullet adds a margin of 5cm to which is an extern variable, so we set it to zero.
 btScalar gDbvtMargin = 0;
 
 namespace tesseract_collision
