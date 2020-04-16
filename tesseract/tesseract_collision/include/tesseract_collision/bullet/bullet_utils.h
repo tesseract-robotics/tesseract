@@ -880,10 +880,12 @@ public:
 
   bool needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) const override
   {
-    return !contact_data_.done && needsCollisionCheck(*(static_cast<CollisionObjectWrapper*>(proxy0->m_clientObject)),
-                                                      *(static_cast<CollisionObjectWrapper*>(proxy1->m_clientObject)),
-                                                      contact_data_.fn,
-                                                      verbose_);
+    // Note: We do not pass the allowed collision matrix because if it changes we do not know and this function only
+    // gets called under certain cases and it could cause overlapping pairs to not be processed.
+    return needsCollisionCheck(*(static_cast<CollisionObjectWrapper*>(proxy0->m_clientObject)),
+                               *(static_cast<CollisionObjectWrapper*>(proxy1->m_clientObject)),
+                               nullptr,
+                               verbose_);
   }
 
 private:
@@ -1133,11 +1135,6 @@ inline void updateBroadphaseAABB(const COW::Ptr& cow,
   // Calculate the aabb
   btVector3 aabb_min, aabb_max;
   cow->getAABB(aabb_min, aabb_max);
-
-  //  // Bullet Double Broadphase interface add 0.05 margin so lets remove it.
-  //  btVector3 remove_bullet_buffer(0.05, 0.05, 0.05);
-  //  aabb_min += remove_bullet_buffer;
-  //  aabb_max -= remove_bullet_buffer;
 
   // Update the broadphase aabb
   assert(cow->getBroadphaseHandle() != nullptr);
