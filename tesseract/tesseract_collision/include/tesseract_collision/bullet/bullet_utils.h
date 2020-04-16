@@ -1184,9 +1184,11 @@ inline void addCollisionObjectToBroadphase(const COW::Ptr& cow,
 }
 
 /**
- * @brief Update a collision objects filters broadphase
+ * @brief Update a collision objects filters for broadphase
  * @param active A list of active collision objects
  * @param cow The collision object to update.
+ * @param broadphase The collision object to update.
+ * @param dispatcher The collision object to update.
  */
 inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
                                          const COW::Ptr& cow,
@@ -1195,7 +1197,9 @@ inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
 {
   updateCollisionObjectFilters(active, cow);
 
-  // Need to clean the proxy from broadphase so BroadPhaseFilter gets called again.
+  // Need to clean the proxy from broadphase cache so BroadPhaseFilter gets called again.
+  // The BroadPhaseFilter only gets called once, so if you change when two objects can be in collision, like filters
+  // this must be called or contacts between shapes will be missed.
   broadphase->getOverlappingPairCache()->cleanProxyFromPairs(cow->getBroadphaseHandle(), dispatcher.get());
 }
 

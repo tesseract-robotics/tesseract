@@ -50,6 +50,19 @@ namespace tesseract_collision_bullet
 /// calculations between two convex objects. Multiple contact points are calculated by perturbing the orientation of the
 /// smallest object orthogonal to the separating normal. This idea was described by Gino van den Bergen in this forum
 /// topic http://www.bulletphysics.com/Bullet/phpBB3/viewtopic.php?f=4&t=288&p=888#p888
+
+/**
+ * @brief This is a modifed Convex to Convex collision algorithm
+ *
+ * This was modified to leverage the Tesseract contact request to enable and disable different parts of the algorithm.
+ * The algorithm first does a quick binary check if the two objects are in collision. If in collision it runs
+ * the penetration algorithm to get the nearest points and penetration depths. If not in collision it runs the an
+ * algorithm to get the nearest points and distance. The Tesseract contact request allow you to now decide if you need
+ * all three. Example, in the case of OMPL if you have a contact distance of zero you can get a performance increase,
+ * by disabling the penetration and distance calculation because they add no value.
+ *
+ * Note: This will not be able to be removed.
+ */
 class TesseractConvexConvexAlgorithm : public btActivatingCollisionAlgorithm
 {
 #ifdef USE_SEPDISTANCE_UTIL2

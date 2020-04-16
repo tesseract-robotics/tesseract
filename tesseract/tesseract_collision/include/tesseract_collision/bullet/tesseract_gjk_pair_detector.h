@@ -37,7 +37,18 @@ namespace tesseract_collision
 {
 namespace tesseract_collision_bullet
 {
-/// btGjkPairDetector uses GJK to implement the btDiscreteCollisionDetectorInterface
+/**
+ * @brief This is a modifed Convex to Convex collision algorithm
+ *
+ * This was modified to leverage the Tesseract contact request to enable and disable different parts of the algorithm.
+ * The algorithm first does a quick binary check if the two objects are in collision. If in collision it runs
+ * the penetration algorithm to get the nearest points and penetration depths. If not in collision it runs the an
+ * algorithm to get the nearest points and distance. The Tesseract contact request allow you to now decide if you need
+ * all three. Example, in the case of OMPL if you have a contact distance of zero you can get a performance increase,
+ * by disabling the penetration and distance calculation because they add no value.
+ *
+ * Note: This will not be able to be removed.
+ */
 class TesseractGjkPairDetector : public btDiscreteCollisionDetectorInterface
 {
   btVector3 m_cachedSeparatingAxis;
