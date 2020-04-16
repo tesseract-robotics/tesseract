@@ -50,6 +50,14 @@ namespace tesseract_collision
 {
 namespace tesseract_collision_bullet
 {
+/**
+ * @brief This is a modified configuration that included the modified Bullet algorithms.
+ *
+ * This swaps out the following Bullet algorithms for modifed one:
+ *     - Compound to Collision
+ *     - Compound to Compound
+ *     - Convex to Convex
+ */
 class TesseractCollisionConfiguration : public btDefaultCollisionConfiguration
 {
 public:

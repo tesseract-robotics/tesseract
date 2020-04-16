@@ -72,6 +72,10 @@ enum CollisionFilterGroups
   AllFilter = -1  // all bits sets: DefaultFilter | StaticFilter | KinematicFilter
 };
 
+/**
+ * @brief This is a Tesseract link collision object wrapper which add items specific to tesseract. It is a wrapper
+ * around a tesseract link which may contain several collision objects.
+ */
 class CollisionObjectWrapper
 {
 public:
@@ -241,6 +245,9 @@ inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
     cow->m_collisionFilterGroup = CollisionFilterGroups::KinematicFilter;
   }
 
+  // If the group is StaticFilter then the Mask is KinematicFilter, then StaticFilter groups can only collide with
+  // KinematicFilter groups. If the group is KinematicFilter then the mask is StaticFilter and KinematicFilter meaning
+  // that KinematicFilter groups can collide with both StaticFilter and KinematicFilter groups.
   if (cow->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
   {
     cow->m_collisionFilterMask = CollisionFilterGroups::KinematicFilter;

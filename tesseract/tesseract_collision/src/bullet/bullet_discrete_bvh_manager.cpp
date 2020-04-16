@@ -156,6 +156,10 @@ bool BulletDiscreteBVHManager::enableCollisionObject(const std::string& name)
   if (it != link2cow_.end())
   {
     it->second->m_enabled = true;
+
+    // Need to clean the proxy from broadphase cache so BroadPhaseFilter gets called again.
+    // The BroadPhaseFilter only gets called once, so if you change when two objects can be in collision, like filters
+    // this must be called or contacts between shapes will be missed.
     broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(it->second->getBroadphaseHandle(), dispatcher_.get());
     return true;
   }
@@ -168,6 +172,10 @@ bool BulletDiscreteBVHManager::disableCollisionObject(const std::string& name)
   if (it != link2cow_.end())
   {
     it->second->m_enabled = false;
+
+    // Need to clean the proxy from broadphase cache so BroadPhaseFilter gets called again.
+    // The BroadPhaseFilter only gets called once, so if you change when two objects can be in collision, like filters
+    // this must be called or contacts between shapes will be missed.
     broadphase_->getOverlappingPairCache()->cleanProxyFromPairs(it->second->getBroadphaseHandle(), dispatcher_.get());
     return true;
   }

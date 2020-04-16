@@ -39,7 +39,7 @@ namespace tesseract_collision_fcl
 /**
  * @brief This is a wrapper around FCL Collision Object Class which allows you to expand the AABB by the contact dist.
  *
- * This significantly improves when making distance requests if performing a contact tests type FIRST.
+ * This significantly improves performance when making distance requests if performing a contact tests type FIRST.
  */
 class FCLCollisionObjectWrapper : public fcl::CollisionObject<double>
 {

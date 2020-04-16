@@ -256,6 +256,10 @@ void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::str
 
   for (auto& co : link2cow_)
     updateCollisionObjectFilters(active_, co.second, static_manager_, dynamic_manager_);
+
+  // This causes a refit on the bvh tree.
+  dynamic_manager_->update();
+  static_manager_->update();
 }
 
 const std::vector<std::string>& FCLDiscreteBVHManager::getActiveCollisionObjects() const { return active_; }
@@ -368,6 +372,10 @@ void FCLDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
   // If active links is not empty update filters to respace the active links list
   if (!active_.empty())
     updateCollisionObjectFilters(active_, cow, static_manager_, dynamic_manager_);
+
+  // This causes a refit on the bvh tree.
+  dynamic_manager_->update();
+  static_manager_->update();
 }
 }  // namespace tesseract_collision_fcl
 }  // namespace tesseract_collision

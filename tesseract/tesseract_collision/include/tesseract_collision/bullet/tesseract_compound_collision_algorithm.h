@@ -40,7 +40,18 @@ namespace tesseract_collision
 {
 namespace tesseract_collision_bullet
 {
-/// btCompoundCollisionAlgorithm  supports collision between CompoundCollisionShapes and other collision shapes
+/**
+ * @brief Supports collision between CompoundCollisionShapes and other collision shapes
+ *
+ * The original implementation would check all collision objects before exiting the bvh of the compound shape. The
+ * original code had a callback, but it only passed in the collision shape and no the collision object which is where
+ * the user data is located. This was modifed to check if collision is done for the contact test type FIRST during the
+ * internal broadphase of the compound shapes and exit early.
+ *
+ * Note: This could be removed in the future but the callback need to be modifed to accept the collision object along
+ * with the collision shape. I don't believe this will be an issue since all of the other callback in Bullet accept
+ * both.
+ */
 class TesseractCompoundCollisionAlgorithm : public btActivatingCollisionAlgorithm  // NOLINT
 {
   btNodeStack stack2;
