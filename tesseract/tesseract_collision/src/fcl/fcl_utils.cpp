@@ -233,6 +233,11 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
 
   if (col_result.isCollision())
   {
+    Eigen::Isometry3d tf1 = cd1->getCollisionObjectsTransform();
+    Eigen::Isometry3d tf2 = cd2->getCollisionObjectsTransform();
+    Eigen::Isometry3d tf1_inv = tf1.inverse();
+    Eigen::Isometry3d tf2_inv = tf2.inverse();
+
     for (size_t i = 0; i < col_result.numContacts(); ++i)
     {
       const fcl::Contactd& fcl_contact = col_result.getContact(i);
@@ -245,6 +250,10 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
       contact.subshape_id[1] = fcl_contact.b2;
       contact.nearest_points[0] = fcl_contact.pos;
       contact.nearest_points[1] = fcl_contact.pos;
+      contact.nearest_points_local[0] = tf1_inv * contact.nearest_points[0];
+      contact.nearest_points_local[1] = tf2_inv * contact.nearest_points[1];
+      contact.transform[0] = tf1;
+      contact.transform[1] = tf2;
       contact.type_id[0] = cd1->getTypeID();
       contact.type_id[1] = cd2->getTypeID();
       contact.distance = -1.0 * fcl_contact.penetration_depth;
@@ -289,6 +298,11 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
 
   if (d < cdata->contact_distance)
   {
+    Eigen::Isometry3d tf1 = cd1->getCollisionObjectsTransform();
+    Eigen::Isometry3d tf2 = cd2->getCollisionObjectsTransform();
+    Eigen::Isometry3d tf1_inv = tf1.inverse();
+    Eigen::Isometry3d tf2_inv = tf2.inverse();
+
     ContactResult contact;
     contact.link_names[0] = cd1->getName();
     contact.link_names[1] = cd2->getName();
@@ -298,16 +312,17 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
     contact.subshape_id[1] = fcl_result.b2;
     contact.nearest_points[0] = fcl_result.nearest_points[0];
     contact.nearest_points[1] = fcl_result.nearest_points[1];
+    contact.nearest_points_local[0] = tf1_inv * contact.nearest_points[0];
+    contact.nearest_points_local[1] = tf2_inv * contact.nearest_points[1];
+    contact.transform[0] = tf1;
+    contact.transform[1] = tf2;
     contact.type_id[0] = cd1->getTypeID();
     contact.type_id[1] = cd2->getTypeID();
     contact.distance = fcl_result.min_distance;
     contact.normal = (fcl_result.min_distance * (contact.nearest_points[1] - contact.nearest_points[0])).normalized();
 
     // TODO: There is an issue with FCL need to track down
-    if (std::isnan(contact.nearest_points[0](0)))
-    {
-      CONSOLE_BRIDGE_logError("Nearest Points are NAN's");
-    }
+    assert(!std::isnan(contact.nearest_points[0](0)));
 
     ObjectPairKey pc = getObjectPairKey(cd1->getName(), cd2->getName());
     const auto& it = cdata->res->find(pc);
