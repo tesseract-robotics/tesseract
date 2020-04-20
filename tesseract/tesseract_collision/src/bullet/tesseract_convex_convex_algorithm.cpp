@@ -59,6 +59,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 ///////////
 extern btScalar gContactBreakingThreshold;
 
+// LCOV_EXCL_START
 namespace tesseract_collision
 {
 namespace tesseract_collision_bullet
@@ -959,3 +960,4 @@ btScalar TesseractConvexConvexAlgorithm::calculateTimeOfImpact(btCollisionObject
 }
 }  // namespace tesseract_collision_bullet
 }  // namespace tesseract_collision
+// LCOV_EXCL_STOP

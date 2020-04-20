@@ -159,12 +159,26 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   if (result_vector[0].link_names[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.25, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.0, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][2], 0.0, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], -0.05, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1], 0.0, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][2], 0.0, 0.001);
+  if (result_vector[0].single_contact_point)
+  {
+    EXPECT_NEAR(result_vector[0].nearest_points[0][0], result_vector[0].nearest_points[1][0], 0.001);
+    EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][0] - (0.25)) > 0.001 &&
+                 std::abs(result_vector[0].nearest_points[0][0] - (-0.05)) > 0.001);
+    EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][1] - (0.0)) > 0.001 &&
+                 std::abs(result_vector[0].nearest_points[0][1] - (0.0)) > 0.001);
+    EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][2] - (0.0)) > 0.001 &&
+                 std::abs(result_vector[0].nearest_points[0][2] - (0.0)) > 0.001);
+  }
+  else
+  {
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.25, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][2], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], -0.05, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][2], 0.0, 0.001);
+  }
+
   EXPECT_NEAR(result_vector[0].normal[0], idx[2] * 1.0, 0.001);
   EXPECT_NEAR(result_vector[0].normal[1], idx[2] * 0.0, 0.001);
   EXPECT_NEAR(result_vector[0].normal[2], idx[2] * 0.0, 0.0016);  // TODO LEVI: This was increased due to FLC
@@ -203,12 +217,26 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   if (result_vector[0].link_names[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.25, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.0, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][2], 0.0, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], 0.75, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1], 0.0, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][2], 0.0, 0.001);
+  if (result_vector[0].single_contact_point)
+  {
+    EXPECT_NEAR(result_vector[0].nearest_points[0][0], result_vector[0].nearest_points[1][0], 0.001);
+    EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][0] - (0.25)) > 0.001 &&
+                 std::abs(result_vector[0].nearest_points[0][0] - (0.75)) > 0.001);
+    EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][1] - (0.0)) > 0.001 &&
+                 std::abs(result_vector[0].nearest_points[0][1] - (0.0)) > 0.001);
+    EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][2] - (0.0)) > 0.001 &&
+                 std::abs(result_vector[0].nearest_points[0][2] - (0.0)) > 0.001);
+  }
+  else
+  {
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.25, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][2], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], 0.75, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][2], 0.0, 0.001);
+  }
+
   EXPECT_NEAR(result_vector[0].normal[0], idx[2] * 1.0, 0.001);
   EXPECT_NEAR(result_vector[0].normal[1], idx[2] * 0.0, 0.001);
   EXPECT_NEAR(result_vector[0].normal[2], idx[2] * 0.0, 0.001);
@@ -246,12 +274,26 @@ inline void runTestConvex1(DiscreteContactManager& checker)
   if (result_vector[0].link_names[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.232874, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.0, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][2], -0.025368, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], -0.032874, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1], 0.0, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][2], 0.025368, 0.001);
+  if (result_vector[0].single_contact_point)
+  {
+    EXPECT_NEAR(result_vector[0].nearest_points[0][0], result_vector[0].nearest_points[1][0], 0.001);
+    EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][0] - (0.23776)) > 0.001 &&
+                 std::abs(result_vector[0].nearest_points[0][0] - (-0.032874)) > 0.001);
+    EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][1] - (0.0)) > 0.001 &&
+                 std::abs(result_vector[0].nearest_points[0][1] - (0.0)) > 0.001);
+    EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][2] - (-0.025368)) > 0.001 &&
+                 std::abs(result_vector[0].nearest_points[0][2] - (0.025368)) > 0.001);
+  }
+  else
+  {
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.232874, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][2], -0.025368, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], -0.032874, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1], 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][2], 0.025368, 0.001);
+  }
+
   EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1, 0, 0)), 0.0);
   EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1, 0, 0)))), 0.5);
 
@@ -278,6 +320,13 @@ inline void runTestConvex2(DiscreteContactManager& checker)
   ContactResultMap result;
   ContactResultVector result_vector;
 
+  checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
+  tesseract_common::TransformMap location;
+  location["sphere_link"] = Eigen::Isometry3d::Identity();
+  location["sphere1_link"] = Eigen::Isometry3d::Identity();
+  location["sphere1_link"].translation() = Eigen::Vector3d(1, 0, 0);
+  checker.setCollisionObjectsTransform(location);
+
   checker.setContactDistanceThreshold(0.55);
   EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.55, 1e-5);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
@@ -287,15 +336,25 @@ inline void runTestConvex2(DiscreteContactManager& checker)
   // FCL:    0.546834 {0.237717,-0.0772317,0} {0.7622825,0.0772317}
   EXPECT_TRUE(!result_vector.empty());
   EXPECT_NEAR(result_vector[0].distance, 0.52448, 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[0][1], result_vector[0].nearest_points[1][1], 0.001);
+  EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
 
   std::vector<int> idx = { 0, 1, 1 };
   if (result_vector[0].link_names[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.23776, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], 0.76224, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[0][1], result_vector[0].nearest_points[1][1], 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
+  if (result_vector[0].single_contact_point)
+  {
+    EXPECT_NEAR(result_vector[0].nearest_points[0][0], result_vector[0].nearest_points[1][0], 0.001);
+    EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][0] - (0.23776)) > 0.001 &&
+                 std::abs(result_vector[0].nearest_points[0][0] - (0.76224)) > 0.001);
+  }
+  else
+  {
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 0.23776, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], 0.76224, 0.001);
+  }
+
   EXPECT_GT((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1, 0, 0)), 0.0);
   EXPECT_LT(std::abs(std::acos((idx[2] * result_vector[0].normal).dot(Eigen::Vector3d(1, 0, 0)))), 0.00001);
 }
@@ -305,6 +364,10 @@ inline void runTestConvex3(DiscreteContactManager& checker)
   //////////////////////////////////////////////////////////////////////
   // Test when object is in collision (Closest Feature face to edge)
   //////////////////////////////////////////////////////////////////////
+  checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
+  checker.setContactDistanceThreshold(0.1);
+  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.1, 1e-5);
+
   tesseract_common::TransformMap location;
   location["sphere1_link"] = Eigen::Isometry3d::Identity();
   location["sphere1_link"].translation()(1) = 0.2;
@@ -325,12 +388,24 @@ inline void runTestConvex3(DiscreteContactManager& checker)
   if (result_vector[0].link_names[0] != "sphere_link")
     idx = { 1, 0, -1 };
 
-  EXPECT_NEAR(std::abs(result_vector[0].nearest_points[idx[0]][0]), 0.0425563, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.2308753, 0.001);
-  EXPECT_NEAR(std::abs(result_vector[0].nearest_points[idx[0]][2]), 0.0263040, 0.001);
-  EXPECT_NEAR(std::abs(result_vector[0].nearest_points[idx[1]][0]), 0.0425563, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1], -0.0308753, 0.001);
-  EXPECT_NEAR(std::abs(result_vector[0].nearest_points[idx[1]][2]), 0.0263040, 0.001);
+  if (result_vector[0].single_contact_point)
+  {
+    EXPECT_NEAR(result_vector[0].nearest_points[0][0], result_vector[0].nearest_points[1][0], 0.001);
+    EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][1] - (0.2308753)) > 0.001 &&
+                 std::abs(result_vector[0].nearest_points[0][1] - (-0.0308753)) > 0.001);
+    EXPECT_NEAR(std::abs(result_vector[0].nearest_points[idx[0]][0]), 0.0425563, 0.001);
+    EXPECT_NEAR(std::abs(result_vector[0].nearest_points[idx[0]][2]), 0.0263040, 0.001);
+  }
+  else
+  {
+    EXPECT_NEAR(std::abs(result_vector[0].nearest_points[idx[0]][0]), 0.0425563, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][1], 0.2308753, 0.001);
+    EXPECT_NEAR(std::abs(result_vector[0].nearest_points[idx[0]][2]), 0.0263040, 0.001);
+    EXPECT_NEAR(std::abs(result_vector[0].nearest_points[idx[1]][0]), 0.0425563, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][1], -0.0308753, 0.001);
+    EXPECT_NEAR(std::abs(result_vector[0].nearest_points[idx[1]][2]), 0.0263040, 0.001);
+  }
+
   EXPECT_NEAR(std::abs(idx[2] * result_vector[0].normal[0]), 0.3037316, 0.001);
   EXPECT_NEAR(idx[2] * result_vector[0].normal[1], 0.9340783, 0.001);
   EXPECT_NEAR(std::abs(idx[2] * result_vector[0].normal[2]), 0.1877358, 0.001);

@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 class btConvexPenetrationDepthSolver;
 
+// LCOV_EXCL_START
 namespace tesseract_collision
 {
 namespace tesseract_collision_bullet
@@ -146,4 +147,5 @@ public:
 
 }  // namespace tesseract_collision_bullet
 }  // namespace tesseract_collision
+// LCOV_EXCL_STOP
 #endif  // TESSERACT_COLLISION_TESSERACT_CONVEX_CONVEX_ALGORITHM_H
