@@ -115,7 +115,12 @@ struct ContactResult
   Eigen::Vector3d nearest_points_local[2];
   /** @brief The transform of link in world coordinates */
   Eigen::Isometry3d transform[2];
-  /** @brief The normal vector to move the two objects out of contact in world coordinates */
+  /**
+   * @brief The normal vector to move the two objects out of contact in world coordinates
+   *
+   * @note This points from link_name[0] to link_name[1], so it shows the direction to move link_name[1] to avoid or get
+   *       out of collision with link_name[0].
+   */
   Eigen::Vector3d normal;
   /** @brief This is between 0 and 1 indicating the point of contact */
   double cc_time[2];
@@ -127,6 +132,11 @@ struct ContactResult
    *       transform and cc_transform;
    */
   Eigen::Isometry3d cc_transform[2];
+
+  /** @brief Some collision checkers only provide a single contact point for a given pair. This is used to indicate
+   * if only one contact point is provided which means nearest_points[0] must equal nearest_points[1].
+   */
+  bool single_contact_point{ false };
 
   ContactResult() { clear(); }
 
@@ -155,6 +165,7 @@ struct ContactResult
     cc_type[1] = ContinuousCollisionType::CCType_None;
     cc_transform[0] = Eigen::Isometry3d::Identity();
     cc_transform[1] = Eigen::Isometry3d::Identity();
+    single_contact_point = false;
   }
 };
 

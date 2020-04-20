@@ -15,7 +15,7 @@ namespace tesseract_collision
 {
 namespace test_suite
 {
-inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = false)
+inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = false, int num_interations = 10)
 {
   // Add Meshed Sphere to checker
   CollisionShapePtr sphere;
@@ -77,18 +77,17 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
   ContactResultVector result_vector;
 
   auto start_time = std::chrono::high_resolution_clock::now();
-  for (auto i = 0; i < 10; ++i)
+  for (auto i = 0; i < num_interations; ++i)
   {
     ContactResultMap result;
     result_vector.clear();
     checker.contactTest(result, ContactRequest(ContactTestType::ALL));
     flattenResults(std::move(result), result_vector);
+    EXPECT_TRUE(result_vector.size() == 300);
   }
   auto end_time = std::chrono::high_resolution_clock::now();
 
   CONSOLE_BRIDGE_logInform("DT: %f ms", std::chrono::duration<double, std::milli>(end_time - start_time).count());
-
-  EXPECT_TRUE(result_vector.size() == 300);
 }
 }  // namespace test_suite
 }  // namespace tesseract_collision
