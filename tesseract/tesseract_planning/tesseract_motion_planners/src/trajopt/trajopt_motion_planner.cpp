@@ -176,11 +176,20 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
                                                      length,
                                                      verbose);
 
+  tesseract_collision::ContactRequest request(tesseract_collision::ContactTestType::FIRST);
+  request.is_valid = [&](const tesseract_collision::ContactResult& res) {
+    Eigen::Vector2d coll_info =
+        config_->special_collision_constraint->getPairSafetyMarginData(res.link_names[0], res.link_names[1]);
+    if (res.distance < coll_info.x())
+      return true;
+
+    return false;
+  };
   bool valid = validator_->trajectoryValid(getTraj(opt.x(), config_->prob->GetVars()),
                                            check_type,
                                            *state_solver,
                                            config_->prob->GetKin()->getJointNames(),
-                                           config_->special_collision_constraint);
+                                           request);
 
   // Send response
   response.joint_trajectory.trajectory = getTraj(opt.x(), config_->prob->GetVars());

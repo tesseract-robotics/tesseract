@@ -76,25 +76,6 @@ static const std::vector<std::string> ContactTestTypeStrings = {
   "LIMITED",
 };
 
-/** @brief The ContactRequest struct */
-struct ContactRequest
-{
-  /** @brief This controls the exit condition for the contact test type */
-  ContactTestType type{ ContactTestType::ALL };
-
-  /** @brief This enables the calculation of penetration contact data if two objects are in collision */
-  bool calculate_penetration{ true };
-
-  /** @brief This enables the calculation of distance data if two objects are within the contact threshold */
-  bool calculate_distance{ true };
-
-  /** @brief This is used if the ContactTestType is set to LIMITED, where the test will exit when number of contacts
-   * reach this limit */
-  long contact_limit{ 0 };
-
-  ContactRequest(ContactTestType type = ContactTestType::ALL) : type(type) {}
-};
-
 struct ContactResult
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -171,6 +152,35 @@ struct ContactResult
 
 using ContactResultVector = tesseract_common::AlignedVector<ContactResult>;
 using ContactResultMap = tesseract_common::AlignedMap<std::pair<std::string, std::string>, ContactResultVector>;
+
+/**
+ * @brief Should return true if contact results are valid, otherwise false.
+ *
+ * This is used so users may provide a callback to reject/approve collision results in various algorithms.
+ */
+using IsContactResultValidFn = std::function<bool(const ContactResult&)>;
+
+/** @brief The ContactRequest struct */
+struct ContactRequest
+{
+  /** @brief This controls the exit condition for the contact test type */
+  ContactTestType type{ ContactTestType::ALL };
+
+  /** @brief This enables the calculation of penetration contact data if two objects are in collision */
+  bool calculate_penetration{ true };
+
+  /** @brief This enables the calculation of distance data if two objects are within the contact threshold */
+  bool calculate_distance{ true };
+
+  /** @brief This is used if the ContactTestType is set to LIMITED, where the test will exit when number of contacts
+   * reach this limit */
+  long contact_limit{ 0 };
+
+  /** @brief This provides a user defined function approve/reject contact results */
+  IsContactResultValidFn is_valid{ nullptr };
+
+  ContactRequest(ContactTestType type = ContactTestType::ALL) : type(type) {}
+};
 
 inline std::size_t flattenMoveResults(ContactResultMap&& m, ContactResultVector& v)
 {
