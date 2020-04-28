@@ -222,7 +222,7 @@ struct ContactTestData
                   IsContactAllowedFn fn,
                   ContactRequest req,
                   ContactResultMap& res)
-    : active(&active), contact_distance(contact_distance), fn(std::move(fn)), req(req), res(&res)
+    : active(&active), contact_distance(contact_distance), fn(std::move(fn)), req(std::move(req)), res(&res)
   {
   }
 
