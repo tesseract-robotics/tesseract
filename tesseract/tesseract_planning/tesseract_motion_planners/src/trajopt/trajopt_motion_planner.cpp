@@ -134,6 +134,12 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
   auto tStart = boost::posix_time::second_clock::local_time();
   opt.optimize();
   CONSOLE_BRIDGE_logInform("planning time: %.3f", (boost::posix_time::second_clock::local_time() - tStart).seconds());
+  if (opt.results().status != sco::OptStatus::OPT_CONVERGED)
+  {
+    response.status =
+        tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::FailedToFindValidSolution, status_category_);
+    return response.status;
+  }
 
   // Check and report collisions
   const Eigen::MatrixX2d& limits = config_->prob->GetKin()->getLimits();
@@ -170,18 +176,25 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
                                                      length,
                                                      verbose);
 
-  bool valid = validator_->trajectoryValid(
-      getTraj(opt.x(), config_->prob->GetVars()), check_type, *state_solver, config_->prob->GetKin()->getJointNames());
+  tesseract_collision::ContactRequest request(tesseract_collision::ContactTestType::FIRST);
+  request.is_valid = [&](const tesseract_collision::ContactResult& res) {
+    Eigen::Vector2d coll_info =
+        config_->special_collision_constraint->getPairSafetyMarginData(res.link_names[0], res.link_names[1]);
+    if (res.distance < coll_info.x())
+      return true;
+
+    return false;
+  };
+  bool valid = validator_->trajectoryValid(getTraj(opt.x(), config_->prob->GetVars()),
+                                           check_type,
+                                           *state_solver,
+                                           config_->prob->GetKin()->getJointNames(),
+                                           request);
 
   // Send response
   response.joint_trajectory.trajectory = getTraj(opt.x(), config_->prob->GetVars());
   response.joint_trajectory.joint_names = config_->prob->GetKin()->getJointNames();
-  if (opt.results().status != sco::OptStatus::OPT_CONVERGED)
-  {
-    response.status =
-        tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::FailedToFindValidSolution, status_category_);
-  }
-  else if (!valid)
+  if (!valid)
   {
     response.status = tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::FoundValidSolutionInCollision,
                                                    status_category_);
