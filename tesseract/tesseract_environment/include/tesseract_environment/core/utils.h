@@ -25,17 +25,18 @@
  */
 #ifndef TESSERACT_ENVIRONMENT_UTILS_H
 #define TESSERACT_ENVIRONMENT_UTILS_H
+
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/parser/srdf_parser.h>
 #include <utility>
 #include <unordered_map>
-#include <tesseract_collision/core/continuous_contact_manager.h>
-#include <tesseract_environment/core/environment.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/types.h>
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/parser/srdf_parser.h>
+#include <tesseract_collision/core/continuous_contact_manager.h>
+#include <tesseract_environment/core/environment.h>
 
 namespace tesseract_environment
 {
@@ -79,24 +80,24 @@ inline void getActiveLinkNamesRecursive(std::vector<std::string>& active_links,
  * @param manager A continuous contact manager
  * @param state0 First environment state
  * @param state1 Second environment state
- * @param type The type of contact test to perform (FIRST, CLOSEST, ALL)
+ * @param request Contact request data
  * @param verbose Print out found collisions
  * @return True if collision was found, otherwise false.
  */
-inline bool
-checkTrajectorySegment(std::vector<tesseract_collision::ContactResultMap>& contacts,
-                       tesseract_collision::ContinuousContactManager& manager,
-                       const tesseract_environment::EnvState::Ptr& state0,
-                       const tesseract_environment::EnvState::Ptr& state1,
-                       tesseract_collision::ContactTestType type = tesseract_collision::ContactTestType::FIRST,
-                       bool verbose = false)
+inline bool checkTrajectorySegment(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                                   tesseract_collision::ContinuousContactManager& manager,
+                                   const tesseract_environment::EnvState::Ptr& state0,
+                                   const tesseract_environment::EnvState::Ptr& state1,
+                                   const tesseract_collision::ContactRequest& request =
+                                       tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST),
+                                   bool verbose = false)
 {
   for (const auto& link_name : manager.getActiveCollisionObjects())
     manager.setCollisionObjectsTransform(
         link_name, state0->link_transforms[link_name], state1->link_transforms[link_name]);
 
   tesseract_collision::ContactResultMap collisions;
-  manager.contactTest(collisions, type);
+  manager.contactTest(collisions, request);
 
   if (!collisions.empty())
   {
@@ -124,23 +125,23 @@ checkTrajectorySegment(std::vector<tesseract_collision::ContactResultMap>& conta
  * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
  * @param manager A discrete contact manager
  * @param state First environment state
- * @param type The type of contact test to perform (FIRST, CLOSEST, ALL)
+ * @param request Contact request data
  * @param verbose Print out found collisions
  * @return True if collision was found, otherwise false.
  */
-inline bool
-checkTrajectoryState(std::vector<tesseract_collision::ContactResultMap>& contacts,
-                     tesseract_collision::DiscreteContactManager& manager,
-                     const tesseract_environment::EnvState::Ptr& state,
-                     tesseract_collision::ContactTestType type = tesseract_collision::ContactTestType::FIRST,
-                     bool verbose = false)
+inline bool checkTrajectoryState(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                                 tesseract_collision::DiscreteContactManager& manager,
+                                 const tesseract_environment::EnvState::Ptr& state,
+                                 const tesseract_collision::ContactRequest& request =
+                                     tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST),
+                                 bool verbose = false)
 {
   tesseract_collision::ContactResultMap collisions;
 
   for (const auto& link_name : manager.getActiveCollisionObjects())
     manager.setCollisionObjectsTransform(link_name, state->link_transforms[link_name]);
 
-  manager.contactTest(collisions, type);
+  manager.contactTest(collisions, request);
 
   if (!collisions.empty())
   {
@@ -170,7 +171,8 @@ checkTrajectoryState(std::vector<tesseract_collision::ContactResultMap>& contact
  * @param state_solver The environment state solver
  * @param joint_names JointNames corresponding to the values in traj (must be in same order)
  * @param traj The joint values at each time step
- * @param type The type of contact test to perform (FIRST, CLOSEST, ALL)
+ * @param request Contact request data
+ * @param verbose Print out found collisions
  * @return True if collision was found, otherwise false.
  */
 inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
@@ -178,7 +180,8 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
                             const tesseract_environment::StateSolver& state_solver,
                             const std::vector<std::string>& joint_names,
                             const tesseract_common::TrajArray& traj,
-                            tesseract_collision::ContactTestType type = tesseract_collision::ContactTestType::FIRST,
+                            const tesseract_collision::ContactRequest& request =
+                                tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST),
                             bool verbose = false)
 {
   bool found = false;
@@ -189,7 +192,7 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
     tesseract_environment::EnvState::Ptr state0 = state_solver.getState(joint_names, traj.row(iStep));
     tesseract_environment::EnvState::Ptr state1 = state_solver.getState(joint_names, traj.row(iStep + 1));
 
-    if (checkTrajectorySegment(contacts, manager, state0, state1, type, verbose))
+    if (checkTrajectorySegment(contacts, manager, state0, state1, request, verbose))
     {
       found = true;
       if (verbose)
@@ -209,7 +212,7 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
       }
     }
 
-    if (found && (type == tesseract_collision::ContactTestType::FIRST))
+    if (found && (request.type == tesseract_collision::ContactTestType::FIRST))
       break;
   }
 
@@ -225,7 +228,8 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
  * @param traj The joint values at each time step
  * @param longest_valid_segment_length Used to check collisions between two state if norm(state0-state1) >
  * longest_valid_segment_length.
- * @param type The type of contact test to perform (FIRST, CLOSEST, ALL)
+ * @param request Contact request data
+ * @param verbose Print out found collisions
  * @return True if collision was found, otherwise false.
  */
 inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
@@ -234,7 +238,8 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
                             const std::vector<std::string>& joint_names,
                             const tesseract_common::TrajArray& traj,
                             double longest_valid_segment_length,
-                            tesseract_collision::ContactTestType type = tesseract_collision::ContactTestType::FIRST,
+                            const tesseract_collision::ContactRequest& request =
+                                tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST),
                             bool verbose = false)
 {
   bool found = false;
@@ -254,7 +259,7 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
       {
         tesseract_environment::EnvState::Ptr state0 = state_solver.getState(joint_names, subtraj.row(iSubStep));
         tesseract_environment::EnvState::Ptr state1 = state_solver.getState(joint_names, subtraj.row(iSubStep + 1));
-        if (checkTrajectorySegment(contacts, manager, state0, state1, type, verbose))
+        if (checkTrajectorySegment(contacts, manager, state0, state1, request, verbose))
         {
           found = true;
           if (verbose)
@@ -275,18 +280,18 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
           }
         }
 
-        if (found && (type == tesseract_collision::ContactTestType::FIRST))
+        if (found && (request.type == tesseract_collision::ContactTestType::FIRST))
           break;
       }
 
-      if (found && (type == tesseract_collision::ContactTestType::FIRST))
+      if (found && (request.type == tesseract_collision::ContactTestType::FIRST))
         break;
     }
     else
     {
       tesseract_environment::EnvState::Ptr state0 = state_solver.getState(joint_names, traj.row(iStep));
       tesseract_environment::EnvState::Ptr state1 = state_solver.getState(joint_names, traj.row(iStep + 1));
-      if (checkTrajectorySegment(contacts, manager, state0, state1, type, verbose))
+      if (checkTrajectorySegment(contacts, manager, state0, state1, request, verbose))
       {
         found = true;
         if (verbose)
@@ -306,7 +311,7 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
         }
       }
 
-      if (found && (type == tesseract_collision::ContactTestType::FIRST))
+      if (found && (request.type == tesseract_collision::ContactTestType::FIRST))
         break;
     }
   }
@@ -321,7 +326,8 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
  * @param state_solver The environment state solver
  * @param joint_names JointNames corresponding to the values in traj (must be in same order)
  * @param traj The joint values at each time step
- * @param type The type of contact test to perform (FIRST, CLOSEST, ALL)
+ * @param request Contact request data
+ * @param verbose Print out found collisions
  * @return True if collision was found, otherwise false.
  */
 inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
@@ -329,7 +335,8 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
                             const tesseract_environment::StateSolver& state_solver,
                             const std::vector<std::string>& joint_names,
                             const tesseract_common::TrajArray& traj,
-                            tesseract_collision::ContactTestType type = tesseract_collision::ContactTestType::FIRST,
+                            const tesseract_collision::ContactRequest& request =
+                                tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST),
                             bool verbose = false)
 {
   bool found = false;
@@ -338,7 +345,7 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
   for (int iStep = 0; iStep < traj.rows() - 1; ++iStep)
   {
     tesseract_environment::EnvState::Ptr state = state_solver.getState(joint_names, traj.row(iStep));
-    if (checkTrajectoryState(contacts, manager, state, type, verbose))
+    if (checkTrajectoryState(contacts, manager, state, request, verbose))
     {
       found = true;
       if (verbose)
@@ -356,7 +363,7 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
       }
     }
 
-    if (found && (type == tesseract_collision::ContactTestType::FIRST))
+    if (found && (request.type == tesseract_collision::ContactTestType::FIRST))
       break;
   }
 
@@ -372,7 +379,8 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
  * @param traj The joint values at each time step
  * @param longest_valid_segment_length Used to check collisions between two state if norm(state0-state1) >
  * longest_valid_segment_length.
- * @param type The type of contact test to perform (FIRST, CLOSEST, ALL)
+ * @param request Contact request data
+ * @param verbose Print out found collisions
  * @return True if collision was found, otherwise false.
  */
 inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& contacts,
@@ -381,7 +389,8 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
                             const std::vector<std::string>& joint_names,
                             const tesseract_common::TrajArray& traj,
                             double longest_valid_segment_length,
-                            tesseract_collision::ContactTestType type = tesseract_collision::ContactTestType::FIRST,
+                            const tesseract_collision::ContactRequest& request =
+                                tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST),
                             bool verbose = false)
 {
   bool found = false;
@@ -403,7 +412,7 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
       for (int iSubStep = 0; iSubStep < subtraj.rows() - 1; ++iSubStep)
       {
         tesseract_environment::EnvState::Ptr state = state_solver.getState(joint_names, subtraj.row(iSubStep));
-        if (checkTrajectoryState(contacts, manager, state, type, verbose))
+        if (checkTrajectoryState(contacts, manager, state, request, verbose))
         {
           found = true;
           if (verbose)
@@ -422,17 +431,17 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
           }
         }
 
-        if (found && (type == tesseract_collision::ContactTestType::FIRST))
+        if (found && (request.type == tesseract_collision::ContactTestType::FIRST))
           break;
       }
 
-      if (found && (type == tesseract_collision::ContactTestType::FIRST))
+      if (found && (request.type == tesseract_collision::ContactTestType::FIRST))
         break;
     }
     else
     {
       tesseract_environment::EnvState::Ptr state = state_solver.getState(joint_names, traj.row(iStep));
-      if (checkTrajectoryState(contacts, manager, state, type, verbose))
+      if (checkTrajectoryState(contacts, manager, state, request, verbose))
       {
         found = true;
         if (verbose)
@@ -450,7 +459,7 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
         }
       }
 
-      if (found && (type == tesseract_collision::ContactTestType::FIRST))
+      if (found && (request.type == tesseract_collision::ContactTestType::FIRST))
         break;
     }
   }

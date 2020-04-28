@@ -108,6 +108,9 @@ inline ContactResult* processResult(ContactTestData& cdata,
                                     const std::pair<std::string, std::string>& key,
                                     bool found)
 {
+  if (cdata.req.is_valid && !cdata.req.is_valid(contact))
+    return nullptr;
+
   if (!found)
   {
     ContactResultVector data;
