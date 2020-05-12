@@ -41,6 +41,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_kinematics
 {
+IKFastInvKin::IKFastInvKin() : initialized_(false), solver_name_("IKFastInvKin") {}
+
 InverseKinematics::Ptr IKFastInvKin::clone() const
 {
   auto cloned_invkin = std::make_shared<IKFastInvKin>();
@@ -176,6 +178,25 @@ bool IKFastInvKin::init(const IKFastInvKin& kin)
   link_names_ = kin.link_names_;
   active_link_names_ = kin.active_link_names_;
   joint_limits_ = kin.joint_limits_;
+
+  return initialized_;
+}
+
+const std::vector<std::string>& IKFastInvKin::getJointNames() const { return joint_names_; }
+const std::vector<std::string>& IKFastInvKin::getLinkNames() const { return link_names_; }
+const std::vector<std::string>& IKFastInvKin::getActiveLinkNames() const { return active_link_names_; }
+const Eigen::MatrixX2d& IKFastInvKin::getLimits() const { return joint_limits_; }
+const std::string& IKFastInvKin::getBaseLinkName() const { return base_link_name_; }
+const std::string& IKFastInvKin::getTipLinkName() const { return tip_link_name_; }
+const std::string& IKFastInvKin::getName() const { return name_; }
+const std::string& IKFastInvKin::getSolverName() const { return solver_name_; }
+
+bool IKFastInvKin::checkInitialized() const
+{
+  if (!initialized_)
+  {
+    CONSOLE_BRIDGE_logError("Kinematics has not been initialized!");
+  }
 
   return initialized_;
 }
