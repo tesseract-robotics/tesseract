@@ -87,7 +87,7 @@ public:
   using Ptr = std::shared_ptr<IKFastInvKin>;
   using ConstPtr = std::shared_ptr<const IKFastInvKin>;
 
-  IKFastInvKin() : initialized_(false), solver_name_("IKFastInvKin") {}
+  IKFastInvKin();
   IKFastInvKin(const IKFastInvKin&) = delete;
   IKFastInvKin& operator=(const IKFastInvKin&) = delete;
   IKFastInvKin(IKFastInvKin&&) = delete;
@@ -107,14 +107,14 @@ public:
   bool checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const override;
   unsigned int numJoints() const override;
 
-  const std::vector<std::string>& getJointNames() const override { return joint_names_; }
-  const std::vector<std::string>& getLinkNames() const override { return link_names_; }
-  const std::vector<std::string>& getActiveLinkNames() const override { return active_link_names_; }
-  const Eigen::MatrixX2d& getLimits() const override { return joint_limits_; }
-  const std::string& getBaseLinkName() const override { return base_link_name_; }
-  const std::string& getTipLinkName() const override { return tip_link_name_; }
-  const std::string& getName() const override { return name_; }
-  const std::string& getSolverName() const override { return solver_name_; }
+  const std::vector<std::string>& getJointNames() const override;
+  const std::vector<std::string>& getLinkNames() const override;
+  const std::vector<std::string>& getActiveLinkNames() const;
+  const Eigen::MatrixX2d& getLimits() const override;
+  const std::string& getBaseLinkName() const override;
+  const std::string& getTipLinkName() const override;
+  const std::string& getName() const override;
+  const std::string& getSolverName() const override;
 
   /**
    * @brief Initialize IKFast Inverse Kinematics
@@ -139,15 +139,7 @@ public:
    * @brief Checks if kinematics has been initialized
    * @return True if init() has completed successfully
    */
-  bool checkInitialized() const
-  {
-    if (!initialized_)
-    {
-      CONSOLE_BRIDGE_logError("Kinematics has not been initialized!");
-    }
-
-    return initialized_;
-  }
+  bool checkInitialized() const;
 
 protected:
   bool initialized_ = false;                   /**< @brief Identifies if the object has been initialized */
