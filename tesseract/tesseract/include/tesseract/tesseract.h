@@ -31,13 +31,14 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract/tesseract_init_info.h>
 #include <tesseract_environment/core/environment.h>
-#include <tesseract_scene_graph/parser/srdf_parser.h>
+#include <tesseract_scene_graph/srdf_model.h>
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
 #include <boost/filesystem/path.hpp>
 #include <tesseract/forward_kinematics_manager.h>
 #include <tesseract/inverse_kinematics_manager.h>
 #include <memory>
+#include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract
@@ -65,7 +66,7 @@ public:
   bool isInitialized() const;
 
   bool init(tesseract_scene_graph::SceneGraph::Ptr scene_graph);
-  bool init(tesseract_scene_graph::SceneGraph::Ptr scene_graph, tesseract_scene_graph::SRDFModel::ConstPtr srdf_model);
+  bool init(tesseract_scene_graph::SceneGraph::Ptr scene_graph, tesseract_scene_graph::SRDFModel::Ptr srdf_model);
   bool init(const std::string& urdf_string, const tesseract_scene_graph::ResourceLocator::Ptr& locator);
   bool init(const std::string& urdf_string,
             const std::string& srdf_string,
@@ -76,7 +77,8 @@ public:
             const tesseract_scene_graph::ResourceLocator::Ptr& locator);
   bool init(const TesseractInitInfo::Ptr& init_info);
 
-  const tesseract_scene_graph::SRDFModel::ConstPtr& getSRDFModel() const;
+  const tesseract_scene_graph::SRDFModel::Ptr& getSRDFModel() const;
+  const tesseract_scene_graph::SRDFModel::ConstPtr& getSRDFModelConst() const;
 
   const tesseract_environment::Environment::Ptr& getEnvironment();
   const tesseract_environment::Environment::ConstPtr& getEnvironmentConst() const;
@@ -87,15 +89,20 @@ public:
   const InverseKinematicsManager::Ptr& getInvKinematicsManager();
   const InverseKinematicsManager::ConstPtr& getInvKinematicsManagerConst() const;
 
+  tesseract_scene_graph::SRDFModel::GroupStates& getUserDefinedGroupStates();
+  const tesseract_scene_graph::SRDFModel::GroupStates& getUserDefinedGroupStatesConst() const;
+
 private:
   bool initialized_;
   tesseract_environment::Environment::Ptr environment_;
   tesseract_environment::Environment::ConstPtr environment_const_;
-  tesseract_scene_graph::SRDFModel::ConstPtr srdf_model_;
+  tesseract_scene_graph::SRDFModel::Ptr srdf_model_;
+  tesseract_scene_graph::SRDFModel::ConstPtr srdf_model_const_;
   ForwardKinematicsManager::Ptr fwd_kin_manager_;
   ForwardKinematicsManager::ConstPtr fwd_kin_manager_const_;
   InverseKinematicsManager::Ptr inv_kin_manager_;
   InverseKinematicsManager::ConstPtr inv_kin_manager_const_;
+  tesseract_scene_graph::SRDFModel::GroupStates defined_group_states_;
   TesseractInitInfo::Ptr init_info_;
 
   bool registerDefaultContactManagers();

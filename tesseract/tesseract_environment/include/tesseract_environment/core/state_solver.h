@@ -90,6 +90,18 @@ public:
   virtual EnvState::ConstPtr getCurrentState() const = 0;
 
   /**
+   * @brief Get the random state of the environment
+   * @return Environment state
+   */
+  virtual EnvState::Ptr getRandomState() const = 0;
+
+  /**
+   * @brief Getter for joint_limits_
+   * @return Matrix of joint limits
+   */
+  virtual const Eigen::MatrixX2d& getLimits() const = 0;
+
+  /**
    * @brief This should clone the object so it may be used in a multi threaded application where each thread would
    * clone the solver.
    * @return A clone of the object.

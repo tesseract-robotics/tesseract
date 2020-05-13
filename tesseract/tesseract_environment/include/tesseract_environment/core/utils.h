@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/types.h>
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/parser/srdf_parser.h>
+#include <tesseract_scene_graph/srdf_model.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_environment/core/environment.h>
 
@@ -466,5 +466,6 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
 
   return found;
 }
+
 }  // namespace tesseract_environment
 #endif  // TESSERACT_ENVIRONMENT_UTILS_H

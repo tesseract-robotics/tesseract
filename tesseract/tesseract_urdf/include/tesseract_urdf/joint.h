@@ -41,7 +41,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/mimic.h>
 #include <tesseract_urdf/origin.h>
 #include <tesseract_urdf/safety_controller.h>
-#include <tesseract_urdf/utils.h>
 
 namespace tesseract_urdf
 {
@@ -129,7 +128,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
 
   // get joint name
   std::string joint_name;
-  if (QueryStringAttribute(xml_element, "name", joint_name) != tinyxml2::XML_SUCCESS)
+  if (tesseract_common::QueryStringAttribute(xml_element, "name", joint_name) != tinyxml2::XML_SUCCESS)
     return std::make_shared<SC>(JointStatusCategory::ErrorMissingAttributeName, status_cat);
 
   status_cat = std::make_shared<JointStatusCategory>(joint_name);
@@ -151,7 +150,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
   if (parent == nullptr)
     return std::make_shared<SC>(JointStatusCategory::ErrorMissingParentElement, status_cat);
 
-  if (QueryStringAttribute(parent, "link", j->parent_link_name) != tinyxml2::XML_SUCCESS)
+  if (tesseract_common::QueryStringAttribute(parent, "link", j->parent_link_name) != tinyxml2::XML_SUCCESS)
     return std::make_shared<SC>(JointStatusCategory::ErrorParsingParentAttributeLink, status_cat);
 
   // get child link
@@ -159,12 +158,12 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
   if (child == nullptr)
     return std::make_shared<SC>(JointStatusCategory::ErrorMissingChildElement, status_cat);
 
-  if (QueryStringAttribute(child, "link", j->child_link_name) != tinyxml2::XML_SUCCESS)
+  if (tesseract_common::QueryStringAttribute(child, "link", j->child_link_name) != tinyxml2::XML_SUCCESS)
     return std::make_shared<SC>(JointStatusCategory::ErrorParsingChildAttributeLink, status_cat);
 
   // get joint type
   std::string joint_type;
-  if (QueryStringAttribute(xml_element, "type", joint_type) != tinyxml2::XML_SUCCESS)
+  if (tesseract_common::QueryStringAttribute(xml_element, "type", joint_type) != tinyxml2::XML_SUCCESS)
     return std::make_shared<SC>(JointStatusCategory::ErrorMissingTypeElement, status_cat);
 
   if (joint_type == "planar")
@@ -193,7 +192,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::Joint::Ptr
     else
     {
       std::string axis_str;
-      if (QueryStringAttribute(axis, "xyz", axis_str) != tinyxml2::XML_SUCCESS)
+      if (tesseract_common::QueryStringAttribute(axis, "xyz", axis_str) != tinyxml2::XML_SUCCESS)
         return std::make_shared<SC>(JointStatusCategory::ErrorParsingAxisAttributeXYZ, status_cat);
 
       std::vector<std::string> tokens;

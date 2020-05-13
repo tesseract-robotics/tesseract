@@ -28,7 +28,7 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
 
 # Create ikfast kinematics interface
 add_library(${PROJECT_NAME}_ikfast INTERFACE)
-target_link_libraries(${PROJECT_NAME}_ikfast INTERFACE ${PROJECT_NAME}_core)
+target_link_libraries(${PROJECT_NAME}_ikfast INTERFACE ${PROJECT_NAME}_core console_bridge)
 tesseract_target_compile_options(${PROJECT_NAME}_ikfast INTERFACE)
 tesseract_clang_tidy(${PROJECT_NAME}_ikfast)
 tesseract_code_coverage(${PROJECT_NAME}_ikfast ALL EXCLUDE ${COVERAGE_EXCLUDE})

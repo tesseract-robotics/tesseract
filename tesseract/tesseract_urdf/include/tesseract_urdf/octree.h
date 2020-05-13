@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/status_code.h>
+#include <tesseract_common/utils.h>
 #include <Eigen/Geometry>
 #include <tinyxml2.h>
 #include <boost/iostreams/stream.hpp>
@@ -38,7 +39,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/impl/octree.h>
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
-#include <tesseract_urdf/utils.h>
 
 namespace tesseract_urdf
 {
@@ -87,7 +87,7 @@ inline tesseract_common::StatusCode::Ptr parseOctree(tesseract_geometry::Octree:
   auto status_cat = std::make_shared<OctreeStatusCategory>();
 
   std::string filename;
-  if (QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
+  if (tesseract_common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
     return std::make_shared<tesseract_common::StatusCode>(OctreeStatusCategory::ErrorAttributeFileName, status_cat);
 
   tesseract_common::Resource::Ptr resource = locator->locateResource(filename);

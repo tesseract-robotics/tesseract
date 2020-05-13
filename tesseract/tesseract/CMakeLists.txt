@@ -16,7 +16,13 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 
 # Create target
 add_library(${PROJECT_NAME} SHARED src/tesseract.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_urdf tesseract::tesseract_scene_graph tesseract::tesseract_collision_bullet tesseract::tesseract_environment_kdl tesseract::tesseract_kinematics_kdl console_bridge)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  tesseract::tesseract_urdf
+  tesseract::tesseract_scene_graph
+  tesseract::tesseract_collision_bullet
+  tesseract::tesseract_environment_kdl
+  tesseract::tesseract_kinematics_kdl
+  console_bridge)
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME})
 tesseract_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE})

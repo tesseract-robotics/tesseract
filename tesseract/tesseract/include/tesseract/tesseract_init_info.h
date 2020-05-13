@@ -30,6 +30,8 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/srdf_model.h>
 #include <boost/filesystem.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -63,8 +65,9 @@ struct TesseractInitInfo
 
   TODO: When SceneGraph is given a clone method make this a copy of the initial state rather than a pointer*/
   tesseract_scene_graph::SceneGraph::Ptr scene_graph;
+
   /** @brief Used when InitType is SCENE_GRAPH_SRDF_MODEL*/
-  tesseract_scene_graph::SRDFModel::ConstPtr srdf_model_;
+  tesseract_scene_graph::SRDFModel::Ptr srdf_model;
 
   /** @brief Used when InitType is URDF_STRING and URDF_STRING_SRDF_STRING*/
   std::string urdf_string;

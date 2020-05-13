@@ -10,7 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
-#include <tesseract_scene_graph/parser/srdf_parser.h>
+#include <tesseract_scene_graph/srdf_model.h>
 #include <tesseract_scene_graph/parser/kdl_parser.h>
 
 // getLinks and getJoint use an internal map so need to check against graph
@@ -355,7 +355,7 @@ void printKDLTree(const KDL::SegmentMap::const_iterator& link, const std::string
     printKDLTree(child, prefix + "  ");
 }
 
-TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
+tesseract_scene_graph::SceneGraph buildTestSceneGraph()
 {
   using namespace tesseract_scene_graph;
   SceneGraph g;
@@ -406,6 +406,14 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
   joint_4.child_link_name = "link_5";
   joint_4.type = JointType::REVOLUTE;
   g.addJoint(std::move(joint_4));
+
+  return g;
+}
+
+TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
+{
+  using namespace tesseract_scene_graph;
+  SceneGraph g = buildTestSceneGraph();
 
   KDL::Tree tree;
   EXPECT_TRUE(parseSceneGraph(g, tree));
@@ -468,6 +476,81 @@ TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)  // NOLINT
   tesseract_scene_graph::SceneGraph::edge_descriptor e = g.getEdge("joint_n1");
   double d = boost::get(boost::edge_weight_t(), g)[e];
   EXPECT_EQ(d, g.getJoint("joint_n1")->parent_to_joint_origin_transform.translation().norm());
+}
+
+TEST(TesseractSceneGraphUnit, TesseractSRDFModelUnit)  // NOLINT
+{
+  using namespace tesseract_scene_graph;
+
+  SRDFModel srdf;
+
+  // Set Name
+  srdf.getName() = "test_srdf";
+  EXPECT_TRUE(srdf.getName() == "test_srdf");
+
+  // Add chain groups
+  auto& chain_groups = srdf.getChainGroups();
+  EXPECT_TRUE(chain_groups.empty());
+
+  chain_groups["manipulator_chain"] = {std::make_pair("base_link", "link_5")};
+  EXPECT_FALSE(srdf.getChainGroups().empty());
+
+  // Add joint groups
+  auto& joint_groups = srdf.getJointGroups();
+  EXPECT_TRUE(joint_groups.empty());
+
+  joint_groups["manipulator_joint"] = {"joint_1", "joint_2", "joint_3", "joint_4"};
+  EXPECT_FALSE(srdf.getJointGroups().empty());
+
+  // Add link groups
+  auto& link_groups = srdf.getLinkGroups();
+  EXPECT_TRUE(link_groups.empty());
+  link_groups["manipulator_link"] = {"base_link", "link_1", "link_2", "link_3", "link_4", "link_5"};
+  EXPECT_FALSE(srdf.getLinkGroups().empty());
+
+  // Add group states
+  auto& group_state = srdf.getGroupStates();
+  EXPECT_TRUE(group_state.empty());
+  tesseract_scene_graph::SRDFModel::JointState joint_state;
+  joint_state["joint_1"] = 0;
+  joint_state["joint_2"] = 0;
+  joint_state["joint_3"] = 0;
+  joint_state["joint_4"] = 0;
+  group_state["manipulator_chain"]["All Zeros"] = joint_state;
+  group_state["manipulator_joint"]["All Zeros"] = joint_state;
+  group_state["manipulator_link"]["All Zeros"] = joint_state;
+  EXPECT_EQ(srdf.getGroupStates().size(), 3);
+
+  // Add Tool Center Points
+  auto& group_tcps = srdf.getGroupTCPs();
+  EXPECT_TRUE(group_tcps.empty());
+  group_tcps["manipulator_chain"]["laser"] = Eigen::Isometry3d::Identity();
+  group_tcps["manipulator_joint"]["laser"] = Eigen::Isometry3d::Identity();
+  group_tcps["manipulator_link"]["laser"] = Eigen::Isometry3d::Identity();
+  EXPECT_FALSE(srdf.getGroupTCPs().empty());
+
+  // Add disabled collisions
+  auto& acm = srdf.getAllowedCollisionMatrix();
+  EXPECT_TRUE(acm.getAllAllowedCollisions().empty());
+  acm.addAllowedCollision("base_link", "link_1", "Adjacent");
+  acm.addAllowedCollision("link_1", "link_2", "Adjacent");
+  acm.addAllowedCollision("link_2", "link_3", "Adjacent");
+  acm.addAllowedCollision("link_3", "link_4", "Adjacent");
+  acm.addAllowedCollision("link_4", "link_5", "Adjacent");
+  EXPECT_FALSE(srdf.getAllowedCollisionMatrix().getAllAllowedCollisions().empty());
+  srdf.saveToFile("/tmp/test.srdf");
+
+  SceneGraph g = buildTestSceneGraph();
+
+  tesseract_scene_graph::SRDFModel srdf_reload;
+  srdf_reload.initFile(g, "/tmp/test.srdf");
+  EXPECT_TRUE(srdf_reload.getName() == "test_srdf");
+  EXPECT_FALSE(srdf_reload.getChainGroups().empty());
+  EXPECT_FALSE(srdf_reload.getJointGroups().empty());
+  EXPECT_FALSE(srdf_reload.getLinkGroups().empty());
+  EXPECT_EQ(srdf_reload.getGroupStates().size(), 3);
+  EXPECT_FALSE(srdf_reload.getGroupTCPs().empty());
+  EXPECT_FALSE(srdf_reload.getAllowedCollisionMatrix().getAllAllowedCollisions().empty());
 }
 
 int main(int argc, char** argv)

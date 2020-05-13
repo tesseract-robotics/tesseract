@@ -36,7 +36,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_urdf/utils.h>
 #include <tesseract_scene_graph/link.h>
 
 namespace tesseract_urdf
@@ -104,7 +103,7 @@ parse(tesseract_scene_graph::Material::Ptr& material,
   auto success_status = std::make_shared<SC>(MaterialStatusCategory::Success, status_cat);
 
   std::string material_name;
-  if (QueryStringAttribute(xml_element, "name", material_name) != tinyxml2::XML_SUCCESS)
+  if (tesseract_common::QueryStringAttribute(xml_element, "name", material_name) != tinyxml2::XML_SUCCESS)
     return std::make_shared<SC>(MaterialStatusCategory::ErrorAttributeName, status_cat);
 
   auto m = std::make_shared<tesseract_scene_graph::Material>(material_name);
@@ -113,7 +112,7 @@ parse(tesseract_scene_graph::Material::Ptr& material,
   const tinyxml2::XMLElement* texture = xml_element->FirstChildElement("texture");
   if (texture != nullptr)
   {
-    if (QueryStringAttribute(texture, "filename", m->texture_filename) != tinyxml2::XML_SUCCESS)
+    if (tesseract_common::QueryStringAttribute(texture, "filename", m->texture_filename) != tinyxml2::XML_SUCCESS)
       return std::make_shared<SC>(MaterialStatusCategory::ErrorTextureAttributeFilename, status_cat);
   }
 
@@ -121,7 +120,7 @@ parse(tesseract_scene_graph::Material::Ptr& material,
   if (color != nullptr)
   {
     std::string color_string;
-    if (QueryStringAttribute(color, "rgba", color_string) != tinyxml2::XML_SUCCESS)
+    if (tesseract_common::QueryStringAttribute(color, "rgba", color_string) != tinyxml2::XML_SUCCESS)
       return std::make_shared<SC>(MaterialStatusCategory::ErrorColorAttributeRGBA, status_cat);
 
     if (!color_string.empty())

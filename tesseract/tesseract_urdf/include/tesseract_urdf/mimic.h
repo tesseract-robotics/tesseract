@@ -29,12 +29,12 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/status_code.h>
+#include <tesseract_common/utils.h>
 #include <Eigen/Geometry>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/joint.h>
-#include <tesseract_urdf/utils.h>
 
 namespace tesseract_urdf
 {
@@ -89,7 +89,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointMimic
   auto status_cat = std::make_shared<MimicStatusCategory>();
 
   auto m = std::make_shared<tesseract_scene_graph::JointMimic>();
-  if (QueryStringAttribute(xml_element, "joint", m->joint_name) != tinyxml2::XML_SUCCESS)
+  if (tesseract_common::QueryStringAttribute(xml_element, "joint", m->joint_name) != tinyxml2::XML_SUCCESS)
     return std::make_shared<tesseract_common::StatusCode>(MimicStatusCategory::ErrorAttributeJoint, status_cat);
 
   auto status = std::make_shared<tesseract_common::StatusCode>(MimicStatusCategory::Success, status_cat);

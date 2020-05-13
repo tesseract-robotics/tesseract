@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/status_code.h>
+#include <tesseract_common/utils.h>
 #include <Eigen/Geometry>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -36,7 +37,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_scene_graph/link.h>
-#include <tesseract_urdf/utils.h>
 #include <tesseract_urdf/origin.h>
 #include <tesseract_urdf/material.h>
 #include <tesseract_urdf/geometry.h>
@@ -94,7 +94,7 @@ parse(std::vector<tesseract_scene_graph::Visual::Ptr>& visuals,
   auto status_cat = std::make_shared<VisualStatusCategory>();
 
   // get name
-  std::string visual_name = StringAttribute(xml_element, "name", "");
+  std::string visual_name = tesseract_common::StringAttribute(xml_element, "name", "");
 
   // get origin
   Eigen::Isometry3d visual_origin = Eigen::Isometry3d::Identity();

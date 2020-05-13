@@ -49,6 +49,26 @@ TEST(TesseractCommonUnit, toNumeric)  // NOLINT
   }
 }
 
+TEST(TesseractCommonUnit, generateRandomNumber)  // NOLINT
+{
+  Eigen::MatrixX2d limits(4);
+  limits(0, 0) = -5;
+  limits(0, 1) = 5;
+  limits(1, 0) = 0;
+  limits(1, 1) = 10;
+  limits(2, 0) = 5;
+  limits(2, 1) = 15;
+  limits(3, 0) = -15;
+  limits(3, 1) = -5;
+
+  Eigen::VectorXd random_numbers = tesseract_common::generateRandomNumber(limits);
+  for (long i = 0; i < 4; ++i)
+  {
+    EXPECT_LE(random_numbers(i), limits(i, 1));
+    EXPECT_GE(random_numbers(i), limits(i, 0));
+  }
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

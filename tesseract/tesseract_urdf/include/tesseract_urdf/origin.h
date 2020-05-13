@@ -36,8 +36,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/algorithm/string.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_urdf/utils.h>
-
 namespace tesseract_urdf
 {
 class OriginStatusCategory : public tesseract_common::StatusCategory
@@ -99,7 +97,7 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
                                                           status_cat);
 
   std::string xyz_string, rpy_string, wxyz_string;
-  tinyxml2::XMLError status = QueryStringAttribute(xml_element, "xyz", xyz_string);
+  tinyxml2::XMLError status = tesseract_common::QueryStringAttribute(xml_element, "xyz", xyz_string);
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
   {
     return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeXYZ, status_cat);
@@ -124,7 +122,7 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
 
   if (xml_element->Attribute("wxyz") == nullptr)
   {
-    status = QueryStringAttribute(xml_element, "rpy", rpy_string);
+    status = tesseract_common::QueryStringAttribute(xml_element, "rpy", rpy_string);
     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
     {
       return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeRPY, status_cat);
@@ -155,7 +153,7 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
   }
   else
   {
-    status = QueryStringAttribute(xml_element, "wxyz", wxyz_string);
+    status = tesseract_common::QueryStringAttribute(xml_element, "wxyz", wxyz_string);
     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
     {
       return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQ, status_cat);

@@ -44,7 +44,7 @@ tesseract_common::StatusCode::Ptr parseURDFString(tesseract_scene_graph::SceneGr
     return std::make_shared<tesseract_common::StatusCode>(URDFStatusCategory::ErrorParsingRobotElement, status_cat);
 
   std::string robot_name;
-  if (QueryStringAttribute(robot, "name", robot_name) != tinyxml2::XML_SUCCESS)
+  if (tesseract_common::QueryStringAttribute(robot, "name", robot_name) != tinyxml2::XML_SUCCESS)
     return std::make_shared<tesseract_common::StatusCode>(URDFStatusCategory::ErrorAttributeName, status_cat);
 
   int urdf_version = 1;

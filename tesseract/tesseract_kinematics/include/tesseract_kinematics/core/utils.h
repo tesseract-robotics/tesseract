@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <console_bridge/console.h>
-#include <tesseract_scene_graph/parser/srdf_parser.h>
+#include <tesseract_scene_graph/srdf_model.h>
 #include <tesseract_scene_graph/graph.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -227,50 +227,50 @@ ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::Sc
                                                  const tesseract_scene_graph::SRDFModel& srdf_model)
 {
   ForwardKinematicsConstPtrMap manipulators;
-  for (const auto& group : srdf_model.getGroups())
+  for (const auto& group : srdf_model.getChainGroups())
   {
-    if (!group.chains_.empty())
+    if (!group.second.empty())
     {
-      assert(group.chains_.size() == 1);
-      if (manipulators.find(group.name_) == manipulators.end())
+      if (manipulators.find(group.first) == manipulators.end())
       {
         std::shared_ptr<Chain_T> manip(new Chain_T());
-        if (!manip->init(scene_graph, group.chains_.front().first, group.chains_.front().second, group.name_))
+        if (!manip->init(scene_graph, group.second, group.first))
         {
-          CONSOLE_BRIDGE_logError("Failed to create kinematic chaing for manipulator %s!", group.name_);
+          CONSOLE_BRIDGE_logError("Failed to create kinematic chaing for manipulator %s!", group.first);
         }
         else
         {
-          manipulators.insert(std::make_pair(group.name_, manip));
+          manipulators.insert(std::make_pair(group.first, manip));
         }
       }
     }
+  }
 
-    if (!group.joints_.empty())
+  for (const auto& group : srdf_model.getJointGroups())
+  {
+    if (!group.second.empty())
     {
-      if (manipulators.find(group.name_) == manipulators.end())
+      if (manipulators.find(group.first) == manipulators.end())
       {
         std::shared_ptr<Tree_T> manip(new Tree_T());
-        if (!manip->init(scene_graph, group.joints_, group.name_))
+        if (!manip->init(scene_graph, group.second, group.first))
         {
-          CONSOLE_BRIDGE_logError("Failed to create kinematic chaing for manipulator %s!", group.name_);
+          CONSOLE_BRIDGE_logError("Failed to create kinematic chaing for manipulator %s!", group.first);
         }
         else
         {
-          manipulators.insert(std::make_pair(group.name_, manip));
+          manipulators.insert(std::make_pair(group.first, manip));
         }
       }
     }
+  }
 
+  for (const auto& group : srdf_model.getLinkGroups())
+  {
     // TODO: Need to add other options
-    if (!group.links_.empty())
+    if (!group.second.empty())
     {
       CONSOLE_BRIDGE_logError("Link groups are currently not supported!");
-    }
-
-    if (!group.subgroups_.empty())
-    {
-      CONSOLE_BRIDGE_logError("Subgroups are currently not supported!");
     }
   }
 
