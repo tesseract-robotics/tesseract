@@ -22,6 +22,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   tesseract::tesseract_collision_bullet
   tesseract::tesseract_environment_kdl
   tesseract::tesseract_kinematics_kdl
+  tesseract::tesseract_kinematics_opw
   console_bridge)
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME})

@@ -83,7 +83,7 @@
 %include "tesseract_geometry/geometry_loaders.i"
 %include "tesseract_scene_graph/graph.i"
 %include "tesseract_scene_graph/resource_locator.i"
-%include "tesseract_scene_graph/srdf_parser.i"
+%include "tesseract_scene_graph/srdf_model.i"
 %include "tesseract_kinematics/core/forward_kinematics.i"
 %include "tesseract_kinematics/core/forward_kinematics_factory.i"
 %include "tesseract_kinematics/core/inverse_kinematics.i"

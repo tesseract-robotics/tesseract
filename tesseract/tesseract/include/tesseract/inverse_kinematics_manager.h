@@ -136,9 +136,28 @@ public:
    * @param manipulator The name of the manipulator
    * @param name The name of the solver
    */
-  void removeFwdKinematicSolver(const std::string& manipulator, const std::string& name)
+  void removeInvKinematicSolver(const std::string& manipulator, const std::string& name)
   {
     inv_kin_manipulators_.erase(std::make_pair(manipulator, name));
+  }
+
+  /**
+   * @brief Remove all forward kinematic solver for a given manipulator
+   * @param manipulator The name of the manipulator
+   * @param name The name of the solver
+   */
+  void removeInvKinematicSolver(const std::string& manipulator)
+  {
+    auto it = inv_kin_manipulators_.begin();
+    while (it != inv_kin_manipulators_.end())
+    {
+      if (it->first.first == manipulator)
+        it = inv_kin_manipulators_.erase(it);
+      else
+        ++it;
+    }
+
+    inv_kin_manipulators_default_.erase(manipulator);
   }
 
   /**

@@ -54,7 +54,9 @@ public:
 
   bool addInvKinematicSolver(tesseract_kinematics::InverseKinematics::ConstPtr solver);
 
-  void removeFwdKinematicSolver(const std::string& manipulator, const std::string& name);
+  void removeInvKinematicSolver(const std::string& manipulator, const std::string& name);
+
+  void removeInvKinematicSolver(const std::string& manipulator);
 
   std::vector<std::string> getAvailableInvKinematicsManipulators() const;
 

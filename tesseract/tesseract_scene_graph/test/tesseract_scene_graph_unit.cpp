@@ -492,20 +492,20 @@ TEST(TesseractSceneGraphUnit, TesseractSRDFModelUnit)  // NOLINT
   auto& chain_groups = srdf.getChainGroups();
   EXPECT_TRUE(chain_groups.empty());
 
-  chain_groups["manipulator_chain"] = {std::make_pair("base_link", "link_5")};
+  chain_groups["manipulator_chain"] = { std::make_pair("base_link", "link_5") };
   EXPECT_FALSE(srdf.getChainGroups().empty());
 
   // Add joint groups
   auto& joint_groups = srdf.getJointGroups();
   EXPECT_TRUE(joint_groups.empty());
 
-  joint_groups["manipulator_joint"] = {"joint_1", "joint_2", "joint_3", "joint_4"};
+  joint_groups["manipulator_joint"] = { "joint_1", "joint_2", "joint_3", "joint_4" };
   EXPECT_FALSE(srdf.getJointGroups().empty());
 
   // Add link groups
   auto& link_groups = srdf.getLinkGroups();
   EXPECT_TRUE(link_groups.empty());
-  link_groups["manipulator_link"] = {"base_link", "link_1", "link_2", "link_3", "link_4", "link_5"};
+  link_groups["manipulator_link"] = { "base_link", "link_1", "link_2", "link_3", "link_4", "link_5" };
   EXPECT_FALSE(srdf.getLinkGroups().empty());
 
   // Add group states
@@ -549,8 +549,21 @@ TEST(TesseractSceneGraphUnit, TesseractSRDFModelUnit)  // NOLINT
   EXPECT_FALSE(srdf_reload.getJointGroups().empty());
   EXPECT_FALSE(srdf_reload.getLinkGroups().empty());
   EXPECT_EQ(srdf_reload.getGroupStates().size(), 3);
+  EXPECT_TRUE(srdf_reload.getGroupStates()["manipulator_chain"].find("All Zeros") !=
+              srdf_reload.getGroupStates()["manipulator_chain"].end());
+  EXPECT_TRUE(srdf_reload.getGroupStates()["manipulator_joint"].find("All Zeros") !=
+              srdf_reload.getGroupStates()["manipulator_joint"].end());
+  EXPECT_TRUE(srdf_reload.getGroupStates()["manipulator_link"].find("All Zeros") !=
+              srdf_reload.getGroupStates()["manipulator_link"].end());
   EXPECT_FALSE(srdf_reload.getGroupTCPs().empty());
+  EXPECT_TRUE(srdf_reload.getGroupTCPs()["manipulator_chain"].find("laser") !=
+              srdf_reload.getGroupTCPs()["manipulator_chain"].end());
+  EXPECT_TRUE(srdf_reload.getGroupTCPs()["manipulator_joint"].find("laser") !=
+              srdf_reload.getGroupTCPs()["manipulator_joint"].end());
+  EXPECT_TRUE(srdf_reload.getGroupTCPs()["manipulator_link"].find("laser") !=
+              srdf_reload.getGroupTCPs()["manipulator_link"].end());
   EXPECT_FALSE(srdf_reload.getAllowedCollisionMatrix().getAllAllowedCollisions().empty());
+  srdf_reload.saveToFile("/tmp/test_reload.srdf");
 }
 
 int main(int argc, char** argv)

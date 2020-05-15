@@ -89,8 +89,11 @@ public:
   const InverseKinematicsManager::Ptr& getInvKinematicsManager();
   const InverseKinematicsManager::ConstPtr& getInvKinematicsManagerConst() const;
 
-  tesseract_scene_graph::SRDFModel::GroupStates& getUserDefinedGroupStates();
-  const tesseract_scene_graph::SRDFModel::GroupStates& getUserDefinedGroupStatesConst() const;
+  tesseract_scene_graph::SRDFModel::GroupStates& getGroupStates();
+  const tesseract_scene_graph::SRDFModel::GroupStates& getGroupStatesConst() const;
+
+  tesseract_scene_graph::SRDFModel::GroupTCPs& getGroupTCPs();
+  const tesseract_scene_graph::SRDFModel::GroupTCPs& getGroupTCPs() const;
 
 private:
   bool initialized_;
@@ -102,7 +105,6 @@ private:
   ForwardKinematicsManager::ConstPtr fwd_kin_manager_const_;
   InverseKinematicsManager::Ptr inv_kin_manager_;
   InverseKinematicsManager::ConstPtr inv_kin_manager_const_;
-  tesseract_scene_graph::SRDFModel::GroupStates defined_group_states_;
   TesseractInitInfo::Ptr init_info_;
 
   bool registerDefaultContactManagers();

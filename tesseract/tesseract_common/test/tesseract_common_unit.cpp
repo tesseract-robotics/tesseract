@@ -51,7 +51,7 @@ TEST(TesseractCommonUnit, toNumeric)  // NOLINT
 
 TEST(TesseractCommonUnit, generateRandomNumber)  // NOLINT
 {
-  Eigen::MatrixX2d limits(4);
+  Eigen::MatrixX2d limits(4, 2);
   limits(0, 0) = -5;
   limits(0, 1) = 5;
   limits(1, 0) = 0;

@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain_factory.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_tree_factory.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_lma_factory.h>
+#include <tesseract_kinematics/opw/opw_inv_kin.h>
 #include <tesseract_kinematics/core/utils.h>
 #include <tesseract_urdf/urdf_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -58,6 +59,9 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
     return false;
   }
   environment_const_ = environment_;
+  srdf_model_ = std::make_shared<tesseract_scene_graph::SRDFModel>();
+  srdf_model_->getName() = scene_graph->getName();
+  srdf_model_const_ = srdf_model_;
 
   registerDefaultContactManagers();
   registerDefaultFwdKinSolvers();
@@ -118,6 +122,10 @@ bool Tesseract::init(const std::string& urdf_string, const tesseract_scene_graph
     return false;
   }
   environment_const_ = environment_;
+  srdf_model_ = std::make_shared<tesseract_scene_graph::SRDFModel>();
+  srdf_model_->getName() = scene_graph->getName();
+  srdf_model_const_ = srdf_model_;
+
   registerDefaultContactManagers();
   registerDefaultFwdKinSolvers();
   registerDefaultInvKinSolvers();
@@ -152,6 +160,7 @@ bool Tesseract::init(const std::string& urdf_string,
     return false;
   }
   srdf_model_ = srdf;
+  srdf_model_const_ = srdf_model_;
 
   // Add allowed collision matrix to scene graph
   tesseract_scene_graph::processSRDFAllowedCollisions(*scene_graph, *srdf);
@@ -196,6 +205,10 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
     return false;
   }
   environment_const_ = environment_;
+  srdf_model_ = std::make_shared<tesseract_scene_graph::SRDFModel>();
+  srdf_model_->getName() = scene_graph->getName();
+  srdf_model_const_ = srdf_model_;
+
   registerDefaultContactManagers();
   registerDefaultFwdKinSolvers();
   registerDefaultInvKinSolvers();
@@ -234,9 +247,6 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
 
   // Add allowed collision matrix to scene graph
   tesseract_scene_graph::processSRDFAllowedCollisions(*scene_graph, *srdf_model_);
-
-  // Add user defined joint state
-  defined_group_states_ = srdf_model_->getGroupStates();
 
   // Construct Environment
   environment_ = std::make_shared<tesseract_environment::KDLEnv>();
@@ -290,14 +300,22 @@ const tesseract_environment::Environment::ConstPtr& Tesseract::getEnvironmentCon
   return environment_const_;
 }
 
-const tesseract_scene_graph::SRDFModel::Ptr &Tesseract::getSRDFModel() const { return srdf_model_; }
-const tesseract_scene_graph::SRDFModel::ConstPtr &Tesseract::getSRDFModelConst() const { return srdf_model_const_; }
+const tesseract_scene_graph::SRDFModel::Ptr& Tesseract::getSRDFModel() const { return srdf_model_; }
+const tesseract_scene_graph::SRDFModel::ConstPtr& Tesseract::getSRDFModelConst() const { return srdf_model_const_; }
 
-tesseract_scene_graph::SRDFModel::GroupStates& Tesseract::getUserDefinedGroupStates() { return defined_group_states_; }
-const tesseract_scene_graph::SRDFModel::GroupStates& Tesseract::getUserDefinedGroupStatesConst() const
+tesseract_scene_graph::SRDFModel::GroupStates& Tesseract::getGroupStates() { return srdf_model_->getGroupStates(); }
+
+const tesseract_scene_graph::SRDFModel::GroupStates& Tesseract::getGroupStatesConst() const
 {
-  return defined_group_states_;
-};
+  return srdf_model_const_->getGroupStates();
+}
+
+tesseract_scene_graph::SRDFModel::GroupTCPs& Tesseract::getGroupTCPs() { return srdf_model_->getGroupTCPs(); }
+
+const tesseract_scene_graph::SRDFModel::GroupTCPs& Tesseract::getGroupTCPs() const
+{
+  return srdf_model_->getGroupTCPs();
+}
 
 const ForwardKinematicsManager::Ptr& Tesseract::getFwdKinematicsManager() { return fwd_kin_manager_; }
 
@@ -463,6 +481,62 @@ bool Tesseract::registerDefaultInvKinSolvers()
     }
   }
 
+  for (const auto& group : srdf_model_->getGroupOPWKinematics())
+  {
+    if (!group.first.empty())
+    {
+      tesseract_kinematics::ForwardKinematics::Ptr fwd_kin = fwd_kin_manager_->getFwdKinematicSolver(group.first);
+      if (fwd_kin == nullptr)
+      {
+        CONSOLE_BRIDGE_logError("Failed to add inverse kinematic opw solver for manipulator %s to manager!",
+                                group.first.c_str());
+        success = false;
+      }
+      else
+      {
+        opw_kinematics::Parameters<double> params;
+        params.a1 = group.second.a1;
+        params.a2 = group.second.a2;
+        params.b = group.second.b;
+        params.c1 = group.second.c1;
+        params.c2 = group.second.c2;
+        params.c3 = group.second.c3;
+        params.c4 = group.second.c4;
+        for (std::size_t i = 0; i < 6; ++i)
+        {
+          params.offsets[i] = group.second.offsets[i];
+          params.sign_corrections[i] = group.second.sign_corrections[i];
+        }
+
+        auto solver = std::make_shared<tesseract_kinematics::OPWInvKin>();
+        solver->init(group.first,
+                     params,
+                     fwd_kin->getBaseLinkName(),
+                     fwd_kin->getTipLinkName(),
+                     fwd_kin->getJointNames(),
+                     fwd_kin->getLinkNames(),
+                     fwd_kin->getActiveLinkNames(),
+                     fwd_kin->getLimits());
+
+        if (solver->checkInitialized())
+        {
+          if (!inv_kin_manager_->addInvKinematicSolver(solver))
+          {
+            CONSOLE_BRIDGE_logError("Failed to add inverse kinematic opw solver for manipulator %s to manager!",
+                                    group.first.c_str());
+            success = false;
+          }
+        }
+        else
+        {
+          CONSOLE_BRIDGE_logError("Failed to create inverse kinematic opw solver for manipulator %s!",
+                                  group.first.c_str());
+          success = false;
+        }
+      }
+    }
+  }
+
   return success;
 }
 
@@ -477,6 +551,5 @@ void Tesseract::clear()
   inv_kin_manager_const_ = nullptr;
   fwd_kin_manager_ = nullptr;
   fwd_kin_manager_const_ = nullptr;
-  defined_group_states_.clear();
 }
 }  // namespace tesseract

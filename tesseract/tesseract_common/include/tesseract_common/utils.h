@@ -38,11 +38,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <iostream>
 #include <algorithm>
 #include <tinyxml2.h>
+#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
-
 /** @brief Random number generator */
 inline std::mt19937 mersenne{ static_cast<std::mt19937::result_type>(std::time(nullptr)) };
 
@@ -116,7 +116,7 @@ inline Eigen::VectorXd generateRandomNumber(Eigen::MatrixX2d limits)
   joint_values.resize(limits.rows());
   for (long i = 0; i < limits.rows(); ++i)
   {
-    std::uniform_real_distribution<double> sample{limits(i, 0), limits(i, 1)};
+    std::uniform_real_distribution<double> sample{ limits(i, 0), limits(i, 1) };
     joint_values(i) = sample(mersenne);
   }
   return joint_values;
@@ -126,20 +126,13 @@ inline Eigen::VectorXd generateRandomNumber(Eigen::MatrixX2d limits)
  * @brief Left trim string
  * @param s The string to left trim
  */
-inline void ltrim(std::string& s)
-{
-  s.erase(0, s.find_first_not_of(" \n\r\t\f\v"));
-}
+inline void ltrim(std::string& s) { s.erase(0, s.find_first_not_of(" \n\r\t\f\v")); }
 
 /**
  * @brief Right trim string
  * @param s The string to right trim
  */
-inline void rtrim(std::string& s)
-{
-  s.erase(s.find_last_not_of(" \n\r\t\f\v") + 1);
-}
-
+inline void rtrim(std::string& s) { s.erase(s.find_last_not_of(" \n\r\t\f\v") + 1); }
 
 /**
  * @brief Trim left and right of string
@@ -214,6 +207,74 @@ inline std::string StringAttribute(const tinyxml2::XMLElement* xml_element, cons
   std::string str = std::move(default_value);
   QueryStringAttribute(xml_element, name, str);
   return str;
+}
+
+/**
+ * @brief Query a string attribute from an xml element and print error log
+ *
+ * This is the same QueryStringAttribute but it will print out error messages for the failure conditions so the user
+ * only needs to check for the tinyxml2::XML_SUCCESS since it is a required attribute.
+ *
+ * @param xml_element The xml attribute to query attribute
+ * @param name The name of the attribute to query
+ * @param value The value to update from the xml attribute
+ * @return tinyxml2::XML_SUCCESS if successful, otherwise returns tinyxml2::XML_NO_ATTRIBUTE or
+ * tinyxml2::XML_WRONG_ATTRIBUTE_TYPE
+ */
+inline tinyxml2::XMLError QueryStringAttributeRequired(const tinyxml2::XMLElement* xml_element,
+                                                       const char* name,
+                                                       std::string& value)
+{
+  tinyxml2::XMLError status = QueryStringAttribute(xml_element, name, value);
+
+  if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+  {
+    CONSOLE_BRIDGE_logError("Invalid %s attribute '%s'", xml_element->Name(), name);
+  }
+  else if (status == tinyxml2::XML_NO_ATTRIBUTE)
+  {
+    CONSOLE_BRIDGE_logError("Missing %s required attribute '%s'", xml_element->Name(), name);
+  }
+  else if (status == tinyxml2::XML_WRONG_ATTRIBUTE_TYPE)
+  {
+    CONSOLE_BRIDGE_logError("Invalid %s attribute type '%s'", xml_element->Name(), name);
+  }
+
+  return status;
+}
+
+/**
+ * @brief Query a double attribute from an xml element and print error log
+ *
+ * This is the same QueryDoubleAttribute but it will print out error messages for the failure conditions so the user
+ * only needs to check for the tinyxml2::XML_SUCCESS since it is a required attribute.
+ *
+ * @param xml_element The xml attribute to query attribute
+ * @param name The name of the attribute to query
+ * @param value The value to update from the xml attribute
+ * @return tinyxml2::XML_SUCCESS if successful, otherwise returns tinyxml2::XML_NO_ATTRIBUTE or
+ * tinyxml2::XML_WRONG_ATTRIBUTE_TYPE
+ */
+inline tinyxml2::XMLError QueryDoubleAttributeRequired(const tinyxml2::XMLElement* xml_element,
+                                                       const char* name,
+                                                       double& value)
+{
+  tinyxml2::XMLError status = xml_element->QueryDoubleAttribute(name, &value);
+
+  if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+  {
+    CONSOLE_BRIDGE_logError("Invalid %s attribute '%s'", xml_element->Name(), name);
+  }
+  else if (status == tinyxml2::XML_NO_ATTRIBUTE)
+  {
+    CONSOLE_BRIDGE_logError("Missing %s required attribute '%s'", xml_element->Name(), name);
+  }
+  else if (status == tinyxml2::XML_WRONG_ATTRIBUTE_TYPE)
+  {
+    CONSOLE_BRIDGE_logError("Invalid %s attribute type '%s'", xml_element->Name(), name);
+  }
+
+  return status;
 }
 
 }  // namespace tesseract_common

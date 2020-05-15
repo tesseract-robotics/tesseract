@@ -54,16 +54,23 @@ public:
   //          const boost::filesystem::path& srdf_path,
   //          tesseract_scene_graph::ResourceLocator::Ptr locator);
 
-  const tesseract_scene_graph::SRDFModel::ConstPtr& getSRDFModel() const;
+  const tesseract_scene_graph::SRDFModel::Ptr& getSRDFModel() const;
+  const tesseract_scene_graph::SRDFModel::ConstPtr& getSRDFModelConst() const;
 
-  const tesseract_environment::Environment::Ptr getEnvironment();
-  const tesseract_environment::Environment::ConstPtr getEnvironmentConst() const;
+  const tesseract_environment::Environment::Ptr& getEnvironment();
+  const tesseract_environment::Environment::ConstPtr& getEnvironmentConst() const;
 
-  const ForwardKinematicsManager::Ptr getFwdKinematicsManager();
-  const ForwardKinematicsManager::ConstPtr getFwdKinematicsManagerConst() const;
+  const ForwardKinematicsManager::Ptr& getFwdKinematicsManager();
+  const ForwardKinematicsManager::ConstPtr& getFwdKinematicsManagerConst() const;
 
-  const InverseKinematicsManager::Ptr getInvKinematicsManager();
-  const InverseKinematicsManager::ConstPtr getInvKinematicsManagerConst() const;
+  const InverseKinematicsManager::Ptr& getInvKinematicsManager();
+  const InverseKinematicsManager::ConstPtr& getInvKinematicsManagerConst() const;
+
+  tesseract_scene_graph::SRDFModel::GroupStates& getGroupStates();
+  const tesseract_scene_graph::SRDFModel::GroupStates& getGroupStatesConst() const;
+
+  tesseract_scene_graph::SRDFModel::GroupTCPs& getGroupTCPs();
+  const tesseract_scene_graph::SRDFModel::GroupTCPs& getGroupTCPs() const;
 
 };
 

@@ -56,6 +56,8 @@ public:
   
   void removeFwdKinematicSolver(const std::string& manipulator, const std::string& name);
   
+  void removeFwdKinematicSolver(const std::string& manipulator);
+
   std::vector<std::string> getAvailableFwdKinematicsManipulators() const;
   
   bool setDefaultFwdKinematicSolver(const std::string& manipulator, const std::string& name);
