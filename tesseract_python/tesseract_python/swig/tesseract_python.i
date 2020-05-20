@@ -71,9 +71,13 @@
 %template(vector_string) std::vector<std::string>;
 %template(pair_string) std::pair<std::string, std::string>;
 %template(vector_pair_string) std::vector<std::pair<std::string, std::string> >;
+%template(map_string_vector_pair_string) std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>>;
 
 %template(vector_double) std::vector<double>;
-%template(map_string_vector_double) std::map<std::string, std::vector<double> >;
+%template(map_string_vector_double) std::unordered_map<std::string, std::vector<double> >;
+%template(map_string_double) std::unordered_map<std::string, double>;
+%template(map_string_map_string_double) std::unordered_map<std::string, std::unordered_map<std::string, double> >;
+%template(map_string_map_string_map_string_double) std::unordered_map<std::string, std::unordered_map<std::string, std::unordered_map<std::string, double> > >;
 
 %include "tesseract_common/types.i"
 %include "tesseract_common/status_code.i"
