@@ -153,6 +153,27 @@ public:
     setCoefficients(Eigen::VectorXd::Ones(joint_positions_.size()));
   }
 
+  JointWaypoint(const std::unordered_map<std::string, double>& joint_map)
+    : Waypoint(WaypointType::JOINT_WAYPOINT)
+  {
+    joint_names_.resize(joint_map.size());
+    joint_positions_.resize(static_cast<long>(joint_map.size()));
+
+    long idx = 0;
+    for (const auto& pair : joint_map)
+    {
+      joint_names_[static_cast<std::size_t>(idx)] = pair.first;
+      joint_positions_[idx] = pair.second;
+      ++idx;
+    }
+
+    assert(joint_positions_.size() == static_cast<long>(joint_names_.size()));
+    for (size_t i = 0; i < joint_names_.size(); ++i)
+      lookup_[joint_names_[i]] = static_cast<int>(i);
+
+    setCoefficients(Eigen::VectorXd::Ones(joint_positions_.size()));
+  }
+
   /**
    * @brief Get the joint positions in radians
    * @return A vector of joint positions
