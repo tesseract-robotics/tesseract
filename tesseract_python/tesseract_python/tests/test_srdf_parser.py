@@ -24,20 +24,18 @@ def test_environment():
     assert str(t_srdf.getName()) == "abb_irb2400"
 
     chain_groups = t_srdf.getChainGroups()
-    assert len(groups) == 1
-    group = chain_groups.find("manipulator")
-    assert group.first == "manipulator"
-    assert group.second == ("base_link", "tool0")
+    assert len(chain_groups) == 1
+    group = chain_groups["manipulator"]
+    assert(len(group) == 1)
+    assert group[0] == ("base_link", "tool0")
 
     # Group state now
     group_states = t_srdf.getGroupStates()
     assert len(group_states) == 1
-    group_state = group_states.find("manipulator")
-    assert group_state.first == "manipulator"
-    state = group_state.second.find("all-zeros")
-    assert state.first == "all-zeros"
-    for i in range(1, 7):
-        assert state.second["joint_{}".format(i)] == (0.0,)
+    group_state = group_states["manipulator"]
+    state = group_state["all-zeros"]
+    for i in range(1, 7):        
+        assert state["joint_{}".format(i)] == 0.0
 
 
 class TesseractSupportResourceLocator(tesseract.ResourceLocator):

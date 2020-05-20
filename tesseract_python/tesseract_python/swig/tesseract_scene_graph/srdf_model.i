@@ -32,6 +32,9 @@
 
 %shared_ptr(tesseract_scene_graph::SRDFModel)
 
+%template(map_string_isometry3d) std::unordered_map<std::string, Eigen::Isometry3d>;
+//%template(map_string_opwkinparams) std::unordered_map<std::string, tesseract_scene_graph::SRDFModel::OPWKinematicParameters>;
+
 namespace tesseract_scene_graph
 {
 
@@ -75,8 +78,8 @@ public:
   bool saveToFile(const std::string& file_path) const;
 
   /** @brief Get the name of this model */
-  const std::string& getName() const;
-  std::string& getName();
+  const std::string getName() const;
+  std::string getName();
 
   /** @brief Get the list of pairs of links that need not be checked for collisions (because they can never touch given the geometry and kinematics of the robot) */
   const AllowedCollisionMatrix& getAllowedCollisionMatrix() const;
