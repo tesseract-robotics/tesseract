@@ -24,8 +24,6 @@
  * limitations under the License.
  */
 
-%feature(flatnested)
-
 %{
 #include <tesseract_scene_graph/srdf_model.h>
 %}
@@ -33,6 +31,8 @@
 %shared_ptr(tesseract_scene_graph::SRDFModel)
 
 %template(map_string_isometry3d) std::unordered_map<std::string, Eigen::Isometry3d>;
+
+%template(map_string_opwkinparams) std::unordered_map<std::string, tesseract_scene_graph::OPWKinematicParameters>;
 
 namespace tesseract_scene_graph
 {
@@ -114,4 +114,3 @@ public:
 
 }  // namespace tesseract_scene_graph
 
-%template(map_string_opwkinparams) std::unordered_map<std::string, tesseract_scene_graph::OPWKinematicParameters>;
