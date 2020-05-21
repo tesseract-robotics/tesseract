@@ -44,20 +44,21 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 /// Main namespace
 namespace tesseract_scene_graph
 {
+
+/** @brief A structure to hold opw kinematics data */
+struct OPWKinematicParameters
+{
+  double a1{ 0 }, a2{ 0 }, b{ 0 }, c1{ 0 }, c2{ 0 }, c3{ 0 }, c4{ 0 };
+  double offsets[6]{ 0, 0, 0, 0, 0, 0 };
+  signed char sign_corrections[6]{ 1, 1, 1, 1, 1, 1 };
+};
+
 /** @brief Representation of semantic information about the robot */
 class SRDFModel
 {
 public:
   using Ptr = std::shared_ptr<SRDFModel>;
   using ConstPtr = std::shared_ptr<const SRDFModel>;
-
-  /** @brief A structure to hold opw kinematics data */
-  struct OPWKinematicParameters
-  {
-    double a1{ 0 }, a2{ 0 }, b{ 0 }, c1{ 0 }, c2{ 0 }, c3{ 0 }, c4{ 0 };
-    double offsets[6]{ 0, 0, 0, 0, 0, 0 };
-    signed char sign_corrections[6]{ 1, 1, 1, 1, 1, 1 };
-  };
 
   using JointState = std::unordered_map<std::string, double>;
   using JointStates = std::unordered_map<std::string, JointState>;

@@ -33,24 +33,23 @@
 %shared_ptr(tesseract_scene_graph::SRDFModel)
 
 %template(map_string_isometry3d) std::unordered_map<std::string, Eigen::Isometry3d>;
-//%template(map_string_opwkinparams) std::unordered_map<std::string, tesseract_scene_graph::SRDFModel::OPWKinematicParameters>;
 
 namespace tesseract_scene_graph
 {
+
+/** @brief A structure to hold opw kinematics data */
+struct OPWKinematicParameters
+{
+  double a1, a2, b, c1, c2, c3, c4;
+  double offsets[6];
+  signed char sign_corrections[6];
+};
 
 class SRDFModel
 {
 public:
   using Ptr = std::shared_ptr<SRDFModel>;
   using ConstPtr = std::shared_ptr<const SRDFModel>;
-
-  /** @brief A structure to hold opw kinematics data */
-  struct OPWKinematicParameters
-  {
-    double a1, a2, b, c1, c2, c3, c4;
-    double offsets[6];
-    signed char sign_corrections[6];
-  };
 
   using JointState = std::unordered_map<std::string, double>;
   using JointStates = std::unordered_map<std::string, JointState>;
@@ -114,3 +113,5 @@ public:
 };
 
 }  // namespace tesseract_scene_graph
+
+%template(map_string_opwkinparams) std::unordered_map<std::string, tesseract_scene_graph::OPWKinematicParameters>;
