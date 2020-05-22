@@ -81,6 +81,27 @@ inline tesseract_common::VectorIsometry3d interpolate(const Eigen::Isometry3d& s
 }
 
 /**
+ * @brief Inerpolate between two Eigen::VectorXd and return a Matrix
+ * @param start The Start State
+ * @param stop The Stop/End State
+ * @param steps The number of step
+ * @return A matrix where columns = steps + 1
+ */
+inline Eigen::MatrixXd interpolate(const Eigen::VectorXd& start,
+                                   const Eigen::VectorXd& stop,
+                                   int steps)
+{
+  assert(start.size() == stop.size());
+
+  Eigen::MatrixXd result(start.size(), steps + 1);
+
+  for (int i = 0; i < start.size(); ++i)
+    result.row(i) = Eigen::VectorXd::LinSpaced(steps + 1, start(i), stop(i));
+
+  return result;
+}
+
+/**
  * @brief Inerpolate between two waypoints return a vector of waypoints.
  * @param start The Start Waypoint
  * @param stop The Stop/End Waypoint
