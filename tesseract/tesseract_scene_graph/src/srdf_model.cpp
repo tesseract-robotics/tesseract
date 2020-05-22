@@ -128,7 +128,7 @@ bool SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph,
   tinyxml2::XMLError status = xml_doc.Parse(xmlstring.c_str());
   if (status != tinyxml2::XMLError::XML_SUCCESS)
   {
-    CONSOLE_BRIDGE_logError("Could not parse the SRDF XML File. %s", xml_doc.ErrorStr());
+    CONSOLE_BRIDGE_logError("Could not parse the SRDF XML File");
     return false;
   }
 
@@ -268,7 +268,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
   tinyxml2::XMLError status = doc.SaveFile(file_path.c_str());
   if (status != tinyxml2::XMLError::XML_SUCCESS)
   {
-    CONSOLE_BRIDGE_logError("Failed to save SRDF XML File: %s, Error: &s", file_path.c_str(), doc.ErrorStr());
+    CONSOLE_BRIDGE_logError("Failed to save SRDF XML File: %s", file_path.c_str());
     return false;
   }
 

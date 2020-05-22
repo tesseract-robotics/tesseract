@@ -165,16 +165,16 @@ private:
    */
   void loadGroupOPWKinematics(const tesseract_scene_graph::SceneGraph& scene_graph, tinyxml2::XMLElement* srdf_xml);
 
-  std::string name_{ "undefined" };         /**< @brief The name of the srdf model */
-  std::array<int, 3> version_{ 1, 0, 0 };   /**< @brief The version number major.minor[.patch] */
-  ChainGroups chain_groups_;                /**< @brief A map of chains groups*/
-  JointGroups joint_groups_;                /**< @brief A map of joint groups */
-  LinkGroups link_groups_;                  /**< @brief A map of link groups */
-  std::vector<std::string> group_names_;    /**< @brief A vector of group names */
-  GroupStates group_states_;                /**< @brief  A map of group states*/
-  GroupTCPs group_tcps_;                    /**< @brief A map of group tool center points */
-  AllowedCollisionMatrix acm_;              /**< @brief The allowed collision matrix */
-  GroupOPWKinematics group_opw_kinematics_; /**< @brief A map of group opw kinematics data */
+  std::string name_{ "undefined" };           /**< @brief The name of the srdf model */
+  std::array<int, 3> version_{ { 1, 0, 0 } }; /**< @brief The version number major.minor[.patch] */
+  ChainGroups chain_groups_;                  /**< @brief A map of chains groups*/
+  JointGroups joint_groups_;                  /**< @brief A map of joint groups */
+  LinkGroups link_groups_;                    /**< @brief A map of link groups */
+  std::vector<std::string> group_names_;      /**< @brief A vector of group names */
+  GroupStates group_states_;                  /**< @brief  A map of group states*/
+  GroupTCPs group_tcps_;                      /**< @brief A map of group tool center points */
+  AllowedCollisionMatrix acm_;                /**< @brief The allowed collision matrix */
+  GroupOPWKinematics group_opw_kinematics_;   /**< @brief A map of group opw kinematics data */
 };
 
 }  // namespace tesseract_scene_graph
