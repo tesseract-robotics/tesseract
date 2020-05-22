@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>tesseract_command_language</name>
+  <version>0.0.0</version>
+  <description>The Tesseract Command Language package</description>
+  <author email="levi.armstrong@swri.org">Levi Armstrong</author>
+  <maintainer email="levi.armstrong@swri.org">Levi Armstrong</maintainer>
+  <license>Apache 2.0</license>
+
+  <depend>tesseract_common</depend>
+
+  <build_depend>eigen</build_depend>
+  <build_export_depend>eigen</build_export_depend>
+
+  <test_depend>gtest</test_depend>
+  <test_depend>tesseract_motion_planners</test_depend>
+  <test_depend>tesseract_support</test_depend>
+  <test_depend>tesseract</test_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>
