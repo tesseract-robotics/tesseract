@@ -43,8 +43,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_common
 {
-
-#if __cplusplus <= 201305L
+#if __cplusplus <= 201402
 /** @brief Random number generator */
 static std::mt19937 mersenne{ static_cast<std::mt19937::result_type>(std::time(nullptr)) };
 #else

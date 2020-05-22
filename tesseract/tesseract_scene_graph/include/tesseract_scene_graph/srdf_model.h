@@ -44,7 +44,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 /// Main namespace
 namespace tesseract_scene_graph
 {
-
 /** @brief A structure to hold opw kinematics data */
 struct OPWKinematicParameters
 {

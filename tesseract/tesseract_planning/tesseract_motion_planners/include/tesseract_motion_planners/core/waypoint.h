@@ -153,8 +153,7 @@ public:
     setCoefficients(Eigen::VectorXd::Ones(joint_positions_.size()));
   }
 
-  JointWaypoint(const std::unordered_map<std::string, double>& joint_map)
-    : Waypoint(WaypointType::JOINT_WAYPOINT)
+  JointWaypoint(const std::unordered_map<std::string, double>& joint_map) : Waypoint(WaypointType::JOINT_WAYPOINT)
   {
     joint_names_.resize(joint_map.size());
     joint_positions_.resize(static_cast<long>(joint_map.size()));
