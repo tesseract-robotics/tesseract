@@ -293,6 +293,16 @@ bool Tesseract::init(const TesseractInitInfo::Ptr& init_info)
   return true;
 }
 
+void Tesseract::setResourceLocator(tesseract_scene_graph::ResourceLocator::Ptr locator)
+{
+  init_info_->resource_locator = locator;
+}
+
+const tesseract_scene_graph::ResourceLocator::Ptr& Tesseract::getResourceLocator() const
+{
+  return init_info_->resource_locator;
+}
+
 const tesseract_environment::Environment::Ptr& Tesseract::getEnvironment() { return environment_; }
 
 const tesseract_environment::Environment::ConstPtr& Tesseract::getEnvironmentConst() const

@@ -95,6 +95,9 @@ public:
   tesseract_scene_graph::SRDFModel::GroupTCPs& getGroupTCPs();
   const tesseract_scene_graph::SRDFModel::GroupTCPs& getGroupTCPs() const;
 
+  void setResourceLocator(tesseract_scene_graph::ResourceLocator::Ptr locator);
+  const tesseract_scene_graph::ResourceLocator::Ptr& getResourceLocator() const;
+
 private:
   bool initialized_;
   tesseract_environment::Environment::Ptr environment_;
