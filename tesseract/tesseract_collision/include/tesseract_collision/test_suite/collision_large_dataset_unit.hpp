@@ -77,6 +77,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
   ContactResultVector result_vector;
 
   auto start_time = std::chrono::high_resolution_clock::now();
+  num_interations = 1;
   for (auto i = 0; i < num_interations; ++i)
   {
     ContactResultMap result;
@@ -84,8 +85,13 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
     checker.contactTest(result, ContactRequest(ContactTestType::ALL));
     flattenResults(std::move(result), result_vector);
 
+    if (result_vector.size() != 300)
+      for(const auto& result : result_vector)
+        std::cout << result.link_names[0] << "," << result.link_names[1] << "," << result.distance << std::endl;
+
     /** @todo Some reason FCL Convex hull version only finds 299 instead of 300 only on the code coverage build */
-    EXPECT_TRUE(result_vector.size() == 300 || result_vector.size() == 299);
+    EXPECT_TRUE(result_vector.size() == 300);
+
   }
   auto end_time = std::chrono::high_resolution_clock::now();
 
