@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain_factory.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_tree_factory.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_lma_factory.h>
+#include <tesseract_kinematics/opw/opw_inv_kin.h>
 #include <tesseract_kinematics/core/utils.h>
 #include <tesseract_urdf/urdf_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -58,6 +59,9 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
     return false;
   }
   environment_const_ = environment_;
+  srdf_model_ = std::make_shared<tesseract_scene_graph::SRDFModel>();
+  srdf_model_->getName() = scene_graph->getName();
+  srdf_model_const_ = srdf_model_;
 
   registerDefaultContactManagers();
   registerDefaultFwdKinSolvers();
@@ -68,14 +72,15 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
 }
 
 bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph,
-                     tesseract_scene_graph::SRDFModel::ConstPtr srdf_model)
+                     tesseract_scene_graph::SRDFModel::Ptr srdf_model)
 {
   clear();
   init_info_->type = TesseractInitType::SCENE_GRAPH_SRDF_MODEL;
   init_info_->scene_graph = scene_graph;
-  init_info_->srdf_model_ = srdf_model;
+  init_info_->srdf_model = srdf_model;
 
   srdf_model_ = std::move(srdf_model);
+  srdf_model_const_ = srdf_model_;
 
   // Construct Environment from Scene Graph
   environment_ = std::make_shared<tesseract_environment::KDLEnv>();
@@ -117,6 +122,10 @@ bool Tesseract::init(const std::string& urdf_string, const tesseract_scene_graph
     return false;
   }
   environment_const_ = environment_;
+  srdf_model_ = std::make_shared<tesseract_scene_graph::SRDFModel>();
+  srdf_model_->getName() = scene_graph->getName();
+  srdf_model_const_ = srdf_model_;
+
   registerDefaultContactManagers();
   registerDefaultFwdKinSolvers();
   registerDefaultInvKinSolvers();
@@ -151,6 +160,7 @@ bool Tesseract::init(const std::string& urdf_string,
     return false;
   }
   srdf_model_ = srdf;
+  srdf_model_const_ = srdf_model_;
 
   // Add allowed collision matrix to scene graph
   tesseract_scene_graph::processSRDFAllowedCollisions(*scene_graph, *srdf);
@@ -195,6 +205,10 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
     return false;
   }
   environment_const_ = environment_;
+  srdf_model_ = std::make_shared<tesseract_scene_graph::SRDFModel>();
+  srdf_model_->getName() = scene_graph->getName();
+  srdf_model_const_ = srdf_model_;
+
   registerDefaultContactManagers();
   registerDefaultFwdKinSolvers();
   registerDefaultInvKinSolvers();
@@ -222,16 +236,17 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
   }
 
   // Parse srdf file into SRDF Model
-  tesseract_scene_graph::SRDFModel::Ptr srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
-  if (!srdf->initFile(*scene_graph, srdf_path.string()))
+  srdf_model_ = std::make_shared<tesseract_scene_graph::SRDFModel>();
+  if (!srdf_model_->initFile(*scene_graph, srdf_path.string()))
   {
     CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
+    srdf_model_ = nullptr;
     return false;
   }
-  srdf_model_ = srdf;
+  srdf_model_const_ = srdf_model_;
 
   // Add allowed collision matrix to scene graph
-  tesseract_scene_graph::processSRDFAllowedCollisions(*scene_graph, *srdf);
+  tesseract_scene_graph::processSRDFAllowedCollisions(*scene_graph, *srdf_model_);
 
   // Construct Environment
   environment_ = std::make_shared<tesseract_environment::KDLEnv>();
@@ -257,7 +272,7 @@ bool Tesseract::init(const TesseractInitInfo::Ptr& init_info)
       init(init_info->scene_graph);
       break;
     case TesseractInitType::SCENE_GRAPH_SRDF_MODEL:
-      init(init_info->scene_graph, init_info->srdf_model_);
+      init(init_info->scene_graph, std::make_shared<tesseract_scene_graph::SRDFModel>(*(init_info->srdf_model)));
       break;
     case TesseractInitType::URDF_STRING:
       init(init_info->urdf_string, init_info->resource_locator);
@@ -278,6 +293,16 @@ bool Tesseract::init(const TesseractInitInfo::Ptr& init_info)
   return true;
 }
 
+void Tesseract::setResourceLocator(tesseract_scene_graph::ResourceLocator::Ptr locator)
+{
+  init_info_->resource_locator = locator;
+}
+
+const tesseract_scene_graph::ResourceLocator::Ptr& Tesseract::getResourceLocator() const
+{
+  return init_info_->resource_locator;
+}
+
 const tesseract_environment::Environment::Ptr& Tesseract::getEnvironment() { return environment_; }
 
 const tesseract_environment::Environment::ConstPtr& Tesseract::getEnvironmentConst() const
@@ -285,7 +310,19 @@ const tesseract_environment::Environment::ConstPtr& Tesseract::getEnvironmentCon
   return environment_const_;
 }
 
-const tesseract_scene_graph::SRDFModel::ConstPtr& Tesseract::getSRDFModel() const { return srdf_model_; }
+const tesseract_scene_graph::SRDFModel::Ptr& Tesseract::getSRDFModel() const { return srdf_model_; }
+const tesseract_scene_graph::SRDFModel::ConstPtr& Tesseract::getSRDFModelConst() const { return srdf_model_const_; }
+
+tesseract_scene_graph::GroupStates& Tesseract::getGroupStates() { return srdf_model_->getGroupStates(); }
+
+const tesseract_scene_graph::GroupStates& Tesseract::getGroupStatesConst() const
+{
+  return srdf_model_const_->getGroupStates();
+}
+
+tesseract_scene_graph::GroupTCPs& Tesseract::getGroupTCPs() { return srdf_model_->getGroupTCPs(); }
+
+const tesseract_scene_graph::GroupTCPs& Tesseract::getGroupTCPs() const { return srdf_model_->getGroupTCPs(); }
 
 const ForwardKinematicsManager::Ptr& Tesseract::getFwdKinematicsManager() { return fwd_kin_manager_; }
 
@@ -332,19 +369,19 @@ bool Tesseract::registerDefaultFwdKinSolvers()
   auto tree_factory = std::make_shared<tesseract_kinematics::KDLFwdKinTreeFactory>();
   fwd_kin_manager_->registerFwdKinematicsFactory(tree_factory);
 
-  for (const auto& group : srdf_model_->getGroups())
+  for (const auto& group : srdf_model_->getChainGroups())
   {
-    if (!group.chains_.empty())
+    if (!group.second.empty())
     {
       tesseract_kinematics::ForwardKinematics::Ptr solver =
-          chain_factory->create(environment_->getSceneGraph(), group.chains_, group.name_);
+          chain_factory->create(environment_->getSceneGraph(), group.second, group.first);
       if (solver != nullptr)
       {
         if (!fwd_kin_manager_->addFwdKinematicSolver(solver))
         {
           CONSOLE_BRIDGE_logError("Failed to add inverse kinematic chain solver %s for manipulator %s to manager!",
                                   solver->getSolverName().c_str(),
-                                  group.name_.c_str());
+                                  group.first.c_str());
           success = false;
         }
       }
@@ -352,23 +389,25 @@ bool Tesseract::registerDefaultFwdKinSolvers()
       {
         CONSOLE_BRIDGE_logError("Failed to create inverse kinematic chain solver %s for manipulator %s!",
                                 solver->getSolverName().c_str(),
-                                group.name_.c_str());
+                                group.first.c_str());
         success = false;
       }
     }
+  }
 
-    if (!group.joints_.empty())
+  for (const auto& group : srdf_model_->getJointGroups())
+  {
+    if (!group.second.empty())
     {
-      assert(!group.joints_.empty());
       tesseract_kinematics::ForwardKinematics::Ptr solver =
-          tree_factory->create(environment_->getSceneGraph(), group.joints_, group.name_);
+          tree_factory->create(environment_->getSceneGraph(), group.second, group.first);
       if (solver != nullptr)
       {
         if (!fwd_kin_manager_->addFwdKinematicSolver(solver))
         {
           CONSOLE_BRIDGE_logError("Failed to add inverse kinematic tree solver %s for manipulator %s to manager!",
                                   solver->getSolverName().c_str(),
-                                  group.name_.c_str());
+                                  group.first.c_str());
           success = false;
         }
       }
@@ -376,21 +415,18 @@ bool Tesseract::registerDefaultFwdKinSolvers()
       {
         CONSOLE_BRIDGE_logError("Failed to create inverse kinematic tree solver %s for manipulator %s!",
                                 solver->getSolverName().c_str(),
-                                group.name_.c_str());
+                                group.first.c_str());
         success = false;
       }
     }
+  }
 
+  for (const auto& group : srdf_model_->getLinkGroups())
+  {
     // TODO: Need to add other options
-    if (!group.links_.empty())
+    if (!group.second.empty())
     {
       CONSOLE_BRIDGE_logError("Link groups are currently not supported!");
-      success = false;
-    }
-
-    if (!group.subgroups_.empty())
-    {
-      CONSOLE_BRIDGE_logError("Subgroups are currently not supported!");
       success = false;
     }
   }
@@ -408,19 +444,19 @@ bool Tesseract::registerDefaultInvKinSolvers()
   auto factory = std::make_shared<tesseract_kinematics::KDLInvKinChainLMAFactory>();
   inv_kin_manager_->registerInvKinematicsFactory(factory);
 
-  for (const auto& group : srdf_model_->getGroups())
+  for (const auto& group : srdf_model_->getChainGroups())
   {
-    if (!group.chains_.empty())
+    if (!group.second.empty())
     {
       tesseract_kinematics::InverseKinematics::Ptr solver =
-          factory->create(environment_->getSceneGraph(), group.chains_, group.name_);
+          factory->create(environment_->getSceneGraph(), group.second, group.first);
       if (solver != nullptr)
       {
         if (!inv_kin_manager_->addInvKinematicSolver(solver))
         {
           CONSOLE_BRIDGE_logError("Failed to add inverse kinematic chain solver %s for manipulator %s to manager!",
                                   solver->getSolverName().c_str(),
-                                  group.name_.c_str());
+                                  group.first.c_str());
           success = false;
         }
       }
@@ -428,28 +464,83 @@ bool Tesseract::registerDefaultInvKinSolvers()
       {
         CONSOLE_BRIDGE_logError("Failed to create inverse kinematic chain solver %s for manipulator %s!",
                                 solver->getSolverName().c_str(),
-                                group.name_.c_str());
+                                group.first.c_str());
         success = false;
       }
     }
+  }
 
-    if (!group.joints_.empty())
+  for (const auto& group : srdf_model_->getJointGroups())
+  {
+    if (!group.second.empty())
     {
       CONSOLE_BRIDGE_logError("Joint groups are currently not supported by inverse kinematics!");
       success = false;
     }
+  }
 
-    // TODO: Need to add other options
-    if (!group.links_.empty())
+  for (const auto& group : srdf_model_->getLinkGroups())
+  {
+    if (!group.second.empty())
     {
       CONSOLE_BRIDGE_logError("Link groups are currently not supported by inverse kinematics!");
       success = false;
     }
+  }
 
-    if (!group.subgroups_.empty())
+  for (const auto& group : srdf_model_->getGroupOPWKinematics())
+  {
+    if (!group.first.empty())
     {
-      CONSOLE_BRIDGE_logError("Subgroups are currently not supported!");
-      success = false;
+      tesseract_kinematics::ForwardKinematics::Ptr fwd_kin = fwd_kin_manager_->getFwdKinematicSolver(group.first);
+      if (fwd_kin == nullptr)
+      {
+        CONSOLE_BRIDGE_logError("Failed to add inverse kinematic opw solver for manipulator %s to manager!",
+                                group.first.c_str());
+        success = false;
+      }
+      else
+      {
+        opw_kinematics::Parameters<double> params;
+        params.a1 = group.second.a1;
+        params.a2 = group.second.a2;
+        params.b = group.second.b;
+        params.c1 = group.second.c1;
+        params.c2 = group.second.c2;
+        params.c3 = group.second.c3;
+        params.c4 = group.second.c4;
+        for (std::size_t i = 0; i < 6; ++i)
+        {
+          params.offsets[i] = group.second.offsets[i];
+          params.sign_corrections[i] = group.second.sign_corrections[i];
+        }
+
+        auto solver = std::make_shared<tesseract_kinematics::OPWInvKin>();
+        solver->init(group.first,
+                     params,
+                     fwd_kin->getBaseLinkName(),
+                     fwd_kin->getTipLinkName(),
+                     fwd_kin->getJointNames(),
+                     fwd_kin->getLinkNames(),
+                     fwd_kin->getActiveLinkNames(),
+                     fwd_kin->getLimits());
+
+        if (solver->checkInitialized())
+        {
+          if (!inv_kin_manager_->addInvKinematicSolver(solver))
+          {
+            CONSOLE_BRIDGE_logError("Failed to add inverse kinematic opw solver for manipulator %s to manager!",
+                                    group.first.c_str());
+            success = false;
+          }
+        }
+        else
+        {
+          CONSOLE_BRIDGE_logError("Failed to create inverse kinematic opw solver for manipulator %s!",
+                                  group.first.c_str());
+          success = false;
+        }
+      }
     }
   }
 
@@ -462,6 +553,7 @@ void Tesseract::clear()
   environment_ = nullptr;
   environment_const_ = nullptr;
   srdf_model_ = nullptr;
+  srdf_model_const_ = nullptr;
   inv_kin_manager_ = nullptr;
   inv_kin_manager_const_ = nullptr;
   fwd_kin_manager_ = nullptr;

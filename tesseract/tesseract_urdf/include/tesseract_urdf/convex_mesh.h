@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/status_code.h>
+#include <tesseract_common/utils.h>
 #include <Eigen/Geometry>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -38,9 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/mesh_parser.h>
 #include <tesseract_geometry/impl/mesh.h>
 #include <tesseract_geometry/impl/convex_mesh.h>
-#include <tesseract_common/utils.h>
 #include <tesseract_collision/core/common.h>
-#include <tesseract_urdf/utils.h>
 
 namespace tesseract_urdf
 {
@@ -89,12 +88,12 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::C
   using SC = tesseract_common::StatusCode;
 
   std::string filename;
-  if (QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
+  if (tesseract_common::QueryStringAttribute(xml_element, "filename", filename) != tinyxml2::XML_SUCCESS)
     return std::make_shared<SC>(ConvexMeshStatusCategory::ErrorAttributeFileName, status_cat);
 
   std::string scale_string;
   Eigen::Vector3d scale(1, 1, 1);
-  if (QueryStringAttribute(xml_element, "scale", scale_string) == tinyxml2::XML_SUCCESS)
+  if (tesseract_common::QueryStringAttribute(xml_element, "scale", scale_string) == tinyxml2::XML_SUCCESS)
   {
     std::vector<std::string> tokens;
     boost::split(tokens, scale_string, boost::is_any_of(" "), boost::token_compress_on);

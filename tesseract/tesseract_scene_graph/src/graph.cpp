@@ -303,6 +303,8 @@ bool SceneGraph::isCollisionAllowed(const std::string& link_name1, const std::st
 
 AllowedCollisionMatrix::ConstPtr SceneGraph::getAllowedCollisionMatrix() const { return acm_; }
 
+AllowedCollisionMatrix::Ptr SceneGraph::getAllowedCollisionMatrix() { return acm_; }
+
 Link::ConstPtr SceneGraph::getSourceLink(const std::string& joint_name) const
 {
   Edge e = getEdge(joint_name);

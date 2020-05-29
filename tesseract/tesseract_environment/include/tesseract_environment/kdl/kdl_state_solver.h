@@ -54,7 +54,11 @@ public:
   EnvState::Ptr getState(const std::vector<std::string>& joint_names,
                          const Eigen::Ref<const Eigen::VectorXd>& joint_values) const override;
 
-  EnvState::ConstPtr getCurrentState() const override { return current_state_; }
+  EnvState::ConstPtr getCurrentState() const override;
+
+  EnvState::Ptr getRandomState() const override;
+
+  const Eigen::MatrixX2d& getLimits() const override;
 
 private:
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;    /**< Tesseract Scene Graph */
@@ -62,6 +66,8 @@ private:
   KDL::Tree kdl_tree_;                                         /**< KDL tree object */
   std::unordered_map<std::string, unsigned int> joint_to_qnr_; /**< Map between joint name and kdl q index */
   KDL::JntArray kdl_jnt_array_;                                /**< The kdl joint array */
+  Eigen::MatrixX2d joint_limits_;                              /**< The joint limits */
+  std::vector<std::string> joint_names_;                       /**< The active joint names */
 
   /**
    * @brief This used by the clone method
@@ -83,17 +89,7 @@ private:
 
   bool createKDETree();
 
-  void onEnvironmentChanged(const Commands& /*commands*/) override
-  {
-    // Cache current joint values
-    std::unordered_map<std::string, double> joints = current_state_->joints;
-
-    // Recreate state solver
-    createKDETree();
-
-    // Set to current state
-    setState(joints);
-  }
+  void onEnvironmentChanged(const Commands& commands) override;
 };
 
 }  // namespace tesseract_environment

@@ -49,6 +49,96 @@ TEST(TesseractCommonUnit, toNumeric)  // NOLINT
   }
 }
 
+TEST(TesseractCommonUnit, generateRandomNumber)  // NOLINT
+{
+  Eigen::MatrixX2d limits(4, 2);
+  limits(0, 0) = -5;
+  limits(0, 1) = 5;
+  limits(1, 0) = 0;
+  limits(1, 1) = 10;
+  limits(2, 0) = 5;
+  limits(2, 1) = 15;
+  limits(3, 0) = -15;
+  limits(3, 1) = -5;
+
+  Eigen::VectorXd random_numbers = tesseract_common::generateRandomNumber(limits);
+  EXPECT_EQ(limits.rows(), random_numbers.size());
+  for (long i = 0; i < limits.rows(); ++i)
+  {
+    EXPECT_LE(random_numbers(i), limits(i, 1));
+    EXPECT_GE(random_numbers(i), limits(i, 0));
+  }
+
+  Eigen::MatrixX2d empty_limits;
+  Eigen::VectorXd random_numbers2 = tesseract_common::generateRandomNumber(empty_limits);
+  EXPECT_EQ(empty_limits.rows(), random_numbers2.size());
+
+  Eigen::MatrixX2d equal_limits(4, 2);
+  equal_limits(0, 0) = 5;
+  equal_limits(0, 1) = 5;
+  equal_limits(1, 0) = 5;
+  equal_limits(1, 1) = 5;
+  equal_limits(2, 0) = 5;
+  equal_limits(2, 1) = 5;
+  equal_limits(3, 0) = 5;
+  equal_limits(3, 1) = 5;
+  Eigen::VectorXd random_numbers3 = tesseract_common::generateRandomNumber(equal_limits);
+  EXPECT_EQ(equal_limits.rows(), random_numbers3.size());
+  for (long i = 0; i < equal_limits.rows(); ++i)
+  {
+    EXPECT_NEAR(random_numbers3(i), 5, 1e-5);
+  }
+
+  Eigen::MatrixX2d wrong_limits(4, 2);
+  wrong_limits(0, 0) = 5;
+  wrong_limits(0, 1) = -5;
+  wrong_limits(1, 0) = 5;
+  wrong_limits(1, 1) = -5;
+  wrong_limits(2, 0) = 5;
+  wrong_limits(2, 1) = -5;
+  wrong_limits(3, 0) = 5;
+  wrong_limits(3, 1) = -5;
+  Eigen::VectorXd random_numbers4 = tesseract_common::generateRandomNumber(wrong_limits);
+  EXPECT_EQ(wrong_limits.rows(), random_numbers4.size());
+  for (long i = 0; i < limits.rows(); ++i)
+  {
+    EXPECT_GE(random_numbers4(i), wrong_limits(i, 1));
+    EXPECT_LE(random_numbers4(i), wrong_limits(i, 0));
+  }
+}
+
+TEST(TesseractCommonUnit, trim)  // NOLINT
+{
+  std::string check1 = "    trim";
+  std::string check2 = "trim    ";
+  std::string check3 = "    trim    ";
+  std::string check_trimmed = "trim";
+
+  std::string s = check1;
+  tesseract_common::rtrim(s);
+  EXPECT_EQ(s, check1);
+  tesseract_common::ltrim(s);
+  EXPECT_EQ(s, check_trimmed);
+
+  s = check2;
+  tesseract_common::ltrim(s);
+  EXPECT_EQ(s, check2);
+  tesseract_common::rtrim(s);
+  EXPECT_EQ(s, check_trimmed);
+
+  s = check1;
+  tesseract_common::trim(s);
+  EXPECT_EQ(s, check_trimmed);
+
+  s = check2;
+  tesseract_common::trim(s);
+  EXPECT_EQ(s, check_trimmed);
+
+  s = check3;
+  tesseract_common::trim(s);
+  EXPECT_EQ(s, check_trimmed);
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

@@ -282,6 +282,12 @@ public:
   AllowedCollisionMatrix::ConstPtr getAllowedCollisionMatrix() const;
 
   /**
+   * @brief Get the allowed collision matrix
+   * @return AllowedCollisionMatrixPtr
+   */
+  AllowedCollisionMatrix::Ptr getAllowedCollisionMatrix();
+
+  /**
    * @brief Get the source link (parent link) for a joint
    * @param joint_name The name of the joint
    * @return The source link

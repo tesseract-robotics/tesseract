@@ -30,6 +30,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fstream>
 #include <tesseract_common/status_code.h>
+#include <tesseract_common/utils.h>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -38,7 +39,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_urdf/joint.h>
 #include <tesseract_urdf/link.h>
-#include <tesseract_urdf/utils.h>
 #include <tesseract_urdf/material.h>
 
 namespace tesseract_urdf

@@ -36,7 +36,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/box.h>
-#include <tesseract_urdf/utils.h>
 
 namespace tesseract_urdf
 {
@@ -79,7 +78,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Box::Ptr& box
   auto status_cat = std::make_shared<BoxStatusCategory>();
 
   std::string size_string;
-  if (QueryStringAttribute(xml_element, "size", size_string) != tinyxml2::XML_SUCCESS)
+  if (tesseract_common::QueryStringAttribute(xml_element, "size", size_string) != tinyxml2::XML_SUCCESS)
     return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSize, status_cat);
 
   std::vector<std::string> tokens;

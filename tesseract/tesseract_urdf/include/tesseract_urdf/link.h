@@ -29,13 +29,13 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/status_code.h>
+#include <tesseract_common/utils.h>
 #include <Eigen/Geometry>
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/link.h>
-#include <tesseract_urdf/utils.h>
 #include <tesseract_urdf/inertial.h>
 #include <tesseract_urdf/visual.h>
 #include <tesseract_urdf/collision.h>
@@ -91,7 +91,7 @@ parse(tesseract_scene_graph::Link::Ptr& link,
   auto status_cat = std::make_shared<LinkStatusCategory>();
 
   std::string link_name;
-  if (QueryStringAttribute(xml_element, "name", link_name) != tinyxml2::XML_SUCCESS)
+  if (tesseract_common::QueryStringAttribute(xml_element, "name", link_name) != tinyxml2::XML_SUCCESS)
     return std::make_shared<tesseract_common::StatusCode>(LinkStatusCategory::ErrorAttributeName, status_cat);
 
   status_cat = std::make_shared<LinkStatusCategory>(link_name);

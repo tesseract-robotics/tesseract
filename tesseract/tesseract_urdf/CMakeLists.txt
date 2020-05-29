@@ -1,12 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_urdf VERSION 0.1.0 LANGUAGES CXX)
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
-
 find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(console_bridge REQUIRED)
-find_package(TinyXML2 REQUIRED)
 find_package(PCL REQUIRED)
 find_package(tesseract_geometry REQUIRED)
 find_package(tesseract_common REQUIRED)
@@ -18,7 +15,7 @@ set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/* /
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 
 add_library(${PROJECT_NAME} SHARED src/urdf_parser.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_geometry tesseract::tesseract_scene_graph tesseract::tesseract_collision_core console_bridge ${Boost_LIBRARIES} ${TinyXML2_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_common tesseract::tesseract_geometry tesseract::tesseract_scene_graph tesseract::tesseract_collision_core console_bridge ${Boost_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME})
 tesseract_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE})
@@ -55,7 +52,6 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}
     ${console_bridge_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
-    ${TinyXML2_INCLUDE_DIRS}
     $<TARGET_PROPERTY:tesseract::tesseract_common,INTERFACE_INCLUDE_DIRECTORIES>) #tesseract::tesseract_common Due to bug in catkin, there is an open PR
 
 tesseract_configure_package(${PROJECT_NAME})
@@ -66,8 +62,6 @@ install(DIRECTORY include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
 )
-
-install(FILES cmake/FindTinyXML2.cmake DESTINATION lib/cmake/${PROJECT_NAME})
 
 # ADD Examples
 add_subdirectory(examples)

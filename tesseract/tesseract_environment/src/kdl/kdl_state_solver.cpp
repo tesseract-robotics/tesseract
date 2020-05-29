@@ -56,6 +56,8 @@ bool KDLStateSolver::init(const KDLStateSolver& solver)
   kdl_tree_ = solver.kdl_tree_;
   joint_to_qnr_ = solver.joint_to_qnr_;
   kdl_jnt_array_ = solver.kdl_jnt_array_;
+  joint_limits_ = solver.joint_limits_;
+  joint_names_ = solver.joint_names_;
 
   return true;
 }
@@ -156,6 +158,15 @@ EnvState::Ptr KDLStateSolver::getState(const std::vector<std::string>& joint_nam
   return state;
 }
 
+EnvState::ConstPtr KDLStateSolver::getCurrentState() const { return current_state_; }
+
+EnvState::Ptr KDLStateSolver::getRandomState() const
+{
+  return getState(joint_names_, tesseract_common::generateRandomNumber(joint_limits_));
+}
+
+const Eigen::MatrixX2d& KDLStateSolver::getLimits() const { return joint_limits_; }
+
 bool KDLStateSolver::createKDETree()
 {
   kdl_tree_ = KDL::Tree();
@@ -167,6 +178,8 @@ bool KDLStateSolver::createKDETree()
 
   current_state_ = std::make_shared<EnvState>();
   kdl_jnt_array_.resize(kdl_tree_.getNrOfJoints());
+  joint_limits_.resize(kdl_tree_.getNrOfJoints(), 2);
+  joint_names_.resize(kdl_tree_.getNrOfJoints());
   size_t j = 0;
   for (const auto& seg : kdl_tree_.getSegments())
   {
@@ -178,6 +191,12 @@ bool KDLStateSolver::createKDETree()
     joint_to_qnr_.insert(std::make_pair(jnt.getName(), seg.second.q_nr));
     kdl_jnt_array_(seg.second.q_nr) = 0.0;
     current_state_->joints.insert(std::make_pair(jnt.getName(), 0.0));
+    joint_names_[j] = jnt.getName();
+
+    // Store joint limits.
+    const auto& sj = scene_graph_->getJoint(jnt.getName());
+    joint_limits_(static_cast<long>(j), 0) = sj->limits->lower;
+    joint_limits_(static_cast<long>(j), 0) = sj->limits->upper;
 
     j++;
   }
@@ -231,6 +250,18 @@ void KDLStateSolver::calculateTransforms(EnvState& state,
                                          const Eigen::Isometry3d& parent_frame) const
 {
   calculateTransformsHelper(state, q_in, it, parent_frame);
+}
+
+void KDLStateSolver::onEnvironmentChanged(const Commands& /*commands*/)
+{
+  // Cache current joint values
+  std::unordered_map<std::string, double> joints = current_state_->joints;
+
+  // Recreate state solver
+  createKDETree();
+
+  // Set to current state
+  setState(joints);
 }
 
 }  // namespace tesseract_environment

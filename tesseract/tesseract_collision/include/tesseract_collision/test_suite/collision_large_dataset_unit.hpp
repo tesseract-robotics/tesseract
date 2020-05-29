@@ -77,13 +77,19 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
   ContactResultVector result_vector;
 
   auto start_time = std::chrono::high_resolution_clock::now();
+  num_interations = 1;
   for (auto i = 0; i < num_interations; ++i)
   {
     ContactResultMap result;
     result_vector.clear();
     checker.contactTest(result, ContactRequest(ContactTestType::ALL));
     flattenResults(std::move(result), result_vector);
-    EXPECT_TRUE(result_vector.size() == 300);
+
+    if (result_vector.size() != 300)
+      for (const auto& result : result_vector)
+        std::cout << result.link_names[0] << "," << result.link_names[1] << "," << result.distance << std::endl;
+
+    EXPECT_EQ(result_vector.size(), 300);
   }
   auto end_time = std::chrono::high_resolution_clock::now();
 

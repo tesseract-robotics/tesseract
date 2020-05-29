@@ -142,6 +142,25 @@ public:
   }
 
   /**
+   * @brief Remove all forward kinematic solver for a given manipulator
+   * @param manipulator The name of the manipulator
+   * @param name The name of the solver
+   */
+  void removeFwdKinematicSolver(const std::string& manipulator)
+  {
+    auto it = fwd_kin_manipulators_.begin();
+    while (it != fwd_kin_manipulators_.end())
+    {
+      if (it->first.first == manipulator)
+        it = fwd_kin_manipulators_.erase(it);
+      else
+        ++it;
+    }
+
+    fwd_kin_manipulators_default_.erase(manipulator);
+  }
+
+  /**
    * @brief Get a list of all available forward kinematics manipulators
    * @return Vector of names
    */

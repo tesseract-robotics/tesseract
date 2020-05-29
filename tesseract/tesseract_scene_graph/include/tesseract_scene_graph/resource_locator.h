@@ -30,7 +30,6 @@
 #include <tesseract_common/resource.h>
 #include <tesseract_scene_graph/allowed_collision_matrix.h>
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/parser/srdf_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <functional>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP

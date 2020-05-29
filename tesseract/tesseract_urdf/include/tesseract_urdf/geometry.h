@@ -120,7 +120,7 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::G
                                                           status_cat);
 
   std::string geometry_type;
-  tinyxml2::XMLError status = QueryStringValue(geometry, geometry_type);
+  tinyxml2::XMLError status = tesseract_common::QueryStringValue(geometry, geometry_type);
   if (status != tinyxml2::XML_SUCCESS)
     return std::make_shared<tesseract_common::StatusCode>(GeometryStatusCategory::ErrorInvalidGeometryType, status_cat);
 
