@@ -36,38 +36,22 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <tinyxml2.h>
 #include <console_bridge/console.h>
-#include <tesseract_scene_graph/graph.h>
 #include <fstream>
 #include <array>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/srdf/types.h>
+
 /// Main namespace
 namespace tesseract_scene_graph
 {
-/** @brief A structure to hold opw kinematics data */
-struct OPWKinematicParameters
-{
-  double a1{ 0 }, a2{ 0 }, b{ 0 }, c1{ 0 }, c2{ 0 }, c3{ 0 }, c4{ 0 };
-  double offsets[6]{ 0, 0, 0, 0, 0, 0 };
-  signed char sign_corrections[6]{ 1, 1, 1, 1, 1, 1 };
-};
-
 /** @brief Representation of semantic information about the robot */
 class SRDFModel
 {
 public:
   using Ptr = std::shared_ptr<SRDFModel>;
   using ConstPtr = std::shared_ptr<const SRDFModel>;
-
-  using JointState = std::unordered_map<std::string, double>;
-  using JointStates = std::unordered_map<std::string, JointState>;
-  using GroupStates = std::unordered_map<std::string, JointStates>;
-  using TCPs = std::unordered_map<std::string, Eigen::Isometry3d>;
-  using GroupTCPs = std::unordered_map<std::string, TCPs>;
-  using ChainGroups = std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>>;
-  using JointGroups = std::unordered_map<std::string, std::vector<std::string>>;
-  using LinkGroups = std::unordered_map<std::string, std::vector<std::string>>;
-  using GroupOPWKinematics = std::unordered_map<std::string, OPWKinematicParameters>;
 
   SRDFModel() = default;
   virtual ~SRDFModel() = default;
@@ -77,10 +61,10 @@ public:
   SRDFModel& operator=(SRDFModel&&) = default;
 
   /** @brief Load Model from TiXMLElement */
-  bool initXml(const tesseract_scene_graph::SceneGraph& scene_graph, tinyxml2::XMLElement* srdf_xml);
+  bool initXml(const tesseract_scene_graph::SceneGraph& scene_graph, const tinyxml2::XMLElement* srdf_xml);
 
   /** @brief Load Model from TiXMLDocument */
-  bool initXml(const tesseract_scene_graph::SceneGraph& scene_graph, tinyxml2::XMLDocument* srdf_xml);
+  bool initXml(const tesseract_scene_graph::SceneGraph& scene_graph, const tinyxml2::XMLDocument* srdf_xml);
 
   /** @brief Load Model given a filename */
   bool initFile(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& filename);
@@ -130,48 +114,13 @@ public:
   void clear();
 
 private:
-  /**
-   * @brief Load groups from srdf xml element
-   * @param scene_graph The tesseract scene graph
-   * @param srdf_xml The xml element to parse
-   */
-  void loadGroups(const tesseract_scene_graph::SceneGraph& scene_graph, tinyxml2::XMLElement* srdf_xml);
-
-  /**
-   * @brief Load groups states from srdf xml element
-   * @param scene_graph The tesseract scene graph
-   * @param srdf_xml The xml element to parse
-   */
-  void loadGroupStates(const tesseract_scene_graph::SceneGraph& scene_graph, tinyxml2::XMLElement* srdf_xml);
-
-  /**
-   * @brief Load groups tool center points from srdf xml element
-   * @param scene_graph The tesseract scene graph
-   * @param srdf_xml The xml element to parse
-   */
-  void loadToolCenterPoints(const tesseract_scene_graph::SceneGraph& scene_graph, tinyxml2::XMLElement* srdf_xml);
-
-  /**
-   * @brief Load allowed collisions from srdf xml element
-   * @param scene_graph The tesseract scene graph
-   * @param srdf_xml The xml element to parse
-   */
-  void loadDisabledCollisions(const tesseract_scene_graph::SceneGraph& scene_graph, tinyxml2::XMLElement* srdf_xml);
-
-  /**
-   * @brief Load group opw kinematics from srdf xml element
-   * @param scene_graph The tesseract scene graph
-   * @param srdf_xml The xml element to parse
-   */
-  void loadGroupOPWKinematics(const tesseract_scene_graph::SceneGraph& scene_graph, tinyxml2::XMLElement* srdf_xml);
-
   std::string name_{ "undefined" };           /**< @brief The name of the srdf model */
   std::array<int, 3> version_{ { 1, 0, 0 } }; /**< @brief The version number major.minor[.patch] */
   ChainGroups chain_groups_;                  /**< @brief A map of chains groups*/
   JointGroups joint_groups_;                  /**< @brief A map of joint groups */
   LinkGroups link_groups_;                    /**< @brief A map of link groups */
   std::vector<std::string> group_names_;      /**< @brief A vector of group names */
-  GroupStates group_states_;                  /**< @brief  A map of group states*/
+  GroupStates group_states_;                  /**< @brief A map of group states */
   GroupTCPs group_tcps_;                      /**< @brief A map of group tool center points */
   AllowedCollisionMatrix acm_;                /**< @brief The allowed collision matrix */
   GroupOPWKinematics group_opw_kinematics_;   /**< @brief A map of group opw kinematics data */

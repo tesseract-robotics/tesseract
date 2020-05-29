@@ -67,7 +67,7 @@ struct TesseractInitInfo
   tesseract_scene_graph::SceneGraph::Ptr scene_graph;
 
   /** @brief Used when InitType is SCENE_GRAPH_SRDF_MODEL*/
-  tesseract_scene_graph::SRDFModel::Ptr srdf_model;
+  tesseract_scene_graph::SRDFModel::ConstPtr srdf_model;
 
   /** @brief Used when InitType is URDF_STRING and URDF_STRING_SRDF_STRING*/
   std::string urdf_string;

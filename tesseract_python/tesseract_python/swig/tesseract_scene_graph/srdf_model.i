@@ -28,22 +28,12 @@
 #include <tesseract_scene_graph/srdf_model.h>
 %}
 
+%include "srdf/types.i"
+
 %shared_ptr(tesseract_scene_graph::SRDFModel)
-
-%template(map_string_isometry3d) std::unordered_map<std::string, Eigen::Isometry3d>;
-
-%template(map_string_opwkinparams) std::unordered_map<std::string, tesseract_scene_graph::OPWKinematicParameters>;
 
 namespace tesseract_scene_graph
 {
-
-/** @brief A structure to hold opw kinematics data */
-struct OPWKinematicParameters
-{
-  double a1, a2, b, c1, c2, c3, c4;
-  double offsets[6];
-  signed char sign_corrections[6];
-};
 
 class SRDFModel
 {
@@ -51,21 +41,11 @@ public:
   using Ptr = std::shared_ptr<SRDFModel>;
   using ConstPtr = std::shared_ptr<const SRDFModel>;
 
-  using JointState = std::unordered_map<std::string, double>;
-  using JointStates = std::unordered_map<std::string, JointState>;
-  using GroupStates = std::unordered_map<std::string, JointStates>;
-  using TCPs = std::unordered_map<std::string, Eigen::Isometry3d>;
-  using GroupTCPs = std::unordered_map<std::string, TCPs>;
-  using ChainGroups = std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>>;
-  using JointGroups = std::unordered_map<std::string, std::vector<std::string>>;
-  using LinkGroups = std::unordered_map<std::string, std::vector<std::string>>;
-  using GroupOPWKinematics = std::unordered_map<std::string, OPWKinematicParameters>;
-
   /** @brief Load Model from TiXMLElement */
-  bool initXml(const tesseract_scene_graph::SceneGraph& scene_graph, tinyxml2::XMLElement* srdf_xml);
+  bool initXml(const tesseract_scene_graph::SceneGraph& scene_graph, const tinyxml2::XMLElement* srdf_xml);
 
   /** @brief Load Model from TiXMLDocument */
-  bool initXml(const tesseract_scene_graph::SceneGraph& scene_graph, tinyxml2::XMLDocument* srdf_xml);
+  bool initXml(const tesseract_scene_graph::SceneGraph& scene_graph, const tinyxml2::XMLDocument* srdf_xml);
 
   /** @brief Load Model given a filename */
   bool initFile(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& filename);

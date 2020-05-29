@@ -272,7 +272,7 @@ bool Tesseract::init(const TesseractInitInfo::Ptr& init_info)
       init(init_info->scene_graph);
       break;
     case TesseractInitType::SCENE_GRAPH_SRDF_MODEL:
-      init(init_info->scene_graph, init_info->srdf_model);
+      init(init_info->scene_graph, std::make_shared<tesseract_scene_graph::SRDFModel>(*(init_info->srdf_model)));
       break;
     case TesseractInitType::URDF_STRING:
       init(init_info->urdf_string, init_info->resource_locator);
@@ -313,19 +313,16 @@ const tesseract_environment::Environment::ConstPtr& Tesseract::getEnvironmentCon
 const tesseract_scene_graph::SRDFModel::Ptr& Tesseract::getSRDFModel() const { return srdf_model_; }
 const tesseract_scene_graph::SRDFModel::ConstPtr& Tesseract::getSRDFModelConst() const { return srdf_model_const_; }
 
-tesseract_scene_graph::SRDFModel::GroupStates& Tesseract::getGroupStates() { return srdf_model_->getGroupStates(); }
+tesseract_scene_graph::GroupStates& Tesseract::getGroupStates() { return srdf_model_->getGroupStates(); }
 
-const tesseract_scene_graph::SRDFModel::GroupStates& Tesseract::getGroupStatesConst() const
+const tesseract_scene_graph::GroupStates& Tesseract::getGroupStatesConst() const
 {
   return srdf_model_const_->getGroupStates();
 }
 
-tesseract_scene_graph::SRDFModel::GroupTCPs& Tesseract::getGroupTCPs() { return srdf_model_->getGroupTCPs(); }
+tesseract_scene_graph::GroupTCPs& Tesseract::getGroupTCPs() { return srdf_model_->getGroupTCPs(); }
 
-const tesseract_scene_graph::SRDFModel::GroupTCPs& Tesseract::getGroupTCPs() const
-{
-  return srdf_model_->getGroupTCPs();
-}
+const tesseract_scene_graph::GroupTCPs& Tesseract::getGroupTCPs() const { return srdf_model_->getGroupTCPs(); }
 
 const ForwardKinematicsManager::Ptr& Tesseract::getFwdKinematicsManager() { return fwd_kin_manager_; }
 

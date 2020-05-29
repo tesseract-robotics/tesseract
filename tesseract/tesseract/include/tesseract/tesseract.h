@@ -89,11 +89,11 @@ public:
   const InverseKinematicsManager::Ptr& getInvKinematicsManager();
   const InverseKinematicsManager::ConstPtr& getInvKinematicsManagerConst() const;
 
-  tesseract_scene_graph::SRDFModel::GroupStates& getGroupStates();
-  const tesseract_scene_graph::SRDFModel::GroupStates& getGroupStatesConst() const;
+  tesseract_scene_graph::GroupStates& getGroupStates();
+  const tesseract_scene_graph::GroupStates& getGroupStatesConst() const;
 
-  tesseract_scene_graph::SRDFModel::GroupTCPs& getGroupTCPs();
-  const tesseract_scene_graph::SRDFModel::GroupTCPs& getGroupTCPs() const;
+  tesseract_scene_graph::GroupTCPs& getGroupTCPs();
+  const tesseract_scene_graph::GroupTCPs& getGroupTCPs() const;
 
   void setResourceLocator(tesseract_scene_graph::ResourceLocator::Ptr locator);
   const tesseract_scene_graph::ResourceLocator::Ptr& getResourceLocator() const;

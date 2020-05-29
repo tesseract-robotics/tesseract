@@ -1,8 +1,8 @@
 #include <console_bridge/console.h>
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/srdf_model.h>
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_scene_graph/srdf_model.h>
 #include <iostream>
 
 using namespace tesseract_scene_graph;
