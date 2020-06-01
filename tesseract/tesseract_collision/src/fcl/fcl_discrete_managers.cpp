@@ -66,7 +66,7 @@ DiscreteContactManager::Ptr FCLDiscreteBVHManager::clone() const
   manager->setContactDistanceThreshold(contact_distance_);
   manager->setIsContactAllowedFn(fn_);
 
-  return std::move(manager);
+  return manager;
 }
 
 bool FCLDiscreteBVHManager::addCollisionObject(const std::string& name,

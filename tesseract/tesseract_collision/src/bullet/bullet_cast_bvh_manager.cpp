@@ -98,7 +98,7 @@ ContinuousContactManager::Ptr BulletCastBVHManager::clone() const
   manager->setContactDistanceThreshold(contact_test_data_.contact_distance);
   manager->setIsContactAllowedFn(contact_test_data_.fn);
 
-  return std::move(manager);
+  return manager;
 }
 
 bool BulletCastBVHManager::addCollisionObject(const std::string& name,
