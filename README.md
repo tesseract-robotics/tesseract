@@ -24,10 +24,15 @@ The planning framework (Tesseract) was designed to be light weight, limiting the
 * **tesseract_support** – This package contains support data used for unit tests and examples throughout Tesseract.
 * **tesseract_visualization** – This package contains visualization utilities and libraries.
 
+## Documentation
+
+* [Wiki](https://ros-industrial-tesseract.rtfd.io)
+* [Doxygen](https://ros-industrial-consortium.github.io/tesseract/)
+* [Benchmark](https://ros-industrial-consortium.github.io/tesseract/dev/bench)
+
 ## TODO's
 
-.. Warning:: These packages are under heavy development and are subject to change.
-
+Warning: These packages are under heavy development and are subject to change.
 
 See [issue #66](https://github.com/ros-industrial-consortium/tesseract/issues/66)
 
@@ -37,7 +42,7 @@ See [issue #66](https://github.com/ros-industrial-consortium/tesseract/issues/66
 2) Clone the repositories in the dependencies.rosinstall file using wstool or some other method (e.g. manually git cloning them)
 3) Build the workspace using catkin tools, colcon, or a similar tool
 
-.. NOTE: To speed up clean build you may want to add tesseract_ext to an extended workspace.
+NOTE: To speed up clean build you may want to add tesseract_ext to an extended workspace.
 
 ## Building with Clang-Tidy Enabled
 
@@ -47,7 +52,7 @@ Must pass the -DTESSERACT_ENABLE_CLANG_TIDY=ON to cmake when building. This is a
 
 Must pass the -DTESSERACT_ENABLE_TESTING=ON to cmake when wanting to build tests. This is automatically enabled if cmake argument -DTESSERACT_ENABLE_TESTING_ALL=ON is passed.
 
-.. NOTE: If you are building using catkin tools, use `catkin build --force-cmake -DTESSERACT_ENABLE_TESTING=ON`.
+NOTE: If you are building using catkin tools, use `catkin build --force-cmake -DTESSERACT_ENABLE_TESTING=ON`.
 
 ## Running Tesseract Tests
 
@@ -57,7 +62,7 @@ Tesseract packages use ctest because it is ROS agnostic, so to run the test call
 
 Must pass the -DTESSERACT_CODE_COVERAGE=ON to cmake when wanting to build code coverage. The code coverage report is located in each individuals build directory inside a ccov/all-merged folder. Open the index.html file to see the packages code coverage report.
 
-.. NOTE: Must be a clean build when generating a code coverage report. Also must build in debug.
+NOTE: Must be a clean build when generating a code coverage report. Also must build in debug.
 
 ### Exclude Code From Code Coverage
 
