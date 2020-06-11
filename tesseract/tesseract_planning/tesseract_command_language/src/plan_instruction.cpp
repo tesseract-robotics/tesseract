@@ -2,9 +2,10 @@
 
 namespace tesseract_planning
 {
-PlanInstruction::PlanInstruction(Waypoint waypoint, PlanInstructionType type)
+PlanInstruction::PlanInstruction(Waypoint waypoint, PlanInstructionType type, std::string profile)
   : plan_type_(type)
-  , waypoint_(std::move(waypoint)) {}
+  , waypoint_(std::move(waypoint))
+  , profile_(std::move(profile)) {}
 
 void PlanInstruction::setWaypoint(Waypoint waypoint) { waypoint_ = waypoint; }
 const Waypoint& PlanInstruction::getWaypoint() const { return waypoint_; }
@@ -15,17 +16,11 @@ const Eigen::Isometry3d& PlanInstruction::getTCP() const { return tcp_; }
 void PlanInstruction::setWorkingFrame(std::string working_frame) { working_frame_ = working_frame; }
 const std::string& PlanInstruction::getWorkingFrame() const { return working_frame_; }
 
-void PlanInstruction::addCost(ComponentInfo component) { costs_.push_back(component); }
-const std::vector<ComponentInfo>& PlanInstruction::getCosts() const { return costs_; }
-
-void PlanInstruction::addConstraint(ComponentInfo component) { constraints_.push_back(component); }
-const std::vector<ComponentInfo>& PlanInstruction::getConstraints() const { return constraints_; }
-
-void PlanInstruction::addPathCost(ComponentInfo component) { path_costs_.push_back(component); }
-const std::vector<ComponentInfo>& PlanInstruction::getPathCosts() const { return path_costs_; }
-
-void PlanInstruction::addPathConstraint(ComponentInfo component) { path_constraints_.push_back(component); }
-const std::vector<ComponentInfo>& PlanInstruction::getPathConstraints() const { return path_constraints_; }
+void PlanInstruction::setProfile(const std::string& profile)
+{
+  profile_ = (profile.empty()) ? "DEFAULT" : profile;
+}
+const std::string& PlanInstruction::getProfile() const { return profile_; }
 
 int PlanInstruction::getType() const { return type_; }
 

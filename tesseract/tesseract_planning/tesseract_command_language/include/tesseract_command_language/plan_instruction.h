@@ -1,7 +1,6 @@
 #ifndef TESSERACT_COMMAND_LANGUAGE_PLAN_INSTRUCTION_H
 #define TESSERACT_COMMAND_LANGUAGE_PLAN_INSTRUCTION_H
 
-#include <tesseract_command_language/core/component_info.h>
 #include <tesseract_command_language/core/waypoint.h>
 #include <tesseract_command_language/instruction_type.h>
 #include <vector>
@@ -23,7 +22,7 @@ public:
   using Ptr = std::shared_ptr<PlanInstruction>;
   using ConstPtr = std::shared_ptr<const PlanInstruction>;
 
-  PlanInstruction(Waypoint waypoint, PlanInstructionType type);
+  PlanInstruction(Waypoint waypoint, PlanInstructionType type, std::string profile = "DEFAULT");
 
   void setWaypoint(Waypoint waypoint);
   const Waypoint& getWaypoint() const;
@@ -34,17 +33,8 @@ public:
   void setWorkingFrame(std::string working_frame);
   const std::string& getWorkingFrame() const;
 
-  void addCost(ComponentInfo component);
-  const std::vector<ComponentInfo>& getCosts() const;
-
-  void addConstraint(ComponentInfo component);
-  const std::vector<ComponentInfo>& getConstraints() const;
-
-  void addPathCost(ComponentInfo component);
-  const std::vector<ComponentInfo>& getPathCosts() const;
-
-  void addPathConstraint(ComponentInfo component);
-  const std::vector<ComponentInfo>& getPathConstraints() const;
+  void setProfile(const std::string& profile);
+  const std::string& getProfile() const;
 
   int getType() const;
 
@@ -80,13 +70,12 @@ private:
   /** @brief The working frame the waypoint is relative to */
   std::string working_frame_;
 
-  std::string description_;
+  /** @brief The description of the instruction */
+  std::string description_ {"Tesseract Plan Instruction"};
 
-  std::vector<ComponentInfo> costs_;
-  std::vector<ComponentInfo> constraints_;
+  /** @brief The profile used for this plan instruction */
+  std::string profile_ {"DEFAULT"};
 
-  std::vector<ComponentInfo> path_costs_;
-  std::vector<ComponentInfo> path_constraints_;
 };
 
 }

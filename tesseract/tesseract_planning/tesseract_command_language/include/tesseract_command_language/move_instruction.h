@@ -1,7 +1,6 @@
 #ifndef TESSERACT_COMMAND_LANGUAGE_MOVE_INSTRUCTION_H
 #define TESSERACT_COMMAND_LANGUAGE_MOVE_INSTRUCTION_H
 
-#include <tesseract_command_language/core/component_info.h>
 #include <tesseract_command_language/core/waypoint.h>
 #include <tesseract_command_language/instruction_type.h>
 #include <vector>
@@ -33,6 +32,9 @@ public:
 
   void setWorkingFrame(std::string working_frame);
   const std::string& getWorkingFrame() const;
+
+  void setProfile(const std::string& profile);
+  const std::string& getProfile() const;
 
   void setPosition(Eigen::VectorXd position);
   const Eigen::VectorXd& getPosition() const;
@@ -74,6 +76,9 @@ private:
 
   MoveInstructionType move_type_;
   std::string description_;
+
+  /** @brief The profile used for this move instruction */
+  std::string profile_ {"DEFAULT"};
 
   /** @brief The assigned waypoint (Cartesian or Joint) */
   Waypoint waypoint_;
