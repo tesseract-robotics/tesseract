@@ -4,6 +4,7 @@
 #include <tesseract_motion_planners/trajopt/config/trajopt_planner_config.h>
 #include <tesseract_motion_planners/trajopt/config/trajopt_collision_config.h>
 #include <tesseract_command_language/composite_instruction.h>
+#include <tesseract_command_language/planners/trajopt/trajopt_profile.h>
 
 namespace tesseract_planning
 {
@@ -23,17 +24,7 @@ struct TrajOptPlannerUniversalConfig : public tesseract_motion_planners::TrajOpt
   using ConstPtr = std::shared_ptr<const TrajOptPlannerUniversalConfig>;
 
   TrajOptPlannerUniversalConfig(tesseract::Tesseract::ConstPtr tesseract_,
-                                std::string manipulator_,
-                                std::string link_,
-                                tesseract_common::VectorIsometry3d tcp_);
-
-  TrajOptPlannerUniversalConfig(const tesseract::Tesseract::ConstPtr& tesseract_,
-                                const std::string& manipulator_,
-                                const std::string& link_,
-                                const Eigen::Isometry3d& tcp_);
-
-  /** @brief Function for creating a ProblemConstructionInfo from the planner configuration */
-  std::shared_ptr<trajopt::ProblemConstructionInfo> generatePCI();
+                                std::string manipulator_);
 
   /** @brief Generates the TrajOpt problem and saves the result internally */
   bool generate() override;
@@ -47,19 +38,29 @@ struct TrajOptPlannerUniversalConfig : public tesseract_motion_planners::TrajOpt
 
   /** @brief Tesseract object. ***REQUIRED*** */
   tesseract::Tesseract::ConstPtr tesseract;
+
   /** @brief Manipulator used for pathplanning ***REQUIRED*** */
   std::string manipulator;
-  /** @brief This is the tip link in the kinematics object used for the cartesian positions ***REQUIRED*** */
-  std::string link;
 
   /** @brief The QP solver used in the SQP optimization routine */
   sco::ModelType optimizer = sco::ModelType::AUTO_SOLVER;
 
   /**
-   * @brief Vector of TCP transforms. This should contain either one transform to be applied to all waypoints
-   * or a separate transform for each waypoint
+   * @brief The available composite profiles
+   *
+   * Composite instruction is a way to namespace or organize your planning problem. The composite instruction has a
+   * profile which is used for applying multy waypoint costs and constraints like joint smoothing, collision avoidance,
+   * and velocity smoothing.
    */
-  tesseract_common::VectorIsometry3d tcp;
+  std::unordered_map<std::string, TrajOptCompositeProfile::Ptr> composite_profiles;
+
+  /**
+   * @brief The available plan profiles
+   *
+   * Plan instruction profiles are used to control waypoint specific information like fixed waypoint, toleranced
+   * waypoint, corner distance waypoint, etc.
+   */
+  std::unordered_map<std::string, TrajOptPlanProfile::Ptr> plan_profiles;
 
   /**
    * @brief The program instruction
@@ -74,10 +75,8 @@ struct TrajOptPlannerUniversalConfig : public tesseract_motion_planners::TrajOpt
   tesseract_planning::CompositeInstruction seed;
 
 protected:
-  bool checkUserInput() const;
-  void addInstructions(trajopt::ProblemConstructionInfo& pci, std::vector<int>& fixed_steps);
-
   std::vector<std::size_t> plan_instruction_indices_;
+  bool checkUserInput() const;
 };
 
 }

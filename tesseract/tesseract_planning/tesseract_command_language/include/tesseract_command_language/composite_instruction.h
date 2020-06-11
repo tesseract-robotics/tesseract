@@ -4,6 +4,7 @@
 #include <tesseract_command_language/core/instruction.h>
 #include <tesseract_command_language/instruction_type.h>
 #include <vector>
+#include <string>
 
 namespace tesseract_planning
 {
@@ -21,21 +22,17 @@ public:
   using Ptr = std::shared_ptr<CompositeInstruction>;
   using ConstPtr = std::shared_ptr<const CompositeInstruction>;
 
-  CompositeInstruction(CompositeInstructionOrder order = CompositeInstructionOrder::ORDERED);
+  CompositeInstruction(std::string profile = "DEFAULT", CompositeInstructionOrder order = CompositeInstructionOrder::ORDERED);
 
   CompositeInstructionOrder getOrder() const;
 
-  void addCost(ComponentInfo component);
-  const std::vector<ComponentInfo>& getCosts() const;
-
-  void addConstraint(ComponentInfo component);
-  const std::vector<ComponentInfo>& getConstraints() const;
-
   int getType() const;
 
+  void setDescription(const std::string& description);
   const std::string& getDescription() const;
 
-  void setDescription(const std::string& description);
+  void setProfile(const std::string& profile);
+  const std::string& getProfile() const;
 
   bool isComposite() const;
 
@@ -50,11 +47,15 @@ public:
 private:
   int type_ { static_cast<int>(InstructionType::COMPOSITE_INSTRUCTION) };
 
-  std::string description_;
+  /** @brief The description of the instruction */
+  std::string description_ {"Tesseract Composite Instruction"};
 
-  std::vector<ComponentInfo> costs_;
-
-  std::vector<ComponentInfo> constraints_;
+  /**
+   * @brief The profile applied its child plan instructions
+   *
+   * If it has a child composite instruction it uses the child composites profile for that section
+   */
+  std::string profile_ {"DEFAULT"};
 
   CompositeInstructionOrder order_;
 
