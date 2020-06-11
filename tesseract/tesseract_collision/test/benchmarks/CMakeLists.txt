@@ -15,7 +15,7 @@ macro(add_benchmark benchmark_name benchmark_file)
       console_bridge
       ${BULLET_LIBRARIES}
       ${Boost_LIBRARIES}
-      ${OCTOMAP_LIBRARIES}
+      octomap octomath
       ${LIBFCL_LIBRARIES}
       )
   target_include_directories(${benchmark_name} PRIVATE
