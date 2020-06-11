@@ -228,7 +228,11 @@ void KDLStateSolver::calculateTransformsHelper(EnvState& state,
   if (it != kdl_tree_.getSegments().end())
   {
     const KDL::TreeElementType& current_element = it->second;
-    KDL::Frame current_frame = GetTreeElementSegment(current_element).pose(q_in(GetTreeElementQNr(current_element)));
+    KDL::Frame current_frame;
+    if (q_in.data.size() > 0)
+      current_frame = GetTreeElementSegment(current_element).pose(q_in(GetTreeElementQNr(current_element)));
+    else
+      current_frame = GetTreeElementSegment(current_element).pose(0);
 
     Eigen::Isometry3d local_frame, global_frame;
     KDLToEigen(current_frame, local_frame);
