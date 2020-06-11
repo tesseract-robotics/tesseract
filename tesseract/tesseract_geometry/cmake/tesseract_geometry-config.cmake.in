@@ -17,4 +17,16 @@ if (NOT ASSIMP_FOUND)
   pkg_check_modules(ASSIMP REQUIRED assimp)
 endif()
 
+# These targets are necessary for 16.04 builds. Remove when Kinetic support is dropped
+if(NOT TARGET octomap)
+  add_library(octomap INTERFACE IMPORTED)
+  set_target_properties(octomap PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${OCTOMAP_INCLUDE_DIRS}")
+  set_target_properties(octomap PROPERTIES INTERFACE_LINK_LIBRARIES "${OCTOMAP_LIBRARIES}")
+endif()
+if(NOT TARGET octomath)
+  add_library(octomath INTERFACE IMPORTED)
+  set_target_properties(octomath PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${OCTOMAP_INCLUDE_DIRS}")
+  set_target_properties(octomath PROPERTIES INTERFACE_LINK_LIBRARIES "${OCTOMAP_LIBRARIES}")
+endif()
+
 include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-targets.cmake")

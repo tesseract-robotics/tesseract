@@ -14,6 +14,18 @@ find_package(fcl REQUIRED)
 # We need to find ccd ourselves because FCL doesn't do it in their fclConfig.cmake
 find_package(ccd REQUIRED)
 
+# These targets are necessary for 16.04 builds. Remove when Kinetic support is dropped
+if(NOT TARGET octomap)
+  add_library(octomap INTERFACE IMPORTED)
+  set_target_properties(octomap PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${OCTOMAP_INCLUDE_DIRS}")
+  set_target_properties(octomap PROPERTIES INTERFACE_LINK_LIBRARIES "${OCTOMAP_LIBRARIES}")
+endif()
+if(NOT TARGET octomath)
+  add_library(octomath INTERFACE IMPORTED)
+  set_target_properties(octomath PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${OCTOMAP_INCLUDE_DIRS}")
+  set_target_properties(octomath PROPERTIES INTERFACE_LINK_LIBRARIES "${OCTOMAP_LIBRARIES}")
+endif()
+
 set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* ${CMAKE_CURRENT_LIST_DIR}/include/tesseract_collision/test_suite/* /*/gtest/* /*/bullet/LinearMath/* /*/bullet/BulletCollision/* /*/include/ccd/* /*/include/fcl/*)
 
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
@@ -46,7 +58,7 @@ add_library(${PROJECT_NAME}_bullet SHARED
   src/bullet/tesseract_convex_convex_algorithm.cpp
   src/bullet/tesseract_gjk_pair_detector.cpp
 )
-target_link_libraries(${PROJECT_NAME}_bullet PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_geometry console_bridge ${OCTOMAP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_bullet PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_geometry console_bridge octomap octomath)
 tesseract_target_compile_options(${PROJECT_NAME}_bullet PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_bullet)
 tesseract_code_coverage(${PROJECT_NAME}_bullet ALL EXCLUDE ${COVERAGE_EXCLUDE})
@@ -56,15 +68,14 @@ target_include_directories(${PROJECT_NAME}_bullet PUBLIC
 target_include_directories(${PROJECT_NAME}_bullet SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}
     ${BULLET_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${OCTOMAP_INCLUDE_DIRS})
+    ${Boost_INCLUDE_DIRS})
 
 # Create target for FCL implementation
 add_library(${PROJECT_NAME}_fcl SHARED
   src/fcl/fcl_discrete_managers.cpp
   src/fcl/fcl_utils.cpp
   src/fcl/fcl_collision_object_wrapper.cpp)
-target_link_libraries(${PROJECT_NAME}_fcl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_geometry console_bridge ${OCTOMAP_LIBRARIES} fcl)
+target_link_libraries(${PROJECT_NAME}_fcl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_geometry console_bridge octomap octomath fcl)
 tesseract_target_compile_options(${PROJECT_NAME}_fcl PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_fcl)
 tesseract_code_coverage(${PROJECT_NAME}_fcl ALL EXCLUDE ${COVERAGE_EXCLUDE})
@@ -74,12 +85,11 @@ target_include_directories(${PROJECT_NAME}_fcl PUBLIC
 target_include_directories(${PROJECT_NAME}_fcl SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}
     ${BULLET_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${OCTOMAP_INCLUDE_DIRS})
+    ${Boost_INCLUDE_DIRS})
 
 # Create target for creating convex hull's from meshes
 add_executable(create_convex_hull src/create_convex_hull.cpp)
-target_link_libraries(create_convex_hull PUBLIC tesseract::tesseract_common tesseract::tesseract_geometry console_bridge ${BULLET_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES})
+target_link_libraries(create_convex_hull PUBLIC tesseract::tesseract_common tesseract::tesseract_geometry console_bridge ${BULLET_LIBRARIES} ${Boost_LIBRARIES} octomap octomath)
 tesseract_target_compile_options(create_convex_hull PUBLIC)
 tesseract_clang_tidy(create_convex_hull)
 target_compile_definitions(create_convex_hull PRIVATE "-DBT_USE_DOUBLE_PRECISION")
@@ -88,8 +98,7 @@ target_include_directories(create_convex_hull SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}
     ${BULLET_INCLUDE_DIRS}
     ${LIBFCL_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
-    ${OCTOMAP_INCLUDE_DIRS})
+    ${Boost_INCLUDE_DIRS})
 
 # Create test suite interface
 add_library(${PROJECT_NAME}_test_suite INTERFACE)
