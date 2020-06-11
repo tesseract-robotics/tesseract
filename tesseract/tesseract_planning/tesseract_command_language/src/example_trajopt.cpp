@@ -1,5 +1,4 @@
 #include <tesseract_command_language/core/waypoint.h>
-#include <tesseract_command_language/core/component_info.h>
 #include <tesseract_command_language/core/instruction.h>
 
 #include <tesseract_command_language/joint_waypoint.h>
@@ -7,9 +6,8 @@
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_command_language/plan_instruction.h>
 #include <tesseract_command_language/move_instruction.h>
-#include <tesseract_command_language/component_info_impl.h>
 
-#include <tesseract_command_language/trajopt_planner_universal_config.h>
+#include <tesseract_command_language/planners/trajopt/trajopt_planner_universal_config.h>
 #include <tesseract_motion_planners/trajopt/trajopt_motion_planner.h>
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_common/utils.h>
@@ -144,6 +142,10 @@ int main (int argc, char *argv[])
   // Get Kinematics Object
   auto kin = tesseract->getFwdKinematicsManager()->getFwdKinematicSolver("manipulator");
 
+  // Define Profiles {}
+  std::string DEFAULT_PLAN_PROFILE = "DEFAULT";
+  std::string DEFAULT_COMPOSITE_PROFILE = "DEFAULT";
+
   // Start Joint Position for the program
   JointWaypoint wp0(Eigen::VectorXd::Zero(kin->numJoints()));
 
@@ -152,23 +154,17 @@ int main (int argc, char *argv[])
   JointWaypoint wp1(tesseract_common::generateRandomNumber(kin->getLimits()));
 
   // Define Start State
-  PlanInstruction plan_f0(wp0, PlanInstructionType::FREESPACE);
-  plan_f0.addConstraint(FixedComponentInfo());
+  PlanInstruction plan_f0(wp0, PlanInstructionType::FREESPACE, DEFAULT_PLAN_PROFILE);
 
   // Define freespace move instruction
-  PlanInstruction plan_f1(wp1, PlanInstructionType::FREESPACE);
-  plan_f1.addConstraint(FixedComponentInfo());
+  PlanInstruction plan_f1(wp1, PlanInstructionType::FREESPACE, DEFAULT_PLAN_PROFILE);
 
   // Create a program
-  CompositeInstruction program;
+  CompositeInstruction program(DEFAULT_COMPOSITE_PROFILE);
   program.push_back(plan_f0);
   program.push_back(plan_f1);
-  program.addCost(VelocitySmoothingComponentInfo());
-  program.addCost(AccelerationSmoothingComponentInfo());
-  program.addCost(JerkSmoothingComponentInfo());
-  program.addCost(AvoidCollisionComponentInfo());
 
-  auto config = std::make_shared<tesseract_planning::TrajOptPlannerUniversalConfig>(tesseract, "manipulator", "tool0", Eigen::Isometry3d::Identity());
+  auto config = std::make_shared<tesseract_planning::TrajOptPlannerUniversalConfig>(tesseract, "manipulator");
   config->instructions = program;
   config->seed = generateSeed(program, wp0);
 

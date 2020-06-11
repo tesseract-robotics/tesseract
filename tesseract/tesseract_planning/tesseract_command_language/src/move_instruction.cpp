@@ -15,6 +15,12 @@ const Eigen::Isometry3d& MoveInstruction::getTCP() const { return tcp_; }
 void MoveInstruction::setWorkingFrame(std::string working_frame) { working_frame_ = working_frame; }
 const std::string& MoveInstruction::getWorkingFrame() const { return working_frame_; }
 
+void MoveInstruction::setProfile(const std::string& profile)
+{
+  profile_ = (profile.empty()) ? "DEFAULT" : profile;
+}
+const std::string& MoveInstruction::getProfile() const { return profile_; }
+
 void MoveInstruction::setPosition(Eigen::VectorXd position) { position_ = position; }
 const Eigen::VectorXd& MoveInstruction::getPosition() const { return position_; }
 
