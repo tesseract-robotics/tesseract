@@ -24,7 +24,12 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
  	${EIGEN3_INCLUDE_DIRS})
 
-add_library(${PROJECT_NAME}_trajopt src/trajopt_planner_universal_config.cpp)
+add_library(${PROJECT_NAME}_trajopt
+  src/planners/trajopt/trajopt_planner_universal_config.cpp
+  src/planners/trajopt/trajopt_default_profile.cpp
+  src/planners/trajopt/trajopt_default_plan_profile.cpp
+  src/planners/trajopt/trajopt_default_composite_profile.cpp
+  src/planners/trajopt/trajopt_utils.cpp)
 target_link_libraries(${PROJECT_NAME}_trajopt PUBLIC ${PROJECT_NAME} tesseract::tesseract_motion_planners_trajopt tesseract::tesseract)
 tesseract_target_compile_options(${PROJECT_NAME}_trajopt PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_trajopt)
@@ -34,6 +39,17 @@ target_include_directories(${PROJECT_NAME}_trajopt PUBLIC
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_trajopt SYSTEM PUBLIC
         ${EIGEN3_INCLUDE_DIRS})
+
+#add_library(${PROJECT_NAME}_descartes src/planners/descartes/descartes_motion_planner.cpp src/planners/descartes/descartes_motion_planner_default_config.cpp)
+#target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME} tesseract::tesseract_motion_planners_descartes tesseract::tesseract)
+#tesseract_target_compile_options(${PROJECT_NAME}_descartes PUBLIC)
+#tesseract_clang_tidy(${PROJECT_NAME}_descartes)
+#tesseract_code_coverage(${PROJECT_NAME}_descartes ALL EXCLUDE ${COVERAGE_EXCLUDE})
+#target_include_directories(${PROJECT_NAME}_descartes PUBLIC
+#    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+#    "$<INSTALL_INTERFACE:include>")
+#target_include_directories(${PROJECT_NAME}_descartes SYSTEM PUBLIC
+#        ${EIGEN3_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME}_demo src/example_program.cpp)
 target_link_libraries(${PROJECT_NAME}_demo PUBLIC ${PROJECT_NAME} ${PROJECT_NAME}_trajopt)
