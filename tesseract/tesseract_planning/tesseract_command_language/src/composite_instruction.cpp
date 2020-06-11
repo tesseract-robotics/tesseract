@@ -3,34 +3,23 @@
 
 namespace tesseract_planning
 {
-CompositeInstruction::CompositeInstruction(CompositeInstructionOrder order) : order_(order) {}
+CompositeInstruction::CompositeInstruction(std::string profile, CompositeInstructionOrder order)
+  : profile_(std::move(profile))
+  , order_(order) {}
 
 CompositeInstructionOrder CompositeInstruction::getOrder() const { return order_; }
-
-void CompositeInstruction::addCost(ComponentInfo component)
-{
-  if (!component.isCompositeInstructionSupported())
-    throw std::runtime_error("Component is not supported for a composite instruction!");
-
-  costs_.push_back(component);
-}
-const std::vector<ComponentInfo>& CompositeInstruction::getCosts() const { return costs_; }
-
-void CompositeInstruction::addConstraint(ComponentInfo component)
-{
-  if (!component.isCompositeInstructionSupported())
-    throw std::runtime_error("Component is not supported for a composite instruction!");
-
-  constraints_.push_back(component);
-}
-
-const std::vector<ComponentInfo>& CompositeInstruction::getConstraints() const { return constraints_; }
 
 int CompositeInstruction::getType() const { return type_; }
 
 const std::string& CompositeInstruction::getDescription() const { return description_; }
 
 void CompositeInstruction::setDescription(const std::string& description) { description_ = description; }
+
+void CompositeInstruction::setProfile(const std::string& profile)
+{
+  profile_ = (profile.empty()) ? "DEFAULT" : profile;
+}
+const std::string& CompositeInstruction::getProfile() const { return profile_; }
 
 bool CompositeInstruction::isComposite() const { return true; }
 
