@@ -1,9 +1,9 @@
-#include <tesseract_command_language/planners/trajopt/trajopt_utils.h>
+#include <tesseract_motion_planners/trajopt/trajopt_utils.h>
 
 namespace tesseract_planning
 {
 
-trajopt::TermInfo::Ptr createCartesianWaypointTermInfo(const CartesianWaypoint& c_wp,
+trajopt::TermInfo::Ptr createCartesianWaypointTermInfo(const Eigen::Isometry3d& c_wp,
                                                        int index,
                                                        std::string working_frame,
                                                        Eigen::Isometry3d tcp,
@@ -38,7 +38,7 @@ trajopt::TermInfo::Ptr createCartesianWaypointTermInfo(const CartesianWaypoint& 
   return pose_info;
 }
 
-trajopt::TermInfo::Ptr createDynamicCartesianWaypointTermInfo(const CartesianWaypoint& c_wp,
+trajopt::TermInfo::Ptr createDynamicCartesianWaypointTermInfo(const Eigen::Isometry3d &c_wp,
                                                               int index,
                                                               std::string working_frame,
                                                               const Eigen::Isometry3d& tcp,
@@ -71,17 +71,15 @@ trajopt::TermInfo::Ptr createDynamicCartesianWaypointTermInfo(const CartesianWay
   return pose;
 }
 
-trajopt::TermInfo::Ptr createNearJointStateTermInfo(const JointWaypoint& target,
+trajopt::TermInfo::Ptr createNearJointStateTermInfo(const Eigen::VectorXd& target,
                                                     const std::vector<std::string>& joint_names,
                                                     int index,
                                                     const Eigen::VectorXd& coeffs,
                                                     trajopt::TermType type)
 {
   assert(static_cast<std::size_t>(target.size()) == joint_names.size());
-  assert(target.joint_names.size() == joint_names.size());
 
   std::shared_ptr<trajopt::JointPosTermInfo> jp = std::make_shared<trajopt::JointPosTermInfo>();
-  assert(std::equal(joint_names.begin(), joint_names.end(), target.joint_names.begin()));
   if (static_cast<std::size_t>(coeffs.size()) == 1)
     jp->coeffs = std::vector<double>(joint_names.size(), coeffs(0));  // Default value
   else if (static_cast<std::size_t>(coeffs.size()) == joint_names.size())
@@ -96,7 +94,7 @@ trajopt::TermInfo::Ptr createNearJointStateTermInfo(const JointWaypoint& target,
   return jp;
 }
 
-trajopt::TermInfo::Ptr createJointWaypointTermInfo(const JointWaypoint& j_wp,
+trajopt::TermInfo::Ptr createJointWaypointTermInfo(const Eigen::VectorXd& j_wp,
                                                    int index,
                                                    const Eigen::VectorXd& coeffs,
                                                    trajopt::TermType type)
