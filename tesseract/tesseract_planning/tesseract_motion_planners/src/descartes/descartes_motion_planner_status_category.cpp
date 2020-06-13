@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/descartes/descartes_motion_planner_status_category.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 DescartesMotionPlannerStatusCategory::DescartesMotionPlannerStatusCategory(std::string name) : name_(std::move(name)) {}
 const std::string& DescartesMotionPlannerStatusCategory::name() const noexcept { return name_; }
@@ -74,4 +74,4 @@ std::string DescartesMotionPlannerStatusCategory::message(int code) const
     }
   }
 }
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning

@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <functional>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 /**
  * @brief This is used for passing a function to tesseract descartes samplers that filters out invalid solutions.

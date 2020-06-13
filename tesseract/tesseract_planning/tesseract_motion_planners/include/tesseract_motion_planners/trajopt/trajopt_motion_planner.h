@@ -32,9 +32,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/planner.h>
-#include <tesseract_motion_planners/trajopt/config/trajopt_planner_config.h>
+#include <tesseract_motion_planners/trajopt/trajopt_planner_config.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 class TrajOptMotionPlannerStatusCategory;
 

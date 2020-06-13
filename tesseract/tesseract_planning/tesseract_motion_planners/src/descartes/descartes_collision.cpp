@@ -25,10 +25,10 @@
  */
 #include <tesseract_motion_planners/descartes/impl/descartes_collision.hpp>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 // Explicit template instantiation
 template class DescartesCollision<float>;
 template class DescartesCollision<double>;
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning

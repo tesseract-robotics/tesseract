@@ -1,7 +1,7 @@
-#ifndef TESSERACT_COMMAND_LANGUAGE_TRAJOPT_DEFAULT_PLAN_PROFILE_H
-#define TESSERACT_COMMAND_LANGUAGE_TRAJOPT_DEFAULT_PLAN_PROFILE_H
+#ifndef TESSERACT_MOTION_PLANNERS_TRAJOPT_DEFAULT_PLAN_PROFILE_H
+#define TESSERACT_MOTION_PLANNERS_TRAJOPT_DEFAULT_PLAN_PROFILE_H
 
-#include <tesseract_command_language/planners/trajopt/trajopt_profile.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
 #include <trajopt_sco/modeling_utils.hpp>
 #include <Eigen/Geometry>
 
@@ -41,30 +41,23 @@ public:
 
   void apply(trajopt::ProblemConstructionInfo& pci,
              const Eigen::Isometry3d& cartesian_waypoint,
-             const PlanInstruction& parent_instructions,
+             const PlanInstruction& parent_instruction,
              const std::vector<std::string> &active_links,
              int index) override;
 
   void apply(trajopt::ProblemConstructionInfo& pci,
              const Eigen::VectorXd& joint_waypoint,
-             const PlanInstruction& parent_instructions,
+             const PlanInstruction& parent_instruction,
              const std::vector<std::string> &active_links,
              int index) override;
 protected:
-  bool checkUserInput() const;
-
-//  std::pair<std::vector<std::size_t>,std::vector<int>>
-//  addInstructions(trajopt::ProblemConstructionInfo& pci,
-//                  const TrajOptPlannerUniversalConfig& config) const;
 
   void addConstraintErrorFunctions(trajopt::ProblemConstructionInfo& pci,
-                                   const std::vector<int>& fixed_steps,
-                                   const TrajOptPlannerUniversalConfig& config) const;
+                                   const std::vector<int>& fixed_steps) const;
 
   void addAvoidSingularity(trajopt::ProblemConstructionInfo& pci,
-                           const std::vector<int>& fixed_steps,
-                           const TrajOptPlannerUniversalConfig& config) const;
+                           const std::vector<int>& fixed_steps) const;
 };
 }
 
-#endif // TESSERACT_COMMAND_LANGUAGE_TRAJOPT_DEFAULT_PLAN_PROFILE_H
+#endif // TESSERACT_MOTION_PLANNERS_TRAJOPT_DEFAULT_PLAN_PROFILE_H

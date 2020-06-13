@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 template <typename FloatType>
 bool DescartesTesseractKinematics<FloatType>::ik(const Eigen::Transform<FloatType, 3, Eigen::Isometry>& p,
@@ -203,5 +203,5 @@ void DescartesTesseractKinematics<FloatType>::setIKSeed(const std::vector<FloatT
     seed_copy.push_back(static_cast<double>(i));
   ik_seed_ = Eigen::Map<Eigen::VectorXd>(seed_copy.data(), static_cast<long>(seed_copy.size()));
 }
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 #endif

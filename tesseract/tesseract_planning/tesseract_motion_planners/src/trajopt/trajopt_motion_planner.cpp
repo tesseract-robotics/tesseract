@@ -42,7 +42,7 @@ using namespace trajopt;
 
 static const double LONGEST_VALID_SEGMENT_FRACTION_DEFAULT = 0.01;
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 TrajOptMotionPlannerStatusCategory::TrajOptMotionPlannerStatusCategory(std::string name) : name_(std::move(name)) {}
 const std::string& TrajOptMotionPlannerStatusCategory::name() const noexcept { return name_; }

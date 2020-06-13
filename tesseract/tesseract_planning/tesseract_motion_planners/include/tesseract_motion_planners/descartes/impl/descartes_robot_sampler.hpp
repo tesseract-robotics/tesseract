@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/descartes/descartes_robot_sampler.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 template <typename FloatType>
 DescartesRobotSampler<FloatType>::DescartesRobotSampler(
@@ -152,6 +152,6 @@ bool DescartesRobotSampler<FloatType>::getBestSolution(std::vector<FloatType>& s
   return !solution_set.empty();
 }
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_ROBOT_SAMPLER_HPP

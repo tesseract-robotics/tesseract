@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/core/trajectory_validator.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 class MotionPlanner
 {
