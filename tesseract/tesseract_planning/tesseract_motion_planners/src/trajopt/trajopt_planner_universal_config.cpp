@@ -23,15 +23,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_command_language/planners/trajopt/trajopt_planner_universal_config.h>
-#include <tesseract_command_language/planners/trajopt/trajopt_default_plan_profile.h>
-#include <tesseract_command_language/planners/trajopt/trajopt_default_composite_profile.h>
 #include <tesseract_command_language/plan_instruction.h>
 #include <tesseract_command_language/move_instruction.h>
 #include <tesseract_command_language/cartesian_waypoint.h>
 #include <tesseract_command_language/joint_waypoint.h>
 
-#include <tesseract_motion_planners/trajopt/config/utils.h>
+#include <tesseract_motion_planners/trajopt/trajopt_planner_universal_config.h>
+#include <tesseract_motion_planners/trajopt/trajopt_utils.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
+//#include <tesseract_motion_planners/trajopt/config/utils.h>
 #include <tesseract_motion_planners/core/utils.h>
 
 
@@ -142,7 +143,7 @@ bool TrajOptPlannerUniversalConfig::generate()
           /** @todo This should also handle if waypoint type is joint */
           const auto* pre_wp = prev_plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
 
-          tesseract_common::VectorIsometry3d poses = tesseract_motion_planners::interpolate(*pre_wp, *cur_wp, static_cast<int>(seed_composite->size()));
+          tesseract_common::VectorIsometry3d poses = interpolate(*pre_wp, *cur_wp, static_cast<int>(seed_composite->size()));
           // Add intermediate points with path costs and constraints
           for (std::size_t p = 1; p < poses.size() - 1; ++p)
           {
@@ -177,7 +178,7 @@ bool TrajOptPlannerUniversalConfig::generate()
           /** @todo This should also handle if waypoint type is cartesian */
           const auto* pre_wp = prev_plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>();
 
-          Eigen::MatrixXd states = tesseract_motion_planners::interpolate(*pre_wp, *cur_wp, static_cast<int>(seed_composite->size()));
+          Eigen::MatrixXd states = interpolate(*pre_wp, *cur_wp, static_cast<int>(seed_composite->size()));
           // Add intermediate points with path costs and constraints
           for (long s = 1; s < states.cols() - 1; ++s)
           {

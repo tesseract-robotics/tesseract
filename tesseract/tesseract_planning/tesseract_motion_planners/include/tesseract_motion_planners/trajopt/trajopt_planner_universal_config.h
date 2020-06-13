@@ -1,10 +1,10 @@
 #ifndef TESSERACT_MOTION_PLANNERS_TRAJOPT_PLANNER_UNIVERSAL_CONFIG_H
 #define TESSERACT_MOTION_PLANNERS_TRAJOPT_PLANNER_UNIVERSAL_CONFIG_H
 
-#include <tesseract_motion_planners/trajopt/config/trajopt_planner_config.h>
-#include <tesseract_motion_planners/trajopt/config/trajopt_collision_config.h>
+#include <tesseract_motion_planners/trajopt/trajopt_planner_config.h>
+#include <tesseract_motion_planners/trajopt/trajopt_collision_config.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
 #include <tesseract_command_language/composite_instruction.h>
-#include <tesseract_command_language/planners/trajopt/trajopt_profile.h>
 
 namespace tesseract_planning
 {
@@ -16,7 +16,7 @@ namespace tesseract_planning
  * problems. These are always required: tesseract_, maninpulator_, link_, tcp_
  *
  */
-struct TrajOptPlannerUniversalConfig : public tesseract_motion_planners::TrajOptPlannerConfig
+struct TrajOptPlannerUniversalConfig : public TrajOptPlannerConfig
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -81,4 +81,4 @@ protected:
 
 }
 
-#endif // TRAJOPT_PLANNER_UNIVERSAL_CONFIG_H
+#endif // TESSERACT_MOTION_PLANNERS_TRAJOPT_PLANNER_UNIVERSAL_CONFIG_H

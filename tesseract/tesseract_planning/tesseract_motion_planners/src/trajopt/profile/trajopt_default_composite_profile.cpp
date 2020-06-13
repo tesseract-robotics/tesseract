@@ -1,5 +1,7 @@
-#include <tesseract_command_language/planners/trajopt/trajopt_default_composite_profile.h>
-#include <tesseract_command_language/planners/trajopt/trajopt_utils.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
+#include <tesseract_motion_planners/trajopt/trajopt_utils.h>
+#include <tesseract_motion_planners/core/utils.h>
+
 #include <trajopt/problem_description.hpp>
 
 #include <tesseract_command_language/core/instruction.h>
@@ -8,7 +10,6 @@
 #include <tesseract_command_language/cartesian_waypoint.h>
 #include <tesseract_command_language/joint_waypoint.h>
 
-#include <tesseract_motion_planners/core/utils.h>
 
 static const double LONGEST_VALID_SEGMENT_FRACTION_DEFAULT = 0.01;
 

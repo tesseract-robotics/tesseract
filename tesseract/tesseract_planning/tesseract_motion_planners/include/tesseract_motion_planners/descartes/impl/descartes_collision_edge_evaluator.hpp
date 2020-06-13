@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/descartes/descartes_collision_edge_evaluator.h>
 #include <tesseract_environment/core/utils.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 template <typename FloatType>
 DescartesCollisionEdgeEvaluator<FloatType>::DescartesCollisionEdgeEvaluator(
@@ -61,7 +61,7 @@ DescartesCollisionEdgeEvaluator<FloatType>::DescartesCollisionEdgeEvaluator(
   discrete_contact_manager_->setActiveCollisionObjects(active_link_names_);
   discrete_contact_manager_->setContactDistanceThreshold(collision_safety_margin_);
   discrete_contact_manager_->setIsContactAllowedFn(
-      std::bind(&tesseract_motion_planners::DescartesCollisionEdgeEvaluator<FloatType>::isContactAllowed,
+      std::bind(&tesseract_planning::DescartesCollisionEdgeEvaluator<FloatType>::isContactAllowed,
                 this,
                 std::placeholders::_1,
                 std::placeholders::_2));
@@ -69,7 +69,7 @@ DescartesCollisionEdgeEvaluator<FloatType>::DescartesCollisionEdgeEvaluator(
   continuous_contact_manager_->setActiveCollisionObjects(active_link_names_);
   continuous_contact_manager_->setContactDistanceThreshold(collision_safety_margin_);
   continuous_contact_manager_->setIsContactAllowedFn(
-      std::bind(&tesseract_motion_planners::DescartesCollisionEdgeEvaluator<FloatType>::isContactAllowed,
+      std::bind(&tesseract_planning::DescartesCollisionEdgeEvaluator<FloatType>::isContactAllowed,
                 this,
                 std::placeholders::_1,
                 std::placeholders::_2));
@@ -226,6 +226,6 @@ bool DescartesCollisionEdgeEvaluator<FloatType>::discreteCollisionCheck(
                                                 debug_);
 }
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_IMPL_DESCARTES_COLLISION_EDGE_EVALUATOR_HPP
