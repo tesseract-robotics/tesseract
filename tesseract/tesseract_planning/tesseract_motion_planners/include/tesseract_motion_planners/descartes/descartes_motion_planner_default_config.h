@@ -1,5 +1,5 @@
-#ifndef TESSERACT_COMMAND_LANGUAGE_DESCARTES_MOTION_PLANNER_DEFAULT_CONFIG_H
-#define TESSERACT_COMMAND_LANGUAGE_DESCARTES_MOTION_PLANNER_DEFAULT_CONFIG_H
+#ifndef TESSERACT_MOTION_PLANNERS_DESCARTES_MOTION_PLANNER_DEFAULT_CONFIG_H
+#define TESSERACT_MOTION_PLANNERS_DESCARTES_MOTION_PLANNER_DEFAULT_CONFIG_H
 
 #include <tesseract/tesseract.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -33,14 +33,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_planning
 {
 template <typename FloatType>
-struct DescartesMotionPlannerDefaultConfig : DescartesMotionPlannerConfig<FloatType>
+struct DescartesMotionPlannerDefaultConfig : public DescartesMotionPlannerConfig<FloatType>
 {
   using Ptr = std::shared_ptr<DescartesMotionPlannerDefaultConfig<FloatType>>;
   using ConstPtr = std::shared_ptr<const DescartesMotionPlannerDefaultConfig<FloatType>>;
 
-  DescartesMotionPlannerDefaultConfig(tesseract::Tesseract::ConstPtr tesseract_ptr)
-    : tesseract(std::move(tesseract_ptr))
+  DescartesMotionPlannerDefaultConfig(tesseract::Tesseract::ConstPtr tesseract,
+                                      tesseract_environment::EnvState::ConstPtr env_state)
   {
+    prob.tesseract = tesseract;
+    prob.env_state = env_state;
   }
 
   virtual ~DescartesMotionPlannerDefaultConfig() = default;
@@ -49,28 +51,12 @@ struct DescartesMotionPlannerDefaultConfig : DescartesMotionPlannerConfig<FloatT
   DescartesMotionPlannerDefaultConfig(DescartesMotionPlannerDefaultConfig&&) = default;             // NOLINT
   DescartesMotionPlannerDefaultConfig& operator=(DescartesMotionPlannerDefaultConfig&&) = default;  // NOLINT
 
-  tesseract::Tesseract::ConstPtr tesseract;
-  tesseract_environment::EnvState::ConstPtr env_state;
+  DescartesProblem::Configuration configuration;
+
   std::string manipulator;
   std::string manipulator_ik_solver;
-  std::string manipulator_reach;
-
   std::string positioner;
-
-  enum Configuration
-  {
-    ROBOT_ONLY,
-    ROBOT_ON_POSITIONER,
-    ROBOT_WITH_EXTERNAL_POSITIONER
-  };
-
-  Configuration configuration;
-
-//  std::vector<std::string> active_link_names;
-//  std::vector<std::string> joint_names;
-
-//  Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
-//  Eigen::Isometry3d world_to_base = Eigen::Isometry3d::Identity();
+  double manip_reach;
 
   /**
    * @brief The program instruction
@@ -86,7 +72,17 @@ struct DescartesMotionPlannerDefaultConfig : DescartesMotionPlannerConfig<FloatT
 
   bool generate() override
   {
+    getManipulatorInfo();
 
+
+
+
+
+
+
+
+
+    // Call the base class generate which checks the problem to make sure everything is in order
     return DescartesMotionPlannerConfig<FloatType>::generate();
   }
 private:
@@ -94,77 +90,19 @@ private:
 
   void getManipulatorInfo()
   {
-    manip_fwd_kin_ = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator);
-    manip_inv_kin_ = tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
-    this->dof = manip_fwd_kin_->numJoints();
+    prob.manip_fwd_kin = prob.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator);
+    prob.manip_inv_kin = prob.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
+    prob.manip_reach = manip_reach
 
+    prob.dof = prob.manip_fwd_kin->numJoints();
     if (configuration == ROBOT_ON_POSITIONER || configuration == ROBOT_WITH_EXTERNAL_POSITIONER)
-      positioner_fwd_kin_ = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(positioner);
+    {
+      prob.positioner_fwd_kin = prob.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(positioner);
+      prob.dof += prob.positioner_fwd_kin.numJoints();
+    }
   }
 
-//  template <typename FloatType>
-//  std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr>
-//  makeRobotSamplers(const std::vector<Waypoint::Ptr>& path,
-//                    const typename descartes_light::CollisionInterface<FloatType>::Ptr& collision_interface,
-//                    const tesseract_environment::EnvState::ConstPtr current_state,
-//                    const Eigen::Isometry3d& robot_tcp,
-//                    const double robot_reach,
-//                    const bool allow_collision,
-//                    const DescartesIsValidFn<FloatType>& is_valid)
-//  {
-//    const std::vector<std::string>& joint_names = robot_kinematics->getJointNames();
-//    std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr> result;
-//    result.reserve(path.size());
 
-//    for (const auto& wp : path)
-//    {
-//      typename descartes_light::CollisionInterface<FloatType>::Ptr ci = nullptr;
-//      if (collision_interface != nullptr)
-//        ci = collision_interface->clone();
-
-//      tesseract_motion_planners::PoseSamplerFn target_pose_sampler = getPoseSampler(wp,
-//                                                                                    x_sample_resolution,
-//                                                                                    y_sample_resolution,
-//                                                                                    z_sample_resolution,
-//                                                                                    x_axes_sample_resolution,
-//                                                                                    y_axes_sample_resolution,
-//                                                                                    z_axes_sample_resolution);
-//      if (wp->getType() == WaypointType::CARTESIAN_WAYPOINT)
-//      {
-//        CartesianWaypoint::ConstPtr cwp = std::static_pointer_cast<const CartesianWaypoint>(wp);
-
-//        // Check if the waypoint is not relative to the world coordinate system
-//        Eigen::Isometry3d world_to_waypoint = Eigen::Isometry3d::Identity();
-//        if (!cwp->getParentLinkName().empty())
-//          world_to_waypoint = current_state->link_transforms.at(cwp->getParentLinkName());
-
-//        auto sampler = std::make_shared<DescartesRobotSampler<FloatType>>(world_to_waypoint * cwp->getTransform(),
-//                                                                          target_pose_sampler,
-//                                                                          robot_kinematics,
-//                                                                          ci,
-//                                                                          current_state,
-//                                                                          robot_tcp,
-//                                                                          robot_reach,
-//                                                                          allow_collision,
-//                                                                          is_valid);
-//        result.push_back(std::move(sampler));
-//      }
-//      else if (wp->getType() == WaypointType::JOINT_WAYPOINT)
-//      {
-//        JointWaypoint::ConstPtr jwp = std::static_pointer_cast<const JointWaypoint>(wp);
-//        Eigen::Matrix<FloatType, 1, Eigen::Dynamic> jwp_positions = jwp->getPositions(joint_names).cast<FloatType>();
-//        std::vector<FloatType> joint_pose(jwp_positions.data(),
-//                                          jwp_positions.data() + jwp_positions.rows() * jwp_positions.cols());
-//        auto sampler = std::make_shared<descartes_light::FixedJointPoseSampler<FloatType>>(joint_pose);
-//        result.push_back(std::move(sampler));
-//      }
-//      else
-//      {
-//        CONSOLE_BRIDGE_logError("Tesseract Descartes planner does not currently support waypoint type: %d",
-//                                wp->getType());
-//        return std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr>();
-//      }
-//    }
 
   descartes_light::PositionSampler<FloatType>::Ptr
   createCartesianComponents(const CartesianWaypoint& c_wp,
@@ -401,4 +339,4 @@ private:
 using DescartesMotionPlannerConfigD = DescartesMotionPlannerConfig<double>;
 using DescartesMotionPlannerConfigF = DescartesMotionPlannerConfig<float>;
 }
-#endif // TESSERACT_COMMAND_LANGUAGE_DESCARTES_MOTION_PLANNER_DEFAULT_CONFIG_H
+#endif // TESSERACT_MOTION_PLANNERS_DESCARTES_MOTION_PLANNER_DEFAULT_CONFIG_H

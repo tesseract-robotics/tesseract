@@ -37,10 +37,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_environment/core/types.h>
-#include <tesseract_motion_planners/descartes/pose_samplers.h>
+#include <tesseract_motion_planners/descartes/descartes_utils.h>
 #include <tesseract_motion_planners/descartes/types.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 template <typename FloatType>
 class DescartesRobotSampler : public descartes_light::PositionSampler<FloatType>
@@ -59,7 +59,7 @@ public:
    * @param is_valid This is a user defined function to filter out solution
    */
   DescartesRobotSampler(const Eigen::Isometry3d& target_pose,
-                        tesseract_motion_planners::PoseSamplerFn target_pose_sampler,
+                        PoseSamplerFn target_pose_sampler,
                         tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics,
                         typename descartes_light::CollisionInterface<FloatType>::Ptr collision,
                         const tesseract_environment::EnvState::ConstPtr& current_state,
@@ -72,7 +72,7 @@ public:
 
 private:
   Eigen::Isometry3d target_pose_;                                          /**< @brief The target pose to sample */
-  tesseract_motion_planners::PoseSamplerFn target_pose_sampler_;           /**< @brief Target pose sampler function */
+  PoseSamplerFn target_pose_sampler_;           /**< @brief Target pose sampler function */
   tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics_;     /**< @brief The robot inverse kinematics */
   typename descartes_light::CollisionInterface<FloatType>::Ptr collision_; /**< @brief The collision interface */
   Eigen::Isometry3d world_to_robot_base_; /**< @brief The transform from world to the base of the robot */
@@ -115,6 +115,6 @@ private:
 using DescartesRobotSamplerF = DescartesRobotSampler<float>;
 using DescartesRobotSamplerD = DescartesRobotSampler<double>;
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_ROBOT_SAMPLER_H

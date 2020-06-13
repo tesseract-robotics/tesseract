@@ -25,10 +25,10 @@
  */
 #include <tesseract_motion_planners/descartes/impl/descartes_robot_positioner_sampler.hpp>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 // Explicit template instantiation
 template class DescartesRobotPositionerSampler<float>;
 template class DescartesRobotPositionerSampler<double>;
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning

@@ -1,5 +1,5 @@
-#ifndef TESSERACT_COMMAND_LANGUAGE_PLANNER_UTILS_H
-#define TESSERACT_COMMAND_LANGUAGE_PLANNER_UTILS_H
+#ifndef TESSERACT_MOTION_PLANNERS_PLANNER_UTILS_H
+#define TESSERACT_MOTION_PLANNERSE_PLANNER_UTILS_H
 
 namespace tesseract_planning
 {
@@ -73,4 +73,4 @@ bool isValidState(const tesseract_kinematics::ForwardKinematics::ConstPtr& robot
 }
 }
 
-#endif // TESSERACT_COMMAND_LANGUAGE_PLANNER_UTILS_H
+#endif // TESSERACT_MOTION_PLANNERS_PLANNER_UTILS_H

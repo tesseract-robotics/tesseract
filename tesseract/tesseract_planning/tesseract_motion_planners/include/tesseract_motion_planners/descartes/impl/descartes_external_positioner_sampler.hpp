@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/descartes/descartes_external_positioner_sampler.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 template <typename FloatType>
 DescartesExternalPositionerSampler<FloatType>::DescartesExternalPositionerSampler(
@@ -211,5 +211,5 @@ bool DescartesExternalPositionerSampler<FloatType>::getBestSolution(
   return !solution_set.empty();
 }
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 #endif  // TESSERACT_MOTION_PLANNERS_IMPL_DESCARTES_EXTERNAL_POSITIONER_SAMPLER_HPP

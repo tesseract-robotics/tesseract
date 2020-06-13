@@ -29,7 +29,7 @@
 #include <tesseract_motion_planners/descartes/descartes_collision.h>
 #include <tesseract_environment/core/utils.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 template <typename FloatType>
 bool DescartesCollision<FloatType>::isContactAllowed(const std::string& a, const std::string& b) const
@@ -54,7 +54,7 @@ DescartesCollision<FloatType>::DescartesCollision(const tesseract_environment::E
   contact_manager_->setActiveCollisionObjects(active_link_names_);
   contact_manager_->setContactDistanceThreshold(collision_safety_margin_);
   contact_manager_->setIsContactAllowedFn(
-      std::bind(&tesseract_motion_planners::DescartesCollision<FloatType>::isContactAllowed,
+      std::bind(&tesseract_planning::DescartesCollision<FloatType>::isContactAllowed,
                 this,
                 std::placeholders::_1,
                 std::placeholders::_2));
@@ -74,7 +74,7 @@ DescartesCollision<FloatType>::DescartesCollision(const DescartesCollision& coll
   contact_manager_->setActiveCollisionObjects(active_link_names_);
   contact_manager_->setContactDistanceThreshold(collision_safety_margin_);
   contact_manager_->setIsContactAllowedFn(
-      std::bind(&tesseract_motion_planners::DescartesCollision<FloatType>::isContactAllowed,
+      std::bind(&tesseract_planning::DescartesCollision<FloatType>::isContactAllowed,
                 this,
                 std::placeholders::_1,
                 std::placeholders::_2));
@@ -123,6 +123,6 @@ typename descartes_light::CollisionInterface<FloatType>::Ptr DescartesCollision<
   return std::make_shared<DescartesCollision>(*this);
 }
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_IMPL_DESCARTES_COLLISION_HPP

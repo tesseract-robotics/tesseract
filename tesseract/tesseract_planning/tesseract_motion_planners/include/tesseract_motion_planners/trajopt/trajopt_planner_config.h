@@ -29,7 +29,7 @@
 #include <trajopt/problem_description.hpp>
 #include <tesseract_motion_planners/core/waypoint.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 /**
  * @brief The TrajOptPlannerConfigBase struct
