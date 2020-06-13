@@ -1,8 +1,8 @@
-#ifndef TESSERACT_COMMAND_LANGUAGE_TRAJOPT_DEFAULT_COMPOSITE_PROFILE_H
-#define TESSERACT_COMMAND_LANGUAGE_TRAJOPT_DEFAULT_COMPOSITE_PROFILE_H
+#ifndef TESSERACT_MOTION_PLANNERS_TRAJOPT_DEFAULT_COMPOSITE_PROFILE_H
+#define TESSERACT_MOTION_PLANNERS_TRAJOPT_DEFAULT_COMPOSITE_PROFILE_H
 
-#include <tesseract_motion_planners/trajopt/config/trajopt_collision_config.h>
-#include <tesseract_command_language/planners/trajopt/trajopt_profile.h>
+#include <tesseract_motion_planners/trajopt/trajopt_collision_config.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
 #include <vector>
 #include <Eigen/Geometry>
 #include <Eigen/Core>
@@ -16,9 +16,9 @@ public:
   /** @brief The type of contact test to perform: FIRST, CLOSEST, ALL */
   tesseract_collision::ContactTestType contact_test_type = tesseract_collision::ContactTestType::ALL;
   /** @brief Configuration info for collisions that are modeled as costs */
-  tesseract_motion_planners::CollisionCostConfig collision_cost_config;
+  CollisionCostConfig collision_cost_config;
   /** @brief Configuration info for collisions that are modeled as constraints */
-  tesseract_motion_planners::CollisionConstraintConfig collision_constraint_config;
+  CollisionConstraintConfig collision_constraint_config;
   /** @brief If true, a joint velocity cost with a target of 0 will be applied for all timesteps Default: true*/
   bool smooth_velocities = true;
   /** @brief This default to all ones, but allows you to weight different joints */
@@ -97,4 +97,4 @@ protected:
 };
 }
 
-#endif // TESSERACT_COMMAND_LANGUAGE_TRAJOPT_DEFAULT_COMPOSITE_PROFILE_H
+#endif // TESSERACT_MOTION_PLANNERS_TRAJOPT_DEFAULT_COMPOSITE_PROFILE_H

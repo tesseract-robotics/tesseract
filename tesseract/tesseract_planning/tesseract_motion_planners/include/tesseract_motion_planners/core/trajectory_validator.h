@@ -33,7 +33,7 @@
 #include <console_bridge/console.h>
 #include <trajopt/utils.hpp>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 /** @brief Enumeration of the types of validation checks that can be performed on a planned trajectory */
 enum class PostPlanCheckType : unsigned

@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_MOTION_PLANNERS_DECARTES_MOTION_PLANNER_HPP
-#define TESSERACT_MOTION_PLANNERS_DECARTES_MOTION_PLANNER_HPP
+#ifndef TESSERACT_COMMAND_LANGUAGE_DECARTES_MOTION_PLANNER_HPP
+#define TESSERACT_COMMAND_LANGUAGE_DECARTES_MOTION_PLANNER_HPP
 
 #include <tesseract/tesseract.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
@@ -45,9 +45,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_motion_planners/descartes/descartes_motion_planner.h>
+#include <tesseract_command_language/planners/descartes/descartes_motion_planner.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 template <typename FloatType>
 DescartesMotionPlanner<FloatType>::DescartesMotionPlanner(std::string name)
@@ -58,48 +58,10 @@ DescartesMotionPlanner<FloatType>::DescartesMotionPlanner(std::string name)
 }
 
 template <typename FloatType>
-bool DescartesMotionPlanner<FloatType>::setConfiguration(const DescartesMotionPlannerConfig<FloatType>& config)
+bool DescartesMotionPlanner<FloatType>::setConfiguration(typename DescartesMotionPlannerConfig<FloatType>::Ptr config)
 {
-  // Check that parameters are valid
-  if (config.tesseract == nullptr)
-  {
-    CONSOLE_BRIDGE_logError("In %s: tesseract is a required parameter and has not been set", name_.c_str());
-    return false;
-  }
-
-  if (config.edge_evaluator == nullptr)
-  {
-    CONSOLE_BRIDGE_logError("In %s: edge_evaluator is a required parameter and has not been set", name_.c_str());
-    return false;
-  }
-
-  if (config.timing_constraint.empty())
-  {
-    CONSOLE_BRIDGE_logError("In %s: timing_constraint is a required parameter and has not been set", name_.c_str());
-    return false;
-  }
-
-  if (config.waypoints.empty())
-  {
-    CONSOLE_BRIDGE_logError("In %s: waypoints is a required parameter and has not been set", name_.c_str());
-    return false;
-  }
-
-  if (config.samplers.empty())
-  {
-    CONSOLE_BRIDGE_logError("In %s: samplers is a required parameter and has not been set", name_.c_str());
-    return false;
-  }
-
-  if ((config.timing_constraint.size() != config.waypoints.size()) ||
-      (config.timing_constraint.size() != config.samplers.size()))
-  {
-    CONSOLE_BRIDGE_logError("In %s: waypoints, timing_constraint and samplers must be the same size", name_.c_str());
-    return false;
-  }
-
-  config_ = std::make_shared<DescartesMotionPlannerConfig<FloatType>>(config);
-  return true;
+  config_ = std::move(config);
+  return config_->generate();
 }
 
 template <typename FloatType>
@@ -117,31 +79,29 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
 
   auto tStart = boost::posix_time::second_clock::local_time();
 
-  const auto dof = config_->joint_names.size();
-  descartes_light::Solver<FloatType> graph_builder(dof);
-  if (!graph_builder.build(
-          config_->samplers, config_->timing_constraint, config_->edge_evaluator, config_->num_threads))
+  descartes_light::Solver<FloatType> graph_builder(config_->prob.dof);
+  if (!graph_builder.build(config_->prob.samplers, config_->prob.timing_constraint, config_->prob.edge_evaluator, config_->prob.num_threads))
   {
-    CONSOLE_BRIDGE_logError("Failed to build vertices");
-    for (const auto& i : graph_builder.getFailedVertices())
-      response.failed_waypoints.push_back(config_->waypoints[i]);
+//    CONSOLE_BRIDGE_logError("Failed to build vertices");
+//    for (const auto& i : graph_builder.getFailedVertices())
+//      response.failed_waypoints.push_back(config_->waypoints[i]);
 
-    // Copy the waypoint if it is not already in the failed waypoints list
-    std::copy_if(config_->waypoints.begin(),
-                 config_->waypoints.end(),
-                 std::back_inserter(response.succeeded_waypoints),
-                 [&response](const Waypoint::ConstPtr wp) {
-                   return std::find(response.failed_waypoints.begin(), response.failed_waypoints.end(), wp) ==
-                          response.failed_waypoints.end();
-                 });
+//    // Copy the waypoint if it is not already in the failed waypoints list
+//    std::copy_if(config_->waypoints.begin(),
+//                 config_->waypoints.end(),
+//                 std::back_inserter(response.succeeded_waypoints),
+//                 [&response](const Waypoint::ConstPtr wp) {
+//                   return std::find(response.failed_waypoints.begin(), response.failed_waypoints.end(), wp) ==
+//                          response.failed_waypoints.end();
+//                 });
 
     response.status =
         tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::ErrorFailedToBuildGraph, status_category_);
     return response.status;
   }
-  // No failed waypoints
-  response.succeeded_waypoints = config_->waypoints;
-  response.failed_waypoints.clear();
+//  // No failed waypoints
+//  response.succeeded_waypoints = config_->waypoints;
+//  response.failed_waypoints.clear();
 
   // Search for edges
   std::vector<FloatType> solution;
@@ -153,33 +113,33 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
     return response.status;
   }
 
-  response.joint_trajectory.joint_names = config_->joint_names;
-  response.joint_trajectory.trajectory.resize(static_cast<long>(config_->waypoints.size()), static_cast<long>(dof));
-  for (size_t r = 0; r < config_->waypoints.size(); ++r)
-    for (size_t c = 0; c < dof; ++c)
-      response.joint_trajectory.trajectory(static_cast<long>(r), static_cast<long>(c)) = solution[(r * dof) + c];
+//  response.joint_trajectory.joint_names = config_->joint_names;
+//  response.joint_trajectory.trajectory.resize(static_cast<long>(config_->waypoints.size()), static_cast<long>(dof));
+//  for (size_t r = 0; r < config_->waypoints.size(); ++r)
+//    for (size_t c = 0; c < dof; ++c)
+//      response.joint_trajectory.trajectory(static_cast<long>(r), static_cast<long>(c)) = solution[(r * dof) + c];
 
-  // Check and report collisions
-  validator_ =
-      std::make_shared<TrajectoryValidator>(config_->tesseract->getEnvironmentConst()->getContinuousContactManager(),
-                                            config_->tesseract->getEnvironmentConst()->getDiscreteContactManager(),
-                                            0.01,
-                                            verbose);
+//  // Check and report collisions
+//  validator_ =
+//      std::make_shared<TrajectoryValidator>(config_->tesseract->getEnvironmentConst()->getContinuousContactManager(),
+//                                            config_->tesseract->getEnvironmentConst()->getDiscreteContactManager(),
+//                                            0.01,
+//                                            verbose);
 
-  bool valid = validator_->trajectoryValid(response.joint_trajectory.trajectory,
-                                           check_type,
-                                           *(config_->tesseract->getEnvironmentConst()->getStateSolver()),
-                                           response.joint_trajectory.joint_names);
+//  bool valid = validator_->trajectoryValid(response.joint_trajectory.trajectory,
+//                                           check_type,
+//                                           *(config_->tesseract->getEnvironmentConst()->getStateSolver()),
+//                                           response.joint_trajectory.joint_names);
 
-  CONSOLE_BRIDGE_logInform("Descartes planning time: %.3f",
-                           (boost::posix_time::second_clock::local_time() - tStart).seconds());
+//  CONSOLE_BRIDGE_logInform("Descartes planning time: %.3f",
+//                           (boost::posix_time::second_clock::local_time() - tStart).seconds());
 
-  if (!valid)
-  {
-    response.status = tesseract_common::StatusCode(
-        DescartesMotionPlannerStatusCategory::ErrorFoundValidSolutionInCollision, status_category_);
-    return response.status;
-  }
+//  if (!valid)
+//  {
+//    response.status = tesseract_common::StatusCode(
+//        tesseract_motion_planners::DescartesMotionPlannerStatusCategory::ErrorFoundValidSolutionInCollision, status_category_);
+//    return response.status;
+//  }
 
   CONSOLE_BRIDGE_logInform("Final trajectory is collision free");
   response.status = tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::SolutionFound, status_category_);
@@ -209,5 +169,5 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::isConfigured() c
   return tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::ErrorIsNotConfigured, status_category_);
 }
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 #endif  // TESSERACT_MOTION_PLANNERS_DECARTES_MOTION_PLANNER_HPP

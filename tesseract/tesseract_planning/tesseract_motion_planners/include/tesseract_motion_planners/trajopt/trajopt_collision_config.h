@@ -28,7 +28,7 @@
 
 #include <trajopt/problem_description.hpp>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 /**
  * @brief Config settings for collision cost terms.

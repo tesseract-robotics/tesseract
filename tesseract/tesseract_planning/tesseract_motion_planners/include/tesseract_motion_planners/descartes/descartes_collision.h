@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_collision/core/discrete_contact_manager.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 template <typename FloatType>
 class DescartesCollision : public descartes_light::CollisionInterface<FloatType>
@@ -109,6 +109,6 @@ private:
 using DescartesCollisionF = DescartesCollision<float>;
 using DescartesCollisionD = DescartesCollision<double>;
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_COLLISION_H

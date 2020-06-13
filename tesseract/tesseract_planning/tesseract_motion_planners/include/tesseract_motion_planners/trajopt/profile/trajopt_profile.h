@@ -1,5 +1,5 @@
-#ifndef TESSERACT_COMMAND_LANGUAGE_TRAJOPT_PROFILE_H
-#define TESSERACT_COMMAND_LANGUAGE_TRAJOPT_PROFILE_H
+#ifndef TESSERACT_MOTION_PLANNERS_TRAJOPT_PROFILE_H
+#define TESSERACT_MOTION_PLANNERS_TRAJOPT_PROFILE_H
 
 #include <trajopt/problem_description.hpp>
 #include <vector>
@@ -9,23 +9,6 @@
 namespace tesseract_planning
 {
 
-class TrajOptPlannerUniversalConfig;
-
-struct TrajOptProfileResults
-{
-  std::shared_ptr<trajopt::ProblemConstructionInfo> pci;
-  std::vector<std::size_t> plan_instruction_indices;
-};
-
-class TrajOptProfile
-{
-public:
-  using Ptr = std::shared_ptr<TrajOptProfile>;
-  using ConstPtr = std::shared_ptr<const TrajOptProfile>;
-
-  virtual TrajOptProfileResults generate(const TrajOptPlannerUniversalConfig& config) = 0;
-};
-
 class TrajOptPlanProfile
 {
 public:
@@ -34,13 +17,13 @@ public:
 
   virtual void apply(trajopt::ProblemConstructionInfo& pci,
                      const Eigen::Isometry3d& cartesian_waypoint,
-                     const PlanInstruction& parent_instructions,
+                     const PlanInstruction& parent_instruction,
                      const std::vector<std::string> &active_links,
                      int index) = 0;
 
   virtual void apply(trajopt::ProblemConstructionInfo& pci,
                      const Eigen::VectorXd& joint_waypoint,
-                     const PlanInstruction& parent_instructions,
+                     const PlanInstruction& parent_instruction,
                      const std::vector<std::string> &active_links,
                      int index) = 0;
 };
@@ -60,4 +43,4 @@ public:
 
 }
 
-#endif // TESSERACT_COMMAND_LANGUAGE_TRAJOPT_PROFILE_H
+#endif // TESSERACT_MOTION_PLANNERS_TRAJOPT_PROFILE_H
