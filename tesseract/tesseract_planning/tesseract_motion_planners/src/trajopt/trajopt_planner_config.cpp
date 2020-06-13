@@ -23,9 +23,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_motion_planners/trajopt/config/trajopt_planner_config.h>
+#include <tesseract_motion_planners/trajopt/trajopt_planner_config.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 TrajOptPlannerConfig::TrajOptPlannerConfig(trajopt::TrajOptProb::Ptr problem) : prob(std::move(problem)) {}
 

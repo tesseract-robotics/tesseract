@@ -38,10 +38,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_environment/core/types.h>
-#include <tesseract_motion_planners/descartes/pose_samplers.h>
+#include <tesseract_motion_planners/descartes/descartes_utils.h>
 #include <tesseract_motion_planners/descartes/types.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 template <typename FloatType>
 class DescartesRobotPositionerSampler : public descartes_light::PositionSampler<FloatType>
@@ -65,7 +65,7 @@ public:
    * @param is_valid This is a user defined function to filter out solution
    */
   DescartesRobotPositionerSampler(const Eigen::Isometry3d& target_pose,
-                                  tesseract_motion_planners::PoseSamplerFn target_pose_sampler,
+                                  PoseSamplerFn target_pose_sampler,
                                   tesseract_kinematics::ForwardKinematics::ConstPtr positioner_kinematics,
                                   tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics,
                                   typename descartes_light::CollisionInterface<FloatType>::Ptr collision,
@@ -80,7 +80,7 @@ public:
 
 private:
   Eigen::Isometry3d target_pose_;                                           /**< @brief The target pose to sample */
-  tesseract_motion_planners::PoseSamplerFn target_pose_sampler_;            /**< @brief Target pose sampler function */
+  PoseSamplerFn target_pose_sampler_;            /**< @brief Target pose sampler function */
   tesseract_kinematics::ForwardKinematics::ConstPtr positioner_kinematics_; /**< @brief The robot base positioner
                                                                                kinematics */
   tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics_;      /**< @brief The robot inverse kinematics */
@@ -152,5 +152,5 @@ private:
 using DescartesRobotPositionerSamplerF = DescartesRobotPositionerSampler<float>;
 using DescartesRobotPositionerSamplerD = DescartesRobotPositionerSampler<double>;
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 #endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_ROBOT_POSITIONER_SAMPLER_H

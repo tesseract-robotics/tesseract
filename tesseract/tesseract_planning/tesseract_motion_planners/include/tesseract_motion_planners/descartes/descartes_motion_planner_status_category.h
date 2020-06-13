@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/status_code.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 /**
  * @brief The Descartes motion planner status category
@@ -62,6 +62,6 @@ public:
 private:
   std::string name_; /**< @brief The name of the status category */
 };
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_MOTION_PLANNER_STATUS_CATEGORY_H

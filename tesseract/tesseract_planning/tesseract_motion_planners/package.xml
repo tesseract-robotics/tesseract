@@ -11,6 +11,7 @@
   <depend>tesseract_common</depend>
   <depend>tesseract_environment</depend>
   <depend>tesseract_kinematics</depend>
+  <depend>tesseract_command_language</depend>
 
   <depend>descartes_light</depend>
   <depend>descartes_samplers</depend>

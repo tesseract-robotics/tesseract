@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_collision/core/continuous_contact_manager.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 template <typename FloatType>
 class DescartesCollisionEdgeEvaluator : public descartes_light::EdgeEvaluator<FloatType>
@@ -141,5 +141,5 @@ protected:
 using DescartesCollisionEdgeEvaluatorF = DescartesCollisionEdgeEvaluator<float>;
 using DescartesCollisionEdgeEvaluatorD = DescartesCollisionEdgeEvaluator<double>;
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 #endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_COLLISION_EDGE_EVALUATOR_H

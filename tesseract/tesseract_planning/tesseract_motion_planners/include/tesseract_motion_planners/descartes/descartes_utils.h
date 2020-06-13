@@ -69,48 +69,48 @@ inline tesseract_common::VectorIsometry3d sampleToolZAxis(const Eigen::Isometry3
  * @param wp The waypoint
  * @return A tool pose sampler function
  */
-template <typename FloatType>
-inline tesseract_motion_planners::PoseSamplerFn getPoseSampler(const ComponentInfo& component)
-{
-  tesseract_motion_planners::PoseSamplerFn tool_pose_sampler = nullptr;
-  switch (component.getType())
-  {
-    case static_cast<int>(ComponentTypes::FIXED):
-    {
-      const auto* local = component.cast_const<FixedComponentInfo>();
-      tool_pose_sampler = [](const Eigen::Isometry3d& tool_pose) {
-        return tesseract_common::VectorIsometry3d({ tool_pose });
-      };
-      break;
-    }
-    case static_cast<int>(ComponentTypes::CARTESIAN_X_ROTATION_FREE):
-    {
-      const auto* local = component.cast_const<CartesianXRotationFreeComponentInfo>();
-      tool_pose_sampler =
-          std::bind(&tesseract_motion_planners::sampleToolXAxis, std::placeholders::_1, local->resolution);
-      break;
-    }
-    case static_cast<int>(ComponentTypes::CARTESIAN_Y_ROTATION_FREE):
-    {
-      const auto* local = component.cast_const<CartesianYRotationFreeComponentInfo>();
-      tool_pose_sampler =
-          std::bind(&tesseract_motion_planners::sampleToolYAxis, std::placeholders::_1, local->resolution);
-      break;
-    }
-    case static_cast<int>(ComponentTypes::CARTESIAN_Z_ROTATION_FREE):
-    {
-      const auto* local = component.cast_const<CartesianXRotationFreeComponentInfo>();
-      tool_pose_sampler =
-          std::bind(&tesseract_motion_planners::sampleToolZAxis, std::placeholders::_1, local->resolution);
-      break;
-    }
-    default:
-    {
-      return tool_pose_sampler;
-    }
-  }
+//template <typename FloatType>
+//inline PoseSamplerFn getPoseSampler(const ComponentInfo& component)
+//{
+//  tesseract_motion_planners::PoseSamplerFn tool_pose_sampler = nullptr;
+//  switch (component.getType())
+//  {
+//    case static_cast<int>(ComponentTypes::FIXED):
+//    {
+//      const auto* local = component.cast_const<FixedComponentInfo>();
+//      tool_pose_sampler = [](const Eigen::Isometry3d& tool_pose) {
+//        return tesseract_common::VectorIsometry3d({ tool_pose });
+//      };
+//      break;
+//    }
+//    case static_cast<int>(ComponentTypes::CARTESIAN_X_ROTATION_FREE):
+//    {
+//      const auto* local = component.cast_const<CartesianXRotationFreeComponentInfo>();
+//      tool_pose_sampler =
+//          std::bind(&tesseract_motion_planners::sampleToolXAxis, std::placeholders::_1, local->resolution);
+//      break;
+//    }
+//    case static_cast<int>(ComponentTypes::CARTESIAN_Y_ROTATION_FREE):
+//    {
+//      const auto* local = component.cast_const<CartesianYRotationFreeComponentInfo>();
+//      tool_pose_sampler =
+//          std::bind(&tesseract_motion_planners::sampleToolYAxis, std::placeholders::_1, local->resolution);
+//      break;
+//    }
+//    case static_cast<int>(ComponentTypes::CARTESIAN_Z_ROTATION_FREE):
+//    {
+//      const auto* local = component.cast_const<CartesianXRotationFreeComponentInfo>();
+//      tool_pose_sampler =
+//          std::bind(&tesseract_motion_planners::sampleToolZAxis, std::placeholders::_1, local->resolution);
+//      break;
+//    }
+//    default:
+//    {
+//      return tool_pose_sampler;
+//    }
+//  }
 
-  return tool_pose_sampler;
-}
+//  return tool_pose_sampler;
+//}
 }
 #endif // TESSERACT_PLANNING_DESCARTES_UTILS_H

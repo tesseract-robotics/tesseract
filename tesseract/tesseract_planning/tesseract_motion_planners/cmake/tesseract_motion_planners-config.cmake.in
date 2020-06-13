@@ -13,6 +13,7 @@ find_dependency(descartes_samplers)
 find_dependency(descartes_opw)
 find_dependency(tesseract)
 find_dependency(tesseract_common)
+find_dependency(tesseract_command_language)
 find_dependency(console_bridge)
 find_dependency(Boost)
 

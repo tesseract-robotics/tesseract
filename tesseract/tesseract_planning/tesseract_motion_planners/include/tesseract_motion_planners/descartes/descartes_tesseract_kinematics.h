@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 /** @brief Provides a Descartes interface for Tesseract Kinematics
  */
@@ -123,6 +123,6 @@ protected:
 
 using DescartesTesseractKinematicsD = DescartesTesseractKinematics<double>;
 using DescartesTesseractKinematicsF = DescartesTesseractKinematics<float>;
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 
 #endif

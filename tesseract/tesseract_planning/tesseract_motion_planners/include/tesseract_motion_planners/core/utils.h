@@ -36,9 +36,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_environment/core/types.h>
 #include <tesseract_kinematics/core/forward_kinematics.h>
-#include <tesseract_motion_planners/core/waypoint.h>
+#include <tesseract_command_language/core/waypoint.h>
+#include <tesseract_command_language/cartesian_waypoint.h>
+#include <tesseract_command_language/joint_waypoint.h>
+#include <tesseract_command_language/waypoint_type.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 /**
  * @brief Inerpolate between two transforms return a vector of Eigen::Isometry transforms.
@@ -108,33 +111,40 @@ inline Eigen::MatrixXd interpolate(const Eigen::VectorXd& start,
  * @param steps The number of step
  * @return A vector of waypoints with a length = steps + 1
  */
-inline std::vector<Waypoint::Ptr> interpolate(const Waypoint& start, const Waypoint& stop, int steps)
+inline std::vector<Waypoint> interpolate(const Waypoint& start, const Waypoint& stop, int steps)
 {
   switch (start.getType())
   {
-    case WaypointType::CARTESIAN_WAYPOINT:
+    case static_cast<int>(WaypointType::CARTESIAN_WAYPOINT):
     {
-      const auto& w1 = static_cast<const CartesianWaypoint&>(start);
-      const auto& w2 = static_cast<const CartesianWaypoint&>(stop);
-      tesseract_common::VectorIsometry3d eigen_poses = interpolate(w1.getTransform(), w2.getTransform(), steps);
+      const auto* w1 = start.cast_const<Eigen::Isometry3d>();
+      const auto* w2 = start.cast_const<Eigen::Isometry3d>();
+      tesseract_common::VectorIsometry3d eigen_poses = interpolate(*w1, *w2, steps);
 
-      std::vector<Waypoint::Ptr> result;
+      std::vector<Waypoint> result;
       result.reserve(eigen_poses.size());
       for (auto& eigen_pose : eigen_poses)
-      {
-        CartesianWaypoint::Ptr new_waypoint =
-            std::make_shared<tesseract_motion_planners::CartesianWaypoint>(eigen_pose, w1.getParentLinkName());
-        new_waypoint->setCoefficients(start.getCoefficients());
-        new_waypoint->setIsCritical(start.isCritical());
-        result.push_back(new_waypoint);
-      }
+        result.push_back(CartesianWaypoint(eigen_pose));
+
+      return result;
+    }
+    case static_cast<int>(WaypointType::JOINT_WAYPOINT):
+    {
+      const auto* w1 = start.cast_const<Eigen::VectorXd>();
+      const auto* w2 = start.cast_const<Eigen::VectorXd>();
+      Eigen::MatrixXd joint_poses = interpolate(*w1, *w2, steps);
+
+      std::vector<Waypoint> result;
+      result.reserve(joint_poses.cols());
+      for ( int i = 0; i < joint_poses.cols(); ++i)
+        result.push_back(JointWaypoint(joint_poses.col(i)));
 
       return result;
     }
     default:
     {
       CONSOLE_BRIDGE_logError("Interpolator for Waypoint type %d is currently not support!", start.getType());
-      return std::vector<Waypoint::Ptr>();
+      return std::vector<Waypoint>();
     }
   }
 }
