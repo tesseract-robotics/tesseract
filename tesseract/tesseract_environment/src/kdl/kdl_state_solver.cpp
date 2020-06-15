@@ -40,7 +40,7 @@ StateSolver::Ptr KDLStateSolver::clone() const
 {
   auto cloned_solver = std::make_shared<KDLStateSolver>();
   cloned_solver->init(*this);
-  return std::move(cloned_solver);
+  return cloned_solver;
 }
 
 bool KDLStateSolver::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph)
