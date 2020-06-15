@@ -41,7 +41,7 @@ ForwardKinematics::Ptr KDLFwdKinChain::clone() const
 {
   auto cloned_fwdkin = std::make_shared<KDLFwdKinChain>();
   cloned_fwdkin->init(*this);
-  return std::move(cloned_fwdkin);
+  return cloned_fwdkin;
 }
 
 bool KDLFwdKinChain::calcFwdKinHelper(Eigen::Isometry3d& pose,

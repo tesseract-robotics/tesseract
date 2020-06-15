@@ -42,7 +42,7 @@ InverseKinematics::Ptr KDLInvKinChainLMA::clone() const
 {
   auto cloned_invkin = std::make_shared<KDLInvKinChainLMA>();
   cloned_invkin->init(*this);
-  return std::move(cloned_invkin);
+  return cloned_invkin;
 }
 
 bool KDLInvKinChainLMA::calcInvKinHelper(Eigen::VectorXd& solutions,

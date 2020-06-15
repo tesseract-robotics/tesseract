@@ -41,7 +41,7 @@ ForwardKinematics::Ptr KDLFwdKinTree::clone() const
 {
   auto cloned_fwdkin = std::make_shared<KDLFwdKinTree>();
   cloned_fwdkin->init(*this);
-  return std::move(cloned_fwdkin);
+  return cloned_fwdkin;
 }
 
 KDL::JntArray KDLFwdKinTree::getKDLJntArray(const std::vector<std::string>& joint_names,
