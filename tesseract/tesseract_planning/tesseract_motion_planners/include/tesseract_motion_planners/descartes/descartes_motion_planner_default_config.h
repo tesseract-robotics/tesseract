@@ -20,15 +20,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/move_instruction.h>
 #include <tesseract_command_language/cartesian_waypoint.h>
 #include <tesseract_command_language/joint_waypoint.h>
-#include <tesseract_command_language/planners/descartes/descartes_motion_planner_config.h>
 
 #include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 
+#include <tesseract_motion_planners/descartes/descartes_motion_planner_config.h>
 #include <tesseract_motion_planners/descartes/descartes_collision.h>
+#include <tesseract_motion_planners/descartes/descartes_utils.h>
+#include <tesseract_motion_planners/descartes/descartes_problem.h>
+#include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
 #include <tesseract_motion_planners/core/utils.h>
-
-#include <tesseract_command_language/descartes/descartes_utils.h>
 
 namespace tesseract_planning
 {
@@ -41,8 +42,8 @@ struct DescartesMotionPlannerDefaultConfig : public DescartesMotionPlannerConfig
   DescartesMotionPlannerDefaultConfig(tesseract::Tesseract::ConstPtr tesseract,
                                       tesseract_environment::EnvState::ConstPtr env_state)
   {
-    prob.tesseract = tesseract;
-    prob.env_state = env_state;
+    this->prob.tesseract = tesseract;
+    this->prob.env_state = env_state;
   }
 
   virtual ~DescartesMotionPlannerDefaultConfig() = default;
@@ -51,12 +52,20 @@ struct DescartesMotionPlannerDefaultConfig : public DescartesMotionPlannerConfig
   DescartesMotionPlannerDefaultConfig(DescartesMotionPlannerDefaultConfig&&) = default;             // NOLINT
   DescartesMotionPlannerDefaultConfig& operator=(DescartesMotionPlannerDefaultConfig&&) = default;  // NOLINT
 
-  DescartesProblem::Configuration configuration;
+  typename DescartesProblem<FloatType>::Configuration configuration;
 
   std::string manipulator;
   std::string manipulator_ik_solver;
   std::string positioner;
   double manip_reach;
+
+  /**
+   * @brief The available plan profiles
+   *
+   * Plan instruction profiles are used to control waypoint specific information like fixed waypoint, toleranced
+   * waypoint, corner distance waypoint, etc.
+   */
+  std::unordered_map<std::string, typename DescartesPlanProfile<FloatType>::Ptr> plan_profiles;
 
   /**
    * @brief The program instruction
@@ -76,12 +85,6 @@ struct DescartesMotionPlannerDefaultConfig : public DescartesMotionPlannerConfig
 
 
 
-
-
-
-
-
-
     // Call the base class generate which checks the problem to make sure everything is in order
     return DescartesMotionPlannerConfig<FloatType>::generate();
   }
@@ -90,66 +93,64 @@ private:
 
   void getManipulatorInfo()
   {
-    prob.manip_fwd_kin = prob.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator);
-    prob.manip_inv_kin = prob.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
-    prob.manip_reach = manip_reach
+    this->prob.manip_fwd_kin = this->prob.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator);
+    this->prob.manip_inv_kin = this->prob.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
+    this->prob.manip_reach = manip_reach;
 
-    prob.dof = prob.manip_fwd_kin->numJoints();
-    if (configuration == ROBOT_ON_POSITIONER || configuration == ROBOT_WITH_EXTERNAL_POSITIONER)
+    this->prob.dof = this->prob.manip_fwd_kin->numJoints();
+    if (configuration == DescartesProblem<FloatType>::ROBOT_ON_POSITIONER || configuration == DescartesProblem<FloatType>::ROBOT_WITH_EXTERNAL_POSITIONER)
     {
-      prob.positioner_fwd_kin = prob.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(positioner);
-      prob.dof += prob.positioner_fwd_kin.numJoints();
+      this->prob.positioner_fwd_kin = this->prob.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(positioner);
+      this->prob.dof += this->prob.positioner_fwd_kin->numJoints();
     }
   }
 
+//  typename descartes_light::PositionSampler<FloatType>::Ptr
+//  createCartesianComponents(const CartesianWaypoint& c_wp,
+//                            int index,
+//                            std::string working_frame,
+//                            Eigen::Isometry3d tcp,
+//                            const std::vector<ComponentInfo>& components,
+//                            std::string link)
+//  {
+//    typename descartes_light::CollisionInterface<FloatType>::Ptr ci = nullptr;
+//    if (collision_interface != nullptr)
+//      ci = collision_interface->clone();
 
+//    for (const auto& component : components)
+//    {
+//      tesseract_motion_planners::PoseSamplerFn sampler = getPoseSampler(component);
+//      /** @todo Need to figure out how to handle cases when there is more than one cartesian constraint or cost */
+//      if (sampler != nullptr)
+//      {
+//        // Check if the waypoint is not relative to the world coordinate system
+//        Eigen::Isometry3d world_to_waypoint = Eigen::Isometry3d::Identity();
+//        if (!working_frame.empty())
+//          world_to_waypoint = current_state->link_transforms.at(working_frame);
 
-  descartes_light::PositionSampler<FloatType>::Ptr
-  createCartesianComponents(const CartesianWaypoint& c_wp,
-                            int index,
-                            std::string working_frame,
-                            Eigen::Isometry3d tcp,
-                            const std::vector<ComponentInfo>& components,
-                            std::string link)
-  {
-    typename descartes_light::CollisionInterface<FloatType>::Ptr ci = nullptr;
-    if (collision_interface != nullptr)
-      ci = collision_interface->clone();
-
-    for (const auto& component : components)
-    {
-      tesseract_motion_planners::PoseSamplerFn sampler = getPoseSampler(component);
-      /** @todo Need to figure out how to handle cases when there is more than one cartesian constraint or cost */
-      if (sampler != nullptr)
-      {
-        // Check if the waypoint is not relative to the world coordinate system
-        Eigen::Isometry3d world_to_waypoint = Eigen::Isometry3d::Identity();
-        if (!working_frame.empty())
-          world_to_waypoint = current_state->link_transforms.at(working_frame);
-
-        auto sampler = std::make_shared<DescartesRobotSampler<FloatType>>(world_to_waypoint * c_wp
-                                                                          target_pose_sampler,
-                                                                          robot_kinematics,
-                                                                          ci,
-                                                                          current_state,
-                                                                          robot_tcp,
-                                                                          robot_reach,
-                                                                          allow_collision,
-                                                                          is_valid);
-        break;
-      }
-    }
-  }
+//        auto sampler = std::make_shared<DescartesRobotSampler<FloatType>>(world_to_waypoint * c_wp
+//                                                                          target_pose_sampler,
+//                                                                          robot_kinematics,
+//                                                                          ci,
+//                                                                          current_state,
+//                                                                          robot_tcp,
+//                                                                          robot_reach,
+//                                                                          allow_collision,
+//                                                                          is_valid);
+//        break;
+//      }
+//    }
+//  }
 
   bool RobotOnlyGenerate()
   {
-    if (!tesseract_kinematics::checkKinematics(manip_fwd_kin_, manip_inv_kin_))
+    if (!tesseract_kinematics::checkKinematics(this->prob.manip_fwd_kin, this->prob.manip_inv_kin))
       CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that Inverse Kinematics does not agree with KDL (TrajOpt). Did you change the URDF recently?");
 
-    std::vector<std::string> joint_names = manip_inv_kin_->getJointNames();
-    std::vector<std::string> active_link_names = manip_inv_kin_->getActiveLinkNames();
+    std::vector<std::string> joint_names = this->prob.manip_inv_kin->getJointNames();
+    std::vector<std::string> active_link_names = this->prob.manip_inv_kin->getActiveLinkNames();
 
-    auto adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(tesseract->getEnvironmentConst()->getSceneGraph(), active_link_names, env_state->link_transforms);
+    auto adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(this->prob.tesseract->getEnvironmentConst()->getSceneGraph(), active_link_names, this->prob.env_state->link_transforms);
     const std::vector<std::string>& adjacency_links = adjacency_map->getActiveLinkNames();
 
     // Check and make sure it does not contain any composite instruction
@@ -196,13 +197,13 @@ private:
             /** @todo This should also handle if waypoint type is joint */
             const auto* pre_wp = prev_plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
 
-            tesseract_common::VectorIsometry3d poses = tesseract_motion_planners::interpolate(*pre_wp, *cur_wp, static_cast<int>(seed_composite->size()));
+            tesseract_common::VectorIsometry3d poses = interpolate(*pre_wp, *cur_wp, static_cast<int>(seed_composite->size()));
             // Add intermediate points with path costs and constraints
             for (std::size_t p = 1; p < poses.size() - 1; ++p)
             {
               tesseract_planning::CartesianWaypoint p_cpw = poses[p];
 //              createCartesianComponents(p_cpw, index, working_frame, tcp, plan_instruction->getPathCosts(), link);
-              createCartesianComponents(p_cpw, index, working_frame, tcp, plan_instruction->getPathConstraints(), link);
+//              createCartesianComponents(p_cpw, index, working_frame, tcp, plan_instruction->getPathConstraints(), link);
 
               /** @todo Add createDynamicCartesianWaypointTermInfo */
               /* Check if this cartesian waypoint is dynamic
@@ -250,7 +251,7 @@ private:
             /** @todo This should also handle if waypoint type is cartesian */
             const auto* pre_wp = prev_plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>();
 
-            Eigen::MatrixXd states = tesseract_motion_planners::interpolate(*pre_wp, *cur_wp, static_cast<int>(seed_composite->size()));
+            Eigen::MatrixXd states = interpolate(*pre_wp, *cur_wp, static_cast<int>(seed_composite->size()));
             // Add intermediate points with path costs and constraints
             for (long s = 1; s < states.cols() - 1; ++s)
             {
@@ -318,25 +319,9 @@ private:
 //                                                                10 * M_PI / 180);
 
   }
-
-  bool RobotOnPositionerGenerate()
-  {
-
-  }
-
-  bool RobotWithExternalPositionerGenerate()
-  {
-
-  }
-
-  tesseract_kinematics::ForwardKinematics::ConstPtr manip_fwd_kin_;
-  tesseract_kinematics::InverseKinematics::ConstPtr manip_inv_kin_;
-
-  tesseract_kinematics::ForwardKinematics::ConstPtr positioner_fwd_kin_;
-
 };
 
-using DescartesMotionPlannerConfigD = DescartesMotionPlannerConfig<double>;
-using DescartesMotionPlannerConfigF = DescartesMotionPlannerConfig<float>;
+using DescartesMotionPlannerDefaultConfigD = DescartesMotionPlannerDefaultConfig<double>;
+using DescartesMotionPlannerDefaultConfigF = DescartesMotionPlannerDefaultConfig<float>;
 }
 #endif // TESSERACT_MOTION_PLANNERS_DESCARTES_MOTION_PLANNER_DEFAULT_CONFIG_H

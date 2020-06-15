@@ -27,7 +27,6 @@
 #define TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_CONFIG_H
 
 #include <trajopt/problem_description.hpp>
-#include <tesseract_motion_planners/core/waypoint.h>
 
 namespace tesseract_planning
 {
