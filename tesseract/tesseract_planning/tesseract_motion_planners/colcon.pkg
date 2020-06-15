@@ -1,0 +1,3 @@
+{
+    "hooks": ["share/tesseract_motion_planners/hook/ament_prefix_path.dsv"]
+}
