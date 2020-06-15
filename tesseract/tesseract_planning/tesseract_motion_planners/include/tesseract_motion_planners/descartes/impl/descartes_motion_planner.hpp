@@ -31,7 +31,6 @@
 #include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_environment/core/utils.h>
-#include <tesseract_motion_planners/core/waypoint.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <descartes_light/descartes_light.h>
 #include <descartes_light/interface/position_sampler.h>
@@ -45,7 +44,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_command_language/planners/descartes/descartes_motion_planner.h>
+#include <tesseract_motion_planners/descartes/descartes_motion_planner.h>
 
 namespace tesseract_planning
 {

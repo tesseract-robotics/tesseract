@@ -19,7 +19,7 @@ namespace tesseract_planning
 {
 
 template <typename FloatType>
-class DescartesMotionPlanner : public tesseract_motion_planners::MotionPlanner
+class DescartesMotionPlanner : public MotionPlanner
 {
 public:
   /** @brief Construct a basic planner */
@@ -49,8 +49,8 @@ public:
    * to console
    * @return true if optimization complete
    */
-  tesseract_common::StatusCode solve(tesseract_motion_planners::PlannerResponse& response,
-                                     tesseract_motion_planners::PostPlanCheckType check_type = tesseract_motion_planners::PostPlanCheckType::DISCRETE_CONTINUOUS_COLLISION,
+  tesseract_common::StatusCode solve(PlannerResponse& response,
+                                     PostPlanCheckType check_type = PostPlanCheckType::DISCRETE_CONTINUOUS_COLLISION,
                                      bool verbose = false) override;
 
   bool terminate() override;
@@ -68,7 +68,7 @@ private:
   typename DescartesMotionPlannerConfig<FloatType>::Ptr config_;
 
   /** @brief The planners status codes */
-  std::shared_ptr<const tesseract_motion_planners::DescartesMotionPlannerStatusCategory> status_category_;
+  std::shared_ptr<const DescartesMotionPlannerStatusCategory> status_category_;
 };
 
 using DescartesMotionPlannerD = DescartesMotionPlanner<double>;
