@@ -19,7 +19,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core INTERFACE)
-target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract::tesseract tesseract::tesseract_common trajopt::trajopt console_bridge)
+target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract::tesseract tesseract::tesseract_common tesseract::tesseract_command_language trajopt::trajopt console_bridge)
 tesseract_target_compile_options(${PROJECT_NAME}_core INTERFACE)
 tesseract_clang_tidy(${PROJECT_NAME}_core)
 tesseract_code_coverage(${PROJECT_NAME}_core ALL EXCLUDE ${COVERAGE_EXCLUDE})
@@ -55,7 +55,7 @@ add_library(${PROJECT_NAME}_trajopt
   src/trajopt/trajopt_utils.cpp
   src/trajopt/profile/trajopt_default_plan_profile.cpp
   src/trajopt/profile/trajopt_default_composite_profile.cpp)
-target_link_libraries(${PROJECT_NAME}_trajopt PUBLIC ${PROJECT_NAME} ${Boost_LIBRARIES} ${PROJECT_NAME}_core trajopt::trajopt trajopt::trajopt_utils trajopt::trajopt_sco)
+target_link_libraries(${PROJECT_NAME}_trajopt PUBLIC ${Boost_LIBRARIES} ${PROJECT_NAME}_core trajopt::trajopt trajopt::trajopt_utils trajopt::trajopt_sco)
 tesseract_target_compile_options(${PROJECT_NAME}_trajopt PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_trajopt)
 tesseract_code_coverage(${PROJECT_NAME}_trajopt ALL EXCLUDE ${COVERAGE_EXCLUDE})
@@ -94,19 +94,6 @@ target_include_directories(${PROJECT_NAME}_trajopt SYSTEM PUBLIC
 #target_include_directories(${PROJECT_NAME}_ompl SYSTEM PUBLIC
 #    ${OMPL_INCLUDE_DIRS})
 
-# OMPL Hybrid Planner
-#add_library(${PROJECT_NAME}_ompl_trajopt_freespace SHARED src/hybrid/ompl_trajopt_freespace_planner.cpp)
-#target_link_libraries(${PROJECT_NAME}_ompl_trajopt_freespace PUBLIC ${PROJECT_NAME}_ompl ${PROJECT_NAME}_trajopt)
-#tesseract_target_compile_options(${PROJECT_NAME}_ompl_trajopt_freespace PUBLIC)
-#tesseract_clang_tidy(${PROJECT_NAME}_ompl_trajopt_freespace)
-#tesseract_code_coverage(${PROJECT_NAME}_ompl_trajopt_freespace ALL EXCLUDE ${COVERAGE_EXCLUDE})
-#if(OMPL_VERSION VERSION_LESS "1.4.0")
-#    target_compile_definitions(${PROJECT_NAME}_ompl PUBLIC OMPL_LESS_1_4_0=ON)
-#endif()
-#target_include_directories(${PROJECT_NAME}_ompl_trajopt_freespace PUBLIC
-#    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-#    "$<INSTALL_INTERFACE:include>")
-
 # Descartes Planner
 add_library(${PROJECT_NAME}_descartes SHARED
   src/descartes/descartes_motion_planner.cpp
@@ -126,22 +113,10 @@ target_include_directories(${PROJECT_NAME}_descartes PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 
-# Descartes Hybrid Planner
-#add_library(${PROJECT_NAME}_descartes_trajopt_array SHARED src/hybrid/descartes_trajopt_array_planner.cpp)
-#target_link_libraries(${PROJECT_NAME}_descartes_trajopt_array PUBLIC ${PROJECT_NAME}_descartes ${PROJECT_NAME}_trajopt)
-#tesseract_target_compile_options(${PROJECT_NAME}_descartes_trajopt_array PUBLIC)
-#tesseract_clang_tidy(${PROJECT_NAME}_descartes_trajopt_array)
-#tesseract_code_coverage(${PROJECT_NAME}_descartes_trajopt_array ALL EXCLUDE ${COVERAGE_EXCLUDE})
-#target_include_directories(${PROJECT_NAME}_descartes_trajopt_array PUBLIC
-#    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-#    "$<INSTALL_INTERFACE:include>")
-
 tesseract_configure_package(${PROJECT_NAME}_core
                             ${PROJECT_NAME}_trajopt
                             #${PROJECT_NAME}_ompl
-                            #${PROJECT_NAME}_ompl_trajopt_freespace
-                            #${PROJECT_NAME}_descartes
-                            #${PROJECT_NAME}_descartes_trajopt_array
+                            ${PROJECT_NAME}_descartes
                             )
 
 # Mark cpp header files for installation
@@ -151,8 +126,8 @@ install(DIRECTORY include/${PROJECT_NAME}
   PATTERN ".svn" EXCLUDE
 )
 
-if (TESSERACT_ENABLE_TESTING)
-  enable_testing()
-  tesseract_add_run_tests_target()
+#if (TESSERACT_ENABLE_TESTING)
+#  enable_testing()
+#  tesseract_add_run_tests_target()
   add_subdirectory(test)
-endif()
+#endif()

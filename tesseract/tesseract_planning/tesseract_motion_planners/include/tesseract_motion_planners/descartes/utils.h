@@ -36,7 +36,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <functional>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_motion_planners/core/waypoint.h>
 #include <tesseract_motion_planners/descartes/descartes_robot_sampler.h>
 #include <tesseract_motion_planners/descartes/descartes_robot_positioner_sampler.h>
 #include <tesseract_motion_planners/descartes/types.h>
