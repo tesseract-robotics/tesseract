@@ -47,6 +47,8 @@ struct DescartesProblem
   int num_threads = descartes_light::Solver<double>::getMaxThreads();
   int dof {0};
 };
+using DescartesProblemF = DescartesProblem<float>;
+using DescartesProblemD = DescartesProblem<double>;
 
 }
 #endif // TESSERACT_MOTION_PLANNERS_DESCARTES_PROBLEM_H
