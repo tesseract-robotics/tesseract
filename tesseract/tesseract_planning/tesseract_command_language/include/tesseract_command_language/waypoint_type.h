@@ -23,7 +23,7 @@ inline bool isCartesianWaypoint(int type)
 
 inline bool isJointWaypoint(int type)
 {
-  return (type <= static_cast<int>(WaypointType::JOINT_WAYPOINT));
+  return (type == static_cast<int>(WaypointType::JOINT_WAYPOINT));
 }
 
 }
