@@ -1,6 +1,23 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_python_viewer)
 
+if(NOT PYTHON_VERSION)
+  set(PYTHON_VERSION  $ENV{ROS_PYTHON_VERSION})
+  message(STATUS "Setting Python Version: " ${PYTHON_VERSION})
+endif()
+
+if(PYTHON_VERSION)
+  if(${PYTHON_VERSION} LESS 3)
+    set(Python_ADDITIONAL_VERSIONS 2.7 2.6 2.5 2.4 2.3 2.2 2.1 2.0)
+  else()
+    set(Python_ADDITIONAL_VERSIONS 3.8 3.7 3.6 3.5 3.4 3.3 3.2 3.1 3.0)
+  endif()
+endif()
+
+find_package(PythonInterp ${PYTHON_VERSION} REQUIRED)
+find_package(PythonLibs REQUIRED)
+message(STATUS "Building Python Version: " ${PYTHON_VERSION_MAJOR})
+
 # Read version
 FILE (STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/package.xml" tesseract_viewer_python_version1 REGEX "<version>[0-9]+\\.[0-9]+\\.[0-9]+</version>")
 IF ("${tesseract_viewer_python_version1}" STREQUAL "" )
