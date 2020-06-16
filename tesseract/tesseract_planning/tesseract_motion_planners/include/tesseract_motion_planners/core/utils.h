@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_environment/core/types.h>
 #include <tesseract_kinematics/core/forward_kinematics.h>
+#include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_command_language/core/waypoint.h>
 #include <tesseract_command_language/cartesian_waypoint.h>
 #include <tesseract_command_language/joint_waypoint.h>
@@ -154,13 +155,16 @@ inline std::vector<Waypoint> interpolate(const Waypoint& start, const Waypoint& 
 }
 
 inline CompositeInstruction generateSeed(const CompositeInstruction& instructions,
-                                         const Eigen::VectorXd& current_state,
+                                         const tesseract_environment::EnvState::ConstPtr current_state,
+                                         const tesseract_kinematics::ForwardKinematics::Ptr& fwd_kin,
+                                         const tesseract_kinematics::InverseKinematics::Ptr& inv_kin,
                                          double longest_freespace_segment = 0.01,
                                          double longest_cartesian_segment = 0.01)
 {
   CompositeInstruction seed;
   const PlanInstruction* prev_plan_instruction {nullptr};
-  JointWaypoint current_jwp(current_state);
+  Eigen::VectorXd current_jv = current_state->getJointValues(fwd_kin->getJointNames());
+  Eigen::Isometry3d world_to_base = current_state->link_transforms.at(fwd_kin->getBaseLinkName());
 
   for (const auto& instruction : instructions)
   {
@@ -172,21 +176,110 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
         CompositeInstruction composite;
         if (prev_plan_instruction)
         {
-          assert(isCartesianWaypoint(prev_plan_instruction->getWaypoint().getType()));
-          assert(isCartesianWaypoint(plan_instruction->getWaypoint().getType()));
-          /** @todo This should also handle if waypoint type is joint */
-          const auto* pre_cwp = prev_plan_instruction->getWaypoint().cast_const<CartesianWaypoint>();
-          const auto* cur_cwp = plan_instruction->getWaypoint().cast_const<CartesianWaypoint>();
+          bool is_cwp1 = isCartesianWaypoint(prev_plan_instruction->getWaypoint().getType());
+          bool is_cwp2 = isCartesianWaypoint(plan_instruction->getWaypoint().getType());
+          bool is_jwp1 = isJointWaypoint(prev_plan_instruction->getWaypoint().getType());
+          bool is_jwp2 = isJointWaypoint(plan_instruction->getWaypoint().getType());
 
-          tesseract_common::VectorIsometry3d poses = interpolate(*pre_cwp, *cur_cwp, 10);
-          for (std::size_t p = 1; p < poses.size(); ++p)
+          assert(is_cwp1 || is_jwp1);
+          assert(is_cwp2 || is_jwp2);
+
+          if (is_cwp1 && is_cwp2)
           {
-            tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
-            move_instruction.setPosition(current_state);
-            move_instruction.setTCP(plan_instruction->getTCP());
-            move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
-            move_instruction.setDescription(plan_instruction->getDescription());
-            composite.push_back(move_instruction);
+            // If both are cartesian it will cartesian interpolate and use the current state as the seed.
+            const auto* pre_cwp = prev_plan_instruction->getWaypoint().cast_const<CartesianWaypoint>();
+            const auto* cur_cwp = plan_instruction->getWaypoint().cast_const<CartesianWaypoint>();
+
+            tesseract_common::VectorIsometry3d poses = interpolate(*pre_cwp, *cur_cwp, 10);
+            for (std::size_t p = 1; p < poses.size(); ++p)
+            {
+              tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
+              move_instruction.setPosition(current_jv);
+              move_instruction.setTCP(plan_instruction->getTCP());
+              move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
+              move_instruction.setDescription(plan_instruction->getDescription());
+              composite.push_back(move_instruction);
+            }
+          }
+          else if (is_cwp1 && is_jwp2)
+          {
+            // If one is cartesian and the other is a joint waypoint it will calculate the forward kinematics
+            // then cartesian interpolate and set the seed as the provided joint_waypoint.
+            const auto* pre_cwp = prev_plan_instruction->getWaypoint().cast_const<CartesianWaypoint>();
+            const auto* cur_jwp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
+
+            Eigen::Isometry3d p2 = Eigen::Isometry3d::Identity();
+            if (!fwd_kin->calcFwdKin(p2, *cur_jwp))
+              throw std::runtime_error("tesseract_planning::generateSeed: failed to find forward kinematics solution!");
+
+            p2 = world_to_base * p2 * plan_instruction->getTCP();
+            tesseract_common::VectorIsometry3d poses = interpolate(*pre_cwp, p2, 10);
+            for (std::size_t p = 1; p < poses.size(); ++p)
+            {
+              tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
+              move_instruction.setPosition(*cur_jwp);
+              move_instruction.setTCP(plan_instruction->getTCP());
+              move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
+              move_instruction.setDescription(plan_instruction->getDescription());
+              composite.push_back(move_instruction);
+            }
+          }
+          else if (is_cwp2 && is_jwp1)
+          {
+            // If one is cartesian and the other is a joint waypoint it will calculate the forward kinematics
+            // then cartesian interpolate and set the seed as the provided joint_waypoint.
+            const auto* pre_jwp = prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>();
+            const auto* cur_cwp = plan_instruction->getWaypoint().cast_const<CartesianWaypoint>();
+
+            Eigen::Isometry3d p1 = Eigen::Isometry3d::Identity();
+            if (!fwd_kin->calcFwdKin(p1, *pre_jwp))
+              throw std::runtime_error("tesseract_planning::generateSeed: failed to find forward kinematics solution!");
+
+            p1 = world_to_base * p1 * prev_plan_instruction->getTCP();
+            tesseract_common::VectorIsometry3d poses = interpolate(p1, *cur_cwp, 10);
+            for (std::size_t p = 1; p < poses.size(); ++p)
+            {
+              tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
+              move_instruction.setPosition(*pre_jwp);
+              move_instruction.setTCP(plan_instruction->getTCP());
+              move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
+              move_instruction.setDescription(plan_instruction->getDescription());
+              composite.push_back(move_instruction);
+            }
+          }
+          else if (is_jwp1 && is_jwp2)
+          {
+            // If both are joint waypoints it will calculate the forward kinematics for both then cartesian interpolate
+            // and set the seed using joint interpolation between the two.
+            const auto* pre_jwp = prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>();
+            const auto* cur_jwp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
+
+            Eigen::Isometry3d p1 = Eigen::Isometry3d::Identity();
+            if (!fwd_kin->calcFwdKin(p1, *pre_jwp))
+              throw std::runtime_error("tesseract_planning::generateSeed: failed to find forward kinematics solution!");
+
+            p1 = world_to_base * p1 * prev_plan_instruction->getTCP();
+
+            Eigen::Isometry3d p2 = Eigen::Isometry3d::Identity();
+            if (!fwd_kin->calcFwdKin(p2, *cur_jwp))
+              throw std::runtime_error("tesseract_planning::generateSeed: failed to find forward kinematics solution!");
+
+            p2 = world_to_base * p2 * plan_instruction->getTCP();
+            tesseract_common::VectorIsometry3d poses = interpolate(p1, p2, 10);
+            Eigen::MatrixXd joint_poses = interpolate(*pre_jwp, *cur_jwp, 10);
+            for (std::size_t p = 1; p < poses.size(); ++p)
+            {
+              tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
+              move_instruction.setPosition(joint_poses.col(p));
+              move_instruction.setTCP(plan_instruction->getTCP());
+              move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
+              move_instruction.setDescription(plan_instruction->getDescription());
+              composite.push_back(move_instruction);
+            }
+          }
+          else
+          {
+            throw std::runtime_error("tesseract_planning::generateSeed: unsupported waypoints provided!");
           }
         }
         else
@@ -204,8 +297,15 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
         CompositeInstruction composite;
         if (prev_plan_instruction)
         {
-          assert(isJointWaypoint(prev_plan_instruction->getWaypoint().getType()));
-          assert(isJointWaypoint(plan_instruction->getWaypoint().getType()));
+          bool is_cwp1 = isCartesianWaypoint(prev_plan_instruction->getWaypoint().getType());
+          bool is_cwp2 = isCartesianWaypoint(plan_instruction->getWaypoint().getType());
+          bool is_jwp1 = isJointWaypoint(prev_plan_instruction->getWaypoint().getType());
+          bool is_jwp2 = isJointWaypoint(plan_instruction->getWaypoint().getType());
+
+          assert(is_cwp1 || is_jwp1);
+          assert(is_cwp2 || is_jwp2);
+
+
 
           /** @todo This should also handle if waypoint type is cartesian */
           const auto* pre_cwp = prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>();

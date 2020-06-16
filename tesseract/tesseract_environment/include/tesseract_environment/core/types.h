@@ -64,6 +64,16 @@ struct EnvState
 
   /** @brief The joint transforms in world coordinate system */
   tesseract_common::TransformMap joint_transforms;
+
+  Eigen::VectorXd getJointValues(const std::vector<std::string>& joint_names) const
+  {
+    Eigen::VectorXd jv;
+    jv.resize(static_cast<long int>(joint_names.size()));
+    for (auto j = 0u; j < joint_names.size(); ++j)
+      jv(j) = joints.at(joint_names[j]);
+
+    return jv;
+  }
 };
 
 /**
