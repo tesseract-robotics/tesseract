@@ -32,7 +32,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/trajopt/trajopt_motion_planner.h>
 #include <tesseract_motion_planners/trajopt/config/trajopt_planner_default_config.h>
 #include <tesseract_motion_planners/trajopt/config/trajopt_planner_freespace_config.h>
-#include <urdf_parser/urdf_parser.h>
 
 const int NUM_STEPS = 7;
 

@@ -244,10 +244,10 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
       ContactResult contact;
       contact.link_names[0] = cd1->getName();
       contact.link_names[1] = cd2->getName();
-      contact.shape_id[0] = cd1->getShapeIndex(o1);
-      contact.shape_id[1] = cd2->getShapeIndex(o2);
-      contact.subshape_id[0] = fcl_contact.b1;
-      contact.subshape_id[1] = fcl_contact.b2;
+      contact.shape_id[0] = static_cast<int>(cd1->getShapeIndex(o1));
+      contact.shape_id[1] = static_cast<int>(cd2->getShapeIndex(o2));
+      contact.subshape_id[0] = static_cast<int>(fcl_contact.b1);
+      contact.subshape_id[1] = static_cast<int>(fcl_contact.b2);
       contact.nearest_points[0] = fcl_contact.pos;
       contact.nearest_points[1] = fcl_contact.pos;
       contact.nearest_points_local[0] = tf1_inv * contact.nearest_points[0];
@@ -308,8 +308,8 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
     contact.link_names[1] = cd2->getName();
     contact.shape_id[0] = cd1->getShapeIndex(o1);
     contact.shape_id[1] = cd2->getShapeIndex(o2);
-    contact.subshape_id[0] = fcl_result.b1;
-    contact.subshape_id[1] = fcl_result.b2;
+    contact.subshape_id[0] = static_cast<int>(fcl_result.b1);
+    contact.subshape_id[1] = static_cast<int>(fcl_result.b2);
     contact.nearest_points[0] = fcl_result.nearest_points[0];
     contact.nearest_points[1] = fcl_result.nearest_points[1];
     contact.nearest_points_local[0] = tf1_inv * contact.nearest_points[0];
