@@ -49,8 +49,7 @@ jobs:
              PARALLEL_TESTS: false,
              BEFORE_RUN_TARGET_TEST_EMBED: "source /root/target_ws/install/setup.bash",
              UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
-             TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON",
-             AFTER_SCRIPT: 'catkin build -w $target_ws --no-deps --verbose tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf tesseract_python --make-args test'}
+             TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON"}
           - {CI_NAME: Bionic-Build,
              OS_NAME: ubuntu,
              OS_CODE_NAME: bionic,
