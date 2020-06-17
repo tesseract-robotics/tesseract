@@ -136,73 +136,199 @@ bool TrajOptPlannerUniversalConfig::generate()
 
       if (plan_instruction->isLinear())
       {
-        /** @todo This should also handle if waypoint type is joint */
-        const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
-        if (prev_plan_instruction)
+        if (isCartesianWaypoint(plan_instruction->getWaypoint().getType()))
         {
-          /** @todo This should also handle if waypoint type is joint */
-          const auto* pre_wp = prev_plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
-
-          tesseract_common::VectorIsometry3d poses = interpolate(*pre_wp, *cur_wp, static_cast<int>(seed_composite->size()));
-          // Add intermediate points with path costs and constraints
-          for (std::size_t p = 1; p < poses.size() - 1; ++p)
+          const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
+          if (prev_plan_instruction)
           {
-            cur_plan_profile->apply(*pci, poses[p], *plan_instruction, active_links, index);
+            assert(prev_plan_instruction->getTCP().isApprox(plan_instruction->getTCP(), 1e-5));
 
-            // Add seed state
-            assert(seed_composite->at(p - 1).isMove());
-            const auto* seed_instruction = seed_composite->at(p - 1).cast_const<tesseract_planning::MoveInstruction>();
-            seed_states.push_back(seed_instruction->getPosition());
+            /** @todo This should also handle if waypoint type is joint */
+            Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
+            if (isCartesianWaypoint(prev_plan_instruction->getWaypoint().getType()))
+            {
+              prev_pose = (*prev_plan_instruction->getWaypoint().cast_const<Eigen::Isometry3d>());
+            }
+            else if (isJointWaypoint(prev_plan_instruction->getWaypoint().getType()))
+            {
+              const auto* jwp = prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>();
+              if (!pci->kin->calcFwdKin(prev_pose, *jwp))
+                throw std::runtime_error("TrajOptPlannerUniversalConfig: failed to solve forward kinematics!");
 
-            ++index;
+              prev_pose = pci->env->getCurrentState()->link_transforms.at(pci->kin->getBaseLinkName()) * prev_pose * plan_instruction->getTCP();
+            }
+            else
+            {
+              throw std::runtime_error("TrajOptPlannerUniversalConfig: uknown waypoint type.");
+            }
+
+            tesseract_common::VectorIsometry3d poses = interpolate(prev_pose, *cur_wp, static_cast<int>(seed_composite->size()));
+            // Add intermediate points with path costs and constraints
+            for (std::size_t p = 1; p < poses.size() - 1; ++p)
+            {
+              cur_plan_profile->apply(*pci, poses[p], *plan_instruction, active_links, index);
+
+              // Add seed state
+              assert(seed_composite->at(p - 1).isMove());
+              const auto* seed_instruction = seed_composite->at(p - 1).cast_const<tesseract_planning::MoveInstruction>();
+              seed_states.push_back(seed_instruction->getPosition());
+
+              ++index;
+            }
           }
+          else
+          {
+            assert(seed_composite->size()==1);
+          }
+
+          // Add final point with waypoint
+          cur_plan_profile->apply(*pci, *cur_wp, *plan_instruction, active_links, index);
+
+          // Add seed state
+          assert(seed_composite->back().isMove());
+          const auto* seed_instruction = seed_composite->back().cast_const<tesseract_planning::MoveInstruction>();
+          seed_states.push_back(seed_instruction->getPosition());
+
+          ++index;
         }
+        else if (isJointWaypoint(plan_instruction->getWaypoint().getType()))
+        {
+          const auto* cur_wp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
+          Eigen::Isometry3d cur_pose = Eigen::Isometry3d::Identity();
+          if (!pci->kin->calcFwdKin(cur_pose, *cur_wp))
+            throw std::runtime_error("TrajOptPlannerUniversalConfig: failed to solve forward kinematics!");
 
-        // Add final point with waypoint
-        cur_plan_profile->apply(*pci, *cur_wp, *plan_instruction, active_links, index);
+          cur_pose = pci->env->getCurrentState()->link_transforms.at(pci->kin->getBaseLinkName()) * cur_pose * plan_instruction->getTCP();
+          if (prev_plan_instruction)
+          {
+            assert(prev_plan_instruction->getTCP().isApprox(plan_instruction->getTCP(), 1e-5));
 
-        // Add seed state
-        assert(seed_composite->back().isMove());
-        const auto* seed_instruction = seed_composite->back().cast_const<tesseract_planning::MoveInstruction>();
-        seed_states.push_back(seed_instruction->getPosition());
+            /** @todo This should also handle if waypoint type is joint */
+            Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
+            if (isCartesianWaypoint(prev_plan_instruction->getWaypoint().getType()))
+            {
+              prev_pose = (*prev_plan_instruction->getWaypoint().cast_const<Eigen::Isometry3d>());
+            }
+            else if (isJointWaypoint(prev_plan_instruction->getWaypoint().getType()))
+            {
+              const auto* jwp = prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>();
+              if (!pci->kin->calcFwdKin(prev_pose, *jwp))
+                throw std::runtime_error("TrajOptPlannerUniversalConfig: failed to solve forward kinematics!");
 
-        ++index;
-        prev_plan_instruction = plan_instruction;
+              prev_pose = pci->env->getCurrentState()->link_transforms.at(pci->kin->getBaseLinkName()) * prev_pose * plan_instruction->getTCP();
+            }
+            else
+            {
+              throw std::runtime_error("TrajOptPlannerUniversalConfig: uknown waypoint type.");
+            }
+
+            tesseract_common::VectorIsometry3d poses = interpolate(prev_pose, cur_pose, static_cast<int>(seed_composite->size()));
+            // Add intermediate points with path costs and constraints
+            for (std::size_t p = 1; p < poses.size() - 1; ++p)
+            {
+              cur_plan_profile->apply(*pci, poses[p], *plan_instruction, active_links, index);
+
+              // Add seed state
+              assert(seed_composite->at(p - 1).isMove());
+              const auto* seed_instruction = seed_composite->at(p - 1).cast_const<tesseract_planning::MoveInstruction>();
+              seed_states.push_back(seed_instruction->getPosition());
+
+              ++index;
+            }
+          }
+          else
+          {
+            assert(seed_composite->size()==1);
+          }
+
+          // Add final point with waypoint
+          cur_plan_profile->apply(*pci, *cur_wp, *plan_instruction, active_links, index);
+
+          // Add seed state
+          assert(seed_composite->back().isMove());
+          const auto* seed_instruction = seed_composite->back().cast_const<tesseract_planning::MoveInstruction>();
+          seed_states.push_back(seed_instruction->getPosition());
+
+          ++index;
+        }
+        else
+        {
+          throw std::runtime_error("TrajOptPlannerUniversalConfig: unknown waypoint type");
+        }
       }
       else if (plan_instruction->isFreespace())
       {
         /** @todo This should also handle if waypoint type is cartesian */
-        const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>();
-        if (prev_plan_instruction)
+        if (isJointWaypoint(plan_instruction->getWaypoint().getType()))
         {
-          /** @todo This should also handle if waypoint type is cartesian */
-          const auto* pre_wp = prev_plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>();
-
-          Eigen::MatrixXd states = interpolate(*pre_wp, *cur_wp, static_cast<int>(seed_composite->size()));
-          // Add intermediate points with path costs and constraints
-          for (long s = 1; s < states.cols() - 1; ++s)
+          const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>();
+          if (prev_plan_instruction)
           {
-            // Add seed state
-            tesseract_planning::JointWaypoint i_jpw = states.col(s);
-            assert(seed_composite->at(static_cast<std::size_t>(s - 1)).isMove());
-            const auto* seed_instruction = seed_composite->at(static_cast<std::size_t>(s - 1)).cast_const<tesseract_planning::MoveInstruction>();
-            seed_states.push_back(seed_instruction->getPosition());
+            // Add intermediate points with path costs and constraints
+            for (std::size_t s = 1; s < seed_composite->size() - 1; ++s)
+            {
+              // Add seed state
+              assert(seed_composite->at(s - 1).isMove());
+              const auto* seed_instruction = seed_composite->at(s - 1).cast_const<tesseract_planning::MoveInstruction>();
+              seed_states.push_back(seed_instruction->getPosition());
 
-            ++index;
+              ++index;
+            }
           }
+          else
+          {
+            assert(seed_composite->size()==1);
+          }
+
+          // Add final point with waypoint costs and contraints
+          /** @todo Should check that the joint names match the order of the manipulator */
+          cur_plan_profile->apply(*pci, *cur_wp, *plan_instruction, active_links, index);
+
+          // Add to fixed indices
+          fixed_steps.push_back(index);
+
+          // Add seed state
+          assert(seed_composite->back().isMove());
+          const auto* seed_instruction = seed_composite->back().cast_const<tesseract_planning::MoveInstruction>();
+          seed_states.push_back(seed_instruction->getPosition());
         }
+        else if (isCartesianWaypoint(plan_instruction->getWaypoint().getType()))
+        {
+          const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
+          if (prev_plan_instruction)
+          {
+            // Add intermediate points with path costs and constraints
+            for (std::size_t s = 1; s < seed_composite->size() - 1; ++s)
+            {
+              // Add seed state
+              assert(seed_composite->at(s - 1).isMove());
+              const auto* seed_instruction = seed_composite->at(s - 1).cast_const<tesseract_planning::MoveInstruction>();
+              seed_states.push_back(seed_instruction->getPosition());
 
-        // Add final point with waypoint costs and contraints
-        /** @todo Should check that the joint names match the order of the manipulator */
-        cur_plan_profile->apply(*pci, *cur_wp, *plan_instruction, active_links, index);
+              ++index;
+            }
+          }
+          else
+          {
+            assert(seed_composite->size()==1);
+          }
 
-        // Add to fixed indices
-        fixed_steps.push_back(index);
+          // Add final point with waypoint costs and contraints
+          /** @todo Should check that the joint names match the order of the manipulator */
+          cur_plan_profile->apply(*pci, *cur_wp, *plan_instruction, active_links, index);
 
-        // Add seed state
-        assert(seed_composite->back().isMove());
-        const auto* seed_instruction = seed_composite->back().cast_const<tesseract_planning::MoveInstruction>();
-        seed_states.push_back(seed_instruction->getPosition());
+          // Add to fixed indices
+          fixed_steps.push_back(index);
+
+          // Add seed state
+          assert(seed_composite->back().isMove());
+          const auto* seed_instruction = seed_composite->back().cast_const<tesseract_planning::MoveInstruction>();
+          seed_states.push_back(seed_instruction->getPosition());
+        }
+        else
+        {
+          throw std::runtime_error("TrajOptPlannerUniversalConfig: unknown waypoint type");
+        }
 
         ++index;
       }
