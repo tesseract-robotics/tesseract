@@ -123,7 +123,7 @@ inline std::vector<Waypoint> interpolate(const Waypoint& start, const Waypoint& 
     case static_cast<int>(WaypointType::CARTESIAN_WAYPOINT):
     {
       const auto* w1 = start.cast_const<Eigen::Isometry3d>();
-      const auto* w2 = start.cast_const<Eigen::Isometry3d>();
+      const auto* w2 = stop.cast_const<Eigen::Isometry3d>();
       tesseract_common::VectorIsometry3d eigen_poses = interpolate(*w1, *w2, steps);
 
       std::vector<Waypoint> result;
@@ -136,7 +136,7 @@ inline std::vector<Waypoint> interpolate(const Waypoint& start, const Waypoint& 
     case static_cast<int>(WaypointType::JOINT_WAYPOINT):
     {
       const auto* w1 = start.cast_const<Eigen::VectorXd>();
-      const auto* w2 = start.cast_const<Eigen::VectorXd>();
+      const auto* w2 = stop.cast_const<Eigen::VectorXd>();
       Eigen::MatrixXd joint_poses = interpolate(*w1, *w2, steps);
 
       std::vector<Waypoint> result;
@@ -157,9 +157,9 @@ inline std::vector<Waypoint> interpolate(const Waypoint& start, const Waypoint& 
 inline CompositeInstruction generateSeed(const CompositeInstruction& instructions,
                                          const tesseract_environment::EnvState::ConstPtr current_state,
                                          const tesseract_kinematics::ForwardKinematics::Ptr& fwd_kin,
-                                         const tesseract_kinematics::InverseKinematics::Ptr& inv_kin,
-                                         double longest_freespace_segment = 0.01,
-                                         double longest_cartesian_segment = 0.01)
+                                         const tesseract_kinematics::InverseKinematics::Ptr& /*inv_kin*/,
+                                         double /*longest_freespace_segment*/ = 0.01,
+                                         double /*longest_cartesian_segment*/ = 0.01)
 {
   CompositeInstruction seed;
   const PlanInstruction* prev_plan_instruction {nullptr};
@@ -183,6 +183,7 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
 
           assert(is_cwp1 || is_jwp1);
           assert(is_cwp2 || is_jwp2);
+          assert(prev_plan_instruction->getTCP().isApprox(plan_instruction->getTCP(), 1e-5));
 
           if (is_cwp1 && is_cwp2)
           {
@@ -270,7 +271,7 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
             for (std::size_t p = 1; p < poses.size(); ++p)
             {
               tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
-              move_instruction.setPosition(joint_poses.col(p));
+              move_instruction.setPosition(joint_poses.col(static_cast<long>(p)));
               move_instruction.setTCP(plan_instruction->getTCP());
               move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
               move_instruction.setDescription(plan_instruction->getDescription());
@@ -284,7 +285,17 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
         }
         else
         {
+          bool is_cwp = isCartesianWaypoint(plan_instruction->getWaypoint().getType());
+          bool is_jwp = isJointWaypoint(plan_instruction->getWaypoint().getType());
+          assert(is_cwp || is_jwp);
+
           tesseract_planning::MoveInstruction move_instruction(plan_instruction->getWaypoint(), MoveInstructionType::LINEAR);
+
+          if (is_jwp)
+            move_instruction.setPosition(*(plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>()));
+          else
+            move_instruction.setPosition(current_jv);
+
           move_instruction.setTCP(plan_instruction->getTCP());
           move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
           move_instruction.setDescription(plan_instruction->getDescription());
@@ -305,27 +316,80 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
           assert(is_cwp1 || is_jwp1);
           assert(is_cwp2 || is_jwp2);
 
-
-
-          /** @todo This should also handle if waypoint type is cartesian */
-          const auto* pre_cwp = prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>();
-          const auto* cur_cwp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
-
-          Eigen::MatrixXd states = interpolate(*pre_cwp, *cur_cwp, 10);
-          for (long i = 1; i < states.cols(); ++i)
+          if (is_jwp1 && is_jwp2)
           {
-            tesseract_planning::MoveInstruction move_instruction(JointWaypoint(states.col(i)), MoveInstructionType::FREESPACE);
-            move_instruction.setPosition(states.col(i));
-            move_instruction.setTCP(plan_instruction->getTCP());
-            move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
-            move_instruction.setDescription(plan_instruction->getDescription());
-            composite.push_back(move_instruction);
+            const auto* pre_cwp = prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>();
+            const auto* cur_cwp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
+
+            Eigen::MatrixXd states = interpolate(*pre_cwp, *cur_cwp, 10);
+            for (long i = 1; i < states.cols(); ++i)
+            {
+              tesseract_planning::MoveInstruction move_instruction(JointWaypoint(states.col(i)), MoveInstructionType::FREESPACE);
+              move_instruction.setPosition(states.col(i));
+              move_instruction.setTCP(plan_instruction->getTCP());
+              move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
+              move_instruction.setDescription(plan_instruction->getDescription());
+              composite.push_back(move_instruction);
+            }
+          }
+          else if (is_cwp1 && is_jwp2)
+          {
+            const auto* cur_jwp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
+
+            for (long i = 1; i < 10; ++i)
+            {
+              tesseract_planning::MoveInstruction move_instruction(*cur_jwp, MoveInstructionType::FREESPACE);
+              move_instruction.setPosition(*cur_jwp);
+              move_instruction.setTCP(plan_instruction->getTCP());
+              move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
+              move_instruction.setDescription(plan_instruction->getDescription());
+              composite.push_back(move_instruction);
+            }
+          }
+          else if (is_cwp2 && is_jwp1)
+          {
+            const auto* pre_jwp = prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>();
+
+            for (long i = 1; i < 10; ++i)
+            {
+              tesseract_planning::MoveInstruction move_instruction(*pre_jwp, MoveInstructionType::FREESPACE);
+              move_instruction.setPosition(*pre_jwp);
+              move_instruction.setTCP(plan_instruction->getTCP());
+              move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
+              move_instruction.setDescription(plan_instruction->getDescription());
+              composite.push_back(move_instruction);
+            }
+
+          }
+          else if (is_cwp1 && is_cwp2)
+          {
+            for (long i = 1; i < 10; ++i)
+            {
+              tesseract_planning::MoveInstruction move_instruction(JointWaypoint(current_jv), MoveInstructionType::FREESPACE);
+              move_instruction.setPosition(current_jv);
+              move_instruction.setTCP(plan_instruction->getTCP());
+              move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
+              move_instruction.setDescription(plan_instruction->getDescription());
+              composite.push_back(move_instruction);
+            }
+          }
+          else
+          {
+            throw std::runtime_error("tesseract_planning::generateSeed: unsupported waypoints provided!");
           }
         }
         else
         {
+          bool is_cwp = isCartesianWaypoint(plan_instruction->getWaypoint().getType());
+          bool is_jwp = isJointWaypoint(plan_instruction->getWaypoint().getType());
+          assert(is_cwp || is_jwp);
+
           tesseract_planning::MoveInstruction move_instruction(plan_instruction->getWaypoint(), MoveInstructionType::FREESPACE);
-          move_instruction.setPosition(*(plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>()));
+          if (is_jwp)
+            move_instruction.setPosition(*(plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>()));
+          else
+            move_instruction.setPosition(current_jv);
+
           move_instruction.setTCP(plan_instruction->getTCP());
           move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
           move_instruction.setDescription(plan_instruction->getDescription());
