@@ -19,12 +19,10 @@ void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
   if (it != active_links.end())
   {
     ti = createDynamicCartesianWaypointTermInfo(cartesian_waypoint, index, parent_instruction.getWorkingFrame(), parent_instruction.getTCP(), cartesian_coeff, pci.kin->getTipLinkName(), term_type);
-    pci.cnt_infos.push_back(ti);
   }
   else
   {
     ti = createCartesianWaypointTermInfo(cartesian_waypoint, index, parent_instruction.getWorkingFrame(), parent_instruction.getTCP(), cartesian_coeff, pci.kin->getTipLinkName(), term_type);
-    pci.cnt_infos.push_back(ti);
   }
 
   if (term_type == trajopt::TermType::TT_CNT)
