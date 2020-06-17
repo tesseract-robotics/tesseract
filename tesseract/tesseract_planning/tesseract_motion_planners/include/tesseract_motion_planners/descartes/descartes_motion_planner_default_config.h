@@ -97,11 +97,11 @@ private:
     this->prob.manip_inv_kin = this->prob.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
     this->prob.manip_reach = manip_reach;
 
-    this->prob.dof = this->prob.manip_fwd_kin->numJoints();
+    this->prob.dof = static_cast<int>(this->prob.manip_fwd_kin->numJoints());
     if (configuration == DescartesProblem<FloatType>::ROBOT_ON_POSITIONER || configuration == DescartesProblem<FloatType>::ROBOT_WITH_EXTERNAL_POSITIONER)
     {
       this->prob.positioner_fwd_kin = this->prob.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(positioner);
-      this->prob.dof += this->prob.positioner_fwd_kin->numJoints();
+      this->prob.dof += static_cast<int>(this->prob.positioner_fwd_kin->numJoints());
     }
   }
 
@@ -181,9 +181,9 @@ private:
 
         assert(instruction.getType() == static_cast<int>(InstructionType::PLAN_INSTRUCTION));
         const auto* plan_instruction = instruction.cast_const<PlanInstruction>();
-        const Waypoint& wp = plan_instruction->getWaypoint();
+//        const Waypoint& wp = plan_instruction->getWaypoint();
         const std::string& working_frame = plan_instruction->getWorkingFrame();
-        const Eigen::Isometry3d& tcp = plan_instruction->getTCP();
+//        const Eigen::Isometry3d& tcp = plan_instruction->getTCP();
 
         assert(seed[i].isComposite());
         const auto* seed_composite = seed[i].cast_const<tesseract_planning::CompositeInstruction>();
@@ -201,7 +201,7 @@ private:
             // Add intermediate points with path costs and constraints
             for (std::size_t p = 1; p < poses.size() - 1; ++p)
             {
-              tesseract_planning::CartesianWaypoint p_cpw = poses[p];
+//              tesseract_planning::CartesianWaypoint p_cpw = poses[p];
 //              createCartesianComponents(p_cpw, index, working_frame, tcp, plan_instruction->getPathCosts(), link);
 //              createCartesianComponents(p_cpw, index, working_frame, tcp, plan_instruction->getPathConstraints(), link);
 
