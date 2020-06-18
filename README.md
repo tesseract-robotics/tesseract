@@ -14,11 +14,11 @@ The planning framework (Tesseract) was designed to be light weight, limiting the
 ## Tesseract Core Packages
 
 * **tesseract** – This is the main class that manages the major component Environment, Forward Kinematics, Inverse Kinematics and loading from various data.
-* **tesseract_collision** – This package contains privides a common interface for collision checking prividing several implementation of a Bullet collision library and FCL collision library. It includes both continuous and discrete collision checking for convex-convex, convex-concave and concave-concave shapes.
+* **tesseract_collision** – This package contains a common interface for collision checking prividing several implementation of a Bullet collision library and FCL collision library. It includes both continuous and discrete collision checking for convex-convex, convex-concave and concave-concave shapes.
 * **tesseract_common** – This package contains common functionality needed by the majority of the packages.
 * **tesseract_environment** – This package contains the Tesseract Environment which provides functionality to add,remove,move and modify links and joint. It also manages adding object to the contact managers and provides the ability.
 * **tesseract_geometry** – This package contains geometry types used by Tesseract including primitive shapes, mesh, convex hull mesh, octomap and signed distance field.
-* **tesseract_kinematics** –  This package contains a common interface for Forward and Inverse kinematics for Chain, Tree's and Graphs including implementation using KDL and OPW Kinematics.
+* **tesseract_kinematics** –  This package contains a common interface for Forward and Inverse kinematics for Chains, Trees and Graphs including implementation using KDL and OPW Kinematics.
 * **tesseract_motion_planners** – This package contains a common interface for Motion Planners and includes implementation for OMPL, TrajOpt and Descartes.
 * **tesseract_scene_graph** – This package contains the scene graph which is the data structure used to manage the connectivity of objects in the environment. It inherits from boost graph and provides addition functionality for adding,removing and modifying Links and Joints along with search implementation.
 * **tesseract_support** – This package contains support data used for unit tests and examples throughout Tesseract.
