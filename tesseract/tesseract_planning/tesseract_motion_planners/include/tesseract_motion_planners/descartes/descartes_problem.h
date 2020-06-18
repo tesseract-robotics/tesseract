@@ -40,9 +40,13 @@ struct DescartesProblem
   tesseract_kinematics::ForwardKinematics::ConstPtr positioner_fwd_kin;
   double manip_reach;
 
+  // The limits are positioner + manipulator
+  Eigen::MatrixX2d joint_limits;
+  std::vector<std::string> joint_names;
+
   // These are required for descartes
-  typename descartes_light::EdgeEvaluator<FloatType>::Ptr edge_evaluator;
-  std::vector<descartes_core::TimingConstraint<FloatType>> timing_constraint;
+  std::vector<typename descartes_light::EdgeEvaluator<FloatType>::Ptr> edge_evaluators;
+  std::vector<descartes_core::TimingConstraint<FloatType>> timing_constraints;
   std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr> samplers;
   int num_threads = descartes_light::Solver<double>::getMaxThreads();
   int dof {0};
