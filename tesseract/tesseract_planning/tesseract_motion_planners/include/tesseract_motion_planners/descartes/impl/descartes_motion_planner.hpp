@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_COMMAND_LANGUAGE_DECARTES_MOTION_PLANNER_HPP
-#define TESSERACT_COMMAND_LANGUAGE_DECARTES_MOTION_PLANNER_HPP
+#ifndef TESSERACT_MOTION_PLANNERS_IMPL_DESCARTES_DECARTES_MOTION_PLANNER_HPP
+#define TESSERACT_MOTION_PLANNERS_IMPL_DESCARTES_DECARTES_MOTION_PLANNER_HPP
 
 #include <tesseract/tesseract.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
@@ -79,7 +79,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
   auto tStart = boost::posix_time::second_clock::local_time();
 
   descartes_light::Solver<FloatType> graph_builder(config_->prob.dof);
-  if (!graph_builder.build(config_->prob.samplers, config_->prob.timing_constraint, config_->prob.edge_evaluator, config_->prob.num_threads))
+  if (!graph_builder.build(config_->prob.samplers, config_->prob.timing_constraints, config_->prob.edge_evaluators, config_->prob.num_threads))
   {
 //    CONSOLE_BRIDGE_logError("Failed to build vertices");
 //    for (const auto& i : graph_builder.getFailedVertices())
@@ -169,4 +169,4 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::isConfigured() c
 }
 
 }  // namespace tesseract_planning
-#endif  // TESSERACT_MOTION_PLANNERS_DECARTES_MOTION_PLANNER_HPP
+#endif  // TESSERACT_MOTION_PLANNERS_IMPL_DESCARTES_DECARTES_MOTION_PLANNER_HPP
