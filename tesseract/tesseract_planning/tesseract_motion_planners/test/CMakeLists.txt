@@ -52,7 +52,7 @@ tesseract_target_compile_options(${PROJECT_NAME}_descartes_unit PRIVATE)
 tesseract_clang_tidy(${PROJECT_NAME}_descartes_unit)
 tesseract_code_coverage(${PROJECT_NAME}_descartes_unit ALL EXCLUDE ${COVERAGE_EXCLUDE})
 tesseract_gtest_discover_tests(${PROJECT_NAME}_descartes_unit)
-add_dependencies(${PROJECT_NAME}_trajopt_unit ${PROJECT_NAME}_descartes)
+add_dependencies(${PROJECT_NAME}_descartes_unit ${PROJECT_NAME}_descartes)
 add_dependencies(run_tests ${PROJECT_NAME}_descartes_unit)
 
 # Utils Tests
