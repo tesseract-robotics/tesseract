@@ -36,7 +36,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/descartes/descartes_motion_planner.h>
 #include <tesseract_motion_planners/descartes/descartes_motion_planner_default_config.h>
-#include <tesseract_motion_planners/descartes/descartes_collision_edge_evaluator.h>
 #include <tesseract_motion_planners/descartes/descartes_utils.h>
 #include <tesseract_motion_planners/descartes/profile/descartes_default_plan_profile.h>
 
@@ -174,6 +173,7 @@ protected:
                   robot_kin->getLimits());
 
     tesseract_ptr_->getInvKinematicsManager()->addInvKinematicSolver(opw_kin);
+    tesseract_ptr_->getInvKinematicsManager()->setDefaultInvKinematicSolver("manipulator", opw_kin->getSolverName());
   }
 };
 
@@ -211,8 +211,10 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
   auto plan_profile = std::make_shared<DescartesDefaultPlanProfileD>();
 
   // Create TrajOpt Config
-  auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(tesseract_ptr_, tesseract_ptr_->getEnvironmentConst()->getCurrentState());
-  config->manip_reach = 1.5;
+  auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(tesseract_ptr_,
+                                                                       tesseract_ptr_->getEnvironmentConst()->getCurrentState(),
+                                                                       "manipulator",
+                                                                       1.5);
   config->configuration = DescartesProblemD::Configuration::ROBOT_ONLY;
   config->instructions = program;
   config->seed = seed;
@@ -224,7 +226,6 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
   single_descartes_planner.setConfiguration(config);
 
   PlannerResponse single_planner_response;
-  single_descartes_planner.setConfiguration(config);
   auto single_status = single_descartes_planner.solve(single_planner_response);
   EXPECT_TRUE(&single_status);
 
@@ -237,6 +238,10 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
     PlannerResponse planner_response;
     config->seed = seed; // reset seed to the original seed
     descartes_planner.setConfiguration(config);
+    EXPECT_EQ(config->prob.samplers.size(), 11);
+    EXPECT_EQ(config->prob.timing_constraints.size(), 11);
+    EXPECT_EQ(config->prob.edge_evaluators.size(), 10);
+
     auto status = descartes_planner.solve(planner_response);
     EXPECT_TRUE(&status);
     EXPECT_TRUE(official_results.size() == config->seed.size());
@@ -306,8 +311,10 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
   plan_profile->target_pose_sampler = [](const Eigen::Isometry3d& tool_pose) { return tesseract_planning::sampleToolAxis(tool_pose, M_PI_4, Eigen::Vector3d(0, 0, 1)); };
 
   // Create TrajOpt Config
-  auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(tesseract_ptr_, tesseract_ptr_->getEnvironmentConst()->getCurrentState());
-  config->manip_reach = 1.5;
+  auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(tesseract_ptr_,
+                                                                       tesseract_ptr_->getEnvironmentConst()->getCurrentState(),
+                                                                       "manipulator",
+                                                                       1.5);
   config->configuration = DescartesProblemD::Configuration::ROBOT_ONLY;
   config->instructions = program;
   config->seed = seed;
@@ -317,9 +324,11 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
   // Create Planner
   DescartesMotionPlannerD single_descartes_planner;
   single_descartes_planner.setConfiguration(config);
+  EXPECT_EQ(config->prob.samplers.size(), 11);
+  EXPECT_EQ(config->prob.timing_constraints.size(), 11);
+  EXPECT_EQ(config->prob.edge_evaluators.size(), 10);
 
   PlannerResponse single_planner_response;
-  single_descartes_planner.setConfiguration(config);
   auto single_status = single_descartes_planner.solve(single_planner_response);
   EXPECT_TRUE(&single_status);
 
@@ -399,11 +408,13 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   auto plan_profile = std::make_shared<DescartesDefaultPlanProfileD>();
   // Make this a tool z-axis free sampler
   plan_profile->target_pose_sampler = [](const Eigen::Isometry3d& tool_pose) { return tesseract_planning::sampleToolAxis(tool_pose, M_PI_4, Eigen::Vector3d(0, 0, 1)); };
-  // TODO add collision edge evaluator
+  plan_profile->enable_edge_collision = true; // Add collision edge evaluator
 
   // Create TrajOpt Config
-  auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(tesseract_ptr_, tesseract_ptr_->getEnvironmentConst()->getCurrentState());
-  config->manip_reach = 1.5;
+  auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(tesseract_ptr_,
+                                                                       tesseract_ptr_->getEnvironmentConst()->getCurrentState(),
+                                                                       "manipulator",
+                                                                       1.5);
   config->configuration = DescartesProblemD::Configuration::ROBOT_ONLY;
   config->instructions = program;
   config->seed = seed;
@@ -413,9 +424,11 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   // Create Planner
   DescartesMotionPlannerD single_descartes_planner;
   single_descartes_planner.setConfiguration(config);
+  EXPECT_EQ(config->prob.samplers.size(), 11);
+  EXPECT_EQ(config->prob.timing_constraints.size(), 11);
+  EXPECT_EQ(config->prob.edge_evaluators.size(), 10);
 
   PlannerResponse single_planner_response;
-  single_descartes_planner.setConfiguration(config);
   auto single_status = single_descartes_planner.solve(single_planner_response);
   EXPECT_TRUE(&single_status);
 
@@ -459,57 +472,6 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
       }
     }
   }
-}
-
-TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerMakeRobotSampler)  // NOLINT
-{
-//  auto robot_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator", "OPWInvKin");
-//  auto current_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
-
-//  // These specify the series of points to be optimized
-//  std::vector<tesseract_motion_planners::Waypoint::Ptr> waypoints;
-//  Eigen::VectorXd x = Eigen::VectorXd::LinSpaced(NUM_STEPS, -0.2, 0.2);
-//  for (int i = 0; i < x.size(); ++i)
-//  {
-//    if (i == 0)
-//    {
-//      std::vector<std::string> joint_names = robot_kin->getJointNames();
-//      Eigen::VectorXd joint_positions = tesseract_ptr_->getEnvironmentConst()->getCurrentJointValues(joint_names);
-//      JointWaypoint::Ptr waypoint = std::make_shared<JointWaypoint>(joint_positions, joint_names);
-//      waypoint->setIsCritical(true);
-//      waypoints.push_back(waypoint);
-//    }
-//    else if (i == 1)
-//    {
-//      CartesianWaypoint::Ptr waypoint =
-//          std::make_shared<CartesianWaypoint>(Eigen::Vector3d(0.8, x[i], 0.8), Eigen::Quaterniond(0, 0, -1.0, 0));
-//      waypoint->setIsCritical(true);
-//      Eigen::VectorXd c(6);
-//      c << 1, 1, 1, 1, 1, 1;
-//      waypoint->setCoefficients(c);
-//      waypoints.push_back(waypoint);
-//    }
-//    else
-//    {
-//      CartesianWaypoint::Ptr waypoint =
-//          std::make_shared<CartesianWaypoint>(Eigen::Vector3d(0.8, x[i], 0.8), Eigen::Quaterniond(0, 0, -1.0, 0));
-//      waypoint->setIsCritical(true);
-//      Eigen::VectorXd c(6);
-//      c << 1, 1, 1, 1, 1, 0;
-//      waypoint->setCoefficients(c);
-//      waypoints.push_back(waypoint);
-//    }
-//  }
-
-//  DescartesMotionPlannerConfigD config = createDescartesPlannerConfig(
-//      tesseract_ptr_, "manipulator", robot_kin, Eigen::Isometry3d::Identity(), 1.5, current_state, waypoints);
-//  config.num_threads = 1;
-
-//  // Verify that the right sampler was choosen
-//  EXPECT_TRUE(config.samplers.size() == static_cast<std::size_t>(x.size()));
-//  EXPECT_TRUE(config.samplers[0] != nullptr);
-//  EXPECT_TRUE(config.samplers[1] != nullptr);
-//  EXPECT_TRUE(config.samplers[2] != nullptr);
 }
 
 int main(int argc, char** argv)
