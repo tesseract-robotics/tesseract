@@ -30,24 +30,6 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
     ${EIGEN3_INCLUDE_DIRS})
 
 # Trajopt Planner
-#add_library(${PROJECT_NAME}_trajopt
-#  SHARED
-#    src/trajopt/config/utils.cpp
-#    src/trajopt/config/trajopt_planner_config.cpp
-#    src/trajopt/config/trajopt_planner_default_config.cpp
-#    src/trajopt/config/trajopt_planner_freespace_config.cpp
-#    src/trajopt/trajopt_motion_planner.cpp
-#)
-#target_link_libraries(${PROJECT_NAME}_trajopt PUBLIC ${Boost_LIBRARIES} ${PROJECT_NAME}_core trajopt::trajopt trajopt::trajopt_utils trajopt::trajopt_sco)
-#tesseract_target_compile_options(${PROJECT_NAME}_trajopt PUBLIC)
-#tesseract_clang_tidy(${PROJECT_NAME}_trajopt)
-#tesseract_code_coverage(${PROJECT_NAME}_trajopt ALL EXCLUDE ${COVERAGE_EXCLUDE})
-#target_include_directories(${PROJECT_NAME}_trajopt PUBLIC
-#    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-#    "$<INSTALL_INTERFACE:include>")
-#target_include_directories(${PROJECT_NAME}_trajopt SYSTEM PUBLIC
-#    ${Boost_INCLUDE_DIRS})
-
 add_library(${PROJECT_NAME}_trajopt
   src/trajopt/trajopt_planner_config.cpp
   src/trajopt/trajopt_motion_planner.cpp
