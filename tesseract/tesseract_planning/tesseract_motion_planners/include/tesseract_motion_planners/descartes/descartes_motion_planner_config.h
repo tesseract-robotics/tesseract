@@ -31,13 +31,13 @@ struct DescartesMotionPlannerConfig
   virtual bool generate()
   {
     // Check that parameters are valid
-    if (prob.edge_evaluator == nullptr)
+    if (prob.edge_evaluators.empty() || prob.edge_evaluators.size() != (prob.samplers.size() - 1))
     {
-      CONSOLE_BRIDGE_logError("In DescartesMotionPlannerConfig: edge_evaluator is a required parameter and has not been set");
+      CONSOLE_BRIDGE_logError("In DescartesMotionPlannerConfig: edge_evaluators is a required parameter and has not been set");
       return false;
     }
 
-    if (prob.timing_constraint.empty())
+    if (prob.timing_constraints.empty())
     {
       CONSOLE_BRIDGE_logError("In DescartesMotionPlannerConfig: timing_constraint is a required parameter and has not been set");
       return false;
@@ -49,7 +49,7 @@ struct DescartesMotionPlannerConfig
       return false;
     }
 
-    if (prob.timing_constraint.size() != prob.samplers.size())
+    if (prob.timing_constraints.size() != prob.samplers.size())
     {
       CONSOLE_BRIDGE_logError("In DescartesMotionPlannerConfig: timing_constraint and samplers must be the same size");
       return false;
