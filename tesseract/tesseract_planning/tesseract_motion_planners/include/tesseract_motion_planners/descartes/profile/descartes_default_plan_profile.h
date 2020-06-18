@@ -4,6 +4,8 @@
 #include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
 #include <tesseract_motion_planners/descartes/descartes_utils.h>
 #include <tesseract_motion_planners/descartes/types.h>
+
+#include <descartes_light/interface/edge_evaluator.h>
 #include <Eigen/Geometry>
 
 namespace tesseract_planning
@@ -17,11 +19,21 @@ public:
   using ConstPtr = std::shared_ptr<const DescartesDefaultPlanProfile<FloatType>>;
 
   PoseSamplerFn target_pose_sampler = [](const Eigen::Isometry3d& tool_pose) { return tesseract_common::VectorIsometry3d({ tool_pose }); };
+  DescartesEdgeEvaluatorAllocatorFn<FloatType> edge_evaluator {nullptr};
+  double timing_constraint = std::numeric_limits<FloatType>::max();
   Eigen::VectorXd positioner_sample_resolution = Eigen::VectorXd::Constant(1, 1, 0.01); // TODO Does this belong here or in the problem?
+
+  // Applied to sampled states
   bool enable_collision {true};
-  bool allow_collision {false};
   double collision_safety_margin {0};
-  DescartesIsValidFn<FloatType> is_valid; // TODO add default
+
+  // Applied during edge evaluation
+  bool enable_edge_collision {false};
+  double edge_collision_saftey_margin {0};
+  double edge_longest_valid_segment_length = 0.5;
+
+  bool allow_collision {false};
+  DescartesIsValidFn<FloatType> is_valid; // If not provided it adds a joint limit is valid function
   bool debug {false};
 
   void apply(DescartesProblem<FloatType>& prob,

@@ -6,9 +6,14 @@
 #include <tesseract_motion_planners/descartes/descartes_robot_positioner_sampler.h>
 #include <tesseract_motion_planners/descartes/descartes_external_positioner_sampler.h>
 #include <tesseract_motion_planners/descartes/descartes_collision.h>
+#include <tesseract_motion_planners/descartes/descartes_collision_edge_evaluator.h>
 
 #include <descartes_light/interface/collision_interface.h>
+#include <descartes_samplers/evaluators/euclidean_distance_edge_evaluator.h>
+#include <descartes_samplers/evaluators/compound_edge_evaluator.h>
 #include <descartes_samplers/samplers/fixed_joint_pose_sampler.h>
+
+#include <tesseract_kinematics/core/utils.h>
 
 namespace tesseract_planning
 {
@@ -34,6 +39,36 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
     applyRobotWithExternalPositioner(prob, cartesian_waypoint, parent_instruction, active_links, index);
   else
     throw std::runtime_error("DescartesDefaultPlanProfile: Unsupported configuration");
+
+  if (index != 0)
+  {
+    // Add edge Evaluator
+    if (edge_evaluator == nullptr)
+    {
+      if (enable_edge_collision)
+      {
+        auto compound_evaluator = std::make_shared<descartes_light::CompoundEdgeEvaluator<FloatType>>();
+        compound_evaluator->push_back(std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(prob.dof));
+        compound_evaluator->push_back(std::make_shared<DescartesCollisionEdgeEvaluator<FloatType>>(prob.tesseract->getEnvironmentConst(), active_links, prob.joint_names, edge_collision_saftey_margin, edge_longest_valid_segment_length, allow_collision, debug));
+        prob.edge_evaluators.push_back(compound_evaluator);
+      }
+      else
+      {
+        prob.edge_evaluators.push_back(std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(prob.dof));
+      }
+    }
+    else
+    {
+      prob.edge_evaluators.push_back(edge_evaluator(prob));
+    }
+  }
+
+  // Add timing Constraint
+  prob.timing_constraints.push_back(descartes_core::TimingConstraint<FloatType>(timing_constraint));
+
+  // Add isValid function
+  if (is_valid == nullptr)
+    is_valid = std::bind(&tesseract_kinematics::isWithinLimits<FloatType>, std::placeholders::_1, prob.joint_limits);
 }
 
 template <typename FloatType>
@@ -51,6 +86,36 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
     applyRobotWithExternalPositioner(prob, joint_waypoint, parent_instruction, active_links, index);
   else
     throw std::runtime_error("DescartesDefaultPlanProfile: Unsupported configuration");
+
+  if (index != 0)
+  {
+    // Add edge Evaluator
+    if (edge_evaluator == nullptr)
+    {
+      if (enable_edge_collision)
+      {
+        auto compound_evaluator = std::make_shared<descartes_light::CompoundEdgeEvaluator<FloatType>>();
+        compound_evaluator->push_back(std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(prob.dof));
+        compound_evaluator->push_back(std::make_shared<DescartesCollisionEdgeEvaluator<FloatType>>(prob.tesseract->getEnvironmentConst(), active_links, prob.joint_names, edge_collision_saftey_margin, edge_longest_valid_segment_length, allow_collision, debug));
+        prob.edge_evaluators.push_back(compound_evaluator);
+      }
+      else
+      {
+        prob.edge_evaluators.push_back(std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(prob.dof));
+      }
+    }
+    else
+    {
+      prob.edge_evaluators.push_back(edge_evaluator(prob));
+    }
+  }
+
+  // Add timing Constraint
+  prob.timing_constraints.push_back(descartes_core::TimingConstraint<FloatType>(timing_constraint));
+
+  // Add isValid function
+  if (is_valid == nullptr)
+    is_valid = std::bind(&tesseract_kinematics::isWithinLimits<FloatType>, std::placeholders::_1, prob.joint_limits);
 }
 
 template <typename FloatType>
