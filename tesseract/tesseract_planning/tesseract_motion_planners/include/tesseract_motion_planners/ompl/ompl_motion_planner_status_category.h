@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/status_code.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 class OMPLMotionPlannerStatusCategory : public tesseract_common::StatusCategory
 {

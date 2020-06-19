@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/compound_state_validator.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 CompoundStateValidator::CompoundStateValidator() : StateValidityChecker(nullptr) {}
 

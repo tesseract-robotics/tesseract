@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/continuous_motion_validator.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 ContinuousMotionValidator::ContinuousMotionValidator(const ompl::base::SpaceInformationPtr& space_info,
                                                      ompl::base::StateValidityCheckerPtr state_validator,
