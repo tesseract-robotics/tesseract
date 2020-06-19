@@ -81,60 +81,6 @@ std::string locateResource(const std::string& url)
   return mod_url;
 }
 
-//DescartesMotionPlannerConfigD
-//createDescartesPlannerConfig(const tesseract::Tesseract::ConstPtr& tesseract_ptr,
-//                             const std::string& /*manip*/,
-//                             const tesseract_kinematics::InverseKinematics::ConstPtr& kin,
-//                             const Eigen::Isometry3d& tcp,
-//                             const double robot_reach,
-//                             const tesseract_environment::EnvState::ConstPtr& current_state,
-//                             const std::vector<tesseract_motion_planners::Waypoint::Ptr>& waypoints,
-//                             bool use_collision_edge_evaluator = false)
-//{
-//  const std::vector<std::string>& joint_names = kin->getJointNames();
-//  const std::vector<std::string>& active_link_names = kin->getActiveLinkNames();
-
-//  tesseract_environment::AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-//      tesseract_ptr->getEnvironmentConst()->getSceneGraph(), active_link_names, current_state->link_transforms);
-
-//  // Create Collision Interface
-//  typename descartes_light::CollisionInterface<double>::Ptr coll_interface =
-//      std::make_shared<tesseract_motion_planners::DescartesCollision<double>>(
-//          tesseract_ptr->getEnvironmentConst(), adjacency_map->getActiveLinkNames(), joint_names);
-
-//  // Create Timing Constraint
-//  std::vector<descartes_core::TimingConstraint<double>> timing =
-//      makeTiming<double>(waypoints, std::numeric_limits<double>::max());
-
-//  // Create Edge Evaluator
-//  descartes_light::EdgeEvaluator<double>::Ptr edge_computer;
-//  if (!use_collision_edge_evaluator)
-//  {
-//    edge_computer = std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<double>>(kin->numJoints());
-//  }
-//  else
-//  {
-//    edge_computer = std::make_shared<tesseract_motion_planners::DescartesCollisionEdgeEvaluator<double>>(
-//        tesseract_ptr->getEnvironmentConst(), adjacency_map->getActiveLinkNames(), joint_names);
-//  }
-
-//  // Create is valid function
-//  tesseract_motion_planners::DescartesIsValidFn<double> is_valid_fn =
-//      std::bind(&tesseract_kinematics::isWithinLimits<double>, std::placeholders::_1, kin->getLimits());
-
-//  // Create Position Samplers
-//  std::vector<typename descartes_light::PositionSampler<double>::Ptr> position_samplers =
-//      makeRobotSamplers<double>(waypoints, kin, coll_interface, current_state, tcp, robot_reach, true, is_valid_fn);
-
-//  return tesseract_motion_planners::DescartesMotionPlannerConfigD(tesseract_ptr,
-//                                                                  adjacency_map->getActiveLinkNames(),
-//                                                                  joint_names,
-//                                                                  edge_computer,
-//                                                                  timing,
-//                                                                  position_samplers,
-//                                                                  waypoints);
-//}
-
 class TesseractPlanningDescartesUnit : public ::testing::Test
 {
 protected:

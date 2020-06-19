@@ -35,10 +35,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>
+#include <tesseract_motion_planners/ompl/ompl_problem.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
-using OMPLStateExtractor = std::function<Eigen::Map<Eigen::VectorXd>(const ompl::base::State*)>;
 
 Eigen::Map<Eigen::VectorXd> RealVectorStateSpaceExtractor(const ompl::base::State* s1, unsigned dimension);
 
@@ -53,6 +53,25 @@ Eigen::Map<Eigen::VectorXd> ConstrainedStateSpaceExtractor(const ompl::base::Sta
  * @return Tesseract TrajArray
  */
 tesseract_common::TrajArray toTrajArray(const ompl::geometric::PathGeometric& path, OMPLStateExtractor extractor);
+
+/**
+ * @brief Given longest valid fraction and length it will set the correct information of the state space
+ * @param state_space_ptr OMPL State Space
+ * @param longest_valid_segment_fraction
+ * @param longest_valid_segment_length
+ */
+void processLongestValidSegment(const ompl::base::StateSpacePtr& state_space_ptr,
+                                double longest_valid_segment_fraction,
+                                double longest_valid_segment_length);
+
+/**
+ * @brief For the provided problem check if the state is in collision
+ * @param prob The OMPL Problem
+ * @param state The joint state
+ * @return True if in collision otherwise false
+ */
+bool checkStateInCollision(OMPLProblem& prob, const Eigen::VectorXd& state);
+
 }  // namespace tesseract_motion_planners
 
 #endif  // TESSERACT_MOTION_PLANNERS_OMPL_UTILS_H

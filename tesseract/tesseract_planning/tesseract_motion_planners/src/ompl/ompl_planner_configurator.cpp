@@ -42,7 +42,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/ompl_planner_configurator.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 ompl::base::PlannerPtr SBLConfigurator::create(ompl::base::SpaceInformationPtr si) const
 {

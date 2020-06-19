@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_kinematics/core/forward_kinematics.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 /** @brief Continuous collision check between two states */
 class ContinuousMotionValidator : public ompl::base::MotionValidator
