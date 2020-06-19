@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/utils.h>
 #include <tesseract_motion_planners/ompl/state_collision_validator.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 StateCollisionValidator::StateCollisionValidator(const ompl::base::SpaceInformationPtr& space_info,
                                                  tesseract_environment::Environment::ConstPtr env,

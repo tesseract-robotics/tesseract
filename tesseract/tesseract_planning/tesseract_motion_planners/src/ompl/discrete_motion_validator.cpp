@@ -30,7 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/discrete_motion_validator.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 DiscreteMotionValidator::DiscreteMotionValidator(const ompl::base::SpaceInformationPtr& space_info)
   : MotionValidator(space_info)
