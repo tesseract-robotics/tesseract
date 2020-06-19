@@ -58,8 +58,12 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
   if (!tesseract_kinematics::checkKinematics(this->prob.manip_fwd_kin, this->prob.manip_inv_kin))
     CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that Inverse Kinematics does not agree with KDL (TrajOpt). Did you change the URDF recently?");
 
-  std::vector<std::string> joint_names = this->prob.manip_inv_kin->getJointNames();
   std::vector<std::string> active_link_names = this->prob.manip_inv_kin->getActiveLinkNames();
+  if (this->prob.configuration == DescartesProblem<FloatType>::ROBOT_ON_POSITIONER || this->prob.configuration == DescartesProblem<FloatType>::ROBOT_WITH_EXTERNAL_POSITIONER)
+  {
+    const std::vector<std::string>& positioner_active_link_names = this->prob.positioner_fwd_kin->getActiveLinkNames();
+    active_link_names.insert(active_link_names.end(), positioner_active_link_names.begin(), positioner_active_link_names.end());
+  }
 
   auto adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(this->prob.tesseract->getEnvironmentConst()->getSceneGraph(), active_link_names, this->prob.env_state->link_transforms);
   const std::vector<std::string>& active_links = adjacency_map->getActiveLinkNames();

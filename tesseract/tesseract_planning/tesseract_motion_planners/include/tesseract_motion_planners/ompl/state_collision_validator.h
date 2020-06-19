@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_MOTION_PLANNERS_STATE_COLLISION_VALIDATOR_H
-#define TESSERACT_MOTION_PLANNERS_STATE_COLLISION_VALIDATOR_H
+#ifndef TESSERACT_MOTION_PLANNERS_OMPL_STATE_COLLISION_VALIDATOR_H
+#define TESSERACT_MOTION_PLANNERS_OMPL_STATE_COLLISION_VALIDATOR_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -36,7 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_kinematics/core/forward_kinematics.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 /** @brief Continuous collision check between two states */
 class StateCollisionValidator : public ompl::base::StateValidityChecker
@@ -88,4 +88,4 @@ private:
 };
 
 }  // namespace tesseract_motion_planners
-#endif  // TESSERACT_MOTION_PLANNERS_STATE_COLLISION_VALIDATOR_H
+#endif  // TESSERACT_MOTION_PLANNERS_OMPL_STATE_COLLISION_VALIDATOR_H

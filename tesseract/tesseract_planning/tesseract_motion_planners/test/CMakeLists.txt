@@ -11,15 +11,15 @@ tesseract_gtest_discover_tests(${PROJECT_NAME}_descartes_kin_unit)
 add_dependencies(${PROJECT_NAME}_descartes_kin_unit ${PROJECT_NAME}_descartes)
 #add_dependencies(run_tests ${PROJECT_NAME}_descartes_kin_unit)
 
-## OMPL Planning Test/Example Program
-#add_executable(${PROJECT_NAME}_ompl_unit ompl_planner_tests.cpp)
-#target_link_libraries(${PROJECT_NAME}_ompl_unit PRIVATE ${Boost_LIBRARIES} GTest::GTest GTest::Main ${PROJECT_NAME}_ompl tesseract::tesseract_support trajopt::trajopt)
-#target_include_directories(${PROJECT_NAME}_ompl_unit SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
-#tesseract_target_compile_options(${PROJECT_NAME}_ompl_unit PRIVATE)
-#tesseract_clang_tidy(${PROJECT_NAME}_ompl_unit)
-#tesseract_code_coverage(${PROJECT_NAME}_ompl_unit ALL EXCLUDE ${COVERAGE_EXCLUDE})
-#tesseract_gtest_discover_tests(${PROJECT_NAME}_ompl_unit)
-#add_dependencies(${PROJECT_NAME}_ompl_unit ${PROJECT_NAME}_ompl)
+# OMPL Planning Test/Example Program
+add_executable(${PROJECT_NAME}_ompl_unit ompl_planner_tests.cpp)
+target_link_libraries(${PROJECT_NAME}_ompl_unit PRIVATE ${Boost_LIBRARIES} GTest::GTest GTest::Main ${PROJECT_NAME}_ompl tesseract::tesseract_support trajopt::trajopt)
+target_include_directories(${PROJECT_NAME}_ompl_unit SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
+tesseract_target_compile_options(${PROJECT_NAME}_ompl_unit PRIVATE)
+tesseract_clang_tidy(${PROJECT_NAME}_ompl_unit)
+tesseract_code_coverage(${PROJECT_NAME}_ompl_unit ALL EXCLUDE ${COVERAGE_EXCLUDE})
+tesseract_gtest_discover_tests(${PROJECT_NAME}_ompl_unit)
+add_dependencies(${PROJECT_NAME}_ompl_unit ${PROJECT_NAME}_ompl)
 #add_dependencies(run_tests ${PROJECT_NAME}_ompl_unit)
 
 ## OMPL Constrained Planning Test/Example Program

@@ -38,7 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/Planner.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 struct OMPLPlannerConfigurator
 {

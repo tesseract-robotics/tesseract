@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/ompl_motion_planner_status_category.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 OMPLMotionPlannerStatusCategory::OMPLMotionPlannerStatusCategory(std::string name) : name_(std::move(name)) {}
 const std::string& OMPLMotionPlannerStatusCategory::name() const noexcept { return name_; }
