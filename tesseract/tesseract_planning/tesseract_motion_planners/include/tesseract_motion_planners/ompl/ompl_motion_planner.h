@@ -34,11 +34,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/planner.h>
-#include <tesseract_motion_planners/core/waypoint.h>
-#include <tesseract_motion_planners/ompl/config/ompl_planner_config.h>
+#include <tesseract_motion_planners/ompl/ompl_motion_planner_config.h>
 #include <tesseract_motion_planners/ompl/ompl_motion_planner_status_category.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 /**
  * @brief This planner is intended to provide an easy to use interface to OMPL for freespace planning. It is made to
@@ -58,7 +57,7 @@ public:
    * @param config The planners configuration
    * @return True if successful otherwise false
    */
-  bool setConfiguration(OMPLPlannerConfig::Ptr config);
+  bool setConfiguration(OMPLMotionPlannerConfig::Ptr config);
 
   /**
    * @brief Sets up the OMPL problem then solves. It is intended to simplify setting up
@@ -95,16 +94,13 @@ public:
 
 protected:
   /** @brief The ompl planner planner */
-  typename OMPLPlannerConfig::Ptr config_;
+  typename OMPLMotionPlannerConfig::Ptr config_;
 
   /** @brief The planners status codes */
   std::shared_ptr<const OMPLMotionPlannerStatusCategory> status_category_;
 
   /** @brief OMPL Parallel planner */
   std::shared_ptr<ompl::tools::ParallelPlan> parallel_plan_;
-
-  /** @brief The tesseract kinematics object */
-  tesseract_kinematics::ForwardKinematics::ConstPtr kin_;
 
   /** @brief The continuous contact manager */
   tesseract_collision::ContinuousContactManager::Ptr continuous_contact_manager_;

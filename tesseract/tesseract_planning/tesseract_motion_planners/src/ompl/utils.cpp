@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/utils.h>
 
-namespace tesseract_motion_planners
+namespace tesseract_planning
 {
 Eigen::Map<Eigen::VectorXd> RealVectorStateSpaceExtractor(const ompl::base::State* s1, unsigned dimension)
 {
@@ -66,5 +66,47 @@ tesseract_common::TrajArray toTrajArray(const ompl::geometric::PathGeometric& pa
 
   return result;
 }
+
+void processLongestValidSegment(const ompl::base::StateSpacePtr& state_space_ptr,
+                                double longest_valid_segment_fraction,
+                                double longest_valid_segment_length)
+{
+  if (longest_valid_segment_fraction > 0 && longest_valid_segment_length > 0)
+  {
+    double val =
+        std::min(longest_valid_segment_fraction, longest_valid_segment_length / state_space_ptr->getMaximumExtent());
+    longest_valid_segment_fraction = val;
+    longest_valid_segment_length = val * state_space_ptr->getMaximumExtent();
+    state_space_ptr->setLongestValidSegmentFraction(val);
+  }
+  else if (longest_valid_segment_fraction > 0)
+  {
+    longest_valid_segment_length = longest_valid_segment_fraction * state_space_ptr->getMaximumExtent();
+  }
+  else if (longest_valid_segment_length > 0)
+  {
+    longest_valid_segment_fraction = longest_valid_segment_length / state_space_ptr->getMaximumExtent();
+  }
+  else
+  {
+    longest_valid_segment_fraction = 0.01;
+    longest_valid_segment_length = 0.01 * state_space_ptr->getMaximumExtent();
+  }
+  state_space_ptr->setLongestValidSegmentFraction(longest_valid_segment_fraction);
+}
+
+bool checkStateInCollision(OMPLProblem& prob, const Eigen::VectorXd& state)
+{
+  tesseract_environment::EnvState::Ptr s = prob.state_solver->getState(prob.manip_fwd_kin->getJointNames(), state);
+
+  for (const auto& link_name : prob.contact_checker->getActiveCollisionObjects())
+    prob.contact_checker->setCollisionObjectsTransform(link_name, s->link_transforms[link_name]);
+
+  tesseract_collision::ContactResultMap contact_map;
+  prob.contact_checker->contactTest(contact_map, tesseract_collision::ContactTestType::FIRST);
+
+  return (!contact_map.empty());
+}
+
 
 }  // namespace tesseract_motion_planners
