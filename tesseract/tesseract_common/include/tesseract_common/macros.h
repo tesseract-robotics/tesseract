@@ -37,15 +37,26 @@
 #define DEPRECATED(X)
 #endif
 
-#define TESSERACT_COMMON_IGNORE_WARNINGS_PUSH                                                                          \
-  _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wall\"")                                           \
-      _Pragma("GCC diagnostic ignored \"-Wint-to-pointer-cast\"")                                                      \
-          _Pragma("GCC diagnostic ignored \"-Wunused-parameter\"")                                                     \
-              _Pragma("GCC diagnostic ignored \"-Wsuggest-override\"")                                                 \
-                  _Pragma("GCC diagnostic ignored \"-Wconversion\"")                                                   \
-                      _Pragma("GCC diagnostic ignored \"-Wfloat-conversion\"")                                         \
-                          _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")
-
+#if defined(__clang__)
+#define TESSERACT_COMMON_IGNORE_WARNINGS_PUSH				\
+  _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wall\"") \
+  _Pragma("GCC diagnostic ignored \"-Wint-to-pointer-cast\"")		\
+  _Pragma("GCC diagnostic ignored \"-Wunused-parameter\"")		\
+  _Pragma("GCC diagnostic ignored \"-Winconsistent-missing-override\"")	\
+  _Pragma("GCC diagnostic ignored \"-Wconversion\"")			\
+  _Pragma("GCC diagnostic ignored \"-Wfloat-conversion\"")		\
+  _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")
+#else
+#define TESSERACT_COMMON_IGNORE_WARNINGS_PUSH				\
+  _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wall\"") \
+  _Pragma("GCC diagnostic ignored \"-Wint-to-pointer-cast\"")		\
+  _Pragma("GCC diagnostic ignored \"-Wunused-parameter\"")		\
+  _Pragma("GCC diagnostic ignored \"-Wsuggest-override\"")		\
+  _Pragma("GCC diagnostic ignored \"-Wconversion\"")			\
+  _Pragma("GCC diagnostic ignored \"-Wfloat-conversion\"")		\
+  _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")
+#endif
+  
 #define TESSERACT_COMMON_IGNORE_WARNINGS_POP _Pragma("GCC diagnostic pop")
 
 #define UNUSED(x) (void)(x)
