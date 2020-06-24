@@ -48,7 +48,7 @@ public:
   bool setConfiguration(OMPLPlannerConfig::Ptr ompl_config, TrajOptPlannerFreespaceConfig::Ptr trajopt_config);
 
   /**
-   * @brief Sets up the opimizer and solves a SQP problem read from json with no callbacks and dafault parameterss
+   * @brief Sets up the optimizer and solves an SQP problem read from json with no callbacks and default parameters
    * @param response The results of the optimization. Primary output is the optimized joint trajectory
    * @param check_type The type of validation check to be performed on the planned trajectory
    * @param verbose Boolean indicating whether logging information about the motion planning solution should be printed
@@ -64,7 +64,7 @@ public:
   void clear() override;
 
   /**
-   * @brief checks whether the planner is properly configure for solving a motion plan
+   * @brief checks whether the planner is properly configured for solving a motion plan
    * @return True when it is configured correctly, false otherwise
    */
   tesseract_common::StatusCode isConfigured() const override;
