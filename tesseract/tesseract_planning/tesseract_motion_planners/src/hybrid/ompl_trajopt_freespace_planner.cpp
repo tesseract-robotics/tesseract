@@ -120,6 +120,14 @@ tesseract_common::StatusCode OMPLTrajOptFreespacePlanner::solve(PlannerResponse&
     return response.status;
   }
 
+  if (ompl_planning_response.joint_trajectory.trajectory.rows() == 2)
+  {
+    auto new_trajectory = tesseract_common::TrajArray(3, ompl_planning_response.joint_trajectory.trajectory.cols());
+    new_trajectory.topRows(2) = ompl_planning_response.joint_trajectory.trajectory.topRows(2);
+    new_trajectory.row(2) = new_trajectory.row(1);
+    ompl_planning_response.joint_trajectory.trajectory = new_trajectory;
+  }
+
   if (trajopt_config_)
   {
     // The trajectory from OMPL may not be the same size as the number of steps requested in the TrajOpt config

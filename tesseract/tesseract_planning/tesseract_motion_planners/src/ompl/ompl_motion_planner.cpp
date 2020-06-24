@@ -179,7 +179,7 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
     valid = validator_->trajectoryValid(traj, check_type, *state_solver, kin_->getJointNames());
   }
 
-  // Set the contact distance back to original incase solve was called again.
+  // Set the contact distance back to original in case solve was called again.
   continuous_contact_manager_->setContactDistanceThreshold(config_->collision_safety_margin);
 
   // Send response
