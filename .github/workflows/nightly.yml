@@ -43,7 +43,7 @@ jobs:
              CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Xenial-Build-Nightly/.ccache",
              UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
              TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
-             DOWNSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14"}
+             DOWNSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"}
 
     steps:
       - uses: actions/checkout@v1
