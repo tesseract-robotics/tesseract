@@ -52,11 +52,18 @@ public:
   Visualization& operator=(Visualization&&) = default;
 
   /**
-   * @brief Plot a trajectory
-   * @param traj
+   * @brief \deprecated Plot a trajectory using joint_names and a TrajArray
+   * @param joint_names Joint Names
+   * @param traj Rows are timesteps. Columns correspond to joint_names
    */
   virtual void plotTrajectory(const std::vector<std::string>& joint_names,
                               const Eigen::Ref<const tesseract_common::TrajArray>& traj) = 0;
+
+  /**
+   * @brief Plot a JointTrajectory
+   * @param trajectory JointTrajectory to be plotted
+   */
+  virtual void plotTrajectory(const tesseract_common::JointTrajectory& traj) = 0;
 
   /**
    * @brief Plot the collision results data
