@@ -59,7 +59,6 @@ set(OMPL_SRC src/ompl/ompl_motion_planner.cpp
   src/ompl/ompl_planner_configurator.cpp
   src/ompl/ompl_problem.cpp
   src/ompl/profile/ompl_default_plan_profile.cpp
-  #src/ompl/config/ompl_planner_freespace_config.cpp
   src/ompl/utils.cpp
   src/ompl/state_collision_validator.cpp
   src/ompl/compound_state_validator.cpp)
@@ -86,8 +85,6 @@ add_library(${PROJECT_NAME}_descartes SHARED
   src/descartes/descartes_collision.cpp
   src/descartes/descartes_collision_edge_evaluator.cpp
   src/descartes/descartes_robot_sampler.cpp
-  src/descartes/descartes_robot_positioner_sampler.cpp
-  src/descartes/descartes_external_positioner_sampler.cpp
   src/descartes/descartes_motion_planner_status_category.cpp
   src/descartes/profile/descartes_default_plan_profile.cpp)
 target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME}_core descartes::descartes_light descartes::descartes_samplers descartes::descartes_opw)

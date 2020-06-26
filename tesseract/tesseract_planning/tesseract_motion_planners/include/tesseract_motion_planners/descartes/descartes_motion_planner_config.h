@@ -55,12 +55,6 @@ struct DescartesMotionPlannerConfig
       return false;
     }
 
-    if (!(prob.dof > 0))
-    {
-      CONSOLE_BRIDGE_logError("In DescartesMotionPlannerConfig: dof must be greater than zero");
-      return false;
-    }
-
     return true;
   }
 

@@ -42,8 +42,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/core/utils.h>
 
-const int NUM_STEPS = 200;
-
 using namespace tesseract;
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
@@ -130,7 +128,6 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
 
   auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
   auto inv_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator");
-  const std::vector<std::string>& joint_names = fwd_kin->getJointNames();
   auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
 
   // Specify a start waypoint
@@ -159,9 +156,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
   // Create TrajOpt Config
   auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(tesseract_ptr_,
                                                                        tesseract_ptr_->getEnvironmentConst()->getCurrentState(),
-                                                                       "manipulator",
-                                                                       1.5);
-  config->configuration = DescartesProblemD::Configuration::ROBOT_ONLY;
+                                                                       "manipulator");
   config->instructions = program;
   config->seed = seed;
   config->plan_profiles["TEST_PROFILE"] = plan_profile;
@@ -228,7 +223,6 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
 
   auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
   auto inv_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator");
-  const std::vector<std::string>& joint_names = fwd_kin->getJointNames();
   auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
 
   // Specify a start waypoint
@@ -259,9 +253,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
   // Create TrajOpt Config
   auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(tesseract_ptr_,
                                                                        tesseract_ptr_->getEnvironmentConst()->getCurrentState(),
-                                                                       "manipulator",
-                                                                       1.5);
-  config->configuration = DescartesProblemD::Configuration::ROBOT_ONLY;
+                                                                       "manipulator");
   config->instructions = program;
   config->seed = seed;
   config->plan_profiles["TEST_PROFILE"] = plan_profile;
@@ -327,7 +319,6 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
 
   auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
   auto inv_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator");
-  const std::vector<std::string>& joint_names = fwd_kin->getJointNames();
   auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
 
   // Specify a start waypoint
@@ -355,13 +346,12 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   // Make this a tool z-axis free sampler
   plan_profile->target_pose_sampler = [](const Eigen::Isometry3d& tool_pose) { return tesseract_planning::sampleToolAxis(tool_pose, M_PI_4, Eigen::Vector3d(0, 0, 1)); };
   plan_profile->enable_edge_collision = true; // Add collision edge evaluator
+  plan_profile->
 
   // Create TrajOpt Config
   auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(tesseract_ptr_,
                                                                        tesseract_ptr_->getEnvironmentConst()->getCurrentState(),
-                                                                       "manipulator",
-                                                                       1.5);
-  config->configuration = DescartesProblemD::Configuration::ROBOT_ONLY;
+                                                                       "manipulator");
   config->instructions = program;
   config->seed = seed;
   config->plan_profiles["TEST_PROFILE"] = plan_profile;
