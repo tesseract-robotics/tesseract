@@ -55,7 +55,9 @@ using MotionValidatorAllocator =
 enum class OMPLProblemStateSpace
 {
   REAL_STATE_SPACE,
+#ifndef OMPL_LESS_1_4_0
   REAL_CONSTRAINTED_STATE_SPACE,
+#endif
   SE3_STATE_SPACE,
 };
 

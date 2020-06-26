@@ -45,8 +45,10 @@ void OMPLDefaultPlanProfile::apply(OMPLProblem& prob,
 
   if (state_space == OMPLProblemStateSpace::REAL_STATE_SPACE)
     prob.extractor = std::bind(&tesseract_planning::RealVectorStateSpaceExtractor, std::placeholders::_1, prob.manip_inv_kin->numJoints());
+#ifndef OMPL_LESS_1_4_0
   else if (state_space == OMPLProblemStateSpace::REAL_CONSTRAINTED_STATE_SPACE)
     prob.extractor = tesseract_planning::ConstrainedStateSpaceExtractor;
+#endif
   else
     throw std::runtime_error("OMPLMotionPlannerDefaultConfig: Unsupported configuration!");
 
