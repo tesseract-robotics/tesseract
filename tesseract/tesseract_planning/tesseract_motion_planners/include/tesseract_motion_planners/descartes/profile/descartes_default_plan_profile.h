@@ -21,7 +21,6 @@ public:
   PoseSamplerFn target_pose_sampler = [](const Eigen::Isometry3d& tool_pose) { return tesseract_common::VectorIsometry3d({ tool_pose }); };
   DescartesEdgeEvaluatorAllocatorFn<FloatType> edge_evaluator {nullptr};
   double timing_constraint = std::numeric_limits<FloatType>::max();
-  Eigen::VectorXd positioner_sample_resolution = Eigen::VectorXd::Constant(1, 1, 0.01); // TODO Does this belong here or in the problem?
 
   // Applied to sampled states
   bool enable_collision {true};
@@ -47,43 +46,6 @@ public:
              const PlanInstruction& parent_instruction,
              const std::vector<std::string> &active_links,
              int index) override;
-
-protected:
-  void applyRobotOnly(DescartesProblem<FloatType>& prob,
-                      const Eigen::Isometry3d& cartesian_waypoint,
-                      const PlanInstruction& parent_instruction,
-                      const std::vector<std::string> &active_links,
-                      int index);
-
-  void applyRobotOnly(DescartesProblem<FloatType>& prob,
-                      const Eigen::VectorXd& joint_waypoint,
-                      const PlanInstruction& parent_instruction,
-                      const std::vector<std::string> &active_links,
-                      int index);
-
-  void applyRobotOnPositioner(DescartesProblem<FloatType>& prob,
-                              const Eigen::Isometry3d& cartesian_waypoint,
-                              const PlanInstruction& parent_instruction,
-                              const std::vector<std::string> &active_links,
-                              int index);
-
-  void applyRobotOnPositioner(DescartesProblem<FloatType>& prob,
-                              const Eigen::VectorXd& joint_waypoint,
-                              const PlanInstruction& parent_instruction,
-                              const std::vector<std::string> &active_links,
-                              int index);
-
-  void applyRobotWithExternalPositioner(DescartesProblem<FloatType>& prob,
-                                        const Eigen::Isometry3d& cartesian_waypoint,
-                                        const PlanInstruction& parent_instruction,
-                                        const std::vector<std::string> &active_links,
-                                        int index);
-
-  void applyRobotWithExternalPositioner(DescartesProblem<FloatType>& prob,
-                                        const Eigen::VectorXd& joint_waypoint,
-                                        const PlanInstruction& parent_instruction,
-                                        const std::vector<std::string> &active_links,
-                                        int index);
 
 };
 

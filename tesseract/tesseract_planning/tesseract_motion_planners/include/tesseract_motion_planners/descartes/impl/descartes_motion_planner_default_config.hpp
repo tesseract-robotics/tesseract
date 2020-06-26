@@ -34,10 +34,8 @@ namespace tesseract_planning
 template <typename FloatType>
 DescartesMotionPlannerDefaultConfig<FloatType>::DescartesMotionPlannerDefaultConfig(tesseract::Tesseract::ConstPtr tesseract,
                                                                                     tesseract_environment::EnvState::ConstPtr env_state,
-                                                                                    std::string manipulator,
-                                                                                    double manipulator_reach)
+                                                                                    std::string manipulator)
   : manipulator(manipulator)
-  , manipulator_reach(manipulator_reach)
 {
   this->prob.tesseract = tesseract;
   this->prob.env_state = env_state;
@@ -59,12 +57,6 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
     CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that Inverse Kinematics does not agree with KDL (TrajOpt). Did you change the URDF recently?");
 
   std::vector<std::string> active_link_names = this->prob.manip_inv_kin->getActiveLinkNames();
-  if (this->prob.configuration == DescartesProblem<FloatType>::ROBOT_ON_POSITIONER || this->prob.configuration == DescartesProblem<FloatType>::ROBOT_WITH_EXTERNAL_POSITIONER)
-  {
-    const std::vector<std::string>& positioner_active_link_names = this->prob.positioner_fwd_kin->getActiveLinkNames();
-    active_link_names.insert(active_link_names.end(), positioner_active_link_names.begin(), positioner_active_link_names.end());
-  }
-
   auto adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(this->prob.tesseract->getEnvironmentConst()->getSceneGraph(), active_link_names, this->prob.env_state->link_transforms);
   const std::vector<std::string>& active_links = adjacency_map->getActiveLinkNames();
 
@@ -127,8 +119,6 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
             }
             else if (isJointWaypoint(prev_plan_instruction->getWaypoint().getType()))
             {
-              // This currently only works for ROBOT_ONLY configuration need to update to use state solver
-              assert(this->prob.configuration == DescartesProblem<FloatType>::ROBOT_ONLY);
               const auto* jwp = prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>();
               if (!this->prob.manip_fwd_kin->calcFwdKin(prev_pose, *jwp))
                 throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
@@ -161,8 +151,6 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
         }
         else if (isJointWaypoint(plan_instruction->getWaypoint().getType()))
         {
-          // This currently only works for ROBOT_ONLY configuration Need to update to use state solver
-          assert(this->prob.configuration == DescartesProblem<FloatType>::ROBOT_ONLY);
           const auto* cur_wp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
           Eigen::Isometry3d cur_pose = Eigen::Isometry3d::Identity();
           if (!this->prob.manip_fwd_kin->calcFwdKin(cur_pose, *cur_wp))
@@ -181,8 +169,6 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
             }
             else if (isJointWaypoint(prev_plan_instruction->getWaypoint().getType()))
             {
-              // This currently only works for ROBOT_ONLY configuration need to update to use state solver
-              assert(this->prob.configuration == DescartesProblem<FloatType>::ROBOT_ONLY);
               const auto* jwp = prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>();
               if (!this->prob.manip_fwd_kin->calcFwdKin(prev_pose, *jwp))
                 throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
@@ -284,23 +270,23 @@ void DescartesMotionPlannerDefaultConfig<FloatType>::getManipulatorInfo()
   else
     this->prob.manip_inv_kin = this->prob.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
 
-  this->prob.manip_reach = manipulator_reach;
+//  this->prob.manip_reach = manipulator_reach;
 
-  const std::vector<std::string>& joint_names = this->prob.manip_fwd_kin->getJointNames();
+//  const std::vector<std::string>& joint_names = this->prob.manip_fwd_kin->getJointNames();
 
-  this->prob.dof = static_cast<int>(this->prob.manip_fwd_kin->numJoints());
-  this->prob.joint_limits = this->prob.manip_fwd_kin->getLimits();
-  this->prob.joint_names = joint_names;
-  this->prob.configuration = configuration;
-  if (this->prob.configuration == DescartesProblem<FloatType>::ROBOT_ON_POSITIONER || this->prob.configuration == DescartesProblem<FloatType>::ROBOT_WITH_EXTERNAL_POSITIONER)
-  {
-    this->prob.positioner_fwd_kin = this->prob.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(positioner);
-    this->prob.dof += static_cast<int>(this->prob.positioner_fwd_kin->numJoints());
-    this->prob.joint_limits = Eigen::MatrixX2d(this->prob.dof, 2);
-    this->prob.joint_limits << this->prob.positioner_fwd_kin->getLimits(), this->prob.manip_fwd_kin->getLimits();
-    this->prob.joint_names = this->prob.positioner_fwd_kin->getJointNames();
-    this->prob.joint_names.insert(this->prob.joint_names.end(), joint_names.begin(), joint_names.end());
-  }
+//  this->prob.dof = static_cast<int>(this->prob.manip_fwd_kin->numJoints());
+//  this->prob.joint_limits = this->prob.manip_fwd_kin->getLimits();
+//  this->prob.joint_names = joint_names;
+//  this->prob.configuration = configuration;
+//  if (this->prob.configuration == DescartesProblem<FloatType>::ROBOT_ON_POSITIONER || this->prob.configuration == DescartesProblem<FloatType>::ROBOT_WITH_EXTERNAL_POSITIONER)
+//  {
+//    this->prob.positioner_fwd_kin = this->prob.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(positioner);
+//    this->prob.dof += static_cast<int>(this->prob.positioner_fwd_kin->numJoints());
+//    this->prob.joint_limits = Eigen::MatrixX2d(this->prob.dof, 2);
+//    this->prob.joint_limits << this->prob.positioner_fwd_kin->getLimits(), this->prob.manip_fwd_kin->getLimits();
+//    this->prob.joint_names = this->prob.positioner_fwd_kin->getJointNames();
+//    this->prob.joint_names.insert(this->prob.joint_names.end(), joint_names.begin(), joint_names.end());
+//  }
 }
 }
 
