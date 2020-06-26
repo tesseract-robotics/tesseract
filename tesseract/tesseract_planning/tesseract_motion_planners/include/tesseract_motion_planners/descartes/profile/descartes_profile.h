@@ -31,20 +31,6 @@ public:
 };
 
 /** @todo Currently descartes does not have support of composite profile everything is handled by the plan profile */
-
-//class TrajOptCompositeProfile
-//{
-//public:
-//  using Ptr = std::shared_ptr<TrajOptCompositeProfile>;
-//  using ConstPtr = std::shared_ptr<const TrajOptCompositeProfile>;
-
-//  virtual void apply(trajopt::ProblemConstructionInfo& pci,
-//                     int start_index,
-//                     int end_index,
-//                     const std::vector<std::string> &active_links,
-//                     const std::vector<int>& fixed_indices) = 0;
-//};
-
 }
 
 #endif // TESSERACT_MOTION_PLANNERS_DESCARTES_DESCARTES_PROFILE_H

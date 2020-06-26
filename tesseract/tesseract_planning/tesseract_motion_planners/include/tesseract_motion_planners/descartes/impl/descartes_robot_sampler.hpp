@@ -25,7 +25,6 @@
  */
 #ifndef TESSERACT_MOTION_PLANNERS_DESCARTES_ROBOT_SAMPLER_HPP
 #define TESSERACT_MOTION_PLANNERS_DESCARTES_ROBOT_SAMPLER_HPP
-
 #include <tesseract/tesseract.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <descartes_light/utils.h>
@@ -45,17 +44,14 @@ DescartesRobotSampler<FloatType>::DescartesRobotSampler(
     tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics,
     typename descartes_light::CollisionInterface<FloatType>::Ptr collision,
     const tesseract_environment::EnvState::ConstPtr& current_state,
-    const Eigen::Isometry3d& robot_tcp,
-    double robot_reach,
+    const Eigen::Isometry3d& tcp,
     bool allow_collision,
     DescartesIsValidFn<FloatType> is_valid)
   : target_pose_(target_pose)
   , target_pose_sampler_(std::move(target_pose_sampler))
   , robot_kinematics_(std::move(robot_kinematics))
   , collision_(std::move(collision))
-  , world_to_robot_base_(current_state->link_transforms.at(robot_kinematics_->getBaseLinkName()))
-  , robot_tcp_(robot_tcp)
-  , robot_reach_(robot_reach)
+  , tcp_(tcp)
   , allow_collision_(allow_collision)
   , dof_(static_cast<int>(robot_kinematics_->numJoints()))
   , ik_seed_(Eigen::VectorXd::Zero(dof_))
@@ -71,7 +67,7 @@ bool DescartesRobotSampler<FloatType>::sample(std::vector<FloatType>& solution_s
   for (const auto& sp : target_poses)
   {
     // Tool pose in rail coordinate system
-    Eigen::Isometry3d target_pose = world_to_robot_base_.inverse() * sp * robot_tcp_.inverse();
+    Eigen::Isometry3d target_pose = sp * tcp_.inverse();
     ikAt(solution_set, target_pose, false, distance);
   }
 
@@ -96,9 +92,6 @@ bool DescartesRobotSampler<FloatType>::ikAt(std::vector<FloatType>& solution_set
                                             bool get_best_solution,
                                             double& distance)
 {
-  if (target_pose.translation().norm() > robot_reach_)
-    return false;
-
   Eigen::VectorXd robot_solution_set;
   auto robot_dof = static_cast<int>(robot_kinematics_->numJoints());
   if (!robot_kinematics_->calcInvKin(robot_solution_set, target_pose, ik_seed_))
@@ -145,7 +138,7 @@ bool DescartesRobotSampler<FloatType>::getBestSolution(std::vector<FloatType>& s
   for (const auto& sp : target_poses)
   {
     // Tool pose in rail coordinate system
-    Eigen::Isometry3d target_pose = world_to_robot_base_.inverse() * sp * robot_tcp_.inverse();
+    Eigen::Isometry3d target_pose = sp * tcp_.inverse();
     ikAt(solution_set, target_pose, false, distance);
   }
 
@@ -154,4 +147,4 @@ bool DescartesRobotSampler<FloatType>::getBestSolution(std::vector<FloatType>& s
 
 }  // namespace tesseract_planning
 
-#endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_ROBOT_SAMPLER_HPP
+#endif // TESSERACT_MOTION_PLANNERS_DESCARTES_ROBOT_SAMPLER_HPP
