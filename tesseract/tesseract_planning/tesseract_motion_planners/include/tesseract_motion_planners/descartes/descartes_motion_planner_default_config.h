@@ -41,8 +41,7 @@ struct DescartesMotionPlannerDefaultConfig : public DescartesMotionPlannerConfig
 
   DescartesMotionPlannerDefaultConfig(tesseract::Tesseract::ConstPtr tesseract,
                                       tesseract_environment::EnvState::ConstPtr env_state,
-                                      std::string manipulator,
-                                      double manipulator_reach);
+                                      std::string manipulator);
 
   virtual ~DescartesMotionPlannerDefaultConfig() = default;
   DescartesMotionPlannerDefaultConfig(const DescartesMotionPlannerDefaultConfig&) = default;
@@ -50,12 +49,8 @@ struct DescartesMotionPlannerDefaultConfig : public DescartesMotionPlannerConfig
   DescartesMotionPlannerDefaultConfig(DescartesMotionPlannerDefaultConfig&&) = default;             // NOLINT
   DescartesMotionPlannerDefaultConfig& operator=(DescartesMotionPlannerDefaultConfig&&) = default;  // NOLINT
 
-  typename DescartesProblem<FloatType>::Configuration configuration {DescartesProblem<FloatType>::Configuration::ROBOT_ONLY};
-
   std::string manipulator;
   std::string manipulator_ik_solver;
-  std::string positioner;
-  double manipulator_reach;
 
   /**
    * @brief The available plan profiles

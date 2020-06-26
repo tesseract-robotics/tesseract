@@ -78,7 +78,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
 
   auto tStart = boost::posix_time::second_clock::local_time();
 
-  descartes_light::Solver<FloatType> graph_builder(config_->prob.dof);
+  descartes_light::Solver<FloatType> graph_builder(config_->prob.manip_inv_kin->numJoints());
   if (!graph_builder.build(config_->prob.samplers, config_->prob.timing_constraints, config_->prob.edge_evaluators, config_->prob.num_threads))
   {
 //    CONSOLE_BRIDGE_logError("Failed to build vertices");
