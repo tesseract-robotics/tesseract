@@ -14,17 +14,18 @@ set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/* /
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 
 # Create interface for core
-add_library(${PROJECT_NAME}_core INTERFACE)
-target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract::tesseract_scene_graph console_bridge)
-tesseract_target_compile_options(${PROJECT_NAME}_core INTERFACE)
+add_library(${PROJECT_NAME}_core SHARED
+  src/core/rop_inverse_kinematics.cpp
+  src/core/rep_inverse_kinematics.cpp)
+target_link_libraries(${PROJECT_NAME}_core PUBLIC tesseract::tesseract_scene_graph console_bridge)
+tesseract_target_compile_options(${PROJECT_NAME}_core PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_core)
 tesseract_code_coverage(${PROJECT_NAME}_core ALL EXCLUDE ${COVERAGE_EXCLUDE})
-target_include_directories(${PROJECT_NAME}_core INTERFACE
+target_include_directories(${PROJECT_NAME}_core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
-    ${EIGEN3_INCLUDE_DIRS}
-    $<TARGET_PROPERTY:tesseract::tesseract_common,INTERFACE_INCLUDE_DIRECTORIES>) #tesseract::tesseract_common Due to bug in catkin, there is an open PR
+target_include_directories(${PROJECT_NAME}_core SYSTEM PUBLIC
+    ${EIGEN3_INCLUDE_DIRS})
 
 # Create ikfast kinematics interface
 add_library(${PROJECT_NAME}_ikfast INTERFACE)
