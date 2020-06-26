@@ -39,7 +39,7 @@ InverseKinematics::Ptr RobotOnPositionerInvKin::clone() const
 {
   auto cloned_invkin = std::make_shared<RobotOnPositionerInvKin>();
   cloned_invkin->init(*this);
-  return std::move(cloned_invkin);
+  return cloned_invkin;
 }
 
 bool RobotOnPositionerInvKin::calcInvKinHelper(std::vector<double> &solutions,
@@ -209,7 +209,7 @@ bool RobotOnPositionerInvKin::init(tesseract_scene_graph::SceneGraph::ConstPtr s
     return false;
   }
 
-  if (!scene_graph_->getLink(scene_graph_->getRoot()))
+  if (!scene_graph->getLink(scene_graph->getRoot()))
   {
     CONSOLE_BRIDGE_logError("The scene graph has an invalid root.");
     return false;
