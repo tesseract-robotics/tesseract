@@ -15,7 +15,7 @@
 // Author: John Wason (wason@wasontech.com)
 // Date: 12/10/2019
 
-///<reference path="@babylonjs\babylon.module.d.ts" />
+///<reference path="./node_modules/babylonjs/babylon.module.d.ts" />
 
 // tsc tesseract_viewer.ts --lib es6,DOM -m es2015 -target es6
 
@@ -85,7 +85,7 @@ class TesseractViewer {
         });
         
         
-        this.enableVR();
+        await this.enableVR();
         let _this = this;
         setTimeout(() => _this.updateTrajectory(),2000);
         
@@ -132,12 +132,14 @@ class TesseractViewer {
         //zChar.position = new BABYLON.Vector3(0, 0.05 * size, 0.9 * size);
     }
 
-    enableVR(): void
+    async enableVR(): Promise<void>
     {
         // Enable VR
-        var vrHelper = this._scene.createDefaultVRExperience({createDeviceOrientationCamera:false});
         var ground = BABYLON.Mesh.CreateGround("ground", 6, 6, 2, this._scene);
-        vrHelper.enableTeleportation({floorMeshName: "ground"});
+        const xrHelper = await this._scene.createDefaultXRExperienceAsync({
+            // define floor meshes
+            floorMeshes: [ground]
+        });
         ground.visibility = 0.1;
         //vrHelper.enableTeleportation({floorMeshes: [environment.ground]});
 
