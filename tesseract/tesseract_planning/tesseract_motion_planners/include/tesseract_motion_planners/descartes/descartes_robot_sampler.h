@@ -3,11 +3,11 @@
  * @brief Tesseract Descartes Kinematics Sampler
  *
  * @author Levi Armstrong
- * @date April 18, 2018
+ * @date June 25, 2020
  * @version TODO
  * @bug No known bugs
  *
- * @copyright Copyright (c) 2017, Southwest Research Institute
+ * @copyright Copyright (c) 2020, Southwest Research Institute
  *
  * @par License
  * Software License Agreement (Apache License)
@@ -25,7 +25,6 @@
  */
 #ifndef TESSERACT_MOTION_PLANNERS_DESCARTES_ROBOT_SAMPLER_H
 #define TESSERACT_MOTION_PLANNERS_DESCARTES_ROBOT_SAMPLER_H
-
 #include <tesseract/tesseract.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <descartes_light/interface/position_sampler.h>
@@ -48,13 +47,12 @@ class DescartesRobotSampler : public descartes_light::PositionSampler<FloatType>
 public:
   /**
    * @brief This is a descartes sampler for a robot.
-   * @param target_pose The target pose in world coordinates applied to robot kinematics
+   * @param target_pose The target pose in robot base link coordinates
    * @param target_pose_sampler The target pose sampler function to be used
    * @param robot_kinematics The robot inverse kinematics object
    * @param collision The collision interface
    * @param curret_state The currect state of the system
    * @param robot_tcp The robot tcp to be used.
-   * @param robot_reach The reach of the robot. Used to filter rail samples.
    * @param allow_collision If true and no valid solution was found it will return the best of the worst
    * @param is_valid This is a user defined function to filter out solution
    */
@@ -63,21 +61,18 @@ public:
                         tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics,
                         typename descartes_light::CollisionInterface<FloatType>::Ptr collision,
                         const tesseract_environment::EnvState::ConstPtr& current_state,
-                        const Eigen::Isometry3d& robot_tcp,
-                        double robot_reach,
+                        const Eigen::Isometry3d& tcp,
                         bool allow_collision,
                         DescartesIsValidFn<FloatType> is_valid);
 
   bool sample(std::vector<FloatType>& solution_set) override;
 
 private:
-  Eigen::Isometry3d target_pose_;                                          /**< @brief The target pose to sample */
+  Eigen::Isometry3d target_pose_;               /**< @brief The target pose to sample */
   PoseSamplerFn target_pose_sampler_;           /**< @brief Target pose sampler function */
   tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics_;     /**< @brief The robot inverse kinematics */
   typename descartes_light::CollisionInterface<FloatType>::Ptr collision_; /**< @brief The collision interface */
-  Eigen::Isometry3d world_to_robot_base_; /**< @brief The transform from world to the base of the robot */
-  Eigen::Isometry3d robot_tcp_;           /**< @brief The robot tool center point */
-  double robot_reach_;                    /**< @brief The reach of the robot used to quickly filter samples */
+  Eigen::Isometry3d tcp_;   /**< @brief The robot tool center point */
   bool allow_collision_;    /**< @brief If true and no valid solution was found it will return the best of the worst */
   int dof_;                 /**< @brief The number of joints in the robot */
   Eigen::VectorXd ik_seed_; /**< @brief The seed for inverse kinematics which is zeros */
@@ -116,5 +111,4 @@ using DescartesRobotSamplerF = DescartesRobotSampler<float>;
 using DescartesRobotSamplerD = DescartesRobotSampler<double>;
 
 }  // namespace tesseract_planning
-
-#endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_ROBOT_SAMPLER_H
+#endif // TESSERACT_MOTION_PLANNERS_DESCARTES_ROBOT_SAMPLER_H
