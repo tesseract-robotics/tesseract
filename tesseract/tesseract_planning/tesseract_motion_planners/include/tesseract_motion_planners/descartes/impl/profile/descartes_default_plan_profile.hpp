@@ -49,7 +49,6 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
                                                                     target_pose_sampler,
                                                                     prob.manip_inv_kin,
                                                                     ci,
-                                                                    prob.env_state,
                                                                     parent_instruction.getTCP(),
                                                                     allow_collision,
                                                                     is_valid);
@@ -79,7 +78,7 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
   }
 
   // Add timing Constraint
-  prob.timing_constraints.push_back(descartes_core::TimingConstraint<FloatType>(timing_constraint));
+  prob.timing_constraints.push_back(descartes_core::TimingConstraint<FloatType>(static_cast<FloatType>(timing_constraint)));
 
   // Add isValid function
   if (is_valid == nullptr)
@@ -89,7 +88,7 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
 template <typename FloatType>
 void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& prob,
                                                    const Eigen::VectorXd& joint_waypoint,
-                                                   const PlanInstruction& parent_instruction,
+                                                   const PlanInstruction& /*parent_instruction*/,
                                                    const std::vector<std::string> &active_links,
                                                    int index)
 {
@@ -122,7 +121,7 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
   }
 
   // Add timing Constraint
-  prob.timing_constraints.push_back(descartes_core::TimingConstraint<FloatType>(timing_constraint));
+  prob.timing_constraints.push_back(descartes_core::TimingConstraint<FloatType>(static_cast<FloatType>(timing_constraint)));
 
   // Add isValid function
   if (is_valid == nullptr)

@@ -53,7 +53,7 @@ bool OMPLMotionPlanner::terminate()
 }
 
 tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
-                                                      PostPlanCheckType check_type,
+                                                      PostPlanCheckType /*check_type*/,
                                                       bool verbose)
 {
   tesseract_common::StatusCode config_status = isConfigured();
@@ -206,6 +206,8 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
 
     return response.status;
   }
+
+  return response.status;
 }
 
 void OMPLMotionPlanner::clear()
