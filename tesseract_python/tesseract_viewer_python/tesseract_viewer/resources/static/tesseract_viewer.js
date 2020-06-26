@@ -1,4 +1,19 @@
-///<reference path="C:\Users\wasonj\AppData\Roaming\npm\node_modules\babylonjs\babylon.module.d.ts" />
+// Copyright 2019 Wason Technology, LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// Author: John Wason (wason@wasontech.com)
+// Date: 12/10/2019
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -49,7 +64,7 @@ class TesseractViewer {
                 //m.parent=root;
                 //addAxis(tf, 0.5);
             });
-            this.enableVR();
+            yield this.enableVR();
             let _this = this;
             setTimeout(() => _this.updateTrajectory(), 2000);
             //this._scene.debugLayer.show();
@@ -92,12 +107,16 @@ class TesseractViewer {
         //zChar.position = new BABYLON.Vector3(0, 0.05 * size, 0.9 * size);
     }
     enableVR() {
-        // Enable VR
-        var vrHelper = this._scene.createDefaultVRExperience({ createDeviceOrientationCamera: false });
-        var ground = BABYLON.Mesh.CreateGround("ground", 6, 6, 2, this._scene);
-        vrHelper.enableTeleportation({ floorMeshName: "ground" });
-        ground.visibility = 0.1;
-        //vrHelper.enableTeleportation({floorMeshes: [environment.ground]});
+        return __awaiter(this, void 0, void 0, function* () {
+            // Enable VR
+            var ground = BABYLON.Mesh.CreateGround("ground", 6, 6, 2, this._scene);
+            const xrHelper = yield this._scene.createDefaultXRExperienceAsync({
+                // define floor meshes
+                floorMeshes: [ground]
+            });
+            ground.visibility = 0.1;
+            //vrHelper.enableTeleportation({floorMeshes: [environment.ground]});
+        });
     }
     updateScene() {
         return __awaiter(this, void 0, void 0, function* () {

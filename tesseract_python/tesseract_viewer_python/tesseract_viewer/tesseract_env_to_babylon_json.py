@@ -19,6 +19,7 @@ import json
 import numpy as np
 import math
 import tesseract
+import pkgutil
 
 def tesseract_env_to_babylon_json(t_env, origin_offset=[0,0,0]):
     return json.dumps(tesseract_env_to_babylon_json_dict(t_env,origin_offset))
@@ -44,7 +45,9 @@ def tesseract_env_to_babylon_json_dict(t_env, origin_offset=[0,0,0]):
 
     transform_nodes.append({"name": "root", "id": "root", "isVisible": "true", "isEnabled": "true", "position": list(origin_offset), "parentId": "root0"})
 
-    babylon_dict = {"transformNodes": transform_nodes, "meshes": meshes, "materials": materials}
+    geometries = json.loads(pkgutil.get_data("tesseract_viewer.resources","geometries.json"))["geometries"]
+    
+    babylon_dict = {"geometries": geometries, "transformNodes": transform_nodes, "meshes": meshes, "materials": materials}
     return babylon_dict
 
 
@@ -78,35 +81,78 @@ def _process_link_recursive(link_map, joint_map, link_name, parent_joint_name):
             "parentId": "link_" + link_name, "materialId": "material_" + visual_name}
         tf_visual["position"] = visual_p
         tf_visual["rotationQuaternion"] = visual_q
-
-        mesh = visual.geometry
-        if (not isinstance(mesh,tesseract.Mesh)):
-            continue
-        
-        positions = list(np.concatenate(list(mesh.getVertices())).flatten())
-        triangles = mesh.getTriangles().flatten()
-        triangle_count = int(len(triangles)/4)
-        indices = [0]*(triangle_count*3)
-        for i in range(triangle_count):
-            assert(triangles[i*4]==3, "Only triangle meshes supported")
-            indices[i*3] = int(triangles[i*4+3])
-            indices[i*3+1] = int(triangles[i*4+2])
-            indices[i*3+2] = int(triangles[i*4+1])
-
-        tf_visual["positions"] = positions
-        tf_visual["indices"] = indices
-        
-        tf_visual["scaling"] = list(mesh.getScale().flatten())
-        tf_visual["normals"] = [0,0,1]*int(len(tf_visual["positions"])/3)
-        
-        submesh = {}
-        submesh["materialIndex"] = 0
-        submesh["verticesStart"] = 0
-        submesh["verticesCount"] = len(positions)/3
-        submesh["indexStart"] = 0
-        submesh["indexCount"] = len(indices)
-        tf_visual["subMeshes"] = [submesh]
         tf_visual["billboardMode"] = 0
+
+        visual_geom = visual.geometry
+        if (isinstance(visual_geom,tesseract.Mesh)):
+        
+            mesh=visual_geom
+            positions = list(np.concatenate(list(mesh.getVertices())).flatten())
+            triangles = mesh.getTriangles().flatten()
+            triangle_count = int(len(triangles)/4)
+            indices = [0]*(triangle_count*3)
+            for i in range(triangle_count):
+                assert(triangles[i*4]==3, "Only triangle meshes supported")
+                indices[i*3] = int(triangles[i*4+3])
+                indices[i*3+1] = int(triangles[i*4+2])
+                indices[i*3+2] = int(triangles[i*4+1])
+
+            tf_visual["positions"] = positions
+            tf_visual["indices"] = indices
+            
+            tf_visual["scaling"] = list(mesh.getScale().flatten())
+            tf_visual["normals"] = [0,0,1]*int(len(tf_visual["positions"])/3)
+        
+            submesh = {}
+            submesh["materialIndex"] = 0
+            submesh["verticesStart"] = 0
+            submesh["verticesCount"] = len(positions)/3
+            submesh["indexStart"] = 0
+            submesh["indexCount"] = len(indices)
+            tf_visual["subMeshes"] = [submesh]
+            
+            
+        elif (isinstance(visual_geom,tesseract.Box)):
+            box=visual_geom
+            tf_visual["geometryId"] = "cube_geometry"
+            tf_visual["scaling"] = [0.5*box.getX(), 0.5*box.getY(), 0.5*box.getZ()]
+            submesh = {}
+            submesh["materialIndex"] = 0
+            submesh["verticesStart"] = 0
+            submesh["verticesCount"] = 30
+            submesh["indexStart"] = 0
+            submesh["indexCount"] = 36
+            tf_visual["subMeshes"] = [submesh]
+
+        elif (isinstance(visual_geom,tesseract.Sphere)):
+            sphere=visual_geom
+            tf_visual["geometryId"] = "sphere_geometry"
+            tf_visual["scaling"] = [sphere.getRadius(), sphere.getRadius(), sphere.getRadius()]
+            submesh = {}
+            submesh["materialIndex"] = 0
+            submesh["verticesStart"] = 0
+            submesh["verticesCount"] = 2592
+            submesh["indexStart"] = 0
+            submesh["indexCount"] = 2880
+            tf_visual["subMeshes"] = [submesh]
+
+        elif (isinstance(visual_geom,tesseract.Cylinder)):
+            cylinder=visual_geom
+            tf_visual["geometryId"] = "cylinder_geometry"
+            tf_visual["scaling"] = [cylinder.getRadius(), cylinder.getRadius(), 0.5*cylinder.getLength()]
+            submesh = {}
+            submesh["materialIndex"] = 0
+            submesh["verticesStart"] = 0
+            submesh["verticesCount"] = 309
+            submesh["indexStart"] = 0
+            submesh["indexCount"] = 372
+            tf_visual["subMeshes"] = [submesh]
+
+            
+        else:
+            #Unsupported geometry type
+            continue
+
         meshes.append(tf_visual)
 
         tf_material = {"name": "material_" + visual_name}
