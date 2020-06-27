@@ -76,31 +76,34 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
     return config_status;
   }
 
-//  auto tStart = boost::posix_time::second_clock::local_time();
+  //  auto tStart = boost::posix_time::second_clock::local_time();
 
   descartes_light::Solver<FloatType> graph_builder(config_->prob.manip_inv_kin->numJoints());
-  if (!graph_builder.build(config_->prob.samplers, config_->prob.timing_constraints, config_->prob.edge_evaluators, config_->prob.num_threads))
+  if (!graph_builder.build(config_->prob.samplers,
+                           config_->prob.timing_constraints,
+                           config_->prob.edge_evaluators,
+                           config_->prob.num_threads))
   {
-//    CONSOLE_BRIDGE_logError("Failed to build vertices");
-//    for (const auto& i : graph_builder.getFailedVertices())
-//      response.failed_waypoints.push_back(config_->waypoints[i]);
+    //    CONSOLE_BRIDGE_logError("Failed to build vertices");
+    //    for (const auto& i : graph_builder.getFailedVertices())
+    //      response.failed_waypoints.push_back(config_->waypoints[i]);
 
-//    // Copy the waypoint if it is not already in the failed waypoints list
-//    std::copy_if(config_->waypoints.begin(),
-//                 config_->waypoints.end(),
-//                 std::back_inserter(response.succeeded_waypoints),
-//                 [&response](const Waypoint::ConstPtr wp) {
-//                   return std::find(response.failed_waypoints.begin(), response.failed_waypoints.end(), wp) ==
-//                          response.failed_waypoints.end();
-//                 });
+    //    // Copy the waypoint if it is not already in the failed waypoints list
+    //    std::copy_if(config_->waypoints.begin(),
+    //                 config_->waypoints.end(),
+    //                 std::back_inserter(response.succeeded_waypoints),
+    //                 [&response](const Waypoint::ConstPtr wp) {
+    //                   return std::find(response.failed_waypoints.begin(), response.failed_waypoints.end(), wp) ==
+    //                          response.failed_waypoints.end();
+    //                 });
 
     response.status =
         tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::ErrorFailedToBuildGraph, status_category_);
     return response.status;
   }
-//  // No failed waypoints
-//  response.succeeded_waypoints = config_->waypoints;
-//  response.failed_waypoints.clear();
+  //  // No failed waypoints
+  //  response.succeeded_waypoints = config_->waypoints;
+  //  response.failed_waypoints.clear();
 
   // Search for edges
   std::vector<FloatType> solution;
@@ -112,33 +115,34 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
     return response.status;
   }
 
-//  response.joint_trajectory.joint_names = config_->joint_names;
-//  response.joint_trajectory.trajectory.resize(static_cast<long>(config_->waypoints.size()), static_cast<long>(dof));
-//  for (size_t r = 0; r < config_->waypoints.size(); ++r)
-//    for (size_t c = 0; c < dof; ++c)
-//      response.joint_trajectory.trajectory(static_cast<long>(r), static_cast<long>(c)) = solution[(r * dof) + c];
+  //  response.joint_trajectory.joint_names = config_->joint_names;
+  //  response.joint_trajectory.trajectory.resize(static_cast<long>(config_->waypoints.size()), static_cast<long>(dof));
+  //  for (size_t r = 0; r < config_->waypoints.size(); ++r)
+  //    for (size_t c = 0; c < dof; ++c)
+  //      response.joint_trajectory.trajectory(static_cast<long>(r), static_cast<long>(c)) = solution[(r * dof) + c];
 
-//  // Check and report collisions
-//  validator_ =
-//      std::make_shared<TrajectoryValidator>(config_->tesseract->getEnvironmentConst()->getContinuousContactManager(),
-//                                            config_->tesseract->getEnvironmentConst()->getDiscreteContactManager(),
-//                                            0.01,
-//                                            verbose);
+  //  // Check and report collisions
+  //  validator_ =
+  //      std::make_shared<TrajectoryValidator>(config_->tesseract->getEnvironmentConst()->getContinuousContactManager(),
+  //                                            config_->tesseract->getEnvironmentConst()->getDiscreteContactManager(),
+  //                                            0.01,
+  //                                            verbose);
 
-//  bool valid = validator_->trajectoryValid(response.joint_trajectory.trajectory,
-//                                           check_type,
-//                                           *(config_->tesseract->getEnvironmentConst()->getStateSolver()),
-//                                           response.joint_trajectory.joint_names);
+  //  bool valid = validator_->trajectoryValid(response.joint_trajectory.trajectory,
+  //                                           check_type,
+  //                                           *(config_->tesseract->getEnvironmentConst()->getStateSolver()),
+  //                                           response.joint_trajectory.joint_names);
 
-//  CONSOLE_BRIDGE_logInform("Descartes planning time: %.3f",
-//                           (boost::posix_time::second_clock::local_time() - tStart).seconds());
+  //  CONSOLE_BRIDGE_logInform("Descartes planning time: %.3f",
+  //                           (boost::posix_time::second_clock::local_time() - tStart).seconds());
 
-//  if (!valid)
-//  {
-//    response.status = tesseract_common::StatusCode(
-//        tesseract_motion_planners::DescartesMotionPlannerStatusCategory::ErrorFoundValidSolutionInCollision, status_category_);
-//    return response.status;
-//  }
+  //  if (!valid)
+  //  {
+  //    response.status = tesseract_common::StatusCode(
+  //        tesseract_motion_planners::DescartesMotionPlannerStatusCategory::ErrorFoundValidSolutionInCollision,
+  //        status_category_);
+  //    return response.status;
+  //  }
 
   CONSOLE_BRIDGE_logInform("Final trajectory is collision free");
   response.status = tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::SolutionFound, status_category_);

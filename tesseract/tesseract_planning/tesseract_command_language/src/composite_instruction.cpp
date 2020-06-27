@@ -4,8 +4,9 @@
 namespace tesseract_planning
 {
 CompositeInstruction::CompositeInstruction(std::string profile, CompositeInstructionOrder order)
-  : profile_(std::move(profile))
-  , order_(order) {}
+  : profile_(std::move(profile)), order_(order)
+{
+}
 
 CompositeInstructionOrder CompositeInstruction::getOrder() const { return order_; }
 
@@ -27,7 +28,7 @@ bool CompositeInstruction::isPlan() const { return false; }
 
 bool CompositeInstruction::isMove() const { return false; }
 
-void CompositeInstruction::print() const  {}
+void CompositeInstruction::print() const {}
 
 CompositeInstruction CompositeInstruction::flatten() const
 {
@@ -47,4 +48,4 @@ void CompositeInstruction::flattenHelper(CompositeInstruction& flattened, const 
   }
 }
 
-}
+}  // namespace tesseract_planning

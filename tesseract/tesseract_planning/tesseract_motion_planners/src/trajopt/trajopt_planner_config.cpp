@@ -31,4 +31,4 @@ TrajOptPlannerConfig::TrajOptPlannerConfig(trajopt::TrajOptProb::Ptr problem) : 
 
 bool TrajOptPlannerConfig::generate() { return (prob != nullptr); }
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning

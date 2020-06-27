@@ -7,7 +7,7 @@
 
 namespace tesseract_planning
 {
-trajopt::TermInfo::Ptr createCartesianWaypointTermInfo(const Eigen::Isometry3d &c_wp,
+trajopt::TermInfo::Ptr createCartesianWaypointTermInfo(const Eigen::Isometry3d& c_wp,
                                                        int index,
                                                        std::string working_frame,
                                                        Eigen::Isometry3d tcp,
@@ -15,7 +15,7 @@ trajopt::TermInfo::Ptr createCartesianWaypointTermInfo(const Eigen::Isometry3d &
                                                        std::string link,
                                                        trajopt::TermType type);
 
-trajopt::TermInfo::Ptr createDynamicCartesianWaypointTermInfo(const Eigen::Isometry3d &c_wp,
+trajopt::TermInfo::Ptr createDynamicCartesianWaypointTermInfo(const Eigen::Isometry3d& c_wp,
                                                               int index,
                                                               std::string working_frame,
                                                               const Eigen::Isometry3d& tcp,
@@ -28,7 +28,6 @@ trajopt::TermInfo::Ptr createNearJointStateTermInfo(const Eigen::VectorXd& targe
                                                     int index,
                                                     const Eigen::VectorXd& coeffs,
                                                     trajopt::TermType type);
-
 
 trajopt::TermInfo::Ptr createJointWaypointTermInfo(const Eigen::VectorXd& j_wp,
                                                    int index,
@@ -91,6 +90,6 @@ trajopt::TermInfo::Ptr createAvoidSingularityTermInfo(int start_index,
                                                       const std::string& link,
                                                       double coeff = 5.0,
                                                       trajopt::TermType type = trajopt::TermType::TT_COST);
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_MOTION_PLANNERS_TRAJOPT_UTILS_H
+#endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_UTILS_H

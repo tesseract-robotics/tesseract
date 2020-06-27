@@ -3,8 +3,9 @@
 namespace tesseract_planning
 {
 MoveInstruction::MoveInstruction(Waypoint waypoint, MoveInstructionType type)
-  : move_type_(type)
-  , waypoint_(std::move(waypoint)) {}
+  : move_type_(type), waypoint_(std::move(waypoint))
+{
+}
 
 void MoveInstruction::setWaypoint(Waypoint waypoint) { waypoint_ = waypoint; }
 const Waypoint& MoveInstruction::getWaypoint() const { return waypoint_; }
@@ -15,10 +16,7 @@ const Eigen::Isometry3d& MoveInstruction::getTCP() const { return tcp_; }
 void MoveInstruction::setWorkingFrame(std::string working_frame) { working_frame_ = working_frame; }
 const std::string& MoveInstruction::getWorkingFrame() const { return working_frame_; }
 
-void MoveInstruction::setProfile(const std::string& profile)
-{
-  profile_ = (profile.empty()) ? "DEFAULT" : profile;
-}
+void MoveInstruction::setProfile(const std::string& profile) { profile_ = (profile.empty()) ? "DEFAULT" : profile; }
 const std::string& MoveInstruction::getProfile() const { return profile_; }
 
 void MoveInstruction::setPosition(const Eigen::VectorXd& position) { position_ = position; }
@@ -48,11 +46,11 @@ bool MoveInstruction::isPlan() const { return false; }
 
 bool MoveInstruction::isMove() const { return true; }
 
-void MoveInstruction::print() const { }
+void MoveInstruction::print() const {}
 
 bool MoveInstruction::isLinear() const { return (move_type_ == MoveInstructionType::LINEAR); }
 
 bool MoveInstruction::isFreespace() const { return (move_type_ == MoveInstructionType::FREESPACE); }
 
 bool MoveInstruction::isCircular() const { return (move_type_ == MoveInstructionType::CIRCULAR); }
-}
+}  // namespace tesseract_planning

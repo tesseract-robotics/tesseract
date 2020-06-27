@@ -35,9 +35,7 @@ namespace tesseract_planning
 OMPLMotionPlannerDefaultConfig::OMPLMotionPlannerDefaultConfig(tesseract::Tesseract::ConstPtr tesseract,
                                                                tesseract_environment::EnvState::ConstPtr env_state,
                                                                std::string manipulator)
-  : tesseract(std::move(tesseract))
-  , env_state(std::move(env_state))
-  , manipulator(std::move(manipulator))
+  : tesseract(std::move(tesseract)), env_state(std::move(env_state)), manipulator(std::move(manipulator))
 {
 }
 
@@ -47,11 +45,13 @@ void OMPLMotionPlannerDefaultConfig::init()
   if (manipulator_ik_solver.empty())
     manip_inv_kin_ = tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator);
   else
-    manip_inv_kin_ = tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
+    manip_inv_kin_ =
+        tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
 
   // Get Active Link Names
   std::vector<std::string> active_link_names = manip_inv_kin_->getActiveLinkNames();
-  auto adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(tesseract->getEnvironmentConst()->getSceneGraph(), active_link_names, env_state->link_transforms);
+  auto adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
+      tesseract->getEnvironmentConst()->getSceneGraph(), active_link_names, env_state->link_transforms);
   active_link_names_ = adjacency_map->getActiveLinkNames();
 }
 
@@ -90,7 +90,8 @@ bool OMPLMotionPlannerDefaultConfig::generate()
 
   // Process instructions
   if (!tesseract_kinematics::checkKinematics(manip_fwd_kin_, manip_inv_kin_))
-    CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that Inverse Kinematics does not agree with KDL (TrajOpt). Did you change the URDF recently?");
+    CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that Inverse Kinematics does not agree with KDL "
+                            "(TrajOpt). Did you change the URDF recently?");
 
   // Check and make sure it does not contain any composite instruction
   for (const auto& instruction : instructions)
@@ -100,7 +101,7 @@ bool OMPLMotionPlannerDefaultConfig::generate()
   }
 
   // Transform plan instructions into descartes samplers
-  const PlanInstruction* prev_plan_instruction {nullptr};
+  const PlanInstruction* prev_plan_instruction{ nullptr };
   int index = 0;
   for (std::size_t i = 0; i < instructions.size(); ++i)
   {
@@ -112,9 +113,9 @@ bool OMPLMotionPlannerDefaultConfig::generate()
 
       assert(instruction.getType() == static_cast<int>(InstructionType::PLAN_INSTRUCTION));
       const auto* plan_instruction = instruction.cast_const<PlanInstruction>();
-//      const Waypoint& wp = plan_instruction->getWaypoint();
-//      const std::string& working_frame = plan_instruction->getWorkingFrame();
-//      const Eigen::Isometry3d& tcp = plan_instruction->getTCP();
+      //      const Waypoint& wp = plan_instruction->getWaypoint();
+      //      const std::string& working_frame = plan_instruction->getWorkingFrame();
+      //      const Eigen::Isometry3d& tcp = plan_instruction->getTCP();
 
       assert(seed[i].isComposite());
       const auto* seed_composite = seed[i].cast_const<tesseract_planning::CompositeInstruction>();
@@ -124,7 +125,7 @@ bool OMPLMotionPlannerDefaultConfig::generate()
       if (profile.empty())
         profile = "DEFAULT";
 
-      typename OMPLPlanProfile::Ptr cur_plan_profile {nullptr};
+      typename OMPLPlanProfile::Ptr cur_plan_profile{ nullptr };
       auto it = plan_profiles.find(profile);
       if (it == plan_profiles.end())
         cur_plan_profile = std::make_shared<OMPLDefaultPlanProfile>();
@@ -135,49 +136,54 @@ bool OMPLMotionPlannerDefaultConfig::generate()
       {
         if (isCartesianWaypoint(plan_instruction->getWaypoint().getType()))
         {
-//          const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
+          //          const auto* cur_wp =
+          //          plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
           if (prev_plan_instruction)
           {
             assert(prev_plan_instruction->getTCP().isApprox(plan_instruction->getTCP(), 1e-5));
 
-//            Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
-//            if (isCartesianWaypoint(prev_plan_instruction->getWaypoint().getType()))
-//            {
-//              prev_pose = (*prev_plan_instruction->getWaypoint().cast_const<Eigen::Isometry3d>());
-//            }
-//            else if (isJointWaypoint(prev_plan_instruction->getWaypoint().getType()))
-//            {
-//              // This currently only works for ROBOT_ONLY configuration need to update to use state solver
-//              assert(this->prob.configuration == DescartesProblem<FloatType>::ROBOT_ONLY);
-//              const auto* jwp = prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>();
-//              if (!this->prob.manip_fwd_kin->calcFwdKin(prev_pose, *jwp))
-//                throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
+            //            Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
+            //            if (isCartesianWaypoint(prev_plan_instruction->getWaypoint().getType()))
+            //            {
+            //              prev_pose = (*prev_plan_instruction->getWaypoint().cast_const<Eigen::Isometry3d>());
+            //            }
+            //            else if (isJointWaypoint(prev_plan_instruction->getWaypoint().getType()))
+            //            {
+            //              // This currently only works for ROBOT_ONLY configuration need to update to use state solver
+            //              assert(this->prob.configuration == DescartesProblem<FloatType>::ROBOT_ONLY);
+            //              const auto* jwp = prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>();
+            //              if (!this->prob.manip_fwd_kin->calcFwdKin(prev_pose, *jwp))
+            //                throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward
+            //                kinematics!");
 
-//              prev_pose = this->prob.env_state->link_transforms.at(this->prob.manip_fwd_kin->getBaseLinkName()) * prev_pose * plan_instruction->getTCP();
-//            }
-//            else
-//            {
-//              throw std::runtime_error("DescartesMotionPlannerConfig: uknown waypoint type.");
-//            }
+            //              prev_pose =
+            //              this->prob.env_state->link_transforms.at(this->prob.manip_fwd_kin->getBaseLinkName()) *
+            //              prev_pose * plan_instruction->getTCP();
+            //            }
+            //            else
+            //            {
+            //              throw std::runtime_error("DescartesMotionPlannerConfig: uknown waypoint type.");
+            //            }
 
-//            tesseract_common::VectorIsometry3d poses = interpolate(prev_pose, *cur_wp, static_cast<int>(seed_composite->size()));
-//            // Add intermediate points with path costs and constraints
-//            for (std::size_t p = 1; p < poses.size() - 1; ++p)
-//            {
-//              cur_plan_profile->apply(this->prob, poses[p], *plan_instruction, active_links, index);
+            //            tesseract_common::VectorIsometry3d poses = interpolate(prev_pose, *cur_wp,
+            //            static_cast<int>(seed_composite->size()));
+            //            // Add intermediate points with path costs and constraints
+            //            for (std::size_t p = 1; p < poses.size() - 1; ++p)
+            //            {
+            //              cur_plan_profile->apply(this->prob, poses[p], *plan_instruction, active_links, index);
 
-//              ++index;
-//            }
+            //              ++index;
+            //            }
           }
           else
           {
-            assert(seed_composite->size()==1);
+            assert(seed_composite->size() == 1);
           }
 
-//          // Add final point with waypoint
-//          cur_plan_profile->apply(this->prob, *cur_wp, *plan_instruction, active_links, index);
+          //          // Add final point with waypoint
+          //          cur_plan_profile->apply(this->prob, *cur_wp, *plan_instruction, active_links, index);
 
-//          ++index;
+          //          ++index;
 
           // TODO Currently skipping linear moves until SE3 motion planning is implemented.
           prob.push_back(nullptr);
@@ -185,57 +191,63 @@ bool OMPLMotionPlannerDefaultConfig::generate()
         }
         else if (isJointWaypoint(plan_instruction->getWaypoint().getType()))
         {
-//          // This currently only works for ROBOT_ONLY configuration Need to update to use state solver
-//          assert(configuration == OMPLProblemConfiguration::REAL_STATE_SPACE || configuration == OMPLProblemConfiguration::REAL_CONSTRAINTED_STATE_SPACE || configuration == OMPLProblemConfiguration::SE3_STATE_SPACE_ROBOT_ONLY);
-//          const auto* cur_wp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
-//          Eigen::Isometry3d cur_pose = Eigen::Isometry3d::Identity();
-//          if (!manip_fwd_kin_->calcFwdKin(cur_pose, *cur_wp))
-//            throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
+          //          // This currently only works for ROBOT_ONLY configuration Need to update to use state solver
+          //          assert(configuration == OMPLProblemConfiguration::REAL_STATE_SPACE || configuration ==
+          //          OMPLProblemConfiguration::REAL_CONSTRAINTED_STATE_SPACE || configuration ==
+          //          OMPLProblemConfiguration::SE3_STATE_SPACE_ROBOT_ONLY); const auto* cur_wp =
+          //          plan_instruction->getWaypoint().cast_const<JointWaypoint>(); Eigen::Isometry3d cur_pose =
+          //          Eigen::Isometry3d::Identity(); if (!manip_fwd_kin_->calcFwdKin(cur_pose, *cur_wp))
+          //            throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
 
-//          cur_pose = env_state->link_transforms.at(manip_fwd_kin_->getBaseLinkName()) * cur_pose * plan_instruction->getTCP();
-//          if (prev_plan_instruction)
-//          {
-//            assert(prev_plan_instruction->getTCP().isApprox(plan_instruction->getTCP(), 1e-5));
+          //          cur_pose = env_state->link_transforms.at(manip_fwd_kin_->getBaseLinkName()) * cur_pose *
+          //          plan_instruction->getTCP(); if (prev_plan_instruction)
+          //          {
+          //            assert(prev_plan_instruction->getTCP().isApprox(plan_instruction->getTCP(), 1e-5));
 
-//            /** @todo This should also handle if waypoint type is joint */
-//            Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
-//            if (isCartesianWaypoint(prev_plan_instruction->getWaypoint().getType()))
-//            {
-//              prev_pose = (*prev_plan_instruction->getWaypoint().cast_const<Eigen::Isometry3d>());
-//            }
-//            else if (isJointWaypoint(prev_plan_instruction->getWaypoint().getType()))
-//            {
-//              // This currently only works for ROBOT_ONLY configuration need to update to use state solver
-//              assert(configuration == OMPLProblemConfiguration::REAL_STATE_SPACE || configuration == OMPLProblemConfiguration::REAL_CONSTRAINTED_STATE_SPACE || configuration == OMPLProblemConfiguration::SE3_STATE_SPACE_ROBOT_ONLY);
-//              const auto* jwp = prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>();
-//              if (!manip_fwd_kin_->calcFwdKin(prev_pose, *jwp))
-//                throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
+          //            /** @todo This should also handle if waypoint type is joint */
+          //            Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
+          //            if (isCartesianWaypoint(prev_plan_instruction->getWaypoint().getType()))
+          //            {
+          //              prev_pose = (*prev_plan_instruction->getWaypoint().cast_const<Eigen::Isometry3d>());
+          //            }
+          //            else if (isJointWaypoint(prev_plan_instruction->getWaypoint().getType()))
+          //            {
+          //              // This currently only works for ROBOT_ONLY configuration need to update to use state solver
+          //              assert(configuration == OMPLProblemConfiguration::REAL_STATE_SPACE || configuration ==
+          //              OMPLProblemConfiguration::REAL_CONSTRAINTED_STATE_SPACE || configuration ==
+          //              OMPLProblemConfiguration::SE3_STATE_SPACE_ROBOT_ONLY); const auto* jwp =
+          //              prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>(); if
+          //              (!manip_fwd_kin_->calcFwdKin(prev_pose, *jwp))
+          //                throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward
+          //                kinematics!");
 
-//              prev_pose = env_state->link_transforms.at(manip_fwd_kin_->getBaseLinkName()) * prev_pose * plan_instruction->getTCP();
-//            }
-//            else
-//            {
-//              throw std::runtime_error("DescartesMotionPlannerConfig: uknown waypoint type.");
-//            }
+          //              prev_pose = env_state->link_transforms.at(manip_fwd_kin_->getBaseLinkName()) * prev_pose *
+          //              plan_instruction->getTCP();
+          //            }
+          //            else
+          //            {
+          //              throw std::runtime_error("DescartesMotionPlannerConfig: uknown waypoint type.");
+          //            }
 
-//            tesseract_common::VectorIsometry3d poses = interpolate(prev_pose, cur_pose, static_cast<int>(seed_composite->size()));
-//            // Add intermediate points with path costs and constraints
-//            for (std::size_t p = 1; p < poses.size() - 1; ++p)
-//            {
-//              cur_plan_profile->apply(this->prob, poses[p], *plan_instruction, active_links, index);
+          //            tesseract_common::VectorIsometry3d poses = interpolate(prev_pose, cur_pose,
+          //            static_cast<int>(seed_composite->size()));
+          //            // Add intermediate points with path costs and constraints
+          //            for (std::size_t p = 1; p < poses.size() - 1; ++p)
+          //            {
+          //              cur_plan_profile->apply(this->prob, poses[p], *plan_instruction, active_links, index);
 
-//              ++index;
-//            }
-//          }
-//          else
-//          {
-//            assert(seed_composite->size()==1);
-//          }
+          //              ++index;
+          //            }
+          //          }
+          //          else
+          //          {
+          //            assert(seed_composite->size()==1);
+          //          }
 
-//          // Add final point with waypoint
-//          cur_plan_profile->apply(this->prob, *cur_wp, *plan_instruction, active_links, index);
+          //          // Add final point with waypoint
+          //          cur_plan_profile->apply(this->prob, *cur_wp, *plan_instruction, active_links, index);
 
-//          ++index;
+          //          ++index;
 
           // TODO Currently skipping linear moves until SE3 motion planning is implemented.
           prob.push_back(nullptr);
@@ -254,7 +266,7 @@ bool OMPLMotionPlannerDefaultConfig::generate()
           const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>();
           if (!prev_plan_instruction)
           {
-            assert(seed_composite->size()==1);
+            assert(seed_composite->size() == 1);
           }
           else
           {
@@ -266,7 +278,8 @@ bool OMPLMotionPlannerDefaultConfig::generate()
             ompl::base::ScopedState<> start_state(sub_prob->simple_setup->getStateSpace());
             if (isJointWaypoint(prev_plan_instruction->getWaypoint().getType()))
             {
-              const auto* prev_wp = prev_plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>();
+              const auto* prev_wp =
+                  prev_plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>();
               for (long i = 0; i < prev_wp->size(); ++i)
                 start_state[static_cast<unsigned>(i)] = (*prev_wp)[i];
 
@@ -283,7 +296,7 @@ bool OMPLMotionPlannerDefaultConfig::generate()
             else
             {
               assert(false);
-//              sub_prob->simple_setup->addStartState(start_state);
+              //              sub_prob->simple_setup->addStartState(start_state);
             }
 
             prob.push_back(std::move(sub_prob));
@@ -295,7 +308,7 @@ bool OMPLMotionPlannerDefaultConfig::generate()
           const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
           if (!prev_plan_instruction)
           {
-            assert(seed_composite->size()==1);
+            assert(seed_composite->size() == 1);
           }
           else
           {
@@ -307,7 +320,8 @@ bool OMPLMotionPlannerDefaultConfig::generate()
             ompl::base::ScopedState<> start_state(sub_prob->simple_setup->getStateSpace());
             if (isJointWaypoint(prev_plan_instruction->getWaypoint().getType()))
             {
-              const auto* prev_wp = prev_plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>();
+              const auto* prev_wp =
+                  prev_plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>();
               for (long i = 0; i < prev_wp->size(); ++i)
                 start_state[static_cast<unsigned>(i)] = (*prev_wp)[i];
 
@@ -324,7 +338,7 @@ bool OMPLMotionPlannerDefaultConfig::generate()
             else
             {
               assert(false);
-//              sub_prob->simple_setup->addStartState(start_state);
+              //              sub_prob->simple_setup->addStartState(start_state);
             }
 
             prob.push_back(std::move(sub_prob));
@@ -347,4 +361,4 @@ bool OMPLMotionPlannerDefaultConfig::generate()
 
   return OMPLMotionPlannerConfig::generate();
 }
-}
+}  // namespace tesseract_planning

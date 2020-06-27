@@ -99,4 +99,4 @@ void WeightedRealVectorStateSampler::sampleGaussian(ompl::base::State* state,
     rstate->values[i] = v;
   }
 }
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning

@@ -7,16 +7,15 @@
 
 namespace tesseract_planning
 {
-
 class TrajOptDefaultPlanProfile : public TrajOptPlanProfile
 {
 public:
   using Ptr = std::shared_ptr<TrajOptDefaultPlanProfile>;
   using ConstPtr = std::shared_ptr<const TrajOptDefaultPlanProfile>;
 
-  Eigen::VectorXd cartesian_coeff { Eigen::VectorXd::Constant(1,1,5) };
-  Eigen::VectorXd joint_coeff { Eigen::VectorXd::Constant(1,1,5) };
-  trajopt::TermType term_type { trajopt::TermType::TT_CNT };
+  Eigen::VectorXd cartesian_coeff{ Eigen::VectorXd::Constant(1, 1, 5) };
+  Eigen::VectorXd joint_coeff{ Eigen::VectorXd::Constant(1, 1, 5) };
+  trajopt::TermType term_type{ trajopt::TermType::TT_CNT };
 
   /** @brief Error function that is set as a constraint for each timestep.
    *
@@ -42,22 +41,20 @@ public:
   void apply(trajopt::ProblemConstructionInfo& pci,
              const Eigen::Isometry3d& cartesian_waypoint,
              const PlanInstruction& parent_instruction,
-             const std::vector<std::string> &active_links,
+             const std::vector<std::string>& active_links,
              int index) override;
 
   void apply(trajopt::ProblemConstructionInfo& pci,
              const Eigen::VectorXd& joint_waypoint,
              const PlanInstruction& parent_instruction,
-             const std::vector<std::string> &active_links,
+             const std::vector<std::string>& active_links,
              int index) override;
+
 protected:
+  void addConstraintErrorFunctions(trajopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;
 
-  void addConstraintErrorFunctions(trajopt::ProblemConstructionInfo& pci,
-                                   const std::vector<int>& fixed_steps) const;
-
-  void addAvoidSingularity(trajopt::ProblemConstructionInfo& pci,
-                           const std::vector<int>& fixed_steps) const;
+  void addAvoidSingularity(trajopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;
 };
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_MOTION_PLANNERS_TRAJOPT_DEFAULT_PLAN_PROFILE_H
+#endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_DEFAULT_PLAN_PROFILE_H

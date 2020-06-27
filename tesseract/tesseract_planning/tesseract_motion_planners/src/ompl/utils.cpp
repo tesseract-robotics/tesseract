@@ -108,5 +108,4 @@ bool checkStateInCollision(OMPLProblem& prob, const Eigen::VectorXd& state)
   return (!contact_map.empty());
 }
 
-
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning

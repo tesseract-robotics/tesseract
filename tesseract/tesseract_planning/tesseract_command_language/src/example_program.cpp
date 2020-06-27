@@ -6,7 +6,7 @@
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_command_language/plan_instruction.h>
 
-int main (int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   using namespace tesseract_planning;
 
@@ -71,14 +71,14 @@ int main (int argc, char *argv[])
 
   program.push_back(plan_f3);
 
-//  struct ProgramMetaData
-//  {
-//    Eigen::VectorXd current_position;
-//  };
+  //  struct ProgramMetaData
+  //  {
+  //    Eigen::VectorXd current_position;
+  //  };
 
-//  struct Program
-//  {
-//    ProgramMetaData metadata;
-//    CompositeInstruction instructions;
-//  };
+  //  struct Program
+  //  {
+  //    ProgramMetaData metadata;
+  //    CompositeInstruction instructions;
+  //  };
 }
