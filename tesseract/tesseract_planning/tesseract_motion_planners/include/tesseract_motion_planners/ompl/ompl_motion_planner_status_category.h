@@ -55,6 +55,6 @@ public:
 private:
   std::string name_;
 };
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_OMPL_MOTION_PLANNER_STATUS_CATEGORY_H

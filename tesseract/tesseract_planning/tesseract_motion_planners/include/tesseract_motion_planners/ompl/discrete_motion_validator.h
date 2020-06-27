@@ -45,6 +45,6 @@ public:
                    const ompl::base::State* s2,
                    std::pair<ompl::base::State*, double>& lastValid) const override;
 };
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_DISCRETE_MOTION_VALIDATOR_H

@@ -86,4 +86,4 @@ bool DiscreteMotionValidator::checkMotion(const ompl::base::State* s1,
 
   return is_valid;
 }
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning

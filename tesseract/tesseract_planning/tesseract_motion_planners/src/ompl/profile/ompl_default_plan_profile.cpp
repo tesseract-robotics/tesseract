@@ -20,7 +20,7 @@ namespace tesseract_planning
 void OMPLDefaultPlanProfile::apply(OMPLProblem& /*prob*/,
                                    const Eigen::Isometry3d& /*cartesian_waypoint*/,
                                    const PlanInstruction& /*parent_instruction*/,
-                                   const std::vector<std::string> &/*active_links*/,
+                                   const std::vector<std::string>& /*active_links*/,
                                    int /*index*/)
 {
   assert(false);
@@ -29,7 +29,7 @@ void OMPLDefaultPlanProfile::apply(OMPLProblem& /*prob*/,
 void OMPLDefaultPlanProfile::apply(OMPLProblem& prob,
                                    const Eigen::VectorXd& joint_waypoint,
                                    const PlanInstruction& /*parent_instruction*/,
-                                   const std::vector<std::string> &/*active_links*/,
+                                   const std::vector<std::string>& /*active_links*/,
                                    int /*index*/)
 {
   prob.planners = planners;
@@ -44,7 +44,8 @@ void OMPLDefaultPlanProfile::apply(OMPLProblem& prob,
   const auto& limits = prob.manip_fwd_kin->getLimits();
 
   if (state_space == OMPLProblemStateSpace::REAL_STATE_SPACE)
-    prob.extractor = std::bind(&tesseract_planning::RealVectorStateSpaceExtractor, std::placeholders::_1, prob.manip_inv_kin->numJoints());
+    prob.extractor = std::bind(
+        &tesseract_planning::RealVectorStateSpaceExtractor, std::placeholders::_1, prob.manip_inv_kin->numJoints());
 #ifndef OMPL_LESS_1_4_0
   else if (state_space == OMPLProblemStateSpace::REAL_CONSTRAINTED_STATE_SPACE)
     prob.extractor = tesseract_planning::ConstrainedStateSpaceExtractor;
@@ -59,52 +60,53 @@ void OMPLDefaultPlanProfile::apply(OMPLProblem& prob,
 
   if (prob.state_space == OMPLProblemStateSpace::REAL_STATE_SPACE)
   {
-      // Construct the OMPL state space for this manipulator
-      ompl::base::StateSpacePtr state_space_ptr;
+    // Construct the OMPL state space for this manipulator
+    ompl::base::StateSpacePtr state_space_ptr;
 
-      auto rss = std::make_shared<ompl::base::RealVectorStateSpace>();
-      for (unsigned i = 0; i < dof; ++i)
-        rss->addDimension(joint_names[i], limits(i, 0), limits(i, 1));
+    auto rss = std::make_shared<ompl::base::RealVectorStateSpace>();
+    for (unsigned i = 0; i < dof; ++i)
+      rss->addDimension(joint_names[i], limits(i, 0), limits(i, 1));
 
-      if (state_sampler_allocator)
-      {
-        rss->setStateSamplerAllocator(state_sampler_allocator);
-      }
-      else
-      {
-        rss->setStateSamplerAllocator(std::bind(&OMPLDefaultPlanProfile::allocWeightedRealVectorStateSampler, this, std::placeholders::_1, limits));
-      }
+    if (state_sampler_allocator)
+    {
+      rss->setStateSamplerAllocator(state_sampler_allocator);
+    }
+    else
+    {
+      rss->setStateSamplerAllocator(
+          std::bind(&OMPLDefaultPlanProfile::allocWeightedRealVectorStateSampler, this, std::placeholders::_1, limits));
+    }
 
-      state_space_ptr = rss;
+    state_space_ptr = rss;
 
-      // Setup Longest Valid Segment
-      processLongestValidSegment(state_space_ptr, longest_valid_segment_fraction, longest_valid_segment_length);
+    // Setup Longest Valid Segment
+    processLongestValidSegment(state_space_ptr, longest_valid_segment_fraction, longest_valid_segment_length);
 
-      // Create Simple Setup from state space
-      prob.simple_setup = std::make_shared<ompl::geometric::SimpleSetup>(state_space_ptr);
+    // Create Simple Setup from state space
+    prob.simple_setup = std::make_shared<ompl::geometric::SimpleSetup>(state_space_ptr);
 
-      // Get descrete contact manager for testing provided start and end position
-      // This is required because collision checking happens in motion validators now
-      // instead of the isValid function to avoid unnecessary collision checks.
-      if (checkStateInCollision(prob, joint_waypoint))
-      {
-        CONSOLE_BRIDGE_logError("In OMPLPlannerFreespaceConfig: Start state is in collision");
-      }
+    // Get descrete contact manager for testing provided start and end position
+    // This is required because collision checking happens in motion validators now
+    // instead of the isValid function to avoid unnecessary collision checks.
+    if (checkStateInCollision(prob, joint_waypoint))
+    {
+      CONSOLE_BRIDGE_logError("In OMPLPlannerFreespaceConfig: Start state is in collision");
+    }
 
-      ompl::base::ScopedState<> goal_state(prob.simple_setup->getStateSpace());
-      for (unsigned i = 0; i < dof; ++i)
-        goal_state[i] = joint_waypoint[i];
+    ompl::base::ScopedState<> goal_state(prob.simple_setup->getStateSpace());
+    for (unsigned i = 0; i < dof; ++i)
+      goal_state[i] = joint_waypoint[i];
 
-      prob.simple_setup->setGoalState(goal_state);
+    prob.simple_setup->setGoalState(goal_state);
 
-      // Setup state checking functionality
-      ompl::base::StateValidityCheckerPtr svc_without_collision = processStateValidator(prob, env, prob.manip_fwd_kin);
+    // Setup state checking functionality
+    ompl::base::StateValidityCheckerPtr svc_without_collision = processStateValidator(prob, env, prob.manip_fwd_kin);
 
-      // Setup motion validation (i.e. collision checking)
-      processMotionValidator(svc_without_collision, prob, env, prob.manip_fwd_kin);
+    // Setup motion validation (i.e. collision checking)
+    processMotionValidator(svc_without_collision, prob, env, prob.manip_fwd_kin);
 
-      // make sure the planners run until the time limit, and get the best possible solution
-      processOptimizationObjective(prob);
+    // make sure the planners run until the time limit, and get the best possible solution
+    processOptimizationObjective(prob);
   }
 }
 
@@ -149,8 +151,12 @@ void OMPLDefaultPlanProfile::processMotionValidator(ompl::base::StateValidityChe
       ompl::base::MotionValidatorPtr mv;
       if (collision_continuous)
       {
-        mv = std::make_shared<ContinuousMotionValidator>(
-            prob.simple_setup->getSpaceInformation(), svc_without_collision, env, kin, collision_safety_margin, prob.extractor);
+        mv = std::make_shared<ContinuousMotionValidator>(prob.simple_setup->getSpaceInformation(),
+                                                         svc_without_collision,
+                                                         env,
+                                                         kin,
+                                                         collision_safety_margin,
+                                                         prob.extractor);
       }
       else
       {
@@ -162,7 +168,7 @@ void OMPLDefaultPlanProfile::processMotionValidator(ompl::base::StateValidityChe
   }
 }
 
-void OMPLDefaultPlanProfile::processOptimizationObjective(OMPLProblem &prob)
+void OMPLDefaultPlanProfile::processOptimizationObjective(OMPLProblem& prob)
 {
   if (optimization_objective_allocator)
   {
@@ -178,4 +184,4 @@ OMPLDefaultPlanProfile::allocWeightedRealVectorStateSampler(const ompl::base::St
   return std::make_shared<WeightedRealVectorStateSampler>(space, weights, limits);
 }
 
-}
+}  // namespace tesseract_planning

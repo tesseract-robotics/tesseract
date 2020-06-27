@@ -97,5 +97,5 @@ private:
 
   OMPLProblem::UPtr createSubProblem();
 };
-}
-#endif // TESSERACT_MOTION_PLANNERS_OMPL_OMPL_MOTION_PLANNER_DEFAULT_CONFIG_H
+}  // namespace tesseract_planning
+#endif  // TESSERACT_MOTION_PLANNERS_OMPL_OMPL_MOTION_PLANNER_DEFAULT_CONFIG_H

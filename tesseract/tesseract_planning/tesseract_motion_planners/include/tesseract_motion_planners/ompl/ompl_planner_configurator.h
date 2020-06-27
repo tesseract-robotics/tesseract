@@ -229,6 +229,6 @@ struct SPARSConfigurator : public OMPLPlannerConfigurator
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
 };
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_OMPL_PLANNER_CONFIGURATOR_H
