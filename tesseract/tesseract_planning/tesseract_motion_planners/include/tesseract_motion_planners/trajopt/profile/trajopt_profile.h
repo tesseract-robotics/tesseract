@@ -8,7 +8,6 @@
 
 namespace tesseract_planning
 {
-
 class TrajOptPlanProfile
 {
 public:
@@ -18,13 +17,13 @@ public:
   virtual void apply(trajopt::ProblemConstructionInfo& pci,
                      const Eigen::Isometry3d& cartesian_waypoint,
                      const PlanInstruction& parent_instruction,
-                     const std::vector<std::string> &active_links,
+                     const std::vector<std::string>& active_links,
                      int index) = 0;
 
   virtual void apply(trajopt::ProblemConstructionInfo& pci,
                      const Eigen::VectorXd& joint_waypoint,
                      const PlanInstruction& parent_instruction,
-                     const std::vector<std::string> &active_links,
+                     const std::vector<std::string>& active_links,
                      int index) = 0;
 };
 
@@ -37,10 +36,10 @@ public:
   virtual void apply(trajopt::ProblemConstructionInfo& pci,
                      int start_index,
                      int end_index,
-                     const std::vector<std::string> &active_links,
+                     const std::vector<std::string>& active_links,
                      const std::vector<int>& fixed_indices) = 0;
 };
 
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_MOTION_PLANNERS_TRAJOPT_PROFILE_H
+#endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_PROFILE_H

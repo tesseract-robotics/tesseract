@@ -108,5 +108,5 @@ private:
   std::string name_;
 };
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 #endif  // TESSERACT_PLANNING_TRAJOPT_PLANNER_H

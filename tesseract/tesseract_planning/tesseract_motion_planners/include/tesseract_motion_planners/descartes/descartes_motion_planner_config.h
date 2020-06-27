@@ -14,7 +14,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-
 template <typename FloatType>
 struct DescartesMotionPlannerConfig
 {
@@ -33,13 +32,15 @@ struct DescartesMotionPlannerConfig
     // Check that parameters are valid
     if (prob.edge_evaluators.empty() || prob.edge_evaluators.size() != (prob.samplers.size() - 1))
     {
-      CONSOLE_BRIDGE_logError("In DescartesMotionPlannerConfig: edge_evaluators is a required parameter and has not been set");
+      CONSOLE_BRIDGE_logError("In DescartesMotionPlannerConfig: edge_evaluators is a required parameter and has not "
+                              "been set");
       return false;
     }
 
     if (prob.timing_constraints.empty())
     {
-      CONSOLE_BRIDGE_logError("In DescartesMotionPlannerConfig: timing_constraint is a required parameter and has not been set");
+      CONSOLE_BRIDGE_logError("In DescartesMotionPlannerConfig: timing_constraint is a required parameter and has not "
+                              "been set");
       return false;
     }
 
@@ -57,10 +58,9 @@ struct DescartesMotionPlannerConfig
 
     return true;
   }
-
 };
 
 using DescartesMotionPlannerConfigD = DescartesMotionPlannerConfig<double>;
 using DescartesMotionPlannerConfigF = DescartesMotionPlannerConfig<float>;
-}
-#endif // TESSERACT_MOTION_PLANNERS_DESCARTES_PLANNER_CONFIG_H
+}  // namespace tesseract_planning
+#endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_PLANNER_CONFIG_H

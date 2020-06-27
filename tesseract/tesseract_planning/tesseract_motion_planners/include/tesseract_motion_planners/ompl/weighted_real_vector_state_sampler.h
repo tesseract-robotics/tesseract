@@ -71,5 +71,5 @@ protected:
   Eigen::MatrixX2d bounds_;
 };
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 #endif  // TESSERACT_MOTION_PLANNERS_WEIGHTED_REAL_VECTOR_STATE_SAMPLER_H

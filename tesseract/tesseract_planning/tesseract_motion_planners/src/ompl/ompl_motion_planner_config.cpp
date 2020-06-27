@@ -29,14 +29,14 @@
 
 namespace tesseract_planning
 {
-
 bool OMPLMotionPlannerConfig::generate()
 {
   for (const auto& sub_prob : prob)
-    if (!((sub_prob->simple_setup != nullptr) && (sub_prob->tesseract != nullptr) && (sub_prob->manip_fwd_kin != nullptr) && (!sub_prob->planners.empty()) && (sub_prob->extractor != nullptr)))
+    if (!((sub_prob->simple_setup != nullptr) && (sub_prob->tesseract != nullptr) &&
+          (sub_prob->manip_fwd_kin != nullptr) && (!sub_prob->planners.empty()) && (sub_prob->extractor != nullptr)))
       return false;
 
   return true;
 }
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning

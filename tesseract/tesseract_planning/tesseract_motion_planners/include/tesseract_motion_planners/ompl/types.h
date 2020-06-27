@@ -38,6 +38,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-  using OMPLStateExtractor = std::function<Eigen::Map<Eigen::VectorXd>(const ompl::base::State*)>;
+using OMPLStateExtractor = std::function<Eigen::Map<Eigen::VectorXd>(const ompl::base::State*)>;
 }
-#endif // TESSERACT_MOTION_PLANNERS_OMPL_TYPES_H
+#endif  // TESSERACT_MOTION_PLANNERS_OMPL_TYPES_H

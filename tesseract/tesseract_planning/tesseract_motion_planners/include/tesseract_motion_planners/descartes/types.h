@@ -47,10 +47,12 @@ template <typename FloatType>
 using DescartesIsValidFn = std::function<bool(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1> >&)>;
 
 /**
- * @brief This is used to create edge evaluator within tesseract, to allow thread safe creation of descartes edge evaluators
+ * @brief This is used to create edge evaluator within tesseract, to allow thread safe creation of descartes edge
+ * evaluators
  */
 template <typename FloatType>
-using DescartesEdgeEvaluatorAllocatorFn = std::function<typename descartes_light::EdgeEvaluator<FloatType>::Ptr(const DescartesProblem<FloatType>&)>;
+using DescartesEdgeEvaluatorAllocatorFn =
+    std::function<typename descartes_light::EdgeEvaluator<FloatType>::Ptr(const DescartesProblem<FloatType>&)>;
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 #endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_TYPES_H

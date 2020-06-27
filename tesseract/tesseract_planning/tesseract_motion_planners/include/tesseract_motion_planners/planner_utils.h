@@ -3,7 +3,6 @@
 
 namespace tesseract_planning
 {
-
 /**
  * @brief Check if a joint is within limits
  * @param joint_values The joint values of the robot
@@ -21,10 +20,10 @@ bool isWithinJointLimits(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::
   return true;
 }
 
-
 /**
  * @brief Check if a joint is within limits
- * This will allows you to provide joint 4 and joint 6 coupling limits. This will still work if the robot is on a position.
+ * This will allows you to provide joint 4 and joint 6 coupling limits. This will still work if the robot is on a
+ * position.
  * @param joint_values The joint values of the robot
  * @param limits The robot joint limits
  * @param coupling_limits Limits for robot joint 4 and 6 coupling.
@@ -71,6 +70,6 @@ bool isValidState(const tesseract_kinematics::ForwardKinematics::ConstPtr& robot
 
   return !(robot_config != RobotConfig::FUT && robot_config != RobotConfig::NUT);
 }
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_MOTION_PLANNERS_PLANNER_UTILS_H
+#endif  // TESSERACT_MOTION_PLANNERS_PLANNER_UTILS_H
