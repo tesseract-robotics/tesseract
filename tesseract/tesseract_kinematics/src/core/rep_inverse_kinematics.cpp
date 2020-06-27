@@ -210,6 +210,73 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
                                              const tesseract_common::TransformMap& current_transforms,
                                              std::string name)
 {
+  if (manipulator == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("Provided manipulator is a nullptr");
+    return false;
+  }
+
+  if (positioner == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("Provided positioner is a nullptr");
+    return false;
+  }
+
+  // Calculate manipulator base to positioner base
+  Eigen::Isometry3d manip_base = current_transforms.at(manipulator->getBaseLinkName());
+  Eigen::Isometry3d positioner_base = current_transforms.at(positioner->getBaseLinkName());
+
+  return init(scene_graph,
+              manipulator,
+              manipulator_reach,
+              positioner,
+              positioner_sample_resolution,
+              manip_base.inverse() * positioner_base,
+              name);
+}
+
+bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+                                             InverseKinematics::Ptr manipulator,
+                                             double manipulator_reach,
+                                             ForwardKinematics::Ptr positioner,
+                                             Eigen::VectorXd positioner_sample_resolution,
+                                             std::string name)
+{
+  if (manipulator == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("Provided manipulator is a nullptr");
+    return false;
+  }
+
+  if (positioner == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("Provided positioner is a nullptr");
+    return false;
+  }
+
+  if (manipulator->getBaseLinkName() != positioner->getBaseLinkName())
+  {
+    CONSOLE_BRIDGE_logError("Provided positioner and manipulator base link are not the same");
+    return false;
+  }
+
+  return init(scene_graph,
+              manipulator,
+              manipulator_reach,
+              positioner,
+              positioner_sample_resolution,
+              Eigen::Isometry3d::Identity(),
+              name);
+}
+
+bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+                                             InverseKinematics::Ptr manipulator,
+                                             double manipulator_reach,
+                                             ForwardKinematics::Ptr positioner,
+                                             Eigen::VectorXd positioner_sample_resolution,
+                                             const Eigen::Isometry3d& robot_to_positioner,
+                                             std::string name)
+{
   initialized_ = false;
 
   if (scene_graph == nullptr)
@@ -218,7 +285,7 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
     return false;
   }
 
-  if (!scene_graph_->getLink(scene_graph_->getRoot()))
+  if (!scene_graph->getLink(scene_graph->getRoot()))
   {
     CONSOLE_BRIDGE_logError("The scene graph has an invalid root.");
     return false;
@@ -263,11 +330,7 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
     }
   }
 
-  // Calculate manipulator base to positioner base
-  Eigen::Isometry3d manip_base = current_transforms.at(manipulator->getBaseLinkName());
-  Eigen::Isometry3d positioner_base = current_transforms.at(positioner->getBaseLinkName());
-  manip_base_to_positioner_base_ = manip_base.inverse() * positioner_base;
-
+  manip_base_to_positioner_base_ = robot_to_positioner;
   scene_graph_ = std::move(scene_graph);
   name_ = std::move(name);
   manip_inv_kin_ = std::move(manipulator);
@@ -287,8 +350,16 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
   const auto& manip_links = manip_inv_kin_->getLinkNames();
   link_names_.insert(link_names_.end(), manip_links.begin(), manip_links.end());
 
+  // Remove duplicates
+  std::sort(link_names_.begin(), link_names_.end());
+  link_names_.erase(std::unique(link_names_.begin(), link_names_.end()), link_names_.end());
+
   active_link_names_ = positioner_fwd_kin_->getActiveLinkNames();
   active_link_names_.insert(active_link_names_.end(), manip_links.begin(), manip_links.end());
+
+  // Remove duplicates
+  std::sort(active_link_names_.begin(), active_link_names_.end());
+  active_link_names_.erase(std::unique(active_link_names_.begin(), active_link_names_.end()), active_link_names_.end());
 
   auto positioner_num_joints = static_cast<int>(positioner_fwd_kin_->numJoints());
   const Eigen::MatrixX2d& positioner_limits = positioner_fwd_kin_->getLimits();
