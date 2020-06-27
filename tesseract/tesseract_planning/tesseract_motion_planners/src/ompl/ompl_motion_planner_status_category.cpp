@@ -71,4 +71,4 @@ std::string OMPLMotionPlannerStatusCategory::message(int code) const
   }
 }
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning

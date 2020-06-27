@@ -47,28 +47,32 @@ tesseract_scene_graph::SceneGraph::Ptr getSceneGraph()
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
-tesseract_kinematics::ForwardKinematics::Ptr getRobotFwdKinematics(const tesseract_scene_graph::SceneGraph::Ptr& scene_graph)
+tesseract_kinematics::ForwardKinematics::Ptr
+getRobotFwdKinematics(const tesseract_scene_graph::SceneGraph::Ptr& scene_graph)
 {
   auto fwd_kin = std::make_shared<tesseract_kinematics::KDLFwdKinChain>();
   EXPECT_TRUE(fwd_kin->init(scene_graph, "base_link", "tool0", "manip"));
   return fwd_kin;
 }
 
-tesseract_kinematics::ForwardKinematics::Ptr getFullFwdKinematics(const tesseract_scene_graph::SceneGraph::Ptr& scene_graph)
+tesseract_kinematics::ForwardKinematics::Ptr
+getFullFwdKinematics(const tesseract_scene_graph::SceneGraph::Ptr& scene_graph)
 {
   auto fwd_kin = std::make_shared<tesseract_kinematics::KDLFwdKinChain>();
   EXPECT_TRUE(fwd_kin->init(scene_graph, "positioner_base_link", "tool0", "robot_on_positioner"));
   return fwd_kin;
 }
 
-tesseract_kinematics::ForwardKinematics::Ptr getPositionerFwdKinematics(const tesseract_scene_graph::SceneGraph::Ptr& scene_graph)
+tesseract_kinematics::ForwardKinematics::Ptr
+getPositionerFwdKinematics(const tesseract_scene_graph::SceneGraph::Ptr& scene_graph)
 {
   auto fwd_kin = std::make_shared<tesseract_kinematics::KDLFwdKinChain>();
   EXPECT_TRUE(fwd_kin->init(scene_graph, "positioner_base_link", "positioner_tool0", "positioner"));
   return fwd_kin;
 }
 
-tesseract_kinematics::InverseKinematics::Ptr getFullInvKinematics(const tesseract_scene_graph::SceneGraph::Ptr& scene_graph)
+tesseract_kinematics::InverseKinematics::Ptr
+getFullInvKinematics(const tesseract_scene_graph::SceneGraph::Ptr& scene_graph)
 {
   auto robot_fwd_kin = getRobotFwdKinematics(scene_graph);
 
@@ -152,7 +156,6 @@ void runActiveLinkNamesTest(tesseract_kinematics::InverseKinematics& kin)
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_5") != link_names.end());
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "link_6") != link_names.end());
   EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), "tool0") != link_names.end());
-
 
   link_names = kin.getLinkNames();
   EXPECT_TRUE(link_names.size() == 10);

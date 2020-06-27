@@ -52,5 +52,5 @@ private:
   std::vector<ompl::base::StateValidityCheckerPtr> cache_;
   std::vector<ompl::base::StateValidityCheckerFn> validators_;
 };
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 #endif  // TESSERACT_MOTION_PLANNERS_COMPOUND_STATE_VALIDATOR_H

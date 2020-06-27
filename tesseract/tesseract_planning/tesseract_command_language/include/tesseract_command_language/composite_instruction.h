@@ -8,12 +8,11 @@
 
 namespace tesseract_planning
 {
-
 enum class CompositeInstructionOrder
 {
-  ORDERED, // Must go in forward
-  UNORDERED, // Any order is allowed
-  ORDERED_AND_REVERABLE // Can go forward or reverse the order
+  ORDERED,               // Must go in forward
+  UNORDERED,             // Any order is allowed
+  ORDERED_AND_REVERABLE  // Can go forward or reverse the order
 };
 
 class CompositeInstruction : public std::vector<Instruction>
@@ -22,7 +21,8 @@ public:
   using Ptr = std::shared_ptr<CompositeInstruction>;
   using ConstPtr = std::shared_ptr<const CompositeInstruction>;
 
-  CompositeInstruction(std::string profile = "DEFAULT", CompositeInstructionOrder order = CompositeInstructionOrder::ORDERED);
+  CompositeInstruction(std::string profile = "DEFAULT",
+                       CompositeInstructionOrder order = CompositeInstructionOrder::ORDERED);
 
   CompositeInstructionOrder getOrder() const;
 
@@ -45,24 +45,23 @@ public:
   CompositeInstruction flatten() const;
 
 private:
-  int type_ { static_cast<int>(InstructionType::COMPOSITE_INSTRUCTION) };
+  int type_{ static_cast<int>(InstructionType::COMPOSITE_INSTRUCTION) };
 
   /** @brief The description of the instruction */
-  std::string description_ {"Tesseract Composite Instruction"};
+  std::string description_{ "Tesseract Composite Instruction" };
 
   /**
    * @brief The profile applied its child plan instructions
    *
    * If it has a child composite instruction it uses the child composites profile for that section
    */
-  std::string profile_ {"DEFAULT"};
+  std::string profile_{ "DEFAULT" };
 
   CompositeInstructionOrder order_;
 
   void flattenHelper(CompositeInstruction& flattened, const CompositeInstruction& composite) const;
-
 };
 
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_COMMAND_LANGUAGE_COMPOSITE_INSTRUCTION_H
+#endif  // TESSERACT_COMMAND_LANGUAGE_COMPOSITE_INSTRUCTION_H

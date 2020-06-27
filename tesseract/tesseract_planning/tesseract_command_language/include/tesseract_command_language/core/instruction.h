@@ -5,10 +5,8 @@
 
 namespace tesseract_planning
 {
-
 namespace detail
 {
-
 struct InstructionInnerBase
 {
   InstructionInnerBase() = default;
@@ -44,14 +42,14 @@ struct InstructionInner final : InstructionInnerBase
 {
   InstructionInner() = default;
   ~InstructionInner() override = default;
-  InstructionInner(const InstructionInner &) = delete;
-  InstructionInner(InstructionInner &&) = delete;
-  InstructionInner &operator=(const InstructionInner &) = delete;
-  InstructionInner &operator=(InstructionInner &&) = delete;
+  InstructionInner(const InstructionInner&) = delete;
+  InstructionInner(InstructionInner&&) = delete;
+  InstructionInner& operator=(const InstructionInner&) = delete;
+  InstructionInner& operator=(InstructionInner&&) = delete;
 
   // Constructors from T (copy and move variants).
   explicit InstructionInner(T instruction) : instruction_(std::move(instruction)) {}
-  explicit InstructionInner(T &&instruction) : instruction_(std::move(instruction)) {}
+  explicit InstructionInner(T&& instruction) : instruction_(std::move(instruction)) {}
 
   std::unique_ptr<InstructionInnerBase> clone() const override
   {
@@ -77,7 +75,7 @@ struct InstructionInner final : InstructionInnerBase
   T instruction_;
 };
 
-}
+}  // namespace detail
 
 class Instruction
 {
@@ -94,7 +92,7 @@ public:
   using ConstPtr = std::shared_ptr<const Instruction>;
 
   template <typename T, generic_ctor_enabler<T> = 0>
-  Instruction(T &&instruction) // NOLINT
+  Instruction(T&& instruction)  // NOLINT
     : instruction_(std::make_unique<detail::InstructionInner<uncvref_t<T>>>(instruction))
   {
   }
@@ -103,22 +101,26 @@ public:
   ~Instruction() = default;
 
   // Copy constructor
-  Instruction(const Instruction &other) : instruction_(other.instruction_->clone()) {}
+  Instruction(const Instruction& other) : instruction_(other.instruction_->clone()) {}
 
   // Move ctor.
-  Instruction(Instruction &&other) noexcept { instruction_.swap(other.instruction_); }
+  Instruction(Instruction&& other) noexcept { instruction_.swap(other.instruction_); }
   // Move assignment.
-  Instruction &operator=(Instruction &&other) noexcept { instruction_.swap(other.instruction_); return (*this); }
+  Instruction& operator=(Instruction&& other) noexcept
+  {
+    instruction_.swap(other.instruction_);
+    return (*this);
+  }
 
   // Copy assignment.
-  Instruction &operator=(const Instruction &other)
+  Instruction& operator=(const Instruction& other)
   {
     (*this) = Instruction(other);
     return (*this);
   }
 
   template <typename T, generic_ctor_enabler<T> = 0>
-  Instruction &operator=(T &&other)
+  Instruction& operator=(T&& other)
   {
     (*this) = Instruction(std::forward<T>(other));
     return (*this);
@@ -138,16 +140,22 @@ public:
 
   void print() const { instruction_->print(); }
 
-  template<typename T>
-  T* cast() { return static_cast<T*>(instruction_->recover()); }
+  template <typename T>
+  T* cast()
+  {
+    return static_cast<T*>(instruction_->recover());
+  }
 
-  template<typename T>
-  const T* cast_const() const { return static_cast<const T*>(instruction_->recover()); }
+  template <typename T>
+  const T* cast_const() const
+  {
+    return static_cast<const T*>(instruction_->recover());
+  }
 
 private:
   std::unique_ptr<detail::InstructionInnerBase> instruction_;
 };
 
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_COMMAND_LANGUAGE_INSTRUCTION_H
+#endif  // TESSERACT_COMMAND_LANGUAGE_INSTRUCTION_H

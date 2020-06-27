@@ -15,27 +15,26 @@ namespace tesseract_planning
 class JointWaypoint : public Eigen::VectorXd
 {
 public:
-
-  JointWaypoint(void):Eigen::VectorXd() {}
+  JointWaypoint(void) : Eigen::VectorXd() {}
 
   // This constructor allows you to construct MyVectorType from Eigen expressions
-  template<typename OtherDerived>
-  JointWaypoint(const Eigen::MatrixBase<OtherDerived>& other)
-      : Eigen::VectorXd(other)
-  { }
+  template <typename OtherDerived>
+  JointWaypoint(const Eigen::MatrixBase<OtherDerived>& other) : Eigen::VectorXd(other)
+  {
+  }
 
   // This method allows you to assign Eigen expressions to MyVectorType
-  template<typename OtherDerived>
-  JointWaypoint& operator=(const Eigen::MatrixBase <OtherDerived>& other)
+  template <typename OtherDerived>
+  JointWaypoint& operator=(const Eigen::MatrixBase<OtherDerived>& other)
   {
-      this->Eigen::VectorXd::operator=(other);
-      return *this;
+    this->Eigen::VectorXd::operator=(other);
+    return *this;
   }
 
   int getType() const { return static_cast<int>(WaypointType::JOINT_WAYPOINT); }
 
   std::vector<std::string> joint_names;
 };
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_COMMAND_LANGUAGE_JOINT_WAYPOINT_H
+#endif  // TESSERACT_COMMAND_LANGUAGE_JOINT_WAYPOINT_H

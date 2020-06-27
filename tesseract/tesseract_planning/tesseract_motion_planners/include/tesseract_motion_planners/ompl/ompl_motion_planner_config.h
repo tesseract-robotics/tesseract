@@ -44,9 +44,8 @@ struct OMPLMotionPlannerConfig
 
   /** @brief The OMPL problem to solve */
   std::vector<OMPLProblem::UPtr> prob;
-
 };
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_OMPL_OMPL_PLANNER_CONFIG_H

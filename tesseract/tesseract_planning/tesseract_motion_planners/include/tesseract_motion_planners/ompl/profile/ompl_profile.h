@@ -34,7 +34,6 @@
 
 namespace tesseract_planning
 {
-
 class OMPLPlanProfile
 {
 public:
@@ -44,18 +43,18 @@ public:
   virtual void apply(OMPLProblem& prob,
                      const Eigen::Isometry3d& cartesian_waypoint,
                      const PlanInstruction& parent_instruction,
-                     const std::vector<std::string> &active_links,
+                     const std::vector<std::string>& active_links,
                      int index) = 0;
 
   virtual void apply(OMPLProblem& prob,
                      const Eigen::VectorXd& joint_waypoint,
                      const PlanInstruction& parent_instruction,
-                     const std::vector<std::string> &active_links,
+                     const std::vector<std::string>& active_links,
                      int index) = 0;
 };
 
 /** @todo Currently OMPL does not have support of composite profile everything is handled by the plan profile */
 
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_MOTION_PLANNERS_OMPL_OMPL_PROFILE_H
+#endif  // TESSERACT_MOTION_PLANNERS_OMPL_OMPL_PROFILE_H

@@ -69,4 +69,4 @@ void CompoundStateValidator::addStateValidator(ompl::base::StateValidityCheckerF
   validators_.push_back(std::move(validator));
 }
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning

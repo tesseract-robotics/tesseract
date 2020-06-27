@@ -2,7 +2,6 @@
 
 namespace tesseract_planning
 {
-
 trajopt::TermInfo::Ptr createCartesianWaypointTermInfo(const Eigen::Isometry3d& c_wp,
                                                        int index,
                                                        std::string working_frame,
@@ -38,7 +37,7 @@ trajopt::TermInfo::Ptr createCartesianWaypointTermInfo(const Eigen::Isometry3d& 
   return pose_info;
 }
 
-trajopt::TermInfo::Ptr createDynamicCartesianWaypointTermInfo(const Eigen::Isometry3d &c_wp,
+trajopt::TermInfo::Ptr createDynamicCartesianWaypointTermInfo(const Eigen::Isometry3d& c_wp,
                                                               int index,
                                                               std::string working_frame,
                                                               const Eigen::Isometry3d& tcp,
@@ -139,11 +138,8 @@ trajopt::TermInfo::Ptr createCollisionTermInfo(int start_index,
   return collision;
 }
 
-trajopt::TermInfo::Ptr createSmoothVelocityTermInfo(int start_index,
-                                                    int end_index,
-                                                    int n_joints,
-                                                    double coeff,
-                                                    trajopt::TermType type)
+trajopt::TermInfo::Ptr
+createSmoothVelocityTermInfo(int start_index, int end_index, int n_joints, double coeff, trajopt::TermType type)
 {
   std::shared_ptr<trajopt::JointVelTermInfo> jv = std::make_shared<trajopt::JointVelTermInfo>();
   jv->coeffs = std::vector<double>(static_cast<std::size_t>(n_joints), coeff);
@@ -170,11 +166,8 @@ trajopt::TermInfo::Ptr createSmoothVelocityTermInfo(int start_index,
   return jv;
 }
 
-trajopt::TermInfo::Ptr createSmoothAccelerationTermInfo(int start_index,
-                                                        int end_index,
-                                                        int n_joints,
-                                                        double coeff,
-                                                        trajopt::TermType type)
+trajopt::TermInfo::Ptr
+createSmoothAccelerationTermInfo(int start_index, int end_index, int n_joints, double coeff, trajopt::TermType type)
 {
   std::shared_ptr<trajopt::JointAccTermInfo> ja = std::make_shared<trajopt::JointAccTermInfo>();
   ja->coeffs = std::vector<double>(static_cast<std::size_t>(n_joints), coeff);
@@ -201,11 +194,8 @@ trajopt::TermInfo::Ptr createSmoothAccelerationTermInfo(int start_index,
   return ja;
 }
 
-trajopt::TermInfo::Ptr createSmoothJerkTermInfo(int start_index,
-                                                int end_index,
-                                                int n_joints,
-                                                double coeff,
-                                                trajopt::TermType type)
+trajopt::TermInfo::Ptr
+createSmoothJerkTermInfo(int start_index, int end_index, int n_joints, double coeff, trajopt::TermType type)
 {
   std::shared_ptr<trajopt::JointJerkTermInfo> jj = std::make_shared<trajopt::JointJerkTermInfo>();
   jj->coeffs = std::vector<double>(static_cast<std::size_t>(n_joints), coeff);
@@ -271,4 +261,4 @@ trajopt::TermInfo::Ptr createAvoidSingularityTermInfo(int start_index,
   return as;
 }
 
-}
+}  // namespace tesseract_planning
