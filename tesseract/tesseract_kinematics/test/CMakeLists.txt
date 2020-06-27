@@ -22,3 +22,13 @@ tesseract_code_coverage(${PROJECT_NAME}_rop_unit ALL EXCLUDE ${COVERAGE_EXCLUDE}
 tesseract_gtest_discover_tests(${PROJECT_NAME}_rop_unit)
 add_dependencies(${PROJECT_NAME}_rop_unit ${PROJECT_NAME}_kdl ${PROJECT_NAME}_opw)
 add_dependencies(run_tests ${PROJECT_NAME}_rop_unit)
+
+add_executable(${PROJECT_NAME}_rep_unit rep_kinematics_unit.cpp)
+target_link_libraries(${PROJECT_NAME}_rep_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME}_kdl ${PROJECT_NAME}_opw tesseract::tesseract_support tesseract::tesseract_urdf tesseract::tesseract_scene_graph)
+target_include_directories(${PROJECT_NAME}_rep_unit PRIVATE ${orocos_kdl_INCLUDE_DIRS})
+tesseract_target_compile_options(${PROJECT_NAME}_rep_unit PRIVATE)
+tesseract_clang_tidy(${PROJECT_NAME}_rep_unit)
+tesseract_code_coverage(${PROJECT_NAME}_rep_unit ALL EXCLUDE ${COVERAGE_EXCLUDE})
+tesseract_gtest_discover_tests(${PROJECT_NAME}_rep_unit)
+add_dependencies(${PROJECT_NAME}_rep_unit ${PROJECT_NAME}_kdl ${PROJECT_NAME}_opw)
+add_dependencies(run_tests ${PROJECT_NAME}_rep_unit)
