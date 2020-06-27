@@ -39,7 +39,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-
 Eigen::Map<Eigen::VectorXd> RealVectorStateSpaceExtractor(const ompl::base::State* s1, unsigned dimension);
 
 #ifndef OMPL_LESS_1_4_0
@@ -72,6 +71,6 @@ void processLongestValidSegment(const ompl::base::StateSpacePtr& state_space_ptr
  */
 bool checkStateInCollision(OMPLProblem& prob, const Eigen::VectorXd& state);
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_OMPL_UTILS_H

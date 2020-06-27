@@ -8,10 +8,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-
 namespace detail
 {
-
 struct WaypointInnerBase
 {
   WaypointInnerBase() = default;
@@ -35,19 +33,16 @@ struct WaypointInner final : WaypointInnerBase
 {
   WaypointInner() = default;
   ~WaypointInner() override = default;
-  WaypointInner(const WaypointInner &) = delete;
-  WaypointInner(WaypointInner &&) = delete;
-  WaypointInner &operator=(const WaypointInner &) = delete;
-  WaypointInner &operator=(WaypointInner &&) = delete;
+  WaypointInner(const WaypointInner&) = delete;
+  WaypointInner(WaypointInner&&) = delete;
+  WaypointInner& operator=(const WaypointInner&) = delete;
+  WaypointInner& operator=(WaypointInner&&) = delete;
 
   // Constructors from T (copy and move variants).
   explicit WaypointInner(T waypoint) : waypoint_(std::move(waypoint)) {}
-  explicit WaypointInner(T &&waypoint) : waypoint_(std::move(waypoint)) {}
+  explicit WaypointInner(T&& waypoint) : waypoint_(std::move(waypoint)) {}
 
-  std::unique_ptr<WaypointInnerBase> clone() const override
-  {
-    return std::make_unique<WaypointInner>(waypoint_);
-  }
+  std::unique_ptr<WaypointInnerBase> clone() const override { return std::make_unique<WaypointInner>(waypoint_); }
 
   int getType() const final { return waypoint_.getType(); }
 
@@ -56,7 +51,7 @@ struct WaypointInner final : WaypointInnerBase
   T waypoint_;
 };
 
-}
+}  // namespace detail
 
 class Waypoint
 {
@@ -73,7 +68,7 @@ public:
   using ConstPtr = std::shared_ptr<const Waypoint>;
 
   template <typename T, generic_ctor_enabler<T> = 0>
-  Waypoint(T &&waypoint) // NOLINT
+  Waypoint(T&& waypoint)  // NOLINT
     : waypoint_(std::make_unique<detail::WaypointInner<uncvref_t<T>>>(waypoint))
   {
   }
@@ -82,22 +77,26 @@ public:
   ~Waypoint() = default;
 
   // Copy constructor
-  Waypoint(const Waypoint &other) : waypoint_(other.waypoint_->clone()) {}
+  Waypoint(const Waypoint& other) : waypoint_(other.waypoint_->clone()) {}
 
   // Move ctor.
-  Waypoint(Waypoint &&other) noexcept { waypoint_.swap(other.waypoint_); }
+  Waypoint(Waypoint&& other) noexcept { waypoint_.swap(other.waypoint_); }
   // Move assignment.
-  Waypoint &operator=(Waypoint &&other) noexcept { waypoint_.swap(other.waypoint_); return (*this); }
+  Waypoint& operator=(Waypoint&& other) noexcept
+  {
+    waypoint_.swap(other.waypoint_);
+    return (*this);
+  }
 
   // Copy assignment.
-  Waypoint &operator=(const Waypoint &other)
+  Waypoint& operator=(const Waypoint& other)
   {
     (*this) = Waypoint(other);
     return (*this);
   }
 
   template <typename T, generic_ctor_enabler<T> = 0>
-  Waypoint &operator=(T &&other)
+  Waypoint& operator=(T&& other)
   {
     (*this) = Waypoint(std::forward<T>(other));
     return (*this);
@@ -105,16 +104,22 @@ public:
 
   int getType() const { return waypoint_->getType(); }
 
-  template<typename T>
-  T* cast() { return static_cast<T*>(waypoint_->recover()); }
+  template <typename T>
+  T* cast()
+  {
+    return static_cast<T*>(waypoint_->recover());
+  }
 
-  template<typename T>
-  const T* cast_const() const { return static_cast<const T*>(waypoint_->recover()); }
+  template <typename T>
+  const T* cast_const() const
+  {
+    return static_cast<const T*>(waypoint_->recover());
+  }
 
 private:
   std::unique_ptr<detail::WaypointInnerBase> waypoint_;
 };
 
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_COMMAND_LANGUAGE_WAYPOINT_H
+#endif  // TESSERACT_COMMAND_LANGUAGE_WAYPOINT_H

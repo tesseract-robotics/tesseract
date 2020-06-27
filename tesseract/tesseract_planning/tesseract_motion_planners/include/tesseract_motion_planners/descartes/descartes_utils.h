@@ -69,8 +69,8 @@ inline tesseract_common::VectorIsometry3d sampleToolZAxis(const Eigen::Isometry3
  * @param wp The waypoint
  * @return A tool pose sampler function
  */
-//template <typename FloatType>
-//inline PoseSamplerFn getPoseSampler(const ComponentInfo& component)
+// template <typename FloatType>
+// inline PoseSamplerFn getPoseSampler(const ComponentInfo& component)
 //{
 //  tesseract_motion_planners::PoseSamplerFn tool_pose_sampler = nullptr;
 //  switch (component.getType())
@@ -112,5 +112,5 @@ inline tesseract_common::VectorIsometry3d sampleToolZAxis(const Eigen::Isometry3
 
 //  return tool_pose_sampler;
 //}
-}
-#endif // TESSERACT_PLANNING_DESCARTES_UTILS_H
+}  // namespace tesseract_planning
+#endif  // TESSERACT_PLANNING_DESCARTES_UTILS_H

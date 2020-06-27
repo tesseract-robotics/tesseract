@@ -242,10 +242,9 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner1)  // NOLINT
 
   plan_profile->term_type = trajopt::TermType::TT_COST;
   test_planner.setConfiguration(config);
-  EXPECT_TRUE(
-      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
-  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(
-      config->prob->getCosts())));
+  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
+  EXPECT_FALSE(
+      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
 }
 
 // This test tests freespace motion b/n 1 joint waypoint and 1 cartesian waypoint
@@ -265,7 +264,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner2)  // NOLINT
   wp1.joint_names = joint_names;
 
   // Specify a Joint Waypoint as the finish
-  CartesianWaypoint wp2 = Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
+  CartesianWaypoint wp2 =
+      Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Define Plan Instructions
   PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
@@ -302,10 +302,9 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner2)  // NOLINT
 
   plan_profile->term_type = trajopt::TermType::TT_COST;
   test_planner.setConfiguration(config);
+  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
   EXPECT_TRUE(
-      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
-  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(
-      config->prob->getCosts())));
+      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
 }
 
 // This test tests freespace motion b/n 1 cartesian waypoint and 1 joint waypoint
@@ -320,7 +319,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner3)  // NOLINT
   auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
 
   // Specify a JointWaypoint as the start
-  CartesianWaypoint wp1 = Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
+  CartesianWaypoint wp1 =
+      Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Specify a Joint Waypoint as the finish
   JointWaypoint wp2 = Eigen::VectorXd::Zero(7);
@@ -362,10 +362,9 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner3)  // NOLINT
 
   plan_profile->term_type = trajopt::TermType::TT_COST;
   test_planner.setConfiguration(config);
+  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
   EXPECT_TRUE(
-      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
-  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(
-      config->prob->getCosts())));
+      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
 }
 
 // This test tests freespace motion b/n 2 cartesian waypoints
@@ -379,10 +378,12 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4)  // NOLINT
   auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
 
   // Specify a JointWaypoint as the start
-  CartesianWaypoint wp1 = Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
+  CartesianWaypoint wp1 =
+      Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Specify a Joint Waypoint as the finish
-  CartesianWaypoint wp2 = Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
+  CartesianWaypoint wp2 =
+      Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Define Plan Instructions
   PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
@@ -422,8 +423,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4)  // NOLINT
   test_planner.setConfiguration(config);
   EXPECT_FALSE(
       (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
-  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(
-      config->prob->getCosts())));
+  EXPECT_TRUE(
+      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
 }
 
 // ---------------------------------------------------
@@ -442,10 +443,12 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0)  // NOLINT
   auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
 
   // Specify a JointWaypoint as the start
-  CartesianWaypoint wp1 = Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.8) * Eigen::Quaterniond(0, 0, 1.0, 0);
+  CartesianWaypoint wp1 =
+      Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.8) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Specify a Joint Waypoint as the finish
-  CartesianWaypoint wp2 = Eigen::Isometry3d::Identity() * Eigen::Translation3d(.20, .4, 0.8) * Eigen::Quaterniond(0, 0, 1.0, 0);
+  CartesianWaypoint wp2 =
+      Eigen::Isometry3d::Identity() * Eigen::Translation3d(.20, .4, 0.8) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Define Plan Instructions
   PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
@@ -519,10 +522,12 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner1)  // NOLINT
   auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
 
   // Specify a JointWaypoint as the start
-  CartesianWaypoint wp1 = Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.8) * Eigen::Quaterniond(0, 0, 1.0, 0);
+  CartesianWaypoint wp1 =
+      Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.8) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Specify a Joint Waypoint as the finish
-  CartesianWaypoint wp2 = Eigen::Isometry3d::Identity() * Eigen::Translation3d(.20, .4, 0.8) * Eigen::Quaterniond(0, 0, 1.0, 0);
+  CartesianWaypoint wp2 =
+      Eigen::Isometry3d::Identity() * Eigen::Translation3d(.20, .4, 0.8) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Define Plan Instructions
   PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
@@ -540,7 +545,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner1)  // NOLINT
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
-  plan_profile->term_type = trajopt::TermType::TT_COST; // Everything associated with profile is now added as a cost
+  plan_profile->term_type = trajopt::TermType::TT_COST;  // Everything associated with profile is now added as a cost
 
   auto composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
 
@@ -584,7 +589,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner2)  // NOLINT
   {
     // Specify a Joint Waypoint as the finish
     JointWaypoint wp = Eigen::VectorXd::Zero(7);
-    wp <<  0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0;
+    wp << 0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0;
     wp.joint_names = joint_names;
     PlanInstruction plan_f(wp, PlanInstructionType::FREESPACE, "TEST_PROFILE");
     program.push_back(plan_f);
@@ -619,7 +624,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner2)  // NOLINT
 }
 
 // This test checks that the terms are being added correctly for joint costs
-//TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner3)  // NOLINT
+// TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner3)  // NOLINT
 //{
 //  // Create the planner and the responses that will store the results
 //  PlannerResponse planning_response;
@@ -667,9 +672,10 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner2)  // NOLINT
 //      config->prob->getConstraints())));
 //  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
 //      config->prob->getConstraints())));
-//  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
-//  EXPECT_FALSE(
-//      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
+//  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr,
+//  trajopt::JointPosEqCost>(config->prob->getCosts()))); EXPECT_FALSE(
+//      (tesseract_tests::vectorContainsType<sco::Cost::Ptr,
+//      trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
 //}
 
 int main(int argc, char** argv)

@@ -177,6 +177,6 @@ protected:
   bool verbose_;
 };
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_CORE_TRAJECTORY_VALIDATOR_H

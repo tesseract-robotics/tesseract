@@ -82,5 +82,5 @@ private:
 
 using DescartesMotionPlannerDefaultConfigD = DescartesMotionPlannerDefaultConfig<double>;
 using DescartesMotionPlannerDefaultConfigF = DescartesMotionPlannerDefaultConfig<float>;
-}
-#endif // TESSERACT_MOTION_PLANNERS_DESCARTES_MOTION_PLANNER_DEFAULT_CONFIG_H
+}  // namespace tesseract_planning
+#endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_MOTION_PLANNER_DEFAULT_CONFIG_H

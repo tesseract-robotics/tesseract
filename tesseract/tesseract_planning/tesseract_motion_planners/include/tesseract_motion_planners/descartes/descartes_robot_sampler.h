@@ -67,11 +67,11 @@ public:
   bool sample(std::vector<FloatType>& solution_set) override;
 
 private:
-  Eigen::Isometry3d target_pose_;               /**< @brief The target pose to sample */
-  PoseSamplerFn target_pose_sampler_;           /**< @brief Target pose sampler function */
+  Eigen::Isometry3d target_pose_;                                          /**< @brief The target pose to sample */
+  PoseSamplerFn target_pose_sampler_;                                      /**< @brief Target pose sampler function */
   tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics_;     /**< @brief The robot inverse kinematics */
   typename descartes_light::CollisionInterface<FloatType>::Ptr collision_; /**< @brief The collision interface */
-  Eigen::Isometry3d tcp_;   /**< @brief The robot tool center point */
+  Eigen::Isometry3d tcp_;                                                  /**< @brief The robot tool center point */
   bool allow_collision_;    /**< @brief If true and no valid solution was found it will return the best of the worst */
   int dof_;                 /**< @brief The number of joints in the robot */
   Eigen::VectorXd ik_seed_; /**< @brief The seed for inverse kinematics which is zeros */
@@ -110,4 +110,4 @@ using DescartesRobotSamplerF = DescartesRobotSampler<float>;
 using DescartesRobotSamplerD = DescartesRobotSampler<double>;
 
 }  // namespace tesseract_planning
-#endif // TESSERACT_MOTION_PLANNERS_DESCARTES_ROBOT_SAMPLER_H
+#endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_ROBOT_SAMPLER_H

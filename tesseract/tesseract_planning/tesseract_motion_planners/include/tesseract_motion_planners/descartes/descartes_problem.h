@@ -15,7 +15,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-
 template <typename FloatType>
 struct DescartesProblem
 {
@@ -36,5 +35,5 @@ struct DescartesProblem
 using DescartesProblemF = DescartesProblem<float>;
 using DescartesProblemD = DescartesProblem<double>;
 
-}
-#endif // TESSERACT_MOTION_PLANNERS_DESCARTES_PROBLEM_H
+}  // namespace tesseract_planning
+#endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_PROBLEM_H

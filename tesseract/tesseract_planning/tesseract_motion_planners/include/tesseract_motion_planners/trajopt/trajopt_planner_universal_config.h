@@ -8,7 +8,6 @@
 
 namespace tesseract_planning
 {
-
 /**
  * @brief Default configuration to setup TrajOpt planner.
  *
@@ -23,8 +22,7 @@ struct TrajOptPlannerUniversalConfig : public TrajOptPlannerConfig
   using Ptr = std::shared_ptr<TrajOptPlannerUniversalConfig>;
   using ConstPtr = std::shared_ptr<const TrajOptPlannerUniversalConfig>;
 
-  TrajOptPlannerUniversalConfig(tesseract::Tesseract::ConstPtr tesseract_,
-                                std::string manipulator_);
+  TrajOptPlannerUniversalConfig(tesseract::Tesseract::ConstPtr tesseract_, std::string manipulator_);
 
   /** @brief Generates the TrajOpt problem and saves the result internally */
   bool generate() override;
@@ -79,6 +77,6 @@ protected:
   bool checkUserInput() const;
 };
 
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_MOTION_PLANNERS_TRAJOPT_PLANNER_UNIVERSAL_CONFIG_H
+#endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_PLANNER_UNIVERSAL_CONFIG_H
