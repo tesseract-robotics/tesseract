@@ -88,4 +88,4 @@ bool StateCollisionValidator::isValid(const ompl::base::State* state) const
   return contact_map.empty();
 }
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning

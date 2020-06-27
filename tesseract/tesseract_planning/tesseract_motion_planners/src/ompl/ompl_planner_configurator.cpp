@@ -151,4 +151,4 @@ ompl::base::PlannerPtr SPARSConfigurator::create(ompl::base::SpaceInformationPtr
   planner->setStretchFactor(stretch_factor);
   return planner;
 }
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning

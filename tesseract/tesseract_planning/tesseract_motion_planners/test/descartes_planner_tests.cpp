@@ -131,10 +131,12 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
   auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
 
   // Specify a start waypoint
-  CartesianWaypoint wp1 = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, -.20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
+  CartesianWaypoint wp1 =
+      Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, -.20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
 
   // Specify a end waypoint
-  CartesianWaypoint wp2 = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, .20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
+  CartesianWaypoint wp2 =
+      Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, .20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
 
   // Define Plan Instructions
   PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
@@ -154,9 +156,8 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
   auto plan_profile = std::make_shared<DescartesDefaultPlanProfileD>();
 
   // Create TrajOpt Config
-  auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(tesseract_ptr_,
-                                                                       tesseract_ptr_->getEnvironmentConst()->getCurrentState(),
-                                                                       "manipulator");
+  auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(
+      tesseract_ptr_, tesseract_ptr_->getEnvironmentConst()->getCurrentState(), "manipulator");
   config->instructions = program;
   config->seed = seed;
   config->plan_profiles["TEST_PROFILE"] = plan_profile;
@@ -177,7 +178,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
     config->prob.num_threads = 4;
     DescartesMotionPlannerD descartes_planner;
     PlannerResponse planner_response;
-    config->seed = seed; // reset seed to the original seed
+    config->seed = seed;  // reset seed to the original seed
     descartes_planner.setConfiguration(config);
     EXPECT_EQ(config->prob.samplers.size(), 11);
     EXPECT_EQ(config->prob.timing_constraints.size(), 11);
@@ -226,10 +227,12 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
   auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
 
   // Specify a start waypoint
-  CartesianWaypoint wp1 = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, -.20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
+  CartesianWaypoint wp1 =
+      Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, -.20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
 
   // Specify a end waypoint
-  CartesianWaypoint wp2 = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, .20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
+  CartesianWaypoint wp2 =
+      Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, .20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
 
   // Define Plan Instructions
   PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
@@ -248,12 +251,13 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
   // Create Profiles
   auto plan_profile = std::make_shared<DescartesDefaultPlanProfileD>();
   // Make this a tool z-axis free sampler
-  plan_profile->target_pose_sampler = [](const Eigen::Isometry3d& tool_pose) { return tesseract_planning::sampleToolAxis(tool_pose, M_PI_4, Eigen::Vector3d(0, 0, 1)); };
+  plan_profile->target_pose_sampler = [](const Eigen::Isometry3d& tool_pose) {
+    return tesseract_planning::sampleToolAxis(tool_pose, M_PI_4, Eigen::Vector3d(0, 0, 1));
+  };
 
   // Create TrajOpt Config
-  auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(tesseract_ptr_,
-                                                                       tesseract_ptr_->getEnvironmentConst()->getCurrentState(),
-                                                                       "manipulator");
+  auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(
+      tesseract_ptr_, tesseract_ptr_->getEnvironmentConst()->getCurrentState(), "manipulator");
   config->instructions = program;
   config->seed = seed;
   config->plan_profiles["TEST_PROFILE"] = plan_profile;
@@ -277,7 +281,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
     config->prob.num_threads = 4;
     DescartesMotionPlannerD descartes_planner;
     PlannerResponse planner_response;
-    config->seed = seed; // reset seed to the original seed
+    config->seed = seed;  // reset seed to the original seed
     descartes_planner.setConfiguration(config);
     auto status = descartes_planner.solve(planner_response);
     EXPECT_TRUE(&status);
@@ -322,10 +326,12 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
 
   // Specify a start waypoint
-  CartesianWaypoint wp1 = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, -.10, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
+  CartesianWaypoint wp1 =
+      Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, -.10, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
 
   // Specify a end waypoint
-  CartesianWaypoint wp2 = Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, .10, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
+  CartesianWaypoint wp2 =
+      Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, .10, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
 
   // Define Plan Instructions
   PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
@@ -344,13 +350,14 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   // Create Profiles
   auto plan_profile = std::make_shared<DescartesDefaultPlanProfileD>();
   // Make this a tool z-axis free sampler
-  plan_profile->target_pose_sampler = [](const Eigen::Isometry3d& tool_pose) { return tesseract_planning::sampleToolAxis(tool_pose, M_PI_4, Eigen::Vector3d(0, 0, 1)); };
-  plan_profile->enable_edge_collision = true; // Add collision edge evaluator
+  plan_profile->target_pose_sampler = [](const Eigen::Isometry3d& tool_pose) {
+    return tesseract_planning::sampleToolAxis(tool_pose, M_PI_4, Eigen::Vector3d(0, 0, 1));
+  };
+  plan_profile->enable_edge_collision = true;  // Add collision edge evaluator
 
   // Create TrajOpt Config
-  auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(tesseract_ptr_,
-                                                                       tesseract_ptr_->getEnvironmentConst()->getCurrentState(),
-                                                                       "manipulator");
+  auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(
+      tesseract_ptr_, tesseract_ptr_->getEnvironmentConst()->getCurrentState(), "manipulator");
   config->instructions = program;
   config->seed = seed;
   config->plan_profiles["TEST_PROFILE"] = plan_profile;
@@ -374,7 +381,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
     config->prob.num_threads = 4;
     DescartesMotionPlannerD descartes_planner;
     PlannerResponse planner_response;
-    config->seed = seed; // reset seed to the original seed
+    config->seed = seed;  // reset seed to the original seed
     descartes_planner.setConfiguration(config);
     auto status = descartes_planner.solve(planner_response);
     EXPECT_TRUE(&status);

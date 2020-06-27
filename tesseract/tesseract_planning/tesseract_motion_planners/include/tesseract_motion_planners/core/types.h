@@ -46,8 +46,9 @@ struct PlannerResponse
 {
   tesseract_common::JointTrajectory joint_trajectory;                /**< @brief The joint trajectory */
   tesseract_common::StatusCode status;                               /**< @brief The status information */
-  std::vector<std::reference_wrapper<Waypoint>> succeeded_waypoints; /**< @brief Waypoints for which the planner succeeded */
-  std::vector<std::reference_wrapper<Waypoint>> failed_waypoints;    /**< @brief Waypoints for which the planner failed */
+  std::vector<std::reference_wrapper<Waypoint>> succeeded_waypoints; /**< @brief Waypoints for which the planner
+                                                                        succeeded */
+  std::vector<std::reference_wrapper<Waypoint>> failed_waypoints; /**< @brief Waypoints for which the planner failed */
 };
 
 }  // namespace tesseract_planning

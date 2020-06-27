@@ -30,11 +30,11 @@
 
 namespace tesseract_planning
 {
-
 template <typename FloatType>
-DescartesMotionPlannerDefaultConfig<FloatType>::DescartesMotionPlannerDefaultConfig(tesseract::Tesseract::ConstPtr tesseract,
-                                                                                    tesseract_environment::EnvState::ConstPtr env_state,
-                                                                                    std::string manipulator)
+DescartesMotionPlannerDefaultConfig<FloatType>::DescartesMotionPlannerDefaultConfig(
+    tesseract::Tesseract::ConstPtr tesseract,
+    tesseract_environment::EnvState::ConstPtr env_state,
+    std::string manipulator)
   : manipulator(std::move(manipulator))
 {
   this->prob.tesseract = tesseract;
@@ -54,14 +54,18 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
 
   // Process instructions
   if (!tesseract_kinematics::checkKinematics(this->prob.manip_fwd_kin, this->prob.manip_inv_kin))
-    CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that Inverse Kinematics does not agree with KDL (TrajOpt). Did you change the URDF recently?");
+    CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that Inverse Kinematics does not agree with KDL "
+                            "(TrajOpt). Did you change the URDF recently?");
 
   std::vector<std::string> active_link_names = this->prob.manip_inv_kin->getActiveLinkNames();
-  auto adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(this->prob.tesseract->getEnvironmentConst()->getSceneGraph(), active_link_names, this->prob.env_state->link_transforms);
+  auto adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
+      this->prob.tesseract->getEnvironmentConst()->getSceneGraph(),
+      active_link_names,
+      this->prob.env_state->link_transforms);
   const std::vector<std::string>& active_links = adjacency_map->getActiveLinkNames();
 
   // Check and make sure it does not contain any composite instruction
-  const PlanInstruction* start_instruction {nullptr};
+  const PlanInstruction* start_instruction{ nullptr };
   for (const auto& instruction : instructions)
   {
     if (instruction.isComposite())
@@ -72,7 +76,7 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
   }
 
   // Transform plan instructions into descartes samplers
-  const PlanInstruction* prev_plan_instruction {nullptr};
+  const PlanInstruction* prev_plan_instruction{ nullptr };
   int index = 0;
   for (std::size_t i = 0; i < instructions.size(); ++i)
   {
@@ -84,9 +88,9 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
 
       assert(instruction.getType() == static_cast<int>(InstructionType::PLAN_INSTRUCTION));
       const auto* plan_instruction = instruction.template cast_const<PlanInstruction>();
-//      const Waypoint& wp = plan_instruction->getWaypoint();
-//      const std::string& working_frame = plan_instruction->getWorkingFrame();
-//      const Eigen::Isometry3d& tcp = plan_instruction->getTCP();
+      //      const Waypoint& wp = plan_instruction->getWaypoint();
+      //      const std::string& working_frame = plan_instruction->getWorkingFrame();
+      //      const Eigen::Isometry3d& tcp = plan_instruction->getTCP();
 
       assert(seed[i].isComposite());
       const auto* seed_composite = seed[i].template cast_const<tesseract_planning::CompositeInstruction>();
@@ -96,7 +100,7 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
       if (profile.empty())
         profile = "DEFAULT";
 
-      typename DescartesPlanProfile<FloatType>::Ptr cur_plan_profile {nullptr};
+      typename DescartesPlanProfile<FloatType>::Ptr cur_plan_profile{ nullptr };
       auto it = plan_profiles.find(profile);
       if (it == plan_profiles.end())
         cur_plan_profile = std::make_shared<DescartesDefaultPlanProfile<FloatType>>();
@@ -107,7 +111,8 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
       {
         if (isCartesianWaypoint(plan_instruction->getWaypoint().getType()))
         {
-          const auto* cur_wp = plan_instruction->getWaypoint().template cast_const<tesseract_planning::CartesianWaypoint>();
+          const auto* cur_wp =
+              plan_instruction->getWaypoint().template cast_const<tesseract_planning::CartesianWaypoint>();
           if (prev_plan_instruction)
           {
             assert(prev_plan_instruction->getTCP().isApprox(plan_instruction->getTCP(), 1e-5));
@@ -123,14 +128,16 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
               if (!this->prob.manip_fwd_kin->calcFwdKin(prev_pose, *jwp))
                 throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
 
-              prev_pose = this->prob.env_state->link_transforms.at(this->prob.manip_fwd_kin->getBaseLinkName()) * prev_pose * plan_instruction->getTCP();
+              prev_pose = this->prob.env_state->link_transforms.at(this->prob.manip_fwd_kin->getBaseLinkName()) *
+                          prev_pose * plan_instruction->getTCP();
             }
             else
             {
               throw std::runtime_error("DescartesMotionPlannerConfig: uknown waypoint type.");
             }
 
-            tesseract_common::VectorIsometry3d poses = interpolate(prev_pose, *cur_wp, static_cast<int>(seed_composite->size()));
+            tesseract_common::VectorIsometry3d poses =
+                interpolate(prev_pose, *cur_wp, static_cast<int>(seed_composite->size()));
             // Add intermediate points with path costs and constraints
             for (std::size_t p = 1; p < poses.size() - 1; ++p)
             {
@@ -141,7 +148,7 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
           }
           else
           {
-            assert(seed_composite->size()==1);
+            assert(seed_composite->size() == 1);
           }
 
           // Add final point with waypoint
@@ -156,7 +163,8 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
           if (!this->prob.manip_fwd_kin->calcFwdKin(cur_pose, *cur_wp))
             throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
 
-          cur_pose = this->prob.env_state->link_transforms.at(this->prob.manip_fwd_kin->getBaseLinkName()) * cur_pose * plan_instruction->getTCP();
+          cur_pose = this->prob.env_state->link_transforms.at(this->prob.manip_fwd_kin->getBaseLinkName()) * cur_pose *
+                     plan_instruction->getTCP();
           if (prev_plan_instruction)
           {
             assert(prev_plan_instruction->getTCP().isApprox(plan_instruction->getTCP(), 1e-5));
@@ -173,14 +181,16 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
               if (!this->prob.manip_fwd_kin->calcFwdKin(prev_pose, *jwp))
                 throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
 
-              prev_pose = this->prob.env_state->link_transforms.at(this->prob.manip_fwd_kin->getBaseLinkName()) * prev_pose * plan_instruction->getTCP();
+              prev_pose = this->prob.env_state->link_transforms.at(this->prob.manip_fwd_kin->getBaseLinkName()) *
+                          prev_pose * plan_instruction->getTCP();
             }
             else
             {
               throw std::runtime_error("DescartesMotionPlannerConfig: uknown waypoint type.");
             }
 
-            tesseract_common::VectorIsometry3d poses = interpolate(prev_pose, cur_pose, static_cast<int>(seed_composite->size()));
+            tesseract_common::VectorIsometry3d poses =
+                interpolate(prev_pose, cur_pose, static_cast<int>(seed_composite->size()));
             // Add intermediate points with path costs and constraints
             for (std::size_t p = 1; p < poses.size() - 1; ++p)
             {
@@ -191,7 +201,7 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
           }
           else
           {
-            assert(seed_composite->size()==1);
+            assert(seed_composite->size() == 1);
           }
 
           // Add final point with waypoint
@@ -212,7 +222,7 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
           const auto* cur_wp = plan_instruction->getWaypoint().template cast_const<tesseract_planning::JointWaypoint>();
           if (!prev_plan_instruction)
           {
-            assert(seed_composite->size()==1);
+            assert(seed_composite->size() == 1);
           }
 
           // Descartes does not support freespace so it will only include the plan instruction state, then in
@@ -227,10 +237,11 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
         }
         else if (isCartesianWaypoint(plan_instruction->getWaypoint().getType()))
         {
-          const auto* cur_wp = plan_instruction->getWaypoint().template cast_const<tesseract_planning::CartesianWaypoint>();
+          const auto* cur_wp =
+              plan_instruction->getWaypoint().template cast_const<tesseract_planning::CartesianWaypoint>();
           if (!prev_plan_instruction)
           {
-            assert(seed_composite->size()==1);
+            assert(seed_composite->size() == 1);
           }
 
           // Descartes does not support freespace so it will only include the plan instruction state, then in
@@ -268,26 +279,28 @@ void DescartesMotionPlannerDefaultConfig<FloatType>::getManipulatorInfo()
   if (manipulator_ik_solver.empty())
     this->prob.manip_inv_kin = this->prob.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator);
   else
-    this->prob.manip_inv_kin = this->prob.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
+    this->prob.manip_inv_kin =
+        this->prob.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
 
-//  this->prob.manip_reach = manipulator_reach;
+  //  this->prob.manip_reach = manipulator_reach;
 
-//  const std::vector<std::string>& joint_names = this->prob.manip_fwd_kin->getJointNames();
+  //  const std::vector<std::string>& joint_names = this->prob.manip_fwd_kin->getJointNames();
 
-//  this->prob.dof = static_cast<int>(this->prob.manip_fwd_kin->numJoints());
-//  this->prob.joint_limits = this->prob.manip_fwd_kin->getLimits();
-//  this->prob.joint_names = joint_names;
-//  this->prob.configuration = configuration;
-//  if (this->prob.configuration == DescartesProblem<FloatType>::ROBOT_ON_POSITIONER || this->prob.configuration == DescartesProblem<FloatType>::ROBOT_WITH_EXTERNAL_POSITIONER)
-//  {
-//    this->prob.positioner_fwd_kin = this->prob.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(positioner);
-//    this->prob.dof += static_cast<int>(this->prob.positioner_fwd_kin->numJoints());
-//    this->prob.joint_limits = Eigen::MatrixX2d(this->prob.dof, 2);
-//    this->prob.joint_limits << this->prob.positioner_fwd_kin->getLimits(), this->prob.manip_fwd_kin->getLimits();
-//    this->prob.joint_names = this->prob.positioner_fwd_kin->getJointNames();
-//    this->prob.joint_names.insert(this->prob.joint_names.end(), joint_names.begin(), joint_names.end());
-//  }
+  //  this->prob.dof = static_cast<int>(this->prob.manip_fwd_kin->numJoints());
+  //  this->prob.joint_limits = this->prob.manip_fwd_kin->getLimits();
+  //  this->prob.joint_names = joint_names;
+  //  this->prob.configuration = configuration;
+  //  if (this->prob.configuration == DescartesProblem<FloatType>::ROBOT_ON_POSITIONER || this->prob.configuration ==
+  //  DescartesProblem<FloatType>::ROBOT_WITH_EXTERNAL_POSITIONER)
+  //  {
+  //    this->prob.positioner_fwd_kin =
+  //    this->prob.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(positioner); this->prob.dof +=
+  //    static_cast<int>(this->prob.positioner_fwd_kin->numJoints()); this->prob.joint_limits =
+  //    Eigen::MatrixX2d(this->prob.dof, 2); this->prob.joint_limits << this->prob.positioner_fwd_kin->getLimits(),
+  //    this->prob.manip_fwd_kin->getLimits(); this->prob.joint_names = this->prob.positioner_fwd_kin->getJointNames();
+  //    this->prob.joint_names.insert(this->prob.joint_names.end(), joint_names.begin(), joint_names.end());
+  //  }
 }
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_MOTION_PLANNERS_IMPL_DESCARTES_DESCARTES_MOTION_PLANNER_DEFAULT_CONFIG_HPP
+#endif  // TESSERACT_MOTION_PLANNERS_IMPL_DESCARTES_DESCARTES_MOTION_PLANNER_DEFAULT_CONFIG_HPP

@@ -84,6 +84,6 @@ inline RobotConfig getRobotConfig(const tesseract_kinematics::ForwardKinematics:
 
   return RobotConfig::NDB;
 }
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_COMMAND_LANGUAGE_ROBOT_CONFIG_H
+#endif  // TESSERACT_COMMAND_LANGUAGE_ROBOT_CONFIG_H

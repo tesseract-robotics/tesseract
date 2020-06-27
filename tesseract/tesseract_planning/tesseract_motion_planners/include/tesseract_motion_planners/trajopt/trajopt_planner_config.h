@@ -85,6 +85,6 @@ struct TrajOptPlannerConfig
   double longest_valid_segment_length = 0.5;
 };
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_CONFIG_TRAJOPT_PLANNER_CONFIG_BASE_H

@@ -222,4 +222,4 @@ bool TrajOptMotionPlanner::setConfiguration(TrajOptPlannerConfig::Ptr config)
   return config_->generate();
 }
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning

@@ -87,5 +87,5 @@ private:
   mutable std::map<unsigned long int, tesseract_environment::StateSolver::Ptr> state_solver_managers_;
 };
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 #endif  // TESSERACT_MOTION_PLANNERS_OMPL_STATE_COLLISION_VALIDATOR_H

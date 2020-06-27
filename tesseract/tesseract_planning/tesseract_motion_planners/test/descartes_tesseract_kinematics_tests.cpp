@@ -250,14 +250,12 @@ TEST_F(DescartesTesseractKinematicsUnit, IKTest)  // NOLINT
     testIKFloat(kin, pose_f, seed_f, 0);
   }
   {
-    tesseract_planning::DescartesTesseractKinematics<double> kin(
-        kdl_fk_, kdl_ik_, &isCompletelyValid<double>, nullptr);
+    tesseract_planning::DescartesTesseractKinematics<double> kin(kdl_fk_, kdl_ik_, &isCompletelyValid<double>, nullptr);
     CONSOLE_BRIDGE_logDebug("Double: isCompletelyValid, nullptr");
     testIKDouble(kin, pose_d, seed_d, 1);
   }
   {
-    tesseract_planning::DescartesTesseractKinematics<float> kin(
-        kdl_fk_, kdl_ik_, &isCompletelyValid<float>, nullptr);
+    tesseract_planning::DescartesTesseractKinematics<float> kin(kdl_fk_, kdl_ik_, &isCompletelyValid<float>, nullptr);
     CONSOLE_BRIDGE_logDebug("Float: isCompletelyValid, nullptr");
     testIKFloat(kin, pose_f, seed_f, 1);
   }

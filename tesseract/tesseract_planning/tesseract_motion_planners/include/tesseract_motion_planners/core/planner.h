@@ -87,5 +87,5 @@ protected:
   PlannerRequest request_;             /**< @brief The planner request information */
   TrajectoryValidator::Ptr validator_; /**< @brief The trajectory validator class */
 };
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 #endif  // TESSERACT_PLANNING_PLANNER_H

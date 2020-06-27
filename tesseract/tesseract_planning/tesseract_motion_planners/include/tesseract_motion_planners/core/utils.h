@@ -95,9 +95,7 @@ inline tesseract_common::VectorIsometry3d interpolate(const Eigen::Isometry3d& s
  * @param steps The number of step
  * @return A matrix where columns = steps + 1
  */
-inline Eigen::MatrixXd interpolate(const Eigen::VectorXd& start,
-                                   const Eigen::VectorXd& stop,
-                                   int steps)
+inline Eigen::MatrixXd interpolate(const Eigen::VectorXd& start, const Eigen::VectorXd& stop, int steps)
 {
   assert(start.size() == stop.size());
 
@@ -141,7 +139,7 @@ inline std::vector<Waypoint> interpolate(const Waypoint& start, const Waypoint& 
 
       std::vector<Waypoint> result;
       result.reserve(static_cast<std::size_t>(joint_poses.cols()));
-      for ( int i = 0; i < joint_poses.cols(); ++i)
+      for (int i = 0; i < joint_poses.cols(); ++i)
         result.emplace_back(JointWaypoint(joint_poses.col(i)));
 
       return result;
@@ -162,7 +160,7 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
                                          double /*longest_cartesian_segment*/ = 0.01)
 {
   CompositeInstruction seed;
-  const PlanInstruction* prev_plan_instruction {nullptr};
+  const PlanInstruction* prev_plan_instruction{ nullptr };
   Eigen::VectorXd current_jv = current_state->getJointValues(fwd_kin->getJointNames());
   Eigen::Isometry3d world_to_base = current_state->link_transforms.at(fwd_kin->getBaseLinkName());
 
@@ -194,7 +192,8 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
             tesseract_common::VectorIsometry3d poses = interpolate(*pre_cwp, *cur_cwp, 10);
             for (std::size_t p = 1; p < poses.size(); ++p)
             {
-              tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
+              tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]),
+                                                                   MoveInstructionType::LINEAR);
               move_instruction.setPosition(current_jv);
               move_instruction.setTCP(plan_instruction->getTCP());
               move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
@@ -217,7 +216,8 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
             tesseract_common::VectorIsometry3d poses = interpolate(*pre_cwp, p2, 10);
             for (std::size_t p = 1; p < poses.size(); ++p)
             {
-              tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
+              tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]),
+                                                                   MoveInstructionType::LINEAR);
               move_instruction.setPosition(*cur_jwp);
               move_instruction.setTCP(plan_instruction->getTCP());
               move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
@@ -240,7 +240,8 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
             tesseract_common::VectorIsometry3d poses = interpolate(p1, *cur_cwp, 10);
             for (std::size_t p = 1; p < poses.size(); ++p)
             {
-              tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
+              tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]),
+                                                                   MoveInstructionType::LINEAR);
               move_instruction.setPosition(*pre_jwp);
               move_instruction.setTCP(plan_instruction->getTCP());
               move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
@@ -270,7 +271,8 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
             Eigen::MatrixXd joint_poses = interpolate(*pre_jwp, *cur_jwp, 10);
             for (std::size_t p = 1; p < poses.size(); ++p)
             {
-              tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
+              tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]),
+                                                                   MoveInstructionType::LINEAR);
               move_instruction.setPosition(joint_poses.col(static_cast<long>(p)));
               move_instruction.setTCP(plan_instruction->getTCP());
               move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
@@ -289,10 +291,12 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
           bool is_jwp = isJointWaypoint(plan_instruction->getWaypoint().getType());
           assert(is_cwp || is_jwp);
 
-          tesseract_planning::MoveInstruction move_instruction(plan_instruction->getWaypoint(), MoveInstructionType::LINEAR);
+          tesseract_planning::MoveInstruction move_instruction(plan_instruction->getWaypoint(),
+                                                               MoveInstructionType::LINEAR);
 
           if (is_jwp)
-            move_instruction.setPosition(*(plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>()));
+            move_instruction.setPosition(
+                *(plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>()));
           else
             move_instruction.setPosition(current_jv);
 
@@ -324,7 +328,8 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
             Eigen::MatrixXd states = interpolate(*pre_cwp, *cur_cwp, 10);
             for (long i = 1; i < states.cols(); ++i)
             {
-              tesseract_planning::MoveInstruction move_instruction(JointWaypoint(states.col(i)), MoveInstructionType::FREESPACE);
+              tesseract_planning::MoveInstruction move_instruction(JointWaypoint(states.col(i)),
+                                                                   MoveInstructionType::FREESPACE);
               move_instruction.setPosition(states.col(i));
               move_instruction.setTCP(plan_instruction->getTCP());
               move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
@@ -359,13 +364,13 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
               move_instruction.setDescription(plan_instruction->getDescription());
               composite.push_back(move_instruction);
             }
-
           }
           else if (is_cwp1 && is_cwp2)
           {
             for (long i = 1; i < 10; ++i)
             {
-              tesseract_planning::MoveInstruction move_instruction(JointWaypoint(current_jv), MoveInstructionType::FREESPACE);
+              tesseract_planning::MoveInstruction move_instruction(JointWaypoint(current_jv),
+                                                                   MoveInstructionType::FREESPACE);
               move_instruction.setPosition(current_jv);
               move_instruction.setTCP(plan_instruction->getTCP());
               move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
@@ -384,9 +389,11 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
           bool is_jwp = isJointWaypoint(plan_instruction->getWaypoint().getType());
           assert(is_cwp || is_jwp);
 
-          tesseract_planning::MoveInstruction move_instruction(plan_instruction->getWaypoint(), MoveInstructionType::FREESPACE);
+          tesseract_planning::MoveInstruction move_instruction(plan_instruction->getWaypoint(),
+                                                               MoveInstructionType::FREESPACE);
           if (is_jwp)
-            move_instruction.setPosition(*(plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>()));
+            move_instruction.setPosition(
+                *(plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>()));
           else
             move_instruction.setPosition(current_jv);
 
@@ -410,6 +417,6 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
   }
   return seed;
 }
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 
 #endif  // TESSERACT_PLANNING_UTILS_H
