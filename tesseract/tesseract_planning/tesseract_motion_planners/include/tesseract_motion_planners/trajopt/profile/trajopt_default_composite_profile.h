@@ -12,7 +12,6 @@ namespace tesseract_planning
 class TrajOptDefaultCompositeProfile : public TrajOptCompositeProfile
 {
 public:
-
   /** @brief The type of contact test to perform: FIRST, CLOSEST, ALL */
   tesseract_collision::ContactTestType contact_test_type = tesseract_collision::ContactTestType::ALL;
   /** @brief Configuration info for collisions that are modeled as costs */
@@ -65,36 +64,42 @@ public:
              const std::vector<int>& fixed_indices) override;
 
 protected:
-
   void addCollisionCost(trajopt::ProblemConstructionInfo& pci,
-                        int start_index, int end_index,
+                        int start_index,
+                        int end_index,
                         const std::vector<int>& fixed_indices) const;
 
   void addCollisionConstraint(trajopt::ProblemConstructionInfo& pci,
-                              int start_index, int end_index,
+                              int start_index,
+                              int end_index,
                               const std::vector<int>& fixed_indices) const;
 
   void addVelocitySmoothing(trajopt::ProblemConstructionInfo& pci,
-                            int start_index, int end_index,
+                            int start_index,
+                            int end_index,
                             const std::vector<int>& fixed_indices) const;
 
   void addAccelerationSmoothing(trajopt::ProblemConstructionInfo& pci,
-                                int start_index, int end_index,
+                                int start_index,
+                                int end_index,
                                 const std::vector<int>& fixed_indices) const;
 
   void addJerkSmoothing(trajopt::ProblemConstructionInfo& pci,
-                        int start_index, int end_index,
+                        int start_index,
+                        int end_index,
                         const std::vector<int>& fixed_indices) const;
 
   void addConstraintErrorFunctions(trajopt::ProblemConstructionInfo& pci,
-                                   int start_index, int end_index,
+                                   int start_index,
+                                   int end_index,
                                    const std::vector<int>& fixed_indices) const;
 
   void addAvoidSingularity(trajopt::ProblemConstructionInfo& pci,
-                           int start_index, int end_index,
+                           int start_index,
+                           int end_index,
                            const std::string& link,
                            const std::vector<int>& fixed_indices) const;
 };
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_MOTION_PLANNERS_TRAJOPT_DEFAULT_COMPOSITE_PROFILE_H
+#endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_DEFAULT_COMPOSITE_PROFILE_H

@@ -10,15 +10,14 @@
 #include <tesseract_command_language/cartesian_waypoint.h>
 #include <tesseract_command_language/joint_waypoint.h>
 
-
 static const double LONGEST_VALID_SEGMENT_FRACTION_DEFAULT = 0.01;
 
 namespace tesseract_planning
 {
-
 void TrajOptDefaultCompositeProfile::apply(trajopt::ProblemConstructionInfo& pci,
-                                           int start_index, int end_index,
-                                           const std::vector<std::string> &/*active_links*/,
+                                           int start_index,
+                                           int end_index,
+                                           const std::vector<std::string>& /*active_links*/,
                                            const std::vector<int>& fixed_indices)
 {
   // -------- Construct the problem ------------
@@ -38,16 +37,17 @@ void TrajOptDefaultCompositeProfile::apply(trajopt::ProblemConstructionInfo& pci
   if (smooth_jerks)
     addJerkSmoothing(pci, start_index, end_index, fixed_indices);
 
-//  if (!constraint_error_functions.empty())
-//    addConstraintErrorFunctions(pci, start_index, end_index, fixed_indices);
+  //  if (!constraint_error_functions.empty())
+  //    addConstraintErrorFunctions(pci, start_index, end_index, fixed_indices);
 
   if (avoid_singularity)
     addAvoidSingularity(pci, start_index, end_index, pci.kin->getTipLinkName(), fixed_indices);
 }
 
 void TrajOptDefaultCompositeProfile::addCollisionCost(trajopt::ProblemConstructionInfo& pci,
-                                             int start_index, int end_index,
-                                             const std::vector<int>& fixed_indices) const
+                                                      int start_index,
+                                                      int end_index,
+                                                      const std::vector<int>& fixed_indices) const
 {
   // Calculate longest valid segment length
   const Eigen::MatrixX2d& limits = pci.kin->getLimits();
@@ -97,7 +97,8 @@ void TrajOptDefaultCompositeProfile::addCollisionCost(trajopt::ProblemConstructi
 }
 
 void TrajOptDefaultCompositeProfile::addCollisionConstraint(trajopt::ProblemConstructionInfo& pci,
-                                                            int start_index, int end_index,
+                                                            int start_index,
+                                                            int end_index,
                                                             const std::vector<int>& fixed_indices) const
 {
   // Calculate longest valid segment length
@@ -148,17 +149,20 @@ void TrajOptDefaultCompositeProfile::addCollisionConstraint(trajopt::ProblemCons
 }
 
 void TrajOptDefaultCompositeProfile::addVelocitySmoothing(trajopt::ProblemConstructionInfo& pci,
-                                                          int start_index, int end_index,
+                                                          int start_index,
+                                                          int end_index,
                                                           const std::vector<int>& /*fixed_indices*/) const
 {
   if (velocity_coeff.size() == 0)
-    pci.cost_infos.push_back(createSmoothVelocityTermInfo(start_index, end_index, static_cast<int>(pci.kin->numJoints())));
+    pci.cost_infos.push_back(
+        createSmoothVelocityTermInfo(start_index, end_index, static_cast<int>(pci.kin->numJoints())));
   else
     pci.cost_infos.push_back(createSmoothVelocityTermInfo(start_index, end_index, velocity_coeff));
 }
 
 void TrajOptDefaultCompositeProfile::addAccelerationSmoothing(trajopt::ProblemConstructionInfo& pci,
-                                                              int start_index, int end_index,
+                                                              int start_index,
+                                                              int end_index,
                                                               const std::vector<int>& /*fixed_indices*/) const
 {
   if (acceleration_coeff.size() == 0)
@@ -169,7 +173,8 @@ void TrajOptDefaultCompositeProfile::addAccelerationSmoothing(trajopt::ProblemCo
 }
 
 void TrajOptDefaultCompositeProfile::addJerkSmoothing(trajopt::ProblemConstructionInfo& pci,
-                                                      int start_index, int end_index,
+                                                      int start_index,
+                                                      int end_index,
                                                       const std::vector<int>& /*fixed_indices*/) const
 {
   if (jerk_coeff.size() == 0)
@@ -179,7 +184,8 @@ void TrajOptDefaultCompositeProfile::addJerkSmoothing(trajopt::ProblemConstructi
 }
 
 void TrajOptDefaultCompositeProfile::addAvoidSingularity(trajopt::ProblemConstructionInfo& pci,
-                                                         int start_index, int end_index,
+                                                         int start_index,
+                                                         int end_index,
                                                          const std::string& link,
                                                          const std::vector<int>& /*fixed_indices*/) const
 {
@@ -187,4 +193,4 @@ void TrajOptDefaultCompositeProfile::addAvoidSingularity(trajopt::ProblemConstru
   pci.cost_infos.push_back(ti);
 }
 
-}
+}  // namespace tesseract_planning

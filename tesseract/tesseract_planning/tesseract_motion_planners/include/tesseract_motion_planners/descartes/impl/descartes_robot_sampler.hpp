@@ -146,4 +146,4 @@ bool DescartesRobotSampler<FloatType>::getBestSolution(std::vector<FloatType>& s
 
 }  // namespace tesseract_planning
 
-#endif // TESSERACT_MOTION_PLANNERS_DESCARTES_ROBOT_SAMPLER_HPP
+#endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_ROBOT_SAMPLER_HPP

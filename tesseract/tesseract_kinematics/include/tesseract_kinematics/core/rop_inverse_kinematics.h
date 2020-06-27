@@ -112,7 +112,7 @@ private:
   bool initialized_{ false };                               /**< Identifies if the object has been initialized */
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_; /**< Tesseract Scene Graph */
   InverseKinematics::Ptr manip_inv_kin_;
-  double manip_reach_ {0};
+  double manip_reach_{ 0 };
   ForwardKinematics::Ptr positioner_fwd_kin_;
   Eigen::VectorXd positioner_sample_resolution_;
   unsigned dof_;
@@ -121,8 +121,8 @@ private:
   std::vector<std::string> link_names_;
   std::vector<std::string> active_link_names_;
   std::vector<Eigen::VectorXd> dof_range_;
-  std::string name_;                                      /**< Name of the kinematic chain */
-  std::string solver_name_ { "RobotOnPositionerInvKin" }; /**< Name of this solver */
+  std::string name_;                                     /**< Name of the kinematic chain */
+  std::string solver_name_{ "RobotOnPositionerInvKin" }; /**< Name of this solver */
 
   /**
    * @brief This used by the clone method
@@ -139,13 +139,13 @@ private:
                  int loop_level,
                  const std::vector<Eigen::VectorXd>& dof_range,
                  const Eigen::Isometry3d& target_pose,
-                 Eigen::VectorXd &positioner_pose,
+                 Eigen::VectorXd& positioner_pose,
                  const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
-  bool ikAt(std::vector<double> &solutions,
+  bool ikAt(std::vector<double>& solutions,
             const Eigen::Isometry3d& target_pose,
             Eigen::VectorXd& positioner_pose,
             const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 };
-}
-#endif // TESSERACT_KINEMATICS_ROP_INVERSE_KINEMATICS_H
+}  // namespace tesseract_kinematics
+#endif  // TESSERACT_KINEMATICS_ROP_INVERSE_KINEMATICS_H

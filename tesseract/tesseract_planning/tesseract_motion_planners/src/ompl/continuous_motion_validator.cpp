@@ -169,4 +169,4 @@ bool ContinuousMotionValidator::continuousCollisionCheck(const ompl::base::State
   return contact_map.empty();
 }
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning

@@ -17,7 +17,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-
 template <typename FloatType>
 class DescartesMotionPlanner : public MotionPlanner
 {
@@ -74,5 +73,5 @@ private:
 using DescartesMotionPlannerD = DescartesMotionPlanner<double>;
 using DescartesMotionPlannerF = DescartesMotionPlanner<float>;
 
-}  // namespace tesseract_motion_planners
-#endif // TESSERACT_MOTION_PLANNERS_DECARTES_MOTION_PLANNER_H
+}  // namespace tesseract_planning
+#endif  // TESSERACT_MOTION_PLANNERS_DECARTES_MOTION_PLANNER_H
