@@ -42,9 +42,9 @@ InverseKinematics::Ptr RobotWithExternalPositionerInvKin::clone() const
   return cloned_invkin;
 }
 
-bool RobotWithExternalPositionerInvKin::calcInvKinHelper(std::vector<double> &solutions,
-                                         const Eigen::Isometry3d& pose,
-                                         const Eigen::Ref<const Eigen::VectorXd>& seed) const
+bool RobotWithExternalPositionerInvKin::calcInvKinHelper(std::vector<double>& solutions,
+                                                         const Eigen::Isometry3d& pose,
+                                                         const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   Eigen::VectorXd positioner_pose(positioner_fwd_kin_->numJoints());
   nested_ik(solutions, 0, dof_range_, pose, positioner_pose, seed);
@@ -53,11 +53,11 @@ bool RobotWithExternalPositionerInvKin::calcInvKinHelper(std::vector<double> &so
 }
 
 void RobotWithExternalPositionerInvKin::nested_ik(std::vector<double>& solutions,
-    int loop_level,
-    const std::vector<Eigen::VectorXd>& dof_range,
-    const Eigen::Isometry3d& target_pose,
-    Eigen::VectorXd& positioner_pose,
-    const Eigen::Ref<const Eigen::VectorXd>& seed) const
+                                                  int loop_level,
+                                                  const std::vector<Eigen::VectorXd>& dof_range,
+                                                  const Eigen::Isometry3d& target_pose,
+                                                  Eigen::VectorXd& positioner_pose,
+                                                  const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   if (loop_level >= static_cast<int>(positioner_fwd_kin_->numJoints()))
   {
@@ -74,8 +74,8 @@ void RobotWithExternalPositionerInvKin::nested_ik(std::vector<double>& solutions
 
 bool RobotWithExternalPositionerInvKin::ikAt(std::vector<double>& solutions,
                                              const Eigen::Isometry3d& target_pose,
-                                             Eigen::VectorXd &positioner_pose,
-                                             const Eigen::Ref<const Eigen::VectorXd> &seed) const
+                                             Eigen::VectorXd& positioner_pose,
+                                             const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   Eigen::Isometry3d positioner_tf;
   if (!positioner_fwd_kin_->calcFwdKin(positioner_tf, positioner_pose))
@@ -107,8 +107,8 @@ bool RobotWithExternalPositionerInvKin::ikAt(std::vector<double>& solutions,
 }
 
 bool RobotWithExternalPositionerInvKin::calcInvKin(Eigen::VectorXd& solutions,
-                                   const Eigen::Isometry3d& pose,
-                                   const Eigen::Ref<const Eigen::VectorXd>& seed) const
+                                                   const Eigen::Isometry3d& pose,
+                                                   const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   assert(checkInitialized());
   std::vector<double> solution_set;
@@ -120,9 +120,9 @@ bool RobotWithExternalPositionerInvKin::calcInvKin(Eigen::VectorXd& solutions,
 }
 
 bool RobotWithExternalPositionerInvKin::calcInvKin(Eigen::VectorXd& /*solutions*/,
-                                   const Eigen::Isometry3d& /*pose*/,
-                                   const Eigen::Ref<const Eigen::VectorXd>& /*seed*/,
-                                   const std::string& /*link_name*/) const
+                                                   const Eigen::Isometry3d& /*pose*/,
+                                                   const Eigen::Ref<const Eigen::VectorXd>& /*seed*/,
+                                                   const std::string& /*link_name*/) const
 {
   assert(checkInitialized());
   assert(false);
@@ -136,9 +136,8 @@ bool RobotWithExternalPositionerInvKin::checkJoints(const Eigen::Ref<const Eigen
 {
   if (vec.size() != dof_)
   {
-    CONSOLE_BRIDGE_logError("Number of joint angles (%d) don't match robot_model (%d)",
-                            static_cast<int>(vec.size()),
-                            dof_);
+    CONSOLE_BRIDGE_logError(
+        "Number of joint angles (%d) don't match robot_model (%d)", static_cast<int>(vec.size()), dof_);
     return false;
   }
 
@@ -177,10 +176,19 @@ const std::vector<std::string>& RobotWithExternalPositionerInvKin::getActiveLink
 
 const Eigen::MatrixX2d& RobotWithExternalPositionerInvKin::getLimits() const { return joint_limits_; }
 
-tesseract_scene_graph::SceneGraph::ConstPtr RobotWithExternalPositionerInvKin::getSceneGraph() const { return scene_graph_; };
+tesseract_scene_graph::SceneGraph::ConstPtr RobotWithExternalPositionerInvKin::getSceneGraph() const
+{
+  return scene_graph_;
+};
 unsigned int RobotWithExternalPositionerInvKin::numJoints() const { return dof_; }
-const std::string& RobotWithExternalPositionerInvKin::getBaseLinkName() const { return positioner_fwd_kin_->getTipLinkName(); }
-const std::string& RobotWithExternalPositionerInvKin::getTipLinkName() const { return manip_inv_kin_->getTipLinkName(); }
+const std::string& RobotWithExternalPositionerInvKin::getBaseLinkName() const
+{
+  return positioner_fwd_kin_->getTipLinkName();
+}
+const std::string& RobotWithExternalPositionerInvKin::getTipLinkName() const
+{
+  return manip_inv_kin_->getTipLinkName();
+}
 const std::string& RobotWithExternalPositionerInvKin::getName() const { return name_; }
 const std::string& RobotWithExternalPositionerInvKin::getSolverName() const { return solver_name_; }
 
@@ -199,7 +207,7 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
                                              double manipulator_reach,
                                              ForwardKinematics::Ptr positioner,
                                              Eigen::VectorXd positioner_sample_resolution,
-                                             const tesseract_common::TransformMap &current_transforms,
+                                             const tesseract_common::TransformMap& current_transforms,
                                              std::string name)
 {
   initialized_ = false;

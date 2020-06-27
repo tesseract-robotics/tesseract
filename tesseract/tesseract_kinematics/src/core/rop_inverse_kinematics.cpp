@@ -42,9 +42,9 @@ InverseKinematics::Ptr RobotOnPositionerInvKin::clone() const
   return cloned_invkin;
 }
 
-bool RobotOnPositionerInvKin::calcInvKinHelper(std::vector<double> &solutions,
-                                         const Eigen::Isometry3d& pose,
-                                         const Eigen::Ref<const Eigen::VectorXd>& seed) const
+bool RobotOnPositionerInvKin::calcInvKinHelper(std::vector<double>& solutions,
+                                               const Eigen::Isometry3d& pose,
+                                               const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   Eigen::VectorXd positioner_pose(positioner_fwd_kin_->numJoints());
   nested_ik(solutions, 0, dof_range_, pose, positioner_pose, seed);
@@ -53,11 +53,11 @@ bool RobotOnPositionerInvKin::calcInvKinHelper(std::vector<double> &solutions,
 }
 
 void RobotOnPositionerInvKin::nested_ik(std::vector<double>& solutions,
-    int loop_level,
-    const std::vector<Eigen::VectorXd>& dof_range,
-    const Eigen::Isometry3d& target_pose,
-    Eigen::VectorXd& positioner_pose,
-    const Eigen::Ref<const Eigen::VectorXd>& seed) const
+                                        int loop_level,
+                                        const std::vector<Eigen::VectorXd>& dof_range,
+                                        const Eigen::Isometry3d& target_pose,
+                                        Eigen::VectorXd& positioner_pose,
+                                        const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   if (loop_level >= static_cast<int>(positioner_fwd_kin_->numJoints()))
   {
@@ -74,8 +74,8 @@ void RobotOnPositionerInvKin::nested_ik(std::vector<double>& solutions,
 
 bool RobotOnPositionerInvKin::ikAt(std::vector<double>& solutions,
                                    const Eigen::Isometry3d& target_pose,
-                                   Eigen::VectorXd &positioner_pose,
-                                   const Eigen::Ref<const Eigen::VectorXd> &seed) const
+                                   Eigen::VectorXd& positioner_pose,
+                                   const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   Eigen::Isometry3d positioner_tf;
   if (!positioner_fwd_kin_->calcFwdKin(positioner_tf, positioner_pose))
@@ -107,8 +107,8 @@ bool RobotOnPositionerInvKin::ikAt(std::vector<double>& solutions,
 }
 
 bool RobotOnPositionerInvKin::calcInvKin(Eigen::VectorXd& solutions,
-                                   const Eigen::Isometry3d& pose,
-                                   const Eigen::Ref<const Eigen::VectorXd>& seed) const
+                                         const Eigen::Isometry3d& pose,
+                                         const Eigen::Ref<const Eigen::VectorXd>& seed) const
 {
   assert(checkInitialized());
   std::vector<double> solution_set;
@@ -120,9 +120,9 @@ bool RobotOnPositionerInvKin::calcInvKin(Eigen::VectorXd& solutions,
 }
 
 bool RobotOnPositionerInvKin::calcInvKin(Eigen::VectorXd& /*solutions*/,
-                                   const Eigen::Isometry3d& /*pose*/,
-                                   const Eigen::Ref<const Eigen::VectorXd>& /*seed*/,
-                                   const std::string& /*link_name*/) const
+                                         const Eigen::Isometry3d& /*pose*/,
+                                         const Eigen::Ref<const Eigen::VectorXd>& /*seed*/,
+                                         const std::string& /*link_name*/) const
 {
   assert(checkInitialized());
   assert(false);
@@ -136,9 +136,8 @@ bool RobotOnPositionerInvKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd
 {
   if (vec.size() != dof_)
   {
-    CONSOLE_BRIDGE_logError("Number of joint angles (%d) don't match robot_model (%d)",
-                            static_cast<int>(vec.size()),
-                            dof_);
+    CONSOLE_BRIDGE_logError(
+        "Number of joint angles (%d) don't match robot_model (%d)", static_cast<int>(vec.size()), dof_);
     return false;
   }
 
@@ -195,11 +194,11 @@ bool RobotOnPositionerInvKin::checkInitialized() const
 }
 
 bool RobotOnPositionerInvKin::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-          InverseKinematics::Ptr manipulator,
-          double manipulator_reach,
-          ForwardKinematics::Ptr positioner,
-          Eigen::VectorXd positioner_sample_resolution,
-          std::string name)
+                                   InverseKinematics::Ptr manipulator,
+                                   double manipulator_reach,
+                                   ForwardKinematics::Ptr positioner,
+                                   Eigen::VectorXd positioner_sample_resolution,
+                                   std::string name)
 {
   initialized_ = false;
 

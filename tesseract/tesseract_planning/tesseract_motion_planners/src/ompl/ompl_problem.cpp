@@ -29,11 +29,10 @@
 
 namespace tesseract_planning
 {
-
 tesseract_common::TrajArray OMPLProblem::getTrajectory() const
 {
   assert(extractor != nullptr);
   return toTrajArray(this->simple_setup->getSolutionPath(), extractor);
 }
 
-}
+}  // namespace tesseract_planning

@@ -106,6 +106,6 @@ protected:
   tesseract_collision::ContinuousContactManager::Ptr continuous_contact_manager_;
 };
 
-}  // namespace tesseract_motion_planners
+}  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_OMPL_MOTION_PLANNER_H

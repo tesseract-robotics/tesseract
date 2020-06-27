@@ -8,7 +8,6 @@
 
 namespace tesseract_planning
 {
-
 enum class PlanInstructionType : int
 {
   LINEAR,
@@ -57,7 +56,7 @@ public:
   bool isCircular() const;
 
 private:
-  int type_ { static_cast<int>(InstructionType::PLAN_INSTRUCTION) };
+  int type_{ static_cast<int>(InstructionType::PLAN_INSTRUCTION) };
 
   PlanInstructionType plan_type_;
 
@@ -65,19 +64,18 @@ private:
   Waypoint waypoint_;
 
   /** @brief The tool center point */
-  Eigen::Isometry3d tcp_ { Eigen::Isometry3d::Identity() };
+  Eigen::Isometry3d tcp_{ Eigen::Isometry3d::Identity() };
 
   /** @brief The working frame the waypoint is relative to */
   std::string working_frame_;
 
   /** @brief The description of the instruction */
-  std::string description_ {"Tesseract Plan Instruction"};
+  std::string description_{ "Tesseract Plan Instruction" };
 
   /** @brief The profile used for this plan instruction */
-  std::string profile_ {"DEFAULT"};
-
+  std::string profile_{ "DEFAULT" };
 };
 
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_COMMAND_LANGUAGE_PLAN_INSTRUCTION_H
+#endif  // TESSERACT_COMMAND_LANGUAGE_PLAN_INSTRUCTION_H
