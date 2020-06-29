@@ -346,7 +346,6 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   // Make this a tool z-axis free sampler
   plan_profile->target_pose_sampler = [](const Eigen::Isometry3d& tool_pose) { return tesseract_planning::sampleToolAxis(tool_pose, M_PI_4, Eigen::Vector3d(0, 0, 1)); };
   plan_profile->enable_edge_collision = true; // Add collision edge evaluator
-  plan_profile->
 
   // Create TrajOpt Config
   auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(tesseract_ptr_,

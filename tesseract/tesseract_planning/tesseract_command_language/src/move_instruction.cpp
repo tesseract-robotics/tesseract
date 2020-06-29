@@ -9,7 +9,7 @@ MoveInstruction::MoveInstruction(Waypoint waypoint, MoveInstructionType type)
 void MoveInstruction::setWaypoint(Waypoint waypoint) { waypoint_ = waypoint; }
 const Waypoint& MoveInstruction::getWaypoint() const { return waypoint_; }
 
-void MoveInstruction::setTCP(Eigen::Isometry3d tcp) { tcp_ = tcp; }
+void MoveInstruction::setTCP(const Eigen::Isometry3d& tcp) { tcp_ = tcp; }
 const Eigen::Isometry3d& MoveInstruction::getTCP() const { return tcp_; }
 
 void MoveInstruction::setWorkingFrame(std::string working_frame) { working_frame_ = working_frame; }
@@ -21,16 +21,16 @@ void MoveInstruction::setProfile(const std::string& profile)
 }
 const std::string& MoveInstruction::getProfile() const { return profile_; }
 
-void MoveInstruction::setPosition(Eigen::VectorXd position) { position_ = position; }
+void MoveInstruction::setPosition(const Eigen::VectorXd& position) { position_ = position; }
 const Eigen::VectorXd& MoveInstruction::getPosition() const { return position_; }
 
-void MoveInstruction::setVelocity(Eigen::VectorXd velocity) { velocity_ = velocity; }
+void MoveInstruction::setVelocity(const Eigen::VectorXd& velocity) { velocity_ = velocity; }
 const Eigen::VectorXd& MoveInstruction::getVelocity() const { return velocity_; }
 
-void MoveInstruction::setAcceleration(Eigen::VectorXd acceleration) { acceleration_ = acceleration; }
+void MoveInstruction::setAcceleration(const Eigen::VectorXd& acceleration) { acceleration_ = acceleration; }
 const Eigen::VectorXd& MoveInstruction::getAcceleration() const { return acceleration_; }
 
-void MoveInstruction::setEffort(Eigen::VectorXd effort) { effort_ = effort; }
+void MoveInstruction::setEffort(const Eigen::VectorXd& effort) { effort_ = effort; }
 const Eigen::VectorXd& MoveInstruction::getEffort() const { return effort_; }
 
 void MoveInstruction::setTime(double time) { time_ = time; }

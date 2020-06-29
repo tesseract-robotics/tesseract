@@ -873,10 +873,7 @@ public:
 class TesseractOverlapFilterCallback : public btOverlapFilterCallback
 {
 public:
-  TesseractOverlapFilterCallback(ContactTestData& contact_data, bool verbose = false)
-    : contact_data_(contact_data), verbose_(verbose)
-  {
-  }
+  TesseractOverlapFilterCallback(bool verbose = false) : verbose_(verbose) {}
 
   bool needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) const override
   {
@@ -889,7 +886,6 @@ public:
   }
 
 private:
-  ContactTestData& contact_data_;
   bool verbose_{ false };
 };
 

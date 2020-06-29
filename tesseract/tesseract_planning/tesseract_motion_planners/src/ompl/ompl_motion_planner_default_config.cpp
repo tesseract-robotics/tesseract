@@ -49,37 +49,8 @@ void OMPLMotionPlannerDefaultConfig::init()
   else
     manip_inv_kin_ = tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
 
-//  const std::vector<std::string>& joint_names = manip_fwd_kin_->getJointNames();
-
-//  this->prob.dof = static_cast<int>(this->prob.manip_fwd_kin->numJoints());
-//  this->prob.joint_limits = this->prob.manip_fwd_kin->getLimits();
-//  this->prob.joint_names = joint_names;
-//  this->prob.configuration = configuration;
-  if (configuration == OMPLProblemConfiguration::SE3_STATE_SPACE_ROBOT_ON_POSITIONER || configuration == OMPLProblemConfiguration::SE3_STATE_SPACE_ROBOT_WITH_EXTERNAL_POSITIONER)
-  {
-    positioner_fwd_kin_ = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(positioner);
-//    this->prob.dof += static_cast<int>(this->prob.positioner_fwd_kin->numJoints());
-//    this->prob.joint_limits = Eigen::MatrixX2d(this->prob.dof, 2);
-//    this->prob.joint_limits << this->prob.positioner_fwd_kin->getLimits(), this->prob.manip_fwd_kin->getLimits();
-//    this->prob.joint_names = this->prob.positioner_fwd_kin->getJointNames();
-//    this->prob.joint_names.insert(this->prob.joint_names.end(), joint_names.begin(), joint_names.end());
-  }
-
-  if (configuration == OMPLProblemConfiguration::REAL_STATE_SPACE)
-    extractor_ = std::bind(&tesseract_planning::RealVectorStateSpaceExtractor, std::placeholders::_1, manip_inv_kin_->numJoints());
-  else if (configuration == OMPLProblemConfiguration::REAL_CONSTRAINTED_STATE_SPACE)
-    extractor_ = tesseract_planning::ConstrainedStateSpaceExtractor;
-  else
-    throw std::runtime_error("OMPLMotionPlannerDefaultConfig: Unsupported configuration!");
-
   // Get Active Link Names
   std::vector<std::string> active_link_names = manip_inv_kin_->getActiveLinkNames();
-  if (configuration == OMPLProblemConfiguration::SE3_STATE_SPACE_ROBOT_ON_POSITIONER || configuration == OMPLProblemConfiguration::SE3_STATE_SPACE_ROBOT_WITH_EXTERNAL_POSITIONER)
-  {
-    const std::vector<std::string>& positioner_active_link_names = positioner_fwd_kin_->getActiveLinkNames();
-    active_link_names.insert(active_link_names.end(), positioner_active_link_names.begin(), positioner_active_link_names.end());
-  }
-
   auto adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(tesseract->getEnvironmentConst()->getSceneGraph(), active_link_names, env_state->link_transforms);
   active_link_names_ = adjacency_map->getActiveLinkNames();
 }
@@ -91,7 +62,6 @@ void OMPLMotionPlannerDefaultConfig::clear()
   manip_fwd_kin_ = nullptr;
   manip_inv_kin_ = nullptr;
   positioner_fwd_kin_ = nullptr;
-  extractor_ = nullptr;
   active_link_names_.clear();
 }
 
@@ -102,12 +72,8 @@ OMPLProblem::UPtr OMPLMotionPlannerDefaultConfig::createSubProblem()
   sub_prob->env_state = env_state;
   sub_prob->state_solver = tesseract->getEnvironmentConst()->getStateSolver();
   sub_prob->state_solver->setState(env_state->joints);
-  sub_prob->configuration = configuration;
-  sub_prob->manip_reach = manipulator_reach;
   sub_prob->manip_fwd_kin = manip_fwd_kin_;
   sub_prob->manip_inv_kin = manip_inv_kin_;
-  sub_prob->positioner_fwd_kin = positioner_fwd_kin_;
-  sub_prob->extractor = extractor_;
   sub_prob->contact_checker = tesseract->getEnvironmentConst()->getDiscreteContactManager();
   sub_prob->contact_checker->setCollisionObjectsTransform(env_state->link_transforms);
   sub_prob->contact_checker->setActiveCollisionObjects(active_link_names_);
@@ -146,9 +112,9 @@ bool OMPLMotionPlannerDefaultConfig::generate()
 
       assert(instruction.getType() == static_cast<int>(InstructionType::PLAN_INSTRUCTION));
       const auto* plan_instruction = instruction.cast_const<PlanInstruction>();
-//        const Waypoint& wp = plan_instruction->getWaypoint();
-      const std::string& working_frame = plan_instruction->getWorkingFrame();
-//        const Eigen::Isometry3d& tcp = plan_instruction->getTCP();
+//      const Waypoint& wp = plan_instruction->getWaypoint();
+//      const std::string& working_frame = plan_instruction->getWorkingFrame();
+//      const Eigen::Isometry3d& tcp = plan_instruction->getTCP();
 
       assert(seed[i].isComposite());
       const auto* seed_composite = seed[i].cast_const<tesseract_planning::CompositeInstruction>();
@@ -169,7 +135,7 @@ bool OMPLMotionPlannerDefaultConfig::generate()
       {
         if (isCartesianWaypoint(plan_instruction->getWaypoint().getType()))
         {
-          const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
+//          const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
           if (prev_plan_instruction)
           {
             assert(prev_plan_instruction->getTCP().isApprox(plan_instruction->getTCP(), 1e-5));
