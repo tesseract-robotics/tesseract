@@ -17,20 +17,20 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-void OMPLDefaultPlanProfile::apply(OMPLProblem& prob,
-                                   const Eigen::Isometry3d& cartesian_waypoint,
-                                   const PlanInstruction& parent_instruction,
-                                   const std::vector<std::string> &active_links,
-                                   int index)
+void OMPLDefaultPlanProfile::apply(OMPLProblem& /*prob*/,
+                                   const Eigen::Isometry3d& /*cartesian_waypoint*/,
+                                   const PlanInstruction& /*parent_instruction*/,
+                                   const std::vector<std::string> &/*active_links*/,
+                                   int /*index*/)
 {
   assert(false);
 }
 
 void OMPLDefaultPlanProfile::apply(OMPLProblem& prob,
                                    const Eigen::VectorXd& joint_waypoint,
-                                   const PlanInstruction& parent_instruction,
-                                   const std::vector<std::string> &active_links,
-                                   int index)
+                                   const PlanInstruction& /*parent_instruction*/,
+                                   const std::vector<std::string> &/*active_links*/,
+                                   int /*index*/)
 {
   prob.planners = planners;
   prob.max_solutions = max_solutions;
@@ -43,12 +43,21 @@ void OMPLDefaultPlanProfile::apply(OMPLProblem& prob,
   const auto dof = prob.manip_fwd_kin->numJoints();
   const auto& limits = prob.manip_fwd_kin->getLimits();
 
+  if (state_space == OMPLProblemStateSpace::REAL_STATE_SPACE)
+    prob.extractor = std::bind(&tesseract_planning::RealVectorStateSpaceExtractor, std::placeholders::_1, prob.manip_inv_kin->numJoints());
+#ifndef OMPL_LESS_1_4_0
+  else if (state_space == OMPLProblemStateSpace::REAL_CONSTRAINTED_STATE_SPACE)
+    prob.extractor = tesseract_planning::ConstrainedStateSpaceExtractor;
+#endif
+  else
+    throw std::runtime_error("OMPLMotionPlannerDefaultConfig: Unsupported configuration!");
+
   if (weights.size() == 1)
     weights = Eigen::VectorXd::Constant(1, dof, weights(0));
   else if (weights.size() != dof)
     weights = Eigen::VectorXd::Ones(dof);
 
-  if (prob.configuration == OMPLProblemConfiguration::REAL_STATE_SPACE)
+  if (prob.state_space == OMPLProblemStateSpace::REAL_STATE_SPACE)
   {
       // Construct the OMPL state space for this manipulator
       ompl::base::StateSpacePtr state_space_ptr;

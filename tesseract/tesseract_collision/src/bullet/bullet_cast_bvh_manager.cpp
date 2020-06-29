@@ -48,7 +48,7 @@ namespace tesseract_collision_bullet
 static const CollisionShapesConst EMPTY_COLLISION_SHAPES_CONST;
 static const tesseract_common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORMS;
 
-BulletCastBVHManager::BulletCastBVHManager() : broadphase_overlap_cb_(contact_test_data_)
+BulletCastBVHManager::BulletCastBVHManager()
 {
   dispatcher_ = std::make_unique<btCollisionDispatcher>(&coll_config_);
 
