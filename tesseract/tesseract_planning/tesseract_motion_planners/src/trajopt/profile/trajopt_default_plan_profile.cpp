@@ -34,8 +34,8 @@ void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
 
 void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
                                       const Eigen::VectorXd& joint_waypoint,
-                                      const PlanInstruction& parent_instruction,
-                                      const std::vector<std::string>& active_links,
+                                      const PlanInstruction& /*parent_instruction*/,
+                                      const std::vector<std::string>& /*active_links*/,
                                       int index)
 {
   auto ti = createJointWaypointTermInfo(joint_waypoint, index, joint_coeff, term_type);
