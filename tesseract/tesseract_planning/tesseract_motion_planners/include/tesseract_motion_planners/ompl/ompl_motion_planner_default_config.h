@@ -57,12 +57,8 @@ struct OMPLMotionPlannerDefaultConfig : public OMPLMotionPlannerConfig
   tesseract::Tesseract::ConstPtr tesseract;
   tesseract_environment::EnvState::ConstPtr env_state;
 
-  OMPLProblemConfiguration configuration {OMPLProblemConfiguration::REAL_STATE_SPACE};
-
   std::string manipulator;
   std::string manipulator_ik_solver;
-  std::string positioner;
-  double manipulator_reach;
 
   /**
    * @brief The available plan profiles
@@ -94,7 +90,6 @@ private:
   tesseract_kinematics::InverseKinematics::ConstPtr manip_inv_kin_;
   tesseract_kinematics::ForwardKinematics::ConstPtr positioner_fwd_kin_;
   std::vector<std::string> active_link_names_;
-  OMPLStateExtractor extractor_;
 
   void init();
 

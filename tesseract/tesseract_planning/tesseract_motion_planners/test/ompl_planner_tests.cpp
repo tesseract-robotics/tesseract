@@ -200,8 +200,6 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   auto config = std::make_shared<OMPLMotionPlannerDefaultConfig>(tesseract,
                                                                  tesseract->getEnvironmentConst()->getCurrentState(),
                                                                  "manipulator");
-
-  config->configuration = OMPLProblemConfiguration::REAL_STATE_SPACE;
   config->instructions = program;
   config->seed = seed;
   config->plan_profiles["TEST_PROFILE"] = plan_profile;
@@ -238,7 +236,6 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
 
   // Update Configuration
-  config->configuration = OMPLProblemConfiguration::REAL_STATE_SPACE;
   config->instructions = program;
   config->seed = seed;
   config->plan_profiles["TEST_PROFILE"] = plan_profile;
@@ -252,8 +249,8 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   swp = start_state;
   std::vector<double> ewp = { 0, 0.7, 0.0, 0, 0.0, 0, 0.0 };
 
-  wp1 = Eigen::Map<const Eigen::VectorXd>(swp.data(), swp.size());
-  wp2 = Eigen::Map<const Eigen::VectorXd>(ewp.data(), ewp.size());
+  wp1 = Eigen::Map<const Eigen::VectorXd>(swp.data(), static_cast<long>(swp.size()));
+  wp2 = Eigen::Map<const Eigen::VectorXd>(ewp.data(), static_cast<long>(ewp.size()));
 
   // Define Plan Instructions
   plan_f0 = PlanInstruction(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
@@ -268,7 +265,6 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
 
   // Update Configuration
-  config->configuration = OMPLProblemConfiguration::REAL_STATE_SPACE;
   config->instructions = program;
   config->seed = seed;
   config->plan_profiles["TEST_PROFILE"] = plan_profile;

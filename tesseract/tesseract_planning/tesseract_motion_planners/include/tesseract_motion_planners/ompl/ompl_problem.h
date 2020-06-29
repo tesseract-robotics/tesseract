@@ -52,13 +52,13 @@ using StateValidityCheckerAllocator =
 using MotionValidatorAllocator =
     std::function<ompl::base::MotionValidatorPtr(const ompl::base::SpaceInformationPtr&, const OMPLProblem&)>;
 
-enum class OMPLProblemConfiguration
+enum class OMPLProblemStateSpace
 {
   REAL_STATE_SPACE,
+#ifndef OMPL_LESS_1_4_0
   REAL_CONSTRAINTED_STATE_SPACE,
-  SE3_STATE_SPACE_ROBOT_ONLY,
-  SE3_STATE_SPACE_ROBOT_ON_POSITIONER,
-  SE3_STATE_SPACE_ROBOT_WITH_EXTERNAL_POSITIONER
+#endif
+  SE3_STATE_SPACE,
 };
 
 struct OMPLProblem
@@ -77,13 +77,11 @@ struct OMPLProblem
   tesseract_collision::DiscreteContactManager::Ptr contact_checker;
 
   // Problem Configuration
-  OMPLProblemConfiguration configuration {OMPLProblemConfiguration::REAL_STATE_SPACE};
+  OMPLProblemStateSpace state_space {OMPLProblemStateSpace::REAL_STATE_SPACE};
 
   // Kinematic Objects
   tesseract_kinematics::ForwardKinematics::ConstPtr manip_fwd_kin;
   tesseract_kinematics::InverseKinematics::ConstPtr manip_inv_kin;
-  tesseract_kinematics::ForwardKinematics::ConstPtr positioner_fwd_kin;
-  double manip_reach;
 
   /** @brief Max planning time allowed in seconds */
   double planning_time = 5.0;

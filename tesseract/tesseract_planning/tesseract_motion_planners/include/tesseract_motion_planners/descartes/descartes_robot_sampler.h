@@ -60,7 +60,6 @@ public:
                         PoseSamplerFn target_pose_sampler,
                         tesseract_kinematics::InverseKinematics::ConstPtr robot_kinematics,
                         typename descartes_light::CollisionInterface<FloatType>::Ptr collision,
-                        const tesseract_environment::EnvState::ConstPtr& current_state,
                         const Eigen::Isometry3d& tcp,
                         bool allow_collision,
                         DescartesIsValidFn<FloatType> is_valid);
