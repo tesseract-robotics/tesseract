@@ -426,6 +426,78 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
   return generateSeed(instructions, current_state, fwd_kin, inv_kin, 10, 10);
 }
 
+/**
+ * @brief Helper function used by Flatten. Not intended for direct use
+ * @param flattened Vector of instructions representing the full flattened composite
+ * @param composite Composite instruction to be flattened
+ */
+inline void FlattenHelper(std::vector<std::reference_wrapper<Instruction>>& flattened, CompositeInstruction& composite)
+{
+  for (auto& i : composite)
+  {
+    if (i.isComposite())
+      FlattenHelper(flattened, *(i.cast<CompositeInstruction>()));
+    else
+      flattened.emplace_back(i);
+  }
+}
+
+/**
+ * @brief Flattens a CompositeInstruction into a vector of Instruction&
+ * @param instruction Input composite instruction to be flattened
+ * @return A new flattened vector referencing the original instruction elements
+ */
+inline std::vector<std::reference_wrapper<Instruction>> Flatten(CompositeInstruction& instruction)
+{
+  std::vector<std::reference_wrapper<Instruction>> flattened;
+  FlattenHelper(flattened, instruction);
+  return flattened;
+}
+
+inline void FlattenToPatternHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
+                                   CompositeInstruction& composite,
+                                   const CompositeInstruction& pattern)
+{
+  if (composite.size() != pattern.size())
+  {
+    CONSOLE_BRIDGE_logError("Instruction and pattern sizes are mismatched");
+    return;
+  }
+
+  for (std::size_t i = 0; i < pattern.size(); i++)
+  {
+    if (pattern.at(i).isComposite() && composite[i].isComposite())
+      FlattenToPatternHelper(
+          flattened, *(composite[i].cast<CompositeInstruction>()), *pattern.at(i).cast_const<CompositeInstruction>());
+    else
+      flattened.emplace_back(composite[i]);
+  }
+}
+
+/**
+ * @brief Flattens a composite instruction to the same pattern as the pattern composite instruction. ie, an element of
+ * instruction will only be flattened if the corresponding element in pattern is flattenable.
+ *
+ * The motivation for this utility is a case where you flatten only the elements in a seed that correspond to composites
+ * in the parent instruction
+ * @param instruction CompositeInstruction that will be flattened
+ * @param pattern CompositeInstruction used to determine if instruction will be flattened
+ * @return A new flattened vector referencing the original instruction elements
+ */
+inline std::vector<std::reference_wrapper<Instruction>> FlattenToPattern(CompositeInstruction& instruction,
+                                                                         const CompositeInstruction& pattern)
+{
+  if (instruction.size() != pattern.size())
+  {
+    CONSOLE_BRIDGE_logError("Instruction and pattern sizes are mismatched");
+    return std::vector<std::reference_wrapper<Instruction>>();
+  }
+
+  std::vector<std::reference_wrapper<Instruction>> flattened;
+  FlattenToPatternHelper(flattened, instruction, pattern);
+  return flattened;
+}
+
 }  // namespace tesseract_planning
 
 #endif  // TESSERACT_PLANNING_UTILS_H
