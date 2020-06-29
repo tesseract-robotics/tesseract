@@ -35,7 +35,7 @@ template <typename FloatType>
 DescartesMotionPlannerDefaultConfig<FloatType>::DescartesMotionPlannerDefaultConfig(tesseract::Tesseract::ConstPtr tesseract,
                                                                                     tesseract_environment::EnvState::ConstPtr env_state,
                                                                                     std::string manipulator)
-  : manipulator(manipulator)
+  : manipulator(std::move(manipulator))
 {
   this->prob.tesseract = tesseract;
   this->prob.env_state = env_state;
@@ -68,7 +68,7 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
       throw std::runtime_error("Descartes planner does not support child composite instructions.");
 
     if (start_instruction == nullptr && instruction.isPlan())
-      start_instruction = instruction.cast_const<PlanInstruction>();
+      start_instruction = instruction.template cast_const<PlanInstruction>();
   }
 
   // Transform plan instructions into descartes samplers
@@ -83,13 +83,13 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
       plan_instruction_indices_.push_back(i);
 
       assert(instruction.getType() == static_cast<int>(InstructionType::PLAN_INSTRUCTION));
-      const auto* plan_instruction = instruction.cast_const<PlanInstruction>();
-//        const Waypoint& wp = plan_instruction->getWaypoint();
-      const std::string& working_frame = plan_instruction->getWorkingFrame();
-//        const Eigen::Isometry3d& tcp = plan_instruction->getTCP();
+      const auto* plan_instruction = instruction.template cast_const<PlanInstruction>();
+//      const Waypoint& wp = plan_instruction->getWaypoint();
+//      const std::string& working_frame = plan_instruction->getWorkingFrame();
+//      const Eigen::Isometry3d& tcp = plan_instruction->getTCP();
 
       assert(seed[i].isComposite());
-      const auto* seed_composite = seed[i].cast_const<tesseract_planning::CompositeInstruction>();
+      const auto* seed_composite = seed[i].template cast_const<tesseract_planning::CompositeInstruction>();
 
       // Get Plan Profile
       std::string profile = plan_instruction->getProfile();
@@ -107,7 +107,7 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
       {
         if (isCartesianWaypoint(plan_instruction->getWaypoint().getType()))
         {
-          const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
+          const auto* cur_wp = plan_instruction->getWaypoint().template cast_const<tesseract_planning::CartesianWaypoint>();
           if (prev_plan_instruction)
           {
             assert(prev_plan_instruction->getTCP().isApprox(plan_instruction->getTCP(), 1e-5));
@@ -151,7 +151,7 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
         }
         else if (isJointWaypoint(plan_instruction->getWaypoint().getType()))
         {
-          const auto* cur_wp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
+          const auto* cur_wp = plan_instruction->getWaypoint().template cast_const<JointWaypoint>();
           Eigen::Isometry3d cur_pose = Eigen::Isometry3d::Identity();
           if (!this->prob.manip_fwd_kin->calcFwdKin(cur_pose, *cur_wp))
             throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
@@ -209,7 +209,7 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
         /** @todo This should also handle if waypoint type is cartesian */
         if (isJointWaypoint(plan_instruction->getWaypoint().getType()))
         {
-          const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>();
+          const auto* cur_wp = plan_instruction->getWaypoint().template cast_const<tesseract_planning::JointWaypoint>();
           if (!prev_plan_instruction)
           {
             assert(seed_composite->size()==1);
@@ -227,7 +227,7 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
         }
         else if (isCartesianWaypoint(plan_instruction->getWaypoint().getType()))
         {
-          const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
+          const auto* cur_wp = plan_instruction->getWaypoint().template cast_const<tesseract_planning::CartesianWaypoint>();
           if (!prev_plan_instruction)
           {
             assert(seed_composite->size()==1);
