@@ -1,4 +1,5 @@
 #include <tesseract_command_language/plan_instruction.h>
+#include <iostream>
 
 namespace tesseract_planning
 {
@@ -31,7 +32,11 @@ bool PlanInstruction::isPlan() const { return true; }
 
 bool PlanInstruction::isMove() const { return false; }
 
-void PlanInstruction::print() const {}
+void PlanInstruction::print(std::string prefix) const
+{
+  std::cout << prefix + "Plan Instruction, Move Type: " << getType() << "  Waypoint Type:" << getWaypoint().getType()
+            << "  Description: " << getDescription() << std::endl;
+}
 
 bool PlanInstruction::isLinear() const { return (plan_type_ == PlanInstructionType::LINEAR); }
 
