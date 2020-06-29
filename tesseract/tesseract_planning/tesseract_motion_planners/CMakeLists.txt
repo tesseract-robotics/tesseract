@@ -77,6 +77,9 @@ target_include_directories(${PROJECT_NAME}_ompl PUBLIC
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_ompl SYSTEM PUBLIC
     ${OMPL_INCLUDE_DIRS})
+if(OMPL_VERSION VERSION_LESS "1.4.0")
+    target_compile_definitions(${PROJECT_NAME}_ompl PUBLIC OMPL_LESS_1_4_0=ON)
+endif()
 
 # Descartes Planner
 add_library(${PROJECT_NAME}_descartes SHARED
@@ -108,8 +111,8 @@ install(DIRECTORY include/${PROJECT_NAME}
   PATTERN ".svn" EXCLUDE
 )
 
-#if (TESSERACT_ENABLE_TESTING)
-#  enable_testing()
-#  tesseract_add_run_tests_target()
+if (TESSERACT_ENABLE_TESTING)
+  enable_testing()
+  tesseract_add_run_tests_target()
   add_subdirectory(test)
-#endif()
+endif()

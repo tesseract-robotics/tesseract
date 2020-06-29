@@ -45,6 +45,9 @@ public:
   using Ptr = std::shared_ptr<OMPLDefaultPlanProfile>;
   using ConstPtr = std::shared_ptr<const OMPLDefaultPlanProfile>;
 
+  /** @brief The OMPL state space to use when planning */
+  OMPLProblemStateSpace state_space {OMPLProblemStateSpace::REAL_STATE_SPACE};
+
   /** @brief Max planning time allowed in seconds */
   double planning_time = 5.0;
 
