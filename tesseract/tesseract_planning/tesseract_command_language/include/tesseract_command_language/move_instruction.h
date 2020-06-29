@@ -27,7 +27,7 @@ public:
   void setWaypoint(Waypoint waypoint);
   const Waypoint& getWaypoint() const;
 
-  void setTCP(Eigen::Isometry3d tcp);
+  void setTCP(const Eigen::Isometry3d &tcp);
   const Eigen::Isometry3d& getTCP() const;
 
   void setWorkingFrame(std::string working_frame);
@@ -36,16 +36,16 @@ public:
   void setProfile(const std::string& profile);
   const std::string& getProfile() const;
 
-  void setPosition(Eigen::VectorXd position);
+  void setPosition(const Eigen::VectorXd &position);
   const Eigen::VectorXd& getPosition() const;
 
-  void setVelocity(Eigen::VectorXd velocity);
+  void setVelocity(const Eigen::VectorXd& velocity);
   const Eigen::VectorXd& getVelocity() const;
 
-  void setAcceleration(Eigen::VectorXd acceleration);
+  void setAcceleration(const Eigen::VectorXd& acceleration);
   const Eigen::VectorXd& getAcceleration() const;
 
-  void setEffort(Eigen::VectorXd effort);
+  void setEffort(const Eigen::VectorXd& effort);
   const Eigen::VectorXd& getEffort() const;
 
   void setTime(double time);

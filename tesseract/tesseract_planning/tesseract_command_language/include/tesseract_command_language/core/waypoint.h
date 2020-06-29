@@ -49,9 +49,9 @@ struct WaypointInner final : WaypointInnerBase
     return std::make_unique<WaypointInner>(waypoint_);
   }
 
-  int getType() const { return waypoint_.getType(); }
+  int getType() const final { return waypoint_.getType(); }
 
-  void* recover() { return &waypoint_; }
+  void* recover() final { return &waypoint_; }
 
   T waypoint_;
 };

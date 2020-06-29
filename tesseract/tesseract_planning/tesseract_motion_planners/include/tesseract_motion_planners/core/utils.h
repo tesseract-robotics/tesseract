@@ -129,7 +129,7 @@ inline std::vector<Waypoint> interpolate(const Waypoint& start, const Waypoint& 
       std::vector<Waypoint> result;
       result.reserve(eigen_poses.size());
       for (auto& eigen_pose : eigen_poses)
-        result.push_back(CartesianWaypoint(eigen_pose));
+        result.emplace_back(CartesianWaypoint(eigen_pose));
 
       return result;
     }
@@ -140,9 +140,9 @@ inline std::vector<Waypoint> interpolate(const Waypoint& start, const Waypoint& 
       Eigen::MatrixXd joint_poses = interpolate(*w1, *w2, steps);
 
       std::vector<Waypoint> result;
-      result.reserve(joint_poses.cols());
+      result.reserve(static_cast<std::size_t>(joint_poses.cols()));
       for ( int i = 0; i < joint_poses.cols(); ++i)
-        result.push_back(JointWaypoint(joint_poses.col(i)));
+        result.emplace_back(JointWaypoint(joint_poses.col(i)));
 
       return result;
     }
@@ -155,7 +155,7 @@ inline std::vector<Waypoint> interpolate(const Waypoint& start, const Waypoint& 
 }
 
 inline CompositeInstruction generateSeed(const CompositeInstruction& instructions,
-                                         const tesseract_environment::EnvState::ConstPtr current_state,
+                                         const tesseract_environment::EnvState::ConstPtr& current_state,
                                          const tesseract_kinematics::ForwardKinematics::Ptr& fwd_kin,
                                          const tesseract_kinematics::InverseKinematics::Ptr& /*inv_kin*/,
                                          double /*longest_freespace_segment*/ = 0.01,
