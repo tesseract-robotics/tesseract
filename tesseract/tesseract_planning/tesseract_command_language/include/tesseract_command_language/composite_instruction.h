@@ -40,7 +40,7 @@ public:
 
   bool isMove() const;
 
-  void print() const;
+  void print(std::string prefix = "") const;
 
   CompositeInstruction flatten() const;
 

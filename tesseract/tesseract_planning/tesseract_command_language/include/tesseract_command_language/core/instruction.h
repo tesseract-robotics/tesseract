@@ -28,7 +28,7 @@ struct InstructionInnerBase
 
   virtual bool isMove() const = 0;
 
-  virtual void print() const = 0;
+  virtual void print(std::string prefix) const = 0;
 
   // This is not required for user defined implementation
   virtual void* recover() = 0;
@@ -70,7 +70,7 @@ struct InstructionInner final : InstructionInnerBase
 
   bool isMove() const final { return instruction_.isMove(); }
 
-  void print() const final { instruction_.print(); }
+  void print(std::string prefix) const final { instruction_.print(prefix); }
 
   T instruction_;
 };
@@ -138,7 +138,7 @@ public:
 
   bool isMove() const { return instruction_->isMove(); }
 
-  void print() const { instruction_->print(); }
+  void print(std::string prefix = "") const { instruction_->print(std::move(prefix)); }
 
   template <typename T>
   T* cast()
