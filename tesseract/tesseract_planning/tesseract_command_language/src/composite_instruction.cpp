@@ -1,5 +1,6 @@
 #include <tesseract_command_language/composite_instruction.h>
 #include <stdexcept>
+#include <iostream>
 
 namespace tesseract_planning
 {
@@ -28,7 +29,14 @@ bool CompositeInstruction::isPlan() const { return false; }
 
 bool CompositeInstruction::isMove() const { return false; }
 
-void CompositeInstruction::print() const {}
+void CompositeInstruction::print(std::string prefix) const
+{
+  std::cout << prefix + "Composite Instruction, Description: " << getDescription() << std::endl;
+  std::cout << prefix + "{" << std::endl;
+  for (const auto& i : *this)
+    i.print(prefix + "  ");
+  std::cout << prefix + "}" << std::endl;
+}
 
 CompositeInstruction CompositeInstruction::flatten() const
 {
