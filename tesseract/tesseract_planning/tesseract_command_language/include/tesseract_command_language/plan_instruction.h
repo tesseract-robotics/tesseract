@@ -47,7 +47,7 @@ public:
 
   bool isMove() const;
 
-  void print() const;
+  void print(std::string prefix = "") const;
 
   bool isLinear() const;
 
