@@ -345,13 +345,13 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
+  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin, 2, 2);
 
   // Create Profiles
   auto plan_profile = std::make_shared<DescartesDefaultPlanProfileD>();
   // Make this a tool z-axis free sampler
   plan_profile->target_pose_sampler = [](const Eigen::Isometry3d& tool_pose) {
-    return tesseract_planning::sampleToolAxis(tool_pose, M_PI_4, Eigen::Vector3d(0, 0, 1));
+    return tesseract_planning::sampleToolAxis(tool_pose, 60 * M_PI * 180.0, Eigen::Vector3d(0, 0, 1));
   };
   plan_profile->enable_edge_collision = true;  // Add collision edge evaluator
 
@@ -366,9 +366,9 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   // Create Planner
   DescartesMotionPlannerD single_descartes_planner;
   single_descartes_planner.setConfiguration(config);
-  EXPECT_EQ(config->prob.samplers.size(), 11);
-  EXPECT_EQ(config->prob.timing_constraints.size(), 11);
-  EXPECT_EQ(config->prob.edge_evaluators.size(), 10);
+  EXPECT_EQ(config->prob.samplers.size(), 3);
+  EXPECT_EQ(config->prob.timing_constraints.size(), 3);
+  EXPECT_EQ(config->prob.edge_evaluators.size(), 2);
 
   PlannerResponse single_planner_response;
   auto single_status = single_descartes_planner.solve(single_planner_response);
