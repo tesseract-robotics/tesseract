@@ -156,8 +156,8 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
                                          const tesseract_environment::EnvState::ConstPtr& current_state,
                                          const tesseract_kinematics::ForwardKinematics::Ptr& fwd_kin,
                                          const tesseract_kinematics::InverseKinematics::Ptr& /*inv_kin*/,
-                                         double /*longest_freespace_segment*/ = 0.01,
-                                         double /*longest_cartesian_segment*/ = 0.01)
+                                         int freespace_segments,
+                                         int cartesian_segments)
 {
   CompositeInstruction seed;
   const PlanInstruction* prev_plan_instruction{ nullptr };
@@ -189,7 +189,7 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
             const auto* pre_cwp = prev_plan_instruction->getWaypoint().cast_const<CartesianWaypoint>();
             const auto* cur_cwp = plan_instruction->getWaypoint().cast_const<CartesianWaypoint>();
 
-            tesseract_common::VectorIsometry3d poses = interpolate(*pre_cwp, *cur_cwp, 10);
+            tesseract_common::VectorIsometry3d poses = interpolate(*pre_cwp, *cur_cwp, cartesian_segments);
             for (std::size_t p = 1; p < poses.size(); ++p)
             {
               tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]),
@@ -213,7 +213,7 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
               throw std::runtime_error("tesseract_planning::generateSeed: failed to find forward kinematics solution!");
 
             p2 = world_to_base * p2 * plan_instruction->getTCP();
-            tesseract_common::VectorIsometry3d poses = interpolate(*pre_cwp, p2, 10);
+            tesseract_common::VectorIsometry3d poses = interpolate(*pre_cwp, p2, cartesian_segments);
             for (std::size_t p = 1; p < poses.size(); ++p)
             {
               tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]),
@@ -237,7 +237,7 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
               throw std::runtime_error("tesseract_planning::generateSeed: failed to find forward kinematics solution!");
 
             p1 = world_to_base * p1 * prev_plan_instruction->getTCP();
-            tesseract_common::VectorIsometry3d poses = interpolate(p1, *cur_cwp, 10);
+            tesseract_common::VectorIsometry3d poses = interpolate(p1, *cur_cwp, cartesian_segments);
             for (std::size_t p = 1; p < poses.size(); ++p)
             {
               tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]),
@@ -267,8 +267,8 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
               throw std::runtime_error("tesseract_planning::generateSeed: failed to find forward kinematics solution!");
 
             p2 = world_to_base * p2 * plan_instruction->getTCP();
-            tesseract_common::VectorIsometry3d poses = interpolate(p1, p2, 10);
-            Eigen::MatrixXd joint_poses = interpolate(*pre_jwp, *cur_jwp, 10);
+            tesseract_common::VectorIsometry3d poses = interpolate(p1, p2, cartesian_segments);
+            Eigen::MatrixXd joint_poses = interpolate(*pre_jwp, *cur_jwp, cartesian_segments);
             for (std::size_t p = 1; p < poses.size(); ++p)
             {
               tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]),
@@ -325,7 +325,7 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
             const auto* pre_cwp = prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>();
             const auto* cur_cwp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
 
-            Eigen::MatrixXd states = interpolate(*pre_cwp, *cur_cwp, 10);
+            Eigen::MatrixXd states = interpolate(*pre_cwp, *cur_cwp, freespace_segments);
             for (long i = 1; i < states.cols(); ++i)
             {
               tesseract_planning::MoveInstruction move_instruction(JointWaypoint(states.col(i)),
@@ -341,7 +341,7 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
           {
             const auto* cur_jwp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
 
-            for (long i = 1; i < 10; ++i)
+            for (long i = 1; i < freespace_segments; ++i)
             {
               tesseract_planning::MoveInstruction move_instruction(*cur_jwp, MoveInstructionType::FREESPACE);
               move_instruction.setPosition(*cur_jwp);
@@ -355,7 +355,7 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
           {
             const auto* pre_jwp = prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>();
 
-            for (long i = 1; i < 10; ++i)
+            for (long i = 1; i < freespace_segments; ++i)
             {
               tesseract_planning::MoveInstruction move_instruction(*pre_jwp, MoveInstructionType::FREESPACE);
               move_instruction.setPosition(*pre_jwp);
@@ -367,7 +367,7 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
           }
           else if (is_cwp1 && is_cwp2)
           {
-            for (long i = 1; i < 10; ++i)
+            for (long i = 1; i < freespace_segments; ++i)
             {
               tesseract_planning::MoveInstruction move_instruction(JointWaypoint(current_jv),
                                                                    MoveInstructionType::FREESPACE);
@@ -417,6 +417,15 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
   }
   return seed;
 }
+
+inline CompositeInstruction generateSeed(const CompositeInstruction& instructions,
+                                         const tesseract_environment::EnvState::ConstPtr& current_state,
+                                         const tesseract_kinematics::ForwardKinematics::Ptr& fwd_kin,
+                                         const tesseract_kinematics::InverseKinematics::Ptr& inv_kin)
+{
+  return generateSeed(instructions, current_state, fwd_kin, inv_kin, 10, 10);
+}
+
 }  // namespace tesseract_planning
 
 #endif  // TESSERACT_PLANNING_UTILS_H
