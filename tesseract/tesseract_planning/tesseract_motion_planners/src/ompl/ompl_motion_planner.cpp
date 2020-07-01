@@ -28,6 +28,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 #include <ompl/base/goals/GoalState.h>
+#include <ompl/base/goals/GoalStates.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/utils.h>
@@ -38,6 +39,44 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
+bool checkStartState(const ompl::base::ProblemDefinitionPtr& prob_def,
+                     const Eigen::Ref<const Eigen::VectorXd>& state,
+                     const OMPLStateExtractor& extractor)
+{
+  if (!(prob_def->getStartStateCount() >= 1))
+    return false;
+
+  for (unsigned i = 0; i < prob_def->getStartStateCount(); ++i)
+    if (extractor(prob_def->getStartState(i)).isApprox(state, 1e-5))
+      return true;
+
+  return false;
+}
+
+bool checkGoalState(const ompl::base::ProblemDefinitionPtr& prob_def,
+                    const Eigen::Ref<const Eigen::VectorXd>& state,
+                    const OMPLStateExtractor& extractor)
+{
+  ompl::base::GoalPtr goal = prob_def->getGoal();
+  if (goal->getType() == ompl::base::GoalType::GOAL_STATE)
+  {
+    return extractor(prob_def->getGoal()->as<ompl::base::GoalState>()->getState()).isApprox(state, 1e-5);
+  }
+  else if (goal->getType() == ompl::base::GoalType::GOAL_STATES)
+  {
+    auto goal_states = prob_def->getGoal()->as<ompl::base::GoalStates>();
+    for (unsigned i = 0; i < goal_states->getStateCount(); ++i)
+      if (extractor(goal_states->getState(i)).isApprox(state, 1e-5))
+        return true;
+  }
+  else
+  {
+    CONSOLE_BRIDGE_logWarn("checkGoalStates: Unsupported Goal Type!");
+    return true;
+  }
+  return false;
+}
+
 /** @brief Construct a basic planner */
 OMPLMotionPlanner::OMPLMotionPlanner(std::string name)
   : MotionPlanner(std::move(name))
@@ -159,13 +198,8 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
 
     tesseract_common::TrajArray traj = p->getTrajectory();
 
-    assert(p->simple_setup->getProblemDefinition()->getStartStateCount() == 1);
-    assert(p->extractor(p->simple_setup->getProblemDefinition()->getStartState(0))
-               .transpose()
-               .isApprox(traj.row(0), 1e-5));
-    assert(p->extractor(p->simple_setup->getProblemDefinition()->getGoal()->as<ompl::base::GoalState>()->getState())
-               .transpose()
-               .isApprox(traj.bottomRows(1), 1e-5));
+    assert(checkStartState(p->simple_setup->getProblemDefinition(),traj.row(0), p->extractor));
+    assert(checkGoalState(p->simple_setup->getProblemDefinition(),traj.bottomRows(1).transpose(), p->extractor));
 
     //  // Check and report collisions
     //  continuous_contact_manager_->setContactDistanceThreshold(0.0);

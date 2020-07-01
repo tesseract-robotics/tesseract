@@ -341,7 +341,7 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
           {
             const auto* cur_jwp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
 
-            for (long i = 1; i < freespace_segments; ++i)
+            for (long i = 1; i < freespace_segments + 1; ++i)
             {
               tesseract_planning::MoveInstruction move_instruction(*cur_jwp, MoveInstructionType::FREESPACE);
               move_instruction.setPosition(*cur_jwp);
@@ -355,7 +355,7 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
           {
             const auto* pre_jwp = prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>();
 
-            for (long i = 1; i < freespace_segments; ++i)
+            for (long i = 1; i < freespace_segments + 1; ++i)
             {
               tesseract_planning::MoveInstruction move_instruction(*pre_jwp, MoveInstructionType::FREESPACE);
               move_instruction.setPosition(*pre_jwp);
@@ -367,7 +367,7 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
           }
           else if (is_cwp1 && is_cwp2)
           {
-            for (long i = 1; i < freespace_segments; ++i)
+            for (long i = 1; i < freespace_segments + 1; ++i)
             {
               tesseract_planning::MoveInstruction move_instruction(JointWaypoint(current_jv),
                                                                    MoveInstructionType::FREESPACE);
