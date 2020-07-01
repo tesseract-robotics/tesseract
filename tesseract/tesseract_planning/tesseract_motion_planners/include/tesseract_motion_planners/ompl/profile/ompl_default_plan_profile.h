@@ -123,17 +123,31 @@ public:
    * ContinuousMotionValidator */
   MotionValidatorAllocator mv_allocator;
 
-  void apply(OMPLProblem& prob,
-             const Eigen::Isometry3d& cartesian_waypoint,
-             const PlanInstruction& parent_instruction,
-             const std::vector<std::string>& active_links,
-             int index) override;
+  void setup(OMPLProblem& prob) override;
 
-  void apply(OMPLProblem& prob,
-             const Eigen::VectorXd& joint_waypoint,
-             const PlanInstruction& parent_instruction,
-             const std::vector<std::string>& active_links,
-             int index) override;
+  void applyGoalStates(OMPLProblem& prob,
+                       const Eigen::Isometry3d& cartesian_waypoint,
+                       const PlanInstruction& parent_instruction,
+                       const std::vector<std::string>& active_links,
+                       int index) override;
+
+  void applyGoalStates(OMPLProblem& prob,
+                       const Eigen::VectorXd& joint_waypoint,
+                       const PlanInstruction& parent_instruction,
+                       const std::vector<std::string>& active_links,
+                       int index) override;
+
+  void applyStartStates(OMPLProblem& prob,
+                        const Eigen::Isometry3d& cartesian_waypoint,
+                        const PlanInstruction& parent_instruction,
+                        const std::vector<std::string>& active_links,
+                        int index) override;
+
+  void applyStartStates(OMPLProblem& prob,
+                        const Eigen::VectorXd& joint_waypoint,
+                        const PlanInstruction& parent_instruction,
+                        const std::vector<std::string>& active_links,
+                        int index) override;
 
   /**
    * @brief Default State sampler which uses the weights information to scale the sampled state. This is use full
