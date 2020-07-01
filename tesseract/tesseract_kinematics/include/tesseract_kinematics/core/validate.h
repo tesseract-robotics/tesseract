@@ -53,10 +53,9 @@ namespace tesseract_kinematics
  * @return True it they match, otherwise false.
  */
 inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::ConstPtr& fwd_kin,
-                            const tesseract_kinematics::InverseKinematics::ConstPtr& inv_kin)
+                            const tesseract_kinematics::InverseKinematics::ConstPtr& inv_kin,
+                            double tol = 1e-3)
 {
-  double tol = 1e-5;
-
   // Check name
   if (fwd_kin->getName() != inv_kin->getName())
     return false;
@@ -130,10 +129,9 @@ inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::Const
  * @return True it they match, otherwise false.
  */
 inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::ConstPtr& fwd_kin1,
-                            const tesseract_kinematics::ForwardKinematics::ConstPtr& fwd_kin2)
+                            const tesseract_kinematics::ForwardKinematics::ConstPtr& fwd_kin2,
+                            double tol = 1e-5)
 {
-  double tol = 1e-5;
-
   // Check name
   if (fwd_kin1->getName() != fwd_kin2->getName())
     return false;
