@@ -40,17 +40,31 @@ public:
   using Ptr = std::shared_ptr<OMPLPlanProfile>;
   using ConstPtr = std::shared_ptr<const OMPLPlanProfile>;
 
-  virtual void apply(OMPLProblem& prob,
-                     const Eigen::Isometry3d& cartesian_waypoint,
-                     const PlanInstruction& parent_instruction,
-                     const std::vector<std::string>& active_links,
-                     int index) = 0;
+  virtual void setup(OMPLProblem& prob) = 0;
 
-  virtual void apply(OMPLProblem& prob,
-                     const Eigen::VectorXd& joint_waypoint,
-                     const PlanInstruction& parent_instruction,
-                     const std::vector<std::string>& active_links,
-                     int index) = 0;
+  virtual void applyGoalStates(OMPLProblem& prob,
+                               const Eigen::Isometry3d& cartesian_waypoint,
+                               const PlanInstruction& parent_instruction,
+                               const std::vector<std::string>& active_links,
+                               int index) = 0;
+
+  virtual void applyGoalStates(OMPLProblem& prob,
+                               const Eigen::VectorXd& joint_waypoint,
+                               const PlanInstruction& parent_instruction,
+                               const std::vector<std::string>& active_links,
+                               int index) = 0;
+
+  virtual void applyStartStates(OMPLProblem& prob,
+                               const Eigen::Isometry3d& cartesian_waypoint,
+                               const PlanInstruction& parent_instruction,
+                               const std::vector<std::string>& active_links,
+                               int index) = 0;
+
+  virtual void applyStartStates(OMPLProblem& prob,
+                               const Eigen::VectorXd& joint_waypoint,
+                               const PlanInstruction& parent_instruction,
+                               const std::vector<std::string>& active_links,
+                               int index) = 0;
 };
 
 /** @todo Currently OMPL does not have support of composite profile everything is handled by the plan profile */

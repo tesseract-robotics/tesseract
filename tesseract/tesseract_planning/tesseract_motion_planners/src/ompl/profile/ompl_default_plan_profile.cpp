@@ -4,6 +4,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/spaces/RealVectorStateSpace.h>
 #include <ompl/tools/multiplan/ParallelPlan.h>
 #include <ompl/base/objectives/PathLengthOptimizationObjective.h>
+#include <ompl/base/goals/GoalStates.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/profile/ompl_default_plan_profile.h>
@@ -17,20 +18,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-void OMPLDefaultPlanProfile::apply(OMPLProblem& /*prob*/,
-                                   const Eigen::Isometry3d& /*cartesian_waypoint*/,
-                                   const PlanInstruction& /*parent_instruction*/,
-                                   const std::vector<std::string>& /*active_links*/,
-                                   int /*index*/)
-{
-  assert(false);
-}
-
-void OMPLDefaultPlanProfile::apply(OMPLProblem& prob,
-                                   const Eigen::VectorXd& joint_waypoint,
-                                   const PlanInstruction& /*parent_instruction*/,
-                                   const std::vector<std::string>& /*active_links*/,
-                                   int /*index*/)
+void OMPLDefaultPlanProfile::setup(OMPLProblem& prob)
 {
   prob.planners = planners;
   prob.max_solutions = max_solutions;
@@ -85,6 +73,65 @@ void OMPLDefaultPlanProfile::apply(OMPLProblem& prob,
     // Create Simple Setup from state space
     prob.simple_setup = std::make_shared<ompl::geometric::SimpleSetup>(state_space_ptr);
 
+    // Setup state checking functionality
+    ompl::base::StateValidityCheckerPtr svc_without_collision = processStateValidator(prob, env, prob.manip_fwd_kin);
+
+    // Setup motion validation (i.e. collision checking)
+    processMotionValidator(svc_without_collision, prob, env, prob.manip_fwd_kin);
+
+    // make sure the planners run until the time limit, and get the best possible solution
+    processOptimizationObjective(prob);
+  }
+}
+
+void OMPLDefaultPlanProfile::applyGoalStates(OMPLProblem& prob,
+                                             const Eigen::Isometry3d& cartesian_waypoint,
+                                             const PlanInstruction& /*parent_instruction*/,
+                                             const std::vector<std::string>& /*active_links*/,
+                                             int /*index*/)
+{
+  const auto dof = prob.manip_fwd_kin->numJoints();
+
+  if (prob.state_space == OMPLProblemStateSpace::REAL_STATE_SPACE)
+  {
+    /** @todo Need to add descartes pose sample to ompl profile */
+    Eigen::VectorXd joint_solutions;
+    prob.manip_inv_kin->calcInvKin(joint_solutions, cartesian_waypoint,Eigen::VectorXd::Zero(dof));
+    long num_solutions = joint_solutions.size() / dof;
+    auto goal_states = std::make_shared<ompl::base::GoalStates>(prob.simple_setup->getSpaceInformation());
+    for (long i = 0; i < num_solutions; ++i)
+    {
+      auto solution = joint_solutions.middleRows(i * dof, dof);
+      // Get descrete contact manager for testing provided start and end position
+      // This is required because collision checking happens in motion validators now
+      // instead of the isValid function to avoid unnecessary collision checks.
+      if (!checkStateInCollision(prob, solution))
+      {
+        ompl::base::ScopedState<> goal_state(prob.simple_setup->getStateSpace());
+        for (unsigned i = 0; i < dof; ++i)
+          goal_state[i] = solution(i);
+
+        goal_states->addState(goal_state);
+      }
+    }
+
+    if (!goal_states->hasStates())
+      throw std::runtime_error("In OMPLPlannerFreespaceConfig: All goal states are in collision");
+
+    prob.simple_setup->setGoal(goal_states);
+  }
+}
+
+void OMPLDefaultPlanProfile::applyGoalStates(OMPLProblem& prob,
+                                             const Eigen::VectorXd& joint_waypoint,
+                                             const PlanInstruction& /*parent_instruction*/,
+                                             const std::vector<std::string>& /*active_links*/,
+                                             int /*index*/)
+{
+  const auto dof = prob.manip_fwd_kin->numJoints();
+
+  if (prob.state_space == OMPLProblemStateSpace::REAL_STATE_SPACE)
+  {
     // Get descrete contact manager for testing provided start and end position
     // This is required because collision checking happens in motion validators now
     // instead of the isValid function to avoid unnecessary collision checks.
@@ -98,15 +145,80 @@ void OMPLDefaultPlanProfile::apply(OMPLProblem& prob,
       goal_state[i] = joint_waypoint[i];
 
     prob.simple_setup->setGoalState(goal_state);
+  }
+}
 
-    // Setup state checking functionality
-    ompl::base::StateValidityCheckerPtr svc_without_collision = processStateValidator(prob, env, prob.manip_fwd_kin);
+void OMPLDefaultPlanProfile::applyStartStates(OMPLProblem& prob,
+                                              const Eigen::Isometry3d& cartesian_waypoint,
+                                              const PlanInstruction& parent_instruction,
+                                              const std::vector<std::string>& /*active_links*/,
+                                              int /*index*/)
+{
+  const auto dof = prob.manip_fwd_kin->numJoints();
 
-    // Setup motion validation (i.e. collision checking)
-    processMotionValidator(svc_without_collision, prob, env, prob.manip_fwd_kin);
+  // Check if the waypoint is not relative to the manipulator base coordinate system and at tool0
+  Eigen::Isometry3d world_to_waypoint = cartesian_waypoint;
+  if (!parent_instruction.getWorkingFrame().empty())
+    world_to_waypoint = prob.env_state->link_transforms.at(parent_instruction.getWorkingFrame()) * cartesian_waypoint;
 
-    // make sure the planners run until the time limit, and get the best possible solution
-    processOptimizationObjective(prob);
+  Eigen::Isometry3d world_to_base_link = prob.env_state->link_transforms.at(prob.manip_inv_kin->getBaseLinkName());
+  Eigen::Isometry3d manip_baselink_to_waypoint = world_to_base_link.inverse() * world_to_waypoint;
+  Eigen::Isometry3d manip_baselink_to_tool0 = manip_baselink_to_waypoint * parent_instruction.getTCP().inverse();
+
+  if (prob.state_space == OMPLProblemStateSpace::REAL_STATE_SPACE)
+  {
+    /** @todo Need to add descartes pose sampler to ompl profile */
+    Eigen::VectorXd joint_solutions;
+
+    /** @todo Need to also provide the seed instruction to use here */
+    prob.manip_inv_kin->calcInvKin(joint_solutions, manip_baselink_to_tool0, Eigen::VectorXd::Zero(dof));
+    long num_solutions = joint_solutions.size() / dof;
+    bool found_start_state = false;
+    for (long i = 0; i < num_solutions; ++i)
+    {
+      auto solution = joint_solutions.middleRows(i * dof, dof);
+      // Get descrete contact manager for testing provided start and end position
+      // This is required because collision checking happens in motion validators now
+      // instead of the isValid function to avoid unnecessary collision checks.
+      if (!checkStateInCollision(prob, solution))
+      {
+        found_start_state = true;
+        ompl::base::ScopedState<> start_state(prob.simple_setup->getStateSpace());
+        for (unsigned i = 0; i < dof; ++i)
+          start_state[i] = solution(i);
+
+        prob.simple_setup->addStartState(start_state);
+      }
+    }
+
+    if (!found_start_state)
+      throw std::runtime_error("In OMPLPlannerFreespaceConfig: All start states are in collision");
+  }
+}
+
+void OMPLDefaultPlanProfile::applyStartStates(OMPLProblem& prob,
+                                              const Eigen::VectorXd& joint_waypoint,
+                                              const PlanInstruction& /*parent_instruction*/,
+                                              const std::vector<std::string>& /*active_links*/,
+                                              int /*index*/)
+{
+  const auto dof = prob.manip_fwd_kin->numJoints();
+
+  if (prob.state_space == OMPLProblemStateSpace::REAL_STATE_SPACE)
+  {
+    // Get descrete contact manager for testing provided start and end position
+    // This is required because collision checking happens in motion validators now
+    // instead of the isValid function to avoid unnecessary collision checks.
+    if (checkStateInCollision(prob, joint_waypoint))
+    {
+      CONSOLE_BRIDGE_logError("In OMPLPlannerFreespaceConfig: Start state is in collision");
+    }
+
+    ompl::base::ScopedState<> start_state(prob.simple_setup->getStateSpace());
+    for (unsigned i = 0; i < dof; ++i)
+      start_state[i] = joint_waypoint[i];
+
+    prob.simple_setup->addStartState(start_state);
   }
 }
 
