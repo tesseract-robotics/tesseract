@@ -169,7 +169,6 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
           {
             assert(prev_plan_instruction->getTCP().isApprox(plan_instruction->getTCP(), 1e-5));
 
-            /** @todo This should also handle if waypoint type is joint */
             Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
             if (isCartesianWaypoint(prev_plan_instruction->getWaypoint().getType()))
             {
@@ -216,7 +215,6 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
       }
       else if (plan_instruction->isFreespace())
       {
-        /** @todo This should also handle if waypoint type is cartesian */
         if (isJointWaypoint(plan_instruction->getWaypoint().getType()))
         {
           const auto* cur_wp = plan_instruction->getWaypoint().template cast_const<tesseract_planning::JointWaypoint>();
