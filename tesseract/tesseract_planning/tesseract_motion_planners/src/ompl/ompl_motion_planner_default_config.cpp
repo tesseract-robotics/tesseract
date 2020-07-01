@@ -134,6 +134,7 @@ bool OMPLMotionPlannerDefaultConfig::generate()
 
       if (plan_instruction->isLinear())
       {
+        /** @todo Add support for linear motion to ompl planner */
         if (isCartesianWaypoint(plan_instruction->getWaypoint().getType()))
         {
           //          const auto* cur_wp =
@@ -204,7 +205,6 @@ bool OMPLMotionPlannerDefaultConfig::generate()
           //          {
           //            assert(prev_plan_instruction->getTCP().isApprox(plan_instruction->getTCP(), 1e-5));
 
-          //            /** @todo This should also handle if waypoint type is joint */
           //            Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
           //            if (isCartesianWaypoint(prev_plan_instruction->getWaypoint().getType()))
           //            {
@@ -260,7 +260,6 @@ bool OMPLMotionPlannerDefaultConfig::generate()
       }
       else if (plan_instruction->isFreespace())
       {
-        /** @todo This should also handle if waypoint type is cartesian */
         if (isJointWaypoint(plan_instruction->getWaypoint().getType()))
         {
           const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>();
@@ -272,35 +271,38 @@ bool OMPLMotionPlannerDefaultConfig::generate()
           {
             /** @todo Should check that the joint names match the order of the manipulator */
             OMPLProblem::UPtr sub_prob = createSubProblem();
-            cur_plan_profile->apply(*sub_prob, *cur_wp, *plan_instruction, active_link_names_, index);
+            cur_plan_profile->setup(*sub_prob);
+            cur_plan_profile->applyGoalStates(*sub_prob, *cur_wp, *plan_instruction, active_link_names_, index);
             sub_prob->n_output_states = static_cast<int>(seed_composite->size());
 
-            ompl::base::ScopedState<> start_state(sub_prob->simple_setup->getStateSpace());
-            if (isJointWaypoint(prev_plan_instruction->getWaypoint().getType()))
+            if (index == 0)
             {
-              const auto* prev_wp =
-                  prev_plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>();
-              for (long i = 0; i < prev_wp->size(); ++i)
-                start_state[static_cast<unsigned>(i)] = (*prev_wp)[i];
-
-              sub_prob->simple_setup->setStartState(start_state);
-
-              // Get descrete contact manager for testing provided start and end position
-              // This is required because collision checking happens in motion validators now
-              // instead of the isValid function to avoid unnecessary collision checks.
-              if (checkStateInCollision(*sub_prob, *prev_wp))
+              ompl::base::ScopedState<> start_state(sub_prob->simple_setup->getStateSpace());
+              if (isJointWaypoint(prev_plan_instruction->getWaypoint().getType()))
               {
-                CONSOLE_BRIDGE_logError("In OMPLPlannerFreespaceConfig: Start state is in collision");
+                const auto* prev_wp =
+                    prev_plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>();
+                cur_plan_profile->applyStartStates(*sub_prob, *prev_wp, *plan_instruction, active_link_names_, index);
               }
+              else if (isCartesianWaypoint(prev_plan_instruction->getWaypoint().getType()))
+              {
+                const auto* prev_wp =
+                    prev_plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
+                cur_plan_profile->applyStartStates(*sub_prob, *prev_wp, *plan_instruction, active_link_names_, index);
+              }
+              else
+              {
+                throw std::runtime_error("OMPLMotionPlannerDefaultConfig: unknown waypoint type");
+              }
+
+              prob.push_back(std::move(sub_prob));
+              ++index;
             }
             else
             {
+              /** @todo Update. Extract the solution for the previous plan and set as the start */
               assert(false);
-              //              sub_prob->simple_setup->addStartState(start_state);
             }
-
-            prob.push_back(std::move(sub_prob));
-            ++index;
           }
         }
         else if (isCartesianWaypoint(plan_instruction->getWaypoint().getType()))
@@ -312,33 +314,35 @@ bool OMPLMotionPlannerDefaultConfig::generate()
           }
           else
           {
-            assert(false);
             OMPLProblem::UPtr sub_prob = createSubProblem();
             sub_prob->n_output_states = static_cast<int>(seed_composite->size());
-            cur_plan_profile->apply(*sub_prob, *cur_wp, *plan_instruction, active_link_names_, index);
+            cur_plan_profile->setup(*sub_prob);
+            cur_plan_profile->applyGoalStates(*sub_prob, *cur_wp, *plan_instruction, active_link_names_, index);
 
-            ompl::base::ScopedState<> start_state(sub_prob->simple_setup->getStateSpace());
-            if (isJointWaypoint(prev_plan_instruction->getWaypoint().getType()))
+            if (index == 0)
             {
-              const auto* prev_wp =
-                  prev_plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>();
-              for (long i = 0; i < prev_wp->size(); ++i)
-                start_state[static_cast<unsigned>(i)] = (*prev_wp)[i];
-
-              sub_prob->simple_setup->setStartState(start_state);
-
-              // Get descrete contact manager for testing provided start and end position
-              // This is required because collision checking happens in motion validators now
-              // instead of the isValid function to avoid unnecessary collision checks.
-              if (checkStateInCollision(*sub_prob, *prev_wp))
+              ompl::base::ScopedState<> start_state(sub_prob->simple_setup->getStateSpace());
+              if (isJointWaypoint(prev_plan_instruction->getWaypoint().getType()))
               {
-                CONSOLE_BRIDGE_logError("In OMPLPlannerFreespaceConfig: Start state is in collision");
+                const auto* prev_wp =
+                    prev_plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>();
+                cur_plan_profile->applyStartStates(*sub_prob, *prev_wp, *plan_instruction, active_link_names_, index);
+              }
+              else if (isCartesianWaypoint(prev_plan_instruction->getWaypoint().getType()))
+              {
+                const auto* prev_wp =
+                    prev_plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
+                cur_plan_profile->applyStartStates(*sub_prob, *prev_wp, *plan_instruction, active_link_names_, index);
+              }
+              else
+              {
+                throw std::runtime_error("OMPLMotionPlannerDefaultConfig: unknown waypoint type");
               }
             }
             else
             {
+              /** @todo Update. Extract the solution for the previous plan and set as the start */
               assert(false);
-              //              sub_prob->simple_setup->addStartState(start_state);
             }
 
             prob.push_back(std::move(sub_prob));
