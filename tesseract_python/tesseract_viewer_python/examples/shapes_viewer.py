@@ -102,8 +102,6 @@ viewer.update_environment(t_env, [0,0,0])
 
 viewer.start_serve_background()
 
-viewer.save(".")
-
 if sys.version_info[0] < 3:
     raw_input("press enter")
 else:

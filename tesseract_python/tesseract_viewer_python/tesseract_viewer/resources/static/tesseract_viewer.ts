@@ -16,6 +16,7 @@
 // Date: 12/10/2019
 
 ///<reference path="./node_modules/babylonjs/babylon.module.d.ts" />
+///<reference path="./node_modules/babylonjs-materials/babylonjs.materials.module.d.ts" />
 
 // tsc tesseract_viewer.ts --lib es6,DOM -m es2015 -target es6
 
@@ -135,7 +136,8 @@ class TesseractViewer {
     async enableVR(): Promise<void>
     {
         // Enable VR
-        var ground = BABYLON.Mesh.CreateGround("ground", 6, 6, 2, this._scene);
+        var ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 10, height: 10 }, this._scene);
+        ground.material = new BABYLON.GridMaterial("mat", this._scene);
         const xrHelper = await this._scene.createDefaultXRExperienceAsync({
             // define floor meshes
             floorMeshes: [ground]

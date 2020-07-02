@@ -109,7 +109,8 @@ class TesseractViewer {
     enableVR() {
         return __awaiter(this, void 0, void 0, function* () {
             // Enable VR
-            var ground = BABYLON.Mesh.CreateGround("ground", 6, 6, 2, this._scene);
+            var ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 10, height: 10 }, this._scene);
+            ground.material = new BABYLON.GridMaterial("mat", this._scene);
             const xrHelper = yield this._scene.createDefaultXRExperienceAsync({
                 // define floor meshes
                 floorMeshes: [ground]
