@@ -96,7 +96,7 @@ void OMPLDefaultPlanProfile::applyGoalStates(OMPLProblem& prob,
   {
     /** @todo Need to add descartes pose sample to ompl profile */
     Eigen::VectorXd joint_solutions;
-    prob.manip_inv_kin->calcInvKin(joint_solutions, cartesian_waypoint,Eigen::VectorXd::Zero(dof));
+    prob.manip_inv_kin->calcInvKin(joint_solutions, cartesian_waypoint, Eigen::VectorXd::Zero(dof));
     long num_solutions = joint_solutions.size() / dof;
     auto goal_states = std::make_shared<ompl::base::GoalStates>(prob.simple_setup->getSpaceInformation());
     for (long i = 0; i < num_solutions; ++i)
