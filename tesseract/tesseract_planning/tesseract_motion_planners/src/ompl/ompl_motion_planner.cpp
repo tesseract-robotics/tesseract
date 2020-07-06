@@ -198,8 +198,8 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(PlannerResponse& response,
 
     tesseract_common::TrajArray traj = p->getTrajectory();
 
-    assert(checkStartState(p->simple_setup->getProblemDefinition(),traj.row(0), p->extractor));
-    assert(checkGoalState(p->simple_setup->getProblemDefinition(),traj.bottomRows(1).transpose(), p->extractor));
+    assert(checkStartState(p->simple_setup->getProblemDefinition(), traj.row(0), p->extractor));
+    assert(checkGoalState(p->simple_setup->getProblemDefinition(), traj.bottomRows(1).transpose(), p->extractor));
 
     //  // Check and report collisions
     //  continuous_contact_manager_->setContactDistanceThreshold(0.0);
