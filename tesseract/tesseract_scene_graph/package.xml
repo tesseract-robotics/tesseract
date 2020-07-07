@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package format="2">
+<package format="3">
   <name>tesseract_scene_graph</name>
   <version>0.1.0</version>
   <description>The tesseract_scene_graph package</description>
@@ -14,7 +14,8 @@
   <build_depend>eigen</build_depend>
   <build_export_depend>eigen</build_export_depend>
   <depend>libconsole-bridge-dev</depend>
-  <depend>orocos_kdl</depend>
+  <depend condition="$ROS_DISTRO != noetic">orocos_kdl</depend>
+  <depend condition="$ROS_DISTRO == noetic">liborocos-kdl-dev</depend>
 
   <test_depend>gtest</test_depend>
   <test_depend>tesseract_support</test_depend>
