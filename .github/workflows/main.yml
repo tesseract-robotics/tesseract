@@ -43,7 +43,7 @@ jobs:
              ROS_REPO: main,
              UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#master github:Jmeyer1292/opw_kinematics#master github:ethz-adrl/ifopt#master',
              TARGET_WORKSPACE: '. github:ros-industrial-consortium/trajopt_ros#master',
-             ROSDEP_SKIP_KEYS: "bullet3 fcl ompl orocos_kdl python-numpy ifopt python descartes_opw descartes_samplers descartes_light opw_kinematics",
+             ROSDEP_SKIP_KEYS: "bullet3 fcl ompl ifopt descartes_opw descartes_samplers descartes_light opw_kinematics",
              DOCKER_IMAGE: "lharmstrong/tesseract:noetic",
              CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Bionic-Build/.ccache",
              PARALLEL_TESTS: false,
