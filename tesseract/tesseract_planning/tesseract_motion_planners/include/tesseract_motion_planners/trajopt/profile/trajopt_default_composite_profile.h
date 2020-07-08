@@ -35,11 +35,6 @@ public:
   /** @brief Optimization weight associated with kinematic singularity avoidance */
   double avoid_singularity_coeff = 5.0;
 
-  /**@brief Special link collision cost distances */
-  trajopt::SafetyMarginData::Ptr special_collision_cost{ nullptr };
-  /**@brief Special link collision constraint distances */
-  trajopt::SafetyMarginData::Ptr special_collision_constraint{ nullptr };
-
   /** @brief Set the resolution at which state validity needs to be verified in order for a motion between two states
    * to be considered valid in post checking of trajectory returned by trajopt.
    *
@@ -56,6 +51,11 @@ public:
    *       longest_valid_segment_fraction = longest_valid_segment_length / state_space.getMaximumExtent()
    */
   double longest_valid_segment_length = 0.5;
+
+  /**@brief Special link collision cost distances */
+  trajopt::SafetyMarginData::Ptr special_collision_cost{ nullptr };
+  /**@brief Special link collision constraint distances */
+  trajopt::SafetyMarginData::Ptr special_collision_constraint{ nullptr };
 
   void apply(trajopt::ProblemConstructionInfo& pci,
              int start_index,

@@ -35,10 +35,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/cartesian_waypoint.h>
 
 #include <tesseract_motion_planners/trajopt/trajopt_motion_planner.h>
-#include <tesseract_motion_planners/trajopt/trajopt_planner_universal_config.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 #include <tesseract_motion_planners/core/utils.h>
+#include <tesseract_motion_planners/trajopt/problem_generators/default_problem_generator.h>
 
 const int NUM_STEPS = 7;
 
@@ -121,7 +121,7 @@ bool objectIsType(Base unit)
 }  // namespace tesseract_tests
 
 // This test checks that the boolean flags are adding the correct costs for smoothing and collision
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner0)  // NOLINT
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsJointJoint)  // NOLINT
 {
   auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
   auto inv_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator");
@@ -153,15 +153,19 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner0)  // NOLINT
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
   auto composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
 
-  // Create TrajOpt Config
-  auto config = std::make_shared<TrajOptPlannerUniversalConfig>(tesseract_ptr_, "manipulator");
-  config->instructions = program;
-  config->seed = seed;
-  config->plan_profiles["TEST_PROFILE"] = plan_profile;
-  config->composite_profiles["TEST_PROFILE"] = composite_profile;
-
   // Create Planner
   TrajOptMotionPlanner test_planner;
+  test_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
+  test_planner.composite_profiles["TEST_PROFILE"] = composite_profile;
+
+  // Create Planning Request
+  PlannerRequest request;
+  request.seed = seed;
+  request.instructions = program;
+  request.tesseract = tesseract_ptr_;
+  request.manipulator = "manipulator";
+  request.manipulator_ik_solver = "unused";
+  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   // Loop over all combinations of these 4. 0001, 0010, 0011, ... , 1111
   for (uint8_t byte = 0; byte < 16; byte++)
@@ -176,21 +180,18 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner0)  // NOLINT
     composite_profile->smooth_jerks = t3;
     composite_profile->collision_constraint_config.enabled = t4;
     composite_profile->collision_cost_config.enabled = t4;
-    test_planner.setConfiguration(config);
+    trajopt::TrajOptProb problem =
+        DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
 
-    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointVelEqCost>(config->prob->getCosts())),
-              t1);
-    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointAccEqCost>(config->prob->getCosts())),
-              t2);
-    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointJerkEqCost>(config->prob->getCosts())),
-              t3);
-    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::CollisionCost>(config->prob->getCosts())),
-              t4);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointVelEqCost>(problem.getCosts())), t1);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointAccEqCost>(problem.getCosts())), t2);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointJerkEqCost>(problem.getCosts())), t3);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::CollisionCost>(problem.getCosts())), t4);
   }
 }
 
 // This test tests freespace motion b/n 2 joint waypoints
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner1)  // NOLINT
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointJoint)  // NOLINT
 {
   auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
   auto inv_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator");
@@ -222,35 +223,50 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner1)  // NOLINT
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
   auto composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
 
-  // Create TrajOpt Config
-  auto config = std::make_shared<TrajOptPlannerUniversalConfig>(tesseract_ptr_, "manipulator");
-  config->instructions = program;
-  config->seed = seed;
-  config->plan_profiles["TEST_PROFILE"] = plan_profile;
-  config->composite_profiles["TEST_PROFILE"] = composite_profile;
-
   // Create Planner
   TrajOptMotionPlanner test_planner;
+  test_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
+  test_planner.composite_profiles["TEST_PROFILE"] = composite_profile;
 
-  test_planner.setConfiguration(config);
-  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
-      config->prob->getConstraints())));
-  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
-      config->prob->getConstraints())));
+  // Create Planning Request
+  PlannerRequest request;
+  request.seed = seed;
+  request.instructions = program;
+  request.tesseract = tesseract_ptr_;
+  request.manipulator = "manipulator";
+  request.manipulator_ik_solver = "unused";
+  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
-  plan_profile->term_type = trajopt::TermType::TT_COST;
-  test_planner.setConfiguration(config);
-  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
-  EXPECT_FALSE(
-      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
+  {
+    trajopt::TrajOptProb problem =
+        DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+
+    EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
+        problem.getConstraints())));
+    EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
+        problem.getConstraints())));
+    EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(problem.getCosts())));
+    EXPECT_FALSE(
+        (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(problem.getCosts())));
+  }
+  {
+    plan_profile->term_type = trajopt::TermType::TT_COST;
+    trajopt::TrajOptProb problem =
+        DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+
+    EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
+        problem.getConstraints())));
+    EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
+        problem.getConstraints())));
+    EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(problem.getCosts())));
+    EXPECT_FALSE(
+        (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(problem.getCosts())));
+  }
 }
 
 // This test tests freespace motion b/n 1 joint waypoint and 1 cartesian waypoint
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner2)  // NOLINT
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointCart)  // NOLINT
 {
-  // Create the planner and the responses that will store the results
-  PlannerResponse planning_response;
-
   auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
   auto inv_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator");
   const std::vector<std::string>& joint_names = fwd_kin->getJointNames();
@@ -261,13 +277,12 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner2)  // NOLINT
   wp1 << 0, 0, 0, -1.57, 0, 0, 0;
   wp1.joint_names = joint_names;
 
-  // Specify a Joint Waypoint as the finish
+  // Specify a CartesianWaypoint as the finish
   CartesianWaypoint wp2 =
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
-  plan_f1.setWorkingFrame("base_link");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
@@ -281,31 +296,50 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner2)  // NOLINT
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
   auto composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
 
-  // Create TrajOpt Config
-  auto config = std::make_shared<TrajOptPlannerUniversalConfig>(tesseract_ptr_, "manipulator");
-  config->instructions = program;
-  config->seed = seed;
-  config->plan_profiles["TEST_PROFILE"] = plan_profile;
-  config->composite_profiles["TEST_PROFILE"] = composite_profile;
-
   // Create Planner
   TrajOptMotionPlanner test_planner;
+  test_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
+  test_planner.composite_profiles["TEST_PROFILE"] = composite_profile;
 
-  test_planner.setConfiguration(config);
-  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
-      config->prob->getConstraints())));
-  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
-      config->prob->getConstraints())));
+  // Create Planning Request
+  PlannerRequest request;
+  request.seed = seed;
+  request.instructions = program;
+  request.tesseract = tesseract_ptr_;
+  request.manipulator = "manipulator";
+  request.manipulator_ik_solver = "unused";
+  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
-  plan_profile->term_type = trajopt::TermType::TT_COST;
-  test_planner.setConfiguration(config);
-  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
-  EXPECT_TRUE(
-      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
+  {
+    trajopt::TrajOptProb problem =
+        DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+
+    EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
+        problem.getConstraints())));
+    EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
+        problem.getConstraints())));
+    EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(problem.getCosts())));
+    EXPECT_FALSE(
+        (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(problem.getCosts())));
+  }
+
+  {
+    plan_profile->term_type = trajopt::TermType::TT_COST;
+    trajopt::TrajOptProb problem =
+        DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+
+    EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
+        problem.getConstraints())));
+    EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
+        problem.getConstraints())));
+    EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(problem.getCosts())));
+    EXPECT_TRUE(
+        (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(problem.getCosts())));
+  }
 }
 
 // This test tests freespace motion b/n 1 cartesian waypoint and 1 joint waypoint
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner3)  // NOLINT
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartJoint)  // NOLINT
 {
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
@@ -340,31 +374,50 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner3)  // NOLINT
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
   auto composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
 
-  // Create TrajOpt Config
-  auto config = std::make_shared<TrajOptPlannerUniversalConfig>(tesseract_ptr_, "manipulator");
-  config->instructions = program;
-  config->seed = seed;
-  config->plan_profiles["TEST_PROFILE"] = plan_profile;
-  config->composite_profiles["TEST_PROFILE"] = composite_profile;
-
   // Create Planner
   TrajOptMotionPlanner test_planner;
+  test_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
+  test_planner.composite_profiles["TEST_PROFILE"] = composite_profile;
 
-  test_planner.setConfiguration(config);
-  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
-      config->prob->getConstraints())));
-  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
-      config->prob->getConstraints())));
+  // Create Planning Request
+  PlannerRequest request;
+  request.seed = seed;
+  request.instructions = program;
+  request.tesseract = tesseract_ptr_;
+  request.manipulator = "manipulator";
+  request.manipulator_ik_solver = "unused";
+  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
-  plan_profile->term_type = trajopt::TermType::TT_COST;
-  test_planner.setConfiguration(config);
-  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
-  EXPECT_TRUE(
-      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
+  {
+    trajopt::TrajOptProb problem =
+        DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+
+    EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
+        problem.getConstraints())));
+    EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
+        problem.getConstraints())));
+    EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(problem.getCosts())));
+    EXPECT_FALSE(
+        (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(problem.getCosts())));
+  }
+
+  {
+    plan_profile->term_type = trajopt::TermType::TT_COST;
+    trajopt::TrajOptProb problem =
+        DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+
+    EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
+        problem.getConstraints())));
+    EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
+        problem.getConstraints())));
+    EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(problem.getCosts())));
+    EXPECT_TRUE(
+        (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(problem.getCosts())));
+  }
 }
 
 // This test tests freespace motion b/n 2 cartesian waypoints
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4)  // NOLINT
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartCart)  // NOLINT
 {
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
@@ -373,11 +426,11 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4)  // NOLINT
   auto inv_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator");
   auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
 
-  // Specify a JointWaypoint as the start
+  // Specify a CartesianWaypoint as the start
   CartesianWaypoint wp1 =
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
-  // Specify a Joint Waypoint as the finish
+  // Specify a CartesianWaypoint as the finish
   CartesianWaypoint wp2 =
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
@@ -397,37 +450,50 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4)  // NOLINT
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
   auto composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
 
-  // Create TrajOpt Config
-  auto config = std::make_shared<TrajOptPlannerUniversalConfig>(tesseract_ptr_, "manipulator");
-  config->instructions = program;
-  config->seed = seed;
-  config->plan_profiles["TEST_PROFILE"] = plan_profile;
-  config->composite_profiles["TEST_PROFILE"] = composite_profile;
-
   // Create Planner
   TrajOptMotionPlanner test_planner;
+  test_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
+  test_planner.composite_profiles["TEST_PROFILE"] = composite_profile;
 
-  test_planner.setConfiguration(config);
-  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
-      config->prob->getConstraints())));
-  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
-      config->prob->getConstraints())));
+  // Create Planning Request
+  PlannerRequest request;
+  request.seed = seed;
+  request.instructions = program;
+  request.tesseract = tesseract_ptr_;
+  request.manipulator = "manipulator";
+  request.manipulator_ik_solver = "unused";
+  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
-  plan_profile->term_type = trajopt::TermType::TT_COST;
-  test_planner.setConfiguration(config);
-  EXPECT_FALSE(
-      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
-  EXPECT_TRUE(
-      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
+  {
+    trajopt::TrajOptProb problem =
+        DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+
+    EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
+        problem.getConstraints())));
+    EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
+        problem.getConstraints())));
+    EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(problem.getCosts())));
+    EXPECT_FALSE(
+        (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(problem.getCosts())));
+  }
+  {
+    plan_profile->term_type = trajopt::TermType::TT_COST;
+    trajopt::TrajOptProb problem =
+        DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+
+    EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
+        problem.getConstraints())));
+    EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
+        problem.getConstraints())));
+    EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(problem.getCosts())));
+    EXPECT_TRUE(
+        (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(problem.getCosts())));
+  }
 }
 
-// ---------------------------------------------------
-// ------------ Array Planner ------------------------
-// ---------------------------------------------------
-
-// This test checks that the boolean flags are adding the correct costs for smoothing, collision, and cartesian cnts are
-// added correctly
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0)  // NOLINT
+// This test checks that the boolean flags are adding the correct costs for smoothing, collision, and cartesian cnts
+// are / added correctly
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsCartCart)  // NOLINT
 {
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
@@ -460,15 +526,21 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0)  // NOLINT
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
   auto composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
 
-  // Create TrajOpt Config
-  auto config = std::make_shared<TrajOptPlannerUniversalConfig>(tesseract_ptr_, "manipulator");
-  config->instructions = program;
-  config->seed = seed;
-  config->plan_profiles["TEST_PROFILE"] = plan_profile;
-  config->composite_profiles["TEST_PROFILE"] = composite_profile;
-
   // Create Planner
   TrajOptMotionPlanner test_planner;
+  test_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
+  test_planner.composite_profiles["TEST_PROFILE"] = composite_profile;
+
+  // Create Planning Request
+  PlannerRequest request;
+  request.seed = seed;
+  request.instructions = program;
+  request.tesseract = tesseract_ptr_;
+  request.manipulator = "manipulator";
+  request.manipulator_ik_solver = "unused";
+  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+
+  trajopt::TrajOptProb problem;
 
   // Loop over all combinations of these 4. 0001, 0010, 0011, ... , 1111
   for (uint8_t byte = 0; byte < 16; byte++)
@@ -483,34 +555,32 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0)  // NOLINT
     composite_profile->smooth_jerks = t3;
     composite_profile->collision_constraint_config.enabled = t4;
     composite_profile->collision_cost_config.enabled = t4;
-    test_planner.setConfiguration(config);
-    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointVelEqCost>(config->prob->getCosts())),
-              t1);
-    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointAccEqCost>(config->prob->getCosts())),
-              t2);
-    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointJerkEqCost>(config->prob->getCosts())),
-              t3);
-    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::CollisionCost>(config->prob->getCosts())),
-              t4);
+
+    problem = DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointVelEqCost>(problem.getCosts())), t1);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointAccEqCost>(problem.getCosts())), t2);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointJerkEqCost>(problem.getCosts())), t3);
+    EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::CollisionCost>(problem.getCosts())), t4);
   }
   EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
-      config->prob->getConstraints())));
+      problem.getConstraints())));
   EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
-      config->prob->getConstraints())));
+      problem.getConstraints())));
+  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(problem.getCosts())));
   EXPECT_FALSE(
-      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
-  EXPECT_FALSE(
-      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
+      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(problem.getCosts())));
 }
 
-// This test checks that the terms are being added correctly for cartesian costs
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner1)  // NOLINT
+// This test checks that the terms are being added correctly for joint cnts
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointConstraint)  // NOLINT
 {
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
 
   auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
   auto inv_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator");
+  const std::vector<std::string>& joint_names = fwd_kin->getJointNames();
   auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
 
   // Specify a JointWaypoint as the start
@@ -535,33 +605,36 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner1)  // NOLINT
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
-  plan_profile->term_type = trajopt::TermType::TT_COST;  // Everything associated with profile is now added as a cost
-
   auto composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
-
-  // Create TrajOpt Config
-  auto config = std::make_shared<TrajOptPlannerUniversalConfig>(tesseract_ptr_, "manipulator");
-  config->instructions = program;
-  config->seed = seed;
-  config->plan_profiles["TEST_PROFILE"] = plan_profile;
-  config->composite_profiles["TEST_PROFILE"] = composite_profile;
 
   // Create Planner
   TrajOptMotionPlanner test_planner;
-  test_planner.setConfiguration(config);
+  test_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
+  test_planner.composite_profiles["TEST_PROFILE"] = composite_profile;
 
-  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
-      config->prob->getConstraints())));
+  // Create Planning Request
+  PlannerRequest request;
+  request.seed = seed;
+  request.instructions = program;
+  request.tesseract = tesseract_ptr_;
+  request.manipulator = "manipulator";
+  request.manipulator_ik_solver = "unused";
+  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+
+  trajopt::TrajOptProb problem =
+      DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+
+  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
+      problem.getConstraints())));
   EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
-      config->prob->getConstraints())));
+      problem.getConstraints())));
+  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(problem.getCosts())));
   EXPECT_FALSE(
-      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
-  EXPECT_TRUE(
-      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
+      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(problem.getCosts())));
 }
 
-// This test checks that the terms are being added correctly for joint cnts
-TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner2)  // NOLINT
+// This test checks that the terms are being added correctly for joint costs
+TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointCost)  // NOLINT
 {
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
@@ -590,83 +663,34 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner2)  // NOLINT
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
-  auto composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
+  plan_profile->term_type = trajopt::TermType::TT_COST;  // Everything associated with profile is now added as a cost
 
-  // Create TrajOpt Config
-  auto config = std::make_shared<TrajOptPlannerUniversalConfig>(tesseract_ptr_, "manipulator");
-  config->instructions = program;
-  config->seed = seed;
-  config->plan_profiles["TEST_PROFILE"] = plan_profile;
-  config->composite_profiles["TEST_PROFILE"] = composite_profile;
+  auto composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
 
   // Create Planner
   TrajOptMotionPlanner test_planner;
-  test_planner.setConfiguration(config);
+  test_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
+  test_planner.composite_profiles["TEST_PROFILE"] = composite_profile;
 
-  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
-      config->prob->getConstraints())));
+  // Create Planning Request
+  PlannerRequest request;
+  request.seed = seed;
+  request.instructions = program;
+  request.tesseract = tesseract_ptr_;
+  request.manipulator = "manipulator";
+  request.manipulator_ik_solver = "unused";
+  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+
+  trajopt::TrajOptProb problem =
+      DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
+      problem.getConstraints())));
   EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
-      config->prob->getConstraints())));
+      problem.getConstraints())));
+  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(problem.getCosts())));
   EXPECT_FALSE(
-      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointPosEqCost>(config->prob->getCosts())));
-  EXPECT_FALSE(
-      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
+      (tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::TrajOptCostFromErrFunc>(problem.getCosts())));
 }
-
-// This test checks that the terms are being added correctly for joint costs
-// TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner3)  // NOLINT
-//{
-//  // Create the planner and the responses that will store the results
-//  PlannerResponse planning_response;
-
-//  auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
-//  auto inv_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator");
-//  const std::vector<std::string>& joint_names = fwd_kin->getJointNames();
-//  auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
-
-//  // Create a program
-//  CompositeInstruction program("TEST_PROFILE");
-
-//  // These specify the series of points to be optimized
-//  for (int ind = 0; ind < NUM_STEPS; ind++)
-//  {
-//    // Specify a Joint Waypoint as the finish
-//    JointWaypoint wp = Eigen::VectorXd::Zero(7);
-//    wp <<  0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0;
-//    wp.joint_names = joint_names;
-//    PlanInstruction plan_f(wp, PlanInstructionType::FREESPACE, "TEST_PROFILE");
-//    program.push_back(plan_f);
-//  }
-
-//  // Create a seed
-//  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
-
-//  // Create Profiles
-//  auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
-//  plan_profile->term_type = trajopt::TermType::TT_COST; // Everything associated with profile is now added as a cost
-
-//  auto composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
-
-//  // Create TrajOpt Config
-//  auto config = std::make_shared<TrajOptPlannerUniversalConfig>(tesseract_ptr_, "manipulator");
-//  config->instructions = program;
-//  config->seed = seed;
-//  config->plan_profiles["TEST_PROFILE"] = plan_profile;
-//  config->composite_profiles["TEST_PROFILE"] = composite_profile;
-
-//  // Create Planner
-//  TrajOptMotionPlanner test_planner;
-//  test_planner.setConfiguration(config);
-
-//  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
-//      config->prob->getConstraints())));
-//  EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(
-//      config->prob->getConstraints())));
-//  EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Cost::Ptr,
-//  trajopt::JointPosEqCost>(config->prob->getCosts()))); EXPECT_FALSE(
-//      (tesseract_tests::vectorContainsType<sco::Cost::Ptr,
-//      trajopt::TrajOptCostFromErrFunc>(config->prob->getCosts())));
-//}
 
 int main(int argc, char** argv)
 {
