@@ -50,28 +50,18 @@ public:
 
   /** @brief Get the name of this planner */
   const std::string& getName() const { return name_; }
-  /** @brief Get the planner request */
-  const PlannerRequest& getRequest() const { return request_; }
-  /** @brief Set the planner request for this context */
-  void setRequest(const PlannerRequest& request) { request_ = request; }
 
   /**
    * @brief Solve the planner request problem
-   * @param res The results from the planner
+   * @param request The planning request
+   * @param response The results from the planner
    * @param check_type The type of validation check to be performed on the planned trajectory
    * @param verbose Flag for printing more detailed planning information
    * @return A code indicating the status of the planned trajectory
    */
-  virtual tesseract_common::StatusCode
-  solve(PlannerResponse& res,
-        PostPlanCheckType collision_check_type = PostPlanCheckType::DISCRETE_CONTINUOUS_COLLISION,
-        bool verbose = false) = 0;
-
-  /**
-   * @brief checks if the planner is configured for planning
-   * @return True if configured, false otherwise
-   */
-  virtual tesseract_common::StatusCode isConfigured() const = 0;
+  virtual tesseract_common::StatusCode solve(const PlannerRequest& request,
+                                             PlannerResponse& response,
+                                             bool verbose = false) = 0;
 
   /**
    * @brief If solve() is running, terminate the computation. Return false if termination not possible. No-op if
@@ -84,7 +74,6 @@ public:
 
 protected:
   std::string name_;                   /**< @brief The name of this planner */
-  PlannerRequest request_;             /**< @brief The planner request information */
   TrajectoryValidator::Ptr validator_; /**< @brief The trajectory validator class */
 };
 }  // namespace tesseract_planning
