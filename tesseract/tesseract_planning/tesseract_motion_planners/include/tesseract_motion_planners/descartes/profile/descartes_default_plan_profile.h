@@ -32,6 +32,8 @@ public:
   double edge_collision_saftey_margin{ 0 };
   double edge_longest_valid_segment_length = 0.5;
 
+  int num_threads{ 1 };
+
   bool allow_collision{ false };
   DescartesIsValidFn<FloatType> is_valid;  // If not provided it adds a joint limit is valid function
   bool debug{ false };
