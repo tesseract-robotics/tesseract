@@ -98,6 +98,8 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
   if (is_valid == nullptr)
     is_valid = std::bind(
         &tesseract_kinematics::isWithinLimits<FloatType>, std::placeholders::_1, prob.manip_inv_kin->getLimits());
+
+  prob.num_threads = num_threads;
 }
 
 template <typename FloatType>
@@ -152,6 +154,8 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
   if (is_valid == nullptr)
     is_valid = std::bind(
         &tesseract_kinematics::isWithinLimits<FloatType>, std::placeholders::_1, prob.manip_inv_kin->getLimits());
+
+  prob.num_threads = num_threads;
 }
 
 }  // namespace tesseract_planning

@@ -45,44 +45,32 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/descartes/descartes_motion_planner.h>
+#include <tesseract_motion_planners/core/utils.h>
 
 namespace tesseract_planning
 {
 template <typename FloatType>
 DescartesMotionPlanner<FloatType>::DescartesMotionPlanner(std::string name)
-  : MotionPlanner(name)
-  , config_(nullptr)
-  , status_category_(std::make_shared<const DescartesMotionPlannerStatusCategory>(name))
+  : MotionPlanner(name), status_category_(std::make_shared<const DescartesMotionPlannerStatusCategory>(name))
 {
 }
 
 template <typename FloatType>
-bool DescartesMotionPlanner<FloatType>::setConfiguration(typename DescartesMotionPlannerConfig<FloatType>::Ptr config)
-{
-  config_ = std::move(config);
-  return config_->generate();
-}
-
-template <typename FloatType>
-tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerResponse& response,
-                                                                      PostPlanCheckType /*check_type*/,
+tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const PlannerRequest& request,
+                                                                      PlannerResponse& response,
                                                                       const bool /*verbose*/)
 {
-  tesseract_common::StatusCode config_status = isConfigured();
-  if (!config_status)
+  if (!problem_generator)
   {
-    response.status = config_status;
-    CONSOLE_BRIDGE_logError("Planner %s is not configured", name_.c_str());
-    return config_status;
+    CONSOLE_BRIDGE_logError("DescartesMotionPlanner does not have a problem generator specified.");
+    response.status =
+        tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::ErrorInvalidInput, status_category_);
+    return response.status;
   }
+  DescartesProblem<FloatType> problem = problem_generator(request, plan_profiles);
 
-  //  auto tStart = boost::posix_time::second_clock::local_time();
-
-  descartes_light::Solver<FloatType> graph_builder(config_->prob.manip_inv_kin->numJoints());
-  if (!graph_builder.build(config_->prob.samplers,
-                           config_->prob.timing_constraints,
-                           config_->prob.edge_evaluators,
-                           config_->prob.num_threads))
+  descartes_light::Solver<FloatType> graph_builder(problem.manip_inv_kin->numJoints());
+  if (!graph_builder.build(problem.samplers, problem.timing_constraints, problem.edge_evaluators, problem.num_threads))
   {
     //    CONSOLE_BRIDGE_logError("Failed to build vertices");
     //    for (const auto& i : graph_builder.getFailedVertices())
@@ -121,32 +109,43 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(PlannerRes
   //    for (size_t c = 0; c < dof; ++c)
   //      response.joint_trajectory.trajectory(static_cast<long>(r), static_cast<long>(c)) = solution[(r * dof) + c];
 
-  //  // Check and report collisions
-  //  validator_ =
-  //      std::make_shared<TrajectoryValidator>(config_->tesseract->getEnvironmentConst()->getContinuousContactManager(),
-  //                                            config_->tesseract->getEnvironmentConst()->getDiscreteContactManager(),
-  //                                            0.01,
-  //                                            verbose);
+//  tesseract_common::TrajArray trajectory(static_cast<long>(r), static_cast<long>(c)) = solution[(r * dof) + c];
 
-  //  bool valid = validator_->trajectoryValid(response.joint_trajectory.trajectory,
-  //                                           check_type,
-  //                                           *(config_->tesseract->getEnvironmentConst()->getStateSolver()),
-  //                                           response.joint_trajectory.joint_names);
+  // Flatten the results to make them easier to process
+  response.results = request.seed;
+  std::vector<std::reference_wrapper<Instruction>> results_flattened =
+      FlattenToPattern(response.results, request.instructions);
+  std::vector<std::reference_wrapper<const Instruction>> instructions_flattened = Flatten(request.instructions);
 
-  //  CONSOLE_BRIDGE_logInform("Descartes planning time: %.3f",
-  //                           (boost::posix_time::second_clock::local_time() - tStart).seconds());
+  // Loop over the flattened results and add them to response if the input was a plan instruction
+  Eigen::Index result_index = 0;
+  // TODO: Levi, change plan_index = 0 when add initial state to composite
+  for (std::size_t plan_index = 1; plan_index < results_flattened.size(); plan_index++)
+  {
+    if (instructions_flattened.at(plan_index).get().isPlan())
+    {
+      // This instruction corresponds to a composite. Set all results in that composite to the results
+      auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();
+      for (auto& instruction : *move_instructions)
+      {
+        // TODO: Make this actually work
+//        Eigen::Map<Eigen::Matrix<FloatType, 1, dof>> temp = solution[static_cast<std::size_t>(result_index*dof)];
+        Eigen::VectorXd temp = Eigen::VectorXd::Zero(6);
+        instruction.cast<MoveInstruction>()->setPosition(temp);
+        result_index++;
+      }
+    }
+  }
 
-  //  if (!valid)
-  //  {
-  //    response.status = tesseract_common::StatusCode(
-  //        tesseract_motion_planners::DescartesMotionPlannerStatusCategory::ErrorFoundValidSolutionInCollision,
-  //        status_category_);
-  //    return response.status;
-  //  }
-
-  CONSOLE_BRIDGE_logInform("Final trajectory is collision free");
   response.status = tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::SolutionFound, status_category_);
   return response.status;
+}
+
+template <typename FloatType>
+bool DescartesMotionPlanner<FloatType>::checkUserInput(const PlannerRequest& /*request*/)
+{
+  // TODO: copy from trajopt
+  return true;
 }
 
 template <typename FloatType>
@@ -159,17 +158,6 @@ bool DescartesMotionPlanner<FloatType>::terminate()
 template <typename FloatType>
 void DescartesMotionPlanner<FloatType>::clear()
 {
-  request_ = PlannerRequest();
-  config_ = nullptr;
-}
-
-template <typename FloatType>
-tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::isConfigured() const
-{
-  if (config_ != nullptr)
-    return tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::IsConfigured, status_category_);
-
-  return tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::ErrorIsNotConfigured, status_category_);
 }
 
 }  // namespace tesseract_planning
