@@ -50,7 +50,9 @@ public:
   TrajOptMotionPlanner(TrajOptMotionPlanner&&) = default;
   TrajOptMotionPlanner& operator=(TrajOptMotionPlanner&&) = default;
 
-  std::function<trajopt::TrajOptProb(const PlannerRequest& request)> problem_generator_;
+  std::function<
+      trajopt::TrajOptProb(const PlannerRequest&, const TrajOptPlanProfileMap&, const TrajOptCompositeProfileMap&)>
+      problem_generator;
 
   /**
    * @brief The available composite profiles
@@ -59,7 +61,7 @@ public:
    * profile which is used for applying multy waypoint costs and constraints like joint smoothing, collision avoidance,
    * and velocity smoothing.
    */
-  std::unordered_map<std::string, TrajOptCompositeProfile::Ptr> composite_profiles;
+  TrajOptCompositeProfileMap composite_profiles;
 
   /**
    * @brief The available plan profiles
@@ -67,7 +69,7 @@ public:
    * Plan instruction profiles are used to control waypoint specific information like fixed waypoint, toleranced
    * waypoint, corner distance waypoint, etc.
    */
-  std::unordered_map<std::string, TrajOptPlanProfile::Ptr> plan_profiles;
+  TrajOptPlanProfileMap plan_profiles;
 
   /** @brief Optimization parameters to be used (Optional) */
   sco::BasicTrustRegionSQPParameters params;
