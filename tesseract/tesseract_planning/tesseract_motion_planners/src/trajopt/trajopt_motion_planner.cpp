@@ -37,10 +37,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/trajopt/trajopt_motion_planner.h>
+#include <tesseract_command_language/command_language.h>
+#include <tesseract_motion_planners/core/utils.h>
 
 using namespace trajopt;
-
-static const double LONGEST_VALID_SEGMENT_FRACTION_DEFAULT = 0.01;
 
 namespace tesseract_planning
 {
@@ -50,29 +50,17 @@ std::string TrajOptMotionPlannerStatusCategory::message(int code) const
 {
   switch (code)
   {
-    case IsConfigured:
-    {
-      return "Is Configured";
-    }
     case SolutionFound:
     {
       return "Found valid solution";
     }
-    case IsNotConfigured:
+    case InvalidInput:
     {
-      return "Planner is not configured, must call setConfiguration prior to calling solve.";
-    }
-    case FailedToParseConfig:
-    {
-      return "Failed to parse config data";
+      return "Input to planner is invalid. Check that instructions and seed are compatible";
     }
     case FailedToFindValidSolution:
     {
       return "Failed to find valid solution";
-    }
-    case FoundValidSolutionInCollision:
-    {
-      return "Found valid solution, but is in collision";
     }
     default:
     {
@@ -83,9 +71,7 @@ std::string TrajOptMotionPlannerStatusCategory::message(int code) const
 }
 
 TrajOptMotionPlanner::TrajOptMotionPlanner(std::string name)
-  : MotionPlanner(std::move(name))
-  , config_(nullptr)
-  , status_category_(std::make_shared<const TrajOptMotionPlannerStatusCategory>(name_))
+  : MotionPlanner(std::move(name)), status_category_(std::make_shared<const TrajOptMotionPlannerStatusCategory>(name_))
 {
 }
 
@@ -97,21 +83,20 @@ bool TrajOptMotionPlanner::terminate()
 
 void TrajOptMotionPlanner::clear()
 {
-  request_ = PlannerRequest();
-  config_ = nullptr;
+  params = sco::BasicTrustRegionSQPParameters();
+  callbacks.clear();
 }
 
-tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& response,
-                                                         PostPlanCheckType check_type,
+tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& request,
+                                                         PlannerResponse& response,
                                                          bool verbose)
 {
-  tesseract_common::StatusCode config_status = isConfigured();
-  if (!config_status)
+  if (!checkUserInput(request))
   {
-    response.status = config_status;
-    CONSOLE_BRIDGE_logError("Planner %s is not configured", name_.c_str());
-    return config_status;
+    response.status = tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::InvalidInput, status_category_);
+    return response.status;
   }
+  auto problem = std::make_shared<trajopt::TrajOptProb>(problem_generator_(request));
 
   // Set Log Level
   if (verbose)
@@ -120,12 +105,12 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
     util::gLogLevel = util::LevelWarn;
 
   // Create optimizer
-  sco::BasicTrustRegionSQP opt(config_->prob);
-  opt.setParameters(config_->params);
-  opt.initialize(trajToDblVec(config_->prob->GetInitTraj()));
+  sco::BasicTrustRegionSQP opt(problem);
+  opt.setParameters(params);
+  opt.initialize(trajToDblVec(problem->GetInitTraj()));
 
   // Add all callbacks
-  for (const sco::Optimizer::Callback& callback : config_->callbacks)
+  for (const sco::Optimizer::Callback& callback : callbacks)
   {
     opt.addCallback(callback);
   }
@@ -141,86 +126,55 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(PlannerResponse& respon
     return response.status;
   }
 
-  // Check and report collisions
-  const Eigen::MatrixX2d& limits = config_->prob->GetKin()->getLimits();
-  double length = 0;
-  double extent = (limits.col(1) - limits.col(0)).norm();
-  if (config_->longest_valid_segment_fraction > 0 && config_->longest_valid_segment_length > 0)
+  // Get the results
+  tesseract_common::TrajArray trajectory = getTraj(opt.x(), problem->GetVars());
+
+  // Flatten the results to make them easier to process
+  auto results_flattened = FlattenToPattern(response.results, request.instructions);
+  auto instructions_flattened = Flatten(request.instructions);
+
+  // Loop over the flattened results and add them to response if the input was a plan instruction
+  Eigen::Index result_index = 0;
+  for (std::size_t plan_index = 0; plan_index < results_flattened.size(); plan_index++)
   {
-    length = std::min(config_->longest_valid_segment_fraction * extent, config_->longest_valid_segment_length);
-  }
-  else if (config_->longest_valid_segment_fraction > 0)
-  {
-    length = config_->longest_valid_segment_fraction * extent;
-  }
-  else if (config_->longest_valid_segment_length > 0)
-  {
-    length = config_->longest_valid_segment_length;
-  }
-  else
-  {
-    length = LONGEST_VALID_SEGMENT_FRACTION_DEFAULT * extent;
-  }
-
-  std::vector<tesseract_collision::ContactResultMap> collisions;
-  tesseract_environment::StateSolver::Ptr state_solver = config_->prob->GetEnv()->getStateSolver();
-  tesseract_environment::AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-      config_->prob->GetEnv()->getSceneGraph(),
-      config_->prob->GetKin()->getActiveLinkNames(),
-      config_->prob->GetEnv()->getCurrentState()->link_transforms);
-
-  auto continuous_manager = config_->prob->GetEnv()->getContinuousContactManager();
-  continuous_manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
-
-  auto discrete_manager = config_->prob->GetEnv()->getDiscreteContactManager();
-  discrete_manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
-
-  validator_ = std::make_shared<TrajectoryValidator>(continuous_manager, discrete_manager, length, verbose);
-
-  tesseract_collision::ContactRequest request(tesseract_collision::ContactTestType::FIRST);
-  request.is_valid = [&](const tesseract_collision::ContactResult& res) {
-    Eigen::Vector2d coll_info =
-        config_->special_collision_constraint->getPairSafetyMarginData(res.link_names[0], res.link_names[1]);
-    if (res.distance < coll_info.x())
-      return true;
-
-    return false;
-  };
-  bool valid = validator_->trajectoryValid(getTraj(opt.x(), config_->prob->GetVars()),
-                                           check_type,
-                                           *state_solver,
-                                           config_->prob->GetKin()->getJointNames(),
-                                           request);
-
-  // Send response
-  response.joint_trajectory.trajectory = getTraj(opt.x(), config_->prob->GetVars());
-  response.joint_trajectory.joint_names = config_->prob->GetKin()->getJointNames();
-  if (!valid)
-  {
-    response.status = tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::FoundValidSolutionInCollision,
-                                                   status_category_);
-  }
-  else
-  {
-    response.status = tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::SolutionFound, status_category_);
-    CONSOLE_BRIDGE_logInform("Final trajectory is collision free");
+    if (instructions_flattened.at(plan_index).get().isPlan())
+    {
+      // This instruction corresponds to a composite. Set all results in that composite to the results
+      auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();
+      for (auto& instruction : *move_instructions)
+        instruction.cast<MoveInstruction>()->setPosition(trajectory.row(result_index++));
+    }
   }
 
+  response.status = tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::SolutionFound, status_category_);
   return response.status;
 }
 
-tesseract_common::StatusCode TrajOptMotionPlanner::isConfigured() const
+bool TrajOptMotionPlanner::checkUserInput(const PlannerRequest& request) const
 {
-  if (config_ != nullptr && config_->prob != nullptr)
-    return tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::IsConfigured, status_category_);
+  // Check that parameters are valid
+  if (request.tesseract == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("In TrajOptPlannerUniversalConfig: tesseract is a required parameter and has not been set");
+    return false;
+  }
 
-  return tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::IsNotConfigured, status_category_);
-}
+  // Check that parameters are valid
+  auto manipulators = request.tesseract->getFwdKinematicsManagerConst()->getAvailableFwdKinematicsManipulators();
+  if (std::find(manipulators.begin(), manipulators.end(), request.manipulator) == manipulators.end())
+  {
+    CONSOLE_BRIDGE_logError("In TrajOptPlannerUniversalConfig: manipulator is a required parameter and is not found in "
+                            "the list of available manipulators");
+    return false;
+  }
 
-bool TrajOptMotionPlanner::setConfiguration(TrajOptPlannerConfig::Ptr config)
-{
-  config_ = std::move(config);
-  return config_->generate();
+  if (request.instructions.empty())
+  {
+    CONSOLE_BRIDGE_logError("TrajOptPlannerUniversalConfig requires at least 2 instructions");
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace tesseract_planning
