@@ -457,6 +457,35 @@ inline std::vector<std::reference_wrapper<Instruction>> Flatten(CompositeInstruc
   return flattened;
 }
 
+/**
+ * @brief Helper function used by Flatten. Not intended for direct use
+ * @param flattened Vector of instructions representing the full flattened composite
+ * @param composite Composite instruction to be flattened
+ */
+inline void FlattenHelper(std::vector<std::reference_wrapper<const Instruction>>& flattened,
+                          const CompositeInstruction& composite)
+{
+  for (auto& i : composite)
+  {
+    if (i.isComposite())
+      FlattenHelper(flattened, *(i.cast_const<CompositeInstruction>()));
+    else
+      flattened.emplace_back(i);
+  }
+}
+
+/**
+ * @brief Flattens a CompositeInstruction into a vector of Instruction&
+ * @param instruction Input composite instruction to be flattened
+ * @return A new flattened vector referencing the original instruction elements
+ */
+inline std::vector<std::reference_wrapper<const Instruction>> Flatten(const CompositeInstruction& instruction)
+{
+  std::vector<std::reference_wrapper<const Instruction>> flattened;
+  FlattenHelper(flattened, instruction);
+  return flattened;
+}
+
 inline void FlattenToPatternHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
                                    CompositeInstruction& composite,
                                    const CompositeInstruction& pattern)

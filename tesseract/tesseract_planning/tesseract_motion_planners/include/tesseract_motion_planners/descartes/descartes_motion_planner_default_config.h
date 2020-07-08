@@ -49,9 +49,6 @@ struct DescartesMotionPlannerDefaultConfig : public DescartesMotionPlannerConfig
   DescartesMotionPlannerDefaultConfig(DescartesMotionPlannerDefaultConfig&&) = default;             // NOLINT
   DescartesMotionPlannerDefaultConfig& operator=(DescartesMotionPlannerDefaultConfig&&) = default;  // NOLINT
 
-  std::string manipulator;
-  std::string manipulator_ik_solver;
-
   /**
    * @brief The available plan profiles
    *
@@ -60,19 +57,7 @@ struct DescartesMotionPlannerDefaultConfig : public DescartesMotionPlannerConfig
    */
   std::unordered_map<std::string, typename DescartesPlanProfile<FloatType>::Ptr> plan_profiles;
 
-  /**
-   * @brief The program instruction
-   * This must containt a minimum of two move instruction the first move instruction is the start state
-   */
-  CompositeInstruction instructions;
-
-  /**
-   * @brief This should be a one to one match with the instructions where the PlanInstruction is replaced with a
-   * composite instruction of MoveInstructions.
-   */
-  CompositeInstruction seed;
-
-  bool generate() override;
+  bool generate(const PlannerRequest& request) override;
 
 private:
   std::vector<std::size_t> plan_instruction_indices_;
