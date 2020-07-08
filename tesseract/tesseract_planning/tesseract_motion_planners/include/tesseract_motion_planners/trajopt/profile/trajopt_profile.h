@@ -40,6 +40,8 @@ public:
                      const std::vector<int>& fixed_indices) = 0;
 };
 
+using TrajOptCompositeProfileMap = std::unordered_map<std::string, TrajOptCompositeProfile::Ptr>;
+using TrajOptPlanProfileMap = std::unordered_map<std::string, TrajOptPlanProfile::Ptr>;
 }  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_PROFILE_H

@@ -13,7 +13,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/planner.h>
 #include <tesseract_motion_planners/descartes/descartes_motion_planner_status_category.h>
-#include <tesseract_motion_planners/descartes/descartes_motion_planner_config.h>
+#include <tesseract_motion_planners/descartes/descartes_problem.h>
+#include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
 
 namespace tesseract_planning
 {
@@ -30,15 +31,16 @@ public:
   DescartesMotionPlanner(DescartesMotionPlanner&&) noexcept = default;
   DescartesMotionPlanner& operator=(DescartesMotionPlanner&&) noexcept = default;
 
+  std::function<DescartesProblem<FloatType>(const PlannerRequest&, const DescartesPlanProfileMap<FloatType>&)>
+      problem_generator;
+
   /**
-   * @brief Set the configuration for the planner
+   * @brief The available plan profiles
    *
-   * This must be called prior to calling solve.
-   *
-   * @param config The planners configuration
-   * @return True if successful otherwise false
+   * Plan instruction profiles are used to control waypoint specific information like fixed waypoint, toleranced
+   * waypoint, corner distance waypoint, etc.
    */
-  bool setConfiguration(typename DescartesMotionPlannerConfig<FloatType>::Ptr config);
+  DescartesPlanProfileMap<FloatType> plan_profiles;
 
   /**
    * @brief Sets up the opimizer and solves a SQP problem read from json with no callbacks and dafault parameterss
@@ -48,24 +50,17 @@ public:
    * to console
    * @return true if optimization complete
    */
-  tesseract_common::StatusCode solve(PlannerResponse& response,
-                                     PostPlanCheckType check_type = PostPlanCheckType::DISCRETE_CONTINUOUS_COLLISION,
+  tesseract_common::StatusCode solve(const PlannerRequest& request,
+                                     PlannerResponse& response,
                                      bool verbose = false) override;
+
+  bool checkUserInput(const PlannerRequest& request);
 
   bool terminate() override;
 
   void clear() override;
 
-  /**
-   * @brief checks whether the planner is properly configure for solving a motion plan
-   * @return True when it is configured correctly, false otherwise
-   */
-  tesseract_common::StatusCode isConfigured() const override;
-
 private:
-  /** @brief The planners configuration */
-  typename DescartesMotionPlannerConfig<FloatType>::Ptr config_;
-
   /** @brief The planners status codes */
   std::shared_ptr<const DescartesMotionPlannerStatusCategory> status_category_;
 };
