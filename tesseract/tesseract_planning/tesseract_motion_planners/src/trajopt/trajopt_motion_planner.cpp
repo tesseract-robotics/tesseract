@@ -91,12 +91,12 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& r
                                                          PlannerResponse& response,
                                                          bool verbose)
 {
-  if (!checkUserInput(request))
+  if (!checkUserInput(request) || !problem_generator)
   {
     response.status = tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::InvalidInput, status_category_);
     return response.status;
   }
-  auto problem = std::make_shared<trajopt::TrajOptProb>(problem_generator_(request));
+  auto problem = std::make_shared<trajopt::TrajOptProb>(problem_generator(request, plan_profiles, composite_profiles));
 
   // Set Log Level
   if (verbose)

@@ -35,9 +35,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/descartes/descartes_motion_planner.h>
-#include <tesseract_motion_planners/descartes/descartes_motion_planner_default_config.h>
 #include <tesseract_motion_planners/descartes/descartes_utils.h>
 #include <tesseract_motion_planners/descartes/profile/descartes_default_plan_profile.h>
+#include <tesseract_motion_planners/descartes/problem_generators/default_problem_generator.h>
 
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/core/utils.h>
@@ -155,44 +155,53 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
   // Create Profiles
   auto plan_profile = std::make_shared<DescartesDefaultPlanProfileD>();
 
-  // Create TrajOpt Config
-  auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(
-      tesseract_ptr_, tesseract_ptr_->getEnvironmentConst()->getCurrentState(), "manipulator");
-  config->instructions = program;
-  config->seed = seed;
-  config->plan_profiles["TEST_PROFILE"] = plan_profile;
-  config->prob.num_threads = 1;
-
   // Create Planner
   DescartesMotionPlannerD single_descartes_planner;
-  single_descartes_planner.setConfiguration(config);
+  plan_profile->num_threads = 1;
+  single_descartes_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
+  single_descartes_planner.problem_generator = &DefaultDescartesProblemGenerator<double>;
+
+  // Create Planning Request
+  PlannerRequest request;
+  request.seed = seed;
+  request.instructions = program;
+  request.tesseract = tesseract_ptr_;
+  request.manipulator = "manipulator";
+  request.manipulator_ik_solver = "manipulator";
+  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   PlannerResponse single_planner_response;
-  auto single_status = single_descartes_planner.solve(single_planner_response);
+  auto single_status = single_descartes_planner.solve(request, single_planner_response);
   EXPECT_TRUE(&single_status);
 
-  CompositeInstruction official_results = config->seed;
+  CompositeInstruction official_results = single_planner_response.results;
 
   for (int i = 0; i < 10; ++i)
   {
-    config->prob.num_threads = 4;
-    DescartesMotionPlannerD descartes_planner;
-    PlannerResponse planner_response;
-    config->seed = seed;  // reset seed to the original seed
-    descartes_planner.setConfiguration(config);
-    EXPECT_EQ(config->prob.samplers.size(), 11);
-    EXPECT_EQ(config->prob.timing_constraints.size(), 11);
-    EXPECT_EQ(config->prob.edge_evaluators.size(), 10);
+    // Test the problem generator
+    {
+      DescartesProblem<double> problem =
+          DefaultDescartesProblemGenerator<double>(request, single_descartes_planner.plan_profiles);
+      EXPECT_EQ(problem.samplers.size(), 11);
+      EXPECT_EQ(problem.timing_constraints.size(), 11);
+      EXPECT_EQ(problem.edge_evaluators.size(), 10);
+    }
 
-    auto status = descartes_planner.solve(planner_response);
+    DescartesMotionPlannerD descartes_planner;
+    plan_profile->num_threads = 4;
+    descartes_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
+    descartes_planner.problem_generator = &DefaultDescartesProblemGenerator<double>;
+
+    PlannerResponse planner_response;
+    auto status = descartes_planner.solve(request, planner_response);
     EXPECT_TRUE(&status);
-    EXPECT_TRUE(official_results.size() == config->seed.size());
+    EXPECT_EQ(official_results.size(), planner_response.results.size());
     for (std::size_t j = 0; j < official_results.size(); ++j)
     {
       if (official_results[j].isComposite())
       {
         const auto* sub_official = official_results[j].cast_const<CompositeInstruction>();
-        const auto* sub = config->seed[j].cast_const<CompositeInstruction>();
+        const auto* sub = request.seed[j].cast_const<CompositeInstruction>();
         for (std::size_t k = 0; k < sub->size(); ++k)
         {
           if ((*sub_official)[k].isComposite())
@@ -210,7 +219,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
       else if (official_results[j].isMove())
       {
         const auto* mv_official = official_results[j].cast_const<MoveInstruction>();
-        const auto* mv = config->seed[j].cast_const<MoveInstruction>();
+        const auto* mv = request.seed[j].cast_const<MoveInstruction>();
         EXPECT_TRUE(mv_official->getPosition().isApprox(mv->getPosition(), 1e-5));
       }
     }
@@ -255,43 +264,52 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
     return tesseract_planning::sampleToolAxis(tool_pose, M_PI_4, Eigen::Vector3d(0, 0, 1));
   };
 
-  // Create TrajOpt Config
-  auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(
-      tesseract_ptr_, tesseract_ptr_->getEnvironmentConst()->getCurrentState(), "manipulator");
-  config->instructions = program;
-  config->seed = seed;
-  config->plan_profiles["TEST_PROFILE"] = plan_profile;
-  config->prob.num_threads = 1;
-
   // Create Planner
   DescartesMotionPlannerD single_descartes_planner;
-  single_descartes_planner.setConfiguration(config);
-  EXPECT_EQ(config->prob.samplers.size(), 11);
-  EXPECT_EQ(config->prob.timing_constraints.size(), 11);
-  EXPECT_EQ(config->prob.edge_evaluators.size(), 10);
+  plan_profile->num_threads = 1;
+  single_descartes_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
+  single_descartes_planner.problem_generator = &DefaultDescartesProblemGenerator<double>;
+
+  // Create Planning Request
+  PlannerRequest request;
+  request.seed = seed;
+  request.instructions = program;
+  request.tesseract = tesseract_ptr_;
+  request.manipulator = "manipulator";
+  request.manipulator_ik_solver = "manipulator";
+  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+
+  DescartesProblem<double> problem =
+      DefaultDescartesProblemGenerator<double>(request, single_descartes_planner.plan_profiles);
+  problem.num_threads = 1;
+  EXPECT_EQ(problem.samplers.size(), 11);
+  EXPECT_EQ(problem.timing_constraints.size(), 11);
+  EXPECT_EQ(problem.edge_evaluators.size(), 10);
 
   PlannerResponse single_planner_response;
-  auto single_status = single_descartes_planner.solve(single_planner_response);
+  auto single_status = single_descartes_planner.solve(request, single_planner_response);
   EXPECT_TRUE(&single_status);
 
-  CompositeInstruction official_results = config->seed;
+  CompositeInstruction official_results = request.seed;
 
   for (int i = 0; i < 10; ++i)
   {
-    config->prob.num_threads = 4;
     DescartesMotionPlannerD descartes_planner;
+    plan_profile->num_threads = 4;
+    descartes_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
+    descartes_planner.problem_generator = &DefaultDescartesProblemGenerator<double>;
+
     PlannerResponse planner_response;
-    config->seed = seed;  // reset seed to the original seed
-    descartes_planner.setConfiguration(config);
-    auto status = descartes_planner.solve(planner_response);
+    request.seed = seed;  // reset seed to the original seed
+    auto status = descartes_planner.solve(request, planner_response);
     EXPECT_TRUE(&status);
-    EXPECT_TRUE(official_results.size() == config->seed.size());
+    EXPECT_TRUE(official_results.size() == request.seed.size());
     for (std::size_t j = 0; j < official_results.size(); ++j)
     {
       if (official_results[j].isComposite())
       {
         const auto* sub_official = official_results[j].cast_const<CompositeInstruction>();
-        const auto* sub = config->seed[j].cast_const<CompositeInstruction>();
+        const auto* sub = request.seed[j].cast_const<CompositeInstruction>();
         for (std::size_t k = 0; k < sub->size(); ++k)
         {
           if ((*sub_official)[k].isComposite())
@@ -309,7 +327,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
       else if (official_results[j].isMove())
       {
         const auto* mv_official = official_results[j].cast_const<MoveInstruction>();
-        const auto* mv = config->seed[j].cast_const<MoveInstruction>();
+        const auto* mv = request.seed[j].cast_const<MoveInstruction>();
         EXPECT_TRUE(mv_official->getPosition().isApprox(mv->getPosition(), 1e-5));
       }
     }
@@ -355,43 +373,52 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   };
   plan_profile->enable_edge_collision = true;  // Add collision edge evaluator
 
-  // Create TrajOpt Config
-  auto config = std::make_shared<DescartesMotionPlannerDefaultConfigD>(
-      tesseract_ptr_, tesseract_ptr_->getEnvironmentConst()->getCurrentState(), "manipulator");
-  config->instructions = program;
-  config->seed = seed;
-  config->plan_profiles["TEST_PROFILE"] = plan_profile;
-  config->prob.num_threads = 1;
+  // Create Planning Request
+  PlannerRequest request;
+  request.seed = seed;
+  request.instructions = program;
+  request.tesseract = tesseract_ptr_;
+  request.manipulator = "manipulator";
+  request.manipulator_ik_solver = "manipulator";
+  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   // Create Planner
   DescartesMotionPlannerD single_descartes_planner;
-  single_descartes_planner.setConfiguration(config);
-  EXPECT_EQ(config->prob.samplers.size(), 3);
-  EXPECT_EQ(config->prob.timing_constraints.size(), 3);
-  EXPECT_EQ(config->prob.edge_evaluators.size(), 2);
+  plan_profile->num_threads = 1;
+  single_descartes_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
+
+  // Test Problem size - TODO: Make dedicated unit test for DefaultDescartesProblemGenerator
+  DescartesProblem<double> problem =
+      DefaultDescartesProblemGenerator<double>(request, single_descartes_planner.plan_profiles);
+  EXPECT_EQ(problem.samplers.size(), 3);
+  EXPECT_EQ(problem.timing_constraints.size(), 3);
+  EXPECT_EQ(problem.edge_evaluators.size(), 2);
+  EXPECT_EQ(problem.num_threads, 1);
 
   PlannerResponse single_planner_response;
-  auto single_status = single_descartes_planner.solve(single_planner_response);
+  auto single_status = single_descartes_planner.solve(request, single_planner_response);
   EXPECT_TRUE(&single_status);
 
-  CompositeInstruction official_results = config->seed;
+  CompositeInstruction official_results = request.seed;
 
   for (int i = 0; i < 10; ++i)
   {
-    config->prob.num_threads = 4;
     DescartesMotionPlannerD descartes_planner;
+    plan_profile->num_threads = 4;
+    descartes_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
+    descartes_planner.problem_generator = &DefaultDescartesProblemGenerator<double>;
+
     PlannerResponse planner_response;
-    config->seed = seed;  // reset seed to the original seed
-    descartes_planner.setConfiguration(config);
-    auto status = descartes_planner.solve(planner_response);
+    request.seed = seed;  // reset seed to the original seed
+    auto status = descartes_planner.solve(request, planner_response);
     EXPECT_TRUE(&status);
-    EXPECT_TRUE(official_results.size() == config->seed.size());
+    EXPECT_TRUE(official_results.size() == request.seed.size());
     for (std::size_t j = 0; j < official_results.size(); ++j)
     {
       if (official_results[j].isComposite())
       {
         const auto* sub_official = official_results[j].cast_const<CompositeInstruction>();
-        const auto* sub = config->seed[j].cast_const<CompositeInstruction>();
+        const auto* sub = request.seed[j].cast_const<CompositeInstruction>();
         for (std::size_t k = 0; k < sub->size(); ++k)
         {
           if ((*sub_official)[k].isComposite())
@@ -409,7 +436,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
       else if (official_results[j].isMove())
       {
         const auto* mv_official = official_results[j].cast_const<MoveInstruction>();
-        const auto* mv = config->seed[j].cast_const<MoveInstruction>();
+        const auto* mv = request.seed[j].cast_const<MoveInstruction>();
         EXPECT_TRUE(mv_official->getPosition().isApprox(mv->getPosition(), 1e-5));
       }
     }

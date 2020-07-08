@@ -182,7 +182,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsJointJoint)  // N
     composite_profile->collision_constraint_config.enabled = t4;
     composite_profile->collision_cost_config.enabled = t4;
     trajopt::TrajOptProb problem =
-        DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+        DefaultTrajoptProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
 
     EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointVelEqCost>(problem.getCosts())), t1);
     EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointAccEqCost>(problem.getCosts())), t2);
@@ -241,7 +241,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointJoint)  // NOLINT
 
   {
     trajopt::TrajOptProb problem =
-        DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+        DefaultTrajoptProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
 
     EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
         problem.getConstraints())));
@@ -254,7 +254,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointJoint)  // NOLINT
   {
     plan_profile->term_type = trajopt::TermType::TT_COST;
     trajopt::TrajOptProb problem =
-        DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+        DefaultTrajoptProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
 
     EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
         problem.getConstraints())));
@@ -315,7 +315,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointCart)  // NOLINT
 
   {
     trajopt::TrajOptProb problem =
-        DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+        DefaultTrajoptProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
 
     EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
         problem.getConstraints())));
@@ -329,7 +329,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointCart)  // NOLINT
   {
     plan_profile->term_type = trajopt::TermType::TT_COST;
     trajopt::TrajOptProb problem =
-        DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+        DefaultTrajoptProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
 
     EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
         problem.getConstraints())));
@@ -394,7 +394,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartJoint)  // NOLINT
 
   {
     trajopt::TrajOptProb problem =
-        DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+        DefaultTrajoptProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
 
     EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
         problem.getConstraints())));
@@ -408,7 +408,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartJoint)  // NOLINT
   {
     plan_profile->term_type = trajopt::TermType::TT_COST;
     trajopt::TrajOptProb problem =
-        DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+        DefaultTrajoptProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
 
     EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
         problem.getConstraints())));
@@ -472,7 +472,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartCart)  // NOLINT
 
   {
     trajopt::TrajOptProb problem =
-        DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+        DefaultTrajoptProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
 
     EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
         problem.getConstraints())));
@@ -485,7 +485,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartCart)  // NOLINT
   {
     plan_profile->term_type = trajopt::TermType::TT_COST;
     trajopt::TrajOptProb problem =
-        DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+        DefaultTrajoptProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
 
     EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
         problem.getConstraints())));
@@ -564,7 +564,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsCartCart)  // NOL
     composite_profile->collision_constraint_config.enabled = t4;
     composite_profile->collision_cost_config.enabled = t4;
 
-    problem = DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+    problem = DefaultTrajoptProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
 
     EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointVelEqCost>(problem.getCosts())), t1);
     EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointAccEqCost>(problem.getCosts())), t2);
@@ -627,7 +627,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointConstraint)  // NOLINT
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   trajopt::TrajOptProb problem =
-      DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+      DefaultTrajoptProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
 
   EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
       problem.getConstraints())));
@@ -687,7 +687,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointCost)  // NOLINT
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   trajopt::TrajOptProb problem =
-      DefaultProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
+      DefaultTrajoptProblemGenerator(request, test_planner.plan_profiles, test_planner.composite_profiles);
   EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
       problem.getConstraints())));
   EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(

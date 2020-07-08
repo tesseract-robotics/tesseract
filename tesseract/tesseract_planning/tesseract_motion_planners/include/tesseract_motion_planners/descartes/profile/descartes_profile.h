@@ -29,6 +29,9 @@ public:
                      int index) = 0;
 };
 
+template <typename FloatType>
+using DescartesPlanProfileMap = std::unordered_map<std::string, typename DescartesPlanProfile<FloatType>::Ptr>;
+
 /** @todo Currently descartes does not have support of composite profile everything is handled by the plan profile */
 }  // namespace tesseract_planning
 
