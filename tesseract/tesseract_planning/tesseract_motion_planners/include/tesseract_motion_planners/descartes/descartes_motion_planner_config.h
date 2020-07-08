@@ -10,12 +10,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <descartes_light/descartes_light.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/descartes/descartes_problem.h>
 
 namespace tesseract_planning
 {
 template <typename FloatType>
-struct DescartesMotionPlannerConfig
+struct DescartesMotionPlannerConfig : public PlannerConfig
 {
   using Ptr = std::shared_ptr<DescartesMotionPlannerConfig<FloatType>>;
   using ConstPtr = std::shared_ptr<const DescartesMotionPlannerConfig<FloatType>>;
@@ -27,7 +28,7 @@ struct DescartesMotionPlannerConfig
    * @brief This gets called by the planner. This must be called by the inheriting class
    * @return True if successful, otherwise false.
    */
-  virtual bool generate()
+  virtual bool generate(const PlannerRequest& /*request*/)
   {
     // Check that parameters are valid
     if (prob.edge_evaluators.empty() || prob.edge_evaluators.size() != (prob.samplers.size() - 1))

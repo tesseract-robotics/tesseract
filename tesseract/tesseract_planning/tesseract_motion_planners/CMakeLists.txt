@@ -31,9 +31,7 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
 
 # Trajopt Planner
 add_library(${PROJECT_NAME}_trajopt
-  src/trajopt/trajopt_planner_config.cpp
   src/trajopt/trajopt_motion_planner.cpp
-  src/trajopt/trajopt_planner_universal_config.cpp
   src/trajopt/trajopt_utils.cpp
   src/trajopt/profile/trajopt_default_plan_profile.cpp
   src/trajopt/profile/trajopt_default_composite_profile.cpp)
@@ -67,41 +65,41 @@ set(OMPL_SRC src/ompl/ompl_motion_planner.cpp
 #  list(APPEND OMPL_SRC src/ompl/config/ompl_planner_constrained_config.cpp)
 #endif()
 
-add_library(${PROJECT_NAME}_ompl SHARED ${OMPL_SRC})
-target_link_libraries(${PROJECT_NAME}_ompl PUBLIC ${PROJECT_NAME}_core ${OMPL_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_ompl PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_ompl)
-tesseract_code_coverage(${PROJECT_NAME}_ompl ALL EXCLUDE ${COVERAGE_EXCLUDE})
-target_include_directories(${PROJECT_NAME}_ompl PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_ompl SYSTEM PUBLIC
-    ${OMPL_INCLUDE_DIRS})
-if(OMPL_VERSION VERSION_LESS "1.4.0")
-    target_compile_definitions(${PROJECT_NAME}_ompl PUBLIC OMPL_LESS_1_4_0=ON)
-endif()
+#add_library(${PROJECT_NAME}_ompl SHARED ${OMPL_SRC})
+#target_link_libraries(${PROJECT_NAME}_ompl PUBLIC ${PROJECT_NAME}_core ${OMPL_LIBRARIES})
+#tesseract_target_compile_options(${PROJECT_NAME}_ompl PUBLIC)
+#tesseract_clang_tidy(${PROJECT_NAME}_ompl)
+#tesseract_code_coverage(${PROJECT_NAME}_ompl ALL EXCLUDE ${COVERAGE_EXCLUDE})
+#target_include_directories(${PROJECT_NAME}_ompl PUBLIC
+#    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+#    "$<INSTALL_INTERFACE:include>")
+#target_include_directories(${PROJECT_NAME}_ompl SYSTEM PUBLIC
+#    ${OMPL_INCLUDE_DIRS})
+#if(OMPL_VERSION VERSION_LESS "1.4.0")
+#    target_compile_definitions(${PROJECT_NAME}_ompl PUBLIC OMPL_LESS_1_4_0=ON)
+#endif()
 
-# Descartes Planner
-add_library(${PROJECT_NAME}_descartes SHARED
-  src/descartes/descartes_motion_planner.cpp
-  src/descartes/descartes_motion_planner_default_config.cpp
-  src/descartes/descartes_collision.cpp
-  src/descartes/descartes_collision_edge_evaluator.cpp
-  src/descartes/descartes_robot_sampler.cpp
-  src/descartes/descartes_motion_planner_status_category.cpp
-  src/descartes/profile/descartes_default_plan_profile.cpp)
-target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME}_core descartes::descartes_light descartes::descartes_samplers descartes::descartes_opw)
-tesseract_target_compile_options(${PROJECT_NAME}_descartes PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_descartes)
-tesseract_code_coverage(${PROJECT_NAME}_descartes ALL EXCLUDE ${COVERAGE_EXCLUDE})
-target_include_directories(${PROJECT_NAME}_descartes PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
+## Descartes Planner
+#add_library(${PROJECT_NAME}_descartes SHARED
+#  src/descartes/descartes_motion_planner.cpp
+#  src/descartes/descartes_motion_planner_default_config.cpp
+#  src/descartes/descartes_collision.cpp
+#  src/descartes/descartes_collision_edge_evaluator.cpp
+#  src/descartes/descartes_robot_sampler.cpp
+#  src/descartes/descartes_motion_planner_status_category.cpp
+#  src/descartes/profile/descartes_default_plan_profile.cpp)
+#target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME}_core descartes::descartes_light descartes::descartes_samplers descartes::descartes_opw)
+#tesseract_target_compile_options(${PROJECT_NAME}_descartes PUBLIC)
+#tesseract_clang_tidy(${PROJECT_NAME}_descartes)
+#tesseract_code_coverage(${PROJECT_NAME}_descartes ALL EXCLUDE ${COVERAGE_EXCLUDE})
+#target_include_directories(${PROJECT_NAME}_descartes PUBLIC
+#    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+#    "$<INSTALL_INTERFACE:include>")
 
 tesseract_configure_package(${PROJECT_NAME}_core
                             ${PROJECT_NAME}_trajopt
-                            ${PROJECT_NAME}_ompl
-                            ${PROJECT_NAME}_descartes
+                            #${PROJECT_NAME}_ompl
+#                            ${PROJECT_NAME}_descartes
                             )
 
 # Mark cpp header files for installation
