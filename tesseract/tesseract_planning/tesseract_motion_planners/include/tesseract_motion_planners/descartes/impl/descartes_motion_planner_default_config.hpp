@@ -42,7 +42,7 @@ DescartesMotionPlannerDefaultConfig<FloatType>::DescartesMotionPlannerDefaultCon
 }
 
 template <typename FloatType>
-bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
+bool DescartesMotionPlannerDefaultConfig<FloatType>::generate(const PlannerRequest& request)
 {
   // Clear descartes data
   this->prob.edge_evaluators.clear();
