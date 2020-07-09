@@ -21,7 +21,7 @@ public:
   using Ptr = std::shared_ptr<PlanInstruction>;
   using ConstPtr = std::shared_ptr<const PlanInstruction>;
 
-  PlanInstruction(Waypoint waypoint, PlanInstructionType type, std::string profile = "DEFAULT");
+  PlanInstruction(Waypoint waypoint, PlanInstructionType type, std::string profile = "DEFAULT", std::string working_frame = "");
 
   void setWaypoint(Waypoint waypoint);
   const Waypoint& getWaypoint() const;
@@ -63,6 +63,9 @@ private:
   /** @brief The assigned waypoint (Cartesian or Joint) */
   Waypoint waypoint_;
 
+  /** @brief The profile used for this plan instruction */
+  std::string profile_{ "DEFAULT" };
+
   /** @brief The tool center point */
   Eigen::Isometry3d tcp_{ Eigen::Isometry3d::Identity() };
 
@@ -72,8 +75,6 @@ private:
   /** @brief The description of the instruction */
   std::string description_{ "Tesseract Plan Instruction" };
 
-  /** @brief The profile used for this plan instruction */
-  std::string profile_{ "DEFAULT" };
 };
 
 }  // namespace tesseract_planning
