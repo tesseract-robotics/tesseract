@@ -22,6 +22,7 @@ struct TrajOptPlannerUniversalConfig : public TrajOptPlannerConfig
   using Ptr = std::shared_ptr<TrajOptPlannerUniversalConfig>;
   using ConstPtr = std::shared_ptr<const TrajOptPlannerUniversalConfig>;
 
+  /** @todo Should this take the current state like ompl and descartes? */
   TrajOptPlannerUniversalConfig(tesseract::Tesseract::ConstPtr tesseract_, std::string manipulator_);
 
   /** @brief Generates the TrajOpt problem and saves the result internally */
