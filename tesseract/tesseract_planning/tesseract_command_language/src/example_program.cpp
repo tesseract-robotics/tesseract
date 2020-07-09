@@ -33,9 +33,7 @@ int main(int argc, char* argv[])
 
   // Create a program
   CompositeInstruction program;
-
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE);
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
 
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE);
 
