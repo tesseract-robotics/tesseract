@@ -1,4 +1,5 @@
 #include <tesseract_command_language/composite_instruction.h>
+#include <tesseract_command_language/plan_instruction.h>
 #include <stdexcept>
 #include <iostream>
 
@@ -22,6 +23,36 @@ void CompositeInstruction::setProfile(const std::string& profile)
   profile_ = (profile.empty()) ? "DEFAULT" : profile;
 }
 const std::string& CompositeInstruction::getProfile() const { return profile_; }
+
+void CompositeInstruction::setStartWaypoint(Waypoint waypoint)
+{
+  start_waypoint_ = waypoint;
+}
+
+const Waypoint& CompositeInstruction::getStartWaypoint() const
+{
+  return start_waypoint_;
+}
+
+bool CompositeInstruction::hasStartWaypoint() const
+{
+  return (!isNullWaypoint(start_waypoint_.getType()));
+}
+
+void CompositeInstruction::setEndWaypoint(Waypoint waypoint, bool process_child_composites)
+{
+  assert(!process_child_composites);
+  for (auto it = this->rbegin(); it != this->rend(); ++it)
+  {
+    if(isPlanInstruction(it->getType()))
+    {
+      it->cast<PlanInstruction>()->setWaypoint(waypoint);
+      return;
+    }
+  }
+
+  throw std::runtime_error("Failed to set end waypoint, composite instruction does not contain any plan instructions!");
+}
 
 bool CompositeInstruction::isComposite() const { return true; }
 

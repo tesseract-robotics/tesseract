@@ -65,19 +65,26 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
   const std::vector<std::string>& active_links = adjacency_map->getActiveLinkNames();
 
   // Check and make sure it does not contain any composite instruction
-  const PlanInstruction* start_instruction{ nullptr };
   for (const auto& instruction : instructions)
-  {
     if (instruction.isComposite())
       throw std::runtime_error("Descartes planner does not support child composite instructions.");
 
-    if (start_instruction == nullptr && instruction.isPlan())
-      start_instruction = instruction.template cast_const<PlanInstruction>();
+  Waypoint start_waypoint = NullWaypoint();
+  if (instructions.hasStartWaypoint())
+  {
+    start_waypoint = instructions.getStartWaypoint();
+  }
+  else
+  {
+    Eigen::VectorXd current_jv = this->prob.env_state->getJointValues(this->prob.manip_inv_kin->getJointNames());
+    JointWaypoint temp(current_jv);
+    temp.joint_names = this->prob.manip_inv_kin->getJointNames();
+    start_waypoint = temp;
   }
 
   // Transform plan instructions into descartes samplers
-  const PlanInstruction* prev_plan_instruction{ nullptr };
   int index = 0;
+  bool found_plan_instruction {false};
   for (std::size_t i = 0; i < instructions.size(); ++i)
   {
     const auto& instruction = instructions[i];
@@ -88,12 +95,10 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
 
       assert(instruction.getType() == static_cast<int>(InstructionType::PLAN_INSTRUCTION));
       const auto* plan_instruction = instruction.template cast_const<PlanInstruction>();
-      //      const Waypoint& wp = plan_instruction->getWaypoint();
-      //      const std::string& working_frame = plan_instruction->getWorkingFrame();
-      //      const Eigen::Isometry3d& tcp = plan_instruction->getTCP();
 
       assert(seed[i].isComposite());
       const auto* seed_composite = seed[i].template cast_const<tesseract_planning::CompositeInstruction>();
+      auto interpolate_cnt = static_cast<int>(seed_composite->size());
 
       // Get Plan Profile
       std::string profile = plan_instruction->getProfile();
@@ -107,48 +112,63 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
       else
         cur_plan_profile = it->second;
 
+      if (!found_plan_instruction)
+      {
+        // If this is the first plan instruction we reduce the interpolate cnt because the seed includes the start state
+        --interpolate_cnt;
+
+        // Add start waypoint
+        if (isCartesianWaypoint(start_waypoint.getType()))
+        {
+          const auto* cwp = start_waypoint.cast_const<Eigen::Isometry3d>();
+          cur_plan_profile->apply(this->prob, *cwp, *plan_instruction, active_links, index);
+        }
+        else if (isJointWaypoint(start_waypoint.getType()))
+        {
+          const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
+          cur_plan_profile->apply(this->prob, *jwp, *plan_instruction, active_links, index);
+        }
+        else
+        {
+          throw std::runtime_error("DescartesMotionPlannerConfig: uknown waypoint type.");
+        }
+
+        ++index;
+      }
+
       if (plan_instruction->isLinear())
       {
         if (isCartesianWaypoint(plan_instruction->getWaypoint().getType()))
         {
           const auto* cur_wp =
               plan_instruction->getWaypoint().template cast_const<tesseract_planning::CartesianWaypoint>();
-          if (prev_plan_instruction)
+
+          Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
+          if (isCartesianWaypoint(start_waypoint.getType()))
           {
-            assert(prev_plan_instruction->getTCP().isApprox(plan_instruction->getTCP(), 1e-5));
+            prev_pose = *(start_waypoint.cast_const<Eigen::Isometry3d>());
+          }
+          else if (isJointWaypoint(start_waypoint.getType()))
+          {
+            const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
+            if (!this->prob.manip_fwd_kin->calcFwdKin(prev_pose, *jwp))
+              throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
 
-            Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
-            if (isCartesianWaypoint(prev_plan_instruction->getWaypoint().getType()))
-            {
-              prev_pose = (*prev_plan_instruction->getWaypoint().cast_const<Eigen::Isometry3d>());
-            }
-            else if (isJointWaypoint(prev_plan_instruction->getWaypoint().getType()))
-            {
-              const auto* jwp = prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>();
-              if (!this->prob.manip_fwd_kin->calcFwdKin(prev_pose, *jwp))
-                throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
-
-              prev_pose = this->prob.env_state->link_transforms.at(this->prob.manip_fwd_kin->getBaseLinkName()) *
-                          prev_pose * plan_instruction->getTCP();
-            }
-            else
-            {
-              throw std::runtime_error("DescartesMotionPlannerConfig: uknown waypoint type.");
-            }
-
-            tesseract_common::VectorIsometry3d poses =
-                interpolate(prev_pose, *cur_wp, static_cast<int>(seed_composite->size()));
-            // Add intermediate points with path costs and constraints
-            for (std::size_t p = 1; p < poses.size() - 1; ++p)
-            {
-              cur_plan_profile->apply(this->prob, poses[p], *plan_instruction, active_links, index);
-
-              ++index;
-            }
+            prev_pose = this->prob.env_state->link_transforms.at(this->prob.manip_fwd_kin->getBaseLinkName()) *
+                        prev_pose * plan_instruction->getTCP();
           }
           else
           {
-            assert(seed_composite->size() == 1);
+            throw std::runtime_error("DescartesMotionPlannerConfig: uknown waypoint type.");
+          }
+
+          tesseract_common::VectorIsometry3d poses = interpolate(prev_pose, *cur_wp, interpolate_cnt);
+          // Add intermediate points with path costs and constraints
+          for (std::size_t p = 1; p < poses.size() - 1; ++p)
+          {
+            cur_plan_profile->apply(this->prob, poses[p], *plan_instruction, active_links, index);
+
+            ++index;
           }
 
           // Add final point with waypoint
@@ -165,42 +185,33 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
 
           cur_pose = this->prob.env_state->link_transforms.at(this->prob.manip_fwd_kin->getBaseLinkName()) * cur_pose *
                      plan_instruction->getTCP();
-          if (prev_plan_instruction)
+
+          Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
+          if (isCartesianWaypoint(start_waypoint.getType()))
           {
-            assert(prev_plan_instruction->getTCP().isApprox(plan_instruction->getTCP(), 1e-5));
+            prev_pose = *(start_waypoint.cast_const<Eigen::Isometry3d>());
+          }
+          else if (isJointWaypoint(start_waypoint.getType()))
+          {
+            const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
+            if (!this->prob.manip_fwd_kin->calcFwdKin(prev_pose, *jwp))
+              throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
 
-            Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
-            if (isCartesianWaypoint(prev_plan_instruction->getWaypoint().getType()))
-            {
-              prev_pose = (*prev_plan_instruction->getWaypoint().cast_const<Eigen::Isometry3d>());
-            }
-            else if (isJointWaypoint(prev_plan_instruction->getWaypoint().getType()))
-            {
-              const auto* jwp = prev_plan_instruction->getWaypoint().cast_const<JointWaypoint>();
-              if (!this->prob.manip_fwd_kin->calcFwdKin(prev_pose, *jwp))
-                throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
-
-              prev_pose = this->prob.env_state->link_transforms.at(this->prob.manip_fwd_kin->getBaseLinkName()) *
-                          prev_pose * plan_instruction->getTCP();
-            }
-            else
-            {
-              throw std::runtime_error("DescartesMotionPlannerConfig: uknown waypoint type.");
-            }
-
-            tesseract_common::VectorIsometry3d poses =
-                interpolate(prev_pose, cur_pose, static_cast<int>(seed_composite->size()));
-            // Add intermediate points with path costs and constraints
-            for (std::size_t p = 1; p < poses.size() - 1; ++p)
-            {
-              cur_plan_profile->apply(this->prob, poses[p], *plan_instruction, active_links, index);
-
-              ++index;
-            }
+            prev_pose = this->prob.env_state->link_transforms.at(this->prob.manip_fwd_kin->getBaseLinkName()) *
+                        prev_pose * plan_instruction->getTCP();
           }
           else
           {
-            assert(seed_composite->size() == 1);
+            throw std::runtime_error("DescartesMotionPlannerConfig: uknown waypoint type.");
+          }
+
+          tesseract_common::VectorIsometry3d poses = interpolate(prev_pose, cur_pose, interpolate_cnt);
+          // Add intermediate points with path costs and constraints
+          for (std::size_t p = 1; p < poses.size() - 1; ++p)
+          {
+            cur_plan_profile->apply(this->prob, poses[p], *plan_instruction, active_links, index);
+
+            ++index;
           }
 
           // Add final point with waypoint
@@ -218,10 +229,6 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
         if (isJointWaypoint(plan_instruction->getWaypoint().getType()))
         {
           const auto* cur_wp = plan_instruction->getWaypoint().template cast_const<tesseract_planning::JointWaypoint>();
-          if (!prev_plan_instruction)
-          {
-            assert(seed_composite->size() == 1);
-          }
 
           // Descartes does not support freespace so it will only include the plan instruction state, then in
           // post processing function will perform interpolation to fill out the seed, but may be in collision.
@@ -237,10 +244,6 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
         {
           const auto* cur_wp =
               plan_instruction->getWaypoint().template cast_const<tesseract_planning::CartesianWaypoint>();
-          if (!prev_plan_instruction)
-          {
-            assert(seed_composite->size() == 1);
-          }
 
           // Descartes does not support freespace so it will only include the plan instruction state, then in
           // post processing function will perform interpolation to fill out the seed, but may be in collision.
@@ -262,7 +265,8 @@ bool DescartesMotionPlannerDefaultConfig<FloatType>::generate()
         throw std::runtime_error("DescartesMotionPlannerConfig: Unsupported!");
       }
 
-      prev_plan_instruction = plan_instruction;
+      found_plan_instruction = true;
+      start_waypoint = plan_instruction->getWaypoint();
     }
   }
 
@@ -279,25 +283,6 @@ void DescartesMotionPlannerDefaultConfig<FloatType>::getManipulatorInfo()
   else
     this->prob.manip_inv_kin =
         this->prob.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
-
-  //  this->prob.manip_reach = manipulator_reach;
-
-  //  const std::vector<std::string>& joint_names = this->prob.manip_fwd_kin->getJointNames();
-
-  //  this->prob.dof = static_cast<int>(this->prob.manip_fwd_kin->numJoints());
-  //  this->prob.joint_limits = this->prob.manip_fwd_kin->getLimits();
-  //  this->prob.joint_names = joint_names;
-  //  this->prob.configuration = configuration;
-  //  if (this->prob.configuration == DescartesProblem<FloatType>::ROBOT_ON_POSITIONER || this->prob.configuration ==
-  //  DescartesProblem<FloatType>::ROBOT_WITH_EXTERNAL_POSITIONER)
-  //  {
-  //    this->prob.positioner_fwd_kin =
-  //    this->prob.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(positioner); this->prob.dof +=
-  //    static_cast<int>(this->prob.positioner_fwd_kin->numJoints()); this->prob.joint_limits =
-  //    Eigen::MatrixX2d(this->prob.dof, 2); this->prob.joint_limits << this->prob.positioner_fwd_kin->getLimits(),
-  //    this->prob.manip_fwd_kin->getLimits(); this->prob.joint_names = this->prob.positioner_fwd_kin->getJointNames();
-  //    this->prob.joint_names.insert(this->prob.joint_names.end(), joint_names.begin(), joint_names.end());
-  //  }
 }
 }  // namespace tesseract_planning
 

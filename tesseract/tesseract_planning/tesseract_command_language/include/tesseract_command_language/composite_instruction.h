@@ -3,6 +3,7 @@
 
 #include <tesseract_command_language/core/instruction.h>
 #include <tesseract_command_language/instruction_type.h>
+#include <tesseract_command_language/null_waypoint.h>
 #include <vector>
 #include <string>
 
@@ -34,6 +35,18 @@ public:
   void setProfile(const std::string& profile);
   const std::string& getProfile() const;
 
+  // TODO: May need to create a class that includes not only the waypoint but I/O, environment, etc.
+  void setStartWaypoint(Waypoint waypoint);
+  const Waypoint& getStartWaypoint() const;
+  bool hasStartWaypoint() const;
+
+  /**
+   * @brief This is a useful function for setting the last plan instructions waypoint
+   * This loops over the vector in reverse to find the last plan instruction. It currently skips over child composite
+   * instructions.
+   */
+  void setEndWaypoint(Waypoint waypoint, bool process_child_composites = false);
+
   bool isComposite() const;
 
   bool isPlan() const;
@@ -57,7 +70,15 @@ private:
    */
   std::string profile_{ "DEFAULT" };
 
-  CompositeInstructionOrder order_;
+  /** @brief The order of the composite instruction */
+  CompositeInstructionOrder order_ { CompositeInstructionOrder::ORDERED };
+
+  /**
+   * @brief The start waypoint to use for composite instruction.
+   *
+   * If not provided, the planner should use the current state of the robot.
+   */
+  Waypoint start_waypoint_ { NullWaypoint() };
 
   void flattenHelper(CompositeInstruction& flattened, const CompositeInstruction& composite) const;
 };

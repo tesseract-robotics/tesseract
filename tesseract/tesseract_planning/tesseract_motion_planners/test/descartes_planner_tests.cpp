@@ -139,14 +139,12 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, .20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
-  plan_f0.setWorkingFrame("base_link");
   PlanInstruction plan_f1(wp2, PlanInstructionType::LINEAR, "TEST_PROFILE");
   plan_f1.setWorkingFrame("base_link");
 
   // Create a program
   CompositeInstruction program;
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -235,14 +233,12 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, .20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
-  plan_f0.setWorkingFrame("base_link");
   PlanInstruction plan_f1(wp2, PlanInstructionType::LINEAR, "TEST_PROFILE");
   plan_f1.setWorkingFrame("base_link");
 
   // Create a program
   CompositeInstruction program;
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -334,14 +330,12 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, .10, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
-  plan_f0.setWorkingFrame("base_link");
   PlanInstruction plan_f1(wp2, PlanInstructionType::LINEAR, "TEST_PROFILE");
   plan_f1.setWorkingFrame("base_link");
 
   // Create a program
   CompositeInstruction program;
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
