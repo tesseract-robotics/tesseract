@@ -176,12 +176,11 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   JointWaypoint wp2 = Eigen::Map<const Eigen::VectorXd>(end_state.data(), static_cast<long>(end_state.size()));
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a program
   CompositeInstruction program;
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -216,7 +215,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
     CONSOLE_BRIDGE_logError("CI Error: %s", status.message().c_str());
   }
   EXPECT_TRUE(&status);
-  EXPECT_EQ(planner_response.joint_trajectory.trajectory.rows(), 10);
+  EXPECT_EQ(planner_response.joint_trajectory.trajectory.rows(), 11);
   EXPECT_TRUE(wp1.transpose().isApprox(planner_response.joint_trajectory.trajectory.row(0), 1e-5));
   EXPECT_TRUE(wp2.transpose().isApprox(planner_response.joint_trajectory.trajectory.bottomRows(1), 1e-5));
 
@@ -225,11 +224,10 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
 
   // Specify a start waypoint
   wp1 = Eigen::Map<const Eigen::VectorXd>(swp.data(), static_cast<long>(swp.size()));
-  plan_f0 = PlanInstruction(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a new program
   program = CompositeInstruction();
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a new seed
@@ -253,12 +251,11 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   wp2 = Eigen::Map<const Eigen::VectorXd>(ewp.data(), static_cast<long>(ewp.size()));
 
   // Define Plan Instructions
-  plan_f0 = PlanInstruction(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
   plan_f1 = PlanInstruction(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a new program
   program = CompositeInstruction();
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a new seed
@@ -306,12 +303,11 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianGoalPlannerUnit)
   CartesianWaypoint wp2 = goal;
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a program
   CompositeInstruction program;
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -346,7 +342,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianGoalPlannerUnit)
     CONSOLE_BRIDGE_logError("CI Error: %s", status.message().c_str());
   }
   EXPECT_TRUE(&status);
-  EXPECT_EQ(planner_response.joint_trajectory.trajectory.rows(), 10);
+  EXPECT_EQ(planner_response.joint_trajectory.trajectory.rows(), 11);
   EXPECT_TRUE(wp1.transpose().isApprox(planner_response.joint_trajectory.trajectory.row(0), 1e-5));
 
   Eigen::Isometry3d check_goal = Eigen::Isometry3d::Identity();
@@ -386,12 +382,11 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
   JointWaypoint wp2 = Eigen::Map<const Eigen::VectorXd>(end_state.data(), static_cast<long>(end_state.size()));
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a program
   CompositeInstruction program;
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -426,7 +421,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
     CONSOLE_BRIDGE_logError("CI Error: %s", status.message().c_str());
   }
   EXPECT_TRUE(&status);
-  EXPECT_EQ(planner_response.joint_trajectory.trajectory.rows(), 10);
+  EXPECT_EQ(planner_response.joint_trajectory.trajectory.rows(), 11);
   Eigen::Isometry3d check_start = Eigen::Isometry3d::Identity();
   fwd_kin->calcFwdKin(check_start, planner_response.joint_trajectory.trajectory.row(0).transpose());
   EXPECT_TRUE(wp1.isApprox(check_start, 1e-3));
