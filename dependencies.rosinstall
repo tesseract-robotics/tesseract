@@ -1,4 +1,8 @@
 - git:
+    local-name: cmake_common_scripts
+    uri: https://github.com/ros-industrial/cmake_common_scripts.git
+    version: master
+- git:
     local-name: tesseract_ext
     uri: https://github.com/ros-industrial-consortium/tesseract_ext.git
     version: master
