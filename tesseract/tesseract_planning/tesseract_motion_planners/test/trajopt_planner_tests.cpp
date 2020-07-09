@@ -139,12 +139,11 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner0)  // NOLINT
   wp2.joint_names = joint_names;
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -209,12 +208,11 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner1)  // NOLINT
   wp2.joint_names = joint_names;
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -268,13 +266,12 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner2)  // NOLINT
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
   plan_f1.setWorkingFrame("base_link");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -328,13 +325,12 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner3)  // NOLINT
   wp2.joint_names = joint_names;
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
-  plan_f0.setWorkingFrame("base_link");
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
+  plan_f1.setWorkingFrame("base_link");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -386,14 +382,12 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespacePlanner4)  // NOLINT
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
-  plan_f0.setWorkingFrame("base_link");
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
   plan_f1.setWorkingFrame("base_link");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -451,14 +445,12 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner0)  // NOLINT
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(.20, .4, 0.8) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
-  plan_f0.setWorkingFrame("base_link");
   PlanInstruction plan_f1(wp2, PlanInstructionType::LINEAR, "TEST_PROFILE");
   plan_f1.setWorkingFrame("base_link");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -530,14 +522,12 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayPlanner1)  // NOLINT
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(.20, .4, 0.8) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Define Plan Instructions
-  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE");
-  plan_f0.setWorkingFrame("base_link");
   PlanInstruction plan_f1(wp2, PlanInstructionType::LINEAR, "TEST_PROFILE");
   plan_f1.setWorkingFrame("base_link");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.push_back(plan_f0);
+  program.setStartWaypoint(wp1);
   program.push_back(plan_f1);
 
   // Create a seed
