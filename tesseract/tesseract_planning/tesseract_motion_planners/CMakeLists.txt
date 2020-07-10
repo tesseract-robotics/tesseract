@@ -95,7 +95,7 @@ target_include_directories(${PROJECT_NAME}_descartes PUBLIC
 
 tesseract_configure_package(${PROJECT_NAME}_core
                             ${PROJECT_NAME}_trajopt
-                            #${PROJECT_NAME}_ompl
+                            ${PROJECT_NAME}_ompl
                             ${PROJECT_NAME}_descartes
                             )
 
