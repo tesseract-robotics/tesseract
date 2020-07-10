@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_MOTION_PLANNERS_DEFAULT_PROBLEM_GENERATOR_H
-#define TESSERACT_MOTION_PLANNERS_DEFAULT_PROBLEM_GENERATOR_H
+#ifndef TESSERACT_MOTION_PLANNERS_TRAJOPT_DEFAULT_PROBLEM_GENERATOR_H
+#define TESSERACT_MOTION_PLANNERS_TRAJOPT_DEFAULT_PROBLEM_GENERATOR_H
 
 #include <trajopt/problem_description.hpp>
 #include <tesseract_command_language/command_language.h>
