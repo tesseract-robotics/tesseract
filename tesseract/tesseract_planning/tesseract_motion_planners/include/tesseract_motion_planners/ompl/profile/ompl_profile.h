@@ -67,6 +67,8 @@ public:
                                 int index) = 0;
 };
 
+using OMPLPlanProfileMap = std::unordered_map<std::string, OMPLPlanProfile::Ptr>;
+
 /** @todo Currently OMPL does not have support of composite profile everything is handled by the plan profile */
 
 }  // namespace tesseract_planning
