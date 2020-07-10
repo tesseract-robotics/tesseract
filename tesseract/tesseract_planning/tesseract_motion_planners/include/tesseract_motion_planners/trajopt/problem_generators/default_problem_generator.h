@@ -54,9 +54,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
   }
 
   // Check and make sure it does not contain any composite instruction
-  const PlanInstruction* start_instruction{ nullptr };
   for (const auto& instruction : request.instructions)
-  {
     if (instruction.isComposite())
       throw std::runtime_error("Trajopt planner does not support child composite instructions.");
 
@@ -71,9 +69,9 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
   seed_states.reserve(request.instructions.size());
 
   Waypoint start_waypoint = NullWaypoint();
-  if (instructions.hasStartWaypoint())
+  if (request.instructions.hasStartWaypoint())
   {
-    start_waypoint = instructions.getStartWaypoint();
+    start_waypoint = request.instructions.getStartWaypoint();
   }
   else
   {
