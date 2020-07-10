@@ -109,7 +109,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
   //    for (size_t c = 0; c < dof; ++c)
   //      response.joint_trajectory.trajectory(static_cast<long>(r), static_cast<long>(c)) = solution[(r * dof) + c];
 
-//  tesseract_common::TrajArray trajectory(static_cast<long>(r), static_cast<long>(c)) = solution[(r * dof) + c];
+  //  tesseract_common::TrajArray trajectory(static_cast<long>(r), static_cast<long>(c)) = solution[(r * dof) + c];
 
   // Flatten the results to make them easier to process
   response.results = request.seed;
@@ -129,7 +129,8 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
       for (auto& instruction : *move_instructions)
       {
         // TODO: Make this actually work
-//        Eigen::Map<Eigen::Matrix<FloatType, 1, dof>> temp = solution[static_cast<std::size_t>(result_index*dof)];
+        //        Eigen::Map<Eigen::Matrix<FloatType, 1, dof>> temp =
+        //        solution[static_cast<std::size_t>(result_index*dof)];
         Eigen::VectorXd temp = Eigen::VectorXd::Zero(6);
         instruction.cast<MoveInstruction>()->setPosition(temp);
         result_index++;
