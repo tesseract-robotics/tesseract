@@ -44,12 +44,9 @@ public:
 
   enum
   {
-    IsConfigured = 1,
     SolutionFound = 0,
-    ErrorIsNotConfigured = -1,
-    ErrorFailedToParseConfig = -2,
+    ErrorInvalidInput = -2,
     ErrorFailedToFindValidSolution = -3,
-    ErrorFoundValidSolutionInCollision = -4
   };
 
 private:
