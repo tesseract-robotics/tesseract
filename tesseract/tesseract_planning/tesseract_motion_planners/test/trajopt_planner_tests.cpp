@@ -580,7 +580,6 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointConstraint)  // NOLINT
 
   auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
   auto inv_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator");
-  const std::vector<std::string>& joint_names = fwd_kin->getJointNames();
   auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
 
   // Specify a JointWaypoint as the start
@@ -654,8 +653,15 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointCost)  // NOLINT
     JointWaypoint wp = Eigen::VectorXd::Zero(7);
     wp << 0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0;
     wp.joint_names = joint_names;
-    PlanInstruction plan_f(wp, PlanInstructionType::FREESPACE, "TEST_PROFILE");
-    program.push_back(plan_f);
+    if (ind == 0)
+    {
+      program.setStartWaypoint(wp);
+    }
+    else
+    {
+      PlanInstruction plan_f(wp, PlanInstructionType::FREESPACE, "TEST_PROFILE");
+      program.push_back(plan_f);
+    }
   }
 
   // Create a seed
