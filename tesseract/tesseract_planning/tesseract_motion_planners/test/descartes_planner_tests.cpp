@@ -167,7 +167,6 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
   request.instructions = program;
   request.tesseract = tesseract_ptr_;
   request.manipulator = "manipulator";
-  request.manipulator_ik_solver = "manipulator";
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   PlannerResponse single_planner_response;
@@ -276,7 +275,6 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
   request.instructions = program;
   request.tesseract = tesseract_ptr_;
   request.manipulator = "manipulator";
-  request.manipulator_ik_solver = "manipulator";
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   DescartesProblem<double> problem =
@@ -379,7 +377,6 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   request.instructions = program;
   request.tesseract = tesseract_ptr_;
   request.manipulator = "manipulator";
-  request.manipulator_ik_solver = "manipulator";
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   // Create Planner

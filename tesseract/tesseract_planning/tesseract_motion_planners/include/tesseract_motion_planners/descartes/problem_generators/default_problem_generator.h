@@ -46,8 +46,21 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
 
   // Get Manipulator Information
   prob.manip_fwd_kin = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(request.manipulator);
-  prob.manip_inv_kin =
-      request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(request.manipulator_ik_solver);
+  if (request.manipulator_ik_solver.empty())
+    prob.manip_inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(request.manipulator);
+  else
+    prob.manip_inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(
+        request.manipulator, request.manipulator_ik_solver);
+  if (!prob.manip_fwd_kin)
+  {
+    CONSOLE_BRIDGE_logError("No Forward Kinematics solver found");
+    return prob;
+  }
+  if (!prob.manip_inv_kin)
+  {
+    CONSOLE_BRIDGE_logError("No Inverse Kinematics solver found");
+    return prob;
+  }
   prob.env_state = request.env_state;
   prob.tesseract = request.tesseract;
 
