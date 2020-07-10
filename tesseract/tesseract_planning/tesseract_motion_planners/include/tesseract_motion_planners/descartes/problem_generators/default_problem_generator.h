@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_MOTION_PLANNERS_DEFAULT_PROBLEM_GENERATOR_H
-#define TESSERACT_MOTION_PLANNERS_DEFAULT_PROBLEM_GENERATOR_H
+#ifndef TESSERACT_MOTION_PLANNERS_DESCARTES_DEFAULT_PROBLEM_GENERATOR_H
+#define TESSERACT_MOTION_PLANNERS_DESCARTES_DEFAULT_PROBLEM_GENERATOR_H
 
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_motion_planners/descartes/descartes_problem.h>
@@ -34,8 +34,8 @@
 namespace tesseract_planning
 {
 template <typename FloatType>
-inline DescartesProblem<FloatType> DefaultDescartesProblemGenerator(const PlannerRequest& request,
-                                                                    const DescartesProfileMap<FloatType>& plan_profiles)
+inline DescartesProblem<FloatType>
+DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesPlanProfileMap<FloatType>& plan_profiles)
 {
   DescartesProblem<FloatType> prob;
 
