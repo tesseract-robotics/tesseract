@@ -61,7 +61,7 @@ public:
    */
   virtual tesseract_common::StatusCode solve(const PlannerRequest& request,
                                              PlannerResponse& response,
-                                             bool verbose = false) = 0;
+                                             bool verbose = false) const = 0;
 
   /**
    * @brief If solve() is running, terminate the computation. Return false if termination not possible. No-op if
