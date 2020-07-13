@@ -95,7 +95,7 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
 
   // Transform plan instructions into descartes samplers
   int index = 0;
-  bool found_plan_instruction {false};
+  bool found_plan_instruction{ false };
   for (std::size_t i = 0; i < request.instructions.size(); ++i)
   {
     const auto& instruction = request.instructions[i];
@@ -162,8 +162,8 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
             if (!prob.manip_fwd_kin->calcFwdKin(prev_pose, *jwp))
               throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
 
-            prev_pose = prob.env_state->link_transforms.at(prob.manip_fwd_kin->getBaseLinkName()) *
-                        prev_pose * plan_instruction->getTCP();
+            prev_pose = prob.env_state->link_transforms.at(prob.manip_fwd_kin->getBaseLinkName()) * prev_pose *
+                        plan_instruction->getTCP();
           }
           else
           {
@@ -205,8 +205,8 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
             if (!prob.manip_fwd_kin->calcFwdKin(prev_pose, *jwp))
               throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
 
-            prev_pose = prob.env_state->link_transforms.at(prob.manip_fwd_kin->getBaseLinkName()) *
-                        prev_pose * plan_instruction->getTCP();
+            prev_pose = prob.env_state->link_transforms.at(prob.manip_fwd_kin->getBaseLinkName()) * prev_pose *
+                        plan_instruction->getTCP();
           }
           else
           {

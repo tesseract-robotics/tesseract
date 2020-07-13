@@ -191,8 +191,7 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
         bool is_jwp2 = isJointWaypoint(plan_instruction->getWaypoint().getType());
         if (!found_plan_instruction)
         {
-          tesseract_planning::MoveInstruction move_instruction(start_waypoint,
-                                                               MoveInstructionType::LINEAR);
+          tesseract_planning::MoveInstruction move_instruction(start_waypoint, MoveInstructionType::LINEAR);
 
           if (is_jwp1)
             move_instruction.setPosition(*(start_waypoint.cast_const<JointWaypoint>()));
@@ -322,8 +321,7 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
         bool is_jwp2 = isJointWaypoint(plan_instruction->getWaypoint().getType());
         if (!found_plan_instruction)
         {
-          tesseract_planning::MoveInstruction move_instruction(start_waypoint,
-                                                               MoveInstructionType::FREESPACE);
+          tesseract_planning::MoveInstruction move_instruction(start_waypoint, MoveInstructionType::FREESPACE);
 
           if (is_jwp1)
             move_instruction.setPosition(*(start_waypoint.cast_const<JointWaypoint>()));

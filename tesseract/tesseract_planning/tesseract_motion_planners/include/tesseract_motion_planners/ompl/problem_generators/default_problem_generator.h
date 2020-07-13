@@ -117,7 +117,7 @@ inline std::vector<OMPLProblem::UPtr> DefaultOMPLProblemGenerator(const PlannerR
     if (instruction.isPlan())
     {
       // Save plan index for process trajectory
-//      plan_instruction_indices_.push_back(i);
+      //      plan_instruction_indices_.push_back(i);
 
       assert(instruction.getType() == static_cast<int>(InstructionType::PLAN_INSTRUCTION));
       const auto* plan_instruction = instruction.cast_const<PlanInstruction>();
