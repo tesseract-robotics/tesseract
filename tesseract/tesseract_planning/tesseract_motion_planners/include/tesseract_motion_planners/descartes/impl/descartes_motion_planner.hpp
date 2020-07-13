@@ -103,14 +103,6 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
     return response.status;
   }
 
-  //  response.joint_trajectory.joint_names = config_->joint_names;
-  //  response.joint_trajectory.trajectory.resize(static_cast<long>(config_->waypoints.size()), static_cast<long>(dof));
-  //  for (size_t r = 0; r < config_->waypoints.size(); ++r)
-  //    for (size_t c = 0; c < dof; ++c)
-  //      response.joint_trajectory.trajectory(static_cast<long>(r), static_cast<long>(c)) = solution[(r * dof) + c];
-
-  //  tesseract_common::TrajArray trajectory(static_cast<long>(r), static_cast<long>(c)) = solution[(r * dof) + c];
-
   // Flatten the results to make them easier to process
   response.results = request.seed;
   std::vector<std::reference_wrapper<Instruction>> results_flattened =
@@ -118,9 +110,9 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
   std::vector<std::reference_wrapper<const Instruction>> instructions_flattened = Flatten(request.instructions);
 
   // Loop over the flattened results and add them to response if the input was a plan instruction
+  Eigen::Index dof = problem.manip_fwd_kin->numJoints();
   Eigen::Index result_index = 0;
-  // TODO: Levi, change plan_index = 0 when add initial state to composite
-  for (std::size_t plan_index = 1; plan_index < results_flattened.size(); plan_index++)
+  for (std::size_t plan_index = 0; plan_index < results_flattened.size(); plan_index++)
   {
     if (instructions_flattened.at(plan_index).get().isPlan())
     {
@@ -128,11 +120,8 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
       auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();
       for (auto& instruction : *move_instructions)
       {
-        // TODO: Make this actually work
-        //        Eigen::Map<Eigen::Matrix<FloatType, 1, dof>> temp =
-        //        solution[static_cast<std::size_t>(result_index*dof)];
-        Eigen::VectorXd temp = Eigen::VectorXd::Zero(6);
-        instruction.cast<MoveInstruction>()->setPosition(temp);
+        Eigen::Map<Eigen::Matrix<FloatType, -1, 1>> temp(solution.data() + dof * result_index, dof);
+        instruction.cast<MoveInstruction>()->setPosition(temp.template cast<double>());
         result_index++;
       }
     }
