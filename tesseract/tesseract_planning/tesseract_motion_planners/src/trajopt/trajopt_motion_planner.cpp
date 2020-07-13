@@ -90,7 +90,7 @@ void TrajOptMotionPlanner::clear()
 
 tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& request,
                                                          PlannerResponse& response,
-                                                         bool verbose)
+                                                         bool verbose) const
 {
   if (!checkUserInput(request) || !problem_generator)
   {
