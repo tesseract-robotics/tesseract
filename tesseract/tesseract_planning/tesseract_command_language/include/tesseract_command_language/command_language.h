@@ -8,5 +8,6 @@
 #include <tesseract_command_language/move_instruction.h>
 #include <tesseract_command_language/plan_instruction.h>
 #include <tesseract_command_language/waypoint_type.h>
+#include <tesseract_command_language/null_waypoint.h>
 
 #endif  // TESSERACT_COMMAND_LANGUAGE_WAYPOINT_TYPE_H
