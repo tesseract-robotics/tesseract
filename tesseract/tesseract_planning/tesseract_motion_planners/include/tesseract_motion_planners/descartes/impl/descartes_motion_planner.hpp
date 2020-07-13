@@ -61,7 +61,7 @@ DescartesMotionPlanner<FloatType>::DescartesMotionPlanner(std::string name)
 template <typename FloatType>
 tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const PlannerRequest& request,
                                                                       PlannerResponse& response,
-                                                                      const bool /*verbose*/)
+                                                                      const bool /*verbose*/) const
 {
   if (!problem_generator)
   {
