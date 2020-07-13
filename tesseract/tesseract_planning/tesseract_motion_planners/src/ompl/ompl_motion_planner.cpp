@@ -95,7 +95,7 @@ bool OMPLMotionPlanner::terminate()
 
 tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& request,
                                                       PlannerResponse& response,
-                                                      bool verbose)
+                                                      bool verbose) const
 {
   std::vector<OMPLProblem::UPtr> prob = problem_generator(request, plan_profiles);
 

@@ -87,7 +87,7 @@ public:
    */
   tesseract_common::StatusCode solve(const PlannerRequest& request,
                                      PlannerResponse& response,
-                                     bool verbose = false) override;
+                                     bool verbose = false) const override;
 
   bool checkUserInput(const PlannerRequest& request) const;
 
