@@ -3,8 +3,14 @@
 
 namespace tesseract_planning
 {
-PlanInstruction::PlanInstruction(Waypoint waypoint, PlanInstructionType type, std::string profile, std::string working_frame)
-  : plan_type_(type), waypoint_(std::move(waypoint)), profile_(std::move(profile)), working_frame_(std::move(working_frame))
+PlanInstruction::PlanInstruction(Waypoint waypoint,
+                                 PlanInstructionType type,
+                                 std::string profile,
+                                 std::string working_frame)
+  : plan_type_(type)
+  , waypoint_(std::move(waypoint))
+  , profile_(std::move(profile))
+  , working_frame_(std::move(working_frame))
 {
 }
 
