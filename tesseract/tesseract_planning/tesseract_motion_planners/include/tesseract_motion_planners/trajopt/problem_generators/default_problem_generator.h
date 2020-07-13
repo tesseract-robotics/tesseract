@@ -83,7 +83,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
 
   // Transform plan instructions into trajopt cost and constraints
   int index = 0;
-  bool found_plan_instruction {false};
+  bool found_plan_instruction{ false };
   for (std::size_t i = 0; i < request.instructions.size(); ++i)
   {
     const auto& instruction = request.instructions[i];
@@ -116,8 +116,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
 
         // Add start seed state
         assert(seed_composite->at(0).isMove());
-        const auto* seed_instruction =
-            seed_composite->at(0).cast_const<tesseract_planning::MoveInstruction>();
+        const auto* seed_instruction = seed_composite->at(0).cast_const<tesseract_planning::MoveInstruction>();
         seed_states.push_back(seed_instruction->getPosition());
 
         seed_shift_index = 0;

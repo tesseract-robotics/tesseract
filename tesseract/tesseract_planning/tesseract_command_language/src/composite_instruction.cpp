@@ -24,27 +24,18 @@ void CompositeInstruction::setProfile(const std::string& profile)
 }
 const std::string& CompositeInstruction::getProfile() const { return profile_; }
 
-void CompositeInstruction::setStartWaypoint(Waypoint waypoint)
-{
-  start_waypoint_ = waypoint;
-}
+void CompositeInstruction::setStartWaypoint(Waypoint waypoint) { start_waypoint_ = waypoint; }
 
-const Waypoint& CompositeInstruction::getStartWaypoint() const
-{
-  return start_waypoint_;
-}
+const Waypoint& CompositeInstruction::getStartWaypoint() const { return start_waypoint_; }
 
-bool CompositeInstruction::hasStartWaypoint() const
-{
-  return (!isNullWaypoint(start_waypoint_.getType()));
-}
+bool CompositeInstruction::hasStartWaypoint() const { return (!isNullWaypoint(start_waypoint_.getType())); }
 
 void CompositeInstruction::setEndWaypoint(Waypoint waypoint, bool process_child_composites)
 {
   assert(!process_child_composites);
   for (auto it = this->rbegin(); it != this->rend(); ++it)
   {
-    if(isPlanInstruction(it->getType()))
+    if (isPlanInstruction(it->getType()))
     {
       it->cast<PlanInstruction>()->setWaypoint(waypoint);
       return;
