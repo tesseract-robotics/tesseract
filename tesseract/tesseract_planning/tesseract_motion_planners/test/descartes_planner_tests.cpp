@@ -52,6 +52,8 @@ using namespace opw_kinematics;
 using namespace descartes_light;
 using namespace descartes_core;
 
+const bool DEBUG = false;
+
 std::string locateResource(const std::string& url)
 {
   std::string mod_url = url;
@@ -191,6 +193,19 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
 
     PlannerResponse planner_response;
     auto status = descartes_planner.solve(request, planner_response);
+
+    if (DEBUG)
+    {
+      std::cout << "Request Instructions:" << std::endl;
+      request.instructions.print();
+      std::cout << "Request Seed:" << std::endl;
+      request.seed.print();
+      std::cout << "Single Planner Response Results:" << std::endl;
+      single_planner_response.results.print();
+      std::cout << "Threaded Planner Response Results:" << std::endl;
+      planner_response.results.print();
+    }
+
     EXPECT_TRUE(&status);
     EXPECT_EQ(official_results.size(), planner_response.results.size());
     for (std::size_t j = 0; j < official_results.size(); ++j)
@@ -198,7 +213,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
       if (official_results[j].isComposite())
       {
         const auto* sub_official = official_results[j].cast_const<CompositeInstruction>();
-        const auto* sub = request.seed[j].cast_const<CompositeInstruction>();
+        const auto* sub = planner_response.results[j].cast_const<CompositeInstruction>();
         for (std::size_t k = 0; k < sub->size(); ++k)
         {
           if ((*sub_official)[k].isComposite())
