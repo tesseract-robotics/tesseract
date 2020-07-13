@@ -71,14 +71,14 @@ private:
   std::string profile_{ "DEFAULT" };
 
   /** @brief The order of the composite instruction */
-  CompositeInstructionOrder order_ { CompositeInstructionOrder::ORDERED };
+  CompositeInstructionOrder order_{ CompositeInstructionOrder::ORDERED };
 
   /**
    * @brief The start waypoint to use for composite instruction.
    *
    * If not provided, the planner should use the current state of the robot.
    */
-  Waypoint start_waypoint_ { NullWaypoint() };
+  Waypoint start_waypoint_{ NullWaypoint() };
 
   void flattenHelper(CompositeInstruction& flattened, const CompositeInstruction& composite) const;
 };

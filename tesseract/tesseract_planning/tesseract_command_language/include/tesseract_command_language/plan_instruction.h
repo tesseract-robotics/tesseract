@@ -21,7 +21,10 @@ public:
   using Ptr = std::shared_ptr<PlanInstruction>;
   using ConstPtr = std::shared_ptr<const PlanInstruction>;
 
-  PlanInstruction(Waypoint waypoint, PlanInstructionType type, std::string profile = "DEFAULT", std::string working_frame = "");
+  PlanInstruction(Waypoint waypoint,
+                  PlanInstructionType type,
+                  std::string profile = "DEFAULT",
+                  std::string working_frame = "");
 
   void setWaypoint(Waypoint waypoint);
   const Waypoint& getWaypoint() const;
@@ -74,7 +77,6 @@ private:
 
   /** @brief The description of the instruction */
   std::string description_{ "Tesseract Plan Instruction" };
-
 };
 
 }  // namespace tesseract_planning

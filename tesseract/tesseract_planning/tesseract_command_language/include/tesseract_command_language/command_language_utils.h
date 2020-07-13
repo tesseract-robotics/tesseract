@@ -7,14 +7,14 @@
 
 namespace tesseract_planning
 {
-
 /**
  * @brief Get the first Plan Instruction in a Composite Instruction
  * @param composite_instruction Composite Instruction to search
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The first Plan Instruction (Const)
  */
-const PlanInstruction* getFirstPlanInstruction(const CompositeInstruction& composite_instruction, bool process_child_composites = true);
+const PlanInstruction* getFirstPlanInstruction(const CompositeInstruction& composite_instruction,
+                                               bool process_child_composites = true);
 
 /**
  * @brief Get the last Plan Instruction in a Composite Instruction
@@ -22,7 +22,8 @@ const PlanInstruction* getFirstPlanInstruction(const CompositeInstruction& compo
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The last Plan Instruction (Const)
  */
-const PlanInstruction* getLastPlanInstruction(const CompositeInstruction& composite_instruction, bool process_child_composites = true);
+const PlanInstruction* getLastPlanInstruction(const CompositeInstruction& composite_instruction,
+                                              bool process_child_composites = true);
 
 /**
  * @brief Get the first Plan Instruction in a Composite Instruction
@@ -30,7 +31,8 @@ const PlanInstruction* getLastPlanInstruction(const CompositeInstruction& compos
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The first Plan Instruction (Non-Const)
  */
-PlanInstruction* getFirstPlanInstruction(CompositeInstruction& composite_instruction, bool process_child_composites = true);
+PlanInstruction* getFirstPlanInstruction(CompositeInstruction& composite_instruction,
+                                         bool process_child_composites = true);
 
 /**
  * @brief Get the last Plan Instruction in a Composite Instruction
@@ -38,7 +40,8 @@ PlanInstruction* getFirstPlanInstruction(CompositeInstruction& composite_instruc
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The last Plan Instruction (Non-Const)
  */
-PlanInstruction* getLastPlanInstruction(CompositeInstruction& composite_instruction, bool process_child_composites = true);
+PlanInstruction* getLastPlanInstruction(CompositeInstruction& composite_instruction,
+                                        bool process_child_composites = true);
 
 /**
  * @brief Get the first Move Instruction in a Composite Instruction
@@ -46,7 +49,8 @@ PlanInstruction* getLastPlanInstruction(CompositeInstruction& composite_instruct
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The first Move Instruction (Const)
  */
-const MoveInstruction* getFirstMoveInstruction(const CompositeInstruction& composite_instruction, bool process_child_composites = true);
+const MoveInstruction* getFirstMoveInstruction(const CompositeInstruction& composite_instruction,
+                                               bool process_child_composites = true);
 
 /**
  * @brief Get the last Move Instruction in a Composite Instruction
@@ -54,7 +58,8 @@ const MoveInstruction* getFirstMoveInstruction(const CompositeInstruction& compo
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The last Move Instruction (Const)
  */
-const MoveInstruction* getLastMoveInstruction(const CompositeInstruction& composite_instruction, bool process_child_composites = true);
+const MoveInstruction* getLastMoveInstruction(const CompositeInstruction& composite_instruction,
+                                              bool process_child_composites = true);
 
 /**
  * @brief Get the first Move Instruction in a Composite Instruction
@@ -62,7 +67,8 @@ const MoveInstruction* getLastMoveInstruction(const CompositeInstruction& compos
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The first Move Instruction (Non-Const)
  */
-MoveInstruction* getFirstMoveInstruction(CompositeInstruction& composite_instruction, bool process_child_composites = true);
+MoveInstruction* getFirstMoveInstruction(CompositeInstruction& composite_instruction,
+                                         bool process_child_composites = true);
 
 /**
  * @brief Get the last Move Instruction in a Composite Instruction
@@ -70,7 +76,8 @@ MoveInstruction* getFirstMoveInstruction(CompositeInstruction& composite_instruc
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The last Move Instruction (Non-Const)
  */
-MoveInstruction* getLastMoveInstruction(CompositeInstruction& composite_instruction, bool process_child_composites = true);
+MoveInstruction* getLastMoveInstruction(CompositeInstruction& composite_instruction,
+                                        bool process_child_composites = true);
 
 /**
  * @brief Get number of Move Instruction in a Composite Instruction
@@ -87,6 +94,6 @@ long getMoveInstructionsCount(const CompositeInstruction& composite_instruction,
  * @return The number of Plan Instructions
  */
 long getPlanInstructionsCount(const CompositeInstruction& composite_instruction, bool process_child_composites = true);
-}
+}  // namespace tesseract_planning
 
-#endif // TESSERACT_COMMAND_LANGUAGE_COMMAND_LANGUAGE_UTILS_H
+#endif  // TESSERACT_COMMAND_LANGUAGE_COMMAND_LANGUAGE_UTILS_H
