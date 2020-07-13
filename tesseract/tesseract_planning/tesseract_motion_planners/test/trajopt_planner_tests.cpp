@@ -580,24 +580,29 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointConstraint)  // NOLINT
 
   auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
   auto inv_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator");
+  const std::vector<std::string>& joint_names = fwd_kin->getJointNames();
   auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
-
-  // Specify a JointWaypoint as the start
-  CartesianWaypoint wp1 =
-      Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.8) * Eigen::Quaterniond(0, 0, 1.0, 0);
-
-  // Specify a Joint Waypoint as the finish
-  CartesianWaypoint wp2 =
-      Eigen::Isometry3d::Identity() * Eigen::Translation3d(.20, .4, 0.8) * Eigen::Quaterniond(0, 0, 1.0, 0);
-
-  // Define Plan Instructions
-  PlanInstruction plan_f1(wp2, PlanInstructionType::LINEAR, "TEST_PROFILE");
-  plan_f1.setWorkingFrame("base_link");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.setStartWaypoint(wp1);
-  program.push_back(plan_f1);
+
+  // These specify the series of points to be optimized
+  for (int ind = 0; ind < NUM_STEPS; ind++)
+  {
+    // Specify a Joint Waypoint as the finish
+    JointWaypoint wp = Eigen::VectorXd::Zero(7);
+    wp << 0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0;
+    if (ind == 0)
+    {
+      program.setStartWaypoint(wp);
+    }
+    else
+    {
+      wp.joint_names = joint_names;
+      PlanInstruction plan_f(wp, PlanInstructionType::FREESPACE, "TEST_PROFILE");
+      program.push_back(plan_f);
+    }
+  }
 
   // Create a seed
   CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin);

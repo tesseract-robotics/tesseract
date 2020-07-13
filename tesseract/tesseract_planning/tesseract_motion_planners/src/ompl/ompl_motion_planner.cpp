@@ -211,8 +211,7 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& requ
 
     // Loop over the flattened results and add them to response if the input was a plan instruction
     Eigen::Index result_index = 0;
-    // TODO: Levi, change plan_index = 0 when add initial state to composite
-    for (std::size_t plan_index = 1; plan_index < results_flattened.size(); plan_index++)
+    for (std::size_t plan_index = 0; plan_index < results_flattened.size(); plan_index++)
     {
       if (instructions_flattened.at(plan_index).get().isPlan())
       {
