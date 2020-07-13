@@ -60,6 +60,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/core/utils.h>
 
+#include <tesseract_command_language/command_language_utils.h>
+
 using namespace tesseract;
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
@@ -216,11 +218,11 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   {
     CONSOLE_BRIDGE_logError("CI Error: %s", status.message().c_str());
   }
-  // TODO: Fix!
-  //  EXPECT_TRUE(&status);
-  //  EXPECT_EQ(planner_response.joint_trajectory.trajectory.rows(), 10);
-  //  EXPECT_TRUE(wp1.transpose().isApprox(planner_response.joint_trajectory.trajectory.row(0), 1e-5));
-  //  EXPECT_TRUE(wp2.transpose().isApprox(planner_response.joint_trajectory.trajectory.bottomRows(1), 1e-5));
+
+  EXPECT_TRUE(&status);
+  EXPECT_EQ(getMoveInstructionsCount(planner_response.results), 11);
+  EXPECT_TRUE(wp1.isApprox(getFirstMoveInstruction(planner_response.results)->getPosition(), 1e-5));
+  EXPECT_TRUE(wp2.isApprox(getLastMoveInstruction(planner_response.results)->getPosition(), 1e-5));
 
   // Check for start state in collision error
   std::vector<double> swp = { 0, 0.7, 0.0, 0, 0.0, 0, 0.0 };
@@ -345,25 +347,12 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianGoalPlannerUnit)
     CONSOLE_BRIDGE_logError("CI Error: %s", status.message().c_str());
   }
   EXPECT_TRUE(&status);
-  ASSERT_EQ(planner_response.results.back().cast<CompositeInstruction>()->size(), 11);
-  //  Eigen::Isometry3d check_goal1 = Eigen::Isometry3d::Identity();
-  //  fwd_kin->calcFwdKin(check_goal1,
-  //  planner_response.results.back().cast<CompositeInstruction>()->front().cast<MoveInstruction>()->getWaypoint().cast_const<JointWaypoint>()->transpose());
-  //  Eigen::VectorXd temp =
-  //  *planner_response.results.back().cast<CompositeInstruction>()->front().cast<MoveInstruction>()->getWaypoint().cast_const<JointWaypoint>();
-  //  EXPECT_TRUE(wp1.transpose().isApprox(planner_response.results.back().cast<CompositeInstruction>()->front().cast<MoveInstruction>()->getWaypoint().cast_const<JointWaypoint>()->transpose(),
-  //  1e-5));
+  EXPECT_EQ(getMoveInstructionsCount(planner_response.results), 11);
+  EXPECT_TRUE(wp1.isApprox(getFirstMoveInstruction(planner_response.results)->getPosition(), 1e-5));
 
-  Eigen::Isometry3d check_goal2 = Eigen::Isometry3d::Identity();
-  fwd_kin->calcFwdKin(check_goal2,
-                      planner_response.results.back()
-                          .cast<CompositeInstruction>()
-                          ->back()
-                          .cast<MoveInstruction>()
-                          ->getWaypoint()
-                          .cast_const<JointWaypoint>()
-                          ->transpose());
-  //    EXPECT_TRUE(wp2.isApprox(check_goal2, 1e-3));
+  Eigen::Isometry3d check_goal = Eigen::Isometry3d::Identity();
+  fwd_kin->calcFwdKin(check_goal, getLastMoveInstruction(planner_response.results)->getPosition());
+  EXPECT_TRUE(wp2.isApprox(check_goal, 1e-3));
 }
 
 TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
@@ -437,13 +426,14 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
   {
     CONSOLE_BRIDGE_logError("CI Error: %s", status.message().c_str());
   }
-  EXPECT_TRUE(&status);
-  ASSERT_EQ(planner_response.results.back().cast<CompositeInstruction>()->size(), 11);
-  //  Eigen::Isometry3d check_start = Eigen::Isometry3d::Identity();
-  //  fwd_kin->calcFwdKin(check_start, planner_response.joint_trajectory.trajectory.row(0).transpose());
-  //  EXPECT_TRUE(wp1.isApprox(check_start, 1e-3));
 
-  //  EXPECT_TRUE(wp2.isApprox(planner_response.joint_trajectory.trajectory.bottomRows(1).transpose(), 1e-5));
+  EXPECT_TRUE(&status);
+  EXPECT_EQ(getMoveInstructionsCount(planner_response.results), 11);
+  EXPECT_TRUE(wp2.isApprox(getLastMoveInstruction(planner_response.results)->getPosition(), 1e-5));
+
+  Eigen::Isometry3d check_start = Eigen::Isometry3d::Identity();
+  fwd_kin->calcFwdKin(check_start, getFirstMoveInstruction(planner_response.results)->getPosition());
+  EXPECT_TRUE(wp1.isApprox(check_start, 1e-3));
 }
 
 // TEST(OMPLMultiPlanner, OMPLMultiPlannerUnit)  // NOLINT
