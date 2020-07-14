@@ -51,7 +51,7 @@ public:
   TrajOptMotionPlanner& operator=(TrajOptMotionPlanner&&) = default;
 
   std::function<
-      trajopt::TrajOptProb(const PlannerRequest&, const TrajOptPlanProfileMap&, const TrajOptCompositeProfileMap&)>
+      trajopt::TrajOptProb::Ptr(const PlannerRequest&, const TrajOptPlanProfileMap&, const TrajOptCompositeProfileMap&)>
       problem_generator;
 
   /**
@@ -109,7 +109,7 @@ public:
   enum
   {
     SolutionFound = 0,
-    InvalidInput = -1,
+    ErrorInvalidInput = -1,
     FailedToFindValidSolution = -3,
   };
 
