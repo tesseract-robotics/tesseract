@@ -55,7 +55,7 @@ std::string TrajOptMotionPlannerStatusCategory::message(int code) const
     {
       return "Found valid solution";
     }
-    case InvalidInput:
+    case ErrorInvalidInput:
     {
       return "Input to planner is invalid. Check that instructions and seed are compatible";
     }
@@ -92,12 +92,29 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& r
                                                          PlannerResponse& response,
                                                          bool verbose) const
 {
-  if (!checkUserInput(request) || !problem_generator)
+  if (!checkUserInput(request))
   {
-    response.status = tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::InvalidInput, status_category_);
+    response.status =
+        tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::ErrorInvalidInput, status_category_);
     return response.status;
   }
-  auto problem = std::make_shared<trajopt::TrajOptProb>(problem_generator(request, plan_profiles, composite_profiles));
+  trajopt::TrajOptProb::Ptr problem;
+  if (request.data)
+  {
+    problem = std::static_pointer_cast<trajopt::TrajOptProb>(request.data);
+  }
+  else
+  {
+    if (!problem_generator)
+    {
+      CONSOLE_BRIDGE_logError("TrajOptPlanner does not have a problem generator specified.");
+      response.status =
+          tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::ErrorInvalidInput, status_category_);
+      return response.status;
+    }
+    problem = problem_generator(request, plan_profiles, composite_profiles);
+    response.data = problem;
+  }
 
   // Set Log Level
   if (verbose)

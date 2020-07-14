@@ -179,11 +179,10 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
   {
     // Test the problem generator
     {
-      DescartesProblem<double> problem =
-          DefaultDescartesProblemGenerator<double>(request, single_descartes_planner.plan_profiles);
-      EXPECT_EQ(problem.samplers.size(), 11);
-      EXPECT_EQ(problem.timing_constraints.size(), 11);
-      EXPECT_EQ(problem.edge_evaluators.size(), 10);
+      auto problem = DefaultDescartesProblemGenerator<double>(request, single_descartes_planner.plan_profiles);
+      EXPECT_EQ(problem->samplers.size(), 11);
+      EXPECT_EQ(problem->timing_constraints.size(), 11);
+      EXPECT_EQ(problem->edge_evaluators.size(), 10);
     }
 
     DescartesMotionPlannerD descartes_planner;
@@ -288,12 +287,11 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
   request.manipulator = "manipulator";
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
-  DescartesProblem<double> problem =
-      DefaultDescartesProblemGenerator<double>(request, single_descartes_planner.plan_profiles);
-  problem.num_threads = 1;
-  EXPECT_EQ(problem.samplers.size(), 11);
-  EXPECT_EQ(problem.timing_constraints.size(), 11);
-  EXPECT_EQ(problem.edge_evaluators.size(), 10);
+  auto problem = DefaultDescartesProblemGenerator<double>(request, single_descartes_planner.plan_profiles);
+  problem->num_threads = 1;
+  EXPECT_EQ(problem->samplers.size(), 11);
+  EXPECT_EQ(problem->timing_constraints.size(), 11);
+  EXPECT_EQ(problem->edge_evaluators.size(), 10);
 
   PlannerResponse single_planner_response;
   auto single_status = single_descartes_planner.solve(request, single_planner_response);
@@ -394,12 +392,11 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   single_descartes_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
 
   // Test Problem size - TODO: Make dedicated unit test for DefaultDescartesProblemGenerator
-  DescartesProblem<double> problem =
-      DefaultDescartesProblemGenerator<double>(request, single_descartes_planner.plan_profiles);
-  EXPECT_EQ(problem.samplers.size(), 3);
-  EXPECT_EQ(problem.timing_constraints.size(), 3);
-  EXPECT_EQ(problem.edge_evaluators.size(), 2);
-  EXPECT_EQ(problem.num_threads, 1);
+  auto problem = DefaultDescartesProblemGenerator<double>(request, single_descartes_planner.plan_profiles);
+  EXPECT_EQ(problem->samplers.size(), 3);
+  EXPECT_EQ(problem->timing_constraints.size(), 3);
+  EXPECT_EQ(problem->edge_evaluators.size(), 2);
+  EXPECT_EQ(problem->num_threads, 1);
 
   PlannerResponse single_planner_response;
   auto single_status = single_descartes_planner.solve(request, single_planner_response);

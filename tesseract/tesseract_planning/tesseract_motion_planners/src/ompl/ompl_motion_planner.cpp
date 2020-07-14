@@ -97,7 +97,31 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& requ
                                                       PlannerResponse& response,
                                                       bool verbose) const
 {
-  std::vector<OMPLProblem::UPtr> prob = problem_generator(request, plan_profiles);
+  if (!checkUserInput(request))
+  {
+    response.status =
+        tesseract_common::StatusCode(OMPLMotionPlannerStatusCategory::ErrorInvalidInput, status_category_);
+    return response.status;
+  }
+  std::vector<OMPLProblem::Ptr> problem;
+  if (request.data)
+  {
+    problem = *std::static_pointer_cast<std::vector<OMPLProblem::Ptr>>(request.data);
+  }
+  else
+  {
+    if (!problem_generator)
+    {
+      CONSOLE_BRIDGE_logError("OMPLPlanner does not have a problem generator specified.");
+      response.status =
+          tesseract_common::StatusCode(OMPLMotionPlannerStatusCategory::ErrorInvalidInput, status_category_);
+      return response.status;
+    }
+    problem = problem_generator(request, plan_profiles);
+    response.data = std::make_shared<std::vector<OMPLProblem::Ptr>>(problem);
+  }
+
+  std::vector<OMPLProblem::Ptr> prob = problem_generator(request, plan_profiles);
 
   // If the verbose set the log level to debug.
   if (verbose)
@@ -230,7 +254,7 @@ void OMPLMotionPlanner::clear()
   parallel_plan_ = nullptr;
 }
 
-bool OMPLMotionPlanner::checkUserInput(const PlannerRequest& /*request*/)
+bool OMPLMotionPlanner::checkUserInput(const PlannerRequest& /*request*/) const
 {
   // Maybe add validy check to problem?
   //  for (const auto& sub_prob : prob)

@@ -63,17 +63,27 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
                                                                       PlannerResponse& response,
                                                                       const bool /*verbose*/) const
 {
-  if (!problem_generator)
+  std::shared_ptr<DescartesProblem<FloatType>> problem;
+  if (request.data)
   {
-    CONSOLE_BRIDGE_logError("DescartesMotionPlanner does not have a problem generator specified.");
-    response.status =
-        tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::ErrorInvalidInput, status_category_);
-    return response.status;
+    problem = std::static_pointer_cast<DescartesProblem<FloatType>>(request.data);
   }
-  DescartesProblem<FloatType> problem = problem_generator(request, plan_profiles);
+  else
+  {
+    if (!problem_generator)
+    {
+      CONSOLE_BRIDGE_logError("DescartesMotionPlanner does not have a problem generator specified.");
+      response.status =
+          tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::ErrorInvalidInput, status_category_);
+      return response.status;
+    }
+    problem = problem_generator(request, plan_profiles);
+    response.data = problem;
+  }
 
-  descartes_light::Solver<FloatType> graph_builder(problem.manip_inv_kin->numJoints());
-  if (!graph_builder.build(problem.samplers, problem.timing_constraints, problem.edge_evaluators, problem.num_threads))
+  descartes_light::Solver<FloatType> graph_builder(problem->manip_inv_kin->numJoints());
+  if (!graph_builder.build(
+          problem->samplers, problem->timing_constraints, problem->edge_evaluators, problem->num_threads))
   {
     //    CONSOLE_BRIDGE_logError("Failed to build vertices");
     //    for (const auto& i : graph_builder.getFailedVertices())
@@ -113,7 +123,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
   std::vector<std::reference_wrapper<const Instruction>> instructions_flattened = Flatten(request.instructions);
 
   // Loop over the flattened results and add them to response if the input was a plan instruction
-  Eigen::Index dof = problem.manip_fwd_kin->numJoints();
+  Eigen::Index dof = problem->manip_fwd_kin->numJoints();
   Eigen::Index result_index = 0;
   for (auto& instruction : results_flattened)
   {
