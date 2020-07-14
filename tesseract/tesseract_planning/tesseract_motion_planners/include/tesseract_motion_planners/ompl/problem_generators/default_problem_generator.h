@@ -34,10 +34,10 @@
 
 namespace tesseract_planning
 {
-inline OMPLProblem::UPtr CreateOMPLSubProblem(const PlannerRequest& request,
-                                              const tesseract_kinematics::ForwardKinematics::Ptr& manip_fwd_kin,
-                                              const tesseract_kinematics::InverseKinematics::Ptr& manip_inv_kin,
-                                              const std::vector<std::string>& active_link_names)
+inline OMPLProblem::Ptr CreateOMPLSubProblem(const PlannerRequest& request,
+                                             const tesseract_kinematics::ForwardKinematics::Ptr& manip_fwd_kin,
+                                             const tesseract_kinematics::InverseKinematics::Ptr& manip_inv_kin,
+                                             const std::vector<std::string>& active_link_names)
 {
   auto sub_prob = std::make_unique<OMPLProblem>();
   sub_prob->tesseract = request.tesseract;
@@ -52,10 +52,10 @@ inline OMPLProblem::UPtr CreateOMPLSubProblem(const PlannerRequest& request,
   return sub_prob;
 }
 
-inline std::vector<OMPLProblem::UPtr> DefaultOMPLProblemGenerator(const PlannerRequest& request,
-                                                                  const OMPLPlanProfileMap& plan_profiles)
+inline std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const PlannerRequest& request,
+                                                                 const OMPLPlanProfileMap& plan_profiles)
 {
-  std::vector<OMPLProblem::UPtr> problem;
+  std::vector<OMPLProblem::Ptr> problem;
   std::vector<std::string> active_link_names_;
   tesseract_kinematics::ForwardKinematics::Ptr manip_fwd_kin_;
   tesseract_kinematics::InverseKinematics::Ptr manip_inv_kin_;
@@ -135,7 +135,7 @@ inline std::vector<OMPLProblem::UPtr> DefaultOMPLProblemGenerator(const PlannerR
         cur_plan_profile = it->second;
 
       /** @todo Should check that the joint names match the order of the manipulator */
-      OMPLProblem::UPtr sub_prob = CreateOMPLSubProblem(request, manip_fwd_kin_, manip_inv_kin_, active_link_names_);
+      OMPLProblem::Ptr sub_prob = CreateOMPLSubProblem(request, manip_fwd_kin_, manip_inv_kin_, active_link_names_);
       cur_plan_profile->setup(*sub_prob);
       sub_prob->n_output_states = static_cast<int>(seed_composite->size());
 
