@@ -13,7 +13,9 @@ add_library(${PROJECT_NAME} SHARED
   src/plan_instruction.cpp
   src/move_instruction.cpp
   src/composite_instruction.cpp
-  src/command_language_utils.cpp)
+  src/command_language_utils.cpp
+  src/instruction_type.cpp
+  src/waypoint_type.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_common)
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME})

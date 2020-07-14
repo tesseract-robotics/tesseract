@@ -22,12 +22,6 @@ struct InstructionInnerBase
 
   virtual void setDescription(const std::string& description) = 0;
 
-  virtual bool isComposite() const = 0;
-
-  virtual bool isPlan() const = 0;
-
-  virtual bool isMove() const = 0;
-
   virtual void print(std::string prefix) const = 0;
 
   // This is not required for user defined implementation
@@ -63,12 +57,6 @@ struct InstructionInner final : InstructionInnerBase
   const std::string& getDescription() const final { return instruction_.getDescription(); }
 
   void setDescription(const std::string& description) final { instruction_.setDescription(description); }
-
-  bool isComposite() const final { return instruction_.isComposite(); }
-
-  bool isPlan() const final { return instruction_.isPlan(); }
-
-  bool isMove() const final { return instruction_.isMove(); }
 
   void print(std::string prefix) const final { instruction_.print(prefix); }
 
@@ -131,12 +119,6 @@ public:
   const std::string& getDescription() const { return instruction_->getDescription(); }
 
   void setDescription(const std::string& description) { instruction_->setDescription(description); }
-
-  bool isComposite() const { return instruction_->isComposite(); };
-
-  bool isPlan() const { return instruction_->isPlan(); }
-
-  bool isMove() const { return instruction_->isMove(); }
 
   void print(std::string prefix = "") const { instruction_->print(std::move(prefix)); }
 
