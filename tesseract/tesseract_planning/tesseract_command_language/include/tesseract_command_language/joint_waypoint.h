@@ -15,7 +15,7 @@ namespace tesseract_planning
 class JointWaypoint : public Eigen::VectorXd
 {
 public:
-  JointWaypoint(void) : Eigen::VectorXd() {}
+  JointWaypoint() = default;
 
   // This constructor allows you to construct MyVectorType from Eigen expressions
   template <typename OtherDerived>
