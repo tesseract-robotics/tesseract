@@ -210,17 +210,17 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
     EXPECT_EQ(official_results.size(), planner_response.results.size());
     for (std::size_t j = 0; j < official_results.size(); ++j)
     {
-      if (official_results[j].isComposite())
+      if (isCompositeInstruction(official_results[j]))
       {
         const auto* sub_official = official_results[j].cast_const<CompositeInstruction>();
         const auto* sub = planner_response.results[j].cast_const<CompositeInstruction>();
         for (std::size_t k = 0; k < sub->size(); ++k)
         {
-          if ((*sub_official)[k].isComposite())
+          if (isCompositeInstruction((*sub_official)[k]))
           {
             EXPECT_TRUE(false);
           }
-          else if ((*sub_official)[k].isMove())
+          else if (isMoveInstruction((*sub_official)[k]))
           {
             const auto* mv_official = (*sub_official)[k].cast_const<MoveInstruction>();
             const auto* mv = (*sub)[k].cast_const<MoveInstruction>();
@@ -228,7 +228,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
           }
         }
       }
-      else if (official_results[j].isMove())
+      else if (isMoveInstruction(official_results[j]))
       {
         const auto* mv_official = official_results[j].cast_const<MoveInstruction>();
         const auto* mv = request.seed[j].cast_const<MoveInstruction>();
@@ -315,17 +315,17 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
     EXPECT_TRUE(official_results.size() == request.seed.size());
     for (std::size_t j = 0; j < official_results.size(); ++j)
     {
-      if (official_results[j].isComposite())
+      if (isCompositeInstruction(official_results[j]))
       {
         const auto* sub_official = official_results[j].cast_const<CompositeInstruction>();
         const auto* sub = request.seed[j].cast_const<CompositeInstruction>();
         for (std::size_t k = 0; k < sub->size(); ++k)
         {
-          if ((*sub_official)[k].isComposite())
+          if (isCompositeInstruction((*sub_official)[k]))
           {
             EXPECT_TRUE(false);
           }
-          else if ((*sub_official)[k].isMove())
+          else if (isMoveInstruction((*sub_official)[k]))
           {
             const auto* mv_official = (*sub_official)[k].cast_const<MoveInstruction>();
             const auto* mv = (*sub)[k].cast_const<MoveInstruction>();
@@ -333,7 +333,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
           }
         }
       }
-      else if (official_results[j].isMove())
+      else if (isMoveInstruction(official_results[j]))
       {
         const auto* mv_official = official_results[j].cast_const<MoveInstruction>();
         const auto* mv = request.seed[j].cast_const<MoveInstruction>();
@@ -421,17 +421,17 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
     EXPECT_TRUE(official_results.size() == request.seed.size());
     for (std::size_t j = 0; j < official_results.size(); ++j)
     {
-      if (official_results[j].isComposite())
+      if (isCompositeInstruction(official_results[j]))
       {
         const auto* sub_official = official_results[j].cast_const<CompositeInstruction>();
         const auto* sub = request.seed[j].cast_const<CompositeInstruction>();
         for (std::size_t k = 0; k < sub->size(); ++k)
         {
-          if ((*sub_official)[k].isComposite())
+          if (isCompositeInstruction((*sub_official)[k]))
           {
             EXPECT_TRUE(false);
           }
-          else if ((*sub_official)[k].isMove())
+          else if (isMoveInstruction((*sub_official)[k]))
           {
             const auto* mv_official = (*sub_official)[k].cast_const<MoveInstruction>();
             const auto* mv = (*sub)[k].cast_const<MoveInstruction>();
@@ -439,7 +439,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
           }
         }
       }
-      else if (official_results[j].isMove())
+      else if (isMoveInstruction(official_results[j]))
       {
         const auto* mv_official = official_results[j].cast_const<MoveInstruction>();
         const auto* mv = request.seed[j].cast_const<MoveInstruction>();

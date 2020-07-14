@@ -38,6 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/trajopt/trajopt_motion_planner.h>
 #include <tesseract_command_language/command_language.h>
+#include <tesseract_command_language/command_language_utils.h>
 #include <tesseract_motion_planners/core/utils.h>
 
 using namespace trajopt;
@@ -137,7 +138,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& r
   Eigen::Index result_index = 0;
   for (std::size_t plan_index = 0; plan_index < results_flattened.size(); plan_index++)
   {
-    if (instructions_flattened.at(plan_index).get().isPlan())
+    if (isPlanInstruction(instructions_flattened.at(plan_index).get()))
     {
       // This instruction corresponds to a composite. Set all results in that composite to the results
       auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();

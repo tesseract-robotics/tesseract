@@ -47,6 +47,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/descartes/descartes_motion_planner.h>
 #include <tesseract_motion_planners/core/utils.h>
 
+#include <tesseract_command_language/command_language.h>
+#include <tesseract_command_language/command_language_utils.h>
+
 namespace tesseract_planning
 {
 template <typename FloatType>
@@ -112,12 +115,12 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
   // Loop over the flattened results and add them to response if the input was a plan instruction
   Eigen::Index dof = problem.manip_fwd_kin->numJoints();
   Eigen::Index result_index = 0;
-  for (std::size_t plan_index = 0; plan_index < results_flattened.size(); plan_index++)
+  for (auto& instruction : results_flattened)
   {
-    if (instructions_flattened.at(plan_index).get().isPlan())
+    if (isPlanInstruction(instruction.get()))
     {
       // This instruction corresponds to a composite. Set all results in that composite to the results
-      auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();
+      auto* move_instructions = instruction.get().cast<CompositeInstruction>();
       for (auto& instruction : *move_instructions)
       {
         Eigen::Map<Eigen::Matrix<FloatType, -1, 1>> temp(solution.data() + dof * result_index, dof);
