@@ -32,12 +32,6 @@ const std::string& PlanInstruction::getDescription() const { return description_
 
 void PlanInstruction::setDescription(const std::string& description) { description_ = description; }
 
-bool PlanInstruction::isComposite() const { return false; }
-
-bool PlanInstruction::isPlan() const { return true; }
-
-bool PlanInstruction::isMove() const { return false; }
-
 void PlanInstruction::print(std::string prefix) const
 {
   std::cout << prefix + "Plan Instruction, Move Type: " << getType() << "  Waypoint Type:" << getWaypoint().getType()

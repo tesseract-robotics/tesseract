@@ -40,22 +40,7 @@ public:
   const Waypoint& getStartWaypoint() const;
   bool hasStartWaypoint() const;
 
-  /**
-   * @brief This is a useful function for setting the last plan instructions waypoint
-   * This loops over the vector in reverse to find the last plan instruction. It currently skips over child composite
-   * instructions.
-   */
-  void setEndWaypoint(Waypoint waypoint, bool process_child_composites = false);
-
-  bool isComposite() const;
-
-  bool isPlan() const;
-
-  bool isMove() const;
-
   void print(std::string prefix = "") const;
-
-  CompositeInstruction flatten() const;
 
 private:
   int type_{ static_cast<int>(InstructionType::COMPOSITE_INSTRUCTION) };

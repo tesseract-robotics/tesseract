@@ -38,6 +38,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/weighted_real_vector_state_sampler.h>
 #include <tesseract_motion_planners/core/utils.h>
 
+#include <tesseract_command_language/command_language.h>
+#include <tesseract_command_language/command_language_utils.h>
+
 namespace tesseract_planning
 {
 bool checkStartState(const ompl::base::ProblemDefinitionPtr& prob_def,
@@ -94,14 +97,6 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& requ
                                                       PlannerResponse& response,
                                                       bool verbose)
 {
-  //  tesseract_common::StatusCode config_status = isConfigured();
-  //  if (!config_status)
-  //  {
-  //    response.status = config_status;
-  //    CONSOLE_BRIDGE_logError("Planner %s is not configured", name_.c_str());
-  //    return config_status;
-  //  }
-
   std::vector<OMPLProblem::UPtr> prob = problem_generator(request, plan_profiles);
 
   // If the verbose set the log level to debug.
@@ -213,7 +208,7 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& requ
     Eigen::Index result_index = 0;
     for (std::size_t plan_index = 0; plan_index < results_flattened.size(); plan_index++)
     {
-      if (instructions_flattened.at(plan_index).get().isPlan())
+      if (isPlanInstruction(instructions_flattened.at(plan_index).get()))
       {
         // This instruction corresponds to a composite. Set all results in that composite to the results
         auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();
