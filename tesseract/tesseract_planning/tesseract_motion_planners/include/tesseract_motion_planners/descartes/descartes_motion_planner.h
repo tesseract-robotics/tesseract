@@ -31,7 +31,8 @@ public:
   DescartesMotionPlanner(DescartesMotionPlanner&&) noexcept = default;
   DescartesMotionPlanner& operator=(DescartesMotionPlanner&&) noexcept = default;
 
-  std::function<DescartesProblem<FloatType>(const PlannerRequest&, const DescartesPlanProfileMap<FloatType>&)>
+  std::function<std::shared_ptr<DescartesProblem<FloatType>>(const PlannerRequest&,
+                                                             const DescartesPlanProfileMap<FloatType>&)>
       problem_generator;
 
   /**

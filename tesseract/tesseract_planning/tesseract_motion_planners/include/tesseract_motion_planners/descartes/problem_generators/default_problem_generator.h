@@ -34,43 +34,43 @@
 namespace tesseract_planning
 {
 template <typename FloatType>
-inline DescartesProblem<FloatType>
+inline std::shared_ptr<DescartesProblem<FloatType>>
 DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesPlanProfileMap<FloatType>& plan_profiles)
 {
-  DescartesProblem<FloatType> prob;
+  auto prob = std::make_shared<DescartesProblem<FloatType>>();
 
   // Clear descartes data
-  prob.edge_evaluators.clear();
-  prob.timing_constraints.clear();
-  prob.samplers.clear();
+  prob->edge_evaluators.clear();
+  prob->timing_constraints.clear();
+  prob->samplers.clear();
 
   // Get Manipulator Information
-  prob.manip_fwd_kin = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(request.manipulator);
+  prob->manip_fwd_kin = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(request.manipulator);
   if (request.manipulator_ik_solver.empty())
-    prob.manip_inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(request.manipulator);
+    prob->manip_inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(request.manipulator);
   else
-    prob.manip_inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(
+    prob->manip_inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(
         request.manipulator, request.manipulator_ik_solver);
 
-  if (!prob.manip_fwd_kin)
+  if (!prob->manip_fwd_kin)
   {
     CONSOLE_BRIDGE_logError("No Forward Kinematics solver found");
     return prob;
   }
-  if (!prob.manip_inv_kin)
+  if (!prob->manip_inv_kin)
   {
     CONSOLE_BRIDGE_logError("No Inverse Kinematics solver found");
     return prob;
   }
-  prob.env_state = request.env_state;
-  prob.tesseract = request.tesseract;
+  prob->env_state = request.env_state;
+  prob->tesseract = request.tesseract;
 
   // Process instructions
-  if (!tesseract_kinematics::checkKinematics(prob.manip_fwd_kin, prob.manip_inv_kin))
+  if (!tesseract_kinematics::checkKinematics(prob->manip_fwd_kin, prob->manip_inv_kin))
     CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that Inverse Kinematics does not agree with KDL "
                             "(TrajOpt). Did you change the URDF recently?");
 
-  std::vector<std::string> active_link_names = prob.manip_inv_kin->getActiveLinkNames();
+  std::vector<std::string> active_link_names = prob->manip_inv_kin->getActiveLinkNames();
   auto adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
       request.tesseract->getEnvironmentConst()->getSceneGraph(), active_link_names, request.env_state->link_transforms);
   const std::vector<std::string>& active_links = adjacency_map->getActiveLinkNames();
@@ -87,9 +87,9 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
   }
   else
   {
-    Eigen::VectorXd current_jv = prob.env_state->getJointValues(prob.manip_inv_kin->getJointNames());
+    Eigen::VectorXd current_jv = prob->env_state->getJointValues(prob->manip_inv_kin->getJointNames());
     JointWaypoint temp(current_jv);
-    temp.joint_names = prob.manip_inv_kin->getJointNames();
+    temp.joint_names = prob->manip_inv_kin->getJointNames();
     start_waypoint = temp;
   }
 
@@ -129,12 +129,12 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
         if (isCartesianWaypoint(start_waypoint))
         {
           const auto* cwp = start_waypoint.cast_const<Eigen::Isometry3d>();
-          cur_plan_profile->apply(prob, *cwp, *plan_instruction, active_links, index);
+          cur_plan_profile->apply(*prob, *cwp, *plan_instruction, active_links, index);
         }
         else if (isJointWaypoint(start_waypoint))
         {
           const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
-          cur_plan_profile->apply(prob, *jwp, *plan_instruction, active_links, index);
+          cur_plan_profile->apply(*prob, *jwp, *plan_instruction, active_links, index);
         }
         else
         {
@@ -159,10 +159,10 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
           else if (isJointWaypoint(start_waypoint))
           {
             const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
-            if (!prob.manip_fwd_kin->calcFwdKin(prev_pose, *jwp))
+            if (!prob->manip_fwd_kin->calcFwdKin(prev_pose, *jwp))
               throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
 
-            prev_pose = prob.env_state->link_transforms.at(prob.manip_fwd_kin->getBaseLinkName()) * prev_pose *
+            prev_pose = prob->env_state->link_transforms.at(prob->manip_fwd_kin->getBaseLinkName()) * prev_pose *
                         plan_instruction->getTCP();
           }
           else
@@ -174,13 +174,13 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
           // Add intermediate points with path costs and constraints
           for (std::size_t p = 1; p < poses.size() - 1; ++p)
           {
-            cur_plan_profile->apply(prob, poses[p], *plan_instruction, active_links, index);
+            cur_plan_profile->apply(*prob, poses[p], *plan_instruction, active_links, index);
 
             ++index;
           }
 
           // Add final point with waypoint
-          cur_plan_profile->apply(prob, *cur_wp, *plan_instruction, active_links, index);
+          cur_plan_profile->apply(*prob, *cur_wp, *plan_instruction, active_links, index);
 
           ++index;
         }
@@ -188,10 +188,10 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
         {
           const auto* cur_wp = plan_instruction->getWaypoint().template cast_const<JointWaypoint>();
           Eigen::Isometry3d cur_pose = Eigen::Isometry3d::Identity();
-          if (!prob.manip_fwd_kin->calcFwdKin(cur_pose, *cur_wp))
+          if (!prob->manip_fwd_kin->calcFwdKin(cur_pose, *cur_wp))
             throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
 
-          cur_pose = prob.env_state->link_transforms.at(prob.manip_fwd_kin->getBaseLinkName()) * cur_pose *
+          cur_pose = prob->env_state->link_transforms.at(prob->manip_fwd_kin->getBaseLinkName()) * cur_pose *
                      plan_instruction->getTCP();
 
           Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
@@ -202,10 +202,10 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
           else if (isJointWaypoint(start_waypoint))
           {
             const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
-            if (!prob.manip_fwd_kin->calcFwdKin(prev_pose, *jwp))
+            if (!prob->manip_fwd_kin->calcFwdKin(prev_pose, *jwp))
               throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
 
-            prev_pose = prob.env_state->link_transforms.at(prob.manip_fwd_kin->getBaseLinkName()) * prev_pose *
+            prev_pose = prob->env_state->link_transforms.at(prob->manip_fwd_kin->getBaseLinkName()) * prev_pose *
                         plan_instruction->getTCP();
           }
           else
@@ -217,13 +217,13 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
           // Add intermediate points with path costs and constraints
           for (std::size_t p = 1; p < poses.size() - 1; ++p)
           {
-            cur_plan_profile->apply(prob, poses[p], *plan_instruction, active_links, index);
+            cur_plan_profile->apply(*prob, poses[p], *plan_instruction, active_links, index);
 
             ++index;
           }
 
           // Add final point with waypoint
-          cur_plan_profile->apply(prob, *cur_wp, *plan_instruction, active_links, index);
+          cur_plan_profile->apply(*prob, *cur_wp, *plan_instruction, active_links, index);
 
           ++index;
         }
@@ -244,7 +244,7 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
 
           // Add final point with waypoint costs and contraints
           /** @todo Should check that the joint names match the order of the manipulator */
-          cur_plan_profile->apply(prob, *cur_wp, *plan_instruction, active_links, index);
+          cur_plan_profile->apply(*prob, *cur_wp, *plan_instruction, active_links, index);
 
           ++index;
         }
@@ -259,7 +259,7 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
 
           // Add final point with waypoint costs and contraints
           /** @todo Should check that the joint names match the order of the manipulator */
-          cur_plan_profile->apply(prob, *cur_wp, *plan_instruction, active_links, index);
+          cur_plan_profile->apply(*prob, *cur_wp, *plan_instruction, active_links, index);
 
           ++index;
         }
