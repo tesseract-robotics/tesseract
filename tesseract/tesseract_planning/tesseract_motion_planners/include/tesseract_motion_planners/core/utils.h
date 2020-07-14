@@ -426,12 +426,18 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
  * @param flattened Vector of instructions representing the full flattened composite
  * @param composite Composite instruction to be flattened
  */
-inline void FlattenHelper(std::vector<std::reference_wrapper<Instruction>>& flattened, CompositeInstruction& composite)
+inline void FlattenHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
+                          CompositeInstruction& composite,
+                          const bool& include_composite)
 {
   for (auto& i : composite)
   {
     if (isCompositeInstruction(i))
-      FlattenHelper(flattened, *(i.cast<CompositeInstruction>()));
+    {
+      if (include_composite)
+        flattened.emplace_back(i);
+      FlattenHelper(flattened, *(i.cast<CompositeInstruction>()), include_composite);
+    }
     else
       flattened.emplace_back(i);
   }
@@ -442,10 +448,11 @@ inline void FlattenHelper(std::vector<std::reference_wrapper<Instruction>>& flat
  * @param instruction Input composite instruction to be flattened
  * @return A new flattened vector referencing the original instruction elements
  */
-inline std::vector<std::reference_wrapper<Instruction>> Flatten(CompositeInstruction& instruction)
+inline std::vector<std::reference_wrapper<Instruction>> Flatten(CompositeInstruction& instruction,
+                                                                const bool include_composite = false)
 {
   std::vector<std::reference_wrapper<Instruction>> flattened;
-  FlattenHelper(flattened, instruction);
+  FlattenHelper(flattened, instruction, include_composite);
   return flattened;
 }
 
@@ -455,12 +462,17 @@ inline std::vector<std::reference_wrapper<Instruction>> Flatten(CompositeInstruc
  * @param composite Composite instruction to be flattened
  */
 inline void FlattenHelper(std::vector<std::reference_wrapper<const Instruction>>& flattened,
-                          const CompositeInstruction& composite)
+                          const CompositeInstruction& composite,
+                          const bool& include_composite)
 {
   for (auto& i : composite)
   {
     if (isCompositeInstruction(i))
-      FlattenHelper(flattened, *(i.cast_const<CompositeInstruction>()));
+    {
+      if (include_composite)
+        flattened.emplace_back(i);
+      FlattenHelper(flattened, *(i.cast_const<CompositeInstruction>()), include_composite);
+    }
     else
       flattened.emplace_back(i);
   }
@@ -471,16 +483,18 @@ inline void FlattenHelper(std::vector<std::reference_wrapper<const Instruction>>
  * @param instruction Input composite instruction to be flattened
  * @return A new flattened vector referencing the original instruction elements
  */
-inline std::vector<std::reference_wrapper<const Instruction>> Flatten(const CompositeInstruction& instruction)
+inline std::vector<std::reference_wrapper<const Instruction>> Flatten(const CompositeInstruction& instruction,
+                                                                      const bool include_composite = false)
 {
   std::vector<std::reference_wrapper<const Instruction>> flattened;
-  FlattenHelper(flattened, instruction);
+  FlattenHelper(flattened, instruction, include_composite);
   return flattened;
 }
 
 inline void FlattenToPatternHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
                                    CompositeInstruction& composite,
-                                   const CompositeInstruction& pattern)
+                                   const CompositeInstruction& pattern,
+                                   const bool& include_composite)
 {
   if (composite.size() != pattern.size())
   {
@@ -491,8 +505,14 @@ inline void FlattenToPatternHelper(std::vector<std::reference_wrapper<Instructio
   for (std::size_t i = 0; i < pattern.size(); i++)
   {
     if (isCompositeInstruction(pattern.at(i)) && isCompositeInstruction(composite[i]))
-      FlattenToPatternHelper(
-          flattened, *(composite[i].cast<CompositeInstruction>()), *pattern.at(i).cast_const<CompositeInstruction>());
+    {
+      if (include_composite)
+        flattened.emplace_back(composite[i]);
+      FlattenToPatternHelper(flattened,
+                             *(composite[i].cast<CompositeInstruction>()),
+                             *pattern.at(i).cast_const<CompositeInstruction>(),
+                             include_composite);
+    }
     else
       flattened.emplace_back(composite[i]);
   }
@@ -509,7 +529,8 @@ inline void FlattenToPatternHelper(std::vector<std::reference_wrapper<Instructio
  * @return A new flattened vector referencing the original instruction elements
  */
 inline std::vector<std::reference_wrapper<Instruction>> FlattenToPattern(CompositeInstruction& instruction,
-                                                                         const CompositeInstruction& pattern)
+                                                                         const CompositeInstruction& pattern,
+                                                                         const bool include_composite = false)
 {
   if (instruction.size() != pattern.size())
   {
@@ -518,7 +539,7 @@ inline std::vector<std::reference_wrapper<Instruction>> FlattenToPattern(Composi
   }
 
   std::vector<std::reference_wrapper<Instruction>> flattened;
-  FlattenToPatternHelper(flattened, instruction, pattern);
+  FlattenToPatternHelper(flattened, instruction, pattern, include_composite);
   return flattened;
 }
 
