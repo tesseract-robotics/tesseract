@@ -52,6 +52,12 @@ struct PlannerRequest
    * CompositeInstruction of MoveInstructions.
    */
   CompositeInstruction seed;
+
+  /**
+   * @brief data Planner specific data. For planners included in Tesseract_planning this is the planner problem that
+   * will be used if it is not null
+   */
+  std::shared_ptr<void> data;
 };
 
 struct PlannerResponse
@@ -62,6 +68,11 @@ struct PlannerResponse
                                                                         succeeded */
   std::vector<std::reference_wrapper<Instruction>> failed_instructions;    /**< @brief Waypoints for which the planner
                                                                               failed */
+  /**
+   * @brief data Planner specific data. For planners included in Tesseract_planning this is the planner problem that was
+   * solved
+   */
+  std::shared_ptr<void> data;
 };
 
 }  // namespace tesseract_planning
