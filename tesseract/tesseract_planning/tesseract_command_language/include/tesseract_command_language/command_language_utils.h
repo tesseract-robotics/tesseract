@@ -94,6 +94,7 @@ long getMoveInstructionsCount(const CompositeInstruction& composite_instruction,
  * @return The number of Plan Instructions
  */
 long getPlanInstructionsCount(const CompositeInstruction& composite_instruction, bool process_child_composites = true);
+
 }  // namespace tesseract_planning
 
 #endif  // TESSERACT_COMMAND_LANGUAGE_COMMAND_LANGUAGE_UTILS_H

@@ -77,7 +77,7 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
 
   // Check and make sure it does not contain any composite instruction
   for (const auto& instruction : request.instructions)
-    if (instruction.isComposite())
+    if (isCompositeInstruction(instruction))
       throw std::runtime_error("Descartes planner does not support child composite instructions.");
 
   Waypoint start_waypoint = NullWaypoint();
@@ -99,12 +99,12 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
   for (std::size_t i = 0; i < request.instructions.size(); ++i)
   {
     const auto& instruction = request.instructions[i];
-    if (instruction.isPlan())
+    if (isPlanInstruction(instruction))
     {
-      assert(instruction.getType() == static_cast<int>(InstructionType::PLAN_INSTRUCTION));
+      assert(isPlanInstruction(instruction));
       const auto* plan_instruction = instruction.template cast_const<PlanInstruction>();
 
-      assert(request.seed[i].isComposite());
+      assert(isCompositeInstruction(request.seed[i]));
       const auto* seed_composite = request.seed[i].template cast_const<tesseract_planning::CompositeInstruction>();
       auto interpolate_cnt = static_cast<int>(seed_composite->size());
 
@@ -126,12 +126,12 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
         --interpolate_cnt;
 
         // Add start waypoint
-        if (isCartesianWaypoint(start_waypoint.getType()))
+        if (isCartesianWaypoint(start_waypoint))
         {
           const auto* cwp = start_waypoint.cast_const<Eigen::Isometry3d>();
           cur_plan_profile->apply(prob, *cwp, *plan_instruction, active_links, index);
         }
-        else if (isJointWaypoint(start_waypoint.getType()))
+        else if (isJointWaypoint(start_waypoint))
         {
           const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
           cur_plan_profile->apply(prob, *jwp, *plan_instruction, active_links, index);
@@ -146,17 +146,17 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
 
       if (plan_instruction->isLinear())
       {
-        if (isCartesianWaypoint(plan_instruction->getWaypoint().getType()))
+        if (isCartesianWaypoint(plan_instruction->getWaypoint()))
         {
           const auto* cur_wp =
               plan_instruction->getWaypoint().template cast_const<tesseract_planning::CartesianWaypoint>();
 
           Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
-          if (isCartesianWaypoint(start_waypoint.getType()))
+          if (isCartesianWaypoint(start_waypoint))
           {
             prev_pose = *(start_waypoint.cast_const<Eigen::Isometry3d>());
           }
-          else if (isJointWaypoint(start_waypoint.getType()))
+          else if (isJointWaypoint(start_waypoint))
           {
             const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
             if (!prob.manip_fwd_kin->calcFwdKin(prev_pose, *jwp))
@@ -184,7 +184,7 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
 
           ++index;
         }
-        else if (isJointWaypoint(plan_instruction->getWaypoint().getType()))
+        else if (isJointWaypoint(plan_instruction->getWaypoint()))
         {
           const auto* cur_wp = plan_instruction->getWaypoint().template cast_const<JointWaypoint>();
           Eigen::Isometry3d cur_pose = Eigen::Isometry3d::Identity();
@@ -195,11 +195,11 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
                      plan_instruction->getTCP();
 
           Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
-          if (isCartesianWaypoint(start_waypoint.getType()))
+          if (isCartesianWaypoint(start_waypoint))
           {
             prev_pose = *(start_waypoint.cast_const<Eigen::Isometry3d>());
           }
-          else if (isJointWaypoint(start_waypoint.getType()))
+          else if (isJointWaypoint(start_waypoint))
           {
             const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
             if (!prob.manip_fwd_kin->calcFwdKin(prev_pose, *jwp))
@@ -234,7 +234,7 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
       }
       else if (plan_instruction->isFreespace())
       {
-        if (isJointWaypoint(plan_instruction->getWaypoint().getType()))
+        if (isJointWaypoint(plan_instruction->getWaypoint()))
         {
           const auto* cur_wp = plan_instruction->getWaypoint().template cast_const<tesseract_planning::JointWaypoint>();
 
@@ -248,7 +248,7 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
 
           ++index;
         }
-        else if (isCartesianWaypoint(plan_instruction->getWaypoint().getType()))
+        else if (isCartesianWaypoint(plan_instruction->getWaypoint()))
         {
           const auto* cur_wp =
               plan_instruction->getWaypoint().template cast_const<tesseract_planning::CartesianWaypoint>();
