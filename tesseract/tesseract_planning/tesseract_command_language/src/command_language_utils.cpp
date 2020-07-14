@@ -1,5 +1,6 @@
 
 #include <algorithm>
+#include <console_bridge/console.h>
 #include <tesseract_command_language/command_language_utils.h>
 #include <tesseract_command_language/instruction_type.h>
 
@@ -275,6 +276,103 @@ long getPlanInstructionsCount(const CompositeInstruction& composite_instruction,
 
   return std::count_if(
       composite_instruction.begin(), composite_instruction.end(), [](const auto& i) { return isPlanInstruction(i); });
+}
+
+void flattenHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
+                   CompositeInstruction& composite,
+                   const bool& include_composite)
+{
+  for (auto& i : composite)
+  {
+    if (isCompositeInstruction(i))
+    {
+      if (include_composite)
+        flattened.emplace_back(i);
+      flattenHelper(flattened, *(i.cast<CompositeInstruction>()), include_composite);
+    }
+    else
+      flattened.emplace_back(i);
+  }
+}
+
+std::vector<std::reference_wrapper<Instruction>> flatten(CompositeInstruction& instruction,
+                                                         const bool include_composite)
+{
+  std::vector<std::reference_wrapper<Instruction>> flattened;
+  flattenHelper(flattened, instruction, include_composite);
+  return flattened;
+}
+
+void flattenHelper(std::vector<std::reference_wrapper<const Instruction>>& flattened,
+                   const CompositeInstruction& composite,
+                   const bool& include_composite)
+{
+  for (auto& i : composite)
+  {
+    if (isCompositeInstruction(i))
+    {
+      if (include_composite)
+        flattened.emplace_back(i);
+      flattenHelper(flattened, *(i.cast_const<CompositeInstruction>()), include_composite);
+    }
+    else
+      flattened.emplace_back(i);
+  }
+}
+
+/**
+ * @brief flattens a CompositeInstruction into a vector of Instruction&
+ * @param instruction Input composite instruction to be flattened
+ * @return A new flattened vector referencing the original instruction elements
+ */
+inline std::vector<std::reference_wrapper<const Instruction>> flatten(const CompositeInstruction& instruction,
+                                                                      const bool include_composite)
+{
+  std::vector<std::reference_wrapper<const Instruction>> flattened;
+  flattenHelper(flattened, instruction, include_composite);
+  return flattened;
+}
+
+inline void flattenToPatternHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
+                                   CompositeInstruction& composite,
+                                   const CompositeInstruction& pattern,
+                                   const bool& include_composite)
+{
+  if (composite.size() != pattern.size())
+  {
+    CONSOLE_BRIDGE_logError("Instruction and pattern sizes are mismatched");
+    return;
+  }
+
+  for (std::size_t i = 0; i < pattern.size(); i++)
+  {
+    if (isCompositeInstruction(pattern.at(i)) && isCompositeInstruction(composite[i]))
+    {
+      if (include_composite)
+        flattened.emplace_back(composite[i]);
+      flattenToPatternHelper(flattened,
+                             *(composite[i].cast<CompositeInstruction>()),
+                             *pattern.at(i).cast_const<CompositeInstruction>(),
+                             include_composite);
+    }
+    else
+      flattened.emplace_back(composite[i]);
+  }
+}
+
+std::vector<std::reference_wrapper<Instruction>> flattenToPattern(CompositeInstruction& instruction,
+                                                                  const CompositeInstruction& pattern,
+                                                                  const bool include_composite)
+{
+  if (instruction.size() != pattern.size())
+  {
+    CONSOLE_BRIDGE_logError("Instruction and pattern sizes are mismatched");
+    return std::vector<std::reference_wrapper<Instruction>>();
+  }
+
+  std::vector<std::reference_wrapper<Instruction>> flattened;
+  flattenToPatternHelper(flattened, instruction, pattern, include_composite);
+  return flattened;
 }
 
 }  // namespace tesseract_planning
