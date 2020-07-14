@@ -121,34 +121,92 @@ TEST_F(TesseractPlanningUtilsUnit, Flatten)  // NOLINT
     }
     composite.push_back(sub_composite);
   }
-  if (DEBUG)
-    composite.print();
 
-  // Flatten the composite
-  std::vector<std::reference_wrapper<Instruction>> flattened = Flatten(composite);
-  EXPECT_EQ(flattened.size(), i_max * j_max * k_max);
-
-  // Now change something in the flattened composite
-  for (std::size_t i = 0; i < flattened.size(); i++)
+  // Flatten(composite);
   {
-    flattened[i].get().setDescription("test_" + std::to_string(i));
+    if (DEBUG)
+      composite.print();
+
+    // Flatten the composite
+    std::vector<std::reference_wrapper<Instruction>> flattened = Flatten(composite);
+    EXPECT_EQ(flattened.size(), i_max * j_max * k_max);
+
+    // Now change something in the flattened composite
+    int num_composites = 0;
+    for (std::size_t i = 0; i < flattened.size(); i++)
+    {
+      if (isCompositeInstruction(flattened[i].get().getType()))
+        num_composites++;
+      flattened[i].get().setDescription("test_" + std::to_string(i));
+    }
+    EXPECT_EQ(num_composites, 0);
+
+    if (DEBUG)
+      composite.print();
+
+    // Now make sure the original changed
+    std::size_t cumulative = 0;
+    for (std::size_t i = 0; i < i_max; i++)
+    {
+      for (std::size_t j = 0; j < j_max; j++)
+      {
+        for (std::size_t k = 0; k < k_max; k++)
+        {
+          EXPECT_EQ(
+              "test_" + std::to_string(cumulative),
+              composite[i].cast<CompositeInstruction>()->at(j).cast<CompositeInstruction>()->at(k).getDescription());
+          cumulative++;
+        }
+      }
+    }
   }
 
-  if (DEBUG)
-    composite.print();
-
-  // Now make sure the original changed
-  std::size_t cumulative = 0;
-  for (std::size_t i = 0; i < i_max; i++)
+  // Flatten(composite, true);
   {
-    for (std::size_t j = 0; j < j_max; j++)
+    if (DEBUG)
+      composite.print();
+
+    // Flatten the composite keeping the composite instructions
+    std::vector<std::reference_wrapper<Instruction>> flattened = Flatten(composite, true);
+    EXPECT_EQ(flattened.size(), i_max * j_max * k_max + 16);  // Add 16 for the composite instructions
+
+    // Now change something in the flattened composite
+    int num_composites = 0;
+    for (std::size_t i = 0; i < flattened.size(); i++)
     {
-      for (std::size_t k = 0; k < k_max; k++)
+      if (isCompositeInstruction(flattened[i].get().getType()))
+        num_composites++;
+      flattened[i].get().setDescription("test_" + std::to_string(i));
+    }
+    EXPECT_EQ(num_composites, 16);
+
+    if (DEBUG)
+    {
+      std::cout << "----- Flattened -----" << std::endl;
+      for (auto& i : flattened)
+        i.get().print();
+      std::cout << "----- Composite -----" << std::endl;
+      composite.print();
+    }
+
+    // Now make sure the original changed
+    std::size_t cumulative = 0;
+    for (std::size_t i = 0; i < i_max; i++)
+    {
+      EXPECT_EQ("test_" + std::to_string(cumulative), composite[i].cast<CompositeInstruction>()->getDescription());
+      cumulative++;
+      for (std::size_t j = 0; j < j_max; j++)
       {
-        EXPECT_EQ(
-            "test_" + std::to_string(cumulative),
-            composite[i].cast<CompositeInstruction>()->at(j).cast<CompositeInstruction>()->at(k).getDescription());
+        EXPECT_EQ("test_" + std::to_string(cumulative),
+                  composite[i].cast<CompositeInstruction>()->at(j).cast<CompositeInstruction>()->getDescription());
         cumulative++;
+        for (std::size_t k = 0; k < k_max; k++)
+        {
+          EXPECT_EQ(
+              "test_" + std::to_string(cumulative),
+              composite[i].cast<CompositeInstruction>()->at(j).cast<CompositeInstruction>()->at(k).getDescription());
+          cumulative++;
+        }
       }
     }
   }
@@ -194,49 +252,107 @@ TEST_F(TesseractPlanningUtilsUnit, FlattenToPattern)  // NOLINT
     composite.push_back(sub_composite);
     pattern.push_back(sub_pattern);
   }
-  if (DEBUG)
-  {
-    std::cout << "Composite: " << std::endl;
-    composite.print();
-    std::cout << "Pattern: " << std::endl;
-    pattern.print();
-  }
-  // Flatten the composite
-  std::vector<std::reference_wrapper<Instruction>> flattened = FlattenToPattern(composite, pattern);
-  EXPECT_EQ(flattened.size(), i_max * j_max);
 
-  // Now change something in the flattened composite
-  for (std::size_t i = 0; i < flattened.size(); i++)
+  // FlattenToPattern(composite, pattern)
   {
-    flattened[i].get().setDescription("test_" + std::to_string(i));
-  }
-
-  if (DEBUG)
-  {
-    std::cout << "Flattened Composite: " << std::endl;
-    for (const auto& i : flattened)
-      i.get().print();
-  }
-
-  // Now make sure the original changed
-  std::size_t cumulative = 0;
-  for (std::size_t i = 0; i < i_max; i++)
-  {
-    for (std::size_t j = 0; j < j_max; j++)
+    if (DEBUG)
     {
-      EXPECT_EQ("test_" + std::to_string(cumulative),
-                composite[i].cast<CompositeInstruction>()->at(j).getDescription());
-      cumulative++;
+      std::cout << "Composite: " << std::endl;
+      composite.print();
+      std::cout << "Pattern: " << std::endl;
+      pattern.print();
+    }
+    // Flatten the composite
+    std::vector<std::reference_wrapper<Instruction>> flattened = FlattenToPattern(composite, pattern);
+    EXPECT_EQ(flattened.size(), i_max * j_max);
+
+    // Now change something in the flattened composite
+    int num_composites = 0;
+    for (std::size_t i = 0; i < flattened.size(); i++)
+    {
+      if (isCompositeInstruction(flattened[i].get().getType()))
+        num_composites++;
+      flattened[i].get().setDescription("test_" + std::to_string(i));
+    }
+    EXPECT_EQ(num_composites, 12);
+
+    if (DEBUG)
+    {
+      std::cout << "Flattened Composite: " << std::endl;
+      for (const auto& i : flattened)
+        i.get().print();
+    }
+
+    // Now make sure the original changed
+    std::size_t cumulative = 0;
+    for (std::size_t i = 0; i < i_max; i++)
+    {
+      for (std::size_t j = 0; j < j_max; j++)
+      {
+        EXPECT_EQ("test_" + std::to_string(cumulative),
+                  composite[i].cast<CompositeInstruction>()->at(j).getDescription());
+        cumulative++;
+      }
     }
   }
 
-  if (DEBUG)
+  // FlattenToPattern(composte, pattern, true)
   {
-    std::cout << "Composite after changing description: " << std::endl;
-    composite.print();
-  }
+    if (DEBUG)
+    {
+      std::cout << "Composite after changing description: " << std::endl;
+      composite.print();
+    }
 
-  EXPECT_TRUE(true);
+    if (DEBUG)
+    {
+      std::cout << "Composite: " << std::endl;
+      composite.print();
+      std::cout << "Pattern: " << std::endl;
+      pattern.print();
+    }
+    // Flatten the composite
+    std::vector<std::reference_wrapper<Instruction>> flattened = FlattenToPattern(composite, pattern, true);
+    EXPECT_EQ(flattened.size(),
+              i_max * j_max + 4);  // Add 4 for the extra composite instructions that would be flattened
+
+    // Now change something in the flattened composite
+    int num_composites = 0;
+    for (std::size_t i = 0; i < flattened.size(); i++)
+    {
+      if (isCompositeInstruction(flattened[i].get().getType()))
+        num_composites++;
+      flattened[i].get().setDescription("test_" + std::to_string(i));
+    }
+    EXPECT_EQ(num_composites, 16);
+
+    if (DEBUG)
+    {
+      std::cout << "Flattened Composite: " << std::endl;
+      for (const auto& i : flattened)
+        i.get().print();
+    }
+
+    // Now make sure the original changed
+    std::size_t cumulative = 0;
+    for (std::size_t i = 0; i < i_max; i++)
+    {
+      EXPECT_EQ("test_" + std::to_string(cumulative), composite[i].cast<CompositeInstruction>()->getDescription());
+      cumulative++;
+      for (std::size_t j = 0; j < j_max; j++)
+      {
+        EXPECT_EQ("test_" + std::to_string(cumulative),
+                  composite[i].cast<CompositeInstruction>()->at(j).getDescription());
+        cumulative++;
+      }
+    }
+
+    if (DEBUG)
+    {
+      std::cout << "Composite after changing description: " << std::endl;
+      composite.print();
+    }
+  }
 }
 
 TEST_F(TesseractPlanningUtilsUnit, GenerateSeed)  // NOLINT
