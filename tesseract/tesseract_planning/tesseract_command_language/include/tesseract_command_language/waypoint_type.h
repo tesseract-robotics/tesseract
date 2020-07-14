@@ -3,6 +3,8 @@
 
 namespace tesseract_planning
 {
+class Waypoint;
+
 enum class WaypointType : int
 {
   // NULL Waypoint
@@ -18,11 +20,11 @@ enum class WaypointType : int
   USER_DEFINED = 1000
 };
 
-inline bool isCartesianWaypoint(int type) { return (type == static_cast<int>(WaypointType::CARTESIAN_WAYPOINT)); }
+bool isCartesianWaypoint(const Waypoint& waypoint);
 
-inline bool isJointWaypoint(int type) { return (type == static_cast<int>(WaypointType::JOINT_WAYPOINT)); }
+bool isJointWaypoint(const Waypoint& waypoint);
 
-inline bool isNullWaypoint(int type) { return (type == static_cast<int>(WaypointType::NULL_WAYPOINT)); }
+bool isNullWaypoint(const Waypoint& waypoint);
 
 }  // namespace tesseract_planning
 #endif  // TESSERACT_COMMAND_LANGUAGE_WAYPOINT_TYPE_H

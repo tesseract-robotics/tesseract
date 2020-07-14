@@ -55,7 +55,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
 
   // Check and make sure it does not contain any composite instruction
   for (const auto& instruction : request.instructions)
-    if (instruction.isComposite())
+    if (isCompositeInstruction(instruction))
       throw std::runtime_error("Trajopt planner does not support child composite instructions.");
 
   // Get kinematics information
@@ -87,12 +87,12 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
   for (std::size_t i = 0; i < request.instructions.size(); ++i)
   {
     const auto& instruction = request.instructions[i];
-    if (instruction.isPlan())
+    if (isPlanInstruction(instruction))
     {
-      assert(instruction.getType() == static_cast<int>(InstructionType::PLAN_INSTRUCTION));
+      assert(isPlanInstruction(instruction));
       const auto* plan_instruction = instruction.cast_const<PlanInstruction>();
 
-      assert(request.seed[i].isComposite());
+      assert(isCompositeInstruction(request.seed[i]));
       const auto* seed_composite = request.seed[i].cast_const<tesseract_planning::CompositeInstruction>();
       auto interpolate_cnt = static_cast<int>(seed_composite->size());
 
@@ -115,19 +115,19 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
         --interpolate_cnt;
 
         // Add start seed state
-        assert(seed_composite->at(0).isMove());
+        assert(isMoveInstruction(seed_composite->at(0)));
         const auto* seed_instruction = seed_composite->at(0).cast_const<tesseract_planning::MoveInstruction>();
         seed_states.push_back(seed_instruction->getPosition());
 
         seed_shift_index = 0;
 
         // Add start waypoint
-        if (isCartesianWaypoint(start_waypoint.getType()))
+        if (isCartesianWaypoint(start_waypoint))
         {
           const auto* cwp = start_waypoint.cast_const<Eigen::Isometry3d>();
           cur_plan_profile->apply(*pci, *cwp, *plan_instruction, active_links, index);
         }
-        else if (isJointWaypoint(start_waypoint.getType()))
+        else if (isJointWaypoint(start_waypoint))
         {
           const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
           cur_plan_profile->apply(*pci, *jwp, *plan_instruction, active_links, index);
@@ -142,16 +142,16 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
 
       if (plan_instruction->isLinear())
       {
-        if (isCartesianWaypoint(plan_instruction->getWaypoint().getType()))
+        if (isCartesianWaypoint(plan_instruction->getWaypoint()))
         {
           const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
 
           Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
-          if (isCartesianWaypoint(start_waypoint.getType()))
+          if (isCartesianWaypoint(start_waypoint))
           {
             prev_pose = *(start_waypoint.cast_const<Eigen::Isometry3d>());
           }
-          else if (isJointWaypoint(start_waypoint.getType()))
+          else if (isJointWaypoint(start_waypoint))
           {
             const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
             if (!pci->kin->calcFwdKin(prev_pose, *jwp))
@@ -172,7 +172,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
             cur_plan_profile->apply(*pci, poses[p], *plan_instruction, active_links, index);
 
             // Add seed state
-            assert(seed_composite->at(p - seed_shift_index).isMove());
+            assert(isMoveInstruction(seed_composite->at(p - seed_shift_index)));
             const auto* seed_instruction =
                 seed_composite->at(p - seed_shift_index).cast_const<tesseract_planning::MoveInstruction>();
             seed_states.push_back(seed_instruction->getPosition());
@@ -184,13 +184,13 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
           cur_plan_profile->apply(*pci, *cur_wp, *plan_instruction, active_links, index);
 
           // Add seed state
-          assert(seed_composite->back().isMove());
+          assert(isMoveInstruction(seed_composite->back()));
           const auto* seed_instruction = seed_composite->back().cast_const<tesseract_planning::MoveInstruction>();
           seed_states.push_back(seed_instruction->getPosition());
 
           ++index;
         }
-        else if (isJointWaypoint(plan_instruction->getWaypoint().getType()))
+        else if (isJointWaypoint(plan_instruction->getWaypoint()))
         {
           const auto* cur_wp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
           Eigen::Isometry3d cur_pose = Eigen::Isometry3d::Identity();
@@ -201,11 +201,11 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
                      plan_instruction->getTCP();
 
           Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
-          if (isCartesianWaypoint(start_waypoint.getType()))
+          if (isCartesianWaypoint(start_waypoint))
           {
             prev_pose = *(start_waypoint.cast_const<Eigen::Isometry3d>());
           }
-          else if (isJointWaypoint(start_waypoint.getType()))
+          else if (isJointWaypoint(start_waypoint))
           {
             const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
             if (!pci->kin->calcFwdKin(prev_pose, *jwp))
@@ -226,7 +226,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
             cur_plan_profile->apply(*pci, poses[p], *plan_instruction, active_links, index);
 
             // Add seed state
-            assert(seed_composite->at(p - seed_shift_index).isMove());
+            assert(isMoveInstruction(seed_composite->at(p - seed_shift_index)));
             const auto* seed_instruction =
                 seed_composite->at(p - seed_shift_index).cast_const<tesseract_planning::MoveInstruction>();
             seed_states.push_back(seed_instruction->getPosition());
@@ -238,7 +238,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
           cur_plan_profile->apply(*pci, *cur_wp, *plan_instruction, active_links, index);
 
           // Add seed state
-          assert(seed_composite->back().isMove());
+          assert(isMoveInstruction(seed_composite->back()));
           const auto* seed_instruction = seed_composite->back().cast_const<tesseract_planning::MoveInstruction>();
           seed_states.push_back(seed_instruction->getPosition());
 
@@ -251,7 +251,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
       }
       else if (plan_instruction->isFreespace())
       {
-        if (isJointWaypoint(plan_instruction->getWaypoint().getType()))
+        if (isJointWaypoint(plan_instruction->getWaypoint()))
         {
           const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>();
 
@@ -259,7 +259,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
           for (std::size_t s = 1; s < static_cast<std::size_t>(interpolate_cnt - 1); ++s)
           {
             // Add seed state
-            assert(seed_composite->at(s - seed_shift_index).isMove());
+            assert(isMoveInstruction(seed_composite->at(s - seed_shift_index)));
             const auto* seed_instruction =
                 seed_composite->at(s - seed_shift_index).cast_const<tesseract_planning::MoveInstruction>();
             seed_states.push_back(seed_instruction->getPosition());
@@ -275,11 +275,11 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
           fixed_steps.push_back(index);
 
           // Add seed state
-          assert(seed_composite->back().isMove());
+          assert(isMoveInstruction(seed_composite->back()));
           const auto* seed_instruction = seed_composite->back().cast_const<tesseract_planning::MoveInstruction>();
           seed_states.push_back(seed_instruction->getPosition());
         }
-        else if (isCartesianWaypoint(plan_instruction->getWaypoint().getType()))
+        else if (isCartesianWaypoint(plan_instruction->getWaypoint()))
         {
           const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
 
@@ -287,7 +287,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
           for (std::size_t s = 1; s < static_cast<std::size_t>(interpolate_cnt - 1); ++s)
           {
             // Add seed state
-            assert(seed_composite->at(s - seed_shift_index).isMove());
+            assert(isMoveInstruction(seed_composite->at(s - seed_shift_index)));
             const auto* seed_instruction =
                 seed_composite->at(s - seed_shift_index).cast_const<tesseract_planning::MoveInstruction>();
             seed_states.push_back(seed_instruction->getPosition());
@@ -303,7 +303,7 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
           fixed_steps.push_back(index);
 
           // Add seed state
-          assert(seed_composite->back().isMove());
+          assert(isMoveInstruction(seed_composite->back()));
           const auto* seed_instruction = seed_composite->back().cast_const<tesseract_planning::MoveInstruction>();
           seed_states.push_back(seed_instruction->getPosition());
         }

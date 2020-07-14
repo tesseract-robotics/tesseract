@@ -56,12 +56,6 @@ public:
 
   void setDescription(const std::string& description);
 
-  bool isComposite() const;
-
-  bool isPlan() const;
-
-  bool isMove() const;
-
   void print(std::string prefix = "") const;
 
   bool isLinear() const;

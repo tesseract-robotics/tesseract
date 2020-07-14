@@ -3,6 +3,8 @@
 
 namespace tesseract_planning
 {
+class Instruction;
+
 enum class InstructionType : int
 {
   // Everything before must be a motion plan Instruction
@@ -30,43 +32,19 @@ enum class InstructionType : int
   USER_DEFINED = 1000
 };
 
-inline bool isCommentInstruction(int type)
-{
-  return (type <= static_cast<int>(InstructionType::COMMENT_INSTRUCTION) &&
-          type > static_cast<int>(InstructionType::VARIABLE_INSTRUCTION));
-}
+bool isCommentInstruction(const Instruction& instruction);
 
-inline bool isVariableInstruction(int type)
-{
-  return (type <= static_cast<int>(InstructionType::VARIABLE_INSTRUCTION) &&
-          type > static_cast<int>(InstructionType::ANALOG_INSTRUCTION));
-}
+bool isVariableInstruction(const Instruction& instruction);
 
-inline bool isAnalogInstruction(int type)
-{
-  return (type <= static_cast<int>(InstructionType::ANALOG_INSTRUCTION) &&
-          type > static_cast<int>(InstructionType::IO_INSTRUCTION));
-}
+bool isAnalogInstruction(const Instruction& instruction);
 
-inline bool isIOInstruction(int type)
-{
-  return (type <= static_cast<int>(InstructionType::IO_INSTRUCTION) &&
-          type > static_cast<int>(InstructionType::COMPOSITE_INSTRUCTION));
-}
+bool isIOInstruction(const Instruction& instruction);
 
-inline bool isCompositeInstruction(int type)
-{
-  return (type <= static_cast<int>(InstructionType::COMPOSITE_INSTRUCTION) &&
-          type > static_cast<int>(InstructionType::MOVE_INSTRUCTION));
-}
+bool isCompositeInstruction(const Instruction& instruction);
 
-inline bool isMoveInstruction(int type)
-{
-  return (type <= static_cast<int>(InstructionType::MOVE_INSTRUCTION) &&
-          type > static_cast<int>(InstructionType::PLAN_INSTRUCTION));
-}
+bool isMoveInstruction(const Instruction& instruction);
 
-inline bool isPlanInstruction(int type) { return (type <= static_cast<int>(InstructionType::PLAN_INSTRUCTION)); }
+bool isPlanInstruction(const Instruction& instruction);
 
 }  // namespace tesseract_planning
 
