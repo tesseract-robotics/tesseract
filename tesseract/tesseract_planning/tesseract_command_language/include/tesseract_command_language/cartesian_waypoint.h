@@ -14,7 +14,7 @@ namespace tesseract_planning
 class CartesianWaypoint : public Eigen::Isometry3d
 {
 public:
-  CartesianWaypoint(void) : Eigen::Isometry3d() {}
+  CartesianWaypoint() = default;
 
   // This constructor allows you to construct MyVectorType from Eigen expressions
   template <typename OtherDerived>
