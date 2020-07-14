@@ -32,7 +32,7 @@
 
 namespace tesseract_planning
 {
-inline trajopt::TrajOptProb
+inline trajopt::TrajOptProb::Ptr
 DefaultTrajoptProblemGenerator(const PlannerRequest& request,
                                std::unordered_map<std::string, TrajOptPlanProfile::Ptr> plan_profiles,
                                std::unordered_map<std::string, TrajOptCompositeProfile::Ptr> composite_profiles)
@@ -355,10 +355,10 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
   // Construct Problem
   trajopt::TrajOptProb::Ptr problem = trajopt::ConstructProblem(*pci);
 
-  return *problem;
+  return problem;
 }
 
-inline trajopt::TrajOptProb DefaultTrajoptProblemGenerator(const PlannerRequest& request)
+inline trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& request)
 {
   std::unordered_map<std::string, TrajOptPlanProfile::Ptr> plan_profiles;
   std::unordered_map<std::string, TrajOptCompositeProfile::Ptr> composite_profile;
