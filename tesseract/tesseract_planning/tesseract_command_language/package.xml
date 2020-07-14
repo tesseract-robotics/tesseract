@@ -7,6 +7,7 @@
   <maintainer email="levi.armstrong@swri.org">Levi Armstrong</maintainer>
   <license>Apache 2.0</license>
 
+  <depend>libconsole-bridge-dev</depend>
   <depend>tesseract_common</depend>
 
   <build_depend>eigen</build_depend>

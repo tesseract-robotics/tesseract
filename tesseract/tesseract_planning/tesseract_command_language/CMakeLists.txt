@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_command_language VERSION 0.1.0 LANGUAGES CXX)
 
+find_package(console_bridge REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -16,7 +17,7 @@ add_library(${PROJECT_NAME} SHARED
   src/command_language_utils.cpp
   src/instruction_type.cpp
   src/waypoint_type.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_common)
+target_link_libraries(${PROJECT_NAME} PUBLIC console_bridge tesseract::tesseract_common)
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME})
 tesseract_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE})
@@ -71,9 +72,9 @@ install(DIRECTORY include/${PROJECT_NAME}
   PATTERN ".svn" EXCLUDE
 )
 
-#if (TESSERACT_ENABLE_TESTING)
-#  enable_testing()
-#  tesseract_add_run_tests_target()
-#  add_subdirectory(test)
-#endif()
+if (TESSERACT_ENABLE_TESTING)
+  enable_testing()
+  tesseract_add_run_tests_target()
+  add_subdirectory(test)
+endif()
 
