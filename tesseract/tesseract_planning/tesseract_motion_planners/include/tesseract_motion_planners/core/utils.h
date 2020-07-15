@@ -89,7 +89,9 @@ inline tesseract_common::VectorIsometry3d interpolate(const Eigen::Isometry3d& s
  * @param steps The number of step
  * @return A matrix where columns = steps + 1
  */
-inline Eigen::MatrixXd interpolate(const Eigen::VectorXd& start, const Eigen::VectorXd& stop, int steps)
+inline Eigen::MatrixXd interpolate(const Eigen::Ref<const Eigen::VectorXd>& start,
+                                   const Eigen::Ref<const Eigen::VectorXd>& stop,
+                                   int steps)
 {
   assert(start.size() == stop.size());
 
@@ -108,7 +110,7 @@ inline Eigen::MatrixXd interpolate(const Eigen::VectorXd& start, const Eigen::Ve
  * @param steps The number of step
  * @return A vector of waypoints with a length = steps + 1
  */
-inline std::vector<Waypoint> interpolate(const Waypoint& start, const Waypoint& stop, int steps)
+inline std::vector<Waypoint> interpolate_waypoint(const Waypoint& start, const Waypoint& stop, int steps)
 {
   switch (start.getType())
   {
