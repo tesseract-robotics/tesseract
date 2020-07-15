@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>tesseract_process_managers</name>
+  <version>0.0.0</version>
+  <description>The Process managers package</description>
+
+  <maintainer email="levi.armstrong@swri.org">Levi Armstrong</maintainer>
+  <license>Apache 2.0</license>
+  <author >Levi Armstrong</author>
+
+  <build_depend>eigen</build_depend>
+  <build_export_depend>eigen</build_export_depend>
+  <depend>libconsole-bridge-dev</depend>
+  <depend>taskflow</depend>
+  <depend>tesseract_common</depend>
+  <depend>tesseract_command_language</depend>
+  <depend>tesseract_motion_planners</depend>
+  <depend>tesseract</depend>
+
+  <test_depend>gtest</test_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>
