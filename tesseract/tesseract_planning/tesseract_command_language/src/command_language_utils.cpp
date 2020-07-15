@@ -280,15 +280,15 @@ long getPlanInstructionsCount(const CompositeInstruction& composite_instruction,
 
 void flattenHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
                    CompositeInstruction& composite,
-                   const bool& include_composite)
+                   const bool& process_child_composites)
 {
   for (auto& i : composite)
   {
     if (isCompositeInstruction(i))
     {
-      if (include_composite)
+      if (process_child_composites)
         flattened.emplace_back(i);
-      flattenHelper(flattened, *(i.cast<CompositeInstruction>()), include_composite);
+      flattenHelper(flattened, *(i.cast<CompositeInstruction>()), process_child_composites);
     }
     else
       flattened.emplace_back(i);
@@ -296,24 +296,24 @@ void flattenHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
 }
 
 std::vector<std::reference_wrapper<Instruction>> flatten(CompositeInstruction& instruction,
-                                                         const bool include_composite)
+                                                         const bool process_child_composites)
 {
   std::vector<std::reference_wrapper<Instruction>> flattened;
-  flattenHelper(flattened, instruction, include_composite);
+  flattenHelper(flattened, instruction, process_child_composites);
   return flattened;
 }
 
 void flattenHelper(std::vector<std::reference_wrapper<const Instruction>>& flattened,
                    const CompositeInstruction& composite,
-                   const bool& include_composite)
+                   const bool& process_child_composites)
 {
   for (auto& i : composite)
   {
     if (isCompositeInstruction(i))
     {
-      if (include_composite)
+      if (process_child_composites)
         flattened.emplace_back(i);
-      flattenHelper(flattened, *(i.cast_const<CompositeInstruction>()), include_composite);
+      flattenHelper(flattened, *(i.cast_const<CompositeInstruction>()), process_child_composites);
     }
     else
       flattened.emplace_back(i);
@@ -325,18 +325,18 @@ void flattenHelper(std::vector<std::reference_wrapper<const Instruction>>& flatt
  * @param instruction Input composite instruction to be flattened
  * @return A new flattened vector referencing the original instruction elements
  */
-inline std::vector<std::reference_wrapper<const Instruction>> flatten(const CompositeInstruction& instruction,
-                                                                      const bool include_composite)
+std::vector<std::reference_wrapper<const Instruction>> flatten(const CompositeInstruction& instruction,
+                                                               const bool process_child_composites)
 {
   std::vector<std::reference_wrapper<const Instruction>> flattened;
-  flattenHelper(flattened, instruction, include_composite);
+  flattenHelper(flattened, instruction, process_child_composites);
   return flattened;
 }
 
-inline void flattenToPatternHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
-                                   CompositeInstruction& composite,
-                                   const CompositeInstruction& pattern,
-                                   const bool& include_composite)
+void flattenToPatternHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
+                            CompositeInstruction& composite,
+                            const CompositeInstruction& pattern,
+                            const bool& process_child_composites)
 {
   if (composite.size() != pattern.size())
   {
@@ -348,12 +348,12 @@ inline void flattenToPatternHelper(std::vector<std::reference_wrapper<Instructio
   {
     if (isCompositeInstruction(pattern.at(i)) && isCompositeInstruction(composite[i]))
     {
-      if (include_composite)
+      if (process_child_composites)
         flattened.emplace_back(composite[i]);
       flattenToPatternHelper(flattened,
                              *(composite[i].cast<CompositeInstruction>()),
                              *pattern.at(i).cast_const<CompositeInstruction>(),
-                             include_composite);
+                             process_child_composites);
     }
     else
       flattened.emplace_back(composite[i]);
@@ -362,7 +362,7 @@ inline void flattenToPatternHelper(std::vector<std::reference_wrapper<Instructio
 
 std::vector<std::reference_wrapper<Instruction>> flattenToPattern(CompositeInstruction& instruction,
                                                                   const CompositeInstruction& pattern,
-                                                                  const bool include_composite)
+                                                                  const bool process_child_composites)
 {
   if (instruction.size() != pattern.size())
   {
@@ -371,7 +371,49 @@ std::vector<std::reference_wrapper<Instruction>> flattenToPattern(CompositeInstr
   }
 
   std::vector<std::reference_wrapper<Instruction>> flattened;
-  flattenToPatternHelper(flattened, instruction, pattern, include_composite);
+  flattenToPatternHelper(flattened, instruction, pattern, process_child_composites);
+  return flattened;
+}
+
+inline void flattenToPatternHelper(std::vector<std::reference_wrapper<const Instruction>>& flattened,
+                                   const CompositeInstruction& composite,
+                                   const CompositeInstruction& pattern,
+                                   const bool& process_child_composites)
+{
+  if (composite.size() != pattern.size())
+  {
+    CONSOLE_BRIDGE_logError("Instruction and pattern sizes are mismatched");
+    return;
+  }
+
+  for (std::size_t i = 0; i < pattern.size(); i++)
+  {
+    if (isCompositeInstruction(pattern.at(i)) && isCompositeInstruction(composite[i]))
+    {
+      if (process_child_composites)
+        flattened.emplace_back(composite[i]);
+      flattenToPatternHelper(flattened,
+                             *(composite[i].cast_const<CompositeInstruction>()),
+                             *pattern.at(i).cast_const<CompositeInstruction>(),
+                             process_child_composites);
+    }
+    else
+      flattened.emplace_back(composite[i]);
+  }
+}
+
+std::vector<std::reference_wrapper<const Instruction>> flattenToPattern(const CompositeInstruction& instruction,
+                                                                        const CompositeInstruction& pattern,
+                                                                        const bool process_child_composites)
+{
+  if (instruction.size() != pattern.size())
+  {
+    CONSOLE_BRIDGE_logError("Instruction and pattern sizes are mismatched");
+    return std::vector<std::reference_wrapper<const Instruction>>();
+  }
+
+  std::vector<std::reference_wrapper<const Instruction>> flattened;
+  flattenToPatternHelper(flattened, instruction, pattern, process_child_composites);
   return flattened;
 }
 
