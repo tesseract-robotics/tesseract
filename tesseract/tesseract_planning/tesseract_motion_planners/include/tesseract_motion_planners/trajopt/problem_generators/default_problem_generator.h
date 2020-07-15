@@ -29,13 +29,14 @@
 #include <trajopt/problem_description.hpp>
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_motion_planners/core/types.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
 
 namespace tesseract_planning
 {
-inline trajopt::TrajOptProb::Ptr
-DefaultTrajoptProblemGenerator(const PlannerRequest& request,
-                               std::unordered_map<std::string, TrajOptPlanProfile::Ptr> plan_profiles,
-                               std::unordered_map<std::string, TrajOptCompositeProfile::Ptr> composite_profiles)
+inline trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& request,
+                                                                const TrajOptPlanProfileMap& plan_profiles,
+                                                                const TrajOptCompositeProfileMap& composite_profiles)
 {
   auto pci = std::make_shared<trajopt::ProblemConstructionInfo>(request.tesseract);
 
@@ -108,7 +109,8 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
       else
         cur_plan_profile = it->second;
 
-      std::size_t seed_shift_index = 1;
+      std::size_t cartesian_seed_shift_index = 1;
+      std::size_t freespace_seed_shift_index = 0;
       if (!found_plan_instruction)
       {
         // If this is the first plan instruction we reduce the interpolate cnt because the seed includes the start state
@@ -119,7 +121,8 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
         const auto* seed_instruction = seed_composite->at(0).cast_const<tesseract_planning::MoveInstruction>();
         seed_states.push_back(seed_instruction->getPosition());
 
-        seed_shift_index = 0;
+        cartesian_seed_shift_index = 0;
+        freespace_seed_shift_index = 1;
 
         // Add start waypoint
         if (isCartesianWaypoint(start_waypoint))
@@ -172,9 +175,9 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
             cur_plan_profile->apply(*pci, poses[p], *plan_instruction, active_links, index);
 
             // Add seed state
-            assert(isMoveInstruction(seed_composite->at(p - seed_shift_index)));
+            assert(isMoveInstruction(seed_composite->at(p - cartesian_seed_shift_index)));
             const auto* seed_instruction =
-                seed_composite->at(p - seed_shift_index).cast_const<tesseract_planning::MoveInstruction>();
+                seed_composite->at(p - cartesian_seed_shift_index).cast_const<tesseract_planning::MoveInstruction>();
             seed_states.push_back(seed_instruction->getPosition());
 
             ++index;
@@ -226,9 +229,9 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
             cur_plan_profile->apply(*pci, poses[p], *plan_instruction, active_links, index);
 
             // Add seed state
-            assert(isMoveInstruction(seed_composite->at(p - seed_shift_index)));
+            assert(isMoveInstruction(seed_composite->at(p - cartesian_seed_shift_index)));
             const auto* seed_instruction =
-                seed_composite->at(p - seed_shift_index).cast_const<tesseract_planning::MoveInstruction>();
+                seed_composite->at(p - cartesian_seed_shift_index).cast_const<tesseract_planning::MoveInstruction>();
             seed_states.push_back(seed_instruction->getPosition());
 
             ++index;
@@ -256,12 +259,11 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
           const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::JointWaypoint>();
 
           // Add intermediate points with path costs and constraints
-          for (std::size_t s = 1; s < static_cast<std::size_t>(interpolate_cnt - 1); ++s)
+          for (std::size_t s = freespace_seed_shift_index; s < seed_composite->size() - 1; ++s)
           {
             // Add seed state
-            assert(isMoveInstruction(seed_composite->at(s - seed_shift_index)));
-            const auto* seed_instruction =
-                seed_composite->at(s - seed_shift_index).cast_const<tesseract_planning::MoveInstruction>();
+            assert(isMoveInstruction(seed_composite->at(s)));
+            const auto* seed_instruction = seed_composite->at(s).cast_const<tesseract_planning::MoveInstruction>();
             seed_states.push_back(seed_instruction->getPosition());
 
             ++index;
@@ -284,12 +286,11 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
           const auto* cur_wp = plan_instruction->getWaypoint().cast_const<tesseract_planning::CartesianWaypoint>();
 
           // Add intermediate points with path costs and constraints
-          for (std::size_t s = 1; s < static_cast<std::size_t>(interpolate_cnt - 1); ++s)
+          for (std::size_t s = freespace_seed_shift_index; s < seed_composite->size() - 1; ++s)
           {
             // Add seed state
-            assert(isMoveInstruction(seed_composite->at(s - seed_shift_index)));
-            const auto* seed_instruction =
-                seed_composite->at(s - seed_shift_index).cast_const<tesseract_planning::MoveInstruction>();
+            assert(isMoveInstruction(seed_composite->at(s)));
+            const auto* seed_instruction = seed_composite->at(s).cast_const<tesseract_planning::MoveInstruction>();
             seed_states.push_back(seed_instruction->getPosition());
 
             ++index;
@@ -358,11 +359,5 @@ DefaultTrajoptProblemGenerator(const PlannerRequest& request,
   return problem;
 }
 
-inline trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& request)
-{
-  std::unordered_map<std::string, TrajOptPlanProfile::Ptr> plan_profiles;
-  std::unordered_map<std::string, TrajOptCompositeProfile::Ptr> composite_profile;
-  return DefaultTrajoptProblemGenerator(request, plan_profiles, composite_profile);
-}
 }  // namespace tesseract_planning
 #endif

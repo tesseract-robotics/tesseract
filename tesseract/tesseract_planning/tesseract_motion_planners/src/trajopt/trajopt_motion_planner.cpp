@@ -148,8 +148,9 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& r
   tesseract_common::TrajArray trajectory = getTraj(opt.x(), problem->GetVars());
 
   // Flatten the results to make them easier to process
-  auto results_flattened = FlattenToPattern(response.results, request.instructions);
-  auto instructions_flattened = Flatten(request.instructions);
+  response.results = request.seed;
+  auto results_flattened = flattenToPattern(response.results, request.instructions);
+  auto instructions_flattened = flatten(request.instructions);
 
   // Loop over the flattened results and add them to response if the input was a plan instruction
   Eigen::Index result_index = 0;
@@ -188,7 +189,7 @@ bool TrajOptMotionPlanner::checkUserInput(const PlannerRequest& request) const
 
   if (request.instructions.empty())
   {
-    CONSOLE_BRIDGE_logError("TrajOptPlannerUniversalConfig requires at least 2 instructions");
+    CONSOLE_BRIDGE_logError("TrajOptPlannerUniversalConfig requires at least one instruction");
     return false;
   }
 

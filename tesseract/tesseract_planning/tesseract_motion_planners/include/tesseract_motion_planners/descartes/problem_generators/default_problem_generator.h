@@ -29,6 +29,7 @@
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_motion_planners/descartes/descartes_problem.h>
 #include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
+#include <tesseract_motion_planners/descartes/profile/descartes_default_plan_profile.h>
 #include <tesseract_kinematics/core/validate.h>
 
 namespace tesseract_planning
