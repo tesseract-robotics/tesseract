@@ -1,0 +1,9 @@
+find_package(GTest REQUIRED)
+
+#add_executable(${PROJECT_NAME}_unit tesseract_process_managers_unit.cpp)
+#target_link_libraries(${PROJECT_NAME}_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME})
+#tesseract_target_compile_options(${PROJECT_NAME}_unit PRIVATE)
+#tesseract_clang_tidy(${PROJECT_NAME}_unit)
+#tesseract_code_coverage(${PROJECT_NAME}_unit ALL EXCLUDE ${COVERAGE_EXCLUDE})
+#tesseract_gtest_discover_tests(${PROJECT_NAME}_unit)
+#add_dependencies(run_tests ${PROJECT_NAME}_unit)
