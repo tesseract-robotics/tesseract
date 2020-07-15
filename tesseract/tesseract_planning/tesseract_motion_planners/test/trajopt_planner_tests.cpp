@@ -160,6 +160,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsJointJoint)  // N
   TrajOptMotionPlanner test_planner;
   test_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
   test_planner.composite_profiles["TEST_PROFILE"] = composite_profile;
+  test_planner.problem_generator = &DefaultTrajoptProblemGenerator;
 
   // Create Planning Request
   PlannerRequest request;
@@ -233,6 +234,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointJoint)  // NOLINT
   TrajOptMotionPlanner test_planner;
   test_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
   test_planner.composite_profiles["TEST_PROFILE"] = composite_profile;
+  test_planner.problem_generator = &DefaultTrajoptProblemGenerator;
 
   // Create Planning Request
   PlannerRequest request;
@@ -309,6 +311,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointCart)  // NOLINT
   TrajOptMotionPlanner test_planner;
   test_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
   test_planner.composite_profiles["TEST_PROFILE"] = composite_profile;
+  test_planner.problem_generator = &DefaultTrajoptProblemGenerator;
 
   // Create Planning Request
   PlannerRequest request;
@@ -390,6 +393,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartJoint)  // NOLINT
   TrajOptMotionPlanner test_planner;
   test_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
   test_planner.composite_profiles["TEST_PROFILE"] = composite_profile;
+  test_planner.problem_generator = &DefaultTrajoptProblemGenerator;
 
   // Create Planning Request
   PlannerRequest request;
@@ -470,6 +474,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartCart)  // NOLINT
   TrajOptMotionPlanner test_planner;
   test_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
   test_planner.composite_profiles["TEST_PROFILE"] = composite_profile;
+  test_planner.problem_generator = &DefaultTrajoptProblemGenerator;
 
   // Create Planning Request
   PlannerRequest request;
@@ -550,6 +555,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsCartCart)  // NOL
   TrajOptMotionPlanner test_planner;
   test_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
   test_planner.composite_profiles["TEST_PROFILE"] = composite_profile;
+  test_planner.problem_generator = &DefaultTrajoptProblemGenerator;
 
   // Create Planning Request
   PlannerRequest request;
@@ -637,6 +643,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointConstraint)  // NOLINT
   TrajOptMotionPlanner test_planner;
   test_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
   test_planner.composite_profiles["TEST_PROFILE"] = composite_profile;
+  test_planner.problem_generator = &DefaultTrajoptProblemGenerator;
 
   // Create Planning Request
   PlannerRequest request;
@@ -706,6 +713,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointCost)  // NOLINT
   TrajOptMotionPlanner test_planner;
   test_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
   test_planner.composite_profiles["TEST_PROFILE"] = composite_profile;
+  test_planner.problem_generator = &DefaultTrajoptProblemGenerator;
 
   // Create Planning Request
   PlannerRequest request;
