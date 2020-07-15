@@ -118,25 +118,66 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
 
   // Flatten the results to make them easier to process
   response.results = request.seed;
-  std::vector<std::reference_wrapper<Instruction>> results_flattened =
-      flattenToPattern(response.results, request.instructions);
-  std::vector<std::reference_wrapper<const Instruction>> instructions_flattened = flatten(request.instructions);
+  auto results_flattened = flattenToPattern(response.results, request.instructions);
+  auto instructions_flattened = flatten(request.instructions);
 
   // Loop over the flattened results and add them to response if the input was a plan instruction
   Eigen::Index dof = problem->manip_fwd_kin->numJoints();
   Eigen::Index result_index = 0;
-  for (auto& instruction : results_flattened)
+  bool first_plan_instruction_found = false;
+  for (std::size_t plan_index = 0; plan_index < results_flattened.size(); plan_index++)
   {
-    if (isPlanInstruction(instruction.get()))
+    if (isPlanInstruction(instructions_flattened.at(plan_index).get()))
     {
-      // This instruction corresponds to a composite. Set all results in that composite to the results
-      auto* move_instructions = instruction.get().cast<CompositeInstruction>();
-      for (auto& instruction : *move_instructions)
+      const auto* plan_instruction = instructions_flattened.at(plan_index).get().cast_const<PlanInstruction>();
+
+      if (plan_instruction->isLinear())
       {
-        Eigen::Map<Eigen::Matrix<FloatType, -1, 1>> temp(solution.data() + dof * result_index, dof);
-        instruction.cast<MoveInstruction>()->setPosition(temp.template cast<double>());
-        result_index++;
+        // This instruction corresponds to a composite. Set all results in that composite to the results
+        auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();
+        for (auto& instruction : *move_instructions)
+        {
+          Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> temp(solution.data() + dof * result_index++,
+                                                                             dof);
+          instruction.cast<MoveInstruction>()->setPosition(temp.template cast<double>());
+        }
       }
+      else if (plan_instruction->isFreespace())
+      {
+        // Because descartes does not support freespace it just includes the plan instruction waypoint so we will
+        // fill out the results with a joint interpolated trajectory.
+        Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> start(solution.data() + dof * result_index, dof);
+        Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> stop(solution.data() + dof * result_index++, dof);
+
+        // This instruction corresponds to a composite. Set all results in that composite to the results
+        auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();
+
+        if (!first_plan_instruction_found)
+        {
+          Eigen::MatrixXd temp = interpolate(start.template cast<double>(),
+                                             stop.template cast<double>(),
+                                             static_cast<int>(move_instructions->size()) - 1);
+
+          assert(temp.cols() == static_cast<long>(move_instructions->size()));
+          for (std::size_t i = 0; i < move_instructions->size(); ++i)
+            (*move_instructions)[i].cast<MoveInstruction>()->setPosition(temp.col(static_cast<long>(i)));
+        }
+        else
+        {
+          Eigen::MatrixXd temp = interpolate(
+              start.template cast<double>(), stop.template cast<double>(), static_cast<int>(move_instructions->size()));
+
+          assert(temp.cols() == static_cast<long>(move_instructions->size()) + 1);
+          for (std::size_t i = 0; i < move_instructions->size(); ++i)
+            (*move_instructions)[i].cast<MoveInstruction>()->setPosition(temp.col(static_cast<long>(i) + 1));
+        }
+      }
+      else
+      {
+        throw std::runtime_error("Unsupported Plan Instruction Type!");
+      }
+
+      first_plan_instruction_found = true;
     }
   }
 
