@@ -137,7 +137,8 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
         auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();
         for (auto& instruction : *move_instructions)
         {
-          Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> temp(solution.data() + dof * result_index++, dof);
+          Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> temp(solution.data() + dof * result_index++,
+                                                                             dof);
           instruction.cast<MoveInstruction>()->setPosition(temp.template cast<double>());
         }
       }
@@ -153,7 +154,9 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
 
         if (!first_plan_instruction_found)
         {
-          Eigen::MatrixXd temp = interpolate(start.template cast<double>(), stop.template cast<double>(), static_cast<int>(move_instructions->size()) - 1);
+          Eigen::MatrixXd temp = interpolate(start.template cast<double>(),
+                                             stop.template cast<double>(),
+                                             static_cast<int>(move_instructions->size()) - 1);
 
           assert(temp.cols() == static_cast<long>(move_instructions->size()));
           for (std::size_t i = 0; i < move_instructions->size(); ++i)
@@ -161,7 +164,8 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
         }
         else
         {
-          Eigen::MatrixXd temp = interpolate(start.template cast<double>(), stop.template cast<double>(), static_cast<int>(move_instructions->size()));
+          Eigen::MatrixXd temp = interpolate(
+              start.template cast<double>(), stop.template cast<double>(), static_cast<int>(move_instructions->size()));
 
           assert(temp.cols() == static_cast<long>(move_instructions->size()) + 1);
           for (std::size_t i = 0; i < move_instructions->size(); ++i)
