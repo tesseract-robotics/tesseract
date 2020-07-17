@@ -37,12 +37,10 @@ bool FreespaceProcessManager::init(ProcessInput input)
   assert(isCompositeInstruction(input.instruction));
 
   input.instruction.print("Generating Taskflow for: ");
-  auto task =
-      taskflow
-          .composed_of(taskflow_generator.generateTaskflow(input,
-                                                           std::bind(&FreespaceProcessManager::successCallback, this),
-                                                           std::bind(&FreespaceProcessManager::failureCallback, this)))
-          .name("freespace");
+  auto task = taskflow
+                  .composed_of(taskflow_generator.generateTaskflow(
+                      input, [this]() { successCallback(); }, [this]() { failureCallback(); }))
+                  .name("freespace");
   freespace_tasks.push_back(task);
 
   // Dump the taskflow

@@ -21,32 +21,6 @@ using namespace tesseract_planning;
 
 RasterProcessManager::RasterProcessManager() : taskflow("RasterProcessManagerTaskflow") {}
 
-/**
- * Composite
- * {
- *   Composite - from start
- *   Composite - Raster
- *   {
- *     Composite
- *       ...
- *     Composite
- *   }
- *   Unordered Composite - Transitions
- *   {
- *     Composite
- *       ...
- *     Composite
- *   }
- *   Composite - Raster
- *   {
- *     Composite
- *       ...
- *     Composite
- *   }
- *   Composite - to end
- * }
- */
-
 bool RasterProcessManager::init(ProcessInput input)
 {
   // This should make all of the isComposite checks so that you can safely cast below
@@ -92,10 +66,16 @@ bool RasterProcessManager::init(ProcessInput input)
     // Each transition step depends on the start and end only since they are independent
     for (std::size_t transition_step_idx = 0; transition_step_idx < input[input_idx].size(); transition_step_idx++)
     {
+      // TODO: handle from_start transition
+      // TODO: get last move instruction. We will have to modify the utility to return the index since we need the
+      // reference to the base instruction
+
       auto transition_step =
           taskflow
               .composed_of(freespace_taskflow_generator.generateTaskflow(
                   input[input_idx][transition_step_idx],
+                  input[input_idx - 1].results.cast<CompositeInstruction>()->back(),
+                  input[input_idx + 1].results.cast<CompositeInstruction>()->front(),
                   std::bind(&RasterProcessManager::successCallback, this),
                   std::bind(&RasterProcessManager::failureCallback, this)))
               .name("transition_" + std::to_string(input_idx) + "." + std::to_string(transition_step_idx));

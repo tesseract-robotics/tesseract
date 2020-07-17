@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 
 #include <tesseract_common/utils.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#include <tesseract_command_language/null_instruction.h>
 
 #include <tesseract_process_managers/process_generator.h>
 
@@ -48,38 +49,37 @@ public:
   using Ptr = std::shared_ptr<RandomProcessGenerator>;
   using ConstPtr = std::shared_ptr<const RandomProcessGenerator>;
 
-  std::function<void()> generateTask(ProcessInput input) override
-  {
-    task_inputs_.push_back(input);
+  std::function<void()> generateTask(ProcessInput input) override;
 
-    return std::bind(&RandomProcessGenerator::process, this, task_inputs_.back());
-  }
+  std::function<void()> generateTask(ProcessInput input, const Instruction& start_instruction);
 
-  std::function<int()> generateConditionalTask(ProcessInput input) override
-  {
-    task_inputs_.push_back(input);
+  std::function<void()> generateTask(ProcessInput input,
+                                     const Instruction& start_instruction,
+                                     const Instruction& end_instruction);
 
-    return std::bind(&RandomProcessGenerator::conditionalProcess, this, task_inputs_.back());
-  }
+  std::function<int()> generateConditionalTask(ProcessInput input) override;
 
-  void process(const ProcessInput& /*results*/) const { std::cout << name + "\n"; }
+  std::function<int()> generateConditionalTask(ProcessInput input, const Instruction& start_instruction);
 
-  int conditionalProcess(const ProcessInput& /*results*/) const
-  {
-    Eigen::MatrixX2d limits(1, 2);
-    limits << 0, 1;
-    Eigen::VectorXd rand = tesseract_common::generateRandomNumber(limits);
+  std::function<int()> generateConditionalTask(ProcessInput input,
+                                               const Instruction& start_instruction,
+                                               const Instruction& end_instruction);
 
-    int success = (rand[0] > success_frequency) ? 0 : 1;
-    std::cout << name + "  Success: " + std::to_string(success) + "\n";
-    return success;
-  }
+  int conditionalProcess(const ProcessInput& input,
+                         const Instruction& start_instruction,
+                         const Instruction& end_instruction) const;
+
+  void process(const ProcessInput& input,
+               const Instruction& start_instruction,
+               const Instruction& end_instruction) const;
 
   /** @brief Between 0 and 1. Likelyhood this process with return true (if using conditionalProcess) */
   double success_frequency{ 0.5 };
 
 private:
   std::vector<ProcessInput> task_inputs_;
+
+  NullInstruction null_instruction;
 };
 
 }  // namespace tesseract_planning
