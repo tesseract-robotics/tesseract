@@ -81,22 +81,70 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
     if (isCompositeInstruction(instruction))
       throw std::runtime_error("Descartes planner does not support child composite instructions.");
 
+  int index = 0;
+  std::string profile;
   Waypoint start_waypoint = NullWaypoint();
-  if (request.instructions.hasStartWaypoint())
+  Instruction placeholder_instruction = NullInstruction();
+  const Instruction* start_instruction = nullptr;
+  if (request.instructions.hasStartInstruction())
   {
-    start_waypoint = request.instructions.getStartWaypoint();
+    assert(isMoveInstruction(request.instructions.getStartInstruction()));
+    start_instruction = &(request.instructions.getStartInstruction());
+    if (isMoveInstruction(*start_instruction))
+    {
+      const auto* temp = start_instruction->cast_const<MoveInstruction>();
+      assert(temp->isStart() || temp->isStartFixed());
+      start_waypoint = temp->getWaypoint();
+      profile = temp->getProfile();
+    }
+    else
+    {
+      throw std::runtime_error("OMPL DefaultProblemGenerator: Unsupported start instruction type!");
+    }
   }
   else
   {
-    Eigen::VectorXd current_jv = prob->env_state->getJointValues(prob->manip_inv_kin->getJointNames());
+    Eigen::VectorXd current_jv = request.env_state->getJointValues(prob->manip_inv_kin->getJointNames());
     JointWaypoint temp(current_jv);
     temp.joint_names = prob->manip_inv_kin->getJointNames();
+
+    MoveInstruction temp_move(temp, MoveInstructionType::START_FIXED);
+    temp_move.setPosition(current_jv);
+    placeholder_instruction = temp_move;
+    start_instruction = &placeholder_instruction;
     start_waypoint = temp;
   }
 
+  // Check Start Profile
+  if (profile.empty())
+    profile = "DEFAULT";
+
+  typename DescartesPlanProfile<FloatType>::Ptr cur_plan_profile{ nullptr };
+  auto it = plan_profiles.find(profile);
+  if (it == plan_profiles.end())
+    cur_plan_profile = std::make_shared<DescartesDefaultPlanProfile<FloatType>>();
+  else
+    cur_plan_profile = it->second;
+
+  // Add start waypoint
+  if (isCartesianWaypoint(start_waypoint))
+  {
+    const auto* cwp = start_waypoint.cast_const<Eigen::Isometry3d>();
+    cur_plan_profile->apply(*prob, *cwp, *start_instruction, active_links, index);
+  }
+  else if (isJointWaypoint(start_waypoint))
+  {
+    const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
+    cur_plan_profile->apply(*prob, *jwp, *start_instruction, active_links, index);
+  }
+  else
+  {
+    throw std::runtime_error("DescartesMotionPlannerConfig: uknown waypoint type.");
+  }
+
+  ++index;
+
   // Transform plan instructions into descartes samplers
-  int index = 0;
-  bool found_plan_instruction{ false };
   for (std::size_t i = 0; i < request.instructions.size(); ++i)
   {
     const auto& instruction = request.instructions[i];
@@ -120,30 +168,6 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
         cur_plan_profile = std::make_shared<DescartesDefaultPlanProfile<FloatType>>();
       else
         cur_plan_profile = it->second;
-
-      if (!found_plan_instruction)
-      {
-        // If this is the first plan instruction we reduce the interpolate cnt because the seed includes the start state
-        --interpolate_cnt;
-
-        // Add start waypoint
-        if (isCartesianWaypoint(start_waypoint))
-        {
-          const auto* cwp = start_waypoint.cast_const<Eigen::Isometry3d>();
-          cur_plan_profile->apply(*prob, *cwp, *plan_instruction, active_links, index);
-        }
-        else if (isJointWaypoint(start_waypoint))
-        {
-          const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
-          cur_plan_profile->apply(*prob, *jwp, *plan_instruction, active_links, index);
-        }
-        else
-        {
-          throw std::runtime_error("DescartesMotionPlannerConfig: uknown waypoint type.");
-        }
-
-        ++index;
-      }
 
       if (plan_instruction->isLinear())
       {
@@ -274,8 +298,8 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
         throw std::runtime_error("DescartesMotionPlannerConfig: Unsupported!");
       }
 
-      found_plan_instruction = true;
       start_waypoint = plan_instruction->getWaypoint();
+      start_instruction = &instruction;
     }
   }
 

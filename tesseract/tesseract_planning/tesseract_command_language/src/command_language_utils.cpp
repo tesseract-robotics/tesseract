@@ -126,6 +126,10 @@ PlanInstruction* getLastPlanInstruction(CompositeInstruction& composite_instruct
 const MoveInstruction* getFirstMoveInstruction(const CompositeInstruction& composite_instruction,
                                                bool process_child_composites)
 {
+  if (composite_instruction.hasStartInstruction())
+    if (isMoveInstruction(composite_instruction.getStartInstruction()))
+      return composite_instruction.getStartInstruction().cast_const<MoveInstruction>();
+
   if (process_child_composites)
   {
     for (const auto& instruction : composite_instruction)
@@ -173,6 +177,10 @@ const MoveInstruction* getLastMoveInstruction(const CompositeInstruction& compos
       }
     }
 
+    if (composite_instruction.hasStartInstruction())
+      if (isMoveInstruction(composite_instruction.getStartInstruction()))
+        return composite_instruction.getStartInstruction().cast_const<MoveInstruction>();
+
     return nullptr;
   }
 
@@ -180,11 +188,19 @@ const MoveInstruction* getLastMoveInstruction(const CompositeInstruction& compos
     if (isMoveInstruction(*it))
       return it->cast_const<MoveInstruction>();
 
+  if (composite_instruction.hasStartInstruction())
+    if (isMoveInstruction(composite_instruction.getStartInstruction()))
+      return composite_instruction.getStartInstruction().cast_const<MoveInstruction>();
+
   return nullptr;
 }
 
 MoveInstruction* getFirstMoveInstruction(CompositeInstruction& composite_instruction, bool process_child_composites)
 {
+  if (composite_instruction.hasStartInstruction())
+    if (isMoveInstruction(composite_instruction.getStartInstruction()))
+      return composite_instruction.getStartInstruction().cast<MoveInstruction>();
+
   if (process_child_composites)
   {
     for (auto& instruction : composite_instruction)
@@ -230,6 +246,10 @@ MoveInstruction* getLastMoveInstruction(CompositeInstruction& composite_instruct
       }
     }
 
+    if (composite_instruction.hasStartInstruction())
+      if (isMoveInstruction(composite_instruction.getStartInstruction()))
+        return composite_instruction.getStartInstruction().cast<MoveInstruction>();
+
     return nullptr;
   }
 
@@ -237,14 +257,22 @@ MoveInstruction* getLastMoveInstruction(CompositeInstruction& composite_instruct
     if (isMoveInstruction(*it))
       return it->cast<MoveInstruction>();
 
+  if (composite_instruction.hasStartInstruction())
+    if (isMoveInstruction(composite_instruction.getStartInstruction()))
+      return composite_instruction.getStartInstruction().cast<MoveInstruction>();
+
   return nullptr;
 }
 
 long getMoveInstructionsCount(const CompositeInstruction& composite_instruction, bool process_child_composites)
 {
+  long cnt = 0;
+  if (composite_instruction.hasStartInstruction())
+    if (isMoveInstruction(composite_instruction.getStartInstruction()))
+      ++cnt;
+
   if (process_child_composites)
   {
-    long cnt = 0;
     for (const auto& instruction : composite_instruction)
     {
       if (isCompositeInstruction(instruction))
@@ -255,8 +283,10 @@ long getMoveInstructionsCount(const CompositeInstruction& composite_instruction,
     return cnt;
   }
 
-  return std::count_if(
+  cnt += std::count_if(
       composite_instruction.begin(), composite_instruction.end(), [](const auto& i) { return isMoveInstruction(i); });
+
+  return cnt;
 }
 
 long getPlanInstructionsCount(const CompositeInstruction& composite_instruction, bool process_child_composites)

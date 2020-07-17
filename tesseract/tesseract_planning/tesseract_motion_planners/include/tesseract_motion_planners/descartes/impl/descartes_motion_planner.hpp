@@ -124,7 +124,14 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
   // Loop over the flattened results and add them to response if the input was a plan instruction
   Eigen::Index dof = problem->manip_fwd_kin->numJoints();
   Eigen::Index result_index = 0;
-  bool first_plan_instruction_found = false;
+
+  // Set Result Start Instruction
+  Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> temp(solution.data() + dof * result_index++, dof);
+  assert(response.results.hasStartInstruction());
+
+  Instruction& instruction = response.results.getStartInstruction();
+  instruction.cast<MoveInstruction>()->setPosition(temp.template cast<double>());
+
   for (std::size_t plan_index = 0; plan_index < results_flattened.size(); plan_index++)
   {
     if (isPlanInstruction(instructions_flattened.at(plan_index).get()))
@@ -152,32 +159,23 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
         // This instruction corresponds to a composite. Set all results in that composite to the results
         auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();
 
-        if (!first_plan_instruction_found)
+        if (result_index == 1)
         {
-          Eigen::MatrixXd temp = interpolate(start.template cast<double>(),
-                                             stop.template cast<double>(),
-                                             static_cast<int>(move_instructions->size()) - 1);
-
-          assert(temp.cols() == static_cast<long>(move_instructions->size()));
-          for (std::size_t i = 0; i < move_instructions->size(); ++i)
-            (*move_instructions)[i].cast<MoveInstruction>()->setPosition(temp.col(static_cast<long>(i)));
+          auto* start_result = response.results.getStartInstruction().cast<MoveInstruction>();
+          start_result->setPosition(start.template cast<double>());
         }
-        else
-        {
-          Eigen::MatrixXd temp = interpolate(
-              start.template cast<double>(), stop.template cast<double>(), static_cast<int>(move_instructions->size()));
 
-          assert(temp.cols() == static_cast<long>(move_instructions->size()) + 1);
-          for (std::size_t i = 0; i < move_instructions->size(); ++i)
-            (*move_instructions)[i].cast<MoveInstruction>()->setPosition(temp.col(static_cast<long>(i) + 1));
-        }
+        Eigen::MatrixXd temp = interpolate(
+            start.template cast<double>(), stop.template cast<double>(), static_cast<int>(move_instructions->size()));
+
+        assert(temp.cols() == static_cast<long>(move_instructions->size()) + 1);
+        for (std::size_t i = 0; i < move_instructions->size(); ++i)
+          (*move_instructions)[i].cast<MoveInstruction>()->setPosition(temp.col(static_cast<long>(i) + 1));
       }
       else
       {
         throw std::runtime_error("Unsupported Plan Instruction Type!");
       }
-
-      first_plan_instruction_found = true;
     }
   }
 

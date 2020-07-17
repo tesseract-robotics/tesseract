@@ -3,8 +3,8 @@
 
 namespace tesseract_planning
 {
-MoveInstruction::MoveInstruction(Waypoint waypoint, MoveInstructionType type)
-  : move_type_(type), waypoint_(std::move(waypoint))
+MoveInstruction::MoveInstruction(Waypoint waypoint, MoveInstructionType type, const std::string& profile)
+  : move_type_(type), profile_(profile), waypoint_(std::move(waypoint))
 {
 }
 
@@ -47,9 +47,17 @@ void MoveInstruction::print(std::string prefix) const
             << "  Description: " << getDescription() << std::endl;
 }
 
+void MoveInstruction::setMoveType(MoveInstructionType move_type) { move_type_ = move_type; }
+MoveInstructionType MoveInstruction::getMoveType() const { return move_type_; }
+
 bool MoveInstruction::isLinear() const { return (move_type_ == MoveInstructionType::LINEAR); }
 
 bool MoveInstruction::isFreespace() const { return (move_type_ == MoveInstructionType::FREESPACE); }
 
 bool MoveInstruction::isCircular() const { return (move_type_ == MoveInstructionType::CIRCULAR); }
+
+bool MoveInstruction::isStart() const { return (move_type_ == MoveInstructionType::START); }
+
+bool MoveInstruction::isStartFixed() const { return (move_type_ == MoveInstructionType::START_FIXED); }
+
 }  // namespace tesseract_planning

@@ -4,7 +4,7 @@
 #include <trajopt/problem_description.hpp>
 #include <vector>
 #include <memory>
-#include <tesseract_command_language/plan_instruction.h>
+#include <tesseract_command_language/core/instruction.h>
 
 namespace tesseract_planning
 {
@@ -16,13 +16,13 @@ public:
 
   virtual void apply(trajopt::ProblemConstructionInfo& pci,
                      const Eigen::Isometry3d& cartesian_waypoint,
-                     const PlanInstruction& parent_instruction,
+                     const Instruction& parent_instruction,
                      const std::vector<std::string>& active_links,
                      int index) = 0;
 
   virtual void apply(trajopt::ProblemConstructionInfo& pci,
                      const Eigen::VectorXd& joint_waypoint,
-                     const PlanInstruction& parent_instruction,
+                     const Instruction& parent_instruction,
                      const std::vector<std::string>& active_links,
                      int index) = 0;
 };
