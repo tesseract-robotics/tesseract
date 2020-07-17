@@ -1,6 +1,6 @@
 ﻿/**
- * @file trajopt_process_generator.h
- * @brief Generates a trajopt process
+ * @file motion_planner_process_generator.h
+ * @brief Generates an OMPL process
  *
  * @author Matthew Powelson
  * @date July 15. 2020
@@ -23,28 +23,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_TRAJOPT_PROCESS_GENERATOR_H
-#define TESSERACT_PROCESS_MANAGERS_TRAJOPT_PROCESS_GENERATOR_H
+#ifndef TESSERACT_PROCESS_MANAGERS_MOTION_PLANNER_PROCESS_GENERATOR_H
+#define TESSERACT_PROCESS_MANAGERS_MOTION_PLANNER_PROCESS_GENERATOR_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
-#include <tesseract_motion_planners/trajopt/trajopt_motion_planner.h>
+#include <tesseract_motion_planners/core/planner.h>
 #include <tesseract_command_language/null_instruction.h>
 
 #include <tesseract_process_managers/process_generator.h>
 
 namespace tesseract_planning
 {
-class TrajOptProcessGenerator : public ProcessGenerator
+class MotionPlannerProcessGenerator : public ProcessGenerator
 {
 public:
-  using Ptr = std::shared_ptr<TrajOptProcessGenerator>;
-  using ConstPtr = std::shared_ptr<const TrajOptProcessGenerator>;
+  using Ptr = std::shared_ptr<MotionPlannerProcessGenerator>;
+  using ConstPtr = std::shared_ptr<const MotionPlannerProcessGenerator>;
 
-  TrajOptProcessGenerator();
+  MotionPlannerProcessGenerator(std::shared_ptr<MotionPlanner>);
 
   std::function<void()> generateTask(ProcessInput input) override;
 
@@ -70,7 +70,7 @@ public:
                const Instruction& start_instruction,
                const Instruction& end_instruction) const;
 
-  TrajOptMotionPlanner planner;
+  std::shared_ptr<MotionPlanner> planner;
 
 private:
   std::vector<ProcessInput> task_inputs_;
