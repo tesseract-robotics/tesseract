@@ -152,8 +152,13 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& r
   auto results_flattened = flattenToPattern(response.results, request.instructions);
   auto instructions_flattened = flatten(request.instructions);
 
-  // Loop over the flattened results and add them to response if the input was a plan instruction
+  // Set Result Start Instruction
   Eigen::Index result_index = 0;
+  assert(response.results.hasStartInstruction());
+  Instruction& instruction = response.results.getStartInstruction();
+  instruction.cast<MoveInstruction>()->setPosition(trajectory.row(result_index++));
+
+  // Loop over the flattened results and add them to response if the input was a plan instruction
   for (std::size_t plan_index = 0; plan_index < results_flattened.size(); plan_index++)
   {
     if (isPlanInstruction(instructions_flattened.at(plan_index).get()))

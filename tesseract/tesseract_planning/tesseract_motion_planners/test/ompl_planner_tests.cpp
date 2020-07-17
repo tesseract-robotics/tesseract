@@ -177,12 +177,15 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   // Specify a end waypoint
   JointWaypoint wp2 = Eigen::Map<const Eigen::VectorXd>(end_state.data(), static_cast<long>(end_state.size()));
 
+  // Define Start Instruction
+  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a program
   CompositeInstruction program;
-  program.setStartWaypoint(wp1);
+  program.setStartInstruction(start_instruction);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -220,6 +223,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   }
 
   EXPECT_TRUE(&status);
+  EXPECT_TRUE(planner_response.results.hasStartInstruction());
   EXPECT_EQ(getMoveInstructionsCount(planner_response.results), 11);
   EXPECT_TRUE(wp1.isApprox(getFirstMoveInstruction(planner_response.results)->getPosition(), 1e-5));
   EXPECT_TRUE(wp2.isApprox(getLastMoveInstruction(planner_response.results)->getPosition(), 1e-5));
@@ -227,12 +231,13 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   // Check for start state in collision error
   std::vector<double> swp = { 0, 0.7, 0.0, 0, 0.0, 0, 0.0 };
 
-  // Specify a start waypoint
+  // Define New Start Instruction
   wp1 = Eigen::Map<const Eigen::VectorXd>(swp.data(), static_cast<long>(swp.size()));
+  start_instruction = MoveInstruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
 
   // Create a new program
   program = CompositeInstruction();
-  program.setStartWaypoint(wp1);
+  program.setStartInstruction(start_instruction);
   program.push_back(plan_f1);
 
   // Create a new seed
@@ -259,7 +264,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
 
   // Create a new program
   program = CompositeInstruction();
-  program.setStartWaypoint(wp1);
+  program.setStartInstruction(start_instruction);
   program.push_back(plan_f1);
 
   // Create a new seed
@@ -305,12 +310,15 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianGoalPlannerUnit)
   fwd_kin->calcFwdKin(goal, goal_jv);
   CartesianWaypoint wp2 = goal;
 
+  // Define Start Instruction
+  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a program
   CompositeInstruction program;
-  program.setStartWaypoint(wp1);
+  program.setStartInstruction(start_instruction);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -347,6 +355,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianGoalPlannerUnit)
     CONSOLE_BRIDGE_logError("CI Error: %s", status.message().c_str());
   }
   EXPECT_TRUE(&status);
+  EXPECT_TRUE(planner_response.results.hasStartInstruction());
   EXPECT_EQ(getMoveInstructionsCount(planner_response.results), 11);
   EXPECT_TRUE(wp1.isApprox(getFirstMoveInstruction(planner_response.results)->getPosition(), 1e-5));
 
@@ -385,12 +394,15 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
   // Specify a end waypoint
   JointWaypoint wp2 = Eigen::Map<const Eigen::VectorXd>(end_state.data(), static_cast<long>(end_state.size()));
 
+  // Define Start Instruction
+  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a program
   CompositeInstruction program;
-  program.setStartWaypoint(wp1);
+  program.setStartInstruction(start_instruction);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -428,6 +440,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
   }
 
   EXPECT_TRUE(&status);
+  EXPECT_TRUE(planner_response.results.hasStartInstruction());
   EXPECT_EQ(getMoveInstructionsCount(planner_response.results), 11);
   EXPECT_TRUE(wp2.isApprox(getLastMoveInstruction(planner_response.results)->getPosition(), 1e-5));
 

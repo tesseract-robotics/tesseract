@@ -24,15 +24,20 @@ void CompositeInstruction::setProfile(const std::string& profile)
 }
 const std::string& CompositeInstruction::getProfile() const { return profile_; }
 
-void CompositeInstruction::setStartWaypoint(Waypoint waypoint) { start_waypoint_ = waypoint; }
+void CompositeInstruction::setStartInstruction(Instruction instruction) { start_instruction_ = instruction; }
 
-const Waypoint& CompositeInstruction::getStartWaypoint() const { return start_waypoint_; }
+void CompositeInstruction::resetStartInstruction() { start_instruction_ = NullInstruction(); }
 
-bool CompositeInstruction::hasStartWaypoint() const { return (!isNullWaypoint(start_waypoint_)); }
+const Instruction& CompositeInstruction::getStartInstruction() const { return start_instruction_; }
+
+Instruction& CompositeInstruction::getStartInstruction() { return start_instruction_; }
+
+bool CompositeInstruction::hasStartInstruction() const { return (!isNullInstruction(start_instruction_)); }
 
 void CompositeInstruction::print(std::string prefix) const
 {
   std::cout << prefix + "Composite Instruction, Description: " << getDescription() << std::endl;
+  std::cout << prefix + "--- Start Instruction, Description: " << start_instruction_.getDescription() << std::endl;
   std::cout << prefix + "{" << std::endl;
   for (const auto& i : *this)
     i.print(prefix + "  ");
