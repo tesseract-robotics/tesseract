@@ -13,8 +13,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_generators/random_process_generator.h>
 #include <tesseract_process_managers/taskflow_generators/sequential_failure_tree_taskflow.h>
-#include <tesseract_process_managers/examples/freespace_example_program.h>
-#include <tesseract_process_managers/process_managers/freespace_process_manager.h>
+#include <tesseract_process_managers/examples/raster_example_program.h>
+#include <tesseract_process_managers/process_managers/raster_process_manager.h>
 
 using namespace tesseract_planning;
 
@@ -62,7 +62,7 @@ int main()
   // --------------------
   // Define the program
   // --------------------
-  CompositeInstruction program = freespaceExampleProgram();
+  CompositeInstruction program = rasterExampleProgram();
   const Instruction program_instruction{ program };
 
   // --------------------
@@ -88,13 +88,14 @@ int main()
   // --------------------
   // Initialize Freespace Manager
   // --------------------
-  FreespaceProcessManager freespace_manager;
-  freespace_manager.init(input);
+  RasterProcessManager raster_manager;
+  if (!raster_manager.init(input))
+    CONSOLE_BRIDGE_logError("Initialization Failed");
 
   // --------------------
   // Solve
   // --------------------
-  freespace_manager.execute();
+  raster_manager.execute();
 
   std::cout << "Execution Complete" << std::endl;
 
