@@ -87,8 +87,6 @@ public:
 
   void clear() override;
 
-  bool checkUserInput(const PlannerRequest& request) const;
-
 protected:
   /** @brief The planners status codes */
   std::shared_ptr<const OMPLMotionPlannerStatusCategory> status_category_;
@@ -98,6 +96,8 @@ protected:
 
   /** @brief The continuous contact manager */
   tesseract_collision::ContinuousContactManager::Ptr continuous_contact_manager_;
+
+  bool checkUserInput(const PlannerRequest& request) const;
 };
 
 }  // namespace tesseract_planning

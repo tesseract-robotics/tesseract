@@ -43,4 +43,5 @@ bool PlanInstruction::isLinear() const { return (plan_type_ == PlanInstructionTy
 bool PlanInstruction::isFreespace() const { return (plan_type_ == PlanInstructionType::FREESPACE); }
 
 bool PlanInstruction::isCircular() const { return (plan_type_ == PlanInstructionType::CIRCULAR); }
+
 }  // namespace tesseract_planning

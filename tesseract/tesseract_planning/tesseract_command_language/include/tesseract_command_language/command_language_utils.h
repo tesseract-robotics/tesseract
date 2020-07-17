@@ -9,6 +9,7 @@ namespace tesseract_planning
 {
 /**
  * @brief Get the first Plan Instruction in a Composite Instruction
+ * This does not consider the start instruction
  * @param composite_instruction Composite Instruction to search
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The first Plan Instruction (Const)
@@ -18,6 +19,7 @@ const PlanInstruction* getFirstPlanInstruction(const CompositeInstruction& compo
 
 /**
  * @brief Get the last Plan Instruction in a Composite Instruction
+ * This does not consider the start instruction
  * @param composite_instruction Composite Instruction to search
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The last Plan Instruction (Const)
@@ -27,6 +29,7 @@ const PlanInstruction* getLastPlanInstruction(const CompositeInstruction& compos
 
 /**
  * @brief Get the first Plan Instruction in a Composite Instruction
+ * This does not consider the start instruction
  * @param composite_instruction Composite Instruction to search
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The first Plan Instruction (Non-Const)
@@ -36,6 +39,7 @@ PlanInstruction* getFirstPlanInstruction(CompositeInstruction& composite_instruc
 
 /**
  * @brief Get the last Plan Instruction in a Composite Instruction
+ * This does not consider the start instruction
  * @param composite_instruction Composite Instruction to search
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The last Plan Instruction (Non-Const)
@@ -45,6 +49,7 @@ PlanInstruction* getLastPlanInstruction(CompositeInstruction& composite_instruct
 
 /**
  * @brief Get the first Move Instruction in a Composite Instruction
+ * This does consider the start instruction in the composite instruction
  * @param composite_instruction Composite Instruction to search
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The first Move Instruction (Const)
@@ -54,6 +59,7 @@ const MoveInstruction* getFirstMoveInstruction(const CompositeInstruction& compo
 
 /**
  * @brief Get the last Move Instruction in a Composite Instruction
+ * This does consider the start instruction in the composite instruction
  * @param composite_instruction Composite Instruction to search
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The last Move Instruction (Const)
@@ -63,6 +69,7 @@ const MoveInstruction* getLastMoveInstruction(const CompositeInstruction& compos
 
 /**
  * @brief Get the first Move Instruction in a Composite Instruction
+ * This does consider the start instruction in the composite instruction
  * @param composite_instruction Composite Instruction to search
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The first Move Instruction (Non-Const)
@@ -72,6 +79,7 @@ MoveInstruction* getFirstMoveInstruction(CompositeInstruction& composite_instruc
 
 /**
  * @brief Get the last Move Instruction in a Composite Instruction
+ * This does consider the start instruction in the composite instruction
  * @param composite_instruction Composite Instruction to search
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The last Move Instruction (Non-Const)
@@ -81,6 +89,7 @@ MoveInstruction* getLastMoveInstruction(CompositeInstruction& composite_instruct
 
 /**
  * @brief Get number of Move Instruction in a Composite Instruction
+ * This does consider the start instruction in the composite instruction
  * @param composite_instruction The Composite Instruction to process
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The number of Move Instructions
@@ -89,6 +98,7 @@ long getMoveInstructionsCount(const CompositeInstruction& composite_instruction,
 
 /**
  * @brief Get number of Plan Instruction in a Composite Instruction
+ * This does not consider the start instruction
  * @param composite_instruction The Composite Instruction to process
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The number of Plan Instructions
