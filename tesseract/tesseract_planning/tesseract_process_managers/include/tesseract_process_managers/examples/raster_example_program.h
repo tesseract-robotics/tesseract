@@ -14,7 +14,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-inline CompositeInstruction ExampleProgram()
+inline CompositeInstruction rasterExampleProgram()
 {
   CompositeInstruction program;
   // Start Joint Position for the program
@@ -36,51 +36,94 @@ inline CompositeInstruction ExampleProgram()
   PlanInstruction plan_c5(wp7, PlanInstructionType::LINEAR, "cartesian_profile");
 
   PlanInstruction plan_f0(wp2, PlanInstructionType::FREESPACE, "freespace_profile");
-  plan_f0.setDescription("to_start");
-  program.push_back(plan_f0);
+  plan_f0.setDescription("from_start_plan");
+  CompositeInstruction from_start;
+  from_start.setDescription("from_start");
+  from_start.push_back(plan_f0);
+  program.push_back(from_start);
 
-  PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "freespace_profile");
-  plan_f1.setDescription("freespace");
-  program.push_back(plan_f1);
+  {
+    CompositeInstruction raster_segment;
+    raster_segment.setDescription("raster_segment");
+    CompositeInstruction raster;
+    raster.setDescription("raster");
+    raster.push_back(plan_c1);
+    raster.push_back(plan_c2);
+    raster.push_back(plan_c3);
+    raster.push_back(plan_c4);
+    raster.push_back(plan_c5);
+    raster_segment.push_back(raster);
+    program.push_back(raster_segment);
+  }
 
-  CompositeInstruction raster1;
-  raster1.setDescription("raster");
-  raster1.push_back(plan_c1);
-  raster1.push_back(plan_c2);
-  raster1.push_back(plan_c3);
-  raster1.push_back(plan_c4);
-  raster1.push_back(plan_c5);
-  program.push_back(raster1);
+  {
+    PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "freespace_profile");
+    plan_f1.setDescription("transition_from_end_plan");
+    CompositeInstruction transition_from_end;
+    transition_from_end.setDescription("transition_from_end");
+    transition_from_end.push_back(plan_f1);
+    CompositeInstruction transition_from_start;
+    transition_from_start.setDescription("transition_from_start");
+    transition_from_start.push_back(plan_f1);
+
+    CompositeInstruction transitions("DEFAULT", CompositeInstructionOrder::UNORDERED);
+    transitions.setDescription("transitions");
+    transitions.push_back(transition_from_start);
+    transitions.push_back(transition_from_end);
+    program.push_back(transitions);
+  }
+
+  {
+    CompositeInstruction raster_segment;
+    raster_segment.setDescription("raster_segment");
+    CompositeInstruction raster;
+    raster.setDescription("raster");
+    raster.push_back(plan_c1);
+    raster.push_back(plan_c2);
+    raster.push_back(plan_c3);
+    raster.push_back(plan_c4);
+    raster.push_back(plan_c5);
+    raster_segment.push_back(raster);
+    program.push_back(raster_segment);
+  }
+
+  {
+    PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "freespace_profile");
+    plan_f1.setDescription("transition_from_end_plan");
+    CompositeInstruction transition_from_end;
+    transition_from_end.setDescription("transition_from_end");
+    transition_from_end.push_back(plan_f1);
+    CompositeInstruction transition_from_start;
+    transition_from_start.setDescription("transition_from_start");
+    transition_from_start.push_back(plan_f1);
+
+    CompositeInstruction transitions("DEFAULT", CompositeInstructionOrder::UNORDERED);
+    transitions.setDescription("transitions");
+    transitions.push_back(transition_from_start);
+    transitions.push_back(transition_from_end);
+    program.push_back(transitions);
+  }
+
+  {
+    CompositeInstruction raster_segment;
+    raster_segment.setDescription("raster_segment");
+    CompositeInstruction raster;
+    raster.setDescription("raster");
+    raster.push_back(plan_c1);
+    raster.push_back(plan_c2);
+    raster.push_back(plan_c3);
+    raster.push_back(plan_c4);
+    raster.push_back(plan_c5);
+    raster_segment.push_back(raster);
+    program.push_back(raster_segment);
+  }
 
   PlanInstruction plan_f2(wp2, PlanInstructionType::FREESPACE, "freespace_profile");
-  plan_f2.setDescription("freespace");
-  program.push_back(plan_f2);
-
-  CompositeInstruction raster2;
-  raster2.setDescription("raster");
-  raster2.push_back(plan_c1);
-  raster2.push_back(plan_c2);
-  raster2.push_back(plan_c3);
-  raster2.push_back(plan_c4);
-  raster2.push_back(plan_c5);
-  program.push_back(raster2);
-
-  PlanInstruction plan_f3(wp2, PlanInstructionType::FREESPACE, "freespace_profile");
-  plan_f3.setDescription("freespace");
-  program.push_back(plan_f3);
-
-  CompositeInstruction raster3;
-  raster3.setDescription("raster");
-  raster3.push_back(plan_c1);
-  raster3.push_back(plan_c2);
-  raster3.push_back(plan_c3);
-  raster3.push_back(plan_c4);
-  raster3.push_back(plan_c5);
-  program.push_back(raster3);
-
-  PlanInstruction plan_f4(wp2, PlanInstructionType::FREESPACE, "freespace_profile");
-  plan_f4.setDescription("freespace");
-  program.push_back(plan_f4);
+  plan_f2.setDescription("to_end_plan");
+  CompositeInstruction to_end;
+  to_end.setDescription("to_end");
+  to_end.push_back(plan_f2);
+  program.push_back(to_end);
 
   return program;
 }
