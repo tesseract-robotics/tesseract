@@ -1,6 +1,9 @@
 #ifndef TESSERACT_MOTION_PLANNERS_DESCARTES_IMPL_DESCARTES_DEFAULT_PLAN_PROFILE_HPP
 #define TESSERACT_MOTION_PLANNERS_DESCARTES_IMPL_DESCARTES_DEFAULT_PLAN_PROFILE_HPP
 
+#include <tesseract_command_language/move_instruction.h>
+#include <tesseract_command_language/plan_instruction.h>
+
 #include <tesseract_motion_planners/descartes/profile/descartes_default_plan_profile.h>
 #include <tesseract_motion_planners/descartes/descartes_robot_sampler.h>
 #include <tesseract_motion_planners/descartes/descartes_collision.h>
@@ -18,14 +21,34 @@ namespace tesseract_planning
 template <typename FloatType>
 void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& prob,
                                                    const Eigen::Isometry3d& cartesian_waypoint,
-                                                   const PlanInstruction& parent_instruction,
+                                                   const Instruction& parent_instruction,
                                                    const std::vector<std::string>& active_links,
                                                    int index)
 {
+  // Extract working frame and tcp
+  std::string working_frame;
+  Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
+  if (isMoveInstruction(parent_instruction))
+  {
+    const auto* temp = parent_instruction.cast_const<MoveInstruction>();
+    tcp = temp->getTCP();
+    working_frame = temp->getWorkingFrame();
+  }
+  else if (isPlanInstruction(parent_instruction))
+  {
+    const auto* temp = parent_instruction.cast_const<PlanInstruction>();
+    tcp = temp->getTCP();
+    working_frame = temp->getWorkingFrame();
+  }
+  else
+  {
+    throw std::runtime_error("OMPLDefaultPlanProfile: Unsupported instruction type!");
+  }
+
   /* Check if this cartesian waypoint is dynamic
    * (i.e. defined relative to a frame that will move with the kinematic chain) */
   auto it = std::find(active_links.begin(), active_links.end(), prob.manip_inv_kin->getBaseLinkName());
-  if (it != active_links.end() && prob.manip_inv_kin->getBaseLinkName() != parent_instruction.getWorkingFrame())
+  if (it != active_links.end() && prob.manip_inv_kin->getBaseLinkName() != working_frame)
     throw std::runtime_error("DescartesDefaultPlanProfile: Assigned dynamic waypoint but parent instruction working is "
                              "not set to the base link of manipulator!");
 
@@ -42,20 +65,15 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
   {
     // Check if the waypoint is not relative to the manipulator base coordinate system
     Eigen::Isometry3d world_to_waypoint = cartesian_waypoint;
-    if (!parent_instruction.getWorkingFrame().empty())
-      world_to_waypoint = prob.env_state->link_transforms.at(parent_instruction.getWorkingFrame()) * cartesian_waypoint;
+    if (!working_frame.empty())
+      world_to_waypoint = prob.env_state->link_transforms.at(working_frame) * cartesian_waypoint;
 
     Eigen::Isometry3d world_to_base_link = prob.env_state->link_transforms.at(prob.manip_inv_kin->getBaseLinkName());
     manip_baselink_to_waypoint = world_to_base_link.inverse() * world_to_waypoint;
   }
 
-  auto sampler = std::make_shared<DescartesRobotSampler<FloatType>>(manip_baselink_to_waypoint,
-                                                                    target_pose_sampler,
-                                                                    prob.manip_inv_kin,
-                                                                    ci,
-                                                                    parent_instruction.getTCP(),
-                                                                    allow_collision,
-                                                                    is_valid);
+  auto sampler = std::make_shared<DescartesRobotSampler<FloatType>>(
+      manip_baselink_to_waypoint, target_pose_sampler, prob.manip_inv_kin, ci, tcp, allow_collision, is_valid);
   prob.samplers.push_back(std::move(sampler));
 
   if (index != 0)
@@ -105,7 +123,7 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
 template <typename FloatType>
 void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& prob,
                                                    const Eigen::VectorXd& joint_waypoint,
-                                                   const PlanInstruction& /*parent_instruction*/,
+                                                   const Instruction& /*parent_instruction*/,
                                                    const std::vector<std::string>& active_links,
                                                    int index)
 {

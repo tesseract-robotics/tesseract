@@ -138,12 +138,15 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsJointJoint)  // N
   wp2 << 0, 0, 0, 1.57, 0, 0, 0;
   wp2.joint_names = joint_names;
 
+  // Define Start Instruction
+  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.setStartWaypoint(wp1);
+  program.setStartInstruction(start_instruction);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -208,12 +211,15 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointJoint)  // NOLINT
   wp2 << 0, 0, 0, 1.57, 0, 0, 0;
   wp2.joint_names = joint_names;
 
+  // Define Start Instruction
+  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.setStartWaypoint(wp1);
+  program.setStartInstruction(start_instruction);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -281,12 +287,15 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointCart)  // NOLINT
   CartesianWaypoint wp2 =
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
+  // Define Start Instruction
+  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.setStartWaypoint(wp1);
+  program.setStartInstruction(start_instruction);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -358,13 +367,16 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartJoint)  // NOLINT
   wp2 << 0, 0, 0, -1.57, 0, 0, 0;
   wp2.joint_names = joint_names;
 
+  // Define Start Instruction
+  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+  start_instruction.setWorkingFrame("base_link");
+
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
-  plan_f1.setWorkingFrame("base_link");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.setStartWaypoint(wp1);
+  program.setStartInstruction(start_instruction);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -434,13 +446,17 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartCart)  // NOLINT
   CartesianWaypoint wp2 =
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
+  // Define Start Instruction
+  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+  start_instruction.setWorkingFrame("base_link");
+
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
   plan_f1.setWorkingFrame("base_link");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.setStartWaypoint(wp1);
+  program.setStartInstruction(start_instruction);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -510,13 +526,17 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsCartCart)  // NOL
   CartesianWaypoint wp2 =
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(.20, .4, 0.8) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
+  // Define Start Instruction
+  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+  start_instruction.setWorkingFrame("base_link");
+
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::LINEAR, "TEST_PROFILE");
   plan_f1.setWorkingFrame("base_link");
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
-  program.setStartWaypoint(wp1);
+  program.setStartInstruction(start_instruction);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -594,7 +614,9 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointConstraint)  // NOLINT
     wp << 0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0;
     if (ind == 0)
     {
-      program.setStartWaypoint(wp);
+      // Define Start Instruction
+      MoveInstruction start_instruction(wp, MoveInstructionType::START, "TEST_PROFILE");
+      program.setStartInstruction(start_instruction);
     }
     else
     {
@@ -660,7 +682,9 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointCost)  // NOLINT
     wp.joint_names = joint_names;
     if (ind == 0)
     {
-      program.setStartWaypoint(wp);
+      // Define Start Instruction
+      MoveInstruction start_instruction(wp, MoveInstructionType::START, "TEST_PROFILE");
+      program.setStartInstruction(start_instruction);
     }
     else
     {

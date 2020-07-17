@@ -7,6 +7,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/goals/GoalStates.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_command_language/instruction_type.h>
+#include <tesseract_command_language/move_instruction.h>
+#include <tesseract_command_language/plan_instruction.h>
+
 #include <tesseract_motion_planners/ompl/profile/ompl_default_plan_profile.h>
 #include <tesseract_motion_planners/ompl/utils.h>
 
@@ -86,7 +90,7 @@ void OMPLDefaultPlanProfile::setup(OMPLProblem& prob)
 
 void OMPLDefaultPlanProfile::applyGoalStates(OMPLProblem& prob,
                                              const Eigen::Isometry3d& cartesian_waypoint,
-                                             const PlanInstruction& /*parent_instruction*/,
+                                             const Instruction& /*parent_instruction*/,
                                              const std::vector<std::string>& /*active_links*/,
                                              int /*index*/)
 {
@@ -124,7 +128,7 @@ void OMPLDefaultPlanProfile::applyGoalStates(OMPLProblem& prob,
 
 void OMPLDefaultPlanProfile::applyGoalStates(OMPLProblem& prob,
                                              const Eigen::VectorXd& joint_waypoint,
-                                             const PlanInstruction& /*parent_instruction*/,
+                                             const Instruction& /*parent_instruction*/,
                                              const std::vector<std::string>& /*active_links*/,
                                              int /*index*/)
 {
@@ -150,7 +154,7 @@ void OMPLDefaultPlanProfile::applyGoalStates(OMPLProblem& prob,
 
 void OMPLDefaultPlanProfile::applyStartStates(OMPLProblem& prob,
                                               const Eigen::Isometry3d& cartesian_waypoint,
-                                              const PlanInstruction& parent_instruction,
+                                              const Instruction& parent_instruction,
                                               const std::vector<std::string>& /*active_links*/,
                                               int /*index*/)
 {
@@ -158,12 +162,29 @@ void OMPLDefaultPlanProfile::applyStartStates(OMPLProblem& prob,
 
   // Check if the waypoint is not relative to the manipulator base coordinate system and at tool0
   Eigen::Isometry3d world_to_waypoint = cartesian_waypoint;
-  if (!parent_instruction.getWorkingFrame().empty())
-    world_to_waypoint = prob.env_state->link_transforms.at(parent_instruction.getWorkingFrame()) * cartesian_waypoint;
+  Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
+  if (isMoveInstruction(parent_instruction))
+  {
+    const auto* temp = parent_instruction.cast_const<MoveInstruction>();
+    tcp = temp->getTCP();
+    if (!temp->getWorkingFrame().empty())
+      world_to_waypoint = prob.env_state->link_transforms.at(temp->getWorkingFrame()) * cartesian_waypoint;
+  }
+  else if (isPlanInstruction(parent_instruction))
+  {
+    const auto* temp = parent_instruction.cast_const<PlanInstruction>();
+    tcp = temp->getTCP();
+    if (!temp->getWorkingFrame().empty())
+      world_to_waypoint = prob.env_state->link_transforms.at(temp->getWorkingFrame()) * cartesian_waypoint;
+  }
+  else
+  {
+    throw std::runtime_error("OMPLDefaultPlanProfile: Unsupported instruction type!");
+  }
 
   Eigen::Isometry3d world_to_base_link = prob.env_state->link_transforms.at(prob.manip_inv_kin->getBaseLinkName());
   Eigen::Isometry3d manip_baselink_to_waypoint = world_to_base_link.inverse() * world_to_waypoint;
-  Eigen::Isometry3d manip_baselink_to_tool0 = manip_baselink_to_waypoint * parent_instruction.getTCP().inverse();
+  Eigen::Isometry3d manip_baselink_to_tool0 = manip_baselink_to_waypoint * tcp.inverse();
 
   if (prob.state_space == OMPLProblemStateSpace::REAL_STATE_SPACE)
   {
@@ -198,7 +219,7 @@ void OMPLDefaultPlanProfile::applyStartStates(OMPLProblem& prob,
 
 void OMPLDefaultPlanProfile::applyStartStates(OMPLProblem& prob,
                                               const Eigen::VectorXd& joint_waypoint,
-                                              const PlanInstruction& /*parent_instruction*/,
+                                              const Instruction& /*parent_instruction*/,
                                               const std::vector<std::string>& /*active_links*/,
                                               int /*index*/)
 {

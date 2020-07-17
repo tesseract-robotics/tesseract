@@ -3,7 +3,8 @@
 
 #include <vector>
 #include <memory>
-#include <tesseract_command_language/plan_instruction.h>
+#include <Eigen/Geometry>
+#include <tesseract_command_language/core/instruction.h>
 
 #include <tesseract_motion_planners/descartes/descartes_problem.h>
 
@@ -18,13 +19,13 @@ public:
 
   virtual void apply(DescartesProblem<FloatType>& prob,
                      const Eigen::Isometry3d& cartesian_waypoint,
-                     const PlanInstruction& parent_instruction,
+                     const Instruction& parent_instruction,
                      const std::vector<std::string>& active_links,
                      int index) = 0;
 
   virtual void apply(DescartesProblem<FloatType>& prob,
                      const Eigen::VectorXd& joint_waypoint,
-                     const PlanInstruction& parent_instruction,
+                     const Instruction& parent_instruction,
                      const std::vector<std::string>& active_links,
                      int index) = 0;
 };

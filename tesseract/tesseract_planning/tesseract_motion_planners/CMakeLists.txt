@@ -34,7 +34,8 @@ add_library(${PROJECT_NAME}_trajopt
   src/trajopt/trajopt_motion_planner.cpp
   src/trajopt/trajopt_utils.cpp
   src/trajopt/profile/trajopt_default_plan_profile.cpp
-  src/trajopt/profile/trajopt_default_composite_profile.cpp)
+  src/trajopt/profile/trajopt_default_composite_profile.cpp
+  src/trajopt/problem_generators/default_problem_generator.cpp)
 target_link_libraries(${PROJECT_NAME}_trajopt PUBLIC ${Boost_LIBRARIES} ${PROJECT_NAME}_core trajopt::trajopt trajopt::trajopt_utils trajopt::trajopt_sco)
 tesseract_target_compile_options(${PROJECT_NAME}_trajopt PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_trajopt)
@@ -55,6 +56,7 @@ set(OMPL_SRC src/ompl/ompl_motion_planner.cpp
   src/ompl/ompl_planner_configurator.cpp
   src/ompl/ompl_problem.cpp
   src/ompl/profile/ompl_default_plan_profile.cpp
+  src/ompl/problem_generators/default_problem_generator.cpp
   src/ompl/utils.cpp
   src/ompl/state_collision_validator.cpp
   src/ompl/compound_state_validator.cpp)
