@@ -44,8 +44,19 @@ public:
                                 std::string name = "SequentialFailureTreeTaskflow");
 
   tf::Taskflow& generateTaskflow(ProcessInput input,
-                                 std::function<void()> done_cb = nullptr,
-                                 std::function<void()> error_cb = nullptr) override;
+                                 std::function<void()> done_cb,
+                                 std::function<void()> error_cb) override;
+
+  tf::Taskflow& generateTaskflow(ProcessInput input,
+                                 const Instruction& start_instruction,
+                                 std::function<void()> done_cb,
+                                 std::function<void()> error_cb);
+
+  tf::Taskflow& generateTaskflow(ProcessInput input,
+                                 const Instruction& start_instruction,
+                                 const Instruction& end_instruction,
+                                 std::function<void()> done_cb,
+                                 std::function<void()> error_cb);
 
   void registerProcess(const ProcessGenerator::Ptr& process);
 
@@ -55,6 +66,8 @@ private:
   std::vector<ProcessGenerator::Ptr> processes_;
   std::vector<std::shared_ptr<tf::Taskflow>> sequential_failure_trees_;
   std::vector<tf::Task> tasks_;
+
+  Instruction null_instruction{ NullInstruction() };
 };
 
 }  // namespace tesseract_planning

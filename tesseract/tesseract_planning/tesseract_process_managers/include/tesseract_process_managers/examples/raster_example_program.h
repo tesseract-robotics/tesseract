@@ -19,6 +19,8 @@ inline CompositeInstruction rasterExampleProgram()
   CompositeInstruction program;
   // Start Joint Position for the program
   Waypoint wp1 = JointWaypoint(Eigen::VectorXd::Ones(6));
+  PlanInstruction start_instruction(wp1, PlanInstructionType::START_FIXED);
+  program.setStartInstruction(start_instruction);
 
   // Define raster poses
   Waypoint wp2 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(1, -1, 1));
