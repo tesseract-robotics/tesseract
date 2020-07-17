@@ -12,7 +12,11 @@ enum class MoveInstructionType : int
 {
   LINEAR,
   FREESPACE,
-  CIRCULAR
+  CIRCULAR,
+  /**< This indicates it is a start instruction and waypoint information should be used. */
+  START,
+  /**< This indicates that the data in position, velocity, acceleration and effort should be used instead of waypoint */
+  START_FIXED
 };
 
 class MoveInstruction
@@ -21,7 +25,7 @@ public:
   using Ptr = std::shared_ptr<MoveInstruction>;
   using ConstPtr = std::shared_ptr<const MoveInstruction>;
 
-  MoveInstruction(Waypoint waypoint, MoveInstructionType type);
+  MoveInstruction(Waypoint waypoint, MoveInstructionType type, const std::string& profile = "DEFAULT");
 
   void setWaypoint(Waypoint waypoint);
   const Waypoint& getWaypoint() const;
@@ -58,11 +62,18 @@ public:
 
   void print(std::string prefix = "") const;
 
+  void setMoveType(MoveInstructionType move_type);
+  MoveInstructionType getMoveType() const;
+
   bool isLinear() const;
 
   bool isFreespace() const;
 
   bool isCircular() const;
+
+  bool isStart() const;
+
+  bool isStartFixed() const;
 
 private:
   int type_{ static_cast<int>(InstructionType::MOVE_INSTRUCTION) };

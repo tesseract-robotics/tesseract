@@ -160,18 +160,36 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
   Eigen::Isometry3d world_to_base = current_state->link_transforms.at(fwd_kin->getBaseLinkName());
 
   Waypoint start_waypoint = NullWaypoint();
-  if (instructions.hasStartWaypoint())
+  if (instructions.hasStartInstruction())
   {
-    start_waypoint = instructions.getStartWaypoint();
+    assert(isMoveInstruction(instructions.getStartInstruction()));
+    const auto* start_instruction = instructions.getStartInstruction().cast_const<MoveInstruction>();
+    assert(start_instruction->isStart() || start_instruction->isStartFixed());
+    start_waypoint = start_instruction->getWaypoint();
+
+    MoveInstruction seed_start(*start_instruction);
+    if (start_instruction->isStartFixed() && !isJointWaypoint(start_waypoint))
+      throw std::runtime_error("Plan instruction with type START_FIXED must have a joint waypoint type");
+
+    if (isJointWaypoint(start_waypoint))
+      seed_start.setPosition(*(start_waypoint.cast<JointWaypoint>()));
+    else if (isCartesianWaypoint(start_waypoint))
+      seed_start.setPosition(current_jv);
+    else
+      throw std::runtime_error("Generate Seed: Unsupported waypoint type!");
+    seed.setStartInstruction(seed_start);
   }
   else
   {
     JointWaypoint temp(current_jv);
     temp.joint_names = fwd_kin->getJointNames();
     start_waypoint = temp;
+
+    MoveInstruction seed_start(temp, MoveInstructionType::START);
+    seed_start.setPosition(current_jv);
+    seed.setStartInstruction(seed_start);
   }
 
-  bool found_plan_instruction = false;
   for (const auto& instruction : instructions)
   {
     if (isPlanInstruction(instruction))
@@ -185,20 +203,6 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
         bool is_jwp1 = isJointWaypoint(start_waypoint);
         bool is_cwp2 = isCartesianWaypoint(plan_instruction->getWaypoint());
         bool is_jwp2 = isJointWaypoint(plan_instruction->getWaypoint());
-        if (!found_plan_instruction)
-        {
-          tesseract_planning::MoveInstruction move_instruction(start_waypoint, MoveInstructionType::LINEAR);
-
-          if (is_jwp1)
-            move_instruction.setPosition(*(start_waypoint.cast_const<JointWaypoint>()));
-          else
-            move_instruction.setPosition(current_jv);
-
-          move_instruction.setTCP(plan_instruction->getTCP());
-          move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
-          move_instruction.setDescription(plan_instruction->getDescription());
-          composite.push_back(move_instruction);
-        }
 
         assert(is_cwp1 || is_jwp1);
         assert(is_cwp2 || is_jwp2);
@@ -315,20 +319,6 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
         bool is_jwp1 = isJointWaypoint(start_waypoint);
         bool is_cwp2 = isCartesianWaypoint(plan_instruction->getWaypoint());
         bool is_jwp2 = isJointWaypoint(plan_instruction->getWaypoint());
-        if (!found_plan_instruction)
-        {
-          tesseract_planning::MoveInstruction move_instruction(start_waypoint, MoveInstructionType::FREESPACE);
-
-          if (is_jwp1)
-            move_instruction.setPosition(*(start_waypoint.cast_const<JointWaypoint>()));
-          else
-            move_instruction.setPosition(current_jv);
-
-          move_instruction.setTCP(plan_instruction->getTCP());
-          move_instruction.setWorkingFrame(plan_instruction->getWorkingFrame());
-          move_instruction.setDescription(plan_instruction->getDescription());
-          composite.push_back(move_instruction);
-        }
 
         assert(is_cwp1 || is_jwp1);
         assert(is_cwp2 || is_jwp2);
@@ -403,7 +393,6 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
         throw std::runtime_error("Unsupported!");
       }
 
-      found_plan_instruction = true;
       start_waypoint = plan_instruction->getWaypoint();
     }
     else
