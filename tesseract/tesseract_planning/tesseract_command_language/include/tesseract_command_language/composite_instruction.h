@@ -3,7 +3,7 @@
 
 #include <tesseract_command_language/core/instruction.h>
 #include <tesseract_command_language/instruction_type.h>
-#include <tesseract_command_language/null_waypoint.h>
+#include <tesseract_command_language/null_instruction.h>
 #include <vector>
 #include <string>
 
@@ -35,10 +35,11 @@ public:
   void setProfile(const std::string& profile);
   const std::string& getProfile() const;
 
-  // TODO: May need to create a class that includes not only the waypoint but I/O, environment, etc.
-  void setStartWaypoint(Waypoint waypoint);
-  const Waypoint& getStartWaypoint() const;
-  bool hasStartWaypoint() const;
+  void setStartInstruction(Instruction instruction);
+  void resetStartInstruction();
+  const Instruction& getStartInstruction() const;
+  Instruction& getStartInstruction();
+  bool hasStartInstruction() const;
 
   void print(std::string prefix = "") const;
 
@@ -59,13 +60,12 @@ private:
   CompositeInstructionOrder order_{ CompositeInstructionOrder::ORDERED };
 
   /**
-   * @brief The start waypoint to use for composite instruction.
+   * @brief The start instruction to use for composite instruction. This should be of type PlanInstruction or
+   * MoveInstruction but is stored as type Instruction because it is not required
    *
-   * If not provided, the planner should use the current state of the robot.
+   * If not provided, the planner should use the current state of the robot is used and defined as fixed.
    */
-  Waypoint start_waypoint_{ NullWaypoint() };
-
-  void flattenHelper(CompositeInstruction& flattened, const CompositeInstruction& composite) const;
+  Instruction start_instruction_{ NullInstruction() };
 };
 
 }  // namespace tesseract_planning

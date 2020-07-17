@@ -52,4 +52,7 @@ bool MoveInstruction::isLinear() const { return (move_type_ == MoveInstructionTy
 bool MoveInstruction::isFreespace() const { return (move_type_ == MoveInstructionType::FREESPACE); }
 
 bool MoveInstruction::isCircular() const { return (move_type_ == MoveInstructionType::CIRCULAR); }
+
+bool MoveInstruction::isStart() const { return (move_type_ == MoveInstructionType::START); }
+
 }  // namespace tesseract_planning

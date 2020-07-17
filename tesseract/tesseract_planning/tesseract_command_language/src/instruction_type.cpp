@@ -41,7 +41,13 @@ bool isMoveInstruction(const Instruction& instruction)
 
 bool isPlanInstruction(const Instruction& instruction)
 {
-  return (instruction.getType() <= static_cast<int>(InstructionType::PLAN_INSTRUCTION));
+  return (instruction.getType() <= static_cast<int>(InstructionType::PLAN_INSTRUCTION) &&
+          instruction.getType() > static_cast<int>(InstructionType::NULL_INSTRUCTION));
+}
+
+bool isNullInstruction(const Instruction& instruction)
+{
+  return (instruction.getType() <= static_cast<int>(InstructionType::NULL_INSTRUCTION));
 }
 
 }  // namespace tesseract_planning

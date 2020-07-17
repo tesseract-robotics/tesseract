@@ -12,7 +12,8 @@ enum class MoveInstructionType : int
 {
   LINEAR,
   FREESPACE,
-  CIRCULAR
+  CIRCULAR,
+  START
 };
 
 class MoveInstruction
@@ -63,6 +64,8 @@ public:
   bool isFreespace() const;
 
   bool isCircular() const;
+
+  bool isStart() const;
 
 private:
   int type_{ static_cast<int>(InstructionType::MOVE_INSTRUCTION) };

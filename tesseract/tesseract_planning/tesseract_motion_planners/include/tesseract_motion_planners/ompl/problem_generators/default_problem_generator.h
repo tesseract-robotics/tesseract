@@ -97,15 +97,23 @@ inline std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const PlannerRe
       throw std::runtime_error("OMPL planner does not support child composite instructions.");
 
   Waypoint start_waypoint = NullWaypoint();
-  if (request.instructions.hasStartWaypoint())
+  Instruction placeholder_instruction = NullInstruction();
+  const PlanInstruction* start_instruction = nullptr;
+  if (request.instructions.hasStartInstruction())
   {
-    start_waypoint = request.instructions.getStartWaypoint();
+    assert(isPlanInstruction(request.instructions.getStartInstruction()));
+    start_instruction = request.instructions.getStartInstruction().cast_const<PlanInstruction>();
+    assert(start_instruction->isStart() || start_instruction->isStartFixed());
+    start_waypoint = start_instruction->getWaypoint();
   }
   else
   {
     Eigen::VectorXd current_jv = request.env_state->getJointValues(manip_fwd_kin_->getJointNames());
     JointWaypoint temp(current_jv);
     temp.joint_names = manip_fwd_kin_->getJointNames();
+
+    placeholder_instruction = PlanInstruction(temp, PlanInstructionType::START_FIXED);
+    start_instruction = placeholder_instruction.cast_const<PlanInstruction>();
     start_waypoint = temp;
   }
 
@@ -172,12 +180,12 @@ inline std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const PlannerRe
             if (isJointWaypoint(start_waypoint))
             {
               const auto* prev_wp = start_waypoint.cast_const<tesseract_planning::JointWaypoint>();
-              cur_plan_profile->applyStartStates(*sub_prob, *prev_wp, *plan_instruction, active_link_names_, index);
+              cur_plan_profile->applyStartStates(*sub_prob, *prev_wp, *start_instruction, active_link_names_, index);
             }
             else if (isCartesianWaypoint(start_waypoint))
             {
               const auto* prev_wp = start_waypoint.cast_const<tesseract_planning::CartesianWaypoint>();
-              cur_plan_profile->applyStartStates(*sub_prob, *prev_wp, *plan_instruction, active_link_names_, index);
+              cur_plan_profile->applyStartStates(*sub_prob, *prev_wp, *start_instruction, active_link_names_, index);
             }
             else
             {
@@ -204,12 +212,12 @@ inline std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const PlannerRe
             if (isJointWaypoint(start_waypoint))
             {
               const auto* prev_wp = start_waypoint.cast_const<tesseract_planning::JointWaypoint>();
-              cur_plan_profile->applyStartStates(*sub_prob, *prev_wp, *plan_instruction, active_link_names_, index);
+              cur_plan_profile->applyStartStates(*sub_prob, *prev_wp, *start_instruction, active_link_names_, index);
             }
             else if (isCartesianWaypoint(start_waypoint))
             {
               const auto* prev_wp = start_waypoint.cast_const<tesseract_planning::CartesianWaypoint>();
-              cur_plan_profile->applyStartStates(*sub_prob, *prev_wp, *plan_instruction, active_link_names_, index);
+              cur_plan_profile->applyStartStates(*sub_prob, *prev_wp, *start_instruction, active_link_names_, index);
             }
             else
             {
@@ -232,6 +240,7 @@ inline std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const PlannerRe
       }
 
       start_waypoint = plan_instruction->getWaypoint(); /** @todo need to extract the solution */
+      start_instruction = plan_instruction;
     }
   }
 

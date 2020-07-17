@@ -81,22 +81,59 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
     if (isCompositeInstruction(instruction))
       throw std::runtime_error("Descartes planner does not support child composite instructions.");
 
+  int index = 0;
   Waypoint start_waypoint = NullWaypoint();
-  if (request.instructions.hasStartWaypoint())
+  Instruction placeholder_instruction = NullInstruction();
+  const PlanInstruction* start_instruction = nullptr;
+  if (request.instructions.hasStartInstruction())
   {
-    start_waypoint = request.instructions.getStartWaypoint();
+    assert(isPlanInstruction(request.instructions.getStartInstruction()));
+    start_instruction = request.instructions.getStartInstruction().cast_const<PlanInstruction>();
+    assert(start_instruction->isStart() || start_instruction->isStartFixed());
+    start_waypoint = start_instruction->getWaypoint();
   }
   else
   {
-    Eigen::VectorXd current_jv = prob->env_state->getJointValues(prob->manip_inv_kin->getJointNames());
+    Eigen::VectorXd current_jv = request.env_state->getJointValues(prob->manip_inv_kin->getJointNames());
     JointWaypoint temp(current_jv);
     temp.joint_names = prob->manip_inv_kin->getJointNames();
+
+    placeholder_instruction = PlanInstruction(temp, PlanInstructionType::START_FIXED);
+    start_instruction = placeholder_instruction.cast_const<PlanInstruction>();
     start_waypoint = temp;
   }
 
+  // Get Start Profile
+  std::string profile = start_instruction->getProfile();
+  if (profile.empty())
+    profile = "DEFAULT";
+
+  typename DescartesPlanProfile<FloatType>::Ptr cur_plan_profile{ nullptr };
+  auto it = plan_profiles.find(profile);
+  if (it == plan_profiles.end())
+    cur_plan_profile = std::make_shared<DescartesDefaultPlanProfile<FloatType>>();
+  else
+    cur_plan_profile = it->second;
+
+  // Add start waypoint
+  if (isCartesianWaypoint(start_waypoint))
+  {
+    const auto* cwp = start_waypoint.cast_const<Eigen::Isometry3d>();
+    cur_plan_profile->apply(*prob, *cwp, *start_instruction, active_links, index);
+  }
+  else if (isJointWaypoint(start_waypoint))
+  {
+    const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
+    cur_plan_profile->apply(*prob, *jwp, *start_instruction, active_links, index);
+  }
+  else
+  {
+    throw std::runtime_error("DescartesMotionPlannerConfig: uknown waypoint type.");
+  }
+
+  ++index;
+
   // Transform plan instructions into descartes samplers
-  int index = 0;
-  bool found_plan_instruction{ false };
   for (std::size_t i = 0; i < request.instructions.size(); ++i)
   {
     const auto& instruction = request.instructions[i];
@@ -120,30 +157,6 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
         cur_plan_profile = std::make_shared<DescartesDefaultPlanProfile<FloatType>>();
       else
         cur_plan_profile = it->second;
-
-      if (!found_plan_instruction)
-      {
-        // If this is the first plan instruction we reduce the interpolate cnt because the seed includes the start state
-        --interpolate_cnt;
-
-        // Add start waypoint
-        if (isCartesianWaypoint(start_waypoint))
-        {
-          const auto* cwp = start_waypoint.cast_const<Eigen::Isometry3d>();
-          cur_plan_profile->apply(*prob, *cwp, *plan_instruction, active_links, index);
-        }
-        else if (isJointWaypoint(start_waypoint))
-        {
-          const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
-          cur_plan_profile->apply(*prob, *jwp, *plan_instruction, active_links, index);
-        }
-        else
-        {
-          throw std::runtime_error("DescartesMotionPlannerConfig: uknown waypoint type.");
-        }
-
-        ++index;
-      }
 
       if (plan_instruction->isLinear())
       {
@@ -274,8 +287,8 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
         throw std::runtime_error("DescartesMotionPlannerConfig: Unsupported!");
       }
 
-      found_plan_instruction = true;
       start_waypoint = plan_instruction->getWaypoint();
+      start_instruction = plan_instruction;
     }
   }
 

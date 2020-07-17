@@ -7,6 +7,9 @@ class Instruction;
 
 enum class InstructionType : int
 {
+  // Everything before must be a Null Instruction
+  NULL_INSTRUCTION,
+
   // Everything before must be a motion plan Instruction
   PLAN_INSTRUCTION,
 
@@ -45,6 +48,8 @@ bool isCompositeInstruction(const Instruction& instruction);
 bool isMoveInstruction(const Instruction& instruction);
 
 bool isPlanInstruction(const Instruction& instruction);
+
+bool isNullInstruction(const Instruction& instruction);
 
 }  // namespace tesseract_planning
 
