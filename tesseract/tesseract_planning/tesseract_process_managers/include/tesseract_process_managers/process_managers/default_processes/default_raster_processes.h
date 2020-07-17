@@ -31,9 +31,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <functional>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/process_generators/interpolated_process_generator.h>
 #include <tesseract_process_managers/process_generators/random_process_generator.h>
-#include <tesseract_process_managers/process_generators/trajopt_process_generator.h>
+#include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
 
 namespace tesseract_planning
 {
