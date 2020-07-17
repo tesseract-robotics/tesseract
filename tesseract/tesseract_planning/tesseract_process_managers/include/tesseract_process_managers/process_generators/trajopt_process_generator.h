@@ -30,8 +30,9 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <console_bridge/console.h>
-#include <tesseract_motion_planners/trajopt/trajopt_motion_planner.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#include <tesseract_motion_planners/trajopt/trajopt_motion_planner.h>
+#include <tesseract_command_language/null_instruction.h>
 
 #include <tesseract_process_managers/process_generator.h>
 
@@ -47,16 +48,34 @@ public:
 
   std::function<void()> generateTask(ProcessInput input) override;
 
+  std::function<void()> generateTask(ProcessInput input, const Instruction& start_instruction) override;
+
+  std::function<void()> generateTask(ProcessInput input,
+                                     const Instruction& start_instruction,
+                                     const Instruction& end_instruction) override;
+
   std::function<int()> generateConditionalTask(ProcessInput input) override;
 
-  int conditionalProcess(ProcessInput input) const;
+  std::function<int()> generateConditionalTask(ProcessInput input, const Instruction& start_instruction) override;
 
-  void process(ProcessInput input) const;
+  std::function<int()> generateConditionalTask(ProcessInput input,
+                                               const Instruction& start_instruction,
+                                               const Instruction& end_instruction) override;
+
+  int conditionalProcess(const ProcessInput& input,
+                         const Instruction& start_instruction,
+                         const Instruction& end_instruction) const;
+
+  void process(const ProcessInput& input,
+               const Instruction& start_instruction,
+               const Instruction& end_instruction) const;
 
   TrajOptMotionPlanner planner;
 
 private:
   std::vector<ProcessInput> task_inputs_;
+
+  NullInstruction null_instruction;
 };
 
 }  // namespace tesseract_planning

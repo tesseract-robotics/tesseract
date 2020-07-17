@@ -37,7 +37,7 @@ namespace tesseract_planning
 {
 /**
  * @brief This is a base class for generating instances of processes as tasks such that they may be executed in
- * parallel. A typical workflow would be taskflow.emplace(process_generator.generateTask(input))
+ * parallel. A typical workflow would be taskflow.emplace(process_generator.generateTask(input) override)
  */
 class ProcessGenerator
 {
@@ -47,7 +47,19 @@ public:
 
   virtual std::function<void()> generateTask(ProcessInput input) = 0;
 
+  virtual std::function<void()> generateTask(ProcessInput input, const Instruction& start_instruction) = 0;
+
+  virtual std::function<void()> generateTask(ProcessInput input,
+                                             const Instruction& start_instruction,
+                                             const Instruction& end_instruction) = 0;
+
   virtual std::function<int()> generateConditionalTask(ProcessInput input) = 0;
+
+  virtual std::function<int()> generateConditionalTask(ProcessInput input, const Instruction& start_instruction) = 0;
+
+  virtual std::function<int()> generateConditionalTask(ProcessInput input,
+                                                       const Instruction& start_instruction,
+                                                       const Instruction& end_instruction) = 0;
 
   std::string name;
 };
