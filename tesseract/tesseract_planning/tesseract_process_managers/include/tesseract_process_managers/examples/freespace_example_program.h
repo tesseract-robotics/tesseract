@@ -15,7 +15,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-inline CompositeInstruction FreespaceExampleProgram()
+inline CompositeInstruction freespaceExampleProgram()
 {
   CompositeInstruction program("freespace_composite");
 

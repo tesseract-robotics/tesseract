@@ -1,6 +1,6 @@
 ﻿/**
- * @file process_input.h
- * @brief Process input
+ * @file freespace_process_manager.h
+ * @brief Plans freespace paths
  *
  * @author Matthew Powelson
  * @date July 15. 2020
@@ -38,6 +38,19 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
+/**
+ * @brief This class provides a process manager for a freespace process
+ *
+ * Given a ProcessInput in the correct format, it handles the creation of the process dependencies and uses Taskflow to
+ * execute them efficiently in a parallel based on those dependencies.
+ *
+ * The required format is below.
+ *
+ * Composite
+ * {
+ *   ...
+ * }
+ */
 class FreespaceProcessManager : public ProcessManager
 {
 public:
@@ -54,6 +67,10 @@ public:
 
   bool clear() override;
 
+  /**
+   * @brief Process generators used to create the freespace planning taskflow. If empty, defaultFreespaceProcesses will
+   * be used
+   */
   std::vector<ProcessGenerator::Ptr> process_generators;
 
 private:
