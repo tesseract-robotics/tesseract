@@ -45,6 +45,23 @@ tf::Taskflow& SequentialFailureTreeTaskflow::generateTaskflow(ProcessInput input
                                                               std::function<void()> done_cb,
                                                               std::function<void()> error_cb)
 {
+  return generateTaskflow(input, null_instruction, null_instruction, done_cb, error_cb);
+}
+
+tf::Taskflow& SequentialFailureTreeTaskflow::generateTaskflow(ProcessInput input,
+                                                              const Instruction& start_instruction,
+                                                              std::function<void()> done_cb,
+                                                              std::function<void()> error_cb)
+{
+  return generateTaskflow(input, start_instruction, null_instruction, done_cb, error_cb);
+}
+
+tf::Taskflow& SequentialFailureTreeTaskflow::generateTaskflow(ProcessInput input,
+                                                              const Instruction& start_instruction,
+                                                              const Instruction& end_instruction,
+                                                              std::function<void()> done_cb,
+                                                              std::function<void()> error_cb)
+{
   // Create and store the taskflow
   auto taskflow = std::make_shared<tf::Taskflow>(name);
   sequential_failure_trees_.push_back(taskflow);
@@ -69,7 +86,8 @@ tf::Taskflow& SequentialFailureTreeTaskflow::generateTaskflow(ProcessInput input
   std::size_t first_task_idx = tasks_.size();
   for (auto& process : processes_)
   {
-    tf::Task task = taskflow->emplace(process->generateConditionalTask(input)).name(process->name);
+    tf::Task task = taskflow->emplace(process->generateConditionalTask(input, start_instruction, end_instruction))
+                        .name(process->name);
     tasks_.push_back(task);
   }
 

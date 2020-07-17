@@ -21,7 +21,8 @@ inline CompositeInstruction freespaceExampleProgram()
 
   // Start Joint Position for the program
   Waypoint wp1 = JointWaypoint(Eigen::VectorXd::Ones(7));
-  program.setStartWaypoint(wp1);
+  PlanInstruction start_instruction(wp1, PlanInstructionType::START_FIXED);
+  program.setStartInstruction(start_instruction);
 
   // Define target pose
   Waypoint wp2 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(1, -1, 1));
