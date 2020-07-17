@@ -17,9 +17,8 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 # Create interface
 add_library(${PROJECT_NAME} SHARED
     src/process_input.cpp
-    src/process_generators/interpolated_process_generator.cpp
     src/process_generators/random_process_generator.cpp
-    src/process_generators/trajopt_process_generator.cpp
+    src/process_generators/motion_planner_process_generator.cpp
     src/process_managers/freespace_process_manager.cpp
     src/process_managers/raster_process_manager.cpp
     src/taskflow_generators/sequential_failure_tree_taskflow.cpp)
