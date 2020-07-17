@@ -27,7 +27,7 @@ bool FreespaceProcessManager::init(ProcessInput input)
   taskflow.clear();
 
   // If no processes selected, use defaults
-  if (!process_generators.size())
+  if (process_generators.empty())
     process_generators = defaultFreespaceProcesses();
 
   // Create the taskflow generator
@@ -47,7 +47,7 @@ bool FreespaceProcessManager::init(ProcessInput input)
 
   // Dump the taskflow
   std::ofstream out_data;
-  out_data.open("process_manager.dot");
+  out_data.open("freespace_process_manager.dot");
   taskflow.dump(out_data);
   out_data.close();
 

@@ -1,9 +1,9 @@
 ﻿/**
- * @file default_freespace_processes.h
- * @brief Default processes for the freespace process manager
+ * @file default_raster_processes.h
+ * @brief Default processes for the raster process manager
  *
  * @author Matthew Powelson
- * @date July 15. 2020
+ * @date July 16. 2020
  * @version TODO
  * @bug No known bugs
  *
@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGER_DEFAULT_FREESPACE_PROCESSES_H
-#define TESSERACT_PROCESS_MANAGER_DEFAULT_FREESPACE_PROCESSES_H
+#ifndef TESSERACT_PROCESS_MANAGER_DEFAULT_RASTER_PROCESSES_H
+#define TESSERACT_PROCESS_MANAGER_DEFAULT_RASTER_PROCESSES_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -37,18 +37,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-inline std::vector<ProcessGenerator::Ptr> defaultFreespaceProcesses()
+inline std::vector<ProcessGenerator::Ptr> defaultRasterProcesses()
 {
   // Setup processes
-  auto interpolator = std::make_shared<RandomProcessGenerator>();
-  interpolator->name = "interpolator";
+  auto descartes = std::make_shared<RandomProcessGenerator>();
+  descartes->name = "descartes";
 
-  auto trajopt = std::make_shared<RandomProcessGenerator>();
-
-  auto ompl = std::make_shared<RandomProcessGenerator>();
-  ompl->name = "ompl";
-
-  return std::vector<ProcessGenerator::Ptr>{ interpolator, trajopt, ompl };
+  return std::vector<ProcessGenerator::Ptr>{ descartes };
 }
 
 }  // namespace tesseract_planning
