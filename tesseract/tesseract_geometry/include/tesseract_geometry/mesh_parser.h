@@ -186,7 +186,10 @@ inline std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& pat
                               aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | aiProcess_RemoveComponent);
 
   if (!scene)
+  {
+    CONSOLE_BRIDGE_logError("Could not load mesh from \"%s\": %s", path.c_str(), importer.GetErrorString());
     return std::vector<std::shared_ptr<T>>();
+  }
 
   // Assimp enforces Y_UP convention by rotating models with different conventions.
   // However, that behaviour is confusing and doesn't match the ROS convention
@@ -242,6 +245,13 @@ inline std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::
   }
 
   std::vector<uint8_t> data = resource->getResourceContents();
+  if (data.empty())
+  {
+    if (resource->isFile())
+      return createMeshFromPath<T>(resource->getFilePath(), scale, triangulate, flatten);
+
+    return std::vector<std::shared_ptr<T>>();
+  }
 
   // Create an instance of the Importer class
   Assimp::Importer importer;

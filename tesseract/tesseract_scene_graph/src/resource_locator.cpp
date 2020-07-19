@@ -67,6 +67,7 @@ std::vector<uint8_t> SimpleLocatedResource::getResourceContents()
   std::ifstream ifs(filename_, std::ios::binary | std::ios::ate);
   if (!ifs)
   {
+    CONSOLE_BRIDGE_logError("Could not read all bytes from file: %s", filename_.c_str());
     return std::vector<uint8_t>();
   }
   std::ifstream::pos_type pos = ifs.tellg();
