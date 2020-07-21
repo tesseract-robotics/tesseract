@@ -31,16 +31,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <functional>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/process_generators/random_process_generator.h>
 #include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
+#include <tesseract_process_managers/process_generators/random_process_generator.h>
+
+#include <tesseract_motion_planners/descartes/descartes_motion_planner.h>
+#include <tesseract_motion_planners/descartes/problem_generators/default_problem_generator.h>
+#include <tesseract_motion_planners/descartes/profile/descartes_default_plan_profile.h>
 
 namespace tesseract_planning
 {
 inline std::vector<ProcessGenerator::Ptr> defaultRasterProcesses()
 {
   // Setup processes
-  auto descartes = std::make_shared<RandomProcessGenerator>();
-  descartes->name = "descartes";
+  auto descartes_planner = std::make_shared<DescartesMotionPlanner<double>>();
+  descartes_planner->problem_generator = &DefaultDescartesProblemGenerator<double>;
+  descartes_planner->plan_profiles["RASTER"] = std::make_shared<DescartesDefaultPlanProfileD>();
+
+  auto descartes = std::make_shared<MotionPlannerProcessGenerator>(descartes_planner);
+  descartes->planner = descartes_planner;
 
   return std::vector<ProcessGenerator::Ptr>{ descartes };
 }

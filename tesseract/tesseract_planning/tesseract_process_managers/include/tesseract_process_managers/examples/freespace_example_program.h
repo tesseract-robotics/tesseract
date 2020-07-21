@@ -21,7 +21,7 @@ inline CompositeInstruction freespaceExampleProgram()
 
   // Start Joint Position for the program
   Waypoint wp1 = JointWaypoint(Eigen::VectorXd::Ones(7));
-  PlanInstruction start_instruction(wp1, PlanInstructionType::START_FIXED);
+  MoveInstruction start_instruction(wp1, MoveInstructionType::START);
   program.setStartInstruction(start_instruction);
 
   // Define target pose

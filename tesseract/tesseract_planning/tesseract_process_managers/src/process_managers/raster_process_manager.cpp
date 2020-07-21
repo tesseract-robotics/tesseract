@@ -10,7 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/trajopt/problem_generators/default_problem_generator.h>
 
 #include <tesseract_process_managers/process_generators/random_process_generator.h>
-#include <tesseract_process_managers/process_generators/trajopt_process_generator.h>
+#include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
 #include <tesseract_process_managers/taskflow_generators/sequential_failure_tree_taskflow.h>
 #include <tesseract_process_managers/process_managers/default_processes/default_freespace_processes.h>
 #include <tesseract_process_managers/process_managers/default_processes/default_raster_processes.h>
@@ -18,6 +18,30 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/command_language_utils.h>
 
 using namespace tesseract_planning;
+
+struct BasicObserver : public tf::ObserverInterface
+{
+  BasicObserver(const std::string& name) { std::cout << "Constructing observer " << name << '\n'; }
+
+  void set_up(size_t num_workers) override final
+  {
+    std::cout << "Setting up observer with " << num_workers << " workers\n";
+  }
+
+  void on_entry(size_t w, tf::TaskView tv) override final
+  {
+    std::ostringstream oss;
+    oss << "worker " << w << " ready to run " << tv.name() << '\n';
+    std::cout << oss.str();
+  }
+
+  void on_exit(size_t w, tf::TaskView tv) override final
+  {
+    std::ostringstream oss;
+    oss << "worker " << w << " finished running " << tv.name() << '\n';
+    std::cout << oss.str();
+  }
+};
 
 RasterProcessManager::RasterProcessManager() : taskflow("RasterProcessManagerTaskflow") {}
 
@@ -66,16 +90,18 @@ bool RasterProcessManager::init(ProcessInput input)
     // Each transition step depends on the start and end only since they are independent
     for (std::size_t transition_step_idx = 0; transition_step_idx < input[input_idx].size(); transition_step_idx++)
     {
-      // TODO: handle from_start transition
-      // TODO: get last move instruction. We will have to modify the utility to return the index since we need the
-      // reference to the base instruction
+      // TODO: handle cases when there are no move instructions
+      Instruction start_instruction =
+          *getLastMoveInstruction(*input[input_idx - 1].results.cast<CompositeInstruction>());
+      Instruction end_instruction =
+          *getFirstMoveInstruction(*input[input_idx + 1].results.cast<CompositeInstruction>());
 
       auto transition_step =
           taskflow
               .composed_of(freespace_taskflow_generator.generateTaskflow(
                   input[input_idx][transition_step_idx],
-                  input[input_idx - 1].results.cast<CompositeInstruction>()->back(),
-                  input[input_idx + 1].results.cast<CompositeInstruction>()->front(),
+                  start_instruction,
+                  end_instruction,
                   std::bind(&RasterProcessManager::successCallback, this),
                   std::bind(&RasterProcessManager::failureCallback, this)))
               .name("transition_" + std::to_string(input_idx) + "." + std::to_string(transition_step_idx));
@@ -83,6 +109,7 @@ bool RasterProcessManager::init(ProcessInput input)
       // Each transition is independent and thus depends only on the adjacent rasters
       transition_step.succeed(raster_tasks[starting_raster_idx + transition_idx]);
       transition_step.succeed(raster_tasks[starting_raster_idx + transition_idx + 1]);
+
       freespace_tasks.push_back(transition_step);
     }
     transition_idx++;
@@ -119,14 +146,30 @@ bool RasterProcessManager::init(ProcessInput input)
 
 bool RasterProcessManager::execute()
 {
-  success = false;
+  success = true;
+
+  auto observer = executor.make_observer<BasicObserver>("BasicObserver");
+
+  // TODO: Figure out how to cancel execution. This callback is only checked at beginning of the taskflow (ie before
+  // restarting)
+  //  executor.run_until(taskflow, [this]() { std::cout << "Checking if done: " << this->done << std::endl; return
+  //  this->done;});
+
+  // Wait for currently running taskflows to end.
+  executor.wait_for_all();
   executor.run(taskflow).wait();
+
   return success;
 }
 
 bool RasterProcessManager::terminate()
 {
-  CONSOLE_BRIDGE_logError("Terminate is not implemented");
+  for (auto gen : freespace_process_generators)
+    gen->setAbort(true);
+  for (auto gen : raster_process_generators)
+    gen->setAbort(true);
+
+  CONSOLE_BRIDGE_logError("Terminating Taskflow");
   return false;
 }
 
@@ -134,7 +177,13 @@ bool RasterProcessManager::clear()
 
 {
   taskflow.clear();
-  //  freespace_tasks.clear();
+  freespace_tasks.clear();
+  raster_tasks.clear();
+
+  for (auto gen : freespace_process_generators)
+    gen->setAbort(false);
+  for (auto gen : raster_process_generators)
+    gen->setAbort(false);
   return true;
 }
 
@@ -226,12 +275,19 @@ bool RasterProcessManager::checkProcessInput(const tesseract_planning::ProcessIn
 
 void RasterProcessManager::successCallback()
 {
-  CONSOLE_BRIDGE_logInform("RasterProcessManager Successful");
-  success = true;
+  CONSOLE_BRIDGE_logInform("Task Successful");
+  success &= true;
 }
 
 void RasterProcessManager::failureCallback()
 {
-  CONSOLE_BRIDGE_logInform("RasterProcessManager Failure");
+  // For this process, any failure of a sub-TaskFlow indicates a planning failure. Abort all future tasks
+  for (auto gen : freespace_process_generators)
+    gen->setAbort(true);
+  for (auto gen : raster_process_generators)
+    gen->setAbort(true);
+  // Print an error if this is the first failure
+  if (success)
+    CONSOLE_BRIDGE_logError("RasterProcessManager Failure");
   success = false;
 }
