@@ -45,7 +45,7 @@ jobs:
              TARGET_WORKSPACE: '. github:ros-industrial-consortium/trajopt_ros#master github:mpowelson/cpp-taskflow#catkinized',
              ROSDEP_SKIP_KEYS: "bullet3 fcl ompl orocos_kdl python-numpy ifopt python descartes_opw descartes_samplers descartes_light opw_kinematics cmake_common_scripts iwyu",
              DOCKER_IMAGE: "lharmstrong/tesseract:noetic",
-             CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Bionic-Build/.ccache",
+             CCACHE_DIR: "/home/runner/work/tesseract/tesseract/Focal-Build/.ccache",
              PARALLEL_TESTS: false,
              BEFORE_RUN_TARGET_TEST_EMBED: "source /root/target_ws/install/setup.bash",
              UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release",
