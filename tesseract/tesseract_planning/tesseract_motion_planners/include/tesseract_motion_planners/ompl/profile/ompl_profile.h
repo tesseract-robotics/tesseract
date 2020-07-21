@@ -26,10 +26,13 @@
 #ifndef TESSERACT_MOTION_PLANNERS_OMPL_OMPL_PROFILE_H
 #define TESSERACT_MOTION_PLANNERS_OMPL_OMPL_PROFILE_H
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <memory>
-#include <tesseract_command_language/core/instruction.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_command_language/core/instruction.h>
 #include <tesseract_motion_planners/ompl/ompl_problem.h>
 
 namespace tesseract_planning
