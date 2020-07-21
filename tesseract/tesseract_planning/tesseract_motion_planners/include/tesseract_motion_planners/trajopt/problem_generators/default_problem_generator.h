@@ -26,7 +26,11 @@
 #ifndef TESSERACT_MOTION_PLANNERS_TRAJOPT_DEFAULT_PROBLEM_GENERATOR_H
 #define TESSERACT_MOTION_PLANNERS_TRAJOPT_DEFAULT_PROBLEM_GENERATOR_H
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <trajopt/problem_description.hpp>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
