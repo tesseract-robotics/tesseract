@@ -19,7 +19,7 @@ inline CompositeInstruction rasterExampleProgram()
   CompositeInstruction program;
   // Start Joint Position for the program
   Waypoint wp1 = JointWaypoint(Eigen::VectorXd::Ones(6));
-  PlanInstruction start_instruction(wp1, PlanInstructionType::START_FIXED);
+  MoveInstruction start_instruction(wp1, MoveInstructionType::START);
   program.setStartInstruction(start_instruction);
 
   // Define raster poses
@@ -31,11 +31,11 @@ inline CompositeInstruction rasterExampleProgram()
   Waypoint wp7 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(1, 0.4, 1));
 
   // Define raster move instruction
-  PlanInstruction plan_c1(wp3, PlanInstructionType::LINEAR, "cartesian_profile");
-  PlanInstruction plan_c2(wp4, PlanInstructionType::LINEAR, "cartesian_profile");
-  PlanInstruction plan_c3(wp5, PlanInstructionType::LINEAR, "cartesian_profile");
-  PlanInstruction plan_c4(wp6, PlanInstructionType::LINEAR, "cartesian_profile");
-  PlanInstruction plan_c5(wp7, PlanInstructionType::LINEAR, "cartesian_profile");
+  PlanInstruction plan_c1(wp3, PlanInstructionType::LINEAR, "RASTER");
+  PlanInstruction plan_c2(wp4, PlanInstructionType::LINEAR, "RASTER");
+  PlanInstruction plan_c3(wp5, PlanInstructionType::LINEAR, "RASTER");
+  PlanInstruction plan_c4(wp6, PlanInstructionType::LINEAR, "RASTER");
+  PlanInstruction plan_c5(wp7, PlanInstructionType::LINEAR, "RASTER");
 
   PlanInstruction plan_f0(wp2, PlanInstructionType::FREESPACE, "freespace_profile");
   plan_f0.setDescription("from_start_plan");
