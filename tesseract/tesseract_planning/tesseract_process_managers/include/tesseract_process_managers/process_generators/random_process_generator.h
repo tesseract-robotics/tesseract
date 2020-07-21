@@ -51,19 +51,19 @@ public:
 
   std::function<void()> generateTask(ProcessInput input) override;
 
-  std::function<void()> generateTask(ProcessInput input, const Instruction& start_instruction);
+  std::function<void()> generateTask(ProcessInput input, const Instruction& start_instruction) override;
 
   std::function<void()> generateTask(ProcessInput input,
                                      const Instruction& start_instruction,
-                                     const Instruction& end_instruction);
+                                     const Instruction& end_instruction) override;
 
   std::function<int()> generateConditionalTask(ProcessInput input) override;
 
-  std::function<int()> generateConditionalTask(ProcessInput input, const Instruction& start_instruction);
+  std::function<int()> generateConditionalTask(ProcessInput input, const Instruction& start_instruction) override;
 
   std::function<int()> generateConditionalTask(ProcessInput input,
                                                const Instruction& start_instruction,
-                                               const Instruction& end_instruction);
+                                               const Instruction& end_instruction) override;
 
   int conditionalProcess(const ProcessInput& input,
                          const Instruction& start_instruction,
@@ -76,10 +76,15 @@ public:
   /** @brief Between 0 and 1. Likelyhood this process with return true (if using conditionalProcess) */
   double success_frequency{ 0.5 };
 
+  bool getAbort() const override;
+  void setAbort(bool abort) override;
+
 private:
   std::vector<ProcessInput> task_inputs_;
 
   NullInstruction null_instruction;
+
+  std::atomic<bool> abort_;
 };
 
 }  // namespace tesseract_planning
