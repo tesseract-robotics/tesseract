@@ -71,4 +71,7 @@ int RandomProcessGenerator::conditionalProcess(const ProcessInput& /*results*/,
   std::cout << name + "  Success: " + std::to_string(success) + "\n";
   return success;
 }
+
+bool RandomProcessGenerator::getAbort() const { return abort_; }
+void RandomProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 }  // namespace tesseract_planning

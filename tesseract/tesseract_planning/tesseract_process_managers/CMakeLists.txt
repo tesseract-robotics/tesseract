@@ -22,7 +22,13 @@ add_library(${PROJECT_NAME} SHARED
     src/process_managers/freespace_process_manager.cpp
     src/process_managers/raster_process_manager.cpp
     src/taskflow_generators/sequential_failure_tree_taskflow.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC console_bridge Taskflow::Taskflow tesseract::tesseract tesseract::tesseract_command_language tesseract::tesseract_motion_planners_trajopt ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    console_bridge
+    Taskflow::Taskflow
+    tesseract::tesseract_command_language
+    tesseract::tesseract_motion_planners_trajopt
+    tesseract::tesseract_motion_planners_descartes
+    tesseract::tesseract_motion_planners_ompl)
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME})
 tesseract_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE})
@@ -52,7 +58,7 @@ target_include_directories(${PROJECT_NAME}_raster_manager_example PRIVATE
 target_include_directories(${PROJECT_NAME}_raster_manager_example SYSTEM PRIVATE
     ${EIGEN3_INCLUDE_DIRS})
 
-tesseract_configure_package(${PROJECT_NAME})
+tesseract_configure_package(${PROJECT_NAME} ${PROJECT_NAME}_freespace_manager_example ${PROJECT_NAME}_raster_manager_example)
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
