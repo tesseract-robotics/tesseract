@@ -76,10 +76,9 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
       request.tesseract->getEnvironmentConst()->getSceneGraph(), active_link_names, request.env_state->link_transforms);
   const std::vector<std::string>& active_links = adjacency_map->getActiveLinkNames();
 
-  // Check and make sure it does not contain any composite instruction
-  for (const auto& instruction : request.instructions)
-    if (isCompositeInstruction(instruction))
-      throw std::runtime_error("Descartes planner does not support child composite instructions.");
+  // Flatten the input for planning
+  auto instructions_flat = flatten(request.instructions);
+  auto seed_flat = flattenToPattern(request.seed, request.instructions);
 
   int index = 0;
   std::string profile;
@@ -99,7 +98,7 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
     }
     else
     {
-      throw std::runtime_error("OMPL DefaultProblemGenerator: Unsupported start instruction type!");
+      throw std::runtime_error("Descartes DefaultProblemGenerator: Unsupported start instruction type!");
     }
   }
   else
@@ -145,16 +144,16 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
   ++index;
 
   // Transform plan instructions into descartes samplers
-  for (std::size_t i = 0; i < request.instructions.size(); ++i)
+  for (std::size_t i = 0; i < instructions_flat.size(); ++i)
   {
-    const auto& instruction = request.instructions[i];
+    const auto& instruction = instructions_flat[i].get();
     if (isPlanInstruction(instruction))
     {
       assert(isPlanInstruction(instruction));
       const auto* plan_instruction = instruction.template cast_const<PlanInstruction>();
 
-      assert(isCompositeInstruction(request.seed[i]));
-      const auto* seed_composite = request.seed[i].template cast_const<tesseract_planning::CompositeInstruction>();
+      assert(isCompositeInstruction(seed_flat[i].get()));
+      const auto* seed_composite = seed_flat[i].get().template cast_const<tesseract_planning::CompositeInstruction>();
       auto interpolate_cnt = static_cast<int>(seed_composite->size());
 
       // Get Plan Profile

@@ -5,7 +5,7 @@ namespace tesseract_planning
 {
 MotionPlannerProcessGenerator::MotionPlannerProcessGenerator(std::shared_ptr<MotionPlanner> planner) : planner(planner)
 {
-  name = "motion_planner_";
+  name = planner->getName();
 }
 
 std::function<void()> MotionPlannerProcessGenerator::generateTask(ProcessInput input)
@@ -13,7 +13,7 @@ std::function<void()> MotionPlannerProcessGenerator::generateTask(ProcessInput i
   task_inputs_.push_back(input);
 
   return std::bind(
-      &MotionPlannerProcessGenerator::process, this, task_inputs_.back(), null_instruction, null_instruction);
+      &MotionPlannerProcessGenerator::process, this, task_inputs_.back(), null_instruction_, null_instruction_);
 }
 
 std::function<void()> MotionPlannerProcessGenerator::generateTask(ProcessInput input,
@@ -22,7 +22,7 @@ std::function<void()> MotionPlannerProcessGenerator::generateTask(ProcessInput i
   task_inputs_.push_back(input);
 
   return std::bind(
-      &MotionPlannerProcessGenerator::process, this, task_inputs_.back(), start_instruction, null_instruction);
+      &MotionPlannerProcessGenerator::process, this, task_inputs_.back(), start_instruction, null_instruction_);
 }
 
 std::function<void()> MotionPlannerProcessGenerator::generateTask(ProcessInput input,
@@ -42,8 +42,8 @@ std::function<int()> MotionPlannerProcessGenerator::generateConditionalTask(Proc
   return std::bind(&MotionPlannerProcessGenerator::conditionalProcess,
                    this,
                    task_inputs_.back(),
-                   null_instruction,
-                   null_instruction);
+                   null_instruction_,
+                   null_instruction_);
 }
 
 std::function<int()> MotionPlannerProcessGenerator::generateConditionalTask(ProcessInput input,
@@ -55,7 +55,7 @@ std::function<int()> MotionPlannerProcessGenerator::generateConditionalTask(Proc
                    this,
                    task_inputs_.back(),
                    start_instruction,
-                   null_instruction);
+                   null_instruction_);
 }
 
 std::function<int()> MotionPlannerProcessGenerator::generateConditionalTask(ProcessInput input,
@@ -75,6 +75,8 @@ int MotionPlannerProcessGenerator::conditionalProcess(const ProcessInput& input,
                                                       const Instruction& start_instruction,
                                                       const Instruction& end_instruction) const
 {
+  if (abort_)
+    return 0;
   // --------------------
   // Check that inputs are valid
   // --------------------
@@ -146,5 +148,8 @@ void MotionPlannerProcessGenerator::process(const ProcessInput& input,
 {
   conditionalProcess(input, start_instruction, end_instruction);
 }
+
+bool MotionPlannerProcessGenerator::getAbort() const { return abort_; }
+void MotionPlannerProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 
 }  // namespace tesseract_planning

@@ -1,6 +1,6 @@
 ﻿/**
  * @file motion_planner_process_generator.h
- * @brief Generates an OMPL process
+ * @brief Generates a motion planning process
  *
  * @author Matthew Powelson
  * @date July 15. 2020
@@ -72,10 +72,15 @@ public:
 
   std::shared_ptr<MotionPlanner> planner;
 
+  bool getAbort() const override;
+  void setAbort(bool abort) override;
+
 private:
   std::vector<ProcessInput> task_inputs_;
 
-  NullInstruction null_instruction;
+  NullInstruction null_instruction_;
+
+  std::atomic<bool> abort_;
 };
 
 }  // namespace tesseract_planning
