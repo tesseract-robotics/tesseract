@@ -26,6 +26,11 @@
 #ifndef TESSERACT_MOTION_PLANNERS_OMPL_DEFAULT_PROBLEM_GENERATOR_H
 #define TESSERACT_MOTION_PLANNERS_OMPL_DEFAULT_PROBLEM_GENERATOR_H
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <vector>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract_motion_planners/ompl/profile/ompl_default_plan_profile.h>
 
 namespace tesseract_planning
