@@ -29,6 +29,7 @@
 
 namespace tesseract_planning
 {
+// TODO: Restructure this into several smaller functions that are testable and easier to understand
 trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& request,
                                                          const TrajOptPlanProfileMap& plan_profiles,
                                                          const TrajOptCompositeProfileMap& composite_profiles)
@@ -49,10 +50,9 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
     throw std::runtime_error(error_msg);
   }
 
-  // Check and make sure it does not contain any composite instruction
-  for (const auto& instruction : request.instructions)
-    if (isCompositeInstruction(instruction))
-      throw std::runtime_error("Trajopt planner does not support child composite instructions.");
+  // Flatten the input for planning
+  auto instructions_flat = flatten(request.instructions);
+  auto seed_flat = flattenToPattern(request.seed, request.instructions);
 
   // Get kinematics information
   tesseract_environment::Environment::ConstPtr env = request.tesseract->getEnvironmentConst();
@@ -62,7 +62,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
 
   // Create a temp seed storage.
   std::vector<Eigen::VectorXd> seed_states;
-  seed_states.reserve(request.instructions.size());
+  seed_states.reserve(instructions_flat.size());
 
   int index = 0;
   std::string profile;
@@ -82,7 +82,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
     }
     else
     {
-      throw std::runtime_error("OMPL DefaultProblemGenerator: Unsupported start instruction type!");
+      throw std::runtime_error("TrajOpt DefaultProblemGenerator: Unsupported start instruction type!");
     }
   }
   else
@@ -128,22 +128,26 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
   }
   else
   {
-    throw std::runtime_error("DescartesMotionPlannerConfig: uknown waypoint type.");
+    throw std::runtime_error("TrajOpt Problem Generator: unknown waypoint type.");
   }
 
   ++index;
 
+  // ----------------
+  // Translate TCL
+  // ----------------
+
   // Transform plan instructions into trajopt cost and constraints
-  for (std::size_t i = 0; i < request.instructions.size(); ++i)
+  for (std::size_t i = 0; i < instructions_flat.size(); ++i)
   {
-    const auto& instruction = request.instructions[i];
+    const auto& instruction = instructions_flat[i].get();
     if (isPlanInstruction(instruction))
     {
       assert(isPlanInstruction(instruction));
       const auto* plan_instruction = instruction.cast_const<PlanInstruction>();
 
-      assert(isCompositeInstruction(request.seed[i]));
-      const auto* seed_composite = request.seed[i].cast_const<tesseract_planning::CompositeInstruction>();
+      assert(isCompositeInstruction(seed_flat[i].get()));
+      const auto* seed_composite = seed_flat[i].get().cast_const<tesseract_planning::CompositeInstruction>();
       auto interpolate_cnt = static_cast<int>(seed_composite->size());
 
       // Get Plan Profile
@@ -337,6 +341,10 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
       start_instruction = &instruction;
     }
   }
+
+  // ----------------
+  // Create Problem
+  // ----------------
 
   // Setup Basic Info
   pci->basic_info.n_steps = index;

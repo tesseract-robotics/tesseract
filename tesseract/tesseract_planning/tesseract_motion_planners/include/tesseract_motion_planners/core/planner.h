@@ -73,8 +73,7 @@ public:
   virtual void clear() = 0;
 
 protected:
-  std::string name_;                   /**< @brief The name of this planner */
-  TrajectoryValidator::Ptr validator_; /**< @brief The trajectory validator class */
+  std::string name_; /**< @brief The name of this planner */
 };
 }  // namespace tesseract_planning
 #endif  // TESSERACT_PLANNING_PLANNER_H
