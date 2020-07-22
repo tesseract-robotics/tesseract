@@ -174,7 +174,7 @@ protected:
   CompositeInstruction processCompositeInstruction(const CompositeInstruction& instructions);
 };
 
-// For backwards compatibility
+/** @brief Provided for backwards compatibility */
 inline CompositeInstruction generateSeed(const CompositeInstruction& instructions,
                                          const tesseract_environment::EnvState::ConstPtr& current_state,
                                          const tesseract_kinematics::ForwardKinematics::Ptr& fwd_kin,

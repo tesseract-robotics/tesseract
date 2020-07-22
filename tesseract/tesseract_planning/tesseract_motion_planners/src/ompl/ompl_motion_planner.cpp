@@ -253,11 +253,7 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& requ
   return response.status;
 }
 
-void OMPLMotionPlanner::clear()
-{
-  continuous_contact_manager_ = nullptr;
-  parallel_plan_ = nullptr;
-}
+void OMPLMotionPlanner::clear() { parallel_plan_ = nullptr; }
 
 bool OMPLMotionPlanner::checkUserInput(const PlannerRequest& /*request*/) const
 {
