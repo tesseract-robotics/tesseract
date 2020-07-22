@@ -35,8 +35,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-CompositeInstruction::CompositeInstruction(std::string profile, CompositeInstructionOrder order)
-  : profile_(std::move(profile)), order_(order)
+CompositeInstruction::CompositeInstruction(std::string profile, CompositeInstructionOrder order, ManipulatorInfo manipulator_info)
+  : manipulator_info_(manipulator_info), profile_(std::move(profile)), order_(order)
 {
 }
 
@@ -53,6 +53,10 @@ void CompositeInstruction::setProfile(const std::string& profile)
   profile_ = (profile.empty()) ? "DEFAULT" : profile;
 }
 const std::string& CompositeInstruction::getProfile() const { return profile_; }
+
+void CompositeInstruction::setManipulatorInfo(ManipulatorInfo info) { manipulator_info_ = info; }
+const ManipulatorInfo& CompositeInstruction::getManipulatorInfo() const { return manipulator_info_; }
+ManipulatorInfo& CompositeInstruction::getManipulatorInfo() { return manipulator_info_; }
 
 void CompositeInstruction::setStartInstruction(Instruction instruction) { start_instruction_ = instruction; }
 

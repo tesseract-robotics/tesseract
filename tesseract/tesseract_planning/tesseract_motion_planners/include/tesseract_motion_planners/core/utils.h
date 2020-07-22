@@ -178,9 +178,11 @@ protected:
 inline CompositeInstruction generateSeed(const CompositeInstruction& instructions,
                                          const tesseract_environment::EnvState::ConstPtr& current_state,
                                          const tesseract_kinematics::ForwardKinematics::Ptr& fwd_kin,
-                                         const tesseract_kinematics::InverseKinematics::Ptr& inv_kin)
+                                         const tesseract_kinematics::InverseKinematics::Ptr& inv_kin,
+                                         int freespace_segments = 10,
+                                         int cartesian_segments = 10)
 {
-  SeedGenerator generator(current_state, fwd_kin, inv_kin);
+  SeedGenerator generator(current_state, fwd_kin, inv_kin, freespace_segments, cartesian_segments);
   return generator.generateSeed(instructions);
 }
 

@@ -28,6 +28,7 @@
 #include <tesseract/tesseract.h>
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/ompl/problem_generators/default_problem_generator.h>
+#include <tesseract_command_language/command_language_utils.h>
 
 namespace tesseract_planning
 {
@@ -57,12 +58,17 @@ std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const PlannerRequest& 
   tesseract_kinematics::ForwardKinematics::Ptr manip_fwd_kin_;
   tesseract_kinematics::InverseKinematics::Ptr manip_inv_kin_;
 
-  manip_fwd_kin_ = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(request.manipulator);
-  if (request.manipulator_ik_solver.empty())
-    manip_inv_kin_ = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(request.manipulator);
+  // Assume all the plan instructions have the same manipulator
+  std::string manipulator = getFirstPlanInstruction(request.instructions)->getManipulatorInfoConst().manipulator;
+  std::string manipulator_ik_solver =
+      getFirstPlanInstruction(request.instructions)->getManipulatorInfoConst().manipulator_ik_solver;
+
+  manip_fwd_kin_ = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator);
+  if (manipulator_ik_solver.empty())
+    manip_inv_kin_ = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator);
   else
-    manip_inv_kin_ = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(
-        request.manipulator, request.manipulator_ik_solver);
+    manip_inv_kin_ =
+        request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
   if (!manip_fwd_kin_)
   {
     CONSOLE_BRIDGE_logError("No Forward Kinematics solver found");

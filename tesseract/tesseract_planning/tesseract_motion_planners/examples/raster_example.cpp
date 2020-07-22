@@ -60,6 +60,10 @@ int main(int /*argc*/, char** /*argv*/)
   boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400.srdf");
   tesseract->init(urdf_path, srdf_path, locator);
 
+  ManipulatorInfo manip;
+  manip.manipulator = "manipulator";
+  manip.manipulator_ik_solver = "OPWInvKin";
+
   opw_kinematics::Parameters<double> opw_params;
   opw_params.a1 = (0.100);
   opw_params.a2 = (-0.135);
@@ -71,9 +75,9 @@ int main(int /*argc*/, char** /*argv*/)
 
   opw_params.offsets[2] = -M_PI / 2.0;
 
-  auto robot_kin = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
+  auto robot_kin = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip.manipulator);
   auto opw_kin = std::make_shared<tesseract_kinematics::OPWInvKin>();
-  opw_kin->init("manipulator",
+  opw_kin->init(manip.manipulator,
                 opw_params,
                 robot_kin->getBaseLinkName(),
                 robot_kin->getTipLinkName(),
@@ -83,10 +87,10 @@ int main(int /*argc*/, char** /*argv*/)
                 robot_kin->getLimits());
 
   tesseract->getInvKinematicsManager()->addInvKinematicSolver(opw_kin);
-  tesseract->getInvKinematicsManager()->setDefaultInvKinematicSolver("manipulator", opw_kin->getSolverName());
+  tesseract->getInvKinematicsManager()->setDefaultInvKinematicSolver(manip.manipulator, opw_kin->getSolverName());
 
-  auto fwd_kin = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
-  auto inv_kin = tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator");
+  auto fwd_kin = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manip.manipulator);
   auto cur_state = tesseract->getEnvironmentConst()->getCurrentState();
 
   // Specify start location
@@ -112,12 +116,12 @@ int main(int /*argc*/, char** /*argv*/)
 
   // Define Plan Instructions
   MoveInstruction start_instruction(wp0, MoveInstructionType::START_FIXED);
-  PlanInstruction plan_f1(wp1, PlanInstructionType::FREESPACE, "DEFAULT", "base_link");
-  PlanInstruction plan_c1(wp2, PlanInstructionType::LINEAR, "DEFAULT", "base_link");
-  PlanInstruction plan_c2(wp3, PlanInstructionType::LINEAR, "DEFAULT", "base_link");
-  PlanInstruction plan_c3(wp4, PlanInstructionType::LINEAR, "DEFAULT", "base_link");
-  PlanInstruction plan_c4(wp5, PlanInstructionType::LINEAR, "DEFAULT", "base_link");
-  PlanInstruction plan_c5(wp6, PlanInstructionType::LINEAR, "DEFAULT", "base_link");
+  PlanInstruction plan_f1(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip);
+  PlanInstruction plan_c1(wp2, PlanInstructionType::LINEAR, "DEFAULT", manip);
+  PlanInstruction plan_c2(wp3, PlanInstructionType::LINEAR, "DEFAULT", manip);
+  PlanInstruction plan_c3(wp4, PlanInstructionType::LINEAR, "DEFAULT", manip);
+  PlanInstruction plan_c4(wp5, PlanInstructionType::LINEAR, "DEFAULT", manip);
+  PlanInstruction plan_c5(wp6, PlanInstructionType::LINEAR, "DEFAULT", manip);
   PlanInstruction plan_f3(wp0, PlanInstructionType::FREESPACE, "DEFAULT");
 
   // Create program
@@ -144,8 +148,6 @@ int main(int /*argc*/, char** /*argv*/)
   request.seed = seed;
   request.instructions = program;
   request.tesseract = tesseract;
-  request.manipulator = "manipulator";
-  request.manipulator_ik_solver = opw_kin->getSolverName();
   request.env_state = cur_state;
 
   // Solve Descartes Plan

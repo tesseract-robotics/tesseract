@@ -36,22 +36,17 @@ namespace tesseract_planning
 PlanInstruction::PlanInstruction(Waypoint waypoint,
                                  PlanInstructionType type,
                                  std::string profile,
-                                 std::string working_frame)
-  : plan_type_(type)
-  , waypoint_(std::move(waypoint))
-  , profile_(std::move(profile))
-  , working_frame_(std::move(working_frame))
+                                 ManipulatorInfo manipulator_info)
+  : plan_type_(type), waypoint_(std::move(waypoint)), profile_(std::move(profile)), manipulator_info_(manipulator_info)
 {
 }
 
 void PlanInstruction::setWaypoint(Waypoint waypoint) { waypoint_ = waypoint; }
 const Waypoint& PlanInstruction::getWaypoint() const { return waypoint_; }
 
-void PlanInstruction::setTCP(Eigen::Isometry3d tcp) { tcp_ = tcp; }
-const Eigen::Isometry3d& PlanInstruction::getTCP() const { return tcp_; }
-
-void PlanInstruction::setWorkingFrame(std::string working_frame) { working_frame_ = working_frame; }
-const std::string& PlanInstruction::getWorkingFrame() const { return working_frame_; }
+void PlanInstruction::setManipulatorInfo(ManipulatorInfo info) { manipulator_info_ = info; }
+const ManipulatorInfo& PlanInstruction::getManipulatorInfoConst() const { return manipulator_info_; }
+ManipulatorInfo& PlanInstruction::getManipulatorInfo() { return manipulator_info_; }
 
 void PlanInstruction::setProfile(const std::string& profile) { profile_ = (profile.empty()) ? "DEFAULT" : profile; }
 const std::string& PlanInstruction::getProfile() const { return profile_; }
