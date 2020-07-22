@@ -61,13 +61,18 @@ bool FreespaceProcessManager::execute()
 
 bool FreespaceProcessManager::terminate()
 {
-  CONSOLE_BRIDGE_logError("Terminate is not implemented");
+  for (auto gen : process_generators)
+    gen->setAbort(true);
+
+  CONSOLE_BRIDGE_logError("Terminating Taskflow");
   return false;
 }
 
 bool FreespaceProcessManager::clear()
 
 {
+  for (auto gen : process_generators)
+    gen->setAbort(false);
   taskflow.clear();
   freespace_tasks.clear();
   return true;
