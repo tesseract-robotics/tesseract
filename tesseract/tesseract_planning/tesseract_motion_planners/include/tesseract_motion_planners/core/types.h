@@ -39,9 +39,6 @@ struct PlannerRequest
   tesseract::Tesseract::ConstPtr tesseract;            /**< @brief Tesseract */
   tesseract_environment::EnvState::ConstPtr env_state; /**< @brief The start state to use for planning */
 
-  std::string manipulator;
-  std::string manipulator_ik_solver;
-
   /**
    * @brief The program instruction
    * This must containt a minimum of two move instruction the first move instruction is the start state

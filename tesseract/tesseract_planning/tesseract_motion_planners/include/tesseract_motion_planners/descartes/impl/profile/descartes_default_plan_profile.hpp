@@ -56,14 +56,14 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
   if (isMoveInstruction(parent_instruction))
   {
     const auto* temp = parent_instruction.cast_const<MoveInstruction>();
-    tcp = temp->getTCP();
-    working_frame = temp->getWorkingFrame();
+    tcp = temp->getManipulatorInfo().tcp;
+    working_frame = temp->getManipulatorInfo().working_frame;
   }
   else if (isPlanInstruction(parent_instruction))
   {
     const auto* temp = parent_instruction.cast_const<PlanInstruction>();
-    tcp = temp->getTCP();
-    working_frame = temp->getWorkingFrame();
+    tcp = temp->getManipulatorInfoConst().tcp;
+    working_frame = temp->getManipulatorInfoConst().working_frame;
   }
   else
   {

@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/core/instruction.h>
 #include <tesseract_command_language/instruction_type.h>
+#include <tesseract_command_language/manipulator_info.h>
 #include <tesseract_command_language/null_instruction.h>
 
 namespace tesseract_planning
@@ -52,7 +53,8 @@ public:
   using ConstPtr = std::shared_ptr<const CompositeInstruction>;
 
   CompositeInstruction(std::string profile = "DEFAULT",
-                       CompositeInstructionOrder order = CompositeInstructionOrder::ORDERED);
+                       CompositeInstructionOrder order = CompositeInstructionOrder::ORDERED,
+                       ManipulatorInfo manipulator_info = ManipulatorInfo());
 
   CompositeInstructionOrder getOrder() const;
 
@@ -63,6 +65,10 @@ public:
 
   void setProfile(const std::string& profile);
   const std::string& getProfile() const;
+
+  void setManipulatorInfo(ManipulatorInfo info);
+  const ManipulatorInfo& getManipulatorInfo() const;
+  ManipulatorInfo& getManipulatorInfo();
 
   void setStartInstruction(Instruction instruction);
   void resetStartInstruction();
@@ -77,6 +83,9 @@ private:
 
   /** @brief The description of the instruction */
   std::string description_{ "Tesseract Composite Instruction" };
+
+  /** @brief Contains information about the manipulator associated with this instruction*/
+  ManipulatorInfo manipulator_info_;
 
   /**
    * @brief The profile applied its child plan instructions

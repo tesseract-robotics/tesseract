@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/core/waypoint.h>
 #include <tesseract_command_language/instruction_type.h>
+#include <tesseract_command_language/manipulator_info.h>
 
 namespace tesseract_planning
 {
@@ -54,16 +55,17 @@ public:
   using Ptr = std::shared_ptr<MoveInstruction>;
   using ConstPtr = std::shared_ptr<const MoveInstruction>;
 
-  MoveInstruction(Waypoint waypoint, MoveInstructionType type, const std::string& profile = "DEFAULT");
+  MoveInstruction(Waypoint waypoint,
+                  MoveInstructionType type,
+                  const std::string& profile = "DEFAULT",
+                  ManipulatorInfo manipulator_info = ManipulatorInfo());
 
   void setWaypoint(Waypoint waypoint);
   const Waypoint& getWaypoint() const;
 
-  void setTCP(const Eigen::Isometry3d& tcp);
-  const Eigen::Isometry3d& getTCP() const;
-
-  void setWorkingFrame(std::string working_frame);
-  const std::string& getWorkingFrame() const;
+  void setManipulatorInfo(ManipulatorInfo info);
+  const ManipulatorInfo& getManipulatorInfo() const;
+  ManipulatorInfo& getManipulatorInfo();
 
   void setProfile(const std::string& profile);
   const std::string& getProfile() const;
@@ -116,11 +118,8 @@ private:
   /** @brief The assigned waypoint (Cartesian or Joint) */
   Waypoint waypoint_;
 
-  /** @brief The tool center point */
-  Eigen::Isometry3d tcp_{ Eigen::Isometry3d::Identity() };
-
-  /** @brief The working frame the waypoint is relative to */
-  std::string working_frame_;
+  /** @brief Contains information about the manipulator associated with this instruction*/
+  ManipulatorInfo manipulator_info_;
 
   /**
    * @brief The joint position at the waypoint

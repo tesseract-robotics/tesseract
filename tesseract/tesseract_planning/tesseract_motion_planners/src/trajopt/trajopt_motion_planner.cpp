@@ -183,15 +183,6 @@ bool TrajOptMotionPlanner::checkUserInput(const PlannerRequest& request) const
     return false;
   }
 
-  // Check that parameters are valid
-  auto manipulators = request.tesseract->getFwdKinematicsManagerConst()->getAvailableFwdKinematicsManipulators();
-  if (std::find(manipulators.begin(), manipulators.end(), request.manipulator) == manipulators.end())
-  {
-    CONSOLE_BRIDGE_logError("In TrajOptPlannerUniversalConfig: manipulator is a required parameter and is not found in "
-                            "the list of available manipulators");
-    return false;
-  }
-
   if (request.instructions.empty())
   {
     CONSOLE_BRIDGE_logError("TrajOptPlannerUniversalConfig requires at least one instruction");
