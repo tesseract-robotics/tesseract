@@ -80,7 +80,7 @@ private:
 
   NullInstruction null_instruction_;
 
-  std::atomic<bool> abort_;
+  std::atomic<bool> abort_{ false };
 };
 
 }  // namespace tesseract_planning

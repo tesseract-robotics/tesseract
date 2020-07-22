@@ -3,13 +3,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_command_language/core/waypoint.h>
-#include <tesseract_command_language/core/instruction.h>
-
-#include <tesseract_command_language/joint_waypoint.h>
-#include <tesseract_command_language/cartesian_waypoint.h>
-#include <tesseract_command_language/composite_instruction.h>
-#include <tesseract_command_language/plan_instruction.h>
+#include <tesseract_command_language/command_language.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
@@ -18,17 +12,17 @@ inline CompositeInstruction rasterExampleProgram()
 {
   CompositeInstruction program;
   // Start Joint Position for the program
-  Waypoint wp1 = JointWaypoint(Eigen::VectorXd::Ones(6));
+  Waypoint wp1 = JointWaypoint(Eigen::VectorXd::Zero(7));
   MoveInstruction start_instruction(wp1, MoveInstructionType::START);
   program.setStartInstruction(start_instruction);
 
   // Define raster poses
-  Waypoint wp2 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(1, -1, 1));
-  Waypoint wp3 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(1, -0.4, 1));
-  Waypoint wp4 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(1, -0.2, 1));
-  Waypoint wp5 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(1, 0.0, 1));
-  Waypoint wp6 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(1, 0.2, 1));
-  Waypoint wp7 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(1, 0.4, 1));
+  Waypoint wp2 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
+  Waypoint wp3 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
+  Waypoint wp4 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
+  Waypoint wp5 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
+  Waypoint wp6 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
+  Waypoint wp7 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
 
   // Define raster move instruction
   PlanInstruction plan_c1(wp3, PlanInstructionType::LINEAR, "RASTER");
