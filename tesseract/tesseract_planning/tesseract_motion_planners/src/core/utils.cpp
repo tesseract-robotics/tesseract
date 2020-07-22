@@ -292,7 +292,7 @@ CompositeInstruction SeedGenerator::generateSeed(const CompositeInstruction& ins
     assert(start_instruction->isStart() || start_instruction->isStartFixed());
     start_waypoint = start_instruction->getWaypoint();
 
-    MoveInstruction seed_start(*start_instruction);
+    seed_start.setWaypoint(start_waypoint);
     if (start_instruction->isStartFixed() && !isJointWaypoint(start_waypoint))
       throw std::runtime_error("Plan instruction with type START_FIXED must have a joint waypoint type");
 
@@ -311,7 +311,7 @@ CompositeInstruction SeedGenerator::generateSeed(const CompositeInstruction& ins
 
     seed_start.setPosition(current_jv);
   }
-  // Process the seed todo fix
+  // Process the seed
   seed = processCompositeInstruction(instructions);
 
   // Set start instruction

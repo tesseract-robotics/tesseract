@@ -94,9 +94,6 @@ protected:
   /** @brief OMPL Parallel planner */
   std::shared_ptr<ompl::tools::ParallelPlan> parallel_plan_;
 
-  /** @brief The continuous contact manager */
-  tesseract_collision::ContinuousContactManager::Ptr continuous_contact_manager_;
-
   bool checkUserInput(const PlannerRequest& request) const;
 };
 
