@@ -33,19 +33,20 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-MoveInstruction::MoveInstruction(Waypoint waypoint, MoveInstructionType type, const std::string& profile)
-  : move_type_(type), profile_(profile), waypoint_(std::move(waypoint))
+MoveInstruction::MoveInstruction(Waypoint waypoint,
+                                 MoveInstructionType type,
+                                 const std::string& profile,
+                                 ManipulatorInfo manipulator_info)
+  : move_type_(type), profile_(profile), waypoint_(std::move(waypoint)), manipulator_info_(manipulator_info)
 {
 }
 
 void MoveInstruction::setWaypoint(Waypoint waypoint) { waypoint_ = waypoint; }
 const Waypoint& MoveInstruction::getWaypoint() const { return waypoint_; }
 
-void MoveInstruction::setTCP(const Eigen::Isometry3d& tcp) { tcp_ = tcp; }
-const Eigen::Isometry3d& MoveInstruction::getTCP() const { return tcp_; }
-
-void MoveInstruction::setWorkingFrame(std::string working_frame) { working_frame_ = working_frame; }
-const std::string& MoveInstruction::getWorkingFrame() const { return working_frame_; }
+void MoveInstruction::setManipulatorInfo(ManipulatorInfo info) { manipulator_info_ = info; }
+const ManipulatorInfo& MoveInstruction::getManipulatorInfo() const { return manipulator_info_; }
+ManipulatorInfo& MoveInstruction::getManipulatorInfo() { return manipulator_info_; }
 
 void MoveInstruction::setProfile(const std::string& profile) { profile_ = (profile.empty()) ? "DEFAULT" : profile; }
 const std::string& MoveInstruction::getProfile() const { return profile_; }

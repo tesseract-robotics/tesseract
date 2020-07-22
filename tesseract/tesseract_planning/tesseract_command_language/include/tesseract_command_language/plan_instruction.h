@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/core/waypoint.h>
 #include <tesseract_command_language/instruction_type.h>
+#include <tesseract_command_language/manipulator_info.h>
 
 namespace tesseract_planning
 {
@@ -53,16 +54,14 @@ public:
   PlanInstruction(Waypoint waypoint,
                   PlanInstructionType type,
                   std::string profile = "DEFAULT",
-                  std::string working_frame = "");
+                  ManipulatorInfo manipulator_info = ManipulatorInfo());
 
   void setWaypoint(Waypoint waypoint);
   const Waypoint& getWaypoint() const;
 
-  void setTCP(Eigen::Isometry3d tcp);
-  const Eigen::Isometry3d& getTCP() const;
-
-  void setWorkingFrame(std::string working_frame);
-  const std::string& getWorkingFrame() const;
+  void setManipulatorInfo(ManipulatorInfo info);
+  const ManipulatorInfo& getManipulatorInfoConst() const;
+  ManipulatorInfo& getManipulatorInfo();
 
   void setProfile(const std::string& profile);
   const std::string& getProfile() const;
@@ -92,11 +91,8 @@ private:
   /** @brief The profile used for this plan instruction */
   std::string profile_{ "DEFAULT" };
 
-  /** @brief The tool center point */
-  Eigen::Isometry3d tcp_{ Eigen::Isometry3d::Identity() };
-
-  /** @brief The working frame the waypoint is relative to */
-  std::string working_frame_;
+  /** @brief Contains information about the manipulator associated with this instruction*/
+  ManipulatorInfo manipulator_info_;
 
   /** @brief The description of the instruction */
   std::string description_{ "Tesseract Plan Instruction" };
