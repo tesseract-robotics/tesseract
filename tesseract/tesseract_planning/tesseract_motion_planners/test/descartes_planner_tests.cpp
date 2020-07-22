@@ -86,6 +86,7 @@ class TesseractPlanningDescartesUnit : public ::testing::Test
 protected:
   Tesseract::Ptr tesseract_ptr_;
   opw_kinematics::Parameters<double> opw_params_;
+  ManipulatorInfo manip;
 
   void SetUp() override
   {
@@ -107,9 +108,12 @@ protected:
 
     opw_params_.offsets[2] = -M_PI / 2.0;
 
-    auto robot_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
+    manip.manipulator = "manipulator";
+    manip.manipulator_ik_solver = "OPWInvKin";
+
+    auto robot_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip.manipulator);
     auto opw_kin = std::make_shared<OPWInvKin>();
-    opw_kin->init("manipulator",
+    opw_kin->init(manip.manipulator,
                   opw_params_,
                   robot_kin->getBaseLinkName(),
                   robot_kin->getTipLinkName(),
@@ -119,7 +123,8 @@ protected:
                   robot_kin->getLimits());
 
     tesseract_ptr_->getInvKinematicsManager()->addInvKinematicSolver(opw_kin);
-    tesseract_ptr_->getInvKinematicsManager()->setDefaultInvKinematicSolver("manipulator", opw_kin->getSolverName());
+    tesseract_ptr_->getInvKinematicsManager()->setDefaultInvKinematicSolver(manip.manipulator,
+                                                                            manip.manipulator_ik_solver);
   }
 };
 
@@ -141,12 +146,12 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, .20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
 
   // Define Start Instruction
-  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
-  start_instruction.setWorkingFrame("base_link");
+  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE", manip);
+  start_instruction.getManipulatorInfo().working_frame = "base_link";
 
   // Define Plan Instructions
-  PlanInstruction plan_f1(wp2, PlanInstructionType::LINEAR, "TEST_PROFILE");
-  plan_f1.setWorkingFrame("base_link");
+  PlanInstruction plan_f1(wp2, PlanInstructionType::LINEAR, "TEST_PROFILE", manip);
+  plan_f1.getManipulatorInfo().working_frame = "base_link";
 
   // Create a program
   CompositeInstruction program;
@@ -170,7 +175,6 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
   request.seed = seed;
   request.instructions = program;
   request.tesseract = tesseract_ptr_;
-  request.manipulator = "manipulator";
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   PlannerResponse single_planner_response;
@@ -246,8 +250,8 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
 
-  auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
-  auto inv_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator");
+  auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver(manip.manipulator);
   auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
 
   // Specify a start waypoint
@@ -259,12 +263,12 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, .20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
 
   // Define Start Instruction
-  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
-  start_instruction.setWorkingFrame("base_link");
+  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE", manip);
+  start_instruction.getManipulatorInfo().working_frame = "base_link";
 
   // Define Plan Instructions
-  PlanInstruction plan_f1(wp2, PlanInstructionType::LINEAR, "TEST_PROFILE");
-  plan_f1.setWorkingFrame("base_link");
+  PlanInstruction plan_f1(wp2, PlanInstructionType::LINEAR, "TEST_PROFILE", manip);
+  plan_f1.getManipulatorInfo().working_frame = "base_link";
 
   // Create a program
   CompositeInstruction program;
@@ -292,7 +296,6 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
   request.seed = seed;
   request.instructions = program;
   request.tesseract = tesseract_ptr_;
-  request.manipulator = "manipulator";
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   auto problem = DefaultDescartesProblemGenerator<double>(request, single_descartes_planner.plan_profiles);
@@ -354,8 +357,8 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
 
-  auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
-  auto inv_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator");
+  auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver(manip.manipulator);
   auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
 
   // Specify a start waypoint
@@ -367,12 +370,12 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, .10, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
 
   // Define Start Instruction
-  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
-  start_instruction.setWorkingFrame("base_link");
+  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE", manip);
+  start_instruction.getManipulatorInfo().working_frame = "base_link";
 
   // Define Plan Instructions
-  PlanInstruction plan_f1(wp2, PlanInstructionType::LINEAR, "TEST_PROFILE");
-  plan_f1.setWorkingFrame("base_link");
+  PlanInstruction plan_f1(wp2, PlanInstructionType::LINEAR, "TEST_PROFILE", manip);
+  plan_f1.getManipulatorInfo().working_frame = "base_link";
 
   // Create a program
   CompositeInstruction program;
@@ -395,7 +398,6 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   request.seed = seed;
   request.instructions = program;
   request.tesseract = tesseract_ptr_;
-  request.manipulator = "manipulator";
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   // Create Planner

@@ -114,8 +114,6 @@ int MotionPlannerProcessGenerator::conditionalProcess(const ProcessInput& input,
   request.seed = *input.results.cast<CompositeInstruction>();
   request.env_state = input.tesseract->getEnvironmentConst()->getCurrentState();
   request.tesseract = input.tesseract;
-  request.manipulator = "manipulator";  // TODO: Where do I get this information?
-  //  request.manipulator_ik_solver;
   request.instructions = instructions;
 
   // --------------------
@@ -129,7 +127,7 @@ int MotionPlannerProcessGenerator::conditionalProcess(const ProcessInput& input,
   // --------------------
   // Verify Success
   // --------------------
-  // TODO: Add optional collision check
+  // TODO: Add optional collision check as its own process generator
   if (status)
   {
     CONSOLE_BRIDGE_logDebug("TrajOpt Planner process succeeded");

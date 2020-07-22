@@ -39,8 +39,13 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
   // Store fixed steps
   std::vector<int> fixed_steps;
 
+  // Assume all the plan instructions have the same manipulator
+  std::string manipulator = getFirstPlanInstruction(request.instructions)->getManipulatorInfoConst().manipulator;
+  std::string manipulator_ik_solver =
+      getFirstPlanInstruction(request.instructions)->getManipulatorInfoConst().manipulator_ik_solver;
+
   // Assign Kinematics object
-  pci->kin = pci->getManipulator(request.manipulator);
+  pci->kin = pci->getManipulator(manipulator);
   std::string link = pci->kin->getTipLinkName();
 
   if (pci->kin == nullptr)
@@ -180,7 +185,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
               throw std::runtime_error("TrajOptPlannerUniversalConfig: failed to solve forward kinematics!");
 
             prev_pose = pci->env->getCurrentState()->link_transforms.at(pci->kin->getBaseLinkName()) * prev_pose *
-                        plan_instruction->getTCP();
+                        plan_instruction->getManipulatorInfoConst().tcp;
           }
           else
           {
@@ -219,7 +224,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
             throw std::runtime_error("TrajOptPlannerUniversalConfig: failed to solve forward kinematics!");
 
           cur_pose = pci->env->getCurrentState()->link_transforms.at(pci->kin->getBaseLinkName()) * cur_pose *
-                     plan_instruction->getTCP();
+                     plan_instruction->getManipulatorInfoConst().tcp;
 
           Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
           if (isCartesianWaypoint(start_waypoint))
@@ -233,7 +238,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
               throw std::runtime_error("TrajOptPlannerUniversalConfig: failed to solve forward kinematics!");
 
             prev_pose = pci->env->getCurrentState()->link_transforms.at(pci->kin->getBaseLinkName()) * prev_pose *
-                        plan_instruction->getTCP();
+                        plan_instruction->getManipulatorInfoConst().tcp;
           }
           else
           {
@@ -348,7 +353,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
 
   // Setup Basic Info
   pci->basic_info.n_steps = index;
-  pci->basic_info.manip = request.manipulator;
+  pci->basic_info.manip = manipulator;
   pci->basic_info.start_fixed = false;
   pci->basic_info.use_time = false;
   //  pci->basic_info.convex_solver = optimizer;  // TODO: Fix this when port to trajopt_ifopt
