@@ -246,6 +246,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   // Update Configuration
   request.instructions = program;
   request.seed = seed;
+  request.data = nullptr;  // Note: Nust clear the saved problem or it will use it instead.
   ompl_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
 
   // Solve
@@ -258,6 +259,9 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
 
   wp1 = Eigen::Map<const Eigen::VectorXd>(swp.data(), static_cast<long>(swp.size()));
   wp2 = Eigen::Map<const Eigen::VectorXd>(ewp.data(), static_cast<long>(ewp.size()));
+
+  // Define Start Instruction
+  start_instruction = MoveInstruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
 
   // Define Plan Instructions
   plan_f1 = PlanInstruction(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
@@ -273,6 +277,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   // Update Configuration
   request.instructions = program;
   request.seed = seed;
+  request.data = nullptr;  // Note: Nust clear the saved problem or it will use it instead.
   ompl_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
 
   // Set new configuration and solve
