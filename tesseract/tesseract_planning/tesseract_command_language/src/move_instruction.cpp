@@ -51,21 +51,6 @@ ManipulatorInfo& MoveInstruction::getManipulatorInfo() { return manipulator_info
 void MoveInstruction::setProfile(const std::string& profile) { profile_ = (profile.empty()) ? "DEFAULT" : profile; }
 const std::string& MoveInstruction::getProfile() const { return profile_; }
 
-void MoveInstruction::setPosition(const Eigen::VectorXd& position) { position_ = position; }
-const Eigen::VectorXd& MoveInstruction::getPosition() const { return position_; }
-
-void MoveInstruction::setVelocity(const Eigen::VectorXd& velocity) { velocity_ = velocity; }
-const Eigen::VectorXd& MoveInstruction::getVelocity() const { return velocity_; }
-
-void MoveInstruction::setAcceleration(const Eigen::VectorXd& acceleration) { acceleration_ = acceleration; }
-const Eigen::VectorXd& MoveInstruction::getAcceleration() const { return acceleration_; }
-
-void MoveInstruction::setEffort(const Eigen::VectorXd& effort) { effort_ = effort; }
-const Eigen::VectorXd& MoveInstruction::getEffort() const { return effort_; }
-
-void MoveInstruction::setTime(double time) { time_ = time; }
-const double& MoveInstruction::getTime() const { return time_; }
-
 int MoveInstruction::getType() const { return type_; }
 
 const std::string& MoveInstruction::getDescription() const { return description_; }
@@ -88,7 +73,5 @@ bool MoveInstruction::isFreespace() const { return (move_type_ == MoveInstructio
 bool MoveInstruction::isCircular() const { return (move_type_ == MoveInstructionType::CIRCULAR); }
 
 bool MoveInstruction::isStart() const { return (move_type_ == MoveInstructionType::START); }
-
-bool MoveInstruction::isStartFixed() const { return (move_type_ == MoveInstructionType::START_FIXED); }
 
 }  // namespace tesseract_planning
