@@ -232,7 +232,8 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
           {
             const auto* mv_official = (*sub_official)[k].cast_const<MoveInstruction>();
             const auto* mv = (*sub)[k].cast_const<MoveInstruction>();
-            EXPECT_TRUE(getJointPosition(mv_official->getWaypoint()).isApprox(getJointPosition(mv->getWaypoint()), 1e-5));
+            EXPECT_TRUE(
+                getJointPosition(mv_official->getWaypoint()).isApprox(getJointPosition(mv->getWaypoint()), 1e-5));
           }
         }
       }
@@ -339,7 +340,8 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
           {
             const auto* mv_official = (*sub_official)[k].cast_const<MoveInstruction>();
             const auto* mv = (*sub)[k].cast_const<MoveInstruction>();
-            EXPECT_TRUE(getJointPosition(mv_official->getWaypoint()).isApprox(getJointPosition(mv->getWaypoint()), 1e-5));
+            EXPECT_TRUE(
+                getJointPosition(mv_official->getWaypoint()).isApprox(getJointPosition(mv->getWaypoint()), 1e-5));
           }
         }
       }
@@ -447,7 +449,8 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
           {
             const auto* mv_official = (*sub_official)[k].cast_const<MoveInstruction>();
             const auto* mv = (*sub)[k].cast_const<MoveInstruction>();
-            EXPECT_TRUE(getJointPosition(mv_official->getWaypoint()).isApprox(getJointPosition(mv->getWaypoint()), 1e-5));
+            EXPECT_TRUE(
+                getJointPosition(mv_official->getWaypoint()).isApprox(getJointPosition(mv->getWaypoint()), 1e-5));
           }
         }
       }

@@ -53,8 +53,8 @@ void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
   else if (isPlanInstruction(parent_instruction))
   {
     const auto* temp = parent_instruction.cast_const<PlanInstruction>();
-    tcp = temp->getManipulatorInfoConst().tcp;
-    working_frame = temp->getManipulatorInfoConst().working_frame;
+    tcp = temp->getManipulatorInfo().tcp;
+    working_frame = temp->getManipulatorInfo().working_frame;
   }
   else
   {
