@@ -31,6 +31,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/command_language_utils.h>
 #include <tesseract_command_language/instruction_type.h>
+#include <tesseract_command_language/joint_waypoint.h>
+#include <tesseract_command_language/cartesian_waypoint.h>
+#include <tesseract_command_language/state_waypoint.h>
 
 namespace tesseract_planning
 {
@@ -334,6 +337,19 @@ long getPlanInstructionsCount(const CompositeInstruction& composite_instruction,
 
   return std::count_if(
       composite_instruction.begin(), composite_instruction.end(), [](const auto& i) { return isPlanInstruction(i); });
+}
+
+Eigen::VectorXd getJointPosition(const Waypoint& waypoint)
+{
+  Eigen::VectorXd position;
+  if (isJointWaypoint(waypoint))
+    position = *(waypoint.cast_const<JointWaypoint>());
+  else if (isStateWaypoint(waypoint))
+    position = waypoint.cast_const<StateWaypoint>()->position;
+  else
+    throw std::runtime_error("Unsupported waypoint type.");
+
+  return position;
 }
 
 void flattenHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,

@@ -41,6 +41,9 @@ enum class WaypointType : int
   // Joint Waypoint
   JOINT_WAYPOINT,
 
+  // State Waypoint
+  STATE_WAYPOINT,
+
   // User defined types must be larger than this
   USER_DEFINED = 1000
 };
@@ -48,6 +51,8 @@ enum class WaypointType : int
 bool isCartesianWaypoint(const Waypoint& waypoint);
 
 bool isJointWaypoint(const Waypoint& waypoint);
+
+bool isStateWaypoint(const Waypoint& waypoint);
 
 bool isNullWaypoint(const Waypoint& waypoint);
 

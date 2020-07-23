@@ -232,7 +232,7 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& requ
     Eigen::Index result_index = 0;
     assert(response.results.hasStartInstruction());
     Instruction& instruction = response.results.getStartInstruction();
-    instruction.cast<MoveInstruction>()->setPosition(trajectory.row(result_index++));
+    instruction.cast<MoveInstruction>()->setWaypoint(StateWaypoint(trajectory.row(result_index++)));
 
     // Loop over the flattened results and add them to response if the input was a plan instruction
     for (std::size_t plan_index = 0; plan_index < results_flattened.size(); plan_index++)
@@ -242,7 +242,7 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& requ
         // This instruction corresponds to a composite. Set all results in that composite to the results
         auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();
         for (auto& instruction : *move_instructions)
-          instruction.cast<MoveInstruction>()->setPosition(trajectory.row(result_index++));
+          instruction.cast<MoveInstruction>()->setWaypoint(StateWaypoint(trajectory.row(result_index++)));
       }
     }
 
