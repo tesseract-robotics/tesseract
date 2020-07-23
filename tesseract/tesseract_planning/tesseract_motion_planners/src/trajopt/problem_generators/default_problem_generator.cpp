@@ -81,7 +81,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
     if (isMoveInstruction(*start_instruction))
     {
       const auto* temp = start_instruction->cast_const<MoveInstruction>();
-      assert(temp->isStart() || temp->isStartFixed());
+      assert(temp->isStart());
       start_waypoint = temp->getWaypoint();
       profile = temp->getProfile();
     }
@@ -96,8 +96,8 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
     JointWaypoint temp(current_jv);
     temp.joint_names = pci->kin->getJointNames();
 
-    MoveInstruction temp_move(temp, MoveInstructionType::START_FIXED);
-    temp_move.setPosition(current_jv);
+    MoveInstruction temp_move(temp, MoveInstructionType::START);
+    temp_move.setWaypoint(StateWaypoint(current_jv));
     placeholder_instruction = temp_move;
     start_instruction = &placeholder_instruction;
     start_waypoint = temp;
@@ -117,8 +117,8 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
   // Add start seed state
   assert(request.seed.hasStartInstruction());
   assert(isMoveInstruction(request.seed.getStartInstruction()));
-  const auto* seed_instruction = request.seed.getStartInstruction().cast_const<MoveInstruction>();
-  seed_states.push_back(seed_instruction->getPosition());
+  const auto* seed_instruction = request.seed.getStartInstruction().cast_const<MoveInstruction>();  
+  seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
 
   // Add start waypoint
   if (isCartesianWaypoint(start_waypoint))
@@ -201,7 +201,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
             // Add seed state
             assert(isMoveInstruction(seed_composite->at(p)));
             const auto* seed_instruction = seed_composite->at(p).cast_const<MoveInstruction>();
-            seed_states.push_back(seed_instruction->getPosition());
+            seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
 
             ++index;
           }
@@ -212,7 +212,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
           // Add seed state
           assert(isMoveInstruction(seed_composite->back()));
           const auto* seed_instruction = seed_composite->back().cast_const<tesseract_planning::MoveInstruction>();
-          seed_states.push_back(seed_instruction->getPosition());
+          seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
 
           ++index;
         }
@@ -254,7 +254,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
             // Add seed state
             assert(isMoveInstruction(seed_composite->at(p)));
             const auto* seed_instruction = seed_composite->at(p).cast_const<MoveInstruction>();
-            seed_states.push_back(seed_instruction->getPosition());
+            seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
 
             ++index;
           }
@@ -265,7 +265,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
           // Add seed state
           assert(isMoveInstruction(seed_composite->back()));
           const auto* seed_instruction = seed_composite->back().cast_const<MoveInstruction>();
-          seed_states.push_back(seed_instruction->getPosition());
+          seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
 
           ++index;
         }
@@ -286,7 +286,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
             // Add seed state
             assert(isMoveInstruction(seed_composite->at(s)));
             const auto* seed_instruction = seed_composite->at(s).cast_const<MoveInstruction>();
-            seed_states.push_back(seed_instruction->getPosition());
+            seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
 
             ++index;
           }
@@ -301,7 +301,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
           // Add seed state
           assert(isMoveInstruction(seed_composite->back()));
           const auto* seed_instruction = seed_composite->back().cast_const<MoveInstruction>();
-          seed_states.push_back(seed_instruction->getPosition());
+          seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
         }
         else if (isCartesianWaypoint(plan_instruction->getWaypoint()))
         {
@@ -313,7 +313,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
             // Add seed state
             assert(isMoveInstruction(seed_composite->at(s)));
             const auto* seed_instruction = seed_composite->at(s).cast_const<MoveInstruction>();
-            seed_states.push_back(seed_instruction->getPosition());
+            seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
 
             ++index;
           }
@@ -328,7 +328,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
           // Add seed state
           assert(isMoveInstruction(seed_composite->back()));
           const auto* seed_instruction = seed_composite->back().cast_const<MoveInstruction>();
-          seed_states.push_back(seed_instruction->getPosition());
+          seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
         }
         else
         {

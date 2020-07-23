@@ -115,7 +115,7 @@ int main(int /*argc*/, char** /*argv*/)
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(1.0, .20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
 
   // Define Plan Instructions
-  MoveInstruction start_instruction(wp0, MoveInstructionType::START_FIXED);
+  MoveInstruction start_instruction(wp0, MoveInstructionType::START);
   PlanInstruction plan_f1(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip);
   PlanInstruction plan_c1(wp2, PlanInstructionType::LINEAR, "DEFAULT", manip);
   PlanInstruction plan_c2(wp3, PlanInstructionType::LINEAR, "DEFAULT", manip);

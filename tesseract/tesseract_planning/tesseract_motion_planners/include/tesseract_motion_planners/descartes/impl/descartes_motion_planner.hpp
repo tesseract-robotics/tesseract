@@ -130,7 +130,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
   assert(response.results.hasStartInstruction());
 
   Instruction& instruction = response.results.getStartInstruction();
-  instruction.cast<MoveInstruction>()->setPosition(temp.template cast<double>());
+  instruction.cast<MoveInstruction>()->setWaypoint(StateWaypoint(temp.template cast<double>()));
 
   for (std::size_t plan_index = 0; plan_index < results_flattened.size(); plan_index++)
   {
@@ -146,7 +146,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
         {
           Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> temp(solution.data() + dof * result_index++,
                                                                              dof);
-          instruction.cast<MoveInstruction>()->setPosition(temp.template cast<double>());
+          instruction.cast<MoveInstruction>()->setWaypoint(StateWaypoint(temp.template cast<double>()));
         }
       }
       else if (plan_instruction->isFreespace())
@@ -162,7 +162,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
         if (result_index == 1)
         {
           auto* start_result = response.results.getStartInstruction().cast<MoveInstruction>();
-          start_result->setPosition(start.template cast<double>());
+          start_result->setWaypoint(StateWaypoint(start.template cast<double>()));
         }
 
         Eigen::MatrixXd temp = interpolate(
@@ -170,7 +170,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
 
         assert(temp.cols() == static_cast<long>(move_instructions->size()) + 1);
         for (std::size_t i = 0; i < move_instructions->size(); ++i)
-          (*move_instructions)[i].cast<MoveInstruction>()->setPosition(temp.col(static_cast<long>(i) + 1));
+          (*move_instructions)[i].cast<MoveInstruction>()->setWaypoint(StateWaypoint(temp.col(static_cast<long>(i) + 1)));
       }
       else
       {
