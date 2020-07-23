@@ -295,17 +295,19 @@ CompositeInstruction SeedGenerator::generateSeed(const CompositeInstruction& ins
   {
     assert(isMoveInstruction(instructions.getStartInstruction()));
     const auto* start_instruction = instructions.getStartInstruction().cast_const<MoveInstruction>();
-    assert(start_instruction->isStart() || start_instruction->isStartFixed());
+    assert(start_instruction->isStart());
     start_waypoint = start_instruction->getWaypoint();
 
-    seed_start.setWaypoint(start_waypoint);
-    if (start_instruction->isStartFixed() && !isJointWaypoint(start_waypoint))
-      throw std::runtime_error("Plan instruction with type START_FIXED must have a joint waypoint type");
-
     if (isJointWaypoint(start_waypoint))
-      seed_start.setPosition(*(start_waypoint.cast<JointWaypoint>()));
+    {
+      StateWaypoint state_waypoint(*(start_waypoint.cast<JointWaypoint>()));
+      seed_start.setWaypoint(start_waypoint);
+    }
     else if (isCartesianWaypoint(start_waypoint))
-      seed_start.setPosition(current_jv);
+    {
+      StateWaypoint state_waypoint(current_jv);
+      seed_start.setWaypoint(start_waypoint);
+    }
     else
       throw std::runtime_error("Generate Seed: Unsupported waypoint type!");
   }
@@ -315,7 +317,8 @@ CompositeInstruction SeedGenerator::generateSeed(const CompositeInstruction& ins
     temp.joint_names = fwd_kin->getJointNames();
     start_waypoint = temp;
 
-    seed_start.setPosition(current_jv);
+    StateWaypoint state_waypoint(current_jv);
+    seed_start.setWaypoint(start_waypoint);
   }
   // Process the seed
   seed = processCompositeInstruction(instructions);

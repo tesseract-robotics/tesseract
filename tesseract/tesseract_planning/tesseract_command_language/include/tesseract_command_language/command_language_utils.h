@@ -130,6 +130,8 @@ long getMoveInstructionsCount(const CompositeInstruction& composite_instruction,
  */
 long getPlanInstructionsCount(const CompositeInstruction& composite_instruction, bool process_child_composites = true);
 
+Eigen::VectorXd getJointPosition(const Waypoint& waypoint);
+
 /**
  * @brief Helper function used by Flatten. Not intended for direct use
  * @param flattened Vector of instructions representing the full flattened composite
