@@ -43,10 +43,8 @@ enum class MoveInstructionType : int
   LINEAR,
   FREESPACE,
   CIRCULAR,
-  /**< This indicates it is a start instruction and waypoint information should be used. */
+  /**< This indicates it is a start instruction. */
   START,
-  /**< This indicates that the data in position, velocity, acceleration and effort should be used instead of waypoint */
-  START_FIXED
 };
 
 class MoveInstruction
@@ -70,21 +68,6 @@ public:
   void setProfile(const std::string& profile);
   const std::string& getProfile() const;
 
-  void setPosition(const Eigen::VectorXd& position);
-  const Eigen::VectorXd& getPosition() const;
-
-  void setVelocity(const Eigen::VectorXd& velocity);
-  const Eigen::VectorXd& getVelocity() const;
-
-  void setAcceleration(const Eigen::VectorXd& acceleration);
-  const Eigen::VectorXd& getAcceleration() const;
-
-  void setEffort(const Eigen::VectorXd& effort);
-  const Eigen::VectorXd& getEffort() const;
-
-  void setTime(double time);
-  const double& getTime() const;
-
   int getType() const;
 
   const std::string& getDescription() const;
@@ -104,8 +87,6 @@ public:
 
   bool isStart() const;
 
-  bool isStartFixed() const;
-
 private:
   int type_{ static_cast<int>(InstructionType::MOVE_INSTRUCTION) };
 
@@ -120,27 +101,6 @@ private:
 
   /** @brief Contains information about the manipulator associated with this instruction*/
   ManipulatorInfo manipulator_info_;
-
-  /**
-   * @brief The joint position at the waypoint
-   *
-   * This is different from waypoint because it can be cartesian or joint and this stores the joint position solved
-   * for the planned waypoint. This also can be used for determining the robot configuration if provided a cartesian
-   * waypoint for generating a native robot program.
-   */
-  Eigen::VectorXd position_;
-
-  /** @brief The velocity at the waypoint */
-  Eigen::VectorXd velocity_;
-
-  /** @brief The Acceleration at the waypoint */
-  Eigen::VectorXd acceleration_;
-
-  /** @brief The Effort at the waypoint */
-  Eigen::VectorXd effort_;
-
-  /** @brief The Time from start at the waypoint */
-  double time_;
 };
 
 }  // namespace tesseract_planning

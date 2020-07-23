@@ -228,8 +228,8 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   EXPECT_TRUE(&status);
   EXPECT_TRUE(planner_response.results.hasStartInstruction());
   EXPECT_EQ(getMoveInstructionsCount(planner_response.results), 11);
-  EXPECT_TRUE(wp1.isApprox(getFirstMoveInstruction(planner_response.results)->getPosition(), 1e-5));
-  EXPECT_TRUE(wp2.isApprox(getLastMoveInstruction(planner_response.results)->getPosition(), 1e-5));
+  EXPECT_TRUE(wp1.isApprox(getJointPosition(getFirstMoveInstruction(planner_response.results)->getWaypoint()), 1e-5));
+  EXPECT_TRUE(wp2.isApprox(getJointPosition(getLastMoveInstruction(planner_response.results)->getWaypoint()), 1e-5));
 
   // Check for start state in collision error
   std::vector<double> swp = { 0, 0.7, 0.0, 0, 0.0, 0, 0.0 };
@@ -369,10 +369,10 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianGoalPlannerUnit)
   EXPECT_TRUE(&status);
   EXPECT_TRUE(planner_response.results.hasStartInstruction());
   EXPECT_EQ(getMoveInstructionsCount(planner_response.results), 11);
-  EXPECT_TRUE(wp1.isApprox(getFirstMoveInstruction(planner_response.results)->getPosition(), 1e-5));
+  EXPECT_TRUE(wp1.isApprox(getJointPosition(getFirstMoveInstruction(planner_response.results)->getWaypoint()), 1e-5));
 
   Eigen::Isometry3d check_goal = Eigen::Isometry3d::Identity();
-  fwd_kin->calcFwdKin(check_goal, getLastMoveInstruction(planner_response.results)->getPosition());
+  fwd_kin->calcFwdKin(check_goal, getJointPosition(getLastMoveInstruction(planner_response.results)->getWaypoint()));
   EXPECT_TRUE(wp2.isApprox(check_goal, 1e-3));
 }
 
@@ -458,10 +458,10 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
   EXPECT_TRUE(&status);
   EXPECT_TRUE(planner_response.results.hasStartInstruction());
   EXPECT_EQ(getMoveInstructionsCount(planner_response.results), 11);
-  EXPECT_TRUE(wp2.isApprox(getLastMoveInstruction(planner_response.results)->getPosition(), 1e-5));
+  EXPECT_TRUE(wp2.isApprox(getJointPosition(getLastMoveInstruction(planner_response.results)->getWaypoint()), 1e-5));
 
   Eigen::Isometry3d check_start = Eigen::Isometry3d::Identity();
-  fwd_kin->calcFwdKin(check_start, getFirstMoveInstruction(planner_response.results)->getPosition());
+  fwd_kin->calcFwdKin(check_start, getJointPosition(getFirstMoveInstruction(planner_response.results)->getWaypoint()));
   EXPECT_TRUE(wp1.isApprox(check_start, 1e-3));
 }
 

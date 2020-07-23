@@ -110,7 +110,7 @@ std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const PlannerRequest& 
     if (isMoveInstruction(*start_instruction))
     {
       const auto* temp = start_instruction->cast_const<MoveInstruction>();
-      assert(temp->isStart() || temp->isStartFixed());
+      assert(temp->isStart());
       start_waypoint = temp->getWaypoint();
     }
     else
@@ -124,8 +124,8 @@ std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const PlannerRequest& 
     JointWaypoint temp(current_jv);
     temp.joint_names = manip_fwd_kin_->getJointNames();
 
-    MoveInstruction temp_move(temp, MoveInstructionType::START_FIXED);
-    temp_move.setPosition(current_jv);
+    MoveInstruction temp_move(temp, MoveInstructionType::START);
+    temp_move.setWaypoint(StateWaypoint(current_jv));
     placeholder_instruction = temp_move;
     start_instruction = &placeholder_instruction;
     start_waypoint = temp;
