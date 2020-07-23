@@ -46,9 +46,9 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
   prob->samplers.clear();
 
   // Assume all the plan instructions have the same manipulator
-  std::string manipulator = getFirstPlanInstruction(request.instructions)->getManipulatorInfoConst().manipulator;
+  std::string manipulator = getFirstPlanInstruction(request.instructions)->getManipulatorInfo().manipulator;
   std::string manipulator_ik_solver =
-      getFirstPlanInstruction(request.instructions)->getManipulatorInfoConst().manipulator_ik_solver;
+      getFirstPlanInstruction(request.instructions)->getManipulatorInfo().manipulator_ik_solver;
 
   // Get Manipulator Information
   prob->manip_fwd_kin = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator);
@@ -192,7 +192,7 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
               throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
 
             prev_pose = prob->env_state->link_transforms.at(prob->manip_fwd_kin->getBaseLinkName()) * prev_pose *
-                        plan_instruction->getManipulatorInfoConst().tcp;
+                        plan_instruction->getManipulatorInfo().tcp;
           }
           else
           {
@@ -221,7 +221,7 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
             throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
 
           cur_pose = prob->env_state->link_transforms.at(prob->manip_fwd_kin->getBaseLinkName()) * cur_pose *
-                     plan_instruction->getManipulatorInfoConst().tcp;
+                     plan_instruction->getManipulatorInfo().tcp;
 
           Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
           if (isCartesianWaypoint(start_waypoint))
@@ -235,7 +235,7 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
               throw std::runtime_error("DescartesMotionPlannerConfig: failed to solve forward kinematics!");
 
             prev_pose = prob->env_state->link_transforms.at(prob->manip_fwd_kin->getBaseLinkName()) * prev_pose *
-                        plan_instruction->getManipulatorInfoConst().tcp;
+                        plan_instruction->getManipulatorInfo().tcp;
           }
           else
           {

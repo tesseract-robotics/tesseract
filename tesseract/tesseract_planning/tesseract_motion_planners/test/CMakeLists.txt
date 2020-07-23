@@ -35,6 +35,16 @@ add_dependencies(run_tests ${PROJECT_NAME}_ompl_unit)
 #  add_dependencies(run_tests ${PROJECT_NAME}_ompl_constrained_unit)
 #endif()
 
+# SimplePlanner Tests
+add_executable(${PROJECT_NAME}_simple_planner_fixed_size_interpolation_unit simple_planner_fixed_size_interpolation.cpp)
+target_link_libraries(${PROJECT_NAME}_simple_planner_fixed_size_interpolation_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME}_simple tesseract::tesseract_support)
+tesseract_target_compile_options(${PROJECT_NAME}_simple_planner_fixed_size_interpolation_unit PRIVATE)
+tesseract_clang_tidy(${PROJECT_NAME}_simple_planner_fixed_size_interpolation_unit)
+tesseract_code_coverage(${PROJECT_NAME}_simple_planner_fixed_size_interpolation_unit ALL EXCLUDE ${COVERAGE_EXCLUDE})
+tesseract_gtest_discover_tests(${PROJECT_NAME}_simple_planner_fixed_size_interpolation_unit)
+add_dependencies(${PROJECT_NAME}_simple_planner_fixed_size_interpolation_unit ${PROJECT_NAME}_simple)
+add_dependencies(run_tests ${PROJECT_NAME}_simple_planner_fixed_size_interpolation_unit)
+
 # TrajOpt Planner Tests
 add_executable(${PROJECT_NAME}_trajopt_unit trajopt_planner_tests.cpp)
 target_link_libraries(${PROJECT_NAME}_trajopt_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME}_trajopt tesseract::tesseract_support)

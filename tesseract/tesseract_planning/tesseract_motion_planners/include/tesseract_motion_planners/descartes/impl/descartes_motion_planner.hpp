@@ -170,7 +170,8 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
 
         assert(temp.cols() == static_cast<long>(move_instructions->size()) + 1);
         for (std::size_t i = 0; i < move_instructions->size(); ++i)
-          (*move_instructions)[i].cast<MoveInstruction>()->setWaypoint(StateWaypoint(temp.col(static_cast<long>(i) + 1)));
+          (*move_instructions)[i].cast<MoveInstruction>()->setWaypoint(
+              StateWaypoint(temp.col(static_cast<long>(i) + 1)));
       }
       else
       {

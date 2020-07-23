@@ -51,17 +51,15 @@ struct ManipulatorInfo
   /** @brief (Optional) The tool center point */
   Eigen::Isometry3d tcp{ Eigen::Isometry3d::Identity() };
 
-  /** @brief (Optional) The working frame to which waypoints are relative. If empty the base link of the environment is used*/
+  /** @brief (Optional) The working frame to which waypoints are relative. If empty the base link of the environment is
+   * used*/
   std::string working_frame;
 
   /**
    * @brief Returns true if required members are filled out
    * @return Returns true if required members are filled out
    */
-  bool isEmpty()
-  {
-    return manipulator.empty();
-  }
+  bool isEmpty() { return manipulator.empty(); }
 };
 }  // namespace tesseract_planning
 
