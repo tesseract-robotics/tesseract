@@ -44,7 +44,6 @@ bool isStateWaypoint(const Waypoint& waypoint)
   return (waypoint.getType() == static_cast<int>(WaypointType::STATE_WAYPOINT));
 }
 
-
 bool isNullWaypoint(const Waypoint& waypoint)
 {
   return (waypoint.getType() == static_cast<int>(WaypointType::NULL_WAYPOINT));

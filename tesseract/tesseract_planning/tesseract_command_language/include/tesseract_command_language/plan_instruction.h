@@ -60,7 +60,7 @@ public:
   const Waypoint& getWaypoint() const;
 
   void setManipulatorInfo(ManipulatorInfo info);
-  const ManipulatorInfo& getManipulatorInfoConst() const;
+  const ManipulatorInfo& getManipulatorInfo() const;
   ManipulatorInfo& getManipulatorInfo();
 
   void setProfile(const std::string& profile);

@@ -199,10 +199,10 @@ void OMPLDefaultPlanProfile::applyStartStates(OMPLProblem& prob,
   else if (isPlanInstruction(parent_instruction))
   {
     const auto* temp = parent_instruction.cast_const<PlanInstruction>();
-    tcp = temp->getManipulatorInfoConst().tcp;
-    if (!temp->getManipulatorInfoConst().working_frame.empty())
+    tcp = temp->getManipulatorInfo().tcp;
+    if (!temp->getManipulatorInfo().working_frame.empty())
       world_to_waypoint =
-          prob.env_state->link_transforms.at(temp->getManipulatorInfoConst().working_frame) * cartesian_waypoint;
+          prob.env_state->link_transforms.at(temp->getManipulatorInfo().working_frame) * cartesian_waypoint;
   }
   else
   {

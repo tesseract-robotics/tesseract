@@ -59,9 +59,9 @@ std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const PlannerRequest& 
   tesseract_kinematics::InverseKinematics::Ptr manip_inv_kin_;
 
   // Assume all the plan instructions have the same manipulator
-  std::string manipulator = getFirstPlanInstruction(request.instructions)->getManipulatorInfoConst().manipulator;
+  std::string manipulator = getFirstPlanInstruction(request.instructions)->getManipulatorInfo().manipulator;
   std::string manipulator_ik_solver =
-      getFirstPlanInstruction(request.instructions)->getManipulatorInfoConst().manipulator_ik_solver;
+      getFirstPlanInstruction(request.instructions)->getManipulatorInfo().manipulator_ik_solver;
 
   manip_fwd_kin_ = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator);
   if (manipulator_ik_solver.empty())

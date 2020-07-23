@@ -38,5 +38,4 @@
 #include <tesseract_command_language/state_waypoint.h>
 #include <tesseract_command_language/waypoint_type.h>
 
-
 #endif  // TESSERACT_COMMAND_LANGUAGE_WAYPOINT_TYPE_H

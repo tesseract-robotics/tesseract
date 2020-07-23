@@ -40,9 +40,9 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
   std::vector<int> fixed_steps;
 
   // Assume all the plan instructions have the same manipulator
-  std::string manipulator = getFirstPlanInstruction(request.instructions)->getManipulatorInfoConst().manipulator;
+  std::string manipulator = getFirstPlanInstruction(request.instructions)->getManipulatorInfo().manipulator;
   std::string manipulator_ik_solver =
-      getFirstPlanInstruction(request.instructions)->getManipulatorInfoConst().manipulator_ik_solver;
+      getFirstPlanInstruction(request.instructions)->getManipulatorInfo().manipulator_ik_solver;
 
   // Assign Kinematics object
   pci->kin = pci->getManipulator(manipulator);
@@ -117,7 +117,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
   // Add start seed state
   assert(request.seed.hasStartInstruction());
   assert(isMoveInstruction(request.seed.getStartInstruction()));
-  const auto* seed_instruction = request.seed.getStartInstruction().cast_const<MoveInstruction>();  
+  const auto* seed_instruction = request.seed.getStartInstruction().cast_const<MoveInstruction>();
   seed_states.push_back(getJointPosition(seed_instruction->getWaypoint()));
 
   // Add start waypoint
@@ -185,7 +185,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
               throw std::runtime_error("TrajOptPlannerUniversalConfig: failed to solve forward kinematics!");
 
             prev_pose = pci->env->getCurrentState()->link_transforms.at(pci->kin->getBaseLinkName()) * prev_pose *
-                        plan_instruction->getManipulatorInfoConst().tcp;
+                        plan_instruction->getManipulatorInfo().tcp;
           }
           else
           {
@@ -224,7 +224,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
             throw std::runtime_error("TrajOptPlannerUniversalConfig: failed to solve forward kinematics!");
 
           cur_pose = pci->env->getCurrentState()->link_transforms.at(pci->kin->getBaseLinkName()) * cur_pose *
-                     plan_instruction->getManipulatorInfoConst().tcp;
+                     plan_instruction->getManipulatorInfo().tcp;
 
           Eigen::Isometry3d prev_pose = Eigen::Isometry3d::Identity();
           if (isCartesianWaypoint(start_waypoint))
@@ -238,7 +238,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
               throw std::runtime_error("TrajOptPlannerUniversalConfig: failed to solve forward kinematics!");
 
             prev_pose = pci->env->getCurrentState()->link_transforms.at(pci->kin->getBaseLinkName()) * prev_pose *
-                        plan_instruction->getManipulatorInfoConst().tcp;
+                        plan_instruction->getManipulatorInfo().tcp;
           }
           else
           {
