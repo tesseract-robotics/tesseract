@@ -29,6 +29,24 @@ target_include_directories(${PROJECT_NAME}_core PUBLIC
 target_include_directories(${PROJECT_NAME}_core SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS})
 
+# Simple Planner
+add_library(${PROJECT_NAME}_simple
+  src/simple/simple_motion_planner.cpp
+  src/simple/profile/simple_planner_default_plan_profile.cpp
+  src/simple/step_generators/fixed_size_interpolation.cpp
+  src/simple/step_generators/lvs_interpolation.cpp
+  )
+target_link_libraries(${PROJECT_NAME}_simple PUBLIC ${Boost_LIBRARIES} ${PROJECT_NAME}_core)
+tesseract_target_compile_options(${PROJECT_NAME}_simple PUBLIC)
+tesseract_clang_tidy(${PROJECT_NAME}_simple)
+tesseract_code_coverage(${PROJECT_NAME}_simple ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_include_directories(${PROJECT_NAME}_simple PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_simple SYSTEM PUBLIC
+        ${EIGEN3_INCLUDE_DIRS}
+        ${Boost_INCLUDE_DIRS})
+
 # Trajopt Planner
 add_library(${PROJECT_NAME}_trajopt
   src/trajopt/trajopt_motion_planner.cpp

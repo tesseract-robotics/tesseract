@@ -45,7 +45,7 @@ void PlanInstruction::setWaypoint(Waypoint waypoint) { waypoint_ = waypoint; }
 const Waypoint& PlanInstruction::getWaypoint() const { return waypoint_; }
 
 void PlanInstruction::setManipulatorInfo(ManipulatorInfo info) { manipulator_info_ = info; }
-const ManipulatorInfo& PlanInstruction::getManipulatorInfoConst() const { return manipulator_info_; }
+const ManipulatorInfo& PlanInstruction::getManipulatorInfo() const { return manipulator_info_; }
 ManipulatorInfo& PlanInstruction::getManipulatorInfo() { return manipulator_info_; }
 
 void PlanInstruction::setProfile(const std::string& profile) { profile_ = (profile.empty()) ? "DEFAULT" : profile; }
