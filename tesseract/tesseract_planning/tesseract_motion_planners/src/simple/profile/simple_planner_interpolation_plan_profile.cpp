@@ -1,5 +1,5 @@
 /**
- * @file simple_planner_default_plan_profile.cpp
+ * @file simple_planner_interpolation_plan_profile.cpp
  * @brief
  *
  * @author Matthew Powelson
@@ -24,44 +24,43 @@
  * limitations under the License.
  */
 
-#include <tesseract_motion_planners/simple/profile/simple_planner_default_plan_profile.h>
-#include <tesseract_motion_planners/simple/step_generators/fixed_size_assign_position.h>
+#include <tesseract_motion_planners/simple/profile/simple_planner_interpolation_plan_profile.h>
 #include <tesseract_motion_planners/simple/step_generators/fixed_size_interpolation.h>
 
 namespace tesseract_planning
 {
-SimplePlannerDefaultPlanProfile::SimplePlannerDefaultPlanProfile(int freespace_steps, int cartesian_steps)
+SimplePlannerInterpolationPlanProfile::SimplePlannerInterpolationPlanProfile(int freespace_steps, int cartesian_steps)
   : freespace_steps_(freespace_steps), cartesian_steps_(cartesian_steps)
 {
   apply();
 }
 
-void SimplePlannerDefaultPlanProfile::apply()
+void SimplePlannerInterpolationPlanProfile::apply()
 {
   // Bind the Freespace functions
   joint_joint_freespace = [this](const JointWaypoint& one,
                                  const JointWaypoint& two,
                                  const PlanInstruction& three,
                                  const PlannerRequest& four) {
-    return fixedSizeAssignJointPosition(one, two, three, four, this->freespace_steps_);
+    return fixedSizeJointInterpolation(one, two, three, four, this->freespace_steps_);
   };
   joint_cart_freespace = [this](const JointWaypoint& one,
                                 const CartesianWaypoint& two,
                                 const PlanInstruction& three,
                                 const PlannerRequest& four) {
-    return fixedSizeAssignJointPosition(one, two, three, four, this->freespace_steps_);
+    return fixedSizeJointInterpolation(one, two, three, four, this->freespace_steps_);
   };
   cart_joint_freespace = [this](const CartesianWaypoint& one,
                                 const JointWaypoint& two,
                                 const PlanInstruction& three,
                                 const PlannerRequest& four) {
-    return fixedSizeAssignJointPosition(one, two, three, four, this->freespace_steps_);
+    return fixedSizeJointInterpolation(one, two, three, four, this->freespace_steps_);
   };
   cart_cart_freespace = [this](const CartesianWaypoint& one,
                                const CartesianWaypoint& two,
                                const PlanInstruction& three,
                                const PlannerRequest& four) {
-    return fixedSizeAssignJointPosition(one, two, three, four, this->freespace_steps_);
+    return fixedSizeJointInterpolation(one, two, three, four, this->freespace_steps_);
   };
 
   // Bind the Linear functions
@@ -69,37 +68,37 @@ void SimplePlannerDefaultPlanProfile::apply()
                               const JointWaypoint& two,
                               const PlanInstruction& three,
                               const PlannerRequest& four) {
-    return fixedSizeAssignJointPosition(one, two, three, four, this->cartesian_steps_);
+    return fixedSizeCartesianInterpolation(one, two, three, four, this->cartesian_steps_);
   };
   joint_cart_linear = [this](const JointWaypoint& one,
                              const CartesianWaypoint& two,
                              const PlanInstruction& three,
                              const PlannerRequest& four) {
-    return fixedSizeAssignJointPosition(one, two, three, four, this->cartesian_steps_);
+    return fixedSizeCartesianInterpolation(one, two, three, four, this->cartesian_steps_);
   };
   cart_joint_linear = [this](const CartesianWaypoint& one,
                              const JointWaypoint& two,
                              const PlanInstruction& three,
                              const PlannerRequest& four) {
-    return fixedSizeAssignJointPosition(one, two, three, four, this->cartesian_steps_);
+    return fixedSizeCartesianInterpolation(one, two, three, four, this->cartesian_steps_);
   };
   cart_cart_linear = [this](const CartesianWaypoint& one,
                             const CartesianWaypoint& two,
                             const PlanInstruction& three,
                             const PlannerRequest& four) {
-    return fixedSizeAssignJointPosition(one, two, three, four, this->cartesian_steps_);
+    return fixedSizeCartesianInterpolation(one, two, three, four, this->cartesian_steps_);
   };
 }
 
-const int& SimplePlannerDefaultPlanProfile::getFreespaceSteps() { return freespace_steps_; }
-void SimplePlannerDefaultPlanProfile::setFreespaceSteps(int freespace_steps)
+const int& SimplePlannerInterpolationPlanProfile::getFreespaceSteps() { return freespace_steps_; }
+void SimplePlannerInterpolationPlanProfile::setFreespaceSteps(int freespace_steps)
 {
   freespace_steps_ = freespace_steps;
   apply();
 }
 
-const int& SimplePlannerDefaultPlanProfile::getCartesianSteps() { return cartesian_steps_; }
-void SimplePlannerDefaultPlanProfile::setCartesianSteps(int cartesian_steps)
+const int& SimplePlannerInterpolationPlanProfile::getCartesianSteps() { return cartesian_steps_; }
+void SimplePlannerInterpolationPlanProfile::setCartesianSteps(int cartesian_steps)
 {
   cartesian_steps_ = cartesian_steps;
   apply();

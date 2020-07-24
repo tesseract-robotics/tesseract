@@ -39,10 +39,9 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
   // Store fixed steps
   std::vector<int> fixed_steps;
 
-  // Assume all the plan instructions have the same manipulator
-  std::string manipulator = getFirstPlanInstruction(request.instructions)->getManipulatorInfo().manipulator;
-  std::string manipulator_ik_solver =
-      getFirstPlanInstruction(request.instructions)->getManipulatorInfo().manipulator_ik_solver;
+  // Assume all the plan instructions have the same manipulator as the composite
+  const std::string manipulator = request.instructions.getManipulatorInfo().manipulator;
+  const std::string manipulator_ik_solver = request.instructions.getManipulatorInfo().manipulator_ik_solver;
 
   // Assign Kinematics object
   pci->kin = pci->getManipulator(manipulator);

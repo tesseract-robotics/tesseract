@@ -42,6 +42,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/descartes/problem_generators/default_problem_generator.h>
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/core/utils.h>
+#include <tesseract_motion_planners/interface_utils.h>
 
 using namespace tesseract;
 using namespace tesseract_environment;
@@ -160,7 +161,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_);
 
   // Create Profiles
   auto plan_profile = std::make_shared<DescartesDefaultPlanProfileD>();
@@ -278,7 +279,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_);
 
   // Create Profiles
   auto plan_profile = std::make_shared<DescartesDefaultPlanProfileD>();
@@ -386,7 +387,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin, 2, 2);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_);
 
   // Create Profiles
   auto plan_profile = std::make_shared<DescartesDefaultPlanProfileD>();

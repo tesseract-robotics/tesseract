@@ -61,8 +61,8 @@ ProcessInput ProcessInput::operator[](std::size_t index)
 
 std::size_t ProcessInput::size()
 {
-  if (isCompositeInstruction(instruction) && isCompositeInstruction(results))
-    assert(instruction.cast_const<CompositeInstruction>()->size() == results.cast<CompositeInstruction>()->size());
+  //  if (isCompositeInstruction(instruction) && isCompositeInstruction(results))
+  //    assert(instruction.cast_const<CompositeInstruction>()->size() == results.cast<CompositeInstruction>()->size());
 
   if (isCompositeInstruction(instruction))
   {
