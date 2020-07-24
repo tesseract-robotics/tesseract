@@ -67,38 +67,39 @@ tf::Taskflow& SequentialFailureTreeTaskflow::generateTaskflow(ProcessInput input
   sequential_failure_trees_.push_back(taskflow);
 
   // Add "Done" task
-  std::size_t done_task_idx = tasks_.size();
+  std::size_t done_task_idx = process_tasks_.size();
   if (done_cb)
-    tasks_.push_back(taskflow->emplace(done_cb).name("Done Callback"));
+    process_tasks_.push_back(taskflow->emplace(done_cb).name("Done Callback"));
   else
-    tasks_.push_back(
+    process_tasks_.push_back(
         taskflow->emplace([&]() { std::cout << "Done SequentialFailureTreeTaskflow\n"; }).name("Done Callback"));
 
   // Add "Error" task
-  std::size_t error_task_idx = tasks_.size();
+  std::size_t error_task_idx = process_tasks_.size();
   if (error_cb)
-    tasks_.push_back(taskflow->emplace(error_cb).name("Error Callback"));
+    process_tasks_.push_back(taskflow->emplace(error_cb).name("Error Callback"));
   else
-    tasks_.push_back(
+    process_tasks_.push_back(
         taskflow->emplace([&]() { std::cout << "Error SequentialFailureTreeTaskflow\n"; }).name("Error Callback"));
 
-  // Generate tasks using each process generator
-  std::size_t first_task_idx = tasks_.size();
+  // Generate process tasks using each process generator
+  std::size_t first_task_idx = process_tasks_.size();
   for (auto& process : processes_)
   {
     tf::Task task = taskflow->emplace(process->generateConditionalTask(input, start_instruction, end_instruction))
                         .name(process->name);
-    tasks_.push_back(task);
+    process_tasks_.push_back(task);
   }
 
   // Apply the fail-active logic - sequentially calling the planners until one succeeds
-  for (std::size_t i = first_task_idx; i < tasks_.size() - 1; i++)
+  for (std::size_t i = first_task_idx; i < process_tasks_.size() - 1; i++)
   {
-    tasks_[i].precede(tasks_[i + 1], tasks_[done_task_idx]);
+    // If the process succeeds, go to the validator. Otherwise, proceed to the next process
+    process_tasks_[i].precede(process_tasks_[i + 1], process_tasks_[done_task_idx]);
   }
 
   // If the last planner fails, call the error callback
-  tasks_.back().precede(tasks_[error_task_idx], tasks_[done_task_idx]);
+  process_tasks_.back().precede(process_tasks_[error_task_idx], process_tasks_[done_task_idx]);
 
   return *taskflow;
 }
@@ -107,5 +108,4 @@ void SequentialFailureTreeTaskflow::registerProcess(const ProcessGenerator::Ptr&
 {
   processes_.push_back(process);
 }
-
 }  // namespace tesseract_planning

@@ -20,6 +20,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/core/utils.h>
+#include <tesseract_motion_planners/interface_utils.h>
 
 using namespace tesseract_planning;
 
@@ -141,7 +142,7 @@ int main(int /*argc*/, char** /*argv*/)
   auto trajopt_composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract);
 
   // Create Planning Request
   PlannerRequest request;
