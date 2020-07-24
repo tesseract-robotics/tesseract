@@ -11,7 +11,8 @@ namespace tesseract_planning
 {
 inline CompositeInstruction freespaceExampleProgram()
 {
-  CompositeInstruction program("freespace_composite");
+  CompositeInstruction program(
+      "freespace_composite", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator"));
 
   // Start Joint Position for the program
   Waypoint wp1 = JointWaypoint(Eigen::VectorXd::Zero(7));

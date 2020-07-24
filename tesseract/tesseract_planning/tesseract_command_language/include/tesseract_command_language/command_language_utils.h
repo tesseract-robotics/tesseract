@@ -56,7 +56,7 @@ const PlanInstruction* getLastPlanInstruction(const CompositeInstruction& compos
  * @brief Get the first Plan Instruction in a Composite Instruction
  * This does not consider the start instruction
  * @param composite_instruction Composite Instruction to search
- * @param process_child_composites Indicate if child Composite Instructions should be searched
+ * @param process_child_composites Indicate if child Composite Instructions should be searched.
  * @return The first Plan Instruction (Non-Const)
  */
 PlanInstruction* getFirstPlanInstruction(CompositeInstruction& composite_instruction,
@@ -149,8 +149,10 @@ void flattenHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
  * vector
  * @return A new flattened vector referencing the original instruction elements
  */
-std::vector<std::reference_wrapper<Instruction>> flatten(CompositeInstruction& instruction,
-                                                         bool process_child_composites = false);
+std::vector<std::reference_wrapper<Instruction>>
+flatten(CompositeInstruction& instruction,
+        bool process_child_composites = false);  // TODO: This is a misnomer. The children get processed regardless,
+                                                 // this sets whether or not the composite is included in the result
 
 /**
  * @brief Helper function used by Flatten. Not intended for direct use
