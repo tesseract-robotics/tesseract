@@ -39,6 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_motion_planners/trajopt/problem_generators/default_problem_generator.h>
+#include <tesseract_motion_planners/interface_utils.h>
 
 const int NUM_STEPS = 7;
 
@@ -153,7 +154,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsJointJoint)  // N
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_);
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
@@ -225,7 +226,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointJoint)  // NOLINT
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_);
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
@@ -300,7 +301,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointCart)  // NOLINT
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_);
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
@@ -380,7 +381,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartJoint)  // NOLINT
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_);
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
@@ -459,7 +460,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartCart)  // NOLINT
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_);
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
@@ -538,7 +539,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsCartCart)  // NOL
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_);
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
@@ -624,7 +625,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointConstraint)  // NOLINT
   }
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_);
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
@@ -690,7 +691,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointCost)  // NOLINT
   }
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, fwd_kin, inv_kin);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_);
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();

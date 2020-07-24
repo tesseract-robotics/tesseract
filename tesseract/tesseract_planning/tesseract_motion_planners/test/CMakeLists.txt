@@ -3,7 +3,7 @@ find_package(tesseract_support REQUIRED)
 
 # Descartes Tesseract Kinematics Test
 add_executable(${PROJECT_NAME}_descartes_kin_unit descartes_tesseract_kinematics_tests.cpp)
-target_link_libraries(${PROJECT_NAME}_descartes_kin_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME}_descartes tesseract::tesseract_support)
+target_link_libraries(${PROJECT_NAME}_descartes_kin_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME}_descartes tesseract::tesseract_support ${PROJECT_NAME}_simple)
 tesseract_target_compile_options(${PROJECT_NAME}_descartes_kin_unit PRIVATE)
 tesseract_clang_tidy(${PROJECT_NAME}_descartes_kin_unit)
 tesseract_code_coverage(${PROJECT_NAME}_descartes_kin_unit ALL EXCLUDE ${COVERAGE_EXCLUDE})
@@ -13,7 +13,7 @@ add_dependencies(run_tests ${PROJECT_NAME}_descartes_kin_unit)
 
 # OMPL Planning Test/Example Program
 add_executable(${PROJECT_NAME}_ompl_unit ompl_planner_tests.cpp)
-target_link_libraries(${PROJECT_NAME}_ompl_unit PRIVATE ${Boost_LIBRARIES} GTest::GTest GTest::Main ${PROJECT_NAME}_ompl tesseract::tesseract_support trajopt::trajopt)
+target_link_libraries(${PROJECT_NAME}_ompl_unit PRIVATE ${Boost_LIBRARIES} GTest::GTest GTest::Main ${PROJECT_NAME}_ompl tesseract::tesseract_support trajopt::trajopt ${PROJECT_NAME}_simple)
 target_include_directories(${PROJECT_NAME}_ompl_unit SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 tesseract_target_compile_options(${PROJECT_NAME}_ompl_unit PRIVATE)
 tesseract_clang_tidy(${PROJECT_NAME}_ompl_unit)
@@ -47,7 +47,7 @@ add_dependencies(run_tests ${PROJECT_NAME}_simple_planner_fixed_size_interpolati
 
 # TrajOpt Planner Tests
 add_executable(${PROJECT_NAME}_trajopt_unit trajopt_planner_tests.cpp)
-target_link_libraries(${PROJECT_NAME}_trajopt_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME}_trajopt tesseract::tesseract_support)
+target_link_libraries(${PROJECT_NAME}_trajopt_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME}_trajopt tesseract::tesseract_support ${PROJECT_NAME}_simple)
 tesseract_target_compile_options(${PROJECT_NAME}_trajopt_unit PRIVATE)
 tesseract_clang_tidy(${PROJECT_NAME}_trajopt_unit)
 tesseract_code_coverage(${PROJECT_NAME}_trajopt_unit ALL EXCLUDE ${COVERAGE_EXCLUDE})
@@ -57,7 +57,7 @@ add_dependencies(run_tests ${PROJECT_NAME}_trajopt_unit)
 
 # Descartes Planner Tests
 add_executable(${PROJECT_NAME}_descartes_unit descartes_planner_tests.cpp)
-target_link_libraries(${PROJECT_NAME}_descartes_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME}_descartes tesseract::tesseract_support tesseract::tesseract_kinematics_opw)
+target_link_libraries(${PROJECT_NAME}_descartes_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME}_descartes tesseract::tesseract_support tesseract::tesseract_kinematics_opw ${PROJECT_NAME}_simple)
 tesseract_target_compile_options(${PROJECT_NAME}_descartes_unit PRIVATE)
 tesseract_clang_tidy(${PROJECT_NAME}_descartes_unit)
 tesseract_code_coverage(${PROJECT_NAME}_descartes_unit ALL EXCLUDE ${COVERAGE_EXCLUDE})
@@ -67,7 +67,7 @@ add_dependencies(run_tests ${PROJECT_NAME}_descartes_unit)
 
 # Utils Tests
 add_executable(${PROJECT_NAME}_utils_unit utils_test.cpp)
-target_link_libraries(${PROJECT_NAME}_utils_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME}_core tesseract::tesseract_support tesseract::tesseract_command_language)
+target_link_libraries(${PROJECT_NAME}_utils_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME}_core tesseract::tesseract_support tesseract::tesseract_command_language ${PROJECT_NAME}_simple)
 tesseract_target_compile_options(${PROJECT_NAME}_utils_unit PRIVATE)
 tesseract_clang_tidy(${PROJECT_NAME}_utils_unit)
 tesseract_code_coverage(${PROJECT_NAME}_utils_unit ALL EXCLUDE ${COVERAGE_EXCLUDE})

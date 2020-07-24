@@ -81,6 +81,8 @@ endif()
 add_library(${PROJECT_NAME}_simple
   src/simple/simple_motion_planner.cpp
   src/simple/profile/simple_planner_default_plan_profile.cpp
+  src/simple/profile/simple_planner_interpolation_plan_profile.cpp
+  src/simple/step_generators/fixed_size_assign_position.cpp
   src/simple/step_generators/fixed_size_interpolation.cpp
   src/simple/step_generators/lvs_interpolation.cpp
   )

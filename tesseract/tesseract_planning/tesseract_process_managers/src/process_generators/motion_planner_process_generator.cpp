@@ -127,16 +127,28 @@ int MotionPlannerProcessGenerator::conditionalProcess(const ProcessInput& input,
   // --------------------
   // Verify Success
   // --------------------
-  // TODO: Add optional collision check as its own process generator
   if (status)
   {
     CONSOLE_BRIDGE_logDebug("TrajOpt Planner process succeeded");
-    // Copy results back into input
-    input.results = response.results;
-    return 1;
+    int success = 1;
+    for (auto validator : validators)
+    {
+      ProcessInput validate_input = input;
+      validate_input.results = response.results;
+      success &= validator(validate_input);
+    }
+    if (success == 1)
+    {
+      input.results = response.results;
+      CONSOLE_BRIDGE_logDebug("TrajOpt Planner process results passed validators.");
+      return 1;
+    }
+    else
+      CONSOLE_BRIDGE_logDebug("TrajOpt Planner process results did not pass validators.");
   }
+  else
+    CONSOLE_BRIDGE_logDebug("TrajOpt Planner process failed");
 
-  CONSOLE_BRIDGE_logDebug("TrajOpt Planner process failed");
   return 0;
 }
 
