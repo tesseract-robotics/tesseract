@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
+#include <atomic>
 #include <console_bridge/console.h>
 #include <taskflow/taskflow.hpp>
 
