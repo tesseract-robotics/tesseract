@@ -51,7 +51,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
 #include <tesseract_environment/core/utils.h>
-#include <tesseract_kinematics/opw/opw_inv_kin.h>
 #include <tesseract_motion_planners/ompl/ompl_motion_planner.h>
 #include <tesseract_motion_planners/ompl/ompl_planner_configurator.h>
 #include <tesseract_motion_planners/ompl/profile/ompl_default_plan_profile.h>
@@ -166,7 +165,6 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
 
   ManipulatorInfo manip;
   manip.manipulator = "manipulator";
-  manip.manipulator_ik_solver = "OPWInvKin";
 
   // Step 2: Add box to environment
   addBox(*(tesseract->getEnvironment()));
@@ -183,7 +181,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   JointWaypoint wp2 = Eigen::Map<const Eigen::VectorXd>(end_state.data(), static_cast<long>(end_state.size()));
 
   // Define Start Instruction
-  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+  PlanInstruction start_instruction(wp1, PlanInstructionType::START, "TEST_PROFILE");
 
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
@@ -191,6 +189,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   // Create a program
   CompositeInstruction program;
   program.setStartInstruction(start_instruction);
+  program.setManipulatorInfo(manip);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -237,11 +236,12 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
 
   // Define New Start Instruction
   wp1 = Eigen::Map<const Eigen::VectorXd>(swp.data(), static_cast<long>(swp.size()));
-  start_instruction = MoveInstruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+  start_instruction = PlanInstruction(wp1, PlanInstructionType::START, "TEST_PROFILE");
 
   // Create a new program
   program = CompositeInstruction();
   program.setStartInstruction(start_instruction);
+  program.setManipulatorInfo(manip);
   program.push_back(plan_f1);
 
   // Create a new seed
@@ -265,7 +265,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   wp2 = Eigen::Map<const Eigen::VectorXd>(ewp.data(), static_cast<long>(ewp.size()));
 
   // Define Start Instruction
-  start_instruction = MoveInstruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+  start_instruction = PlanInstruction(wp1, PlanInstructionType::START, "TEST_PROFILE");
 
   // Define Plan Instructions
   plan_f1 = PlanInstruction(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
@@ -273,6 +273,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   // Create a new program
   program = CompositeInstruction();
   program.setStartInstruction(start_instruction);
+  program.setManipulatorInfo(manip);
   program.push_back(plan_f1);
 
   // Create a new seed
@@ -305,7 +306,6 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianGoalPlannerUnit)
   // Set manipulator
   ManipulatorInfo manip;
   manip.manipulator = "manipulator";
-  manip.manipulator_ik_solver = "OPWInvKin";
 
   // Step 2: Add box to environment
   addBox(*(tesseract->getEnvironment()));
@@ -325,7 +325,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianGoalPlannerUnit)
   CartesianWaypoint wp2 = goal;
 
   // Define Start Instruction
-  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+  PlanInstruction start_instruction(wp1, PlanInstructionType::START, "TEST_PROFILE");
 
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
@@ -333,6 +333,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianGoalPlannerUnit)
   // Create a program
   CompositeInstruction program;
   program.setStartInstruction(start_instruction);
+  program.setManipulatorInfo(manip);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -393,7 +394,6 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
   // Set manipulator
   ManipulatorInfo manip;
   manip.manipulator = "manipulator";
-  manip.manipulator_ik_solver = "OPWInvKin";
 
   // Step 2: Add box to environment
   addBox(*(tesseract->getEnvironment()));
@@ -413,7 +413,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
   JointWaypoint wp2 = Eigen::Map<const Eigen::VectorXd>(end_state.data(), static_cast<long>(end_state.size()));
 
   // Define Start Instruction
-  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+  PlanInstruction start_instruction(wp1, PlanInstructionType::START, "TEST_PROFILE");
 
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
@@ -421,6 +421,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
   // Create a program
   CompositeInstruction program;
   program.setStartInstruction(start_instruction);
+  program.setManipulatorInfo(manip);
   program.push_back(plan_f1);
 
   // Create a seed

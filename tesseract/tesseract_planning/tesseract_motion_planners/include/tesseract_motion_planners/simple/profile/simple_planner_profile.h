@@ -37,20 +37,26 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-using JointJointStepGenerator = std::function<
-    CompositeInstruction(const JointWaypoint&, const JointWaypoint&, const PlanInstruction&, const PlannerRequest&)>;
+using JointJointStepGenerator = std::function<CompositeInstruction(const JointWaypoint&,
+                                                                   const JointWaypoint&,
+                                                                   const PlanInstruction&,
+                                                                   const PlannerRequest&,
+                                                                   const ManipulatorInfo&)>;
 using JointCartStepGenerator = std::function<CompositeInstruction(const JointWaypoint&,
                                                                   const CartesianWaypoint&,
                                                                   const PlanInstruction&,
-                                                                  const PlannerRequest&)>;
+                                                                  const PlannerRequest&,
+                                                                  const ManipulatorInfo&)>;
 using CartJointStepGenerator = std::function<CompositeInstruction(const CartesianWaypoint&,
                                                                   const JointWaypoint&,
                                                                   const PlanInstruction&,
-                                                                  const PlannerRequest&)>;
+                                                                  const PlannerRequest&,
+                                                                  const ManipulatorInfo&)>;
 using CartCartStepGenerator = std::function<CompositeInstruction(const CartesianWaypoint&,
                                                                  const CartesianWaypoint&,
                                                                  const PlanInstruction&,
-                                                                 const PlannerRequest&)>;
+                                                                 const PlannerRequest&,
+                                                                 const ManipulatorInfo&)>;
 
 /**
  * @brief Plan Profile for the simple planner. It defines some functions that handle each of the waypoint cases. The

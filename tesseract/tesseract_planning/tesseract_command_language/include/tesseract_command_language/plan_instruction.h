@@ -42,7 +42,8 @@ enum class PlanInstructionType : int
 {
   LINEAR,
   FREESPACE,
-  CIRCULAR
+  CIRCULAR,
+  START
 };
 
 class PlanInstruction
@@ -79,6 +80,8 @@ public:
   bool isFreespace() const;
 
   bool isCircular() const;
+
+  bool isStart() const;
 
 private:
   int type_{ static_cast<int>(InstructionType::PLAN_INSTRUCTION) };
