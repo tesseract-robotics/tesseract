@@ -185,9 +185,21 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
 }
 
 template <typename FloatType>
-bool DescartesMotionPlanner<FloatType>::checkUserInput(const PlannerRequest& /*request*/)
+bool DescartesMotionPlanner<FloatType>::checkUserInput(const PlannerRequest& request)
 {
-  // TODO: copy from trajopt
+  // Check that parameters are valid
+  if (request.tesseract == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("In TrajOptPlannerUniversalConfig: tesseract is a required parameter and has not been set");
+    return false;
+  }
+
+  if (request.instructions.empty())
+  {
+    CONSOLE_BRIDGE_logError("TrajOptPlannerUniversalConfig requires at least one instruction");
+    return false;
+  }
+
   return true;
 }
 
