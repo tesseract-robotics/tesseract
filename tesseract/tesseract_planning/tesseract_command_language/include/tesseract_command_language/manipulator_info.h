@@ -62,7 +62,7 @@ struct ManipulatorInfo
    * @brief Returns true if required members are filled out
    * @return Returns true if required members are filled out
    */
-  bool isEmpty() { return manipulator.empty(); }
+  bool isEmpty() const { return manipulator.empty(); }
 };
 }  // namespace tesseract_planning
 
