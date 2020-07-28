@@ -29,7 +29,7 @@
 
 namespace tesseract_planning
 {
-// TODO: Restructure this into several smaller functions that are testable and easier to understand
+/// @todo: Restructure this into several smaller functions that are testable and easier to understand
 trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& request,
                                                          const TrajOptPlanProfileMap& plan_profiles,
                                                          const TrajOptCompositeProfileMap& composite_profiles)
