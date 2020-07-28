@@ -78,7 +78,7 @@ if(OMPL_VERSION VERSION_LESS "1.4.0")
 endif()
 
 # Simple Planner
-add_library(${PROJECT_NAME}_simple
+add_library(${PROJECT_NAME}_simple SHARED
   src/simple/simple_motion_planner.cpp
   src/simple/profile/simple_planner_default_plan_profile.cpp
   src/simple/profile/simple_planner_interpolation_plan_profile.cpp
@@ -98,7 +98,7 @@ target_include_directories(${PROJECT_NAME}_simple SYSTEM PUBLIC
         ${Boost_INCLUDE_DIRS})
 
 # Trajopt Planner
-add_library(${PROJECT_NAME}_trajopt
+add_library(${PROJECT_NAME}_trajopt SHARED
   src/trajopt/trajopt_motion_planner.cpp
   src/trajopt/trajopt_utils.cpp
   src/trajopt/profile/trajopt_default_plan_profile.cpp
