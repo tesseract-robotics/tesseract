@@ -89,100 +89,140 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointJoint_Join
 {
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
+  request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
   JointWaypoint wp1 = Eigen::VectorXd::Zero(7);
   JointWaypoint wp2 = Eigen::VectorXd::Ones(7);
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
   auto composite = fixedSizeJointInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10);
   EXPECT_EQ(composite.size(), 10);
-  // TODO: Test correctness
+  for (const auto& c : composite)
+  {
+    EXPECT_TRUE(isMoveInstruction(c));
+    EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+  }
+  const auto* mi = composite.back().cast_const<MoveInstruction>();
+  EXPECT_TRUE(wp2.isApprox(mi->getWaypoint().cast_const<StateWaypoint>()->position, 1e-5));
 }
 
 TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointCart_JointInterpolation)  // NOLINT
 {
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
+  request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
   JointWaypoint wp1 = Eigen::VectorXd::Zero(7);
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
   auto composite = fixedSizeJointInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10);
-  EXPECT_EQ(composite.size(), 0);  // TODO: Implement this function
+  EXPECT_EQ(composite.size(), 10);
+  for (const auto& c : composite)
+  {
+    EXPECT_TRUE(isMoveInstruction(c));
+    EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+  }
+  const auto* mi = composite.back().cast_const<MoveInstruction>();
+  const Eigen::VectorXd& last_position = mi->getWaypoint().cast_const<StateWaypoint>()->position;
+  auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip_info_.manipulator);
+  Eigen::Isometry3d final_pose = Eigen::Isometry3d::Identity();
+  fwd_kin->calcFwdKin(final_pose, last_position);
+  EXPECT_TRUE(wp2.isApprox(final_pose, 1e-3));
 }
 
 TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, CartJoint_JointInterpolation)  // NOLINT
 {
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
+  request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   JointWaypoint wp2 = Eigen::VectorXd::Zero(7);
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
   auto composite = fixedSizeJointInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10);
-  EXPECT_EQ(composite.size(), 0);  // TODO: Implement this function
+  EXPECT_EQ(composite.size(), 10);
+  for (const auto& c : composite)
+  {
+    EXPECT_TRUE(isMoveInstruction(c));
+    EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+  }
+  const auto* mi = composite.back().cast_const<MoveInstruction>();
+  EXPECT_TRUE(wp2.isApprox(mi->getWaypoint().cast_const<StateWaypoint>()->position, 1e-5));
 }
 
 TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, CartCart_JointInterpolation)  // NOLINT
 {
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
+  request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
   auto composite = fixedSizeJointInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10);
-  EXPECT_EQ(composite.size(), 0);  // TODO: Implement this function
+  EXPECT_EQ(composite.size(), 10);
+  for (const auto& c : composite)
+  {
+    EXPECT_TRUE(isMoveInstruction(c));
+    EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+  }
+  const auto* mi = composite.back().cast_const<MoveInstruction>();
+  const Eigen::VectorXd& last_position = mi->getWaypoint().cast_const<StateWaypoint>()->position;
+  auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip_info_.manipulator);
+  Eigen::Isometry3d final_pose = Eigen::Isometry3d::Identity();
+  fwd_kin->calcFwdKin(final_pose, last_position);
+  EXPECT_TRUE(wp2.isApprox(final_pose, 1e-3));
 }
 
 TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointJoint_CartesianInterpolation)  // NOLINT
 {
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
   JointWaypoint wp1 = Eigen::VectorXd::Zero(7);
   JointWaypoint wp2 = Eigen::VectorXd::Ones(7);
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
-  auto composite = fixedSizeCartesianInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10);
-  EXPECT_EQ(composite.size(), 10);
-  // TODO: Test correctness
+  EXPECT_ANY_THROW(fixedSizeCartesianInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10));
+  /// @todo: Update once implemented
 }
 
 TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointCart_CartesianInterpolation)  // NOLINT
 {
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
+  request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
   JointWaypoint wp1 = Eigen::VectorXd::Zero(7);
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
-  auto composite = fixedSizeCartesianInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10);
-  EXPECT_EQ(composite.size(), 0);  // TODO: Implement this function
+  EXPECT_ANY_THROW(fixedSizeCartesianInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10));
+  /// @todo: Update once implemented
 }
 
 TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, CartJoint_CartesianInterpolation)  // NOLINT
 {
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
+  request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   JointWaypoint wp2 = Eigen::VectorXd::Zero(7);
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
-  auto composite = fixedSizeCartesianInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10);
-  EXPECT_EQ(composite.size(), 0);  // TODO: Implement this function
+  EXPECT_ANY_THROW(fixedSizeCartesianInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10));
+  /// @todo: Update once implemented
 }
 
 TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, CartCart_CartesianInterpolation)  // NOLINT
 {
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
+  request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
-  auto composite = fixedSizeCartesianInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10);
-  EXPECT_EQ(composite.size(), 10);
-  // TODO: Test correctness
+  EXPECT_ANY_THROW(fixedSizeCartesianInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10));
+  /// @todo: Update once implemented
 }
 
 int main(int argc, char** argv)
