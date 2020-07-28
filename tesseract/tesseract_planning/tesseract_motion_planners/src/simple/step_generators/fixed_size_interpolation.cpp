@@ -83,14 +83,30 @@ CompositeInstruction fixedSizeJointInterpolation(const JointWaypoint& start,
 
   Eigen::Isometry3d p2 = end * tcp.inverse();
   p2 = world_to_base.inverse() * p2;
-  Eigen::VectorXd j2;
+  Eigen::VectorXd j2, j2_final;
   if (!inv_kin->calcInvKin(j2, p2, j1))
     throw std::runtime_error("fixedSizeJointInterpolation: failed to find inverse kinematics solution!");
 
-  // TODO Need to loop over all solutions and find the closest
+  // Find closest solution to the start state
+  double dist = std::numeric_limits<double>::max();
+  const auto dof = inv_kin->numJoints();
+  long num_solutions = j2.size() / dof;
+  j2_final = j2.middleRows(0, dof);
+  for (long i = 0; i < num_solutions; ++i)
+  {
+    /// @todo: May be nice to add contact checking to find best solution, but may not be neccessary because this is used
+    /// to generate the seed.
+    auto solution = j2.middleRows(i * dof, dof);
+    double d = (solution - j1).norm();
+    if (d < dist)
+    {
+      j2_final = solution;
+      dist = d;
+    }
+  }
 
   // Linearly interpolate in joint space
-  Eigen::MatrixXd states = interpolate(j1, j2, steps);
+  Eigen::MatrixXd states = interpolate(j1, j2_final, steps);
 
   // Convert to MoveInstructions
   for (long i = 1; i < states.cols(); ++i)
@@ -124,13 +140,29 @@ CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
   // Calculate IK for start and end
   Eigen::Isometry3d p1 = start * tcp.inverse();
   p1 = world_to_base.inverse() * p1;
-  Eigen::VectorXd j1;
+  Eigen::VectorXd j1, j1_final;
   if (!inv_kin->calcInvKin(j1, p1, end))
     throw std::runtime_error("fixedSizeJointInterpolation: failed to find inverse kinematics solution!");
 
   Eigen::VectorXd j2 = end;
 
-  // TODO Need to loop over all solutions and find the closest
+  // Find closest solution to the end state
+  double dist = std::numeric_limits<double>::max();
+  const auto dof = inv_kin->numJoints();
+  long num_solutions = j1.size() / dof;
+  j1_final = j1.middleRows(0, dof);
+  for (long i = 0; i < num_solutions; ++i)
+  {
+    /// @todo: May be nice to add contact checking to find best solution, but may not be neccessary because this is used
+    /// to generate the seed.
+    auto solution = j1.middleRows(i * dof, dof);
+    double d = (j2 - solution).norm();
+    if (d < dist)
+    {
+      j1_final = solution;
+      dist = d;
+    }
+  }
 
   // Linearly interpolate in joint space
   Eigen::MatrixXd states = interpolate(j1, j2, steps);
@@ -171,17 +203,40 @@ CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
   // Calculate IK for start and end
   Eigen::Isometry3d p1 = start * tcp.inverse();
   p1 = world_to_base.inverse() * p1;
-  Eigen::VectorXd j1;
+  Eigen::VectorXd j1, j1_final;
   if (!inv_kin->calcInvKin(j1, p1, seed))
     throw std::runtime_error("fixedSizeJointInterpolation: failed to find inverse kinematics solution!");
 
   Eigen::Isometry3d p2 = end * tcp.inverse();
   p2 = world_to_base.inverse() * p2;
-  Eigen::VectorXd j2;
+  Eigen::VectorXd j2, j2_final;
   if (!inv_kin->calcInvKin(j2, p2, seed))
     throw std::runtime_error("fixedSizeJointInterpolation: failed to find inverse kinematics solution!");
 
-  // TODO Need to loop over all solutions and find the closest
+  // Find closest solution to the end state
+  double dist = std::numeric_limits<double>::max();
+  const auto dof = inv_kin->numJoints();
+  long j1_num_solutions = j1.size() / dof;
+  long j2_num_solutions = j2.size() / dof;
+  j1_final = j1.middleRows(0, dof);
+  j2_final = j2.middleRows(0, dof);
+  for (long i = 0; i < j1_num_solutions; ++i)
+  {
+    auto j1_solution = j1.middleRows(i * dof, dof);
+    for (long j = 0; j < j2_num_solutions; ++j)
+    {
+      /// @todo: May be nice to add contact checking to find best solution, but may not be neccessary because this is
+      /// used to generate the seed.
+      auto j2_solution = j2.middleRows(j * dof, dof);
+      double d = (j2 - j1).norm();
+      if (d < dist)
+      {
+        j1_final = j1_solution;
+        j2_final = j2_solution;
+        dist = d;
+      }
+    }
+  }
 
   // Linearly interpolate in joint space
   Eigen::MatrixXd states = interpolate(j1, j2, steps);
@@ -205,7 +260,7 @@ CompositeInstruction fixedSizeCartesianInterpolation(const JointWaypoint& start,
                                                      const ManipulatorInfo& manip_info,
                                                      int steps)
 {
-  // TODO: Need to create a cartesian state waypoint and update the code below
+  /// @todo: Need to create a cartesian state waypoint and update the code below
   throw std::runtime_error("Not implemented, PR's are welcome!");
 
   assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
@@ -252,7 +307,7 @@ CompositeInstruction fixedSizeCartesianInterpolation(const JointWaypoint& start,
                                                      const ManipulatorInfo& manip_info,
                                                      int steps)
 {
-  // TODO: Need to create a cartesian state waypoint and update the code below
+  /// @todo: Need to create a cartesian state waypoint and update the code below
   throw std::runtime_error("Not implemented, PR's are welcome!");
 
   assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
@@ -296,7 +351,7 @@ CompositeInstruction fixedSizeCartesianInterpolation(const CartesianWaypoint& st
                                                      const ManipulatorInfo& manip_info,
                                                      int steps)
 {
-  // TODO: Need to create a cartesian state waypoint and update the code below
+  /// @todo: Need to create a cartesian state waypoint and update the code below
   throw std::runtime_error("Not implemented, PR's are welcome!");
 
   assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
@@ -340,7 +395,7 @@ CompositeInstruction fixedSizeCartesianInterpolation(const CartesianWaypoint& st
                                                      const ManipulatorInfo& /*manip_info*/,
                                                      int steps)
 {
-  // TODO: Need to create a cartesian state waypoint and update the code below
+  /// @todo: Need to create a cartesian state waypoint and update the code below
   throw std::runtime_error("Not implemented, PR's are welcome!");
 
   CompositeInstruction composite;
