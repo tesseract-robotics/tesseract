@@ -69,4 +69,6 @@ bool PlanInstruction::isFreespace() const { return (plan_type_ == PlanInstructio
 
 bool PlanInstruction::isCircular() const { return (plan_type_ == PlanInstructionType::CIRCULAR); }
 
+bool PlanInstruction::isStart() const { return (plan_type_ == PlanInstructionType::START); }
+
 }  // namespace tesseract_planning

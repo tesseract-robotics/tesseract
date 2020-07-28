@@ -27,9 +27,11 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <iostream>
+#include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/move_instruction.h>
+#include <tesseract_command_language/waypoint_type.h>
 
 namespace tesseract_planning
 {
@@ -41,7 +43,14 @@ MoveInstruction::MoveInstruction(Waypoint waypoint,
 {
 }
 
-void MoveInstruction::setWaypoint(Waypoint waypoint) { waypoint_ = waypoint; }
+void MoveInstruction::setWaypoint(Waypoint waypoint)
+{
+  if (!isStateWaypoint(waypoint))
+    CONSOLE_BRIDGE_logWarn("MoveInstruction usually expects to be provided a State Waypoint!");
+
+  waypoint_ = waypoint;
+}
+
 const Waypoint& MoveInstruction::getWaypoint() const { return waypoint_; }
 
 void MoveInstruction::setManipulatorInfo(ManipulatorInfo info) { manipulator_info_ = info; }
