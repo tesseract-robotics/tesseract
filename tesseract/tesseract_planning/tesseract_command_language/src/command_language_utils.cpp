@@ -40,6 +40,10 @@ namespace tesseract_planning
 const PlanInstruction* getFirstPlanInstruction(const CompositeInstruction& composite_instruction,
                                                bool process_child_composites)
 {
+  if (composite_instruction.hasStartInstruction())
+    if (isPlanInstruction(composite_instruction.getStartInstruction()))
+      return composite_instruction.getStartInstruction().cast_const<PlanInstruction>();
+
   if (process_child_composites)
   {
     for (const auto& instruction : composite_instruction)
@@ -87,6 +91,10 @@ const PlanInstruction* getLastPlanInstruction(const CompositeInstruction& compos
       }
     }
 
+    if (composite_instruction.hasStartInstruction())
+      if (isPlanInstruction(composite_instruction.getStartInstruction()))
+        return composite_instruction.getStartInstruction().cast_const<PlanInstruction>();
+
     return nullptr;
   }
 
@@ -94,11 +102,19 @@ const PlanInstruction* getLastPlanInstruction(const CompositeInstruction& compos
     if (isPlanInstruction(*it))
       return it->cast_const<PlanInstruction>();
 
+  if (composite_instruction.hasStartInstruction())
+    if (isPlanInstruction(composite_instruction.getStartInstruction()))
+      return composite_instruction.getStartInstruction().cast_const<PlanInstruction>();
+
   return nullptr;
 }
 
 PlanInstruction* getFirstPlanInstruction(CompositeInstruction& composite_instruction, bool process_child_composites)
 {
+  if (composite_instruction.hasStartInstruction())
+    if (isPlanInstruction(composite_instruction.getStartInstruction()))
+      return composite_instruction.getStartInstruction().cast<PlanInstruction>();
+
   if (process_child_composites)
   {
     for (auto& instruction : composite_instruction)
@@ -144,12 +160,20 @@ PlanInstruction* getLastPlanInstruction(CompositeInstruction& composite_instruct
       }
     }
 
+    if (composite_instruction.hasStartInstruction())
+      if (isPlanInstruction(composite_instruction.getStartInstruction()))
+        return composite_instruction.getStartInstruction().cast<PlanInstruction>();
+
     return nullptr;
   }
 
   for (auto it = composite_instruction.rbegin(); it != composite_instruction.rend(); ++it)
     if (isPlanInstruction(*it))
       return it->cast<PlanInstruction>();
+
+  if (composite_instruction.hasStartInstruction())
+    if (isPlanInstruction(composite_instruction.getStartInstruction()))
+      return composite_instruction.getStartInstruction().cast<PlanInstruction>();
 
   return nullptr;
 }
@@ -322,9 +346,13 @@ long getMoveInstructionsCount(const CompositeInstruction& composite_instruction,
 
 long getPlanInstructionsCount(const CompositeInstruction& composite_instruction, bool process_child_composites)
 {
+  long cnt = 0;
+  if (composite_instruction.hasStartInstruction())
+    if (isPlanInstruction(composite_instruction.getStartInstruction()))
+      ++cnt;
+
   if (process_child_composites)
   {
-    long cnt = 0;
     for (const auto& instruction : composite_instruction)
     {
       if (isCompositeInstruction(instruction))
@@ -335,21 +363,21 @@ long getPlanInstructionsCount(const CompositeInstruction& composite_instruction,
     return cnt;
   }
 
-  return std::count_if(
+  cnt += std::count_if(
       composite_instruction.begin(), composite_instruction.end(), [](const auto& i) { return isPlanInstruction(i); });
+
+  return cnt;
 }
 
-Eigen::VectorXd getJointPosition(const Waypoint& waypoint)
+const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint)
 {
-  Eigen::VectorXd position;
   if (isJointWaypoint(waypoint))
-    position = *(waypoint.cast_const<JointWaypoint>());
-  else if (isStateWaypoint(waypoint))
-    position = waypoint.cast_const<StateWaypoint>()->position;
-  else
-    throw std::runtime_error("Unsupported waypoint type.");
+    return *(waypoint.cast_const<JointWaypoint>());
 
-  return position;
+  if (isStateWaypoint(waypoint))
+    return waypoint.cast_const<StateWaypoint>()->position;
+
+  throw std::runtime_error("Unsupported waypoint type.");
 }
 
 void flattenHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,

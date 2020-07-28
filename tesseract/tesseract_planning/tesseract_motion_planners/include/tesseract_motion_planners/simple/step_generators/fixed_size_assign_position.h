@@ -24,8 +24,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_MOTION_PLANNERS_FIXED_SIZE_INTERPOLATION_H
-#define TESSERACT_MOTION_PLANNERS_FIXED_SIZE_INTERPOLATION_H
+#ifndef TESSERACT_MOTION_PLANNERS_FIXED_SIZE_ASSIGN_POSITION_H
+#define TESSERACT_MOTION_PLANNERS_FIXED_SIZE_ASSIGN_POSITION_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -38,62 +38,83 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-CompositeInstruction fixedSizeAssignJointPosition(const PlanInstruction& base_instruction,
-                                                  const PlannerRequest& request,
-                                                  int steps);
-
-CompositeInstruction fixedSizeAssignJointPosition(const JointWaypoint&,
-                                                  const JointWaypoint&,
+/**
+ * @brief fixedSizeAssignJointPosition
+ *
+ * This will create the fixed set of move instruction and assign the provided position for the state waypoint.
+ *
+ * @param position The position to assign to the all interpolated state waypoints
+ * @param base_instruction The base plan instruction
+ * @param manip_info The manipulator information provided by the parent composite instruction.
+ * @param steps The fixed number of steps
+ * @return A composite instruction of move instruction with state waypoints
+ */
+CompositeInstruction fixedSizeAssignJointPosition(const Eigen::Ref<const Eigen::VectorXd>& position,
                                                   const PlanInstruction& base_instruction,
                                                   const PlannerRequest& request,
+                                                  const ManipulatorInfo& manip_info,
                                                   int steps);
-
-CompositeInstruction fixedSizeAssignJointPosition(const JointWaypoint&,
-                                                  const CartesianWaypoint&,
+/**
+ * @brief fixedSizeAssignJointPosition
+ *
+ * This will create the fixed set of move instruction and assign the start as the position for the state waypoint.
+ *
+ * @param start The start joint waypoint
+ * @param end The end cartesian waypoint
+ * @param base_instruction The base plan instruction
+ * @param request The planning request information
+ * @param manip_info The manipulator information provided by the parent composite instruction.
+ * @param steps The fixed number of steps
+ * @return A composite instruction of move instruction with state waypoints
+ */
+CompositeInstruction fixedSizeAssignJointPosition(const JointWaypoint& start,
+                                                  const CartesianWaypoint& end,
                                                   const PlanInstruction& base_instruction,
                                                   const PlannerRequest& request,
+                                                  const ManipulatorInfo& manip_info,
                                                   int steps);
 
-CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint&,
-                                                  const JointWaypoint&,
+/**
+ * @brief fixedSizeAssignJointPosition
+ *
+ * This will create the fixed set of move instruction and assign the end as the position for the state waypoint.
+ *
+ * @param start The start cartesian waypoint
+ * @param end The end joint waypoint
+ * @param base_instruction The base plan instruction
+ * @param request The planning request information
+ * @param manip_info The manipulator information provided by the parent composite instruction.
+ * @param steps The fixed number of steps
+ * @return A composite instruction of move instruction with state waypoints
+ */
+CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint& start,
+                                                  const JointWaypoint& end,
                                                   const PlanInstruction& base_instruction,
                                                   const PlannerRequest& request,
+                                                  const ManipulatorInfo& manip_info,
                                                   int steps);
 
-CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint&,
-                                                  const CartesianWaypoint&,
+/**
+ * @brief fixedSizeAssignJointPosition
+ *
+ * This will create the fixed set of move instruction and assign the current environment state as the position for
+ * the state waypoint.
+ *
+ * @param start The start cartesian waypoint
+ * @param end The end joint waypoint
+ * @param base_instruction The base plan instruction
+ * @param request The planning request information
+ * @param manip_info The manipulator information provided by the parent composite instruction.
+ * @param steps The fixed number of steps
+ * @return A composite instruction of move instruction with state waypoints
+ */
+CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint& start,
+                                                  const CartesianWaypoint& end,
                                                   const PlanInstruction& base_instruction,
                                                   const PlannerRequest& request,
+                                                  const ManipulatorInfo& manip_info,
                                                   int steps);
-
-CompositeInstruction fixedSizeAssignCartesianPosition(const PlanInstruction& base_instruction,
-                                                      const PlannerRequest& request,
-                                                      int steps);
-
-CompositeInstruction fixedSizeAssignCartesianPosition(const JointWaypoint&,
-                                                      const JointWaypoint&,
-                                                      const PlanInstruction& base_instruction,
-                                                      const PlannerRequest& request,
-                                                      int steps);
-
-CompositeInstruction fixedSizeAssignCartesianPosition(const JointWaypoint&,
-                                                      const CartesianWaypoint&,
-                                                      const PlanInstruction& base_instruction,
-                                                      const PlannerRequest& request,
-                                                      int steps);
-
-CompositeInstruction fixedSizeAssignCartesianPosition(const CartesianWaypoint&,
-                                                      const JointWaypoint&,
-                                                      const PlanInstruction& base_instruction,
-                                                      const PlannerRequest& request,
-                                                      int steps);
-
-CompositeInstruction fixedSizeAssignCartesianPosition(const CartesianWaypoint&,
-                                                      const CartesianWaypoint&,
-                                                      const PlanInstruction& base_instruction,
-                                                      const PlannerRequest& request,
-                                                      int steps);
 
 }  // namespace tesseract_planning
 
-#endif  // TESSERACT_MOTION_PLANNERS_SIMPLE_PROFILE_H
+#endif  // TESSERACT_MOTION_PLANNERS_FIXED_SIZE_ASSIGN_POSITION_H

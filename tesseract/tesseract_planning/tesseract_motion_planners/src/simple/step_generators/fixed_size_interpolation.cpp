@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/simple/step_generators/fixed_size_interpolation.h>
 #include <tesseract_motion_planners/core/utils.h>
+#include <tesseract_command_language/state_waypoint.h>
 
 namespace tesseract_planning
 {
@@ -40,6 +41,7 @@ CompositeInstruction fixedSizeJointInterpolation(const JointWaypoint& start,
                                                  const JointWaypoint& end,
                                                  const PlanInstruction& base_instruction,
                                                  const PlannerRequest& /*request*/,
+                                                 const ManipulatorInfo& /*manip_info*/,
                                                  int steps)
 {
   CompositeInstruction composite;
@@ -50,7 +52,7 @@ CompositeInstruction fixedSizeJointInterpolation(const JointWaypoint& start,
   // Convert to MoveInstructions
   for (long i = 1; i < states.cols(); ++i)
   {
-    tesseract_planning::MoveInstruction move_instruction(JointWaypoint(states.col(i)), MoveInstructionType::FREESPACE);
+    tesseract_planning::MoveInstruction move_instruction(StateWaypoint(states.col(i)), MoveInstructionType::FREESPACE);
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
     composite.push_back(move_instruction);
@@ -58,50 +60,162 @@ CompositeInstruction fixedSizeJointInterpolation(const JointWaypoint& start,
   return composite;
 }
 
-CompositeInstruction fixedSizeJointInterpolation(const JointWaypoint& /*start*/,
-                                                 const CartesianWaypoint& /*end*/,
-                                                 const PlanInstruction& /*base_instruction*/,
-                                                 const PlannerRequest& /*request*/,
-                                                 int /*steps*/)
+CompositeInstruction fixedSizeJointInterpolation(const JointWaypoint& start,
+                                                 const CartesianWaypoint& end,
+                                                 const PlanInstruction& base_instruction,
+                                                 const PlannerRequest& request,
+                                                 const ManipulatorInfo& manip_info,
+                                                 int steps)
 {
-  CONSOLE_BRIDGE_logError("fixedSizeLinearInterpolation with Joint/Cart not yet implemented. Pull requests welcome");
+  assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
+  const ManipulatorInfo& mi =
+      (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
 
-  return CompositeInstruction();
+  // Initialize
+  auto inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(mi.manipulator);
+  auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
+  const Eigen::Isometry3d& tcp = mi.tcp;
+
+  CompositeInstruction composite;
+
+  // Calculate IK for start and end
+  Eigen::VectorXd j1 = start;
+
+  Eigen::Isometry3d p2 = end * tcp.inverse();
+  p2 = world_to_base.inverse() * p2;
+  Eigen::VectorXd j2;
+  if (!inv_kin->calcInvKin(j2, p2, j1))
+    throw std::runtime_error("fixedSizeJointInterpolation: failed to find inverse kinematics solution!");
+
+  // TODO Need to loop over all solutions and find the closest
+
+  // Linearly interpolate in joint space
+  Eigen::MatrixXd states = interpolate(j1, j2, steps);
+
+  // Convert to MoveInstructions
+  for (long i = 1; i < states.cols(); ++i)
+  {
+    tesseract_planning::MoveInstruction move_instruction(StateWaypoint(states.col(i)), MoveInstructionType::FREESPACE);
+    move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
+    move_instruction.setDescription(base_instruction.getDescription());
+    composite.push_back(move_instruction);
+  }
+  return composite;
 }
 
-CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& /*start*/,
-                                                 const JointWaypoint& /*end*/,
-                                                 const PlanInstruction& /*base_instruction*/,
-                                                 const PlannerRequest& /*request*/,
-                                                 int /*steps*/)
+CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
+                                                 const JointWaypoint& end,
+                                                 const PlanInstruction& base_instruction,
+                                                 const PlannerRequest& request,
+                                                 const ManipulatorInfo& manip_info,
+                                                 int steps)
 {
-  CONSOLE_BRIDGE_logError("fixedSizeLinearInterpolation with Joint/Cart not yet implemented. Pull requests welcome");
+  assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
+  const ManipulatorInfo& mi =
+      (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
 
-  return CompositeInstruction();
+  // Initialize
+  auto inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(mi.manipulator);
+  auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
+  const Eigen::Isometry3d& tcp = mi.tcp;
+
+  CompositeInstruction composite;
+
+  // Calculate IK for start and end
+  Eigen::Isometry3d p1 = start * tcp.inverse();
+  p1 = world_to_base.inverse() * p1;
+  Eigen::VectorXd j1;
+  if (!inv_kin->calcInvKin(j1, p1, end))
+    throw std::runtime_error("fixedSizeJointInterpolation: failed to find inverse kinematics solution!");
+
+  Eigen::VectorXd j2 = end;
+
+  // TODO Need to loop over all solutions and find the closest
+
+  // Linearly interpolate in joint space
+  Eigen::MatrixXd states = interpolate(j1, j2, steps);
+
+  // Convert to MoveInstructions
+  for (long i = 1; i < states.cols(); ++i)
+  {
+    tesseract_planning::MoveInstruction move_instruction(StateWaypoint(states.col(i)), MoveInstructionType::FREESPACE);
+    move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
+    move_instruction.setDescription(base_instruction.getDescription());
+    composite.push_back(move_instruction);
+  }
+
+  return composite;
 }
 
-CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& /*start*/,
-                                                 const CartesianWaypoint& /*end*/,
-                                                 const PlanInstruction& /*base_instruction*/,
-                                                 const PlannerRequest& /*request*/,
-                                                 int /*steps*/)
+CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
+                                                 const CartesianWaypoint& end,
+                                                 const PlanInstruction& base_instruction,
+                                                 const PlannerRequest& request,
+                                                 const ManipulatorInfo& manip_info,
+                                                 int steps)
 {
-  CONSOLE_BRIDGE_logError("fixedSizeLinearInterpolation with Joint/Cart not yet implemented. Pull requests welcome");
+  assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
+  const ManipulatorInfo& mi =
+      (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
 
-  return CompositeInstruction();
+  // Initialize
+  auto inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(mi.manipulator);
+  auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
+  const Eigen::Isometry3d& tcp = mi.tcp;
+
+  CompositeInstruction composite;
+
+  // Get IK seed
+  Eigen::VectorXd seed = request.env_state->getJointValues(inv_kin->getJointNames());
+
+  // Calculate IK for start and end
+  Eigen::Isometry3d p1 = start * tcp.inverse();
+  p1 = world_to_base.inverse() * p1;
+  Eigen::VectorXd j1;
+  if (!inv_kin->calcInvKin(j1, p1, seed))
+    throw std::runtime_error("fixedSizeJointInterpolation: failed to find inverse kinematics solution!");
+
+  Eigen::Isometry3d p2 = end * tcp.inverse();
+  p2 = world_to_base.inverse() * p2;
+  Eigen::VectorXd j2;
+  if (!inv_kin->calcInvKin(j2, p2, seed))
+    throw std::runtime_error("fixedSizeJointInterpolation: failed to find inverse kinematics solution!");
+
+  // TODO Need to loop over all solutions and find the closest
+
+  // Linearly interpolate in joint space
+  Eigen::MatrixXd states = interpolate(j1, j2, steps);
+
+  // Convert to MoveInstructions
+  for (long i = 1; i < states.cols(); ++i)
+  {
+    tesseract_planning::MoveInstruction move_instruction(StateWaypoint(states.col(i)), MoveInstructionType::FREESPACE);
+    move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
+    move_instruction.setDescription(base_instruction.getDescription());
+    composite.push_back(move_instruction);
+  }
+
+  return composite;
 }
 
 CompositeInstruction fixedSizeCartesianInterpolation(const JointWaypoint& start,
                                                      const JointWaypoint& end,
                                                      const PlanInstruction& base_instruction,
                                                      const PlannerRequest& request,
+                                                     const ManipulatorInfo& manip_info,
                                                      int steps)
 {
+  // TODO: Need to create a cartesian state waypoint and update the code below
+  throw std::runtime_error("Not implemented, PR's are welcome!");
+
+  assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
+  const ManipulatorInfo& mi =
+      (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
+
   // Initialize
-  auto fwd_kin = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(
-      base_instruction.getManipulatorInfo().manipulator);
+  auto fwd_kin = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(mi.manipulator);
   auto world_to_base = request.env_state->link_transforms.at(fwd_kin->getBaseLinkName());
-  Eigen::Isometry3d tcp = base_instruction.getManipulatorInfo().tcp;
+  const Eigen::Isometry3d& tcp = mi.tcp;
 
   CompositeInstruction composite;
 
@@ -131,34 +245,104 @@ CompositeInstruction fixedSizeCartesianInterpolation(const JointWaypoint& start,
   return composite;
 }
 
-CompositeInstruction fixedSizeCartesianInterpolation(const JointWaypoint& /*start*/,
-                                                     const CartesianWaypoint& /*end*/,
-                                                     const PlanInstruction& /*base_instruction*/,
-                                                     const PlannerRequest& /*request*/,
-                                                     int /*steps*/)
+CompositeInstruction fixedSizeCartesianInterpolation(const JointWaypoint& start,
+                                                     const CartesianWaypoint& end,
+                                                     const PlanInstruction& base_instruction,
+                                                     const PlannerRequest& request,
+                                                     const ManipulatorInfo& manip_info,
+                                                     int steps)
 {
-  CONSOLE_BRIDGE_logError("fixedSizeLinearInterpolation with Joint/Cart not yet implemented. Pull requests welcome");
+  // TODO: Need to create a cartesian state waypoint and update the code below
+  throw std::runtime_error("Not implemented, PR's are welcome!");
 
-  return CompositeInstruction();
+  assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
+  const ManipulatorInfo& mi =
+      (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
+
+  // Initialize
+  auto fwd_kin = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(mi.manipulator);
+  auto world_to_base = request.env_state->link_transforms.at(fwd_kin->getBaseLinkName());
+  const Eigen::Isometry3d& tcp = mi.tcp;
+
+  CompositeInstruction composite;
+
+  // Calculate FK for start and end
+  Eigen::Isometry3d p1 = Eigen::Isometry3d::Identity();
+  if (!fwd_kin->calcFwdKin(p1, start))
+    throw std::runtime_error("fixedSizeLinearInterpolation: failed to find forward kinematics solution!");
+  p1 = world_to_base * p1 * tcp;
+
+  Eigen::Isometry3d p2 = end;
+
+  // Linear interpolation in cartesian space
+  tesseract_common::VectorIsometry3d poses = interpolate(p1, p2, steps);
+
+  // Convert to MoveInstructions
+  for (std::size_t p = 1; p < poses.size(); ++p)
+  {
+    tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
+    move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
+    move_instruction.setDescription(base_instruction.getDescription());
+    composite.push_back(move_instruction);
+  }
+
+  return composite;
 }
 
-CompositeInstruction fixedSizeCartesianInterpolation(const CartesianWaypoint& /*start*/,
-                                                     const JointWaypoint& /*end*/,
-                                                     const PlanInstruction& /*base_instruction*/,
-                                                     const PlannerRequest& /*request*/,
-                                                     int /*steps*/)
+CompositeInstruction fixedSizeCartesianInterpolation(const CartesianWaypoint& start,
+                                                     const JointWaypoint& end,
+                                                     const PlanInstruction& base_instruction,
+                                                     const PlannerRequest& request,
+                                                     const ManipulatorInfo& manip_info,
+                                                     int steps)
 {
-  CONSOLE_BRIDGE_logError("fixedSizeLinearInterpolation with Cart/Joint not yet implemented. Pull requests welcome");
+  // TODO: Need to create a cartesian state waypoint and update the code below
+  throw std::runtime_error("Not implemented, PR's are welcome!");
 
-  return CompositeInstruction();
+  assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
+  const ManipulatorInfo& mi =
+      (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
+
+  // Initialize
+  auto fwd_kin = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(mi.manipulator);
+  auto world_to_base = request.env_state->link_transforms.at(fwd_kin->getBaseLinkName());
+  const Eigen::Isometry3d& tcp = mi.tcp;
+
+  CompositeInstruction composite;
+
+  // Calculate FK for start and end
+  Eigen::Isometry3d p1 = start;
+
+  Eigen::Isometry3d p2 = Eigen::Isometry3d::Identity();
+  if (!fwd_kin->calcFwdKin(p2, end))
+    throw std::runtime_error("fixedSizeLinearInterpolation: failed to find forward kinematics solution!");
+  p2 = world_to_base * p2 * tcp;
+
+  // Linear interpolation in cartesian space
+  tesseract_common::VectorIsometry3d poses = interpolate(p1, p2, steps);
+
+  // Convert to MoveInstructions
+  for (std::size_t p = 1; p < poses.size(); ++p)
+  {
+    tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
+    move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
+    move_instruction.setDescription(base_instruction.getDescription());
+    composite.push_back(move_instruction);
+  }
+
+  return composite;
 }
 
 CompositeInstruction fixedSizeCartesianInterpolation(const CartesianWaypoint& start,
                                                      const CartesianWaypoint& end,
                                                      const PlanInstruction& base_instruction,
                                                      const PlannerRequest& /*request*/,
+                                                     const ManipulatorInfo& /*manip_info*/,
                                                      int steps)
 {
+  // TODO: Need to create a cartesian state waypoint and update the code below
+  throw std::runtime_error("Not implemented, PR's are welcome!");
+
   CompositeInstruction composite;
 
   // Linear interpolation in cartesian space

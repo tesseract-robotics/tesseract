@@ -47,33 +47,20 @@ template <typename FloatType>
 void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& prob,
                                                    const Eigen::Isometry3d& cartesian_waypoint,
                                                    const Instruction& parent_instruction,
+                                                   const ManipulatorInfo& manip_info,
                                                    const std::vector<std::string>& active_links,
                                                    int index)
 {
-  // Extract working frame and tcp
-  std::string working_frame;
-  Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
-  if (isMoveInstruction(parent_instruction))
-  {
-    const auto* temp = parent_instruction.cast_const<MoveInstruction>();
-    tcp = temp->getManipulatorInfo().tcp;
-    working_frame = temp->getManipulatorInfo().working_frame;
-  }
-  else if (isPlanInstruction(parent_instruction))
-  {
-    const auto* temp = parent_instruction.cast_const<PlanInstruction>();
-    tcp = temp->getManipulatorInfo().tcp;
-    working_frame = temp->getManipulatorInfo().working_frame;
-  }
-  else
-  {
-    throw std::runtime_error("OMPLDefaultPlanProfile: Unsupported instruction type!");
-  }
+  assert(isPlanInstruction(parent_instruction));
+  const auto* base_instruction = parent_instruction.cast_const<PlanInstruction>();
+  assert(!(manip_info.isEmpty() && base_instruction->getManipulatorInfo().isEmpty()));
+  const ManipulatorInfo& mi =
+      (base_instruction->getManipulatorInfo().isEmpty()) ? manip_info : base_instruction->getManipulatorInfo();
 
   /* Check if this cartesian waypoint is dynamic
    * (i.e. defined relative to a frame that will move with the kinematic chain) */
   auto it = std::find(active_links.begin(), active_links.end(), prob.manip_inv_kin->getBaseLinkName());
-  if (it != active_links.end() && prob.manip_inv_kin->getBaseLinkName() != working_frame)
+  if (it != active_links.end() && prob.manip_inv_kin->getBaseLinkName() != mi.working_frame)
     throw std::runtime_error("DescartesDefaultPlanProfile: Assigned dynamic waypoint but parent instruction working is "
                              "not set to the base link of manipulator!");
 
@@ -90,15 +77,15 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
   {
     // Check if the waypoint is not relative to the manipulator base coordinate system
     Eigen::Isometry3d world_to_waypoint = cartesian_waypoint;
-    if (!working_frame.empty())
-      world_to_waypoint = prob.env_state->link_transforms.at(working_frame) * cartesian_waypoint;
+    if (!mi.working_frame.empty())
+      world_to_waypoint = prob.env_state->link_transforms.at(mi.working_frame) * cartesian_waypoint;
 
     Eigen::Isometry3d world_to_base_link = prob.env_state->link_transforms.at(prob.manip_inv_kin->getBaseLinkName());
     manip_baselink_to_waypoint = world_to_base_link.inverse() * world_to_waypoint;
   }
 
   auto sampler = std::make_shared<DescartesRobotSampler<FloatType>>(
-      manip_baselink_to_waypoint, target_pose_sampler, prob.manip_inv_kin, ci, tcp, allow_collision, is_valid);
+      manip_baselink_to_waypoint, target_pose_sampler, prob.manip_inv_kin, ci, mi.tcp, allow_collision, is_valid);
   prob.samplers.push_back(std::move(sampler));
 
   if (index != 0)
@@ -149,6 +136,7 @@ template <typename FloatType>
 void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& prob,
                                                    const Eigen::VectorXd& joint_waypoint,
                                                    const Instruction& /*parent_instruction*/,
+                                                   const ManipulatorInfo& /*manip_info*/,
                                                    const std::vector<std::string>& active_links,
                                                    int index)
 {
