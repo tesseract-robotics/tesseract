@@ -143,7 +143,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsJointJoint)  // N
   wp2.joint_names = joint_names;
 
   // Define Start Instruction
-  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+  PlanInstruction start_instruction(wp1, PlanInstructionType::START, "TEST_PROFILE");
 
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
@@ -151,6 +151,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsJointJoint)  // N
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
   program.setStartInstruction(start_instruction);
+  program.setManipulatorInfo(manip);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -215,7 +216,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointJoint)  // NOLINT
   wp2.joint_names = joint_names;
 
   // Define Start Instruction
-  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+  PlanInstruction start_instruction(wp1, PlanInstructionType::START, "TEST_PROFILE");
 
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
@@ -223,6 +224,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointJoint)  // NOLINT
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
   program.setStartInstruction(start_instruction);
+  program.setManipulatorInfo(manip);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -290,7 +292,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointCart)  // NOLINT
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Define Start Instruction
-  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+  PlanInstruction start_instruction(wp1, PlanInstructionType::START, "TEST_PROFILE");
 
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "TEST_PROFILE");
@@ -298,6 +300,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointCart)  // NOLINT
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
   program.setStartInstruction(start_instruction);
+  program.setManipulatorInfo(manip);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -369,7 +372,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartJoint)  // NOLINT
   wp2.joint_names = joint_names;
 
   // Define Start Instruction
-  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+  PlanInstruction start_instruction(wp1, PlanInstructionType::START, "TEST_PROFILE");
   start_instruction.getManipulatorInfo().working_frame = "base_link";
 
   // Define Plan Instructions
@@ -378,6 +381,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartJoint)  // NOLINT
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
   program.setStartInstruction(start_instruction);
+  program.setManipulatorInfo(manip);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -447,7 +451,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartCart)  // NOLINT
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(-.20, .4, 0.2) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Define Start Instruction
-  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+  PlanInstruction start_instruction(wp1, PlanInstructionType::START, "TEST_PROFILE");
   start_instruction.getManipulatorInfo().working_frame = "base_link";
 
   // Define Plan Instructions
@@ -457,6 +461,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartCart)  // NOLINT
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
   program.setStartInstruction(start_instruction);
+  program.setManipulatorInfo(manip);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -526,7 +531,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsCartCart)  // NOL
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(.20, .4, 0.8) * Eigen::Quaterniond(0, 0, 1.0, 0);
 
   // Define Start Instruction
-  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE");
+  PlanInstruction start_instruction(wp1, PlanInstructionType::START, "TEST_PROFILE");
   start_instruction.getManipulatorInfo().working_frame = "base_link";
 
   // Define Plan Instructions
@@ -536,6 +541,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsCartCart)  // NOL
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
   program.setStartInstruction(start_instruction);
+  program.setManipulatorInfo(manip);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -603,6 +609,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointConstraint)  // NOLINT
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
+  program.setManipulatorInfo(manip);
 
   // These specify the series of points to be optimized
   for (int ind = 0; ind < NUM_STEPS; ind++)
@@ -613,7 +620,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointConstraint)  // NOLINT
     if (ind == 0)
     {
       // Define Start Instruction
-      MoveInstruction start_instruction(wp, MoveInstructionType::START, "TEST_PROFILE");
+      PlanInstruction start_instruction(wp, PlanInstructionType::START, "TEST_PROFILE");
       program.setStartInstruction(start_instruction);
     }
     else
@@ -669,6 +676,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointCost)  // NOLINT
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
+  program.setManipulatorInfo(manip);
 
   // These specify the series of points to be optimized
   for (int ind = 0; ind < NUM_STEPS; ind++)
@@ -680,7 +688,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointCost)  // NOLINT
     if (ind == 0)
     {
       // Define Start Instruction
-      MoveInstruction start_instruction(wp, MoveInstructionType::START, "TEST_PROFILE");
+      PlanInstruction start_instruction(wp, PlanInstructionType::START, "TEST_PROFILE");
       program.setStartInstruction(start_instruction);
     }
     else

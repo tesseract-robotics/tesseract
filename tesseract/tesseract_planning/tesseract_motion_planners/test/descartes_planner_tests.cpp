@@ -112,6 +112,7 @@ protected:
 
     manip.manipulator = "manipulator";
     manip.manipulator_ik_solver = "OPWInvKin";
+    manip.working_frame = "base_link";
 
     auto robot_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip.manipulator);
     auto opw_kin = std::make_shared<OPWInvKin>();
@@ -148,16 +149,15 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, .20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
 
   // Define Start Instruction
-  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE", manip);
-  start_instruction.getManipulatorInfo().working_frame = "base_link";
+  PlanInstruction start_instruction(wp1, PlanInstructionType::START, "TEST_PROFILE", manip);
 
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::LINEAR, "TEST_PROFILE", manip);
-  plan_f1.getManipulatorInfo().working_frame = "base_link";
 
   // Create a program
   CompositeInstruction program;
   program.setStartInstruction(start_instruction);
+  program.setManipulatorInfo(manip);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -266,16 +266,15 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, .20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
 
   // Define Start Instruction
-  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE", manip);
-  start_instruction.getManipulatorInfo().working_frame = "base_link";
+  PlanInstruction start_instruction(wp1, PlanInstructionType::START, "TEST_PROFILE", manip);
 
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::LINEAR, "TEST_PROFILE", manip);
-  plan_f1.getManipulatorInfo().working_frame = "base_link";
 
   // Create a program
   CompositeInstruction program;
   program.setStartInstruction(start_instruction);
+  program.setManipulatorInfo(manip);
   program.push_back(plan_f1);
 
   // Create a seed
@@ -374,20 +373,19 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
       Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, .10, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
 
   // Define Start Instruction
-  MoveInstruction start_instruction(wp1, MoveInstructionType::START, "TEST_PROFILE", manip);
-  start_instruction.getManipulatorInfo().working_frame = "base_link";
+  PlanInstruction start_instruction(wp1, PlanInstructionType::START, "TEST_PROFILE", manip);
 
   // Define Plan Instructions
   PlanInstruction plan_f1(wp2, PlanInstructionType::LINEAR, "TEST_PROFILE", manip);
-  plan_f1.getManipulatorInfo().working_frame = "base_link";
 
   // Create a program
   CompositeInstruction program;
   program.setStartInstruction(start_instruction);
+  program.setManipulatorInfo(manip);
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_, 2, 2);
 
   // Create Profiles
   auto plan_profile = std::make_shared<DescartesDefaultPlanProfileD>();

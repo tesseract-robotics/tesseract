@@ -115,17 +115,32 @@ void OMPLDefaultPlanProfile::setup(OMPLProblem& prob)
 
 void OMPLDefaultPlanProfile::applyGoalStates(OMPLProblem& prob,
                                              const Eigen::Isometry3d& cartesian_waypoint,
-                                             const Instruction& /*parent_instruction*/,
+                                             const Instruction& parent_instruction,
+                                             const ManipulatorInfo& manip_info,
                                              const std::vector<std::string>& /*active_links*/,
                                              int /*index*/)
 {
   const auto dof = prob.manip_fwd_kin->numJoints();
+  assert(isPlanInstruction(parent_instruction));
+  const auto* base_instruction = parent_instruction.cast_const<PlanInstruction>();
+  assert(!(manip_info.isEmpty() && base_instruction->getManipulatorInfo().isEmpty()));
+  const ManipulatorInfo& mi =
+      (base_instruction->getManipulatorInfo().isEmpty()) ? manip_info : base_instruction->getManipulatorInfo();
+
+  // Check if the waypoint is not relative to the manipulator base coordinate system and at tool0
+  Eigen::Isometry3d world_to_waypoint = cartesian_waypoint;
+  if (!mi.working_frame.empty())
+    world_to_waypoint = prob.env_state->link_transforms.at(mi.working_frame) * cartesian_waypoint;
+
+  Eigen::Isometry3d world_to_base_link = prob.env_state->link_transforms.at(prob.manip_inv_kin->getBaseLinkName());
+  Eigen::Isometry3d manip_baselink_to_waypoint = world_to_base_link.inverse() * world_to_waypoint;
+  Eigen::Isometry3d manip_baselink_to_tool0 = manip_baselink_to_waypoint * mi.tcp.inverse();
 
   if (prob.state_space == OMPLProblemStateSpace::REAL_STATE_SPACE)
   {
     /** @todo Need to add descartes pose sample to ompl profile */
     Eigen::VectorXd joint_solutions;
-    prob.manip_inv_kin->calcInvKin(joint_solutions, cartesian_waypoint, Eigen::VectorXd::Zero(dof));
+    prob.manip_inv_kin->calcInvKin(joint_solutions, manip_baselink_to_tool0, Eigen::VectorXd::Zero(dof));
     long num_solutions = joint_solutions.size() / dof;
     auto goal_states = std::make_shared<ompl::base::GoalStates>(prob.simple_setup->getSpaceInformation());
     for (long i = 0; i < num_solutions; ++i)
@@ -154,6 +169,7 @@ void OMPLDefaultPlanProfile::applyGoalStates(OMPLProblem& prob,
 void OMPLDefaultPlanProfile::applyGoalStates(OMPLProblem& prob,
                                              const Eigen::VectorXd& joint_waypoint,
                                              const Instruction& /*parent_instruction*/,
+                                             const ManipulatorInfo& /*manip_info*/,
                                              const std::vector<std::string>& /*active_links*/,
                                              int /*index*/)
 {
@@ -180,38 +196,25 @@ void OMPLDefaultPlanProfile::applyGoalStates(OMPLProblem& prob,
 void OMPLDefaultPlanProfile::applyStartStates(OMPLProblem& prob,
                                               const Eigen::Isometry3d& cartesian_waypoint,
                                               const Instruction& parent_instruction,
+                                              const ManipulatorInfo& manip_info,
                                               const std::vector<std::string>& /*active_links*/,
                                               int /*index*/)
 {
   const auto dof = prob.manip_fwd_kin->numJoints();
+  assert(isPlanInstruction(parent_instruction));
+  const auto* base_instruction = parent_instruction.cast_const<PlanInstruction>();
+  assert(!(manip_info.isEmpty() && base_instruction->getManipulatorInfo().isEmpty()));
+  const ManipulatorInfo& mi =
+      (base_instruction->getManipulatorInfo().isEmpty()) ? manip_info : base_instruction->getManipulatorInfo();
 
   // Check if the waypoint is not relative to the manipulator base coordinate system and at tool0
   Eigen::Isometry3d world_to_waypoint = cartesian_waypoint;
-  Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
-  if (isMoveInstruction(parent_instruction))
-  {
-    const auto* temp = parent_instruction.cast_const<MoveInstruction>();
-    tcp = temp->getManipulatorInfo().tcp;
-    if (!temp->getManipulatorInfo().working_frame.empty())
-      world_to_waypoint =
-          prob.env_state->link_transforms.at(temp->getManipulatorInfo().working_frame) * cartesian_waypoint;
-  }
-  else if (isPlanInstruction(parent_instruction))
-  {
-    const auto* temp = parent_instruction.cast_const<PlanInstruction>();
-    tcp = temp->getManipulatorInfo().tcp;
-    if (!temp->getManipulatorInfo().working_frame.empty())
-      world_to_waypoint =
-          prob.env_state->link_transforms.at(temp->getManipulatorInfo().working_frame) * cartesian_waypoint;
-  }
-  else
-  {
-    throw std::runtime_error("OMPLDefaultPlanProfile: Unsupported instruction type!");
-  }
+  if (!mi.working_frame.empty())
+    world_to_waypoint = prob.env_state->link_transforms.at(mi.working_frame) * cartesian_waypoint;
 
   Eigen::Isometry3d world_to_base_link = prob.env_state->link_transforms.at(prob.manip_inv_kin->getBaseLinkName());
   Eigen::Isometry3d manip_baselink_to_waypoint = world_to_base_link.inverse() * world_to_waypoint;
-  Eigen::Isometry3d manip_baselink_to_tool0 = manip_baselink_to_waypoint * tcp.inverse();
+  Eigen::Isometry3d manip_baselink_to_tool0 = manip_baselink_to_waypoint * mi.tcp.inverse();
 
   if (prob.state_space == OMPLProblemStateSpace::REAL_STATE_SPACE)
   {
@@ -247,6 +250,7 @@ void OMPLDefaultPlanProfile::applyStartStates(OMPLProblem& prob,
 void OMPLDefaultPlanProfile::applyStartStates(OMPLProblem& prob,
                                               const Eigen::VectorXd& joint_waypoint,
                                               const Instruction& /*parent_instruction*/,
+                                              const ManipulatorInfo& /*manip_info*/,
                                               const std::vector<std::string>& /*active_links*/,
                                               int /*index*/)
 {

@@ -36,44 +36,31 @@ namespace tesseract_planning
 void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
                                       const Eigen::Isometry3d& cartesian_waypoint,
                                       const Instruction& parent_instruction,
+                                      const ManipulatorInfo& manip_info,
                                       const std::vector<std::string>& active_links,
                                       int index)
 {
-  trajopt::TermInfo::Ptr ti{ nullptr };
+  assert(isPlanInstruction(parent_instruction));
+  const auto* base_instruction = parent_instruction.cast_const<PlanInstruction>();
+  assert(!(manip_info.isEmpty() && base_instruction->getManipulatorInfo().isEmpty()));
+  const ManipulatorInfo& mi =
+      (base_instruction->getManipulatorInfo().isEmpty()) ? manip_info : base_instruction->getManipulatorInfo();
 
-  // Extract working frame and tcp
-  std::string working_frame;
-  Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
-  if (isMoveInstruction(parent_instruction))
-  {
-    const auto* temp = parent_instruction.cast_const<MoveInstruction>();
-    tcp = temp->getManipulatorInfo().tcp;
-    working_frame = temp->getManipulatorInfo().working_frame;
-  }
-  else if (isPlanInstruction(parent_instruction))
-  {
-    const auto* temp = parent_instruction.cast_const<PlanInstruction>();
-    tcp = temp->getManipulatorInfo().tcp;
-    working_frame = temp->getManipulatorInfo().working_frame;
-  }
-  else
-  {
-    throw std::runtime_error("TrajOptDefaultPlanProfile: Unsupported instruction type!");
-  }
+  trajopt::TermInfo::Ptr ti{ nullptr };
 
   /* Check if this cartesian waypoint is dynamic
    * (i.e. defined relative to a frame that will move with the kinematic chain)
    */
-  auto it = std::find(active_links.begin(), active_links.end(), working_frame);
+  auto it = std::find(active_links.begin(), active_links.end(), mi.working_frame);
   if (it != active_links.end())
   {
     ti = createDynamicCartesianWaypointTermInfo(
-        cartesian_waypoint, index, working_frame, tcp, cartesian_coeff, pci.kin->getTipLinkName(), term_type);
+        cartesian_waypoint, index, mi.working_frame, mi.tcp, cartesian_coeff, pci.kin->getTipLinkName(), term_type);
   }
   else
   {
     ti = createCartesianWaypointTermInfo(
-        cartesian_waypoint, index, working_frame, tcp, cartesian_coeff, pci.kin->getTipLinkName(), term_type);
+        cartesian_waypoint, index, mi.working_frame, mi.tcp, cartesian_coeff, pci.kin->getTipLinkName(), term_type);
   }
 
   if (term_type == trajopt::TermType::TT_CNT)
@@ -85,6 +72,7 @@ void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
 void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
                                       const Eigen::VectorXd& joint_waypoint,
                                       const Instruction& /*parent_instruction*/,
+                                      const ManipulatorInfo& /*manip_info*/,
                                       const std::vector<std::string>& /*active_links*/,
                                       int index)
 {

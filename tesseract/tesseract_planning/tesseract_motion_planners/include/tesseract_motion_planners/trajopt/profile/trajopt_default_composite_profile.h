@@ -90,6 +90,7 @@ public:
   void apply(trajopt::ProblemConstructionInfo& pci,
              int start_index,
              int end_index,
+             const ManipulatorInfo& manip_info,
              const std::vector<std::string>& active_links,
              const std::vector<int>& fixed_indices) override;
 
