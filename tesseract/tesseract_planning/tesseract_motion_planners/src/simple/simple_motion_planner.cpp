@@ -213,7 +213,6 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
         profile = "DEFAULT";
       auto current_profile = plan_profiles.find(profile);
 
-      // TODO: Catch exceptions
       if (plan_instruction.isLinear())
       {
         if (is_cwp1 && is_cwp2)

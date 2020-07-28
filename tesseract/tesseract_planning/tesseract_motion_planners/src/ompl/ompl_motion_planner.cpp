@@ -127,7 +127,7 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& requ
   if (verbose)
     console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
 
-  // TODO: LEVI need to expand this to support multiple motion plans leveraging taskflow
+  /// @todo: Need to expand this to support multiple motion plans leveraging taskflow
   assert(prob.size() == 1);
   for (auto& p : prob)
   {
@@ -255,14 +255,20 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& requ
 
 void OMPLMotionPlanner::clear() { parallel_plan_ = nullptr; }
 
-bool OMPLMotionPlanner::checkUserInput(const PlannerRequest& /*request*/) const
+bool OMPLMotionPlanner::checkUserInput(const PlannerRequest& request) const
 {
-  // Maybe add validy check to problem?
-  //  for (const auto& sub_prob : prob)
-  //    if (!((sub_prob->simple_setup != nullptr) && (sub_prob->tesseract != nullptr) &&
-  //          (sub_prob->manip_fwd_kin != nullptr) && (!sub_prob->planners.empty()) && (sub_prob->extractor !=
-  //          nullptr)))
-  //      return false;
+  // Check that parameters are valid
+  if (request.tesseract == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("In TrajOptPlannerUniversalConfig: tesseract is a required parameter and has not been set");
+    return false;
+  }
+
+  if (request.instructions.empty())
+  {
+    CONSOLE_BRIDGE_logError("TrajOptPlannerUniversalConfig requires at least one instruction");
+    return false;
+  }
 
   return true;
 }
