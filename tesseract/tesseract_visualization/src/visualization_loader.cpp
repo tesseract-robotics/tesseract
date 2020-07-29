@@ -57,7 +57,17 @@ Visualization::Ptr VisualizationLoader::get()
     try
     {
       if (loader_->isClassAvailable<tesseract_visualization::Visualization>(derived_class_))
+      {
+#ifndef CLASS_LOADER_LESS_0_4_0
         return loader_->createSharedInstance<tesseract_visualization::Visualization>(derived_class_);
+#else
+        CONSOLE_BRIDGE_logWarn("Only supported with class loader version 4.0 and greater");
+        return nullptr;
+#endif
+      }
+      else
+      {
+      }
     }
     catch (const std::exception&)
     {
