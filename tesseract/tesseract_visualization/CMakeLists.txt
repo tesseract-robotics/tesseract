@@ -17,6 +17,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract tesseract::tes
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME})
 tesseract_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE})
+if(class_loader_VERSION VERSION_LESS "0.4.0")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE CLASS_LOADER_LESS_0_4_0=ON)
+endif()
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
