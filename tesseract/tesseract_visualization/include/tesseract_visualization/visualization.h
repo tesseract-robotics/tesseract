@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>
 #include <tesseract_collision/core/types.h>
+#include <tesseract/tesseract.h>
 
 namespace tesseract_visualization
 {
@@ -50,6 +51,16 @@ public:
   Visualization& operator=(const Visualization&) = default;
   Visualization(Visualization&&) = default;
   Visualization& operator=(Visualization&&) = default;
+
+  /**
+   * @brief Initialize the visualization
+   *
+   * This is so this can be used as a plugin
+   *
+   * @param thor The tesseract object
+   * @return True if successful, otherwise false
+   */
+  virtual bool init(tesseract::Tesseract::ConstPtr thor) = 0;
 
   /**
    * @brief \deprecated Plot a trajectory using joint_names and a TrajArray
