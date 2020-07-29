@@ -31,7 +31,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
-#include <tesseract_motion_planners/simple/step_generators/fixed_size_interpolation.h>
+#include <tesseract_motion_planners/simple/step_generators/fixed_size_assign_position.h>
+
+#include <iostream>
 
 using namespace tesseract;
 using namespace tesseract_planning;
@@ -83,24 +85,107 @@ protected:
   }
 };
 
-TEST_F(TesseractPlanningSimplePlannerFixedSizeAssignPositionUnit, XXXXX)  // NOLINT
+TEST_F(TesseractPlanningSimplePlannerFixedSizeAssignPositionUnit, Eigen_AssignJointPosition)  // NOLINT
 {
-  //  PlannerRequest request;
-  //  request.tesseract = tesseract_ptr_;
-  //  request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
-  //  JointWaypoint wp1 = Eigen::VectorXd::Zero(7);
-  //  JointWaypoint wp2 = Eigen::VectorXd::Ones(7);
-  //  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
+  PlannerRequest request;
+  request.tesseract = tesseract_ptr_;
+  request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
+  Eigen::VectorXd vec1 = Eigen::VectorXd::Zero(7);
+  JointWaypoint wp1 = vec1;
+  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
+  auto composite = fixedSizeAssignJointPosition(vec1, instr, request, ManipulatorInfo(), 10);
+  EXPECT_EQ(composite.size(), 10);
+  for (const auto& c : composite)
+  {
+    EXPECT_TRUE(isMoveInstruction(c));
+    EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+    const auto* mi = c.cast_const<MoveInstruction>();
+    EXPECT_TRUE(wp1.isApprox(mi->getWaypoint().cast_const<StateWaypoint>()->position, 1e-5));
+  }
+}
 
-  //  auto composite = fixedSizeJointInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10);
-  //  EXPECT_EQ(composite.size(), 10);
-  //  for (const auto& c : composite)
-  //  {
-  //    EXPECT_TRUE(isMoveInstruction(c));
-  //    EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
-  //  }
-  //  const auto* mi = composite.back().cast_const<MoveInstruction>();
-  //  EXPECT_TRUE(wp2.isApprox(mi->getWaypoint().cast_const<StateWaypoint>()->position, 1e-5));
+TEST_F(TesseractPlanningSimplePlannerFixedSizeAssignPositionUnit, JointCartesian_AssignJointPosition)  // NOLINT
+{
+  PlannerRequest request;
+  request.tesseract = tesseract_ptr_;
+  request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
+  JointWaypoint wp1 = Eigen::VectorXd::Zero(7);
+  CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
+  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
+  auto composite = fixedSizeAssignJointPosition(wp1, wp2, instr, request, ManipulatorInfo(), 10);
+  EXPECT_EQ(composite.size(), 10);
+  for (const auto& c : composite)
+  {
+    EXPECT_TRUE(isMoveInstruction(c));
+    EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+  }
+  const auto* mi1 = composite.front().cast_const<MoveInstruction>();
+  EXPECT_TRUE(wp1.isApprox(mi1->getWaypoint().cast_const<StateWaypoint>()->position, 1e-5));
+
+  const auto* mi2 = composite.back().cast_const<MoveInstruction>();
+  const Eigen::VectorXd& last_position = mi2->getWaypoint().cast_const<StateWaypoint>()->position;
+  auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip_info_.manipulator);
+  Eigen::Isometry3d final_pose = Eigen::Isometry3d::Identity();
+  fwd_kin->calcFwdKin(final_pose, last_position);
+  EXPECT_TRUE(wp2.isApprox(final_pose, 1e-5));
+}
+
+TEST_F(TesseractPlanningSimplePlannerFixedSizeAssignPositionUnit, CartesianJoint_AssignJointPosition)  // NOLINT
+{
+  PlannerRequest request;
+  request.tesseract = tesseract_ptr_;
+  request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
+  CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
+  JointWaypoint wp2 = Eigen::VectorXd::Zero(7);
+  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
+  auto composite = fixedSizeAssignJointPosition(wp1, wp2, instr, request, ManipulatorInfo(), 10);
+  EXPECT_EQ(composite.size(), 10);
+  for (const auto& c : composite)
+  {
+    EXPECT_TRUE(isMoveInstruction(c));
+    EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+  }
+  const auto* mi1 = composite.front().cast_const<MoveInstruction>();
+  const Eigen::VectorXd& initial_position = mi1->getWaypoint().cast_const<StateWaypoint>()->position;
+  Eigen::Isometry3d initial_pose = Eigen::Isometry3d::Identity();
+  auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip_info_.manipulator);
+  fwd_kin->calcFwdKin(initial_pose, initial_position);
+  EXPECT_TRUE(wp1.isApprox(initial_pose, 1e-5));
+
+  const auto* mi2 = composite.back().cast_const<MoveInstruction>();
+  EXPECT_TRUE(wp2.isApprox(mi2->getWaypoint().cast_const<StateWaypoint>()->position, 1e-5));
+}
+
+TEST_F(TesseractPlanningSimplePlannerFixedSizeAssignPositionUnit, CartesianCartesian_AssignJointPosition)  // NOLINT
+{
+  PlannerRequest request;
+  request.tesseract = tesseract_ptr_;
+  request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
+  CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
+  CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
+  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
+  auto composite = fixedSizeAssignJointPosition(wp1, wp2, instr, request, ManipulatorInfo(), 10);
+  EXPECT_EQ(composite.size(), 10);
+  for (const auto& c : composite)
+  {
+    EXPECT_TRUE(isMoveInstruction(c));
+    EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+  }
+
+  auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip_info_.manipulator);
+
+  const auto* mi1 = composite.front().cast_const<MoveInstruction>();
+  const Eigen::VectorXd& initial_position = mi1->getWaypoint().cast_const<StateWaypoint>()->position;
+  Eigen::Isometry3d initial_pose = Eigen::Isometry3d::Identity();
+  fwd_kin->calcFwdKin(initial_pose, initial_position);
+  EXPECT_TRUE(wp1.isApprox(initial_pose, 1e-5));
+
+  const auto* mi2 = composite.back().cast_const<MoveInstruction>();
+  const Eigen::VectorXd& last_position = mi2->getWaypoint().cast_const<StateWaypoint>()->position;
+  auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip_info_.manipulator);
+  Eigen::Isometry3d final_pose = Eigen::Isometry3d::Identity();
+  fwd_kin->calcFwdKin(final_pose, last_position);
+  EXPECT_TRUE(wp2.isApprox(final_pose, 1e-5));
 }
 
 int main(int argc, char** argv)
