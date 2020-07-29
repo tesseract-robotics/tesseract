@@ -90,7 +90,7 @@ public:
   virtual const std::vector<int>& GetFree() const = 0;
 
   /// \brief the dof of the solution
-  virtual const int GetDOF() const = 0;
+  virtual int GetDOF() const = 0;
 };
 
 /// \brief manages all the solutions
@@ -298,7 +298,7 @@ protected:
 #ifdef _MSC_VER
 #define IKFAST_API extern "C" __declspec(dllexport)
 #else
-#define IKFAST_API extern "C"
+#define IKFAST_API extern "C" __attribute__((visibility("default")))
 #endif
 #else
 #define IKFAST_API

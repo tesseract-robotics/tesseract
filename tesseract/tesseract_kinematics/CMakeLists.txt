@@ -30,6 +30,7 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
 add_library(${PROJECT_NAME}_ikfast INTERFACE)
 target_link_libraries(${PROJECT_NAME}_ikfast INTERFACE ${PROJECT_NAME}_core console_bridge)
 tesseract_target_compile_options(${PROJECT_NAME}_ikfast INTERFACE)
+target_compile_definitions(${PROJECT_NAME}_ikfast INTERFACE -DIKFAST_NO_MAIN -DIKFAST_CLIBRARY -DIKFAST_HAS_LIBRARY)
 tesseract_clang_tidy(${PROJECT_NAME}_ikfast)
 tesseract_code_coverage(${PROJECT_NAME}_ikfast ALL EXCLUDE ${COVERAGE_EXCLUDE})
 target_include_directories(${PROJECT_NAME}_ikfast INTERFACE
