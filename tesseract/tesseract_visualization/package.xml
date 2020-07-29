@@ -9,6 +9,9 @@
 
   <depend>tesseract_collision</depend>
   <depend>tesseract_common</depend>
+  <depend>tesseract</depend>
+  <depend>class_loader</depend>
+  <depend>libconsole-bridge-dev</depend>
 
   <build_depend>eigen</build_depend>
   <build_export_depend>eigen</build_export_depend>
