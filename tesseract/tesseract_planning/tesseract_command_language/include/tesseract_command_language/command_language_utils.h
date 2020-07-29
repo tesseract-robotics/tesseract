@@ -34,7 +34,7 @@ namespace tesseract_planning
 {
 /**
  * @brief Get the first Plan Instruction in a Composite Instruction
- * This does not consider the start instruction
+ * This does consider the start instruction in the composite instruction
  * @param composite_instruction Composite Instruction to search
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The first Plan Instruction (Const)
@@ -44,7 +44,7 @@ const PlanInstruction* getFirstPlanInstruction(const CompositeInstruction& compo
 
 /**
  * @brief Get the last Plan Instruction in a Composite Instruction
- * This does not consider the start instruction
+ * This does consider the start instruction in the composite instruction
  * @param composite_instruction Composite Instruction to search
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The last Plan Instruction (Const)
@@ -54,7 +54,7 @@ const PlanInstruction* getLastPlanInstruction(const CompositeInstruction& compos
 
 /**
  * @brief Get the first Plan Instruction in a Composite Instruction
- * This does not consider the start instruction
+ * This does consider the start instruction in the composite instruction
  * @param composite_instruction Composite Instruction to search
  * @param process_child_composites Indicate if child Composite Instructions should be searched.
  * @return The first Plan Instruction (Non-Const)
@@ -64,7 +64,7 @@ PlanInstruction* getFirstPlanInstruction(CompositeInstruction& composite_instruc
 
 /**
  * @brief Get the last Plan Instruction in a Composite Instruction
- * This does not consider the start instruction
+ * This does consider the start instruction in the composite instruction
  * @param composite_instruction Composite Instruction to search
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The last Plan Instruction (Non-Const)
@@ -130,6 +130,12 @@ long getMoveInstructionsCount(const CompositeInstruction& composite_instruction,
  */
 long getPlanInstructionsCount(const CompositeInstruction& composite_instruction, bool process_child_composites = true);
 
+/**
+ * @brief Extracts joint position from waypoint types that store joint positions
+ * If invalid waypoint type then exception is thrown
+ * @param waypoint The waypoint to extract joint position
+ * @return The joint position
+ */
 const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint);
 
 /**
