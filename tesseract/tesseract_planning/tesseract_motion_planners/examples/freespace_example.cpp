@@ -2,7 +2,6 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 #include <opw_kinematics/opw_parameters.h>
-#include <descartes_samplers/evaluators/euclidean_distance_edge_evaluator.h>
 #include <class_loader/class_loader.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
