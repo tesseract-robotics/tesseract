@@ -33,8 +33,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
 #include <tesseract_motion_planners/simple/step_generators/fixed_size_assign_position.h>
 
-#include <iostream>
-
 using namespace tesseract;
 using namespace tesseract_planning;
 
