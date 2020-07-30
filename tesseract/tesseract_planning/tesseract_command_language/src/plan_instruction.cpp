@@ -42,6 +42,7 @@ PlanInstruction::PlanInstruction(Waypoint waypoint,
 }
 
 void PlanInstruction::setWaypoint(Waypoint waypoint) { waypoint_ = waypoint; }
+Waypoint& PlanInstruction::getWaypoint() { return waypoint_; }
 const Waypoint& PlanInstruction::getWaypoint() const { return waypoint_; }
 
 void PlanInstruction::setManipulatorInfo(ManipulatorInfo info) { manipulator_info_ = info; }

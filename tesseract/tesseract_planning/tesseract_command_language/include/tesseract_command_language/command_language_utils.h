@@ -139,39 +139,23 @@ long getPlanInstructionsCount(const CompositeInstruction& composite_instruction,
 const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint);
 
 /**
- * @brief Helper function used by Flatten. Not intended for direct use
- * @param flattened Vector of instructions representing the full flattened composite
- * @param composite Composite instruction to be flattened
- * @param include_composite If true, CompositeInstructions will be included in the final flattened vector
- */
-void flattenHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
-                   CompositeInstruction& composite,
-                   const bool& process_child_composites);
-
-/**
  * @brief Flattens a CompositeInstruction into a vector of Instruction&
+ *
+ * If instruction has a start instruction it is added but subsequent composites are not check for start instructions.
+ *
  * @param instruction Input composite instruction to be flattened
  * @param include_composite Default: false. If true, CompositeInstructions will be included in the final flattened
  * vector
  * @return A new flattened vector referencing the original instruction elements
  */
-std::vector<std::reference_wrapper<Instruction>>
-flatten(CompositeInstruction& instruction,
-        bool process_child_composites = false);  // TODO: This is a misnomer. The children get processed regardless,
-                                                 // this sets whether or not the composite is included in the result
-
-/**
- * @brief Helper function used by Flatten. Not intended for direct use
- * @param flattened Vector of instructions representing the full flattened composite
- * @param composite Composite instruction to be flattened
- * @param include_composite If true, CompositeInstructions will be included in the final flattened vector
- */
-void flattenHelper(std::vector<std::reference_wrapper<const Instruction>>& flattened,
-                   const CompositeInstruction& composite,
-                   const bool& process_child_composites);
+std::vector<std::reference_wrapper<Instruction>> flatten(CompositeInstruction& instruction,
+                                                         bool process_child_composites = false);
 
 /**
  * @brief Flattens a CompositeInstruction into a vector of Instruction&
+ *
+ * If instruction has a start instruction it is added but subsequent composites are not check for start instructions.
+ *
  * @param instruction Input composite instruction to be flattened
  * @param include_composite Default: false. If true, CompositeInstructions will be included in the final flattened
  * vector
@@ -181,20 +165,10 @@ std::vector<std::reference_wrapper<const Instruction>> flatten(const CompositeIn
                                                                bool process_child_composites = false);
 
 /**
- * @brief Helper function used by FlattenToPattern. Not intended for direct use
- * @param flattened Vector of instructions representing the full flattened composite
- * @param composite Composite instruction to be flattened
- * @param pattern CompositeInstruction used to determine if instruction will be flattened
- * @param include_composite If true, CompositeInstructions will be included in the final flattened vector
- */
-void flattenToPatternHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
-                            CompositeInstruction& composite,
-                            const CompositeInstruction& pattern,
-                            const bool& process_child_composites);
-
-/**
  * @brief Flattens a composite instruction to the same pattern as the pattern composite instruction. ie, an element of
  * instruction will only be flattened if the corresponding element in pattern is flattenable.
+ *
+ * If instruction has a start instruction it is added but subsequent composites are not check for start instructions.
  *
  * The motivation for this utility is a case where you flatten only the elements in a seed that correspond to composites
  * in the parent instruction
@@ -209,20 +183,10 @@ std::vector<std::reference_wrapper<Instruction>> flattenToPattern(CompositeInstr
                                                                   bool process_child_composites = false);
 
 /**
- * @brief Helper function used by FlattenToPattern. Not intended for direct use
- * @param flattened Vector of instructions representing the full flattened composite
- * @param composite Composite instruction to be flattened
- * @param pattern CompositeInstruction used to determine if instruction will be flattened
- * @param include_composite If true, CompositeInstructions will be included in the final flattened vector
- */
-void flattenToPatternHelper(std::vector<std::reference_wrapper<const Instruction>>& flattened,
-                            const CompositeInstruction& composite,
-                            const CompositeInstruction& pattern,
-                            const bool& process_child_composites);
-
-/**
  * @brief Flattens a composite instruction to the same pattern as the pattern composite instruction. ie, an element of
  * instruction will only be flattened if the corresponding element in pattern is flattenable.
+ *
+ * If instruction has a start instruction it is added but subsequent composites are not check for start instructions.
  *
  * The motivation for this utility is a case where you flatten only the elements in a seed that correspond to composites
  * in the parent instruction
