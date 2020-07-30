@@ -380,6 +380,12 @@ const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint)
   throw std::runtime_error("Unsupported waypoint type.");
 }
 
+/**
+ * @brief Helper function used by Flatten. Not intended for direct use
+ * @param flattened Vector of instructions representing the full flattened composite
+ * @param composite Composite instruction to be flattened
+ * @param include_composite If true, CompositeInstructions will be included in the final flattened vector
+ */
 void flattenHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
                    CompositeInstruction& composite,
                    const bool& process_child_composites)
@@ -401,10 +407,19 @@ std::vector<std::reference_wrapper<Instruction>> flatten(CompositeInstruction& i
                                                          const bool process_child_composites)
 {
   std::vector<std::reference_wrapper<Instruction>> flattened;
+  if (instruction.hasStartInstruction())
+    flattened.emplace_back(instruction.getStartInstruction());
+
   flattenHelper(flattened, instruction, process_child_composites);
   return flattened;
 }
 
+/**
+ * @brief Helper function used by Flatten. Not intended for direct use
+ * @param flattened Vector of instructions representing the full flattened composite
+ * @param composite Composite instruction to be flattened
+ * @param include_composite If true, CompositeInstructions will be included in the final flattened vector
+ */
 void flattenHelper(std::vector<std::reference_wrapper<const Instruction>>& flattened,
                    const CompositeInstruction& composite,
                    const bool& process_child_composites)
@@ -422,19 +437,25 @@ void flattenHelper(std::vector<std::reference_wrapper<const Instruction>>& flatt
   }
 }
 
-/**
- * @brief flattens a CompositeInstruction into a vector of Instruction&
- * @param instruction Input composite instruction to be flattened
- * @return A new flattened vector referencing the original instruction elements
- */
 std::vector<std::reference_wrapper<const Instruction>> flatten(const CompositeInstruction& instruction,
                                                                const bool process_child_composites)
 {
   std::vector<std::reference_wrapper<const Instruction>> flattened;
+
+  if (instruction.hasStartInstruction())
+    flattened.emplace_back(instruction.getStartInstruction());
+
   flattenHelper(flattened, instruction, process_child_composites);
   return flattened;
 }
 
+/**
+ * @brief Helper function used by FlattenToPattern. Not intended for direct use
+ * @param flattened Vector of instructions representing the full flattened composite
+ * @param composite Composite instruction to be flattened
+ * @param pattern CompositeInstruction used to determine if instruction will be flattened
+ * @param include_composite If true, CompositeInstructions will be included in the final flattened vector
+ */
 void flattenToPatternHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
                             CompositeInstruction& composite,
                             const CompositeInstruction& pattern,
@@ -466,21 +487,32 @@ std::vector<std::reference_wrapper<Instruction>> flattenToPattern(CompositeInstr
                                                                   const CompositeInstruction& pattern,
                                                                   const bool process_child_composites)
 {
-  if (instruction.size() != pattern.size())
+  if (instruction.size() != pattern.size() && instruction.hasStartInstruction() == pattern.hasStartInstruction())
   {
     CONSOLE_BRIDGE_logError("Instruction and pattern sizes are mismatched");
     return std::vector<std::reference_wrapper<Instruction>>();
   }
 
   std::vector<std::reference_wrapper<Instruction>> flattened;
+
+  if (instruction.hasStartInstruction())
+    flattened.emplace_back(instruction.getStartInstruction());
+
   flattenToPatternHelper(flattened, instruction, pattern, process_child_composites);
   return flattened;
 }
 
-inline void flattenToPatternHelper(std::vector<std::reference_wrapper<const Instruction>>& flattened,
-                                   const CompositeInstruction& composite,
-                                   const CompositeInstruction& pattern,
-                                   const bool& process_child_composites)
+/**
+ * @brief Helper function used by FlattenToPattern. Not intended for direct use
+ * @param flattened Vector of instructions representing the full flattened composite
+ * @param composite Composite instruction to be flattened
+ * @param pattern CompositeInstruction used to determine if instruction will be flattened
+ * @param include_composite If true, CompositeInstructions will be included in the final flattened vector
+ */
+void flattenToPatternHelper(std::vector<std::reference_wrapper<const Instruction>>& flattened,
+                            const CompositeInstruction& composite,
+                            const CompositeInstruction& pattern,
+                            const bool& process_child_composites)
 {
   if (composite.size() != pattern.size())
   {
@@ -508,13 +540,17 @@ std::vector<std::reference_wrapper<const Instruction>> flattenToPattern(const Co
                                                                         const CompositeInstruction& pattern,
                                                                         const bool process_child_composites)
 {
-  if (instruction.size() != pattern.size())
+  if (instruction.size() != pattern.size() && instruction.hasStartInstruction() == pattern.hasStartInstruction())
   {
     CONSOLE_BRIDGE_logError("Instruction and pattern sizes are mismatched");
     return std::vector<std::reference_wrapper<const Instruction>>();
   }
 
   std::vector<std::reference_wrapper<const Instruction>> flattened;
+
+  if (instruction.hasStartInstruction())
+    flattened.emplace_back(instruction.getStartInstruction());
+
   flattenToPatternHelper(flattened, instruction, pattern, process_child_composites);
   return flattened;
 }

@@ -58,6 +58,7 @@ public:
                   ManipulatorInfo manipulator_info = ManipulatorInfo());
 
   void setWaypoint(Waypoint waypoint);
+  Waypoint& getWaypoint();
   const Waypoint& getWaypoint() const;
 
   void setManipulatorInfo(ManipulatorInfo info);
