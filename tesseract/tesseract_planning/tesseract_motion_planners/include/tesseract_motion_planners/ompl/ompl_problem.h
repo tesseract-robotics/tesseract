@@ -94,7 +94,7 @@ struct OMPLProblem
    *
    * Note: If set to true it ignores n_output_states and returns the simplest trajectory.
    */
-  bool simplify = true;
+  bool simplify = false;
 
   /**
    * @brief Number of states in the output trajectory
@@ -114,7 +114,7 @@ struct OMPLProblem
    * to true it will leverage all planning time to keep finding solutions up to your max solutions count to find the
    * most optimal solution.
    */
-  bool optimize = false;
+  bool optimize = true;
 
   /** @brief OMPL problem to be solved ***REQUIRED*** */
   ompl::geometric::SimpleSetupPtr simple_setup;

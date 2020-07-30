@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/ompl/profile/ompl_default_plan_profile.h>
 
 namespace tesseract_planning
