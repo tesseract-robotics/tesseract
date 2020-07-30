@@ -86,6 +86,7 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
   auto instructions_flat = flatten(request.instructions);
   auto seed_flat = flattenToPattern(request.seed, request.instructions);
 
+  std::size_t start_index = 0;  // If it has a start instruction then skip first instruction in instructions_flat
   int index = 0;
   std::string profile;
   Waypoint start_waypoint = NullWaypoint();
@@ -106,6 +107,7 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
     {
       throw std::runtime_error("Descartes DefaultProblemGenerator: Unsupported start instruction type!");
     }
+    ++start_index;
   }
   else
   {
@@ -149,7 +151,7 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
   ++index;
 
   // Transform plan instructions into descartes samplers
-  for (std::size_t i = 0; i < instructions_flat.size(); ++i)
+  for (std::size_t i = start_index; i < instructions_flat.size(); ++i)
   {
     const auto& instruction = instructions_flat[i].get();
     if (isPlanInstruction(instruction))
