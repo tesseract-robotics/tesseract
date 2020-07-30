@@ -51,6 +51,7 @@ void MoveInstruction::setWaypoint(Waypoint waypoint)
   waypoint_ = waypoint;
 }
 
+Waypoint& MoveInstruction::getWaypoint() { return waypoint_; }
 const Waypoint& MoveInstruction::getWaypoint() const { return waypoint_; }
 
 void MoveInstruction::setManipulatorInfo(ManipulatorInfo info) { manipulator_info_ = info; }
