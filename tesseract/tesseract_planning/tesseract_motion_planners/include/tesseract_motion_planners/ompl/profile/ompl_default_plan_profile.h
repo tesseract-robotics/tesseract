@@ -58,7 +58,7 @@ public:
    *
    * Note: If set to true it ignores n_output_states and returns the simplest trajectory.
    */
-  bool simplify = true;
+  bool simplify = false;
 
   /**
    * @brief This uses all available planning time to create the most optimized trajectory given the objective function.
@@ -70,14 +70,17 @@ public:
    * to true it will leverage all planning time to keep finding solutions up to your max solutions count to find the
    * most optimal solution.
    */
-  bool optimize = false;
+  bool optimize = true;
 
   /**
-   * @brief The planner configurators ***REQUIRED***
+   * @brief The planner configurators
+   *
+   * This defaults to two RRTConnectConfigurator
    *
    * This will create a new thead for each planner configurator provided. T
    */
-  std::vector<OMPLPlannerConfigurator::ConstPtr> planners;
+  std::vector<OMPLPlannerConfigurator::ConstPtr> planners = { std::make_shared<const RRTConnectConfigurator>(),
+                                                              std::make_shared<const RRTConnectConfigurator>() };
 
   /** @brief If true, collision checking will be enabled. Default: true*/
   bool collision_check = true;

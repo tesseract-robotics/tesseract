@@ -69,6 +69,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
   std::vector<Eigen::VectorXd> seed_states;
   seed_states.reserve(instructions_flat.size());
 
+  std::size_t start_index = 0;  // If it has a start instruction then skip first instruction in instructions_flat
   int index = 0;
   std::string profile;
   Waypoint start_waypoint = NullWaypoint();
@@ -89,6 +90,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
     {
       throw std::runtime_error("TrajOpt DefaultProblemGenerator: Unsupported start instruction type!");
     }
+    ++start_index;
   }
   else
   {
@@ -142,7 +144,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
   // ----------------
 
   // Transform plan instructions into trajopt cost and constraints
-  for (std::size_t i = 0; i < instructions_flat.size(); ++i)
+  for (std::size_t i = start_index; i < instructions_flat.size(); ++i)
   {
     const auto& instruction = instructions_flat[i].get();
     if (isPlanInstruction(instruction))
