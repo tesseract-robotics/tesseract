@@ -10,10 +10,11 @@ namespace tesseract_planning
 {
 inline CompositeInstruction rasterExampleProgram()
 {
-  CompositeInstruction program;
+  CompositeInstruction program("raster_program", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator"));
+
   // Start Joint Position for the program
-  Waypoint wp1 = JointWaypoint(Eigen::VectorXd::Zero(7));
-  MoveInstruction start_instruction(wp1, MoveInstructionType::START);
+  Waypoint wp1 = StateWaypoint(Eigen::VectorXd::Zero(7));
+  PlanInstruction start_instruction(wp1, PlanInstructionType::START);
   program.setStartInstruction(start_instruction);
 
   // Define raster poses

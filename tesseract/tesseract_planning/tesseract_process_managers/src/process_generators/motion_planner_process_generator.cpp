@@ -93,18 +93,49 @@ int MotionPlannerProcessGenerator::conditionalProcess(const ProcessInput& input,
 
   // Make a non-const copy of the input instructions to update the start/end
   CompositeInstruction instructions = *input.instruction.cast_const<CompositeInstruction>();
+  if (instructions.getManipulatorInfo().isEmpty())
+  {
+    assert(!input.manip_info.isEmpty());
+    instructions.setManipulatorInfo(input.manip_info);
+  }
 
   // If the start and end waypoints need to be updated prior to planning
   if (!isNullInstruction(start_instruction))
   {
     // add start
-    instructions.setStartInstruction(start_instruction);
+    if (isCompositeInstruction(start_instruction))
+    {
+      // if provided a composite instruction as the start instruction it will extract the last move instruction
+      const auto* ci = start_instruction.cast_const<CompositeInstruction>();
+      auto* lmi = getLastMoveInstruction(*ci);
+      assert(lmi != nullptr);
+      assert(isMoveInstruction(*lmi));
+      PlanInstruction si(lmi->getWaypoint(), PlanInstructionType::START, lmi->getProfile(), lmi->getManipulatorInfo());
+      instructions.setStartInstruction(si);
+    }
+    else
+    {
+      assert(isPlanInstruction(start_instruction));
+      instructions.setStartInstruction(start_instruction);
+    }
   }
   if (!isNullInstruction(end_instruction))
   {
     // add end
-    assert(isMoveInstruction(end_instruction));
-    getLastPlanInstruction(instructions)->setWaypoint(end_instruction.cast_const<MoveInstruction>()->getWaypoint());
+    if (isCompositeInstruction(end_instruction))
+    {
+      // if provided a composite instruction as the end instruction it will extract the first move instruction
+      const auto* ci = end_instruction.cast_const<CompositeInstruction>();
+      auto* fmi = getFirstMoveInstruction(*ci);
+      assert(fmi != nullptr);
+      assert(isMoveInstruction(*fmi));
+      getLastPlanInstruction(instructions)->setWaypoint(fmi->getWaypoint());
+    }
+    else
+    {
+      assert(isMoveInstruction(end_instruction));
+      getLastPlanInstruction(instructions)->setWaypoint(end_instruction.cast_const<MoveInstruction>()->getWaypoint());
+    }
   }
 
   // --------------------
