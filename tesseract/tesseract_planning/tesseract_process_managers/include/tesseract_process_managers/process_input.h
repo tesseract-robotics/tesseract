@@ -45,7 +45,10 @@ struct ProcessInput
   using Ptr = std::shared_ptr<ProcessInput>;
   using ConstPtr = std::shared_ptr<const ProcessInput>;
 
-  ProcessInput(tesseract::Tesseract::ConstPtr tesseract, const Instruction& instruction, Instruction& seed);
+  ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
+               const Instruction& instruction,
+               const ManipulatorInfo& manip_info,
+               Instruction& seed);
 
   /**
    * @brief Creates a sub-ProcessInput from instruction[index] and seed[index]
@@ -55,8 +58,9 @@ struct ProcessInput
   ProcessInput operator[](std::size_t index);
 
   /**
-   * @brief size Gets the number of instructions contained in the ProcessInput
-   * @return 1 instruction if not a composite, otherwise size of the composite
+   * @brief Gets the number of instructions contained in the ProcessInput
+   * @return 1 instruction if not a composite, otherwise size of the composite @todo Should this be -1, becuase
+   * composite size could be 1, 0, or other?
    */
   std::size_t size();
 
@@ -65,6 +69,9 @@ struct ProcessInput
 
   /** @brief Instructions to be carried out by process */
   const Instruction& instruction;
+
+  /** @brief Global Manipulator Information */
+  const ManipulatorInfo& manip_info;
 
   /** @brief Results/Seed for this process */
   Instruction& results;

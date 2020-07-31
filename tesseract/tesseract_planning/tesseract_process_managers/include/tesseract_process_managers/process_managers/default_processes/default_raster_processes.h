@@ -48,21 +48,24 @@ inline std::vector<ProcessGenerator::Ptr> defaultRasterProcesses()
 {
   // Setup Interpolator
   auto interpolator = std::make_shared<SimpleMotionPlanner>("INTERPOLATOR");
-  interpolator->plan_profiles["FREESPACE"] =
-      std::make_shared<SimplePlannerDefaultPlanProfile>();  // TODO: switch this for interpolator plan profile once the
-                                                            // step generators have been implemented
+  interpolator->plan_profiles["RASTER"] = std::make_shared<SimplePlannerDefaultPlanProfile>();
   auto interpolator_generator = std::make_shared<MotionPlannerProcessGenerator>(interpolator);
   interpolator_generator->validators.emplace_back(&randomValidator);
 
-  // Setup processes
+  // Setup Descartes
   auto descartes_planner = std::make_shared<DescartesMotionPlanner<double>>();
   descartes_planner->problem_generator = &DefaultDescartesProblemGenerator<double>;
   descartes_planner->plan_profiles["RASTER"] = std::make_shared<DescartesDefaultPlanProfileD>();
+  auto descartes_generator = std::make_shared<MotionPlannerProcessGenerator>(descartes_planner);
 
-  auto descartes = std::make_shared<MotionPlannerProcessGenerator>(descartes_planner);
-  descartes->planner = descartes_planner;
+  // Setup TrajOpt
+  auto trajopt_planner = std::make_shared<TrajOptMotionPlanner>();
+  trajopt_planner->problem_generator = &DefaultTrajoptProblemGenerator;
+  trajopt_planner->plan_profiles["FREESPACE"] = std::make_shared<TrajOptDefaultPlanProfile>();
+  trajopt_planner->composite_profiles["FREESPACE"] = std::make_shared<TrajOptDefaultCompositeProfile>();
+  auto trajopt_generator = std::make_shared<MotionPlannerProcessGenerator>(trajopt_planner);
 
-  return std::vector<ProcessGenerator::Ptr>{ interpolator_generator, descartes };
+  return std::vector<ProcessGenerator::Ptr>{ interpolator_generator, descartes_generator };
 }
 
 }  // namespace tesseract_planning

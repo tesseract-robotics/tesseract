@@ -53,11 +53,15 @@ inline std::vector<ProcessGenerator::Ptr> defaultFreespaceProcesses()
 {
   // Setup Interpolator
   auto interpolator = std::make_shared<SimpleMotionPlanner>("INTERPOLATOR");
-  interpolator->plan_profiles["FREESPACE"] =
-      std::make_shared<SimplePlannerDefaultPlanProfile>();  // TODO: switch this for interpolator plan profile once the
-                                                            // step generators have been implemented
+  interpolator->plan_profiles["FREESPACE"] = std::make_shared<SimplePlannerDefaultPlanProfile>();
   auto interpolator_generator = std::make_shared<MotionPlannerProcessGenerator>(interpolator);
   interpolator_generator->validators.emplace_back(&randomValidator);
+
+  // Setup OMPL
+  auto ompl_planner = std::make_shared<OMPLMotionPlanner>();
+  ompl_planner->problem_generator = &DefaultOMPLProblemGenerator;
+  ompl_planner->plan_profiles["FREESPACE"] = std::make_shared<OMPLDefaultPlanProfile>();
+  auto ompl_generator = std::make_shared<MotionPlannerProcessGenerator>(ompl_planner);
 
   // Setup TrajOpt
   auto trajopt_planner = std::make_shared<TrajOptMotionPlanner>();
@@ -65,12 +69,6 @@ inline std::vector<ProcessGenerator::Ptr> defaultFreespaceProcesses()
   trajopt_planner->plan_profiles["FREESPACE"] = std::make_shared<TrajOptDefaultPlanProfile>();
   trajopt_planner->composite_profiles["FREESPACE"] = std::make_shared<TrajOptDefaultCompositeProfile>();
   auto trajopt_generator = std::make_shared<MotionPlannerProcessGenerator>(trajopt_planner);
-
-  // Setup OMPL
-  auto ompl_planner = std::make_shared<OMPLMotionPlanner>();
-  ompl_planner->problem_generator = &DefaultOMPLProblemGenerator;
-  ompl_planner->plan_profiles["FREESPACE"] = std::make_shared<OMPLDefaultPlanProfile>();
-  auto ompl_generator = std::make_shared<MotionPlannerProcessGenerator>(ompl_planner);
 
   return std::vector<ProcessGenerator::Ptr>{ interpolator_generator, trajopt_generator, ompl_generator };
 }
