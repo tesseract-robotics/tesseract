@@ -38,8 +38,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract, const Instruction& instruction, Instruction& seed)
-  : tesseract(std::move(tesseract)), instruction(instruction), results(seed)
+ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
+                           const Instruction& instruction,
+                           const ManipulatorInfo& manip_info,
+                           Instruction& seed)
+  : tesseract(std::move(tesseract)), instruction(instruction), manip_info(manip_info), results(seed)
 {
 }
 
@@ -49,14 +52,14 @@ ProcessInput ProcessInput::operator[](std::size_t index)
   {
     auto composite_instruction = instruction.cast_const<CompositeInstruction>();
     auto composite_seed = results.cast<CompositeInstruction>();
-    return ProcessInput(tesseract, composite_instruction->at(index), composite_seed->at(index));
+    return ProcessInput(tesseract, composite_instruction->at(index), manip_info, composite_seed->at(index));
   }
 
   if (index > 0)
     CONSOLE_BRIDGE_logWarn("ProcessInput[] called with index > 0 when component instructions are not "
                            "CompositeInstructions");
 
-  return ProcessInput(tesseract, instruction, results);
+  return ProcessInput(tesseract, instruction, manip_info, results);
 }
 
 std::size_t ProcessInput::size()
