@@ -90,18 +90,22 @@ bool RasterProcessManager::init(ProcessInput input)
     // Each transition step depends on the start and end only since they are independent
     for (std::size_t transition_step_idx = 0; transition_step_idx < input[input_idx].size(); transition_step_idx++)
     {
-      // TODO: handle cases when there are no move instructions
-      Instruction start_instruction =
-          *getLastMoveInstruction(*input[input_idx - 1].results.cast<CompositeInstruction>());
-      Instruction end_instruction =
-          *getFirstMoveInstruction(*input[input_idx + 1].results.cast<CompositeInstruction>());
-
+      //      // TODO: handle cases when there are no move instructions
+      //      Instruction start_instruction =
+      //          *getLastMoveInstruction(*input[input_idx - 1].results.cast<CompositeInstruction>());
+      //      Instruction end_instruction =
+      //          *getFirstMoveInstruction(*input[input_idx + 1].results.cast<CompositeInstruction>());
+      // This use to extract the start and end, but things were changed so the seed is generated as part of the
+      // taskflow. So the seed is only a skeleton and does not contain move instructions. So instead we provide the
+      // composite and let the generateTaskflow extract the start and end waypoint from the composite. This is also more
+      // robust because planners could modify composite size, which is rare but does happen when using OMPL where it is
+      // not possible to simplify the trajectory to the desired number of states.
       auto transition_step =
           taskflow
               .composed_of(freespace_taskflow_generator.generateTaskflow(
                   input[input_idx][transition_step_idx],
-                  start_instruction,
-                  end_instruction,
+                  input[input_idx - 1].results,
+                  input[input_idx + 1].results,
                   std::bind(&RasterProcessManager::successCallback, this),
                   std::bind(&RasterProcessManager::failureCallback, this)))
               .name("transition_" + std::to_string(input_idx) + "." + std::to_string(transition_step_idx));
