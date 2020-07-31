@@ -66,10 +66,7 @@ int main(int /*argc*/, char** /*argv*/)
   tesseract->init(urdf_path, srdf_path, locator);
 
   // Dynamically load ignition visualizer if exist
-  std::string library_path = "/home/larmstrong/catkin_ws/trajopt_only_ws/devel/lib/"
-                             "libtesseract_ignition_visualization_plugin.so";
-  std::string class_name = "tesseract_ignition::TesseractIgnitionVisualization";
-  tesseract_visualization::VisualizationLoader loader(library_path, class_name);
+  tesseract_visualization::VisualizationLoader loader;
   auto plotter = loader.get();
 
   if (plotter != nullptr)
