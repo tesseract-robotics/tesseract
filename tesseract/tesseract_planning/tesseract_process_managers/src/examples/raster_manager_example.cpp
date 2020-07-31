@@ -6,11 +6,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/tesseract.h>
 #include <tesseract_command_language/command_language.h>
-#include <tesseract_motion_planners/trajopt/trajopt_motion_planner.h>
-#include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
-#include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
-#include <tesseract_motion_planners/core/utils.h>
-
+#include <tesseract_command_language/command_language_utils.h>
 #include <tesseract_process_managers/process_generators/random_process_generator.h>
 #include <tesseract_process_managers/taskflow_generators/sequential_failure_tree_taskflow.h>
 #include <tesseract_process_managers/examples/raster_example_program.h>
@@ -56,15 +52,13 @@ int main()
   boost::filesystem::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
   boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
   tesseract->init(urdf_path, srdf_path, locator);
-  auto fwd_kin = tesseract->getFwdKinematicsManager()->getFwdKinematicSolver("manipulator");
-  auto inv_kin = tesseract->getInvKinematicsManager()->getInvKinematicSolver("manipulator");
 
   // --------------------
   // Define the program
   // --------------------
   CompositeInstruction program = rasterExampleProgram();
   const Instruction program_instruction{ program };
-  Instruction seed = CompositeInstruction();
+  Instruction seed = generateSkeletonSeed(program);
 
   // --------------------
   // Print Diagnostics
@@ -75,7 +69,7 @@ int main()
   // --------------------
   // Define the Process Input
   // --------------------
-  ProcessInput input(tesseract, program_instruction, seed);
+  ProcessInput input(tesseract, program_instruction, program.getManipulatorInfo(), seed);
   std::cout << "Input size: " << input.size() << std::endl;
 
   // --------------------
