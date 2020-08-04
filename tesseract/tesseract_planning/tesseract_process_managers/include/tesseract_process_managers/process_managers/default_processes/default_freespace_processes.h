@@ -70,7 +70,7 @@ inline std::vector<ProcessGenerator::Ptr> defaultFreespaceProcesses()
   trajopt_planner->composite_profiles["FREESPACE"] = std::make_shared<TrajOptDefaultCompositeProfile>();
   auto trajopt_generator = std::make_shared<MotionPlannerProcessGenerator>(trajopt_planner);
 
-  return std::vector<ProcessGenerator::Ptr>{ interpolator_generator, trajopt_generator, ompl_generator };
+  return std::vector<ProcessGenerator::Ptr>{ interpolator_generator, ompl_generator, trajopt_generator};
 }
 
 }  // namespace tesseract_planning

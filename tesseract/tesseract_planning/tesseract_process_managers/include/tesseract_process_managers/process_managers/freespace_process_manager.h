@@ -57,7 +57,7 @@ public:
   using Ptr = std::shared_ptr<FreespaceProcessManager>;
   using ConstPtr = std::shared_ptr<const FreespaceProcessManager>;
 
-  FreespaceProcessManager();
+  FreespaceProcessManager(std::size_t n = std::thread::hardware_concurrency());
 
   bool init(ProcessInput input) override;
 
@@ -76,12 +76,12 @@ public:
 private:
   void successCallback();
   void failureCallback();
-  bool success;
+  bool success_;
 
-  SequentialFailureTreeTaskflow taskflow_generator;
-  tf::Executor executor;
-  tf::Taskflow taskflow;
-  std::vector<tf::Task> freespace_tasks;
+  SequentialFailureTreeTaskflow taskflow_generator_;
+  tf::Executor executor_;
+  tf::Taskflow taskflow_;
+  std::vector<tf::Task> freespace_tasks_;
 };
 
 }  // namespace tesseract_planning
