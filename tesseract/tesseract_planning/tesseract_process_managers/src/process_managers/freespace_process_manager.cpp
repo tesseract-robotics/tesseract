@@ -37,9 +37,9 @@ bool FreespaceProcessManager::init(ProcessInput input)
   taskflow_generator_ = SequentialFailureTreeTaskflow(process_generators);
 
   // Create the dependency graph
-  assert(isCompositeInstruction(input.instruction));
+  assert(isCompositeInstruction(*(input.instruction)));
 
-  input.instruction.print("Generating Taskflow for: ");
+  input.instruction->print("Generating Taskflow for: ");
   auto task = taskflow_
                   .composed_of(taskflow_generator_.generateTaskflow(
                       input, [this]() { successCallback(); }, [this]() { failureCallback(); }))

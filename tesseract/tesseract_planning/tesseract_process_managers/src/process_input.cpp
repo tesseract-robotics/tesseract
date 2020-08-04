@@ -39,27 +39,27 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_planning
 {
 ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
-                           const Instruction& instruction,
+                           const Instruction *instruction,
                            const ManipulatorInfo& manip_info,
-                           Instruction& seed)
+                           Instruction *seed)
   : tesseract(std::move(tesseract)), instruction(instruction), manip_info(manip_info), results(seed)
 {
 }
 
 ProcessInput ProcessInput::operator[](std::size_t index)
 {
-  if (isCompositeInstruction(instruction))
+  if (isCompositeInstruction(*instruction))
   {
-    auto composite_instruction = instruction.cast_const<CompositeInstruction>();
-    auto composite_seed = results.cast<CompositeInstruction>();
-    return ProcessInput(tesseract, composite_instruction->at(index), manip_info, composite_seed->at(index));
+    const auto* composite_instruction = instruction->cast_const<CompositeInstruction>();
+    auto* composite_seed = results->cast<CompositeInstruction>();
+    return ProcessInput(tesseract, &(composite_instruction->at(index)), manip_info, &((*composite_seed)[index]));
   }
 
   if (index > 0)
     CONSOLE_BRIDGE_logWarn("ProcessInput[] called with index > 0 when component instructions are not "
                            "CompositeInstructions");
 
-  return ProcessInput(tesseract, instruction, manip_info, results);
+  return ProcessInput(tesseract, nullptr, manip_info, nullptr);
 }
 
 std::size_t ProcessInput::size()
@@ -67,12 +67,10 @@ std::size_t ProcessInput::size()
   //  if (isCompositeInstruction(instruction) && isCompositeInstruction(results))
   //    assert(instruction.cast_const<CompositeInstruction>()->size() == results.cast<CompositeInstruction>()->size());
 
-  if (isCompositeInstruction(instruction))
-  {
-    auto tmp = instruction.cast_const<CompositeInstruction>();
-    return tmp->size();
-  }
-  return 1;
+  if (isCompositeInstruction(*instruction))
+    return instruction->cast_const<CompositeInstruction>()->size();
+
+  return 0;
 }
 
 }  // namespace tesseract_planning

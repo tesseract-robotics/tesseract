@@ -47,29 +47,45 @@ public:
 
   MotionPlannerProcessGenerator(std::shared_ptr<MotionPlanner>);
 
-  std::function<void()> generateTask(ProcessInput input) override;
+//  std::function<void()> generateTask(ProcessInput input) override;
 
-  std::function<void()> generateTask(ProcessInput input, const Instruction& start_instruction) override;
+//  std::function<void()> generateTask(ProcessInput input, const Instruction& start_instruction) override;
 
   std::function<void()> generateTask(ProcessInput input,
-                                     const Instruction& start_instruction,
-                                     const Instruction& end_instruction) override;
+                                     const Instruction* start_instruction = nullptr,
+                                     const Instruction* end_instruction = nullptr) override;
 
-  std::function<int()> generateConditionalTask(ProcessInput input) override;
+  std::function<void()> generateTask(ProcessInput input,
+                                     Instruction start_instruction = nullptr,
+                                     Instruction end_instruction = nullptr) override;
 
-  std::function<int()> generateConditionalTask(ProcessInput input, const Instruction& start_instruction) override;
+//  std::function<int()> generateConditionalTask(ProcessInput input) override;
+
+//  std::function<int()> generateConditionalTask(ProcessInput input, const Instruction& start_instruction) override;
 
   std::function<int()> generateConditionalTask(ProcessInput input,
-                                               const Instruction& start_instruction,
-                                               const Instruction& end_instruction) override;
+                                               const Instruction* start_instruction = nullptr,
+                                               const Instruction* end_instruction = nullptr) override;
 
-  int conditionalProcess(const ProcessInput& input,
-                         const Instruction& start_instruction,
-                         const Instruction& end_instruction) const;
+  std::function<int()> generateConditionalTask(ProcessInput input,
+                                               Instruction start_instruction = nullptr,
+                                               Instruction end_instruction = nullptr) override;
 
-  void process(const ProcessInput& input,
-               const Instruction& start_instruction,
-               const Instruction& end_instruction) const;
+  int conditionalProcess(ProcessInput input,
+                         const Instruction* start_instruction,
+                         const Instruction* end_instruction) const;
+
+  int conditionalProcess(ProcessInput input,
+                         Instruction start_instruction,
+                         Instruction end_instruction) const;
+
+  void process(ProcessInput input,
+               const Instruction* start_instruction,
+               const Instruction* end_instruction) const;
+
+  void process(ProcessInput input,
+               Instruction start_instruction,
+               Instruction end_instruction) const;
 
   std::shared_ptr<MotionPlanner> planner;
 
@@ -81,8 +97,8 @@ public:
   std::vector<std::function<int(const ProcessInput&)>> validators;
 
 private:
-  /** @brief We have to keep these alive for taskflow*/
-  std::vector<ProcessInput> task_inputs_;
+//  /** @brief We have to keep these alive for taskflow*/
+//  std::vector<ProcessInput> task_inputs_;
 
   NullInstruction null_instruction_;
 

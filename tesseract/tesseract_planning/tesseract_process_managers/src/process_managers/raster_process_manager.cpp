@@ -82,16 +82,16 @@ bool RasterProcessManager::init(ProcessInput input)
     Instruction start_instruction = NullInstruction();
     if (idx == 1)
     {
-      assert(isCompositeInstruction(input[0].instruction));
-      const auto* ci = input[0].instruction.cast_const<CompositeInstruction>();
-      auto* li = getLastPlanInstruction(*ci);
+      assert(isCompositeInstruction(*(input[0].instruction)));
+      const auto* ci = input[0].instruction->cast_const<CompositeInstruction>();
+      const auto* li = getLastPlanInstruction(*ci);
       assert(li != nullptr);
       start_instruction = *li;
     }
     else
     {
-      assert(isCompositeInstruction(input[idx - 1].instruction));
-      const auto* tci = input[idx - 1].instruction.cast_const<CompositeInstruction>();
+      assert(isCompositeInstruction(*(input[idx - 1].instruction)));
+      const auto* tci = input[idx - 1].instruction->cast_const<CompositeInstruction>();
       assert(isCompositeInstruction((*tci)[0]));
       const auto* ci = (*tci)[0].cast_const<CompositeInstruction>();
       auto* li = getLastPlanInstruction(*ci);
@@ -102,9 +102,10 @@ bool RasterProcessManager::init(ProcessInput input)
     start_instruction.cast<PlanInstruction>()->setPlanType(PlanInstructionType::START);
 
     auto raster_step = taskflow_
-                           .composed_of(raster_taskflow_generator_.generateTaskflowS(
+                           .composed_of(raster_taskflow_generator_.generateTaskflow(
                                input[idx],
                                start_instruction,
+                               NullInstruction(),
                                std::bind(&RasterProcessManager::successCallback, this),
                                std::bind(&RasterProcessManager::failureCallback, this)))
                            .name("raster_" + std::to_string(idx));
@@ -125,7 +126,7 @@ bool RasterProcessManager::init(ProcessInput input)
       // not possible to simplify the trajectory to the desired number of states.
       auto transition_step =
           taskflow_
-              .composed_of(freespace_taskflow_generator_.generateTaskflowSE(
+              .composed_of(freespace_taskflow_generator_.generateTaskflow(
                   input[input_idx][transition_step_idx],
                   input[input_idx - 1].results,
                   input[input_idx + 1].results,
@@ -142,27 +143,29 @@ bool RasterProcessManager::init(ProcessInput input)
     transition_idx++;
   }
 
-//  // Plan from_start - preceded by the first raster
-//  auto from_start = taskflow_
-//                        .composed_of(freespace_taskflow_generator_.generateTaskflowE(
-//                            input[0],
-//                            input[1].results,
-//                            std::bind(&RasterProcessManager::successCallback, this),
-//                            std::bind(&RasterProcessManager::failureCallback, this)))
-//                        .name("from_start");
-//  raster_tasks_[starting_raster_idx].precede(from_start);
-//  freespace_tasks_.push_back(from_start);
+  // Plan from_start - preceded by the first raster
+  auto from_start = taskflow_
+                        .composed_of(freespace_taskflow_generator_.generateTaskflow(
+                            input[0],
+                            nullptr,
+                            input[1].results,
+                            std::bind(&RasterProcessManager::successCallback, this),
+                            std::bind(&RasterProcessManager::failureCallback, this)))
+                        .name("from_start");
+  raster_tasks_[starting_raster_idx].precede(from_start);
+  freespace_tasks_.push_back(from_start);
 
-//  // Plan to_end - preceded by the last raster
-//  auto to_end = taskflow_
-//                    .composed_of(freespace_taskflow_generator_.generateTaskflowS(
-//                        input[input.size() - 1],
-//                        input[input.size() - 2].results,
-//                        std::bind(&RasterProcessManager::successCallback, this),
-//                        std::bind(&RasterProcessManager::failureCallback, this)))
-//                    .name("to_end");
-//  raster_tasks_.back().precede(to_end);
-//  freespace_tasks_.push_back(to_end);
+  // Plan to_end - preceded by the last raster
+  auto to_end = taskflow_
+                    .composed_of(freespace_taskflow_generator_.generateTaskflow(
+                        input[input.size() - 1],
+                        input[input.size() - 2].results,
+                        nullptr,
+                        std::bind(&RasterProcessManager::successCallback, this),
+                        std::bind(&RasterProcessManager::failureCallback, this)))
+                    .name("to_end");
+  raster_tasks_.back().precede(to_end);
+  freespace_tasks_.push_back(to_end);
 
   // visualizes the taskflow
   std::ofstream out_data;
@@ -228,38 +231,38 @@ bool RasterProcessManager::checkProcessInput(const tesseract_planning::ProcessIn
   }
 
   // Check the overall input
-  if (!isCompositeInstruction(input.instruction))
+  if (!isCompositeInstruction(*(input.instruction)))
   {
     CONSOLE_BRIDGE_logError("ProcessInput Invalid: input.instructions should be a composite");
     return false;
   }
-  auto composite = *input.instruction.cast_const<CompositeInstruction>();
+  const auto* composite = input.instruction->cast_const<CompositeInstruction>();
 
   // Check from_start
-  if (!isCompositeInstruction(composite.at(0)))
+  if (!isCompositeInstruction(composite->at(0)))
   {
     CONSOLE_BRIDGE_logError("ProcessInput Invalid: from_start should be a composite");
     return false;
   }
 
   // Check rasters and transitions
-  for (std::size_t index = 1; index < composite.size() - 1; index++)
+  for (std::size_t index = 1; index < composite->size() - 1; index++)
   {
     // Both rasters and transitions should be a composite
-    if (!isCompositeInstruction(composite[index]))
+    if (!isCompositeInstruction(composite->at(index)))
     {
       CONSOLE_BRIDGE_logError("ProcessInput Invalid: Both rasters and transitions should be a composite");
       return false;
     }
 
     // Convert to composite
-    auto step = *composite[index].cast_const<CompositeInstruction>();
+    const auto* step = composite->at(index).cast_const<CompositeInstruction>();
 
     // Odd numbers are raster segments
     if (index % 2 == 1)
     {
       // Raster must have at least one element but 3 is not enforced.
-      if (!step.size())
+      if (!step->size())
       {
         CONSOLE_BRIDGE_logError("ProcessInput Invalid: Rasters must have at least one element");
         return false;
@@ -279,21 +282,21 @@ bool RasterProcessManager::checkProcessInput(const tesseract_planning::ProcessIn
     else
     {
       // If there is only one transition, we assume it is transition_from_end
-      if (step.size() > 1)
+      if (step->size() > 1)
       {
         // If there are multiple, then they should be unordered
-        if (step.getOrder() != CompositeInstructionOrder::UNORDERED)
+        if (step->getOrder() != CompositeInstructionOrder::UNORDERED)
         {
           // If you get this error, check that this is not processing a raster strip. You may be missing from_start.
           CONSOLE_BRIDGE_logError("Raster contains multiple transitions but is not marked UNORDERED");
-          step.print();
+          step->print();
           return false;
         }
       }
     }
   }
   // Check to_end
-  if (!isCompositeInstruction(composite.back()))
+  if (!isCompositeInstruction(composite->back()))
   {
     CONSOLE_BRIDGE_logError("ProcessInput Invalid: to_end should be a composite");
     return false;

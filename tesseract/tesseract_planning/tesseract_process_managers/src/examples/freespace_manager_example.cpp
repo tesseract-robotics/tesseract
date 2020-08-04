@@ -68,7 +68,7 @@ int main()
   // --------------------
   // Define the Process Input
   // --------------------
-  ProcessInput input(tesseract, program_instruction, program.getManipulatorInfo(), seed);
+  ProcessInput input(tesseract, &program_instruction, program.getManipulatorInfo(), &seed);
   std::cout << "Input size: " << input.size() << std::endl;
 
   // --------------------
