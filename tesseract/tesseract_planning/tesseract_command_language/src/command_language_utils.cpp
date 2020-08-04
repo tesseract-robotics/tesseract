@@ -384,33 +384,30 @@ const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint)
  * @brief Helper function used by Flatten. Not intended for direct use
  * @param flattened Vector of instructions representing the full flattened composite
  * @param composite Composite instruction to be flattened
- * @param include_composite If true, CompositeInstructions will be included in the final flattened vector
  */
 void flattenHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
                    CompositeInstruction& composite,
-                   const bool& process_child_composites)
+                   const flattenFilter& filter)
 {
   for (auto& i : composite)
   {
     if (isCompositeInstruction(i))
-    {
-      if (process_child_composites)
-        flattened.emplace_back(i);
-      flattenHelper(flattened, *(i.cast<CompositeInstruction>()), process_child_composites);
-    }
+      flattenHelper(flattened, *(i.cast<CompositeInstruction>()), filter);
     else
-      flattened.emplace_back(i);
+      if (!filter || (filter && filter(i)))
+        flattened.emplace_back(i);
   }
 }
 
 std::vector<std::reference_wrapper<Instruction>> flatten(CompositeInstruction& composite_instruction,
-                                                         const bool process_child_composites)
+                                                         const flattenFilter& filter)
 {
   std::vector<std::reference_wrapper<Instruction>> flattened;
   if (composite_instruction.hasStartInstruction())
-    flattened.emplace_back(composite_instruction.getStartInstruction());
+    if (!filter || (filter && filter(composite_instruction.getStartInstruction())))
+      flattened.emplace_back(composite_instruction.getStartInstruction());
 
-  flattenHelper(flattened, composite_instruction, process_child_composites);
+  flattenHelper(flattened, composite_instruction, filter);
   return flattened;
 }
 
@@ -418,34 +415,31 @@ std::vector<std::reference_wrapper<Instruction>> flatten(CompositeInstruction& c
  * @brief Helper function used by Flatten. Not intended for direct use
  * @param flattened Vector of instructions representing the full flattened composite
  * @param composite Composite instruction to be flattened
- * @param include_composite If true, CompositeInstructions will be included in the final flattened vector
  */
 void flattenHelper(std::vector<std::reference_wrapper<const Instruction>>& flattened,
                    const CompositeInstruction& composite,
-                   const bool& process_child_composites)
+                   const flattenFilter& filter)
 {
   for (auto& i : composite)
   {
     if (isCompositeInstruction(i))
-    {
-      if (process_child_composites)
-        flattened.emplace_back(i);
-      flattenHelper(flattened, *(i.cast_const<CompositeInstruction>()), process_child_composites);
-    }
+      flattenHelper(flattened, *(i.cast_const<CompositeInstruction>()), filter);
     else
-      flattened.emplace_back(i);
+      if (!filter || (filter && filter(i)))
+        flattened.emplace_back(i);
   }
 }
 
 std::vector<std::reference_wrapper<const Instruction>> flatten(const CompositeInstruction& composite_instruction,
-                                                               const bool process_child_composites)
+                                                               const flattenFilter& filter)
 {
   std::vector<std::reference_wrapper<const Instruction>> flattened;
 
   if (composite_instruction.hasStartInstruction())
-    flattened.emplace_back(composite_instruction.getStartInstruction());
+    if (!filter || (filter && filter(composite_instruction.getStartInstruction())))
+      flattened.emplace_back(composite_instruction.getStartInstruction());
 
-  flattenHelper(flattened, composite_instruction, process_child_composites);
+  flattenHelper(flattened, composite_instruction, filter);
   return flattened;
 }
 

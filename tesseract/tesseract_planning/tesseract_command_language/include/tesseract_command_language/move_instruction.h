@@ -78,6 +78,7 @@ public:
   void print(std::string prefix = "") const;
 
   void setMoveType(MoveInstructionType move_type);
+
   MoveInstructionType getMoveType() const;
 
   bool isLinear() const;
