@@ -52,6 +52,7 @@ Packages
    tesseract_monitoring <_source/tesseract_monitoring_doc.rst>
    tesseract_planning <_source/tesseract_planning_doc.rst>
    tesseract_urdf <_source/tesseract_urdf_doc.rst>
+   tesseract_srdf <_source/tesseract_srdf_doc.rst>
 
 FAQ
 ---
