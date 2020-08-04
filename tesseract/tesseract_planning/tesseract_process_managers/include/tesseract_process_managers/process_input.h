@@ -46,9 +46,9 @@ struct ProcessInput
   using ConstPtr = std::shared_ptr<const ProcessInput>;
 
   ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
-               const Instruction& instruction,
+               const Instruction* instruction,
                const ManipulatorInfo& manip_info,
-               Instruction& seed);
+               Instruction* seed);
 
   /**
    * @brief Creates a sub-ProcessInput from instruction[index] and seed[index]
@@ -68,13 +68,13 @@ struct ProcessInput
   const tesseract::Tesseract::ConstPtr tesseract;
 
   /** @brief Instructions to be carried out by process */
-  const Instruction& instruction;
+  const Instruction* instruction;
 
   /** @brief Global Manipulator Information */
   const ManipulatorInfo& manip_info;
 
   /** @brief Results/Seed for this process */
-  Instruction& results;
+  Instruction* results;
 };
 
 }  // namespace tesseract_planning
