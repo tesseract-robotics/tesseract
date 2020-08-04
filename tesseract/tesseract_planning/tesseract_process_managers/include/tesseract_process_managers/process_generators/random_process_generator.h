@@ -50,29 +50,29 @@ public:
   using Ptr = std::shared_ptr<RandomProcessGenerator>;
   using ConstPtr = std::shared_ptr<const RandomProcessGenerator>;
 
-  std::function<void()> generateTask(ProcessInput input) override;
+//  std::function<void()> generateTask(ProcessInput input) override;
 
-  std::function<void()> generateTask(ProcessInput input, const Instruction& start_instruction) override;
+//  std::function<void()> generateTask(ProcessInput input, const Instruction& start_instruction) override;
 
   std::function<void()> generateTask(ProcessInput input,
-                                     const Instruction& start_instruction,
-                                     const Instruction& end_instruction) override;
+                                     const Instruction* start_instruction,
+                                     const Instruction* end_instruction) override;
 
-  std::function<int()> generateConditionalTask(ProcessInput input) override;
+//  std::function<int()> generateConditionalTask(ProcessInput input) override;
 
-  std::function<int()> generateConditionalTask(ProcessInput input, const Instruction& start_instruction) override;
+//  std::function<int()> generateConditionalTask(ProcessInput input, const Instruction& start_instruction) override;
 
   std::function<int()> generateConditionalTask(ProcessInput input,
-                                               const Instruction& start_instruction,
-                                               const Instruction& end_instruction) override;
+                                               const Instruction* start_instruction,
+                                               const Instruction* end_instruction) override;
 
   int conditionalProcess(const ProcessInput& input,
-                         const Instruction& start_instruction,
-                         const Instruction& end_instruction) const;
+                         const Instruction* start_instruction,
+                         const Instruction* end_instruction) const;
 
   void process(const ProcessInput& input,
-               const Instruction& start_instruction,
-               const Instruction& end_instruction) const;
+               const Instruction* start_instruction,
+               const Instruction* end_instruction) const;
 
   /** @brief Between 0 and 1. Likelyhood this process with return true (if using conditionalProcess) */
   double success_frequency{ 0.5 };
