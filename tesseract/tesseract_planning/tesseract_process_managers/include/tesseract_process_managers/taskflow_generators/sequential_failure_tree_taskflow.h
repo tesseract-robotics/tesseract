@@ -50,21 +50,27 @@ public:
                                  std::function<void()> done_cb,
                                  std::function<void()> error_cb) override;
 
-  tf::Taskflow& generateTaskflowS(ProcessInput input,
-                                  const Instruction& start_instruction,
-                                  std::function<void()> done_cb,
-                                  std::function<void()> error_cb);
+//  tf::Taskflow& generateTaskflowS(ProcessInput input,
+//                                  const Instruction& start_instruction,
+//                                  std::function<void()> done_cb,
+//                                  std::function<void()> error_cb);
 
-  tf::Taskflow& generateTaskflowE(ProcessInput input,
-                                  const Instruction& end_instruction,
-                                  std::function<void()> done_cb,
-                                  std::function<void()> error_cb);
+//  tf::Taskflow& generateTaskflowE(ProcessInput input,
+//                                  const Instruction& end_instruction,
+//                                  std::function<void()> done_cb,
+//                                  std::function<void()> error_cb);
 
-  tf::Taskflow& generateTaskflowSE(ProcessInput input,
-                                   const Instruction& start_instruction,
-                                   const Instruction& end_instruction,
-                                   std::function<void()> done_cb,
-                                   std::function<void()> error_cb);
+  tf::Taskflow& generateTaskflow(ProcessInput input,
+                                 const Instruction* start_instruction,
+                                 const Instruction* end_instruction,
+                                 std::function<void()> done_cb,
+                                 std::function<void()> error_cb);
+
+  tf::Taskflow& generateTaskflow(ProcessInput input,
+                                 Instruction start_instruction,
+                                 Instruction end_instruction,
+                                 std::function<void()> done_cb,
+                                 std::function<void()> error_cb);
   /**
    * @brief Add another process that will be added to the taskflow
    * @param process Process added to the taskflow

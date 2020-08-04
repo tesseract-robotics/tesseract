@@ -45,21 +45,29 @@ public:
   using Ptr = std::shared_ptr<ProcessGenerator>;
   using ConstPtr = std::shared_ptr<const ProcessGenerator>;
 
-  virtual std::function<void()> generateTask(ProcessInput input) = 0;
+//  virtual std::function<void()> generateTask(ProcessInput input) = 0;
 
-  virtual std::function<void()> generateTask(ProcessInput input, const Instruction& start_instruction) = 0;
+//  virtual std::function<void()> generateTask(ProcessInput input, const Instruction& start_instruction) = 0;
 
   virtual std::function<void()> generateTask(ProcessInput input,
-                                             const Instruction& start_instruction,
-                                             const Instruction& end_instruction) = 0;
+                                             const Instruction* start_instruction,
+                                             const Instruction* end_instruction) = 0;
 
-  virtual std::function<int()> generateConditionalTask(ProcessInput input) = 0;
+  virtual std::function<void()> generateTask(ProcessInput input,
+                                             Instruction start_instruction,
+                                             Instruction end_instruction) = 0;
 
-  virtual std::function<int()> generateConditionalTask(ProcessInput input, const Instruction& start_instruction) = 0;
+//  virtual std::function<int()> generateConditionalTask(ProcessInput input) = 0;
+
+//  virtual std::function<int()> generateConditionalTask(ProcessInput input, const Instruction& start_instruction) = 0;
 
   virtual std::function<int()> generateConditionalTask(ProcessInput input,
-                                                       const Instruction& start_instruction,
-                                                       const Instruction& end_instruction) = 0;
+                                                       const Instruction* start_instruction,
+                                                       const Instruction* end_instruction) = 0;
+
+  virtual std::function<int()> generateConditionalTask(ProcessInput input,
+                                                       Instruction start_instruction,
+                                                       Instruction end_instruction) = 0;
 
   /**
    * @brief Get the abort flag
