@@ -27,10 +27,8 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
-#include <opw_kinematics/opw_parameters.h>
 #include <tesseract_motion_planners/descartes/descartes_collision.h>
 #include <descartes_samplers/evaluators/euclidean_distance_edge_evaluator.h>
-#include <tesseract_kinematics/opw/opw_inv_kin.h>
 #include <tesseract_kinematics/core/utils.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -100,34 +98,9 @@ protected:
     EXPECT_TRUE(tesseract->init(urdf_path, srdf_path, locator));
     tesseract_ptr_ = tesseract;
 
-    opw_params_.a1 = (0.100);
-    opw_params_.a2 = (-0.135);
-    opw_params_.b = (0.000);
-    opw_params_.c1 = (0.615);
-    opw_params_.c2 = (0.705);
-    opw_params_.c3 = (0.755);
-    opw_params_.c4 = (0.085);
-
-    opw_params_.offsets[2] = -M_PI / 2.0;
-
     manip.manipulator = "manipulator";
     manip.manipulator_ik_solver = "OPWInvKin";
     manip.working_frame = "base_link";
-
-    auto robot_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip.manipulator);
-    auto opw_kin = std::make_shared<OPWInvKin>();
-    opw_kin->init(manip.manipulator,
-                  opw_params_,
-                  robot_kin->getBaseLinkName(),
-                  robot_kin->getTipLinkName(),
-                  robot_kin->getJointNames(),
-                  robot_kin->getLinkNames(),
-                  robot_kin->getActiveLinkNames(),
-                  robot_kin->getLimits());
-
-    tesseract_ptr_->getInvKinematicsManager()->addInvKinematicSolver(opw_kin);
-    tesseract_ptr_->getInvKinematicsManager()->setDefaultInvKinematicSolver(manip.manipulator,
-                                                                            manip.manipulator_ik_solver);
   }
 };
 

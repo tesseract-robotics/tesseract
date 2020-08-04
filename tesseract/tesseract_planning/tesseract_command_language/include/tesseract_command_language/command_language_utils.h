@@ -138,6 +138,9 @@ long getPlanInstructionsCount(const CompositeInstruction& composite_instruction,
  */
 const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint);
 
+/** @brief This is used for filtering only what you want in the vector **/
+using flattenFilter = std::function<bool(const Instruction&)>;
+
 /**
  * @brief Flattens a CompositeInstruction into a vector of Instruction&
  *
@@ -145,12 +148,11 @@ const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint);
  * start instructions.
  *
  * @param composite_instruction Input composite instruction to be flattened
- * @param include_composite Default: false. If true, CompositeInstructions will be included in the final flattened
- * vector
+ * @param filter Used to filter only what. Should return true to include otherwise false
  * @return A new flattened vector referencing the original instruction elements
  */
 std::vector<std::reference_wrapper<Instruction>> flatten(CompositeInstruction& composite_instruction,
-                                                         bool process_child_composites = false);
+                                                         const flattenFilter& filter = nullptr);
 
 /**
  * @brief Flattens a CompositeInstruction into a vector of Instruction&
@@ -159,12 +161,11 @@ std::vector<std::reference_wrapper<Instruction>> flatten(CompositeInstruction& c
  * start instructions.
  *
  * @param instruction Input composite instruction to be flattened
- * @param include_composite Default: false. If true, CompositeInstructions will be included in the final flattened
- * vector
+ * @param filter Used to filter only what. Should return true to include otherwise false
  * @return A new flattened vector referencing the original instruction elements
  */
 std::vector<std::reference_wrapper<const Instruction>> flatten(const CompositeInstruction& composite_instruction,
-                                                               bool process_child_composites = false);
+                                                               const flattenFilter& filter = nullptr);
 
 /**
  * @brief Flattens a composite instruction to the same pattern as the pattern composite instruction. ie, an element of

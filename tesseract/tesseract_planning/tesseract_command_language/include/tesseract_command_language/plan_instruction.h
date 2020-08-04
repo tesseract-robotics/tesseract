@@ -76,6 +76,10 @@ public:
 
   void print(std::string prefix = "") const;
 
+  PlanInstructionType getPlanType() const;
+
+  void setPlanType(PlanInstructionType type);
+
   bool isLinear() const;
 
   bool isFreespace() const;

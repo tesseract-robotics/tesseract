@@ -141,6 +141,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
       else if (plan_instruction->isLinear())
       {
         // This instruction corresponds to a composite. Set all results in that composite to the results
+        assert(isCompositeInstruction(results_flattened[plan_index].get()));
         auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();
         for (auto& instruction : *move_instructions)
         {
@@ -158,6 +159,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
         Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> stop(solution.data() + dof * result_index++, dof);
 
         // This instruction corresponds to a composite. Set all results in that composite to the results
+        assert(isCompositeInstruction(results_flattened[plan_index].get()));
         auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();
 
         Eigen::MatrixXd temp = interpolate(
