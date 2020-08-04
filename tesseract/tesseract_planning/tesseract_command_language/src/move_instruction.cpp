@@ -69,11 +69,12 @@ void MoveInstruction::setDescription(const std::string& description) { descripti
 
 void MoveInstruction::print(std::string prefix) const
 {
-  std::cout << prefix + "Move Instruction, Type: " << getType() << "  Waypoint Type:" << getWaypoint().getType()
-            << "  Description: " << getDescription() << std::endl;
+  std::cout << prefix + "Move Instruction, Type: " << getType() << ", Plan Type: " << static_cast<int>(move_type_)
+            << ",  Waypoint Type:" << getWaypoint().getType() << ",  Description: " << getDescription() << std::endl;
 }
 
 void MoveInstruction::setMoveType(MoveInstructionType move_type) { move_type_ = move_type; }
+
 MoveInstructionType MoveInstruction::getMoveType() const { return move_type_; }
 
 bool MoveInstruction::isLinear() const { return (move_type_ == MoveInstructionType::LINEAR); }

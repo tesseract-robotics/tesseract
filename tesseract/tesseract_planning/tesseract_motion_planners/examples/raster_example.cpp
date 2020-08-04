@@ -1,12 +1,10 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
-#include <opw_kinematics/opw_parameters.h>
 #include <descartes_samplers/evaluators/euclidean_distance_edge_evaluator.h>
 #include <class_loader/class_loader.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_kinematics/opw/opw_inv_kin.h>
 #include <tesseract_kinematics/core/utils.h>
 
 #include <tesseract_motion_planners/descartes/descartes_collision.h>
@@ -76,77 +74,112 @@ int main(int /*argc*/, char** /*argv*/)
   manip.manipulator = "manipulator";
   manip.manipulator_ik_solver = "OPWInvKin";
 
-  opw_kinematics::Parameters<double> opw_params;
-  opw_params.a1 = (0.100);
-  opw_params.a2 = (-0.135);
-  opw_params.b = (0.000);
-  opw_params.c1 = (0.615);
-  opw_params.c2 = (0.705);
-  opw_params.c3 = (0.755);
-  opw_params.c4 = (0.085);
-
-  opw_params.offsets[2] = -M_PI / 2.0;
-
-  auto robot_kin = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip.manipulator);
-  auto opw_kin = std::make_shared<tesseract_kinematics::OPWInvKin>();
-  opw_kin->init(manip.manipulator,
-                opw_params,
-                robot_kin->getBaseLinkName(),
-                robot_kin->getTipLinkName(),
-                robot_kin->getJointNames(),
-                robot_kin->getLinkNames(),
-                robot_kin->getActiveLinkNames(),
-                robot_kin->getLimits());
-
-  tesseract->getInvKinematicsManager()->addInvKinematicSolver(opw_kin);
-  tesseract->getInvKinematicsManager()->setDefaultInvKinematicSolver(manip.manipulator, opw_kin->getSolverName());
-
   auto fwd_kin = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip.manipulator);
   auto inv_kin = tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manip.manipulator);
   auto cur_state = tesseract->getEnvironmentConst()->getCurrentState();
 
-  // Specify start location
-  JointWaypoint wp0 = Eigen::VectorXd::Zero(6);
+  CompositeInstruction program("raster_program", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator"));
 
-  // Specify raster 1 start waypoint and end waypoint
-  CartesianWaypoint wp1 =
-      Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, -.20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
-  CartesianWaypoint wp2 =
-      Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, .20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
-
-  // Specify raster 2 start waypoint and end waypoint
-  CartesianWaypoint wp3 =
-      Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.9, -.20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
-  CartesianWaypoint wp4 =
-      Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.9, .20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
-
-  // Specify raster 4 start waypoint and end waypoint
-  CartesianWaypoint wp5 =
-      Eigen::Isometry3d::Identity() * Eigen::Translation3d(1.0, -.20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
-  CartesianWaypoint wp6 =
-      Eigen::Isometry3d::Identity() * Eigen::Translation3d(1.0, .20, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0);
-
-  // Define Plan Instructions
-  PlanInstruction start_instruction(wp0, PlanInstructionType::START);
-  PlanInstruction plan_f1(wp1, PlanInstructionType::FREESPACE, "DEFAULT");
-  PlanInstruction plan_c1(wp2, PlanInstructionType::LINEAR, "DEFAULT");
-  PlanInstruction plan_c2(wp3, PlanInstructionType::LINEAR, "DEFAULT");
-  PlanInstruction plan_c3(wp4, PlanInstructionType::LINEAR, "DEFAULT");
-  PlanInstruction plan_c4(wp5, PlanInstructionType::LINEAR, "DEFAULT");
-  PlanInstruction plan_c5(wp6, PlanInstructionType::LINEAR, "DEFAULT");
-  PlanInstruction plan_f3(wp0, PlanInstructionType::FREESPACE, "DEFAULT");
-
-  // Create program
-  CompositeInstruction program;
+  // Start Joint Position for the program
+  Waypoint wp1 = StateWaypoint(Eigen::VectorXd::Zero(7));
+  PlanInstruction start_instruction(wp1, PlanInstructionType::START);
   program.setStartInstruction(start_instruction);
-  program.setManipulatorInfo(manip);
-  program.push_back(plan_f1);
-  program.push_back(plan_c1);
-  program.push_back(plan_c2);
-  program.push_back(plan_c3);
-  program.push_back(plan_c4);
-  program.push_back(plan_c5);
-  program.push_back(plan_f3);
+
+  // Define raster poses
+  Waypoint wp2 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
+  Waypoint wp3 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
+  Waypoint wp4 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
+  Waypoint wp5 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
+  Waypoint wp6 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
+  Waypoint wp7 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
+
+  // Define raster move instruction
+  PlanInstruction plan_c1(wp3, PlanInstructionType::LINEAR, "RASTER");
+  PlanInstruction plan_c2(wp4, PlanInstructionType::LINEAR, "RASTER");
+  PlanInstruction plan_c3(wp5, PlanInstructionType::LINEAR, "RASTER");
+  PlanInstruction plan_c4(wp6, PlanInstructionType::LINEAR, "RASTER");
+  PlanInstruction plan_c5(wp7, PlanInstructionType::LINEAR, "RASTER");
+
+  PlanInstruction plan_f0(wp2, PlanInstructionType::FREESPACE, "freespace_profile");
+  plan_f0.setDescription("from_start_plan");
+  CompositeInstruction from_start;
+  from_start.setDescription("from_start");
+  from_start.push_back(plan_f0);
+  program.push_back(from_start);
+
+  {
+    CompositeInstruction raster_segment;
+    raster_segment.setDescription("raster_segment");
+    raster_segment.push_back(plan_c1);
+    raster_segment.push_back(plan_c2);
+    raster_segment.push_back(plan_c3);
+    raster_segment.push_back(plan_c4);
+    raster_segment.push_back(plan_c5);
+    program.push_back(raster_segment);
+  }
+
+  {
+    PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "freespace_profile");
+    plan_f1.setDescription("transition_from_end_plan");
+    CompositeInstruction transition_from_end;
+    transition_from_end.setDescription("transition_from_end");
+    transition_from_end.push_back(plan_f1);
+    CompositeInstruction transition_from_start;
+    transition_from_start.setDescription("transition_from_start");
+    transition_from_start.push_back(plan_f1);
+
+    CompositeInstruction transitions("DEFAULT", CompositeInstructionOrder::UNORDERED);
+    transitions.setDescription("transitions");
+    transitions.push_back(transition_from_start);
+    transitions.push_back(transition_from_end);
+    program.push_back(transitions);
+  }
+
+  {
+    CompositeInstruction raster_segment;
+    raster_segment.setDescription("raster_segment");
+    raster_segment.push_back(plan_c1);
+    raster_segment.push_back(plan_c2);
+    raster_segment.push_back(plan_c3);
+    raster_segment.push_back(plan_c4);
+    raster_segment.push_back(plan_c5);
+    program.push_back(raster_segment);
+  }
+
+  {
+    PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "freespace_profile");
+    plan_f1.setDescription("transition_from_end_plan");
+    CompositeInstruction transition_from_end;
+    transition_from_end.setDescription("transition_from_end");
+    transition_from_end.push_back(plan_f1);
+    CompositeInstruction transition_from_start;
+    transition_from_start.setDescription("transition_from_start");
+    transition_from_start.push_back(plan_f1);
+
+    CompositeInstruction transitions("DEFAULT", CompositeInstructionOrder::UNORDERED);
+    transitions.setDescription("transitions");
+    transitions.push_back(transition_from_start);
+    transitions.push_back(transition_from_end);
+    program.push_back(transitions);
+  }
+
+  {
+    CompositeInstruction raster_segment;
+    raster_segment.setDescription("raster_segment");
+    raster_segment.push_back(plan_c1);
+    raster_segment.push_back(plan_c2);
+    raster_segment.push_back(plan_c3);
+    raster_segment.push_back(plan_c4);
+    raster_segment.push_back(plan_c5);
+    program.push_back(raster_segment);
+  }
+
+  PlanInstruction plan_f2(wp2, PlanInstructionType::FREESPACE, "freespace_profile");
+  plan_f2.setDescription("to_end_plan");
+  CompositeInstruction to_end;
+  to_end.setDescription("to_end");
+  to_end.push_back(plan_f2);
+  program.push_back(to_end);
 
   // Plot Program
   if (plotter)
@@ -180,22 +213,7 @@ int main(int /*argc*/, char** /*argv*/)
   if (plotter)
   {
     plotter->waitForInput();
-    long row_cnt = getMoveInstructionsCount(descartes_response.results);
-    tesseract_common::TrajArray traj;
-    traj.resize(row_cnt, robot_kin->numJoints());
-
-    auto f = flatten(descartes_response.results);
-    long cnt = 0;
-    for (const auto& i : f)
-    {
-      if (isMoveInstruction(i))
-      {
-        const auto* mi = i.get().cast_const<MoveInstruction>();
-        const auto* swp = mi->getWaypoint().cast_const<StateWaypoint>();
-        traj.row(cnt++) = swp->position;
-      }
-    }
-    plotter->plotTrajectory(robot_kin->getJointNames(), traj);
+    plotter->plotTrajectory(descartes_response.results);
   }
 
   // Update Seed
@@ -213,22 +231,7 @@ int main(int /*argc*/, char** /*argv*/)
   if (plotter)
   {
     plotter->waitForInput();
-    long row_cnt = getMoveInstructionsCount(trajopt_response.results);
-    tesseract_common::TrajArray traj;
-    traj.resize(row_cnt, robot_kin->numJoints());
-
-    auto f = flatten(trajopt_response.results);
-    long cnt = 0;
-    for (const auto& i : f)
-    {
-      if (isMoveInstruction(i))
-      {
-        const auto* mi = i.get().cast_const<MoveInstruction>();
-        const auto* swp = mi->getWaypoint().cast_const<StateWaypoint>();
-        traj.row(cnt++) = swp->position;
-      }
-    }
-    plotter->plotTrajectory(robot_kin->getJointNames(), traj);
+    plotter->plotTrajectory(trajopt_response.results);
   }
 
   //  // *************************************

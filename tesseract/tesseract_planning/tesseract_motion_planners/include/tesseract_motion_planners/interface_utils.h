@@ -57,7 +57,7 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
 
   auto profile = std::make_shared<SimplePlannerDefaultPlanProfile>(freespace_steps, cartesian_steps);
   planner.plan_profiles[instructions.getProfile()] = profile;
-  auto flat = flatten(instructions, true);
+  auto flat = flatten(instructions);
   for (const auto& i : flat)
     if (isPlanInstruction(i.get()))
       planner.plan_profiles[i.get().cast_const<PlanInstruction>()->getProfile()] = profile;
