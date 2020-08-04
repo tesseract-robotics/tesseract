@@ -61,11 +61,11 @@ inline std::vector<ProcessGenerator::Ptr> defaultRasterProcesses()
   // Setup TrajOpt
   auto trajopt_planner = std::make_shared<TrajOptMotionPlanner>();
   trajopt_planner->problem_generator = &DefaultTrajoptProblemGenerator;
-  trajopt_planner->plan_profiles["FREESPACE"] = std::make_shared<TrajOptDefaultPlanProfile>();
-  trajopt_planner->composite_profiles["FREESPACE"] = std::make_shared<TrajOptDefaultCompositeProfile>();
+  trajopt_planner->plan_profiles["RASTER"] = std::make_shared<TrajOptDefaultPlanProfile>();
+  trajopt_planner->composite_profiles["RASTER"] = std::make_shared<TrajOptDefaultCompositeProfile>();
   auto trajopt_generator = std::make_shared<MotionPlannerProcessGenerator>(trajopt_planner);
 
-  return std::vector<ProcessGenerator::Ptr>{ interpolator_generator, descartes_generator };
+  return std::vector<ProcessGenerator::Ptr>{ interpolator_generator, descartes_generator, trajopt_generator};
 }
 
 }  // namespace tesseract_planning

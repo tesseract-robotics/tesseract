@@ -45,22 +45,30 @@ tf::Taskflow& SequentialFailureTreeTaskflow::generateTaskflow(ProcessInput input
                                                               std::function<void()> done_cb,
                                                               std::function<void()> error_cb)
 {
-  return generateTaskflow(input, null_instruction, null_instruction, done_cb, error_cb);
+  return generateTaskflowSE(input, null_instruction, null_instruction, done_cb, error_cb);
 }
 
-tf::Taskflow& SequentialFailureTreeTaskflow::generateTaskflow(ProcessInput input,
-                                                              const Instruction& start_instruction,
-                                                              std::function<void()> done_cb,
-                                                              std::function<void()> error_cb)
+tf::Taskflow& SequentialFailureTreeTaskflow::generateTaskflowS(ProcessInput input,
+                                                               const Instruction& start_instruction,
+                                                               std::function<void()> done_cb,
+                                                               std::function<void()> error_cb)
 {
-  return generateTaskflow(input, start_instruction, null_instruction, done_cb, error_cb);
+  return generateTaskflowSE(input, start_instruction, null_instruction, done_cb, error_cb);
 }
 
-tf::Taskflow& SequentialFailureTreeTaskflow::generateTaskflow(ProcessInput input,
-                                                              const Instruction& start_instruction,
-                                                              const Instruction& end_instruction,
-                                                              std::function<void()> done_cb,
-                                                              std::function<void()> error_cb)
+tf::Taskflow& SequentialFailureTreeTaskflow::generateTaskflowE(ProcessInput input,
+                                                               const Instruction& end_instruction,
+                                                               std::function<void()> done_cb,
+                                                               std::function<void()> error_cb)
+{
+  return generateTaskflowSE(input, null_instruction, end_instruction, done_cb, error_cb);
+}
+
+tf::Taskflow& SequentialFailureTreeTaskflow::generateTaskflowSE(ProcessInput input,
+                                                                const Instruction& start_instruction,
+                                                                const Instruction& end_instruction,
+                                                                std::function<void()> done_cb,
+                                                                std::function<void()> error_cb)
 {
   // Create and store the taskflow
   auto taskflow = std::make_shared<tf::Taskflow>(name);
