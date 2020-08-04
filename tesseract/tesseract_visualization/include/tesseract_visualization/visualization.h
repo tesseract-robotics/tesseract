@@ -36,6 +36,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/types.h>
 #include <tesseract/tesseract.h>
 
+namespace tesseract_planning
+{
+  class Instruction;
+}
+
 namespace tesseract_visualization
 {
 /** @brief The Vizualization class */
@@ -75,6 +80,25 @@ public:
    * @param trajectory JointTrajectory to be plotted
    */
   virtual void plotTrajectory(const tesseract_common::JointTrajectory& traj) = 0;
+
+  /**
+   * @brief Plot trajectory provided in the instruction
+   *
+   * This can either be a composite instruction which includes move instructions or a single move instruction.
+   *
+   * @param instruction
+   */
+  virtual void plotTrajectory(const tesseract_planning::Instruction& instruction) = 0;
+
+
+  /**
+   * @brief Plot tool path provided in the instruction
+   *
+   * This can either be a composite instruction which includes plan/move instructions or a single plan/move instruction.
+   *
+   * @param instruction
+   */
+  virtual void plotToolPath(const tesseract_planning::Instruction& instruction) = 0;
 
   /**
    * @brief Plot the collision results data
