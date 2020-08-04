@@ -76,7 +76,7 @@ public:
   using Ptr = std::shared_ptr<RasterProcessManager>;
   using ConstPtr = std::shared_ptr<const RasterProcessManager>;
 
-  RasterProcessManager();
+  RasterProcessManager(std::size_t n = std::thread::hardware_concurrency());
 
   bool init(ProcessInput input) override;
 
@@ -107,14 +107,14 @@ public:
 private:
   void successCallback();
   void failureCallback();
-  bool success;
+  bool success_;
 
-  SequentialFailureTreeTaskflow freespace_taskflow_generator;
-  SequentialFailureTreeTaskflow raster_taskflow_generator;
-  tf::Executor executor;
-  tf::Taskflow taskflow;
-  std::vector<tf::Task> freespace_tasks;
-  std::vector<tf::Task> raster_tasks;
+  SequentialFailureTreeTaskflow freespace_taskflow_generator_;
+  SequentialFailureTreeTaskflow raster_taskflow_generator_;
+  tf::Executor executor_;
+  tf::Taskflow taskflow_;
+  std::vector<tf::Task> freespace_tasks_;
+  std::vector<tf::Task> raster_tasks_;
 };
 
 }  // namespace tesseract_planning

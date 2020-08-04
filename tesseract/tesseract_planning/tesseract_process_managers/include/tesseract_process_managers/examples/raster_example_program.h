@@ -18,12 +18,12 @@ inline CompositeInstruction rasterExampleProgram()
   program.setStartInstruction(start_instruction);
 
   // Define raster poses
-  Waypoint wp2 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
-  Waypoint wp3 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
-  Waypoint wp4 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
-  Waypoint wp5 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
-  Waypoint wp6 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
-  Waypoint wp7 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
+  Waypoint wp2 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, -0.2, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0));
+  Waypoint wp3 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, -0.1, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0));
+  Waypoint wp4 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, 0.0, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0));
+  Waypoint wp5 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, 0.1, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0));
+  Waypoint wp6 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, 0.2, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0));
+  Waypoint wp7 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, 0.3, 0.8) * Eigen::Quaterniond(0, 0, -1.0, 0));
 
   // Define raster move instruction
   PlanInstruction plan_c1(wp3, PlanInstructionType::LINEAR, "RASTER");
@@ -42,14 +42,11 @@ inline CompositeInstruction rasterExampleProgram()
   {
     CompositeInstruction raster_segment;
     raster_segment.setDescription("raster_segment");
-    CompositeInstruction raster;
-    raster.setDescription("raster");
-    raster.push_back(plan_c1);
-    raster.push_back(plan_c2);
-    raster.push_back(plan_c3);
-    raster.push_back(plan_c4);
-    raster.push_back(plan_c5);
-    raster_segment.push_back(raster);
+    raster_segment.push_back(plan_c1);
+    raster_segment.push_back(plan_c2);
+    raster_segment.push_back(plan_c3);
+    raster_segment.push_back(plan_c4);
+    raster_segment.push_back(plan_c5);
     program.push_back(raster_segment);
   }
 
@@ -73,14 +70,11 @@ inline CompositeInstruction rasterExampleProgram()
   {
     CompositeInstruction raster_segment;
     raster_segment.setDescription("raster_segment");
-    CompositeInstruction raster;
-    raster.setDescription("raster");
-    raster.push_back(plan_c1);
-    raster.push_back(plan_c2);
-    raster.push_back(plan_c3);
-    raster.push_back(plan_c4);
-    raster.push_back(plan_c5);
-    raster_segment.push_back(raster);
+    raster_segment.push_back(plan_c1);
+    raster_segment.push_back(plan_c2);
+    raster_segment.push_back(plan_c3);
+    raster_segment.push_back(plan_c4);
+    raster_segment.push_back(plan_c5);
     program.push_back(raster_segment);
   }
 
@@ -104,14 +98,11 @@ inline CompositeInstruction rasterExampleProgram()
   {
     CompositeInstruction raster_segment;
     raster_segment.setDescription("raster_segment");
-    CompositeInstruction raster;
-    raster.setDescription("raster");
-    raster.push_back(plan_c1);
-    raster.push_back(plan_c2);
-    raster.push_back(plan_c3);
-    raster.push_back(plan_c4);
-    raster.push_back(plan_c5);
-    raster_segment.push_back(raster);
+    raster_segment.push_back(plan_c1);
+    raster_segment.push_back(plan_c2);
+    raster_segment.push_back(plan_c3);
+    raster_segment.push_back(plan_c4);
+    raster_segment.push_back(plan_c5);
     program.push_back(raster_segment);
   }
 

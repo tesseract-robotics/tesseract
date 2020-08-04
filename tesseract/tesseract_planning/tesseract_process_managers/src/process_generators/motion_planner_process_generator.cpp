@@ -117,6 +117,7 @@ int MotionPlannerProcessGenerator::conditionalProcess(const ProcessInput& input,
     {
       assert(isPlanInstruction(start_instruction));
       instructions.setStartInstruction(start_instruction);
+      instructions.getStartInstruction().cast<PlanInstruction>()->setPlanType(PlanInstructionType::START);
     }
   }
   if (!isNullInstruction(end_instruction))
@@ -134,7 +135,8 @@ int MotionPlannerProcessGenerator::conditionalProcess(const ProcessInput& input,
     else
     {
       assert(isMoveInstruction(end_instruction));
-      getLastPlanInstruction(instructions)->setWaypoint(end_instruction.cast_const<MoveInstruction>()->getWaypoint());
+      auto* lpi = getLastPlanInstruction(instructions);
+      lpi->setWaypoint(end_instruction.cast_const<MoveInstruction>()->getWaypoint());
     }
   }
 
@@ -160,7 +162,7 @@ int MotionPlannerProcessGenerator::conditionalProcess(const ProcessInput& input,
   // --------------------
   if (status)
   {
-    CONSOLE_BRIDGE_logDebug("TrajOpt Planner process succeeded");
+    CONSOLE_BRIDGE_logDebug("Motion Planner process succeeded");
     int success = 1;
     for (auto validator : validators)
     {
@@ -171,14 +173,18 @@ int MotionPlannerProcessGenerator::conditionalProcess(const ProcessInput& input,
     if (success == 1)
     {
       input.results = response.results;
-      CONSOLE_BRIDGE_logDebug("TrajOpt Planner process results passed validators.");
+      CONSOLE_BRIDGE_logDebug("Motion Planner process results passed validators.");
       return 1;
     }
     else
-      CONSOLE_BRIDGE_logDebug("TrajOpt Planner process results did not pass validators.");
+    {
+      CONSOLE_BRIDGE_logDebug("Motion Planner process results did not pass validators.");
+    }
   }
   else
-    CONSOLE_BRIDGE_logDebug("TrajOpt Planner process failed");
+  {
+    CONSOLE_BRIDGE_logDebug("Motion Planner process failed");
+  }
 
   return 0;
 }
