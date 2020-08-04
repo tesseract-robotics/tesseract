@@ -60,9 +60,13 @@ void PlanInstruction::setDescription(const std::string& description) { descripti
 
 void PlanInstruction::print(std::string prefix) const
 {
-  std::cout << prefix + "Plan Instruction, Move Type: " << getType() << "  Waypoint Type:" << getWaypoint().getType()
-            << "  Description: " << getDescription() << std::endl;
+  std::cout << prefix + "Plan Instruction, Type: " << getType() << ", Plan Type: " << static_cast<int>(plan_type_)
+            << ",  Waypoint Type:" << getWaypoint().getType() << ",  Description: " << getDescription() << std::endl;
 }
+
+PlanInstructionType PlanInstruction::getPlanType() const { return plan_type_; }
+
+void PlanInstruction::setPlanType(PlanInstructionType type) { plan_type_ = type; }
 
 bool PlanInstruction::isLinear() const { return (plan_type_ == PlanInstructionType::LINEAR); }
 
