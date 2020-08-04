@@ -44,6 +44,8 @@ See [issue #66](https://github.com/ros-industrial-consortium/tesseract/issues/66
 
 NOTE: To speed up clean build you may want to add tesseract_ext to an extended workspace.
 
+NOTE: Install TaskFlow from [ROS-Industrial PPA](https://launchpad.net/~ros-industrial/+archive/ubuntu/ppa).
+
 ## Building with Clang-Tidy Enabled
 
 Must pass the -DTESSERACT_ENABLE_CLANG_TIDY=ON to cmake when building. This is automatically enabled if cmake argument -DTESSERACT_ENABLE_TESTING_ALL=ON is passed.
