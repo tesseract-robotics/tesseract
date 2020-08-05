@@ -154,25 +154,25 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& r
 
   // Loop over the flattened results and add them to response if the input was a plan instruction
   Eigen::Index result_index = 0;
-  for (std::size_t plan_index = 0; plan_index < results_flattened.size(); plan_index++)
+  for (std::size_t idx = 0; idx < instructions_flattened.size(); idx++)
   {
-    // If plan_index is zero then this should be the start instruction
-    assert((plan_index == 0) ? isPlanInstruction(instructions_flattened.at(plan_index).get()) : true);
-    assert((plan_index == 0) ? isMoveInstruction(results_flattened[plan_index].get()) : true);
-    if (isPlanInstruction(instructions_flattened.at(plan_index).get()))
+    // If idx is zero then this should be the start instruction
+    assert((idx == 0) ? isPlanInstruction(instructions_flattened.at(idx).get()) : true);
+    assert((idx == 0) ? isMoveInstruction(results_flattened[idx].get()) : true);
+    if (isPlanInstruction(instructions_flattened.at(idx).get()))
     {
       // This instruction corresponds to a composite. Set all results in that composite to the results
-      const auto* plan_instruction = instructions_flattened.at(plan_index).get().cast_const<PlanInstruction>();
+      const auto* plan_instruction = instructions_flattened.at(idx).get().cast_const<PlanInstruction>();
       if (plan_instruction->isStart())
       {
-        assert(plan_index == 0);
-        assert(isMoveInstruction(results_flattened[plan_index].get()));
-        auto* move_instruction = results_flattened[plan_index].get().cast<MoveInstruction>();
+        assert(idx == 0);
+        assert(isMoveInstruction(results_flattened[idx].get()));
+        auto* move_instruction = results_flattened[idx].get().cast<MoveInstruction>();
         move_instruction->getWaypoint().cast<StateWaypoint>()->position = trajectory.row(result_index++);
       }
       else
       {
-        auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();
+        auto* move_instructions = results_flattened[idx].get().cast<CompositeInstruction>();
         for (auto& instruction : *move_instructions)
           instruction.cast<MoveInstruction>()->getWaypoint().cast<StateWaypoint>()->position =
               trajectory.row(result_index++);

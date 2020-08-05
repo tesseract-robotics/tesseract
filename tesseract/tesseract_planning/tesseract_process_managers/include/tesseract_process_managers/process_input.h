@@ -75,6 +75,12 @@ struct ProcessInput
 
   /** @brief Results/Seed for this process */
   Instruction* results;
+
+  // These are used to store alternative start and end instructions
+  Instruction start_instruction{ NullInstruction() };
+  Instruction end_instruction{ NullInstruction() };
+  const Instruction* start_instruction_ptr{ nullptr };
+  const Instruction* end_instruction_ptr{ nullptr };
 };
 
 }  // namespace tesseract_planning

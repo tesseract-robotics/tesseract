@@ -121,15 +121,13 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& requ
     response.data = std::make_shared<std::vector<OMPLProblem::Ptr>>(problem);
   }
 
-  std::vector<OMPLProblem::Ptr> prob = problem_generator(request, plan_profiles);
-
   // If the verbose set the log level to debug.
   if (verbose)
     console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
 
   /// @todo: Need to expand this to support multiple motion plans leveraging taskflow
-  assert(prob.size() == 1);
-  for (auto& p : prob)
+  assert(problem.size() == 1);
+  for (auto& p : problem)
   {
     auto parallel_plan = std::make_shared<ompl::tools::ParallelPlan>(p->simple_setup->getProblemDefinition());
 
@@ -230,25 +228,25 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& requ
 
     // Loop over the flattened results and add them to response if the input was a plan instruction
     Eigen::Index result_index = 0;
-    for (std::size_t plan_index = 0; plan_index < results_flattened.size(); plan_index++)
+    for (std::size_t idx = 0; idx < instructions_flattened.size(); idx++)
     {
       // If plan_index is zero then this should be the start instruction
-      assert((plan_index == 0) ? isPlanInstruction(instructions_flattened.at(plan_index).get()) : true);
-      assert((plan_index == 0) ? isMoveInstruction(results_flattened[plan_index].get()) : true);
-      if (isPlanInstruction(instructions_flattened.at(plan_index).get()))
+      assert((idx == 0) ? isPlanInstruction(instructions_flattened.at(idx).get()) : true);
+      assert((idx == 0) ? isMoveInstruction(results_flattened[idx].get()) : true);
+      if (isPlanInstruction(instructions_flattened.at(idx).get()))
       {
         // This instruction corresponds to a composite. Set all results in that composite to the results
-        const auto* plan_instruction = instructions_flattened.at(plan_index).get().cast_const<PlanInstruction>();
+        const auto* plan_instruction = instructions_flattened.at(idx).get().cast_const<PlanInstruction>();
         if (plan_instruction->isStart())
         {
-          assert(plan_index == 0);
-          assert(isMoveInstruction(results_flattened[plan_index].get()));
-          auto* move_instruction = results_flattened[plan_index].get().cast<MoveInstruction>();
+          assert(idx == 0);
+          assert(isMoveInstruction(results_flattened[idx].get()));
+          auto* move_instruction = results_flattened[idx].get().cast<MoveInstruction>();
           move_instruction->getWaypoint().cast<StateWaypoint>()->position = trajectory.row(result_index++);
         }
         else
         {
-          auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();
+          auto* move_instructions = results_flattened[idx].get().cast<CompositeInstruction>();
           for (auto& instruction : *move_instructions)
             instruction.cast<MoveInstruction>()->getWaypoint().cast<StateWaypoint>()->position =
                 trajectory.row(result_index++);

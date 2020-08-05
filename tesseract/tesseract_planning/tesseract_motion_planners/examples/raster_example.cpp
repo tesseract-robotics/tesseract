@@ -81,7 +81,7 @@ int main(int /*argc*/, char** /*argv*/)
   CompositeInstruction program("raster_program", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator"));
 
   // Start Joint Position for the program
-  Waypoint wp1 = StateWaypoint(Eigen::VectorXd::Zero(7));
+  Waypoint wp1 = StateWaypoint(fwd_kin->getJointNames(), Eigen::VectorXd::Zero(7));
   PlanInstruction start_instruction(wp1, PlanInstructionType::START);
   program.setStartInstruction(start_instruction);
 
