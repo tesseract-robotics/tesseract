@@ -82,8 +82,10 @@ std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const PlannerRequest& 
   }
   // Process instructions
   if (!tesseract_kinematics::checkKinematics(manip_fwd_kin_, manip_inv_kin_))
+  {
     CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that Inverse Kinematics does not agree with KDL "
                             "(TrajOpt). Did you change the URDF recently?");
+  }
 
   // Get Active Link Names
   {
@@ -122,8 +124,7 @@ std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const PlannerRequest& 
   else
   {
     Eigen::VectorXd current_jv = request.env_state->getJointValues(manip_fwd_kin_->getJointNames());
-    StateWaypoint swp(current_jv);
-    swp.joint_names = manip_fwd_kin_->getJointNames();
+    StateWaypoint swp(manip_fwd_kin_->getJointNames(), current_jv);
 
     MoveInstruction temp_move(swp, MoveInstructionType::START);
     placeholder_instruction = temp_move;
@@ -183,7 +184,7 @@ std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const PlannerRequest& 
       }
       else if (plan_instruction->isFreespace())
       {
-        if (isJointWaypoint(plan_instruction->getWaypoint()))
+        if (isJointWaypoint(plan_instruction->getWaypoint()) || isStateWaypoint(plan_instruction->getWaypoint()))
         {
           const Eigen::VectorXd& cur_position = getJointPosition(plan_instruction->getWaypoint());
           cur_plan_profile->applyGoalStates(

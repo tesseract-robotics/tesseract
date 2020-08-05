@@ -36,6 +36,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
+enum class SequentialTaskType : int
+{
+  TASK = 0,
+  CONDITIONAL_EXIT_ON_SUCCESS = 1,
+  CONDITIONAL_EXIT_ON_FAILURE = 2
+};
+
+using SequentialProcesses = std::vector<std::pair<ProcessGenerator::Ptr, SequentialTaskType>>;
+
 /** @brief This class generates taskflows for a sequential failure tree. Each process is executed in order until one
  * succeeds. Between each process, the validator tasks are executed (if not empty). For a process to succeed, the
  * process itself must succeed and all of the validators must succeed*/
@@ -43,49 +52,34 @@ class SequentialFailureTreeTaskflow : public TaskflowGenerator
 {
 public:
   SequentialFailureTreeTaskflow() = default;
-  SequentialFailureTreeTaskflow(std::vector<ProcessGenerator::Ptr> processes,
-                                std::string name = "SequentialFailureTreeTaskflow");
+  ~SequentialFailureTreeTaskflow() override = default;
+  SequentialFailureTreeTaskflow(SequentialProcesses processes, std::string name = "SequentialFailureTreeTaskflow");
+
+  const std::string& getName() const override;
 
   tf::Taskflow& generateTaskflow(ProcessInput input,
                                  std::function<void()> done_cb,
                                  std::function<void()> error_cb) override;
 
-//  tf::Taskflow& generateTaskflowS(ProcessInput input,
-//                                  const Instruction& start_instruction,
-//                                  std::function<void()> done_cb,
-//                                  std::function<void()> error_cb);
+  void abort() override;
 
-//  tf::Taskflow& generateTaskflowE(ProcessInput input,
-//                                  const Instruction& end_instruction,
-//                                  std::function<void()> done_cb,
-//                                  std::function<void()> error_cb);
+  void reset() override;
 
-  tf::Taskflow& generateTaskflow(ProcessInput input,
-                                 const Instruction* start_instruction,
-                                 const Instruction* end_instruction,
-                                 std::function<void()> done_cb,
-                                 std::function<void()> error_cb);
-
-  tf::Taskflow& generateTaskflow(ProcessInput input,
-                                 Instruction start_instruction,
-                                 Instruction end_instruction,
-                                 std::function<void()> done_cb,
-                                 std::function<void()> error_cb);
   /**
    * @brief Add another process that will be added to the taskflow
    * @param process Process added to the taskflow
    */
-  void registerProcess(const ProcessGenerator::Ptr& process);
-
-  std::string name;
+  void registerProcess(const ProcessGenerator::Ptr& process, SequentialTaskType task_type);
 
 private:
-  std::vector<ProcessGenerator::Ptr> processes_;
+  /** @brief If true, all tasks return immediately. Workaround for https://github.com/taskflow/taskflow/issues/201 */
+  std::atomic<bool> abort_{ false };
+
+  SequentialProcesses processes_;
   std::vector<ProcessGenerator::Ptr> validators_;
   std::vector<std::shared_ptr<tf::Taskflow>> sequential_failure_trees_;
   std::vector<tf::Task> process_tasks_;
-
-  Instruction null_instruction{ NullInstruction() };
+  std::string name_;
 };
 
 }  // namespace tesseract_planning

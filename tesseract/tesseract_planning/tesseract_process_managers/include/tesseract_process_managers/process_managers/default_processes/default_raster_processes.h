@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
 #include <tesseract_process_managers/process_generators/random_process_generator.h>
 #include <tesseract_process_managers/process_generators/validators/random_validator.h>
+#include <tesseract_process_managers/taskflow_generators/sequential_failure_tree_taskflow.h>
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
 #include <tesseract_motion_planners/simple/profile/simple_planner_default_plan_profile.h>
@@ -42,21 +43,30 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/descartes/problem_generators/default_problem_generator.h>
 #include <tesseract_motion_planners/descartes/profile/descartes_default_plan_profile.h>
 
+#include <tesseract_motion_planners/trajopt/trajopt_motion_planner.h>
+#include <tesseract_motion_planners/trajopt/problem_generators/default_problem_generator.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
+
 namespace tesseract_planning
 {
-inline std::vector<ProcessGenerator::Ptr> defaultRasterProcesses()
+inline SequentialProcesses defaultRasterProcesses()
 {
+  SequentialProcesses sp;
+
   // Setup Interpolator
   auto interpolator = std::make_shared<SimpleMotionPlanner>("INTERPOLATOR");
   interpolator->plan_profiles["RASTER"] = std::make_shared<SimplePlannerDefaultPlanProfile>();
   auto interpolator_generator = std::make_shared<MotionPlannerProcessGenerator>(interpolator);
-  interpolator_generator->validators.emplace_back(&randomValidator);
+  sp.emplace_back(interpolator_generator, SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE);
 
   // Setup Descartes
   auto descartes_planner = std::make_shared<DescartesMotionPlanner<double>>();
   descartes_planner->problem_generator = &DefaultDescartesProblemGenerator<double>;
   descartes_planner->plan_profiles["RASTER"] = std::make_shared<DescartesDefaultPlanProfileD>();
   auto descartes_generator = std::make_shared<MotionPlannerProcessGenerator>(descartes_planner);
+  //  descartes_generator->validators.emplace_back(&randomValidator);
+  sp.emplace_back(descartes_generator, SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE);
 
   // Setup TrajOpt
   auto trajopt_planner = std::make_shared<TrajOptMotionPlanner>();
@@ -64,8 +74,9 @@ inline std::vector<ProcessGenerator::Ptr> defaultRasterProcesses()
   trajopt_planner->plan_profiles["RASTER"] = std::make_shared<TrajOptDefaultPlanProfile>();
   trajopt_planner->composite_profiles["RASTER"] = std::make_shared<TrajOptDefaultCompositeProfile>();
   auto trajopt_generator = std::make_shared<MotionPlannerProcessGenerator>(trajopt_planner);
+  sp.emplace_back(trajopt_generator, SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE);
 
-  return std::vector<ProcessGenerator::Ptr>{ interpolator_generator, descartes_generator, trajopt_generator};
+  return sp;
 }
 
 }  // namespace tesseract_planning

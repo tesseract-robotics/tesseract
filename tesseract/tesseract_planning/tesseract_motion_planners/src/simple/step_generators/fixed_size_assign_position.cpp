@@ -39,13 +39,16 @@ namespace tesseract_planning
 {
 CompositeInstruction fixedSizeAssignJointPosition(const Eigen::Ref<const Eigen::VectorXd>& position,
                                                   const PlanInstruction& base_instruction,
-                                                  const PlannerRequest& /*request*/,
+                                                  const PlannerRequest& request,
                                                   const ManipulatorInfo& manip_info,
                                                   int steps)
 {
   assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
   const ManipulatorInfo& mi =
       (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
+
+  // Get Kinematics Object
+  auto fwd_kin = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(mi.manipulator);
 
   // Convert to MoveInstructions
   MoveInstructionType mv_type;
@@ -61,7 +64,7 @@ CompositeInstruction fixedSizeAssignJointPosition(const Eigen::Ref<const Eigen::
 
   for (int i = 1; i <= steps; ++i)
   {
-    MoveInstruction move_instruction(StateWaypoint(position), mv_type);
+    MoveInstruction move_instruction(StateWaypoint(fwd_kin->getJointNames(), position), mv_type);
     move_instruction.setDescription(base_instruction.getDescription());
     composite.push_back(move_instruction);
   }

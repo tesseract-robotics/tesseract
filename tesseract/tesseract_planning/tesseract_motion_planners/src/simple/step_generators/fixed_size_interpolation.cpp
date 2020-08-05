@@ -46,13 +46,17 @@ CompositeInstruction fixedSizeJointInterpolation(const JointWaypoint& start,
 {
   CompositeInstruction composite;
 
+  // Joint waypoints should have joint names
+  assert(static_cast<long>(start.joint_names.size()) == start.size());
+  assert(static_cast<long>(end.joint_names.size()) == end.size());
+
   // Linearly interpolate in joint space
   Eigen::MatrixXd states = interpolate(start, end, steps);
 
   // Convert to MoveInstructions
   for (long i = 1; i < states.cols(); ++i)
   {
-    tesseract_planning::MoveInstruction move_instruction(StateWaypoint(states.col(i)), MoveInstructionType::FREESPACE);
+    MoveInstruction move_instruction(StateWaypoint(start.joint_names, states.col(i)), MoveInstructionType::FREESPACE);
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
     composite.push_back(move_instruction);
@@ -71,10 +75,14 @@ CompositeInstruction fixedSizeJointInterpolation(const JointWaypoint& start,
   const ManipulatorInfo& mi =
       (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
 
+  // Joint waypoints should have joint names
+  assert(static_cast<long>(start.joint_names.size()) == start.size());
+
   // Initialize
   auto inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(mi.manipulator);
   auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
   const Eigen::Isometry3d& tcp = mi.tcp;
+  assert(start.joint_names.size() == inv_kin->getJointNames().size());
 
   CompositeInstruction composite;
 
@@ -111,7 +119,7 @@ CompositeInstruction fixedSizeJointInterpolation(const JointWaypoint& start,
   // Convert to MoveInstructions
   for (long i = 1; i < states.cols(); ++i)
   {
-    tesseract_planning::MoveInstruction move_instruction(StateWaypoint(states.col(i)), MoveInstructionType::FREESPACE);
+    MoveInstruction move_instruction(StateWaypoint(start.joint_names, states.col(i)), MoveInstructionType::FREESPACE);
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
     composite.push_back(move_instruction);
@@ -130,10 +138,14 @@ CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
   const ManipulatorInfo& mi =
       (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
 
+  // Joint waypoints should have joint names
+  assert(static_cast<long>(end.joint_names.size()) == end.size());
+
   // Initialize
   auto inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(mi.manipulator);
   auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
   const Eigen::Isometry3d& tcp = mi.tcp;
+  assert(end.joint_names.size() == inv_kin->getJointNames().size());
 
   CompositeInstruction composite;
 
@@ -170,7 +182,7 @@ CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
   // Convert to MoveInstructions
   for (long i = 1; i < states.cols(); ++i)
   {
-    tesseract_planning::MoveInstruction move_instruction(StateWaypoint(states.col(i)), MoveInstructionType::FREESPACE);
+    MoveInstruction move_instruction(StateWaypoint(end.joint_names, states.col(i)), MoveInstructionType::FREESPACE);
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
     composite.push_back(move_instruction);
@@ -244,7 +256,8 @@ CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
   // Convert to MoveInstructions
   for (long i = 1; i < states.cols(); ++i)
   {
-    tesseract_planning::MoveInstruction move_instruction(StateWaypoint(states.col(i)), MoveInstructionType::FREESPACE);
+    MoveInstruction move_instruction(StateWaypoint(inv_kin->getJointNames(), states.col(i)),
+                                     MoveInstructionType::FREESPACE);
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
     composite.push_back(move_instruction);

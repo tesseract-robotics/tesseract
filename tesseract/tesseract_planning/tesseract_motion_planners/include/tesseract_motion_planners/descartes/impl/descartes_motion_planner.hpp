@@ -124,16 +124,19 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
   // Loop over the flattened results and add them to response if the input was a plan instruction
   Eigen::Index dof = problem->manip_fwd_kin->numJoints();
   Eigen::Index result_index = 0;
-  for (std::size_t plan_index = 0; plan_index < results_flattened.size(); plan_index++)
+  for (std::size_t idx = 0; idx < instructions_flattened.size(); idx++)
   {
-    if (isPlanInstruction(instructions_flattened.at(plan_index).get()))
+    // If idx is zero then this should be the start instruction
+    assert((idx == 0) ? isPlanInstruction(instructions_flattened.at(idx).get()) : true);
+    assert((idx == 0) ? isMoveInstruction(results_flattened[idx].get()) : true);
+    if (isPlanInstruction(instructions_flattened.at(idx).get()))
     {
-      const auto* plan_instruction = instructions_flattened.at(plan_index).get().cast_const<PlanInstruction>();
+      const auto* plan_instruction = instructions_flattened.at(idx).get().cast_const<PlanInstruction>();
       if (plan_instruction->isStart())
       {
-        assert(plan_index == 0);
-        assert(isMoveInstruction(results_flattened[plan_index].get()));
-        auto* move_instruction = results_flattened[plan_index].get().cast<MoveInstruction>();
+        assert(idx == 0);
+        assert(isMoveInstruction(results_flattened[idx].get()));
+        auto* move_instruction = results_flattened[idx].get().cast<MoveInstruction>();
 
         Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> temp(solution.data() + dof * result_index++, dof);
         move_instruction->getWaypoint().cast<StateWaypoint>()->position = temp.template cast<double>();
@@ -141,8 +144,8 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
       else if (plan_instruction->isLinear())
       {
         // This instruction corresponds to a composite. Set all results in that composite to the results
-        assert(isCompositeInstruction(results_flattened[plan_index].get()));
-        auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();
+        assert(isCompositeInstruction(results_flattened[idx].get()));
+        auto* move_instructions = results_flattened[idx].get().cast<CompositeInstruction>();
         for (auto& instruction : *move_instructions)
         {
           Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> temp(solution.data() + dof * result_index++,
@@ -159,8 +162,8 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
         Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> stop(solution.data() + dof * result_index++, dof);
 
         // This instruction corresponds to a composite. Set all results in that composite to the results
-        assert(isCompositeInstruction(results_flattened[plan_index].get()));
-        auto* move_instructions = results_flattened[plan_index].get().cast<CompositeInstruction>();
+        assert(isCompositeInstruction(results_flattened[idx].get()));
+        auto* move_instructions = results_flattened[idx].get().cast<CompositeInstruction>();
 
         Eigen::MatrixXd temp = interpolate(
             start.template cast<double>(), stop.template cast<double>(), static_cast<int>(move_instructions->size()));

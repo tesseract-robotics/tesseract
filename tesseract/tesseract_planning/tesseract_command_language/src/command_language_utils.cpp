@@ -393,9 +393,8 @@ void flattenHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
   {
     if (isCompositeInstruction(i))
       flattenHelper(flattened, *(i.cast<CompositeInstruction>()), filter);
-    else
-      if (!filter || (filter && filter(i)))
-        flattened.emplace_back(i);
+    else if (!filter || (filter && filter(i)))
+      flattened.emplace_back(i);
   }
 }
 
@@ -424,9 +423,8 @@ void flattenHelper(std::vector<std::reference_wrapper<const Instruction>>& flatt
   {
     if (isCompositeInstruction(i))
       flattenHelper(flattened, *(i.cast_const<CompositeInstruction>()), filter);
-    else
-      if (!filter || (filter && filter(i)))
-        flattened.emplace_back(i);
+    else if (!filter || (filter && filter(i)))
+      flattened.emplace_back(i);
   }
 }
 

@@ -68,8 +68,8 @@ install(DIRECTORY include/${PROJECT_NAME}
   PATTERN ".svn" EXCLUDE
 )
 
-#if (TESSERACT_ENABLE_TESTING)
-#  enable_testing()
+if (TESSERACT_ENABLE_TESTING)
+  enable_testing()
   tesseract_add_run_tests_target()
   add_subdirectory(test)
-#endif()
+endif()
