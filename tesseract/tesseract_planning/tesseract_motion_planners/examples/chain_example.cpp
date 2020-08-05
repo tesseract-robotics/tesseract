@@ -154,22 +154,22 @@ int main(int /*argc*/, char** /*argv*/)
   {
     plotter->waitForInput();
     plotter->plotTrajectory(descartes_response.results);
-//    long row_cnt = getMoveInstructionsCount(descartes_response.results);
-//    tesseract_common::TrajArray traj;
-//    traj.resize(row_cnt, fwd_kin->numJoints());
+    //    long row_cnt = getMoveInstructionsCount(descartes_response.results);
+    //    tesseract_common::TrajArray traj;
+    //    traj.resize(row_cnt, fwd_kin->numJoints());
 
-//    auto f = flatten(descartes_response.results);
-//    long cnt = 0;
-//    for (const auto& i : f)
-//    {
-//      if (isMoveInstruction(i))
-//      {
-//        const auto* mi = i.get().cast_const<MoveInstruction>();
-//        const auto* swp = mi->getWaypoint().cast_const<StateWaypoint>();
-//        traj.row(cnt++) = swp->position;
-//      }
-//    }
-//    plotter->plotTrajectory(fwd_kin->getJointNames(), traj);
+    //    auto f = flatten(descartes_response.results);
+    //    long cnt = 0;
+    //    for (const auto& i : f)
+    //    {
+    //      if (isMoveInstruction(i))
+    //      {
+    //        const auto* mi = i.get().cast_const<MoveInstruction>();
+    //        const auto* swp = mi->getWaypoint().cast_const<StateWaypoint>();
+    //        traj.row(cnt++) = swp->position;
+    //      }
+    //    }
+    //    plotter->plotTrajectory(fwd_kin->getJointNames(), traj);
   }
 
   // Update Seed
@@ -188,21 +188,21 @@ int main(int /*argc*/, char** /*argv*/)
   {
     plotter->waitForInput();
     plotter->plotTrajectory(trajopt_response.results);
-//    long row_cnt = getMoveInstructionsCount(trajopt_response.results);
-//    tesseract_common::TrajArray traj;
-//    traj.resize(row_cnt, fwd_kin->numJoints());
+    //    long row_cnt = getMoveInstructionsCount(trajopt_response.results);
+    //    tesseract_common::TrajArray traj;
+    //    traj.resize(row_cnt, fwd_kin->numJoints());
 
-//    auto f = flatten(trajopt_response.results);
-//    long cnt = 0;
-//    for (const auto& i : f)
-//    {
-//      if (isMoveInstruction(i))
-//      {
-//        const auto* mi = i.get().cast_const<MoveInstruction>();
-//        const auto* swp = mi->getWaypoint().cast_const<StateWaypoint>();
-//        traj.row(cnt++) = swp->position;
-//      }
-//    }
-//    plotter->plotTrajectory(fwd_kin->getJointNames(), traj);
+    //    auto f = flatten(trajopt_response.results);
+    //    long cnt = 0;
+    //    for (const auto& i : f)
+    //    {
+    //      if (isMoveInstruction(i))
+    //      {
+    //        const auto* mi = i.get().cast_const<MoveInstruction>();
+    //        const auto* swp = mi->getWaypoint().cast_const<StateWaypoint>();
+    //        traj.row(cnt++) = swp->position;
+    //      }
+    //    }
+    //    plotter->plotTrajectory(fwd_kin->getJointNames(), traj);
   }
 }

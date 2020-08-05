@@ -38,7 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-  class Instruction;
+class Instruction;
 }
 
 namespace tesseract_visualization
@@ -89,7 +89,6 @@ public:
    * @param instruction
    */
   virtual void plotTrajectory(const tesseract_planning::Instruction& instruction) = 0;
-
 
   /**
    * @brief Plot tool path provided in the instruction

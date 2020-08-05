@@ -42,6 +42,8 @@ public:
   using Ptr = std::shared_ptr<ProcessManager>;
   using ConstPtr = std::shared_ptr<const ProcessManager>;
 
+  virtual ~ProcessManager() = default;
+
   /**
    * @brief Initialize the processes with the input
    * @param input Input that will be processed when execute is called

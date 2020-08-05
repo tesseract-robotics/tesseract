@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_process_managers/process_generators/random_process_generator.h>
 #include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
 #include <tesseract_process_managers/process_generators/validators/random_validator.h>
+#include <tesseract_process_managers/taskflow_generators/sequential_failure_tree_taskflow.h>
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
 #include <tesseract_motion_planners/simple/profile/simple_planner_default_plan_profile.h>
@@ -49,19 +50,23 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-inline std::vector<ProcessGenerator::Ptr> defaultFreespaceProcesses()
+inline SequentialProcesses defaultFreespaceProcesses()
 {
+  SequentialProcesses sp;
+
   // Setup Interpolator
   auto interpolator = std::make_shared<SimpleMotionPlanner>("INTERPOLATOR");
   interpolator->plan_profiles["FREESPACE"] = std::make_shared<SimplePlannerDefaultPlanProfile>();
   auto interpolator_generator = std::make_shared<MotionPlannerProcessGenerator>(interpolator);
-  interpolator_generator->validators.emplace_back(&randomValidator);
+  sp.emplace_back(interpolator_generator, SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE);
 
   // Setup OMPL
   auto ompl_planner = std::make_shared<OMPLMotionPlanner>();
   ompl_planner->problem_generator = &DefaultOMPLProblemGenerator;
   ompl_planner->plan_profiles["FREESPACE"] = std::make_shared<OMPLDefaultPlanProfile>();
   auto ompl_generator = std::make_shared<MotionPlannerProcessGenerator>(ompl_planner);
+  //  ompl_generator->validators.emplace_back(&randomValidator);
+  sp.emplace_back(ompl_generator, SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE);
 
   // Setup TrajOpt
   auto trajopt_planner = std::make_shared<TrajOptMotionPlanner>();
@@ -69,8 +74,9 @@ inline std::vector<ProcessGenerator::Ptr> defaultFreespaceProcesses()
   trajopt_planner->plan_profiles["FREESPACE"] = std::make_shared<TrajOptDefaultPlanProfile>();
   trajopt_planner->composite_profiles["FREESPACE"] = std::make_shared<TrajOptDefaultCompositeProfile>();
   auto trajopt_generator = std::make_shared<MotionPlannerProcessGenerator>(trajopt_planner);
+  sp.emplace_back(trajopt_generator, SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE);
 
-  return std::vector<ProcessGenerator::Ptr>{ interpolator_generator, ompl_generator, trajopt_generator};
+  return sp;
 }
 
 }  // namespace tesseract_planning

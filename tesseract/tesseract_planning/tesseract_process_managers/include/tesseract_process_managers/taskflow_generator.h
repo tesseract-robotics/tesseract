@@ -41,6 +41,16 @@ namespace tesseract_planning
 class TaskflowGenerator
 {
 public:
+  using UPtr = std::unique_ptr<TaskflowGenerator>;
+
+  virtual ~TaskflowGenerator() = default;
+
+  /**
+   * @brief Get the name of the task flow
+   * @return The name
+   */
+  virtual const std::string& getName() const = 0;
+
   /**
    * @brief Generates unique taskflows for using as a component (e.g. with taskflow.composed_of)
    * @param instruction Instructions passed to this instance of the taskflow
@@ -49,6 +59,12 @@ public:
   virtual tf::Taskflow& generateTaskflow(ProcessInput instruction,
                                          std::function<void()> done_cb,
                                          std::function<void()> error_cb) = 0;
+
+  /** @brief Abort the active taskflow */
+  virtual void abort() = 0;
+
+  /** @brief Reset to initial state */
+  virtual void reset() = 0;
 };
 
 }  // namespace tesseract_planning
