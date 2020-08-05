@@ -19,29 +19,36 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract_planning;
 
-FreespaceProcessManager::FreespaceProcessManager(std::size_t n)
-  : executor_(n)
-  , taskflow_("FreespaceProcessManagerTaskflow")
-{}
+FreespaceProcessManager::FreespaceProcessManager(TaskflowGenerator::UPtr taskflow_generator, std::size_t n)
+  : taskflow_generator_(std::move(taskflow_generator)), executor_(n), taskflow_("FreespaceProcessManagerTaskflow")
+{
+}
 
 bool FreespaceProcessManager::init(ProcessInput input)
 {
   // Clear the taskflow
   taskflow_.clear();
 
-  // If no processes selected, use defaults
-  if (process_generators.empty())
-    process_generators = defaultFreespaceProcesses();
+  // Check the overall input
+  if (!isCompositeInstruction(*(input.instruction)))
+  {
+    CONSOLE_BRIDGE_logError("ProcessInput Invalid: input.instructions should be a composite");
+    return false;
+  }
+  const auto* composite = input.instruction->cast_const<CompositeInstruction>();
 
-  // Create the taskflow generator
-  taskflow_generator_ = SequentialFailureTreeTaskflow(process_generators);
+  // Check that it has a start instruction
+  if (!composite->hasStartInstruction() && input.start_instruction_ptr == nullptr &&
+      isNullInstruction(input.start_instruction))
+  {
+    CONSOLE_BRIDGE_logError("ProcessInput Invalid: input.instructions should have a start instruction");
+    return false;
+  }
 
   // Create the dependency graph
-  assert(isCompositeInstruction(*(input.instruction)));
-
   input.instruction->print("Generating Taskflow for: ");
   auto task = taskflow_
-                  .composed_of(taskflow_generator_.generateTaskflow(
+                  .composed_of(taskflow_generator_->generateTaskflow(
                       input, [this]() { successCallback(); }, [this]() { failureCallback(); }))
                   .name("freespace");
   freespace_tasks_.push_back(task);
@@ -64,9 +71,7 @@ bool FreespaceProcessManager::execute()
 
 bool FreespaceProcessManager::terminate()
 {
-  for (auto gen : process_generators)
-    gen->setAbort(true);
-
+  taskflow_generator_->abort();
   CONSOLE_BRIDGE_logError("Terminating Taskflow");
   return false;
 }
@@ -74,8 +79,7 @@ bool FreespaceProcessManager::terminate()
 bool FreespaceProcessManager::clear()
 
 {
-  for (auto gen : process_generators)
-    gen->setAbort(false);
+  taskflow_generator_->reset();
   taskflow_.clear();
   freespace_tasks_.clear();
   return true;

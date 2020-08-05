@@ -76,7 +76,10 @@ public:
   using Ptr = std::shared_ptr<RasterProcessManager>;
   using ConstPtr = std::shared_ptr<const RasterProcessManager>;
 
-  RasterProcessManager(std::size_t n = std::thread::hardware_concurrency());
+  RasterProcessManager(TaskflowGenerator::UPtr freespace_taskflow_generator,
+                       TaskflowGenerator::UPtr raster_taskflow_generator,
+                       std::size_t n = std::thread::hardware_concurrency());
+  ~RasterProcessManager() override = default;
 
   bool init(ProcessInput input) override;
 
@@ -86,16 +89,17 @@ public:
 
   bool clear() override;
 
-  /**
-   * @brief Process generators used to create the freespace planning taskflow (for transitions). If empty,
-   * defaultFreespaceProcesses will be used
-   */
-  std::vector<ProcessGenerator::Ptr> freespace_process_generators;
-  /**
-   * @brief Process generators used to create the raster planning taskflow. If empty, defaultRasterProcesses will be
-   * used
-   */
-  std::vector<ProcessGenerator::Ptr> raster_process_generators;
+private:
+  void successCallback();
+  void failureCallback();
+  bool success_;
+
+  TaskflowGenerator::UPtr freespace_taskflow_generator_;
+  TaskflowGenerator::UPtr raster_taskflow_generator_;
+  tf::Executor executor_;
+  tf::Taskflow taskflow_;
+  std::vector<tf::Task> freespace_tasks_;
+  std::vector<tf::Task> raster_tasks_;
 
   /**
    * @brief Checks that the ProcessInput is in the correct format.
@@ -103,18 +107,6 @@ public:
    * @return True if in the correct format
    */
   bool checkProcessInput(const ProcessInput& input) const;
-
-private:
-  void successCallback();
-  void failureCallback();
-  bool success_;
-
-  SequentialFailureTreeTaskflow freespace_taskflow_generator_;
-  SequentialFailureTreeTaskflow raster_taskflow_generator_;
-  tf::Executor executor_;
-  tf::Taskflow taskflow_;
-  std::vector<tf::Task> freespace_tasks_;
-  std::vector<tf::Task> raster_tasks_;
 };
 
 }  // namespace tesseract_planning

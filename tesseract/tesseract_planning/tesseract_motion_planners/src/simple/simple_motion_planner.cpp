@@ -144,14 +144,11 @@ SimpleMotionPlanner::getStartInstruction(const PlannerRequest& request,
     if (isJointWaypoint(start_waypoint))
     {
       const auto* jwp = start_waypoint.cast_const<JointWaypoint>();
-      StateWaypoint swp(*jwp);
-      swp.joint_names = jwp->joint_names;
-      start_instruction_seed.setWaypoint(swp);
+      start_instruction_seed.setWaypoint(StateWaypoint(jwp->joint_names, *jwp));
     }
     else if (isCartesianWaypoint(start_waypoint))
     {
-      StateWaypoint temp(current_state->getJointValues(fwd_kin->getJointNames()));
-      temp.joint_names = fwd_kin->getJointNames();
+      StateWaypoint temp(fwd_kin->getJointNames(), current_state->getJointValues(fwd_kin->getJointNames()));
       start_waypoint = temp;
 
       start_instruction_seed.setWaypoint(start_waypoint);
@@ -169,8 +166,7 @@ SimpleMotionPlanner::getStartInstruction(const PlannerRequest& request,
   }
   else
   {
-    StateWaypoint temp(current_state->getJointValues(fwd_kin->getJointNames()));
-    temp.joint_names = fwd_kin->getJointNames();
+    StateWaypoint temp(fwd_kin->getJointNames(), current_state->getJointValues(fwd_kin->getJointNames()));
     start_waypoint = temp;
 
     start_instruction_seed.setWaypoint(start_waypoint);

@@ -41,7 +41,10 @@ class StateWaypoint
 {
 public:
   StateWaypoint() = default;
-  StateWaypoint(const Eigen::Ref<const Eigen::VectorXd>& position) : position(position) {}
+  StateWaypoint(std::vector<std::string> joint_names, const Eigen::Ref<const Eigen::VectorXd>& position)
+    : joint_names(std::move(joint_names)), position(position)
+  {
+  }
 
   int getType() const { return static_cast<int>(WaypointType::STATE_WAYPOINT); }
 

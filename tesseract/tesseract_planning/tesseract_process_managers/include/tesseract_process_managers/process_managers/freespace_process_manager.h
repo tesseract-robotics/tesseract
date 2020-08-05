@@ -57,7 +57,9 @@ public:
   using Ptr = std::shared_ptr<FreespaceProcessManager>;
   using ConstPtr = std::shared_ptr<const FreespaceProcessManager>;
 
-  FreespaceProcessManager(std::size_t n = std::thread::hardware_concurrency());
+  FreespaceProcessManager(TaskflowGenerator::UPtr taskflow_generator,
+                          std::size_t n = std::thread::hardware_concurrency());
+  ~FreespaceProcessManager() override = default;
 
   bool init(ProcessInput input) override;
 
@@ -67,18 +69,12 @@ public:
 
   bool clear() override;
 
-  /**
-   * @brief Process generators used to create the freespace planning taskflow. If empty, defaultFreespaceProcesses will
-   * be used
-   */
-  std::vector<ProcessGenerator::Ptr> process_generators;
-
 private:
   void successCallback();
   void failureCallback();
   bool success_;
 
-  SequentialFailureTreeTaskflow taskflow_generator_;
+  TaskflowGenerator::UPtr taskflow_generator_;
   tf::Executor executor_;
   tf::Taskflow taskflow_;
   std::vector<tf::Task> freespace_tasks_;
