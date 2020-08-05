@@ -39,9 +39,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_planning
 {
 ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
-                           const Instruction *instruction,
+                           const Instruction* instruction,
                            const ManipulatorInfo& manip_info,
-                           Instruction *seed)
+                           Instruction* seed)
   : tesseract(std::move(tesseract)), instruction(instruction), manip_info(manip_info), results(seed)
 {
 }
