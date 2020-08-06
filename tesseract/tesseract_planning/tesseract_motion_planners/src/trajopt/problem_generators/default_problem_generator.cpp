@@ -56,8 +56,8 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
   }
 
   // Flatten the input for planning
-  auto instructions_flat = flatten(request.instructions);
-  auto seed_flat = flattenToPattern(request.seed, request.instructions);
+  auto instructions_flat = flattenProgram(request.instructions);
+  auto seed_flat = flattenProgramToPattern(request.seed, request.instructions);
 
   // Get kinematics information
   tesseract_environment::Environment::ConstPtr env = request.tesseract->getEnvironmentConst();

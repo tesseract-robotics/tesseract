@@ -109,7 +109,8 @@ TEST(TesseractCommandLanguageUtilsUnit, flatten)  // NOLINT
       composite.print();
 
     // flatten the composite keeping the composite instructions
-    std::vector<std::reference_wrapper<Instruction>> flattened = flatten(composite, true);
+    flattenFilterFn filter = [](const Instruction&, const CompositeInstruction&, bool) { return true; };
+    std::vector<std::reference_wrapper<Instruction>> flattened = flatten(composite, filter);
     EXPECT_EQ(flattened.size(), i_max * j_max * k_max + 16);  // Add 16 for the composite instructions
 
     // Now change something in the flattened composite
@@ -254,7 +255,8 @@ TEST(TesseractCommandLanguageUtilsUnit, flattenToPattern)  // NOLINT
       pattern.print();
     }
     // flatten the composite
-    std::vector<std::reference_wrapper<Instruction>> flattened = flattenToPattern(composite, pattern, true);
+    flattenFilterFn filter = [](const Instruction&, const CompositeInstruction&, bool) { return true; };
+    std::vector<std::reference_wrapper<Instruction>> flattened = flattenToPattern(composite, pattern, filter);
     EXPECT_EQ(flattened.size(),
               i_max * j_max + 4);  // Add 4 for the extra composite instructions that would be flattened
 

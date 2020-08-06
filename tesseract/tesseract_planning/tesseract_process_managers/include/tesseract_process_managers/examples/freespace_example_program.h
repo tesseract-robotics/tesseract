@@ -16,7 +16,7 @@ inline CompositeInstruction freespaceExampleProgram()
 
   // Start Joint Position for the program
   std::vector<std::string> joint_names = { "joint_a1", "joint_a2", "joint_a3", "joint_a4",
-                                           "joint_a5", "joint_a6", "joint_a6" };
+                                           "joint_a5", "joint_a6", "joint_a7" };
   Waypoint wp1 = StateWaypoint(joint_names, Eigen::VectorXd::Zero(7));
   PlanInstruction start_instruction(wp1, PlanInstructionType::START);
   program.setStartInstruction(start_instruction);
