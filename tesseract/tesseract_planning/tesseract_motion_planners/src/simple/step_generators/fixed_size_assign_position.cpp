@@ -79,6 +79,9 @@ CompositeInstruction fixedSizeAssignJointPosition(const JointWaypoint& start,
                                                   const ManipulatorInfo& manip_info,
                                                   int steps)
 {
+  // Joint waypoints should have joint names
+  assert(static_cast<long>(start.joint_names.size()) == start.size());
+
   return fixedSizeAssignJointPosition(start, base_instruction, request, manip_info, steps);
 }
 
@@ -89,6 +92,9 @@ CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint& /*sta
                                                   const ManipulatorInfo& manip_info,
                                                   int steps)
 {
+  // Joint waypoints should have joint names
+  assert(static_cast<long>(end.joint_names.size()) == end.size());
+
   return fixedSizeAssignJointPosition(end, base_instruction, request, manip_info, steps);
 }
 

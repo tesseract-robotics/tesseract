@@ -37,336 +37,225 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-const PlanInstruction* getFirstPlanInstruction(const CompositeInstruction& composite_instruction,
-                                               bool process_child_composites)
+const Instruction* getFirstInstructionHelper(const CompositeInstruction& composite_instruction,
+                                             locateFilterFn locate_filter,
+                                             bool process_child_composites,
+                                             bool first_composite)
 {
   if (composite_instruction.hasStartInstruction())
-    if (isPlanInstruction(composite_instruction.getStartInstruction()))
-      return composite_instruction.getStartInstruction().cast_const<PlanInstruction>();
+    if (!locate_filter ||
+        locate_filter(composite_instruction.getStartInstruction(), composite_instruction, first_composite))
+      return &(composite_instruction.getStartInstruction());
 
   if (process_child_composites)
   {
     for (const auto& instruction : composite_instruction)
     {
+      if (!locate_filter || locate_filter(instruction, composite_instruction, first_composite))
+        return &instruction;
+
       if (isCompositeInstruction(instruction))
       {
-        const PlanInstruction* result =
-            getFirstPlanInstruction(*(instruction.cast_const<CompositeInstruction>()), process_child_composites);
+        const Instruction* result = getFirstInstructionHelper(
+            *(instruction.cast_const<CompositeInstruction>()), locate_filter, process_child_composites, false);
         if (result)
           return result;
-      }
-      else if (isPlanInstruction(instruction))
-      {
-        return instruction.cast_const<PlanInstruction>();
       }
     }
 
     return nullptr;
   }
 
-  for (auto it = composite_instruction.begin(); it != composite_instruction.end(); ++it)
-    if (isPlanInstruction(*it))
-      return it->cast_const<PlanInstruction>();
+  for (const auto& instruction : composite_instruction)
+    if (!locate_filter || locate_filter(instruction, composite_instruction, first_composite))
+      return &instruction;
 
   return nullptr;
 }
 
-const PlanInstruction* getLastPlanInstruction(const CompositeInstruction& composite_instruction,
-                                              bool process_child_composites)
-{
-  if (process_child_composites)
-  {
-    for (auto it = composite_instruction.rbegin(); it != composite_instruction.rend(); ++it)
-    {
-      if (isCompositeInstruction(*it))
-      {
-        const PlanInstruction* result =
-            getLastPlanInstruction(*(it->cast_const<CompositeInstruction>()), process_child_composites);
-        if (result)
-          return result;
-      }
-      else if (isPlanInstruction(*it))
-      {
-        return it->cast_const<PlanInstruction>();
-      }
-    }
-
-    if (composite_instruction.hasStartInstruction())
-      if (isPlanInstruction(composite_instruction.getStartInstruction()))
-        return composite_instruction.getStartInstruction().cast_const<PlanInstruction>();
-
-    return nullptr;
-  }
-
-  for (auto it = composite_instruction.rbegin(); it != composite_instruction.rend(); ++it)
-    if (isPlanInstruction(*it))
-      return it->cast_const<PlanInstruction>();
-
-  if (composite_instruction.hasStartInstruction())
-    if (isPlanInstruction(composite_instruction.getStartInstruction()))
-      return composite_instruction.getStartInstruction().cast_const<PlanInstruction>();
-
-  return nullptr;
-}
-
-PlanInstruction* getFirstPlanInstruction(CompositeInstruction& composite_instruction, bool process_child_composites)
+Instruction* getFirstInstructionHelper(CompositeInstruction& composite_instruction,
+                                       locateFilterFn locate_filter,
+                                       bool process_child_composites,
+                                       bool first_composite)
 {
   if (composite_instruction.hasStartInstruction())
-    if (isPlanInstruction(composite_instruction.getStartInstruction()))
-      return composite_instruction.getStartInstruction().cast<PlanInstruction>();
+    if (!locate_filter ||
+        locate_filter(composite_instruction.getStartInstruction(), composite_instruction, first_composite))
+      return &(composite_instruction.getStartInstruction());
 
   if (process_child_composites)
   {
     for (auto& instruction : composite_instruction)
     {
+      if (!locate_filter || locate_filter(instruction, composite_instruction, first_composite))
+        return &instruction;
+
       if (isCompositeInstruction(instruction))
       {
-        PlanInstruction* result =
-            getFirstPlanInstruction(*(instruction.cast<CompositeInstruction>()), process_child_composites);
+        Instruction* result = getFirstInstructionHelper(
+            *(instruction.cast<CompositeInstruction>()), locate_filter, process_child_composites, false);
         if (result)
           return result;
-      }
-      else if (isPlanInstruction(instruction))
-      {
-        return instruction.cast<PlanInstruction>();
       }
     }
 
     return nullptr;
   }
 
-  for (auto it = composite_instruction.begin(); it != composite_instruction.end(); ++it)
-    if (isPlanInstruction(*it))
-      return it->cast<PlanInstruction>();
+  for (auto& instruction : composite_instruction)
+    if (!locate_filter || locate_filter(instruction, composite_instruction, first_composite))
+      return &instruction;
 
   return nullptr;
 }
 
-PlanInstruction* getLastPlanInstruction(CompositeInstruction& composite_instruction, bool process_child_composites)
+const Instruction* getLastInstructionHelper(const CompositeInstruction& composite_instruction,
+                                            locateFilterFn locate_filter,
+                                            bool process_child_composites,
+                                            bool first_composite)
 {
   if (process_child_composites)
   {
     for (auto it = composite_instruction.rbegin(); it != composite_instruction.rend(); ++it)
     {
+      if (!locate_filter || locate_filter(*it, composite_instruction, first_composite))
+        return &(*it);
+
       if (isCompositeInstruction(*it))
       {
-        PlanInstruction* result = getLastPlanInstruction(*(it->cast<CompositeInstruction>()), process_child_composites);
+        const Instruction* result = getLastInstructionHelper(
+            *(it->cast_const<CompositeInstruction>()), locate_filter, process_child_composites, false);
         if (result)
           return result;
-      }
-      else if (isPlanInstruction(*it))
-      {
-        return it->cast<PlanInstruction>();
       }
     }
 
     if (composite_instruction.hasStartInstruction())
-      if (isPlanInstruction(composite_instruction.getStartInstruction()))
-        return composite_instruction.getStartInstruction().cast<PlanInstruction>();
+      if (!locate_filter ||
+          locate_filter(composite_instruction.getStartInstruction(), composite_instruction, first_composite))
+        return &(composite_instruction.getStartInstruction());
 
     return nullptr;
   }
 
   for (auto it = composite_instruction.rbegin(); it != composite_instruction.rend(); ++it)
-    if (isPlanInstruction(*it))
-      return it->cast<PlanInstruction>();
+    if (!locate_filter || locate_filter(*it, composite_instruction, first_composite))
+      return &(*it);
 
   if (composite_instruction.hasStartInstruction())
-    if (isPlanInstruction(composite_instruction.getStartInstruction()))
-      return composite_instruction.getStartInstruction().cast<PlanInstruction>();
+    if (!locate_filter ||
+        locate_filter(composite_instruction.getStartInstruction(), composite_instruction, first_composite))
+      return &(composite_instruction.getStartInstruction());
 
   return nullptr;
 }
 
-const MoveInstruction* getFirstMoveInstruction(const CompositeInstruction& composite_instruction,
-                                               bool process_child_composites)
-{
-  if (composite_instruction.hasStartInstruction())
-    if (isMoveInstruction(composite_instruction.getStartInstruction()))
-      return composite_instruction.getStartInstruction().cast_const<MoveInstruction>();
-
-  if (process_child_composites)
-  {
-    for (const auto& instruction : composite_instruction)
-    {
-      if (isCompositeInstruction(instruction))
-      {
-        const MoveInstruction* result =
-            getFirstMoveInstruction(*(instruction.cast_const<CompositeInstruction>()), process_child_composites);
-        if (result)
-          return result;
-      }
-      else if (isMoveInstruction(instruction))
-      {
-        return instruction.cast_const<MoveInstruction>();
-      }
-    }
-
-    return nullptr;
-  }
-
-  for (auto it = composite_instruction.begin(); it != composite_instruction.end(); ++it)
-    if (isMoveInstruction(*it))
-      return it->cast_const<MoveInstruction>();
-
-  return nullptr;
-}
-
-const MoveInstruction* getLastMoveInstruction(const CompositeInstruction& composite_instruction,
-                                              bool process_child_composites)
+Instruction* getLastInstructionHelper(CompositeInstruction& composite_instruction,
+                                      locateFilterFn locate_filter,
+                                      bool process_child_composites,
+                                      bool first_composite)
 {
   if (process_child_composites)
   {
     for (auto it = composite_instruction.rbegin(); it != composite_instruction.rend(); ++it)
     {
+      if (!locate_filter || locate_filter(*it, composite_instruction, first_composite))
+        return &(*it);
+
       if (isCompositeInstruction(*it))
       {
-        const MoveInstruction* result =
-            getLastMoveInstruction(*(it->cast_const<CompositeInstruction>()), process_child_composites);
+        Instruction* result = getLastInstructionHelper(
+            *(it->cast<CompositeInstruction>()), locate_filter, process_child_composites, false);
         if (result)
           return result;
-      }
-      else if (isMoveInstruction(*it))
-      {
-        return it->cast_const<MoveInstruction>();
       }
     }
 
     if (composite_instruction.hasStartInstruction())
-      if (isMoveInstruction(composite_instruction.getStartInstruction()))
-        return composite_instruction.getStartInstruction().cast_const<MoveInstruction>();
+      if (!locate_filter ||
+          locate_filter(composite_instruction.getStartInstruction(), composite_instruction, first_composite))
+        return &(composite_instruction.getStartInstruction());
 
     return nullptr;
   }
 
   for (auto it = composite_instruction.rbegin(); it != composite_instruction.rend(); ++it)
-    if (isMoveInstruction(*it))
-      return it->cast_const<MoveInstruction>();
+    if (!locate_filter || locate_filter(*it, composite_instruction, first_composite))
+      return &(*it);
 
   if (composite_instruction.hasStartInstruction())
-    if (isMoveInstruction(composite_instruction.getStartInstruction()))
-      return composite_instruction.getStartInstruction().cast_const<MoveInstruction>();
+    if (!locate_filter ||
+        locate_filter(composite_instruction.getStartInstruction(), composite_instruction, first_composite))
+      return &(composite_instruction.getStartInstruction());
 
   return nullptr;
 }
 
-MoveInstruction* getFirstMoveInstruction(CompositeInstruction& composite_instruction, bool process_child_composites)
-{
-  if (composite_instruction.hasStartInstruction())
-    if (isMoveInstruction(composite_instruction.getStartInstruction()))
-      return composite_instruction.getStartInstruction().cast<MoveInstruction>();
-
-  if (process_child_composites)
-  {
-    for (auto& instruction : composite_instruction)
-    {
-      if (isCompositeInstruction(instruction))
-      {
-        MoveInstruction* result =
-            getFirstMoveInstruction(*(instruction.cast<CompositeInstruction>()), process_child_composites);
-        if (result)
-          return result;
-      }
-      else if (isMoveInstruction(instruction))
-      {
-        return instruction.cast<MoveInstruction>();
-      }
-    }
-
-    return nullptr;
-  }
-
-  for (auto it = composite_instruction.begin(); it != composite_instruction.end(); ++it)
-    if (isMoveInstruction(*it))
-      return it->cast<MoveInstruction>();
-
-  return nullptr;
-}
-
-MoveInstruction* getLastMoveInstruction(CompositeInstruction& composite_instruction, bool process_child_composites)
-{
-  if (process_child_composites)
-  {
-    for (auto it = composite_instruction.rbegin(); it != composite_instruction.rend(); ++it)
-    {
-      if (isCompositeInstruction(*it))
-      {
-        MoveInstruction* result = getLastMoveInstruction(*(it->cast<CompositeInstruction>()), process_child_composites);
-        if (result)
-          return result;
-      }
-      else if (isMoveInstruction(*it))
-      {
-        return it->cast<MoveInstruction>();
-      }
-    }
-
-    if (composite_instruction.hasStartInstruction())
-      if (isMoveInstruction(composite_instruction.getStartInstruction()))
-        return composite_instruction.getStartInstruction().cast<MoveInstruction>();
-
-    return nullptr;
-  }
-
-  for (auto it = composite_instruction.rbegin(); it != composite_instruction.rend(); ++it)
-    if (isMoveInstruction(*it))
-      return it->cast<MoveInstruction>();
-
-  if (composite_instruction.hasStartInstruction())
-    if (isMoveInstruction(composite_instruction.getStartInstruction()))
-      return composite_instruction.getStartInstruction().cast<MoveInstruction>();
-
-  return nullptr;
-}
-
-long getMoveInstructionsCount(const CompositeInstruction& composite_instruction, bool process_child_composites)
+long getInstructionCountHelper(const CompositeInstruction& composite_instruction,
+                               locateFilterFn locate_filter,
+                               bool process_child_composites,
+                               bool first_composite)
 {
   long cnt = 0;
   if (composite_instruction.hasStartInstruction())
-    if (isMoveInstruction(composite_instruction.getStartInstruction()))
+    if (!locate_filter ||
+        locate_filter(composite_instruction.getStartInstruction(), composite_instruction, first_composite))
       ++cnt;
 
   if (process_child_composites)
   {
     for (const auto& instruction : composite_instruction)
     {
-      if (isCompositeInstruction(instruction))
-        cnt += getMoveInstructionsCount(*(instruction.cast_const<CompositeInstruction>()), process_child_composites);
-      else if (isMoveInstruction(instruction))
+      if (!locate_filter || locate_filter(instruction, composite_instruction, first_composite))
         ++cnt;
+
+      if (isCompositeInstruction(instruction))
+        cnt += getInstructionCountHelper(
+            *(instruction.cast_const<CompositeInstruction>()), locate_filter, process_child_composites, false);
     }
     return cnt;
   }
 
-  cnt += std::count_if(
-      composite_instruction.begin(), composite_instruction.end(), [](const auto& i) { return isMoveInstruction(i); });
+  cnt += std::count_if(composite_instruction.begin(), composite_instruction.end(), [=](const auto& i) {
+    return (!locate_filter || locate_filter(i, composite_instruction, first_composite));
+  });
 
   return cnt;
 }
 
-long getPlanInstructionsCount(const CompositeInstruction& composite_instruction, bool process_child_composites)
+const Instruction* getFirstInstruction(const CompositeInstruction& composite_instruction,
+                                       locateFilterFn locate_filter,
+                                       bool process_child_composites)
 {
-  long cnt = 0;
-  if (composite_instruction.hasStartInstruction())
-    if (isPlanInstruction(composite_instruction.getStartInstruction()))
-      ++cnt;
+  return getFirstInstructionHelper(composite_instruction, locate_filter, process_child_composites, true);
+}
 
-  if (process_child_composites)
-  {
-    for (const auto& instruction : composite_instruction)
-    {
-      if (isCompositeInstruction(instruction))
-        cnt += getPlanInstructionsCount(*(instruction.cast_const<CompositeInstruction>()), process_child_composites);
-      else if (isPlanInstruction(instruction))
-        ++cnt;
-    }
-    return cnt;
-  }
+Instruction* getFirstInstruction(CompositeInstruction& composite_instruction,
+                                 locateFilterFn locate_filter,
+                                 bool process_child_composites)
+{
+  return getFirstInstructionHelper(composite_instruction, locate_filter, process_child_composites, true);
+}
 
-  cnt += std::count_if(
-      composite_instruction.begin(), composite_instruction.end(), [](const auto& i) { return isPlanInstruction(i); });
+const Instruction* getLastInstruction(const CompositeInstruction& composite_instruction,
+                                      locateFilterFn locate_filter,
+                                      bool process_child_composites)
+{
+  return getLastInstructionHelper(composite_instruction, locate_filter, process_child_composites, true);
+}
 
-  return cnt;
+Instruction* getLastInstruction(CompositeInstruction& composite_instruction,
+                                locateFilterFn locate_filter,
+                                bool process_child_composites)
+{
+  return getLastInstructionHelper(composite_instruction, locate_filter, process_child_composites, true);
+}
+
+long getInstructionCount(const CompositeInstruction& composite_instruction,
+                         locateFilterFn locate_filter,
+                         bool process_child_composites)
+{
+  return getInstructionCountHelper(composite_instruction, locate_filter, process_child_composites, true);
 }
 
 const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint)
@@ -384,29 +273,42 @@ const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint)
  * @brief Helper function used by Flatten. Not intended for direct use
  * @param flattened Vector of instructions representing the full flattened composite
  * @param composite Composite instruction to be flattened
+ * @param filter Used to filter only what should be considered. Should return true to include otherwise false
+ * @param first_composite Indicates if the composite being processed is the top most composite
  */
 void flattenHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
                    CompositeInstruction& composite,
-                   const flattenFilter& filter)
+                   flattenFilterFn filter,
+                   bool first_composite)
 {
+  if (composite.hasStartInstruction())
+    if (!filter || filter(composite.getStartInstruction(), composite, first_composite))
+      flattened.emplace_back(composite.getStartInstruction());
+
   for (auto& i : composite)
   {
     if (isCompositeInstruction(i))
-      flattenHelper(flattened, *(i.cast<CompositeInstruction>()), filter);
-    else if (!filter || (filter && filter(i)))
+    {
+      // By default composite instructions will not be stored just it children, but this allows for the filter to
+      // indicate that they should be stored.
+      if (filter)
+        if (filter(i, composite, first_composite))
+          flattened.emplace_back(i);
+
+      flattenHelper(flattened, *(i.cast<CompositeInstruction>()), filter, false);
+    }
+    else if (!filter || (filter && filter(i, composite, first_composite)))
+    {
       flattened.emplace_back(i);
+    }
   }
 }
 
 std::vector<std::reference_wrapper<Instruction>> flatten(CompositeInstruction& composite_instruction,
-                                                         const flattenFilter& filter)
+                                                         flattenFilterFn filter)
 {
   std::vector<std::reference_wrapper<Instruction>> flattened;
-  if (composite_instruction.hasStartInstruction())
-    if (!filter || (filter && filter(composite_instruction.getStartInstruction())))
-      flattened.emplace_back(composite_instruction.getStartInstruction());
-
-  flattenHelper(flattened, composite_instruction, filter);
+  flattenHelper(flattened, composite_instruction, filter, true);
   return flattened;
 }
 
@@ -414,30 +316,42 @@ std::vector<std::reference_wrapper<Instruction>> flatten(CompositeInstruction& c
  * @brief Helper function used by Flatten. Not intended for direct use
  * @param flattened Vector of instructions representing the full flattened composite
  * @param composite Composite instruction to be flattened
+ * @param filter Used to filter only what should be considered. Should return true to include otherwise false
+ * @param first_composite Indicates if the composite being processed is the top most composite
  */
 void flattenHelper(std::vector<std::reference_wrapper<const Instruction>>& flattened,
                    const CompositeInstruction& composite,
-                   const flattenFilter& filter)
+                   flattenFilterFn filter,
+                   bool first_composite)
 {
+  if (composite.hasStartInstruction())
+    if (!filter || filter(composite.getStartInstruction(), composite, first_composite))
+      flattened.emplace_back(composite.getStartInstruction());
+
   for (auto& i : composite)
   {
     if (isCompositeInstruction(i))
-      flattenHelper(flattened, *(i.cast_const<CompositeInstruction>()), filter);
-    else if (!filter || (filter && filter(i)))
+    {
+      // By default composite instructions will not be stored just it children, but this allows for the filter to
+      // indicate that they should be stored.
+      if (filter)
+        if (filter(i, composite, first_composite))
+          flattened.emplace_back(i);
+
+      flattenHelper(flattened, *(i.cast_const<CompositeInstruction>()), filter, false);
+    }
+    else if (!filter || filter(i, composite, first_composite))
+    {
       flattened.emplace_back(i);
+    }
   }
 }
 
 std::vector<std::reference_wrapper<const Instruction>> flatten(const CompositeInstruction& composite_instruction,
-                                                               const flattenFilter& filter)
+                                                               flattenFilterFn filter)
 {
   std::vector<std::reference_wrapper<const Instruction>> flattened;
-
-  if (composite_instruction.hasStartInstruction())
-    if (!filter || (filter && filter(composite_instruction.getStartInstruction())))
-      flattened.emplace_back(composite_instruction.getStartInstruction());
-
-  flattenHelper(flattened, composite_instruction, filter);
+  flattenHelper(flattened, composite_instruction, filter, true);
   return flattened;
 }
 
@@ -446,52 +360,54 @@ std::vector<std::reference_wrapper<const Instruction>> flatten(const CompositeIn
  * @param flattened Vector of instructions representing the full flattened composite
  * @param composite Composite instruction to be flattened
  * @param pattern CompositeInstruction used to determine if instruction will be flattened
- * @param include_composite If true, CompositeInstructions will be included in the final flattened vector
+ * @param filter Used to filter only what should be considered. Should return true to include otherwise false
+ * @param first_composite Indicates if the composite being processed is the top most composite
  */
 void flattenToPatternHelper(std::vector<std::reference_wrapper<Instruction>>& flattened,
                             CompositeInstruction& composite,
                             const CompositeInstruction& pattern,
-                            const bool& process_child_composites)
+                            flattenFilterFn filter,
+                            bool first_composite)
 {
-  if (composite.size() != pattern.size())
+  if (composite.size() != pattern.size() || composite.hasStartInstruction() != pattern.hasStartInstruction())
   {
     CONSOLE_BRIDGE_logError("Instruction and pattern sizes are mismatched");
     return;
   }
 
+  if (composite.hasStartInstruction())
+    if (!filter || filter(composite.getStartInstruction(), composite, first_composite))
+      flattened.emplace_back(composite.getStartInstruction());
+
   for (std::size_t i = 0; i < pattern.size(); i++)
   {
     if (isCompositeInstruction(pattern.at(i)) && isCompositeInstruction(composite[i]))
     {
-      if (process_child_composites)
-        flattened.emplace_back(composite[i]);
+      // By default composite instructions will not be stored just it children, but this allows for the filter to
+      // indicate that they should be stored.
+      if (filter)
+        if (filter(composite[i], composite, first_composite))
+          flattened.emplace_back(composite[i]);
+
       flattenToPatternHelper(flattened,
                              *(composite[i].cast<CompositeInstruction>()),
                              *pattern.at(i).cast_const<CompositeInstruction>(),
-                             process_child_composites);
+                             filter,
+                             false);
     }
     else
+    {
       flattened.emplace_back(composite[i]);
+    }
   }
 }
 
 std::vector<std::reference_wrapper<Instruction>> flattenToPattern(CompositeInstruction& composite_instruction,
                                                                   const CompositeInstruction& pattern,
-                                                                  const bool process_child_composites)
+                                                                  flattenFilterFn filter)
 {
-  if (composite_instruction.size() != pattern.size() &&
-      composite_instruction.hasStartInstruction() == pattern.hasStartInstruction())
-  {
-    CONSOLE_BRIDGE_logError("Instruction and pattern sizes are mismatched");
-    return std::vector<std::reference_wrapper<Instruction>>();
-  }
-
   std::vector<std::reference_wrapper<Instruction>> flattened;
-
-  if (composite_instruction.hasStartInstruction())
-    flattened.emplace_back(composite_instruction.getStartInstruction());
-
-  flattenToPatternHelper(flattened, composite_instruction, pattern, process_child_composites);
+  flattenToPatternHelper(flattened, composite_instruction, pattern, filter, true);
   return flattened;
 }
 
@@ -500,53 +416,55 @@ std::vector<std::reference_wrapper<Instruction>> flattenToPattern(CompositeInstr
  * @param flattened Vector of instructions representing the full flattened composite
  * @param composite Composite instruction to be flattened
  * @param pattern CompositeInstruction used to determine if instruction will be flattened
- * @param include_composite If true, CompositeInstructions will be included in the final flattened vector
+ * @param filter Used to filter only what should be considered. Should return true to include otherwise false
+ * @param first_composite Indicates if the composite being processed is the top most composite
  */
 void flattenToPatternHelper(std::vector<std::reference_wrapper<const Instruction>>& flattened,
                             const CompositeInstruction& composite,
                             const CompositeInstruction& pattern,
-                            const bool& process_child_composites)
+                            flattenFilterFn filter,
+                            bool first_composite)
 {
-  if (composite.size() != pattern.size())
+  if (composite.size() != pattern.size() || composite.hasStartInstruction() != pattern.hasStartInstruction())
   {
     CONSOLE_BRIDGE_logError("Instruction and pattern sizes are mismatched");
     return;
   }
 
+  if (composite.hasStartInstruction())
+    if (!filter || filter(composite.getStartInstruction(), composite, first_composite))
+      flattened.emplace_back(composite.getStartInstruction());
+
   for (std::size_t i = 0; i < pattern.size(); i++)
   {
     if (isCompositeInstruction(pattern.at(i)) && isCompositeInstruction(composite[i]))
     {
-      if (process_child_composites)
-        flattened.emplace_back(composite[i]);
+      // By default composite instructions will not be stored just it children, but this allows for the filter to
+      // indicate that they should be stored.
+      if (filter)
+        if (filter(composite[i], composite, first_composite))
+          flattened.emplace_back(composite[i]);
+
       flattenToPatternHelper(flattened,
                              *(composite[i].cast_const<CompositeInstruction>()),
                              *pattern.at(i).cast_const<CompositeInstruction>(),
-                             process_child_composites);
+                             filter,
+                             false);
     }
     else
+    {
       flattened.emplace_back(composite[i]);
+    }
   }
 }
 
 std::vector<std::reference_wrapper<const Instruction>>
 flattenToPattern(const CompositeInstruction& composite_instruction,
                  const CompositeInstruction& pattern,
-                 const bool process_child_composites)
+                 flattenFilterFn filter)
 {
-  if (composite_instruction.size() != pattern.size() &&
-      composite_instruction.hasStartInstruction() == pattern.hasStartInstruction())
-  {
-    CONSOLE_BRIDGE_logError("Instruction and pattern sizes are mismatched");
-    return std::vector<std::reference_wrapper<const Instruction>>();
-  }
-
   std::vector<std::reference_wrapper<const Instruction>> flattened;
-
-  if (composite_instruction.hasStartInstruction())
-    flattened.emplace_back(composite_instruction.getStartInstruction());
-
-  flattenToPatternHelper(flattened, composite_instruction, pattern, process_child_composites);
+  flattenToPatternHelper(flattened, composite_instruction, pattern, filter, true);
   return flattened;
 }
 

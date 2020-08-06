@@ -68,6 +68,7 @@ class TesseractPlanningSimplePlannerFixedSizeAssignPositionUnit : public ::testi
 protected:
   Tesseract::Ptr tesseract_ptr_;
   ManipulatorInfo manip_info_;
+  std::vector<std::string> joint_names_;
 
   void SetUp() override
   {
@@ -80,6 +81,8 @@ protected:
     tesseract_ptr_ = tesseract;
 
     manip_info_.manipulator = "manipulator";
+    joint_names_ =
+        tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
   }
 };
 
@@ -90,6 +93,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeAssignPositionUnit, Eigen_AssignJo
   request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
   Eigen::VectorXd vec1 = Eigen::VectorXd::Zero(7);
   JointWaypoint wp1 = vec1;
+  wp1.joint_names = joint_names_;
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
   auto composite = fixedSizeAssignJointPosition(vec1, instr, request, ManipulatorInfo(), 10);
   EXPECT_EQ(composite.size(), 10);
@@ -108,6 +112,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeAssignPositionUnit, JointCartesian
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
   JointWaypoint wp1 = Eigen::VectorXd::Zero(7);
+  wp1.joint_names = joint_names_;
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
   auto composite = fixedSizeAssignJointPosition(wp1, wp2, instr, request, ManipulatorInfo(), 10);
@@ -128,6 +133,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeAssignPositionUnit, CartesianJoint
   request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   JointWaypoint wp2 = Eigen::VectorXd::Zero(7);
+  wp2.joint_names = joint_names_;
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
   auto composite = fixedSizeAssignJointPosition(wp1, wp2, instr, request, ManipulatorInfo(), 10);
   EXPECT_EQ(composite.size(), 10);

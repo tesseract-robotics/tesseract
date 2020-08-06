@@ -33,102 +33,71 @@
 namespace tesseract_planning
 {
 /**
- * @brief Get the first Plan Instruction in a Composite Instruction
- * This does consider the start instruction in the composite instruction
+ * @brief This is used for filtering only what you want in the vector
+ *
+ * The first parameter is the instruction consider, the second is it's parent composite instruction, and the third is
+ * indicates if the parent composite is the top most composite
+ * For example an Instruction that is part of a composite
+ */
+using flattenFilterFn =
+    std::function<bool(const Instruction&, const CompositeInstruction&, bool parent_is_first_composite)>;
+using locateFilterFn =
+    std::function<bool(const Instruction&, const CompositeInstruction&, bool parent_is_first_composite)>;
+
+/**
+ * @brief Get the first Instruction in a Composite Instruction that is identified by the filter
  * @param composite_instruction Composite Instruction to search
+ * @param locate_filter The filter to indicate if an instruction should be considered
  * @param process_child_composites Indicate if child Composite Instructions should be searched
- * @return The first Plan Instruction (Const)
+ * @return The first Instruction (Const)
  */
-const PlanInstruction* getFirstPlanInstruction(const CompositeInstruction& composite_instruction,
-                                               bool process_child_composites = true);
+const Instruction* getFirstInstruction(const CompositeInstruction& composite_instruction,
+                                       locateFilterFn locate_filter = nullptr,
+                                       bool process_child_composites = true);
 
 /**
- * @brief Get the last Plan Instruction in a Composite Instruction
- * This does consider the start instruction in the composite instruction
+ * @brief Get the first Instruction in a Composite Instruction that is identified by the filter
  * @param composite_instruction Composite Instruction to search
+ * @param locate_filter The filter to indicate if an instruction should be considered
  * @param process_child_composites Indicate if child Composite Instructions should be searched
- * @return The last Plan Instruction (Const)
+ * @return The first Instruction (Non-Const)
  */
-const PlanInstruction* getLastPlanInstruction(const CompositeInstruction& composite_instruction,
-                                              bool process_child_composites = true);
+Instruction* getFirstInstruction(CompositeInstruction& composite_instruction,
+                                 locateFilterFn locate_filter = nullptr,
+                                 bool process_child_composites = true);
 
 /**
- * @brief Get the first Plan Instruction in a Composite Instruction
- * This does consider the start instruction in the composite instruction
+ * @brief Get the last Instruction in a Composite Instruction that is identified by the filter
  * @param composite_instruction Composite Instruction to search
- * @param process_child_composites Indicate if child Composite Instructions should be searched.
- * @return The first Plan Instruction (Non-Const)
- */
-PlanInstruction* getFirstPlanInstruction(CompositeInstruction& composite_instruction,
-                                         bool process_child_composites = true);
-
-/**
- * @brief Get the last Plan Instruction in a Composite Instruction
- * This does consider the start instruction in the composite instruction
- * @param composite_instruction Composite Instruction to search
+ * @param locate_filter The filter to indicate if an instruction should be considered
  * @param process_child_composites Indicate if child Composite Instructions should be searched
- * @return The last Plan Instruction (Non-Const)
+ * @return The Last Instruction (Const)
  */
-PlanInstruction* getLastPlanInstruction(CompositeInstruction& composite_instruction,
-                                        bool process_child_composites = true);
+const Instruction* getLastInstruction(const CompositeInstruction& composite_instruction,
+                                      locateFilterFn locate_filter = nullptr,
+                                      bool process_child_composites = true);
 
 /**
- * @brief Get the first Move Instruction in a Composite Instruction
- * This does consider the start instruction in the composite instruction
+ * @brief Get the last Instruction in a Composite Instruction that is identified by the filter
  * @param composite_instruction Composite Instruction to search
+ * @param locate_filter The filter to indicate if an instruction should be considered
  * @param process_child_composites Indicate if child Composite Instructions should be searched
- * @return The first Move Instruction (Const)
+ * @return The Last Instruction (Non-Const)
  */
-const MoveInstruction* getFirstMoveInstruction(const CompositeInstruction& composite_instruction,
-                                               bool process_child_composites = true);
+Instruction* getLastInstruction(CompositeInstruction& composite_instruction,
+                                locateFilterFn locate_filter = nullptr,
+                                bool process_child_composites = true);
 
 /**
- * @brief Get the last Move Instruction in a Composite Instruction
- * This does consider the start instruction in the composite instruction
- * @param composite_instruction Composite Instruction to search
- * @param process_child_composites Indicate if child Composite Instructions should be searched
- * @return The last Move Instruction (Const)
- */
-const MoveInstruction* getLastMoveInstruction(const CompositeInstruction& composite_instruction,
-                                              bool process_child_composites = true);
-
-/**
- * @brief Get the first Move Instruction in a Composite Instruction
- * This does consider the start instruction in the composite instruction
- * @param composite_instruction Composite Instruction to search
- * @param process_child_composites Indicate if child Composite Instructions should be searched
- * @return The first Move Instruction (Non-Const)
- */
-MoveInstruction* getFirstMoveInstruction(CompositeInstruction& composite_instruction,
-                                         bool process_child_composites = true);
-
-/**
- * @brief Get the last Move Instruction in a Composite Instruction
- * This does consider the start instruction in the composite instruction
- * @param composite_instruction Composite Instruction to search
- * @param process_child_composites Indicate if child Composite Instructions should be searched
- * @return The last Move Instruction (Non-Const)
- */
-MoveInstruction* getLastMoveInstruction(CompositeInstruction& composite_instruction,
-                                        bool process_child_composites = true);
-
-/**
- * @brief Get number of Move Instruction in a Composite Instruction
- * This does consider the start instruction in the composite instruction
+ * @brief Get number of Instruction in a Composite Instruction
  * @param composite_instruction The Composite Instruction to process
+ * @param locate_filter The filter to indicate if an instruction should be considered
  * @param process_child_composites Indicate if child Composite Instructions should be searched
- * @return The number of Move Instructions
+ * @return The number of Instructions
  */
-long getMoveInstructionsCount(const CompositeInstruction& composite_instruction, bool process_child_composites = true);
-
-/**
- * @brief Get number of Plan Instruction in a Composite Instruction
- * This does consider the start instruction in the composite instruction
- * @param composite_instruction The Composite Instruction to process
- * @param process_child_composites Indicate if child Composite Instructions should be searched
- * @return The number of Plan Instructions
- */
-long getPlanInstructionsCount(const CompositeInstruction& composite_instruction, bool process_child_composites = true);
+long getInstructionCount(const CompositeInstruction& composite_instruction,
+                         locateFilterFn locate_filter = nullptr,
+                         bool process_child_composites = true);
 
 /**
  * @brief Extracts joint position from waypoint types that store joint positions
@@ -138,73 +107,50 @@ long getPlanInstructionsCount(const CompositeInstruction& composite_instruction,
  */
 const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint);
 
-/** @brief This is used for filtering only what you want in the vector **/
-using flattenFilter = std::function<bool(const Instruction&)>;
-
 /**
- * @brief Flattens a CompositeInstruction into a vector of Instruction&
- *
- * If /p composite_instruction parameter has a start instruction it is added but child composites are not check for
- * start instructions.
- *
+ * @brief Flattens a CompositeInstruction into a vector of Instruction
  * @param composite_instruction Input composite instruction to be flattened
- * @param filter Used to filter only what. Should return true to include otherwise false
+ * @param filter Used to filter only what should be considered. Should return true to include otherwise false
  * @return A new flattened vector referencing the original instruction elements
  */
 std::vector<std::reference_wrapper<Instruction>> flatten(CompositeInstruction& composite_instruction,
-                                                         const flattenFilter& filter = nullptr);
+                                                         flattenFilterFn filter = nullptr);
 
 /**
  * @brief Flattens a CompositeInstruction into a vector of Instruction&
- *
- * If /p composite_instruction parameter has a start instruction it is added but child composites are not check for
- * start instructions.
- *
  * @param instruction Input composite instruction to be flattened
- * @param filter Used to filter only what. Should return true to include otherwise false
+ * @param filter Used to filter only what should be considered. Should return true to include otherwise false
  * @return A new flattened vector referencing the original instruction elements
  */
 std::vector<std::reference_wrapper<const Instruction>> flatten(const CompositeInstruction& composite_instruction,
-                                                               const flattenFilter& filter = nullptr);
+                                                               flattenFilterFn filter = nullptr);
 
 /**
  * @brief Flattens a composite instruction to the same pattern as the pattern composite instruction. ie, an element of
  * instruction will only be flattened if the corresponding element in pattern is flattenable.
- *
- * If /p composite_instruction parameter has a start instruction it is added but child composites are not check for
- * start instructions.
- *
  * The motivation for this utility is a case where you flatten only the elements in a seed that correspond to composites
  * in the parent instruction
  * @param instruction CompositeInstruction that will be flattened
  * @param pattern CompositeInstruction used to determine if instruction will be flattened
- * @param include_composite Default: false. If true, CompositeInstructions will be included in the final flattened
- * vector
+ * @param filter Used to filter only what should be considered. Should return true to include otherwise false
  * @return A new flattened vector referencing the original instruction elements
  */
 std::vector<std::reference_wrapper<Instruction>> flattenToPattern(CompositeInstruction& composite_instruction,
                                                                   const CompositeInstruction& pattern,
-                                                                  bool process_child_composites = false);
+                                                                  flattenFilterFn filter = nullptr);
 
 /**
  * @brief Flattens a composite instruction to the same pattern as the pattern composite instruction. ie, an element of
  * instruction will only be flattened if the corresponding element in pattern is flattenable.
- *
- * If /p composite_instruction parameter has a start instruction it is added but child composites are not check for
- * start instructions.
- *
- * The motivation for this utility is a case where you flatten only the elements in a seed that correspond to composites
- * in the parent instruction
  * @param instruction CompositeInstruction that will be flattened
  * @param pattern CompositeInstruction used to determine if instruction will be flattened
- * @param include_composite Default: false. If true, CompositeInstructions will be included in the final flattened
- * vector
+ * @param filter Used to filter only what should be considered. Should return true to include otherwise false
  * @return A new flattened vector referencing the original instruction elements
  */
 std::vector<std::reference_wrapper<const Instruction>>
 flattenToPattern(const CompositeInstruction& composite_instruction,
                  const CompositeInstruction& pattern,
-                 bool process_child_composites = false);
+                 flattenFilterFn filter = nullptr);
 
 /**
  * @brief This creates a seed by looping over and replacing every plan instruction with a composite instruction
