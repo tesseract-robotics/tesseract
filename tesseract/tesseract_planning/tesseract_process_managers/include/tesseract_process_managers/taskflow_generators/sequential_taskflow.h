@@ -48,12 +48,12 @@ using SequentialProcesses = std::vector<std::pair<ProcessGenerator::Ptr, Sequent
 /** @brief This class generates taskflows for a sequential failure tree. Each process is executed in order until one
  * succeeds. Between each process, the validator tasks are executed (if not empty). For a process to succeed, the
  * process itself must succeed and all of the validators must succeed*/
-class SequentialFailureTreeTaskflow : public TaskflowGenerator
+class SequentialTaskflow : public TaskflowGenerator
 {
 public:
-  SequentialFailureTreeTaskflow() = default;
-  ~SequentialFailureTreeTaskflow() override = default;
-  SequentialFailureTreeTaskflow(SequentialProcesses processes, std::string name = "SequentialFailureTreeTaskflow");
+  SequentialTaskflow() = default;
+  ~SequentialTaskflow() override = default;
+  SequentialTaskflow(SequentialProcesses processes, std::string name = "SequentialTaskflow");
 
   const std::string& getName() const override;
 
@@ -77,7 +77,7 @@ private:
 
   SequentialProcesses processes_;
   std::vector<ProcessGenerator::Ptr> validators_;
-  std::vector<std::shared_ptr<tf::Taskflow>> sequential_failure_trees_;
+  std::vector<std::shared_ptr<tf::Taskflow>> sequential_trees_;
   std::vector<tf::Task> process_tasks_;
   std::string name_;
 };

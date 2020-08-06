@@ -31,24 +31,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <taskflow/taskflow.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/taskflow_generators/sequential_failure_tree_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/sequential_taskflow.h>
 
 namespace tesseract_planning
 {
-SequentialFailureTreeTaskflow::SequentialFailureTreeTaskflow(SequentialProcesses processes, std::string name)
+SequentialTaskflow::SequentialTaskflow(SequentialProcesses processes, std::string name)
   : processes_(std::move(processes)), name_(std::move(name))
 {
 }
 
-const std::string& SequentialFailureTreeTaskflow::getName() const { return name_; }
+const std::string& SequentialTaskflow::getName() const { return name_; }
 
-tf::Taskflow& SequentialFailureTreeTaskflow::generateTaskflow(ProcessInput input,
-                                                              std::function<void()> done_cb,
-                                                              std::function<void()> error_cb)
+tf::Taskflow& SequentialTaskflow::generateTaskflow(ProcessInput input,
+                                                   std::function<void()> done_cb,
+                                                   std::function<void()> error_cb)
 {
   // Create and store the taskflow
   auto taskflow = std::make_shared<tf::Taskflow>(name_);
-  sequential_failure_trees_.push_back(taskflow);
+  sequential_trees_.push_back(taskflow);
 
   // Add "Done" task
   std::size_t done_task_idx = process_tasks_.size();
@@ -56,7 +56,7 @@ tf::Taskflow& SequentialFailureTreeTaskflow::generateTaskflow(ProcessInput input
     process_tasks_.push_back(taskflow->emplace(done_cb).name("Done Callback"));
   else
     process_tasks_.push_back(
-        taskflow->emplace([&]() { std::cout << "Done SequentialFailureTreeTaskflow\n"; }).name("Done Callback"));
+        taskflow->emplace([&]() { std::cout << "Done SequentialTaskflow\n"; }).name("Done Callback"));
 
   // Add "Error" task
   std::size_t error_task_idx = process_tasks_.size();
@@ -64,7 +64,7 @@ tf::Taskflow& SequentialFailureTreeTaskflow::generateTaskflow(ProcessInput input
     process_tasks_.push_back(taskflow->emplace(error_cb).name("Error Callback"));
   else
     process_tasks_.push_back(
-        taskflow->emplace([&]() { std::cout << "Error SequentialFailureTreeTaskflow\n"; }).name("Error Callback"));
+        taskflow->emplace([&]() { std::cout << "Error SequentialTaskflow\n"; }).name("Error Callback"));
 
   // Generate process tasks using each process generator
   std::size_t first_task_idx = process_tasks_.size();
@@ -137,19 +137,19 @@ tf::Taskflow& SequentialFailureTreeTaskflow::generateTaskflow(ProcessInput input
   return *taskflow;
 }
 
-void SequentialFailureTreeTaskflow::abort()
+void SequentialTaskflow::abort()
 {
   for (auto gen : processes_)
     gen.first->setAbort(true);
 }
 
-void SequentialFailureTreeTaskflow::reset()
+void SequentialTaskflow::reset()
 {
   for (auto gen : processes_)
     gen.first->setAbort(false);
 }
 
-void SequentialFailureTreeTaskflow::registerProcess(const ProcessGenerator::Ptr& process, SequentialTaskType task_type)
+void SequentialTaskflow::registerProcess(const ProcessGenerator::Ptr& process, SequentialTaskType task_type)
 {
   processes_.emplace_back(process, task_type);
 }

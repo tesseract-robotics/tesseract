@@ -8,7 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/command_language_utils.h>
 #include <tesseract_process_managers/process_generators/random_process_generator.h>
-#include <tesseract_process_managers/taskflow_generators/sequential_failure_tree_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/sequential_taskflow.h>
 #include <tesseract_process_managers/examples/freespace_example_program.h>
 #include <tesseract_process_managers/process_managers/freespace_process_manager.h>
 #include <tesseract_process_managers/process_managers/default_processes/default_freespace_processes.h>
@@ -75,7 +75,7 @@ int main()
   // --------------------
   // Initialize Freespace Manager
   // --------------------
-  auto freespace_taskflow_generator = std::make_unique<SequentialFailureTreeTaskflow>(defaultFreespaceProcesses());
+  auto freespace_taskflow_generator = std::make_unique<SequentialTaskflow>(defaultFreespaceProcesses());
   FreespaceProcessManager freespace_manager(std::move(freespace_taskflow_generator));
   freespace_manager.init(input);
 

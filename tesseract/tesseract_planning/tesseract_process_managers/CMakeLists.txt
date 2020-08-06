@@ -21,7 +21,7 @@ add_library(${PROJECT_NAME} SHARED
     src/process_generators/motion_planner_process_generator.cpp
     src/process_managers/freespace_process_manager.cpp
     src/process_managers/raster_process_manager.cpp
-    src/taskflow_generators/sequential_failure_tree_taskflow.cpp)
+    src/taskflow_generators/sequential_taskflow.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC
     console_bridge
     Taskflow::Taskflow
