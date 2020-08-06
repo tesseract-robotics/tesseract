@@ -8,7 +8,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/command_language_utils.h>
 #include <tesseract_process_managers/process_generators/random_process_generator.h>
-#include <tesseract_process_managers/taskflow_generators/sequential_failure_tree_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/sequential_taskflow.h>
 #include <tesseract_process_managers/examples/raster_example_program.h>
 #include <tesseract_process_managers/process_managers/raster_process_manager.h>
 #include <tesseract_process_managers/process_managers/default_processes/default_raster_processes.h>
@@ -77,8 +77,8 @@ int main()
   // --------------------
   // Initialize Freespace Manager
   // --------------------
-  auto freespace_taskflow_generator = std::make_unique<SequentialFailureTreeTaskflow>(defaultFreespaceProcesses());
-  auto raster_taskflow_generator = std::make_unique<SequentialFailureTreeTaskflow>(defaultRasterProcesses());
+  auto freespace_taskflow_generator = std::make_unique<SequentialTaskflow>(defaultFreespaceProcesses());
+  auto raster_taskflow_generator = std::make_unique<SequentialTaskflow>(defaultRasterProcesses());
   RasterProcessManager raster_manager(std::move(freespace_taskflow_generator), std::move(raster_taskflow_generator));
   if (!raster_manager.init(input))
     CONSOLE_BRIDGE_logError("Initialization Failed");
