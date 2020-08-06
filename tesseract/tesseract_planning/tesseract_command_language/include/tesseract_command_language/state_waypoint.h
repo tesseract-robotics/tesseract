@@ -48,6 +48,7 @@ public:
 
   int getType() const { return static_cast<int>(WaypointType::STATE_WAYPOINT); }
 
+  /** @brief The joint corresponding to the position vector. */
   std::vector<std::string> joint_names;
 
   /**
@@ -69,7 +70,7 @@ public:
   Eigen::VectorXd effort;
 
   /** @brief The Time from start at the waypoint */
-  double time;
+  double time{ 0 };
 };
 }  // namespace tesseract_planning
 

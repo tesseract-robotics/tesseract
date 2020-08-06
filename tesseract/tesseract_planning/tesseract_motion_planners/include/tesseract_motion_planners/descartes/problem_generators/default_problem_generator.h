@@ -83,8 +83,8 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
   const std::vector<std::string>& active_links = adjacency_map->getActiveLinkNames();
 
   // Flatten the input for planning
-  auto instructions_flat = flatten(request.instructions);
-  auto seed_flat = flattenToPattern(request.seed, request.instructions);
+  auto instructions_flat = flattenProgram(request.instructions);
+  auto seed_flat = flattenProgramToPattern(request.seed, request.instructions);
 
   std::size_t start_index = 0;  // If it has a start instruction then skip first instruction in instructions_flat
   int index = 0;

@@ -79,7 +79,7 @@ int main()
   // --------------------
   auto freespace_taskflow_generator = std::make_unique<SequentialFailureTreeTaskflow>(defaultFreespaceProcesses());
   auto raster_taskflow_generator = std::make_unique<SequentialFailureTreeTaskflow>(defaultRasterProcesses());
-  RasterProcessManager raster_manager(std::move(freespace_taskflow_generator), std::move(raster_taskflow_generator), 1);
+  RasterProcessManager raster_manager(std::move(freespace_taskflow_generator), std::move(raster_taskflow_generator));
   if (!raster_manager.init(input))
     CONSOLE_BRIDGE_logError("Initialization Failed");
 
