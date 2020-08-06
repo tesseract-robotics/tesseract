@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_process_managers/process_manager.h>
 #include <tesseract_process_managers/process_input.h>
 #include <tesseract_process_managers/process_generator.h>
-#include <tesseract_process_managers/taskflow_generators/sequential_failure_tree_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/sequential_taskflow.h>
 
 namespace tesseract_planning
 {
