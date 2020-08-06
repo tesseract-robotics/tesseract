@@ -176,9 +176,11 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
 
   // Specify a start waypoint
   JointWaypoint wp1 = Eigen::Map<const Eigen::VectorXd>(start_state.data(), static_cast<long>(start_state.size()));
+  wp1.joint_names = fwd_kin->getJointNames();
 
   // Specify a end waypoint
   JointWaypoint wp2 = Eigen::Map<const Eigen::VectorXd>(end_state.data(), static_cast<long>(end_state.size()));
+  wp2.joint_names = fwd_kin->getJointNames();
 
   // Define Start Instruction
   PlanInstruction start_instruction(wp1, PlanInstructionType::START, "TEST_PROFILE");
@@ -227,7 +229,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
 
   EXPECT_TRUE(&status);
   EXPECT_TRUE(planner_response.results.hasStartInstruction());
-  EXPECT_EQ(getMoveInstructionsCount(planner_response.results), 11);
+  EXPECT_EQ(getMoveInstructionCount(planner_response.results), 11);
   EXPECT_TRUE(wp1.isApprox(getJointPosition(getFirstMoveInstruction(planner_response.results)->getWaypoint()), 1e-5));
   EXPECT_TRUE(wp2.isApprox(getJointPosition(getLastMoveInstruction(planner_response.results)->getWaypoint()), 1e-5));
 
@@ -236,6 +238,8 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
 
   // Define New Start Instruction
   wp1 = Eigen::Map<const Eigen::VectorXd>(swp.data(), static_cast<long>(swp.size()));
+  wp1.joint_names = fwd_kin->getJointNames();
+
   start_instruction = PlanInstruction(wp1, PlanInstructionType::START, "TEST_PROFILE");
 
   // Create a new program
@@ -262,7 +266,10 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   std::vector<double> ewp = { 0, 0.7, 0.0, 0, 0.0, 0, 0.0 };
 
   wp1 = Eigen::Map<const Eigen::VectorXd>(swp.data(), static_cast<long>(swp.size()));
+  wp1.joint_names = fwd_kin->getJointNames();
+
   wp2 = Eigen::Map<const Eigen::VectorXd>(ewp.data(), static_cast<long>(ewp.size()));
+  wp2.joint_names = fwd_kin->getJointNames();
 
   // Define Start Instruction
   start_instruction = PlanInstruction(wp1, PlanInstructionType::START, "TEST_PROFILE");
@@ -317,6 +324,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianGoalPlannerUnit)
 
   // Specify a start waypoint
   JointWaypoint wp1 = Eigen::Map<const Eigen::VectorXd>(start_state.data(), static_cast<long>(start_state.size()));
+  wp1.joint_names = fwd_kin->getJointNames();
 
   // Specify a end waypoint
   Eigen::Isometry3d goal = Eigen::Isometry3d::Identity();
@@ -370,7 +378,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianGoalPlannerUnit)
   }
   EXPECT_TRUE(&status);
   EXPECT_TRUE(planner_response.results.hasStartInstruction());
-  EXPECT_EQ(getMoveInstructionsCount(planner_response.results), 11);
+  EXPECT_EQ(getMoveInstructionCount(planner_response.results), 11);
   EXPECT_TRUE(wp1.isApprox(getJointPosition(getFirstMoveInstruction(planner_response.results)->getWaypoint()), 1e-5));
 
   Eigen::Isometry3d check_goal = Eigen::Isometry3d::Identity();
@@ -411,6 +419,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
 
   // Specify a end waypoint
   JointWaypoint wp2 = Eigen::Map<const Eigen::VectorXd>(end_state.data(), static_cast<long>(end_state.size()));
+  wp2.joint_names = fwd_kin->getJointNames();
 
   // Define Start Instruction
   PlanInstruction start_instruction(wp1, PlanInstructionType::START, "TEST_PROFILE");
@@ -459,7 +468,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
 
   EXPECT_TRUE(&status);
   EXPECT_TRUE(planner_response.results.hasStartInstruction());
-  EXPECT_EQ(getMoveInstructionsCount(planner_response.results), 11);
+  EXPECT_EQ(getMoveInstructionCount(planner_response.results), 11);
   EXPECT_TRUE(wp2.isApprox(getJointPosition(getLastMoveInstruction(planner_response.results)->getWaypoint()), 1e-5));
 
   Eigen::Isometry3d check_start = Eigen::Isometry3d::Identity();

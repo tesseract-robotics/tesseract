@@ -616,6 +616,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointConstraint)  // NOLINT
   {
     // Specify a Joint Waypoint as the finish
     JointWaypoint wp = Eigen::VectorXd::Zero(7);
+    wp.joint_names = joint_names;
     wp << 0, 0, 0, -1.57 + ind * 0.1, 0, 0, 0;
     if (ind == 0)
     {

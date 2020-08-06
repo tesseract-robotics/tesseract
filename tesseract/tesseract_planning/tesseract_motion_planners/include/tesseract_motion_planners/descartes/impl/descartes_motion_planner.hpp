@@ -118,8 +118,8 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
 
   // Flatten the results to make them easier to process
   response.results = request.seed;
-  auto results_flattened = flattenToPattern(response.results, request.instructions);
-  auto instructions_flattened = flatten(request.instructions);
+  auto results_flattened = flattenProgramToPattern(response.results, request.instructions);
+  auto instructions_flattened = flattenProgram(request.instructions);
 
   // Loop over the flattened results and add them to response if the input was a plan instruction
   Eigen::Index dof = problem->manip_fwd_kin->numJoints();

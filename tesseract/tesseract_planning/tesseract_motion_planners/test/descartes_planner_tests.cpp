@@ -48,7 +48,6 @@ using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
 using namespace tesseract_planning;
 using namespace tesseract_kinematics;
-using namespace opw_kinematics;
 using namespace descartes_light;
 using namespace descartes_core;
 
@@ -85,7 +84,6 @@ class TesseractPlanningDescartesUnit : public ::testing::Test
 {
 protected:
   Tesseract::Ptr tesseract_ptr_;
-  opw_kinematics::Parameters<double> opw_params_;
   ManipulatorInfo manip;
 
   void SetUp() override
