@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
 #include <tesseract_process_managers/process_generators/random_process_generator.h>
 #include <tesseract_process_managers/process_generators/validators/random_validator.h>
-#include <tesseract_process_managers/taskflow_generators/sequential_failure_tree_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/sequential_taskflow.h>
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
 #include <tesseract_motion_planners/simple/profile/simple_planner_default_plan_profile.h>
