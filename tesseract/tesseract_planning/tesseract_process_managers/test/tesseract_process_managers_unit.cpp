@@ -1,14 +1,12 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
-#include <opw_kinematics/opw_parameters.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
-#include <tesseract_kinematics/opw/opw_inv_kin.h>
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
-#include <tesseract_command_language/command_language_utils.h>
+#include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_process_managers/examples/raster_example_program.h>
 #include <tesseract_process_managers/examples/freespace_example_program.h>
 
@@ -17,7 +15,6 @@ using namespace tesseract_kinematics;
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
 using namespace tesseract_planning;
-using namespace opw_kinematics;
 
 std::string locateResource(const std::string& url)
 {
@@ -50,7 +47,6 @@ class TesseractProcessManagerUnit : public ::testing::Test
 {
 protected:
   Tesseract::Ptr tesseract_ptr_;
-  opw_kinematics::Parameters<double> opw_params_;
   ManipulatorInfo manip;
 
   void SetUp() override
@@ -90,8 +86,8 @@ TEST_F(TesseractProcessManagerUnit, RasterSimpleMotionPlannerTest)
   auto status = interpolator->solve(request, response);
   EXPECT_TRUE(status);
 
-  auto pcnt = getPlanInstructionsCount(request.instructions);
-  auto mcnt = getMoveInstructionsCount(response.results);
+  auto pcnt = getPlanInstructionCount(request.instructions);
+  auto mcnt = getMoveInstructionCount(response.results);
 
   // The first plan instruction is the start instruction and every other plan instruction should be converted into
   // ten move instruction.
@@ -121,8 +117,8 @@ TEST_F(TesseractProcessManagerUnit, FreespaceSimpleMotionPlannerTest)
   auto status = interpolator->solve(request, response);
   EXPECT_TRUE(status);
 
-  auto pcnt = getPlanInstructionsCount(request.instructions);
-  auto mcnt = getMoveInstructionsCount(response.results);
+  auto pcnt = getPlanInstructionCount(request.instructions);
+  auto mcnt = getMoveInstructionCount(response.results);
 
   // The first plan instruction is the start instruction and every other plan instruction should be converted into
   // ten move instruction.
