@@ -57,24 +57,24 @@ inline SequentialProcesses defaultRasterProcesses()
   // Setup Interpolator
   auto interpolator = std::make_shared<SimpleMotionPlanner>("INTERPOLATOR");
   interpolator->plan_profiles["RASTER"] = std::make_shared<SimplePlannerDefaultPlanProfile>();
-  auto interpolator_generator = std::make_shared<MotionPlannerProcessGenerator>(interpolator);
-  sp.emplace_back(interpolator_generator, SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE);
+  auto interpolator_generator = std::make_unique<MotionPlannerProcessGenerator>(interpolator);
+  sp.emplace_back(std::move(interpolator_generator), SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE);
 
   // Setup Descartes
   auto descartes_planner = std::make_shared<DescartesMotionPlanner<double>>();
   descartes_planner->problem_generator = &DefaultDescartesProblemGenerator<double>;
   descartes_planner->plan_profiles["RASTER"] = std::make_shared<DescartesDefaultPlanProfileD>();
-  auto descartes_generator = std::make_shared<MotionPlannerProcessGenerator>(descartes_planner);
+  auto descartes_generator = std::make_unique<MotionPlannerProcessGenerator>(descartes_planner);
   //  descartes_generator->validators.emplace_back(&randomValidator);
-  sp.emplace_back(descartes_generator, SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE);
+  sp.emplace_back(std::move(descartes_generator), SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE);
 
   // Setup TrajOpt
   auto trajopt_planner = std::make_shared<TrajOptMotionPlanner>();
   trajopt_planner->problem_generator = &DefaultTrajoptProblemGenerator;
   trajopt_planner->plan_profiles["RASTER"] = std::make_shared<TrajOptDefaultPlanProfile>();
   trajopt_planner->composite_profiles["RASTER"] = std::make_shared<TrajOptDefaultCompositeProfile>();
-  auto trajopt_generator = std::make_shared<MotionPlannerProcessGenerator>(trajopt_planner);
-  sp.emplace_back(trajopt_generator, SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE);
+  auto trajopt_generator = std::make_unique<MotionPlannerProcessGenerator>(trajopt_planner);
+  sp.emplace_back(std::move(trajopt_generator), SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE);
 
   return sp;
 }

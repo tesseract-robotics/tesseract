@@ -47,8 +47,7 @@ namespace tesseract_planning
 class RandomProcessGenerator : public ProcessGenerator
 {
 public:
-  using Ptr = std::shared_ptr<RandomProcessGenerator>;
-  using ConstPtr = std::shared_ptr<const RandomProcessGenerator>;
+  using UPtr = std::unique_ptr<RandomProcessGenerator>;
 
   const std::string& getName() const override;
 
