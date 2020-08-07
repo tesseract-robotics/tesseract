@@ -533,6 +533,11 @@ bool Tesseract::registerDefaultInvKinSolvers()
                                     group.first.c_str());
             success = false;
           }
+          else
+          {
+            // Automatically set OPW Inverse Kinematics as the default for the manipulator
+            inv_kin_manager_->setDefaultInvKinematicSolver(solver->getName(), solver->getSolverName());
+          }
         }
         else
         {
