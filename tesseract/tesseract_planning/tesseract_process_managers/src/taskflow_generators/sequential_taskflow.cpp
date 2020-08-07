@@ -139,18 +139,18 @@ tf::Taskflow& SequentialTaskflow::generateTaskflow(ProcessInput input,
 
 void SequentialTaskflow::abort()
 {
-  for (auto gen : processes_)
+  for (auto& gen : processes_)
     gen.first->setAbort(true);
 }
 
 void SequentialTaskflow::reset()
 {
-  for (auto gen : processes_)
+  for (auto& gen : processes_)
     gen.first->setAbort(false);
 }
 
-void SequentialTaskflow::registerProcess(const ProcessGenerator::Ptr& process, SequentialTaskType task_type)
+void SequentialTaskflow::registerProcess(ProcessGenerator::UPtr process, SequentialTaskType task_type)
 {
-  processes_.emplace_back(process, task_type);
+  processes_.emplace_back(std::move(process), task_type);
 }
 }  // namespace tesseract_planning

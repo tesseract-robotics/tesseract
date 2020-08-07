@@ -156,13 +156,11 @@ static locateFilterFn moveFilter =
         {
           if (parent_is_first_composite)
             return true;
-          else
-            return false;
+
+          return false;
         }
-        else
-        {
-          return true;
-        }
+
+        return true;
       }
       return false;
     };
@@ -175,13 +173,11 @@ static locateFilterFn planFilter =
         {
           if (parent_is_first_composite)
             return true;
-          else
-            return false;
+
+          return false;
         }
-        else
-        {
-          return true;
-        }
+
+        return true;
       }
       return false;
     };
@@ -194,8 +190,8 @@ static flattenFilterFn programFlattenFilter =
         {
           if (parent_is_first_composite)
             return true;
-          else
-            return false;
+
+          return false;
         }
       }
       else if (isPlanInstruction(i))
@@ -204,8 +200,8 @@ static flattenFilterFn programFlattenFilter =
         {
           if (parent_is_first_composite)
             return true;
-          else
-            return false;
+
+          return false;
         }
       }
       else if (isCompositeInstruction(i))

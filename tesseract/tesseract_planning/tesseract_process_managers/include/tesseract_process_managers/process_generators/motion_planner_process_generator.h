@@ -42,8 +42,7 @@ namespace tesseract_planning
 class MotionPlannerProcessGenerator : public ProcessGenerator
 {
 public:
-  using Ptr = std::shared_ptr<MotionPlannerProcessGenerator>;
-  using ConstPtr = std::shared_ptr<const MotionPlannerProcessGenerator>;
+  using UPtr = std::unique_ptr<MotionPlannerProcessGenerator>;
 
   MotionPlannerProcessGenerator(std::shared_ptr<MotionPlanner> planner);
   ~MotionPlannerProcessGenerator() override = default;
