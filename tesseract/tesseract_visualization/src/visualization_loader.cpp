@@ -35,18 +35,38 @@ const std::string TESSERACT_IGNITION_LIBRARY = "/snap/tesseract-ignition/current
                                                "libTesseractIgnitionVisualization.so";
 const std::string TESSERACT_IGNITION_CLASS = "tesseract_ignition::TesseractIgnitionVisualization";
 
+const std::string TESSERACT_VISUALIZATION_LIBRARY_ENV = "TESSERACT_VISUALIZATION_PLUGIN_LIBRARY";
+const std::string TESSERACT_VISUALIZATION_CLASS_ENV = "TESSERACT_VISUALIZATION_PLUGIN_CLASS";
+
 namespace tesseract_visualization
 {
 VisualizationLoader::VisualizationLoader()
   : library_path_(TESSERACT_IGNITION_LIBRARY), derived_class_(TESSERACT_IGNITION_CLASS)
 {
-  createLoader(TESSERACT_IGNITION_LIBRARY);
+  // Check for environment variable to override default library
+  const char* env_library = std::getenv(TESSERACT_VISUALIZATION_LIBRARY_ENV.c_str());
+  const char* env_class = std::getenv(TESSERACT_VISUALIZATION_CLASS_ENV.c_str());
+  if (env_library && env_class)
+  {
+    library_path_ = std::string(env_library);
+    derived_class_ = std::string(env_class);
+    createLoader(library_path_);
+  }
+  else if (env_library)
+  {
+    library_path_ = std::string(env_library);
+    createLoader(library_path_);
+  }
+  else
+  {
+    createLoader(library_path_);
+  }
 }
 
 VisualizationLoader::VisualizationLoader(const std::string& library_path, const std::string& derived_class)
   : library_path_(library_path), derived_class_(derived_class)
 {
-  createLoader(library_path);
+  createLoader(library_path_);
 }
 
 Visualization::Ptr VisualizationLoader::get()
