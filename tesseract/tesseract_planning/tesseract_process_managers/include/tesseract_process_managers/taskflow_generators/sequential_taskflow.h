@@ -43,7 +43,7 @@ enum class SequentialTaskType : int
   CONDITIONAL_EXIT_ON_FAILURE = 2
 };
 
-using SequentialProcesses = std::vector<std::pair<ProcessGenerator::Ptr, SequentialTaskType>>;
+using SequentialProcesses = std::vector<std::pair<ProcessGenerator::UPtr, SequentialTaskType>>;
 
 /** @brief This class generates taskflows for a sequential failure tree. Each process is executed in order until one
  * succeeds. Between each process, the validator tasks are executed (if not empty). For a process to succeed, the
@@ -51,6 +51,8 @@ using SequentialProcesses = std::vector<std::pair<ProcessGenerator::Ptr, Sequent
 class SequentialTaskflow : public TaskflowGenerator
 {
 public:
+  using UPtr = std::unique_ptr<SequentialTaskflow>;
+
   SequentialTaskflow() = default;
   ~SequentialTaskflow() override = default;
   SequentialTaskflow(SequentialProcesses processes, std::string name = "SequentialTaskflow");
@@ -69,14 +71,14 @@ public:
    * @brief Add another process that will be added to the taskflow
    * @param process Process added to the taskflow
    */
-  void registerProcess(const ProcessGenerator::Ptr& process, SequentialTaskType task_type);
+  void registerProcess(ProcessGenerator::UPtr process, SequentialTaskType task_type);
 
 private:
   /** @brief If true, all tasks return immediately. Workaround for https://github.com/taskflow/taskflow/issues/201 */
   std::atomic<bool> abort_{ false };
 
   SequentialProcesses processes_;
-  std::vector<ProcessGenerator::Ptr> validators_;
+  std::vector<ProcessGenerator::UPtr> validators_;
   std::vector<std::shared_ptr<tf::Taskflow>> sequential_trees_;
   std::vector<tf::Task> process_tasks_;
   std::string name_;

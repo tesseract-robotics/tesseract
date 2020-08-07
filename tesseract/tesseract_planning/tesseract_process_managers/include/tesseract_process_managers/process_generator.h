@@ -38,12 +38,13 @@ namespace tesseract_planning
 /**
  * @brief This is a base class for generating instances of processes as tasks such that they may be executed in
  * parallel. A typical workflow would be taskflow.emplace(process_generator.generateTask(input) override)
+ *
+ * Only unique pointers should be used because of the ability to abort the process.
  */
 class ProcessGenerator
 {
 public:
-  using Ptr = std::shared_ptr<ProcessGenerator>;
-  using ConstPtr = std::shared_ptr<const ProcessGenerator>;
+  using UPtr = std::unique_ptr<ProcessGenerator>;
 
   virtual ~ProcessGenerator() = default;
 
