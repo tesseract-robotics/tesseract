@@ -35,9 +35,10 @@ namespace tesseract_planning
 /**
  * @brief This is used for filtering only what you want in the vector
  *
- * The first parameter is the instruction consider, the second is it's parent composite instruction, and the third is
+ * The first parameter is the instruction consider, the second is it's parent composite instruction, and the third
  * indicates if the parent composite is the top most composite
- * For example an Instruction that is part of a composite
+ *
+ * The filter should return true when the instruction passed should be included not throw.
  */
 using flattenFilterFn =
     std::function<bool(const Instruction&, const CompositeInstruction&, bool parent_is_first_composite)>;

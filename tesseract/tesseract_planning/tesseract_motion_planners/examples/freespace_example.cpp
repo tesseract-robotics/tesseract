@@ -103,7 +103,7 @@ int main(int /*argc*/, char** /*argv*/)
   auto cur_state = tesseract->getEnvironmentConst()->getCurrentState();
 
   // Specify start location
-  JointWaypoint wp0 = Eigen::VectorXd::Zero(6);
+  StateWaypoint wp0(fwd_kin->getJointNames(), Eigen::VectorXd::Zero(6));
 
   // Specify freespace start waypoint
   CartesianWaypoint wp1 =
