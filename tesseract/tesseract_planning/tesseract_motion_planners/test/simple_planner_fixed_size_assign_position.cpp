@@ -92,8 +92,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeAssignPositionUnit, Eigen_AssignJo
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
   Eigen::VectorXd vec1 = Eigen::VectorXd::Zero(7);
-  JointWaypoint wp1 = vec1;
-  wp1.joint_names = joint_names_;
+  JointWaypoint wp1(joint_names_, vec1);
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
   auto composite = fixedSizeAssignJointPosition(vec1, instr, request, ManipulatorInfo(), 10);
   EXPECT_EQ(composite.size(), 10);
@@ -111,8 +110,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeAssignPositionUnit, JointCartesian
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
-  JointWaypoint wp1 = Eigen::VectorXd::Zero(7);
-  wp1.joint_names = joint_names_;
+  JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
   auto composite = fixedSizeAssignJointPosition(wp1, wp2, instr, request, ManipulatorInfo(), 10);
@@ -132,8 +130,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeAssignPositionUnit, CartesianJoint
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
-  JointWaypoint wp2 = Eigen::VectorXd::Zero(7);
-  wp2.joint_names = joint_names_;
+  JointWaypoint wp2(joint_names_, Eigen::VectorXd::Zero(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
   auto composite = fixedSizeAssignJointPosition(wp1, wp2, instr, request, ManipulatorInfo(), 10);
   EXPECT_EQ(composite.size(), 10);
