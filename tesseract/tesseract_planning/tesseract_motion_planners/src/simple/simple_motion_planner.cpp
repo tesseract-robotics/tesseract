@@ -257,8 +257,7 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
           const auto* pre_swp = start_waypoint.cast_const<StateWaypoint>();
           const auto* cur_cwp = plan_instruction->getWaypoint().cast_const<CartesianWaypoint>();
 
-          JointWaypoint pre_jwp(pre_swp->position);
-          pre_jwp.joint_names = pre_swp->joint_names;
+          JointWaypoint pre_jwp(pre_swp->joint_names, pre_swp->position);
 
           auto step = start_plan_profile->joint_cart_linear(
               pre_jwp, *cur_cwp, *plan_instruction, request, request.instructions.getManipulatorInfo());
@@ -269,8 +268,7 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
           const auto* pre_swp = start_waypoint.cast_const<StateWaypoint>();
           const auto* cur_jwp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
 
-          JointWaypoint pre_jwp(pre_swp->position);
-          pre_jwp.joint_names = pre_swp->joint_names;
+          JointWaypoint pre_jwp(pre_swp->joint_names, pre_swp->position);
 
           auto step = start_plan_profile->joint_joint_linear(
               pre_jwp, *cur_jwp, *plan_instruction, request, request.instructions.getManipulatorInfo());
@@ -281,8 +279,7 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
           const auto* pre_cwp = start_waypoint.cast_const<CartesianWaypoint>();
           const auto* cur_swp = plan_instruction->getWaypoint().cast_const<StateWaypoint>();
 
-          JointWaypoint cur_jwp(cur_swp->position);
-          cur_jwp.joint_names = cur_swp->joint_names;
+          JointWaypoint cur_jwp(cur_swp->joint_names, cur_swp->position);
 
           auto step = start_plan_profile->cart_joint_linear(
               *pre_cwp, cur_jwp, *plan_instruction, request, request.instructions.getManipulatorInfo());
@@ -293,8 +290,7 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
           const auto* pre_jwp = start_waypoint.cast_const<JointWaypoint>();
           const auto* cur_swp = plan_instruction->getWaypoint().cast_const<StateWaypoint>();
 
-          JointWaypoint cur_jwp(cur_swp->position);
-          cur_jwp.joint_names = cur_swp->joint_names;
+          JointWaypoint cur_jwp(cur_swp->joint_names, cur_swp->position);
 
           auto step = start_plan_profile->joint_joint_linear(
               *pre_jwp, cur_jwp, *plan_instruction, request, request.instructions.getManipulatorInfo());
@@ -305,11 +301,8 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
           const auto* pre_swp = start_waypoint.cast_const<StateWaypoint>();
           const auto* cur_swp = plan_instruction->getWaypoint().cast_const<StateWaypoint>();
 
-          JointWaypoint pre_jwp(pre_swp->position);
-          pre_jwp.joint_names = pre_swp->joint_names;
-
-          JointWaypoint cur_jwp(cur_swp->position);
-          cur_jwp.joint_names = cur_swp->joint_names;
+          JointWaypoint pre_jwp(pre_swp->joint_names, pre_swp->position);
+          JointWaypoint cur_jwp(cur_swp->joint_names, cur_swp->position);
 
           auto step = start_plan_profile->joint_joint_linear(
               pre_jwp, cur_jwp, *plan_instruction, request, request.instructions.getManipulatorInfo());
@@ -363,8 +356,7 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
           const auto* pre_swp = start_waypoint.cast_const<StateWaypoint>();
           const auto* cur_cwp = plan_instruction->getWaypoint().cast_const<CartesianWaypoint>();
 
-          JointWaypoint pre_jwp(pre_swp->position);
-          pre_jwp.joint_names = pre_swp->joint_names;
+          JointWaypoint pre_jwp(pre_swp->joint_names, pre_swp->position);
 
           auto step = start_plan_profile->joint_cart_freespace(
               pre_jwp, *cur_cwp, *plan_instruction, request, request.instructions.getManipulatorInfo());
@@ -375,8 +367,7 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
           const auto* pre_swp = start_waypoint.cast_const<StateWaypoint>();
           const auto* cur_jwp = plan_instruction->getWaypoint().cast_const<JointWaypoint>();
 
-          JointWaypoint pre_jwp(pre_swp->position);
-          pre_jwp.joint_names = pre_swp->joint_names;
+          JointWaypoint pre_jwp(pre_swp->joint_names, pre_swp->position);
 
           auto step = start_plan_profile->joint_joint_freespace(
               pre_jwp, *cur_jwp, *plan_instruction, request, request.instructions.getManipulatorInfo());
@@ -387,8 +378,7 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
           const auto* pre_cwp = start_waypoint.cast_const<CartesianWaypoint>();
           const auto* cur_swp = plan_instruction->getWaypoint().cast_const<StateWaypoint>();
 
-          JointWaypoint cur_jwp(cur_swp->position);
-          cur_jwp.joint_names = cur_swp->joint_names;
+          JointWaypoint cur_jwp(cur_swp->joint_names, cur_swp->position);
 
           auto step = start_plan_profile->cart_joint_freespace(
               *pre_cwp, cur_jwp, *plan_instruction, request, request.instructions.getManipulatorInfo());
@@ -411,11 +401,8 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
           const auto* pre_swp = start_waypoint.cast_const<StateWaypoint>();
           const auto* cur_swp = plan_instruction->getWaypoint().cast_const<StateWaypoint>();
 
-          JointWaypoint pre_jwp(pre_swp->position);
-          pre_jwp.joint_names = pre_swp->joint_names;
-
-          JointWaypoint cur_jwp(cur_swp->position);
-          cur_jwp.joint_names = cur_swp->joint_names;
+          JointWaypoint pre_jwp(pre_swp->joint_names, pre_swp->position);
+          JointWaypoint cur_jwp(cur_swp->joint_names, cur_swp->position);
 
           auto step = start_plan_profile->joint_joint_freespace(
               pre_jwp, cur_jwp, *plan_instruction, request, request.instructions.getManipulatorInfo());

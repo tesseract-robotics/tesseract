@@ -175,12 +175,12 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   auto cur_state = tesseract->getEnvironmentConst()->getCurrentState();
 
   // Specify a start waypoint
-  JointWaypoint wp1 = Eigen::Map<const Eigen::VectorXd>(start_state.data(), static_cast<long>(start_state.size()));
-  wp1.joint_names = fwd_kin->getJointNames();
+  JointWaypoint wp1(fwd_kin->getJointNames(),
+                    Eigen::Map<const Eigen::VectorXd>(start_state.data(), static_cast<long>(start_state.size())));
 
   // Specify a end waypoint
-  JointWaypoint wp2 = Eigen::Map<const Eigen::VectorXd>(end_state.data(), static_cast<long>(end_state.size()));
-  wp2.joint_names = fwd_kin->getJointNames();
+  JointWaypoint wp2(fwd_kin->getJointNames(),
+                    Eigen::Map<const Eigen::VectorXd>(end_state.data(), static_cast<long>(end_state.size())));
 
   // Define Start Instruction
   PlanInstruction start_instruction(wp1, PlanInstructionType::START, "TEST_PROFILE");
@@ -323,8 +323,8 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianGoalPlannerUnit)
   auto cur_state = tesseract->getEnvironmentConst()->getCurrentState();
 
   // Specify a start waypoint
-  JointWaypoint wp1 = Eigen::Map<const Eigen::VectorXd>(start_state.data(), static_cast<long>(start_state.size()));
-  wp1.joint_names = fwd_kin->getJointNames();
+  JointWaypoint wp1(fwd_kin->getJointNames(),
+                    Eigen::Map<const Eigen::VectorXd>(start_state.data(), static_cast<long>(start_state.size())));
 
   // Specify a end waypoint
   Eigen::Isometry3d goal = Eigen::Isometry3d::Identity();
@@ -418,8 +418,8 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
   CartesianWaypoint wp1 = start;
 
   // Specify a end waypoint
-  JointWaypoint wp2 = Eigen::Map<const Eigen::VectorXd>(end_state.data(), static_cast<long>(end_state.size()));
-  wp2.joint_names = fwd_kin->getJointNames();
+  JointWaypoint wp2(fwd_kin->getJointNames(),
+                    Eigen::Map<const Eigen::VectorXd>(end_state.data(), static_cast<long>(end_state.size())));
 
   // Define Start Instruction
   PlanInstruction start_instruction(wp1, PlanInstructionType::START, "TEST_PROFILE");

@@ -56,6 +56,13 @@ public:
     return *this;
   }
 
+  // This constructor allows you to construct MyVectorType from Eigen expressions
+  template <typename OtherDerived>
+  JointWaypoint(std::vector<std::string> joint_names, const Eigen::MatrixBase<OtherDerived>& other)
+    : Eigen::VectorXd(other), joint_names(std::move(joint_names))
+  {
+  }
+
   int getType() const { return static_cast<int>(WaypointType::JOINT_WAYPOINT); }
 
   std::vector<std::string> joint_names;

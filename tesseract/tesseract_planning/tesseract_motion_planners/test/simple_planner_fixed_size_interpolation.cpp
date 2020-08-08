@@ -93,10 +93,8 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointJoint_Join
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
-  JointWaypoint wp1 = Eigen::VectorXd::Zero(7);
-  wp1.joint_names = joint_names_;
-  JointWaypoint wp2 = Eigen::VectorXd::Ones(7);
-  wp2.joint_names = joint_names_;
+  JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
+  JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
   auto composite = fixedSizeJointInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10);
@@ -115,8 +113,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointCart_Joint
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
-  JointWaypoint wp1 = Eigen::VectorXd::Zero(7);
-  wp1.joint_names = joint_names_;
+  JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
@@ -141,8 +138,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, CartJoint_Joint
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
-  JointWaypoint wp2 = Eigen::VectorXd::Zero(7);
-  wp2.joint_names = joint_names_;
+  JointWaypoint wp2(joint_names_, Eigen::VectorXd::Zero(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
   auto composite = fixedSizeJointInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10);
@@ -185,10 +181,8 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointJoint_Cart
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
-  JointWaypoint wp1 = Eigen::VectorXd::Zero(7);
-  wp1.joint_names = joint_names_;
-  JointWaypoint wp2 = Eigen::VectorXd::Ones(7);
-  wp2.joint_names = joint_names_;
+  JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
+  JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
   EXPECT_ANY_THROW(fixedSizeCartesianInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10));
@@ -200,8 +194,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointCart_Carte
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
-  JointWaypoint wp1 = Eigen::VectorXd::Zero(7);
-  wp1.joint_names = joint_names_;
+  JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
@@ -215,8 +208,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, CartJoint_Carte
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
-  JointWaypoint wp2 = Eigen::VectorXd::Zero(7);
-  wp2.joint_names = joint_names_;
+  JointWaypoint wp2(joint_names_, Eigen::VectorXd::Zero(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
   EXPECT_ANY_THROW(fixedSizeCartesianInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10));
