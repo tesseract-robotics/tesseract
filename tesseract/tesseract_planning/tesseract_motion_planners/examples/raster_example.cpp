@@ -81,26 +81,35 @@ int main(int /*argc*/, char** /*argv*/)
   CompositeInstruction program("raster_program", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator"));
 
   // Start Joint Position for the program
-  Waypoint wp1 = StateWaypoint(fwd_kin->getJointNames(), Eigen::VectorXd::Zero(6));
-  PlanInstruction start_instruction(wp1, PlanInstructionType::START);
+  Waypoint wp0 = StateWaypoint(fwd_kin->getJointNames(), Eigen::VectorXd::Zero(6));
+  PlanInstruction start_instruction(wp0, PlanInstructionType::START);
   program.setStartInstruction(start_instruction);
 
   // Define raster poses
-  Waypoint wp2 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
-  Waypoint wp3 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
-  Waypoint wp4 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
-  Waypoint wp5 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
-  Waypoint wp6 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
-  Waypoint wp7 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.25, 0.35, 0.2));
+  Waypoint wp1 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, -0.3, 0.8) *
+                                   Eigen::Quaterniond(0, 0, -1.0, 0));
+  Waypoint wp2 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, -0.2, 0.8) *
+                                   Eigen::Quaterniond(0, 0, -1.0, 0));
+  Waypoint wp3 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, -0.1, 0.8) *
+                                   Eigen::Quaterniond(0, 0, -1.0, 0));
+  Waypoint wp4 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, 0.0, 0.8) *
+                                   Eigen::Quaterniond(0, 0, -1.0, 0));
+  Waypoint wp5 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, 0.1, 0.8) *
+                                   Eigen::Quaterniond(0, 0, -1.0, 0));
+  Waypoint wp6 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, 0.2, 0.8) *
+                                   Eigen::Quaterniond(0, 0, -1.0, 0));
+  Waypoint wp7 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, 0.3, 0.8) *
+                                   Eigen::Quaterniond(0, 0, -1.0, 0));
 
   // Define raster move instruction
+  PlanInstruction plan_c0(wp2, PlanInstructionType::LINEAR, "RASTER");
   PlanInstruction plan_c1(wp3, PlanInstructionType::LINEAR, "RASTER");
   PlanInstruction plan_c2(wp4, PlanInstructionType::LINEAR, "RASTER");
   PlanInstruction plan_c3(wp5, PlanInstructionType::LINEAR, "RASTER");
   PlanInstruction plan_c4(wp6, PlanInstructionType::LINEAR, "RASTER");
   PlanInstruction plan_c5(wp7, PlanInstructionType::LINEAR, "RASTER");
 
-  PlanInstruction plan_f0(wp2, PlanInstructionType::FREESPACE, "freespace_profile");
+  PlanInstruction plan_f0(wp1, PlanInstructionType::FREESPACE, "freespace_profile");
   plan_f0.setDescription("from_start_plan");
   CompositeInstruction from_start;
   from_start.setDescription("from_start");
@@ -110,6 +119,7 @@ int main(int /*argc*/, char** /*argv*/)
   {
     CompositeInstruction raster_segment;
     raster_segment.setDescription("raster_segment");
+    raster_segment.push_back(plan_c0);
     raster_segment.push_back(plan_c1);
     raster_segment.push_back(plan_c2);
     raster_segment.push_back(plan_c3);
@@ -119,7 +129,7 @@ int main(int /*argc*/, char** /*argv*/)
   }
 
   {
-    PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "freespace_profile");
+    PlanInstruction plan_f1(wp1, PlanInstructionType::FREESPACE, "freespace_profile");
     plan_f1.setDescription("transition_from_end_plan");
     CompositeInstruction transition_from_end;
     transition_from_end.setDescription("transition_from_end");
@@ -138,6 +148,7 @@ int main(int /*argc*/, char** /*argv*/)
   {
     CompositeInstruction raster_segment;
     raster_segment.setDescription("raster_segment");
+    raster_segment.push_back(plan_c0);
     raster_segment.push_back(plan_c1);
     raster_segment.push_back(plan_c2);
     raster_segment.push_back(plan_c3);
@@ -147,7 +158,7 @@ int main(int /*argc*/, char** /*argv*/)
   }
 
   {
-    PlanInstruction plan_f1(wp2, PlanInstructionType::FREESPACE, "freespace_profile");
+    PlanInstruction plan_f1(wp1, PlanInstructionType::FREESPACE, "freespace_profile");
     plan_f1.setDescription("transition_from_end_plan");
     CompositeInstruction transition_from_end;
     transition_from_end.setDescription("transition_from_end");
@@ -166,6 +177,7 @@ int main(int /*argc*/, char** /*argv*/)
   {
     CompositeInstruction raster_segment;
     raster_segment.setDescription("raster_segment");
+    raster_segment.push_back(plan_c0);
     raster_segment.push_back(plan_c1);
     raster_segment.push_back(plan_c2);
     raster_segment.push_back(plan_c3);
@@ -174,7 +186,7 @@ int main(int /*argc*/, char** /*argv*/)
     program.push_back(raster_segment);
   }
 
-  PlanInstruction plan_f2(wp2, PlanInstructionType::FREESPACE, "freespace_profile");
+  PlanInstruction plan_f2(wp1, PlanInstructionType::FREESPACE, "freespace_profile");
   plan_f2.setDescription("to_end_plan");
   CompositeInstruction to_end;
   to_end.setDescription("to_end");

@@ -153,12 +153,7 @@ static locateFilterFn moveFilter =
       if (isMoveInstruction(i))
       {
         if (i.cast_const<MoveInstruction>()->isStart())
-        {
-          if (parent_is_first_composite)
-            return true;
-
-          return false;
-        }
+          return (parent_is_first_composite);
 
         return true;
       }
@@ -170,12 +165,7 @@ static locateFilterFn planFilter =
       if (isPlanInstruction(i))
       {
         if (i.cast_const<PlanInstruction>()->isStart())
-        {
-          if (parent_is_first_composite)
-            return true;
-
-          return false;
-        }
+          return (parent_is_first_composite);
 
         return true;
       }
@@ -187,22 +177,12 @@ static flattenFilterFn programFlattenFilter =
       if (isMoveInstruction(i))
       {
         if (i.cast_const<MoveInstruction>()->isStart())
-        {
-          if (parent_is_first_composite)
-            return true;
-
-          return false;
-        }
+          return (parent_is_first_composite);
       }
       else if (isPlanInstruction(i))
       {
         if (i.cast_const<PlanInstruction>()->isStart())
-        {
-          if (parent_is_first_composite)
-            return true;
-
-          return false;
-        }
+          return (parent_is_first_composite);
       }
       else if (isCompositeInstruction(i))
       {
