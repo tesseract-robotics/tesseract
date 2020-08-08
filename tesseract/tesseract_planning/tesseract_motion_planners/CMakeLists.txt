@@ -4,7 +4,6 @@ project(tesseract_motion_planners VERSION 0.1.0 LANGUAGES CXX)
 find_package(Boost REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(descartes_light REQUIRED)
-find_package(descartes_opw REQUIRED)
 find_package(descartes_samplers REQUIRED)
 find_package(ompl REQUIRED)
 find_package(tesseract REQUIRED)
@@ -37,7 +36,7 @@ add_library(${PROJECT_NAME}_descartes SHARED
   src/descartes/descartes_robot_sampler.cpp
   src/descartes/descartes_motion_planner_status_category.cpp
   src/descartes/profile/descartes_default_plan_profile.cpp)
-target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME}_core descartes::descartes_light descartes::descartes_samplers descartes::descartes_opw)
+target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME}_core descartes::descartes_light descartes::descartes_samplers)
 tesseract_target_compile_options(${PROJECT_NAME}_descartes PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_descartes)
 tesseract_code_coverage(${PROJECT_NAME}_descartes ALL EXCLUDE ${COVERAGE_EXCLUDE})
