@@ -19,6 +19,8 @@ add_library(${PROJECT_NAME} SHARED
     src/process_input.cpp
     src/process_generators/random_process_generator.cpp
     src/process_generators/motion_planner_process_generator.cpp
+    src/process_generators/discrete_contact_check_process_generator.cpp
+    src/process_generators/continuous_contact_check_process_generator.cpp
     src/process_managers/freespace_process_manager.cpp
     src/process_managers/raster_process_manager.cpp
     src/taskflow_generators/sequential_taskflow.cpp)
