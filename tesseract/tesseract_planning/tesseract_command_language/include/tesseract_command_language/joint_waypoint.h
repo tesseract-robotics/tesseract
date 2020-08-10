@@ -42,12 +42,6 @@ class JointWaypoint : public Eigen::VectorXd
 public:
   JointWaypoint() = default;
 
-  // This constructor allows you to construct MyVectorType from Eigen expressions
-  template <typename OtherDerived>
-  JointWaypoint(const Eigen::MatrixBase<OtherDerived>& other) : Eigen::VectorXd(other)
-  {
-  }
-
   // This method allows you to assign Eigen expressions to MyVectorType
   template <typename OtherDerived>
   JointWaypoint& operator=(const Eigen::MatrixBase<OtherDerived>& other)
