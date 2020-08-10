@@ -13,6 +13,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_process_managers/process_managers/raster_process_manager.h>
 #include <tesseract_process_managers/process_managers/default_processes/default_raster_processes.h>
 #include <tesseract_process_managers/process_managers/default_processes/default_freespace_processes.h>
+#include <tesseract_visualization/visualization_loader.h>
 
 using namespace tesseract_planning;
 
@@ -55,6 +56,13 @@ int main()
   boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400.srdf");
   tesseract->init(urdf_path, srdf_path, locator);
 
+  // Dynamically load ignition visualizer if exist
+  tesseract_visualization::VisualizationLoader loader;
+  auto plotter = loader.get();
+
+  if (plotter != nullptr)
+    plotter->init(tesseract);
+
   // --------------------
   // Define the program
   // --------------------
@@ -86,7 +94,17 @@ int main()
   // --------------------
   // Solve
   // --------------------
-  raster_manager.execute();
+  if (!raster_manager.execute())
+  {
+    CONSOLE_BRIDGE_logError("Execution Failed");
+  }
+
+  // Plot OMPL Trajectory
+  if (plotter)
+  {
+    plotter->waitForInput();
+    plotter->plotTrajectory(*(input.results));
+  }
 
   std::cout << "Execution Complete" << std::endl;
 

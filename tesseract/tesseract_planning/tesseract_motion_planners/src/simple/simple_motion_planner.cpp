@@ -389,8 +389,7 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
           const auto* pre_jwp = start_waypoint.cast_const<JointWaypoint>();
           const auto* cur_swp = plan_instruction->getWaypoint().cast_const<StateWaypoint>();
 
-          JointWaypoint cur_jwp(cur_swp->position);
-          cur_jwp.joint_names = cur_swp->joint_names;
+          JointWaypoint cur_jwp(cur_swp->joint_names, cur_swp->position);
 
           auto step = start_plan_profile->joint_joint_freespace(
               *pre_jwp, cur_jwp, *plan_instruction, request, request.instructions.getManipulatorInfo());
