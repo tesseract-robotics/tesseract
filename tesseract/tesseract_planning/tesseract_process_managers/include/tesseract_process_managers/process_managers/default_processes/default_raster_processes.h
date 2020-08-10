@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
+#include <tesseract_process_managers/process_generators/discrete_contact_check_process_generator.h>
 #include <tesseract_process_managers/process_generators/random_process_generator.h>
 #include <tesseract_process_managers/process_generators/validators/random_validator.h>
 #include <tesseract_process_managers/taskflow_generators/sequential_taskflow.h>
@@ -75,6 +76,10 @@ inline SequentialProcesses defaultRasterProcesses()
   trajopt_planner->composite_profiles["RASTER"] = std::make_shared<TrajOptDefaultCompositeProfile>();
   auto trajopt_generator = std::make_unique<MotionPlannerProcessGenerator>(trajopt_planner);
   sp.emplace_back(std::move(trajopt_generator), SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE);
+
+  // Add Final Discrete Contact Check of trajectory
+  auto contact_check_generator = std::make_unique<DiscreteContactCheckProcessGenerator>();
+  sp.emplace_back(std::move(contact_check_generator), SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE);
 
   return sp;
 }
