@@ -282,5 +282,35 @@ inline tinyxml2::XMLError QueryDoubleAttributeRequired(const tinyxml2::XMLElemen
   return status;
 }
 
+/**
+ * @brief Check if two double are relatively equal
+ * @param a Double
+ * @param b Double
+ * @param max_diff The max diff when comparing std::abs(a - b) <= max_diff, if true they are considered equal
+ * @param max_rel_diff The max relative diff std::abs(a - b) <= largest * max_rel_diff, if true considered equal. The
+ * largest is the largest of the absolute values of a and b.
+ * @return True if they are relativily equal, otherwise false.
+ */
+inline bool almostEqualRelativeAndAbs(double a,
+                                      double b,
+                                      double max_diff,
+                                      double max_rel_diff = std::numeric_limits<double>::epsilon())
+{
+  // Check if the numbers are really close -- needed
+  // when comparing numbers near zero.
+  double diff = std::fabs(a - b);
+  if (diff <= max_diff)
+    return true;
+
+  a = std::fabs(a);
+  b = std::fabs(b);
+  double largest = (b > a) ? b : a;
+
+  if (diff <= largest * max_rel_diff)
+    return true;
+
+  return false;
+}
+
 }  // namespace tesseract_common
 #endif  // TESSERACT_COMMON_UTILS_H
