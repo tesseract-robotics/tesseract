@@ -33,8 +33,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
 #include <tesseract_process_managers/process_generators/discrete_contact_check_process_generator.h>
-#include <tesseract_process_managers/process_generators/random_process_generator.h>
-#include <tesseract_process_managers/process_generators/validators/random_validator.h>
 #include <tesseract_process_managers/taskflow_generators/sequential_taskflow.h>
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
@@ -66,7 +64,6 @@ inline SequentialProcesses defaultRasterProcesses()
   descartes_planner->problem_generator = &DefaultDescartesProblemGenerator<double>;
   descartes_planner->plan_profiles["RASTER"] = std::make_shared<DescartesDefaultPlanProfileD>();
   auto descartes_generator = std::make_unique<MotionPlannerProcessGenerator>(descartes_planner);
-  //  descartes_generator->validators.emplace_back(&randomValidator);
   sp.emplace_back(std::move(descartes_generator), SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE);
 
   // Setup TrajOpt

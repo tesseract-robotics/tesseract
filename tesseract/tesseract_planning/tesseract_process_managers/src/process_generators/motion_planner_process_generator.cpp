@@ -132,31 +132,12 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input) const
   // --------------------
   if (status)
   {
+    *input.results = response.results;
     CONSOLE_BRIDGE_logDebug("Motion Planner process succeeded");
-    int success = 1;
-    for (auto validator : validators)
-    {
-      ProcessInput validate_input = input;
-      Instruction temp_instruction = response.results;
-      validate_input.results = &temp_instruction;
-      success &= validator(validate_input);
-    }
-    if (success == 1)
-    {
-      *input.results = response.results;
-      CONSOLE_BRIDGE_logDebug("Motion Planner process results passed validators.");
-      return 1;
-    }
-    else
-    {
-      CONSOLE_BRIDGE_logDebug("Motion Planner process results did not pass validators.");
-    }
-  }
-  else
-  {
-    CONSOLE_BRIDGE_logDebug("Motion Planner process failed");
+    return 1;
   }
 
+  CONSOLE_BRIDGE_logDebug("Motion Planner process failed");
   return 0;
 }
 
