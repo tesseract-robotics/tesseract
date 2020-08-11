@@ -31,10 +31,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <functional>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/process_generators/random_process_generator.h>
 #include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
 #include <tesseract_process_managers/process_generators/continuous_contact_check_process_generator.h>
-#include <tesseract_process_managers/process_generators/validators/random_validator.h>
 #include <tesseract_process_managers/taskflow_generators/sequential_taskflow.h>
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
@@ -66,7 +64,6 @@ inline SequentialProcesses defaultFreespaceProcesses()
   ompl_planner->problem_generator = &DefaultOMPLProblemGenerator;
   ompl_planner->plan_profiles["FREESPACE"] = std::make_shared<OMPLDefaultPlanProfile>();
   auto ompl_generator = std::make_unique<MotionPlannerProcessGenerator>(ompl_planner);
-  //  ompl_generator->validators.emplace_back(&randomValidator);
   sp.emplace_back(std::move(ompl_generator), SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE);
 
   // Setup TrajOpt
