@@ -27,12 +27,15 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
+#include <cstdlib>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/visualization_loader.h>
 
-const std::string TESSERACT_IGNITION_LIBRARY = "/snap/tesseract-ignition/current/opt/ros/melodic/lib/"
-                                               "libTesseractIgnitionVisualization.so";
+const std::string TESSERACT_IGNITION_LIB_DIR = "/snap/tesseract-ignition/current/opt/ros/melodic/lib";
+
+const std::string TESSERACT_IGNITION_LIBRARY = TESSERACT_IGNITION_LIB_DIR + "/libtesseract_ignition_visualization_"
+                                                                            "plugin.so";
 const std::string TESSERACT_IGNITION_CLASS = "tesseract_ignition::TesseractIgnitionVisualization";
 
 const std::string TESSERACT_VISUALIZATION_LIBRARY_ENV = "TESSERACT_VISUALIZATION_PLUGIN_LIBRARY";
@@ -59,6 +62,12 @@ VisualizationLoader::VisualizationLoader()
   }
   else
   {
+    const char* env_ld_library_path = std::getenv("LD_LIBRARY_PATH");
+    if (env_ld_library_path)
+      setenv("LD_LIBRARY_PATH", (std::string(env_ld_library_path) + ":" + TESSERACT_IGNITION_LIB_DIR).c_str(), true);
+    else
+      setenv("LD_LIBRARY_PATH", TESSERACT_IGNITION_LIB_DIR.c_str(), true);
+
     createLoader(library_path_);
   }
 }
