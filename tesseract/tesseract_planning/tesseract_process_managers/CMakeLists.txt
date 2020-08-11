@@ -17,7 +17,6 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 # Create interface
 add_library(${PROJECT_NAME} SHARED
     src/process_input.cpp
-    src/process_generators/random_process_generator.cpp
     src/process_generators/motion_planner_process_generator.cpp
     src/process_generators/discrete_contact_check_process_generator.cpp
     src/process_generators/continuous_contact_check_process_generator.cpp

@@ -57,10 +57,6 @@ public:
 
   void setAbort(bool abort) override;
 
-  /** @brief TODO: Figure out exactly how to do this. I have gone back and forth, but I think it might be easiest to not
-   * make these tasks in the taskflow and just it this internal to conditionalProcess. */
-  std::vector<std::function<int(const ProcessInput&)>> validators;
-
 private:
   /** @brief If true, all tasks return immediately. Workaround for https://github.com/taskflow/taskflow/issues/201 */
   std::atomic<bool> abort_{ false };
