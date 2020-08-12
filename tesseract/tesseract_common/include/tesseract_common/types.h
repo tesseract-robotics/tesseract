@@ -61,8 +61,20 @@ using TrajArray = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::R
 /** @brief Represents a joint trajectory */
 struct JointTrajectory
 {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   std::vector<std::string> joint_names;   /**< @brief The joint names */
   tesseract_common::TrajArray trajectory; /**< @brief The generated trajectory */
+};
+
+/** @brief Store kinematic limits */
+struct KinematicLimits
+{
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+  Eigen::MatrixX2d joint_limits;
+  Eigen::VectorXd velocity_limits;
+  Eigen::VectorXd acceleration_limits;
 };
 
 }  // namespace tesseract_common

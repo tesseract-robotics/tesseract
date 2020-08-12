@@ -82,7 +82,15 @@ inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::Const
     return false;
 
   // Check joint limits
-  if (!fwd_kin->getLimits().isApprox(inv_kin->getLimits(), tol))
+  if (!fwd_kin->getLimits().joint_limits.isApprox(inv_kin->getLimits().joint_limits, tol))
+    return false;
+
+  // Check velocity limits
+  if (!fwd_kin->getLimits().velocity_limits.isApprox(inv_kin->getLimits().velocity_limits, tol))
+    return false;
+
+  // Check acceleration limits
+  if (!fwd_kin->getLimits().acceleration_limits.isApprox(inv_kin->getLimits().acceleration_limits, tol))
     return false;
 
   Eigen::Isometry3d test1;
@@ -159,7 +167,15 @@ inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::Const
     return false;
 
   // Check joint limits
-  if (!fwd_kin1->getLimits().isApprox(fwd_kin2->getLimits(), tol))
+  if (!fwd_kin1->getLimits().joint_limits.isApprox(fwd_kin2->getLimits().joint_limits, tol))
+    return false;
+
+  // Check velocity limits
+  if (!fwd_kin1->getLimits().velocity_limits.isApprox(fwd_kin2->getLimits().velocity_limits, tol))
+    return false;
+
+  // Check acceleration limits
+  if (!fwd_kin1->getLimits().acceleration_limits.isApprox(fwd_kin2->getLimits().acceleration_limits, tol))
     return false;
 
   Eigen::Isometry3d test1;

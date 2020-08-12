@@ -29,8 +29,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_scene_graph/parser/kdl_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include "tesseract_kinematics/kdl/kdl_fwd_kin_tree.h"
-#include "tesseract_kinematics/kdl/kdl_utils.h"
+#include <tesseract_kinematics/kdl/kdl_fwd_kin_tree.h>
+#include <tesseract_kinematics/kdl/kdl_utils.h>
+#include <tesseract_common/utils.h>
 
 namespace tesseract_kinematics
 {
@@ -177,13 +178,13 @@ bool KDLFwdKinTree::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) co
 
   for (int i = 0; i < vec.size(); ++i)
   {
-    if ((vec[i] < joint_limits_(i, 0)) || (vec(i) > joint_limits_(i, 1)))
+    if ((vec[i] < limits_.joint_limits(i, 0)) || (vec(i) > limits_.joint_limits(i, 1)))
     {
       CONSOLE_BRIDGE_logDebug("Joint %s is out-of-range (%g < %g < %g)",
                               joint_list_[static_cast<size_t>(i)].c_str(),
-                              joint_limits_(i, 0),
+                              limits_.joint_limits(i, 0),
                               vec(i),
-                              joint_limits_(i, 1));
+                              limits_.joint_limits(i, 1));
     }
   }
 
@@ -208,7 +209,7 @@ const std::vector<std::string>& KDLFwdKinTree::getActiveLinkNames() const
   return active_link_list_;
 }
 
-const Eigen::MatrixX2d& KDLFwdKinTree::getLimits() const { return joint_limits_; }
+const tesseract_common::KinematicLimits& KDLFwdKinTree::getLimits() const { return limits_; }
 
 bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
                          const std::vector<std::string>& joint_names,
@@ -247,7 +248,9 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph
   }
 
   joint_list_.resize(joint_names.size());
-  joint_limits_.resize(static_cast<long int>(joint_names.size()), 2);
+  limits_.joint_limits.resize(static_cast<long int>(joint_names.size()), 2);
+  limits_.velocity_limits.resize(static_cast<long int>(joint_names.size()));
+  limits_.acceleration_limits.resize(static_cast<long int>(joint_names.size()));
   joint_qnr_.resize(joint_names.size());
 
   unsigned j = 0;
@@ -281,16 +284,18 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph
     joint_qnr_[j] = static_cast<int>(tree_element.second.q_nr);
 
     const tesseract_scene_graph::Joint::ConstPtr& joint = scene_graph_->getJoint(jnt.getName());
-    joint_limits_(j, 0) = joint->limits->lower;
-    joint_limits_(j, 1) = joint->limits->upper;
+    limits_.joint_limits(j, 0) = joint->limits->lower;
+    limits_.joint_limits(j, 1) = joint->limits->upper;
+    limits_.velocity_limits(j) = joint->limits->velocity;
+    limits_.acceleration_limits(j) = joint->limits->acceleration;
 
     // Need to set limits for continuous joints. TODO: This may not be required
     // by the optization library but may be nice to have
     if (joint->type == tesseract_scene_graph::JointType::CONTINUOUS &&
-        std::abs(joint_limits_(j, 0) - joint_limits_(j, 1)) <= std::numeric_limits<float>::epsilon())
+        tesseract_common::almostEqualRelativeAndAbs(limits_.joint_limits(j, 0), limits_.joint_limits(j, 1), 1e-5))
     {
-      joint_limits_(j, 0) = -4 * M_PI;
-      joint_limits_(j, 1) = +4 * M_PI;
+      limits_.joint_limits(j, 0) = -4 * M_PI;
+      limits_.joint_limits(j, 1) = +4 * M_PI;
     }
     ++j;
   }
@@ -318,7 +323,7 @@ bool KDLFwdKinTree::init(const KDLFwdKinTree& kin)
   name_ = kin.name_;
   solver_name_ = kin.solver_name_;
   kdl_tree_ = kin.kdl_tree_;
-  joint_limits_ = kin.joint_limits_;
+  limits_ = kin.limits_;
   joint_list_ = kin.joint_list_;
   link_list_ = kin.link_list_;
   active_link_list_ = kin.active_link_list_;
