@@ -552,6 +552,7 @@ void Environment::environmentChanged()
 
     // UNKNOWN, REVOLUTE, CONTINUOUS, PRISMATIC, FLOATING, PLANAR, FIXED
     if (joint->type == tesseract_scene_graph::JointType::REVOLUTE ||
+        joint->type == tesseract_scene_graph::JointType::CONTINUOUS ||
         joint->type == tesseract_scene_graph::JointType::PRISMATIC)
       active_joint_names_.push_back(joint->getName());
   }
