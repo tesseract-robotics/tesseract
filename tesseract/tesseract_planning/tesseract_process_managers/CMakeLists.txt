@@ -10,6 +10,7 @@ find_package(tesseract REQUIRED)
 find_package(tesseract_support REQUIRED)
 find_package(tesseract_command_language REQUIRED)
 find_package(tesseract_motion_planners REQUIRED)
+find_package(tesseract_time_parameterization REQUIRED)
 
 set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/*)
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
@@ -20,6 +21,7 @@ add_library(${PROJECT_NAME} SHARED
     src/process_generators/motion_planner_process_generator.cpp
     src/process_generators/discrete_contact_check_process_generator.cpp
     src/process_generators/continuous_contact_check_process_generator.cpp
+    src/process_generators/iterative_spline_parameterization_process_generator.cpp
     src/process_managers/freespace_process_manager.cpp
     src/process_managers/raster_process_manager.cpp
     src/taskflow_generators/sequential_taskflow.cpp)
@@ -30,7 +32,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     tesseract::tesseract_motion_planners_simple
     tesseract::tesseract_motion_planners_trajopt
     tesseract::tesseract_motion_planners_descartes
-    tesseract::tesseract_motion_planners_ompl)
+    tesseract::tesseract_motion_planners_ompl
+    tesseract::tesseract_time_parameterization)
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME})
 tesseract_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE})
