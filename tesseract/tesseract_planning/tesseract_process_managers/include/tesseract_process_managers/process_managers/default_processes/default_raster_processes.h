@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
 #include <tesseract_process_managers/process_generators/discrete_contact_check_process_generator.h>
+#include <tesseract_process_managers/process_generators/iterative_spline_parameterization_process_generator.h>
 #include <tesseract_process_managers/taskflow_generators/sequential_taskflow.h>
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
@@ -77,6 +78,10 @@ inline SequentialProcesses defaultRasterProcesses()
   // Add Final Discrete Contact Check of trajectory
   auto contact_check_generator = std::make_unique<DiscreteContactCheckProcessGenerator>();
   sp.emplace_back(std::move(contact_check_generator), SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE);
+
+  // Time parameterization trajectory
+  auto time_parameterization_generator = std::make_unique<IterativeSplineParameterizationProcessGenerator>();
+  sp.emplace_back(std::move(time_parameterization_generator), SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE);
 
   return sp;
 }
