@@ -70,16 +70,16 @@ static void adjust_two_positions(const int n,
                                  const double x2_i,
                                  const double x2_f);
 static void init_times(int n, double dt[], const double x[], const double max_velocity, const double min_velocity);
-static int fit_spline_and_adjust_times(const int n,
-                                       double dt[],
-                                       const double x[],
-                                       double x1[],
-                                       double x2[],
-                                       const double max_velocity,
-                                       const double min_velocity,
-                                       const double max_acceleration,
-                                       const double min_acceleration,
-                                       const double tfactor);
+// static int fit_spline_and_adjust_times(const int n,
+//                                       double dt[],
+//                                       const double x[],
+//                                       double x1[],
+//                                       double x2[],
+//                                       const double max_velocity,
+//                                       const double min_velocity,
+//                                       const double max_acceleration,
+//                                       const double min_acceleration,
+//                                       const double tfactor);
 static double global_adjustment_factor(int n,
                                        double dt[],
                                        const double x[],
@@ -113,11 +113,11 @@ IterativeSplineParameterization::IterativeSplineParameterization(bool add_points
 
 IterativeSplineParameterization::~IterativeSplineParameterization() = default;
 
-bool IterativeSplineParameterization::computeTimeStamps(CompositeInstruction& program,
-                                                        const double& max_velocity,
-                                                        const double& max_acceleration,
-                                                        const double max_velocity_scaling_factor,
-                                                        const double max_acceleration_scaling_factor) const
+bool IterativeSplineParameterization::compute(CompositeInstruction& program,
+                                              const double& max_velocity,
+                                              const double& max_acceleration,
+                                              const double max_velocity_scaling_factor,
+                                              const double max_acceleration_scaling_factor) const
 {
   std::vector<std::reference_wrapper<Instruction>> trajectory = flatten(program, programFlattenMoveInstructionFilter);
 
@@ -129,31 +129,42 @@ bool IterativeSplineParameterization::computeTimeStamps(CompositeInstruction& pr
 
   auto num_joints = static_cast<unsigned int>(swp->position.size());
 
-  return computeTimeStamps(trajectory,
-                           std::vector<double>(num_joints, max_velocity),
-                           std::vector<double>(num_joints, max_acceleration),
-                           max_velocity_scaling_factor,
-                           max_acceleration_scaling_factor);
+  return compute(trajectory,
+                 std::vector<double>(num_joints, max_velocity),
+                 std::vector<double>(num_joints, max_acceleration),
+                 max_velocity_scaling_factor,
+                 max_acceleration_scaling_factor);
 }
 
-bool IterativeSplineParameterization::computeTimeStamps(CompositeInstruction& program,
-                                                        const std::vector<double>& max_velocity,
-                                                        const std::vector<double>& max_acceleration,
-                                                        const double max_velocity_scaling_factor,
-                                                        const double max_acceleration_scaling_factor) const
+bool IterativeSplineParameterization::compute(CompositeInstruction& program,
+                                              const std::vector<double>& max_velocity,
+                                              const std::vector<double>& max_acceleration,
+                                              const double max_velocity_scaling_factor,
+                                              const double max_acceleration_scaling_factor) const
 {
   std::vector<std::reference_wrapper<Instruction>> trajectory = flatten(program, programFlattenMoveInstructionFilter);
 
-  return computeTimeStamps(
+  return compute(
       trajectory, max_velocity, max_acceleration, max_velocity_scaling_factor, max_acceleration_scaling_factor);
 }
 
-bool IterativeSplineParameterization::computeTimeStamps(
-    const std::vector<std::reference_wrapper<Instruction>>& trajectory,
-    const double& max_velocity,
-    const double& max_acceleration,
-    const double max_velocity_scaling_factor,
-    const double max_acceleration_scaling_factor) const
+bool IterativeSplineParameterization::compute(CompositeInstruction& program,
+                                              const Eigen::Ref<const Eigen::VectorXd>& max_velocity,
+                                              const Eigen::Ref<const Eigen::VectorXd>& max_acceleration,
+                                              const double max_velocity_scaling_factor,
+                                              const double max_acceleration_scaling_factor) const
+{
+  std::vector<std::reference_wrapper<Instruction>> trajectory = flatten(program, programFlattenMoveInstructionFilter);
+
+  return compute(
+      trajectory, max_velocity, max_acceleration, max_velocity_scaling_factor, max_acceleration_scaling_factor);
+}
+
+bool IterativeSplineParameterization::compute(const std::vector<std::reference_wrapper<Instruction>>& trajectory,
+                                              const double& max_velocity,
+                                              const double& max_acceleration,
+                                              const double max_velocity_scaling_factor,
+                                              const double max_acceleration_scaling_factor) const
 {
   assert(isMoveInstruction(trajectory[0].get()));
   auto* mi = trajectory[0].get().cast<MoveInstruction>();
@@ -163,19 +174,31 @@ bool IterativeSplineParameterization::computeTimeStamps(
 
   auto num_joints = static_cast<unsigned int>(swp->position.size());
 
-  return computeTimeStamps(trajectory,
-                           std::vector<double>(num_joints, max_velocity),
-                           std::vector<double>(num_joints, max_acceleration),
-                           max_velocity_scaling_factor,
-                           max_acceleration_scaling_factor);
+  return compute(trajectory,
+                 std::vector<double>(num_joints, max_velocity),
+                 std::vector<double>(num_joints, max_acceleration),
+                 max_velocity_scaling_factor,
+                 max_acceleration_scaling_factor);
 }
 
-bool IterativeSplineParameterization::computeTimeStamps(
-    const std::vector<std::reference_wrapper<Instruction>>& trajectory,
-    const std::vector<double>& max_velocity,
-    const std::vector<double>& max_acceleration,
-    const double max_velocity_scaling_factor,
-    const double max_acceleration_scaling_factor) const
+bool IterativeSplineParameterization::compute(const std::vector<std::reference_wrapper<Instruction>>& trajectory,
+                                              const std::vector<double>& max_velocity,
+                                              const std::vector<double>& max_acceleration,
+                                              const double max_velocity_scaling_factor,
+                                              const double max_acceleration_scaling_factor) const
+{
+  return compute(trajectory,
+                 Eigen::Map<const Eigen::VectorXd>(max_velocity.data(), static_cast<long>(max_velocity.size())),
+                 Eigen::Map<const Eigen::VectorXd>(max_acceleration.data(), static_cast<long>(max_acceleration.size())),
+                 max_velocity_scaling_factor,
+                 max_acceleration_scaling_factor);
+}
+
+bool IterativeSplineParameterization::compute(const std::vector<std::reference_wrapper<Instruction>>& trajectory,
+                                              const Eigen::Ref<const Eigen::VectorXd>& max_velocity,
+                                              const Eigen::Ref<const Eigen::VectorXd>& max_acceleration,
+                                              const double max_velocity_scaling_factor,
+                                              const double max_acceleration_scaling_factor) const
 {
   // Make a copy of the vector in case it introduces point we do not want it to modify the original trajectory size
   // just the data.
@@ -198,7 +221,8 @@ bool IterativeSplineParameterization::computeTimeStamps(
 
   auto num_joints = static_cast<std::size_t>(swp->position.size());
 
-  if (max_velocity.size() != num_joints || max_acceleration.size() != num_joints)
+  if (static_cast<std::size_t>(max_velocity.size()) != num_joints ||
+      static_cast<std::size_t>(max_acceleration.size()) != num_joints)
   {
     return false;
   }
@@ -631,49 +655,49 @@ static void init_times(int n, double dt[], const double x[], const double max_ve
   x1 and x2 are filled in by the algorithm.
 */
 
-static int fit_spline_and_adjust_times(const int n,
-                                       double dt[],
-                                       const double x[],
-                                       double x1[],
-                                       double x2[],
-                                       const double max_velocity,
-                                       const double min_velocity,
-                                       const double max_acceleration,
-                                       const double min_acceleration,
-                                       const double tfactor)
-{
-  int i, ret = 0;
+// static int fit_spline_and_adjust_times(const int n,
+//                                       double dt[],
+//                                       const double x[],
+//                                       double x1[],
+//                                       double x2[],
+//                                       const double max_velocity,
+//                                       const double min_velocity,
+//                                       const double max_acceleration,
+//                                       const double min_acceleration,
+//                                       const double tfactor)
+//{
+//  int i, ret = 0;
 
-  fit_cubic_spline(n, dt, x, x1, x2);
+//  fit_cubic_spline(n, dt, x, x1, x2);
 
-  // Instantaneous velocity is calculated at each point
-  for (i = 0; i < n - 1; i++)
-  {
-    const double vel = x1[i];
-    const double vel2 = x1[i + 1];
-    if (vel > max_velocity || vel < min_velocity || vel2 > max_velocity || vel2 < min_velocity)
-    {
-      dt[i] *= tfactor;
-      ret = 1;
-    }
-  }
-  // Instantaneous acceleration is calculated at each point
-  if (ret == 0)
-  {
-    for (i = 0; i < n - 1; i++)
-    {
-      const double acc = x2[i];
-      const double acc2 = x2[i + 1];
-      if (acc > max_acceleration || acc < min_acceleration || acc2 > max_acceleration || acc2 < min_acceleration)
-      {
-        dt[i] *= tfactor;
-        ret = 1;
-      }
-    }
-  }
+//  // Instantaneous velocity is calculated at each point
+//  for (i = 0; i < n - 1; i++)
+//  {
+//    const double vel = x1[i];
+//    const double vel2 = x1[i + 1];
+//    if (vel > max_velocity || vel < min_velocity || vel2 > max_velocity || vel2 < min_velocity)
+//    {
+//      dt[i] *= tfactor;
+//      ret = 1;
+//    }
+//  }
+//  // Instantaneous acceleration is calculated at each point
+//  if (ret == 0)
+//  {
+//    for (i = 0; i < n - 1; i++)
+//    {
+//      const double acc = x2[i];
+//      const double acc2 = x2[i + 1];
+//      if (acc > max_acceleration || acc < min_acceleration || acc2 > max_acceleration || acc2 < min_acceleration)
+//      {
+//        dt[i] *= tfactor;
+//        ret = 1;
+//      }
+//    }
+//  }
 
-  return ret;
-}
+//  return ret;
+//}
 
 // return global expansion multiplicative factor required
 // to force within bounds.
