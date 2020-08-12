@@ -9,7 +9,7 @@
 - git:
     local-name: trajopt
     uri: https://github.com/ros-industrial-consortium/trajopt_ros.git
-    version: master
+    version: feature/CommandLanguage
 - git:
     local-name: descartes_light
     uri: https://github.com/swri-robotics/descartes_light.git
