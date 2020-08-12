@@ -56,6 +56,8 @@ public:
         return "Missing or failed to parse limits attribute 'effort'!";
       case ErrorAttributeVelocity:
         return "Missing or failed to parse limits attribute 'velocity'!";
+      case ErrorAttributeAcceleration:
+        return "Failed to parse limits attribute 'acceleration'!";
       default:
         return "Invalid error code for " + name_ + "!";
     }
@@ -67,7 +69,8 @@ public:
     ErrorAttributeLower = -1,
     ErrorAttributeUpper = -2,
     ErrorAttributeEffort = -3,
-    ErrorAttributeVelocity = -4
+    ErrorAttributeVelocity = -4,
+    ErrorAttributeAcceleration = -5
   };
 
 private:
@@ -96,6 +99,12 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointLimit
 
   if (xml_element->QueryDoubleAttribute("velocity", &(l->velocity)) != tinyxml2::XML_SUCCESS)
     return std::make_shared<tesseract_common::StatusCode>(LimitsStatusCategory::ErrorAttributeVelocity, status_cat);
+
+  status = xml_element->QueryDoubleAttribute("acceleration", &(l->acceleration));
+  if (status == tinyxml2::XML_NO_ATTRIBUTE)
+    l->acceleration = 0.5 * l->velocity;
+  else if (status != tinyxml2::XML_SUCCESS)
+    return std::make_shared<tesseract_common::StatusCode>(LimitsStatusCategory::ErrorAttributeAcceleration, status_cat);
 
   limits = l;
   return std::make_shared<tesseract_common::StatusCode>(LimitsStatusCategory::Success, status_cat);

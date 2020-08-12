@@ -126,8 +126,9 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
 
   // Add isValid function
   if (is_valid == nullptr)
-    is_valid = std::bind(
-        &tesseract_kinematics::isWithinLimits<FloatType>, std::placeholders::_1, prob.manip_inv_kin->getLimits());
+    is_valid = std::bind(&tesseract_kinematics::isWithinLimits<FloatType>,
+                         std::placeholders::_1,
+                         prob.manip_inv_kin->getLimits().joint_limits);
 
   prob.num_threads = num_threads;
 }
@@ -183,8 +184,9 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
 
   // Add isValid function
   if (is_valid == nullptr)
-    is_valid = std::bind(
-        &tesseract_kinematics::isWithinLimits<FloatType>, std::placeholders::_1, prob.manip_inv_kin->getLimits());
+    is_valid = std::bind(&tesseract_kinematics::isWithinLimits<FloatType>,
+                         std::placeholders::_1,
+                         prob.manip_inv_kin->getLimits().joint_limits);
 
   prob.num_threads = num_threads;
 }

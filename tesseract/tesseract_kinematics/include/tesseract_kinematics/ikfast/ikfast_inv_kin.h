@@ -110,7 +110,7 @@ public:
   const std::vector<std::string>& getJointNames() const override;
   const std::vector<std::string>& getLinkNames() const override;
   const std::vector<std::string>& getActiveLinkNames() const;
-  const Eigen::MatrixX2d& getLimits() const override;
+  const KinematicLimits& getLimits() const override;
   const std::string& getBaseLinkName() const override;
   const std::string& getTipLinkName() const override;
   const std::string& getName() const override;

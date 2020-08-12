@@ -119,13 +119,13 @@ bool KDLInvKinChainLMA::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec
 
   for (int i = 0; i < vec.size(); ++i)
   {
-    if ((vec[i] < kdl_data_.joint_limits(i, 0)) || (vec(i) > kdl_data_.joint_limits(i, 1)))
+    if ((vec[i] < kdl_data_.limits.joint_limits(i, 0)) || (vec(i) > kdl_data_.limits.joint_limits(i, 1)))
     {
       CONSOLE_BRIDGE_logDebug("Joint %s is out-of-range (%g < %g < %g)",
                               kdl_data_.joint_list[static_cast<size_t>(i)].c_str(),
-                              kdl_data_.joint_limits(i, 0),
+                              kdl_data_.limits.joint_limits(i, 0),
                               vec(i),
-                              kdl_data_.joint_limits(i, 1));
+                              kdl_data_.limits.joint_limits(i, 1));
     }
   }
 
@@ -150,7 +150,7 @@ const std::vector<std::string>& KDLInvKinChainLMA::getActiveLinkNames() const
   return kdl_data_.active_link_list;
 }
 
-const Eigen::MatrixX2d& KDLInvKinChainLMA::getLimits() const { return kdl_data_.joint_limits; }
+const tesseract_common::KinematicLimits& KDLInvKinChainLMA::getLimits() const { return kdl_data_.limits; }
 
 bool KDLInvKinChainLMA::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
                              const std::vector<std::pair<std::string, std::string>>& chains,

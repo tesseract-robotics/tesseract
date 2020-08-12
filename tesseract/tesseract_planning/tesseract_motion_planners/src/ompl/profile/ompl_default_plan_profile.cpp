@@ -58,7 +58,7 @@ void OMPLDefaultPlanProfile::setup(OMPLProblem& prob)
   const tesseract_environment::Environment::ConstPtr& env = prob.tesseract->getEnvironmentConst();
   const std::vector<std::string>& joint_names = prob.manip_fwd_kin->getJointNames();
   const auto dof = prob.manip_fwd_kin->numJoints();
-  const auto& limits = prob.manip_fwd_kin->getLimits();
+  const auto& limits = prob.manip_fwd_kin->getLimits().joint_limits;
 
   if (state_space == OMPLProblemStateSpace::REAL_STATE_SPACE)
     prob.extractor = std::bind(
