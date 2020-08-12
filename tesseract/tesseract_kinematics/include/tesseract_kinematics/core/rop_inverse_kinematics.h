@@ -76,7 +76,7 @@ public:
 
   const std::vector<std::string>& getActiveLinkNames() const override;
 
-  const Eigen::MatrixX2d& getLimits() const override;
+  const tesseract_common::KinematicLimits& getLimits() const override;
 
   tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const;
   unsigned int numJoints() const override;
@@ -116,7 +116,7 @@ private:
   ForwardKinematics::Ptr positioner_fwd_kin_;
   Eigen::VectorXd positioner_sample_resolution_;
   unsigned dof_;
-  Eigen::MatrixX2d joint_limits_;
+  tesseract_common::KinematicLimits limits_;
   std::vector<std::string> joint_names_;
   std::vector<std::string> link_names_;
   std::vector<std::string> active_link_names_;

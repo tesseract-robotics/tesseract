@@ -143,13 +143,13 @@ bool RobotWithExternalPositionerInvKin::checkJoints(const Eigen::Ref<const Eigen
 
   for (int i = 0; i < vec.size(); ++i)
   {
-    if ((vec[i] < joint_limits_(i, 0)) || (vec(i) > joint_limits_(i, 1)))
+    if ((vec[i] < limits_.joint_limits(i, 0)) || (vec(i) > limits_.joint_limits(i, 1)))
     {
       CONSOLE_BRIDGE_logDebug("Joint %s is out-of-range (%g < %g < %g)",
                               joint_names_[static_cast<size_t>(i)].c_str(),
-                              joint_limits_(i, 0),
+                              limits_.joint_limits(i, 0),
                               vec(i),
-                              joint_limits_(i, 1));
+                              limits_.joint_limits(i, 1));
     }
   }
 
@@ -174,7 +174,7 @@ const std::vector<std::string>& RobotWithExternalPositionerInvKin::getActiveLink
   return active_link_names_;
 }
 
-const Eigen::MatrixX2d& RobotWithExternalPositionerInvKin::getLimits() const { return joint_limits_; }
+const tesseract_common::KinematicLimits& RobotWithExternalPositionerInvKin::getLimits() const { return limits_; }
 
 tesseract_scene_graph::SceneGraph::ConstPtr RobotWithExternalPositionerInvKin::getSceneGraph() const
 {
@@ -339,8 +339,16 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
   positioner_sample_resolution_ = positioner_sample_resolution;
   dof_ = positioner_fwd_kin_->numJoints() + manip_inv_kin_->numJoints();
 
-  joint_limits_ = Eigen::MatrixX2d(dof_, 2);
-  joint_limits_ << positioner_fwd_kin_->getLimits(), manip_inv_kin_->getLimits();
+  limits_.joint_limits = Eigen::MatrixX2d(dof_, 2);
+  limits_.joint_limits << positioner_fwd_kin_->getLimits().joint_limits, manip_inv_kin_->getLimits().joint_limits;
+
+  limits_.velocity_limits = Eigen::VectorXd(dof_);
+  limits_.velocity_limits << positioner_fwd_kin_->getLimits().velocity_limits,
+      manip_inv_kin_->getLimits().velocity_limits;
+
+  limits_.acceleration_limits = Eigen::VectorXd(dof_);
+  limits_.acceleration_limits << positioner_fwd_kin_->getLimits().acceleration_limits,
+      manip_inv_kin_->getLimits().acceleration_limits;
 
   joint_names_ = positioner_fwd_kin_->getJointNames();
   const auto& manip_joints = manip_inv_kin_->getJointNames();
@@ -362,7 +370,7 @@ bool RobotWithExternalPositionerInvKin::init(tesseract_scene_graph::SceneGraph::
   active_link_names_.erase(std::unique(active_link_names_.begin(), active_link_names_.end()), active_link_names_.end());
 
   auto positioner_num_joints = static_cast<int>(positioner_fwd_kin_->numJoints());
-  const Eigen::MatrixX2d& positioner_limits = positioner_fwd_kin_->getLimits();
+  const Eigen::MatrixX2d& positioner_limits = positioner_fwd_kin_->getLimits().joint_limits;
 
   // For the kinematics object to be sampled we need to create the joint values at the sampling resolution
   // The sampled joints results are stored in dof_range[joint index] to be used by the nested_ik function
@@ -391,7 +399,7 @@ bool RobotWithExternalPositionerInvKin::init(const RobotWithExternalPositionerIn
   positioner_fwd_kin_ = kin.positioner_fwd_kin_->clone();
   positioner_sample_resolution_ = kin.positioner_sample_resolution_;
   dof_ = kin.dof_;
-  joint_limits_ = kin.joint_limits_;
+  limits_ = kin.limits_;
   joint_names_ = kin.joint_names_;
   link_names_ = kin.link_names_;
   active_link_names_ = kin.active_link_names_;

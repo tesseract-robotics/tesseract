@@ -77,6 +77,7 @@ public:
   double upper;
   double effort;
   double velocity;
+  double acceleration;
 
   void clear()
   {
@@ -84,6 +85,7 @@ public:
     upper = 0;
     effort = 0;
     velocity = 0;
+    acceleration = 0;
   }
 };
 
