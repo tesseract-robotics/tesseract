@@ -92,11 +92,11 @@ public:
    * @param max_acceleration_scaling_factor The max acceleration scaling factor
    * @return True if successful, otherwise false
    */
-  bool computeTimeStamps(CompositeInstruction& program,
-                         const double& max_velocity,
-                         const double& max_acceleration,
-                         const double max_velocity_scaling_factor = 1.0,
-                         const double max_acceleration_scaling_factor = 1.0) const;
+  bool compute(CompositeInstruction& program,
+               const double& max_velocity,
+               const double& max_acceleration,
+               const double max_velocity_scaling_factor = 1.0,
+               const double max_acceleration_scaling_factor = 1.0) const;
 
   /**
    * @brief Compute the time stamps for a provided program.
@@ -110,11 +110,29 @@ public:
    * @param max_acceleration_scaling_factor The max acceleration scaling factor
    * @return True if successful, otherwise false
    */
-  bool computeTimeStamps(CompositeInstruction& program,
-                         const std::vector<double>& max_velocity,
-                         const std::vector<double>& max_acceleration,
-                         const double max_velocity_scaling_factor = 1.0,
-                         const double max_acceleration_scaling_factor = 1.0) const;
+  bool compute(CompositeInstruction& program,
+               const std::vector<double>& max_velocity,
+               const std::vector<double>& max_acceleration,
+               const double max_velocity_scaling_factor = 1.0,
+               const double max_acceleration_scaling_factor = 1.0) const;
+
+  /**
+   * @brief Compute the time stamps for a provided program.
+   *
+   * This will flatten the program to a vector of move instructions
+   *
+   * @param program The program to compute time stamps
+   * @param max_velocities The max velocities for each joint
+   * @param max_accelerations The max acceleration for each joint
+   * @param max_velocity_scaling_factor The max velocity scaling factor
+   * @param max_acceleration_scaling_factor The max acceleration scaling factor
+   * @return True if successful, otherwise false
+   */
+  bool compute(CompositeInstruction& program,
+               const Eigen::Ref<const Eigen::VectorXd>& max_velocity,
+               const Eigen::Ref<const Eigen::VectorXd>& max_acceleration,
+               const double max_velocity_scaling_factor = 1.0,
+               const double max_acceleration_scaling_factor = 1.0) const;
 
   /**
    * @brief Compute the time stamps for a flattened vector of move instruction
@@ -125,11 +143,11 @@ public:
    * @param max_acceleration_scaling_factor The max acceleration scaling factor
    * @return True if successful, otherwise false
    */
-  bool computeTimeStamps(const std::vector<std::reference_wrapper<Instruction>>& trajectory,
-                         const double& max_velocity,
-                         const double& max_acceleration,
-                         const double max_velocity_scaling_factor = 1.0,
-                         const double max_acceleration_scaling_factor = 1.0) const;
+  bool compute(const std::vector<std::reference_wrapper<Instruction>>& trajectory,
+               const double& max_velocity,
+               const double& max_acceleration,
+               const double max_velocity_scaling_factor = 1.0,
+               const double max_acceleration_scaling_factor = 1.0) const;
 
   /**
    * @brief Compute the time stamps for a flattened vector of move instruction
@@ -140,11 +158,26 @@ public:
    * @param max_acceleration_scaling_factor The max acceleration scaling factor
    * @return True if successful, otherwise false
    */
-  bool computeTimeStamps(const std::vector<std::reference_wrapper<Instruction>>& trajectory,
-                         const std::vector<double>& max_velocity,
-                         const std::vector<double>& max_acceleration,
-                         const double max_velocity_scaling_factor = 1.0,
-                         const double max_acceleration_scaling_factor = 1.0) const;
+  bool compute(const std::vector<std::reference_wrapper<Instruction>>& trajectory,
+               const std::vector<double>& max_velocity,
+               const std::vector<double>& max_acceleration,
+               const double max_velocity_scaling_factor = 1.0,
+               const double max_acceleration_scaling_factor = 1.0) const;
+
+  /**
+   * @brief Compute the time stamps for a flattened vector of move instruction
+   * @param trajectory Flattended vector of move instruction
+   * @param max_velocities The max velocities for each joint
+   * @param max_accelerations The max acceleration for each joint
+   * @param max_velocity_scaling_factor The max velocity scaling factor
+   * @param max_acceleration_scaling_factor The max acceleration scaling factor
+   * @return True if successful, otherwise false
+   */
+  bool compute(const std::vector<std::reference_wrapper<Instruction>>& trajectory,
+               const Eigen::Ref<const Eigen::VectorXd>& max_velocity,
+               const Eigen::Ref<const Eigen::VectorXd>& max_acceleration,
+               const double max_velocity_scaling_factor = 1.0,
+               const double max_acceleration_scaling_factor = 1.0) const;
 
 private:
   bool add_points_;  /// @brief If true, add two points to trajectory (first and last segments).
