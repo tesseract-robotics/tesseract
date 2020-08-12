@@ -15,6 +15,7 @@
   <depend>tesseract_common</depend>
   <depend>tesseract_command_language</depend>
   <depend>tesseract_motion_planners</depend>
+  <depend>tesseract_time_parameterization</depend>
   <depend>tesseract</depend>
 
   <test_depend>gtest</test_depend>
