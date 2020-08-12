@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Eigen>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/types.h>
+#include <tesseract_common/utils.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/parser/kdl_parser.h>
 
@@ -146,7 +147,7 @@ struct KDLChainData
   std::vector<std::string> joint_list;       /**< List of joint names */
   std::vector<std::string> link_list;        /**< List of link names */
   std::vector<std::string> active_link_list; /**< List of link names that move with changes in joint values */
-  Eigen::MatrixX2d joint_limits;             /**< Joint limits */
+  tesseract_common::KinematicLimits limits;  /**< Joint limits, velocity limits, and acceleration limits */
   std::map<std::string, int> segment_index;  /**< A map from chain link name to kdl chain segment number */
   std::vector<std::pair<std::string, std::string>> chains; /**< The chains used to create the object */
 };
@@ -185,7 +186,9 @@ inline bool parseSceneGraph(KDLChainData& results,
   results.tip_name = chains.back().second;
 
   results.joint_list.resize(results.robot_chain.getNrOfJoints());
-  results.joint_limits.resize(results.robot_chain.getNrOfJoints(), 2);
+  results.limits.joint_limits.resize(results.robot_chain.getNrOfJoints(), 2);
+  results.limits.velocity_limits.resize(results.robot_chain.getNrOfJoints());
+  results.limits.acceleration_limits.resize(results.robot_chain.getNrOfJoints());
 
   results.segment_index[results.base_name] = 0;
   results.link_list.push_back(results.base_name);
@@ -216,17 +219,19 @@ inline bool parseSceneGraph(KDLChainData& results,
 
     results.joint_list[j] = jnt.getName();
     const tesseract_scene_graph::Joint::ConstPtr& joint = scene_graph.getJoint(jnt.getName());
-    results.joint_limits(j, 0) = joint->limits->lower;
-    results.joint_limits(j, 1) = joint->limits->upper;
+    results.limits.joint_limits(j, 0) = joint->limits->lower;
+    results.limits.joint_limits(j, 1) = joint->limits->upper;
+    results.limits.velocity_limits(j) = joint->limits->velocity;
+    results.limits.acceleration_limits(j) = joint->limits->acceleration;
 
     // Need to set limits for continuous joints. TODO: This may not be required
     // by the optimization library but may be nice to have
     if (joint->type == tesseract_scene_graph::JointType::CONTINUOUS &&
-        std::abs(results.joint_limits(j, 0) - results.joint_limits(j, 1)) <=
-            static_cast<double>(std::numeric_limits<float>::epsilon()))
+        tesseract_common::almostEqualRelativeAndAbs(
+            results.limits.joint_limits(j, 0), results.limits.joint_limits(j, 1), 1e-5))
     {
-      results.joint_limits(j, 0) = -4 * M_PI;
-      results.joint_limits(j, 1) = +4 * M_PI;
+      results.limits.joint_limits(j, 0) = -4 * M_PI;
+      results.limits.joint_limits(j, 1) = +4 * M_PI;
     }
     ++j;
   }

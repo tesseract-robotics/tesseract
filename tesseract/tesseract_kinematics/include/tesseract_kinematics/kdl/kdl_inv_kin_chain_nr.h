@@ -80,7 +80,7 @@ public:
 
   const std::vector<std::string>& getActiveLinkNames() const override;
 
-  const Eigen::MatrixX2d& getLimits() const override;
+  const tesseract_common::KinematicLimits& getLimits() const override;
 
   tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const { return scene_graph_; }
   unsigned int numJoints() const override { return kdl_data_.robot_chain.getNrOfJoints(); }

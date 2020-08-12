@@ -59,10 +59,10 @@ public:
                                    tesseract_ik,
                                    std::bind(&descartes_light::isWithinLimits<FloatType>,
                                              std::placeholders::_1,
-                                             tesseract_fk->getLimits().cast<FloatType>()),
+                                             tesseract_fk->getLimits().joint_limits.cast<FloatType>()),
                                    std::bind(&descartes_light::getRedundantSolutions<FloatType>,
                                              std::placeholders::_1,
-                                             tesseract_fk->getLimits().cast<FloatType>()))
+                                             tesseract_fk->getLimits().joint_limits.cast<FloatType>()))
   {
     ik_seed_ = Eigen::VectorXd::Zero(dof());
   }

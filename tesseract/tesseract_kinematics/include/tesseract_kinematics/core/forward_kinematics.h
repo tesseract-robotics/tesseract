@@ -135,10 +135,10 @@ public:
   virtual const std::vector<std::string>& getActiveLinkNames() const = 0;
 
   /**
-   * @brief Getter for joint_limits_
-   * @return Matrix of joint limits
+   * @brief Getter for kinematic limits (joint, velocity, acceleration, etc.)
+   * @return Kinematic Limits
    */
-  virtual const Eigen::MatrixX2d& getLimits() const = 0;
+  virtual const tesseract_common::KinematicLimits& getLimits() const = 0;
 
   /**
    * @brief Number of joints in robot
