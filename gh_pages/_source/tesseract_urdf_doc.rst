@@ -22,6 +22,10 @@ Features
 
    * Quaternion
 
+#. Limits
+
+   * Acceleration - Oddly this was not supported by the original urdf specification
+
 #. URDF Version
 
    * The original implementation of Tesseract interpreted mesh tags different than what is called version 2. It originally converted mesh geometry types to convex hull because there was no way to distinguish different types of meshes. Now in version 2 it supports the shape types (mesh, convex_mesh, sdf_mesh, etc.), therefore in version 2 the mesh tag is now interpreted as a detailed mesh and is no longer converted to a convex hull. To get the same behavior using version 2 change the tag to convex_mesh and set convert equal to true. For backwards compatibility any URDF without a version is assumed version 1 and mesh tags will be converted to convex hulls.
@@ -181,3 +185,14 @@ This allows the ability to use a quaternion instead of roll, pitch and yaw value
    * - wxyz
      - Optional
      - A Quaternion = [w, x, y, z]. It will be normalized on creation.
+
+Acceleration Limits
+-------------------
+
+.. code-block:: xml
+
+   <limit effort="30" velocity="1.0" acceleration="1.0" lower="-2.2" upper="0.7" />
+
+.. note::
+
+   For backwards compatability acceleration is required. If not provided it is assigned to be 0.5 * velocity.
