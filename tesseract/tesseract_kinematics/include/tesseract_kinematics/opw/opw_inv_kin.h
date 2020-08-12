@@ -69,7 +69,7 @@ public:
   const std::vector<std::string>& getJointNames() const override { return joint_names_; }
   const std::vector<std::string>& getLinkNames() const override { return link_names_; }
   const std::vector<std::string>& getActiveLinkNames() const override { return active_link_names_; }
-  const Eigen::MatrixX2d& getLimits() const override { return joint_limits_; }
+  const tesseract_common::KinematicLimits& getLimits() const override { return limits_; }
   const std::string& getBaseLinkName() const override { return base_link_name_; }
   const std::string& getTipLinkName() const override { return tip_link_name_; }
   const std::string& getName() const override { return name_; }
@@ -94,7 +94,7 @@ public:
             std::vector<std::string> joint_names,
             std::vector<std::string> link_names,
             std::vector<std::string> active_link_names,
-            const Eigen::MatrixX2d& joint_limits);
+            tesseract_common::KinematicLimits limits);
 
   /**
    * @brief Checks if kinematics has been initialized
@@ -115,7 +115,7 @@ protected:
   opw_kinematics::Parameters<double> params_;  /**< @brief The opw kinematics parameters */
   std::string base_link_name_;                 /**< @brief Kinematic base link name */
   std::string tip_link_name_;                  /**< @brief Kinematic tip link name */
-  Eigen::MatrixX2d joint_limits_;              /**< @brief Joint Limits */
+  tesseract_common::KinematicLimits limits_;   /**< @brief Joint Limits, velocity limits, and acceleration limits */
   std::vector<std::string> joint_names_;       /**< @brief joint names */
   std::vector<std::string> link_names_;        /**< @brief link names */
   std::vector<std::string> active_link_names_; /**< @brief active link names */

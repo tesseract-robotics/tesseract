@@ -80,7 +80,7 @@ void TrajOptDefaultCompositeProfile::addCollisionCost(trajopt::ProblemConstructi
                                                       const std::vector<int>& fixed_indices) const
 {
   // Calculate longest valid segment length
-  const Eigen::MatrixX2d& limits = pci.kin->getLimits();
+  const Eigen::MatrixX2d& limits = pci.kin->getLimits().joint_limits;
   double length = 0;
   double extent = (limits.col(1) - limits.col(0)).norm();
   if (longest_valid_segment_fraction > 0 && longest_valid_segment_length > 0)
@@ -132,7 +132,7 @@ void TrajOptDefaultCompositeProfile::addCollisionConstraint(trajopt::ProblemCons
                                                             const std::vector<int>& fixed_indices) const
 {
   // Calculate longest valid segment length
-  const Eigen::MatrixX2d& limits = pci.kin->getLimits();
+  const Eigen::MatrixX2d& limits = pci.kin->getLimits().joint_limits;
   double length = 0;
   double extent = (limits.col(1) - limits.col(0)).norm();
   if (longest_valid_segment_fraction > 0 && longest_valid_segment_length > 0)

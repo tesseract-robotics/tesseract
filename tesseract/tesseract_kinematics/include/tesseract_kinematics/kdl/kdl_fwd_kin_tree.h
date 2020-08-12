@@ -88,7 +88,7 @@ public:
 
   const std::vector<std::string>& getActiveLinkNames() const override;
 
-  const Eigen::MatrixX2d& getLimits() const override;
+  const tesseract_common::KinematicLimits& getLimits() const override;
 
   tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const { return scene_graph_; }
   unsigned int numJoints() const override { return static_cast<unsigned>(joint_list_.size()); }
@@ -141,7 +141,7 @@ private:
   std::unordered_map<std::string, unsigned int> joint_to_qnr_; /**< The tree joint name to qnr */
   std::vector<std::string> link_list_;                         /**< List of link names */
   std::vector<std::string> active_link_list_; /**< List of link names that move with changes in joint values */
-  Eigen::MatrixX2d joint_limits_;             /**< Joint limits */
+  tesseract_common::KinematicLimits limits_;  /**< Joint limits, velocity limits and acceleration limits */
   std::unique_ptr<KDL::TreeFkSolverPos_recursive> fk_solver_; /**< KDL Forward Kinematic Solver */
   std::unique_ptr<KDL::TreeJntToJacSolver> jac_solver_;       /**< KDL Jacobian Solver */
 

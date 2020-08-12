@@ -63,7 +63,7 @@ bool OPWInvKin::calcInvKin(Eigen::VectorXd& solutions,
       solution_set.insert(end(solution_set), sol, sol + 6);
 
       // Add redundant solutions
-      std::vector<double> redundant_sols = getRedundantSolutions(sol, joint_limits_);
+      std::vector<double> redundant_sols = getRedundantSolutions(sol, limits_.joint_limits);
       if (!redundant_sols.empty())
       {
         auto num_sol = static_cast<int>(redundant_sols.size() / 6);
@@ -99,7 +99,7 @@ bool OPWInvKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) const
     return false;
   }
 
-  return isWithinLimits<double>(vec, joint_limits_);
+  return isWithinLimits<double>(vec, limits_.joint_limits);
 }
 
 unsigned int OPWInvKin::numJoints() const { return 6; }
@@ -111,7 +111,7 @@ bool OPWInvKin::init(std::string name,
                      std::vector<std::string> joint_names,
                      std::vector<std::string> link_names,
                      std::vector<std::string> active_link_names,
-                     const Eigen::MatrixX2d& joint_limits)
+                     tesseract_common::KinematicLimits limits)
 {
   assert(joint_names.size() == 6);
 
@@ -122,7 +122,7 @@ bool OPWInvKin::init(std::string name,
   joint_names_ = std::move(joint_names);
   link_names_ = std::move(link_names);
   active_link_names_ = std::move(active_link_names);
-  joint_limits_ = joint_limits;
+  limits_ = std::move(limits);
   initialized_ = true;
 
   return initialized_;
@@ -139,7 +139,7 @@ bool OPWInvKin::init(const OPWInvKin& kin)
   joint_names_ = kin.joint_names_;
   link_names_ = kin.link_names_;
   active_link_names_ = kin.active_link_names_;
-  joint_limits_ = kin.joint_limits_;
+  limits_ = kin.limits_;
 
   return initialized_;
 }
