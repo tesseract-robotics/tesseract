@@ -243,7 +243,7 @@ void runApplyCommandsTest(const tesseract_environment::Environment::Ptr& env)
   // Add
   {
     {
-      Commands commands {std::make_shared<AddCommand>(link_1, joint_1) };
+      Commands commands{ std::make_shared<AddCommand>(link_1, joint_1) };
       EXPECT_TRUE(env->applyCommands(commands));
       EXPECT_FALSE(env->applyCommands(commands));
 
@@ -253,7 +253,7 @@ void runApplyCommandsTest(const tesseract_environment::Environment::Ptr& env)
       EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) != joint_names.end());
     }
     {
-      Commands commands {std::make_shared<AddCommand>(link_2, nullptr) };
+      Commands commands{ std::make_shared<AddCommand>(link_2, nullptr) };
       EXPECT_TRUE(env->applyCommands(commands));
       std::vector<std::string> link_names = env->getLinkNames();
       std::vector<std::string> joint_names = env->getJointNames();
@@ -261,16 +261,64 @@ void runApplyCommandsTest(const tesseract_environment::Environment::Ptr& env)
       EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), "joint_" + link_name2) != joint_names.end());
     }
     {
-      Commands commands {std::make_shared<AddCommand>(nullptr, joint_1) };
+      Commands commands{ std::make_shared<AddCommand>(nullptr, joint_1) };
       EXPECT_FALSE(env->applyCommands(commands));
     }
     {
-      Commands commands {std::make_shared<AddCommand>(nullptr, nullptr) };
+      Commands commands{ std::make_shared<AddCommand>(nullptr, nullptr) };
       EXPECT_FALSE(env->applyCommands(commands));
     }
-
   }
   /// @todo Add tests for applying commands to the environment
+}
+
+void runCloneTest(const tesseract_environment::Environment::ConstPtr& env)
+{
+  auto clone = env->clone();
+
+  // Check the basics
+  EXPECT_EQ(clone->getName(), env->getName());
+  EXPECT_EQ(clone->getRevision(), env->getRevision());
+
+  // Check that all links got cloned
+  std::vector<std::string> link_names = env->getLinkNames();
+  std::vector<std::string> clone_link_names = clone->getLinkNames();
+  for (const auto& name : link_names)
+    EXPECT_TRUE(std::find(clone_link_names.begin(), clone_link_names.end(), name) != clone_link_names.end());
+
+  // Check that all joints got cloned
+  std::vector<std::string> joint_names = env->getJointNames();
+  std::vector<std::string> clone_joint_names = clone->getJointNames();
+  for (const auto& name : joint_names)
+    EXPECT_TRUE(std::find(clone_joint_names.begin(), clone_joint_names.end(), name) != clone_joint_names.end());
+
+  // Check that the command history is preserved
+  auto history = env->getCommandHistory();
+  auto clone_history = clone->getCommandHistory();
+  ASSERT_EQ(history.size(), clone_history.size());
+  for (std::size_t i = 0; i < history.size(); i++)
+  {
+    EXPECT_EQ(history[i]->getType(), clone_history[i]->getType());
+  }
+
+  // Check active links
+  std::vector<std::string> active_link_names = env->getActiveLinkNames();
+  std::vector<std::string> clone_active_link_names = clone->getActiveLinkNames();
+  for (const auto& name : active_link_names)
+    EXPECT_TRUE(std::find(clone_active_link_names.begin(), clone_active_link_names.end(), name) !=
+                clone_active_link_names.end());
+
+  // Check active joints
+  std::vector<std::string> active_joint_names = env->getActiveJointNames();
+  std::vector<std::string> clone_active_joint_names = clone->getActiveJointNames();
+  for (const auto& name : active_joint_names)
+    EXPECT_TRUE(std::find(clone_active_joint_names.begin(), clone_active_joint_names.end(), name) !=
+                clone_active_joint_names.end());
+
+  // Check that the state is preserved
+  Eigen::VectorXd joint_vals = env->getCurrentState()->getJointValues(active_joint_names);
+  Eigen::VectorXd clone_joint_vals = clone->getCurrentState()->getJointValues(active_joint_names);
+  EXPECT_TRUE(joint_vals.isApprox(clone_joint_vals));
 }
 
 TEST(TesseractEnvironmentUnit, KDLEnvCloneContactManagerUnit)  // NOLINT
@@ -429,6 +477,19 @@ TEST(TesseractEnvironmentUnit, applyCommands)  // NOLINT
   runApplyCommandsTest(env);
 }
 
+TEST(TesseractEnvironmentUnit, clone)  // NOLINT
+{
+  SceneGraph::Ptr scene_graph = getSceneGraph();
+  EXPECT_TRUE(scene_graph != nullptr);
+
+  KDLEnv::Ptr env(new KDLEnv());
+  EXPECT_TRUE(env != nullptr);
+
+  bool success = env->init(scene_graph);
+  EXPECT_TRUE(success);
+
+  runCloneTest(env);
+}
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
