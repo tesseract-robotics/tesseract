@@ -1,9 +1,9 @@
-﻿/**
- * @file sequential_taskflow.h
- * @brief Creates a taskflow that sequentially calls processes
+/**
+ * @file graph_taskflow.h
+ * @brief Creates a directed graph taskflow
  *
- * @author Matthew Powelson
- * @date July 15. 2020
+ * @author Levi Armstrong
+ * @date August 13. 2020
  * @version TODO
  * @bug No known bugs
  *
@@ -23,8 +23,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_SEQUENTIAL_TASKFLOW_H
-#define TESSERACT_PROCESS_MANAGERS_SEQUENTIAL_TASKFLOW_H
+
+#ifndef TESSERACT_PROCESS_MANAGERS_GRAPH_TASKFLOW_H
+#define TESSERACT_PROCESS_MANAGERS_GRAPH_TASKFLOW_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -36,26 +37,50 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-enum class SequentialTaskType : int
-{
-  TASK = 0,
-  CONDITIONAL_EXIT_ON_SUCCESS = 1,
-  CONDITIONAL_EXIT_ON_FAILURE = 2
-};
-
-using SequentialProcesses = std::vector<std::pair<ProcessGenerator::UPtr, SequentialTaskType>>;
-
 /** @brief This class generates taskflows for a sequential failure tree. Each process is executed in order until one
  * succeeds. Between each process, the validator tasks are executed (if not empty). For a process to succeed, the
  * process itself must succeed and all of the validators must succeed*/
-class SequentialTaskflow : public TaskflowGenerator
+class GraphTaskflow : public TaskflowGenerator
 {
 public:
-  using UPtr = std::unique_ptr<SequentialTaskflow>;
+  using UPtr = std::unique_ptr<GraphTaskflow>;
 
-  SequentialTaskflow() = default;
-  ~SequentialTaskflow() override = default;
-  SequentialTaskflow(SequentialProcesses processes, std::string name = "SequentialTaskflow");
+  enum class NodeType : int
+  {
+    TASK = 0,
+    CONDITIONAL = 1
+  };
+
+  enum class SourceChannel : int
+  {
+    NONE = 0,
+    ON_SUCCESS = 1,
+    ON_FAILURE = 2
+  };
+
+  enum class DestinationChannel : int
+  {
+    PROCESS_NODE = 0,
+    DONE_CALLBACK = 1,
+    ERROR_CALLBACK = 2
+  };
+
+  struct Edge
+  {
+    SourceChannel src_channel;
+    int dest{ -1 };
+    DestinationChannel dest_channel;
+  };
+
+  struct Node
+  {
+    ProcessGenerator::UPtr process;
+    NodeType process_type;
+    std::vector<Edge> edges;
+  };
+
+  GraphTaskflow(std::string name = "GraphTaskflow");
+  ~GraphTaskflow() override = default;
 
   const std::string& getName() const override;
 
@@ -67,22 +92,19 @@ public:
 
   void reset() override;
 
-  /**
-   * @brief Add another process that will be added to the taskflow
-   * @param process Process added to the taskflow
-   */
-  void registerProcess(ProcessGenerator::UPtr process, SequentialTaskType task_type);
+  int addNode(ProcessGenerator::UPtr process, NodeType process_type);
+  void addEdge(int src, SourceChannel src_channel, int dest, DestinationChannel dest_channel);
 
 private:
   /** @brief If true, all tasks return immediately. Workaround for https://github.com/taskflow/taskflow/issues/201 */
   std::atomic<bool> abort_{ false };
 
-  SequentialProcesses processes_;
-  std::vector<std::shared_ptr<tf::Taskflow>> sequential_trees_;
+  std::vector<Node> nodes_;
+  std::vector<std::shared_ptr<tf::Taskflow>> taskflow_objects_;
   std::vector<tf::Task> process_tasks_;
   std::string name_;
 };
 
 }  // namespace tesseract_planning
 
-#endif
+#endif  // TESSERACT_PROCESS_MANAGERS_GRAPH_TASKFLOW_H

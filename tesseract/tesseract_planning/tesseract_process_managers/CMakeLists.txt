@@ -24,10 +24,12 @@ add_library(${PROJECT_NAME} SHARED
     src/process_generators/iterative_spline_parameterization_process_generator.cpp
     src/process_managers/freespace_process_manager.cpp
     src/process_managers/raster_process_manager.cpp
-    src/taskflow_generators/sequential_taskflow.cpp)
+    src/taskflow_generators/sequential_taskflow.cpp
+    src/taskflow_generators/graph_taskflow.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC
     console_bridge
     Taskflow::Taskflow
+    tesseract::tesseract_common
     tesseract::tesseract_command_language
     tesseract::tesseract_motion_planners_simple
     tesseract::tesseract_motion_planners_trajopt
@@ -53,6 +55,16 @@ target_include_directories(${PROJECT_NAME}_freespace_manager_example PRIVATE
 target_include_directories(${PROJECT_NAME}_freespace_manager_example SYSTEM PRIVATE
     ${EIGEN3_INCLUDE_DIRS})
 
+add_executable(${PROJECT_NAME}_freespace_manager_graph_example src/examples/freespace_manager_graph_example.cpp)
+target_link_libraries(${PROJECT_NAME}_freespace_manager_graph_example console_bridge ${PROJECT_NAME} Taskflow::Taskflow tesseract::tesseract tesseract::tesseract_command_language tesseract::tesseract_support tesseract::tesseract_motion_planners_trajopt ${CMAKE_THREAD_LIBS_INIT})
+tesseract_target_compile_options(${PROJECT_NAME}_freespace_manager_graph_example PRIVATE)
+tesseract_clang_tidy(${PROJECT_NAME}_freespace_manager_graph_example)
+target_include_directories(${PROJECT_NAME}_freespace_manager_graph_example PRIVATE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_freespace_manager_graph_example SYSTEM PRIVATE
+    ${EIGEN3_INCLUDE_DIRS})
+
 add_executable(${PROJECT_NAME}_raster_manager_example src/examples/raster_manager_example.cpp)
 target_link_libraries(${PROJECT_NAME}_raster_manager_example console_bridge ${PROJECT_NAME} Taskflow::Taskflow tesseract::tesseract tesseract::tesseract_command_language tesseract::tesseract_support tesseract::tesseract_motion_planners_trajopt ${CMAKE_THREAD_LIBS_INIT})
 tesseract_target_compile_options(${PROJECT_NAME}_raster_manager_example PRIVATE)
@@ -63,7 +75,11 @@ target_include_directories(${PROJECT_NAME}_raster_manager_example PRIVATE
 target_include_directories(${PROJECT_NAME}_raster_manager_example SYSTEM PRIVATE
     ${EIGEN3_INCLUDE_DIRS})
 
-tesseract_configure_package(${PROJECT_NAME} ${PROJECT_NAME}_freespace_manager_example ${PROJECT_NAME}_raster_manager_example)
+tesseract_configure_package(
+  ${PROJECT_NAME}
+  ${PROJECT_NAME}_freespace_manager_example
+  ${PROJECT_NAME}_freespace_manager_graph_example
+  ${PROJECT_NAME}_raster_manager_example)
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
