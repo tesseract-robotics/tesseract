@@ -9,6 +9,7 @@
 
   <depend>tesseract_collision</depend>
   <depend>tesseract_common</depend>
+  <depend>tesseract_command_language</depend>
   <depend>tesseract</depend>
   <depend>class_loader</depend>
   <depend>libconsole-bridge-dev</depend>
