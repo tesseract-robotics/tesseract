@@ -107,6 +107,15 @@ public:
    */
   void clearAllowedCollisions() { lookup_table_.clear(); }
 
+  /**
+   * @brief Inserts an allowable collision matrix ignoring duplicate pairs
+   * @param acm ACM to be inserted
+   */
+  void insertAllowedCollisionMatrix(const AllowedCollisionMatrix& acm)
+  {
+    lookup_table_.insert(acm.getAllAllowedCollisions().begin(), acm.getAllAllowedCollisions().end());
+  }
+
 private:
   AllowedCollisionEntries lookup_table_;
 

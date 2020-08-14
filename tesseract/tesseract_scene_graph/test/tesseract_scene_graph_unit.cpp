@@ -415,18 +415,36 @@ TEST(TesseractSceneGraphUnit, LoadKDLUnit)  // NOLINT
   using namespace tesseract_scene_graph;
   SceneGraph g = buildTestSceneGraph();
 
-  KDL::Tree tree;
-  EXPECT_TRUE(parseSceneGraph(g, tree));
+  {
+    KDL::Tree tree;
+    EXPECT_TRUE(parseSceneGraph(g, tree));
 
-  // walk through tree
-  std::cout << " ======================================" << std::endl;
-  std::cout << " Tree has " << tree.getNrOfSegments() << " link(s) and a root link" << std::endl;
-  std::cout << " ======================================" << std::endl;
-  auto root = tree.getRootSegment();
-  printKDLTree(root, "");
+    // walk through tree
+    std::cout << " ======================================" << std::endl;
+    std::cout << " Tree has " << tree.getNrOfSegments() << " link(s) and a root link" << std::endl;
+    std::cout << " ======================================" << std::endl;
+    auto root = tree.getRootSegment();
+    printKDLTree(root, "");
 
-  EXPECT_TRUE(tree.getNrOfJoints() == 4);
-  EXPECT_TRUE(tree.getNrOfSegments() == 5);
+    EXPECT_EQ(tree.getNrOfJoints(), 4);
+    EXPECT_EQ(tree.getNrOfSegments(), 5);
+  }
+
+  SceneGraph::Ptr g_clone = g.clone();
+  {
+    KDL::Tree tree;
+    EXPECT_TRUE(parseSceneGraph(*g_clone, tree));
+
+    // walk through tree
+    std::cout << " ======================================" << std::endl;
+    std::cout << " Tree has " << tree.getNrOfSegments() << " link(s) and a root link" << std::endl;
+    std::cout << " ======================================" << std::endl;
+    auto root = tree.getRootSegment();
+    printKDLTree(root, "");
+
+    EXPECT_EQ(tree.getNrOfJoints(), 4);
+    EXPECT_EQ(tree.getNrOfSegments(), 5);
+  }
 }
 
 /// Testing AllowedCollisionMatrix
@@ -448,6 +466,18 @@ TEST(TesseractSceneGraphUnit, TestAllowedCollisionMatrix)  // NOLINT
   EXPECT_EQ(acm.getAllAllowedCollisions().size(), 1);
   acm.clearAllowedCollisions();
   EXPECT_EQ(acm.getAllAllowedCollisions().size(), 0);
+
+  tesseract_scene_graph::AllowedCollisionMatrix acm2;
+  acm.addAllowedCollision("link1", "link2", "test");
+  acm2.addAllowedCollision("link1", "link2", "test");
+  acm2.addAllowedCollision("link1", "link3", "test");
+  acm.insertAllowedCollisionMatrix(acm2);
+
+  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 2);
+  EXPECT_TRUE(acm.isCollisionAllowed("link1", "link2"));
+  EXPECT_TRUE(acm.isCollisionAllowed("link1", "link3"));
+  EXPECT_FALSE(acm.isCollisionAllowed("link2", "link3"));
+  EXPECT_EQ(acm.getAllAllowedCollisions().size(), 2);
 }
 
 TEST(TesseractSceneGraphUnit, TestChangeJointOrigin)  // NOLINT

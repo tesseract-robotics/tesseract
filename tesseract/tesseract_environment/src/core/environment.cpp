@@ -93,26 +93,11 @@ bool Environment::addLink(tesseract_scene_graph::Link link)
 
 bool Environment::addLink(tesseract_scene_graph::Link link, tesseract_scene_graph::Joint joint)
 {
-  std::lock_guard<std::mutex> lock(mutex_);
-  if (scene_graph_->getLink(link.getName()) != nullptr)
-  {
-    CONSOLE_BRIDGE_logWarn("Tried to add link (%s) with same name as an existing link.", link.getName().c_str());
-    return false;
-  }
-
-  if (scene_graph_->getJoint(joint.getName()) != nullptr)
-  {
-    CONSOLE_BRIDGE_logWarn("Tried to add joint (%s) with same name as an existing joint.", joint.getName().c_str());
-    return false;
-  }
-
   std::string link_name = link.getName();
   std::string joint_name = joint.getName();
 
-  if (!scene_graph_->addLink(std::move(link)))
-    return false;
-
-  if (!scene_graph_->addJoint(std::move(joint)))
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (!scene_graph_->addLink(std::move(link), std::move(joint)))
     return false;
 
   // We have moved the original objects, get a pointer to them from scene_graph
