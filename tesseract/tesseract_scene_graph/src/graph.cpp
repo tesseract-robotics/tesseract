@@ -28,6 +28,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <fstream>
+#include <queue>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -36,6 +37,23 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_scene_graph
 {
 SceneGraph::SceneGraph() : acm_(std::make_shared<AllowedCollisionMatrix>()) {}
+
+SceneGraph::Ptr SceneGraph::clone() const
+{
+  SceneGraph::Ptr cloned_graph = std::make_shared<SceneGraph>();
+
+  for (auto& link : getLinks())
+    cloned_graph->addLink(std::move(link->clone(link->getName())));
+  for (auto& joint : getJoints())
+    cloned_graph->addJoint(std::move(joint->clone(joint->getName())));
+
+  cloned_graph->getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(*getAllowedCollisionMatrix());
+
+  cloned_graph->setName(getName());
+  cloned_graph->setRoot(getRoot());
+
+  return cloned_graph;
+}
 
 void SceneGraph::setName(const std::string& name)
 {
@@ -68,6 +86,32 @@ bool SceneGraph::addLink(Link link)
 {
   auto link_ptr = std::make_shared<tesseract_scene_graph::Link>(std::move(link));
   return addLink(link_ptr);
+}
+
+bool SceneGraph::addLink(Link link, Joint joint)
+{
+  if (getLink(link.getName()) != nullptr)
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to add link (%s) with same name as an existing link.", link.getName().c_str());
+    return false;
+  }
+
+  if (getJoint(joint.getName()) != nullptr)
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to add joint (%s) with same name as an existing joint.", joint.getName().c_str());
+    return false;
+  }
+
+  std::string link_name = link.getName();
+  std::string joint_name = joint.getName();
+
+  if (!addLink(std::move(link)))
+    return false;
+
+  if (!addJoint(std::move(joint)))
+    return false;
+
+  return true;
 }
 
 bool SceneGraph::addLink(Link::Ptr link_ptr)
@@ -554,6 +598,82 @@ SceneGraph::Edge SceneGraph::getEdge(const std::string& name) const
     return Edge{};
 
   return found->second.second;
+}
+
+/** addSceneGraph needs a couple helpers to handle prefixing, we hide them in an anonymous namespace here **/
+namespace
+{
+tesseract_scene_graph::Link clone_prefix(tesseract_scene_graph::Link::ConstPtr link, const std::string& prefix)
+{
+  return link->clone(prefix + link->getName());
+}
+tesseract_scene_graph::Joint clone_prefix(tesseract_scene_graph::Joint::ConstPtr joint, const std::string& prefix)
+{
+  auto ret = joint->clone(prefix + joint->getName());
+  ret.child_link_name = prefix + joint->child_link_name;
+  ret.parent_link_name = prefix + joint->parent_link_name;
+  return ret;
+}
+}  // namespace
+
+bool SceneGraph::insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& prefix)
+{
+  // Connect root of subgraph to graph
+  tesseract_scene_graph::Joint::Ptr root_joint =
+      std::make_shared<tesseract_scene_graph::Joint>(scene_graph.getName() + "_joint");
+  root_joint->type = tesseract_scene_graph::JointType::FIXED;
+  root_joint->parent_link_name = getRoot();
+  root_joint->child_link_name = scene_graph.getRoot();
+  root_joint->parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
+
+  return insertSceneGraph(scene_graph, root_joint, prefix);
+}
+
+bool SceneGraph::insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
+                                  tesseract_scene_graph::Joint::ConstPtr root_joint,
+                                  const std::string& prefix)
+{
+  auto link = scene_graph.getLink(scene_graph.getRoot());
+  if (!link)
+  {
+    return true;
+  }
+  auto new_link = clone_prefix(link, prefix);
+  auto new_joint = clone_prefix(root_joint, prefix);
+  // Preserve reference to common ancestor
+  new_joint.parent_link_name = root_joint->parent_link_name;
+
+  bool res = addLink(std::move(new_link), std::move(new_joint));
+  if (!res)
+  {
+    CONSOLE_BRIDGE_logError("Could not add the root joint");
+    return false;
+  }
+
+  std::queue<std::string> work_links;
+  work_links.push(link->getName());
+  while (!work_links.empty())
+  {
+    auto joints = scene_graph.getOutboundJoints(work_links.front());
+    work_links.pop();
+    for (const auto& joint : joints)
+    {
+      auto new_joint = clone_prefix(joint, prefix);
+      link = scene_graph.getLink(joint->child_link_name);
+      auto new_link = clone_prefix(link, prefix);
+      res = addLink(std::move(new_link), std::move(new_joint));
+      if (!res)
+      {
+        CONSOLE_BRIDGE_logError("Could not add link (%s) with prefix (%s)", link->getName().c_str(), prefix.c_str());
+        return false;
+      }
+      work_links.push(link->getName());
+    }
+  }
+
+  acm_->insertAllowedCollisionMatrix(*scene_graph.getAllowedCollisionMatrix());
+
+  return res;
 }
 
 }  // namespace tesseract_scene_graph
