@@ -6,14 +6,18 @@ find_package(console_bridge REQUIRED)
 find_package(tesseract_collision REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract REQUIRED)
+find_package(tesseract_command_language REQUIRED)
 find_package(class_loader REQUIRED)
 
 set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/*)
 
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 
-add_library(${PROJECT_NAME} SHARED src/visualization_loader.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract tesseract::tesseract_collision_core tesseract::tesseract_common console_bridge ${class_loader_LIBRARIES})
+add_library(${PROJECT_NAME} SHARED
+    src/visualization_loader.cpp
+    src/trajectory_interpolator.cpp
+    src/trajectory_player.cpp)
+target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract tesseract::tesseract_command_language tesseract::tesseract_collision_core tesseract::tesseract_common console_bridge ${class_loader_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME})
 tesseract_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE})
@@ -35,3 +39,9 @@ install(DIRECTORY include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
 )
+
+if (TESSERACT_ENABLE_TESTING)
+  enable_testing()
+  tesseract_add_run_tests_target()
+  add_subdirectory(test)
+endif()
