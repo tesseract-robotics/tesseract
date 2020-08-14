@@ -77,6 +77,10 @@ public:
             const tesseract_scene_graph::ResourceLocator::Ptr& locator);
   bool init(const TesseractInitInfo::Ptr& init_info);
 
+  /** @brief Clone the Tesseract and all of the internals
+   * @return A Ptr to the cloned Tesseract   */
+  Tesseract::Ptr clone() const;
+
   const tesseract_scene_graph::SRDFModel::Ptr& getSRDFModel() const;
   const tesseract_scene_graph::SRDFModel::ConstPtr& getSRDFModelConst() const;
 
