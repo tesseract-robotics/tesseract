@@ -328,7 +328,7 @@ void flattenHelper(std::vector<std::reference_wrapper<const Instruction>>& flatt
     if (!filter || filter(composite.getStartInstruction(), composite, first_composite))
       flattened.emplace_back(composite.getStartInstruction());
 
-  for (auto& i : composite)
+  for (const auto& i : composite)
   {
     if (isCompositeInstruction(i))
     {

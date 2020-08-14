@@ -657,11 +657,14 @@ inline bool contactCheckProgram(std::vector<tesseract_collision::ContactResultMa
   for (std::size_t iStep = 0; iStep < mi.size(); ++iStep)
   {
     const auto* swp0 = mi.at(iStep).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
-    const auto* swp1 = mi.at(iStep + 1).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
+    const StateWaypoint* swp1 = nullptr;
 
     double dist = -1;
     if (iStep < mi.size() - 1)
+    {
+      swp1 = mi.at(iStep + 1).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
       dist = (swp1->position - swp0->position).norm();
+    }
 
     if (dist > 0 && dist > longest_valid_segment_length)
     {
@@ -701,7 +704,6 @@ inline bool contactCheckProgram(std::vector<tesseract_collision::ContactResultMa
     }
     else
     {
-      const auto* swp0 = mi.at(iStep).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
       tesseract_environment::EnvState::Ptr state = state_solver.getState(swp0->joint_names, swp0->position);
       if (checkTrajectoryState(contacts, manager, state, request, verbose))
       {
