@@ -63,8 +63,11 @@ public:
   /** @brief Abort the active taskflow */
   virtual void abort() = 0;
 
-  /** @brief Reset to initial state */
+  /** @brief Reset to initial state, but does not clear stored task */
   virtual void reset() = 0;
+
+  //  /** @brief Clear all stored task and calls reset() */
+  //  virtual void clear() = 0;
 };
 
 }  // namespace tesseract_planning
