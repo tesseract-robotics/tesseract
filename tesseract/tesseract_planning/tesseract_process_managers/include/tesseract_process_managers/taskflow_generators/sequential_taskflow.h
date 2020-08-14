@@ -1,6 +1,6 @@
 ﻿/**
- * @file sequential_failure_tree_taskflow.h
- * @brief Creates a taskflow that sequentially calls processes until one succeeds
+ * @file sequential_taskflow.h
+ * @brief Creates a taskflow that sequentially calls processes
  *
  * @author Matthew Powelson
  * @date July 15. 2020
@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_SEQUENTIAL_FAILURE_TREE_TASKFLOW_H
-#define TESSERACT_PROCESS_MANAGERS_SEQUENTIAL_FAILURE_TREE_TASKFLOW_H
+#ifndef TESSERACT_PROCESS_MANAGERS_SEQUENTIAL_TASKFLOW_H
+#define TESSERACT_PROCESS_MANAGERS_SEQUENTIAL_TASKFLOW_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -78,7 +78,6 @@ private:
   std::atomic<bool> abort_{ false };
 
   SequentialProcesses processes_;
-  std::vector<ProcessGenerator::UPtr> validators_;
   std::vector<std::shared_ptr<tf::Taskflow>> sequential_trees_;
   std::vector<tf::Task> process_tasks_;
   std::string name_;

@@ -1,6 +1,6 @@
 ﻿/**
- * @file sequential_failure_tree_taskflow.h
- * @brief Creates a taskflow that sequentially calls processes until one succeeds
+ * @file sequential_taskflow.cpp
+ * @brief Creates a taskflow that sequentially calls processes
  *
  * @author Matthew Powelson
  * @date July 15. 2020
