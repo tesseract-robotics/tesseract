@@ -69,6 +69,8 @@ public:
    */
   virtual bool init(tesseract_scene_graph::SceneGraph::Ptr scene_graph) = 0;
 
+  virtual Environment::Ptr clone() = 0;
+
   /**
    * @brief Get the current revision number
    * @return Revision number
@@ -80,6 +82,13 @@ public:
    * @return List of commands
    */
   const Commands& getCommandHistory() const { return commands_; }
+
+  /**
+   * @brief Applies the commands to the environment
+   * @param commands Commands to be applied to the environment
+   * @return true if successful. If returned false, then only a partial set of commands have been applied. Call getCommandHistory to check. Some commands are not checked for success
+   */
+  bool applyCommands(const Commands& commands);
 
   /**
    * @brief Check if environment has been initialized
