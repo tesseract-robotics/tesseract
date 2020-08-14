@@ -69,7 +69,7 @@ public:
    */
   virtual bool init(tesseract_scene_graph::SceneGraph::Ptr scene_graph) = 0;
 
-  virtual Environment::Ptr clone() = 0;
+  virtual Environment::Ptr clone() const = 0;
 
   /**
    * @brief Get the current revision number
@@ -86,7 +86,8 @@ public:
   /**
    * @brief Applies the commands to the environment
    * @param commands Commands to be applied to the environment
-   * @return true if successful. If returned false, then only a partial set of commands have been applied. Call getCommandHistory to check. Some commands are not checked for success
+   * @return true if successful. If returned false, then only a partial set of commands have been applied. Call
+   * getCommandHistory to check. Some commands are not checked for success
    */
   bool applyCommands(const Commands& commands);
 
@@ -361,6 +362,8 @@ public:
   /** @brief Get a copy of the environments active discrete contact manager */
   virtual tesseract_collision::DiscreteContactManager::Ptr getDiscreteContactManager() const
   {
+    if (!discrete_manager_)
+      return nullptr;
     return discrete_manager_->clone();
   }
 
@@ -377,6 +380,8 @@ public:
   /** @brief Get a copy of the environments active continuous contact manager */
   virtual tesseract_collision::ContinuousContactManager::Ptr getContinuousContactManager() const
   {
+    if (!continuous_manager_)
+      return nullptr;
     return continuous_manager_->clone();
   }
 

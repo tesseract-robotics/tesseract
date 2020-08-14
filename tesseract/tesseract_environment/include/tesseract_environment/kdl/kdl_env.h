@@ -46,6 +46,8 @@ public:
   KDLEnv& operator=(KDLEnv&&) = delete;
 
   bool init(tesseract_scene_graph::SceneGraph::Ptr scene_graph) override;
+
+  Environment::Ptr clone() const override;
 };
 
 }  // namespace tesseract_environment

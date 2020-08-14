@@ -269,10 +269,7 @@ public:
    * @brief Clone the joint keeping the name
    * @return Cloned joint
    */
-  Joint clone() const
-  {
-    return clone(name_);
-  }
+  Joint clone() const { return clone(name_); }
 
   /* Create a clone of current joint, with a new name. Child link name and parent link name are unchanged.
    * All underlying properties, such as dynamics, limits... are copied as well.*/
