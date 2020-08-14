@@ -218,6 +218,61 @@ void runCurrentStatePreservedWhenEnvChangesTest(const tesseract_environment::Env
   }
 }
 
+void runApplyCommandsTest(const tesseract_environment::Environment::Ptr& env)
+{
+  const std::string link_name1 = "link_n1";
+  const std::string link_name2 = "link_n2";
+  const std::string joint_name1 = "joint_n1";
+  auto link_1 = std::make_shared<Link>(link_name1);
+  auto link_2 = std::make_shared<Link>(link_name2);
+
+  auto joint_1 = std::make_shared<Joint>(joint_name1);
+  joint_1->parent_to_joint_origin_transform.translation()(0) = 1.25;
+  joint_1->parent_link_name = "base_link";
+  joint_1->child_link_name = link_name1;
+  joint_1->type = JointType::FIXED;
+
+  // Empty or invalid
+  {
+    Commands commands;
+    EXPECT_TRUE(env->applyCommands(commands));
+    commands.push_back(nullptr);
+    EXPECT_FALSE(env->applyCommands(commands));
+  }
+
+  // Add
+  {
+    {
+      Commands commands {std::make_shared<AddCommand>(link_1, joint_1) };
+      EXPECT_TRUE(env->applyCommands(commands));
+      EXPECT_FALSE(env->applyCommands(commands));
+
+      std::vector<std::string> link_names = env->getLinkNames();
+      std::vector<std::string> joint_names = env->getJointNames();
+      EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name1) != link_names.end());
+      EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), joint_name1) != joint_names.end());
+    }
+    {
+      Commands commands {std::make_shared<AddCommand>(link_2, nullptr) };
+      EXPECT_TRUE(env->applyCommands(commands));
+      std::vector<std::string> link_names = env->getLinkNames();
+      std::vector<std::string> joint_names = env->getJointNames();
+      EXPECT_TRUE(std::find(link_names.begin(), link_names.end(), link_name2) != link_names.end());
+      EXPECT_TRUE(std::find(joint_names.begin(), joint_names.end(), "joint_" + link_name2) != joint_names.end());
+    }
+    {
+      Commands commands {std::make_shared<AddCommand>(nullptr, joint_1) };
+      EXPECT_FALSE(env->applyCommands(commands));
+    }
+    {
+      Commands commands {std::make_shared<AddCommand>(nullptr, nullptr) };
+      EXPECT_FALSE(env->applyCommands(commands));
+    }
+
+  }
+  /// @todo Add tests for applying commands to the environment
+}
+
 TEST(TesseractEnvironmentUnit, KDLEnvCloneContactManagerUnit)  // NOLINT
 {
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
@@ -358,6 +413,20 @@ TEST(TesseractEnvironmentUnit, addSceneGraph)
   EXPECT_TRUE(env.addSceneGraph(*subgraph, "prefix_"));
   EXPECT_TRUE(env.getJoint("prefix_subgraph_joint") != nullptr);
   EXPECT_TRUE(env.getLink("prefix_subgraph_base_link") != nullptr);
+}
+
+TEST(TesseractEnvironmentUnit, applyCommands)  // NOLINT
+{
+  SceneGraph::Ptr scene_graph = getSceneGraph();
+  EXPECT_TRUE(scene_graph != nullptr);
+
+  KDLEnv::Ptr env(new KDLEnv());
+  EXPECT_TRUE(env != nullptr);
+
+  bool success = env->init(scene_graph);
+  EXPECT_TRUE(success);
+
+  runApplyCommandsTest(env);
 }
 
 int main(int argc, char** argv)

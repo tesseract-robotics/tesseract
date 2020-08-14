@@ -179,6 +179,15 @@ public:
     this->visual.clear();
   }
 
+  /**
+   * @brief Clone the link keeping the name.
+   * @return Cloned link
+   */
+  Link clone() const
+  {
+    return clone(name_);
+  }
+
   /** Perform a copy of link, changing its name **/
   Link clone(const std::string& name) const
   {

@@ -34,6 +34,121 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+bool Environment::applyCommands(const Commands& commands)
+{
+  for (const auto& command : commands)
+  {
+    if (!command)
+      return false;
+    switch (command->getType())
+    {
+      case tesseract_environment::CommandType::ADD:
+      {
+        const auto& cmd = static_cast<const tesseract_environment::AddCommand&>(*command);
+        // If only a link is provided
+        if (cmd.getLink() && !cmd.getJoint())
+        {
+          if (!addLink(cmd.getLink()->clone()))
+            return false;
+        }
+        else if (cmd.getLink() && cmd.getJoint())
+        {
+          if (!addLink(cmd.getLink()->clone(), cmd.getJoint()->clone()))
+            return false;
+        }
+        else if (!cmd.getLink() && !cmd.getJoint())
+          return false;
+        else
+          return false;
+
+        break;
+      }
+      case tesseract_environment::CommandType::MOVE_LINK:
+      {
+        const auto& cmd = static_cast<const tesseract_environment::MoveLinkCommand&>(*command);
+        if (!moveLink(cmd.getJoint()->clone()))
+          return false;
+        break;
+      }
+      case tesseract_environment::CommandType::MOVE_JOINT:
+      {
+        const auto& cmd = static_cast<const tesseract_environment::MoveJointCommand&>(*command);
+        if (!moveJoint(cmd.getJointName(), cmd.getParentLink()))
+          return false;
+        break;
+      }
+      case tesseract_environment::CommandType::REMOVE_LINK:
+      {
+        const auto& cmd = static_cast<const tesseract_environment::RemoveLinkCommand&>(*command);
+        if (!removeLink(cmd.getLinkName()))
+          return false;
+        break;
+      }
+      case tesseract_environment::CommandType::REMOVE_JOINT:
+      {
+        const auto& cmd = static_cast<const tesseract_environment::RemoveJointCommand&>(*command);
+        if (!removeJoint(cmd.getJointName()))
+          return false;
+        break;
+      }
+      case tesseract_environment::CommandType::CHANGE_LINK_ORIGIN:
+      {
+        CONSOLE_BRIDGE_logError("Unhandled environment command: CHANGE_LINK_ORIGIN");
+        assert(false);
+        return false;
+      }
+      case tesseract_environment::CommandType::CHANGE_JOINT_ORIGIN:
+      {
+        const auto& cmd = static_cast<const tesseract_environment::ChangeJointOriginCommand&>(*command);
+        if (!changeJointOrigin(cmd.getJointName(), cmd.getOrigin()))
+          return false;
+        break;
+      }
+      case tesseract_environment::CommandType::CHANGE_LINK_COLLISION_ENABLED:
+      {
+        const auto& cmd = static_cast<const tesseract_environment::ChangeLinkCollisionEnabledCommand&>(*command);
+        setLinkCollisionEnabled(cmd.getLinkName(), cmd.getEnabled());
+        if (getLinkCollisionEnabled(cmd.getLinkName()) != cmd.getEnabled())
+          return false;
+        break;
+      }
+      case tesseract_environment::CommandType::CHANGE_LINK_VISIBILITY:
+      {
+        const auto& cmd = static_cast<const tesseract_environment::ChangeLinkVisibilityCommand&>(*command);
+        setLinkVisibility(cmd.getLinkName(), cmd.getEnabled());
+        if (getLinkVisibility(cmd.getLinkName()) != cmd.getEnabled())
+          return false;
+        break;
+      }
+      case tesseract_environment::CommandType::ADD_ALLOWED_COLLISION:
+      {
+        const auto& cmd = static_cast<const tesseract_environment::AddAllowedCollisionCommand&>(*command);
+        addAllowedCollision(cmd.getLinkName1(), cmd.getLinkName2(), cmd.getReason());
+        break;
+      }
+      case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION:
+      {
+        const auto& cmd = static_cast<const tesseract_environment::RemoveAllowedCollisionCommand&>(*command);
+        removeAllowedCollision(cmd.getLinkName1(), cmd.getLinkName2());
+        break;
+      }
+      case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION_LINK:
+      {
+        const auto& cmd = static_cast<const tesseract_environment::RemoveAllowedCollisionLinkCommand&>(*command);
+        removeAllowedCollision(cmd.getLinkName());
+        break;
+      }
+      default:
+      {
+        CONSOLE_BRIDGE_logError("Unhandled environment command");
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 void Environment::setState(const std::unordered_map<std::string, double>& joints)
 {
   std::lock_guard<std::mutex> lock(mutex_);
