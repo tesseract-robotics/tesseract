@@ -293,6 +293,25 @@ bool Tesseract::init(const TesseractInitInfo::Ptr& init_info)
   return true;
 }
 
+Tesseract::Ptr Tesseract::clone() const
+{
+  auto clone = std::make_shared<Tesseract>();
+
+  clone->init(init_info_);
+
+  clone->environment_ = environment_->clone();
+  clone->environment_const_ = clone->environment_;
+  clone->srdf_model_ = srdf_model_;
+  clone->srdf_model_const_ = clone->srdf_model_;
+  clone->fwd_kin_manager_ = fwd_kin_manager_;
+  clone->fwd_kin_manager_const_ = clone->fwd_kin_manager_;
+  clone->inv_kin_manager_ = inv_kin_manager_;
+  clone->inv_kin_manager_const_ = clone->inv_kin_manager_;
+  clone->init_info_ = init_info_;
+
+  return clone;
+}
+
 void Tesseract::setResourceLocator(tesseract_scene_graph::ResourceLocator::Ptr locator)
 {
   init_info_->resource_locator = locator;
