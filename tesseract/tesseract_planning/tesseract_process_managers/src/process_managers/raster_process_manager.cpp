@@ -61,8 +61,8 @@ bool RasterProcessManager::init(ProcessInput input)
     return false;
   }
 
-  // Clear the taskflow
-  taskflow_.clear();
+  // Clear the process manager
+  clear();
 
   // Store the current size of the tasks so that we can add from_start later
   std::size_t starting_raster_idx = raster_tasks_.size();
@@ -201,8 +201,8 @@ bool RasterProcessManager::terminate()
 bool RasterProcessManager::clear()
 
 {
-  freespace_taskflow_generator_->reset();
-  raster_taskflow_generator_->reset();
+  freespace_taskflow_generator_->clear();
+  raster_taskflow_generator_->clear();
   taskflow_.clear();
   freespace_tasks_.clear();
   raster_tasks_.clear();

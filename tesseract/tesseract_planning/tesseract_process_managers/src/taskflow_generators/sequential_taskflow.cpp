@@ -139,14 +139,23 @@ tf::Taskflow& SequentialTaskflow::generateTaskflow(ProcessInput input,
 
 void SequentialTaskflow::abort()
 {
+  abort_ = true;
   for (auto& gen : processes_)
     gen.first->setAbort(true);
 }
 
 void SequentialTaskflow::reset()
 {
+  abort_ = false;
   for (auto& gen : processes_)
     gen.first->setAbort(false);
+}
+
+void SequentialTaskflow::clear()
+{
+  reset();
+  sequential_trees_.clear();
+  process_tasks_.clear();
 }
 
 void SequentialTaskflow::registerProcess(ProcessGenerator::UPtr process, SequentialTaskType task_type)

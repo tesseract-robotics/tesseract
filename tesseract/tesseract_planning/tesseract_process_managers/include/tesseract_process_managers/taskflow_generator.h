@@ -66,8 +66,8 @@ public:
   /** @brief Reset to initial state, but does not clear stored task */
   virtual void reset() = 0;
 
-  //  /** @brief Clear all stored task and calls reset() */
-  //  virtual void clear() = 0;
+  /** @brief Clear all stored task and calls reset() */
+  virtual void clear() = 0;
 };
 
 }  // namespace tesseract_planning

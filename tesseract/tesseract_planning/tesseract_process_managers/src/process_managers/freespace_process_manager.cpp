@@ -25,8 +25,8 @@ FreespaceProcessManager::FreespaceProcessManager(TaskflowGenerator::UPtr taskflo
 
 bool FreespaceProcessManager::init(ProcessInput input)
 {
-  // Clear the taskflow
-  taskflow_.clear();
+  // Clear the process manager
+  clear();
 
   // Check the overall input
   if (!isCompositeInstruction(*(input.instruction)))
@@ -78,7 +78,7 @@ bool FreespaceProcessManager::terminate()
 bool FreespaceProcessManager::clear()
 
 {
-  taskflow_generator_->reset();
+  taskflow_generator_->clear();
   taskflow_.clear();
   freespace_tasks_.clear();
   return true;

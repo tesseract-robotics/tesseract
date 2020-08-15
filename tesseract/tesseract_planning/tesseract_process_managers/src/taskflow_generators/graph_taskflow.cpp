@@ -192,14 +192,23 @@ tf::Taskflow& GraphTaskflow::generateTaskflow(ProcessInput input,
 
 void GraphTaskflow::abort()
 {
+  abort_ = true;
   for (auto& node : nodes_)
     node.process->setAbort(true);
 }
 
 void GraphTaskflow::reset()
 {
+  abort_ = false;
   for (auto& node : nodes_)
     node.process->setAbort(false);
+}
+
+void GraphTaskflow::clear()
+{
+  reset();
+  taskflow_objects_.clear();
+  process_tasks_.clear();
 }
 
 int GraphTaskflow::addNode(ProcessGenerator::UPtr process, NodeType process_type)
