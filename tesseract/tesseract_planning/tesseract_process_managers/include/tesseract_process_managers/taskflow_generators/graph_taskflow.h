@@ -93,6 +93,8 @@ public:
 
   void reset() override;
 
+  void clear() override;
+
   /**
    * @brief Add a node to the taskflow graph along with setting the process type.
    * @param process The process generator assigned to the node
