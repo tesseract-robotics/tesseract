@@ -67,6 +67,8 @@ public:
 
   void reset() override;
 
+  void clear() override;
+
   /**
    * @brief Add another process that will be added to the taskflow
    * @param process Process added to the taskflow
