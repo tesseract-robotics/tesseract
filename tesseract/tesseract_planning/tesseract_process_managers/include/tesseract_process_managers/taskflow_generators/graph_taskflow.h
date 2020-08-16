@@ -82,6 +82,10 @@ public:
 
   GraphTaskflow(std::string name = "GraphTaskflow");
   ~GraphTaskflow() override = default;
+  GraphTaskflow(const GraphTaskflow&) = delete;
+  GraphTaskflow& operator=(const GraphTaskflow&) = delete;
+  GraphTaskflow(GraphTaskflow&&) = delete;
+  GraphTaskflow& operator=(GraphTaskflow&&) = delete;
 
   const std::string& getName() const override;
 

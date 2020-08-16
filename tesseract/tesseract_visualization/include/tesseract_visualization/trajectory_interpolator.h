@@ -44,6 +44,7 @@ public:
   using UPtr = std::unique_ptr<TrajectoryInterpolator>;
 
   TrajectoryInterpolator(tesseract_planning::CompositeInstruction program);
+  virtual ~TrajectoryInterpolator() = default;
   TrajectoryInterpolator(const TrajectoryInterpolator&) = delete;
   TrajectoryInterpolator& operator=(const TrajectoryInterpolator&) = delete;
   TrajectoryInterpolator(TrajectoryInterpolator&&) = delete;
@@ -67,7 +68,7 @@ private:
 
   tesseract_planning::StateWaypoint interpolate(const tesseract_planning::StateWaypoint& start,
                                                 const tesseract_planning::StateWaypoint& end,
-                                                const double t) const;
+                                                double t) const;
 };
 }  // namespace tesseract_visualization
 #endif  // TESSERACT_VISUALIZATION_TRAJECTORY_INTERPOLATOR_H
