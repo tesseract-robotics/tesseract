@@ -384,13 +384,6 @@ public:
 
   Path getShortestPath(const std::string& root, const std::string& tip);
 
-  // static inline Graph copyGraph(const Graph& graph)
-  //{
-  //  Graph new_graph;
-  //  boost::copy_graph(graph, new_graph);
-  //  return new_graph;
-  //}
-
   /**
    * @brief Get the graph vertex by name
    * @param name The vertex/link name
@@ -405,26 +398,30 @@ public:
    */
   Edge getEdge(const std::string& name) const;
 
-  /** @brief Merge a graph into the current graph
+  /**
+   * @brief Merge a graph into the current graph
    * @param scene_graph Const ref to the graph to be merged (said graph will be copied)
    * @param prefix string Will be prepended to every link and joint of the merged graph
    * @return Return False if any link or joint name collides with current environment, otherwise True
    * Merge a subgraph into the current environment, considering that the root of the merged graph is attached to the
    * root of the environment by a fixed joint and no displacement. Every joint and link of the subgraph will be copied
    * into the environment graph. The prefix argument is meant to allow adding multiple copies of the same subgraph with
-   * different names */
+   * different names
+   */
   bool insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& prefix = "");
 
-  /** @brief Merge a graph into the current environment
+  /**
+   * @brief Merge a graph into the current environment
    * @param scene_graph Const ref to the graph to be merged (said graph will be copied)
-   * @param root_joint Const ptr to the joint that connects current environment with root of the merged graph
+   * @param joint The joint that connects current environment with the inserted graph
    * @param prefix string Will be prepended to every link and joint of the merged graph
    * @return Return False if any link or joint name collides with current environment, otherwise True
    * Merge a subgraph into the current environment. Every joint and link of the subgraph will be copied into the
    * environment graph. The prefix argument is meant to allow adding multiple copies of the same subgraph with different
-   * names */
+   * names
+   */
   bool insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
-                        tesseract_scene_graph::Joint::ConstPtr root_joint,
+                        tesseract_scene_graph::Joint joint,
                         const std::string& prefix = "");
 
 protected:
@@ -480,6 +477,17 @@ private:
         return;
       }
 
+      // Check if more that one root exist
+      if (num_in_edges == 0 && found_root_)
+      {
+        tree_ = false;
+        return;
+      }
+      else if (num_in_edges == 0)
+      {
+        found_root_ = true;
+      }
+
       // Check if not vertex is unused.
       if (num_in_edges == 0 && boost::out_degree(vertex, graph) == 0)
       {
@@ -496,6 +504,7 @@ private:
 
   protected:
     bool& tree_;
+    bool found_root_{ false };
   };
 
   struct children_detector : public boost::default_bfs_visitor
