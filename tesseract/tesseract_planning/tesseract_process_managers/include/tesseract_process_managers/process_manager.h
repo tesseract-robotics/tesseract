@@ -42,7 +42,12 @@ public:
   using Ptr = std::shared_ptr<ProcessManager>;
   using ConstPtr = std::shared_ptr<const ProcessManager>;
 
+  ProcessManager() = default;
   virtual ~ProcessManager() = default;
+  ProcessManager(const ProcessManager&) = delete;
+  ProcessManager& operator=(const ProcessManager&) = delete;
+  ProcessManager(ProcessManager&&) = delete;
+  ProcessManager& operator=(ProcessManager&&) = delete;
 
   /**
    * @brief Initialize the processes with the input

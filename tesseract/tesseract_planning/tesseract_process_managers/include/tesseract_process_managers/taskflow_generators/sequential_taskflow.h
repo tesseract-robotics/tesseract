@@ -56,6 +56,10 @@ public:
   SequentialTaskflow() = default;
   ~SequentialTaskflow() override = default;
   SequentialTaskflow(SequentialProcesses processes, std::string name = "SequentialTaskflow");
+  SequentialTaskflow(const SequentialTaskflow&) = delete;
+  SequentialTaskflow& operator=(const SequentialTaskflow&) = delete;
+  SequentialTaskflow(SequentialTaskflow&&) = delete;
+  SequentialTaskflow& operator=(SequentialTaskflow&&) = delete;
 
   const std::string& getName() const override;
 
