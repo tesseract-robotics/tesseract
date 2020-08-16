@@ -43,7 +43,12 @@ class TaskflowGenerator
 public:
   using UPtr = std::unique_ptr<TaskflowGenerator>;
 
+  TaskflowGenerator() = default;
   virtual ~TaskflowGenerator() = default;
+  TaskflowGenerator(const TaskflowGenerator&) = delete;
+  TaskflowGenerator& operator=(const TaskflowGenerator&) = delete;
+  TaskflowGenerator(TaskflowGenerator&&) = delete;
+  TaskflowGenerator& operator=(TaskflowGenerator&&) = delete;
 
   /**
    * @brief Get the name of the task flow

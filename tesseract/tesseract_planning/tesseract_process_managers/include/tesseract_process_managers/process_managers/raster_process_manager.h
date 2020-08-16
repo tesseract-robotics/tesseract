@@ -80,6 +80,10 @@ public:
                        TaskflowGenerator::UPtr raster_taskflow_generator,
                        std::size_t n = std::thread::hardware_concurrency());
   ~RasterProcessManager() override = default;
+  RasterProcessManager(const RasterProcessManager&) = delete;
+  RasterProcessManager& operator=(const RasterProcessManager&) = delete;
+  RasterProcessManager(RasterProcessManager&&) = delete;
+  RasterProcessManager& operator=(RasterProcessManager&&) = delete;
 
   bool init(ProcessInput input) override;
 

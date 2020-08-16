@@ -48,6 +48,10 @@ public:
                                          std::string name = "Continuous Contact Check Trajectory");
 
   ~ContinuousContactCheckProcessGenerator() override = default;
+  ContinuousContactCheckProcessGenerator(const ContinuousContactCheckProcessGenerator&) = delete;
+  ContinuousContactCheckProcessGenerator& operator=(const ContinuousContactCheckProcessGenerator&) = delete;
+  ContinuousContactCheckProcessGenerator(ContinuousContactCheckProcessGenerator&&) = delete;
+  ContinuousContactCheckProcessGenerator& operator=(ContinuousContactCheckProcessGenerator&&) = delete;
 
   const std::string& getName() const override;
 

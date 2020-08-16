@@ -46,6 +46,10 @@ public:
 
   MotionPlannerProcessGenerator(std::shared_ptr<MotionPlanner> planner);
   ~MotionPlannerProcessGenerator() override = default;
+  MotionPlannerProcessGenerator(const MotionPlannerProcessGenerator&) = delete;
+  MotionPlannerProcessGenerator& operator=(const MotionPlannerProcessGenerator&) = delete;
+  MotionPlannerProcessGenerator(MotionPlannerProcessGenerator&&) = delete;
+  MotionPlannerProcessGenerator& operator=(MotionPlannerProcessGenerator&&) = delete;
 
   const std::string& getName() const override;
 

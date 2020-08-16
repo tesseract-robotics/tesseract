@@ -60,6 +60,10 @@ public:
   FreespaceProcessManager(TaskflowGenerator::UPtr taskflow_generator,
                           std::size_t n = std::thread::hardware_concurrency());
   ~FreespaceProcessManager() override = default;
+  FreespaceProcessManager(const FreespaceProcessManager&) = delete;
+  FreespaceProcessManager& operator=(const FreespaceProcessManager&) = delete;
+  FreespaceProcessManager(FreespaceProcessManager&&) = delete;
+  FreespaceProcessManager& operator=(FreespaceProcessManager&&) = delete;
 
   bool init(ProcessInput input) override;
 

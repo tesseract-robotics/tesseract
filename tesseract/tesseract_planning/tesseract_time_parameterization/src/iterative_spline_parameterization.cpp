@@ -116,8 +116,8 @@ IterativeSplineParameterization::~IterativeSplineParameterization() = default;
 bool IterativeSplineParameterization::compute(CompositeInstruction& program,
                                               const double& max_velocity,
                                               const double& max_acceleration,
-                                              const double max_velocity_scaling_factor,
-                                              const double max_acceleration_scaling_factor) const
+                                              double max_velocity_scaling_factor,
+                                              double max_acceleration_scaling_factor) const
 {
   std::vector<std::reference_wrapper<Instruction>> trajectory = flatten(program, programFlattenMoveInstructionFilter);
 
@@ -139,8 +139,8 @@ bool IterativeSplineParameterization::compute(CompositeInstruction& program,
 bool IterativeSplineParameterization::compute(CompositeInstruction& program,
                                               const std::vector<double>& max_velocity,
                                               const std::vector<double>& max_acceleration,
-                                              const double max_velocity_scaling_factor,
-                                              const double max_acceleration_scaling_factor) const
+                                              double max_velocity_scaling_factor,
+                                              double max_acceleration_scaling_factor) const
 {
   std::vector<std::reference_wrapper<Instruction>> trajectory = flatten(program, programFlattenMoveInstructionFilter);
 
@@ -151,8 +151,8 @@ bool IterativeSplineParameterization::compute(CompositeInstruction& program,
 bool IterativeSplineParameterization::compute(CompositeInstruction& program,
                                               const Eigen::Ref<const Eigen::VectorXd>& max_velocity,
                                               const Eigen::Ref<const Eigen::VectorXd>& max_acceleration,
-                                              const double max_velocity_scaling_factor,
-                                              const double max_acceleration_scaling_factor) const
+                                              double max_velocity_scaling_factor,
+                                              double max_acceleration_scaling_factor) const
 {
   std::vector<std::reference_wrapper<Instruction>> trajectory = flatten(program, programFlattenMoveInstructionFilter);
 
@@ -163,8 +163,8 @@ bool IterativeSplineParameterization::compute(CompositeInstruction& program,
 bool IterativeSplineParameterization::compute(const std::vector<std::reference_wrapper<Instruction>>& trajectory,
                                               const double& max_velocity,
                                               const double& max_acceleration,
-                                              const double max_velocity_scaling_factor,
-                                              const double max_acceleration_scaling_factor) const
+                                              double max_velocity_scaling_factor,
+                                              double max_acceleration_scaling_factor) const
 {
   assert(isMoveInstruction(trajectory[0].get()));
   auto* mi = trajectory[0].get().cast<MoveInstruction>();
@@ -184,8 +184,8 @@ bool IterativeSplineParameterization::compute(const std::vector<std::reference_w
 bool IterativeSplineParameterization::compute(const std::vector<std::reference_wrapper<Instruction>>& trajectory,
                                               const std::vector<double>& max_velocity,
                                               const std::vector<double>& max_acceleration,
-                                              const double max_velocity_scaling_factor,
-                                              const double max_acceleration_scaling_factor) const
+                                              double max_velocity_scaling_factor,
+                                              double max_acceleration_scaling_factor) const
 {
   return compute(trajectory,
                  Eigen::Map<const Eigen::VectorXd>(max_velocity.data(), static_cast<long>(max_velocity.size())),
@@ -197,8 +197,8 @@ bool IterativeSplineParameterization::compute(const std::vector<std::reference_w
 bool IterativeSplineParameterization::compute(const std::vector<std::reference_wrapper<Instruction>>& trajectory,
                                               const Eigen::Ref<const Eigen::VectorXd>& max_velocity,
                                               const Eigen::Ref<const Eigen::VectorXd>& max_acceleration,
-                                              const double max_velocity_scaling_factor,
-                                              const double max_acceleration_scaling_factor) const
+                                              double max_velocity_scaling_factor,
+                                              double max_acceleration_scaling_factor) const
 {
   // Make a copy of the vector in case it introduces point we do not want it to modify the original trajectory size
   // just the data.
