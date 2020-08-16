@@ -158,7 +158,7 @@ std::size_t TrajectoryInterpolator::getMoveInstructionCount() const { return way
 
 tesseract_planning::StateWaypoint TrajectoryInterpolator::interpolate(const tesseract_planning::StateWaypoint& start,
                                                                       const tesseract_planning::StateWaypoint& end,
-                                                                      const double t) const
+                                                                      double t) const
 {
   tesseract_planning::StateWaypoint out;
   out.time = start.time + t;
