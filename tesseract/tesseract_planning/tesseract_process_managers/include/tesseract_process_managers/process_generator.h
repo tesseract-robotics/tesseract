@@ -46,7 +46,12 @@ class ProcessGenerator
 public:
   using UPtr = std::unique_ptr<ProcessGenerator>;
 
+  ProcessGenerator() = default;
   virtual ~ProcessGenerator() = default;
+  ProcessGenerator(const ProcessGenerator&) = delete;
+  ProcessGenerator& operator=(const ProcessGenerator&) = delete;
+  ProcessGenerator(ProcessGenerator&&) = delete;
+  ProcessGenerator& operator=(ProcessGenerator&&) = delete;
 
   /**
    * @brief Get the task name

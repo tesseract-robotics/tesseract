@@ -45,6 +45,12 @@ public:
                                                   std::string name = "Iterative Spline Parameterization");
 
   ~IterativeSplineParameterizationProcessGenerator() override = default;
+  IterativeSplineParameterizationProcessGenerator(const IterativeSplineParameterizationProcessGenerator&) = delete;
+  IterativeSplineParameterizationProcessGenerator&
+  operator=(const IterativeSplineParameterizationProcessGenerator&) = delete;
+  IterativeSplineParameterizationProcessGenerator(IterativeSplineParameterizationProcessGenerator&&) = delete;
+  IterativeSplineParameterizationProcessGenerator&
+  operator=(IterativeSplineParameterizationProcessGenerator&&) = delete;
 
   const std::string& getName() const override;
 

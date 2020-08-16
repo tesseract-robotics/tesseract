@@ -78,7 +78,11 @@ class IterativeSplineParameterization
 {
 public:
   IterativeSplineParameterization(bool add_points = true);
-  ~IterativeSplineParameterization();
+  virtual ~IterativeSplineParameterization();
+  IterativeSplineParameterization(const IterativeSplineParameterization&) = default;
+  IterativeSplineParameterization& operator=(const IterativeSplineParameterization&) = default;
+  IterativeSplineParameterization(IterativeSplineParameterization&&) = default;
+  IterativeSplineParameterization& operator=(IterativeSplineParameterization&&) = default;
 
   /**
    * @brief Compute the time stamps for a provided program.
@@ -95,8 +99,8 @@ public:
   bool compute(CompositeInstruction& program,
                const double& max_velocity,
                const double& max_acceleration,
-               const double max_velocity_scaling_factor = 1.0,
-               const double max_acceleration_scaling_factor = 1.0) const;
+               double max_velocity_scaling_factor = 1.0,
+               double max_acceleration_scaling_factor = 1.0) const;
 
   /**
    * @brief Compute the time stamps for a provided program.
@@ -113,8 +117,8 @@ public:
   bool compute(CompositeInstruction& program,
                const std::vector<double>& max_velocity,
                const std::vector<double>& max_acceleration,
-               const double max_velocity_scaling_factor = 1.0,
-               const double max_acceleration_scaling_factor = 1.0) const;
+               double max_velocity_scaling_factor = 1.0,
+               double max_acceleration_scaling_factor = 1.0) const;
 
   /**
    * @brief Compute the time stamps for a provided program.
@@ -131,8 +135,8 @@ public:
   bool compute(CompositeInstruction& program,
                const Eigen::Ref<const Eigen::VectorXd>& max_velocity,
                const Eigen::Ref<const Eigen::VectorXd>& max_acceleration,
-               const double max_velocity_scaling_factor = 1.0,
-               const double max_acceleration_scaling_factor = 1.0) const;
+               double max_velocity_scaling_factor = 1.0,
+               double max_acceleration_scaling_factor = 1.0) const;
 
   /**
    * @brief Compute the time stamps for a flattened vector of move instruction
@@ -146,8 +150,8 @@ public:
   bool compute(const std::vector<std::reference_wrapper<Instruction>>& trajectory,
                const double& max_velocity,
                const double& max_acceleration,
-               const double max_velocity_scaling_factor = 1.0,
-               const double max_acceleration_scaling_factor = 1.0) const;
+               double max_velocity_scaling_factor = 1.0,
+               double max_acceleration_scaling_factor = 1.0) const;
 
   /**
    * @brief Compute the time stamps for a flattened vector of move instruction
@@ -161,8 +165,8 @@ public:
   bool compute(const std::vector<std::reference_wrapper<Instruction>>& trajectory,
                const std::vector<double>& max_velocity,
                const std::vector<double>& max_acceleration,
-               const double max_velocity_scaling_factor = 1.0,
-               const double max_acceleration_scaling_factor = 1.0) const;
+               double max_velocity_scaling_factor = 1.0,
+               double max_acceleration_scaling_factor = 1.0) const;
 
   /**
    * @brief Compute the time stamps for a flattened vector of move instruction
@@ -176,8 +180,8 @@ public:
   bool compute(const std::vector<std::reference_wrapper<Instruction>>& trajectory,
                const Eigen::Ref<const Eigen::VectorXd>& max_velocity,
                const Eigen::Ref<const Eigen::VectorXd>& max_acceleration,
-               const double max_velocity_scaling_factor = 1.0,
-               const double max_acceleration_scaling_factor = 1.0) const;
+               double max_velocity_scaling_factor = 1.0,
+               double max_acceleration_scaling_factor = 1.0) const;
 
 private:
   bool add_points_;  /// @brief If true, add two points to trajectory (first and last segments).

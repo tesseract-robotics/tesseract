@@ -306,10 +306,7 @@ inline bool almostEqualRelativeAndAbs(double a,
   b = std::fabs(b);
   double largest = (b > a) ? b : a;
 
-  if (diff <= largest * max_rel_diff)
-    return true;
-
-  return false;
+  return (diff <= largest * max_rel_diff);
 }
 
 }  // namespace tesseract_common

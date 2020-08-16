@@ -48,6 +48,10 @@ public:
                                        std::string name = "Discrete Contact Check Trajectory");
 
   ~DiscreteContactCheckProcessGenerator() override = default;
+  DiscreteContactCheckProcessGenerator(const DiscreteContactCheckProcessGenerator&) = delete;
+  DiscreteContactCheckProcessGenerator& operator=(const DiscreteContactCheckProcessGenerator&) = delete;
+  DiscreteContactCheckProcessGenerator(DiscreteContactCheckProcessGenerator&&) = delete;
+  DiscreteContactCheckProcessGenerator& operator=(DiscreteContactCheckProcessGenerator&&) = delete;
 
   const std::string& getName() const override;
 
