@@ -596,6 +596,187 @@ TEST(TesseractSceneGraphUnit, TesseractSRDFModelUnit)  // NOLINT
   srdf_reload.saveToFile("/tmp/test_reload.srdf");
 }
 
+TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertEmptyUnit)  // NOLINT
+{
+  // Test inserting graph into empty graph
+  tesseract_scene_graph::SceneGraph g = buildTestSceneGraph();
+  tesseract_scene_graph::AllowedCollisionMatrix acm;
+  acm.addAllowedCollision("link1", "link2", "test");
+  acm.addAllowedCollision("link1", "link3", "test");
+  g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
+  EXPECT_EQ(g.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
+
+  tesseract_scene_graph::SceneGraph ng;
+  EXPECT_TRUE(ng.insertSceneGraph(g));
+
+  // Check Graph
+  checkSceneGraph(ng);
+
+  EXPECT_EQ(g.getLinks().size(), ng.getLinks().size());
+  EXPECT_EQ(g.getJoints().size(), ng.getJoints().size());
+  EXPECT_EQ(g.getRoot(), ng.getRoot());
+  EXPECT_EQ(ng.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
+
+  for (const auto& l : g.getLinks())
+  {
+    EXPECT_TRUE(ng.getLink(l->getName()) != nullptr);
+  }
+
+  for (const auto& j : g.getJoints())
+  {
+    EXPECT_TRUE(ng.getJoint(j->getName()) != nullptr);
+  }
+
+  for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
+  {
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first.first, entry.first.second));
+  }
+
+  // Save Graph
+  ng.saveDOT("/tmp/graph_insert_empty_example.dot");
+}
+
+TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointNoPrefixUnit)  // NOLINT
+{
+  // Test inserting graph into empty graph
+  tesseract_scene_graph::SceneGraph g = buildTestSceneGraph();
+  tesseract_scene_graph::AllowedCollisionMatrix acm;
+  acm.addAllowedCollision("link1", "link2", "test");
+  acm.addAllowedCollision("link1", "link3", "test");
+  g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
+  EXPECT_EQ(g.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
+
+  tesseract_scene_graph::SceneGraph ng = buildTestSceneGraph();
+  ng.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
+  EXPECT_EQ(ng.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
+
+  // Insert without prefix which should fail leaving the original graph
+  EXPECT_FALSE(ng.insertSceneGraph(g));
+  EXPECT_EQ(g.getLinks().size(), ng.getLinks().size());
+  EXPECT_EQ(g.getJoints().size(), ng.getJoints().size());
+  EXPECT_EQ(g.getRoot(), ng.getRoot());
+  EXPECT_EQ(ng.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
+
+  for (const auto& l : g.getLinks())
+  {
+    EXPECT_TRUE(ng.getLink(l->getName()) != nullptr);
+  }
+
+  for (const auto& j : g.getJoints())
+  {
+    EXPECT_TRUE(ng.getJoint(j->getName()) != nullptr);
+  }
+
+  for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
+  {
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first.first, entry.first.second));
+  }
+}
+
+TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointWithPrefixUnit)  // NOLINT
+{
+  // Test inserting graph into empty graph
+  tesseract_scene_graph::SceneGraph g = buildTestSceneGraph();
+  tesseract_scene_graph::AllowedCollisionMatrix acm;
+  acm.addAllowedCollision("link1", "link2", "test");
+  acm.addAllowedCollision("link1", "link3", "test");
+  g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
+  EXPECT_EQ(g.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
+
+  tesseract_scene_graph::SceneGraph ng = buildTestSceneGraph();
+  ng.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
+  EXPECT_EQ(ng.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
+
+  std::string prefix = "r1::";
+  EXPECT_TRUE(ng.insertSceneGraph(g, prefix));
+  EXPECT_FALSE(ng.isTree());
+
+  // Check Graph
+  checkSceneGraph(ng);
+
+  EXPECT_EQ(2 * g.getLinks().size(), ng.getLinks().size());
+  EXPECT_EQ(2 * g.getJoints().size(), ng.getJoints().size());
+  EXPECT_EQ(g.getRoot(), ng.getRoot());
+  EXPECT_EQ(ng.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 4);
+
+  for (const auto& l : g.getLinks())
+  {
+    EXPECT_TRUE(ng.getLink(l->getName()) != nullptr);
+    EXPECT_TRUE(ng.getLink(prefix + l->getName()) != nullptr);
+  }
+
+  for (const auto& j : g.getJoints())
+  {
+    EXPECT_TRUE(ng.getJoint(j->getName()) != nullptr);
+    EXPECT_TRUE(ng.getJoint(prefix + j->getName()) != nullptr);
+  }
+
+  for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
+  {
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first.first, entry.first.second));
+    EXPECT_TRUE(
+        ng.getAllowedCollisionMatrix()->isCollisionAllowed(prefix + entry.first.first, prefix + entry.first.second));
+  }
+
+  // Save Graph
+  ng.saveDOT("/tmp/graph_insert_example.dot");
+}
+
+TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit)  // NOLINT
+{
+  // Test inserting graph into empty graph
+  tesseract_scene_graph::SceneGraph g = buildTestSceneGraph();
+  tesseract_scene_graph::AllowedCollisionMatrix acm;
+  acm.addAllowedCollision("link1", "link2", "test");
+  acm.addAllowedCollision("link1", "link3", "test");
+  g.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
+  EXPECT_EQ(g.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
+
+  tesseract_scene_graph::SceneGraph ng = buildTestSceneGraph();
+  ng.getAllowedCollisionMatrix()->insertAllowedCollisionMatrix(acm);
+  EXPECT_EQ(ng.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 2);
+
+  std::string prefix = "r1::";
+
+  tesseract_scene_graph::Joint new_joint("insert_graph_joint");
+  new_joint.parent_link_name = "base_link";
+  new_joint.child_link_name = prefix + new_joint.parent_link_name;
+  new_joint.type = tesseract_scene_graph::JointType::FIXED;
+  new_joint.parent_to_joint_origin_transform = Eigen::Translation3d(1, 0, 0) * Eigen::Isometry3d::Identity();
+  EXPECT_TRUE(ng.insertSceneGraph(g, std::move(new_joint), prefix));
+  EXPECT_TRUE(ng.isTree());
+
+  // Check Graph
+  checkSceneGraph(ng);
+
+  EXPECT_EQ(2 * g.getLinks().size(), ng.getLinks().size());
+  EXPECT_EQ((2 * g.getJoints().size()) + 1, ng.getJoints().size());
+  EXPECT_EQ(g.getRoot(), ng.getRoot());
+  EXPECT_EQ(ng.getAllowedCollisionMatrix()->getAllAllowedCollisions().size(), 4);
+
+  for (const auto& l : g.getLinks())
+  {
+    EXPECT_TRUE(ng.getLink(l->getName()) != nullptr);
+    EXPECT_TRUE(ng.getLink(prefix + l->getName()) != nullptr);
+  }
+
+  for (const auto& j : g.getJoints())
+  {
+    EXPECT_TRUE(ng.getJoint(j->getName()) != nullptr);
+    EXPECT_TRUE(ng.getJoint(prefix + j->getName()) != nullptr);
+  }
+
+  for (const auto& entry : g.getAllowedCollisionMatrix()->getAllAllowedCollisions())
+  {
+    EXPECT_TRUE(ng.getAllowedCollisionMatrix()->isCollisionAllowed(entry.first.first, entry.first.second));
+    EXPECT_TRUE(
+        ng.getAllowedCollisionMatrix()->isCollisionAllowed(prefix + entry.first.first, prefix + entry.first.second));
+  }
+
+  // Save Graph
+  ng.saveDOT("/tmp/graph_insert_with_joint_example.dot");
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
