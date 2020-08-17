@@ -138,6 +138,22 @@ bool Environment::applyCommands(const Commands& commands)
         removeAllowedCollision(cmd.getLinkName());
         break;
       }
+      case tesseract_environment::CommandType::ADD_SCENE_GRAPH:
+      {
+        const auto& cmd = static_cast<const tesseract_environment::AddSceneGraphCommand&>(*command);
+        if (cmd.getJoint() != nullptr)
+        {
+          if (!addSceneGraph(*(cmd.getSceneGraph()), cmd.getJoint()->clone(), cmd.getPrefix()))
+            return false;
+        }
+        else
+        {
+          // This should only occur if the this graph is empty.
+          if (!addSceneGraph(*(cmd.getSceneGraph()), cmd.getPrefix()))
+            return false;
+        }
+        break;
+      }
       default:
       {
         CONSOLE_BRIDGE_logError("Unhandled environment command");
@@ -703,77 +719,71 @@ bool Environment::removeLinkHelper(const std::string& name)
   return true;
 }
 
-/** addSceneGraph needs a couple helpers to handle prefixing, we hide them in an anonymous namespace here **/
-namespace
-{
-tesseract_scene_graph::Link clone_prefix(tesseract_scene_graph::Link::ConstPtr link, const std::string& prefix)
-{
-  return link->clone(prefix + link->getName());
-}
-tesseract_scene_graph::Joint clone_prefix(tesseract_scene_graph::Joint::ConstPtr joint, const std::string& prefix)
-{
-  auto ret = joint->clone(prefix + joint->getName());
-  ret.child_link_name = prefix + joint->child_link_name;
-  ret.parent_link_name = prefix + joint->parent_link_name;
-  return ret;
-}
-}  // namespace
-
 bool Environment::addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& prefix)
 {
-  // Connect root of subgraph to graph
-  tesseract_scene_graph::Joint::Ptr root_joint =
-      std::make_shared<tesseract_scene_graph::Joint>(scene_graph.getName() + "_joint");
-  root_joint->type = tesseract_scene_graph::JointType::FIXED;
-  root_joint->parent_link_name = getRootLinkName();
-  root_joint->child_link_name = scene_graph.getRoot();
-  root_joint->parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
+  if (scene_graph_->isEmpty())
+  {
+    if (!scene_graph_->insertSceneGraph(scene_graph, prefix))
+      return false;
 
-  return addSceneGraph(scene_graph, root_joint, prefix);
+    ++revision_;
+    commands_.push_back(std::make_shared<AddSceneGraphCommand>(scene_graph, nullptr, prefix));
+
+    environmentChanged();
+    return true;
+  }
+
+  // Connect root of subgraph to graph
+  tesseract_scene_graph::Joint root_joint(scene_graph.getName() + "_joint");
+  root_joint.type = tesseract_scene_graph::JointType::FIXED;
+  root_joint.parent_link_name = getRootLinkName();
+  root_joint.child_link_name = scene_graph.getRoot();
+  root_joint.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
+
+  return addSceneGraph(scene_graph, std::move(root_joint), prefix);
 }
 
 bool Environment::addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                tesseract_scene_graph::Joint::ConstPtr root_joint,
+                                tesseract_scene_graph::Joint joint,
                                 const std::string& prefix)
 {
-  auto link = scene_graph.getLink(scene_graph.getRoot());
-  if (!link)
-  {
-    return true;
-  }
-  auto new_link = clone_prefix(link, prefix);
-  auto new_joint = clone_prefix(root_joint, prefix);
-  // Preserve reference to common ancestor
-  new_joint.parent_link_name = root_joint->parent_link_name;
-
-  bool res = addLink(std::move(new_link), std::move(new_joint));
-  if (!res)
-  {
-    CONSOLE_BRIDGE_logError("Could not add the root joint");
+  std::string joint_name = joint.getName();
+  if (!scene_graph_->insertSceneGraph(scene_graph, std::move(joint), prefix))
     return false;
-  }
 
-  std::queue<std::string> work_links;
-  work_links.push(link->getName());
-  while (!work_links.empty())
-  {
-    auto joints = scene_graph.getOutboundJoints(work_links.front());
-    work_links.pop();
-    for (const auto& joint : joints)
-    {
-      auto new_joint = clone_prefix(joint, prefix);
-      link = scene_graph.getLink(joint->child_link_name);
-      auto new_link = clone_prefix(link, prefix);
-      res = addLink(std::move(new_link), std::move(new_joint));
-      if (!res)
-      {
-        CONSOLE_BRIDGE_logError("Could not add link (%s) with prefix (%s)", link->getName().c_str(), prefix.c_str());
-        return false;
-      }
-      work_links.push(link->getName());
-    }
-  }
+  ++revision_;
+  commands_.push_back(std::make_shared<AddSceneGraphCommand>(scene_graph, getJoint(joint_name), prefix));
+
   environmentChanged();
-  return res;
+  return true;
+}
+
+Environment::Ptr Environment::clone() const
+{
+  auto cloned_env = std::make_shared<Environment>();
+
+  std::lock_guard<std::mutex> lock(mutex_);
+  cloned_env->initialized_ = initialized_;
+  cloned_env->revision_ = revision_;
+  cloned_env->commands_ = commands_;
+  cloned_env->scene_graph_ = scene_graph_->clone();
+  cloned_env->scene_graph_const_ = cloned_env->scene_graph_;
+  cloned_env->current_state_ = std::make_shared<EnvState>(*current_state_);
+  cloned_env->state_solver_ = state_solver_->clone();
+  cloned_env->link_names_ = link_names_;
+  cloned_env->joint_names_ = joint_names_;
+  cloned_env->active_link_names_ = active_link_names_;
+  cloned_env->active_joint_names_ = active_joint_names_;
+  cloned_env->is_contact_allowed_fn_ = is_contact_allowed_fn_;
+  if (discrete_manager_)
+    cloned_env->discrete_manager_ = discrete_manager_->clone();
+  if (continuous_manager_)
+    cloned_env->continuous_manager_ = continuous_manager_->clone();
+  cloned_env->discrete_manager_name_ = discrete_manager_name_;
+  cloned_env->continuous_manager_name_ = continuous_manager_name_;
+  cloned_env->discrete_factory_ = discrete_factory_;
+  cloned_env->continuous_factory_ = continuous_factory_;
+
+  return cloned_env;
 }
 }  // namespace tesseract_environment

@@ -64,12 +64,64 @@ public:
    *
    * Inherited class must call the protected create function
    *
-   * @param scene_graph
-   * @return
+   * @param scene_graph The scene graph to initialize the environment.
+   * @return True if successful, otherwise false
    */
-  virtual bool init(tesseract_scene_graph::SceneGraph::Ptr scene_graph) = 0;
+  template <typename S>
+  bool init(const tesseract_scene_graph::SceneGraph& scene_graph)
+  {
+    initialized_ = false;
+    revision_ = 0;
+    scene_graph_ = std::make_shared<tesseract_scene_graph::SceneGraph>(scene_graph.getName());
+    scene_graph_const_ = scene_graph_;
+    commands_.clear();
+    link_names_.clear();
+    joint_names_.clear();
+    active_link_names_.clear();
+    active_joint_names_.clear();
 
-  virtual Environment::Ptr clone() const = 0;
+    if (!scene_graph_->insertSceneGraph(scene_graph))
+    {
+      CONSOLE_BRIDGE_logError("Failed to insert the scene graph");
+      return false;
+    }
+
+    // Add this to the command history. This should always the the first thing in the command history
+    ++revision_;
+    commands_.push_back(std::make_shared<AddSceneGraphCommand>(scene_graph, nullptr, ""));
+
+    if (scene_graph_ == nullptr)
+    {
+      CONSOLE_BRIDGE_logError("Null pointer to Scene Graph");
+      return false;
+    }
+
+    if (!scene_graph_->getLink(scene_graph_->getRoot()))
+    {
+      CONSOLE_BRIDGE_logError("The scene graph has an invalid root.");
+      return false;
+    }
+
+    state_solver_ = std::make_shared<S>();
+    if (!state_solver_->init(scene_graph_))
+    {
+      CONSOLE_BRIDGE_logError("The environment state solver failed to initialize");
+      return false;
+    }
+
+    is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed,
+                                       scene_graph_,
+                                       std::placeholders::_1,
+                                       std::placeholders::_2);
+
+    initialized_ = true;
+
+    environmentChanged();
+
+    return initialized_;
+  }
+
+  Environment::Ptr clone() const;
 
   /**
    * @brief Get the current revision number
@@ -432,7 +484,7 @@ public:
    * environment graph. The prefix argument is meant to allow adding multiple copies of the same subgraph with different
    * names */
   virtual bool addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph,
-                             tesseract_scene_graph::Joint::ConstPtr root_joint,
+                             tesseract_scene_graph::Joint joint,
                              const std::string& prefix = "");
 
 protected:
@@ -462,56 +514,6 @@ protected:
 
   /** This will notify the state solver that the environment has changed */
   void environmentChanged();
-
-  /**
-   * @brief Initialize the Environment
-   * @param scene_graph
-   * @param state_solver
-   * @return
-   */
-  template <typename S>
-  bool create(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
-  {
-    initialized_ = false;
-    revision_ = 0;
-    scene_graph_ = std::move(scene_graph);
-    scene_graph_const_ = scene_graph_;
-    commands_.clear();
-    link_names_.clear();
-    joint_names_.clear();
-    active_link_names_.clear();
-    active_joint_names_.clear();
-
-    if (scene_graph_ == nullptr)
-    {
-      CONSOLE_BRIDGE_logError("Null pointer to Scene Graph");
-      return false;
-    }
-
-    if (!scene_graph_->getLink(scene_graph_->getRoot()))
-    {
-      CONSOLE_BRIDGE_logError("The scene graph has an invalid root.");
-      return false;
-    }
-
-    state_solver_ = std::make_shared<S>();
-    if (!state_solver_->init(scene_graph_))
-    {
-      CONSOLE_BRIDGE_logError("The environment state solver failed to initialize");
-      return false;
-    }
-
-    is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed,
-                                       scene_graph_,
-                                       std::placeholders::_1,
-                                       std::placeholders::_2);
-
-    initialized_ = true;
-
-    environmentChanged();
-
-    return initialized_;
-  }
 
 private:
   bool removeLinkHelper(const std::string& name);
