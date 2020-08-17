@@ -109,7 +109,7 @@ public:
   using Ptr = std::shared_ptr<SceneGraph>;
   using ConstPtr = std::shared_ptr<const SceneGraph>;
 
-  SceneGraph();
+  SceneGraph(const std::string& name = "");
   ~SceneGraph() = default;
   // SceneGraphs are non-copyable
   SceneGraph(const SceneGraph& other) = delete;
@@ -347,6 +347,12 @@ public:
    * @return True if graph is tree otherwise false
    */
   bool isTree() const;
+
+  /**
+   * @brief Check if the graph is empty
+   * @return True if empty, otherwise false
+   */
+  bool isEmpty() const;
 
   /**
    * @brief Get a vector of adjacent link names provided a link name

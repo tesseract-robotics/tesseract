@@ -31,6 +31,7 @@
 #include <memory>
 #include <tesseract_scene_graph/joint.h>
 #include <tesseract_scene_graph/link.h>
+#include <tesseract_scene_graph/graph.h>
 #include <Eigen/Geometry>
 
 namespace tesseract_environment
@@ -48,7 +49,8 @@ enum class CommandType
   CHANGE_LINK_VISIBILITY = 8,
   ADD_ALLOWED_COLLISION = 9,
   REMOVE_ALLOWED_COLLISION = 10,
-  REMOVE_ALLOWED_COLLISION_LINK = 11
+  REMOVE_ALLOWED_COLLISION_LINK = 11,
+  ADD_SCENE_GRAPH = 12
 };
 
 class Command
@@ -256,6 +258,29 @@ public:
 
 private:
   std::string link_name_;
+};
+
+class AddSceneGraphCommand : public Command
+{
+public:
+  AddSceneGraphCommand(const tesseract_scene_graph::SceneGraph& scene_graph,
+                       tesseract_scene_graph::Joint::ConstPtr joint,
+                       std::string prefix)
+    : Command(CommandType::ADD_SCENE_GRAPH)
+    , scene_graph_(scene_graph.clone())
+    , joint_(std::move(joint))
+    , prefix_(std::move(prefix))
+  {
+  }
+
+  const tesseract_scene_graph::SceneGraph::ConstPtr& getSceneGraph() const { return scene_graph_; }
+  const tesseract_scene_graph::Joint::ConstPtr& getJoint() const { return joint_; }
+  const std::string& getPrefix() const { return prefix_; }
+
+private:
+  tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;
+  tesseract_scene_graph::Joint::ConstPtr joint_;
+  std::string prefix_;
 };
 
 }  // namespace tesseract_environment
