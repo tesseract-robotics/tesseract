@@ -46,7 +46,11 @@ SceneGraph::Ptr SceneGraph::clone() const
   SceneGraph::Ptr cloned_graph = std::make_shared<SceneGraph>();
 
   for (auto& link : getLinks())
+  {
     cloned_graph->addLink(link->clone(link->getName()));
+    cloned_graph->setLinkVisibility(link->getName(), getLinkVisibility(link->getName()));
+    cloned_graph->setLinkCollisionEnabled(link->getName(), getLinkCollisionEnabled(link->getName()));
+  }
 
   for (auto& joint : getJoints())
     cloned_graph->addJoint(joint->clone(joint->getName()));
