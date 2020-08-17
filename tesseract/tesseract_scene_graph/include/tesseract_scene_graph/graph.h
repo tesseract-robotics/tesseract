@@ -489,10 +489,9 @@ private:
         tree_ = false;
         return;
       }
-      else if (num_in_edges == 0)
-      {
+
+      if (num_in_edges == 0)
         found_root_ = true;
-      }
 
       // Check if not vertex is unused.
       if (num_in_edges == 0 && boost::out_degree(vertex, graph) == 0)
