@@ -9,7 +9,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/types.h>
-#include "tesseract_environment/kdl/kdl_env.h"
+#include <tesseract_environment/kdl/kdl_state_solver.h>
+#include <tesseract_environment/core/environment.h>
 
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
@@ -321,15 +322,15 @@ void runCloneTest(const tesseract_environment::Environment::ConstPtr& env)
   EXPECT_TRUE(joint_vals.isApprox(clone_joint_vals));
 }
 
-TEST(TesseractEnvironmentUnit, KDLEnvCloneContactManagerUnit)  // NOLINT
+TEST(TesseractEnvironmentUnit, EnvCloneContactManagerUnit)  // NOLINT
 {
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
 
-  tesseract_environment::KDLEnv::Ptr env(new tesseract_environment::KDLEnv);
+  auto env = std::make_shared<Environment>();
   EXPECT_TRUE(env != nullptr);
 
-  bool success = env->init(scene_graph);
+  bool success = env->init<KDLStateSolver>(*scene_graph);
   EXPECT_TRUE(success);
 
   // Register contact manager
@@ -345,15 +346,15 @@ TEST(TesseractEnvironmentUnit, KDLEnvCloneContactManagerUnit)  // NOLINT
   runContactManagerCloneTest(env);
 }
 
-TEST(TesseractEnvironmentUnit, KDLEnvAddandRemoveLink)  // NOLINT
+TEST(TesseractEnvironmentUnit, EnvAddandRemoveLink)  // NOLINT
 {
   SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
 
-  KDLEnv::Ptr env(new KDLEnv());
+  auto env = std::make_shared<Environment>();
   EXPECT_TRUE(env != nullptr);
 
-  bool success = env->init(scene_graph);
+  bool success = env->init<KDLStateSolver>(*scene_graph);
   EXPECT_TRUE(success);
 
   // Register contact manager
@@ -369,15 +370,15 @@ TEST(TesseractEnvironmentUnit, KDLEnvAddandRemoveLink)  // NOLINT
   runAddandRemoveLinkTest(env);
 }
 
-TEST(TesseractEnvironmentUnit, KDLEnvMoveLinkandJoint)  // NOLINT
+TEST(TesseractEnvironmentUnit, EnvMoveLinkandJoint)  // NOLINT
 {
   SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
 
-  KDLEnv::Ptr env(new KDLEnv());
+  auto env = std::make_shared<Environment>();
   EXPECT_TRUE(env != nullptr);
 
-  bool success = env->init(scene_graph);
+  bool success = env->init<KDLStateSolver>(*scene_graph);
   EXPECT_TRUE(success);
 
   // Register contact manager
@@ -393,15 +394,15 @@ TEST(TesseractEnvironmentUnit, KDLEnvMoveLinkandJoint)  // NOLINT
   runMoveLinkandJointTest(env);
 }
 
-TEST(TesseractEnvironmentUnit, KDLEnvChangeJointOrigin)  // NOLINT
+TEST(TesseractEnvironmentUnit, EnvChangeJointOrigin)  // NOLINT
 {
   SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
 
-  KDLEnv::Ptr env(new KDLEnv());
+  auto env = std::make_shared<Environment>();
   EXPECT_TRUE(env != nullptr);
 
-  bool success = env->init(scene_graph);
+  bool success = env->init<KDLStateSolver>(*scene_graph);
   EXPECT_TRUE(success);
 
   // Register contact manager
@@ -417,15 +418,15 @@ TEST(TesseractEnvironmentUnit, KDLEnvChangeJointOrigin)  // NOLINT
   runChangeJointOriginTest(env);
 }
 
-TEST(TesseractEnvironmentUnit, KDLEnvCurrentStatePreservedWhenEnvChanges)  // NOLINT
+TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLINT
 {
   SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
 
-  KDLEnv::Ptr env(new KDLEnv());
+  auto env = std::make_shared<Environment>();
   EXPECT_TRUE(env != nullptr);
 
-  bool success = env->init(scene_graph);
+  bool success = env->init<KDLStateSolver>(*scene_graph);
   EXPECT_TRUE(success);
 
   runCurrentStatePreservedWhenEnvChangesTest(env);
@@ -439,14 +440,13 @@ TEST(TesseractEnvironmentUnit, addSceneGraph)
   SceneGraph::Ptr subgraph = std::make_shared<SceneGraph>();
   subgraph->setName("subgraph");
 
-  KDLEnv env;
+  Environment env;
 
-  bool success = env.init(scene_graph);
+  bool success = env.init<KDLStateSolver>(*scene_graph);
   EXPECT_TRUE(success);
 
-  // Adding an empty environment will work, however many times
-  EXPECT_TRUE(env.addSceneGraph(*subgraph));
-  EXPECT_TRUE(env.addSceneGraph(*subgraph));
+  // Adding an empty scene graph which should fail
+  EXPECT_FALSE(env.addSceneGraph(*subgraph));
 
   // Now add a link to empty environment
   Link link("subgraph_base_link");
@@ -468,10 +468,10 @@ TEST(TesseractEnvironmentUnit, applyCommands)  // NOLINT
   SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
 
-  KDLEnv::Ptr env(new KDLEnv());
+  auto env = std::make_shared<Environment>();
   EXPECT_TRUE(env != nullptr);
 
-  bool success = env->init(scene_graph);
+  bool success = env->init<KDLStateSolver>(*scene_graph);
   EXPECT_TRUE(success);
 
   runApplyCommandsTest(env);
@@ -482,10 +482,10 @@ TEST(TesseractEnvironmentUnit, clone)  // NOLINT
   SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
 
-  KDLEnv::Ptr env(new KDLEnv());
+  auto env = std::make_shared<Environment>();
   EXPECT_TRUE(env != nullptr);
 
-  bool success = env->init(scene_graph);
+  bool success = env->init<KDLStateSolver>(*scene_graph);
   EXPECT_TRUE(success);
 
   runCloneTest(env);
