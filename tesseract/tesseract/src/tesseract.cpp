@@ -28,7 +28,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
-#include <tesseract_environment/kdl/kdl_env.h>
+#include <tesseract_environment/kdl/kdl_state_solver.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain_factory.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_tree_factory.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_lma_factory.h>
@@ -52,8 +52,8 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
   init_info_->scene_graph = scene_graph;
 
   // Construct Environment from Scene Graph
-  environment_ = std::make_shared<tesseract_environment::KDLEnv>();
-  if (!environment_->init(std::move(scene_graph)))
+  environment_ = std::make_shared<tesseract_environment::Environment>();
+  if (!environment_->init<tesseract_environment::KDLStateSolver>(*scene_graph))
   {
     CONSOLE_BRIDGE_logError("Failed to initialize environment.");
     return false;
@@ -83,8 +83,8 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph,
   srdf_model_const_ = srdf_model_;
 
   // Construct Environment from Scene Graph
-  environment_ = std::make_shared<tesseract_environment::KDLEnv>();
-  if (!environment_->init(std::move(scene_graph)))
+  environment_ = std::make_shared<tesseract_environment::Environment>();
+  if (!environment_->init<tesseract_environment::KDLStateSolver>(*scene_graph))
   {
     CONSOLE_BRIDGE_logError("Failed to initialize environment.");
     return false;
@@ -115,8 +115,8 @@ bool Tesseract::init(const std::string& urdf_string, const tesseract_scene_graph
   }
 
   // Construct Environment from Scene Graph
-  environment_ = std::make_shared<tesseract_environment::KDLEnv>();
-  if (!environment_->init(scene_graph))
+  environment_ = std::make_shared<tesseract_environment::Environment>();
+  if (!environment_->init<tesseract_environment::KDLStateSolver>(*scene_graph))
   {
     CONSOLE_BRIDGE_logError("Failed to initialize environment.");
     return false;
@@ -166,8 +166,8 @@ bool Tesseract::init(const std::string& urdf_string,
   tesseract_scene_graph::processSRDFAllowedCollisions(*scene_graph, *srdf);
 
   // Construct Environment
-  environment_ = std::make_shared<tesseract_environment::KDLEnv>();
-  if (!environment_->init(scene_graph))
+  environment_ = std::make_shared<tesseract_environment::Environment>();
+  if (!environment_->init<tesseract_environment::KDLStateSolver>(*scene_graph))
   {
     CONSOLE_BRIDGE_logError("Failed to initialize environment.");
     return false;
@@ -198,8 +198,8 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
   }
 
   // Construct Environment from Scene Graph
-  environment_ = std::make_shared<tesseract_environment::KDLEnv>();
-  if (!environment_->init(scene_graph))
+  environment_ = std::make_shared<tesseract_environment::Environment>();
+  if (!environment_->init<tesseract_environment::KDLStateSolver>(*scene_graph))
   {
     CONSOLE_BRIDGE_logError("Failed to initialize environment.");
     return false;
@@ -249,8 +249,8 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
   tesseract_scene_graph::processSRDFAllowedCollisions(*scene_graph, *srdf_model_);
 
   // Construct Environment
-  environment_ = std::make_shared<tesseract_environment::KDLEnv>();
-  if (!environment_->init(scene_graph))
+  environment_ = std::make_shared<tesseract_environment::Environment>();
+  if (!environment_->init<tesseract_environment::KDLStateSolver>(*scene_graph))
   {
     CONSOLE_BRIDGE_logError("Failed to initialize environment.");
     return false;
