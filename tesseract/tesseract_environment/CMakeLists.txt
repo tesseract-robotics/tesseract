@@ -26,7 +26,7 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}
     $<TARGET_PROPERTY:tesseract::tesseract_common,INTERFACE_INCLUDE_DIRECTORIES>) #tesseract::tesseract_common Due to bug in catkin, there is an open PR
 
-add_library(${PROJECT_NAME}_kdl SHARED src/kdl/kdl_env.cpp src/kdl/kdl_state_solver.cpp)
+add_library(${PROJECT_NAME}_kdl SHARED src/kdl/kdl_state_solver.cpp)
 target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_collision_fcl tesseract::tesseract_collision_bullet tesseract::tesseract_scene_graph orocos-kdl console_bridge ${BULLET_LIBRARIES})
 tesseract_target_compile_options(${PROJECT_NAME}_kdl PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_kdl)
