@@ -733,10 +733,10 @@ bool Environment::addSceneGraph(const tesseract_scene_graph::SceneGraph& scene_g
   }
 
   // Connect root of subgraph to graph
-  tesseract_scene_graph::Joint root_joint(scene_graph.getName() + "_joint");
+  tesseract_scene_graph::Joint root_joint(prefix + scene_graph.getName() + "_joint");
   root_joint.type = tesseract_scene_graph::JointType::FIXED;
   root_joint.parent_link_name = getRootLinkName();
-  root_joint.child_link_name = scene_graph.getRoot();
+  root_joint.child_link_name = prefix + scene_graph.getRoot();
   root_joint.parent_to_joint_origin_transform = Eigen::Isometry3d::Identity();
 
   return addSceneGraph(scene_graph, std::move(root_joint), prefix);
