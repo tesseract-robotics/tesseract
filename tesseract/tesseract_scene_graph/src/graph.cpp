@@ -36,7 +36,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
 {
-SceneGraph::SceneGraph() : acm_(std::make_shared<AllowedCollisionMatrix>()) {}
+SceneGraph::SceneGraph(const std::string& name) : acm_(std::make_shared<AllowedCollisionMatrix>())
+{
+  boost::set_property(static_cast<Graph&>(*this), boost::graph_name, name);
+}
 
 SceneGraph::Ptr SceneGraph::clone() const
 {
@@ -404,6 +407,8 @@ std::vector<Joint::ConstPtr> SceneGraph::getOutboundJoints(const std::string& li
   return joints;
 }
 
+bool SceneGraph::isEmpty() const { return link_map_.empty(); }
+
 bool SceneGraph::isAcyclic() const
 {
   const auto& graph = static_cast<const Graph&>(*this);
@@ -632,7 +637,7 @@ AllowedCollisionMatrix::Ptr clone_prefix(AllowedCollisionMatrix::ConstPtr acm, c
 
 bool SceneGraph::insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& prefix)
 {
-  bool is_empty = link_map_.empty();
+  bool is_empty = isEmpty();
 
   // Verify that link names are unique
   for (const auto& link : scene_graph.getLinks())
