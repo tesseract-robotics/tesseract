@@ -62,7 +62,7 @@ public:
   /**
    * @brief Initialize the Environment
    *
-   * Inherited class must call the protected create function
+   * The templated class provided should be a derived class from StateSolver.
    *
    * @param scene_graph The scene graph to initialize the environment.
    * @return True if successful, otherwise false
