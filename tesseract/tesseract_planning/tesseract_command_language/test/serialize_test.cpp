@@ -1,9 +1,9 @@
 /**
- * @file utils_test.cpp
+ * @file serialize_test.cpp
  * @brief
  *
- * @author Matthew Powelson
- * @date June 15, 2020
+ * @author Levi Armstrong
+ * @date August 20, 2020
  * @version TODO
  * @bug No known bugs
  *
@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/command_language_utils.h>
 #include <tesseract_command_language/serialize.h>
+#include <tesseract_command_language/deserialize.h>
 
 using namespace tesseract_planning;
 

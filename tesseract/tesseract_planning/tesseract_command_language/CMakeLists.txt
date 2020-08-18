@@ -17,6 +17,7 @@ add_library(${PROJECT_NAME} SHARED
   src/instruction_type.cpp
   src/waypoint_type.cpp
   src/serialize.cpp
+  src/deserialize.cpp
   src/manipulator_info.cpp
   src/null_waypoint.cpp
   src/state_waypoint.cpp)
@@ -39,9 +40,9 @@ install(DIRECTORY include/${PROJECT_NAME}
   PATTERN ".svn" EXCLUDE
 )
 
-#if (TESSERACT_ENABLE_TESTING)
-#  enable_testing()
+if (TESSERACT_ENABLE_TESTING)
+  enable_testing()
   tesseract_add_run_tests_target()
   add_subdirectory(test)
-#endif()
+endif()
 

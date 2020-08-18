@@ -29,7 +29,7 @@
 
 namespace tesseract_planning
 {
-NullWaypoint::NullWaypoint(const tinyxml2::XMLElement& xml_element) {}
+NullWaypoint::NullWaypoint(const tinyxml2::XMLElement& /*xml_element*/) {}
 
 int NullWaypoint::getType() const { return static_cast<int>(WaypointType::NULL_WAYPOINT); }
 
