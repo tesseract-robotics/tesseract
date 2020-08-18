@@ -67,6 +67,17 @@ void processLongestValidSegment(const ompl::base::StateSpacePtr& state_space_ptr
  * @brief For the provided problem check if the state is in collision
  * @param prob The OMPL Problem
  * @param state The joint state
+ * @param contact_map Map of contact results. Will be empty if return true
+ * @return True if in collision otherwise false
+ */
+bool checkStateInCollision(OMPLProblem& prob,
+                           const Eigen::VectorXd& state,
+                           tesseract_collision::ContactResultMap& contact_map);
+
+/**
+ * @brief For the provided problem check if the state is in collision
+ * @param prob The OMPL Problem
+ * @param state The joint state
  * @return True if in collision otherwise false
  */
 bool checkStateInCollision(OMPLProblem& prob, const Eigen::VectorXd& state);
