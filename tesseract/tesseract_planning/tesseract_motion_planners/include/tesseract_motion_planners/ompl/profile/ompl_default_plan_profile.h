@@ -89,7 +89,7 @@ public:
   bool collision_continuous = true;
 
   /** @brief Max distance over which collisions are checked */
-  double collision_safety_margin = 0.025;
+  double collision_safety_margin = 0.00;
 
   /** @brief Set the resolution at which state validity needs to be verified in order for a motion between two states
    * to be considered valid in post checking of trajectory returned by trajopt.
