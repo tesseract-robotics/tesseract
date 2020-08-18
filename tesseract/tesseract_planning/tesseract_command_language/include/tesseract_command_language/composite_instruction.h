@@ -30,6 +30,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <string>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/core/instruction.h>
@@ -77,6 +78,8 @@ public:
   bool hasStartInstruction() const;
 
   void print(std::string prefix = "") const;
+
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const;
 
 private:
   int type_{ static_cast<int>(InstructionType::COMPOSITE_INSTRUCTION) };

@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
@@ -45,6 +46,8 @@ struct WaypointInnerBase
   WaypointInnerBase& operator=(WaypointInnerBase&&) = delete;
 
   virtual int getType() const = 0;
+
+  virtual tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const = 0;
 
   // This is not required for user defined implementation
   virtual void* recover() = 0;
@@ -70,6 +73,8 @@ struct WaypointInner final : WaypointInnerBase
   std::unique_ptr<WaypointInnerBase> clone() const override { return std::make_unique<WaypointInner>(waypoint_); }
 
   int getType() const final { return waypoint_.getType(); }
+
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const final { return waypoint_.toXML(doc); }
 
   void* recover() final { return &waypoint_; }
 
@@ -128,6 +133,8 @@ public:
   }
 
   int getType() const { return waypoint_->getType(); }
+
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const { return waypoint_->toXML(doc); }
 
   template <typename T>
   T* cast()

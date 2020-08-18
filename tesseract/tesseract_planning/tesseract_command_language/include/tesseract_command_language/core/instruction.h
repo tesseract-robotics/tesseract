@@ -26,6 +26,11 @@
 #ifndef TESSERACT_COMMAND_LANGUAGE_INSTRUCTION_H
 #define TESSERACT_COMMAND_LANGUAGE_INSTRUCTION_H
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <tinyxml2.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract_command_language/core/waypoint.h>
 
 namespace tesseract_planning
@@ -48,6 +53,8 @@ struct InstructionInnerBase
   virtual void setDescription(const std::string& description) = 0;
 
   virtual void print(std::string prefix) const = 0;
+
+  virtual tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const = 0;
 
   // This is not required for user defined implementation
   virtual void* recover() = 0;
@@ -84,6 +91,8 @@ struct InstructionInner final : InstructionInnerBase
   void setDescription(const std::string& description) final { instruction_.setDescription(description); }
 
   void print(std::string prefix) const final { instruction_.print(prefix); }
+
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const final { return instruction_.toXML(doc); }
 
   T instruction_;
 };
@@ -146,6 +155,8 @@ public:
   void setDescription(const std::string& description) { instruction_->setDescription(description); }
 
   void print(std::string prefix = "") const { instruction_->print(std::move(prefix)); }
+
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const { return instruction_->toXML(doc); }
 
   template <typename T>
   T* cast()
