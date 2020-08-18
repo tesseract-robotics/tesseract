@@ -35,13 +35,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_planning
 {
 std::shared_ptr<tinyxml2::XMLDocument> toXMLDocument(const Instruction& instruction);
-Instruction fromXMLDocument(const tinyxml2::XMLDocument& xml_doc);
 
 bool toXMLFile(const Instruction& instruction, const std::string& file_path);
-Instruction fromXMLFile(const std::string& file_path);
 
 std::string toXMLString(const Instruction& instruction);
-Instruction fromXMLString(const std::string& xml_string);
 
 }  // namespace tesseract_planning
 #endif  // TESSERACT_COMMAND_LANGUAGE_SERIALIZE_H
