@@ -30,10 +30,13 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <Eigen/Geometry>
+#include <tinyxml2.h>
+#include <boost/algorithm/string.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/core/waypoint.h>
 #include <tesseract_command_language/instruction_type.h>
+#include <tesseract_common/utils.h>
 
 namespace tesseract_planning
 {
@@ -43,7 +46,8 @@ namespace tesseract_planning
 struct ManipulatorInfo
 {
   ManipulatorInfo() = default;
-  ManipulatorInfo(std::string manipulator) : manipulator(std::move(manipulator)) {}
+  ManipulatorInfo(std::string manipulator);
+  ManipulatorInfo(const tinyxml2::XMLElement& xml_element);
 
   /** @brief Name of the manipulator group */
   std::string manipulator;
@@ -62,7 +66,9 @@ struct ManipulatorInfo
    * @brief Returns true if required members are filled out
    * @return Returns true if required members are filled out
    */
-  bool isEmpty() const { return manipulator.empty(); }
+  bool isEmpty() const;
+
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const;
 };
 }  // namespace tesseract_planning
 

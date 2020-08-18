@@ -31,9 +31,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Core>
 #include <memory>
 #include <vector>
+#include <tinyxml2.h>
+#include <boost/algorithm/string.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/waypoint_type.h>
+#include <tesseract_common/utils.h>
 
 namespace tesseract_planning
 {
@@ -41,12 +44,12 @@ class StateWaypoint
 {
 public:
   StateWaypoint() = default;
-  StateWaypoint(std::vector<std::string> joint_names, const Eigen::Ref<const Eigen::VectorXd>& position)
-    : joint_names(std::move(joint_names)), position(position)
-  {
-  }
+  StateWaypoint(std::vector<std::string> joint_names, const Eigen::Ref<const Eigen::VectorXd>& position);
+  StateWaypoint(const tinyxml2::XMLElement& xml_element);
 
-  int getType() const { return static_cast<int>(WaypointType::STATE_WAYPOINT); }
+  int getType() const;
+
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const;
 
   /** @brief The joint corresponding to the position vector. */
   std::vector<std::string> joint_names;

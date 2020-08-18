@@ -15,7 +15,11 @@ add_library(${PROJECT_NAME} SHARED
   src/composite_instruction.cpp
   src/command_language_utils.cpp
   src/instruction_type.cpp
-  src/waypoint_type.cpp)
+  src/waypoint_type.cpp
+  src/serialize.cpp
+  src/manipulator_info.cpp
+  src/null_waypoint.cpp
+  src/state_waypoint.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC console_bridge tesseract::tesseract_common)
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME})
@@ -35,9 +39,9 @@ install(DIRECTORY include/${PROJECT_NAME}
   PATTERN ".svn" EXCLUDE
 )
 
-if (TESSERACT_ENABLE_TESTING)
-  enable_testing()
+#if (TESSERACT_ENABLE_TESTING)
+#  enable_testing()
   tesseract_add_run_tests_target()
   add_subdirectory(test)
-endif()
+#endif()
 

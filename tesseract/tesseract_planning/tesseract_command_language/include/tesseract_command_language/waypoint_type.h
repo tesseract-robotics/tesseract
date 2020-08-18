@@ -33,16 +33,16 @@ class Waypoint;
 enum class WaypointType : int
 {
   // NULL Waypoint
-  NULL_WAYPOINT,
+  NULL_WAYPOINT = 0,
 
   // Cartesian Waypoint
-  CARTESIAN_WAYPOINT,
+  CARTESIAN_WAYPOINT = 1,
 
   // Joint Waypoint
-  JOINT_WAYPOINT,
+  JOINT_WAYPOINT = 2,
 
   // State Waypoint
-  STATE_WAYPOINT,
+  STATE_WAYPOINT = 3,
 
   // User defined types must be larger than this
   USER_DEFINED = 1000
