@@ -95,17 +95,24 @@ void processLongestValidSegment(const ompl::base::StateSpacePtr& state_space_ptr
   state_space_ptr->setLongestValidSegmentFraction(longest_valid_segment_fraction);
 }
 
-bool checkStateInCollision(OMPLProblem& prob, const Eigen::VectorXd& state)
+bool checkStateInCollision(OMPLProblem& prob,
+                           const Eigen::VectorXd& state,
+                           tesseract_collision::ContactResultMap& contact_map)
 {
   tesseract_environment::EnvState::Ptr s = prob.state_solver->getState(prob.manip_fwd_kin->getJointNames(), state);
 
   for (const auto& link_name : prob.contact_checker->getActiveCollisionObjects())
     prob.contact_checker->setCollisionObjectsTransform(link_name, s->link_transforms[link_name]);
 
-  tesseract_collision::ContactResultMap contact_map;
   prob.contact_checker->contactTest(contact_map, tesseract_collision::ContactTestType::FIRST);
 
   return (!contact_map.empty());
+}
+
+bool checkStateInCollision(OMPLProblem& prob, const Eigen::VectorXd& state)
+{
+  tesseract_collision::ContactResultMap contact_map;
+  return checkStateInCollision(prob, state, contact_map);
 }
 
 }  // namespace tesseract_planning
