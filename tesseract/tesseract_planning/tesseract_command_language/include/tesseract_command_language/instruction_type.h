@@ -33,28 +33,28 @@ class Instruction;
 enum class InstructionType : int
 {
   // Everything before must be a Null Instruction
-  NULL_INSTRUCTION,
+  NULL_INSTRUCTION = 0,
 
   // Everything before must be a motion plan Instruction
-  PLAN_INSTRUCTION,
+  PLAN_INSTRUCTION = 10,
 
   // Everything before must be a motion Instruction
-  MOVE_INSTRUCTION,
+  MOVE_INSTRUCTION = 20,
 
   // Everything before must be a composite Instruction
-  COMPOSITE_INSTRUCTION,
+  COMPOSITE_INSTRUCTION = 30,
 
   // Everything before must be a I/O Instruction
-  IO_INSTRUCTION,
+  IO_INSTRUCTION = 40,
 
   // Everything before must be a Analog Instruction
-  ANALOG_INSTRUCTION,
+  ANALOG_INSTRUCTION = 50,
 
   // Everything before must be a variable Instruction
-  VARIABLE_INSTRUCTION,
+  VARIABLE_INSTRUCTION = 60,
 
   // Everything before must be a comment Instruction
-  COMMENT_INSTRUCTION,
+  COMMENT_INSTRUCTION = 70,
 
   // User defined types must be larger than this
   USER_DEFINED = 1000

@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <iostream>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/instruction_type.h>
@@ -47,6 +48,21 @@ public:
   void print(std::string prefix = "") const  // NOLINT
   {
     std::cout << prefix + "Null Instruction, Type: " << getType() << "  Description: " << getDescription() << std::endl;
+  }
+
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const
+  {
+    tinyxml2::XMLElement* xml_instruction = doc.NewElement("Instruction");
+    xml_instruction->SetAttribute("type", std::to_string(getType()).c_str());
+
+    tinyxml2::XMLElement* xml_null_instruction = doc.NewElement("NullInstruction");
+    tinyxml2::XMLElement* xml_description = doc.NewElement("Description");
+    xml_description->SetText(getDescription().c_str());
+
+    xml_null_instruction->InsertEndChild(xml_description);
+    xml_instruction->InsertEndChild(xml_null_instruction);
+
+    return xml_instruction;
   }
 
 private:

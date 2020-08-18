@@ -85,4 +85,34 @@ bool MoveInstruction::isCircular() const { return (move_type_ == MoveInstruction
 
 bool MoveInstruction::isStart() const { return (move_type_ == MoveInstructionType::START); }
 
+tinyxml2::XMLElement* MoveInstruction::toXML(tinyxml2::XMLDocument& doc) const
+{
+  tinyxml2::XMLElement* xml_instruction = doc.NewElement("Instruction");
+  xml_instruction->SetAttribute("type", std::to_string(getType()).c_str());
+
+  tinyxml2::XMLElement* xml_move_instruction = doc.NewElement("MoveInstruction");
+  xml_move_instruction->SetAttribute("type", std::to_string(static_cast<int>(getMoveType())).c_str());
+
+  tinyxml2::XMLElement* xml_description = doc.NewElement("Description");
+  xml_description->SetText(getDescription().c_str());
+  xml_move_instruction->InsertEndChild(xml_description);
+
+  tinyxml2::XMLElement* xml_profile = doc.NewElement("Profile");
+  xml_profile->SetText(getProfile().c_str());
+  xml_move_instruction->InsertEndChild(xml_profile);
+
+  if (!getManipulatorInfo().isEmpty())
+  {
+    tinyxml2::XMLElement* xml_manip_info = getManipulatorInfo().toXML(doc);
+    xml_move_instruction->InsertEndChild(xml_manip_info);
+  }
+
+  tinyxml2::XMLElement* xml_waypoint = getWaypoint().toXML(doc);
+  xml_move_instruction->InsertEndChild(xml_waypoint);
+
+  xml_instruction->InsertEndChild(xml_move_instruction);
+
+  return xml_instruction;
+}
+
 }  // namespace tesseract_planning

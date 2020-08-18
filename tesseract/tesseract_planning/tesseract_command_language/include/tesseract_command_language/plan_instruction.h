@@ -30,6 +30,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <Eigen/Geometry>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/core/waypoint.h>
@@ -40,10 +41,10 @@ namespace tesseract_planning
 {
 enum class PlanInstructionType : int
 {
-  LINEAR,
-  FREESPACE,
-  CIRCULAR,
-  START
+  LINEAR = 0,
+  FREESPACE = 1,
+  CIRCULAR = 2,
+  START = 3
 };
 
 class PlanInstruction
@@ -87,6 +88,8 @@ public:
   bool isCircular() const;
 
   bool isStart() const;
+
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const;
 
 private:
   int type_{ static_cast<int>(InstructionType::PLAN_INSTRUCTION) };
