@@ -40,11 +40,10 @@ namespace tesseract_planning
 {
 enum class MoveInstructionType : int
 {
-  LINEAR,
-  FREESPACE,
-  CIRCULAR,
-  /**< This indicates it is a start instruction. */
-  START,
+  LINEAR = 0,
+  FREESPACE = 1,
+  CIRCULAR = 2,
+  START = 3 /**< This indicates it is a start instruction. */
 };
 
 class MoveInstruction
@@ -88,6 +87,8 @@ public:
   bool isCircular() const;
 
   bool isStart() const;
+
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const;
 
 private:
   int type_{ static_cast<int>(InstructionType::MOVE_INSTRUCTION) };

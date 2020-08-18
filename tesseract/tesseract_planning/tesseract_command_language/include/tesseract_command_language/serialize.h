@@ -1,9 +1,9 @@
 /**
- * @file null_waypoint.h
- * @brief
+ * @file serialize.h
+ * @brief Provide methods for serializing instructions to xml and deserialization
  *
  * @author Levi Armstrong
- * @date June 15, 2020
+ * @date August 17, 2020
  * @version TODO
  * @bug No known bugs
  *
@@ -23,27 +23,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_COMMAND_LANGUAGE_NULL_WAYPOINT_H
-#define TESSERACT_COMMAND_LANGUAGE_NULL_WAYPOINT_H
+#ifndef TESSERACT_COMMAND_LANGUAGE_SERIALIZE_H
+#define TESSERACT_COMMAND_LANGUAGE_SERIALIZE_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
-#include <string>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#include <tesseract_command_language/core/instruction.h>
 
 namespace tesseract_planning
 {
-class NullWaypoint
-{
-public:
-  NullWaypoint() = default;
-  NullWaypoint(const tinyxml2::XMLElement& xml_element);
+std::shared_ptr<tinyxml2::XMLDocument> toXMLDocument(const Instruction& instruction);
+Instruction fromXMLDocument(const tinyxml2::XMLDocument& xml_doc);
 
-  int getType() const;
+bool toXMLFile(const Instruction& instruction, const std::string& file_path);
+Instruction fromXMLFile(const std::string& file_path);
 
-  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const;
-};
+std::string toXMLString(const Instruction& instruction);
+Instruction fromXMLString(const std::string& xml_string);
+
 }  // namespace tesseract_planning
-
-#endif  // TESSERACT_COMMAND_LANGUAGE_NULL_WAYPOINT_H
+#endif  // TESSERACT_COMMAND_LANGUAGE_SERIALIZE_H

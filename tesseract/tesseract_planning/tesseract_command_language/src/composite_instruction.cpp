@@ -80,4 +80,38 @@ void CompositeInstruction::print(std::string prefix) const
   std::cout << prefix + "}" << std::endl;
 }
 
+tinyxml2::XMLElement* CompositeInstruction::toXML(tinyxml2::XMLDocument& doc) const
+{
+  tinyxml2::XMLElement* xml_instruction = doc.NewElement("Instruction");
+  xml_instruction->SetAttribute("type", std::to_string(getType()).c_str());
+
+  tinyxml2::XMLElement* xml_composite_instruction = doc.NewElement("CompositeInstruction");
+  xml_composite_instruction->SetAttribute("order", std::to_string(static_cast<int>(getOrder())).c_str());
+
+  tinyxml2::XMLElement* xml_description = doc.NewElement("Description");
+  xml_description->SetText(getDescription().c_str());
+  xml_composite_instruction->InsertEndChild(xml_description);
+
+  tinyxml2::XMLElement* xml_profile = doc.NewElement("Profile");
+  xml_profile->SetText(getProfile().c_str());
+  xml_composite_instruction->InsertEndChild(xml_profile);
+
+  if (!getManipulatorInfo().isEmpty())
+  {
+    tinyxml2::XMLElement* xml_manip_info = getManipulatorInfo().toXML(doc);
+    xml_composite_instruction->InsertEndChild(xml_manip_info);
+  }
+
+  tinyxml2::XMLElement* xml_start_instruction = doc.NewElement("StartInstruction");
+  xml_start_instruction->InsertEndChild(getStartInstruction().toXML(doc));
+  xml_composite_instruction->InsertEndChild(xml_start_instruction);
+
+  for (const auto& i : *this)
+    xml_composite_instruction->InsertEndChild(i.toXML(doc));
+
+  xml_instruction->InsertEndChild(xml_composite_instruction);
+
+  return xml_instruction;
+}
+
 }  // namespace tesseract_planning

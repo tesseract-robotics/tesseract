@@ -1,5 +1,5 @@
 /**
- * @file null_waypoint.h
+ * @file null_waypoint.cpp
  * @brief
  *
  * @author Levi Armstrong
@@ -23,27 +23,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_COMMAND_LANGUAGE_NULL_WAYPOINT_H
-#define TESSERACT_COMMAND_LANGUAGE_NULL_WAYPOINT_H
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tinyxml2.h>
-#include <string>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#include <tesseract_command_language/null_waypoint.h>
+#include <tesseract_command_language/waypoint_type.h>
 
 namespace tesseract_planning
 {
-class NullWaypoint
+NullWaypoint::NullWaypoint(const tinyxml2::XMLElement& xml_element) {}
+
+int NullWaypoint::getType() const { return static_cast<int>(WaypointType::NULL_WAYPOINT); }
+
+tinyxml2::XMLElement* NullWaypoint::toXML(tinyxml2::XMLDocument& doc) const
 {
-public:
-  NullWaypoint() = default;
-  NullWaypoint(const tinyxml2::XMLElement& xml_element);
+  tinyxml2::XMLElement* xml_waypoint = doc.NewElement("Waypoint");
+  xml_waypoint->SetAttribute("type", std::to_string(getType()).c_str());
 
-  int getType() const;
+  tinyxml2::XMLElement* xml_null_waypoint = doc.NewElement("NullWaypoint");
+  xml_waypoint->InsertEndChild(xml_null_waypoint);
 
-  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const;
-};
+  return xml_waypoint;
+}
+
 }  // namespace tesseract_planning
-
-#endif  // TESSERACT_COMMAND_LANGUAGE_NULL_WAYPOINT_H
