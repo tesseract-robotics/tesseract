@@ -166,6 +166,22 @@ inline tinyxml2::XMLError QueryStringValue(const tinyxml2::XMLElement* xml_eleme
 }
 
 /**
+ * @brief Query a string Text from xml element
+ * @param xml_element The xml element to query string from
+ * @param test The value to update from the xml element
+ * @return tinyxml2::XML_SUCCESS if successful, otherwise returns tinyxml2::XML_NO_ATTRIBUTE
+ */
+inline tinyxml2::XMLError QueryStringText(const tinyxml2::XMLElement* xml_element, std::string& text)
+{
+  if (xml_element->GetText() == nullptr)
+    return tinyxml2::XML_NO_ATTRIBUTE;
+
+  text = std::string(xml_element->GetText());
+  trim(text);
+  return tinyxml2::XML_SUCCESS;
+}
+
+/**
  * @brief Query a string value from xml attribute
  * @param xml_attribute The xml attribute to query string from
  * @param value The value to update from the xml attribute
