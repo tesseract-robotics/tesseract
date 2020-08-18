@@ -143,13 +143,14 @@ void OMPLDefaultPlanProfile::applyGoalStates(OMPLProblem& prob,
     prob.manip_inv_kin->calcInvKin(joint_solutions, manip_baselink_to_tool0, Eigen::VectorXd::Zero(dof));
     long num_solutions = joint_solutions.size() / dof;
     auto goal_states = std::make_shared<ompl::base::GoalStates>(prob.simple_setup->getSpaceInformation());
+    std::vector<tesseract_collision::ContactResultMap> contact_map_vec(static_cast<std::size_t>(num_solutions));
     for (long i = 0; i < num_solutions; ++i)
     {
       auto solution = joint_solutions.middleRows(i * dof, dof);
-      // Get descrete contact manager for testing provided start and end position
+      // Get discrete contact manager for testing provided start and end position
       // This is required because collision checking happens in motion validators now
       // instead of the isValid function to avoid unnecessary collision checks.
-      if (!checkStateInCollision(prob, solution))
+      if (!checkStateInCollision(prob, solution, contact_map_vec[static_cast<std::size_t>(i)]))
       {
         ompl::base::ScopedState<> goal_state(prob.simple_setup->getStateSpace());
         for (unsigned i = 0; i < dof; ++i)
@@ -160,8 +161,15 @@ void OMPLDefaultPlanProfile::applyGoalStates(OMPLProblem& prob,
     }
 
     if (!goal_states->hasStates())
+    {
+      for (std::size_t i = 0; i < contact_map_vec.size(); i++)
+        for (const auto& contact_vec : contact_map_vec[i])
+          for (const auto& contact : contact_vec.second)
+            CONSOLE_BRIDGE_logError(("Solution: " + std::to_string(i) + "  Links: " + contact.link_names[0] + ", " +
+                                     contact.link_names[1] + "  Distance: " + std::to_string(contact.distance))
+                                        .c_str());
       throw std::runtime_error("In OMPLPlannerFreespaceConfig: All goal states are in collision");
-
+    }
     prob.simple_setup->setGoal(goal_states);
   }
 }
@@ -177,12 +185,18 @@ void OMPLDefaultPlanProfile::applyGoalStates(OMPLProblem& prob,
 
   if (prob.state_space == OMPLProblemStateSpace::REAL_STATE_SPACE)
   {
-    // Get descrete contact manager for testing provided start and end position
+    // Get discrete contact manager for testing provided start and end position
     // This is required because collision checking happens in motion validators now
     // instead of the isValid function to avoid unnecessary collision checks.
-    if (checkStateInCollision(prob, joint_waypoint))
+    tesseract_collision::ContactResultMap contact_map;
+    if (checkStateInCollision(prob, joint_waypoint, contact_map))
     {
       CONSOLE_BRIDGE_logError("In OMPLPlannerFreespaceConfig: Start state is in collision");
+      for (const auto& contact_vec : contact_map)
+        for (const auto& contact : contact_vec.second)
+          CONSOLE_BRIDGE_logError(("Links: " + contact.link_names[0] + ", " + contact.link_names[1] +
+                                   "  Distance: " + std::to_string(contact.distance))
+                                      .c_str());
     }
 
     ompl::base::ScopedState<> goal_state(prob.simple_setup->getStateSpace());
@@ -225,13 +239,14 @@ void OMPLDefaultPlanProfile::applyStartStates(OMPLProblem& prob,
     prob.manip_inv_kin->calcInvKin(joint_solutions, manip_baselink_to_tool0, Eigen::VectorXd::Zero(dof));
     long num_solutions = joint_solutions.size() / dof;
     bool found_start_state = false;
+    std::vector<tesseract_collision::ContactResultMap> contact_map_vec(static_cast<std::size_t>(num_solutions));
     for (long i = 0; i < num_solutions; ++i)
     {
       auto solution = joint_solutions.middleRows(i * dof, dof);
-      // Get descrete contact manager for testing provided start and end position
+      // Get discrete contact manager for testing provided start and end position
       // This is required because collision checking happens in motion validators now
       // instead of the isValid function to avoid unnecessary collision checks.
-      if (!checkStateInCollision(prob, solution))
+      if (!checkStateInCollision(prob, solution, contact_map_vec[static_cast<std::size_t>(i)]))
       {
         found_start_state = true;
         ompl::base::ScopedState<> start_state(prob.simple_setup->getStateSpace());
@@ -243,7 +258,15 @@ void OMPLDefaultPlanProfile::applyStartStates(OMPLProblem& prob,
     }
 
     if (!found_start_state)
+    {
+      for (std::size_t i = 0; i < contact_map_vec.size(); i++)
+        for (const auto& contact_vec : contact_map_vec[i])
+          for (const auto& contact : contact_vec.second)
+            CONSOLE_BRIDGE_logError(("Solution: " + std::to_string(i) + "  Links: " + contact.link_names[0] + ", " +
+                                     contact.link_names[1] + "  Distance: " + std::to_string(contact.distance))
+                                        .c_str());
       throw std::runtime_error("In OMPLPlannerFreespaceConfig: All start states are in collision");
+    }
   }
 }
 
@@ -258,12 +281,18 @@ void OMPLDefaultPlanProfile::applyStartStates(OMPLProblem& prob,
 
   if (prob.state_space == OMPLProblemStateSpace::REAL_STATE_SPACE)
   {
-    // Get descrete contact manager for testing provided start and end position
+    // Get discrete contact manager for testing provided start and end position
     // This is required because collision checking happens in motion validators now
     // instead of the isValid function to avoid unnecessary collision checks.
-    if (checkStateInCollision(prob, joint_waypoint))
+    tesseract_collision::ContactResultMap contact_map;
+    if (checkStateInCollision(prob, joint_waypoint, contact_map))
     {
       CONSOLE_BRIDGE_logError("In OMPLPlannerFreespaceConfig: Start state is in collision");
+      for (const auto& contact_vec : contact_map)
+        for (const auto& contact : contact_vec.second)
+          CONSOLE_BRIDGE_logError(("Links: " + contact.link_names[0] + ", " + contact.link_names[1] +
+                                   "  Distance: " + std::to_string(contact.distance))
+                                      .c_str());
     }
 
     ompl::base::ScopedState<> start_state(prob.simple_setup->getStateSpace());
