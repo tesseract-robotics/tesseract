@@ -19,6 +19,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_planning
 {
 template <typename FloatType>
+using DescartesProblemGeneratorFn =
+    std::function<std::shared_ptr<DescartesProblem<FloatType>>(const std::string&,
+                                                               const PlannerRequest&,
+                                                               const DescartesPlanProfileMap<FloatType>&)>;
+
+template <typename FloatType>
 class DescartesMotionPlanner : public MotionPlanner
 {
 public:
@@ -31,9 +37,7 @@ public:
   DescartesMotionPlanner(DescartesMotionPlanner&&) noexcept = default;
   DescartesMotionPlanner& operator=(DescartesMotionPlanner&&) noexcept = default;
 
-  std::function<std::shared_ptr<DescartesProblem<FloatType>>(const PlannerRequest&,
-                                                             const DescartesPlanProfileMap<FloatType>&)>
-      problem_generator;
+  DescartesProblemGeneratorFn<FloatType> problem_generator;
 
   /**
    * @brief The available plan profiles

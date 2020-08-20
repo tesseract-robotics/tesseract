@@ -30,7 +30,8 @@
 namespace tesseract_planning
 {
 /// @todo: Restructure this into several smaller functions that are testable and easier to understand
-trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& request,
+trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name,
+                                                         const PlannerRequest& request,
                                                          const TrajOptPlanProfileMap& plan_profiles,
                                                          const TrajOptCompositeProfileMap& composite_profiles)
 {
@@ -107,6 +108,15 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
   if (profile.empty())
     profile = "DEFAULT";
 
+  // Check for remapping of profile
+  auto remap = request.plan_profile_remapping.find(name);
+  if (remap != request.plan_profile_remapping.end())
+  {
+    auto p = remap->second.find(profile);
+    if (p != remap->second.end())
+      profile = p->second;
+  }
+
   TrajOptPlanProfile::Ptr start_plan_profile{ nullptr };
   auto it = plan_profiles.find(profile);
   if (it == plan_profiles.end())
@@ -164,6 +174,15 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
       std::string profile = plan_instruction->getProfile();
       if (profile.empty())
         profile = "DEFAULT";
+
+      // Check for remapping of profile
+      auto remap = request.plan_profile_remapping.find(name);
+      if (remap != request.plan_profile_remapping.end())
+      {
+        auto p = remap->second.find(profile);
+        if (p != remap->second.end())
+          profile = p->second;
+      }
 
       TrajOptPlanProfile::Ptr cur_plan_profile{ nullptr };
       auto it = plan_profiles.find(profile);
@@ -371,6 +390,15 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const PlannerRequest& r
   profile = request.instructions.getProfile();
   if (profile.empty())
     profile = "DEFAULT";
+
+  // Check for remapping of profile
+  remap = request.composite_profile_remapping.find(name);
+  if (remap != request.composite_profile_remapping.end())
+  {
+    auto p = remap->second.find(profile);
+    if (p != remap->second.end())
+      profile = p->second;
+  }
 
   TrajOptCompositeProfile::Ptr cur_composite_profile{ nullptr };
   auto it_composite = composite_profiles.find(profile);

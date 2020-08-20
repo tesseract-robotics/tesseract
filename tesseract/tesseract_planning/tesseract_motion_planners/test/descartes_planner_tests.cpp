@@ -160,7 +160,8 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
   {
     // Test the problem generator
     {
-      auto problem = DefaultDescartesProblemGenerator<double>(request, single_descartes_planner.plan_profiles);
+      auto problem = DefaultDescartesProblemGenerator<double>(
+          single_descartes_planner.getName(), request, single_descartes_planner.plan_profiles);
       EXPECT_EQ(problem->samplers.size(), 11);
       EXPECT_EQ(problem->timing_constraints.size(), 11);
       EXPECT_EQ(problem->edge_evaluators.size(), 10);
@@ -271,7 +272,8 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
-  auto problem = DefaultDescartesProblemGenerator<double>(request, single_descartes_planner.plan_profiles);
+  auto problem = DefaultDescartesProblemGenerator<double>(
+      single_descartes_planner.getName(), request, single_descartes_planner.plan_profiles);
   problem->num_threads = 1;
   EXPECT_EQ(problem->samplers.size(), 11);
   EXPECT_EQ(problem->timing_constraints.size(), 11);
@@ -379,7 +381,8 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   single_descartes_planner.plan_profiles["TEST_PROFILE"] = plan_profile;
 
   // Test Problem size - TODO: Make dedicated unit test for DefaultDescartesProblemGenerator
-  auto problem = DefaultDescartesProblemGenerator<double>(request, single_descartes_planner.plan_profiles);
+  auto problem = DefaultDescartesProblemGenerator<double>(
+      single_descartes_planner.getName(), request, single_descartes_planner.plan_profiles);
   EXPECT_EQ(problem->samplers.size(), 3);
   EXPECT_EQ(problem->timing_constraints.size(), 3);
   EXPECT_EQ(problem->edge_evaluators.size(), 2);

@@ -38,6 +38,11 @@ namespace tesseract_planning
 {
 class TrajOptMotionPlannerStatusCategory;
 
+using TrajOptProblemGeneratorFn = std::function<trajopt::TrajOptProb::Ptr(const std::string&,
+                                                                          const PlannerRequest&,
+                                                                          const TrajOptPlanProfileMap&,
+                                                                          const TrajOptCompositeProfileMap&)>;
+
 class TrajOptMotionPlanner : public MotionPlanner
 {
 public:
@@ -50,9 +55,7 @@ public:
   TrajOptMotionPlanner(TrajOptMotionPlanner&&) = default;
   TrajOptMotionPlanner& operator=(TrajOptMotionPlanner&&) = default;
 
-  std::function<
-      trajopt::TrajOptProb::Ptr(const PlannerRequest&, const TrajOptPlanProfileMap&, const TrajOptCompositeProfileMap&)>
-      problem_generator;
+  TrajOptProblemGeneratorFn problem_generator;
 
   /**
    * @brief The available composite profiles
