@@ -36,7 +36,9 @@ namespace tesseract_planning
 {
 template <typename FloatType>
 inline std::shared_ptr<DescartesProblem<FloatType>>
-DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesPlanProfileMap<FloatType>& plan_profiles)
+DefaultDescartesProblemGenerator(const std::string& name,
+                                 const PlannerRequest& request,
+                                 const DescartesPlanProfileMap<FloatType>& plan_profiles)
 {
   auto prob = std::make_shared<DescartesProblem<FloatType>>();
 
@@ -124,6 +126,15 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
   if (profile.empty())
     profile = "DEFAULT";
 
+  // Check for remapping of profile
+  auto remap = request.plan_profile_remapping.find(name);
+  if (remap != request.plan_profile_remapping.end())
+  {
+    auto p = remap->second.find(profile);
+    if (p != remap->second.end())
+      profile = p->second;
+  }
+
   typename DescartesPlanProfile<FloatType>::Ptr cur_plan_profile{ nullptr };
   auto it = plan_profiles.find(profile);
   if (it == plan_profiles.end())
@@ -175,6 +186,15 @@ DefaultDescartesProblemGenerator(const PlannerRequest& request, const DescartesP
       std::string profile = plan_instruction->getProfile();
       if (profile.empty())
         profile = "DEFAULT";
+
+      // Check for remapping of profile
+      auto remap = request.plan_profile_remapping.find(name);
+      if (remap != request.plan_profile_remapping.end())
+      {
+        auto p = remap->second.find(profile);
+        if (p != remap->second.end())
+          profile = p->second;
+      }
 
       typename DescartesPlanProfile<FloatType>::Ptr cur_plan_profile{ nullptr };
       auto it = plan_profiles.find(profile);

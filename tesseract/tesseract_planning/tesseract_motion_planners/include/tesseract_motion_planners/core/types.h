@@ -33,9 +33,18 @@
 
 namespace tesseract_planning
 {
+/**
+ * This used to store planner specific profile mapping with the request
+ *
+ * For example say you have a profile named Raster in your command language. Say you have multiple Raster profiles
+ * for descartes {Raster, Raster1, Rester2}. This allows you to remap the meaning of Raster in the command language to
+ * say Raster2 for the specific planner Descartes by Map<Descartes, Map<Raster, Raster1>>.
+ */
+using PlannerProfileRemapping = std::unordered_map<std::string, std::unordered_map<std::string, std::string>>;
+
 struct PlannerRequest
 {
-  std::string name;                                    /**< @brief The name of the planner to use */
+  std::string name;                                    /**< @brief The name of the process manager to use */
   tesseract::Tesseract::ConstPtr tesseract;            /**< @brief Tesseract */
   tesseract_environment::EnvState::ConstPtr env_state; /**< @brief The start state to use for planning */
 
@@ -49,6 +58,18 @@ struct PlannerRequest
    * CompositeInstruction of MoveInstructions.
    */
   CompositeInstruction seed;
+
+  /**
+   * @brief This allows the remapping of the Plan Profile identified in the command language to a specific profile for a
+   * given motion planner.
+   */
+  PlannerProfileRemapping plan_profile_remapping;
+
+  /**
+   * @brief This allows the remapping of the Composite Profile identified in the command language to a specific profile
+   * for a given motion planner.
+   */
+  PlannerProfileRemapping composite_profile_remapping;
 
   /**
    * @brief data Planner specific data. For planners included in Tesseract_planning this is the planner problem that
