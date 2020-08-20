@@ -69,7 +69,11 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
   const ManipulatorInfo& manip_info = ci->getManipulatorInfo();
   const auto fwd_kin = input.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip_info.manipulator);
 
-  if (!solver_.compute(*ci, fwd_kin->getLimits().velocity_limits, fwd_kin->getLimits().acceleration_limits))
+  if (!solver_.compute(*ci,
+                       fwd_kin->getLimits().velocity_limits,
+                       fwd_kin->getLimits().acceleration_limits,
+                       max_velocity_scaling_factor,
+                       max_acceleration_scaling_factor))
   {
     CONSOLE_BRIDGE_logInform("Failed to perform iterative spline time parameterization!");
     return 0;

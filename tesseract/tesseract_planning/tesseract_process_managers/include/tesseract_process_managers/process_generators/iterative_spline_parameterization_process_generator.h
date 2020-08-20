@@ -62,6 +62,12 @@ public:
 
   void setAbort(bool abort) override;
 
+  /** @brief max_velocity_scaling_factor The max velocity scaling factor passed to the solver */
+  double max_velocity_scaling_factor = 1.0;
+
+  /** @brief max_velocity_scaling_factor The max acceleration scaling factor passed to the solver */
+  double max_acceleration_scaling_factor = 1.0;
+
 private:
   /** @brief If true, all tasks return immediately. Workaround for https://github.com/taskflow/taskflow/issues/201 */
   std::atomic<bool> abort_{ false };
