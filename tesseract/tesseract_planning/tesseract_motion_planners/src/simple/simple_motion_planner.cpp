@@ -207,6 +207,15 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
       if (profile.empty())
         profile = "DEFAULT";
 
+      // Check for remapping of profile
+      auto remap = request.plan_profile_remapping.find(name_);
+      if (remap != request.plan_profile_remapping.end())
+      {
+        auto p = remap->second.find(profile);
+        if (p != remap->second.end())
+          profile = p->second;
+      }
+
       SimplePlannerPlanProfile::Ptr start_plan_profile{ nullptr };
       auto it = plan_profiles.find(profile);
       if (it == plan_profiles.end())

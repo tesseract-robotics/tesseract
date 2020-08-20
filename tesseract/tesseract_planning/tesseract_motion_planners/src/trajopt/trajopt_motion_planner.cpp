@@ -112,7 +112,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& r
           tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::ErrorInvalidInput, status_category_);
       return response.status;
     }
-    problem = problem_generator(request, plan_profiles, composite_profiles);
+    problem = problem_generator(name_, request, plan_profiles, composite_profiles);
     response.data = problem;
   }
 

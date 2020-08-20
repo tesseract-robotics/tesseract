@@ -24,6 +24,7 @@ add_library(${PROJECT_NAME} SHARED
     src/process_generators/iterative_spline_parameterization_process_generator.cpp
     src/process_managers/freespace_process_manager.cpp
     src/process_managers/raster_process_manager.cpp
+    src/process_managers/simple_process_manager.cpp
     src/taskflow_generators/sequential_taskflow.cpp
     src/taskflow_generators/graph_taskflow.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC
