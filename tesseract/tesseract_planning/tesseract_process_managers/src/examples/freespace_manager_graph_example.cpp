@@ -99,49 +99,26 @@ GraphTaskflow::UPtr createGraphTaskflow()
   /////////////////
   /// Add Edges ///
   /////////////////
-  graph->addEdge(interpolator_idx,
-                 GraphTaskflow::SourceChannel::ON_SUCCESS,
-                 ompl_idx,
-                 GraphTaskflow::DestinationChannel::PROCESS_NODE);
+  auto ON_SUCCESS = GraphTaskflow::SourceChannel::ON_SUCCESS;
+  auto ON_FAILURE = GraphTaskflow::SourceChannel::ON_FAILURE;
+  auto PROCESS_NODE = GraphTaskflow::DestinationChannel::PROCESS_NODE;
+  auto ERROR_CALLBACK = GraphTaskflow::DestinationChannel::ERROR_CALLBACK;
+  auto DONE_CALLBACK = GraphTaskflow::DestinationChannel::DONE_CALLBACK;
 
-  graph->addEdge(interpolator_idx,
-                 GraphTaskflow::SourceChannel::ON_FAILURE,
-                 -1,
-                 GraphTaskflow::DestinationChannel::ERROR_CALLBACK);
+  graph->addEdge(interpolator_idx, ON_SUCCESS, ompl_idx, PROCESS_NODE);
+  graph->addEdge(interpolator_idx, ON_FAILURE, -1, ERROR_CALLBACK);
 
-  graph->addEdge(
-      ompl_idx, GraphTaskflow::SourceChannel::ON_SUCCESS, trajopt_idx, GraphTaskflow::DestinationChannel::PROCESS_NODE);
+  graph->addEdge(ompl_idx, ON_SUCCESS, trajopt_idx, PROCESS_NODE);
+  graph->addEdge(ompl_idx, ON_FAILURE, -1, ERROR_CALLBACK);
 
-  graph->addEdge(
-      ompl_idx, GraphTaskflow::SourceChannel::ON_FAILURE, -1, GraphTaskflow::DestinationChannel::ERROR_CALLBACK);
+  graph->addEdge(trajopt_idx, ON_SUCCESS, contact_check_idx, PROCESS_NODE);
+  graph->addEdge(trajopt_idx, ON_FAILURE, -1, ERROR_CALLBACK);
 
-  graph->addEdge(trajopt_idx,
-                 GraphTaskflow::SourceChannel::ON_SUCCESS,
-                 contact_check_idx,
-                 GraphTaskflow::DestinationChannel::PROCESS_NODE);
+  graph->addEdge(contact_check_idx, ON_SUCCESS, time_parameterization_idx, PROCESS_NODE);
+  graph->addEdge(contact_check_idx, ON_FAILURE, -1, ERROR_CALLBACK);
 
-  graph->addEdge(
-      trajopt_idx, GraphTaskflow::SourceChannel::ON_FAILURE, -1, GraphTaskflow::DestinationChannel::ERROR_CALLBACK);
-
-  graph->addEdge(contact_check_idx,
-                 GraphTaskflow::SourceChannel::ON_SUCCESS,
-                 time_parameterization_idx,
-                 GraphTaskflow::DestinationChannel::PROCESS_NODE);
-
-  graph->addEdge(contact_check_idx,
-                 GraphTaskflow::SourceChannel::ON_FAILURE,
-                 -1,
-                 GraphTaskflow::DestinationChannel::ERROR_CALLBACK);
-
-  graph->addEdge(time_parameterization_idx,
-                 GraphTaskflow::SourceChannel::ON_SUCCESS,
-                 -1,
-                 GraphTaskflow::DestinationChannel::DONE_CALLBACK);
-
-  graph->addEdge(time_parameterization_idx,
-                 GraphTaskflow::SourceChannel::ON_FAILURE,
-                 -1,
-                 GraphTaskflow::DestinationChannel::ERROR_CALLBACK);
+  graph->addEdge(time_parameterization_idx, ON_SUCCESS, -1, DONE_CALLBACK);
+  graph->addEdge(time_parameterization_idx, ON_FAILURE, -1, ERROR_CALLBACK);
 
   return graph;
 }

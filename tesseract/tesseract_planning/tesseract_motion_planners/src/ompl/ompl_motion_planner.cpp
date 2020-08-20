@@ -117,7 +117,7 @@ tesseract_common::StatusCode OMPLMotionPlanner::solve(const PlannerRequest& requ
           tesseract_common::StatusCode(OMPLMotionPlannerStatusCategory::ErrorInvalidInput, status_category_);
       return response.status;
     }
-    problem = problem_generator(request, plan_profiles);
+    problem = problem_generator(name_, request, plan_profiles);
     response.data = std::make_shared<std::vector<OMPLProblem::Ptr>>(problem);
   }
 

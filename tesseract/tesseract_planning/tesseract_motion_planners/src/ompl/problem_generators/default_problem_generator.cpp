@@ -50,7 +50,8 @@ OMPLProblem::Ptr CreateOMPLSubProblem(const PlannerRequest& request,
   return sub_prob;
 }
 
-std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const PlannerRequest& request,
+std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const std::string& name,
+                                                          const PlannerRequest& request,
                                                           const OMPLPlanProfileMap& plan_profiles)
 {
   std::vector<OMPLProblem::Ptr> problem;
@@ -148,6 +149,15 @@ std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const PlannerRequest& 
       std::string profile = plan_instruction->getProfile();
       if (profile.empty())
         profile = "DEFAULT";
+
+      // Check for remapping of profile
+      auto remap = request.plan_profile_remapping.find(name);
+      if (remap != request.plan_profile_remapping.end())
+      {
+        auto p = remap->second.find(profile);
+        if (p != remap->second.end())
+          profile = p->second;
+      }
 
       typename OMPLPlanProfile::Ptr cur_plan_profile{ nullptr };
       auto it = plan_profiles.find(profile);

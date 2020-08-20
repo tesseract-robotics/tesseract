@@ -118,6 +118,8 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input) const
   request.env_state = input.tesseract->getEnvironmentConst()->getCurrentState();
   request.tesseract = input.tesseract;
   request.instructions = instructions;
+  request.plan_profile_remapping = input.plan_profile_remapping;
+  request.composite_profile_remapping = input.composite_profile_remapping;
 
   // --------------------
   // Fill out response
