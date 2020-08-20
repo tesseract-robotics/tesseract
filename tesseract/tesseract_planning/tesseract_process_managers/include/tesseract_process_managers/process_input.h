@@ -32,6 +32,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_command_language/command_language.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_motion_planners/core/types.h>
+
 namespace tesseract_planning
 {
 /**
@@ -49,6 +51,21 @@ struct ProcessInput
                const Instruction* instruction,
                const ManipulatorInfo& manip_info,
                Instruction* seed);
+
+  ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
+               const Instruction* instruction,
+               const ManipulatorInfo& manip_info,
+               const PlannerProfileRemapping& plan_profile_remapping,
+               const PlannerProfileRemapping& composite_profile_remapping,
+               Instruction* seed);
+
+  ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
+               const Instruction* instruction,
+               const PlannerProfileRemapping& plan_profile_remapping,
+               const PlannerProfileRemapping& composite_profile_remapping,
+               Instruction* seed);
+
+  ProcessInput(tesseract::Tesseract::ConstPtr tesseract, const Instruction* instruction, Instruction* seed);
 
   /**
    * @brief Creates a sub-ProcessInput from instruction[index] and seed[index]
@@ -72,6 +89,18 @@ struct ProcessInput
 
   /** @brief Global Manipulator Information */
   const ManipulatorInfo& manip_info;
+
+  /**
+   * @brief This allows the remapping of the Plan Profile identified in the command language to a specific profile for a
+   * given motion planner.
+   */
+  const PlannerProfileRemapping& plan_profile_remapping;
+
+  /**
+   * @brief This allows the remapping of the Composite Profile identified in the command language to a specific profile
+   * for a given motion planner.
+   */
+  const PlannerProfileRemapping& composite_profile_remapping;
 
   /** @brief Results/Seed for this process */
   Instruction* results;

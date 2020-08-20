@@ -40,6 +40,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
+using OMPLProblemGeneratorFn =
+    std::function<std::vector<OMPLProblem::Ptr>(const std::string&, const PlannerRequest&, const OMPLPlanProfileMap&)>;
 /**
  * @brief This planner is intended to provide an easy to use interface to OMPL for freespace planning. It is made to
  * take a start and end point and automate the generation of the OMPL problem.
@@ -50,7 +52,7 @@ public:
   /** @brief Construct a planner */
   OMPLMotionPlanner(std::string name = "OMPL");
 
-  std::function<std::vector<OMPLProblem::Ptr>(const PlannerRequest&, const OMPLPlanProfileMap&)> problem_generator;
+  OMPLProblemGeneratorFn problem_generator;
 
   /**
    * @brief The available plan profiles

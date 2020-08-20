@@ -38,11 +38,58 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
+static const ManipulatorInfo EMPTY_MANIPULATOR_INFO;
+static const PlannerProfileRemapping EMPTY_PROFILE_MAPPING;
+
 ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                            const Instruction* instruction,
                            const ManipulatorInfo& manip_info,
                            Instruction* seed)
-  : tesseract(std::move(tesseract)), instruction(instruction), manip_info(manip_info), results(seed)
+  : tesseract(std::move(tesseract))
+  , instruction(instruction)
+  , manip_info(manip_info)
+  , plan_profile_remapping(EMPTY_PROFILE_MAPPING)
+  , composite_profile_remapping(EMPTY_PROFILE_MAPPING)
+  , results(seed)
+{
+}
+
+ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
+                           const Instruction* instruction,
+                           const ManipulatorInfo& manip_info,
+                           const PlannerProfileRemapping& plan_profile_remapping,
+                           const PlannerProfileRemapping& composite_profile_remapping,
+                           Instruction* seed)
+  : tesseract(std::move(tesseract))
+  , instruction(instruction)
+  , manip_info(manip_info)
+  , plan_profile_remapping(plan_profile_remapping)
+  , composite_profile_remapping(composite_profile_remapping)
+  , results(seed)
+{
+}
+
+ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
+                           const Instruction* instruction,
+                           const PlannerProfileRemapping& plan_profile_remapping,
+                           const PlannerProfileRemapping& composite_profile_remapping,
+                           Instruction* seed)
+  : tesseract(std::move(tesseract))
+  , instruction(instruction)
+  , manip_info(EMPTY_MANIPULATOR_INFO)
+  , plan_profile_remapping(plan_profile_remapping)
+  , composite_profile_remapping(composite_profile_remapping)
+  , results(seed)
+{
+}
+
+ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract, const Instruction* instruction, Instruction* seed)
+  : tesseract(std::move(tesseract))
+  , instruction(instruction)
+  , manip_info(EMPTY_MANIPULATOR_INFO)
+  , plan_profile_remapping(EMPTY_PROFILE_MAPPING)
+  , composite_profile_remapping(EMPTY_PROFILE_MAPPING)
+  , results(seed)
 {
 }
 
