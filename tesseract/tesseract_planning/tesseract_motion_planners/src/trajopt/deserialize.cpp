@@ -39,7 +39,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-
 TrajOptDefaultCompositeProfile trajoptCompositeParser(const tinyxml2::XMLElement& xml_element)
 {
   const tinyxml2::XMLElement* trajopt_composite_element = xml_element.FirstChildElement("TrajoptCompositeProfile");

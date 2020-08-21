@@ -43,7 +43,6 @@ static const double LONGEST_VALID_SEGMENT_FRACTION_DEFAULT = 0.01;
 
 namespace tesseract_planning
 {
-
 TrajOptDefaultCompositeProfile::TrajOptDefaultCompositeProfile(const tinyxml2::XMLElement& xml_element)
 {
   const tinyxml2::XMLElement* contact_test_type_element = xml_element.FirstChildElement("ContactTestType");
@@ -53,8 +52,10 @@ TrajOptDefaultCompositeProfile::TrajOptDefaultCompositeProfile(const tinyxml2::X
   const tinyxml2::XMLElement* smooth_accelerations_element = xml_element.FirstChildElement("SmoothAccelerations");
   const tinyxml2::XMLElement* smooth_jerks_element = xml_element.FirstChildElement("SmoothJerks");
   const tinyxml2::XMLElement* avoid_singularities_element = xml_element.FirstChildElement("AvoidSingularity");
-  const tinyxml2::XMLElement* longest_valid_seg_fraction_element = xml_element.FirstChildElement("LongestValidSegmentFraction");
-  const tinyxml2::XMLElement* longest_valid_seg_length_element = xml_element.FirstChildElement("LongestValidSegmentLength");
+  const tinyxml2::XMLElement* longest_valid_seg_fraction_element = xml_element.FirstChildElement("LongestValidSegmentFr"
+                                                                                                 "action");
+  const tinyxml2::XMLElement* longest_valid_seg_length_element = xml_element.FirstChildElement("LongestValidSegmentLeng"
+                                                                                               "th");
 
   tinyxml2::XMLError status;
 
@@ -81,26 +82,19 @@ TrajOptDefaultCompositeProfile::TrajOptDefaultCompositeProfile(const tinyxml2::X
   std::size_t coeff_length = 0;
   if (smooth_velocities_element)
   {
-    TrajOptDefaultCompositeProfile::smoothMotionTerms(*smooth_velocities_element,
-                                                      smooth_velocities,
-                                                      velocity_coeff,
-                                                      coeff_length);
+    TrajOptDefaultCompositeProfile::smoothMotionTerms(
+        *smooth_velocities_element, smooth_velocities, velocity_coeff, coeff_length);
   }
 
   if (smooth_accelerations_element)
   {
-    TrajOptDefaultCompositeProfile::smoothMotionTerms(*smooth_accelerations_element,
-                                                      smooth_accelerations,
-                                                      acceleration_coeff,
-                                                      coeff_length);
+    TrajOptDefaultCompositeProfile::smoothMotionTerms(
+        *smooth_accelerations_element, smooth_accelerations, acceleration_coeff, coeff_length);
   }
 
   if (smooth_jerks_element)
   {
-    TrajOptDefaultCompositeProfile::smoothMotionTerms(*smooth_jerks_element,
-                                                      smooth_jerks,
-                                                      jerk_coeff,
-                                                      coeff_length);
+    TrajOptDefaultCompositeProfile::smoothMotionTerms(*smooth_jerks_element, smooth_jerks, jerk_coeff, coeff_length);
   }
 
   if (avoid_singularities_element)
@@ -154,7 +148,6 @@ TrajOptDefaultCompositeProfile::TrajOptDefaultCompositeProfile(const tinyxml2::X
 
     tesseract_common::toNumeric<double>(long_valid_seg_len_string, longest_valid_segment_length);
   }
-
 }
 
 void TrajOptDefaultCompositeProfile::smoothMotionTerms(const tinyxml2::XMLElement& xml_element,

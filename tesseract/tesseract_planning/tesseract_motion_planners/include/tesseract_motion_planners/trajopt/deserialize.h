@@ -33,7 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-//using TrajoptCompositeParserFn = std::function<TrajOptCompositeProfile(const tinyxml2::XMLElement&)>;
+// using TrajoptCompositeParserFn = std::function<TrajOptCompositeProfile(const tinyxml2::XMLElement&)>;
 
 TrajOptDefaultCompositeProfile trajoptCompositeParser(const tinyxml2::XMLElement& xml_element);
 

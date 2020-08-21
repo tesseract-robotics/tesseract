@@ -35,7 +35,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-
 CollisionCostConfig::CollisionCostConfig(const tinyxml2::XMLElement& xml_element)
 {
   const tinyxml2::XMLElement* enabled_element = xml_element.FirstChildElement("Enabled");
@@ -109,140 +108,138 @@ CollisionCostConfig::CollisionCostConfig(const tinyxml2::XMLElement& xml_element
   }
 }
 
- tinyxml2::XMLElement* CollisionCostConfig::toXML(tinyxml2::XMLDocument& doc) const
- {
-   tinyxml2::XMLElement* xml_coll_cost_config = doc.NewElement("CollisionCostConfig");
+tinyxml2::XMLElement* CollisionCostConfig::toXML(tinyxml2::XMLDocument& doc) const
+{
+  tinyxml2::XMLElement* xml_coll_cost_config = doc.NewElement("CollisionCostConfig");
 
-   tinyxml2::XMLElement* xml_enabled = doc.NewElement("Enabled");
-   xml_enabled->SetText(enabled);
-   xml_coll_cost_config->InsertEndChild(xml_enabled);
+  tinyxml2::XMLElement* xml_enabled = doc.NewElement("Enabled");
+  xml_enabled->SetText(enabled);
+  xml_coll_cost_config->InsertEndChild(xml_enabled);
 
-   tinyxml2::XMLElement* xml_use_weighted_sum = doc.NewElement("UseWeightedSum");
-   xml_use_weighted_sum->SetText(use_weighted_sum);
-   xml_coll_cost_config->InsertEndChild(xml_use_weighted_sum);
+  tinyxml2::XMLElement* xml_use_weighted_sum = doc.NewElement("UseWeightedSum");
+  xml_use_weighted_sum->SetText(use_weighted_sum);
+  xml_coll_cost_config->InsertEndChild(xml_use_weighted_sum);
 
-   tinyxml2::XMLElement* xml_type = doc.NewElement("CollisionEvaluator");
-   xml_type->SetAttribute("type", std::to_string(static_cast<int>(type)).c_str());
-   xml_coll_cost_config->InsertEndChild(xml_type);
+  tinyxml2::XMLElement* xml_type = doc.NewElement("CollisionEvaluator");
+  xml_type->SetAttribute("type", std::to_string(static_cast<int>(type)).c_str());
+  xml_coll_cost_config->InsertEndChild(xml_type);
 
-   tinyxml2::XMLElement* xml_buffer_margin = doc.NewElement("BufferMargin");
-   xml_buffer_margin->SetText(buffer_margin);
-   xml_coll_cost_config->InsertEndChild(xml_buffer_margin);
+  tinyxml2::XMLElement* xml_buffer_margin = doc.NewElement("BufferMargin");
+  xml_buffer_margin->SetText(buffer_margin);
+  xml_coll_cost_config->InsertEndChild(xml_buffer_margin);
 
-   tinyxml2::XMLElement* xml_safety_margin_buffer = doc.NewElement("SafetyMarginBuffer");
-   xml_safety_margin_buffer->SetText(safety_margin_buffer);
-   xml_coll_cost_config->InsertEndChild(xml_safety_margin_buffer);
+  tinyxml2::XMLElement* xml_safety_margin_buffer = doc.NewElement("SafetyMarginBuffer");
+  xml_safety_margin_buffer->SetText(safety_margin_buffer);
+  xml_coll_cost_config->InsertEndChild(xml_safety_margin_buffer);
 
-   tinyxml2::XMLElement* xml_coeff = doc.NewElement("Coefficient");
-   xml_coeff->SetText(coeff);
-   xml_coll_cost_config->InsertEndChild(xml_coeff);
+  tinyxml2::XMLElement* xml_coeff = doc.NewElement("Coefficient");
+  xml_coeff->SetText(coeff);
+  xml_coll_cost_config->InsertEndChild(xml_coeff);
 
-   return xml_coll_cost_config;
- }
-
- CollisionConstraintConfig::CollisionConstraintConfig(const tinyxml2::XMLElement& xml_element)
- {
-   const tinyxml2::XMLElement* enabled_element = xml_element.FirstChildElement("Enabled");
-   const tinyxml2::XMLElement* use_weighted_sum_element = xml_element.FirstChildElement("UseWeightedSum");
-   const tinyxml2::XMLElement* type_element = xml_element.FirstChildElement("CollisionEvaluator");
-   const tinyxml2::XMLElement* safety_margin_element = xml_element.FirstChildElement("SafetyMargin");
-   const tinyxml2::XMLElement* safety_margin_buffer_element = xml_element.FirstChildElement("SafetyMarginBuffer");
-   const tinyxml2::XMLElement* coeff_element = xml_element.FirstChildElement("Coefficient");
-
-   if (!enabled_element)
-     throw std::runtime_error("CollisionConstraintConfig: Must have Enabled element.");
-
-   tinyxml2::XMLError status = enabled_element->QueryBoolText(&enabled);
-   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-     throw std::runtime_error("CollisionConstraintConfig: Error parsing Enabled string");
-
-   if (use_weighted_sum_element)
-   {
-     status = use_weighted_sum_element->QueryBoolText(&use_weighted_sum);
-     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-       throw std::runtime_error("CollisionConstraintConfig: Error parsing UseWeightedSum string");
-   }
-
-   if (type_element)
-   {
-     int coll_type = static_cast<int>(trajopt::CollisionEvaluatorType::CAST_CONTINUOUS);
-     status = type_element->QueryIntAttribute("type", &coll_type);
-     if (status != tinyxml2::XML_SUCCESS)
-       throw std::runtime_error("CollisionConstraintConfig: Error parsing CollisionEvaluator type attribute.");
-
-     type = static_cast<trajopt::CollisionEvaluatorType>(coll_type);
-   }
-
-   if (safety_margin_element)
-   {
-     std::string safety_margin_string;
-     status = tesseract_common::QueryStringText(safety_margin_element, safety_margin_string);
-     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-       throw std::runtime_error("CollisionConstraintConfig: Error parsing SafetyMargin string");
-
-     if (!tesseract_common::isNumeric(safety_margin_string))
-       throw std::runtime_error("CollisionConstraintConfig: SafetyMargin is not a numeric values.");
-
-     tesseract_common::toNumeric<double>(safety_margin_string, safety_margin);
-   }
-
-   if (safety_margin_buffer_element)
-   {
-     std::string safety_margin_buffer_string;
-     status = tesseract_common::QueryStringText(safety_margin_buffer_element, safety_margin_buffer_string);
-     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-       throw std::runtime_error("CollisionConstraintConfig: Error parsing SafetyMarginBuffer string");
-
-     if (!tesseract_common::isNumeric(safety_margin_buffer_string))
-       throw std::runtime_error("CollisionConstraintConfig: SafetyMarginBuffer is not a numeric values.");
-
-     tesseract_common::toNumeric<double>(safety_margin_buffer_string, safety_margin_buffer);
-   }
-
-   if (coeff_element)
-   {
-     std::string coeff_string;
-     status = tesseract_common::QueryStringText(coeff_element, coeff_string);
-     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-       throw std::runtime_error("CollisionConstraintConfig: Error parsing Coefficient string");
-
-     if (!tesseract_common::isNumeric(coeff_string))
-       throw std::runtime_error("CollisionConstraintConfig: Coefficient is not a numeric values.");
-
-     tesseract_common::toNumeric<double>(coeff_string, coeff);
-   }
- }
-
- tinyxml2::XMLElement* CollisionConstraintConfig::toXML(tinyxml2::XMLDocument& doc) const
- {
-   tinyxml2::XMLElement* xml_coll_cnt_config = doc.NewElement("CollisionConstraintConfig");
-
-   tinyxml2::XMLElement* xml_enabled = doc.NewElement("Enabled");
-   xml_enabled->SetText(enabled);
-   xml_coll_cnt_config->InsertEndChild(xml_enabled);
-
-   tinyxml2::XMLElement* xml_use_weighted_sum = doc.NewElement("UseWeightedSum");
-   xml_use_weighted_sum->SetText(use_weighted_sum);
-   xml_coll_cnt_config->InsertEndChild(xml_use_weighted_sum);
-
-   tinyxml2::XMLElement* xml_type = doc.NewElement("CollisionEvaluator");
-   xml_type->SetAttribute("type", std::to_string(static_cast<int>(type)).c_str());
-   xml_coll_cnt_config->InsertEndChild(xml_type);
-
-   tinyxml2::XMLElement* xml_safety_margin = doc.NewElement("SafetyMargin");
-   xml_safety_margin->SetText(safety_margin);
-   xml_coll_cnt_config->InsertEndChild(xml_safety_margin);
-
-   tinyxml2::XMLElement* xml_safety_margin_buffer = doc.NewElement("SafetyMarginBuffer");
-   xml_safety_margin_buffer->SetText(safety_margin_buffer);
-   xml_coll_cnt_config->InsertEndChild(xml_safety_margin_buffer);
-
-   tinyxml2::XMLElement* xml_coeff = doc.NewElement("Coefficient");
-   xml_coeff->SetText(coeff);
-   xml_coll_cnt_config->InsertEndChild(xml_coeff);
-
-   return xml_coll_cnt_config;
- }
+  return xml_coll_cost_config;
 }
 
+CollisionConstraintConfig::CollisionConstraintConfig(const tinyxml2::XMLElement& xml_element)
+{
+  const tinyxml2::XMLElement* enabled_element = xml_element.FirstChildElement("Enabled");
+  const tinyxml2::XMLElement* use_weighted_sum_element = xml_element.FirstChildElement("UseWeightedSum");
+  const tinyxml2::XMLElement* type_element = xml_element.FirstChildElement("CollisionEvaluator");
+  const tinyxml2::XMLElement* safety_margin_element = xml_element.FirstChildElement("SafetyMargin");
+  const tinyxml2::XMLElement* safety_margin_buffer_element = xml_element.FirstChildElement("SafetyMarginBuffer");
+  const tinyxml2::XMLElement* coeff_element = xml_element.FirstChildElement("Coefficient");
 
+  if (!enabled_element)
+    throw std::runtime_error("CollisionConstraintConfig: Must have Enabled element.");
+
+  tinyxml2::XMLError status = enabled_element->QueryBoolText(&enabled);
+  if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+    throw std::runtime_error("CollisionConstraintConfig: Error parsing Enabled string");
+
+  if (use_weighted_sum_element)
+  {
+    status = use_weighted_sum_element->QueryBoolText(&use_weighted_sum);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("CollisionConstraintConfig: Error parsing UseWeightedSum string");
+  }
+
+  if (type_element)
+  {
+    int coll_type = static_cast<int>(trajopt::CollisionEvaluatorType::CAST_CONTINUOUS);
+    status = type_element->QueryIntAttribute("type", &coll_type);
+    if (status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("CollisionConstraintConfig: Error parsing CollisionEvaluator type attribute.");
+
+    type = static_cast<trajopt::CollisionEvaluatorType>(coll_type);
+  }
+
+  if (safety_margin_element)
+  {
+    std::string safety_margin_string;
+    status = tesseract_common::QueryStringText(safety_margin_element, safety_margin_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("CollisionConstraintConfig: Error parsing SafetyMargin string");
+
+    if (!tesseract_common::isNumeric(safety_margin_string))
+      throw std::runtime_error("CollisionConstraintConfig: SafetyMargin is not a numeric values.");
+
+    tesseract_common::toNumeric<double>(safety_margin_string, safety_margin);
+  }
+
+  if (safety_margin_buffer_element)
+  {
+    std::string safety_margin_buffer_string;
+    status = tesseract_common::QueryStringText(safety_margin_buffer_element, safety_margin_buffer_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("CollisionConstraintConfig: Error parsing SafetyMarginBuffer string");
+
+    if (!tesseract_common::isNumeric(safety_margin_buffer_string))
+      throw std::runtime_error("CollisionConstraintConfig: SafetyMarginBuffer is not a numeric values.");
+
+    tesseract_common::toNumeric<double>(safety_margin_buffer_string, safety_margin_buffer);
+  }
+
+  if (coeff_element)
+  {
+    std::string coeff_string;
+    status = tesseract_common::QueryStringText(coeff_element, coeff_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("CollisionConstraintConfig: Error parsing Coefficient string");
+
+    if (!tesseract_common::isNumeric(coeff_string))
+      throw std::runtime_error("CollisionConstraintConfig: Coefficient is not a numeric values.");
+
+    tesseract_common::toNumeric<double>(coeff_string, coeff);
+  }
+}
+
+tinyxml2::XMLElement* CollisionConstraintConfig::toXML(tinyxml2::XMLDocument& doc) const
+{
+  tinyxml2::XMLElement* xml_coll_cnt_config = doc.NewElement("CollisionConstraintConfig");
+
+  tinyxml2::XMLElement* xml_enabled = doc.NewElement("Enabled");
+  xml_enabled->SetText(enabled);
+  xml_coll_cnt_config->InsertEndChild(xml_enabled);
+
+  tinyxml2::XMLElement* xml_use_weighted_sum = doc.NewElement("UseWeightedSum");
+  xml_use_weighted_sum->SetText(use_weighted_sum);
+  xml_coll_cnt_config->InsertEndChild(xml_use_weighted_sum);
+
+  tinyxml2::XMLElement* xml_type = doc.NewElement("CollisionEvaluator");
+  xml_type->SetAttribute("type", std::to_string(static_cast<int>(type)).c_str());
+  xml_coll_cnt_config->InsertEndChild(xml_type);
+
+  tinyxml2::XMLElement* xml_safety_margin = doc.NewElement("SafetyMargin");
+  xml_safety_margin->SetText(safety_margin);
+  xml_coll_cnt_config->InsertEndChild(xml_safety_margin);
+
+  tinyxml2::XMLElement* xml_safety_margin_buffer = doc.NewElement("SafetyMarginBuffer");
+  xml_safety_margin_buffer->SetText(safety_margin_buffer);
+  xml_coll_cnt_config->InsertEndChild(xml_safety_margin_buffer);
+
+  tinyxml2::XMLElement* xml_coeff = doc.NewElement("Coefficient");
+  xml_coeff->SetText(coeff);
+  xml_coll_cnt_config->InsertEndChild(xml_coeff);
+
+  return xml_coll_cnt_config;
+}
+}  // namespace tesseract_planning
