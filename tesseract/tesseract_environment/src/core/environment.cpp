@@ -774,11 +774,21 @@ Environment::Ptr Environment::clone() const
   cloned_env->joint_names_ = joint_names_;
   cloned_env->active_link_names_ = active_link_names_;
   cloned_env->active_joint_names_ = active_joint_names_;
-  cloned_env->is_contact_allowed_fn_ = is_contact_allowed_fn_;
+  cloned_env->is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed,
+                                                 cloned_env->scene_graph_,
+                                                 std::placeholders::_1,
+                                                 std::placeholders::_2);
+
   if (discrete_manager_)
+  {
     cloned_env->discrete_manager_ = discrete_manager_->clone();
+    cloned_env->discrete_manager_->setIsContactAllowedFn(cloned_env->is_contact_allowed_fn_);
+  }
   if (continuous_manager_)
+  {
     cloned_env->continuous_manager_ = continuous_manager_->clone();
+    cloned_env->continuous_manager_->setIsContactAllowedFn(cloned_env->is_contact_allowed_fn_);
+  }
   cloned_env->discrete_manager_name_ = discrete_manager_name_;
   cloned_env->continuous_manager_name_ = continuous_manager_name_;
   cloned_env->discrete_factory_ = discrete_factory_;
