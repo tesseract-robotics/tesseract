@@ -116,6 +116,13 @@ public:
     lookup_table_.insert(acm.getAllAllowedCollisions().begin(), acm.getAllAllowedCollisions().end());
   }
 
+  friend std::ostream& operator<<(std::ostream& os, const AllowedCollisionMatrix& acm)
+  {
+    for (const auto& pair : acm.getAllAllowedCollisions())
+      os << "link=" << pair.first.first << " link=" << pair.first.second << " reason=" << pair.second << std::endl;
+    return os;
+  }
+
 private:
   AllowedCollisionEntries lookup_table_;
 
