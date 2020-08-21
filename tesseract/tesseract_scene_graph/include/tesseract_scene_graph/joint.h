@@ -87,6 +87,13 @@ public:
     velocity = 0;
     acceleration = 0;
   }
+
+  friend std::ostream& operator<<(std::ostream& os, const JointLimits& limits)
+  {
+    os << "lower=" << limits.lower << " upper=" << limits.upper << " effort=" << limits.effort
+       << " velocity=" << limits.velocity << " acceleration=" << limits.acceleration;
+    return os;
+  };
 };
 
 /// \brief Parameters for Joint Safety Controllers
@@ -143,6 +150,13 @@ public:
     k_position = 0;
     k_velocity = 0;
   }
+
+  friend std::ostream& operator<<(std::ostream& os, const JointSafety& safety)
+  {
+    os << "soft_upper_limit=" << safety.soft_upper_limit << " soft_lower_limit=" << safety.soft_lower_limit
+       << " k_position=" << safety.k_position << " k_velocity=" << safety.k_velocity;
+    return os;
+  };
 };
 
 class JointCalibration
@@ -161,6 +175,13 @@ public:
     rising = 0;
     falling = 0;
   }
+
+  friend std::ostream& operator<<(std::ostream& os, const JointCalibration& calibration)
+  {
+    os << "reference_position=" << calibration.reference_position << " rising=" << calibration.rising
+       << " falling=" << calibration.falling;
+    return os;
+  };
 };
 
 class JointMimic
@@ -180,6 +201,12 @@ public:
     multiplier = 1.0;
     joint_name.clear();
   }
+
+  friend std::ostream& operator<<(std::ostream& os, const JointMimic& mimic)
+  {
+    os << "joint_name=" << mimic.joint_name << " offset=" << mimic.offset << " multiplier=" << mimic.multiplier;
+    return os;
+  };
 };
 
 enum class JointType
