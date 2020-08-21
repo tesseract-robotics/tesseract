@@ -94,6 +94,8 @@ public:
              const std::vector<std::string>& active_links,
              const std::vector<int>& fixed_indices) override;
 
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
+
 protected:
   void addCollisionCost(trajopt::ProblemConstructionInfo& pci,
                         int start_index,

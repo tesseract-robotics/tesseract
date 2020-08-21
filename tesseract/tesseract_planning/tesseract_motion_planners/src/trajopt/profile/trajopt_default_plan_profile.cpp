@@ -84,4 +84,33 @@ void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
     pci.cost_infos.push_back(ti);
 }
 
+tinyxml2::XMLElement* TrajOptDefaultPlanProfile::toXML(tinyxml2::XMLDocument& doc) const
+{
+  Eigen::IOFormat eigen_format(Eigen::StreamPrecision, 0, " ", " ");
+
+  tinyxml2::XMLElement* xml_planner = doc.NewElement("Planner");
+  xml_planner->SetAttribute("type", std::to_string(1).c_str());
+
+  tinyxml2::XMLElement* xml_trajopt = doc.NewElement("TrajoptPlanProfile");
+
+  tinyxml2::XMLElement* xml_cart_coeff = doc.NewElement("CartesianCoefficients");
+  std::stringstream cart_coeff;
+  cart_coeff << cartesian_coeff.format(eigen_format);
+  xml_cart_coeff->SetText(cart_coeff.str().c_str());
+  xml_trajopt->InsertEndChild(xml_cart_coeff);
+
+  tinyxml2::XMLElement* xml_joint_coeff = doc.NewElement("JointCoefficients");
+  std::stringstream jnt_coeff;
+  jnt_coeff << joint_coeff.format(eigen_format);
+  xml_joint_coeff->SetText(jnt_coeff.str().c_str());
+  xml_trajopt->InsertEndChild(xml_joint_coeff);
+
+  tinyxml2::XMLElement* xml_term_type = doc.NewElement("TermType");
+  xml_term_type->SetText(static_cast<int>(term_type));
+  xml_trajopt->InsertEndChild(xml_term_type);
+
+  xml_planner->InsertEndChild(xml_trajopt);
+
+  return xml_planner;
+}
 }  // namespace tesseract_planning

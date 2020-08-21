@@ -74,6 +74,88 @@ void TrajOptDefaultCompositeProfile::apply(trajopt::ProblemConstructionInfo& pci
     addAvoidSingularity(pci, start_index, end_index, pci.kin->getTipLinkName(), fixed_indices);
 }
 
+tinyxml2::XMLElement* TrajOptDefaultCompositeProfile::toXML(tinyxml2::XMLDocument& doc) const
+{
+  Eigen::IOFormat eigen_format(Eigen::StreamPrecision, 0, " ", " ");
+
+  tinyxml2::XMLElement* xml_planner = doc.NewElement("Planner");
+  xml_planner->SetAttribute("type", std::to_string(1).c_str());
+
+  tinyxml2::XMLElement* xml_trajopt = doc.NewElement("TrajoptCompositeProfile");
+
+  tinyxml2::XMLElement* xml_contact_test_type = doc.NewElement("ContactTestType");
+  xml_contact_test_type->SetText(static_cast<int>(contact_test_type));
+  xml_trajopt->InsertEndChild(xml_contact_test_type);
+
+  tinyxml2::XMLElement* xml_collision_cost_info = collision_cost_config.toXML(doc);
+  xml_trajopt->InsertEndChild(xml_collision_cost_info);
+
+  tinyxml2::XMLElement* xml_collision_constraint_info = collision_constraint_config.toXML(doc);
+  xml_trajopt->InsertEndChild(xml_collision_constraint_info);
+
+  tinyxml2::XMLElement* xml_smooth_velocities = doc.NewElement("SmoothVelocities");
+
+  tinyxml2::XMLElement* xml_sv_enabled = doc.NewElement("Enabled");
+  xml_sv_enabled->SetText(smooth_velocities);
+  xml_smooth_velocities->InsertEndChild(xml_sv_enabled);
+
+  tinyxml2::XMLElement* xml_sv_coeff = doc.NewElement("Coefficients");
+  std::stringstream sv_coeff;
+  sv_coeff << velocity_coeff.format(eigen_format);
+  xml_sv_coeff->SetText(sv_coeff.str().c_str());
+  xml_smooth_velocities->InsertEndChild(xml_sv_coeff);
+  xml_trajopt->InsertEndChild(xml_smooth_velocities);
+
+  tinyxml2::XMLElement* xml_smooth_accelerations = doc.NewElement("SmoothAccelerations");
+
+  tinyxml2::XMLElement* xml_sa_enabled = doc.NewElement("Enabled");
+  xml_sa_enabled->SetText(smooth_accelerations);
+  xml_smooth_accelerations->InsertEndChild(xml_sa_enabled);
+
+  tinyxml2::XMLElement* xml_sa_coeff = doc.NewElement("Coefficients");
+  std::stringstream sa_coeff;
+  sa_coeff << acceleration_coeff.format(eigen_format);
+  xml_sa_coeff->SetText(sa_coeff.str().c_str());
+  xml_smooth_accelerations->InsertEndChild(xml_sa_coeff);
+  xml_trajopt->InsertEndChild(xml_smooth_accelerations);
+
+  tinyxml2::XMLElement* xml_smooth_jerks = doc.NewElement("SmoothJerks");
+
+  tinyxml2::XMLElement* xml_sj_enabled = doc.NewElement("Enabled");
+  xml_sj_enabled->SetText(smooth_jerks);
+  xml_smooth_jerks->InsertEndChild(xml_sj_enabled);
+
+  tinyxml2::XMLElement* xml_sj_coeff = doc.NewElement("Coefficients");
+  std::stringstream sj_coeff;
+  sj_coeff << jerk_coeff.format(eigen_format);
+  xml_sj_coeff->SetText(sj_coeff.str().c_str());
+  xml_smooth_jerks->InsertEndChild(xml_sj_coeff);
+  xml_trajopt->InsertEndChild(xml_smooth_jerks);
+
+  tinyxml2::XMLElement* xml_avoid_singularity = doc.NewElement("AvoidSingularity");
+
+  tinyxml2::XMLElement* xml_as_enabled = doc.NewElement("Enabled");
+  xml_as_enabled->SetText(avoid_singularity);
+  xml_avoid_singularity->InsertEndChild(xml_as_enabled);
+
+  tinyxml2::XMLElement* xml_as_coeff = doc.NewElement("Coefficient");
+  xml_as_coeff->SetText(avoid_singularity_coeff);
+  xml_avoid_singularity->InsertEndChild(xml_as_coeff);
+  xml_trajopt->InsertEndChild(xml_avoid_singularity);
+
+  tinyxml2::XMLElement* xml_long_valid_seg_frac = doc.NewElement("LongestValidSegmentFraction");
+  xml_long_valid_seg_frac->SetText(longest_valid_segment_fraction);
+  xml_trajopt->InsertEndChild(xml_long_valid_seg_frac);
+
+  tinyxml2::XMLElement* xml_long_valid_seg_len = doc.NewElement("LongestValidSegmentLength");
+  xml_long_valid_seg_len->SetText(longest_valid_segment_length);
+  xml_trajopt->InsertEndChild(xml_long_valid_seg_len);
+
+  xml_planner->InsertEndChild(xml_trajopt);
+
+  return xml_planner;
+}
+
 void TrajOptDefaultCompositeProfile::addCollisionCost(trajopt::ProblemConstructionInfo& pci,
                                                       int start_index,
                                                       int end_index,

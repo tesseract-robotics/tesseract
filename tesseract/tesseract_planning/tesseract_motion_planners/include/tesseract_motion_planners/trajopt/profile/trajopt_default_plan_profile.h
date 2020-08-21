@@ -82,6 +82,8 @@ public:
              const std::vector<std::string>& active_links,
              int index) override;
 
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
+
 protected:
   void addConstraintErrorFunctions(trajopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;
 

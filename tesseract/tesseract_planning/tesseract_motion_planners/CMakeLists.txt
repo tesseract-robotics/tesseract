@@ -98,11 +98,13 @@ target_include_directories(${PROJECT_NAME}_simple SYSTEM PUBLIC
 
 # Trajopt Planner
 add_library(${PROJECT_NAME}_trajopt SHARED
+  src/trajopt/trajopt_collision_config.cpp
   src/trajopt/trajopt_motion_planner.cpp
   src/trajopt/trajopt_utils.cpp
   src/trajopt/profile/trajopt_default_plan_profile.cpp
   src/trajopt/profile/trajopt_default_composite_profile.cpp
-  src/trajopt/problem_generators/default_problem_generator.cpp)
+  src/trajopt/problem_generators/default_problem_generator.cpp
+  src/trajopt/serialize.cpp)
 target_link_libraries(${PROJECT_NAME}_trajopt PUBLIC ${Boost_LIBRARIES} ${PROJECT_NAME}_core trajopt::trajopt trajopt::trajopt_utils trajopt::trajopt_sco)
 tesseract_target_compile_options(${PROJECT_NAME}_trajopt PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_trajopt)
@@ -129,8 +131,8 @@ install(DIRECTORY include/${PROJECT_NAME}
 
 add_subdirectory(examples)
 
-if (TESSERACT_ENABLE_TESTING)
+#if (TESSERACT_ENABLE_TESTING)
   enable_testing()
   tesseract_add_run_tests_target()
   add_subdirectory(test)
-endif()
+#endif()
