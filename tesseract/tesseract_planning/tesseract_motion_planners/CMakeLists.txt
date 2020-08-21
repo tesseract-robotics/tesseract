@@ -104,7 +104,8 @@ add_library(${PROJECT_NAME}_trajopt SHARED
   src/trajopt/profile/trajopt_default_plan_profile.cpp
   src/trajopt/profile/trajopt_default_composite_profile.cpp
   src/trajopt/problem_generators/default_problem_generator.cpp
-  src/trajopt/serialize.cpp)
+  src/trajopt/serialize.cpp
+  src/trajopt/deserialize.cpp)
 target_link_libraries(${PROJECT_NAME}_trajopt PUBLIC ${Boost_LIBRARIES} ${PROJECT_NAME}_core trajopt::trajopt trajopt::trajopt_utils trajopt::trajopt_sco)
 tesseract_target_compile_options(${PROJECT_NAME}_trajopt PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_trajopt)

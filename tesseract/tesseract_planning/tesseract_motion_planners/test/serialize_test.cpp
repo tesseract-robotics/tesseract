@@ -30,7 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 #include <tesseract_motion_planners/trajopt/serialize.h>
-//#include <tesseract_motion_planners/trajopt/deserialize.h>
+#include <tesseract_motion_planners/trajopt/deserialize.h>
 
 using namespace tesseract_planning;
 
@@ -50,6 +50,8 @@ TrajOptDefaultCompositeProfile getTrajOptCompositeProfile()
   composite_profile.acceleration_coeff = Eigen::VectorXd::Ones(6) * 10;
   composite_profile.jerk_coeff = Eigen::VectorXd::Ones(6) * 10;
 
+  composite_profile.smooth_velocities = false;
+
   return composite_profile;
 }
 
@@ -57,10 +59,14 @@ TEST(TesseractMotionPlannersTrajoptSerializeUnit, SerializeTrajoptDefaultComposi
 {
   // Write program to file
   TrajOptDefaultCompositeProfile profile = getTrajOptCompositeProfile();
-  EXPECT_TRUE(toXMLFile(profile, "/tmp/trajopt_default_composite_example_input.xml"));
+//  EXPECT_TRUE(toXMLFile(profile, "/tmp/trajopt_default_composite_example_input.xml"));
+  EXPECT_TRUE(toXMLFile(profile, "/home/tmarr/Documents/trajopt_default_composite_example_input.xml"));
 
-//  Instruction imported_program = fromXMLFile("/tmp/raster_example_input.xml");
+//  TrajOptDefaultCompositeProfile imported_profile = fromXMLFile("/tmp/raster_example_input.xml");
+  TrajOptDefaultCompositeProfile imported_profile = fromXMLFile("/home/tmarr/Documents/trajopt_default_composite_example_input.xml");
 
+  EXPECT_TRUE(toXMLFile(imported_profile, "/home/tmarr/Documents/trajopt_default_composite_example_input2.xml"));
+  EXPECT_TRUE(profile.smooth_velocities == imported_profile.smooth_velocities);
 //  EXPECT_TRUE(isCompositeInstruction(imported_program));
 //  const auto* ci = imported_program.cast_const<CompositeInstruction>();
 //  EXPECT_EQ(program.size(), ci->size());

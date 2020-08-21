@@ -42,6 +42,9 @@ namespace tesseract_planning
  */
 struct CollisionCostConfig
 {
+  CollisionCostConfig() = default;
+  CollisionCostConfig(const tinyxml2::XMLElement& xml_element);
+
   /** @brief If true, a collision cost term will be added to the problem. Default: true*/
   bool enabled = true;
   /**
@@ -68,6 +71,9 @@ struct CollisionCostConfig
  */
 struct CollisionConstraintConfig
 {
+  CollisionConstraintConfig() = default;
+  CollisionConstraintConfig(const tinyxml2::XMLElement& xml_element);
+
   /** @brief If true, a collision cost term will be added to the problem. Default: true*/
   bool enabled = true;
   /**

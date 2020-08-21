@@ -43,6 +43,158 @@ static const double LONGEST_VALID_SEGMENT_FRACTION_DEFAULT = 0.01;
 
 namespace tesseract_planning
 {
+
+TrajOptDefaultCompositeProfile::TrajOptDefaultCompositeProfile(const tinyxml2::XMLElement& xml_element)
+{
+  const tinyxml2::XMLElement* contact_test_type_element = xml_element.FirstChildElement("ContactTestType");
+  const tinyxml2::XMLElement* collision_cost_config_element = xml_element.FirstChildElement("CollisionCostConfig");
+  const tinyxml2::XMLElement* collision_cnt_config_element = xml_element.FirstChildElement("CollisionConstraintConfig");
+  const tinyxml2::XMLElement* smooth_velocities_element = xml_element.FirstChildElement("SmoothVelocities");
+  const tinyxml2::XMLElement* smooth_accelerations_element = xml_element.FirstChildElement("SmoothAccelerations");
+  const tinyxml2::XMLElement* smooth_jerks_element = xml_element.FirstChildElement("SmoothJerks");
+  const tinyxml2::XMLElement* avoid_singularities_element = xml_element.FirstChildElement("AvoidSingularity");
+  const tinyxml2::XMLElement* longest_valid_seg_fraction_element = xml_element.FirstChildElement("LongestValidSegmentFraction");
+  const tinyxml2::XMLElement* longest_valid_seg_length_element = xml_element.FirstChildElement("LongestValidSegmentLength");
+
+  tinyxml2::XMLError status;
+
+  if (contact_test_type_element)
+  {
+    int type = static_cast<int>(tesseract_collision::ContactTestType::ALL);
+    status = contact_test_type_element->QueryIntAttribute("type", &type);
+    if (status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("TrajoptCompositeProfile: Error parsing ContactTest type attribute.");
+
+    contact_test_type = static_cast<tesseract_collision::ContactTestType>(type);
+  }
+
+  if (collision_cost_config_element)
+  {
+    collision_cost_config = CollisionCostConfig(*collision_cost_config_element);
+  }
+
+  if (collision_cnt_config_element)
+  {
+    collision_constraint_config = CollisionConstraintConfig(*collision_cnt_config_element);
+  }
+
+  std::size_t coeff_length = 0;
+  if (smooth_velocities_element)
+  {
+    TrajOptDefaultCompositeProfile::smoothMotionTerms(*smooth_velocities_element,
+                                                      smooth_velocities,
+                                                      velocity_coeff,
+                                                      coeff_length);
+  }
+
+  if (smooth_accelerations_element)
+  {
+    TrajOptDefaultCompositeProfile::smoothMotionTerms(*smooth_accelerations_element,
+                                                      smooth_accelerations,
+                                                      acceleration_coeff,
+                                                      coeff_length);
+  }
+
+  if (smooth_jerks_element)
+  {
+    TrajOptDefaultCompositeProfile::smoothMotionTerms(*smooth_jerks_element,
+                                                      smooth_jerks,
+                                                      jerk_coeff,
+                                                      coeff_length);
+  }
+
+  if (avoid_singularities_element)
+  {
+    const tinyxml2::XMLElement* enabled_element = avoid_singularities_element->FirstChildElement("Enabled");
+    const tinyxml2::XMLElement* coeff_element = avoid_singularities_element->FirstChildElement("Coefficient");
+
+    if (!enabled_element)
+      throw std::runtime_error("TrajoptCompositeProfile: Avoid singularity element must have Enabled element.");
+
+    status = enabled_element->QueryBoolText(&avoid_singularity);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("TrajoptCompositeProfile: Error parsing Enabled string");
+
+    if (coeff_element)
+    {
+      std::string coeff_string;
+      status = tesseract_common::QueryStringText(coeff_element, coeff_string);
+      if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+        throw std::runtime_error("TrajoptCompositeProfile: AvoidSingularity: Error parsing Coefficient string");
+
+      if (!tesseract_common::isNumeric(coeff_string))
+        throw std::runtime_error("TrajoptCompositeProfile: AvoidSingularity: Coefficient is not a numeric values.");
+
+      tesseract_common::toNumeric<double>(coeff_string, avoid_singularity_coeff);
+    }
+  }
+
+  if (longest_valid_seg_fraction_element)
+  {
+    std::string long_valid_seg_frac_string;
+    status = tesseract_common::QueryStringText(longest_valid_seg_fraction_element, long_valid_seg_frac_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("TrajoptCompositeProfile: Error parsing LongestValidSegmentFraction string");
+
+    if (!tesseract_common::isNumeric(long_valid_seg_frac_string))
+      throw std::runtime_error("TrajoptCompositeProfile: LongestValidSegmentFraction is not a numeric values.");
+
+    tesseract_common::toNumeric<double>(long_valid_seg_frac_string, longest_valid_segment_fraction);
+  }
+
+  if (longest_valid_seg_length_element)
+  {
+    std::string long_valid_seg_len_string;
+    status = tesseract_common::QueryStringText(longest_valid_seg_length_element, long_valid_seg_len_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("TrajoptCompositeProfile: Error parsing LongestValidSegmentLength string");
+
+    if (!tesseract_common::isNumeric(long_valid_seg_len_string))
+      throw std::runtime_error("TrajoptCompositeProfile: LongestValidSegmentLength is not a numeric values.");
+
+    tesseract_common::toNumeric<double>(long_valid_seg_len_string, longest_valid_segment_length);
+  }
+
+}
+
+void TrajOptDefaultCompositeProfile::smoothMotionTerms(const tinyxml2::XMLElement& xml_element,
+                                                       bool& enabled,
+                                                       Eigen::VectorXd& coeff,
+                                                       std::size_t& length)
+{
+  const tinyxml2::XMLElement* enabled_element = xml_element.FirstChildElement("Enabled");
+  const tinyxml2::XMLElement* coeff_element = xml_element.FirstChildElement("Coefficients");
+
+  if (!enabled_element)
+    throw std::runtime_error("TrajoptCompositeProfile: All motion smoothing types must have Enabled element.");
+
+  tinyxml2::XMLError status = enabled_element->QueryBoolText(&enabled);
+  if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+    throw std::runtime_error("TrajoptCompositeProfile: Error parsing Enabled string");
+
+  if (coeff_element)
+  {
+    std::vector<std::string> coeff_tokens;
+    std::string coeff_string;
+    status = tesseract_common::QueryStringText(coeff_element, coeff_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("TrajoptCompositeProfile: Error parsing motion smoothing Coefficients string");
+
+    boost::split(coeff_tokens, coeff_string, boost::is_any_of(" "), boost::token_compress_on);
+    if (length == 0)
+      length = coeff_tokens.size();
+    else if (length != coeff_tokens.size())
+      throw std::runtime_error("TrajoptCompositeProfile: Motion smoothing Coefficients are inconsistent sizes.");
+
+    if (!tesseract_common::isNumeric(coeff_tokens))
+      throw std::runtime_error("TrajoptCompositeProfile: Motion smoothing Coefficients are not all numeric values.");
+
+    coeff.resize(static_cast<long>(length));
+    for (std::size_t i = 0; i < coeff_tokens.size(); ++i)
+      tesseract_common::toNumeric<double>(coeff_tokens[i], coeff[static_cast<long>(i)]);
+  }
+}
+
 void TrajOptDefaultCompositeProfile::apply(trajopt::ProblemConstructionInfo& pci,
                                            int start_index,
                                            int end_index,
@@ -83,8 +235,8 @@ tinyxml2::XMLElement* TrajOptDefaultCompositeProfile::toXML(tinyxml2::XMLDocumen
 
   tinyxml2::XMLElement* xml_trajopt = doc.NewElement("TrajoptCompositeProfile");
 
-  tinyxml2::XMLElement* xml_contact_test_type = doc.NewElement("ContactTestType");
-  xml_contact_test_type->SetText(static_cast<int>(contact_test_type));
+  tinyxml2::XMLElement* xml_contact_test_type = doc.NewElement("ContactTest");
+  xml_contact_test_type->SetAttribute("type", std::to_string(static_cast<int>(contact_test_type)).c_str());
   xml_trajopt->InsertEndChild(xml_contact_test_type);
 
   tinyxml2::XMLElement* xml_collision_cost_info = collision_cost_config.toXML(doc);

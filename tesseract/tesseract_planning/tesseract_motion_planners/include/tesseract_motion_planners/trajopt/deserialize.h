@@ -2,8 +2,8 @@
  * @file deserialize.h
  * @brief Provide methods for deserialize instructions to xml and deserialization
  *
- * @author Levi Armstrong
- * @date August 17, 2020
+ * @author Tyler Marr
+ * @date August 20, 2020
  * @version TODO
  * @bug No known bugs
  *
@@ -23,38 +23,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_COMMAND_LANGUAGE_DESERAILIZE_H
-#define TESSERACT_COMMAND_LANGUAGE_DESERAILIZE_H
+#ifndef TESSERACT_MOTION_PLANNERS_TRAJOPT_DESERIALIZE_H
+#define TESSERACT_MOTION_PLANNERS_TRAJOPT_DESERIALIZE_H
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
-#include <functional>
-#include <map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
-#include <tesseract_command_language/core/instruction.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 
 namespace tesseract_planning
 {
-using WaypointParserFn = std::function<Waypoint(const tinyxml2::XMLElement&, int)>;
-using InstructionParserFn = std::function<Instruction(const tinyxml2::XMLElement&, int, WaypointParserFn)>;
+//using TrajoptCompositeParserFn = std::function<TrajOptCompositeProfile(const tinyxml2::XMLElement&)>;
 
-Waypoint defaultWaypointParser(const tinyxml2::XMLElement& xml_element, int type);
-Instruction defaultInstructionParser(const tinyxml2::XMLElement& xml_element,
-                                     int type,
-                                     WaypointParserFn waypoint_parser);
+TrajOptDefaultCompositeProfile trajoptCompositeParser(const tinyxml2::XMLElement& xml_element);
 
-Instruction fromXMLDocument(const tinyxml2::XMLDocument& xml_doc,
-                            InstructionParserFn instruction_parser = defaultInstructionParser,
-                            WaypointParserFn waypoint_parser = defaultWaypointParser);
+TrajOptDefaultCompositeProfile fromXMLDocument(const tinyxml2::XMLDocument& xml_doc);
 
-Instruction fromXMLFile(const std::string& file_path,
-                        InstructionParserFn instruction_parser = defaultInstructionParser,
-                        WaypointParserFn waypoint_parser = defaultWaypointParser);
+TrajOptDefaultCompositeProfile fromXMLFile(const std::string& file_path);
 
-Instruction fromXMLString(const std::string& xml_string,
-                          InstructionParserFn instruction_parser = defaultInstructionParser,
-                          WaypointParserFn waypoint_parser = defaultWaypointParser);
+TrajOptDefaultCompositeProfile fromXMLString(const std::string& xml_string);
 
 }  // namespace tesseract_planning
 
-#endif  // TESSERACT_COMMAND_LANGUAGE_DESERAILIZE_H
+#endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_DESERIALIZE_H

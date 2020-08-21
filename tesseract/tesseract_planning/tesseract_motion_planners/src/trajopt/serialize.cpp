@@ -46,6 +46,9 @@ std::shared_ptr<tinyxml2::XMLDocument> toXMLDocument(const TrajOptPlanProfile& p
   auto doc = std::make_shared<tinyxml2::XMLDocument>();
   tinyxml2::XMLElement* xml_root = doc->NewElement("Profile");
   xml_root->SetAttribute("name", "TrajoptDefaultPlanProfile");
+  xml_root->SetAttribute(
+      "version",
+      (std::to_string(VERSION[0]) + "." + std::to_string(VERSION[1]) + "." + std::to_string(VERSION[2])).c_str());
 
   tinyxml2::XMLElement* xml_plan_profile = plan_profile.toXML(*doc);
   xml_root->InsertEndChild(xml_plan_profile);
@@ -74,12 +77,15 @@ std::string toXMLString(const TrajOptPlanProfile& plan_profile)
   doc->Print(&printer);
   return std::string(printer.CStr());
 }
-//
+
 std::shared_ptr<tinyxml2::XMLDocument> toXMLDocument(const TrajOptCompositeProfile& composite_profile)
 {
   auto doc = std::make_shared<tinyxml2::XMLDocument>();
   tinyxml2::XMLElement* xml_root = doc->NewElement("Profile");
   xml_root->SetAttribute("name", "TrajoptDefaultCompositeProfile");
+  xml_root->SetAttribute(
+      "version",
+      (std::to_string(VERSION[0]) + "." + std::to_string(VERSION[1]) + "." + std::to_string(VERSION[2])).c_str());
 
   tinyxml2::XMLElement* xml_composite_profile = composite_profile.toXML(*doc);
   xml_root->InsertEndChild(xml_composite_profile);
