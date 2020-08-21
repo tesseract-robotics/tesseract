@@ -59,18 +59,16 @@ TEST(TesseractMotionPlannersTrajoptSerializeUnit, SerializeTrajoptDefaultComposi
 {
   // Write program to file
   TrajOptDefaultCompositeProfile profile = getTrajOptCompositeProfile();
-  //  EXPECT_TRUE(toXMLFile(profile, "/tmp/trajopt_default_composite_example_input.xml"));
-  EXPECT_TRUE(toXMLFile(profile, "/home/tmarr/Documents/trajopt_default_composite_example_input.xml"));
+    EXPECT_TRUE(toXMLFile(profile, "/tmp/trajopt_default_composite_example_input.xml"));
+//  EXPECT_TRUE(toXMLFile(profile, "/home/tmarr/Documents/trajopt_default_composite_example_input.xml"));
 
-  //  TrajOptDefaultCompositeProfile imported_profile = fromXMLFile("/tmp/raster_example_input.xml");
-  TrajOptDefaultCompositeProfile imported_profile = fromXMLFile("/home/tmarr/Documents/"
-                                                                "trajopt_default_composite_example_input.xml");
+    TrajOptDefaultCompositeProfile imported_profile = fromXMLFile("/tmp/raster_example_input.xml");
+//  TrajOptDefaultCompositeProfile imported_profile = fromXMLFile("/home/tmarr/Documents/"
+//                                                                "trajopt_default_composite_example_input.xml");
 
-  EXPECT_TRUE(toXMLFile(imported_profile, "/home/tmarr/Documents/trajopt_default_composite_example_input2.xml"));
+    EXPECT_TRUE(toXMLFile(imported_profile, "/tmp/raster_example_input2.xml"));
+//  EXPECT_TRUE(toXMLFile(imported_profile, "/home/tmarr/Documents/trajopt_default_composite_example_input2.xml"));
   EXPECT_TRUE(profile.smooth_velocities == imported_profile.smooth_velocities);
-  //  EXPECT_TRUE(isCompositeInstruction(imported_program));
-  //  const auto* ci = imported_program.cast_const<CompositeInstruction>();
-  //  EXPECT_EQ(program.size(), ci->size());
 }
 
 int main(int argc, char** argv)
