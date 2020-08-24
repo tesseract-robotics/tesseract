@@ -29,19 +29,30 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 
 namespace tesseract_planning
 {
-// using TrajoptCompositeParserFn = std::function<TrajOptCompositeProfile(const tinyxml2::XMLElement&)>;
+TrajOptDefaultPlanProfile trajOptPlanParser(const tinyxml2::XMLElement& xml_element);
 
-TrajOptDefaultCompositeProfile trajoptCompositeParser(const tinyxml2::XMLElement& xml_element);
+TrajOptDefaultPlanProfile trajOptPlanFromXMLElement(const tinyxml2::XMLElement* profile_xml);
 
-TrajOptDefaultCompositeProfile fromXMLDocument(const tinyxml2::XMLDocument& xml_doc);
+TrajOptDefaultPlanProfile trajOptPlanFromXMLDocument(const tinyxml2::XMLDocument& xml_doc);
 
-TrajOptDefaultCompositeProfile fromXMLFile(const std::string& file_path);
+TrajOptDefaultPlanProfile trajOptPlanFromXMLFile(const std::string& file_path);
 
-TrajOptDefaultCompositeProfile fromXMLString(const std::string& xml_string);
+TrajOptDefaultPlanProfile trajOptPlanFromXMLString(const std::string& xml_string);
+
+TrajOptDefaultCompositeProfile trajOptCompositeParser(const tinyxml2::XMLElement& xml_element);
+
+TrajOptDefaultCompositeProfile trajOptCompositeFromXMLElement(const tinyxml2::XMLElement* profile_xml);
+
+TrajOptDefaultCompositeProfile trajOptCompositeFromXMLDocument(const tinyxml2::XMLDocument& xml_doc);
+
+TrajOptDefaultCompositeProfile trajOptCompositeFromXMLFile(const std::string& file_path);
+
+TrajOptDefaultCompositeProfile trajOptCompositeFromXMLString(const std::string& xml_string);
 
 }  // namespace tesseract_planning
 

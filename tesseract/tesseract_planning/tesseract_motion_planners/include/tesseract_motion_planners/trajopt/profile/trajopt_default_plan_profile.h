@@ -43,6 +43,9 @@ public:
   using Ptr = std::shared_ptr<TrajOptDefaultPlanProfile>;
   using ConstPtr = std::shared_ptr<const TrajOptDefaultPlanProfile>;
 
+  TrajOptDefaultPlanProfile() = default;
+  TrajOptDefaultPlanProfile(const tinyxml2::XMLElement& xml_element);
+
   Eigen::VectorXd cartesian_coeff{ Eigen::VectorXd::Constant(1, 1, 5) };
   Eigen::VectorXd joint_coeff{ Eigen::VectorXd::Constant(1, 1, 5) };
   trajopt::TermType term_type{ trajopt::TermType::TT_CNT };
