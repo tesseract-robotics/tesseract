@@ -35,8 +35,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract_planning;
 
-// bool DEBUG = false;
-
 TrajOptDefaultCompositeProfile getTrajOptCompositeProfile()
 {
   TrajOptDefaultCompositeProfile composite_profile;
@@ -84,7 +82,10 @@ TEST(TesseractMotionPlannersTrajoptSerializeUnit, SerializeTrajoptDefaultComposi
   //    EXPECT_TRUE(toXMLFile(imported_comp_profile, "/tmp/raster_example_input2.xml"));
   EXPECT_TRUE(toXMLFile(imported_comp_profile, "/home/tmarr/Documents/trajopt_default_composite_example_input2.xml"));
   EXPECT_TRUE(comp_profile.smooth_velocities == imported_comp_profile.smooth_velocities);
+}
 
+TEST(TesseractMotionPlannersTrajoptSerializeUnit, SerializeTrajoptDefaultPlanToXml)  // NOLINT
+{
   TrajOptDefaultPlanProfile plan_profile = getTrajOptPlanProfile();
   //  EXPECT_TRUE(toXMLFile(plan_profile, "/tmp/trajopt_default_plan_example_input.xml"));
   EXPECT_TRUE(toXMLFile(plan_profile, "/home/tmarr/Documents/trajopt_default_plan_example_input.xml"));
