@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/geometric/planners/kpiece/LBKPIECE1.h>
 #include <ompl/geometric/planners/kpiece/BKPIECE1.h>
 #include <ompl/geometric/planners/kpiece/KPIECE1.h>
+#include <ompl/geometric/planners/rrt/BiTRRT.h>
 #include <ompl/geometric/planners/rrt/RRT.h>
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
 #include <ompl/geometric/planners/rrt/RRTstar.h>
@@ -86,6 +87,18 @@ ompl::base::PlannerPtr KPIECE1Configurator::create(ompl::base::SpaceInformationP
   planner->setBorderFraction(border_fraction);
   planner->setFailedExpansionCellScoreFactor(failed_expansion_score_factor);
   planner->setMinValidPathFraction(min_valid_path_fraction);
+  return planner;
+}
+
+ompl::base::PlannerPtr BiTRRTConfigurator::create(ompl::base::SpaceInformationPtr si) const
+{
+  auto planner = std::make_shared<ompl::geometric::BiTRRT>(si);
+  planner->setRange(range);
+  planner->setTempChangeFactor(temp_change_factor);
+  planner->setCostThreshold(cost_threshold);
+  planner->setInitTemperature(init_temperature);
+  planner->setFrontierThreshold(frontier_threshold);
+  planner->setFrontierNodeRatio(frontier_node_ratio);
   return planner;
 }
 
