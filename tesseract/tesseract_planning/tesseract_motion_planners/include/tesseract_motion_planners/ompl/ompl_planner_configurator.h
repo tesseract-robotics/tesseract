@@ -130,6 +130,31 @@ struct KPIECE1Configurator : public OMPLPlannerConfigurator
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
 };
 
+struct BiTRRTConfigurator : public OMPLPlannerConfigurator
+{
+  /** @brief Max motion added to tree */
+  double range = 0.;
+
+  /** @brief How much to increase or decrease temp. */
+  double temp_change_factor = 0.1;
+
+  /** @brief Any motion cost that is not better than this cost (according to the optimization objective) will not be
+   * expanded by the planner.  */
+  double cost_threshold = std::numeric_limits<double>::infinity();
+
+  /** @brief Initial temperature. */
+  double init_temperature = 100.;
+
+  /** @brief Dist new state to nearest neighbor to disqualify as frontier. */
+  double frontier_threshold = 0.0;
+
+  /** @brief 1/10, or 1 nonfrontier for every 10 frontier. */
+  double frontier_node_ratio = 0.1;
+
+  /** @brief Create the planner */
+  ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
+};
+
 struct RRTConfigurator : public OMPLPlannerConfigurator
 {
   /** @brief Max motion added to tree */
