@@ -14,7 +14,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_process_managers/process_managers/default_processes/default_freespace_processes.h>
 #include <tesseract_process_managers/process_managers/default_processes/default_raster_processes.h>
 #include <tesseract_process_managers/process_managers/raster_process_manager.h>
-#include <tesseract_command_language/command_language_utils.h>
+#include <tesseract_command_language/utils/utils.h>
 
 using namespace tesseract_planning;
 

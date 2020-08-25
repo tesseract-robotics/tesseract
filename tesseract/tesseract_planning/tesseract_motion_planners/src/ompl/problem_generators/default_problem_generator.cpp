@@ -28,7 +28,7 @@
 #include <tesseract/tesseract.h>
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/ompl/problem_generators/default_problem_generator.h>
-#include <tesseract_command_language/command_language_utils.h>
+#include <tesseract_command_language/utils/utils.h>
 
 namespace tesseract_planning
 {
