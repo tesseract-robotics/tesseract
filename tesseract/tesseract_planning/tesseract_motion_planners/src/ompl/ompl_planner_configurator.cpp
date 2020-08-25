@@ -47,7 +47,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-
 SBLConfigurator::SBLConfigurator(const tinyxml2::XMLElement& xml_element)
 {
   const tinyxml2::XMLElement* sbl_element = xml_element.FirstChildElement("SBL");
@@ -76,10 +75,7 @@ ompl::base::PlannerPtr SBLConfigurator::create(ompl::base::SpaceInformationPtr s
   return planner;
 }
 
-OMPLPlannerType SBLConfigurator::getType() const
-{
-  return type;
-}
+OMPLPlannerType SBLConfigurator::getType() const { return type; }
 
 tinyxml2::XMLElement* SBLConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -135,10 +131,7 @@ ompl::base::PlannerPtr ESTConfigurator::create(ompl::base::SpaceInformationPtr s
   return planner;
 }
 
-OMPLPlannerType ESTConfigurator::getType() const
-{
-  return type;
-}
+OMPLPlannerType ESTConfigurator::getType() const { return type; }
 
 tinyxml2::XMLElement* ESTConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -160,7 +153,8 @@ LBKPIECE1Configurator::LBKPIECE1Configurator(const tinyxml2::XMLElement& xml_ele
   const tinyxml2::XMLElement* lbkpiece1_element = xml_element.FirstChildElement("LBKPIECE1");
   const tinyxml2::XMLElement* range_element = lbkpiece1_element->FirstChildElement("Range");
   const tinyxml2::XMLElement* border_fraction_element = lbkpiece1_element->FirstChildElement("BorderFraction");
-  const tinyxml2::XMLElement* min_valid_path_fraction_element = lbkpiece1_element->FirstChildElement("MinValidPathFraction");
+  const tinyxml2::XMLElement* min_valid_path_fraction_element = lbkpiece1_element->FirstChildElement("MinValidPathFract"
+                                                                                                     "ion");
 
   tinyxml2::XMLError status;
 
@@ -213,10 +207,7 @@ ompl::base::PlannerPtr LBKPIECE1Configurator::create(ompl::base::SpaceInformatio
   return planner;
 }
 
-OMPLPlannerType LBKPIECE1Configurator::getType() const
-{
-  return type;
-}
+OMPLPlannerType LBKPIECE1Configurator::getType() const { return type; }
 
 tinyxml2::XMLElement* LBKPIECE1Configurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -242,8 +233,11 @@ BKPIECE1Configurator::BKPIECE1Configurator(const tinyxml2::XMLElement& xml_eleme
   const tinyxml2::XMLElement* bkpiece1_element = xml_element.FirstChildElement("BKPIECE1");
   const tinyxml2::XMLElement* range_element = bkpiece1_element->FirstChildElement("Range");
   const tinyxml2::XMLElement* border_fraction_element = bkpiece1_element->FirstChildElement("BorderFraction");
-  const tinyxml2::XMLElement* failed_expansion_score_factor_element = bkpiece1_element->FirstChildElement("FailedExpansionScoreFactor");
-  const tinyxml2::XMLElement* min_valid_path_fraction_element = bkpiece1_element->FirstChildElement("MinValidPathFraction");
+  const tinyxml2::XMLElement* failed_expansion_score_factor_element = bkpiece1_element->FirstChildElement("FailedExpans"
+                                                                                                          "ionScoreFact"
+                                                                                                          "or");
+  const tinyxml2::XMLElement* min_valid_path_fraction_element = bkpiece1_element->FirstChildElement("MinValidPathFracti"
+                                                                                                    "on");
 
   tinyxml2::XMLError status;
 
@@ -276,7 +270,8 @@ BKPIECE1Configurator::BKPIECE1Configurator(const tinyxml2::XMLElement& xml_eleme
   if (failed_expansion_score_factor_element)
   {
     std::string failed_expansion_score_factor_string;
-    status = tesseract_common::QueryStringText(failed_expansion_score_factor_element, failed_expansion_score_factor_string);
+    status =
+        tesseract_common::QueryStringText(failed_expansion_score_factor_element, failed_expansion_score_factor_string);
     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
       throw std::runtime_error("OMPLConfigurator: BKPIECE1: Error parsing FailedExpansionScoreFactor string");
 
@@ -310,10 +305,7 @@ ompl::base::PlannerPtr BKPIECE1Configurator::create(ompl::base::SpaceInformation
   return planner;
 }
 
-OMPLPlannerType BKPIECE1Configurator::getType() const
-{
-  return type;
-}
+OMPLPlannerType BKPIECE1Configurator::getType() const { return type; }
 
 tinyxml2::XMLElement* BKPIECE1Configurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -344,8 +336,11 @@ KPIECE1Configurator::KPIECE1Configurator(const tinyxml2::XMLElement& xml_element
   const tinyxml2::XMLElement* range_element = kpiece1_element->FirstChildElement("Range");
   const tinyxml2::XMLElement* goal_bias_element = kpiece1_element->FirstChildElement("GoalBias");
   const tinyxml2::XMLElement* border_fraction_element = kpiece1_element->FirstChildElement("BorderFraction");
-  const tinyxml2::XMLElement* failed_expansion_score_factor_element = kpiece1_element->FirstChildElement("FailedExpansionScoreFactor");
-  const tinyxml2::XMLElement* min_valid_path_fraction_element = kpiece1_element->FirstChildElement("MinValidPathFraction");
+  const tinyxml2::XMLElement* failed_expansion_score_factor_element = kpiece1_element->FirstChildElement("FailedExpansi"
+                                                                                                         "onScoreFacto"
+                                                                                                         "r");
+  const tinyxml2::XMLElement* min_valid_path_fraction_element = kpiece1_element->FirstChildElement("MinValidPathFractio"
+                                                                                                   "n");
 
   tinyxml2::XMLError status;
 
@@ -391,7 +386,8 @@ KPIECE1Configurator::KPIECE1Configurator(const tinyxml2::XMLElement& xml_element
   if (failed_expansion_score_factor_element)
   {
     std::string failed_expansion_score_factor_string;
-    status = tesseract_common::QueryStringText(failed_expansion_score_factor_element, failed_expansion_score_factor_string);
+    status =
+        tesseract_common::QueryStringText(failed_expansion_score_factor_element, failed_expansion_score_factor_string);
     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
       throw std::runtime_error("OMPLConfigurator: KPIECE1: Error parsing FailedExpansionScoreFactor string");
 
@@ -438,10 +434,7 @@ ompl::base::PlannerPtr BiTRRTConfigurator::create(ompl::base::SpaceInformationPt
   return planner;
 }
 
-OMPLPlannerType KPIECE1Configurator::getType() const
-{
-  return type;
-}
+OMPLPlannerType KPIECE1Configurator::getType() const { return type; }
 
 tinyxml2::XMLElement* KPIECE1Configurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -513,10 +506,7 @@ ompl::base::PlannerPtr RRTConfigurator::create(ompl::base::SpaceInformationPtr s
   return planner;
 }
 
-OMPLPlannerType RRTConfigurator::getType() const
-{
-  return type;
-}
+OMPLPlannerType RRTConfigurator::getType() const { return type; }
 
 tinyxml2::XMLElement* RRTConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -561,10 +551,7 @@ ompl::base::PlannerPtr RRTConnectConfigurator::create(ompl::base::SpaceInformati
   return planner;
 }
 
-OMPLPlannerType RRTConnectConfigurator::getType() const
-{
-  return type;
-}
+OMPLPlannerType RRTConnectConfigurator::getType() const { return type; }
 
 tinyxml2::XMLElement* RRTConnectConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -582,7 +569,8 @@ RRTstarConfigurator::RRTstarConfigurator(const tinyxml2::XMLElement& xml_element
   const tinyxml2::XMLElement* rrt_star_element = xml_element.FirstChildElement("RRTstar");
   const tinyxml2::XMLElement* range_element = rrt_star_element->FirstChildElement("Range");
   const tinyxml2::XMLElement* goal_bias_element = rrt_star_element->FirstChildElement("GoalBias");
-  const tinyxml2::XMLElement* delay_collision_checking_element = rrt_star_element->FirstChildElement("DelayCollisionChecking");
+  const tinyxml2::XMLElement* delay_collision_checking_element = rrt_star_element->FirstChildElement("DelayCollisionChe"
+                                                                                                     "cking");
 
   tinyxml2::XMLError status;
 
@@ -630,10 +618,7 @@ ompl::base::PlannerPtr RRTstarConfigurator::create(ompl::base::SpaceInformationP
   return planner;
 }
 
-OMPLPlannerType RRTstarConfigurator::getType() const
-{
-  return type;
-}
+OMPLPlannerType RRTstarConfigurator::getType() const { return type; }
 
 tinyxml2::XMLElement* RRTstarConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -757,10 +742,7 @@ ompl::base::PlannerPtr TRRTConfigurator::create(ompl::base::SpaceInformationPtr 
   return planner;
 }
 
-OMPLPlannerType TRRTConfigurator::getType() const
-{
-  return type;
-}
+OMPLPlannerType TRRTConfigurator::getType() const { return type; }
 
 tinyxml2::XMLElement* TRRTConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -821,10 +803,7 @@ ompl::base::PlannerPtr PRMConfigurator::create(ompl::base::SpaceInformationPtr s
   return planner;
 }
 
-OMPLPlannerType PRMConfigurator::getType() const
-{
-  return type;
-}
+OMPLPlannerType PRMConfigurator::getType() const { return type; }
 
 tinyxml2::XMLElement* PRMConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -844,10 +823,7 @@ ompl::base::PlannerPtr PRMstarConfigurator::create(ompl::base::SpaceInformationP
   return std::make_shared<ompl::geometric::PRMstar>(si);
 }
 
-OMPLPlannerType PRMstarConfigurator::getType() const
-{
-  return type;
-}
+OMPLPlannerType PRMstarConfigurator::getType() const { return type; }
 
 tinyxml2::XMLElement* PRMstarConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -863,10 +839,7 @@ ompl::base::PlannerPtr LazyPRMstarConfigurator::create(ompl::base::SpaceInformat
   return std::make_shared<ompl::geometric::LazyPRMstar>(si);
 }
 
-OMPLPlannerType LazyPRMstarConfigurator::getType() const
-{
-  return type;
-}
+OMPLPlannerType LazyPRMstarConfigurator::getType() const { return type; }
 
 tinyxml2::XMLElement* LazyPRMstarConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -948,10 +921,7 @@ ompl::base::PlannerPtr SPARSConfigurator::create(ompl::base::SpaceInformationPtr
   return planner;
 }
 
-OMPLPlannerType SPARSConfigurator::getType() const
-{
-  return type;
-}
+OMPLPlannerType SPARSConfigurator::getType() const { return type; }
 
 tinyxml2::XMLElement* SPARSConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {

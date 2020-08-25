@@ -58,8 +58,10 @@ OMPLDefaultPlanProfile::OMPLDefaultPlanProfile(const tinyxml2::XMLElement& xml_e
   const tinyxml2::XMLElement* collision_check_element = xml_element.FirstChildElement("CollisionCheck");
   const tinyxml2::XMLElement* collision_continuous_element = xml_element.FirstChildElement("CollisionContinuous");
   const tinyxml2::XMLElement* collision_safety_margin_element = xml_element.FirstChildElement("CollisionSafetyMargin");
-  const tinyxml2::XMLElement* longest_valid_segment_fraction_element = xml_element.FirstChildElement("LongestValidSegmentFraction");
-  const tinyxml2::XMLElement* longest_valid_segment_length_element = xml_element.FirstChildElement("LongestValidSegmentLength");
+  const tinyxml2::XMLElement* longest_valid_segment_fraction_element = xml_element.FirstChildElement("LongestValidSegme"
+                                                                                                     "ntFraction");
+  const tinyxml2::XMLElement* longest_valid_segment_length_element = xml_element.FirstChildElement("LongestValidSegment"
+                                                                                                   "Length");
   const tinyxml2::XMLElement* weights_element = xml_element.FirstChildElement("Weights");
 
   tinyxml2::XMLError status;
@@ -117,98 +119,99 @@ OMPLDefaultPlanProfile::OMPLDefaultPlanProfile(const tinyxml2::XMLElement& xml_e
   if (planners_element)
   {
     planners.clear();
-    for(const tinyxml2::XMLElement* e = planners_element->FirstChildElement("Planner"); e; e = e->NextSiblingElement("Planner"))
+    for (const tinyxml2::XMLElement* e = planners_element->FirstChildElement("Planner"); e;
+         e = e->NextSiblingElement("Planner"))
     {
-        int type;
-        status = e->QueryIntAttribute("type", &type);
-        if (status != tinyxml2::XML_SUCCESS)
-          throw std::runtime_error("OMPLPlanProfile: Error parsing Planner type attribute.");
+      int type;
+      status = e->QueryIntAttribute("type", &type);
+      if (status != tinyxml2::XML_SUCCESS)
+        throw std::runtime_error("OMPLPlanProfile: Error parsing Planner type attribute.");
 
-        switch (type)
+      switch (type)
+      {
+        case static_cast<int>(OMPLPlannerType::SBL):
         {
-          case static_cast<int>(OMPLPlannerType::SBL):
-          {
-            SBLConfigurator::ConstPtr ompl_planner = std::make_shared<const SBLConfigurator>(*e);
-            planners.push_back(ompl_planner);
-            break;
-          }
-          case static_cast<int>(OMPLPlannerType::EST):
-          {
-            ESTConfigurator::ConstPtr ompl_planner = std::make_shared<const ESTConfigurator>(*e);
-            planners.push_back(ompl_planner);
-            break;
-          }
-          case static_cast<int>(OMPLPlannerType::LBKPIECE1):
-          {
-            LBKPIECE1Configurator::ConstPtr ompl_planner = std::make_shared<const LBKPIECE1Configurator>(*e);
-            planners.push_back(ompl_planner);
-            break;
-          }
-          case static_cast<int>(OMPLPlannerType::BKPIECE1):
-          {
-            BKPIECE1Configurator::ConstPtr ompl_planner = std::make_shared<const BKPIECE1Configurator>(*e);
-            planners.push_back(ompl_planner);
-            break;
-          }
-          case static_cast<int>(OMPLPlannerType::KPIECE1):
-          {
-            KPIECE1Configurator::ConstPtr ompl_planner = std::make_shared<const KPIECE1Configurator>(*e);
-            planners.push_back(ompl_planner);
-            break;
-          }
-          case static_cast<int>(OMPLPlannerType::RRT):
-          {
-            RRTConfigurator::ConstPtr ompl_planner = std::make_shared<const RRTConfigurator>(*e);
-            planners.push_back(ompl_planner);
-            break;
-          }
-          case static_cast<int>(OMPLPlannerType::RRTConnect):
-          {
-            RRTConnectConfigurator::ConstPtr ompl_planner = std::make_shared<const RRTConnectConfigurator>(*e);
-            planners.push_back(ompl_planner);
-            break;
-          }
-          case static_cast<int>(OMPLPlannerType::RRTstar):
-          {
-            RRTstarConfigurator::ConstPtr ompl_planner = std::make_shared<const RRTstarConfigurator>(*e);
-            planners.push_back(ompl_planner);
-            break;
-          }
-          case static_cast<int>(OMPLPlannerType::TRRT):
-          {
-            TRRTConfigurator::ConstPtr ompl_planner = std::make_shared<const TRRTConfigurator>(*e);
-            planners.push_back(ompl_planner);
-            break;
-          }
-          case static_cast<int>(OMPLPlannerType::PRM):
-          {
-            PRMConfigurator::ConstPtr ompl_planner = std::make_shared<const PRMConfigurator>(*e);
-            planners.push_back(ompl_planner);
-            break;
-          }
-          case static_cast<int>(OMPLPlannerType::PRMstar):
-          {
-            PRMstarConfigurator::ConstPtr ompl_planner = std::make_shared<const PRMstarConfigurator>(*e);
-            planners.push_back(ompl_planner);
-            break;
-          }
-          case static_cast<int>(OMPLPlannerType::LazyPRMstar):
-          {
-            LazyPRMstarConfigurator::ConstPtr ompl_planner = std::make_shared<const LazyPRMstarConfigurator>(*e);
-            planners.push_back(ompl_planner);
-            break;
-          }
-          case static_cast<int>(OMPLPlannerType::SPARS):
-          {
-            SPARSConfigurator::ConstPtr ompl_planner = std::make_shared<const SPARSConfigurator>(*e);
-            planners.push_back(ompl_planner);
-            break;
-          }
-          default:
-          {
-            throw std::runtime_error("Unsupported OMPL Planner type");
-          }
+          SBLConfigurator::ConstPtr ompl_planner = std::make_shared<const SBLConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
         }
+        case static_cast<int>(OMPLPlannerType::EST):
+        {
+          ESTConfigurator::ConstPtr ompl_planner = std::make_shared<const ESTConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::LBKPIECE1):
+        {
+          LBKPIECE1Configurator::ConstPtr ompl_planner = std::make_shared<const LBKPIECE1Configurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::BKPIECE1):
+        {
+          BKPIECE1Configurator::ConstPtr ompl_planner = std::make_shared<const BKPIECE1Configurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::KPIECE1):
+        {
+          KPIECE1Configurator::ConstPtr ompl_planner = std::make_shared<const KPIECE1Configurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::RRT):
+        {
+          RRTConfigurator::ConstPtr ompl_planner = std::make_shared<const RRTConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::RRTConnect):
+        {
+          RRTConnectConfigurator::ConstPtr ompl_planner = std::make_shared<const RRTConnectConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::RRTstar):
+        {
+          RRTstarConfigurator::ConstPtr ompl_planner = std::make_shared<const RRTstarConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::TRRT):
+        {
+          TRRTConfigurator::ConstPtr ompl_planner = std::make_shared<const TRRTConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::PRM):
+        {
+          PRMConfigurator::ConstPtr ompl_planner = std::make_shared<const PRMConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::PRMstar):
+        {
+          PRMstarConfigurator::ConstPtr ompl_planner = std::make_shared<const PRMstarConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::LazyPRMstar):
+        {
+          LazyPRMstarConfigurator::ConstPtr ompl_planner = std::make_shared<const LazyPRMstarConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::SPARS):
+        {
+          SPARSConfigurator::ConstPtr ompl_planner = std::make_shared<const SPARSConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        default:
+        {
+          throw std::runtime_error("Unsupported OMPL Planner type");
+        }
+      }
     }
   }
 
@@ -242,7 +245,8 @@ OMPLDefaultPlanProfile::OMPLDefaultPlanProfile(const tinyxml2::XMLElement& xml_e
   if (longest_valid_segment_fraction_element)
   {
     std::string longest_valid_segment_fraction_string;
-    status = tesseract_common::QueryStringText(longest_valid_segment_fraction_element, longest_valid_segment_fraction_string);
+    status = tesseract_common::QueryStringText(longest_valid_segment_fraction_element,
+                                               longest_valid_segment_fraction_string);
     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
       throw std::runtime_error("OMPLPlanProfile: Error parsing LongestValidSegmentFraction string");
 
@@ -255,7 +259,8 @@ OMPLDefaultPlanProfile::OMPLDefaultPlanProfile(const tinyxml2::XMLElement& xml_e
   if (longest_valid_segment_length_element)
   {
     std::string longest_valid_segment_length_string;
-    status = tesseract_common::QueryStringText(longest_valid_segment_fraction_element, longest_valid_segment_length_string);
+    status =
+        tesseract_common::QueryStringText(longest_valid_segment_fraction_element, longest_valid_segment_length_string);
     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
       throw std::runtime_error("OMPLPlanProfile: Error parsing LongestValidSegmentLength string");
 
@@ -282,7 +287,6 @@ OMPLDefaultPlanProfile::OMPLDefaultPlanProfile(const tinyxml2::XMLElement& xml_e
     for (std::size_t i = 0; i < weights_tokens.size(); ++i)
       tesseract_common::toNumeric<double>(weights_tokens[i], weights[static_cast<long>(i)]);
   }
-
 }
 
 void OMPLDefaultPlanProfile::setup(OMPLProblem& prob)
@@ -614,7 +618,6 @@ tinyxml2::XMLElement* OMPLDefaultPlanProfile::toXML(tinyxml2::XMLDocument& doc) 
   xml_planner->InsertEndChild(xml_ompl);
 
   return xml_planner;
-
 }
 
 ompl::base::StateValidityCheckerPtr
