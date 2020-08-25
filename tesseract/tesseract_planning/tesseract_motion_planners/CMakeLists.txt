@@ -56,7 +56,9 @@ set(OMPL_SRC src/ompl/ompl_motion_planner.cpp
   src/ompl/problem_generators/default_problem_generator.cpp
   src/ompl/utils.cpp
   src/ompl/state_collision_validator.cpp
-  src/ompl/compound_state_validator.cpp)
+  src/ompl/compound_state_validator.cpp
+  src/ompl/serialize.cpp
+  src/ompl/deserialize.cpp)
 
 #if(NOT OMPL_VERSION VERSION_LESS "1.4.0")
 #  list(APPEND OMPL_SRC src/ompl/config/ompl_planner_constrained_config.cpp)

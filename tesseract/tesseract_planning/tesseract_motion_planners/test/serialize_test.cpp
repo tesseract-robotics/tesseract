@@ -33,6 +33,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/trajopt/serialize.h>
 #include <tesseract_motion_planners/trajopt/deserialize.h>
 
+#include <tesseract_motion_planners/ompl/profile/ompl_default_plan_profile.h>
+#include <tesseract_motion_planners/ompl/serialize.h>
+#include <tesseract_motion_planners/ompl/deserialize.h>
+
 using namespace tesseract_planning;
 
 TrajOptDefaultCompositeProfile getTrajOptCompositeProfile()
@@ -66,38 +70,67 @@ TrajOptDefaultPlanProfile getTrajOptPlanProfile()
   return plan_profile;
 }
 
+OMPLDefaultPlanProfile getOMPLPlanProfile()
+{
+  OMPLDefaultPlanProfile ompl_profile;
+
+  ompl_profile.weights = Eigen::VectorXd::Ones(6) * 10;
+
+  ompl_profile.simplify = true;
+
+  ompl_profile.planners.push_back(std::make_shared<const KPIECE1Configurator>());
+
+  return ompl_profile;
+}
+
 TEST(TesseractMotionPlannersTrajoptSerializeUnit, SerializeTrajoptDefaultCompositeToXml)  // NOLINT
 {
   // Write program to file
   TrajOptDefaultCompositeProfile comp_profile = getTrajOptCompositeProfile();
-  //    EXPECT_TRUE(toXMLFile(comp_profile, "/tmp/trajopt_default_composite_example_input.xml"));
-  EXPECT_TRUE(toXMLFile(comp_profile, "/home/tmarr/Documents/trajopt_default_composite_example_input.xml"));
+      EXPECT_TRUE(toXMLFile(comp_profile, "/tmp/trajopt_default_composite_example_input.xml"));
+//  EXPECT_TRUE(toXMLFile(comp_profile, "/home/tmarr/Documents/trajopt_default_composite_example_input.xml"));
 
-  //    TrajOptDefaultCompositeProfile imported_comp_profile =
-  //    trajOptCompositeFromXMLFile("/tmp/raster_example_input.xml");
-  TrajOptDefaultCompositeProfile imported_comp_profile = trajOptCompositeFromXMLFile("/home/tmarr/Documents/"
-                                                                                     "trajopt_default_composite_"
-                                                                                     "example_input.xml");
+      TrajOptDefaultCompositeProfile imported_comp_profile =
+      trajOptCompositeFromXMLFile("/tmp/raster_example_input.xml");
+//  TrajOptDefaultCompositeProfile imported_comp_profile = trajOptCompositeFromXMLFile("/home/tmarr/Documents/"
+//                                                                                     "trajopt_default_composite_"
+//                                                                                     "example_input.xml");
 
-  //    EXPECT_TRUE(toXMLFile(imported_comp_profile, "/tmp/raster_example_input2.xml"));
-  EXPECT_TRUE(toXMLFile(imported_comp_profile, "/home/tmarr/Documents/trajopt_default_composite_example_input2.xml"));
+      EXPECT_TRUE(toXMLFile(imported_comp_profile, "/tmp/raster_example_input2.xml"));
+//  EXPECT_TRUE(toXMLFile(imported_comp_profile, "/home/tmarr/Documents/trajopt_default_composite_example_input2.xml"));
   EXPECT_TRUE(comp_profile.smooth_velocities == imported_comp_profile.smooth_velocities);
 }
 
 TEST(TesseractMotionPlannersTrajoptSerializeUnit, SerializeTrajoptDefaultPlanToXml)  // NOLINT
 {
   TrajOptDefaultPlanProfile plan_profile = getTrajOptPlanProfile();
-  //  EXPECT_TRUE(toXMLFile(plan_profile, "/tmp/trajopt_default_plan_example_input.xml"));
-  EXPECT_TRUE(toXMLFile(plan_profile, "/home/tmarr/Documents/trajopt_default_plan_example_input.xml"));
+    EXPECT_TRUE(toXMLFile(plan_profile, "/tmp/trajopt_default_plan_example_input.xml"));
+//  EXPECT_TRUE(toXMLFile(plan_profile, "/home/tmarr/Documents/trajopt_default_plan_example_input.xml"));
 
-  //  TrajOptDefaultPlanProfile imported_plan_profile =
-  //  trajOptPlanFromXMLFile("/tmp/trajopt_default_plan_example_input.xml");
-  TrajOptDefaultPlanProfile imported_plan_profile = trajOptPlanFromXMLFile("/home/tmarr/Documents/"
-                                                                           "trajopt_default_plan_example_input.xml");
+    TrajOptDefaultPlanProfile imported_plan_profile =
+    trajOptPlanFromXMLFile("/tmp/trajopt_default_plan_example_input.xml");
+//  TrajOptDefaultPlanProfile imported_plan_profile = trajOptPlanFromXMLFile("/home/tmarr/Documents/"
+//                                                                           "trajopt_default_plan_example_input.xml");
 
   EXPECT_TRUE(toXMLFile(imported_plan_profile, "/tmp/trajopt_default_plan_example_input2.xml"));
-  EXPECT_TRUE(toXMLFile(imported_plan_profile, "/home/tmarr/Documents/trajopt_default_plan_example_input2.xml"));
+//  EXPECT_TRUE(toXMLFile(imported_plan_profile, "/home/tmarr/Documents/trajopt_default_plan_example_input2.xml"));
   EXPECT_TRUE(plan_profile.term_type == imported_plan_profile.term_type);
+}
+
+TEST(TesseractMotionPlannersOMPLSerializeUnit, SerializeOMPLDefaultPlanToXml)  // NOLINT
+{
+  OMPLDefaultPlanProfile plan_profile = getOMPLPlanProfile();
+
+    EXPECT_TRUE(toXMLFile(plan_profile, "/tmp/ompl_default_plan_example_input.xml"));
+//  EXPECT_TRUE(toXMLFile(plan_profile, "/home/tmarr/Documents/ompl_default_plan_example_input.xml"));
+
+    OMPLDefaultPlanProfile imported_plan_profile =
+    omplPlanFromXMLFile("/tmp/ompl_default_plan_example_input.xml");
+//  OMPLDefaultPlanProfile imported_plan_profile = omplPlanFromXMLFile("/home/tmarr/Documents/ompl_default_plan_example_input.xml");
+
+  EXPECT_TRUE(toXMLFile(imported_plan_profile, "/tmp/ompl_default_plan_example_input2.xml"));
+//  EXPECT_TRUE(toXMLFile(imported_plan_profile, "/home/tmarr/Documents/ompl_default_plan_example_input2.xml"));
+  EXPECT_TRUE(plan_profile.simplify == imported_plan_profile.simplify);
 }
 
 int main(int argc, char** argv)

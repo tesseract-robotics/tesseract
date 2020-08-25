@@ -1,9 +1,9 @@
 /**
  * @file serialize.h
- * @brief Provide methods for serializing trajopt plans to xml
+ * @brief Provide methods for serializing ompl plans to xml
  *
  * @author Tyler Marr
- * @date August 20, 2020
+ * @date August 24, 2020
  * @version TODO
  * @bug No known bugs
  *
@@ -23,28 +23,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_MOTION_PLANNERS_TRAJOPT_SERIALIZE_H
-#define TESSERACT_MOTION_PLANNERS_TRAJOPT_SERIALIZE_H
+#ifndef TESSERACT_MOTION_PLANNERS_OMPL_SERIALIZE_H
+#define TESSERACT_MOTION_PLANNERS_OMPL_SERIALIZE_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
-#include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
+#include <tesseract_motion_planners/ompl/profile/ompl_profile.h>
 
 namespace tesseract_planning
 {
-std::shared_ptr<tinyxml2::XMLDocument> toXMLDocument(const TrajOptPlanProfile& plan_profile);
+std::shared_ptr<tinyxml2::XMLDocument> toXMLDocument(const OMPLPlanProfile& plan_profile);
 
-bool toXMLFile(const TrajOptPlanProfile& plan_profile, const std::string& file_path);
+bool toXMLFile(const OMPLPlanProfile& plan_profile, const std::string& file_path);
 
-std::string toXMLString(const TrajOptPlanProfile& plan_profile);
-
-std::shared_ptr<tinyxml2::XMLDocument> toXMLDocument(const TrajOptCompositeProfile& composite_profile);
-
-bool toXMLFile(const TrajOptCompositeProfile& composite_profile, const std::string& file_path);
-
-std::string toXMLString(const TrajOptCompositeProfile& composite_profile);
+std::string toXMLString(const OMPLPlanProfile& plan_profile);
 
 }  // namespace tesseract_planning
-#endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_SERIALIZE_H
+#endif  // TESSERACT_MOTION_PLANNERS_OMPL_SERIALIZE_H
