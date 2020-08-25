@@ -35,7 +35,9 @@ add_library(${PROJECT_NAME}_descartes SHARED
   src/descartes/descartes_collision_edge_evaluator.cpp
   src/descartes/descartes_robot_sampler.cpp
   src/descartes/descartes_motion_planner_status_category.cpp
-  src/descartes/profile/descartes_default_plan_profile.cpp)
+  src/descartes/profile/descartes_default_plan_profile.cpp
+  src/descartes/serialize.cpp
+  src/descartes/deserialize.cpp)
 target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME}_core descartes::descartes_light descartes::descartes_samplers)
 tesseract_target_compile_options(${PROJECT_NAME}_descartes PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_descartes)
@@ -134,8 +136,8 @@ install(DIRECTORY include/${PROJECT_NAME}
 
 add_subdirectory(examples)
 
-#if (TESSERACT_ENABLE_TESTING)
+if (TESSERACT_ENABLE_TESTING)
   enable_testing()
   tesseract_add_run_tests_target()
   add_subdirectory(test)
-#endif()
+endif()
