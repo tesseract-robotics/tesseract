@@ -48,14 +48,15 @@ enum struct OMPLPlannerType : int
   LBKPIECE1 = 2,
   BKPIECE1 = 3,
   KPIECE1 = 4,
-  RRT = 5,
-  RRTConnect = 6,
-  RRTstar = 7,
-  TRRT = 8,
-  PRM = 9,
-  PRMstar = 10,
-  LazyPRMstar = 11,
-  SPARS = 12
+  BiTRRT = 5,
+  RRT = 6,
+  RRTConnect = 7,
+  RRTstar = 8,
+  TRRT = 9,
+  PRM = 10,
+  PRMstar = 11,
+  LazyPRMstar = 12,
+  SPARS = 13
 };
 
 struct OMPLPlannerConfigurator
@@ -208,12 +209,24 @@ struct KPIECE1Configurator : public OMPLPlannerConfigurator
 
   /** @brief Create the planner */
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
+
+  OMPLPlannerType getType() const override;
+
+  /** @brief Serialize planner to xml */
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
 struct BiTRRTConfigurator : public OMPLPlannerConfigurator
 {
+  BiTRRTConfigurator() = default;
+  BiTRRTConfigurator(const BiTRRTConfigurator&) = default;
+  BiTRRTConfigurator(const tinyxml2::XMLElement& xml_element);
+
+  /** @brief Planner type */
+  OMPLPlannerType type = OMPLPlannerType::BiTRRT;
+
   /** @brief Max motion added to tree */
-  double range = 0.;
+  double range = 0;
 
   /** @brief How much to increase or decrease temp. */
   double temp_change_factor = 0.1;

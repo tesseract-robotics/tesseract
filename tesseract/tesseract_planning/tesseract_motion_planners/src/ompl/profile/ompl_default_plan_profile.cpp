@@ -159,6 +159,12 @@ OMPLDefaultPlanProfile::OMPLDefaultPlanProfile(const tinyxml2::XMLElement& xml_e
           planners.push_back(ompl_planner);
           break;
         }
+        case static_cast<int>(OMPLPlannerType::BiTRRT):
+        {
+          BiTRRTConfigurator::ConstPtr ompl_planner = std::make_shared<const BiTRRTConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
         case static_cast<int>(OMPLPlannerType::RRT):
         {
           RRTConfigurator::ConstPtr ompl_planner = std::make_shared<const RRTConfigurator>(*e);
@@ -260,7 +266,7 @@ OMPLDefaultPlanProfile::OMPLDefaultPlanProfile(const tinyxml2::XMLElement& xml_e
   {
     std::string longest_valid_segment_length_string;
     status =
-        tesseract_common::QueryStringText(longest_valid_segment_fraction_element, longest_valid_segment_length_string);
+        tesseract_common::QueryStringText(longest_valid_segment_length_element, longest_valid_segment_length_string);
     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
       throw std::runtime_error("OMPLPlanProfile: Error parsing LongestValidSegmentLength string");
 

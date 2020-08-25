@@ -422,18 +422,6 @@ ompl::base::PlannerPtr KPIECE1Configurator::create(ompl::base::SpaceInformationP
   return planner;
 }
 
-ompl::base::PlannerPtr BiTRRTConfigurator::create(ompl::base::SpaceInformationPtr si) const
-{
-  auto planner = std::make_shared<ompl::geometric::BiTRRT>(si);
-  planner->setRange(range);
-  planner->setTempChangeFactor(temp_change_factor);
-  planner->setCostThreshold(cost_threshold);
-  planner->setInitTemperature(init_temperature);
-  planner->setFrontierThreshold(frontier_threshold);
-  planner->setFrontierNodeRatio(frontier_node_ratio);
-  return planner;
-}
-
 OMPLPlannerType KPIECE1Configurator::getType() const { return type; }
 
 tinyxml2::XMLElement* KPIECE1Configurator::toXML(tinyxml2::XMLDocument& doc) const
@@ -459,6 +447,145 @@ tinyxml2::XMLElement* KPIECE1Configurator::toXML(tinyxml2::XMLDocument& doc) con
   tinyxml2::XMLElement* min_valid_path_fraction_xml = doc.NewElement("MinValidPathFraction");
   min_valid_path_fraction_xml->SetText(min_valid_path_fraction);
   ompl_xml->InsertEndChild(min_valid_path_fraction_xml);
+
+  return ompl_xml;
+}
+
+BiTRRTConfigurator::BiTRRTConfigurator(const tinyxml2::XMLElement& xml_element)
+{
+  const tinyxml2::XMLElement* bitrrt_element = xml_element.FirstChildElement("BiTRRT");
+  const tinyxml2::XMLElement* range_element = bitrrt_element->FirstChildElement("Range");
+  const tinyxml2::XMLElement* temp_change_factor_element = bitrrt_element->FirstChildElement("TempChangeFactor");
+  const tinyxml2::XMLElement* cost_threshold_element = bitrrt_element->FirstChildElement("CostThreshold");
+  const tinyxml2::XMLElement* init_temperature_element = bitrrt_element->FirstChildElement("InitTemperature");
+  const tinyxml2::XMLElement* frontier_threshold_element = bitrrt_element->FirstChildElement("FrontierThreshold");
+  const tinyxml2::XMLElement* frontier_node_ratio_element = bitrrt_element->FirstChildElement("FrontierNodeRatio");
+
+  tinyxml2::XMLError status;
+
+  if (range_element)
+  {
+    std::string range_string;
+    status = tesseract_common::QueryStringText(range_element, range_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("OMPLConfigurator: BiTRRT: Error parsing Range string");
+
+    if (!tesseract_common::isNumeric(range_string))
+      throw std::runtime_error("OMPLConfigurator: BiTRRT: Range is not a numeric values.");
+
+    tesseract_common::toNumeric<double>(range_string, range);
+  }
+
+  if (temp_change_factor_element)
+  {
+    std::string temp_change_factor_string;
+    status = tesseract_common::QueryStringText(temp_change_factor_element, temp_change_factor_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("OMPLConfigurator: BiTRRT: Error parsing TempChangeFactor string");
+
+    if (!tesseract_common::isNumeric(temp_change_factor_string))
+      throw std::runtime_error("OMPLConfigurator: BiTRRT: TempChangeFactor is not a numeric values.");
+
+    tesseract_common::toNumeric<double>(temp_change_factor_string, temp_change_factor);
+  }
+
+  if (cost_threshold_element)
+  {
+    std::string cost_threshold_string;
+    status = tesseract_common::QueryStringText(cost_threshold_element, cost_threshold_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("OMPLConfigurator: BiTRRT: Error parsing CostThreshold string");
+
+    if (!tesseract_common::isNumeric(cost_threshold_string))
+    {
+      if (cost_threshold_string != "inf")
+        throw std::runtime_error("OMPLConfigurator: BiTRRT: CostThreshold is not a numeric values.");
+    }
+    else
+      tesseract_common::toNumeric<double>(cost_threshold_string, cost_threshold);
+  }
+
+  if (init_temperature_element)
+  {
+    std::string init_temperature_string;
+    status = tesseract_common::QueryStringText(init_temperature_element, init_temperature_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("OMPLConfigurator: BiTRRT: Error parsing InitTemperature string");
+
+    if (!tesseract_common::isNumeric(init_temperature_string))
+      throw std::runtime_error("OMPLConfigurator: BiTRRT: InitTemperature is not a numeric values.");
+
+    tesseract_common::toNumeric<double>(init_temperature_string, init_temperature);
+  }
+
+  if (frontier_threshold_element)
+  {
+    std::string frontier_threshold_string;
+    status = tesseract_common::QueryStringText(frontier_threshold_element, frontier_threshold_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("OMPLConfigurator: BiTRRT: Error parsing FrontierThreshold string");
+
+    if (!tesseract_common::isNumeric(frontier_threshold_string))
+      throw std::runtime_error("OMPLConfigurator: BiTRRT: FrontierThreshold is not a numeric values.");
+
+    tesseract_common::toNumeric<double>(frontier_threshold_string, frontier_threshold);
+  }
+
+  if (frontier_node_ratio_element)
+  {
+    std::string frontier_node_ratio_string;
+    status = tesseract_common::QueryStringText(frontier_node_ratio_element, frontier_node_ratio_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("OMPLConfigurator: BiTRRT: Error FrontierNodeRatio GoalBias string");
+
+    if (!tesseract_common::isNumeric(frontier_node_ratio_string))
+      throw std::runtime_error("OMPLConfigurator: BiTRRT: FrontierNodeRatio is not a numeric values.");
+
+    tesseract_common::toNumeric<double>(frontier_node_ratio_string, frontier_node_ratio);
+  }
+}
+
+ompl::base::PlannerPtr BiTRRTConfigurator::create(ompl::base::SpaceInformationPtr si) const
+{
+  auto planner = std::make_shared<ompl::geometric::BiTRRT>(si);
+  planner->setRange(range);
+  planner->setTempChangeFactor(temp_change_factor);
+  planner->setCostThreshold(cost_threshold);
+  planner->setInitTemperature(init_temperature);
+  planner->setFrontierThreshold(frontier_threshold);
+  planner->setFrontierNodeRatio(frontier_node_ratio);
+  return planner;
+}
+
+OMPLPlannerType BiTRRTConfigurator::getType() const { return type; }
+
+tinyxml2::XMLElement* BiTRRTConfigurator::toXML(tinyxml2::XMLDocument& doc) const
+{
+  tinyxml2::XMLElement* ompl_xml = doc.NewElement("BiTRRT");
+
+  tinyxml2::XMLElement* range_xml = doc.NewElement("Range");
+  range_xml->SetText(range);
+  ompl_xml->InsertEndChild(range_xml);
+
+  tinyxml2::XMLElement* temp_change_factor_xml = doc.NewElement("TempChangeFactor");
+  temp_change_factor_xml->SetText(temp_change_factor);
+  ompl_xml->InsertEndChild(temp_change_factor_xml);
+
+  tinyxml2::XMLElement* cost_threshold_xml = doc.NewElement("CostThreshold");
+  cost_threshold_xml->SetText(cost_threshold);
+  ompl_xml->InsertEndChild(cost_threshold_xml);
+
+  tinyxml2::XMLElement* init_temperature_xml = doc.NewElement("InitTemperature");
+  init_temperature_xml->SetText(init_temperature);
+  ompl_xml->InsertEndChild(init_temperature_xml);
+
+  tinyxml2::XMLElement* frontier_threshold_xml = doc.NewElement("FrontierThreshold");
+  frontier_threshold_xml->SetText(frontier_threshold);
+  ompl_xml->InsertEndChild(frontier_threshold_xml);
+
+  tinyxml2::XMLElement* frontier_node_ratio_xml = doc.NewElement("FrontierNodeRatio");
+  frontier_node_ratio_xml->SetText(frontier_node_ratio);
+  ompl_xml->InsertEndChild(frontier_node_ratio_xml);
 
   return ompl_xml;
 }

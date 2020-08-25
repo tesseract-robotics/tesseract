@@ -82,7 +82,33 @@ OMPLDefaultPlanProfile getOMPLPlanProfile()
 
   ompl_profile.simplify = true;
 
+  ompl_profile.planners.push_back(std::make_shared<const SBLConfigurator>());
+
+  ompl_profile.planners.push_back(std::make_shared<const ESTConfigurator>());
+
+  ompl_profile.planners.push_back(std::make_shared<const LBKPIECE1Configurator>());
+
+  ompl_profile.planners.push_back(std::make_shared<const BKPIECE1Configurator>());
+
   ompl_profile.planners.push_back(std::make_shared<const KPIECE1Configurator>());
+
+  ompl_profile.planners.push_back(std::make_shared<const BiTRRTConfigurator>());
+
+  ompl_profile.planners.push_back(std::make_shared<const RRTConfigurator>());
+
+  ompl_profile.planners.push_back(std::make_shared<const RRTConnectConfigurator>());
+
+  ompl_profile.planners.push_back(std::make_shared<const RRTstarConfigurator>());
+
+  ompl_profile.planners.push_back(std::make_shared<const TRRTConfigurator>());
+
+  ompl_profile.planners.push_back(std::make_shared<const PRMConfigurator>());
+
+  ompl_profile.planners.push_back(std::make_shared<const PRMstarConfigurator>());
+
+  ompl_profile.planners.push_back(std::make_shared<const LazyPRMstarConfigurator>());
+
+  ompl_profile.planners.push_back(std::make_shared<const SPARSConfigurator>());
 
   return ompl_profile;
 }
