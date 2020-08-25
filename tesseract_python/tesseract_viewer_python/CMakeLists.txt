@@ -39,7 +39,7 @@ if(SETUPTOOLS_DEB_LAYOUT)
 endif()
 
 install(CODE "message(STATUS \"Running setup.py in ${CMAKE_CURRENT_SOURCE_DIR}\")
-execute_process(COMMAND python ${CMAKE_CURRENT_BINARY_DIR}/python/setup.py install -f
+execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/python/setup.py install -f
 --root=/ --prefix=${CMAKE_INSTALL_PREFIX} ${SETUPTOOLS_ARG_EXTRA} --single-version-externally-managed WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})")
 
   # Allows Colcon to find non-Ament packages when using workspace underlays
