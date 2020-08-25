@@ -4,6 +4,9 @@
  *
  * This is based on the paper "A Forward Kinematics Data Structure for Efficient Evolutionary Inverse Kinematics".
  *
+ * Starke, S., Hendrich, N., & Zhang, J. (2018). A Forward Kinematics Data Structure for Efficient Evolutionary Inverse
+ * Kinematics. In Computational Kinematics (pp. 560-568). Springer, Cham.
+ *
  * @author Levi Armstrong
  * @date August 24, 2020
  * @version TODO
@@ -25,8 +28,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_ENVIRONMENTOFKT_NODE_H
-#define TESSERACT_ENVIRONMENTOFKT_NODE_H
+#ifndef TESSERACT_ENVIRONMENT_OFKT_NODE_H
+#define TESSERACT_ENVIRONMENT_OFKT_NODE_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -54,6 +57,8 @@ class OFKTNode
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using UPtr = std::unique_ptr<OFKTNode>;
+  using Ptr = std::shared_ptr<OFKTNode>;
+  using ConstPtr = std::shared_ptr<const OFKTNode>;
 
   OFKTNode() = default;
   virtual ~OFKTNode() = default;
@@ -211,4 +216,4 @@ public:
 };
 }  // namespace tesseract_environment
 
-#endif  // TESSERACT_ENVIRONMENTOFKT_NODE_H
+#endif  // TESSERACT_ENVIRONMENT_OFKT_NODE_H

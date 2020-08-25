@@ -37,7 +37,7 @@ target_include_directories(${PROJECT_NAME}_kdl SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}
     ${orocos_kdl_INCLUDE_DIRS}) # Orocos did not export target correctly
 
-add_library(${PROJECT_NAME}_ofkt SHARED src/ofkt/ofkt_state_solver.cpp)
+add_library(${PROJECT_NAME}_ofkt SHARED src/ofkt/ofkt_state_solver.cpp src/ofkt/ofkt_nodes.cpp)
 target_link_libraries(${PROJECT_NAME}_ofkt PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph console_bridge)
 tesseract_target_compile_options(${PROJECT_NAME}_ofkt PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_ofkt)

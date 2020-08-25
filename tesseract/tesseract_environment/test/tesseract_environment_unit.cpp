@@ -415,7 +415,7 @@ void runApplyCommandsTest()
 }
 
 template <typename S>
-void runCloneTest()
+void runEnvCloneTest()
 {
   // Get the environment
   auto env = getEnvironment<S>();
@@ -469,7 +469,7 @@ void runCloneTest()
 }
 
 template <typename S>
-void runSetStateTest()
+void runEnvSetStateTest()
 {
   // Get the environment
   auto env = getEnvironment<S>();
@@ -562,7 +562,7 @@ void runSetStateTest()
 }
 
 template <typename S>
-void runSetStateTest2()
+void runEnvSetStateTest2()
 {
   // Get the environment
   auto env = getEnvironment<S>();
@@ -708,17 +708,17 @@ TEST(TesseractEnvironmentUnit, EnvApplyCommands)  // NOLINT
 
 TEST(TesseractEnvironmentUnit, EnvClone)  // NOLINT
 {
-  runCloneTest<KDLStateSolver>();
-  runCloneTest<OFKTStateSolver>();
+  runEnvCloneTest<KDLStateSolver>();
+  runEnvCloneTest<OFKTStateSolver>();
 }
 
 TEST(TesseractEnvironmentUnit, EnvSetState)  // NOLINT
 {
-  runSetStateTest<KDLStateSolver>();
-  runSetStateTest<OFKTStateSolver>();
+  runEnvSetStateTest<KDLStateSolver>();
+  runEnvSetStateTest<OFKTStateSolver>();
 
-  runSetStateTest2<KDLStateSolver>();
-  runSetStateTest2<OFKTStateSolver>();
+  runEnvSetStateTest2<KDLStateSolver>();
+  runEnvSetStateTest2<OFKTStateSolver>();
 }
 
 int main(int argc, char** argv)

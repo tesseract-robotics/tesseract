@@ -4,6 +4,9 @@
  *
  * This is based on the paper "A Forward Kinematics Data Structure for Efficient Evolutionary Inverse Kinematics".
  *
+ * Starke, S., Hendrich, N., & Zhang, J. (2018). A Forward Kinematics Data Structure for Efficient Evolutionary Inverse
+ * Kinematics. In Computational Kinematics (pp. 560-568). Springer, Cham.
+ *
  * @author Levi Armstrong
  * @date August 24, 2020
  * @version TODO
@@ -40,6 +43,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+/**
+ * @brief An implementation of the Optimized Forward Kinematic Tree as a stat solver
+ *
+ * Starke, S., Hendrich, N., & Zhang, J. (2018). A Forward Kinematics Data Structure for Efficient Evolutionary Inverse
+ * Kinematics. In Computational Kinematics (pp. 560-568). Springer, Cham.
+ *
+ */
 class OFKTStateSolver : public StateSolver
 {
 public:
