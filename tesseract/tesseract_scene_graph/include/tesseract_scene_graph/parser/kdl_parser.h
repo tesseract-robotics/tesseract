@@ -199,11 +199,7 @@ protected:
  */
 inline bool parseSceneGraph(const SceneGraph& scene_graph, KDL::Tree& tree)
 {
-  if (!scene_graph.isTree())
-  {
-    CONSOLE_BRIDGE_logError("Tesseract KDL Parser can only parse Scene Graphs that are trees");
-    return false;
-  }
+  assert(scene_graph.isTree());
 
   const std::string& root_name = scene_graph.getRoot();
   const Link::ConstPtr& root_link = scene_graph.getLink(root_name);
