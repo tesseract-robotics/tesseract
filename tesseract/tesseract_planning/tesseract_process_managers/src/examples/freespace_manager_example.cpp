@@ -6,7 +6,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/tesseract.h>
 #include <tesseract_command_language/command_language.h>
-#include <tesseract_command_language/command_language_utils.h>
+#include <tesseract_command_language/utils/utils.h>
 #include <tesseract_process_managers/taskflow_generators/sequential_taskflow.h>
 #include <tesseract_process_managers/examples/freespace_example_program.h>
 #include <tesseract_process_managers/process_managers/freespace_process_manager.h>
