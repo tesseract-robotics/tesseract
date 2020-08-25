@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_command_language/command_language.h>
-#include <tesseract_command_language/command_language_utils.h>
+#include <tesseract_command_language/utils/utils.h>
 #include <tesseract_motion_planners/core/utils.h>
 
 namespace tesseract_planning

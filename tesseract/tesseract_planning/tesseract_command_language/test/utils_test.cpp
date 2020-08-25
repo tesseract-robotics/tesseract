@@ -28,7 +28,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/command_language.h>
-#include <tesseract_command_language/command_language_utils.h>
+#include <tesseract_command_language/utils/utils.h>
 
 using namespace tesseract_planning;
 

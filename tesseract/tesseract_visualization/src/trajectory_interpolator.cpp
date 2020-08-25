@@ -27,7 +27,7 @@
 /* Based on MoveIt code authored by: Ioan Sucan, Adam Leeper */
 
 #include <tesseract_command_language/command_language.h>
-#include <tesseract_command_language/command_language_utils.h>
+#include <tesseract_command_language/utils/utils.h>
 #include <tesseract_visualization/trajectory_interpolator.h>
 
 namespace tesseract_visualization

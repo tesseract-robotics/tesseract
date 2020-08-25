@@ -13,14 +13,16 @@ add_library(${PROJECT_NAME} SHARED
   src/plan_instruction.cpp
   src/move_instruction.cpp
   src/composite_instruction.cpp
-  src/command_language_utils.cpp
   src/instruction_type.cpp
   src/waypoint_type.cpp
   src/serialize.cpp
   src/deserialize.cpp
   src/manipulator_info.cpp
   src/null_waypoint.cpp
-  src/state_waypoint.cpp)
+  src/state_waypoint.cpp
+  src/utils/flatten_utils.cpp
+  src/utils/get_instruction_utils.cpp
+  src/utils/utils.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC console_bridge tesseract::tesseract_common)
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME})

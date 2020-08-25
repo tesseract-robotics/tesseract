@@ -59,7 +59,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/core/utils.h>
 
-#include <tesseract_command_language/command_language_utils.h>
+#include <tesseract_command_language/utils/utils.h>
 #include <tesseract_motion_planners/interface_utils.h>
 
 using namespace tesseract;
