@@ -788,6 +788,7 @@ Environment::Ptr Environment::clone() const
     cloned_env->continuous_manager_ = continuous_manager_->clone();
     cloned_env->continuous_manager_->setIsContactAllowedFn(cloned_env->is_contact_allowed_fn_);
   }
+
   cloned_env->discrete_manager_name_ = discrete_manager_name_;
   cloned_env->continuous_manager_name_ = continuous_manager_name_;
   cloned_env->discrete_factory_ = discrete_factory_;

@@ -3,7 +3,7 @@ find_package(tesseract_support REQUIRED)
 find_package(tesseract_urdf REQUIRED)
 
 add_executable(${PROJECT_NAME}_unit tesseract_environment_unit.cpp)
-target_link_libraries(${PROJECT_NAME}_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME}_kdl tesseract::tesseract_support tesseract::tesseract_urdf tesseract::tesseract_collision_bullet tesseract::tesseract_collision_fcl tesseract::tesseract_scene_graph)
+target_link_libraries(${PROJECT_NAME}_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME}_kdl ${PROJECT_NAME}_ofkt tesseract::tesseract_support tesseract::tesseract_urdf tesseract::tesseract_collision_bullet tesseract::tesseract_collision_fcl tesseract::tesseract_scene_graph)
 tesseract_target_compile_options(${PROJECT_NAME}_unit PRIVATE)
 tesseract_clang_tidy(${PROJECT_NAME}_unit)
 tesseract_code_coverage(${PROJECT_NAME}_unit ALL EXCLUDE ${COVERAGE_EXCLUDE})

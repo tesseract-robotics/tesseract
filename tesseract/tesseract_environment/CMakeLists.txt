@@ -15,7 +15,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core SHARED src/core/environment.cpp)
-target_link_libraries(${PROJECT_NAME}_core PUBLIC tesseract::tesseract_collision_core tesseract::tesseract_scene_graph)
+target_link_libraries(${PROJECT_NAME}_core PUBLIC tesseract::tesseract_common tesseract::tesseract_collision_core tesseract::tesseract_scene_graph)
 tesseract_target_compile_options(${PROJECT_NAME}_core PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_core)
 tesseract_code_coverage(${PROJECT_NAME}_core ALL EXCLUDE ${COVERAGE_EXCLUDE})
@@ -23,11 +23,10 @@ target_include_directories(${PROJECT_NAME}_core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_core SYSTEM PUBLIC
-    ${EIGEN3_INCLUDE_DIRS}
-    $<TARGET_PROPERTY:tesseract::tesseract_common,INTERFACE_INCLUDE_DIRECTORIES>) #tesseract::tesseract_common Due to bug in catkin, there is an open PR
+    ${EIGEN3_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_kdl SHARED src/kdl/kdl_state_solver.cpp)
-target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_collision_fcl tesseract::tesseract_collision_bullet tesseract::tesseract_scene_graph orocos-kdl console_bridge ${BULLET_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph orocos-kdl console_bridge)
 tesseract_target_compile_options(${PROJECT_NAME}_kdl PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_kdl)
 tesseract_code_coverage(${PROJECT_NAME}_kdl ALL EXCLUDE ${COVERAGE_EXCLUDE})
@@ -36,10 +35,20 @@ target_include_directories(${PROJECT_NAME}_kdl PUBLIC
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_kdl SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}
-    ${BULLET_INCLUDE_DIRS}
     ${orocos_kdl_INCLUDE_DIRS}) # Orocos did not export target correctly
 
-tesseract_configure_package(${PROJECT_NAME}_core ${PROJECT_NAME}_kdl)
+add_library(${PROJECT_NAME}_ofkt SHARED src/ofkt/ofkt_state_solver.cpp)
+target_link_libraries(${PROJECT_NAME}_ofkt PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph console_bridge)
+tesseract_target_compile_options(${PROJECT_NAME}_ofkt PUBLIC)
+tesseract_clang_tidy(${PROJECT_NAME}_ofkt)
+tesseract_code_coverage(${PROJECT_NAME}_ofkt ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_include_directories(${PROJECT_NAME}_ofkt PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+target_include_directories(${PROJECT_NAME}_ofkt SYSTEM PUBLIC
+    ${EIGEN3_INCLUDE_DIRS})
+
+tesseract_configure_package(${PROJECT_NAME}_core ${PROJECT_NAME}_kdl ${PROJECT_NAME}_ofkt)
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
@@ -48,8 +57,8 @@ install(DIRECTORY include/${PROJECT_NAME}
   PATTERN ".svn" EXCLUDE
 )
 
-if (TESSERACT_ENABLE_TESTING)
-  enable_testing()
+#if (TESSERACT_ENABLE_TESTING)
+#  enable_testing()
   tesseract_add_run_tests_target()
   add_subdirectory(test)
-endif()
+#endif()
