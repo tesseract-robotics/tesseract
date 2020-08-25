@@ -45,7 +45,8 @@ bool FreespaceProcessManager::init(ProcessInput input)
   }
 
   // Create the dependency graph
-  input.instruction->print("Generating Taskflow for: ");
+  if (console_bridge::getLogLevel() == console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG)
+    input.instruction->print("Generating Taskflow for: ");
   auto task = taskflow_
                   .composed_of(taskflow_generator_->generateTaskflow(
                       input, [this]() { successCallback(); }, [this]() { failureCallback(); }))
