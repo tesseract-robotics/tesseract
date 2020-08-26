@@ -116,6 +116,29 @@ TEST(TestTimeParameterization, TestIterativeSplineAddPoints)
   ASSERT_LT(program.back().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>()->time, 5.0);
 }
 
+TEST(TestTimeParameterization, TestIterativeSplineDynamicParams)
+{
+  IterativeSplineParameterization time_parameterization(false);
+  CompositeInstruction program = createStraightTrajectory();
+  Eigen::VectorXd max_velocity(6);
+  max_velocity << 2.088, 2.082, 3.27, 3.6, 3.3, 3.078;
+  Eigen::VectorXd max_acceleration(6);
+  max_acceleration << 1, 1, 1, 1, 1, 1;
+  Eigen::VectorXd max_velocity_scaling_factors = Eigen::VectorXd::Ones(static_cast<Eigen::Index>(program.size() + 1));
+  Eigen::VectorXd max_acceleration_scaling_factors =
+      Eigen::VectorXd::Ones(static_cast<Eigen::Index>(program.size() + 1));  // +1 for start instruction
+
+  EXPECT_TRUE(time_parameterization.compute(
+      program, max_velocity, max_acceleration, max_velocity_scaling_factors, max_acceleration_scaling_factors));
+  EXPECT_LT(program.back().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>()->time, 5.0);
+
+  program = createStraightTrajectory();
+  max_velocity_scaling_factors[0] = 0.5;
+  max_acceleration_scaling_factors[0] = 0.5;
+  EXPECT_TRUE(time_parameterization.compute(
+      program, max_velocity, max_acceleration, max_velocity_scaling_factors, max_acceleration_scaling_factors));
+}
+
 TEST(TestTimeParameterization, TestRepeatedPoint)
 {
   IterativeSplineParameterization time_parameterization(true);
@@ -130,5 +153,6 @@ int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
 
+  console_bridge::setLogLevel(console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG);
   return RUN_ALL_TESTS();
 }
