@@ -36,6 +36,27 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
+struct IterativeSplineParameterizationProfile
+{
+  using Ptr = std::shared_ptr<IterativeSplineParameterizationProfile>;
+  using ConstPtr = std::shared_ptr<const IterativeSplineParameterizationProfile>;
+
+  IterativeSplineParameterizationProfile(double max_velocity_scaling_factor = 1.0,
+                                         double max_acceleration_scaling_factor = 1.0)
+    : max_velocity_scaling_factor(max_velocity_scaling_factor)
+    , max_acceleration_scaling_factor(max_acceleration_scaling_factor)
+  {
+  }
+
+  /** @brief max_velocity_scaling_factor The max velocity scaling factor passed to the solver */
+  double max_velocity_scaling_factor = 1.0;
+
+  /** @brief max_velocity_scaling_factor The max acceleration scaling factor passed to the solver */
+  double max_acceleration_scaling_factor = 1.0;
+};
+using IterativeSplineParameterizationProfileMap =
+    std::unordered_map<std::string, IterativeSplineParameterizationProfile::Ptr>;
+
 class IterativeSplineParameterizationProcessGenerator : public ProcessGenerator
 {
 public:
@@ -62,11 +83,8 @@ public:
 
   void setAbort(bool abort) override;
 
-  /** @brief max_velocity_scaling_factor The max velocity scaling factor passed to the solver */
-  double max_velocity_scaling_factor = 1.0;
-
-  /** @brief max_velocity_scaling_factor The max acceleration scaling factor passed to the solver */
-  double max_acceleration_scaling_factor = 1.0;
+  IterativeSplineParameterizationProfileMap composite_profiles;
+  IterativeSplineParameterizationProfileMap plan_profiles;
 
 private:
   /** @brief If true, all tasks return immediately. Workaround for https://github.com/taskflow/taskflow/issues/201 */
