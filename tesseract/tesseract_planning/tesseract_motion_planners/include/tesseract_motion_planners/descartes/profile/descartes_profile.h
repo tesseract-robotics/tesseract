@@ -46,6 +46,13 @@ public:
   using Ptr = std::shared_ptr<DescartesPlanProfile<FloatType>>;
   using ConstPtr = std::shared_ptr<const DescartesPlanProfile<FloatType>>;
 
+  DescartesPlanProfile() = default;
+  virtual ~DescartesPlanProfile() = default;
+  DescartesPlanProfile(const DescartesPlanProfile&) = default;
+  DescartesPlanProfile& operator=(const DescartesPlanProfile&) = default;
+  DescartesPlanProfile(DescartesPlanProfile&&) noexcept = default;
+  DescartesPlanProfile& operator=(DescartesPlanProfile&&) noexcept = default;
+
   virtual void apply(DescartesProblem<FloatType>& prob,
                      const Eigen::Isometry3d& cartesian_waypoint,
                      const Instruction& parent_instruction,
@@ -59,6 +66,8 @@ public:
                      const ManipulatorInfo& manip_info,
                      const std::vector<std::string>& active_links,
                      int index) = 0;
+
+  virtual tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const = 0;
 };
 
 template <typename FloatType>

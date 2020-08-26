@@ -26,6 +26,13 @@
 #ifndef TESSERACT_MOTION_PLANNERS_OMPL_OMPL_DEFAULT_PLAN_PROFILE_H
 #define TESSERACT_MOTION_PLANNERS_OMPL_OMPL_DEFAULT_PLAN_PROFILE_H
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <vector>
+#include <Eigen/Geometry>
+#include <Eigen/Core>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract_motion_planners/ompl/utils.h>
 #include <tesseract_motion_planners/ompl/ompl_planner_configurator.h>
 #include <tesseract_motion_planners/ompl/profile/ompl_profile.h>
@@ -43,6 +50,14 @@ class OMPLDefaultPlanProfile : public OMPLPlanProfile
 public:
   using Ptr = std::shared_ptr<OMPLDefaultPlanProfile>;
   using ConstPtr = std::shared_ptr<const OMPLDefaultPlanProfile>;
+
+  OMPLDefaultPlanProfile() = default;
+  ~OMPLDefaultPlanProfile() override = default;
+  OMPLDefaultPlanProfile(const OMPLDefaultPlanProfile&) = default;
+  OMPLDefaultPlanProfile& operator=(const OMPLDefaultPlanProfile&) = default;
+  OMPLDefaultPlanProfile(OMPLDefaultPlanProfile&&) noexcept = default;
+  OMPLDefaultPlanProfile& operator=(OMPLDefaultPlanProfile&&) noexcept = default;
+  OMPLDefaultPlanProfile(const tinyxml2::XMLElement& xml_element);
 
   /** @brief The OMPL state space to use when planning */
   OMPLProblemStateSpace state_space{ OMPLProblemStateSpace::REAL_STATE_SPACE };
@@ -164,6 +179,8 @@ public:
    */
   ompl::base::StateSamplerPtr allocWeightedRealVectorStateSampler(const ompl::base::StateSpace* space,
                                                                   const Eigen::MatrixX2d& limits) const;
+
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 
 protected:
   bool processStartAndGoalState(OMPLProblem& prob,

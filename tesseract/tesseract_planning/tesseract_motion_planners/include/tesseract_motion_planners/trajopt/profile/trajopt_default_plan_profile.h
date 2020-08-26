@@ -43,6 +43,9 @@ public:
   using Ptr = std::shared_ptr<TrajOptDefaultPlanProfile>;
   using ConstPtr = std::shared_ptr<const TrajOptDefaultPlanProfile>;
 
+  TrajOptDefaultPlanProfile() = default;
+  TrajOptDefaultPlanProfile(const tinyxml2::XMLElement& xml_element);
+
   Eigen::VectorXd cartesian_coeff{ Eigen::VectorXd::Constant(1, 1, 5) };
   Eigen::VectorXd joint_coeff{ Eigen::VectorXd::Constant(1, 1, 5) };
   trajopt::TermType term_type{ trajopt::TermType::TT_CNT };
@@ -81,6 +84,8 @@ public:
              const ManipulatorInfo& manip_info,
              const std::vector<std::string>& active_links,
              int index) override;
+
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 
 protected:
   void addConstraintErrorFunctions(trajopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;

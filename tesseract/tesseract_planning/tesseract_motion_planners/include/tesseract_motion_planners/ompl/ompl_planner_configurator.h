@@ -36,10 +36,29 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/SpaceInformation.h>
 #include <ompl/base/Planner.h>
+#include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
+enum class OMPLPlannerType
+{
+  SBL = 0,
+  EST = 1,
+  LBKPIECE1 = 2,
+  BKPIECE1 = 3,
+  KPIECE1 = 4,
+  BiTRRT = 5,
+  RRT = 6,
+  RRTConnect = 7,
+  RRTstar = 8,
+  TRRT = 9,
+  PRM = 10,
+  PRMstar = 11,
+  LazyPRMstar = 12,
+  SPARS = 13
+};
+
 struct OMPLPlannerConfigurator
 {
   using Ptr = std::shared_ptr<OMPLPlannerConfigurator>;
@@ -53,19 +72,44 @@ struct OMPLPlannerConfigurator
   OMPLPlannerConfigurator& operator=(OMPLPlannerConfigurator&&) = default;
 
   virtual ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const = 0;
+
+  virtual OMPLPlannerType getType() const = 0;
+
+  virtual tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const = 0;
 };
 
 struct SBLConfigurator : public OMPLPlannerConfigurator
 {
+  SBLConfigurator() = default;
+  ~SBLConfigurator() override = default;
+  SBLConfigurator(const SBLConfigurator&) = default;
+  SBLConfigurator& operator=(const SBLConfigurator&) = default;
+  SBLConfigurator(SBLConfigurator&&) = default;
+  SBLConfigurator& operator=(SBLConfigurator&&) = default;
+  SBLConfigurator(const tinyxml2::XMLElement& xml_element);
+
   /** @brief Max motion added to tree */
   double range = 0;
 
   /** @brief Create the planner */
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
+
+  OMPLPlannerType getType() const override;
+
+  /** @brief Serialize planner to xml */
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
 struct ESTConfigurator : public OMPLPlannerConfigurator
 {
+  ESTConfigurator() = default;
+  ~ESTConfigurator() override = default;
+  ESTConfigurator(const ESTConfigurator&) = default;
+  ESTConfigurator& operator=(const ESTConfigurator&) = default;
+  ESTConfigurator(ESTConfigurator&&) = default;
+  ESTConfigurator& operator=(ESTConfigurator&&) = default;
+  ESTConfigurator(const tinyxml2::XMLElement& xml_element);
+
   /** @brief Max motion added to tree */
   double range = 0;
 
@@ -74,10 +118,23 @@ struct ESTConfigurator : public OMPLPlannerConfigurator
 
   /** @brief Create the planner */
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
+
+  OMPLPlannerType getType() const override;
+
+  /** @brief Serialize planner to xml */
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
 struct LBKPIECE1Configurator : public OMPLPlannerConfigurator
 {
+  LBKPIECE1Configurator() = default;
+  ~LBKPIECE1Configurator() override = default;
+  LBKPIECE1Configurator(const LBKPIECE1Configurator&) = default;
+  LBKPIECE1Configurator& operator=(const LBKPIECE1Configurator&) = default;
+  LBKPIECE1Configurator(LBKPIECE1Configurator&&) = default;
+  LBKPIECE1Configurator& operator=(LBKPIECE1Configurator&&) = default;
+  LBKPIECE1Configurator(const tinyxml2::XMLElement& xml_element);
+
   /** @brief Max motion added to tree */
   double range = 0;
 
@@ -89,10 +146,23 @@ struct LBKPIECE1Configurator : public OMPLPlannerConfigurator
 
   /** @brief Create the planner */
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
+
+  OMPLPlannerType getType() const override;
+
+  /** @brief Serialize planner to xml */
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
 struct BKPIECE1Configurator : public OMPLPlannerConfigurator
 {
+  BKPIECE1Configurator() = default;
+  ~BKPIECE1Configurator() override = default;
+  BKPIECE1Configurator(const BKPIECE1Configurator&) = default;
+  BKPIECE1Configurator& operator=(const BKPIECE1Configurator&) = default;
+  BKPIECE1Configurator(BKPIECE1Configurator&&) = default;
+  BKPIECE1Configurator& operator=(BKPIECE1Configurator&&) = default;
+  BKPIECE1Configurator(const tinyxml2::XMLElement& xml_element);
+
   /** @brief Max motion added to tree */
   double range = 0;
 
@@ -107,10 +177,23 @@ struct BKPIECE1Configurator : public OMPLPlannerConfigurator
 
   /** @brief Create the planner */
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
+
+  OMPLPlannerType getType() const override;
+
+  /** @brief Serialize planner to xml */
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
 struct KPIECE1Configurator : public OMPLPlannerConfigurator
 {
+  KPIECE1Configurator() = default;
+  ~KPIECE1Configurator() override = default;
+  KPIECE1Configurator(const KPIECE1Configurator&) = default;
+  KPIECE1Configurator& operator=(const KPIECE1Configurator&) = default;
+  KPIECE1Configurator(KPIECE1Configurator&&) = default;
+  KPIECE1Configurator& operator=(KPIECE1Configurator&&) = default;
+  KPIECE1Configurator(const tinyxml2::XMLElement& xml_element);
+
   /** @brief Max motion added to tree */
   double range = 0;
 
@@ -128,12 +211,25 @@ struct KPIECE1Configurator : public OMPLPlannerConfigurator
 
   /** @brief Create the planner */
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
+
+  OMPLPlannerType getType() const override;
+
+  /** @brief Serialize planner to xml */
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
 struct BiTRRTConfigurator : public OMPLPlannerConfigurator
 {
+  BiTRRTConfigurator() = default;
+  ~BiTRRTConfigurator() override = default;
+  BiTRRTConfigurator(const BiTRRTConfigurator&) = default;
+  BiTRRTConfigurator& operator=(const BiTRRTConfigurator&) = default;
+  BiTRRTConfigurator(BiTRRTConfigurator&&) = default;
+  BiTRRTConfigurator& operator=(BiTRRTConfigurator&&) = default;
+  BiTRRTConfigurator(const tinyxml2::XMLElement& xml_element);
+
   /** @brief Max motion added to tree */
-  double range = 0.;
+  double range = 0;
 
   /** @brief How much to increase or decrease temp. */
   double temp_change_factor = 0.1;
@@ -153,10 +249,23 @@ struct BiTRRTConfigurator : public OMPLPlannerConfigurator
 
   /** @brief Create the planner */
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
+
+  OMPLPlannerType getType() const override;
+
+  /** @brief Serialize planner to xml */
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
 struct RRTConfigurator : public OMPLPlannerConfigurator
 {
+  RRTConfigurator() = default;
+  ~RRTConfigurator() override = default;
+  RRTConfigurator(const RRTConfigurator&) = default;
+  RRTConfigurator& operator=(const RRTConfigurator&) = default;
+  RRTConfigurator(RRTConfigurator&&) = default;
+  RRTConfigurator& operator=(RRTConfigurator&&) = default;
+  RRTConfigurator(const tinyxml2::XMLElement& xml_element);
+
   /** @brief Max motion added to tree */
   double range = 0;
 
@@ -165,19 +274,45 @@ struct RRTConfigurator : public OMPLPlannerConfigurator
 
   /** @brief Create the planner */
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
+
+  OMPLPlannerType getType() const override;
+
+  /** @brief Serialize planner to xml */
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
 struct RRTConnectConfigurator : public OMPLPlannerConfigurator
 {
+  RRTConnectConfigurator() = default;
+  ~RRTConnectConfigurator() override = default;
+  RRTConnectConfigurator(const RRTConnectConfigurator&) = default;
+  RRTConnectConfigurator& operator=(const RRTConnectConfigurator&) = default;
+  RRTConnectConfigurator(RRTConnectConfigurator&&) = default;
+  RRTConnectConfigurator& operator=(RRTConnectConfigurator&&) = default;
+  RRTConnectConfigurator(const tinyxml2::XMLElement& xml_element);
+
   /** @brief Max motion added to tree */
   double range = 0;
 
   /** @brief Create the planner */
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
+
+  OMPLPlannerType getType() const override;
+
+  /** @brief Serialize planner to xml */
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
 struct RRTstarConfigurator : public OMPLPlannerConfigurator
 {
+  RRTstarConfigurator() = default;
+  ~RRTstarConfigurator() override = default;
+  RRTstarConfigurator(const RRTstarConfigurator&) = default;
+  RRTstarConfigurator& operator=(const RRTstarConfigurator&) = default;
+  RRTstarConfigurator(RRTstarConfigurator&&) = default;
+  RRTstarConfigurator& operator=(RRTstarConfigurator&&) = default;
+  RRTstarConfigurator(const tinyxml2::XMLElement& xml_element);
+
   /** @brief Max motion added to tree */
   double range = 0;
 
@@ -189,10 +324,23 @@ struct RRTstarConfigurator : public OMPLPlannerConfigurator
 
   /** @brief Create the planner */
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
+
+  OMPLPlannerType getType() const override;
+
+  /** @brief Serialize planner to xml */
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
 struct TRRTConfigurator : public OMPLPlannerConfigurator
 {
+  TRRTConfigurator() = default;
+  ~TRRTConfigurator() override = default;
+  TRRTConfigurator(const TRRTConfigurator&) = default;
+  TRRTConfigurator& operator=(const TRRTConfigurator&) = default;
+  TRRTConfigurator(TRRTConfigurator&&) = default;
+  TRRTConfigurator& operator=(TRRTConfigurator&&) = default;
+  TRRTConfigurator(const tinyxml2::XMLElement& xml_element);
+
   /** @brief Max motion added to tree */
   double range = 0;
 
@@ -213,31 +361,83 @@ struct TRRTConfigurator : public OMPLPlannerConfigurator
 
   /** @brief Create the planner */
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
+
+  OMPLPlannerType getType() const override;
+
+  /** @brief Serialize planner to xml */
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
 struct PRMConfigurator : public OMPLPlannerConfigurator
 {
+  PRMConfigurator() = default;
+  ~PRMConfigurator() override = default;
+  PRMConfigurator(const PRMConfigurator&) = default;
+  PRMConfigurator& operator=(const PRMConfigurator&) = default;
+  PRMConfigurator(PRMConfigurator&&) = default;
+  PRMConfigurator& operator=(PRMConfigurator&&) = default;
+  PRMConfigurator(const tinyxml2::XMLElement& xml_element);
+
   /** @brief Use k nearest neighbors. */
   int max_nearest_neighbors = 10;
 
   /** @brief Create the planner */
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
+
+  OMPLPlannerType getType() const override;
+
+  /** @brief Serialize planner to xml */
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
 struct PRMstarConfigurator : public OMPLPlannerConfigurator
 {
+  PRMstarConfigurator() = default;
+  ~PRMstarConfigurator() override = default;
+  PRMstarConfigurator(const PRMstarConfigurator&) = default;
+  PRMstarConfigurator& operator=(const PRMstarConfigurator&) = default;
+  PRMstarConfigurator(PRMstarConfigurator&&) = default;
+  PRMstarConfigurator& operator=(PRMstarConfigurator&&) = default;
+  PRMstarConfigurator(const tinyxml2::XMLElement& xml_element);
+
   /** @brief Create the planner */
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
+
+  OMPLPlannerType getType() const override;
+
+  /** @brief Serialize planner to xml */
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
 struct LazyPRMstarConfigurator : public OMPLPlannerConfigurator
 {
+  LazyPRMstarConfigurator() = default;
+  ~LazyPRMstarConfigurator() override = default;
+  LazyPRMstarConfigurator(const LazyPRMstarConfigurator&) = default;
+  LazyPRMstarConfigurator& operator=(const LazyPRMstarConfigurator&) = default;
+  LazyPRMstarConfigurator(LazyPRMstarConfigurator&&) = default;
+  LazyPRMstarConfigurator& operator=(LazyPRMstarConfigurator&&) = default;
+  LazyPRMstarConfigurator(const tinyxml2::XMLElement& xml_element);
+
   /** @brief Create the planner */
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
+
+  OMPLPlannerType getType() const override;
+
+  /** @brief Serialize planner to xml */
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
 struct SPARSConfigurator : public OMPLPlannerConfigurator
 {
+  SPARSConfigurator() = default;
+  ~SPARSConfigurator() override = default;
+  SPARSConfigurator(const SPARSConfigurator&) = default;
+  SPARSConfigurator& operator=(const SPARSConfigurator&) = default;
+  SPARSConfigurator(SPARSConfigurator&&) = default;
+  SPARSConfigurator& operator=(SPARSConfigurator&&) = default;
+  SPARSConfigurator(const tinyxml2::XMLElement& xml_element);
+
   /** @brief The maximum number of failures before terminating the algorithm */
   int max_failures = 1000;
 
@@ -252,6 +452,11 @@ struct SPARSConfigurator : public OMPLPlannerConfigurator
 
   /** @brief Create the planner */
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
+
+  OMPLPlannerType getType() const override;
+
+  /** @brief Serialize planner to xml */
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
 }  // namespace tesseract_planning
