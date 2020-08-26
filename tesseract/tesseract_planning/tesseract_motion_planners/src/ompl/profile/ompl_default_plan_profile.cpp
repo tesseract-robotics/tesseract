@@ -47,6 +47,254 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
+OMPLDefaultPlanProfile::OMPLDefaultPlanProfile(const tinyxml2::XMLElement& xml_element)
+{
+  const tinyxml2::XMLElement* state_space_element = xml_element.FirstChildElement("StateSpace");
+  const tinyxml2::XMLElement* planning_time_element = xml_element.FirstChildElement("PlanningTime");
+  const tinyxml2::XMLElement* max_solutions_element = xml_element.FirstChildElement("MaxSolutions");
+  const tinyxml2::XMLElement* simplify_element = xml_element.FirstChildElement("Simplify");
+  const tinyxml2::XMLElement* optimize_element = xml_element.FirstChildElement("Optimize");
+  const tinyxml2::XMLElement* planners_element = xml_element.FirstChildElement("Planners");
+  const tinyxml2::XMLElement* collision_check_element = xml_element.FirstChildElement("CollisionCheck");
+  const tinyxml2::XMLElement* collision_continuous_element = xml_element.FirstChildElement("CollisionContinuous");
+  const tinyxml2::XMLElement* collision_safety_margin_element = xml_element.FirstChildElement("CollisionSafetyMargin");
+  const tinyxml2::XMLElement* longest_valid_segment_fraction_element = xml_element.FirstChildElement("LongestValidSegme"
+                                                                                                     "ntFraction");
+  const tinyxml2::XMLElement* longest_valid_segment_length_element = xml_element.FirstChildElement("LongestValidSegment"
+                                                                                                   "Length");
+  const tinyxml2::XMLElement* weights_element = xml_element.FirstChildElement("Weights");
+
+  tinyxml2::XMLError status;
+
+  if (state_space_element)
+  {
+    int type = static_cast<int>(OMPLProblemStateSpace::REAL_STATE_SPACE);
+    status = state_space_element->QueryIntAttribute("type", &type);
+    if (status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("OMPLPlanProfile: Error parsing StateSpace type attribute.");
+
+    state_space = static_cast<OMPLProblemStateSpace>(type);
+  }
+
+  if (planning_time_element)
+  {
+    std::string planning_time_string;
+    status = tesseract_common::QueryStringText(planning_time_element, planning_time_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("OMPLPlanProfile: Error parsing PlanningTime string");
+
+    if (!tesseract_common::isNumeric(planning_time_string))
+      throw std::runtime_error("OMPLPlanProfile: PlanningTime is not a numeric values.");
+
+    tesseract_common::toNumeric<double>(planning_time_string, planning_time);
+  }
+
+  if (max_solutions_element)
+  {
+    std::string max_solutions_string;
+    status = tesseract_common::QueryStringText(max_solutions_element, max_solutions_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("OMPLPlanProfile: Error parsing MaxSolutions string");
+
+    if (!tesseract_common::isNumeric(max_solutions_string))
+      throw std::runtime_error("OMPLPlanProfile: MaxSolutions is not a numeric values.");
+
+    tesseract_common::toNumeric<int>(max_solutions_string, max_solutions);
+  }
+
+  if (simplify_element)
+  {
+    status = simplify_element->QueryBoolText(&simplify);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("OMPLPlanProfile: Error parsing Simplify string");
+  }
+
+  if (optimize_element)
+  {
+    status = optimize_element->QueryBoolText(&optimize);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("OMPLPlanProfile: Error parsing Optimize string");
+  }
+
+  if (planners_element)
+  {
+    planners.clear();
+    for (const tinyxml2::XMLElement* e = planners_element->FirstChildElement("Planner"); e;
+         e = e->NextSiblingElement("Planner"))
+    {
+      int type;
+      status = e->QueryIntAttribute("type", &type);
+      if (status != tinyxml2::XML_SUCCESS)
+        throw std::runtime_error("OMPLPlanProfile: Error parsing Planner type attribute.");
+
+      switch (type)
+      {
+        case static_cast<int>(OMPLPlannerType::SBL):
+        {
+          SBLConfigurator::ConstPtr ompl_planner = std::make_shared<const SBLConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::EST):
+        {
+          ESTConfigurator::ConstPtr ompl_planner = std::make_shared<const ESTConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::LBKPIECE1):
+        {
+          LBKPIECE1Configurator::ConstPtr ompl_planner = std::make_shared<const LBKPIECE1Configurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::BKPIECE1):
+        {
+          BKPIECE1Configurator::ConstPtr ompl_planner = std::make_shared<const BKPIECE1Configurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::KPIECE1):
+        {
+          KPIECE1Configurator::ConstPtr ompl_planner = std::make_shared<const KPIECE1Configurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::BiTRRT):
+        {
+          BiTRRTConfigurator::ConstPtr ompl_planner = std::make_shared<const BiTRRTConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::RRT):
+        {
+          RRTConfigurator::ConstPtr ompl_planner = std::make_shared<const RRTConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::RRTConnect):
+        {
+          RRTConnectConfigurator::ConstPtr ompl_planner = std::make_shared<const RRTConnectConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::RRTstar):
+        {
+          RRTstarConfigurator::ConstPtr ompl_planner = std::make_shared<const RRTstarConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::TRRT):
+        {
+          TRRTConfigurator::ConstPtr ompl_planner = std::make_shared<const TRRTConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::PRM):
+        {
+          PRMConfigurator::ConstPtr ompl_planner = std::make_shared<const PRMConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::PRMstar):
+        {
+          PRMstarConfigurator::ConstPtr ompl_planner = std::make_shared<const PRMstarConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::LazyPRMstar):
+        {
+          LazyPRMstarConfigurator::ConstPtr ompl_planner = std::make_shared<const LazyPRMstarConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        case static_cast<int>(OMPLPlannerType::SPARS):
+        {
+          SPARSConfigurator::ConstPtr ompl_planner = std::make_shared<const SPARSConfigurator>(*e);
+          planners.push_back(ompl_planner);
+          break;
+        }
+        default:
+        {
+          throw std::runtime_error("Unsupported OMPL Planner type");
+        }
+      }
+    }
+  }
+
+  if (collision_check_element)
+  {
+    status = collision_check_element->QueryBoolText(&collision_check);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("OMPLPlanProfile: Error parsing CollisionCheck string");
+  }
+
+  if (collision_continuous_element)
+  {
+    status = collision_continuous_element->QueryBoolText(&collision_continuous);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("OMPLPlanProfile: Error parsing CollisionContinuous string");
+  }
+
+  if (collision_safety_margin_element)
+  {
+    std::string collision_safety_margin_string;
+    status = tesseract_common::QueryStringText(collision_safety_margin_element, collision_safety_margin_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("OMPLPlanProfile: Error parsing CollisionSafetyMargin string");
+
+    if (!tesseract_common::isNumeric(collision_safety_margin_string))
+      throw std::runtime_error("OMPLPlanProfile: CollisionSafetyMargin is not a numeric values.");
+
+    tesseract_common::toNumeric<double>(collision_safety_margin_string, collision_safety_margin);
+  }
+
+  if (longest_valid_segment_fraction_element)
+  {
+    std::string longest_valid_segment_fraction_string;
+    status = tesseract_common::QueryStringText(longest_valid_segment_fraction_element,
+                                               longest_valid_segment_fraction_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("OMPLPlanProfile: Error parsing LongestValidSegmentFraction string");
+
+    if (!tesseract_common::isNumeric(longest_valid_segment_fraction_string))
+      throw std::runtime_error("OMPLPlanProfile: LongestValidSegmentFraction is not a numeric values.");
+
+    tesseract_common::toNumeric<double>(longest_valid_segment_fraction_string, longest_valid_segment_fraction);
+  }
+
+  if (longest_valid_segment_length_element)
+  {
+    std::string longest_valid_segment_length_string;
+    status =
+        tesseract_common::QueryStringText(longest_valid_segment_length_element, longest_valid_segment_length_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("OMPLPlanProfile: Error parsing LongestValidSegmentLength string");
+
+    if (!tesseract_common::isNumeric(longest_valid_segment_length_string))
+      throw std::runtime_error("OMPLPlanProfile: LongestValidSegmentLength is not a numeric values.");
+
+    tesseract_common::toNumeric<double>(longest_valid_segment_length_string, longest_valid_segment_length);
+  }
+
+  if (weights_element)
+  {
+    std::vector<std::string> weights_tokens;
+    std::string weights_string;
+    status = tesseract_common::QueryStringText(weights_element, weights_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("OMPLPlanProfile: Error parsing Weights string");
+
+    boost::split(weights_tokens, weights_string, boost::is_any_of(" "), boost::token_compress_on);
+
+    if (!tesseract_common::isNumeric(weights_tokens))
+      throw std::runtime_error("OMPLPlanProfile: Weights are not all numeric values.");
+
+    weights.resize(static_cast<long>(weights_tokens.size()));
+    for (std::size_t i = 0; i < weights_tokens.size(); ++i)
+      tesseract_common::toNumeric<double>(weights_tokens[i], weights[static_cast<long>(i)]);
+  }
+}
+
 void OMPLDefaultPlanProfile::setup(OMPLProblem& prob)
 {
   prob.planners = planners;
@@ -301,6 +549,81 @@ void OMPLDefaultPlanProfile::applyStartStates(OMPLProblem& prob,
 
     prob.simple_setup->addStartState(start_state);
   }
+}
+
+tinyxml2::XMLElement* OMPLDefaultPlanProfile::toXML(tinyxml2::XMLDocument& doc) const
+{
+  Eigen::IOFormat eigen_format(Eigen::StreamPrecision, 0, " ", " ");
+
+  tinyxml2::XMLElement* xml_planner = doc.NewElement("Planner");
+  xml_planner->SetAttribute("type", std::to_string(2).c_str());
+
+  tinyxml2::XMLElement* xml_ompl = doc.NewElement("OMPLPlanProfile");
+
+  tinyxml2::XMLElement* xml_ompl_planners = doc.NewElement("Planners");
+
+  for (auto planner : planners)
+  {
+    tinyxml2::XMLElement* xml_ompl_planner = doc.NewElement("Planner");
+    xml_ompl_planner->SetAttribute("type", std::to_string(static_cast<int>(planner->getType())).c_str());
+    tinyxml2::XMLElement* xml_planner = planner->toXML(doc);
+    xml_ompl_planner->InsertEndChild(xml_planner);
+    xml_ompl_planners->InsertEndChild(xml_ompl_planner);
+  }
+
+  xml_ompl->InsertEndChild(xml_ompl_planners);
+
+  tinyxml2::XMLElement* xml_state_space = doc.NewElement("StateSpace");
+  xml_state_space->SetAttribute("type", std::to_string(static_cast<int>(state_space)).c_str());
+  xml_ompl->InsertEndChild(xml_state_space);
+
+  tinyxml2::XMLElement* xml_planning_time = doc.NewElement("PlanningTime");
+  xml_planning_time->SetText(planning_time);
+  xml_ompl->InsertEndChild(xml_planning_time);
+
+  tinyxml2::XMLElement* xml_max_solutions = doc.NewElement("MaxSolutions");
+  xml_max_solutions->SetText(max_solutions);
+  xml_ompl->InsertEndChild(xml_max_solutions);
+
+  tinyxml2::XMLElement* xml_simplify = doc.NewElement("Simplify");
+  xml_simplify->SetText(simplify);
+  xml_ompl->InsertEndChild(xml_simplify);
+
+  tinyxml2::XMLElement* xml_optimize = doc.NewElement("Optimize");
+  xml_optimize->SetText(optimize);
+  xml_ompl->InsertEndChild(xml_optimize);
+
+  tinyxml2::XMLElement* xml_collision_check = doc.NewElement("CollisionCheck");
+  xml_collision_check->SetText(collision_check);
+  xml_ompl->InsertEndChild(xml_collision_check);
+
+  tinyxml2::XMLElement* xml_collision_continuous = doc.NewElement("CollisionContinuous");
+  xml_collision_continuous->SetText(collision_continuous);
+  xml_ompl->InsertEndChild(xml_collision_continuous);
+
+  tinyxml2::XMLElement* xml_collision_safety_margin = doc.NewElement("CollisionSafetyMargin");
+  xml_collision_safety_margin->SetText(collision_safety_margin);
+  xml_ompl->InsertEndChild(xml_collision_safety_margin);
+
+  tinyxml2::XMLElement* xml_long_valid_seg_frac = doc.NewElement("LongestValidSegmentFraction");
+  xml_long_valid_seg_frac->SetText(longest_valid_segment_fraction);
+  xml_ompl->InsertEndChild(xml_long_valid_seg_frac);
+
+  tinyxml2::XMLElement* xml_long_valid_seg_len = doc.NewElement("LongestValidSegmentLength");
+  xml_long_valid_seg_len->SetText(longest_valid_segment_length);
+  xml_ompl->InsertEndChild(xml_long_valid_seg_len);
+
+  tinyxml2::XMLElement* xml_weights = doc.NewElement("Weights");
+  std::stringstream weights_stream;
+  weights_stream << weights.format(eigen_format);
+  xml_weights->SetText(weights_stream.str().c_str());
+  xml_ompl->InsertEndChild(xml_weights);
+
+  // TODO: Add plugins for state_sampler_allocator, optimization_objective_allocator, svc_allocator, mv_allocator
+
+  xml_planner->InsertEndChild(xml_ompl);
+
+  return xml_planner;
 }
 
 ompl::base::StateValidityCheckerPtr

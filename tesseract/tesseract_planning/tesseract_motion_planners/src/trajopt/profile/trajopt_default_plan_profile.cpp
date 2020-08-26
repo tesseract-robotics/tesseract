@@ -33,6 +33,71 @@
 
 namespace tesseract_planning
 {
+TrajOptDefaultPlanProfile::TrajOptDefaultPlanProfile(const tinyxml2::XMLElement& xml_element)
+{
+  const tinyxml2::XMLElement* cartesian_coeff_element = xml_element.FirstChildElement("CartesianCoeff");
+  const tinyxml2::XMLElement* joint_coeff_element = xml_element.FirstChildElement("JointCoeff");
+  const tinyxml2::XMLElement* term_type_element = xml_element.FirstChildElement("Term");
+  const tinyxml2::XMLElement* cnt_error_fn_element = xml_element.FirstChildElement("ConstraintErrorFunctions");
+
+  tinyxml2::XMLError status;
+
+  if (cartesian_coeff_element)
+  {
+    std::vector<std::string> cart_coeff_tokens;
+    std::string cart_coeff_string;
+    status = tesseract_common::QueryStringText(cartesian_coeff_element, cart_coeff_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("TrajoptPlanProfile: Error parsing CartesianCoeff string");
+
+    boost::split(cart_coeff_tokens, cart_coeff_string, boost::is_any_of(" "), boost::token_compress_on);
+
+    if (!tesseract_common::isNumeric(cart_coeff_tokens))
+      throw std::runtime_error("TrajoptPlanProfile: CartesianCoeff are not all numeric values.");
+
+    cartesian_coeff.resize(static_cast<long>(cart_coeff_tokens.size()));
+    for (std::size_t i = 0; i < cart_coeff_tokens.size(); ++i)
+      tesseract_common::toNumeric<double>(cart_coeff_tokens[i], cartesian_coeff[static_cast<long>(i)]);
+  }
+
+  if (joint_coeff_element)
+  {
+    std::vector<std::string> joint_coeff_tokens;
+    std::string joint_coeff_string;
+    status = tesseract_common::QueryStringText(joint_coeff_element, joint_coeff_string);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("TrajoptPlanProfile: Error parsing JointCoeff string");
+
+    boost::split(joint_coeff_tokens, joint_coeff_string, boost::is_any_of(" "), boost::token_compress_on);
+
+    if (!tesseract_common::isNumeric(joint_coeff_tokens))
+      throw std::runtime_error("TrajoptPlanProfile: JointCoeff are not all numeric values.");
+
+    joint_coeff.resize(static_cast<long>(joint_coeff_tokens.size()));
+    for (std::size_t i = 0; i < joint_coeff_tokens.size(); ++i)
+      tesseract_common::toNumeric<double>(joint_coeff_tokens[i], joint_coeff[static_cast<long>(i)]);
+  }
+
+  if (term_type_element)
+  {
+    int type = static_cast<int>(trajopt::TermType::TT_CNT);
+    status = term_type_element->QueryIntAttribute("type", &type);
+    if (status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("TrajoptPlanProfile: Error parsing Term type attribute.");
+
+    term_type = static_cast<trajopt::TermType>(type);
+  }
+
+  if (cnt_error_fn_element)
+  {
+    std::string error_fn_name;
+    status = tesseract_common::QueryStringAttribute(cnt_error_fn_element, "type", error_fn_name);
+    if (status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("TrajoptPlanProfile: Error parsing ConstraintErrorFunctions plugin attribute.");
+
+    // TODO: Implement plugin capabilities
+  }
+}
 void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
                                       const Eigen::Isometry3d& cartesian_waypoint,
                                       const Instruction& parent_instruction,
@@ -84,4 +149,33 @@ void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
     pci.cost_infos.push_back(ti);
 }
 
+tinyxml2::XMLElement* TrajOptDefaultPlanProfile::toXML(tinyxml2::XMLDocument& doc) const
+{
+  Eigen::IOFormat eigen_format(Eigen::StreamPrecision, 0, " ", " ");
+
+  tinyxml2::XMLElement* xml_planner = doc.NewElement("Planner");
+  xml_planner->SetAttribute("type", std::to_string(1).c_str());
+
+  tinyxml2::XMLElement* xml_trajopt = doc.NewElement("TrajoptPlanProfile");
+
+  tinyxml2::XMLElement* xml_cart_coeff = doc.NewElement("CartesianCoefficients");
+  std::stringstream cart_coeff;
+  cart_coeff << cartesian_coeff.format(eigen_format);
+  xml_cart_coeff->SetText(cart_coeff.str().c_str());
+  xml_trajopt->InsertEndChild(xml_cart_coeff);
+
+  tinyxml2::XMLElement* xml_joint_coeff = doc.NewElement("JointCoefficients");
+  std::stringstream jnt_coeff;
+  jnt_coeff << joint_coeff.format(eigen_format);
+  xml_joint_coeff->SetText(jnt_coeff.str().c_str());
+  xml_trajopt->InsertEndChild(xml_joint_coeff);
+
+  tinyxml2::XMLElement* xml_term_type = doc.NewElement("Term");
+  xml_term_type->SetAttribute("type", static_cast<int>(term_type));
+  xml_trajopt->InsertEndChild(xml_term_type);
+
+  xml_planner->InsertEndChild(xml_trajopt);
+
+  return xml_planner;
+}
 }  // namespace tesseract_planning

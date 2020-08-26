@@ -57,6 +57,8 @@ public:
                      const ManipulatorInfo& manip_info,
                      const std::vector<std::string>& active_links,
                      int index) = 0;
+
+  virtual tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const = 0;
 };
 
 class TrajOptCompositeProfile
@@ -71,6 +73,8 @@ public:
                      const ManipulatorInfo& manip_info,
                      const std::vector<std::string>& active_links,
                      const std::vector<int>& fixed_indices) = 0;
+
+  virtual tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const = 0;
 };
 
 using TrajOptCompositeProfileMap = std::unordered_map<std::string, TrajOptCompositeProfile::Ptr>;

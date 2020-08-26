@@ -35,7 +35,9 @@ add_library(${PROJECT_NAME}_descartes SHARED
   src/descartes/descartes_collision_edge_evaluator.cpp
   src/descartes/descartes_robot_sampler.cpp
   src/descartes/descartes_motion_planner_status_category.cpp
-  src/descartes/profile/descartes_default_plan_profile.cpp)
+  src/descartes/profile/descartes_default_plan_profile.cpp
+  src/descartes/serialize.cpp
+  src/descartes/deserialize.cpp)
 target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME}_core descartes::descartes_light descartes::descartes_samplers)
 tesseract_target_compile_options(${PROJECT_NAME}_descartes PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_descartes)
@@ -56,7 +58,9 @@ set(OMPL_SRC src/ompl/ompl_motion_planner.cpp
   src/ompl/problem_generators/default_problem_generator.cpp
   src/ompl/utils.cpp
   src/ompl/state_collision_validator.cpp
-  src/ompl/compound_state_validator.cpp)
+  src/ompl/compound_state_validator.cpp
+  src/ompl/serialize.cpp
+  src/ompl/deserialize.cpp)
 
 #if(NOT OMPL_VERSION VERSION_LESS "1.4.0")
 #  list(APPEND OMPL_SRC src/ompl/config/ompl_planner_constrained_config.cpp)
@@ -98,11 +102,14 @@ target_include_directories(${PROJECT_NAME}_simple SYSTEM PUBLIC
 
 # Trajopt Planner
 add_library(${PROJECT_NAME}_trajopt SHARED
+  src/trajopt/trajopt_collision_config.cpp
   src/trajopt/trajopt_motion_planner.cpp
   src/trajopt/trajopt_utils.cpp
   src/trajopt/profile/trajopt_default_plan_profile.cpp
   src/trajopt/profile/trajopt_default_composite_profile.cpp
-  src/trajopt/problem_generators/default_problem_generator.cpp)
+  src/trajopt/problem_generators/default_problem_generator.cpp
+  src/trajopt/serialize.cpp
+  src/trajopt/deserialize.cpp)
 target_link_libraries(${PROJECT_NAME}_trajopt PUBLIC ${Boost_LIBRARIES} ${PROJECT_NAME}_core trajopt::trajopt trajopt::trajopt_utils trajopt::trajopt_sco)
 tesseract_target_compile_options(${PROJECT_NAME}_trajopt PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME}_trajopt)

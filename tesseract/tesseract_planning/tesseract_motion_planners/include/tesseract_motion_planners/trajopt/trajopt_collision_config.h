@@ -29,7 +29,11 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <trajopt/problem_description.hpp>
+#include <tinyxml2.h>
+#include <boost/algorithm/string.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_common/utils.h>
 
 namespace tesseract_planning
 {
@@ -38,6 +42,9 @@ namespace tesseract_planning
  */
 struct CollisionCostConfig
 {
+  CollisionCostConfig() = default;
+  CollisionCostConfig(const tinyxml2::XMLElement& xml_element);
+
   /** @brief If true, a collision cost term will be added to the problem. Default: true*/
   bool enabled = true;
   /**
@@ -47,6 +54,7 @@ struct CollisionCostConfig
   bool use_weighted_sum = false;
   /** @brief The evaluator type that will be used for collision checking. */
   trajopt::CollisionEvaluatorType type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
+
   /** @brief Max distance in which collision costs will be evaluated. */
   double buffer_margin = 0.025;
   /** @brief Distance beyond buffer_margin in which collision optimization will be evaluated.
@@ -54,6 +62,8 @@ struct CollisionCostConfig
   double safety_margin_buffer = 0.0;
   /** @brief The collision coeff/weight */
   double coeff = 20;
+
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const;
 };
 
 /**
@@ -61,6 +71,9 @@ struct CollisionCostConfig
  */
 struct CollisionConstraintConfig
 {
+  CollisionConstraintConfig() = default;
+  CollisionConstraintConfig(const tinyxml2::XMLElement& xml_element);
+
   /** @brief If true, a collision cost term will be added to the problem. Default: true*/
   bool enabled = true;
   /**
@@ -76,6 +89,8 @@ struct CollisionConstraintConfig
   double safety_margin_buffer = 0.05;
   /** @brief The collision coeff/weight */
   double coeff = 20;
+
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const;
 };
 }  // namespace tesseract_planning
 
