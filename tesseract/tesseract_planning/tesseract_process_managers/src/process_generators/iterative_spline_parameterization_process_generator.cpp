@@ -97,7 +97,13 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
     cur_plan_profile = it->second;
 
   // Create data structures for checking for plan profile overrides
-  auto flattened = flatten(*ci, planFilter);
+  auto flattened = flatten(*ci, moveFilter);
+  if (flattened.empty())
+  {
+    CONSOLE_BRIDGE_logWarn("Iterative spline time parameterization found no MoveInstructions to process");
+    return 1;
+  }
+
   Eigen::VectorXd velocity_scaling_factors = Eigen::VectorXd::Ones(static_cast<Eigen::Index>(flattened.size())) *
                                              cur_plan_profile->max_velocity_scaling_factor;
   Eigen::VectorXd acceleration_scaling_factors = Eigen::VectorXd::Ones(static_cast<Eigen::Index>(flattened.size())) *
@@ -106,7 +112,7 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
   // Loop over all PlanInstructions
   for (Eigen::Index idx = 0; idx < static_cast<Eigen::Index>(flattened.size()); idx++)
   {
-    profile = flattened[static_cast<std::size_t>(idx)].get().cast_const<PlanInstruction>()->getProfile();
+    profile = flattened[static_cast<std::size_t>(idx)].get().cast_const<MoveInstruction>()->getProfile();
 
     // Check for remapping of plan profile
     auto remap = input.plan_profile_remapping.find(name_);
@@ -117,9 +123,9 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
         profile = p->second;
     }
 
-    // If there is a plan profile associated with it, override the parameters
-    auto it = plan_profiles.find(profile);
-    if (it != plan_profiles.end())
+    // If there is a move profile associated with it, override the parameters
+    auto it = move_profiles.find(profile);
+    if (it != move_profiles.end())
     {
       velocity_scaling_factors[idx] = it->second->max_velocity_scaling_factor;
       acceleration_scaling_factors[idx] = it->second->max_acceleration_scaling_factor;

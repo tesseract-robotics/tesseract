@@ -84,7 +84,7 @@ public:
   void setAbort(bool abort) override;
 
   IterativeSplineParameterizationProfileMap composite_profiles;
-  IterativeSplineParameterizationProfileMap plan_profiles;
+  IterativeSplineParameterizationProfileMap move_profiles;
 
 private:
   /** @brief If true, all tasks return immediately. Workaround for https://github.com/taskflow/taskflow/issues/201 */
