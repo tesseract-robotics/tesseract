@@ -41,7 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-enum struct OMPLPlannerType : int
+enum class OMPLPlannerType
 {
   SBL = 0,
   EST = 1,
@@ -71,9 +71,6 @@ struct OMPLPlannerConfigurator
   OMPLPlannerConfigurator(OMPLPlannerConfigurator&&) = default;
   OMPLPlannerConfigurator& operator=(OMPLPlannerConfigurator&&) = default;
 
-  /** @brief Planner type */
-  OMPLPlannerType type = OMPLPlannerType::RRTConnect;
-
   virtual ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const = 0;
 
   virtual OMPLPlannerType getType() const = 0;
@@ -86,9 +83,6 @@ struct SBLConfigurator : public OMPLPlannerConfigurator
   SBLConfigurator() = default;
   SBLConfigurator(const SBLConfigurator&) = default;
   SBLConfigurator(const tinyxml2::XMLElement& xml_element);
-
-  /** @brief Planner type */
-  OMPLPlannerType type = OMPLPlannerType::SBL;
 
   /** @brief Max motion added to tree */
   double range = 0;
@@ -107,9 +101,6 @@ struct ESTConfigurator : public OMPLPlannerConfigurator
   ESTConfigurator() = default;
   ESTConfigurator(const ESTConfigurator&) = default;
   ESTConfigurator(const tinyxml2::XMLElement& xml_element);
-
-  /** @brief Planner type */
-  OMPLPlannerType type = OMPLPlannerType::EST;
 
   /** @brief Max motion added to tree */
   double range = 0;
@@ -131,9 +122,6 @@ struct LBKPIECE1Configurator : public OMPLPlannerConfigurator
   LBKPIECE1Configurator() = default;
   LBKPIECE1Configurator(const LBKPIECE1Configurator&) = default;
   LBKPIECE1Configurator(const tinyxml2::XMLElement& xml_element);
-
-  /** @brief Planner type */
-  OMPLPlannerType type = OMPLPlannerType::LBKPIECE1;
 
   /** @brief Max motion added to tree */
   double range = 0;
@@ -158,9 +146,6 @@ struct BKPIECE1Configurator : public OMPLPlannerConfigurator
   BKPIECE1Configurator() = default;
   BKPIECE1Configurator(const BKPIECE1Configurator&) = default;
   BKPIECE1Configurator(const tinyxml2::XMLElement& xml_element);
-
-  /** @brief Planner type */
-  OMPLPlannerType type = OMPLPlannerType::BKPIECE1;
 
   /** @brief Max motion added to tree */
   double range = 0;
@@ -188,9 +173,6 @@ struct KPIECE1Configurator : public OMPLPlannerConfigurator
   KPIECE1Configurator() = default;
   KPIECE1Configurator(const KPIECE1Configurator&) = default;
   KPIECE1Configurator(const tinyxml2::XMLElement& xml_element);
-
-  /** @brief Planner type */
-  OMPLPlannerType type = OMPLPlannerType::KPIECE1;
 
   /** @brief Max motion added to tree */
   double range = 0;
@@ -221,9 +203,6 @@ struct BiTRRTConfigurator : public OMPLPlannerConfigurator
   BiTRRTConfigurator() = default;
   BiTRRTConfigurator(const BiTRRTConfigurator&) = default;
   BiTRRTConfigurator(const tinyxml2::XMLElement& xml_element);
-
-  /** @brief Planner type */
-  OMPLPlannerType type = OMPLPlannerType::BiTRRT;
 
   /** @brief Max motion added to tree */
   double range = 0;
@@ -259,9 +238,6 @@ struct RRTConfigurator : public OMPLPlannerConfigurator
   RRTConfigurator(const RRTConfigurator&) = default;
   RRTConfigurator(const tinyxml2::XMLElement& xml_element);
 
-  /** @brief Planner type */
-  OMPLPlannerType type = OMPLPlannerType::RRT;
-
   /** @brief Max motion added to tree */
   double range = 0;
 
@@ -283,9 +259,6 @@ struct RRTConnectConfigurator : public OMPLPlannerConfigurator
   RRTConnectConfigurator(const RRTConnectConfigurator&) = default;
   RRTConnectConfigurator(const tinyxml2::XMLElement& xml_element);
 
-  /** @brief Planner type */
-  OMPLPlannerType type = OMPLPlannerType::RRTConnect;
-
   /** @brief Max motion added to tree */
   double range = 0;
 
@@ -303,9 +276,6 @@ struct RRTstarConfigurator : public OMPLPlannerConfigurator
   RRTstarConfigurator() = default;
   RRTstarConfigurator(const RRTstarConfigurator&) = default;
   RRTstarConfigurator(const tinyxml2::XMLElement& xml_element);
-
-  /** @brief Planner type */
-  OMPLPlannerType type = OMPLPlannerType::RRTstar;
 
   /** @brief Max motion added to tree */
   double range = 0;
@@ -330,9 +300,6 @@ struct TRRTConfigurator : public OMPLPlannerConfigurator
   TRRTConfigurator() = default;
   TRRTConfigurator(const TRRTConfigurator&) = default;
   TRRTConfigurator(const tinyxml2::XMLElement& xml_element);
-
-  /** @brief Planner type */
-  OMPLPlannerType type = OMPLPlannerType::TRRT;
 
   /** @brief Max motion added to tree */
   double range = 0;
@@ -367,9 +334,6 @@ struct PRMConfigurator : public OMPLPlannerConfigurator
   PRMConfigurator(const PRMConfigurator&) = default;
   PRMConfigurator(const tinyxml2::XMLElement& xml_element);
 
-  /** @brief Planner type */
-  OMPLPlannerType type = OMPLPlannerType::PRM;
-
   /** @brief Use k nearest neighbors. */
   int max_nearest_neighbors = 10;
 
@@ -388,9 +352,6 @@ struct PRMstarConfigurator : public OMPLPlannerConfigurator
   PRMstarConfigurator(const PRMstarConfigurator&) = default;
   PRMstarConfigurator(const tinyxml2::XMLElement& xml_element);
 
-  /** @brief Planner type */
-  OMPLPlannerType type = OMPLPlannerType::PRMstar;
-
   /** @brief Create the planner */
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
 
@@ -406,9 +367,6 @@ struct LazyPRMstarConfigurator : public OMPLPlannerConfigurator
   LazyPRMstarConfigurator(const LazyPRMstarConfigurator&) = default;
   LazyPRMstarConfigurator(const tinyxml2::XMLElement& xml_element);
 
-  /** @brief Planner type */
-  OMPLPlannerType type = OMPLPlannerType::LazyPRMstar;
-
   /** @brief Create the planner */
   ompl::base::PlannerPtr create(ompl::base::SpaceInformationPtr si) const override;
 
@@ -423,9 +381,6 @@ struct SPARSConfigurator : public OMPLPlannerConfigurator
   SPARSConfigurator() = default;
   SPARSConfigurator(const SPARSConfigurator&) = default;
   SPARSConfigurator(const tinyxml2::XMLElement& xml_element);
-
-  /** @brief Planner type */
-  OMPLPlannerType type = OMPLPlannerType::SPARS;
 
   /** @brief The maximum number of failures before terminating the algorithm */
   int max_failures = 1000;

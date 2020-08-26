@@ -75,7 +75,7 @@ ompl::base::PlannerPtr SBLConfigurator::create(ompl::base::SpaceInformationPtr s
   return planner;
 }
 
-OMPLPlannerType SBLConfigurator::getType() const { return type; }
+OMPLPlannerType SBLConfigurator::getType() const { return OMPLPlannerType::SBL; }
 
 tinyxml2::XMLElement* SBLConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -131,7 +131,7 @@ ompl::base::PlannerPtr ESTConfigurator::create(ompl::base::SpaceInformationPtr s
   return planner;
 }
 
-OMPLPlannerType ESTConfigurator::getType() const { return type; }
+OMPLPlannerType ESTConfigurator::getType() const { return OMPLPlannerType::EST; }
 
 tinyxml2::XMLElement* ESTConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -207,7 +207,7 @@ ompl::base::PlannerPtr LBKPIECE1Configurator::create(ompl::base::SpaceInformatio
   return planner;
 }
 
-OMPLPlannerType LBKPIECE1Configurator::getType() const { return type; }
+OMPLPlannerType LBKPIECE1Configurator::getType() const { return OMPLPlannerType::LBKPIECE1; }
 
 tinyxml2::XMLElement* LBKPIECE1Configurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -305,7 +305,7 @@ ompl::base::PlannerPtr BKPIECE1Configurator::create(ompl::base::SpaceInformation
   return planner;
 }
 
-OMPLPlannerType BKPIECE1Configurator::getType() const { return type; }
+OMPLPlannerType BKPIECE1Configurator::getType() const { return OMPLPlannerType::BKPIECE1; }
 
 tinyxml2::XMLElement* BKPIECE1Configurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -422,7 +422,7 @@ ompl::base::PlannerPtr KPIECE1Configurator::create(ompl::base::SpaceInformationP
   return planner;
 }
 
-OMPLPlannerType KPIECE1Configurator::getType() const { return type; }
+OMPLPlannerType KPIECE1Configurator::getType() const { return OMPLPlannerType::KPIECE1; }
 
 tinyxml2::XMLElement* KPIECE1Configurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -557,7 +557,7 @@ ompl::base::PlannerPtr BiTRRTConfigurator::create(ompl::base::SpaceInformationPt
   return planner;
 }
 
-OMPLPlannerType BiTRRTConfigurator::getType() const { return type; }
+OMPLPlannerType BiTRRTConfigurator::getType() const { return OMPLPlannerType::BiTRRT; }
 
 tinyxml2::XMLElement* BiTRRTConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -633,7 +633,7 @@ ompl::base::PlannerPtr RRTConfigurator::create(ompl::base::SpaceInformationPtr s
   return planner;
 }
 
-OMPLPlannerType RRTConfigurator::getType() const { return type; }
+OMPLPlannerType RRTConfigurator::getType() const { return OMPLPlannerType::RRT; }
 
 tinyxml2::XMLElement* RRTConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -678,7 +678,7 @@ ompl::base::PlannerPtr RRTConnectConfigurator::create(ompl::base::SpaceInformati
   return planner;
 }
 
-OMPLPlannerType RRTConnectConfigurator::getType() const { return type; }
+OMPLPlannerType RRTConnectConfigurator::getType() const { return OMPLPlannerType::RRTConnect; }
 
 tinyxml2::XMLElement* RRTConnectConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -745,7 +745,7 @@ ompl::base::PlannerPtr RRTstarConfigurator::create(ompl::base::SpaceInformationP
   return planner;
 }
 
-OMPLPlannerType RRTstarConfigurator::getType() const { return type; }
+OMPLPlannerType RRTstarConfigurator::getType() const { return OMPLPlannerType::RRTstar; }
 
 tinyxml2::XMLElement* RRTstarConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -869,7 +869,7 @@ ompl::base::PlannerPtr TRRTConfigurator::create(ompl::base::SpaceInformationPtr 
   return planner;
 }
 
-OMPLPlannerType TRRTConfigurator::getType() const { return type; }
+OMPLPlannerType TRRTConfigurator::getType() const { return OMPLPlannerType::TRRT; }
 
 tinyxml2::XMLElement* TRRTConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -930,7 +930,7 @@ ompl::base::PlannerPtr PRMConfigurator::create(ompl::base::SpaceInformationPtr s
   return planner;
 }
 
-OMPLPlannerType PRMConfigurator::getType() const { return type; }
+OMPLPlannerType PRMConfigurator::getType() const { return OMPLPlannerType::PRM; }
 
 tinyxml2::XMLElement* PRMConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -950,7 +950,7 @@ ompl::base::PlannerPtr PRMstarConfigurator::create(ompl::base::SpaceInformationP
   return std::make_shared<ompl::geometric::PRMstar>(si);
 }
 
-OMPLPlannerType PRMstarConfigurator::getType() const { return type; }
+OMPLPlannerType PRMstarConfigurator::getType() const { return OMPLPlannerType::PRMstar; }
 
 tinyxml2::XMLElement* PRMstarConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -966,7 +966,7 @@ ompl::base::PlannerPtr LazyPRMstarConfigurator::create(ompl::base::SpaceInformat
   return std::make_shared<ompl::geometric::LazyPRMstar>(si);
 }
 
-OMPLPlannerType LazyPRMstarConfigurator::getType() const { return type; }
+OMPLPlannerType LazyPRMstarConfigurator::getType() const { return OMPLPlannerType::LazyPRMstar; }
 
 tinyxml2::XMLElement* LazyPRMstarConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
@@ -1048,7 +1048,7 @@ ompl::base::PlannerPtr SPARSConfigurator::create(ompl::base::SpaceInformationPtr
   return planner;
 }
 
-OMPLPlannerType SPARSConfigurator::getType() const { return type; }
+OMPLPlannerType SPARSConfigurator::getType() const { return OMPLPlannerType::SPARS; }
 
 tinyxml2::XMLElement* SPARSConfigurator::toXML(tinyxml2::XMLDocument& doc) const
 {
