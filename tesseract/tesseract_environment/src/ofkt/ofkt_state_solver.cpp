@@ -77,56 +77,56 @@ void OFKTStateSolver::cloneHelper(OFKTStateSolver& cloned, const OFKTNode* node)
     if (child->getType() == tesseract_scene_graph::JointType::FIXED)
     {
       auto n = std::make_unique<OFKTFixedNode>(
-          parent_node, node->getLinkName(), node->getJointName(), node->getStaticTransformation());
-      cloned.link_map_[node->getLinkName()] = n.get();
+          parent_node, child->getLinkName(), child->getJointName(), child->getStaticTransformation());
+      cloned.link_map_[child->getLinkName()] = n.get();
       parent_node->addChild(n.get());
-      cloned.nodes_[node->getJointName()] = std::move(n);
+      cloned.nodes_[child->getJointName()] = std::move(n);
     }
     else if (child->getType() == tesseract_scene_graph::JointType::REVOLUTE)
     {
-      const auto* cn = static_cast<const OFKTRevoluteNode*>(node);
+      const auto* cn = static_cast<const OFKTRevoluteNode*>(child);
 
       auto n = std::make_unique<OFKTRevoluteNode>(parent_node,
-                                                  node->getLinkName(),
-                                                  node->getJointName(),
-                                                  node->getStaticTransformation(),
+                                                  cn->getLinkName(),
+                                                  cn->getJointName(),
+                                                  cn->getStaticTransformation(),
                                                   cn->getAxis(),
                                                   cn->getJointLimits());
       n->local_tf_ = cn->getLocalTransformation();
       n->world_tf_ = cn->getWorldTransformation();
       n->joint_value_ = cn->getJointValue();
 
-      cloned.link_map_[node->getLinkName()] = n.get();
+      cloned.link_map_[cn->getLinkName()] = n.get();
       parent_node->addChild(n.get());
-      cloned.nodes_[node->getJointName()] = std::move(n);
+      cloned.nodes_[cn->getJointName()] = std::move(n);
     }
     else if (child->getType() == tesseract_scene_graph::JointType::CONTINUOUS)
     {
-      const auto* cn = static_cast<const OFKTContinuousNode*>(node);
+      const auto* cn = static_cast<const OFKTContinuousNode*>(child);
 
       auto n = std::make_unique<OFKTContinuousNode>(
-          parent_node, node->getLinkName(), node->getJointName(), node->getStaticTransformation(), cn->getAxis());
+          parent_node, cn->getLinkName(), cn->getJointName(), cn->getStaticTransformation(), cn->getAxis());
       n->local_tf_ = cn->getLocalTransformation();
       n->world_tf_ = cn->getWorldTransformation();
       n->joint_value_ = cn->getJointValue();
 
-      cloned.link_map_[node->getLinkName()] = n.get();
+      cloned.link_map_[cn->getLinkName()] = n.get();
       parent_node->addChild(n.get());
-      cloned.nodes_[node->getJointName()] = std::move(n);
+      cloned.nodes_[cn->getJointName()] = std::move(n);
     }
     else if (child->getType() == tesseract_scene_graph::JointType::PRISMATIC)
     {
-      const auto* cn = static_cast<const OFKTPrismaticNode*>(node);
+      const auto* cn = static_cast<const OFKTPrismaticNode*>(child);
 
       auto n = std::make_unique<OFKTPrismaticNode>(
-          parent_node, node->getLinkName(), node->getJointName(), node->getStaticTransformation(), cn->getAxis());
+          parent_node, cn->getLinkName(), cn->getJointName(), cn->getStaticTransformation(), cn->getAxis());
       n->local_tf_ = cn->getLocalTransformation();
       n->world_tf_ = cn->getWorldTransformation();
       n->joint_value_ = cn->getJointValue();
 
-      cloned.link_map_[node->getLinkName()] = n.get();
+      cloned.link_map_[cn->getLinkName()] = n.get();
       parent_node->addChild(n.get());
-      cloned.nodes_[node->getJointName()] = std::move(n);
+      cloned.nodes_[cn->getJointName()] = std::move(n);
     }
     else
     {
@@ -140,11 +140,14 @@ void OFKTStateSolver::cloneHelper(OFKTStateSolver& cloned, const OFKTNode* node)
 StateSolver::Ptr OFKTStateSolver::clone() const
 {
   auto cloned = std::make_shared<OFKTStateSolver>();
+  cloned->current_state_ = std::make_shared<EnvState>(*current_state_);
+  cloned->joint_limits_ = joint_limits_;
+  cloned->joint_names_ = joint_names_;
   cloned->root_ = std::make_unique<OFKTRootNode>(root_->getLinkName());
   cloned->link_map_[root_->getLinkName()] = cloned->root_.get();
-  cloned->current_state_ = std::make_shared<EnvState>(*current_state_);
-  cloned->joint_names_ = joint_names_;
   cloned->limits_ = limits_;
+  cloned->revision_ = revision_;
+  cloneHelper(*cloned, root_.get());
   return cloned;
 }
 
@@ -203,6 +206,7 @@ void OFKTStateSolver::setState(const std::unordered_map<std::string, double>& jo
 
 void OFKTStateSolver::setState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values)
 {
+  assert(joint_names.size() == static_cast<std::size_t>(joint_values.size()));
   for (std::size_t i = 0; i < joint_names.size(); ++i)
   {
     nodes_[joint_names[i]]->storeJointValue(joint_values[i]);
@@ -215,6 +219,9 @@ void OFKTStateSolver::setState(const std::vector<std::string>& joint_names, cons
 void OFKTStateSolver::setState(const std::vector<std::string>& joint_names,
                                const Eigen::Ref<const Eigen::VectorXd>& joint_values)
 {
+  assert(joint_names.size() == static_cast<std::size_t>(joint_values.size()));
+  Eigen::VectorXd jv = joint_values;
+  std::cout << jv.transpose() << std::endl;
   for (std::size_t i = 0; i < joint_names.size(); ++i)
   {
     nodes_[joint_names[i]]->storeJointValue(joint_values(static_cast<long>(i)));
