@@ -45,11 +45,6 @@ public:
   TrajOptDefaultCompositeProfile() = default;
   TrajOptDefaultCompositeProfile(const tinyxml2::XMLElement& xml_element);
 
-  void smoothMotionTerms(const tinyxml2::XMLElement& xml_element,
-                         bool& enabled,
-                         Eigen::VectorXd& coeff,
-                         std::size_t& length);
-
   /** @brief The type of contact test to perform: FIRST, CLOSEST, ALL */
   tesseract_collision::ContactTestType contact_test_type = tesseract_collision::ContactTestType::ALL;
   /** @brief Configuration info for collisions that are modeled as costs */
@@ -140,6 +135,11 @@ protected:
                            int end_index,
                            const std::string& link,
                            const std::vector<int>& fixed_indices) const;
+
+  void smoothMotionTerms(const tinyxml2::XMLElement& xml_element,
+                         bool& enabled,
+                         Eigen::VectorXd& coeff,
+                         std::size_t& length);
 };
 }  // namespace tesseract_planning
 
