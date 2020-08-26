@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_generators/iterative_spline_parameterization_process_generator.h>
+#include <tesseract_command_language/utils/utils.h>
 
 namespace tesseract_planning
 {
@@ -37,6 +38,8 @@ IterativeSplineParameterizationProcessGenerator::IterativeSplineParameterization
                                                                                                  std::string name)
   : name_(std::move(name)), solver_(add_points)
 {
+  // Register default profile
+  composite_profiles["DEFAULT"] = std::make_shared<IterativeSplineParameterizationProfile>();
 }
 
 const std::string& IterativeSplineParameterizationProcessGenerator::getName() const { return name_; }
@@ -69,11 +72,67 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
   const ManipulatorInfo& manip_info = ci->getManipulatorInfo();
   const auto fwd_kin = input.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip_info.manipulator);
 
+  // Get Composite profile
+  std::string profile = ci->getProfile();
+  if (profile.empty())
+    profile = "DEFAULT";
+
+  // Check for remapping of composite profile
+  {
+    auto remap = input.composite_profile_remapping.find(name_);
+    if (remap != input.composite_profile_remapping.end())
+    {
+      auto p = remap->second.find(profile);
+      if (p != remap->second.end())
+        profile = p->second;
+    }
+  }
+
+  // Get the parameters associated with this profile
+  typename IterativeSplineParameterizationProfile::Ptr cur_plan_profile{ nullptr };
+  auto it = composite_profiles.find(profile);
+  if (it == composite_profiles.end())
+    cur_plan_profile = std::make_shared<IterativeSplineParameterizationProfile>();
+  else
+    cur_plan_profile = it->second;
+
+  // Create data structures for checking for plan profile overrides
+  auto flattened = flatten(*ci, planFilter);
+  Eigen::VectorXd velocity_scaling_factors = Eigen::VectorXd::Ones(static_cast<Eigen::Index>(flattened.size())) *
+                                             cur_plan_profile->max_velocity_scaling_factor;
+  Eigen::VectorXd acceleration_scaling_factors = Eigen::VectorXd::Ones(static_cast<Eigen::Index>(flattened.size())) *
+                                                 cur_plan_profile->max_acceleration_scaling_factor;
+
+  // Loop over all PlanInstructions
+  for (Eigen::Index idx = 0; idx < static_cast<Eigen::Index>(flattened.size()); idx++)
+  {
+    profile = flattened[static_cast<std::size_t>(idx)].get().cast_const<PlanInstruction>()->getProfile();
+
+    // Check for remapping of plan profile
+    auto remap = input.plan_profile_remapping.find(name_);
+    if (remap != input.plan_profile_remapping.end())
+    {
+      auto p = remap->second.find(profile);
+      if (p != remap->second.end())
+        profile = p->second;
+    }
+
+    // If there is a plan profile associated with it, override the parameters
+    auto it = plan_profiles.find(profile);
+    if (it != plan_profiles.end())
+    {
+      velocity_scaling_factors[idx] = it->second->max_velocity_scaling_factor;
+      acceleration_scaling_factors[idx] = it->second->max_acceleration_scaling_factor;
+    }
+  }
+
+  // Solve using parameters
   if (!solver_.compute(*ci,
                        fwd_kin->getLimits().velocity_limits,
                        fwd_kin->getLimits().acceleration_limits,
-                       max_velocity_scaling_factor,
-                       max_acceleration_scaling_factor))
+                       velocity_scaling_factors,
+                       acceleration_scaling_factors))
+
   {
     CONSOLE_BRIDGE_logInform("Failed to perform iterative spline time parameterization!");
     return 0;
