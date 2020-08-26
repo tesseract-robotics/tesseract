@@ -44,6 +44,14 @@ public:
   using Ptr = std::shared_ptr<OMPLPlanProfile>;
   using ConstPtr = std::shared_ptr<const OMPLPlanProfile>;
 
+  OMPLPlanProfile() = default;
+  virtual ~OMPLPlanProfile() = default;
+  OMPLPlanProfile(const OMPLPlanProfile&) = default;
+  OMPLPlanProfile& operator=(const OMPLPlanProfile&) = default;
+  OMPLPlanProfile(OMPLPlanProfile&&) noexcept = default;
+  OMPLPlanProfile& operator=(OMPLPlanProfile&&) noexcept = default;
+  OMPLPlanProfile(const tinyxml2::XMLElement& xml_element);
+
   virtual void setup(OMPLProblem& prob) = 0;
 
   virtual void applyGoalStates(OMPLProblem& prob,
@@ -73,6 +81,8 @@ public:
                                 const ManipulatorInfo& manip_info,
                                 const std::vector<std::string>& active_links,
                                 int index) = 0;
+
+  virtual tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const = 0;
 };
 
 using OMPLPlanProfileMap = std::unordered_map<std::string, OMPLPlanProfile::Ptr>;
