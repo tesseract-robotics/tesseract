@@ -69,7 +69,11 @@ static void adjust_two_positions(const int n,
                                  double x2[],
                                  const double x2_i,
                                  const double x2_f);
-static void init_times(int n, double dt[], const double x[], const double max_velocity, const double min_velocity);
+static void init_times(int n,
+                       double dt[],
+                       const double x[],
+                       const Eigen::Ref<const Eigen::VectorXd>& max_velocity,
+                       const Eigen::Ref<const Eigen::VectorXd>& min_velocity);
 // static int fit_spline_and_adjust_times(const int n,
 //                                       double dt[],
 //                                       const double x[],
@@ -85,10 +89,10 @@ static double global_adjustment_factor(int n,
                                        const double x[],
                                        double x1[],
                                        double x2[],
-                                       const double max_velocity,
-                                       const double min_velocity,
-                                       const double max_acceleration,
-                                       const double min_acceleration);
+                                       const Eigen::Ref<const Eigen::VectorXd>& max_velocity,
+                                       const Eigen::Ref<const Eigen::VectorXd>& min_velocity,
+                                       const Eigen::Ref<const Eigen::VectorXd>& max_acceleration,
+                                       const Eigen::Ref<const Eigen::VectorXd>& min_acceleration);
 
 // The path of a single joint: positions, velocities, and accelerations
 struct SingleJointTrajectory
@@ -98,10 +102,10 @@ struct SingleJointTrajectory
   std::vector<double> accelerations_;
   double initial_acceleration_;
   double final_acceleration_;
-  double min_velocity_;
-  double max_velocity_;
-  double min_acceleration_;
-  double max_acceleration_;
+  Eigen::VectorXd min_velocity_;
+  Eigen::VectorXd max_velocity_;
+  Eigen::VectorXd min_acceleration_;
+  Eigen::VectorXd max_acceleration_;
 };
 
 void globalAdjustment(std::vector<SingleJointTrajectory>& t2,
@@ -160,6 +164,19 @@ bool IterativeSplineParameterization::compute(CompositeInstruction& program,
       trajectory, max_velocity, max_acceleration, max_velocity_scaling_factor, max_acceleration_scaling_factor);
 }
 
+bool IterativeSplineParameterization::compute(
+    CompositeInstruction& program,
+    const Eigen::Ref<const Eigen::VectorXd>& max_velocity,
+    const Eigen::Ref<const Eigen::VectorXd>& max_acceleration,
+    const Eigen::Ref<const Eigen::VectorXd>& max_velocity_scaling_factor,
+    const Eigen::Ref<const Eigen::VectorXd>& max_acceleration_scaling_factor) const
+{
+  std::vector<std::reference_wrapper<Instruction>> trajectory = flatten(program, programFlattenMoveInstructionFilter);
+
+  return compute(
+      trajectory, max_velocity, max_acceleration, max_velocity_scaling_factor, max_acceleration_scaling_factor);
+}
+
 bool IterativeSplineParameterization::compute(const std::vector<std::reference_wrapper<Instruction>>& trajectory,
                                               const double& max_velocity,
                                               const double& max_acceleration,
@@ -200,6 +217,21 @@ bool IterativeSplineParameterization::compute(const std::vector<std::reference_w
                                               double max_velocity_scaling_factor,
                                               double max_acceleration_scaling_factor) const
 {
+  Eigen::VectorXd max_velocity_scaling_factors =
+      Eigen::VectorXd::Ones(static_cast<Eigen::Index>(trajectory.size())) * max_velocity_scaling_factor;
+  Eigen::VectorXd max_acceleration_scaling_factors =
+      Eigen::VectorXd::Ones(static_cast<Eigen::Index>(trajectory.size())) * max_acceleration_scaling_factor;
+  return compute(
+      trajectory, max_velocity, max_acceleration, max_velocity_scaling_factors, max_acceleration_scaling_factors);
+}
+
+bool IterativeSplineParameterization::compute(
+    const std::vector<std::reference_wrapper<Instruction>>& trajectory,
+    const Eigen::Ref<const Eigen::VectorXd>& max_velocity,
+    const Eigen::Ref<const Eigen::VectorXd>& max_acceleration,
+    const Eigen::Ref<const Eigen::VectorXd>& max_velocity_scaling_factors,
+    const Eigen::Ref<const Eigen::VectorXd>& max_acceleration_scaling_factors) const
+{
   // Make a copy of the vector in case it introduces point we do not want it to modify the original trajectory size
   // just the data.
   std::vector<std::reference_wrapper<Instruction>> local_trajectory = trajectory;
@@ -209,8 +241,8 @@ bool IterativeSplineParameterization::compute(const std::vector<std::reference_w
   if (local_trajectory.empty())
     return true;
 
-  double velocity_scaling_factor = 1.0;
-  double acceleration_scaling_factor = 1.0;
+  Eigen::VectorXd velocity_scaling_factor = Eigen::VectorXd::Ones(static_cast<Eigen::Index>(trajectory.size()));
+  Eigen::VectorXd acceleration_scaling_factor = Eigen::VectorXd::Ones(static_cast<Eigen::Index>(trajectory.size()));
   std::size_t num_points = local_trajectory.size();
 
   assert(isMoveInstruction(local_trajectory[0].get()));
@@ -228,29 +260,48 @@ bool IterativeSplineParameterization::compute(const std::vector<std::reference_w
   }
 
   // Set scaling factors
-  if (max_velocity_scaling_factor > 0.0 && max_velocity_scaling_factor <= 1.0)
-    velocity_scaling_factor = max_velocity_scaling_factor;
-  else if (max_velocity_scaling_factor == 0.0)
-    CONSOLE_BRIDGE_logDebug("iterative_spline_parameterization: A max_velocity_scaling_factor of 0.0 was specified, "
-                            "defaulting to %f instead.",
-                            velocity_scaling_factor);
+  if ((max_velocity_scaling_factors.array() > 0.0).all() && (max_velocity_scaling_factors.array() <= 1.0).all())
+    velocity_scaling_factor = max_velocity_scaling_factors;
   else
-    CONSOLE_BRIDGE_logWarn("iterative_spline_parameterization: Invalid max_velocity_scaling_factor %f specified, "
-                           "defaulting to %f instead.",
-                           max_velocity_scaling_factor,
-                           velocity_scaling_factor);
-
-  if (max_acceleration_scaling_factor > 0.0 && max_acceleration_scaling_factor <= 1.0)
-    acceleration_scaling_factor = max_acceleration_scaling_factor;
-  else if (max_acceleration_scaling_factor == 0.0)
-    CONSOLE_BRIDGE_logDebug("iterative_spline_parameterization: A max_acceleration_scaling_factor of 0.0 was "
-                            "specified, defaulting to %f instead.",
-                            acceleration_scaling_factor);
+  {
+    for (Eigen::Index idx = 0; idx < max_velocity_scaling_factors.size(); idx++)
+    {
+      if (max_velocity_scaling_factors[idx] == 0.0)
+        CONSOLE_BRIDGE_logDebug("iterative_spline_parameterization: A max_velocity_scaling_factor of 0.0 was "
+                                "specified at index %d, "
+                                "defaulting to %f instead.",
+                                idx,
+                                velocity_scaling_factor[idx]);
+      else
+        CONSOLE_BRIDGE_logWarn("iterative_spline_parameterization: Invalid max_velocity_scaling_factor %f specified at "
+                               "index %d, "
+                               "defaulting to %f instead.",
+                               max_velocity_scaling_factors[idx],
+                               idx,
+                               velocity_scaling_factor[idx]);
+    }
+  }
+  if ((max_acceleration_scaling_factors.array() > 0.0).all() && (max_acceleration_scaling_factors.array() <= 1.0).all())
+    acceleration_scaling_factor = max_acceleration_scaling_factors;
   else
-    CONSOLE_BRIDGE_logWarn("iterative_spline_parameterization: Invalid max_acceleration_scaling_factor %f specified, "
-                           "defaulting to %f instead.",
-                           max_acceleration_scaling_factor,
-                           acceleration_scaling_factor);
+  {
+    for (Eigen::Index idx = 0; idx < max_acceleration_scaling_factors.size(); idx++)
+    {
+      if (max_acceleration_scaling_factors[idx] == 0.0)
+        CONSOLE_BRIDGE_logDebug("iterative_spline_parameterization: A max_acceleration_scaling_factor of 0.0 was "
+                                "specified at index %d, defaulting to %f instead.",
+                                idx,
+                                acceleration_scaling_factor[idx]);
+      else
+        CONSOLE_BRIDGE_logWarn("iterative_spline_parameterization: Invalid max_acceleration_scaling_factor %f "
+                               "specified "
+                               "at index %d, "
+                               "defaulting to %f instead.",
+                               max_acceleration_scaling_factors[idx],
+                               idx,
+                               acceleration_scaling_factor[idx]);
+    }
+  }
 
   if (add_points_)
   {
@@ -295,6 +346,20 @@ bool IterativeSplineParameterization::compute(const std::vector<std::reference_w
       }
       local_trajectory.insert(local_trajectory.end() - 1, point_to_insert_back);
       num_points++;
+
+      // Add points to scaling factors
+      auto velocity_scaling_factor_tmp = velocity_scaling_factor;
+      auto acceleration_scaling_factor_tmp = acceleration_scaling_factor;
+      velocity_scaling_factor.resize(velocity_scaling_factor.size() + 2);
+      acceleration_scaling_factor.resize(acceleration_scaling_factor.size() + 2);
+
+      velocity_scaling_factor[0] = velocity_scaling_factor_tmp[0];
+      acceleration_scaling_factor[0] = acceleration_scaling_factor_tmp[0];
+      velocity_scaling_factor.block(1, 0, velocity_scaling_factor_tmp.size(), 1) = velocity_scaling_factor_tmp;
+      acceleration_scaling_factor.block(1, 0, acceleration_scaling_factor_tmp.size(), 1) =
+          acceleration_scaling_factor_tmp;
+      velocity_scaling_factor.bottomRows(1) = velocity_scaling_factor_tmp.bottomRows(1);
+      acceleration_scaling_factor.bottomRows(1) = acceleration_scaling_factor_tmp.bottomRows(1);
     }
   }
 
@@ -340,33 +405,33 @@ bool IterativeSplineParameterization::compute(const std::vector<std::reference_w
     t2[j].accelerations_[num_points - 1] = t2[j].final_acceleration_;
 
     // Set bounds based on inputs
-    t2[j].max_velocity_ = max_velocity[j];
-    t2[j].min_velocity_ = -max_velocity[j];
-    t2[j].max_velocity_ *= velocity_scaling_factor;
-    t2[j].min_velocity_ *= velocity_scaling_factor;
+    t2[j].max_velocity_ = Eigen::VectorXd::Ones(static_cast<Eigen::Index>(num_points)) * max_velocity[j];
+    t2[j].min_velocity_ = Eigen::VectorXd::Ones(static_cast<Eigen::Index>(num_points)) * -max_velocity[j];
+    t2[j].max_velocity_.array() *= velocity_scaling_factor.array();
+    t2[j].min_velocity_.array() *= velocity_scaling_factor.array();
 
-    t2[j].max_acceleration_ = max_acceleration[j];
-    t2[j].min_acceleration_ = -max_acceleration[j];
-    t2[j].max_acceleration_ *= acceleration_scaling_factor;
-    t2[j].min_acceleration_ *= acceleration_scaling_factor;
+    t2[j].max_acceleration_ = Eigen::VectorXd::Ones(static_cast<Eigen::Index>(num_points)) * max_acceleration[j];
+    t2[j].min_acceleration_ = Eigen::VectorXd::Ones(static_cast<Eigen::Index>(num_points)) * -max_acceleration[j];
+    t2[j].max_acceleration_.array() *= acceleration_scaling_factor.array();
+    t2[j].min_acceleration_.array() *= acceleration_scaling_factor.array();
 
     // Error out if bounds don't make sense
-    if (t2[j].max_velocity_ <= 0.0 || t2[j].max_acceleration_ <= 0.0)
+    if ((t2[j].max_velocity_.array() <= 0.0).any() || (t2[j].max_acceleration_.array() <= 0.0).any())
     {
       CONSOLE_BRIDGE_logError("iterative_spline_parameterization: Joint %d max velocity %f and max acceleration %f "
                               "must be greater than zero or a solution won't be found.",
                               j,
-                              t2[j].max_velocity_,
-                              t2[j].max_acceleration_);
+                              t2[j].max_velocity_[0],
+                              t2[j].max_acceleration_[0]);
       return false;
     }
-    if (t2[j].min_velocity_ >= 0.0 || t2[j].min_acceleration_ >= 0.0)
+    if ((t2[j].min_velocity_.array() >= 0.0).any() || (t2[j].min_acceleration_.array() >= 0.0).any())
     {
       CONSOLE_BRIDGE_logError("trajectory_processing.iterative_spline_parameterization: Joint %d min velocity %f and "
                               "min acceleration %f must be less than zero or a solution won't be found.",
                               j,
-                              t2[j].min_velocity_,
-                              t2[j].min_acceleration_);
+                              t2[j].min_velocity_[0],
+                              t2[j].min_acceleration_[0]);
       return false;
     }
   }
@@ -380,27 +445,29 @@ bool IterativeSplineParameterization::compute(const std::vector<std::reference_w
   }
   for (unsigned int j = 0; j < num_joints; j++)
   {
-    if (t2[j].velocities_[0] > t2[j].max_velocity_ || t2[j].velocities_[0] < t2[j].min_velocity_)
+    if (t2[j].velocities_[0] > t2[j].max_velocity_[0] || t2[j].velocities_[0] < t2[j].min_velocity_[0])
     {
       CONSOLE_BRIDGE_logError("iterative_spline_parameterization: Initial velocity %f out of bounds.",
                               t2[j].velocities_[0]);
       return false;
     }
-    else if (t2[j].velocities_[num_points - 1] > t2[j].max_velocity_ ||
-             t2[j].velocities_[num_points - 1] < t2[j].min_velocity_)
+    else if (t2[j].velocities_[num_points - 1] > t2[j].max_velocity_[static_cast<Eigen::Index>(num_points) - 1] ||
+             t2[j].velocities_[num_points - 1] < t2[j].min_velocity_[static_cast<Eigen::Index>(num_points) - 1])
     {
       CONSOLE_BRIDGE_logError("iterative_spline_parameterization: Final velocity %f out of bounds.",
                               t2[j].velocities_[num_points - 1]);
       return false;
     }
-    else if (t2[j].accelerations_[0] > t2[j].max_acceleration_ || t2[j].accelerations_[0] < t2[j].min_acceleration_)
+    else if (t2[j].accelerations_[0] > t2[j].max_acceleration_[0] ||
+             t2[j].accelerations_[0] < t2[j].min_acceleration_[0])
     {
       CONSOLE_BRIDGE_logError("iterative_spline_parameterization: Initial acceleration %f out of bounds\n",
                               t2[j].accelerations_[0]);
       return false;
     }
-    else if (t2[j].accelerations_[num_points - 1] > t2[j].max_acceleration_ ||
-             t2[j].accelerations_[num_points - 1] < t2[j].min_acceleration_)
+    else if (t2[j].accelerations_[num_points - 1] >
+                 t2[j].max_acceleration_[static_cast<Eigen::Index>(num_points) - 1] ||
+             t2[j].accelerations_[num_points - 1] < t2[j].min_acceleration_[static_cast<Eigen::Index>(num_points) - 1])
     {
       CONSOLE_BRIDGE_logError("iterative_spline_parameterization: Final acceleration %f out of bounds\n",
                               t2[j].accelerations_[num_points - 1]);
@@ -446,10 +513,10 @@ bool IterativeSplineParameterization::compute(const std::vector<std::reference_w
       {
         const double acc = t2[j].accelerations_[i];
         double atfactor = 1.0;
-        if (acc > t2[j].max_acceleration_)
-          atfactor = sqrt(acc / t2[j].max_acceleration_);
-        if (acc < t2[j].min_acceleration_)
-          atfactor = sqrt(acc / t2[j].min_acceleration_);
+        if (acc > t2[j].max_acceleration_[i])
+          atfactor = sqrt(acc / t2[j].max_acceleration_[i]);
+        if (acc < t2[j].min_acceleration_[i])
+          atfactor = sqrt(acc / t2[j].min_acceleration_[i]);
         if (atfactor > 1.01)  // within 1%
           loop = 1;
         atfactor = (atfactor - 1.0) / 16.0 + 1.0;  // 1/16th
@@ -617,7 +684,11 @@ static void adjust_two_positions(const int n,
   Increase a segment's time interval if the current time isn't long enough.
 */
 
-static void init_times(int n, double dt[], const double x[], const double max_velocity, const double min_velocity)
+static void init_times(int n,
+                       double dt[],
+                       const double x[],
+                       const Eigen::Ref<const Eigen::VectorXd>& max_velocity,
+                       const Eigen::Ref<const Eigen::VectorXd>& min_velocity)
 {
   int i;
   for (i = 0; i < n - 1; i++)
@@ -625,9 +696,9 @@ static void init_times(int n, double dt[], const double x[], const double max_ve
     double time;
     double dx = x[i + 1] - x[i];
     if (dx >= 0.0)
-      time = (dx / max_velocity);
+      time = (dx / max_velocity[i]);
     else
-      time = (dx / min_velocity);
+      time = (dx / min_velocity[i]);
     time += std::numeric_limits<double>::epsilon();  // prevent divide-by-zero
 
     if (dt[i] < time)
@@ -708,10 +779,10 @@ static double global_adjustment_factor(int n,
                                        const double /*x*/[],
                                        double x1[],
                                        double x2[],
-                                       const double max_velocity,
-                                       const double min_velocity,
-                                       const double max_acceleration,
-                                       const double min_acceleration)
+                                       const Eigen::Ref<const Eigen::VectorXd>& max_velocity,
+                                       const Eigen::Ref<const Eigen::VectorXd>& min_velocity,
+                                       const Eigen::Ref<const Eigen::VectorXd>& max_acceleration,
+                                       const Eigen::Ref<const Eigen::VectorXd>& min_acceleration)
 {
   int i;
   double tfactor2 = 1.00;
@@ -721,22 +792,22 @@ static double global_adjustment_factor(int n,
   for (i = 0; i < n; i++)
   {
     double tfactor;
-    tfactor = x1[i] / max_velocity;
+    tfactor = x1[i] / max_velocity[i];
     if (tfactor2 < tfactor)
       tfactor2 = tfactor;
-    tfactor = x1[i] / min_velocity;
+    tfactor = x1[i] / min_velocity[i];
     if (tfactor2 < tfactor)
       tfactor2 = tfactor;
 
     if (x2[i] >= 0)
     {
-      tfactor = sqrt(fabs(x2[i] / max_acceleration));
+      tfactor = sqrt(fabs(x2[i] / max_acceleration[i]));
       if (tfactor2 < tfactor)
         tfactor2 = tfactor;
     }
     else
     {
-      tfactor = sqrt(fabs(x2[i] / min_acceleration));
+      tfactor = sqrt(fabs(x2[i] / min_acceleration[i]));
       if (tfactor2 < tfactor)
         tfactor2 = tfactor;
     }
