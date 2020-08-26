@@ -47,7 +47,11 @@ public:
   using ConstPtr = std::shared_ptr<const DescartesDefaultPlanProfile<FloatType>>;
 
   DescartesDefaultPlanProfile() = default;
+  ~DescartesDefaultPlanProfile() override = default;
   DescartesDefaultPlanProfile(const DescartesDefaultPlanProfile<FloatType>&) = default;
+  DescartesDefaultPlanProfile& operator=(const DescartesDefaultPlanProfile&) = default;
+  DescartesDefaultPlanProfile(DescartesDefaultPlanProfile&&) noexcept = default;
+  DescartesDefaultPlanProfile& operator=(DescartesDefaultPlanProfile&&) noexcept = default;
   DescartesDefaultPlanProfile(const tinyxml2::XMLElement& xml_element);
 
   PoseSamplerFn target_pose_sampler = [](const Eigen::Isometry3d& tool_pose) {
@@ -85,7 +89,7 @@ public:
              const std::vector<std::string>& active_links,
              int index) override;
 
-  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const;
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
 using DescartesDefaultPlanProfileF = DescartesDefaultPlanProfile<float>;

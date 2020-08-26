@@ -47,8 +47,11 @@ public:
   using ConstPtr = std::shared_ptr<const DescartesPlanProfile<FloatType>>;
 
   DescartesPlanProfile() = default;
+  virtual ~DescartesPlanProfile() = default;
   DescartesPlanProfile(const DescartesPlanProfile&) = default;
-  DescartesPlanProfile(const tinyxml2::XMLElement& xml_element);
+  DescartesPlanProfile& operator=(const DescartesPlanProfile&) = default;
+  DescartesPlanProfile(DescartesPlanProfile&&) noexcept = default;
+  DescartesPlanProfile& operator=(DescartesPlanProfile&&) noexcept = default;
 
   virtual void apply(DescartesProblem<FloatType>& prob,
                      const Eigen::Isometry3d& cartesian_waypoint,

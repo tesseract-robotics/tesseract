@@ -81,7 +81,11 @@ struct OMPLPlannerConfigurator
 struct SBLConfigurator : public OMPLPlannerConfigurator
 {
   SBLConfigurator() = default;
+  ~SBLConfigurator() override = default;
   SBLConfigurator(const SBLConfigurator&) = default;
+  SBLConfigurator& operator=(const SBLConfigurator&) = default;
+  SBLConfigurator(SBLConfigurator&&) = default;
+  SBLConfigurator& operator=(SBLConfigurator&&) = default;
   SBLConfigurator(const tinyxml2::XMLElement& xml_element);
 
   /** @brief Max motion added to tree */
@@ -99,7 +103,11 @@ struct SBLConfigurator : public OMPLPlannerConfigurator
 struct ESTConfigurator : public OMPLPlannerConfigurator
 {
   ESTConfigurator() = default;
+  ~ESTConfigurator() override = default;
   ESTConfigurator(const ESTConfigurator&) = default;
+  ESTConfigurator& operator=(const ESTConfigurator&) = default;
+  ESTConfigurator(ESTConfigurator&&) = default;
+  ESTConfigurator& operator=(ESTConfigurator&&) = default;
   ESTConfigurator(const tinyxml2::XMLElement& xml_element);
 
   /** @brief Max motion added to tree */
@@ -120,7 +128,11 @@ struct ESTConfigurator : public OMPLPlannerConfigurator
 struct LBKPIECE1Configurator : public OMPLPlannerConfigurator
 {
   LBKPIECE1Configurator() = default;
+  ~LBKPIECE1Configurator() override = default;
   LBKPIECE1Configurator(const LBKPIECE1Configurator&) = default;
+  LBKPIECE1Configurator& operator=(const LBKPIECE1Configurator&) = default;
+  LBKPIECE1Configurator(LBKPIECE1Configurator&&) = default;
+  LBKPIECE1Configurator& operator=(LBKPIECE1Configurator&&) = default;
   LBKPIECE1Configurator(const tinyxml2::XMLElement& xml_element);
 
   /** @brief Max motion added to tree */
@@ -144,7 +156,11 @@ struct LBKPIECE1Configurator : public OMPLPlannerConfigurator
 struct BKPIECE1Configurator : public OMPLPlannerConfigurator
 {
   BKPIECE1Configurator() = default;
+  ~BKPIECE1Configurator() override = default;
   BKPIECE1Configurator(const BKPIECE1Configurator&) = default;
+  BKPIECE1Configurator& operator=(const BKPIECE1Configurator&) = default;
+  BKPIECE1Configurator(BKPIECE1Configurator&&) = default;
+  BKPIECE1Configurator& operator=(BKPIECE1Configurator&&) = default;
   BKPIECE1Configurator(const tinyxml2::XMLElement& xml_element);
 
   /** @brief Max motion added to tree */
@@ -171,7 +187,11 @@ struct BKPIECE1Configurator : public OMPLPlannerConfigurator
 struct KPIECE1Configurator : public OMPLPlannerConfigurator
 {
   KPIECE1Configurator() = default;
+  ~KPIECE1Configurator() override = default;
   KPIECE1Configurator(const KPIECE1Configurator&) = default;
+  KPIECE1Configurator& operator=(const KPIECE1Configurator&) = default;
+  KPIECE1Configurator(KPIECE1Configurator&&) = default;
+  KPIECE1Configurator& operator=(KPIECE1Configurator&&) = default;
   KPIECE1Configurator(const tinyxml2::XMLElement& xml_element);
 
   /** @brief Max motion added to tree */
@@ -201,7 +221,11 @@ struct KPIECE1Configurator : public OMPLPlannerConfigurator
 struct BiTRRTConfigurator : public OMPLPlannerConfigurator
 {
   BiTRRTConfigurator() = default;
+  ~BiTRRTConfigurator() override = default;
   BiTRRTConfigurator(const BiTRRTConfigurator&) = default;
+  BiTRRTConfigurator& operator=(const BiTRRTConfigurator&) = default;
+  BiTRRTConfigurator(BiTRRTConfigurator&&) = default;
+  BiTRRTConfigurator& operator=(BiTRRTConfigurator&&) = default;
   BiTRRTConfigurator(const tinyxml2::XMLElement& xml_element);
 
   /** @brief Max motion added to tree */
@@ -235,7 +259,11 @@ struct BiTRRTConfigurator : public OMPLPlannerConfigurator
 struct RRTConfigurator : public OMPLPlannerConfigurator
 {
   RRTConfigurator() = default;
+  ~RRTConfigurator() override = default;
   RRTConfigurator(const RRTConfigurator&) = default;
+  RRTConfigurator& operator=(const RRTConfigurator&) = default;
+  RRTConfigurator(RRTConfigurator&&) = default;
+  RRTConfigurator& operator=(RRTConfigurator&&) = default;
   RRTConfigurator(const tinyxml2::XMLElement& xml_element);
 
   /** @brief Max motion added to tree */
@@ -256,7 +284,11 @@ struct RRTConfigurator : public OMPLPlannerConfigurator
 struct RRTConnectConfigurator : public OMPLPlannerConfigurator
 {
   RRTConnectConfigurator() = default;
+  ~RRTConnectConfigurator() override = default;
   RRTConnectConfigurator(const RRTConnectConfigurator&) = default;
+  RRTConnectConfigurator& operator=(const RRTConnectConfigurator&) = default;
+  RRTConnectConfigurator(RRTConnectConfigurator&&) = default;
+  RRTConnectConfigurator& operator=(RRTConnectConfigurator&&) = default;
   RRTConnectConfigurator(const tinyxml2::XMLElement& xml_element);
 
   /** @brief Max motion added to tree */
@@ -274,7 +306,11 @@ struct RRTConnectConfigurator : public OMPLPlannerConfigurator
 struct RRTstarConfigurator : public OMPLPlannerConfigurator
 {
   RRTstarConfigurator() = default;
+  ~RRTstarConfigurator() override = default;
   RRTstarConfigurator(const RRTstarConfigurator&) = default;
+  RRTstarConfigurator& operator=(const RRTstarConfigurator&) = default;
+  RRTstarConfigurator(RRTstarConfigurator&&) = default;
+  RRTstarConfigurator& operator=(RRTstarConfigurator&&) = default;
   RRTstarConfigurator(const tinyxml2::XMLElement& xml_element);
 
   /** @brief Max motion added to tree */
@@ -298,7 +334,11 @@ struct RRTstarConfigurator : public OMPLPlannerConfigurator
 struct TRRTConfigurator : public OMPLPlannerConfigurator
 {
   TRRTConfigurator() = default;
+  ~TRRTConfigurator() override = default;
   TRRTConfigurator(const TRRTConfigurator&) = default;
+  TRRTConfigurator& operator=(const TRRTConfigurator&) = default;
+  TRRTConfigurator(TRRTConfigurator&&) = default;
+  TRRTConfigurator& operator=(TRRTConfigurator&&) = default;
   TRRTConfigurator(const tinyxml2::XMLElement& xml_element);
 
   /** @brief Max motion added to tree */
@@ -331,7 +371,11 @@ struct TRRTConfigurator : public OMPLPlannerConfigurator
 struct PRMConfigurator : public OMPLPlannerConfigurator
 {
   PRMConfigurator() = default;
+  ~PRMConfigurator() override = default;
   PRMConfigurator(const PRMConfigurator&) = default;
+  PRMConfigurator& operator=(const PRMConfigurator&) = default;
+  PRMConfigurator(PRMConfigurator&&) = default;
+  PRMConfigurator& operator=(PRMConfigurator&&) = default;
   PRMConfigurator(const tinyxml2::XMLElement& xml_element);
 
   /** @brief Use k nearest neighbors. */
@@ -349,7 +393,11 @@ struct PRMConfigurator : public OMPLPlannerConfigurator
 struct PRMstarConfigurator : public OMPLPlannerConfigurator
 {
   PRMstarConfigurator() = default;
+  ~PRMstarConfigurator() override = default;
   PRMstarConfigurator(const PRMstarConfigurator&) = default;
+  PRMstarConfigurator& operator=(const PRMstarConfigurator&) = default;
+  PRMstarConfigurator(PRMstarConfigurator&&) = default;
+  PRMstarConfigurator& operator=(PRMstarConfigurator&&) = default;
   PRMstarConfigurator(const tinyxml2::XMLElement& xml_element);
 
   /** @brief Create the planner */
@@ -364,7 +412,11 @@ struct PRMstarConfigurator : public OMPLPlannerConfigurator
 struct LazyPRMstarConfigurator : public OMPLPlannerConfigurator
 {
   LazyPRMstarConfigurator() = default;
+  ~LazyPRMstarConfigurator() override = default;
   LazyPRMstarConfigurator(const LazyPRMstarConfigurator&) = default;
+  LazyPRMstarConfigurator& operator=(const LazyPRMstarConfigurator&) = default;
+  LazyPRMstarConfigurator(LazyPRMstarConfigurator&&) = default;
+  LazyPRMstarConfigurator& operator=(LazyPRMstarConfigurator&&) = default;
   LazyPRMstarConfigurator(const tinyxml2::XMLElement& xml_element);
 
   /** @brief Create the planner */
@@ -379,7 +431,11 @@ struct LazyPRMstarConfigurator : public OMPLPlannerConfigurator
 struct SPARSConfigurator : public OMPLPlannerConfigurator
 {
   SPARSConfigurator() = default;
+  ~SPARSConfigurator() override = default;
   SPARSConfigurator(const SPARSConfigurator&) = default;
+  SPARSConfigurator& operator=(const SPARSConfigurator&) = default;
+  SPARSConfigurator(SPARSConfigurator&&) = default;
+  SPARSConfigurator& operator=(SPARSConfigurator&&) = default;
   SPARSConfigurator(const tinyxml2::XMLElement& xml_element);
 
   /** @brief The maximum number of failures before terminating the algorithm */

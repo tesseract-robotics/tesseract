@@ -52,7 +52,11 @@ public:
   using ConstPtr = std::shared_ptr<const OMPLDefaultPlanProfile>;
 
   OMPLDefaultPlanProfile() = default;
+  ~OMPLDefaultPlanProfile() override = default;
   OMPLDefaultPlanProfile(const OMPLDefaultPlanProfile&) = default;
+  OMPLDefaultPlanProfile& operator=(const OMPLDefaultPlanProfile&) = default;
+  OMPLDefaultPlanProfile(OMPLDefaultPlanProfile&&) noexcept = default;
+  OMPLDefaultPlanProfile& operator=(OMPLDefaultPlanProfile&&) noexcept = default;
   OMPLDefaultPlanProfile(const tinyxml2::XMLElement& xml_element);
 
   /** @brief The OMPL state space to use when planning */
@@ -176,7 +180,7 @@ public:
   ompl::base::StateSamplerPtr allocWeightedRealVectorStateSampler(const ompl::base::StateSpace* space,
                                                                   const Eigen::MatrixX2d& limits) const;
 
-  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const;
+  tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 
 protected:
   bool processStartAndGoalState(OMPLProblem& prob,

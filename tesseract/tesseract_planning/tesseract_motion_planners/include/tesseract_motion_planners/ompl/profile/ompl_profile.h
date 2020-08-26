@@ -45,7 +45,11 @@ public:
   using ConstPtr = std::shared_ptr<const OMPLPlanProfile>;
 
   OMPLPlanProfile() = default;
+  virtual ~OMPLPlanProfile() = default;
   OMPLPlanProfile(const OMPLPlanProfile&) = default;
+  OMPLPlanProfile& operator=(const OMPLPlanProfile&) = default;
+  OMPLPlanProfile(OMPLPlanProfile&&) noexcept = default;
+  OMPLPlanProfile& operator=(OMPLPlanProfile&&) noexcept = default;
   OMPLPlanProfile(const tinyxml2::XMLElement& xml_element);
 
   virtual void setup(OMPLProblem& prob) = 0;
