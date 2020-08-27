@@ -215,12 +215,18 @@ void OFKTRevoluteNode::storeJointValue(double joint_value)
 {
   if (joint_value > joint_limits_[1])
   {
-    CONSOLE_BRIDGE_logWarn("OFKTRevoluteNode: Joint value is above than upper limits, setting to upper limit.");
+    CONSOLE_BRIDGE_logDebug("OFKTRevoluteNode: Joint value (%f) is above the upper limits (%f), setting to upper "
+                            "limit.",
+                            joint_value,
+                            joint_limits_[1]);
     joint_value = joint_limits_[1];
   }
   else if (joint_value < joint_limits_[0])
   {
-    CONSOLE_BRIDGE_logWarn("OFKTRevoluteNode: Joint value is below the lower limits, setting to lower limit.");
+    CONSOLE_BRIDGE_logDebug("OFKTRevoluteNode: Joint value (%f) is below the lower limits (%f), setting to lower "
+                            "limit.",
+                            joint_value,
+                            joint_limits_[0]);
     joint_value = joint_limits_[0];
   }
 
@@ -238,12 +244,18 @@ Eigen::Isometry3d OFKTRevoluteNode::computeLocalTransformation(double joint_valu
 {
   if (joint_value > joint_limits_[1])
   {
-    CONSOLE_BRIDGE_logWarn("OFKTRevoluteNode: Joint value is above than upper limits, setting to upper limit.");
+    CONSOLE_BRIDGE_logDebug("OFKTRevoluteNode: Joint value (%f) is above the upper limits (%f), setting to upper "
+                            "limit.",
+                            joint_value,
+                            joint_limits_[1]);
     joint_value = joint_limits_[1];
   }
   else if (joint_value < joint_limits_[0])
   {
-    CONSOLE_BRIDGE_logWarn("OFKTRevoluteNode: Joint value is below the lower limits, setting to lower limit.");
+    CONSOLE_BRIDGE_logDebug("OFKTRevoluteNode: Joint value (%f) is below the lower limits (%f), setting to lower "
+                            "limit.",
+                            joint_value,
+                            joint_limits_[0]);
     joint_value = joint_limits_[0];
   }
 
