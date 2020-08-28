@@ -299,6 +299,53 @@ TEST(TesseractCommandLanguageUtilsUnit, flattenToPattern)  // NOLINT
   }
 }
 
+TEST(TesseractCommandLanguageUtilsUnit, clampToJointLimits)
+{
+  Eigen::MatrixX2d limits(3, 2);
+  limits << 0, 2, 0, 2, 0, 2;
+  std::vector<std::string> joint_names = { "1", "2", "3" };
+  Eigen::VectorXd values(3);
+
+  // Invalid limits
+  {
+    JointWaypoint jp;
+    Waypoint tmp(jp);
+    EXPECT_FALSE(clampToJointLimits(tmp, limits));
+  }
+  // Within limits
+  {
+    values << 1, 1, 1;
+    JointWaypoint jp(joint_names, values);
+    Waypoint tmp(jp);
+    EXPECT_TRUE(clampToJointLimits(tmp, limits));
+    EXPECT_TRUE(tmp.cast<JointWaypoint>()->isApprox(values, 1e-5));
+  }
+  // Above limits
+  {
+    values << 1, 1, 3;
+    JointWaypoint jp(joint_names, values);
+    Waypoint tmp(jp);
+    EXPECT_TRUE(clampToJointLimits(tmp, limits));
+    EXPECT_FALSE(tmp.cast<JointWaypoint>()->isApprox(values, 1e-5));
+    EXPECT_DOUBLE_EQ(2, (*tmp.cast<JointWaypoint>())[2]);
+  }
+  // Below limits
+  {
+    values << 1, -1, 1;
+    JointWaypoint jp(joint_names, values);
+    Waypoint tmp(jp);
+    EXPECT_TRUE(clampToJointLimits(tmp, limits));
+    EXPECT_FALSE(tmp.cast<JointWaypoint>()->isApprox(values, 1e-5));
+    EXPECT_DOUBLE_EQ(0, (*tmp.cast<JointWaypoint>())[1]);
+  }
+  // Type with no joint values
+  {
+    CartesianWaypoint jp;
+    Waypoint tmp(jp);
+    EXPECT_TRUE(clampToJointLimits(tmp, limits));
+  }
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
