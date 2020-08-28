@@ -60,17 +60,42 @@ bool setJointPosition(Waypoint& waypoint, const Eigen::Ref<const Eigen::VectorXd
   return true;
 }
 
-bool clampToJointLimits(Waypoint& wp, const Eigen::Ref<const Eigen::MatrixX2d>& limits)
+bool clampToJointLimits(Waypoint& wp, const Eigen::Ref<const Eigen::MatrixX2d>& limits, double max_deviation)
+{
+  Eigen::VectorXd deviation_vec = Eigen::VectorXd::Ones(limits.rows()) * max_deviation;
+  return clampToJointLimits(wp, limits, deviation_vec);
+}
+
+bool clampToJointLimits(Waypoint& wp,
+                        const Eigen::Ref<const Eigen::MatrixX2d>& limits,
+                        const Eigen::Ref<const Eigen::VectorXd>& max_deviation)
 {
   if (isJointWaypoint(wp) || isStateWaypoint(wp))
   {
-    const Eigen::VectorXd cmd_pos = getJointPosition(wp);
+    Eigen::VectorXd cmd_pos;
+    try
+    {
+      cmd_pos = getJointPosition(wp);
+    }
+    catch (std::exception& e)
+    {
+      CONSOLE_BRIDGE_logWarn("getJointPosition threw %s", e.what());
+      return false;
+    }
 
     // Check input validity
     if (limits.rows() != cmd_pos.size())
     {
       CONSOLE_BRIDGE_logWarn(
           "Invalid limits when clamping Waypoint. Waypoint size: %d, Limits size: %d", limits.rows(), cmd_pos.size());
+      return false;
+    }
+    if (limits.rows() != max_deviation.size())
+    {
+      CONSOLE_BRIDGE_logWarn("Invalid max deviation given when clamping Waypoint. Waypoint size: %d, max deviation "
+                             "size: %d",
+                             limits.rows(),
+                             max_deviation.size());
       return false;
     }
 
@@ -83,6 +108,11 @@ bool clampToJointLimits(Waypoint& wp, const Eigen::Ref<const Eigen::MatrixX2d>& 
 
     if (adjust_position)
     {
+      if (((cmd_pos.array() - limits.col(1).array()) > max_deviation.array()).any())
+        return false;
+      if ((-(cmd_pos.array() - limits.col(0).array()) > max_deviation.array()).any())
+        return false;
+
       CONSOLE_BRIDGE_logDebug("Clamping Waypoint to joint limits");
       Eigen::VectorXd new_position = cmd_pos;
       new_position = new_position.cwiseMax(limits.col(0));

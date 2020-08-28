@@ -50,9 +50,23 @@ bool setJointPosition(Waypoint& waypoint, const Eigen::Ref<const Eigen::VectorXd
  * @brief Clamps a waypoint to be within joint limits
  * @param wp Waypoint to be adjusted. Does nothing if not a JointPosition or State waypoint
  * @param limits Matrix2d of limits with first column being lower limits and second column being upper limits
+ * @param max_deviation. Max deviation that will be clamped
  * @return True if successful or if the waypoint doesn't contain that information.
  */
-bool clampToJointLimits(Waypoint& wp, const Eigen::Ref<const Eigen::MatrixX2d>& limits);
+bool clampToJointLimits(Waypoint& wp,
+                        const Eigen::Ref<const Eigen::MatrixX2d>& limits,
+                        double max_deviation = std::numeric_limits<double>::max());
+
+/**
+ * @brief Clamps a waypoint to be within joint limits
+ * @param wp Waypoint to be adjusted. Does nothing if not a JointPosition or State waypoint
+ * @param limits Matrix2d of limits with first column being lower limits and second column being upper limits
+ * @param max_deviation. Max deviation that will be clamped
+ * @return True if successful or if the waypoint doesn't contain that information.
+ */
+bool clampToJointLimits(Waypoint& wp,
+                        const Eigen::Ref<const Eigen::MatrixX2d>& limits,
+                        const Eigen::Ref<const Eigen::VectorXd>& max_deviation);
 
 /**
  * @brief This creates a seed by looping over and replacing every plan instruction with a composite instruction
