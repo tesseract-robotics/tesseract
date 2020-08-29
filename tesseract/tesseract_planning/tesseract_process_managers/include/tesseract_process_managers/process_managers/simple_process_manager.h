@@ -23,18 +23,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGER_SIMPLE_PROCESS_MANAGER_H
-#define TESSERACT_PROCESS_MANAGER_SIMPLE_PROCESS_MANAGER_H
+#ifndef TESSERACT_PROCESS_MANAGERS_SIMPLE_PROCESS_MANAGER_H
+#define TESSERACT_PROCESS_MANAGERS_SIMPLE_PROCESS_MANAGER_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <functional>
+#include <vector>
+#include <thread>
+#include <taskflow/taskflow.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_manager.h>
-#include <tesseract_process_managers/process_input.h>
-#include <tesseract_process_managers/process_generator.h>
-#include <tesseract_process_managers/taskflow_generators/sequential_taskflow.h>
+#include <tesseract_process_managers/taskflow_generator.h>
 
 namespace tesseract_planning
 {

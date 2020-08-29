@@ -4,11 +4,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
+
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
 #include <tesseract_motion_planners/core/utils.h>
-#include <tesseract_process_managers/examples/raster_example_program.h>
-#include <tesseract_process_managers/examples/freespace_example_program.h>
+
+#include <tesseract_process_managers/process_input.h>
+#include <tesseract_process_managers/process_managers/raster_process_manager.h>
+#include <tesseract_process_managers/process_managers/raster_dt_process_manager.h>
+#include <tesseract_process_managers/process_managers/raster_waad_process_manager.h>
+#include <tesseract_process_managers/process_managers/raster_waad_dt_process_manager.h>
+#include <tesseract_process_managers/taskflows/cartesian_taskflow.h>
+#include <tesseract_process_managers/taskflows/freespace_taskflow.h>
+
+#include "raster_example_program.h"
+#include "raster_dt_example_program.h"
+#include "raster_waad_example_program.h"
+#include "raster_waad_dt_example_program.h"
+#include "freespace_example_program.h"
 
 using namespace tesseract;
 using namespace tesseract_kinematics;
@@ -98,7 +111,7 @@ TEST_F(TesseractProcessManagerUnit, RasterSimpleMotionPlannerTest)
 
 TEST_F(TesseractProcessManagerUnit, FreespaceSimpleMotionPlannerTest)
 {
-  tesseract_planning::CompositeInstruction program = freespaceExampleProgram();
+  CompositeInstruction program = freespaceExampleProgram();
   EXPECT_FALSE(program.getManipulatorInfo().isEmpty());
 
   program.setManipulatorInfo(manip);
@@ -125,6 +138,102 @@ TEST_F(TesseractProcessManagerUnit, FreespaceSimpleMotionPlannerTest)
   EXPECT_EQ(((pcnt - 1) * 10) + 1, mcnt);
   EXPECT_TRUE(response.results.hasStartInstruction());
   EXPECT_FALSE(response.results.getManipulatorInfo().isEmpty());
+}
+
+TEST_F(TesseractProcessManagerUnit, RasterProcessManagerTest)
+{
+  // Define the program
+  CompositeInstruction program = rasterExampleProgram();
+  const Instruction program_instruction{ program };
+  Instruction seed = generateSkeletonSeed(program);
+
+  // Define the Process Input
+  ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
+
+  // Initialize Freespace Manager
+  auto freespace_taskflow_generator = createFreespaceTaskflow(true);
+  auto transition_taskflow_generator = createFreespaceTaskflow(true);
+  auto raster_taskflow_generator = createCartesianTaskflow(true);
+  RasterProcessManager raster_manager(std::move(freespace_taskflow_generator),
+                                      std::move(transition_taskflow_generator),
+                                      std::move(raster_taskflow_generator),
+                                      1);
+  EXPECT_TRUE(raster_manager.init(input));
+
+  // Solve
+  EXPECT_TRUE(raster_manager.execute());
+}
+
+TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerTest)
+{
+  // Define the program
+  CompositeInstruction program = rasterDTExampleProgram();
+  const Instruction program_instruction{ program };
+  Instruction seed = generateSkeletonSeed(program);
+
+  // Define the Process Input
+  ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
+
+  // Initialize Freespace Manager
+  auto freespace_taskflow_generator = createFreespaceTaskflow(true);
+  auto transition_taskflow_generator = createFreespaceTaskflow(true);
+  auto raster_taskflow_generator = createCartesianTaskflow(true);
+  RasterDTProcessManager raster_manager(std::move(freespace_taskflow_generator),
+                                        std::move(transition_taskflow_generator),
+                                        std::move(raster_taskflow_generator),
+                                        1);
+  EXPECT_TRUE(raster_manager.init(input));
+
+  // Solve
+  EXPECT_TRUE(raster_manager.execute());
+}
+
+TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerTest)
+{
+  // Define the program
+  CompositeInstruction program = rasterWAADExampleProgram();
+  const Instruction program_instruction{ program };
+  Instruction seed = generateSkeletonSeed(program);
+
+  // Define the Process Input
+  ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
+
+  // Initialize Freespace Manager
+  auto freespace_taskflow_generator = createFreespaceTaskflow(true);
+  auto transition_taskflow_generator = createFreespaceTaskflow(true);
+  auto raster_taskflow_generator = createCartesianTaskflow(true);
+  RasterWAADProcessManager raster_manager(std::move(freespace_taskflow_generator),
+                                          std::move(transition_taskflow_generator),
+                                          std::move(raster_taskflow_generator),
+                                          1);
+  EXPECT_TRUE(raster_manager.init(input));
+
+  // Solve
+  EXPECT_TRUE(raster_manager.execute());
+}
+
+TEST_F(TesseractProcessManagerUnit, RasterWAADDTProcessManagerTest)
+{
+  // Define the program
+  CompositeInstruction program = rasterWAADDTExampleProgram();
+  const Instruction program_instruction{ program };
+  Instruction seed = generateSkeletonSeed(program);
+
+  // Define the Process Input
+  ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
+
+  // Initialize Freespace Manager
+  auto freespace_taskflow_generator = createFreespaceTaskflow(true);
+  auto transition_taskflow_generator = createFreespaceTaskflow(true);
+  auto raster_taskflow_generator = createCartesianTaskflow(true);
+  RasterWAADDTProcessManager raster_manager(std::move(freespace_taskflow_generator),
+                                            std::move(transition_taskflow_generator),
+                                            std::move(raster_taskflow_generator),
+                                            1);
+  EXPECT_TRUE(raster_manager.init(input));
+
+  // Solve
+  EXPECT_TRUE(raster_manager.execute());
 }
 
 int main(int argc, char** argv)

@@ -28,16 +28,20 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <taskflow/taskflow.hpp>
+#include <functional>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_input.h>
 
+// Forward Declare
+namespace tf
+{
+class Taskflow;
+}
+
 namespace tesseract_planning
 {
-/**
- * @brief Base class for generating a taskflow
- */
+/** @brief Base class for generating a taskflow */
 class TaskflowGenerator
 {
 public:

@@ -30,6 +30,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/planner.h>
@@ -47,6 +48,9 @@ class SimpleMotionPlannerStatusCategory;
 class SimpleMotionPlanner : public MotionPlanner
 {
 public:
+  using Ptr = std::shared_ptr<SimpleMotionPlanner>;
+  using ConstPtr = std::shared_ptr<const SimpleMotionPlanner>;
+
   /** @brief Construct a basic planner */
   SimpleMotionPlanner(std::string name = "SIMPLE_PLANNER");
 

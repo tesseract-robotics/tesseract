@@ -28,18 +28,24 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <ompl/tools/multiplan/ParallelPlan.h>
-#include <utility>
-#include <type_traits>
+#include <functional>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/planner.h>
-#include <tesseract_motion_planners/ompl/ompl_motion_planner_status_category.h>
 #include <tesseract_motion_planners/ompl/profile/ompl_profile.h>
-#include <tesseract_motion_planners/ompl/problem_generators/default_problem_generator.h>
+
+namespace ompl
+{
+namespace tools
+{
+class ParallelPlan;
+}
+}  // namespace ompl
 
 namespace tesseract_planning
 {
+class OMPLMotionPlannerStatusCategory;
+
 using OMPLProblemGeneratorFn =
     std::function<std::vector<OMPLProblem::Ptr>(const std::string&, const PlannerRequest&, const OMPLPlanProfileMap&)>;
 /**

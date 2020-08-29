@@ -28,13 +28,12 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <console_bridge/console.h>
-
-#include <tesseract/tesseract.h>
-#include <tesseract_command_language/command_language.h>
-#include <tesseract_command_language/utils/utils.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_input.h>
+#include <tesseract_command_language/composite_instruction.h>
+#include <tesseract_command_language/instruction_type.h>
+#include <tesseract_command_language/utils/utils.h>
 
 namespace tesseract_planning
 {
@@ -51,6 +50,8 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
   , plan_profile_remapping(EMPTY_PROFILE_MAPPING)
   , composite_profile_remapping(EMPTY_PROFILE_MAPPING)
   , results(seed)
+  , start_instruction(NullInstruction())
+  , end_instruction(NullInstruction())
 {
 }
 
@@ -66,6 +67,8 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
   , plan_profile_remapping(plan_profile_remapping)
   , composite_profile_remapping(composite_profile_remapping)
   , results(seed)
+  , start_instruction(NullInstruction())
+  , end_instruction(NullInstruction())
 {
 }
 
@@ -80,6 +83,8 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
   , plan_profile_remapping(plan_profile_remapping)
   , composite_profile_remapping(composite_profile_remapping)
   , results(seed)
+  , start_instruction(NullInstruction())
+  , end_instruction(NullInstruction())
 {
 }
 
@@ -90,6 +95,8 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract, const Instr
   , plan_profile_remapping(EMPTY_PROFILE_MAPPING)
   , composite_profile_remapping(EMPTY_PROFILE_MAPPING)
   , results(seed)
+  , start_instruction(NullInstruction())
+  , end_instruction(NullInstruction())
 {
 }
 
