@@ -25,6 +25,8 @@
  */
 
 #include <tesseract_motion_planners/trajopt/problem_generators/default_problem_generator.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
 #include <tesseract_motion_planners/core/utils.h>
 
 namespace tesseract_planning

@@ -28,11 +28,13 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract/tesseract.h>
-#include <tesseract_command_language/command_language.h>
+#include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_command_language/core/instruction.h>
+#include <tesseract_command_language/manipulator_info.h>
 #include <tesseract_motion_planners/core/types.h>
+#include <tesseract/tesseract.h>
 
 namespace tesseract_planning
 {
@@ -106,8 +108,8 @@ struct ProcessInput
   Instruction* results;
 
   // These are used to store alternative start and end instructions
-  Instruction start_instruction{ NullInstruction() };
-  Instruction end_instruction{ NullInstruction() };
+  Instruction start_instruction;
+  Instruction end_instruction;
   const Instruction* start_instruction_ptr{ nullptr };
   const Instruction* end_instruction_ptr{ nullptr };
 };
