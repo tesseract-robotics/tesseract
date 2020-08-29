@@ -31,11 +31,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <trajopt/problem_description.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_command_language/command_language.h>
 #include <tesseract_motion_planners/core/types.h>
-#include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
-#include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
-#include <tesseract_motion_planners/core/utils.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
 
 namespace tesseract_planning
 {

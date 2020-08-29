@@ -4,14 +4,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <taskflow/taskflow.hpp>
 #include <fstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <raster_example_program.h>
 #include <tesseract/tesseract.h>
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/utils/utils.h>
-#include <tesseract_process_managers/taskflow_generators/sequential_taskflow.h>
-#include <tesseract_process_managers/examples/raster_example_program.h>
 #include <tesseract_process_managers/process_managers/raster_process_manager.h>
-#include <tesseract_process_managers/process_managers/default_processes/default_raster_processes.h>
-#include <tesseract_process_managers/process_managers/default_processes/default_freespace_processes.h>
+#include <tesseract_process_managers/taskflows/freespace_taskflow.h>
+#include <tesseract_process_managers/taskflows/cartesian_taskflow.h>
 #include <tesseract_visualization/visualization_loader.h>
 
 using namespace tesseract_planning;
@@ -84,9 +84,12 @@ int main()
   // --------------------
   // Initialize Freespace Manager
   // --------------------
-  auto freespace_taskflow_generator = std::make_unique<SequentialTaskflow>(defaultFreespaceProcesses());
-  auto raster_taskflow_generator = std::make_unique<SequentialTaskflow>(defaultRasterProcesses());
-  RasterProcessManager raster_manager(std::move(freespace_taskflow_generator), std::move(raster_taskflow_generator));
+  auto freespace_taskflow_generator = createFreespaceTaskflow(true);
+  auto transition_taskflow_generator = createFreespaceTaskflow(true);
+  auto raster_taskflow_generator = createCartesianTaskflow(true);
+  RasterProcessManager raster_manager(std::move(freespace_taskflow_generator),
+                                      std::move(transition_taskflow_generator),
+                                      std::move(raster_taskflow_generator));
   if (!raster_manager.init(input))
     CONSOLE_BRIDGE_logError("Initialization Failed");
 

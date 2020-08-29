@@ -29,7 +29,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 #include <ompl/base/goals/GoalState.h>
 #include <ompl/base/goals/GoalStates.h>
+#include <ompl/tools/multiplan/ParallelPlan.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_motion_planners/ompl/ompl_motion_planner_status_category.h>
+#include <tesseract_motion_planners/ompl/problem_generators/default_problem_generator.h>
 
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_motion_planners/ompl/ompl_motion_planner.h>

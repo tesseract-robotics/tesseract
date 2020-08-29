@@ -1,9 +1,9 @@
-﻿/**
- * @file raster_process_manager.cpp
- * @brief Plans raster paths
+/**
+ * @file raster_dt_process_manager.cpp
+ * @brief Plans raster paths with dual transitions
  *
- * @author Matthew Powelson
- * @date July 15, 2020
+ * @author Levi Armstrong
+ * @date August 28, 2020
  * @version TODO
  * @bug No known bugs
  *
@@ -30,7 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/process_managers/raster_process_manager.h>
+#include <tesseract_process_managers/process_managers/raster_dt_process_manager.h>
 #include <tesseract_command_language/instruction_type.h>
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_command_language/plan_instruction.h>
@@ -38,43 +38,19 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract_planning;
 
-// struct BasicObserver : public tf::ObserverInterface
-//{
-//  BasicObserver(const std::string& name) { std::cout << "Constructing observer " << name << '\n'; }
-
-//  void set_up(size_t num_workers) override final
-//  {
-//    std::cout << "Setting up observer with " << num_workers << " workers\n";
-//  }
-
-//  void on_entry(size_t w, tf::TaskView tv) override final
-//  {
-//    std::ostringstream oss;
-//    oss << "worker " << w << " ready to run " << tv.name() << '\n';
-//    std::cout << oss.str();
-//  }
-
-//  void on_exit(size_t w, tf::TaskView tv) override final
-//  {
-//    std::ostringstream oss;
-//    oss << "worker " << w << " finished running " << tv.name() << '\n';
-//    std::cout << oss.str();
-//  }
-//};
-
-RasterProcessManager::RasterProcessManager(TaskflowGenerator::UPtr freespace_taskflow_generator,
-                                           TaskflowGenerator::UPtr transition_taskflow_generator,
-                                           TaskflowGenerator::UPtr raster_taskflow_generator,
-                                           std::size_t n)
+RasterDTProcessManager::RasterDTProcessManager(TaskflowGenerator::UPtr freespace_taskflow_generator,
+                                               TaskflowGenerator::UPtr transition_taskflow_generator,
+                                               TaskflowGenerator::UPtr raster_taskflow_generator,
+                                               std::size_t n)
   : freespace_taskflow_generator_(std::move(freespace_taskflow_generator))
   , transition_taskflow_generator_(std::move(transition_taskflow_generator))
   , raster_taskflow_generator_(std::move(raster_taskflow_generator))
   , executor_(n)
-  , taskflow_("RasterProcessManagerTaskflow")
+  , taskflow_("RasterDTProcessManagerTaskflow")
 {
 }
 
-bool RasterProcessManager::init(ProcessInput input)
+bool RasterDTProcessManager::init(ProcessInput input)
 {
   // This should make all of the isComposite checks so that you can safely cast below
   if (!checkProcessInput(input))
@@ -106,7 +82,9 @@ bool RasterProcessManager::init(ProcessInput input)
     {
       assert(isCompositeInstruction(*(input[idx - 1].instruction)));
       const auto* tci = input[idx - 1].instruction->cast_const<CompositeInstruction>();
-      auto* li = getLastPlanInstruction(*tci);
+      assert(isCompositeInstruction((*tci)[0]));
+      const auto* ci = (*tci)[0].cast_const<CompositeInstruction>();
+      auto* li = getLastPlanInstruction(*ci);
       assert(li != nullptr);
       start_instruction = *li;
     }
@@ -117,8 +95,8 @@ bool RasterProcessManager::init(ProcessInput input)
     auto raster_step = taskflow_
                            .composed_of(raster_taskflow_generator_->generateTaskflow(
                                raster_input,
-                               std::bind(&RasterProcessManager::successCallback, this),
-                               std::bind(&RasterProcessManager::failureCallback, this)))
+                               std::bind(&RasterDTProcessManager::successCallback, this),
+                               std::bind(&RasterDTProcessManager::failureCallback, this)))
                            .name("raster_" + std::to_string(idx));
     raster_tasks_.push_back(raster_step);
   }
@@ -132,21 +110,38 @@ bool RasterProcessManager::init(ProcessInput input)
     // composite and let the generateTaskflow extract the start and end waypoint from the composite. This is also more
     // robust because planners could modify composite size, which is rare but does happen when using OMPL where it is
     // not possible to simplify the trajectory to the desired number of states.
-    ProcessInput transition_input = input[input_idx];
-    transition_input.start_instruction_ptr = input[input_idx - 1].results;
-    transition_input.end_instruction_ptr = input[input_idx + 1].results;
-    auto transition_step = taskflow_
-                               .composed_of(transition_taskflow_generator_->generateTaskflow(
-                                   transition_input,
-                                   std::bind(&RasterProcessManager::successCallback, this),
-                                   std::bind(&RasterProcessManager::failureCallback, this)))
-                               .name("transition_" + std::to_string(input_idx));
+    ProcessInput transition_from_end_input = input[input_idx][0];
+    transition_from_end_input.start_instruction_ptr = input[input_idx - 1].results;
+    transition_from_end_input.end_instruction_ptr = input[input_idx + 1].results;
+    auto transition_from_end_step = taskflow_
+                                        .composed_of(transition_taskflow_generator_->generateTaskflow(
+                                            transition_from_end_input,
+                                            std::bind(&RasterDTProcessManager::successCallback, this),
+                                            std::bind(&RasterDTProcessManager::failureCallback, this)))
+                                        .name("transition_from_end" + std::to_string(input_idx));
 
     // Each transition is independent and thus depends only on the adjacent rasters
-    transition_step.succeed(raster_tasks_[starting_raster_idx + transition_idx]);
-    transition_step.succeed(raster_tasks_[starting_raster_idx + transition_idx + 1]);
+    transition_from_end_step.succeed(raster_tasks_[starting_raster_idx + transition_idx]);
+    transition_from_end_step.succeed(raster_tasks_[starting_raster_idx + transition_idx + 1]);
 
-    transition_tasks_.push_back(transition_step);
+    transition_tasks_.push_back(transition_from_end_step);
+
+    ProcessInput transition_to_start_input = input[input_idx][1];
+    transition_to_start_input.start_instruction_ptr = input[input_idx + 1].results;
+    transition_to_start_input.end_instruction_ptr = input[input_idx - 1].results;
+    auto transition_to_start_step = taskflow_
+                                        .composed_of(transition_taskflow_generator_->generateTaskflow(
+                                            transition_to_start_input,
+                                            std::bind(&RasterDTProcessManager::successCallback, this),
+                                            std::bind(&RasterDTProcessManager::failureCallback, this)))
+                                        .name("transition_to_start" + std::to_string(input_idx));
+
+    // Each transition is independent and thus depends only on the adjacent rasters
+    transition_to_start_step.succeed(raster_tasks_[starting_raster_idx + transition_idx]);
+    transition_to_start_step.succeed(raster_tasks_[starting_raster_idx + transition_idx + 1]);
+
+    transition_tasks_.push_back(transition_to_start_step);
+
     transition_idx++;
   }
 
@@ -157,8 +152,8 @@ bool RasterProcessManager::init(ProcessInput input)
   auto from_start = taskflow_
                         .composed_of(freespace_taskflow_generator_->generateTaskflow(
                             from_start_input,
-                            std::bind(&RasterProcessManager::successCallback, this),
-                            std::bind(&RasterProcessManager::failureCallback, this)))
+                            std::bind(&RasterDTProcessManager::successCallback, this),
+                            std::bind(&RasterDTProcessManager::failureCallback, this)))
                         .name("from_start");
   raster_tasks_[starting_raster_idx].precede(from_start);
   freespace_tasks_.push_back(from_start);
@@ -169,26 +164,24 @@ bool RasterProcessManager::init(ProcessInput input)
   auto to_end = taskflow_
                     .composed_of(freespace_taskflow_generator_->generateTaskflow(
                         to_end_input,
-                        std::bind(&RasterProcessManager::successCallback, this),
-                        std::bind(&RasterProcessManager::failureCallback, this)))
+                        std::bind(&RasterDTProcessManager::successCallback, this),
+                        std::bind(&RasterDTProcessManager::failureCallback, this)))
                     .name("to_end");
   raster_tasks_.back().precede(to_end);
   freespace_tasks_.push_back(to_end);
 
   // visualizes the taskflow
   std::ofstream out_data;
-  out_data.open("/tmp/raster_process_manager.dot");
+  out_data.open("/tmp/raster_dt_process_manager.dot");
   taskflow_.dump(out_data);
   out_data.close();
 
   return true;
 }
 
-bool RasterProcessManager::execute()
+bool RasterDTProcessManager::execute()
 {
   success_ = true;
-
-  // auto observer = executor_.make_observer<BasicObserver>("BasicObserver");
 
   // TODO: Figure out how to cancel execution. This callback is only checked at beginning of the taskflow (ie before
   // restarting)
@@ -202,7 +195,7 @@ bool RasterProcessManager::execute()
   return success_;
 }
 
-bool RasterProcessManager::terminate()
+bool RasterDTProcessManager::terminate()
 {
   freespace_taskflow_generator_->abort();
   transition_taskflow_generator_->abort();
@@ -212,7 +205,7 @@ bool RasterProcessManager::terminate()
   return false;
 }
 
-bool RasterProcessManager::clear()
+bool RasterDTProcessManager::clear()
 
 {
   freespace_taskflow_generator_->clear();
@@ -224,7 +217,7 @@ bool RasterProcessManager::clear()
   return true;
 }
 
-bool RasterProcessManager::checkProcessInput(const tesseract_planning::ProcessInput& input) const
+bool RasterDTProcessManager::checkProcessInput(const tesseract_planning::ProcessInput& input) const
 {
   // -------------
   // Check Input
@@ -267,8 +260,45 @@ bool RasterProcessManager::checkProcessInput(const tesseract_planning::ProcessIn
       CONSOLE_BRIDGE_logError("ProcessInput Invalid: Both rasters and transitions should be a composite");
       return false;
     }
-  }
 
+    // Convert to composite
+    const auto* step = composite->at(index).cast_const<CompositeInstruction>();
+
+    // Odd numbers are raster segments
+    if (index % 2 != 1)
+    {
+      // Evens are transitions
+      // If there is only one transition, we assume it is transition_from_end
+      if (step->size() == 2)
+      {
+        // If there are multiple, then they should be unordered
+        if (step->getOrder() != CompositeInstructionOrder::UNORDERED)
+        {
+          // If you get this error, check that this is not processing a raster strip. You may be missing from_start.
+          CONSOLE_BRIDGE_logError("Raster contains multiple transitions but is not marked UNORDERED");
+          step->print();
+          return false;
+        }
+
+        if (!isCompositeInstruction(step->at(0)))
+        {
+          CONSOLE_BRIDGE_logError("ProcessInput Invalid: transition from end should be a composite");
+          return false;
+        }
+
+        if (!isCompositeInstruction(step->at(1)))
+        {
+          CONSOLE_BRIDGE_logError("ProcessInput Invalid: transition to start should be a composite");
+          return false;
+        }
+      }
+      else
+      {
+        CONSOLE_BRIDGE_logError("ProcessInput Invalid: transition should be a composite of size 2");
+        return false;
+      }
+    }
+  }
   // Check to_end
   if (!isCompositeInstruction(composite->back()))
   {
@@ -279,13 +309,13 @@ bool RasterProcessManager::checkProcessInput(const tesseract_planning::ProcessIn
   return true;
 }
 
-void RasterProcessManager::successCallback()
+void RasterDTProcessManager::successCallback()
 {
   CONSOLE_BRIDGE_logInform("Task Successful");
   success_ &= true;
 }
 
-void RasterProcessManager::failureCallback()
+void RasterDTProcessManager::failureCallback()
 {
   // For this process, any failure of a sub-TaskFlow indicates a planning failure. Abort all future tasks
   freespace_taskflow_generator_->abort();
@@ -293,6 +323,6 @@ void RasterProcessManager::failureCallback()
   raster_taskflow_generator_->abort();
   // Print an error if this is the first failure
   if (success_)
-    CONSOLE_BRIDGE_logError("RasterProcessManager Failure");
+    CONSOLE_BRIDGE_logError("RasterDTProcessManager Failure");
   success_ = false;
 }

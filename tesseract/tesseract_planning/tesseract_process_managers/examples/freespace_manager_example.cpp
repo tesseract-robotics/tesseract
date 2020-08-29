@@ -4,13 +4,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <taskflow/taskflow.hpp>
 #include <fstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract/tesseract.h>
 #include <tesseract_command_language/command_language.h>
+#include <freespace_example_program.h>
+
 #include <tesseract_command_language/utils/utils.h>
-#include <tesseract_process_managers/taskflow_generators/sequential_taskflow.h>
-#include <tesseract_process_managers/examples/freespace_example_program.h>
-#include <tesseract_process_managers/process_managers/freespace_process_manager.h>
-#include <tesseract_process_managers/process_managers/default_processes/default_freespace_processes.h>
+#include <tesseract_process_managers/taskflows/freespace_taskflow.h>
+#include <tesseract_process_managers/process_managers/simple_process_manager.h>
 #include <tesseract_visualization/visualization_loader.h>
 
 using namespace tesseract_planning;
@@ -82,8 +83,7 @@ int main()
   // --------------------
   // Initialize Freespace Manager
   // --------------------
-  auto freespace_taskflow_generator = std::make_unique<SequentialTaskflow>(defaultFreespaceProcesses());
-  FreespaceProcessManager freespace_manager(std::move(freespace_taskflow_generator));
+  SimpleProcessManager freespace_manager(createFreespaceTaskflow(true));
   freespace_manager.init(input);
 
   // --------------------
