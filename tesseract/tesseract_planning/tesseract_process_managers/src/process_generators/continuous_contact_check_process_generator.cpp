@@ -29,8 +29,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_process_managers/process_generators/continuous_contact_check_process_generator.h>
+#include <tesseract_command_language/composite_instruction.h>
+#include <tesseract_motion_planners/core/utils.h>
 
 namespace tesseract_planning
 {

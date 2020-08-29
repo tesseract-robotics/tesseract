@@ -99,7 +99,7 @@ public:
   void clear() override;
 
 protected:
-  std::shared_ptr<const TrajOptMotionPlannerStatusCategory> status_category_; /** @brief The plannsers status codes */
+  std::shared_ptr<const TrajOptMotionPlannerStatusCategory> status_category_; /** @brief The planners status codes */
 };
 
 class TrajOptMotionPlannerStatusCategory : public tesseract_common::StatusCategory

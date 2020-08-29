@@ -28,17 +28,16 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <vector>
-#include <console_bridge/console.h>
 #include <atomic>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
-#include <tesseract_motion_planners/core/planner.h>
-#include <tesseract_command_language/null_instruction.h>
 
 #include <tesseract_process_managers/process_generator.h>
 
 namespace tesseract_planning
 {
+// Forward Declare
+class MotionPlanner;
+
 class MotionPlannerProcessGenerator : public ProcessGenerator
 {
 public:
