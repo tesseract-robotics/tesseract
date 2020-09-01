@@ -40,7 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-CompositeInstruction LVSJointInterpolation(const JointWaypoint& start,
+CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
                                            const JointWaypoint& end,
                                            const PlanInstruction& base_instruction,
                                            const PlannerRequest& /*request*/,
@@ -76,7 +76,7 @@ CompositeInstruction LVSJointInterpolation(const JointWaypoint& start,
   return composite;
 }
 
-CompositeInstruction LVSJointInterpolation(const JointWaypoint& start,
+CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
                                            const CartesianWaypoint& end,
                                            const PlanInstruction& base_instruction,
                                            const PlannerRequest& request,
@@ -146,7 +146,7 @@ CompositeInstruction LVSJointInterpolation(const JointWaypoint& start,
   return composite;
 }
 
-CompositeInstruction LVSJointInterpolation(const CartesianWaypoint& start,
+CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
                                            const JointWaypoint& end,
                                            const PlanInstruction& base_instruction,
                                            const PlannerRequest& request,
@@ -217,7 +217,7 @@ CompositeInstruction LVSJointInterpolation(const CartesianWaypoint& start,
   return composite;
 }
 
-CompositeInstruction LVSJointInterpolation(const CartesianWaypoint& start,
+CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
                                            const CartesianWaypoint& end,
                                            const PlanInstruction& base_instruction,
                                            const PlannerRequest& request,
