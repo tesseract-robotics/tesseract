@@ -31,7 +31,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <memory>
-#include <algorithm> // std::max
+#include <algorithm>  // std::max
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/types.h>
@@ -40,14 +40,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-CompositeInstruction
-LVSJointInterpolation(const JointWaypoint& start, 
-                      const JointWaypoint& end, 
-                      const PlanInstruction& base_instruction, 
-                      const PlannerRequest& /*request*/,
-                      const ManipulatorInfo& manip_info,
-                      double state_longest_valid_segment_length,
-                      int min_steps)
+CompositeInstruction LVSJointInterpolation(const JointWaypoint& start,
+                                           const JointWaypoint& end,
+                                           const PlanInstruction& base_instruction,
+                                           const PlannerRequest& /*request*/,
+                                           const ManipulatorInfo& manip_info,
+                                           double state_longest_valid_segment_length,
+                                           int min_steps)
 {
   CompositeInstruction composite;
 
@@ -77,14 +76,13 @@ LVSJointInterpolation(const JointWaypoint& start,
   return composite;
 }
 
-CompositeInstruction
-LVSJointInterpolation(const JointWaypoint& start, 
-                      const CartesianWaypoint& end, 
-                      const PlanInstruction& base_instruction, 
-                      const PlannerRequest& request,
-                      const ManipulatorInfo& manip_info,
-                      double state_longest_valid_segment_length,
-                      int min_steps)
+CompositeInstruction LVSJointInterpolation(const JointWaypoint& start,
+                                           const CartesianWaypoint& end,
+                                           const PlanInstruction& base_instruction,
+                                           const PlannerRequest& request,
+                                           const ManipulatorInfo& manip_info,
+                                           double state_longest_valid_segment_length,
+                                           int min_steps)
 {
   assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
   const ManipulatorInfo& mi =
@@ -148,14 +146,13 @@ LVSJointInterpolation(const JointWaypoint& start,
   return composite;
 }
 
-CompositeInstruction
-LVSJointInterpolation(const CartesianWaypoint& start, 
-                      const JointWaypoint& end, 
-                      const PlanInstruction& base_instruction, 
-                      const PlannerRequest& request,
-                      const ManipulatorInfo& manip_info,
-                      double state_longest_valid_segment_length,
-                      int min_steps)
+CompositeInstruction LVSJointInterpolation(const CartesianWaypoint& start,
+                                           const JointWaypoint& end,
+                                           const PlanInstruction& base_instruction,
+                                           const PlannerRequest& request,
+                                           const ManipulatorInfo& manip_info,
+                                           double state_longest_valid_segment_length,
+                                           int min_steps)
 {
   assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
   const ManipulatorInfo& mi =
@@ -220,14 +217,13 @@ LVSJointInterpolation(const CartesianWaypoint& start,
   return composite;
 }
 
-CompositeInstruction
-LVSJointInterpolation(const CartesianWaypoint& start, 
-                      const CartesianWaypoint& end, 
-                      const PlanInstruction& base_instruction, 
-                      const PlannerRequest& request,
-                      const ManipulatorInfo& manip_info,
-                      double state_longest_valid_segment_length,
-                      int min_steps)
+CompositeInstruction LVSJointInterpolation(const CartesianWaypoint& start,
+                                           const CartesianWaypoint& end,
+                                           const PlanInstruction& base_instruction,
+                                           const PlannerRequest& request,
+                                           const ManipulatorInfo& manip_info,
+                                           double state_longest_valid_segment_length,
+                                           int min_steps)
 {
   assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
   const ManipulatorInfo& mi =
@@ -303,15 +299,14 @@ LVSJointInterpolation(const CartesianWaypoint& start,
   return composite;
 }
 
-CompositeInstruction
-LVSCartesianInterpolation(const JointWaypoint& start, 
-                          const JointWaypoint& end, 
-                          const PlanInstruction& base_instruction, 
-                          const PlannerRequest& request,
-                          const ManipulatorInfo& manip_info,
-                          double translation_longest_valid_segment_length,
-                          double rotation_longest_valid_segment_length,
-                          int min_steps)
+CompositeInstruction LVSCartesianInterpolation(const JointWaypoint& start,
+                                               const JointWaypoint& end,
+                                               const PlanInstruction& base_instruction,
+                                               const PlannerRequest& request,
+                                               const ManipulatorInfo& manip_info,
+                                               double translation_longest_valid_segment_length,
+                                               double rotation_longest_valid_segment_length,
+                                               int min_steps)
 {
   /// @todo: Need to create a cartesian state waypoint and update the code below
   throw std::runtime_error("Not implemented, PR's are welcome!");
@@ -339,7 +334,9 @@ LVSCartesianInterpolation(const JointWaypoint& start,
   p2 = world_to_base * p2 * tcp;
 
   double trans_dist = (p2.translation() - p1.translation()).norm();
-  double rot_dist = Eigen::Quaterniond(p1.linear()).angularDistance(Eigen::Quaterniond(p2.linear())); // maybe rotation instead of linear
+  double rot_dist =
+      Eigen::Quaterniond(p1.linear()).angularDistance(Eigen::Quaterniond(p2.linear()));  // maybe rotation instead of
+                                                                                         // linear
   int trans_steps = int(trans_dist / translation_longest_valid_segment_length) + 1;
   int rot_steps = int(rot_dist / rotation_longest_valid_segment_length) + 1;
   int steps = std::max(trans_steps, rot_steps);
@@ -360,15 +357,14 @@ LVSCartesianInterpolation(const JointWaypoint& start,
   return composite;
 }
 
-CompositeInstruction
-LVSCartesianInterpolation(const JointWaypoint& start, 
-                          const CartesianWaypoint& end, 
-                          const PlanInstruction& base_instruction, 
-                          const PlannerRequest& request,
-                          const ManipulatorInfo& manip_info,
-                          double translation_longest_valid_segment_length,
-                          double rotation_longest_valid_segment_length,
-                          int min_steps)
+CompositeInstruction LVSCartesianInterpolation(const JointWaypoint& start,
+                                               const CartesianWaypoint& end,
+                                               const PlanInstruction& base_instruction,
+                                               const PlannerRequest& request,
+                                               const ManipulatorInfo& manip_info,
+                                               double translation_longest_valid_segment_length,
+                                               double rotation_longest_valid_segment_length,
+                                               int min_steps)
 {
   /// @todo: Need to create a cartesian state waypoint and update the code below
   throw std::runtime_error("Not implemented, PR's are welcome!");
@@ -393,7 +389,9 @@ LVSCartesianInterpolation(const JointWaypoint& start,
   Eigen::Isometry3d p2 = end;
 
   double trans_dist = (p2.translation() - p1.translation()).norm();
-  double rot_dist = Eigen::Quaterniond(p1.linear()).angularDistance(Eigen::Quaterniond(p2.linear())); // maybe rotation instead of linear
+  double rot_dist =
+      Eigen::Quaterniond(p1.linear()).angularDistance(Eigen::Quaterniond(p2.linear()));  // maybe rotation instead of
+                                                                                         // linear
   int trans_steps = int(trans_dist / translation_longest_valid_segment_length) + 1;
   int rot_steps = int(rot_dist / rotation_longest_valid_segment_length) + 1;
   int steps = std::max(trans_steps, rot_steps);
@@ -414,15 +412,14 @@ LVSCartesianInterpolation(const JointWaypoint& start,
   return composite;
 }
 
-CompositeInstruction
-LVSCartesianInterpolation(const CartesianWaypoint& start, 
-                          const JointWaypoint& end, 
-                          const PlanInstruction& base_instruction, 
-                          const PlannerRequest& request,
-                          const ManipulatorInfo& manip_info,
-                          double translation_longest_valid_segment_length,
-                          double rotation_longest_valid_segment_length,
-                          int min_steps)
+CompositeInstruction LVSCartesianInterpolation(const CartesianWaypoint& start,
+                                               const JointWaypoint& end,
+                                               const PlanInstruction& base_instruction,
+                                               const PlannerRequest& request,
+                                               const ManipulatorInfo& manip_info,
+                                               double translation_longest_valid_segment_length,
+                                               double rotation_longest_valid_segment_length,
+                                               int min_steps)
 {
   /// @todo: Need to create a cartesian state waypoint and update the code below
   throw std::runtime_error("Not implemented, PR's are welcome!");
@@ -447,7 +444,9 @@ LVSCartesianInterpolation(const CartesianWaypoint& start,
   p2 = world_to_base * p2 * tcp;
 
   double trans_dist = (p2.translation() - p1.translation()).norm();
-  double rot_dist = Eigen::Quaterniond(p1.linear()).angularDistance(Eigen::Quaterniond(p2.linear())); // maybe rotation instead of linear
+  double rot_dist =
+      Eigen::Quaterniond(p1.linear()).angularDistance(Eigen::Quaterniond(p2.linear()));  // maybe rotation instead of
+                                                                                         // linear
   int trans_steps = int(trans_dist / translation_longest_valid_segment_length) + 1;
   int rot_steps = int(rot_dist / rotation_longest_valid_segment_length) + 1;
   int steps = std::max(trans_steps, rot_steps);
@@ -468,15 +467,14 @@ LVSCartesianInterpolation(const CartesianWaypoint& start,
   return composite;
 }
 
-CompositeInstruction
-LVSCartesianInterpolation(const CartesianWaypoint& start, 
-                          const CartesianWaypoint& end, 
-                          const PlanInstruction& base_instruction, 
-                          const PlannerRequest& /*request*/,
-                          const ManipulatorInfo& /*manip_info*/,
-                          double translation_longest_valid_segment_length,
-                          double rotation_longest_valid_segment_length,
-                          int min_steps)
+CompositeInstruction LVSCartesianInterpolation(const CartesianWaypoint& start,
+                                               const CartesianWaypoint& end,
+                                               const PlanInstruction& base_instruction,
+                                               const PlannerRequest& /*request*/,
+                                               const ManipulatorInfo& /*manip_info*/,
+                                               double translation_longest_valid_segment_length,
+                                               double rotation_longest_valid_segment_length,
+                                               int min_steps)
 {
   /// @todo: Need to create a cartesian state waypoint and update the code below
   throw std::runtime_error("Not implemented, PR's are welcome!");
@@ -484,7 +482,9 @@ LVSCartesianInterpolation(const CartesianWaypoint& start,
   CompositeInstruction composite;
 
   double trans_dist = (end.translation() - start.translation()).norm();
-  double rot_dist = Eigen::Quaterniond(start.linear()).angularDistance(Eigen::Quaterniond(end.linear())); // maybe rotation instead of linear
+  double rot_dist =
+      Eigen::Quaterniond(start.linear()).angularDistance(Eigen::Quaterniond(end.linear()));  // maybe rotation instead
+                                                                                             // of linear
   int trans_steps = int(trans_dist / translation_longest_valid_segment_length) + 1;
   int rot_steps = int(rot_dist / rotation_longest_valid_segment_length) + 1;
   int steps = std::max(trans_steps, rot_steps);
