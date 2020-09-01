@@ -31,9 +31,9 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <memory>
+#include <algorithm> // std::max
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <algorithm> // std::max
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_motion_planners/simple/step_generators/lvs_interpolation.h>
@@ -46,7 +46,7 @@ LVSJointInterpolation(const JointWaypoint& start,
                       const PlanInstruction& base_instruction, 
                       const PlannerRequest& /*request*/,
                       const ManipulatorInfo& manip_info,
-                      const double& state_longest_valid_segment_length,
+                      double state_longest_valid_segment_length,
                       int min_steps)
 {
   CompositeInstruction composite;
@@ -83,7 +83,7 @@ LVSJointInterpolation(const JointWaypoint& start,
                       const PlanInstruction& base_instruction, 
                       const PlannerRequest& request,
                       const ManipulatorInfo& manip_info,
-                      const double& state_longest_valid_segment_length,
+                      double state_longest_valid_segment_length,
                       int min_steps)
 {
   assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
@@ -154,7 +154,7 @@ LVSJointInterpolation(const CartesianWaypoint& start,
                       const PlanInstruction& base_instruction, 
                       const PlannerRequest& request,
                       const ManipulatorInfo& manip_info,
-                      const double& state_longest_valid_segment_length,
+                      double state_longest_valid_segment_length,
                       int min_steps)
 {
   assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
@@ -226,7 +226,7 @@ LVSJointInterpolation(const CartesianWaypoint& start,
                       const PlanInstruction& base_instruction, 
                       const PlannerRequest& request,
                       const ManipulatorInfo& manip_info,
-                      const double& state_longest_valid_segment_length,
+                      double state_longest_valid_segment_length,
                       int min_steps)
 {
   assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
@@ -309,8 +309,8 @@ LVSCartesianInterpolation(const JointWaypoint& start,
                           const PlanInstruction& base_instruction, 
                           const PlannerRequest& request,
                           const ManipulatorInfo& manip_info,
-                          const double& translation_longest_valid_segment_length,
-                          const double& rotation_longest_valid_segment_length,
+                          double translation_longest_valid_segment_length,
+                          double rotation_longest_valid_segment_length,
                           int min_steps)
 {
   /// @todo: Need to create a cartesian state waypoint and update the code below
@@ -366,8 +366,8 @@ LVSCartesianInterpolation(const JointWaypoint& start,
                           const PlanInstruction& base_instruction, 
                           const PlannerRequest& request,
                           const ManipulatorInfo& manip_info,
-                          const double& translation_longest_valid_segment_length,
-                          const double& rotation_longest_valid_segment_length,
+                          double translation_longest_valid_segment_length,
+                          double rotation_longest_valid_segment_length,
                           int min_steps)
 {
   /// @todo: Need to create a cartesian state waypoint and update the code below
@@ -420,8 +420,8 @@ LVSCartesianInterpolation(const CartesianWaypoint& start,
                           const PlanInstruction& base_instruction, 
                           const PlannerRequest& request,
                           const ManipulatorInfo& manip_info,
-                          const double& translation_longest_valid_segment_length,
-                          const double& rotation_longest_valid_segment_length,
+                          double translation_longest_valid_segment_length,
+                          double rotation_longest_valid_segment_length,
                           int min_steps)
 {
   /// @todo: Need to create a cartesian state waypoint and update the code below
@@ -474,8 +474,8 @@ LVSCartesianInterpolation(const CartesianWaypoint& start,
                           const PlanInstruction& base_instruction, 
                           const PlannerRequest& /*request*/,
                           const ManipulatorInfo& /*manip_info*/,
-                          const double& translation_longest_valid_segment_length,
-                          const double& rotation_longest_valid_segment_length,
+                          double translation_longest_valid_segment_length,
+                          double rotation_longest_valid_segment_length,
                           int min_steps)
 {
   /// @todo: Need to create a cartesian state waypoint and update the code below
