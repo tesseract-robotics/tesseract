@@ -37,45 +37,76 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-CompositeInstruction LVSJointInterpolation(const JointWaypoint&,
-                                           const JointWaypoint&,
-                                           const PlanInstruction& base_instruction,
-                                           const PlannerRequest& request);
+CompositeInstruction LVSJointInterpolation(const JointWaypoint& start, 
+                                           const JointWaypoint& end, 
+                                           const PlanInstruction& base_instruction, 
+                                           const PlannerRequest& request,
+                                           const ManipulatorInfo& manip_info,
+                                           const double& state_longest_valid_segment_length,
+                                           int min_steps);
 
-CompositeInstruction LVSJointInterpolation(const JointWaypoint&,
-                                           const CartesianWaypoint&,
-                                           const PlanInstruction& base_instruction,
-                                           const PlannerRequest& request);
 
-CompositeInstruction LVSJointInterpolation(const CartesianWaypoint&,
-                                           const JointWaypoint&,
-                                           const PlanInstruction& base_instruction,
-                                           const PlannerRequest& request);
+CompositeInstruction LVSJointInterpolation(const JointWaypoint& start, 
+                                           const CartesianWaypoint& end, 
+                                           const PlanInstruction& base_instruction, 
+                                           const PlannerRequest& request,
+                                           const ManipulatorInfo& manip_info,
+                                           const double& state_longest_valid_segment_length,
+                                           int min_steps);
 
-CompositeInstruction LVSJointInterpolation(const CartesianWaypoint&,
-                                           const CartesianWaypoint&,
-                                           const PlanInstruction& base_instruction,
-                                           const PlannerRequest& request);
+CompositeInstruction LVSJointInterpolation(const CartesianWaypoint& start, 
+                                           const JointWaypoint& end, 
+                                           const PlanInstruction& base_instruction, 
+                                           const PlannerRequest& request,
+                                           const ManipulatorInfo& manip_info,
+                                           const double& state_longest_valid_segment_length,
+                                           int min_steps);
 
-CompositeInstruction LVSLinearInterpolation(const JointWaypoint&,
-                                            const JointWaypoint&,
-                                            const PlanInstruction& base_instruction,
-                                            const PlannerRequest& request);
+CompositeInstruction LVSJointInterpolation(const CartesianWaypoint& start, 
+                                           const CartesianWaypoint& end, 
+                                           const PlanInstruction& base_instruction, 
+                                           const PlannerRequest& request,
+                                           const ManipulatorInfo& manip_info,
+                                           const double& state_longest_valid_segment_length,
+                                           int min_steps);
 
-CompositeInstruction LVSLinearInterpolation(const JointWaypoint&,
-                                            const CartesianWaypoint&,
-                                            const PlanInstruction& base_instruction,
-                                            const PlannerRequest& request);
 
-CompositeInstruction LVSLinearInterpolation(const CartesianWaypoint&,
-                                            const JointWaypoint&,
-                                            const PlanInstruction& base_instruction,
-                                            const PlannerRequest& request);
+CompositeInstruction LVSCartesianInterpolation(const JointWaypoint& start, 
+                                               const JointWaypoint& end, 
+                                               const PlanInstruction& base_instruction, 
+                                               const PlannerRequest& request,
+                                               const ManipulatorInfo& manip_info,
+                                               const double& translation_longest_valid_segment_length,
+                                               const double& rotation_longest_valid_segment_length,
+                                               int min_steps);
 
-CompositeInstruction LVSLinearInterpolation(const CartesianWaypoint&,
-                                            const CartesianWaypoint&,
-                                            const PlanInstruction& base_instruction,
-                                            const PlannerRequest& request);
+
+CompositeInstruction LVSCartesianInterpolation(const JointWaypoint& start, 
+                                               const CartesianWaypoint& end, 
+                                               const PlanInstruction& base_instruction, 
+                                               const PlannerRequest& request,
+                                               const ManipulatorInfo& manip_info,
+                                               const double& translation_longest_valid_segment_length,
+                                               const double& rotation_longest_valid_segment_length,
+                                               int min_steps);
+
+CompositeInstruction LVSCartesianInterpolation(const CartesianWaypoint& start, 
+                                               const JointWaypoint& end, 
+                                               const PlanInstruction& base_instruction, 
+                                               const PlannerRequest& request,
+                                               const ManipulatorInfo& manip_info,
+                                               const double& translation_longest_valid_segment_length,
+                                               const double& rotation_longest_valid_segment_length,
+                                               int min_steps);
+
+CompositeInstruction LVSCartesianInterpolation(const CartesianWaypoint& start, 
+                                               const CartesianWaypoint& end, 
+                                               const PlanInstruction& base_instruction, 
+                                               const PlannerRequest& request,
+                                               const ManipulatorInfo& manip_info,
+                                               const double& translation_longest_valid_segment_length,
+                                               const double& rotation_longest_valid_segment_length,
+                                               int min_steps);
 }  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_SIMPLE_PROFILE_H
