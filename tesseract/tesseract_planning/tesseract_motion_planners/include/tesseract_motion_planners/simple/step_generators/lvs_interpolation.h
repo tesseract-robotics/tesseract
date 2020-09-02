@@ -42,18 +42,25 @@ namespace tesseract_planning
  *
  * This will interpolate the motion from the start state to the end state. 
  *
- * If the base_instruction type is FREESPACE, then the interpolation will be done in joint space. If the 
- * base_instrucation type is LINEAR, then the interpolation will be done in cartesian space.
+ * CASE 1: The base_instruction type is FREESPACE:
+ * - the interpolation will be done in joint space
+ * - the number of steps for the plan will be calculated such that the norm of all joint distances between successive 
+ *   steps is no longer than state_longest_valid_segment_length
  *
- * The number of steps for the motion plan will be calculated such that the norm of all joint movements during
- * 
+ * CASE 2: The base_instrucation type is LINEAR:
+ * - the interpolation will be done in cartesian space
+ * - the number of steps for the plan will be calculated such that:
+ *   - the translational distance between successive steps is no longer than translation_longest_valid segment 
+ *   - the rotational distance between successive steps is no longer than rotation_longest_valid_segment
  *
  * @param start The joint state at the start of the plan
  * @param end The joint state at the end of the plan
  * @param base_instruction The base plan instruction
  * @param request The planning request information
  * @param manip_info The manipulator information provided by the parent composite instruction
- * @param state_longest_valid_segment_length The longest valid joint distance (norm of all joint movements) per step
+ * @param state_longest_valid_segment_length The maximum joint distance (norm of changes to all joint positions) between successive steps
+ * @param translation_longest_valid_segment_length The maximum translational distance between successive steps
+ * @param rotation_longest_valid_segment_length The maximaum rotational distance between successive steps
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
@@ -63,6 +70,8 @@ CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
                                            const PlannerRequest& request,
                                            const ManipulatorInfo& manip_info,
                                            double state_longest_valid_segment_length,
+                                           double translation_longest_valid_segment_length,
+                                           double rotation_longest_valid_segment_length,
                                            int min_steps);
 
 /**
@@ -91,17 +100,29 @@ CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
                                            int min_steps);
 
 /**
- * @brief LVSInterpolateStateWaypoints(CartesianWaypoint to JointWaypoint)
+ * @brief LVSInterpolateStateWaypoints(JointWaypoint to JointWaypoint)
  *
- * This will interpolate joint positions from the start state to the end state, where the norm of all joint movements
- * at each step is no longer than state_longest_valid_segment_length.
+ * This will interpolate the motion from the start state to the end state. 
  *
- * @param start The cartesian state at the start of the plan
+ * CASE 1: The base_instruction type is FREESPACE:
+ * - the interpolation will be done in joint space
+ * - the number of steps for the plan will be calculated such that the norm of all joint distances between successive 
+ *   steps is no longer than state_longest_valid_segment_length
+ *
+ * CASE 2: The base_instrucation type is LINEAR:
+ * - the interpolation will be done in cartesian space
+ * - the number of steps for the plan will be calculated such that:
+ *   - the translational distance between successive steps is no longer than translation_longest_valid segment 
+ *   - the rotational distance between successive steps is no longer than rotation_longest_valid_segment
+ *
+ * @param start The joint state at the start of the plan
  * @param end The joint state at the end of the plan
  * @param base_instruction The base plan instruction
  * @param request The planning request information
  * @param manip_info The manipulator information provided by the parent composite instruction
- * @param state_longest_valid_segment_length The longest valid joint distance (norm of all joint movements) per step
+ * @param state_longest_valid_segment_length The maximum joint distance (norm of changes to all joint positions) between successive steps
+ * @param translation_longest_valid_segment_length The maximum translational distance between successive steps
+ * @param rotation_longest_valid_segment_length The maximaum rotational distance between successive steps
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
@@ -116,17 +137,29 @@ CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start
                                            int min_steps);
 
 /**
- * @brief LVSInterpolateStateWaypoints(CartesianWaypoint to CartesianWaypoint)
+ * @brief LVSInterpolateStateWaypoints(JointWaypoint to JointWaypoint)
  *
- * This will interpolate joint positions from the start state to the end state, where the norm of all joint movements
- * at each step is no longer than state_longest_valid_segment_length.
+ * This will interpolate the motion from the start state to the end state. 
  *
- * @param start The cartesian state at the start of the plan
- * @param end The cartesian state at the end of the plan
+ * CASE 1: The base_instruction type is FREESPACE:
+ * - the interpolation will be done in joint space
+ * - the number of steps for the plan will be calculated such that the norm of all joint distances between successive 
+ *   steps is no longer than state_longest_valid_segment_length
+ *
+ * CASE 2: The base_instrucation type is LINEAR:
+ * - the interpolation will be done in cartesian space
+ * - the number of steps for the plan will be calculated such that:
+ *   - the translational distance between successive steps is no longer than translation_longest_valid segment 
+ *   - the rotational distance between successive steps is no longer than rotation_longest_valid_segment
+ *
+ * @param start The joint state at the start of the plan
+ * @param end The joint state at the end of the plan
  * @param base_instruction The base plan instruction
  * @param request The planning request information
  * @param manip_info The manipulator information provided by the parent composite instruction
- * @param state_longest_valid_segment_length The longest valid joint distance (norm of all joint movements) per step
+ * @param state_longest_valid_segment_length The maximum joint distance (norm of changes to all joint positions) between successive steps
+ * @param translation_longest_valid_segment_length The maximum translational distance between successive steps
+ * @param rotation_longest_valid_segment_length The maximaum rotational distance between successive steps
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
@@ -141,19 +174,29 @@ CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start
                                            int min_steps);
 
 /**
- * @brief LVSCartesianInterpolate(JointWaypoint to JointWaypoint)
+ * @brief LVSCartesianInterpolation(JointWaypoint to JointWaypoint)
  *
- * This will interpolate cartesian positions from the start state to the end state, where the translational distance
- * at each step is no longer than translational_longest_valid_segment_length, and the rotational distance at each step
- * is no longer than rotational_longest_valid_length.
+ * This will interpolate the motion from the start state to the end state. 
+ *
+ * CASE 1: The base_instruction type is FREESPACE:
+ * - the interpolation will be done in joint space
+ * - the number of steps for the plan will be calculated such that the norm of all joint distances between successive 
+ *   steps is no longer than state_longest_valid_segment_length
+ *
+ * CASE 2: The base_instrucation type is LINEAR:
+ * - the interpolation will be done in cartesian space
+ * - the number of steps for the plan will be calculated such that:
+ *   - the translational distance between successive steps is no longer than translation_longest_valid segment 
+ *   - the rotational distance between successive steps is no longer than rotation_longest_valid_segment
  *
  * @param start The joint state at the start of the plan
  * @param end The joint state at the end of the plan
  * @param base_instruction The base plan instruction
  * @param request The planning request information
  * @param manip_info The manipulator information provided by the parent composite instruction
- * @param translation_longest_valid_segment_length The longest valid translational distance per step
- * @param rotation_longest_valid_segment_length The longest valid rotational distance per step
+ * @param state_longest_valid_segment_length The maximum joint distance (norm of changes to all joint positions) between successive steps
+ * @param translation_longest_valid_segment_length The maximum translational distance between successive steps
+ * @param rotation_longest_valid_segment_length The maximaum rotational distance between successive steps
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
@@ -168,19 +211,29 @@ CompositeInstruction LVSCartesianInterpolation(const JointWaypoint& start,
                                                int min_steps);
 
 /**
- * @brief LVSCartesianInterpolate(JointWaypoint to CartesianWaypoint)
+ * @brief LVSCartesianInterpolation(JointWaypoint to CartesianWaypoint)
  *
- * This will interpolate cartesian positions from the start state to the end state, where the translational distance
- * at each step is no longer than translational_longest_valid_segment_length, and the rotational distance at each step
- * is no longer than rotational_longest_valid_length.
+ * This will interpolate the motion from the start state to the end state. 
+ *
+ * CASE 1: The base_instruction type is FREESPACE:
+ * - the interpolation will be done in joint space
+ * - the number of steps for the plan will be calculated such that the norm of all joint distances between successive 
+ *   steps is no longer than state_longest_valid_segment_length
+ *
+ * CASE 2: The base_instrucation type is LINEAR:
+ * - the interpolation will be done in cartesian space
+ * - the number of steps for the plan will be calculated such that:
+ *   - the translational distance between successive steps is no longer than translation_longest_valid segment 
+ *   - the rotational distance between successive steps is no longer than rotation_longest_valid_segment
  *
  * @param start The joint state at the start of the plan
- * @param end The cartesian state at the end of the plan
+ * @param end The joint state at the end of the plan
  * @param base_instruction The base plan instruction
  * @param request The planning request information
  * @param manip_info The manipulator information provided by the parent composite instruction
- * @param translation_longest_valid_segment_length The longest valid translational distance per step
- * @param rotation_longest_valid_segment_length The longest valid rotational distance per step
+ * @param state_longest_valid_segment_length The maximum joint distance (norm of changes to all joint positions) between successive steps
+ * @param translation_longest_valid_segment_length The maximum translational distance between successive steps
+ * @param rotation_longest_valid_segment_length The maximaum rotational distance between successive steps
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
@@ -195,19 +248,29 @@ CompositeInstruction LVSCartesianInterpolation(const JointWaypoint& start,
                                                int min_steps);
 
 /**
- * @brief LVSCartesianInterpolate(CartesianWaypoint to JointWaypoint)
+ * @brief LVSCartesianInterpolation(CartesianWaypoint to JointWaypoint)
  *
- * This will interpolate cartesian positions from the start state to the end state, where the translational distance
- * at each step is no longer than translational_longest_valid_segment_length, and the rotational distance at each step
- * is no longer than rotational_longest_valid_length.
+ * This will interpolate the motion from the start state to the end state. 
  *
- * @param start The cartesian state at the start of the plan
+ * CASE 1: The base_instruction type is FREESPACE:
+ * - the interpolation will be done in joint space
+ * - the number of steps for the plan will be calculated such that the norm of all joint distances between successive 
+ *   steps is no longer than state_longest_valid_segment_length
+ *
+ * CASE 2: The base_instrucation type is LINEAR:
+ * - the interpolation will be done in cartesian space
+ * - the number of steps for the plan will be calculated such that:
+ *   - the translational distance between successive steps is no longer than translation_longest_valid segment 
+ *   - the rotational distance between successive steps is no longer than rotation_longest_valid_segment
+ *
+ * @param start The joint state at the start of the plan
  * @param end The joint state at the end of the plan
  * @param base_instruction The base plan instruction
  * @param request The planning request information
  * @param manip_info The manipulator information provided by the parent composite instruction
- * @param translation_longest_valid_segment_length The longest valid translational distance per step
- * @param rotation_longest_valid_segment_length The longest valid rotational distance per step
+ * @param state_longest_valid_segment_length The maximum joint distance (norm of changes to all joint positions) between successive steps
+ * @param translation_longest_valid_segment_length The maximum translational distance between successive steps
+ * @param rotation_longest_valid_segment_length The maximaum rotational distance between successive steps
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
@@ -222,19 +285,29 @@ CompositeInstruction LVSCartesianInterpolation(const CartesianWaypoint& start,
                                                int min_steps);
 
 /**
- * @brief LVSCartesianInterpolate(CartesianWaypoint to CartesianWaypoint )
+ * @brief LVSCartesianInterpolation(CartesianWaypoint to CartesianWaypoint)
  *
- * This will interpolate cartesian positions from the start state to the end state, where the translational distance
- * at each step is no longer than translational_longest_valid_segment_length, and the rotational distance at each step
- * is no longer than rotational_longest_valid_length.
+ * This will interpolate the motion from the start state to the end state. 
  *
- * @param start The cartesian state at the start of the plan
- * @param end The cartesian state at the end of the plan
+ * CASE 1: The base_instruction type is FREESPACE:
+ * - the interpolation will be done in joint space
+ * - the number of steps for the plan will be calculated such that the norm of all joint distances between successive 
+ *   steps is no longer than state_longest_valid_segment_length
+ *
+ * CASE 2: The base_instrucation type is LINEAR:
+ * - the interpolation will be done in cartesian space
+ * - the number of steps for the plan will be calculated such that:
+ *   - the translational distance between successive steps is no longer than translation_longest_valid segment 
+ *   - the rotational distance between successive steps is no longer than rotation_longest_valid_segment
+ *
+ * @param start The joint state at the start of the plan
+ * @param end The joint state at the end of the plan
  * @param base_instruction The base plan instruction
  * @param request The planning request information
  * @param manip_info The manipulator information provided by the parent composite instruction
- * @param translation_longest_valid_segment_length The longest valid translational distance per step
- * @param rotation_longest_valid_segment_length The longest valid rotational distance per step
+ * @param state_longest_valid_segment_length The maximum joint distance (norm of changes to all joint positions) between successive steps
+ * @param translation_longest_valid_segment_length The maximum translational distance between successive steps
+ * @param rotation_longest_valid_segment_length The maximaum rotational distance between successive steps
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
