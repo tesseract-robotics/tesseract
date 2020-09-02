@@ -38,10 +38,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_planning
 {
 /**
- * @brief LVSJointInterpolate(JointWaypoint to JointWaypoint)
+ * @brief LVSInterpolateStateWaypoints(JointWaypoint to JointWaypoint)
  *
- * This will interpolate joint positions from the start state to the end state, where the norm of all joint movements
- * at each step is no longer than state_longest_valid_segment_length.
+ * This will interpolate the motion from the start state to the end state. 
+ *
+ * If the base_instruction type is FREESPACE, then the interpolation will be done in joint space. If the 
+ * base_instrucation type is LINEAR, then the interpolation will be done in cartesian space.
+ *
+ * The number of steps for the motion plan will be calculated such that the norm of all joint movements during
+ * 
  *
  * @param start The joint state at the start of the plan
  * @param end The joint state at the end of the plan
@@ -52,7 +57,7 @@ namespace tesseract_planning
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
-CompositeInstruction LVSJointInterpolation(const JointWaypoint& start,
+CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
                                            const JointWaypoint& end,
                                            const PlanInstruction& base_instruction,
                                            const PlannerRequest& request,
@@ -61,7 +66,7 @@ CompositeInstruction LVSJointInterpolation(const JointWaypoint& start,
                                            int min_steps);
 
 /**
- * @brief LVSJointInterpolate(JointWaypoint to CartesianWaypoint)
+ * @brief LVSInterpolateStateWaypoints(JointWaypoint to CartesianWaypoint)
  *
  * This will interpolate joint positions from the start state to the end state, where the norm of all joint movements
  * at each step is no longer than state_longest_valid_segment_length.
@@ -75,16 +80,18 @@ CompositeInstruction LVSJointInterpolation(const JointWaypoint& start,
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
-CompositeInstruction LVSJointInterpolation(const JointWaypoint& start,
+CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
                                            const CartesianWaypoint& end,
                                            const PlanInstruction& base_instruction,
                                            const PlannerRequest& request,
                                            const ManipulatorInfo& manip_info,
                                            double state_longest_valid_segment_length,
+                                           double translation_longest_valid_segment_length,
+                                           double rotation_longest_valid_segment_length,
                                            int min_steps);
 
 /**
- * @brief LVSJointInterpolate(CartesianWaypoint to JointWaypoint)
+ * @brief LVSInterpolateStateWaypoints(CartesianWaypoint to JointWaypoint)
  *
  * This will interpolate joint positions from the start state to the end state, where the norm of all joint movements
  * at each step is no longer than state_longest_valid_segment_length.
@@ -98,16 +105,18 @@ CompositeInstruction LVSJointInterpolation(const JointWaypoint& start,
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
-CompositeInstruction LVSJointInterpolation(const CartesianWaypoint& start,
+CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start,
                                            const JointWaypoint& end,
                                            const PlanInstruction& base_instruction,
                                            const PlannerRequest& request,
                                            const ManipulatorInfo& manip_info,
                                            double state_longest_valid_segment_length,
+                                           double translation_longest_valid_segment_length,
+                                           double rotation_longest_valid_segment_length,
                                            int min_steps);
 
 /**
- * @brief LVSJointInterpolate(CartesianWaypoint to CartesianWaypoint)
+ * @brief LVSInterpolateStateWaypoints(CartesianWaypoint to CartesianWaypoint)
  *
  * This will interpolate joint positions from the start state to the end state, where the norm of all joint movements
  * at each step is no longer than state_longest_valid_segment_length.
@@ -121,12 +130,14 @@ CompositeInstruction LVSJointInterpolation(const CartesianWaypoint& start,
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
-CompositeInstruction LVSJointInterpolation(const CartesianWaypoint& start,
+CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start,
                                            const CartesianWaypoint& end,
                                            const PlanInstruction& base_instruction,
                                            const PlannerRequest& request,
                                            const ManipulatorInfo& manip_info,
                                            double state_longest_valid_segment_length,
+                                           double translation_longest_valid_segment_length,
+                                           double rotation_longest_valid_segment_length,
                                            int min_steps);
 
 /**
@@ -151,6 +162,7 @@ CompositeInstruction LVSCartesianInterpolation(const JointWaypoint& start,
                                                const PlanInstruction& base_instruction,
                                                const PlannerRequest& request,
                                                const ManipulatorInfo& manip_info,
+                                               double state_longest_valid_segment_length,
                                                double translation_longest_valid_segment_length,
                                                double rotation_longest_valid_segment_length,
                                                int min_steps);
@@ -177,6 +189,7 @@ CompositeInstruction LVSCartesianInterpolation(const JointWaypoint& start,
                                                const PlanInstruction& base_instruction,
                                                const PlannerRequest& request,
                                                const ManipulatorInfo& manip_info,
+                                               double state_longest_valid_segment_length,
                                                double translation_longest_valid_segment_length,
                                                double rotation_longest_valid_segment_length,
                                                int min_steps);
@@ -203,6 +216,7 @@ CompositeInstruction LVSCartesianInterpolation(const CartesianWaypoint& start,
                                                const PlanInstruction& base_instruction,
                                                const PlannerRequest& request,
                                                const ManipulatorInfo& manip_info,
+                                               double state_longest_valid_segment_length,
                                                double translation_longest_valid_segment_length,
                                                double rotation_longest_valid_segment_length,
                                                int min_steps);
@@ -229,6 +243,7 @@ CompositeInstruction LVSCartesianInterpolation(const CartesianWaypoint& start,
                                                const PlanInstruction& base_instruction,
                                                const PlannerRequest& request,
                                                const ManipulatorInfo& manip_info,
+                                               double state_longest_valid_segment_length,
                                                double translation_longest_valid_segment_length,
                                                double rotation_longest_valid_segment_length,
                                                int min_steps);
