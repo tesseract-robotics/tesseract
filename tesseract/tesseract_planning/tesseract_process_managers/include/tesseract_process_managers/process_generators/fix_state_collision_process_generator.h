@@ -1,6 +1,6 @@
 /**
- * @file fix_state_bounds_process_generator.h
- * @brief Process generator for process that pushes plan instructions back within joint limits
+ * @file fix_state_collision_process_generator.h
+ * @brief Process generator for process that pushes plan instructions to be out of collision
  *
  * @author Matthew Powelson
  * @date August 31. 2020
@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_FIX_STATE_BOUNDS_PROCESS_GENERATOR_H
-#define TESSERACT_PROCESS_MANAGERS_FIX_STATE_BOUNDS_PROCESS_GENERATOR_H
+#ifndef TESSERACT_PROCESS_MANAGERS_FIX_STATE_COLLISION_PROCESS_GENERATOR_H
+#define TESSERACT_PROCESS_MANAGERS_FIX_STATE_COLLISION_PROCESS_GENERATOR_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -32,14 +32,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_generator.h>
-#include <tesseract_time_parameterization/iterative_spline_parameterization.h>
 
 namespace tesseract_planning
 {
-struct FixStateBoundsProfile
+struct FixStateCollisionProfile
 {
-  using Ptr = std::shared_ptr<FixStateBoundsProfile>;
-  using ConstPtr = std::shared_ptr<const FixStateBoundsProfile>;
+  using Ptr = std::shared_ptr<FixStateCollisionProfile>;
+  using ConstPtr = std::shared_ptr<const FixStateCollisionProfile>;
 
   enum class Settings
   {
@@ -49,32 +48,35 @@ struct FixStateBoundsProfile
     DISABLED
   };
 
-  FixStateBoundsProfile(Settings mode = Settings::ALL) : mode(mode) {}
+  FixStateCollisionProfile(Settings mode = Settings::ALL) : mode(mode) {}
 
   /** @brief Sets which terms will be corrected  */
   Settings mode;
 
-  /** @brief Maximum amount the process is allowed to correct. If deviation is further than this, it will fail */
-  double max_deviation_global = std::numeric_limits<double>::max();
+  /** @brief Percent of the total joint range that a joint will be allowed to be adjusted */
+  double jiggle_factor{ 0.02 };
+
+  /** @brief Safety margin applied to collision costs/cnts when using trajopt to correct collisions */
+  double safety_margin{ 0.025 };
 };
-using FixStateBoundsProfileMap = std::unordered_map<std::string, FixStateBoundsProfile::Ptr>;
+using FixStateCollisionProfileMap = std::unordered_map<std::string, FixStateCollisionProfile::Ptr>;
 
 /**
- * @brief This generator modifies the const input instructions in order to push waypoints that are outside of their
- * limits back within them.
+ * @brief This generator modifies the const input instructions in order to push waypoints that are in collision out of
+ * collision
  */
-class FixStateBoundsProcessGenerator : public ProcessGenerator
+class FixStateCollisionProcessGenerator : public ProcessGenerator
 {
 public:
-  using UPtr = std::unique_ptr<FixStateBoundsProcessGenerator>;
+  using UPtr = std::unique_ptr<FixStateCollisionProcessGenerator>;
 
-  FixStateBoundsProcessGenerator(std::string name = "Fix State Bounds");
+  FixStateCollisionProcessGenerator(std::string name = "FixStateCollision");
 
-  ~FixStateBoundsProcessGenerator() override = default;
-  FixStateBoundsProcessGenerator(const FixStateBoundsProcessGenerator&) = delete;
-  FixStateBoundsProcessGenerator& operator=(const FixStateBoundsProcessGenerator&) = delete;
-  FixStateBoundsProcessGenerator(FixStateBoundsProcessGenerator&&) = delete;
-  FixStateBoundsProcessGenerator& operator=(FixStateBoundsProcessGenerator&&) = delete;
+  ~FixStateCollisionProcessGenerator() override = default;
+  FixStateCollisionProcessGenerator(const FixStateCollisionProcessGenerator&) = delete;
+  FixStateCollisionProcessGenerator& operator=(const FixStateCollisionProcessGenerator&) = delete;
+  FixStateCollisionProcessGenerator(FixStateCollisionProcessGenerator&&) = delete;
+  FixStateCollisionProcessGenerator& operator=(FixStateCollisionProcessGenerator&&) = delete;
 
   const std::string& getName() const override;
 
@@ -86,7 +88,7 @@ public:
 
   void setAbort(bool abort) override;
 
-  FixStateBoundsProfileMap composite_profiles;
+  FixStateCollisionProfileMap composite_profiles;
 
 private:
   /** @brief If true, all tasks return immediately. Workaround for https://github.com/taskflow/taskflow/issues/201 */

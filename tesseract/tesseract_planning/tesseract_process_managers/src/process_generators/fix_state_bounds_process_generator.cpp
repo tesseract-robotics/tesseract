@@ -97,7 +97,7 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
   if (cur_composite_profile->mode == FixStateBoundsProfile::Settings::DISABLED)
     return 1;
 
-  CONSOLE_BRIDGE_logError("FixStateBoundsProcessGenerator is modifying the const input instructions");
+  CONSOLE_BRIDGE_logInform("FixStateBoundsProcessGenerator is modifying the const input instructions");
   auto limits = fwd_kin->getLimits().joint_limits;
   switch (cur_composite_profile->mode)
   {
@@ -113,7 +113,7 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
       }
     }
     break;
-    case FixStateBoundsProfile::Settings::END:
+    case FixStateBoundsProfile::Settings::END_ONLY:
     {
       const PlanInstruction* instr_const_ptr = getLastPlanInstruction(*ci);
       if (instr_const_ptr)

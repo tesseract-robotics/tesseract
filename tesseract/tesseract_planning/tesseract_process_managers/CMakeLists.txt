@@ -21,6 +21,7 @@ add_library(${PROJECT_NAME} SHARED
     src/process_generators/continuous_contact_check_process_generator.cpp
     src/process_generators/discrete_contact_check_process_generator.cpp
     src/process_generators/fix_state_bounds_process_generator.cpp
+    src/process_generators/fix_state_collision_process_generator.cpp
     src/process_generators/iterative_spline_parameterization_process_generator.cpp
     src/process_generators/motion_planner_process_generator.cpp
     src/process_managers/raster_process_manager.cpp
