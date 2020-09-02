@@ -327,7 +327,7 @@ CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start
     steps = std::max(steps, min_steps);
 
     // Linearly interpolate in joint space
-    Eigen::MatrixXd states = interpolate(j1, j2, steps);
+    Eigen::MatrixXd states = interpolate(j1_final, j2, steps);
 
     // Convert to MoveInstructions
     for (long i = 1; i < states.cols(); ++i)
@@ -435,7 +435,7 @@ CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start
     steps = std::max(steps, min_steps);
 
     // Linearly interpolate in joint space
-    Eigen::MatrixXd states = interpolate(j1, j2, steps);
+    Eigen::MatrixXd states = interpolate(j1_final, j2_final, steps);
 
     // Convert to MoveInstructions
     for (long i = 1; i < states.cols(); ++i)
