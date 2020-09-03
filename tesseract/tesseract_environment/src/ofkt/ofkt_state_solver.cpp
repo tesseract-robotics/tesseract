@@ -221,7 +221,6 @@ void OFKTStateSolver::setState(const std::vector<std::string>& joint_names,
 {
   assert(joint_names.size() == static_cast<std::size_t>(joint_values.size()));
   Eigen::VectorXd jv = joint_values;
-  std::cout << jv.transpose() << std::endl;
   for (std::size_t i = 0; i < joint_names.size(); ++i)
   {
     nodes_[joint_names[i]]->storeJointValue(joint_values(static_cast<long>(i)));
