@@ -366,7 +366,6 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name
       }
 
       start_waypoint = plan_instruction->getWaypoint();
-      start_instruction = &instruction;
     }
   }
 

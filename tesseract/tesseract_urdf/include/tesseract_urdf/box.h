@@ -86,7 +86,7 @@ inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Box::Ptr& box
   if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
     return std::make_shared<tesseract_common::StatusCode>(BoxStatusCategory::ErrorAttributeSizeConversion, status_cat);
 
-  double l, w, h;
+  double l{ 0 }, w{ 0 }, h{ 0 };
   // No need to check return values because the tokens are verified above
   tesseract_common::toNumeric<double>(tokens[0], l);
   tesseract_common::toNumeric<double>(tokens[1], w);

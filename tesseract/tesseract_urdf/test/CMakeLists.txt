@@ -29,11 +29,12 @@ add_executable(${PROJECT_NAME}_unit
   tesseract_urdf_visual_unit.cpp)
 
 target_link_libraries(${PROJECT_NAME}_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME} tesseract::tesseract_support tesseract::tesseract_geometry)
-tesseract_target_compile_options(${PROJECT_NAME}_unit PRIVATE)
-tesseract_clang_tidy(${PROJECT_NAME}_unit)
-tesseract_code_coverage(${PROJECT_NAME}_unit ALL EXCLUDE ${COVERAGE_EXCLUDE})
 target_include_directories(${PROJECT_NAME}_unit PRIVATE
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
-tesseract_gtest_discover_tests(${PROJECT_NAME}_unit)
+target_compile_options(${PROJECT_NAME}_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME}_unit ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_unit PRIVATE VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(${PROJECT_NAME}_unit ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
+add_gtest_discover_tests(${PROJECT_NAME}_unit)
 add_dependencies(${PROJECT_NAME}_unit ${PROJECT_NAME})
 add_dependencies(run_tests ${PROJECT_NAME}_unit)

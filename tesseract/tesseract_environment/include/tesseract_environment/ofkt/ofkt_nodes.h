@@ -174,6 +174,8 @@ private:
   Eigen::Vector3d axis_;
   Eigen::Vector2d joint_limits_;
 
+  void computeAndStoreLocalTransformationImpl();
+
   friend class OFKTStateSolver;
 };
 
@@ -198,6 +200,8 @@ public:
 private:
   Eigen::Vector3d axis_;
 
+  void computeAndStoreLocalTransformationImpl();
+
   friend class OFKTStateSolver;
 };
 
@@ -221,6 +225,8 @@ public:
 
 private:
   Eigen::Vector3d axis_;
+
+  void computeAndStoreLocalTransformationImpl();
 
   friend class OFKTStateSolver;
 };

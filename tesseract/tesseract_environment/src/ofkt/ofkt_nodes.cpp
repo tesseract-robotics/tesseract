@@ -163,7 +163,7 @@ OFKTFixedNode::OFKTFixedNode(OFKTNode* parent,
                  std::move(joint_name),
                  static_tf)
 {
-  computeAndStoreWorldTransformation();
+  OFKTBaseNode::computeAndStoreWorldTransformation();
 }
 
 void OFKTFixedNode::storeJointValue(double /*joint_value*/)
@@ -207,8 +207,8 @@ OFKTRevoluteNode::OFKTRevoluteNode(OFKTNode* parent,
   if (tesseract_common::almostEqualRelativeAndAbs(joint_limits_[0], joint_limits_[1], 1e-5))
     throw std::runtime_error("OFKTRevoluteNode: Invalid joint limits!");
 
-  computeAndStoreLocalTransformation();
-  computeAndStoreWorldTransformation();
+  computeAndStoreLocalTransformationImpl();
+  OFKTBaseNode::computeAndStoreWorldTransformation();
 }
 
 void OFKTRevoluteNode::storeJointValue(double joint_value)
@@ -233,12 +233,14 @@ void OFKTRevoluteNode::storeJointValue(double joint_value)
   OFKTBaseNode::storeJointValue(joint_value);
 }
 
-void OFKTRevoluteNode::computeAndStoreLocalTransformation()
+void OFKTRevoluteNode::computeAndStoreLocalTransformationImpl()
 {
   joint_tf_ = Eigen::AngleAxisd(joint_value_, axis_);
   local_tf_ = static_tf_ * joint_tf_;
   joint_value_changed_ = false;
 }
+
+void OFKTRevoluteNode::computeAndStoreLocalTransformation() { computeAndStoreLocalTransformationImpl(); }
 
 Eigen::Isometry3d OFKTRevoluteNode::computeLocalTransformation(double joint_value) const
 {
@@ -281,16 +283,18 @@ OFKTContinuousNode::OFKTContinuousNode(OFKTNode* parent,
                  static_tf)
   , axis_(axis.normalized())
 {
-  computeAndStoreLocalTransformation();
-  computeAndStoreWorldTransformation();
+  computeAndStoreLocalTransformationImpl();
+  OFKTBaseNode::computeAndStoreWorldTransformation();
 }
 
-void OFKTContinuousNode::computeAndStoreLocalTransformation()
+void OFKTContinuousNode::computeAndStoreLocalTransformationImpl()
 {
   joint_tf_ = Eigen::AngleAxisd(joint_value_, axis_);
   local_tf_ = static_tf_ * joint_tf_;
   joint_value_changed_ = false;
 }
+
+void OFKTContinuousNode::computeAndStoreLocalTransformation() { computeAndStoreLocalTransformationImpl(); }
 
 Eigen::Isometry3d OFKTContinuousNode::computeLocalTransformation(double joint_value) const
 {
@@ -314,16 +318,18 @@ OFKTPrismaticNode::OFKTPrismaticNode(OFKTNode* parent,
                  static_tf)
   , axis_(axis.normalized())
 {
-  computeAndStoreLocalTransformation();
-  computeAndStoreWorldTransformation();
+  computeAndStoreLocalTransformationImpl();
+  OFKTBaseNode::computeAndStoreWorldTransformation();
 }
 
-void OFKTPrismaticNode::computeAndStoreLocalTransformation()
+void OFKTPrismaticNode::computeAndStoreLocalTransformationImpl()
 {
   joint_tf_ = Eigen::Translation3d(joint_value_ * axis_);
   local_tf_ = static_tf_ * joint_tf_;
   joint_value_changed_ = false;
 }
+
+void OFKTPrismaticNode::computeAndStoreLocalTransformation() { computeAndStoreLocalTransformationImpl(); }
 
 Eigen::Isometry3d OFKTPrismaticNode::computeLocalTransformation(double joint_value) const
 {

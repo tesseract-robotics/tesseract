@@ -76,12 +76,6 @@ void processLongestValidSegment(const ompl::base::StateSpacePtr& state_space_ptr
     double val =
         std::min(longest_valid_segment_fraction, longest_valid_segment_length / state_space_ptr->getMaximumExtent());
     longest_valid_segment_fraction = val;
-    longest_valid_segment_length = val * state_space_ptr->getMaximumExtent();
-    state_space_ptr->setLongestValidSegmentFraction(val);
-  }
-  else if (longest_valid_segment_fraction > 0)
-  {
-    longest_valid_segment_length = longest_valid_segment_fraction * state_space_ptr->getMaximumExtent();
   }
   else if (longest_valid_segment_length > 0)
   {
@@ -90,7 +84,6 @@ void processLongestValidSegment(const ompl::base::StateSpacePtr& state_space_ptr
   else
   {
     longest_valid_segment_fraction = 0.01;
-    longest_valid_segment_length = 0.01 * state_space_ptr->getMaximumExtent();
   }
   state_space_ptr->setLongestValidSegmentFraction(longest_valid_segment_fraction);
 }
