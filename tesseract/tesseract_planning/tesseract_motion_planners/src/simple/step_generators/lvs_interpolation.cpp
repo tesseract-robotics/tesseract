@@ -93,9 +93,9 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
     tesseract_common::VectorIsometry3d poses = interpolate(p1, p2, steps);
 
     // Convert to MoveInstructions
-    for (std::size_t p = 1; p < poses.size(); ++p)
+    for (const auto& pose : poses)
     {
-      tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
+      tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(pose), MoveInstructionType::LINEAR);
       move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
       move_instruction.setDescription(base_instruction.getDescription());
       composite.push_back(move_instruction);
@@ -173,9 +173,9 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
     tesseract_common::VectorIsometry3d poses = interpolate(p1, p2, steps);
 
     // Convert to MoveInstructions
-    for (std::size_t p = 1; p < poses.size(); ++p)
+    for (const auto& pose : poses)
     {
-      tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
+      tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(pose), MoveInstructionType::LINEAR);
       move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
       move_instruction.setDescription(base_instruction.getDescription());
       composite.push_back(move_instruction);
@@ -285,9 +285,9 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
     tesseract_common::VectorIsometry3d poses = interpolate(p1, p2, steps);
 
     // Convert to MoveInstructions
-    for (std::size_t p = 1; p < poses.size(); ++p)
+    for (const auto& pose : poses)
     {
-      tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
+      tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(pose), MoveInstructionType::LINEAR);
       move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
       move_instruction.setDescription(base_instruction.getDescription());
       composite.push_back(move_instruction);
@@ -378,9 +378,9 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
     tesseract_common::VectorIsometry3d poses = interpolate(start, end, steps);
 
     // Convert to MoveInstructions
-    for (std::size_t p = 1; p < poses.size(); ++p)
+    for (const auto& pose : poses)
     {
-      tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
+      tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(pose), MoveInstructionType::LINEAR);
       move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
       move_instruction.setDescription(base_instruction.getDescription());
       composite.push_back(move_instruction);
@@ -507,9 +507,9 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
   tesseract_common::VectorIsometry3d poses = interpolate(p1, p2, steps);
 
   // Convert to MoveInstructions
-  for (std::size_t p = 1; p < poses.size(); ++p)
+  for (const auto& pose : poses)
   {
-    tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
+    tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(pose), MoveInstructionType::LINEAR);
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
     composite.push_back(move_instruction);
@@ -563,9 +563,9 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
   tesseract_common::VectorIsometry3d poses = interpolate(p1, p2, steps);
 
   // Convert to MoveInstructions
-  for (std::size_t p = 1; p < poses.size(); ++p)
+  for (const auto& pose : poses)
   {
-    tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
+    tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(pose), MoveInstructionType::LINEAR);
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
     composite.push_back(move_instruction);
@@ -619,9 +619,9 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const CartesianWaypoint& st
   tesseract_common::VectorIsometry3d poses = interpolate(p1, p2, steps);
 
   // Convert to MoveInstructions
-  for (std::size_t p = 1; p < poses.size(); ++p)
+  for (const auto& pose : poses)
   {
-    tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
+    tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(pose), MoveInstructionType::LINEAR);
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
     composite.push_back(move_instruction);
@@ -658,9 +658,9 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const CartesianWaypoint& st
   tesseract_common::VectorIsometry3d poses = interpolate(start, end, steps);
 
   // Convert to MoveInstructions
-  for (std::size_t p = 1; p < poses.size(); ++p)
+  for (const auto& pose : poses)
   {
-    tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(poses[p]), MoveInstructionType::LINEAR);
+    tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(pose), MoveInstructionType::LINEAR);
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
     composite.push_back(move_instruction);
