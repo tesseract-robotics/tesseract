@@ -8,6 +8,7 @@ find_package(tesseract_common REQUIRED)
 find_package(tesseract REQUIRED)
 find_package(tesseract_command_language REQUIRED)
 find_package(class_loader REQUIRED)
+find_package(cmake_common_scripts REQUIRED)
 
 # Optional to build ignition visualization
 find_package(ignition-common3 COMPONENTS profiler events av QUIET)
@@ -24,6 +25,9 @@ set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/*)
 
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 
+# Load variable for clang tidy args, compiler options and cxx version
+tesseract_variables()
+
 #####################################
 # Define compile-time default variables
 if(MSVC)
@@ -37,9 +41,10 @@ add_library(${PROJECT_NAME} SHARED
     src/trajectory_interpolator.cpp
     src/trajectory_player.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract tesseract::tesseract_command_language tesseract::tesseract_collision_core tesseract::tesseract_common console_bridge ${class_loader_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME})
-tesseract_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
 target_compile_definitions(${PROJECT_NAME} PRIVATE TESSERACT_VISUALIZATION_PLUGIN_PATH="${TESSERACT_VISUALIZATION_PLUGIN_PATH}")
 if(class_loader_VERSION VERSION_LESS "0.4.0")
   target_compile_definitions(${PROJECT_NAME} PRIVATE CLASS_LOADER_NOT_SUPPORTED=ON)
@@ -66,9 +71,10 @@ if (IGNITION_FOUND)
     ${IGNITION-COMMON_LIBRARIES}
     ${IGNITION-MSGS_LIBRARIES}
     console_bridge)
-  tesseract_target_compile_options(${PROJECT_NAME}_ignition PUBLIC)
-  tesseract_clang_tidy(${PROJECT_NAME}_ignition)
-  tesseract_code_coverage(${PROJECT_NAME}_ignition ALL EXCLUDE ${COVERAGE_EXCLUDE})
+  target_compile_options(${PROJECT_NAME}_ignition PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+  target_clang_tidy(${PROJECT_NAME}_ignition ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+  target_cxx_version(${PROJECT_NAME}_ignition PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+  target_code_coverage(${PROJECT_NAME}_ignition ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
   target_include_directories(${PROJECT_NAME}_ignition PUBLIC
       "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
       "$<INSTALL_INTERFACE:include>")
@@ -87,9 +93,10 @@ if (IGNITION_FOUND)
     ${IGNITION-TRANSPORT_LIBRARIES}
     ${IGNITION-MSGS_LIBRARIES}
     console_bridge)
-  tesseract_target_compile_options(${PROJECT_NAME}_ignition_visualization PUBLIC)
-  tesseract_clang_tidy(${PROJECT_NAME}_ignition_visualization)
-  tesseract_code_coverage(${PROJECT_NAME}_ignition_visualization ALL EXCLUDE ${COVERAGE_EXCLUDE})
+  target_compile_options(${PROJECT_NAME}_ignition_visualization PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+  target_clang_tidy(${PROJECT_NAME}_ignition_visualization ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+  target_cxx_version(${PROJECT_NAME}_ignition_visualization PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+  target_code_coverage(${PROJECT_NAME}_ignition_visualization ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
   target_include_directories(${PROJECT_NAME}_ignition_visualization PUBLIC
       "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
       "$<INSTALL_INTERFACE:include>")
@@ -103,7 +110,7 @@ else()
   message(WARNING "Ignition Visualization Library will not be built!")
 endif()
 
-tesseract_configure_package(${PACKAGE_LIBRARIES})
+configure_package(NAMESPACE tesseract TARGETS ${PACKAGE_LIBRARIES})
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
@@ -114,6 +121,6 @@ install(DIRECTORY include/${PROJECT_NAME}
 
 if (TESSERACT_ENABLE_TESTING)
   enable_testing()
-  tesseract_add_run_tests_target()
+  add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
 endif()

@@ -43,28 +43,28 @@ ManipulatorInfo::ManipulatorInfo(const tinyxml2::XMLElement& xml_element)
   const tinyxml2::XMLElement* working_frame_element = xml_element.FirstChildElement("WorkingFrame");
   const tinyxml2::XMLElement* tcp_element = xml_element.FirstChildElement("TCP");
 
-  if (manipulator_element)
+  if (manipulator_element != nullptr)
   {
     tinyxml2::XMLError status = tesseract_common::QueryStringText(manipulator_element, manipulator);
     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
       throw std::runtime_error("ManipulatorInfo: Error parsing Manipulator string");
   }
 
-  if (manipulator_ik_solver_element)
+  if (manipulator_ik_solver_element != nullptr)
   {
     tinyxml2::XMLError status = tesseract_common::QueryStringText(manipulator_ik_solver_element, manipulator_ik_solver);
     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
       throw std::runtime_error("ManipulatorInfo: Error parsing ManipulatorIKSolver string");
   }
 
-  if (working_frame_element)
+  if (working_frame_element != nullptr)
   {
     tinyxml2::XMLError status = tesseract_common::QueryStringText(working_frame_element, working_frame);
     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
       throw std::runtime_error("ManipulatorInfo: Error parsing WorkingFrame string");
   }
 
-  if (tcp_element)
+  if (tcp_element != nullptr)
   {
     if (tcp_element->Attribute("xyz") == nullptr && tcp_element->Attribute("rpy") == nullptr &&
         tcp_element->Attribute("wxyz") == nullptr)
@@ -82,7 +82,7 @@ ManipulatorInfo::ManipulatorInfo(const tinyxml2::XMLElement& xml_element)
       if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
         throw std::runtime_error("ManipulatorInfo: Error parsing TCP attribute xyz string.");
 
-      double x, y, z;
+      double x{ 0 }, y{ 0 }, z{ 0 };
       // No need to check return values because the tokens are verified above
       tesseract_common::toNumeric<double>(tokens[0], x);
       tesseract_common::toNumeric<double>(tokens[1], y);
@@ -104,7 +104,7 @@ ManipulatorInfo::ManipulatorInfo(const tinyxml2::XMLElement& xml_element)
         if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
           throw std::runtime_error("ManipulatorInfo: Error parsing TCP attribute rpy string.");
 
-        double r, p, y;
+        double r{ 0 }, p{ 0 }, y{ 0 };
         // No need to check return values because the tokens are verified above
         tesseract_common::toNumeric<double>(tokens[0], r);
         tesseract_common::toNumeric<double>(tokens[1], p);
@@ -132,7 +132,7 @@ ManipulatorInfo::ManipulatorInfo(const tinyxml2::XMLElement& xml_element)
         if (tokens.size() != 4 || !tesseract_common::isNumeric(tokens))
           throw std::runtime_error("ManipulatorInfo: Error parsing TCP attribute wxyz string.");
 
-        double qw, qx, qy, qz;
+        double qw{ 0 }, qx{ 0 }, qy{ 0 }, qz{ 0 };
         // No need to check return values because the tokens are verified above
         tesseract_common::toNumeric<double>(tokens[0], qw);
         tesseract_common::toNumeric<double>(tokens[1], qx);

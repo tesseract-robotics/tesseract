@@ -86,6 +86,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 #pragma omp parallel for num_threads(num_threads) shared(location)
   for (unsigned i = 0; i < num_threads; ++i)
   {
+    UNUSED(i);
     const int tn = omp_get_thread_num();
     CONSOLE_BRIDGE_logDebug("Thread %i of %i", tn, omp_get_num_threads());
     const DiscreteContactManager::Ptr& manager = contact_manager[static_cast<size_t>(tn)];

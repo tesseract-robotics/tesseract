@@ -9,6 +9,7 @@
 
   <depend>libconsole-bridge-dev</depend>
   <depend>tesseract_common</depend>
+  <build_depend>cmake_common_scripts</build_depend>
 
   <build_depend>eigen</build_depend>
   <build_export_depend>eigen</build_export_depend>

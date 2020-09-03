@@ -7,6 +7,7 @@
   <license>Apache 2.0</license>
   <author>Levi Armstrong</author>
 
+  <build_depend>cmake_common_scripts</build_depend>
   <depend>boost</depend>
   <depend>tesseract_scene_graph</depend>
   <depend>tesseract_collision</depend>

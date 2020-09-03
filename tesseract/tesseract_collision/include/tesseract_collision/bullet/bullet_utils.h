@@ -135,6 +135,13 @@ public:
                          CollisionShapesConst shapes,
                          tesseract_common::VectorIsometry3d shape_poses);
 
+  /** @brief This is a special constructor used by the clone method */
+  CollisionObjectWrapper(std::string name,
+                         const int& type_id,
+                         CollisionShapesConst shapes,
+                         tesseract_common::VectorIsometry3d shape_poses,
+                         std::vector<std::shared_ptr<void>> data);
+
   short int m_collisionFilterGroup;
   short int m_collisionFilterMask;
   bool m_enabled;
@@ -179,8 +186,7 @@ public:
    */
   std::shared_ptr<CollisionObjectWrapper> clone()
   {
-    std::shared_ptr<CollisionObjectWrapper> clone_cow(
-        new CollisionObjectWrapper(m_name, m_type_id, m_shapes, m_shape_poses, m_data));
+    auto clone_cow = std::make_shared<CollisionObjectWrapper>(m_name, m_type_id, m_shapes, m_shape_poses, m_data);
     clone_cow->setCollisionShape(getCollisionShape());
     clone_cow->setWorldTransform(getWorldTransform());
     clone_cow->m_collisionFilterGroup = m_collisionFilterGroup;
@@ -202,13 +208,6 @@ public:
   }
 
 protected:
-  /** @brief This is a special constructor used by the clone method */
-  CollisionObjectWrapper(std::string name,
-                         const int& type_id,
-                         CollisionShapesConst shapes,
-                         tesseract_common::VectorIsometry3d shape_poses,
-                         std::vector<std::shared_ptr<void>> data);
-
   std::string m_name;                               /**< @brief The name of the collision object */
   int m_type_id;                                    /**< @brief A user defined type id */
   CollisionShapesConst m_shapes;                    /**< @brief The shapes that define the collison object */
