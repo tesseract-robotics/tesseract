@@ -50,7 +50,7 @@ namespace tesseract_planning
  * CASE 2: The base_instrucation type is LINEAR:
  * - the interpolation will be done in cartesian space
  * - the number of steps for the plan will be calculated such that:
- *   - the translational distance between successive steps is no longer than translation_longest_valid segment
+ *   - the translational distance between successive steps is no longer than translation_longest_valid_segment
  *   - the rotational distance between successive steps is no longer than rotation_longest_valid_segment
  *
  * @param start The joint state at the start of the plan
@@ -113,7 +113,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
  * CASE 2: The base_instrucation type is LINEAR:
  * - the interpolation will be done in cartesian space
  * - the number of steps for the plan will be calculated such that:
- *   - the translational distance between successive steps is no longer than translation_longest_valid segment
+ *   - the translational distance between successive steps is no longer than translation_longest_valid_segment
  *   - the rotational distance between successive steps is no longer than rotation_longest_valid_segment
  *
  * @param start The joint state at the start of the plan
@@ -151,7 +151,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
  * CASE 2: The base_instrucation type is LINEAR:
  * - the interpolation will be done in cartesian space
  * - the number of steps for the plan will be calculated such that:
- *   - the translational distance between successive steps is no longer than translation_longest_valid segment
+ *   - the translational distance between successive steps is no longer than translation_longest_valid_segment
  *   - the rotational distance between successive steps is no longer than rotation_longest_valid_segment
  *
  * @param start The joint state at the start of the plan
@@ -189,7 +189,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
  * CASE 2: The base_instrucation type is LINEAR:
  * - the interpolation will be done in cartesian space
  * - the number of steps for the plan will be calculated such that:
- *   - the translational distance between successive steps is no longer than translation_longest_valid segment
+ *   - the translational distance between successive steps is no longer than translation_longest_valid_segment
  *   - the rotational distance between successive steps is no longer than rotation_longest_valid_segment
  *
  * @param start The joint state at the start of the plan
@@ -227,7 +227,7 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
  * CASE 2: The base_instrucation type is LINEAR:
  * - the interpolation will be done in cartesian space
  * - the number of steps for the plan will be calculated such that:
- *   - the translational distance between successive steps is no longer than translation_longest_valid segment
+ *   - the translational distance between successive steps is no longer than translation_longest_valid_segment
  *   - the rotational distance between successive steps is no longer than rotation_longest_valid_segment
  *
  * @param start The joint state at the start of the plan
@@ -265,7 +265,7 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
  * CASE 2: The base_instrucation type is LINEAR:
  * - the interpolation will be done in cartesian space
  * - the number of steps for the plan will be calculated such that:
- *   - the translational distance between successive steps is no longer than translation_longest_valid segment
+ *   - the translational distance between successive steps is no longer than translation_longest_valid_segment
  *   - the rotational distance between successive steps is no longer than rotation_longest_valid_segment
  *
  * @param start The joint state at the start of the plan
@@ -303,7 +303,7 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const CartesianWaypoint& st
  * CASE 2: The base_instrucation type is LINEAR:
  * - the interpolation will be done in cartesian space
  * - the number of steps for the plan will be calculated such that:
- *   - the translational distance between successive steps is no longer than translation_longest_valid segment
+ *   - the translational distance between successive steps is no longer than translation_longest_valid_segment
  *   - the rotational distance between successive steps is no longer than rotation_longest_valid_segment
  *
  * @param start The joint state at the start of the plan
