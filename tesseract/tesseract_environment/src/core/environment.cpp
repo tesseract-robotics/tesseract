@@ -512,7 +512,12 @@ bool Environment::setActiveDiscreteContactManager(const std::string& name)
   tesseract_collision::DiscreteContactManager::Ptr manager = getDiscreteContactManagerHelper(name);
   if (manager == nullptr)
   {
-    CONSOLE_BRIDGE_logError("Discrete manager with %s does not exist in factory!", name.c_str());
+    std::string msg = "\n  Discrete manager with " + name + " does not exist in factory!\n";
+    msg += "    Available Managers:\n";
+    for (const auto& m : discrete_factory_.getAvailableManagers())
+      msg += "      " + m + "\n";
+
+    CONSOLE_BRIDGE_logError(msg.c_str());
     return false;
   }
 
@@ -545,7 +550,12 @@ bool Environment::setActiveContinuousContactManager(const std::string& name)
 
   if (manager == nullptr)
   {
-    CONSOLE_BRIDGE_logError("Continuous manager with %s does not exist in factory!", name.c_str());
+    std::string msg = "\n  Continuous manager with " + name + " does not exist in factory!\n";
+    msg += "    Available Managers:\n";
+    for (const auto& m : continuous_factory_.getAvailableManagers())
+      msg += "      " + m + "\n";
+
+    CONSOLE_BRIDGE_logError(msg.c_str());
     return false;
   }
 
