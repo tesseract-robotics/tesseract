@@ -585,13 +585,6 @@ SceneGraph::Path SceneGraph::getShortestPath(const std::string& root, const std:
   return Path(links, joints);
 }
 
-// static inline Graph copyGraph(const Graph& graph)
-//{
-//  Graph new_graph;
-//  boost::copy_graph(graph, new_graph);
-//  return new_graph;
-//}
-
 SceneGraph::Vertex SceneGraph::getVertex(const std::string& name) const
 {
   auto found = link_map_.find(name);

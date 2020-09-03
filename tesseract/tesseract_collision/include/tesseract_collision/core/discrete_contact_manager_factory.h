@@ -42,6 +42,7 @@ public:
     if (it == discrete_types.end())
     {
       discrete_types[name] = std::move(create_function);
+      keys_.push_back(name);
       return true;
     }
     return false;
@@ -56,8 +57,11 @@ public:
     return nullptr;
   }
 
+  const std::vector<std::string>& getAvailableManagers() const { return keys_; }
+
 private:
   std::unordered_map<std::string, CreateMethod> discrete_types;
+  std::vector<std::string> keys_;
 };
 }  // namespace tesseract_collision
 #endif  // TESSERACT_COLLISION_DISCRETE_CONTACT_MANAGER_FACTORY_H
