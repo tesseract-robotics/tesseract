@@ -41,15 +41,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
-                                                  const JointWaypoint& end,
-                                                  const PlanInstruction& base_instruction,
-                                                  const PlannerRequest& request,
-                                                  const ManipulatorInfo& manip_info,
-                                                  double state_longest_valid_segment_length,
-                                                  double translation_longest_valid_segment_length,
-                                                  double rotation_longest_valid_segment_length,
-                                                  int min_steps)
+CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
+                                                 const JointWaypoint& end,
+                                                 const PlanInstruction& base_instruction,
+                                                 const PlannerRequest& request,
+                                                 const ManipulatorInfo& manip_info,
+                                                 double state_longest_valid_segment_length,
+                                                 double translation_longest_valid_segment_length,
+                                                 double rotation_longest_valid_segment_length,
+                                                 int min_steps)
 {
   // Joint waypoints should have joint names
   assert(static_cast<long>(start.joint_names.size()) == start.size());
@@ -72,12 +72,12 @@ CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
     // Calculate FK for start and end
     Eigen::Isometry3d p1 = Eigen::Isometry3d::Identity();
     if (!fwd_kin->calcFwdKin(p1, start))
-      throw std::runtime_error("LVSInterpolateStateWaypoints: failed to find forward kinematics solution!");
+      throw std::runtime_error("LVSInterpolateStateWaypoint: failed to find forward kinematics solution!");
     p1 = world_to_base * p1 * tcp;
 
     Eigen::Isometry3d p2 = Eigen::Isometry3d::Identity();
     if (!fwd_kin->calcFwdKin(p2, end))
-      throw std::runtime_error("LVSInterpolateStateWaypoints: failed to find forward kinematics solution!");
+      throw std::runtime_error("LVSInterpolateStateWaypoint: failed to find forward kinematics solution!");
     p2 = world_to_base * p2 * tcp;
 
     double trans_dist = (p2.translation() - p1.translation()).norm();
@@ -125,15 +125,15 @@ CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
   return composite;
 }
 
-CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
-                                                  const CartesianWaypoint& end,
-                                                  const PlanInstruction& base_instruction,
-                                                  const PlannerRequest& request,
-                                                  const ManipulatorInfo& manip_info,
-                                                  double state_longest_valid_segment_length,
-                                                  double translation_longest_valid_segment_length,
-                                                  double rotation_longest_valid_segment_length,
-                                                  int min_steps)
+CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
+                                                 const CartesianWaypoint& end,
+                                                 const PlanInstruction& base_instruction,
+                                                 const PlannerRequest& request,
+                                                 const ManipulatorInfo& manip_info,
+                                                 double state_longest_valid_segment_length,
+                                                 double translation_longest_valid_segment_length,
+                                                 double rotation_longest_valid_segment_length,
+                                                 int min_steps)
 {
   assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
 
@@ -155,7 +155,7 @@ CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
     // Calculate FK for start and end
     Eigen::Isometry3d p1 = Eigen::Isometry3d::Identity();
     if (!fwd_kin->calcFwdKin(p1, start))
-      throw std::runtime_error("LVSInterpolateStateWaypoints: failed to find forward kinematics solution!");
+      throw std::runtime_error("LVSInterpolateStateWaypoint: failed to find forward kinematics solution!");
     p1 = world_to_base * p1 * tcp;
 
     Eigen::Isometry3d p2 = end;
@@ -195,7 +195,7 @@ CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
     p2 = world_to_base.inverse() * p2;
     Eigen::VectorXd j2, j2_final;
     if (!inv_kin->calcInvKin(j2, p2, j1))
-      throw std::runtime_error("LVSInterpolateStateWaypoints: failed to find inverse kinematics solution!");
+      throw std::runtime_error("LVSInterpolateStateWaypoint: failed to find inverse kinematics solution!");
 
     // Find closest solution to the start state
     double dist = std::numeric_limits<double>::max();
@@ -237,15 +237,15 @@ CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
   return composite;
 }
 
-CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start,
-                                                  const JointWaypoint& end,
-                                                  const PlanInstruction& base_instruction,
-                                                  const PlannerRequest& request,
-                                                  const ManipulatorInfo& manip_info,
-                                                  double state_longest_valid_segment_length,
-                                                  double translation_longest_valid_segment_length,
-                                                  double rotation_longest_valid_segment_length,
-                                                  int min_steps)
+CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
+                                                 const JointWaypoint& end,
+                                                 const PlanInstruction& base_instruction,
+                                                 const PlannerRequest& request,
+                                                 const ManipulatorInfo& manip_info,
+                                                 double state_longest_valid_segment_length,
+                                                 double translation_longest_valid_segment_length,
+                                                 double rotation_longest_valid_segment_length,
+                                                 int min_steps)
 {
   assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
 
@@ -269,7 +269,7 @@ CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start
 
     Eigen::Isometry3d p2 = Eigen::Isometry3d::Identity();
     if (!fwd_kin->calcFwdKin(p2, end))
-      throw std::runtime_error("LVSInterpolateStateWaypoints: failed to find forward kinematics solution!");
+      throw std::runtime_error("LVSInterpolateStateWaypoint: failed to find forward kinematics solution!");
     p2 = world_to_base * p2 * tcp;
 
     double trans_dist = (p2.translation() - p1.translation()).norm();
@@ -305,7 +305,7 @@ CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start
     p1 = world_to_base.inverse() * p1;
     Eigen::VectorXd j1, j1_final;
     if (!inv_kin->calcInvKin(j1, p1, end))
-      throw std::runtime_error("LVSInterpolateStateWaypoints: failed to find inverse kinematics solution!");
+      throw std::runtime_error("LVSInterpolateStateWaypoint: failed to find inverse kinematics solution!");
 
     Eigen::VectorXd j2 = end;
 
@@ -349,15 +349,15 @@ CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start
   return composite;
 }
 
-CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start,
-                                                  const CartesianWaypoint& end,
-                                                  const PlanInstruction& base_instruction,
-                                                  const PlannerRequest& request,
-                                                  const ManipulatorInfo& manip_info,
-                                                  double state_longest_valid_segment_length,
-                                                  double translation_longest_valid_segment_length,
-                                                  double rotation_longest_valid_segment_length,
-                                                  int min_steps)
+CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
+                                                 const CartesianWaypoint& end,
+                                                 const PlanInstruction& base_instruction,
+                                                 const PlannerRequest& request,
+                                                 const ManipulatorInfo& manip_info,
+                                                 double state_longest_valid_segment_length,
+                                                 double translation_longest_valid_segment_length,
+                                                 double rotation_longest_valid_segment_length,
+                                                 int min_steps)
 {
   assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
 
@@ -404,13 +404,13 @@ CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start
     p1 = world_to_base.inverse() * p1;
     Eigen::VectorXd j1, j1_final;
     if (!inv_kin->calcInvKin(j1, p1, seed))
-      throw std::runtime_error("LVSInterpolateStateWaypoints: failed to find inverse kinematics solution!");
+      throw std::runtime_error("LVSInterpolateStateWaypoint: failed to find inverse kinematics solution!");
 
     Eigen::Isometry3d p2 = end * tcp.inverse();
     p2 = world_to_base.inverse() * p2;
     Eigen::VectorXd j2, j2_final;
     if (!inv_kin->calcInvKin(j2, p2, seed))
-      throw std::runtime_error("LVSInterpolateStateWaypoints: failed to find inverse kinematics solution!");
+      throw std::runtime_error("LVSInterpolateStateWaypoint: failed to find inverse kinematics solution!");
 
     // Find closest solution to the end state
     double dist = std::numeric_limits<double>::max();
@@ -459,15 +459,15 @@ CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start
   return composite;
 }
 
-CompositeInstruction LVSCartesianInterpolation(const JointWaypoint& start,
-                                               const JointWaypoint& end,
-                                               const PlanInstruction& base_instruction,
-                                               const PlannerRequest& request,
-                                               const ManipulatorInfo& manip_info,
-                                               double /*state_longest_valid_segment_length*/,
-                                               double translation_longest_valid_segment_length,
-                                               double rotation_longest_valid_segment_length,
-                                               int min_steps)
+CompositeInstruction LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
+                                                     const JointWaypoint& end,
+                                                     const PlanInstruction& base_instruction,
+                                                     const PlannerRequest& request,
+                                                     const ManipulatorInfo& manip_info,
+                                                     double /*state_longest_valid_segment_length*/,
+                                                     double translation_longest_valid_segment_length,
+                                                     double rotation_longest_valid_segment_length,
+                                                     int min_steps)
 {
   /// @todo: Need to create a cartesian state waypoint and update the code below
   throw std::runtime_error("Not implemented, PR's are welcome!");
@@ -518,15 +518,15 @@ CompositeInstruction LVSCartesianInterpolation(const JointWaypoint& start,
   return composite;
 }
 
-CompositeInstruction LVSCartesianInterpolation(const JointWaypoint& start,
-                                               const CartesianWaypoint& end,
-                                               const PlanInstruction& base_instruction,
-                                               const PlannerRequest& request,
-                                               const ManipulatorInfo& manip_info,
-                                               double /*state_longest_valid_segment_length*/,
-                                               double translation_longest_valid_segment_length,
-                                               double rotation_longest_valid_segment_length,
-                                               int min_steps)
+CompositeInstruction LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
+                                                     const CartesianWaypoint& end,
+                                                     const PlanInstruction& base_instruction,
+                                                     const PlannerRequest& request,
+                                                     const ManipulatorInfo& manip_info,
+                                                     double /*state_longest_valid_segment_length*/,
+                                                     double translation_longest_valid_segment_length,
+                                                     double rotation_longest_valid_segment_length,
+                                                     int min_steps)
 {
   /// @todo: Need to create a cartesian state waypoint and update the code below
   throw std::runtime_error("Not implemented, PR's are welcome!");
@@ -574,15 +574,15 @@ CompositeInstruction LVSCartesianInterpolation(const JointWaypoint& start,
   return composite;
 }
 
-CompositeInstruction LVSCartesianInterpolation(const CartesianWaypoint& start,
-                                               const JointWaypoint& end,
-                                               const PlanInstruction& base_instruction,
-                                               const PlannerRequest& request,
-                                               const ManipulatorInfo& manip_info,
-                                               double /*state_longest_valid_segment_length*/,
-                                               double translation_longest_valid_segment_length,
-                                               double rotation_longest_valid_segment_length,
-                                               int min_steps)
+CompositeInstruction LVSInterpolateCartStateWaypoint(const CartesianWaypoint& start,
+                                                     const JointWaypoint& end,
+                                                     const PlanInstruction& base_instruction,
+                                                     const PlannerRequest& request,
+                                                     const ManipulatorInfo& manip_info,
+                                                     double /*state_longest_valid_segment_length*/,
+                                                     double translation_longest_valid_segment_length,
+                                                     double rotation_longest_valid_segment_length,
+                                                     int min_steps)
 {
   /// @todo: Need to create a cartesian state waypoint and update the code below
   throw std::runtime_error("Not implemented, PR's are welcome!");
@@ -630,15 +630,15 @@ CompositeInstruction LVSCartesianInterpolation(const CartesianWaypoint& start,
   return composite;
 }
 
-CompositeInstruction LVSCartesianInterpolation(const CartesianWaypoint& start,
-                                               const CartesianWaypoint& end,
-                                               const PlanInstruction& base_instruction,
-                                               const PlannerRequest& /*request*/,
-                                               const ManipulatorInfo& /*manip_info*/,
-                                               double /*state_longest_valid_segment_length*/,
-                                               double translation_longest_valid_segment_length,
-                                               double rotation_longest_valid_segment_length,
-                                               int min_steps)
+CompositeInstruction LVSInterpolateCartStateWaypoint(const CartesianWaypoint& start,
+                                                     const CartesianWaypoint& end,
+                                                     const PlanInstruction& base_instruction,
+                                                     const PlannerRequest& /*request*/,
+                                                     const ManipulatorInfo& /*manip_info*/,
+                                                     double /*state_longest_valid_segment_length*/,
+                                                     double translation_longest_valid_segment_length,
+                                                     double rotation_longest_valid_segment_length,
+                                                     int min_steps)
 {
   /// @todo: Need to create a cartesian state waypoint and update the code below
   throw std::runtime_error("Not implemented, PR's are welcome!");
