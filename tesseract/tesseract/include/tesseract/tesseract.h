@@ -81,6 +81,9 @@ public:
    * @return A Ptr to the cloned Tesseract   */
   Tesseract::Ptr clone() const;
 
+  /** @brief reset to initialized state */
+  bool reset();
+
   const tesseract_scene_graph::SRDFModel::Ptr& getSRDFModel() const;
   const tesseract_scene_graph::SRDFModel::ConstPtr& getSRDFModelConst() const;
 
