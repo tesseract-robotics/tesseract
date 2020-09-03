@@ -40,7 +40,7 @@ namespace tesseract_planning
 /**
  * @brief LVSInterpolateStateWaypoints(JointWaypoint to JointWaypoint)
  *
- * This will interpolate the motion from the start state to the end state. 
+ * This function interpolates the motion from start state to end state. Results are stored in StateWaypoint objects.
  *
  * CASE 1: The base_instruction type is FREESPACE:
  * - the interpolation will be done in joint space
@@ -102,7 +102,7 @@ CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
 /**
  * @brief LVSInterpolateStateWaypoints(JointWaypoint to JointWaypoint)
  *
- * This will interpolate the motion from the start state to the end state. 
+ * This function interpolates the motion from start state to end state. Results are stored in StateWaypoint objects.
  *
  * CASE 1: The base_instruction type is FREESPACE:
  * - the interpolation will be done in joint space
@@ -139,7 +139,7 @@ CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start
 /**
  * @brief LVSInterpolateStateWaypoints(JointWaypoint to JointWaypoint)
  *
- * This will interpolate the motion from the start state to the end state. 
+ * This function interpolates the motion from start state to end state. Results are stored in StateWaypoint objects.
  *
  * CASE 1: The base_instruction type is FREESPACE:
  * - the interpolation will be done in joint space
@@ -176,7 +176,7 @@ CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start
 /**
  * @brief LVSCartesianInterpolation(JointWaypoint to JointWaypoint)
  *
- * This will interpolate the motion from the start state to the end state. 
+ * This function interpolates the motion from start state to end state. Results are stored in CartesianWaypoint objects.
  *
  * CASE 1: The base_instruction type is FREESPACE:
  * - the interpolation will be done in joint space
@@ -213,7 +213,7 @@ CompositeInstruction LVSCartesianInterpolation(const JointWaypoint& start,
 /**
  * @brief LVSCartesianInterpolation(JointWaypoint to CartesianWaypoint)
  *
- * This will interpolate the motion from the start state to the end state. 
+ * This function interpolates the motion from start state to end state. Results are stored in CartesianWaypoint objects.
  *
  * CASE 1: The base_instruction type is FREESPACE:
  * - the interpolation will be done in joint space
@@ -250,7 +250,7 @@ CompositeInstruction LVSCartesianInterpolation(const JointWaypoint& start,
 /**
  * @brief LVSCartesianInterpolation(CartesianWaypoint to JointWaypoint)
  *
- * This will interpolate the motion from the start state to the end state. 
+ * This function interpolates the motion from start state to end state. Results are stored in CartesianWaypoint objects.
  *
  * CASE 1: The base_instruction type is FREESPACE:
  * - the interpolation will be done in joint space
@@ -287,7 +287,7 @@ CompositeInstruction LVSCartesianInterpolation(const CartesianWaypoint& start,
 /**
  * @brief LVSCartesianInterpolation(CartesianWaypoint to CartesianWaypoint)
  *
- * This will interpolate the motion from the start state to the end state. 
+ * This function interpolates the motion from start state to end state. Results are stored in CartesianWaypoint objects.
  *
  * CASE 1: The base_instruction type is FREESPACE:
  * - the interpolation will be done in joint space
