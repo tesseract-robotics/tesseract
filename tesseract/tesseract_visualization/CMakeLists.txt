@@ -9,9 +9,28 @@ find_package(tesseract REQUIRED)
 find_package(tesseract_command_language REQUIRED)
 find_package(class_loader REQUIRED)
 
+# Optional to build ignition visualization
+find_package(ignition-common3 COMPONENTS profiler events av QUIET)
+find_package(ignition-transport8 QUIET)
+find_package(ignition-msgs5 QUIET)
+
+set(IGNITION_FOUND FALSE)
+if (ignition-common3_FOUND AND ignition-transport8_FOUND AND ignition-msgs5_FOUND)
+  set(IGNITION_FOUND TRUE)
+  message(STATUS "Ignition Visualization Library will be built!")
+endif()
+
 set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/*)
 
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
+
+#####################################
+# Define compile-time default variables
+if(MSVC)
+  set(TESSERACT_VISUALIZATION_PLUGIN_PATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
+else()
+  set(TESSERACT_VISUALIZATION_PLUGIN_PATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
+endif()
 
 add_library(${PROJECT_NAME} SHARED
     src/visualization_loader.cpp
@@ -21,8 +40,13 @@ target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract tesseract::tes
 tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
 tesseract_clang_tidy(${PROJECT_NAME})
 tesseract_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_compile_definitions(${PROJECT_NAME} PRIVATE TESSERACT_VISUALIZATION_PLUGIN_PATH="${TESSERACT_VISUALIZATION_PLUGIN_PATH}")
 if(class_loader_VERSION VERSION_LESS "0.4.0")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE CLASS_LOADER_LESS_0_4_0=ON)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE CLASS_LOADER_NOT_SUPPORTED=ON)
+elseif(class_loader_VERSION VERSION_LESS "1.2.0")
+  target_compile_definitions(${PROJECT_NAME} PRIVATE CLASS_LOADER_SHARED_INSTANCE=ON)
+else()
+  target_compile_definitions(${PROJECT_NAME} PRIVATE CLASS_LOADER_INSTANCE=ON)
 endif()
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -31,7 +55,55 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}
     ${class_loader_INCLUDE_DIRS})
 
-tesseract_configure_package(${PROJECT_NAME})
+list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
+if (IGNITION_FOUND)
+  add_library(${PROJECT_NAME}_ignition SHARED
+      src/ignition/entity_manager.cpp
+      src/ignition/conversions.cpp)
+  target_link_libraries(${PROJECT_NAME}_ignition PUBLIC
+    tesseract::tesseract_scene_graph
+    tesseract::tesseract_common
+    ${IGNITION-COMMON_LIBRARIES}
+    ${IGNITION-MSGS_LIBRARIES}
+    console_bridge)
+  tesseract_target_compile_options(${PROJECT_NAME}_ignition PUBLIC)
+  tesseract_clang_tidy(${PROJECT_NAME}_ignition)
+  tesseract_code_coverage(${PROJECT_NAME}_ignition ALL EXCLUDE ${COVERAGE_EXCLUDE})
+  target_include_directories(${PROJECT_NAME}_ignition PUBLIC
+      "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+      "$<INSTALL_INTERFACE:include>")
+  target_include_directories(${PROJECT_NAME}_ignition SYSTEM PUBLIC
+    ${IGNITION-COMMON_INCLUDE_DIRS}
+    ${IGNITION-MSGS_INCLUDE_DIRS})
+
+  add_library(${PROJECT_NAME}_ignition_visualization SHARED
+      src/ignition/tesseract_ignition_visualization.cpp)
+  target_link_libraries(${PROJECT_NAME}_ignition_visualization PUBLIC
+    ${PROJECT_NAME}
+    ${PROJECT_NAME}_ignition
+    tesseract::tesseract_common
+    tesseract::tesseract_command_language
+    ${IGNITION-COMMON_LIBRARIES}
+    ${IGNITION-TRANSPORT_LIBRARIES}
+    ${IGNITION-MSGS_LIBRARIES}
+    console_bridge)
+  tesseract_target_compile_options(${PROJECT_NAME}_ignition_visualization PUBLIC)
+  tesseract_clang_tidy(${PROJECT_NAME}_ignition_visualization)
+  tesseract_code_coverage(${PROJECT_NAME}_ignition_visualization ALL EXCLUDE ${COVERAGE_EXCLUDE})
+  target_include_directories(${PROJECT_NAME}_ignition_visualization PUBLIC
+      "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+      "$<INSTALL_INTERFACE:include>")
+  target_include_directories(${PROJECT_NAME}_ignition_visualization SYSTEM PUBLIC
+    ${IGNITION-COMMON_INCLUDE_DIRS}
+    ${IGNITION-TRANSPORT_INCLUDE_DIRS}
+    ${IGNITION-MSGS_INCLUDE_DIRS})
+
+  list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_ignition ${PROJECT_NAME}_ignition_visualization)
+else()
+  message(WARNING "Ignition Visualization Library will not be built!")
+endif()
+
+tesseract_configure_package(${PACKAGE_LIBRARIES})
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
