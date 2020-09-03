@@ -7,16 +7,21 @@ find_package(console_bridge REQUIRED)
 find_package(orocos_kdl REQUIRED)
 find_package(tesseract_geometry REQUIRED)
 find_package(tesseract_common REQUIRED)
+find_package(cmake_common_scripts REQUIRED)
 
 set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/*)
 
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 
+# Load variable for clang tidy args, compiler options and cxx version
+tesseract_variables()
+
 add_library(${PROJECT_NAME} SHARED src/graph.cpp src/resource_locator.cpp src/srdf_model.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_geometry tesseract::tesseract_common orocos-kdl console_bridge ${Boost_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME})
-tesseract_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
 target_compile_definitions(${PROJECT_NAME} PUBLIC Boost_USE_STATIC_LIBS=OFF Boost_USE_MULTITHREADED=ON Boost_USE_STATIC_RUNTIME=OFF)
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -28,7 +33,7 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
     ${orocos_kdl_INCLUDE_DIRS} # Orocos did not export target correctly
     $<TARGET_PROPERTY:tesseract::tesseract_common,INTERFACE_INCLUDE_DIRECTORIES>) #tesseract::tesseract_common Due to bug in catkin, there is an open PR
 
-tesseract_configure_package(${PROJECT_NAME})
+configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
@@ -42,6 +47,6 @@ add_subdirectory(examples)
 
 if (TESSERACT_ENABLE_TESTING)
   enable_testing()
-  tesseract_add_run_tests_target()
+  add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
 endif()

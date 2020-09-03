@@ -33,7 +33,7 @@ install(DIRECTORY include/${PROJECT_NAME}
 
 if (TESSERACT_ENABLE_TESTING)
   enable_testing()
-  tesseract_add_run_tests_target()
+  tesseract_add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
 endif()
 
