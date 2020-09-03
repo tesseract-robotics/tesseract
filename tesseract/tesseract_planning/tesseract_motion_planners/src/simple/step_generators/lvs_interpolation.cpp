@@ -42,14 +42,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_planning
 {
 CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
-                                           const JointWaypoint& end,
-                                           const PlanInstruction& base_instruction,
-                                           const PlannerRequest& request,
-                                           const ManipulatorInfo& manip_info,
-                                           double state_longest_valid_segment_length,
-                                           double translation_longest_valid_segment_length,
-                                           double rotation_longest_valid_segment_length,
-                                           int min_steps)
+                                                  const JointWaypoint& end,
+                                                  const PlanInstruction& base_instruction,
+                                                  const PlannerRequest& request,
+                                                  const ManipulatorInfo& manip_info,
+                                                  double state_longest_valid_segment_length,
+                                                  double translation_longest_valid_segment_length,
+                                                  double rotation_longest_valid_segment_length,
+                                                  int min_steps)
 {
   // Joint waypoints should have joint names
   assert(static_cast<long>(start.joint_names.size()) == start.size());
@@ -59,7 +59,8 @@ CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
 
   CompositeInstruction composite;
 
-  if (base_instruction.isLinear()) {
+  if (base_instruction.isLinear())
+  {
     const ManipulatorInfo& mi =
         (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
 
@@ -82,7 +83,7 @@ CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
     double trans_dist = (p2.translation() - p1.translation()).norm();
     double rot_dist =
         Eigen::Quaterniond(p1.linear()).angularDistance(Eigen::Quaterniond(p2.linear()));  // maybe rotation instead of
-                                                                                          // linear
+                                                                                           // linear
     int trans_steps = int(trans_dist / translation_longest_valid_segment_length) + 1;
     int rot_steps = int(rot_dist / rotation_longest_valid_segment_length) + 1;
     int steps = std::max(trans_steps, rot_steps);
@@ -100,7 +101,8 @@ CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
       composite.push_back(move_instruction);
     }
   }
-  else if (base_instruction.isFreespace()) {
+  else if (base_instruction.isFreespace())
+  {
     // calculate steps
     int steps;
     double dist = (end - start).norm();
@@ -124,25 +126,27 @@ CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
 }
 
 CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
-                                           const CartesianWaypoint& end,
-                                           const PlanInstruction& base_instruction,
-                                           const PlannerRequest& request,
-                                           const ManipulatorInfo& manip_info,
-                                           double state_longest_valid_segment_length,
-                                           double translation_longest_valid_segment_length,
-                                           double rotation_longest_valid_segment_length,
-                                           int min_steps)
+                                                  const CartesianWaypoint& end,
+                                                  const PlanInstruction& base_instruction,
+                                                  const PlannerRequest& request,
+                                                  const ManipulatorInfo& manip_info,
+                                                  double state_longest_valid_segment_length,
+                                                  double translation_longest_valid_segment_length,
+                                                  double rotation_longest_valid_segment_length,
+                                                  int min_steps)
 {
   assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
 
   // Joint waypoints should have joint names
   assert(static_cast<long>(start.joint_names.size()) == start.size());
 
-  const ManipulatorInfo& mi = (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
+  const ManipulatorInfo& mi =
+      (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
 
   CompositeInstruction composite;
 
-  if (base_instruction.isLinear()) {
+  if (base_instruction.isLinear())
+  {
     // Initialize
     auto fwd_kin = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(mi.manipulator);
     auto world_to_base = request.env_state->link_transforms.at(fwd_kin->getBaseLinkName());
@@ -159,7 +163,7 @@ CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
     double trans_dist = (p2.translation() - p1.translation()).norm();
     double rot_dist =
         Eigen::Quaterniond(p1.linear()).angularDistance(Eigen::Quaterniond(p2.linear()));  // maybe rotation instead of
-                                                                                          // linear
+                                                                                           // linear
     int trans_steps = int(trans_dist / translation_longest_valid_segment_length) + 1;
     int rot_steps = int(rot_dist / rotation_longest_valid_segment_length) + 1;
     int steps = std::max(trans_steps, rot_steps);
@@ -177,7 +181,8 @@ CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
       composite.push_back(move_instruction);
     }
   }
-  else if (base_instruction.isFreespace()) {
+  else if (base_instruction.isFreespace())
+  {
     // Initialize
     auto inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(mi.manipulator);
     auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
@@ -199,8 +204,8 @@ CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
     j2_final = j2.middleRows(0, dof);
     for (long i = 0; i < num_solutions; ++i)
     {
-      /// @todo: May be nice to add contact checking to find best solution, but may not be neccessary because this is used
-      /// to generate the seed.
+      /// @todo: May be nice to add contact checking to find best solution, but may not be neccessary because this is
+      /// used to generate the seed.
       auto solution = j2.middleRows(i * dof, dof);
       double d = (solution - j1).norm();
       if (d < dist)
@@ -233,14 +238,14 @@ CompositeInstruction LVSInterpolateStateWaypoints(const JointWaypoint& start,
 }
 
 CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start,
-                                           const JointWaypoint& end,
-                                           const PlanInstruction& base_instruction,
-                                           const PlannerRequest& request,
-                                           const ManipulatorInfo& manip_info,
-                                           double state_longest_valid_segment_length,
-                                           double translation_longest_valid_segment_length,
-                                           double rotation_longest_valid_segment_length,
-                                           int min_steps)
+                                                  const JointWaypoint& end,
+                                                  const PlanInstruction& base_instruction,
+                                                  const PlannerRequest& request,
+                                                  const ManipulatorInfo& manip_info,
+                                                  double state_longest_valid_segment_length,
+                                                  double translation_longest_valid_segment_length,
+                                                  double rotation_longest_valid_segment_length,
+                                                  int min_steps)
 {
   assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
 
@@ -252,7 +257,8 @@ CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start
 
   CompositeInstruction composite;
 
-  if (base_instruction.isLinear()) {
+  if (base_instruction.isLinear())
+  {
     // Initialize
     auto fwd_kin = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(mi.manipulator);
     auto world_to_base = request.env_state->link_transforms.at(fwd_kin->getBaseLinkName());
@@ -269,7 +275,7 @@ CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start
     double trans_dist = (p2.translation() - p1.translation()).norm();
     double rot_dist =
         Eigen::Quaterniond(p1.linear()).angularDistance(Eigen::Quaterniond(p2.linear()));  // maybe rotation instead of
-                                                                                          // linear
+                                                                                           // linear
     int trans_steps = int(trans_dist / translation_longest_valid_segment_length) + 1;
     int rot_steps = int(rot_dist / rotation_longest_valid_segment_length) + 1;
     int steps = std::max(trans_steps, rot_steps);
@@ -287,7 +293,8 @@ CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start
       composite.push_back(move_instruction);
     }
   }
-  else if (base_instruction.isFreespace()) {
+  else if (base_instruction.isFreespace())
+  {
     // Initialize
     auto inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(mi.manipulator);
     auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
@@ -309,8 +316,8 @@ CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start
     j1_final = j1.middleRows(0, dof);
     for (long i = 0; i < num_solutions; ++i)
     {
-      /// @todo: May be nice to add contact checking to find best solution, but may not be neccessary because this is used
-      /// to generate the seed.
+      /// @todo: May be nice to add contact checking to find best solution, but may not be neccessary because this is
+      /// used to generate the seed.
       auto solution = j1.middleRows(i * dof, dof);
       double d = (j2 - solution).norm();
       if (d < dist)
@@ -343,24 +350,25 @@ CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start
 }
 
 CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start,
-                                           const CartesianWaypoint& end,
-                                           const PlanInstruction& base_instruction,
-                                           const PlannerRequest& request,
-                                           const ManipulatorInfo& manip_info,
-                                           double state_longest_valid_segment_length,
-                                           double translation_longest_valid_segment_length,
-                                           double rotation_longest_valid_segment_length,
-                                           int min_steps)
+                                                  const CartesianWaypoint& end,
+                                                  const PlanInstruction& base_instruction,
+                                                  const PlannerRequest& request,
+                                                  const ManipulatorInfo& manip_info,
+                                                  double state_longest_valid_segment_length,
+                                                  double translation_longest_valid_segment_length,
+                                                  double rotation_longest_valid_segment_length,
+                                                  int min_steps)
 {
   assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
 
   CompositeInstruction composite;
 
-  if (base_instruction.isLinear()) {
+  if (base_instruction.isLinear())
+  {
     double trans_dist = (end.translation() - start.translation()).norm();
     double rot_dist =
         Eigen::Quaterniond(start.linear()).angularDistance(Eigen::Quaterniond(end.linear()));  // maybe rotation instead
-                                                                                              // of linear
+                                                                                               // of linear
     int trans_steps = int(trans_dist / translation_longest_valid_segment_length) + 1;
     int rot_steps = int(rot_dist / rotation_longest_valid_segment_length) + 1;
     int steps = std::max(trans_steps, rot_steps);
@@ -378,9 +386,10 @@ CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start
       composite.push_back(move_instruction);
     }
   }
-  else if (base_instruction.isFreespace()) {
+  else if (base_instruction.isFreespace())
+  {
     const ManipulatorInfo& mi =
-      (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
+        (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
 
     // Initialize
     auto inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(mi.manipulator);
@@ -441,12 +450,11 @@ CompositeInstruction LVSInterpolateStateWaypoints(const CartesianWaypoint& start
     for (long i = 1; i < states.cols(); ++i)
     {
       MoveInstruction move_instruction(StateWaypoint(inv_kin->getJointNames(), states.col(i)),
-                                      MoveInstructionType::FREESPACE);
+                                       MoveInstructionType::FREESPACE);
       move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
       move_instruction.setDescription(base_instruction.getDescription());
       composite.push_back(move_instruction);
     }
-
   }
   return composite;
 }
