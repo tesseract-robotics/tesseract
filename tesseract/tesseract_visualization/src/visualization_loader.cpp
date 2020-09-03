@@ -27,25 +27,29 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
-#include <cstdlib>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/visualization_loader.h>
 
-const std::string TESSERACT_IGNITION_LIB_DIR = "/snap/tesseract-ignition/current/opt/ros/melodic/lib";
-
-const std::string TESSERACT_IGNITION_LIBRARY = TESSERACT_IGNITION_LIB_DIR + "/libtesseract_ignition_visualization_"
-                                                                            "plugin.so";
-const std::string TESSERACT_IGNITION_CLASS = "tesseract_ignition::TesseractIgnitionVisualization";
+const std::string TESSERACT_IGNITION_LIBRARY = "tesseract_visualization_ignition_visualization";
+const std::string TESSERACT_IGNITION_CLASS = "tesseract_visualization::TesseractIgnitionVisualization";
 
 const std::string TESSERACT_VISUALIZATION_LIBRARY_ENV = "TESSERACT_VISUALIZATION_PLUGIN_LIBRARY";
 const std::string TESSERACT_VISUALIZATION_CLASS_ENV = "TESSERACT_VISUALIZATION_PLUGIN_CLASS";
 
 namespace tesseract_visualization
 {
-VisualizationLoader::VisualizationLoader()
-  : library_path_(TESSERACT_IGNITION_LIBRARY), derived_class_(TESSERACT_IGNITION_CLASS)
+VisualizationLoader::VisualizationLoader() : derived_class_(TESSERACT_IGNITION_CLASS)
 {
+#ifdef __APPLE__
+  std::string extension = ".dylib";
+#elif _WIN32
+  std::string extension = ".dll";
+#else
+  std::string extension = ".so";
+#endif
+  library_path_ = std::string(TESSERACT_VISUALIZATION_PLUGIN_PATH) + "/" + TESSERACT_IGNITION_LIBRARY + extension;
+
   // Check for environment variable to override default library
   const char* env_library = std::getenv(TESSERACT_VISUALIZATION_LIBRARY_ENV.c_str());
   const char* env_class = std::getenv(TESSERACT_VISUALIZATION_CLASS_ENV.c_str());
@@ -62,12 +66,6 @@ VisualizationLoader::VisualizationLoader()
   }
   else
   {
-    const char* env_ld_library_path = std::getenv("LD_LIBRARY_PATH");
-    if (env_ld_library_path)
-      setenv("LD_LIBRARY_PATH", (std::string(env_ld_library_path) + ":" + TESSERACT_IGNITION_LIB_DIR).c_str(), true);
-    else
-      setenv("LD_LIBRARY_PATH", TESSERACT_IGNITION_LIB_DIR.c_str(), true);
-
     createLoader(library_path_);
   }
 }
@@ -87,8 +85,10 @@ Visualization::Ptr VisualizationLoader::get()
     {
       if (loader_->isClassAvailable<tesseract_visualization::Visualization>(derived_class_))
       {
-#ifndef CLASS_LOADER_LESS_0_4_0
+#if defined(CLASS_LOADER_SHARED_INSTANCE)
         return loader_->createSharedInstance<tesseract_visualization::Visualization>(derived_class_);
+#elif defined(CLASS_LOADER_INSTANCE)
+        return loader_->createInstance<tesseract_visualization::Visualization>(derived_class_);
 #else
         CONSOLE_BRIDGE_logWarn("Only supported with class loader version 4.0 and greater");
         return nullptr;
@@ -96,12 +96,14 @@ Visualization::Ptr VisualizationLoader::get()
       }
       else
       {
+        CONSOLE_BRIDGE_logWarn(
+            "Class '%s' is not available from library '%s'", derived_class_.c_str(), library_path_.c_str());
       }
     }
     catch (const std::exception&)
     {
       CONSOLE_BRIDGE_logWarn(
-          "Failed to load class '%s' from library '%s'", library_path_.c_str(), derived_class_.c_str());
+          "Failed to load class '%s' from library '%s'", derived_class_.c_str(), library_path_.c_str());
       return nullptr;
     }
   }
