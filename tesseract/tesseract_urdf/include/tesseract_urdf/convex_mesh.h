@@ -100,7 +100,7 @@ inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_geometry::C
     if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
       return std::make_shared<SC>(ConvexMeshStatusCategory::ErrorParsingAttributeScale, status_cat);
 
-    double sx, sy, sz;
+    double sx{ 0 }, sy{ 0 }, sz{ 0 };
     // No need to check return values because the tokens are verified above
     tesseract_common::toNumeric<double>(tokens[0], sx);
     tesseract_common::toNumeric<double>(tokens[1], sy);

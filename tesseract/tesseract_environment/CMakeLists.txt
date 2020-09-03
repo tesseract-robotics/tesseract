@@ -8,17 +8,22 @@ find_package(console_bridge REQUIRED)
 find_package(tesseract_collision REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_common REQUIRED)
+find_package(cmake_common_scripts REQUIRED)
 
 set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/* /*/bullet/LinearMath/* /*/bullet/BulletCollision/*)
 
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 
+# Load variable for clang tidy args, compiler options and cxx version
+tesseract_variables()
+
 # Create interface for core
 add_library(${PROJECT_NAME}_core SHARED src/core/environment.cpp)
 target_link_libraries(${PROJECT_NAME}_core PUBLIC tesseract::tesseract_common tesseract::tesseract_collision_core tesseract::tesseract_scene_graph)
-tesseract_target_compile_options(${PROJECT_NAME}_core PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_core)
-tesseract_code_coverage(${PROJECT_NAME}_core ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME}_core ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_core PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(${PROJECT_NAME}_core ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
 target_include_directories(${PROJECT_NAME}_core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -27,9 +32,10 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM PUBLIC
 
 add_library(${PROJECT_NAME}_kdl SHARED src/kdl/kdl_state_solver.cpp)
 target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph orocos-kdl console_bridge)
-tesseract_target_compile_options(${PROJECT_NAME}_kdl PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_kdl)
-tesseract_code_coverage(${PROJECT_NAME}_kdl ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_compile_options(${PROJECT_NAME}_kdl PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME}_kdl ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_kdl PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(${PROJECT_NAME}_kdl ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
 target_include_directories(${PROJECT_NAME}_kdl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -39,16 +45,17 @@ target_include_directories(${PROJECT_NAME}_kdl SYSTEM PUBLIC
 
 add_library(${PROJECT_NAME}_ofkt SHARED src/ofkt/ofkt_state_solver.cpp src/ofkt/ofkt_nodes.cpp)
 target_link_libraries(${PROJECT_NAME}_ofkt PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph console_bridge)
-tesseract_target_compile_options(${PROJECT_NAME}_ofkt PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_ofkt)
-tesseract_code_coverage(${PROJECT_NAME}_ofkt ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_compile_options(${PROJECT_NAME}_ofkt PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME}_ofkt ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_ofkt PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(${PROJECT_NAME}_ofkt ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
 target_include_directories(${PROJECT_NAME}_ofkt PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_ofkt SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS})
 
-tesseract_configure_package(${PROJECT_NAME}_core ${PROJECT_NAME}_kdl ${PROJECT_NAME}_ofkt)
+configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME}_core ${PROJECT_NAME}_kdl ${PROJECT_NAME}_ofkt)
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
@@ -57,8 +64,8 @@ install(DIRECTORY include/${PROJECT_NAME}
   PATTERN ".svn" EXCLUDE
 )
 
-#if (TESSERACT_ENABLE_TESTING)
-#  enable_testing()
-  tesseract_add_run_tests_target()
+if (TESSERACT_ENABLE_TESTING)
+  enable_testing()
+  add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
-#endif()
+endif()

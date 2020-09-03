@@ -111,7 +111,7 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
       return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeXYZString,
                                                             status_cat);
 
-    double x, y, z;
+    double x{ 0 }, y{ 0 }, z{ 0 };
     // No need to check return values because the tokens are verified above
     tesseract_common::toNumeric<double>(tokens[0], x);
     tesseract_common::toNumeric<double>(tokens[1], y);
@@ -136,7 +136,7 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
         return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeRPYString,
                                                               status_cat);
 
-      double r, p, y;
+      double r{ 0 }, p{ 0 }, y{ 0 };
       // No need to check return values because the tokens are verified above
       tesseract_common::toNumeric<double>(tokens[0], r);
       tesseract_common::toNumeric<double>(tokens[1], p);
@@ -167,7 +167,7 @@ inline tesseract_common::StatusCode::Ptr parse(Eigen::Isometry3d& origin,
         return std::make_shared<tesseract_common::StatusCode>(OriginStatusCategory::ErrorParsingAttributeQString,
                                                               status_cat);
 
-      double qw, qx, qy, qz;
+      double qw{ 0 }, qx{ 0 }, qy{ 0 }, qz{ 0 };
       // No need to check return values because the tokens are verified above
       tesseract_common::toNumeric<double>(tokens[0], qw);
       tesseract_common::toNumeric<double>(tokens[1], qx);

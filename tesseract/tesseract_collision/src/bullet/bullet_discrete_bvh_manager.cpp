@@ -261,7 +261,7 @@ void BulletDiscreteBVHManager::contactTest(ContactResultMap& collisions, const C
   pairCache->processAllOverlappingPairs(&collisionCallback, dispatcher_.get());
 }
 
-void BulletDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
+void BulletDiscreteBVHManager::addCollisionObject(CollisionObjectWrapper::Ptr cow)
 {
   cow->setUserPointer(&contact_test_data_);
   link2cow_[cow->getName()] = cow;
