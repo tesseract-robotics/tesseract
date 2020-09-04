@@ -58,7 +58,6 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
   assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
 
   CompositeInstruction composite;
-  return composite;
 
   if (base_instruction.isLinear())
   {
@@ -145,7 +144,6 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
       (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
 
   CompositeInstruction composite;
-  return composite;
 
   if (base_instruction.isLinear())
   {
@@ -258,7 +256,6 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
       (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
 
   CompositeInstruction composite;
-  return composite;
 
   if (base_instruction.isLinear())
   {
@@ -365,7 +362,6 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
   assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
 
   CompositeInstruction composite;
-  return composite;
 
   if (base_instruction.isLinear())
   {
