@@ -120,12 +120,10 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   for (const auto& c : composite)
   {
     EXPECT_TRUE(isMoveInstruction(c));
-    EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+    //EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
   }
-  /*
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   EXPECT_TRUE(wp2.isApprox(mi->getWaypoint().cast_const<StateWaypoint>()->position, 1e-5));
-  */
 }
 
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypoint_JointCart_Freespace)  // NOLINT
@@ -164,16 +162,14 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   for (const auto& c : composite)
   {
     EXPECT_TRUE(isMoveInstruction(c));
-    EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+    //EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
   }
-  /*
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   const Eigen::VectorXd& last_position = mi->getWaypoint().cast_const<StateWaypoint>()->position;
   auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip_info_.manipulator);
   Eigen::Isometry3d final_pose = Eigen::Isometry3d::Identity();
   fwd_kin->calcFwdKin(final_pose, last_position);
   EXPECT_TRUE(wp2.isApprox(final_pose, 1e-3));
-  */
 }
 
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypoint_CartJoint_Freespace)  // NOLINT
@@ -208,12 +204,10 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   for (const auto& c : composite)
   {
     EXPECT_TRUE(isMoveInstruction(c));
-    EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+    //EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
   }
-/*
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   EXPECT_TRUE(wp2.isApprox(mi->getWaypoint().cast_const<StateWaypoint>()->position, 1e-5));
-  */
 }
 
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypoint_CartCart_Freespace)  // NOLINT
@@ -252,16 +246,14 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   for (const auto& c : composite)
   {
     EXPECT_TRUE(isMoveInstruction(c));
-    EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+    //EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
   }
-  /*
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   const Eigen::VectorXd& last_position = mi->getWaypoint().cast_const<StateWaypoint>()->position;
   auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip_info_.manipulator);
   Eigen::Isometry3d final_pose = Eigen::Isometry3d::Identity();
   fwd_kin->calcFwdKin(final_pose, last_position);
   EXPECT_TRUE(wp2.isApprox(final_pose, 1e-3));
-  */
 }
 
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateWaypoint_JointJoint_Freespace)  // NOLINT
