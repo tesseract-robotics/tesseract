@@ -288,7 +288,7 @@ void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, cons
   }
 }
 
-void BulletDiscreteSimpleManager::addCollisionObject(const COW::Ptr& cow)
+void BulletDiscreteSimpleManager::addCollisionObject(COW::Ptr cow)
 {
   cow->setUserPointer(&contact_test_data_);
   link2cow_[cow->getName()] = cow;

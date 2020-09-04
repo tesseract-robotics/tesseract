@@ -542,14 +542,20 @@ private:
     std::map<Vertex, size_t> index_map;
     boost::associative_property_map<std::map<Vertex, size_t>> prop_index_map(index_map);
 
+    std::map<Vertex, boost::default_color_type> color_map;
+    boost::associative_property_map<std::map<Vertex, boost::default_color_type>> prop_color_map(color_map);
+
     int c = 0;
     Graph::vertex_iterator i, iend;
     for (boost::tie(i, iend) = boost::vertices(graph); i != iend; ++i, ++c)
       boost::put(prop_index_map, *i, c);
 
     children_detector vis(child_link_names);
+    // NOLINTNEXTLINE
     boost::breadth_first_search(
-        graph, start_vertex, boost::visitor(vis).root_vertex(start_vertex).vertex_index_map(prop_index_map));
+        graph,
+        start_vertex,
+        boost::visitor(vis).root_vertex(start_vertex).vertex_index_map(prop_index_map).color_map(prop_color_map));
 
     return child_link_names;
   }
