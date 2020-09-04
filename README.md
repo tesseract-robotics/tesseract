@@ -50,27 +50,27 @@ NOTE: To speed up clean build you may want to add tesseract_ext to an extended w
 
 NOTE: Install TaskFlow from [ROS-Industrial PPA](https://launchpad.net/~ros-industrial/+archive/ubuntu/ppa).
 
-## Building with Clang-Tidy Enabled
+### Building with Clang-Tidy Enabled
 
 Must pass the -DTESSERACT_ENABLE_CLANG_TIDY=ON to cmake when building. This is automatically enabled if cmake argument -DTESSERACT_ENABLE_TESTING_ALL=ON is passed.
 
-## Building Tesseract Tests
+### Building Tesseract Tests
 
 Must pass the -DTESSERACT_ENABLE_TESTING=ON to cmake when wanting to build tests. This is automatically enabled if cmake argument -DTESSERACT_ENABLE_TESTING_ALL=ON is passed.
 
 NOTE: If you are building using catkin tools, use `catkin build --force-cmake -DTESSERACT_ENABLE_TESTING=ON`.
 
-## Running Tesseract Tests
+#### Running Tesseract Tests
 
 Tesseract packages use ctest because it is ROS agnostic, so to run the test call `catkin test --no-deps tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_process_planners tesseract_scene_graph tesseract_urdf`
 
-## Building Tesseract Code Coverage
+### Building Tesseract Code Coverage
 
 Must pass the -DTESSERACT_CODE_COVERAGE=ON to cmake when wanting to build code coverage. The code coverage report is located in each individuals build directory inside a ccov/all-merged folder. Open the index.html file to see the packages code coverage report.
 
 NOTE: Must be a clean build when generating a code coverage report. Also must build in debug.
 
-### Exclude Code From Code Coverage
+#### Exclude Code From Code Coverage
 
 - LCOV_EXCL_LINE
   - Lines containing this marker will be excluded.
@@ -80,6 +80,47 @@ NOTE: Must be a clean build when generating a code coverage report. Also must bu
   - Marks the end of an excluded section. The current line not part of this section.
 
 .. NOTE: You can replace **LCOV** above with **GCOV** or **GCOVR**.
+
+## Quality Tools Leverage
+
+Tesseract currently leverages Compiler Warnigs, Clang Tidy and Code Coverage. All warnings produced by Compiler and Clang Tidy are treated as errors during CI builds.
+
+- Compiler
+  - Wall
+  - Wextra
+  - Wconversion
+  - Wsign-conversion
+  - Wno-sign-compare
+- Clang Tidy
+  - clang-analyzer-*
+  - bugprone-*
+  - cppcoreguidelines-avoid-goto
+  - cppcoreguidelines-c-copy-assignment-signature
+  - cppcoreguidelines-interfaces-global-init
+  - cppcoreguidelines-narrowing-conversions
+  - cppcoreguidelines-no-malloc
+  - cppcoreguidelines-slicing
+  - cppcoreguidelines-special-member-functions
+  - misc-*
+  - modernize-*
+  - performance-*
+  - readability-avoid-const-params-in-decls
+  - readability-container-size-empty
+  - readability-delete-null-pointer
+  - readability-deleted-default
+  - readability-else-after-return
+  - readability-function-size
+  - readability-identifier-naming
+  - readability-inconsistent-declaration-parameter-name
+  - readability-misleading-indentation
+  - readability-misplaced-array-index
+  - readability-non-const-parameter
+  - readability-redundant-*
+  - readability-simplify-*
+  - readability-static-*
+  - readability-string-compare
+  - readability-uniqueptr-delete-release
+  - readability-rary-objects
 
 ## Build Branch Sphinx Documentation
 

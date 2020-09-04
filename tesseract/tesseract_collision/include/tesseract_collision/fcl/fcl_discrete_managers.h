@@ -114,7 +114,7 @@ public:
    * @brief Add a fcl collision object to the manager
    * @param cow The tesseract fcl collision object
    */
-  void addCollisionObject(const COW::Ptr& cow);
+  void addCollisionObject(COW::Ptr cow);
 
 private:
   /** @brief Broadphase Collision Manager for active collision objects */
