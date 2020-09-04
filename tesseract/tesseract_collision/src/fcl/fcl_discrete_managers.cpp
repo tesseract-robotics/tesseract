@@ -347,7 +347,7 @@ void FCLDiscreteBVHManager::contactTest(ContactResultMap& collisions, const Cont
   }
 }
 
-void FCLDiscreteBVHManager::addCollisionObject(const COW::Ptr& cow)
+void FCLDiscreteBVHManager::addCollisionObject(COW::Ptr cow)
 {
   std::size_t cnt = cow->getCollisionObjectsRaw().size();
   fcl_co_count_ += cnt;

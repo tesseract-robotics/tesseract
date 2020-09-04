@@ -82,8 +82,10 @@ public:
     , tesseract_ik_(std::move(tesseract_ik))
     , is_valid_fn_(std::move(is_valid_fn))
     , redundant_sol_fn_(std::move(redundant_sol_fn))
+    , ik_seed_(Eigen::VectorXd::Zero(static_cast<int>(tesseract_fk_->numJoints())))
   {
-    ik_seed_ = Eigen::VectorXd::Zero(dof());
+    assert(tesseract_fk_->numJoints() < std::numeric_limits<int>::max());
+    assert(tesseract_ik_->numJoints() < std::numeric_limits<int>::max());
   }
 
   /** @brief Calculate inverse kinematics using isValidFn, GetRedundantSolutionsFn, and ik_seed provided

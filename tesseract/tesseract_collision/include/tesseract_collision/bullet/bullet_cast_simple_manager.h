@@ -125,7 +125,7 @@ public:
    * @brief A a bullet collision object to the manager
    * @param cow The tesseract bullet collision object
    */
-  void addCollisionObject(const COW::Ptr& cow);
+  void addCollisionObject(COW::Ptr cow);
 
 private:
   std::vector<std::string> active_;            /**< @brief A list of the active collision objects */
