@@ -117,12 +117,12 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "DEFAULT", manip_info_);
 
   auto composite = LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5);
-  /*
   for (const auto& c : composite)
   {
     EXPECT_TRUE(isMoveInstruction(c));
     EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
   }
+  /*
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   EXPECT_TRUE(wp2.isApprox(mi->getWaypoint().cast_const<StateWaypoint>()->position, 1e-5));
   */
@@ -161,12 +161,12 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "DEFAULT", manip_info_);
 
   auto composite = LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5);
-  /*
   for (const auto& c : composite)
   {
     EXPECT_TRUE(isMoveInstruction(c));
     EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
   }
+  /*
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   const Eigen::VectorXd& last_position = mi->getWaypoint().cast_const<StateWaypoint>()->position;
   auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip_info_.manipulator);
@@ -205,12 +205,12 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "DEFAULT", manip_info_);
 
   auto composite = LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5);
-/*
   for (const auto& c : composite)
   {
     EXPECT_TRUE(isMoveInstruction(c));
     EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
   }
+/*
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   EXPECT_TRUE(wp2.isApprox(mi->getWaypoint().cast_const<StateWaypoint>()->position, 1e-5));
   */
@@ -249,12 +249,12 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "DEFAULT", manip_info_);
 
   auto composite = LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5);
-  /*
   for (const auto& c : composite)
   {
     EXPECT_TRUE(isMoveInstruction(c));
     EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
   }
+  /*
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   const Eigen::VectorXd& last_position = mi->getWaypoint().cast_const<StateWaypoint>()->position;
   auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip_info_.manipulator);
