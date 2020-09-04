@@ -406,7 +406,7 @@ void BulletCastSimpleManager::contactTest(ContactResultMap& collisions, const Co
   }
 }
 
-void BulletCastSimpleManager::addCollisionObject(const COW::Ptr& cow)
+void BulletCastSimpleManager::addCollisionObject(COW::Ptr cow)
 {
   cow->setUserPointer(&contact_test_data_);
   link2cow_[cow->getName()] = cow;

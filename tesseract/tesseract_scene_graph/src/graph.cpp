@@ -484,7 +484,7 @@ std::vector<std::string> SceneGraph::getJointChildrenNames(const std::string& na
   const auto& graph = static_cast<const Graph&>(*this);
   Edge e = getEdge(name);
   Vertex v = boost::target(e, graph);
-  return getLinkChildrenHelper(v);
+  return getLinkChildrenHelper(v);  // NOLINT
 }
 
 void SceneGraph::saveDOT(const std::string& path) const
