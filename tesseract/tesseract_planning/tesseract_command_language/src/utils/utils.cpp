@@ -60,6 +60,39 @@ bool setJointPosition(Waypoint& waypoint, const Eigen::Ref<const Eigen::VectorXd
   return true;
 }
 
+bool isWithinJointLimits(const Waypoint& wp, const Eigen::Ref<const Eigen::MatrixX2d>& limits)
+{
+  if (isJointWaypoint(wp) || isStateWaypoint(wp))
+  {
+    Eigen::VectorXd cmd_pos;
+    try
+    {
+      cmd_pos = getJointPosition(wp);
+    }
+    catch (std::exception& e)
+    {
+      CONSOLE_BRIDGE_logWarn("getJointPosition threw %s", e.what());
+      return false;
+    }
+
+    // Check input validity
+    if (limits.rows() != cmd_pos.size())
+    {
+      CONSOLE_BRIDGE_logWarn(
+          "Invalid limits when clamping Waypoint. Waypoint size: %d, Limits size: %d", cmd_pos.size(), limits.rows());
+      return false;
+    }
+
+    // Is it within the limits?
+    if ((limits.col(0).array() > cmd_pos.array()).any())
+      return false;
+    if ((limits.col(1).array() < cmd_pos.array()).any())
+      return false;
+  }
+
+  return true;
+}
+
 bool clampToJointLimits(Waypoint& wp, const Eigen::Ref<const Eigen::MatrixX2d>& limits, double max_deviation)
 {
   Eigen::VectorXd deviation_vec = Eigen::VectorXd::Ones(limits.rows()) * max_deviation;
@@ -99,26 +132,16 @@ bool clampToJointLimits(Waypoint& wp,
       return false;
     }
 
-    // Does the position need adjusting?
-    bool adjust_position = false;
-    if ((limits.col(0).array() > cmd_pos.array()).any())
-      adjust_position = true;
-    if ((limits.col(1).array() < cmd_pos.array()).any())
-      adjust_position = true;
+    if (((cmd_pos.array() - limits.col(1).array()) > max_deviation.array()).any())
+      return false;
+    if ((-(cmd_pos.array() - limits.col(0).array()) > max_deviation.array()).any())
+      return false;
 
-    if (adjust_position)
-    {
-      if (((cmd_pos.array() - limits.col(1).array()) > max_deviation.array()).any())
-        return false;
-      if ((-(cmd_pos.array() - limits.col(0).array()) > max_deviation.array()).any())
-        return false;
-
-      CONSOLE_BRIDGE_logDebug("Clamping Waypoint to joint limits");
-      Eigen::VectorXd new_position = cmd_pos;
-      new_position = new_position.cwiseMax(limits.col(0));
-      new_position = new_position.cwiseMin(limits.col(1));
-      return setJointPosition(wp, new_position);
-    }
+    CONSOLE_BRIDGE_logDebug("Clamping Waypoint to joint limits");
+    Eigen::VectorXd new_position = cmd_pos;
+    new_position = new_position.cwiseMax(limits.col(0));
+    new_position = new_position.cwiseMin(limits.col(1));
+    return setJointPosition(wp, new_position);
   }
 
   return true;
