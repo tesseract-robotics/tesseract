@@ -97,7 +97,6 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
   if (cur_composite_profile->mode == FixStateBoundsProfile::Settings::DISABLED)
     return 1;
 
-  CONSOLE_BRIDGE_logInform("FixStateBoundsProcessGenerator is modifying the const input instructions");
   auto limits = fwd_kin->getLimits().joint_limits;
   switch (cur_composite_profile->mode)
   {
@@ -107,9 +106,13 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
       if (instr_const_ptr)
       {
         PlanInstruction* mutable_instruction = const_cast<PlanInstruction*>(instr_const_ptr);
-        if (!clampToJointLimits(
-                mutable_instruction->getWaypoint(), limits, cur_composite_profile->max_deviation_global))
-          return 0;
+        if (!isWithinJointLimits(mutable_instruction->getWaypoint(), limits))
+        {
+          CONSOLE_BRIDGE_logInform("FixStateBoundsProcessGenerator is modifying the const input instructions");
+          if (!clampToJointLimits(
+                  mutable_instruction->getWaypoint(), limits, cur_composite_profile->max_deviation_global))
+            return 0;
+        }
       }
     }
     break;
@@ -119,9 +122,13 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
       if (instr_const_ptr)
       {
         PlanInstruction* mutable_instruction = const_cast<PlanInstruction*>(instr_const_ptr);
-        if (!clampToJointLimits(
-                mutable_instruction->getWaypoint(), limits, cur_composite_profile->max_deviation_global))
-          return 0;
+        if (!isWithinJointLimits(mutable_instruction->getWaypoint(), limits))
+        {
+          CONSOLE_BRIDGE_logInform("FixStateBoundsProcessGenerator is modifying the const input instructions");
+          if (!clampToJointLimits(
+                  mutable_instruction->getWaypoint(), limits, cur_composite_profile->max_deviation_global))
+            return 0;
+        }
       }
     }
     break;
@@ -133,6 +140,16 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
         CONSOLE_BRIDGE_logWarn("FixStateBoundsProcessGenerator found no PlanInstructions to process");
         return 1;
       }
+
+      bool outside_limits = false;
+      for (const auto& instruction : flattened)
+      {
+        outside_limits |= isWithinJointLimits(instruction.get().cast_const<PlanInstruction>()->getWaypoint(), limits);
+      }
+      if (!outside_limits)
+        break;
+
+      CONSOLE_BRIDGE_logInform("FixStateBoundsProcessGenerator is modifying the const input instructions");
       for (const auto& instruction : flattened)
       {
         const Instruction* instr_const_ptr = &instruction.get();
