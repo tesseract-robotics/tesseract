@@ -47,6 +47,14 @@ const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint);
 bool setJointPosition(Waypoint& waypoint, const Eigen::Ref<const Eigen::VectorXd>& position);
 
 /**
+ * @brief Checks if a waypoint is
+ * @param wp Waypoint to be checked. Only checks if a JointPosition or State waypoint (otherwise returns true)
+ * @param limits Matrix2d of limits with first column being lower limits and second column being upper limits
+ * @return True if the waypoit falls within the joint limits
+ */
+bool isWithinJointLimits(const Waypoint& wp, const Eigen::Ref<const Eigen::MatrixX2d>& limits);
+
+/**
  * @brief Clamps a waypoint to be within joint limits
  * @param wp Waypoint to be adjusted. Does nothing if not a JointPosition or State waypoint
  * @param limits Matrix2d of limits with first column being lower limits and second column being upper limits
