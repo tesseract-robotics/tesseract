@@ -43,10 +43,12 @@ public:
     if (it == continuous_types.end())
     {
       continuous_types[name] = std::move(create_function);
+      keys_.push_back(name);
       return true;
     }
     return false;
   }
+
   ContinuousContactManager::Ptr create(const std::string& name) const
   {
     auto it = continuous_types.find(name);
@@ -56,8 +58,11 @@ public:
     return nullptr;
   }
 
+  const std::vector<std::string>& getAvailableManagers() const { return keys_; }
+
 private:
   std::unordered_map<std::string, CreateMethod> continuous_types;
+  std::vector<std::string> keys_;
 };
 }  // namespace tesseract_collision
 

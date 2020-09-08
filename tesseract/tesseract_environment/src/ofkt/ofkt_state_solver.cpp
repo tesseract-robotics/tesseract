@@ -221,7 +221,6 @@ void OFKTStateSolver::setState(const std::vector<std::string>& joint_names,
 {
   assert(joint_names.size() == static_cast<std::size_t>(joint_values.size()));
   Eigen::VectorXd jv = joint_values;
-  std::cout << jv.transpose() << std::endl;
   for (std::size_t i = 0; i < joint_names.size(); ++i)
   {
     nodes_[joint_names[i]]->storeJointValue(joint_values(static_cast<long>(i)));
@@ -401,7 +400,7 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
   }
 
   // Remove deleted joints
-  if (!removed_joints.empty())
+  if (removed_joints.empty() == false)
   {
     joint_names_.erase(
         std::remove_if(joint_names_.begin(), joint_names_.end(), [removed_joints](const std::string& joint_name) {
@@ -417,7 +416,7 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
   }
 
   // Populate Joint Limits
-  if (!new_limits.empty())
+  if (new_limits.empty() == false)
   {
     Eigen::MatrixX2d l(limits_.rows() + static_cast<long>(new_limits.size()), 2);
     Eigen::MatrixX2d l2(static_cast<long>(new_limits.size()), 2);

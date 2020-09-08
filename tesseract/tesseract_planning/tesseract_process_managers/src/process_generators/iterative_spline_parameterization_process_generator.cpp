@@ -30,10 +30,21 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_generators/iterative_spline_parameterization_process_generator.h>
-#include <tesseract_command_language/utils/utils.h>
+#include <tesseract_command_language/composite_instruction.h>
+#include <tesseract_command_language/move_instruction.h>
+#include <tesseract_command_language/utils/filter_functions.h>
+#include <tesseract_command_language/utils/flatten_utils.h>
+#include <tesseract_time_parameterization/iterative_spline_parameterization.h>
 
 namespace tesseract_planning
 {
+IterativeSplineParameterizationProfile::IterativeSplineParameterizationProfile(double max_velocity_scaling_factor,
+                                                                               double max_acceleration_scaling_factor)
+  : max_velocity_scaling_factor(max_velocity_scaling_factor)
+  , max_acceleration_scaling_factor(max_acceleration_scaling_factor)
+{
+}
+
 IterativeSplineParameterizationProcessGenerator::IterativeSplineParameterizationProcessGenerator(bool add_points,
                                                                                                  std::string name)
   : name_(std::move(name)), solver_(add_points)
@@ -138,7 +149,6 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
                        fwd_kin->getLimits().acceleration_limits,
                        velocity_scaling_factors,
                        acceleration_scaling_factors))
-
   {
     CONSOLE_BRIDGE_logInform("Failed to perform iterative spline time parameterization!");
     return 0;

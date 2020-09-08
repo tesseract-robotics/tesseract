@@ -447,7 +447,7 @@ void BulletCastBVHManager::contactTest(ContactResultMap& collisions, const Conta
   pairCache->processAllOverlappingPairs(&collisionCallback, dispatcher_.get());
 }
 
-void BulletCastBVHManager::addCollisionObject(const COW::Ptr& cow)
+void BulletCastBVHManager::addCollisionObject(COW::Ptr cow)
 {
   cow->setUserPointer(&contact_test_data_);
   link2cow_[cow->getName()] = cow;

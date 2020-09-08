@@ -484,7 +484,7 @@ std::vector<std::string> SceneGraph::getJointChildrenNames(const std::string& na
   const auto& graph = static_cast<const Graph&>(*this);
   Edge e = getEdge(name);
   Vertex v = boost::target(e, graph);
-  return getLinkChildrenHelper(v);
+  return getLinkChildrenHelper(v);  // NOLINT
 }
 
 void SceneGraph::saveDOT(const std::string& path) const
@@ -584,13 +584,6 @@ SceneGraph::Path SceneGraph::getShortestPath(const std::string& root, const std:
 #endif
   return Path(links, joints);
 }
-
-// static inline Graph copyGraph(const Graph& graph)
-//{
-//  Graph new_graph;
-//  boost::copy_graph(graph, new_graph);
-//  return new_graph;
-//}
 
 SceneGraph::Vertex SceneGraph::getVertex(const std::string& name) const
 {

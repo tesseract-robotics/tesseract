@@ -8,6 +8,7 @@
   <author >Levi Armstrong</author>
 
   <depend>tesseract_common</depend>
+  <build_depend>cmake_common_scripts</build_depend>
 
   <depend>assimp-dev</depend>
   <build_depend>eigen</build_depend>

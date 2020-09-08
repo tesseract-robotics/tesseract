@@ -23,18 +23,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGER_RASTER_PROCESS_MANAGER_H
-#define TESSERACT_PROCESS_MANAGER_RASTER_PROCESS_MANAGER_H
+#ifndef TESSERACT_PROCESS_MANAGERS_RASTER_PROCESS_MANAGER_H
+#define TESSERACT_PROCESS_MANAGERS_RASTER_PROCESS_MANAGER_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <functional>
+#include <vector>
+#include <thread>
+#include <taskflow/taskflow.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_manager.h>
-#include <tesseract_process_managers/process_input.h>
-#include <tesseract_process_managers/process_generator.h>
-#include <tesseract_process_managers/taskflow_generators/sequential_taskflow.h>
+#include <tesseract_process_managers/taskflow_generator.h>
 
 namespace tesseract_planning
 {
@@ -44,29 +45,17 @@ namespace tesseract_planning
  * Given a ProcessInput in the correct format, it handles the creation of the process dependencies and uses Taskflow to
  * execute them efficiently in a parallel based on those dependencies.
  *
- * The required format is below. Note that a transition is planned from both the start and end of each raster to allow
+ * The required format is below.
  * for skipping of rasters without replanning. This logic must be handled in the execute process.
  *
  * Composite
  * {
  *   Composite - from start
- *   Composite - Raster segment (e.g. approach, raster, departure)
- *   {
- *     Composite
- *       ...
- *     Composite
- *   }
- *   Unordered Composite - Transitions
- *   {
- *     Composite - Transition from start
- *     Composite - Transition from end
- *   }
  *   Composite - Raster segment
- *   {
- *     Composite
- *       ...
- *     Composite
- *   }
+ *   Composite - Transitions
+ *   Composite - Raster segment
+ *   Composite - Transitions
+ *   Composite - Raster segment
  *   Composite - to end
  * }
  */
@@ -77,6 +66,7 @@ public:
   using ConstPtr = std::shared_ptr<const RasterProcessManager>;
 
   RasterProcessManager(TaskflowGenerator::UPtr freespace_taskflow_generator,
+                       TaskflowGenerator::UPtr transition_taskflow_generator,
                        TaskflowGenerator::UPtr raster_taskflow_generator,
                        std::size_t n = std::thread::hardware_concurrency());
   ~RasterProcessManager() override = default;
@@ -99,10 +89,12 @@ private:
   bool success_;
 
   TaskflowGenerator::UPtr freespace_taskflow_generator_;
+  TaskflowGenerator::UPtr transition_taskflow_generator_;
   TaskflowGenerator::UPtr raster_taskflow_generator_;
   tf::Executor executor_;
   tf::Taskflow taskflow_;
   std::vector<tf::Task> freespace_tasks_;
+  std::vector<tf::Task> transition_tasks_;
   std::vector<tf::Task> raster_tasks_;
 
   /**

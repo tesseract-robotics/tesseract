@@ -11,22 +11,35 @@ find_package(tesseract_support REQUIRED)
 find_package(tesseract_command_language REQUIRED)
 find_package(tesseract_motion_planners REQUIRED)
 find_package(tesseract_time_parameterization REQUIRED)
+find_package(cmake_common_scripts REQUIRED)
 
 set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/*)
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 
+# Load variable for clang tidy args, compiler options and cxx version
+tesseract_variables()
+
 # Create interface
 add_library(${PROJECT_NAME} SHARED
     src/process_input.cpp
-    src/process_generators/motion_planner_process_generator.cpp
-    src/process_generators/discrete_contact_check_process_generator.cpp
     src/process_generators/continuous_contact_check_process_generator.cpp
+    src/process_generators/discrete_contact_check_process_generator.cpp
+    src/process_generators/fix_state_bounds_process_generator.cpp
+    src/process_generators/fix_state_collision_process_generator.cpp
     src/process_generators/iterative_spline_parameterization_process_generator.cpp
-    src/process_managers/freespace_process_manager.cpp
+    src/process_generators/motion_planner_process_generator.cpp
     src/process_managers/raster_process_manager.cpp
+    src/process_managers/raster_dt_process_manager.cpp
+    src/process_managers/raster_waad_process_manager.cpp
+    src/process_managers/raster_waad_dt_process_manager.cpp
     src/process_managers/simple_process_manager.cpp
     src/taskflow_generators/sequential_taskflow.cpp
-    src/taskflow_generators/graph_taskflow.cpp)
+    src/taskflow_generators/graph_taskflow.cpp
+    src/taskflows/descartes_taskflow.cpp
+    src/taskflows/ompl_taskflow.cpp
+    src/taskflows/trajopt_taskflow.cpp
+    src/taskflows/cartesian_taskflow.cpp
+    src/taskflows/freespace_taskflow.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC
     console_bridge
     Taskflow::Taskflow
@@ -37,50 +50,19 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     tesseract::tesseract_motion_planners_descartes
     tesseract::tesseract_motion_planners_ompl
     tesseract::tesseract_time_parameterization)
-tesseract_target_compile_options(${PROJECT_NAME} PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME})
-tesseract_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS})
 
-add_executable(${PROJECT_NAME}_freespace_manager_example src/examples/freespace_manager_example.cpp)
-target_link_libraries(${PROJECT_NAME}_freespace_manager_example console_bridge ${PROJECT_NAME} Taskflow::Taskflow tesseract::tesseract tesseract::tesseract_command_language tesseract::tesseract_support tesseract::tesseract_motion_planners_trajopt ${CMAKE_THREAD_LIBS_INIT})
-tesseract_target_compile_options(${PROJECT_NAME}_freespace_manager_example PRIVATE)
-tesseract_clang_tidy(${PROJECT_NAME}_freespace_manager_example)
-target_include_directories(${PROJECT_NAME}_freespace_manager_example PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_freespace_manager_example SYSTEM PRIVATE
-    ${EIGEN3_INCLUDE_DIRS})
+add_subdirectory(examples)
 
-add_executable(${PROJECT_NAME}_freespace_manager_graph_example src/examples/freespace_manager_graph_example.cpp)
-target_link_libraries(${PROJECT_NAME}_freespace_manager_graph_example console_bridge ${PROJECT_NAME} Taskflow::Taskflow tesseract::tesseract tesseract::tesseract_command_language tesseract::tesseract_support tesseract::tesseract_motion_planners_trajopt ${CMAKE_THREAD_LIBS_INIT})
-tesseract_target_compile_options(${PROJECT_NAME}_freespace_manager_graph_example PRIVATE)
-tesseract_clang_tidy(${PROJECT_NAME}_freespace_manager_graph_example)
-target_include_directories(${PROJECT_NAME}_freespace_manager_graph_example PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_freespace_manager_graph_example SYSTEM PRIVATE
-    ${EIGEN3_INCLUDE_DIRS})
-
-add_executable(${PROJECT_NAME}_raster_manager_example src/examples/raster_manager_example.cpp)
-target_link_libraries(${PROJECT_NAME}_raster_manager_example console_bridge ${PROJECT_NAME} Taskflow::Taskflow tesseract::tesseract tesseract::tesseract_command_language tesseract::tesseract_support tesseract::tesseract_motion_planners_trajopt ${CMAKE_THREAD_LIBS_INIT})
-tesseract_target_compile_options(${PROJECT_NAME}_raster_manager_example PRIVATE)
-tesseract_clang_tidy(${PROJECT_NAME}_raster_manager_example)
-target_include_directories(${PROJECT_NAME}_raster_manager_example PRIVATE
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME}_raster_manager_example SYSTEM PRIVATE
-    ${EIGEN3_INCLUDE_DIRS})
-
-tesseract_configure_package(
-  ${PROJECT_NAME}
-  ${PROJECT_NAME}_freespace_manager_example
-  ${PROJECT_NAME}_freespace_manager_graph_example
-  ${PROJECT_NAME}_raster_manager_example)
+configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
@@ -91,6 +73,6 @@ install(DIRECTORY include/${PROJECT_NAME}
 
 if (TESSERACT_ENABLE_TESTING)
   enable_testing()
-  tesseract_add_run_tests_target()
+  add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
 endif()

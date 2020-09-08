@@ -50,7 +50,7 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
 {
   clear();
   init_info_->type = TesseractInitType::SCENE_GRAPH;
-  init_info_->scene_graph = scene_graph;
+  init_info_->scene_graph = scene_graph->clone();
 
   // Construct Environment from Scene Graph
   environment_ = std::make_shared<tesseract_environment::Environment>();
@@ -77,8 +77,8 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph,
 {
   clear();
   init_info_->type = TesseractInitType::SCENE_GRAPH_SRDF_MODEL;
-  init_info_->scene_graph = scene_graph;
-  init_info_->srdf_model = srdf_model;
+  init_info_->scene_graph = scene_graph->clone();
+  init_info_->srdf_model = std::make_shared<tesseract_scene_graph::SRDFModel>(*srdf_model);
 
   srdf_model_ = std::move(srdf_model);
   srdf_model_const_ = srdf_model_;
@@ -312,6 +312,8 @@ Tesseract::Ptr Tesseract::clone() const
 
   return clone;
 }
+
+bool Tesseract::reset() { return init(init_info_); }
 
 void Tesseract::setResourceLocator(tesseract_scene_graph::ResourceLocator::Ptr locator)
 {

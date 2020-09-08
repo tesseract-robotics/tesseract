@@ -78,7 +78,7 @@ public:
       if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
         throw std::runtime_error("CartesianWaypoint: Error parsing attribute xyz string.");
 
-      double x, y, z;
+      double x{ 0 }, y{ 0 }, z{ 0 };
       // No need to check return values because the tokens are verified above
       tesseract_common::toNumeric<double>(tokens[0], x);
       tesseract_common::toNumeric<double>(tokens[1], y);
@@ -100,7 +100,7 @@ public:
         if (tokens.size() != 3 || !tesseract_common::isNumeric(tokens))
           throw std::runtime_error("CartesianWaypoint: Error parsing attribute rpy string.");
 
-        double r, p, y;
+        double r{ 0 }, p{ 0 }, y{ 0 };
         // No need to check return values because the tokens are verified above
         tesseract_common::toNumeric<double>(tokens[0], r);
         tesseract_common::toNumeric<double>(tokens[1], p);
@@ -128,7 +128,7 @@ public:
         if (tokens.size() != 4 || !tesseract_common::isNumeric(tokens))
           throw std::runtime_error("CartesianWaypoint: Error parsing attribute wxyz string.");
 
-        double qw, qx, qy, qz;
+        double qw{ 0 }, qx{ 0 }, qy{ 0 }, qz{ 0 };
         // No need to check return values because the tokens are verified above
         tesseract_common::toNumeric<double>(tokens[0], qw);
         tesseract_common::toNumeric<double>(tokens[1], qx);

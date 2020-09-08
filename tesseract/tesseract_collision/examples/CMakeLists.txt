@@ -1,7 +1,8 @@
 add_executable(${PROJECT_NAME}_box_box_example box_box_example.cpp)
 target_link_libraries(${PROJECT_NAME}_box_box_example ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl tesseract::tesseract_geometry console_bridge ${BULLET_LIBRARIES} ${Boost_LIBRARIES} octomap octomath ${${LIBFCL_LIBRARIES}})
-tesseract_target_compile_options(${PROJECT_NAME}_box_box_example PRIVATE)
-tesseract_clang_tidy(${PROJECT_NAME}_box_box_example)
+target_compile_options(${PROJECT_NAME}_box_box_example PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME}_box_box_example ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_box_box_example PRIVATE VERSION ${TESSERACT_CXX_VERSION})
 target_compile_definitions(${PROJECT_NAME}_box_box_example PRIVATE DATA_DIR="${CMAKE_SOURCE_DIR}/test")
 
 install(TARGETS ${PROJECT_NAME}_box_box_example DESTINATION bin)

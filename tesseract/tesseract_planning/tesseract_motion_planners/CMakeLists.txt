@@ -11,17 +11,22 @@ find_package(tesseract_common REQUIRED)
 find_package(tesseract_command_language REQUIRED)
 find_package(trajopt REQUIRED)
 find_package(trajopt_sco REQUIRED)
+find_package(cmake_common_scripts REQUIRED)
 
 set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/* /*/include/descartes_light/* /*/include/opw_kinematics/* /*/include/trajopt/* /*/include/trajopt_sco/*)
 
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 
+# Load variable for clang tidy args, compiler options and cxx version
+tesseract_variables()
+
 # Create interface for core
 add_library(${PROJECT_NAME}_core SHARED src/core/utils.cpp)
 target_link_libraries(${PROJECT_NAME}_core PUBLIC tesseract::tesseract tesseract::tesseract_common tesseract::tesseract_command_language trajopt::trajopt console_bridge)
-tesseract_target_compile_options(${PROJECT_NAME}_core PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_core)
-tesseract_code_coverage(${PROJECT_NAME}_core ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME}_core ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_core PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(${PROJECT_NAME}_core ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
 target_include_directories(${PROJECT_NAME}_core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -39,9 +44,10 @@ add_library(${PROJECT_NAME}_descartes SHARED
   src/descartes/serialize.cpp
   src/descartes/deserialize.cpp)
 target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME}_core descartes::descartes_light descartes::descartes_samplers)
-tesseract_target_compile_options(${PROJECT_NAME}_descartes PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_descartes)
-tesseract_code_coverage(${PROJECT_NAME}_descartes ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_compile_options(${PROJECT_NAME}_descartes PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME}_descartes ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_descartes PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(${PROJECT_NAME}_descartes ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
 target_include_directories(${PROJECT_NAME}_descartes PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -68,9 +74,10 @@ set(OMPL_SRC src/ompl/ompl_motion_planner.cpp
 
 add_library(${PROJECT_NAME}_ompl SHARED ${OMPL_SRC})
 target_link_libraries(${PROJECT_NAME}_ompl PUBLIC ${PROJECT_NAME}_core ${OMPL_LIBRARIES})
-tesseract_target_compile_options(${PROJECT_NAME}_ompl PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_ompl)
-tesseract_code_coverage(${PROJECT_NAME}_ompl ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_compile_options(${PROJECT_NAME}_ompl PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME}_ompl ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_ompl PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(${PROJECT_NAME}_ompl ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
 target_include_directories(${PROJECT_NAME}_ompl PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -90,9 +97,10 @@ add_library(${PROJECT_NAME}_simple SHARED
   src/simple/step_generators/lvs_interpolation.cpp
   )
 target_link_libraries(${PROJECT_NAME}_simple PUBLIC ${Boost_LIBRARIES} ${PROJECT_NAME}_core)
-tesseract_target_compile_options(${PROJECT_NAME}_simple PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_simple)
-tesseract_code_coverage(${PROJECT_NAME}_simple ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_compile_options(${PROJECT_NAME}_simple PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME}_simple ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_simple PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(${PROJECT_NAME}_simple ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
 target_include_directories(${PROJECT_NAME}_simple PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -111,9 +119,10 @@ add_library(${PROJECT_NAME}_trajopt SHARED
   src/trajopt/serialize.cpp
   src/trajopt/deserialize.cpp)
 target_link_libraries(${PROJECT_NAME}_trajopt PUBLIC ${Boost_LIBRARIES} ${PROJECT_NAME}_core trajopt::trajopt trajopt::trajopt_utils trajopt::trajopt_sco)
-tesseract_target_compile_options(${PROJECT_NAME}_trajopt PUBLIC)
-tesseract_clang_tidy(${PROJECT_NAME}_trajopt)
-tesseract_code_coverage(${PROJECT_NAME}_trajopt ALL EXCLUDE ${COVERAGE_EXCLUDE})
+target_compile_options(${PROJECT_NAME}_trajopt PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_clang_tidy(${PROJECT_NAME}_trajopt ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_trajopt PUBLIC VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(${PROJECT_NAME}_trajopt ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
 target_include_directories(${PROJECT_NAME}_trajopt PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
@@ -121,12 +130,12 @@ target_include_directories(${PROJECT_NAME}_trajopt SYSTEM PUBLIC
         ${EIGEN3_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS})
 
-tesseract_configure_package(${PROJECT_NAME}_core
-                            ${PROJECT_NAME}_descartes
-                            ${PROJECT_NAME}_ompl
-                            ${PROJECT_NAME}_simple
-                            ${PROJECT_NAME}_trajopt
-                            )
+configure_package(NAMESPACE tesseract
+                  TARGETS ${PROJECT_NAME}_core
+                          ${PROJECT_NAME}_descartes
+                          ${PROJECT_NAME}_ompl
+                          ${PROJECT_NAME}_simple
+                          ${PROJECT_NAME}_trajopt)
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}
@@ -138,6 +147,6 @@ add_subdirectory(examples)
 
 if (TESSERACT_ENABLE_TESTING)
   enable_testing()
-  tesseract_add_run_tests_target()
+  add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
 endif()
