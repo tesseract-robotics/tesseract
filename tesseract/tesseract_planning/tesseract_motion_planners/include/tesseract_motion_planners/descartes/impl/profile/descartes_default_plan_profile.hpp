@@ -178,7 +178,7 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
 
   typename descartes_light::CollisionInterface<FloatType>::Ptr ci = nullptr;
   if (enable_collision)
-    ci = std::make_shared<DescartesCollision<FloatType>>(prob.tesseract->getEnvironmentConst(),
+    ci = std::make_shared<DescartesCollision<FloatType>>(prob.tesseract->getEnvironment(),
                                                          active_links,
                                                          prob.manip_inv_kin->getJointNames(),
                                                          collision_safety_margin,
@@ -211,7 +211,7 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
         compound_evaluator->push_back(std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(
             prob.manip_inv_kin->numJoints()));
         compound_evaluator->push_back(
-            std::make_shared<DescartesCollisionEdgeEvaluator<FloatType>>(prob.tesseract->getEnvironmentConst(),
+            std::make_shared<DescartesCollisionEdgeEvaluator<FloatType>>(prob.tesseract->getEnvironment(),
                                                                          active_links,
                                                                          prob.manip_inv_kin->getJointNames(),
                                                                          edge_collision_saftey_margin,
@@ -269,7 +269,7 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
         compound_evaluator->push_back(std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(
             prob.manip_inv_kin->numJoints()));
         compound_evaluator->push_back(
-            std::make_shared<DescartesCollisionEdgeEvaluator<FloatType>>(prob.tesseract->getEnvironmentConst(),
+            std::make_shared<DescartesCollisionEdgeEvaluator<FloatType>>(prob.tesseract->getEnvironment(),
                                                                          active_links,
                                                                          prob.manip_inv_kin->getJointNames(),
                                                                          edge_collision_saftey_margin,

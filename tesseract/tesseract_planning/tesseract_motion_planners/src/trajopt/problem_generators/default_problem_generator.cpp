@@ -63,7 +63,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name
   auto seed_flat = flattenProgramToPattern(request.seed, request.instructions);
 
   // Get kinematics information
-  tesseract_environment::Environment::ConstPtr env = request.tesseract->getEnvironmentConst();
+  tesseract_environment::Environment::ConstPtr env = request.tesseract->getEnvironment();
   tesseract_environment::AdjacencyMap map(
       env->getSceneGraph(), pci->kin->getActiveLinkNames(), env->getCurrentState()->link_transforms);
   const std::vector<std::string>& active_links = map.getActiveLinkNames();

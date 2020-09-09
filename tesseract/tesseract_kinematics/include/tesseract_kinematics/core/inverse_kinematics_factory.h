@@ -81,6 +81,21 @@ public:
   }
 
   /**
+   * @brief Create Inverse Kinematics Chain Object
+   * This only need to be implemented if of type chain
+   * @param scene_graph The Tesseract Scene Graph
+   * @param chains The chains that make up the kinematic chain
+   * @param name The name of the kinematic chain
+   * @return If failed to create, nullptr is returned.
+   */
+  virtual InverseKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr /*scene_graph*/,         // NOLINT
+                                        const std::vector<std::pair<std::string, std::string>>& /*chains*/,  // NOLINT
+                                        const std::string /*name*/) const                                    // NOLINT
+  {
+    return nullptr;
+  }
+
+  /**
    * @brief Create Inverse Kinematics Tree Object
    * This only need to be implemented if of type chain
    * @param scene_graph The tesseract scene graph

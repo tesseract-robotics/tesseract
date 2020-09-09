@@ -37,10 +37,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_visualization
 {
+bool isMeshWithColor(const std::string& file_path);
+
 bool toMsg(ignition::msgs::Scene& scene_msg,
            EntityManager& entity_manager,
            const tesseract_scene_graph::SceneGraph& scene_graph,
            const tesseract_common::TransformMap& link_transforms);
-}
+}  // namespace tesseract_visualization
 
 #endif  // TESSERACT_VISUALIZATION_IGNITION_CONVERSIONS_H

@@ -86,6 +86,10 @@ public:
   const AllowedCollisionMatrix& getAllowedCollisionMatrix() const;
   AllowedCollisionMatrix& getAllowedCollisionMatrix();
 
+  /** @brief Get the group names for this model */
+  const GroupNames& getGroupNames() const;
+  GroupNames& getGroupNames();
+
   /** @brief Get the map of chain groups defined for this model */
   const ChainGroups& getChainGroups() const;
   ChainGroups& getChainGroups();
@@ -94,17 +98,25 @@ public:
   const JointGroups& getJointGroups() const;
   JointGroups& getJointGroups();
 
-  /** @brief Get the map of groups defined for this model */
+  /** @brief Get the map of link groups defined for this model */
   const LinkGroups& getLinkGroups() const;
   LinkGroups& getLinkGroups();
+
+  /** @brief Get the map of robot on positioner groups defined for this model */
+  const ROPGroups& getROPGroups() const;
+  ROPGroups& getROPGroups();
+
+  /** @brief Get the map of robot with external positioner groups defined for this model */
+  const REPGroups& getREPGroups() const;
+  REPGroups& getREPGroups();
 
   /** @brief Get the map of group tool center points (TCP) defined for this model */
   const GroupTCPs& getGroupTCPs() const;
   GroupTCPs& getGroupTCPs();
 
   /** @brief Get the map of group states defined for this model */
-  const GroupStates& getGroupStates() const;
-  GroupStates& getGroupStates();
+  const GroupJointStates& getGroupStates() const;
+  GroupJointStates& getGroupStates();
 
   /** @brief Get the map of group opw kinematics defined for this model */
   const GroupOPWKinematics& getGroupOPWKinematics() const;
@@ -119,8 +131,10 @@ private:
   ChainGroups chain_groups_;                  /**< @brief A map of chains groups*/
   JointGroups joint_groups_;                  /**< @brief A map of joint groups */
   LinkGroups link_groups_;                    /**< @brief A map of link groups */
+  ROPGroups rop_groups_;                      /**< @brief A map of robot on positioner groups */
+  REPGroups rep_groups_;                      /**< @brief A map of robot with external positioner groups */
   std::vector<std::string> group_names_;      /**< @brief A vector of group names */
-  GroupStates group_states_;                  /**< @brief A map of group states */
+  GroupJointStates group_states_;             /**< @brief A map of group states */
   GroupTCPs group_tcps_;                      /**< @brief A map of group tool center points */
   AllowedCollisionMatrix acm_;                /**< @brief The allowed collision matrix */
   GroupOPWKinematics group_opw_kinematics_;   /**< @brief A map of group opw kinematics data */

@@ -28,12 +28,14 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/filesystem.hpp>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract/manipulator_manager.h>
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/srdf_model.h>
-#include <boost/filesystem.hpp>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract
 {
@@ -45,7 +47,8 @@ enum class TesseractInitType
   URDF_STRING,
   URDF_STRING_SRDF_STRING,
   URDF_PATH,
-  URDF_PATH_SRDF_PATH
+  URDF_PATH_SRDF_PATH,
+  ENVIRONMENT_MANIPULATOR_MANAGER
 };
 
 /** @brief Used to store information about how a given Tesseract was initialized. See the Tesseract init methods.
@@ -61,13 +64,33 @@ struct TesseractInitInfo
   /** @brief Specifies which members should be used to recreate the Tesseract*/
   TesseractInitType type;
 
-  /** @brief Used when InitType is SCENE_GRAPH or SCENE_GRAPH_SRDF_MODEL
-
-  TODO: When SceneGraph is given a clone method make this a copy of the initial state rather than a pointer*/
+  /**
+   * @brief Used when InitType is SCENE_GRAPH or SCENE_GRAPH_SRDF_MODEL
+   *
+   * This stores a clone of the scene graph
+   */
   tesseract_scene_graph::SceneGraph::Ptr scene_graph;
 
-  /** @brief Used when InitType is SCENE_GRAPH_SRDF_MODEL*/
-  tesseract_scene_graph::SRDFModel::ConstPtr srdf_model;
+  /**
+   * @brief Used when InitType is SCENE_GRAPH_SRDF_MODEL
+   *
+   * This stores a clone of the srdf model
+   */
+  tesseract_scene_graph::SRDFModel::Ptr srdf_model;
+
+  /**
+   * @brief Used when InitType is ENVIRONMENT_MANIPULATOR_MANAGER
+   *
+   * This store a clone of the environment
+   */
+  tesseract_environment::Environment::Ptr environment;
+
+  /**
+   * @brief Used when InitType is ENVIRONMENT_MANIPULATOR_MANAGER
+   *
+   * This stores a clone of the manipulator manager
+   */
+  tesseract::ManipulatorManager::Ptr manipulator_manager;
 
   /** @brief Used when InitType is URDF_STRING and URDF_STRING_SRDF_STRING*/
   std::string urdf_string;
@@ -78,6 +101,7 @@ struct TesseractInitInfo
   boost::filesystem::path urdf_path;
   /** @brief Used when InitType is URDF_PATH_SRDF_PATH*/
   boost::filesystem::path srdf_path;
+
   /** @brief Used when InitType is URDF_STRING, URDF_STRING_SRDF_STRING, URDF_PATH, and URDF_PATH_SRDF_PATH */
   tesseract_scene_graph::ResourceLocator::Ptr resource_locator;
 };

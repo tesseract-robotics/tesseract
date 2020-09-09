@@ -31,7 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/visualization_loader.h>
 
-const std::string TESSERACT_IGNITION_LIBRARY = "tesseract_visualization_ignition_visualization";
+const std::string TESSERACT_IGNITION_LIBRARY = "tesseract_visualization_ignition_visualization_plugin";
 const std::string TESSERACT_IGNITION_CLASS = "tesseract_visualization::TesseractIgnitionVisualization";
 
 const std::string TESSERACT_VISUALIZATION_LIBRARY_ENV = "TESSERACT_VISUALIZATION_PLUGIN_LIBRARY";
@@ -48,7 +48,8 @@ VisualizationLoader::VisualizationLoader() : derived_class_(TESSERACT_IGNITION_C
 #else
   std::string extension = ".so";
 #endif
-  library_path_ = std::string(TESSERACT_VISUALIZATION_PLUGIN_PATH) + "/" + TESSERACT_IGNITION_LIBRARY + extension;
+
+  library_path_ = std::string(TESSERACT_VISUALIZATION_PLUGIN_PATH) + "/lib" + TESSERACT_IGNITION_LIBRARY + extension;
 
   // Check for environment variable to override default library
   const char* env_library = std::getenv(TESSERACT_VISUALIZATION_LIBRARY_ENV.c_str());
