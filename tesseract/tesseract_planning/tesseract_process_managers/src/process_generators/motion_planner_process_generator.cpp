@@ -148,7 +148,7 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input) const
   // --------------------
   PlannerRequest request;
   request.seed = *input.results->cast<CompositeInstruction>();
-  request.env_state = input.tesseract->getEnvironmentConst()->getCurrentState();
+  request.env_state = input.tesseract->getEnvironment()->getCurrentState();
   request.tesseract = input.tesseract;
   request.instructions = instructions;
   request.plan_profile_remapping = input.plan_profile_remapping;
@@ -174,7 +174,10 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input) const
     return 1;
   }
 
-  CONSOLE_BRIDGE_logDebug("Motion Planner process failed");
+  CONSOLE_BRIDGE_logInform("%s motion planning failed (%s) for process input: %s",
+                           planner_->getName().c_str(),
+                           status.message().c_str(),
+                           input.instruction->getDescription().c_str());
   return 0;
 }
 

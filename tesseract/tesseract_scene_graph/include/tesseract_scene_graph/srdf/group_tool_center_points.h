@@ -40,7 +40,7 @@ inline GroupTCPs parseGroupTCPs(const tesseract_scene_graph::SceneGraph& /*scene
     auto group_tcp = group_tcps.find(group_name_string);
     if (group_tcp == group_tcps.end())
     {
-      group_tcps[group_name_string] = TCPs();
+      group_tcps[group_name_string] = GroupsTCPs();
       group_tcp = group_tcps.find(group_name_string);
     }
 

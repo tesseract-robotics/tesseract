@@ -91,7 +91,7 @@ ManipulatorInfo::ManipulatorInfo(const tinyxml2::XMLElement& xml_element)
       tcp.translation() = Eigen::Vector3d(x, y, z);
     }
 
-    if (xml_element.Attribute("wxyz") == nullptr)
+    if (tcp_element->Attribute("wxyz") == nullptr)
     {
       status = tesseract_common::QueryStringAttribute(tcp_element, "rpy", rpy_string);
       if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)

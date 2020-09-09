@@ -81,7 +81,7 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
 
   auto* ci = input.results->cast<CompositeInstruction>();
   const ManipulatorInfo& manip_info = ci->getManipulatorInfo();
-  const auto fwd_kin = input.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip_info.manipulator);
+  const auto fwd_kin = input.tesseract->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
 
   // Get Composite profile
   std::string profile = ci->getProfile();
@@ -150,7 +150,8 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
                        velocity_scaling_factors,
                        acceleration_scaling_factors))
   {
-    CONSOLE_BRIDGE_logInform("Failed to perform iterative spline time parameterization!");
+    CONSOLE_BRIDGE_logInform("Failed to perform iterative spline time parameterization for process input: %s!",
+                             input.instruction->getDescription().c_str());
     return 0;
   }
 

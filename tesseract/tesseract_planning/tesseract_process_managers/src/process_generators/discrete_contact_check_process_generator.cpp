@@ -73,16 +73,17 @@ int DiscreteContactCheckProcessGenerator::conditionalProcess(ProcessInput input)
   }
 
   // Get state solver
-  tesseract_environment::StateSolver::Ptr state_solver = input.tesseract->getEnvironmentConst()->getStateSolver();
+  tesseract_environment::StateSolver::Ptr state_solver = input.tesseract->getEnvironment()->getStateSolver();
   tesseract_collision::DiscreteContactManager::Ptr manager =
-      input.tesseract->getEnvironmentConst()->getDiscreteContactManager();
+      input.tesseract->getEnvironment()->getDiscreteContactManager();
   manager->setContactDistanceThreshold(contact_distance_);
 
   const auto* ci = input.results->cast_const<CompositeInstruction>();
   std::vector<tesseract_collision::ContactResultMap> contacts;
   if (contactCheckProgram(contacts, *manager, *state_solver, *ci, longest_valid_segment_length_))
   {
-    CONSOLE_BRIDGE_logInform("Results are not contact free!");
+    CONSOLE_BRIDGE_logInform("Results are not contact free for process intput: %s !",
+                             input.instruction->getDescription().c_str());
     for (std::size_t i = 0; i < contacts.size(); i++)
       for (const auto& contact_vec : contacts[i])
         for (const auto& contact : contact_vec.second)

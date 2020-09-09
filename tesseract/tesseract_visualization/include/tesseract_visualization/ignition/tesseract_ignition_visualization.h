@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/visualization.h>
 #include <tesseract_visualization/ignition/entity_manager.h>
-#include <tesseract/tesseract.h>
+#include <tesseract_environment/core/environment.h>
 
 namespace tesseract_visualization
 {
@@ -46,9 +46,17 @@ public:
   using Ptr = std::shared_ptr<TesseractIgnitionVisualization>;
   using ConstPtr = std::shared_ptr<const TesseractIgnitionVisualization>;
 
-  TesseractIgnitionVisualization() = default;
+  TesseractIgnitionVisualization();
 
   bool init(tesseract::Tesseract::ConstPtr thor) override;
+
+  void plotEnvironment(tesseract_environment::Environment::ConstPtr env = nullptr) override;
+
+  void plotEnvironmentState(tesseract_environment::EnvState::ConstPtr state = nullptr) override;
+
+  bool isConnected() const override;
+
+  void waitForConnection(long seconds = 0) const override;
 
   void plotTrajectory(const std::vector<std::string>& joint_names,
                       const Eigen::Ref<const tesseract_common::TrajArray>& traj) override;
@@ -75,7 +83,8 @@ public:
   void waitForInput() override;
 
 private:
-  tesseract::Tesseract::ConstPtr thor_;               /**< The tesseract */
+  tesseract::Tesseract::ConstPtr thor_;               /**< Tesseract object */
+  tesseract_environment::Environment::ConstPtr env_;  /**< Tesseract Environment Object */
   ignition::transport::Node node_;                    /**< Ignition communication node. */
   ignition::transport::Node::Publisher scene_pub_;    /**< Scene publisher */
   ignition::transport::Node::Publisher pose_pub_;     /**< Pose publisher */
@@ -86,7 +95,7 @@ private:
    * @brief Helper function for sending state to visualization tool
    * @param env_state Environment state
    */
-  void sendEnvState(const tesseract_environment::EnvState::Ptr& env_state);
+  void sendEnvState(const tesseract_environment::EnvState::ConstPtr& env_state);
 };
 
 }  // namespace tesseract_visualization

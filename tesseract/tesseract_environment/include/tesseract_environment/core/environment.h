@@ -121,6 +121,42 @@ public:
     return initialized_;
   }
 
+  /**
+   * @brief Initialize the Environment
+   *
+   * The templated class provided should be a derived class from StateSolver.
+   *
+   * @param scene_graph The scene graph to initialize the environment.
+   * @return True if successful, otherwise false
+   */
+  template <typename S>
+  bool init(const Commands& commands)
+  {
+    if (commands.empty())
+      return false;
+
+    if (commands.at(0)->getType() != CommandType::ADD_SCENE_GRAPH)
+    {
+      CONSOLE_BRIDGE_logError("When initializing environment from command history the first command must be type "
+                              "ADD_SCENE_GRAPH!");
+      return false;
+    }
+
+    auto cmd = std::static_pointer_cast<const AddSceneGraphCommand>(commands.at(0));
+    init<S>(*(cmd->getSceneGraph()));
+
+    for (std::size_t i = 1; i < commands.size(); ++i)
+    {
+      if (!applyCommand(*(commands.at(i))))
+      {
+        CONSOLE_BRIDGE_logError("When initializing environment from command history it failed to apply a command!");
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   Environment::Ptr clone() const;
 
   /**
@@ -142,6 +178,22 @@ public:
    * getCommandHistory to check. Some commands are not checked for success
    */
   bool applyCommands(const Commands& commands);
+
+  /**
+   * @brief Applies the commands to the environment
+   * @param commands Commands to be applied to the environment
+   * @return true if successful. If returned false, then only a partial set of commands have been applied. Call
+   * getCommandHistory to check. Some commands are not checked for success
+   */
+  bool applyCommand(const std::vector<Command>& commands);
+
+  /**
+   * @brief Apply command to the environment
+   * @param command Command to be applied to the environment
+   * @return true if successful. If returned false, then only a partial set of commands have been applied. Call
+   * getCommandHistory to check. Some commands are not checked for success
+   */
+  bool applyCommand(const Command& command);
 
   /**
    * @brief Check if environment has been initialized
