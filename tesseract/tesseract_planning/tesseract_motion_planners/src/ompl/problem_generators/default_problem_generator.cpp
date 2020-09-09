@@ -40,11 +40,11 @@ OMPLProblem::Ptr CreateOMPLSubProblem(const PlannerRequest& request,
   auto sub_prob = std::make_unique<OMPLProblem>();
   sub_prob->tesseract = request.tesseract;
   sub_prob->env_state = request.env_state;
-  sub_prob->state_solver = request.tesseract->getEnvironmentConst()->getStateSolver();
+  sub_prob->state_solver = request.tesseract->getEnvironment()->getStateSolver();
   sub_prob->state_solver->setState(request.env_state->joints);
   sub_prob->manip_fwd_kin = manip_fwd_kin;
   sub_prob->manip_inv_kin = manip_inv_kin;
-  sub_prob->contact_checker = request.tesseract->getEnvironmentConst()->getDiscreteContactManager();
+  sub_prob->contact_checker = request.tesseract->getEnvironment()->getDiscreteContactManager();
   sub_prob->contact_checker->setCollisionObjectsTransform(request.env_state->link_transforms);
   sub_prob->contact_checker->setActiveCollisionObjects(active_link_names);
   return sub_prob;
@@ -65,12 +65,12 @@ std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const std::string& nam
   const std::string& manipulator = composite_mi.manipulator;
   const std::string& manipulator_ik_solver = composite_mi.manipulator_ik_solver;
 
-  manip_fwd_kin_ = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator);
+  manip_fwd_kin_ = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(manipulator);
   if (manipulator_ik_solver.empty())
-    manip_inv_kin_ = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator);
+    manip_inv_kin_ = request.tesseract->getManipulatorManager()->getInvKinematicSolver(manipulator);
   else
     manip_inv_kin_ =
-        request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
+        request.tesseract->getManipulatorManager()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
   if (!manip_fwd_kin_)
   {
     CONSOLE_BRIDGE_logError("No Forward Kinematics solver found");
@@ -91,10 +91,8 @@ std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const std::string& nam
   // Get Active Link Names
   {
     std::vector<std::string> active_link_names = manip_inv_kin_->getActiveLinkNames();
-    auto adjacency_map =
-        std::make_shared<tesseract_environment::AdjacencyMap>(request.tesseract->getEnvironmentConst()->getSceneGraph(),
-                                                              active_link_names,
-                                                              request.env_state->link_transforms);
+    auto adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
+        request.tesseract->getEnvironment()->getSceneGraph(), active_link_names, request.env_state->link_transforms);
     active_link_names_ = adjacency_map->getActiveLinkNames();
   }
 

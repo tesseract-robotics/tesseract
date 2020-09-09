@@ -22,7 +22,7 @@ namespace tesseract_scene_graph
  * @param version The srdf version number
  * @return GroupNames, ChainGroups, JointGroups, LinkGroups
  */
-inline std::tuple<GroupNames, ChainGroups, JointGroups, LinkGroups>
+inline std::tuple<GroupNames, ChainGroups, JointGroups, LinkGroups, ROPGroups, REPGroups>
 parseGroups(const tesseract_scene_graph::SceneGraph& scene_graph,
             const tinyxml2::XMLElement* srdf_xml,
             const std::array<int, 3>& /*version*/)
@@ -31,6 +31,8 @@ parseGroups(const tesseract_scene_graph::SceneGraph& scene_graph,
   ChainGroups chain_groups;
   LinkGroups link_groups;
   JointGroups joint_groups;
+  ROPGroups rop_groups;
+  REPGroups rep_groups;
 
   for (const tinyxml2::XMLElement* xml_element = srdf_xml->FirstChildElement("group"); xml_element;
        xml_element = xml_element->NextSiblingElement("group"))
@@ -114,6 +116,130 @@ parseGroups(const tesseract_scene_graph::SceneGraph& scene_graph,
       chains.emplace_back(base_link_name, tip_link_name);
     }
 
+    // get the robot on positioner group information
+    const tinyxml2::XMLElement* rop_xml = xml_element->FirstChildElement("rop");
+    if (rop_xml != nullptr)
+    {
+      ROPKinematicParameters rop_info;
+      const tinyxml2::XMLElement* manip_xml = rop_xml->FirstChildElement("manipulator");
+      if (manip_xml == nullptr)
+      {
+        CONSOLE_BRIDGE_logError("ROP Group defined, but missing manipulator element!");
+        continue;
+      }
+
+      tinyxml2::XMLError status =
+          tesseract_common::QueryStringAttributeRequired(manip_xml, "group", rop_info.manipulator_group);
+      if (status != tinyxml2::XML_SUCCESS)
+        continue;
+
+      status = tesseract_common::QueryStringAttributeRequired(manip_xml, "ik_solver", rop_info.manipulator_ik_solver);
+      if (status != tinyxml2::XML_SUCCESS)
+        continue;
+
+      status = tesseract_common::QueryDoubleAttributeRequired(manip_xml, "reach", rop_info.manipulator_reach);
+      if (status != tinyxml2::XML_SUCCESS)
+        continue;
+
+      const tinyxml2::XMLElement* positioner_xml = rop_xml->FirstChildElement("positioner");
+      if (positioner_xml == nullptr)
+      {
+        CONSOLE_BRIDGE_logError("ROP Group defined, but missing positioner element!");
+        continue;
+      }
+
+      status = tesseract_common::QueryStringAttributeRequired(positioner_xml, "group", rop_info.positioner_group);
+      if (status != tinyxml2::XML_SUCCESS)
+        continue;
+
+      status = tesseract_common::QueryStringAttribute(positioner_xml, "fk_solver", rop_info.positioner_fk_solver);
+      if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      {
+        CONSOLE_BRIDGE_logInform("ROP Group, positioner element missing or failed to parse 'fk_solver' attribute!");
+        continue;
+      }
+
+      // get the chains in the groups
+      for (const tinyxml2::XMLElement* joint_xml = positioner_xml->FirstChildElement("joint"); positioner_xml;
+           positioner_xml = positioner_xml->NextSiblingElement("joint"))
+      {
+        std::string joint_name;
+        status = tesseract_common::QueryStringAttributeRequired(joint_xml, "name", joint_name);
+        if (status != tinyxml2::XML_SUCCESS)
+          continue;
+
+        double resolution;
+        status = tesseract_common::QueryDoubleAttributeRequired(joint_xml, "resolution", resolution);
+        if (status != tinyxml2::XML_SUCCESS)
+          continue;
+
+        rop_info.positioner_sample_resolution[joint_name] = resolution;
+      }
+      rop_groups[group_name] = rop_info;
+    }
+
+    // get the robot with external positioner group information
+    const tinyxml2::XMLElement* rep_xml = xml_element->FirstChildElement("rep");
+    if (rep_xml != nullptr)
+    {
+      REPKinematicParameters rep_info;
+      const tinyxml2::XMLElement* manip_xml = rep_xml->FirstChildElement("manipulator");
+      if (manip_xml == nullptr)
+      {
+        CONSOLE_BRIDGE_logError("REP Group defined, but missing manipulator element!");
+        continue;
+      }
+
+      tinyxml2::XMLError status =
+          tesseract_common::QueryStringAttributeRequired(manip_xml, "group", rep_info.manipulator_group);
+      if (status != tinyxml2::XML_SUCCESS)
+        continue;
+
+      status = tesseract_common::QueryStringAttributeRequired(manip_xml, "ik_solver", rep_info.manipulator_ik_solver);
+      if (status != tinyxml2::XML_SUCCESS)
+        continue;
+
+      status = tesseract_common::QueryDoubleAttributeRequired(manip_xml, "reach", rep_info.manipulator_reach);
+      if (status != tinyxml2::XML_SUCCESS)
+        continue;
+
+      const tinyxml2::XMLElement* positioner_xml = rop_xml->FirstChildElement("positioner");
+      if (positioner_xml == nullptr)
+      {
+        CONSOLE_BRIDGE_logError("REP Group defined, but missing positioner element!");
+        continue;
+      }
+
+      status = tesseract_common::QueryStringAttributeRequired(positioner_xml, "group", rep_info.positioner_group);
+      if (status != tinyxml2::XML_SUCCESS)
+        continue;
+
+      status = tesseract_common::QueryStringAttribute(positioner_xml, "fk_solver", rep_info.positioner_fk_solver);
+      if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      {
+        CONSOLE_BRIDGE_logInform("REP Group, positioner element missing or failed to parse 'fk_solver' attribute!");
+        continue;
+      }
+
+      // get the chains in the groups
+      for (const tinyxml2::XMLElement* joint_xml = positioner_xml->FirstChildElement("joint"); positioner_xml;
+           positioner_xml = positioner_xml->NextSiblingElement("joint"))
+      {
+        std::string joint_name;
+        status = tesseract_common::QueryStringAttributeRequired(joint_xml, "name", joint_name);
+        if (status != tinyxml2::XML_SUCCESS)
+          continue;
+
+        double resolution;
+        status = tesseract_common::QueryDoubleAttributeRequired(joint_xml, "resolution", resolution);
+        if (status != tinyxml2::XML_SUCCESS)
+          continue;
+
+        rep_info.positioner_sample_resolution[joint_name] = resolution;
+      }
+      rep_groups[group_name] = rep_info;
+    }
+
     if (!chains.empty() && links.empty() && joints.empty())
     {
       chain_groups[group_name] = chains;
@@ -135,7 +261,7 @@ parseGroups(const tesseract_scene_graph::SceneGraph& scene_graph,
     }
   }
 
-  return std::make_tuple(group_names, chain_groups, joint_groups, link_groups);
+  return std::make_tuple(group_names, chain_groups, joint_groups, link_groups, rop_groups, rep_groups);
 }
 }  // namespace tesseract_scene_graph
 

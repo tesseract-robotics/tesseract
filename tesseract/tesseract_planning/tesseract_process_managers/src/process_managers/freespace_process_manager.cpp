@@ -46,10 +46,12 @@ bool FreespaceProcessManager::init(ProcessInput input)
 
   // Create the dependency graph
   if (console_bridge::getLogLevel() == console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG)
-    input.instruction->print("Generating Taskflow for: ");
+    , to_end_input.instruction->getDescription() input.instruction->print("Generating Taskflow for: ");
   auto task = taskflow_
                   .composed_of(taskflow_generator_->generateTaskflow(
-                      input, [this]() { successCallback(); }, [this]() { failureCallback(); }))
+                      input,
+                      [this, &input]() { successCallback(input.instruction->getDescription()); },
+                      [this, &input]() { failureCallback(input.instruction->getDescription()); }))
                   .name("freespace");
   freespace_tasks_.push_back(task);
 
@@ -85,14 +87,14 @@ bool FreespaceProcessManager::clear()
   return true;
 }
 
-void FreespaceProcessManager::successCallback()
+void FreespaceProcessManager::successCallback(std::string message)
 {
-  CONSOLE_BRIDGE_logInform("FreespaceProcessManager Successful");
+  CONSOLE_BRIDGE_logInform("FreespaceProcessManager Successful: %s", message.c_str());
   success_ = true;
 }
 
-void FreespaceProcessManager::failureCallback()
+void FreespaceProcessManager::failureCallback(std::string message)
 {
-  CONSOLE_BRIDGE_logInform("FreespaceProcessManager Failure");
+  CONSOLE_BRIDGE_logInform("FreespaceProcessManager Failure: %s", message.c_str());
   success_ = false;
 }

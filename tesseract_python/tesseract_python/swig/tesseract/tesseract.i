@@ -61,13 +61,13 @@ public:
   const tesseract_environment::Environment::ConstPtr& getEnvironmentConst() const;
 
   const ForwardKinematicsManager::Ptr& getFwdKinematicsManager();
-  const ForwardKinematicsManager::ConstPtr& getFwdKinematicsManagerConst() const;
+  const ForwardKinematicsManager::ConstPtr& getManipulatorManager() const;
 
   const InverseKinematicsManager::Ptr& getInvKinematicsManager();
-  const InverseKinematicsManager::ConstPtr& getInvKinematicsManagerConst() const;
+  const InverseKinematicsManager::ConstPtr& getManipulatorManager() const;
 
-  tesseract_scene_graph::GroupStates& getGroupStates();
-  const tesseract_scene_graph::GroupStates& getGroupStatesConst() const;
+  tesseract_scene_graph::GroupJointStates& getGroupStates();
+  const tesseract_scene_graph::GroupJointStates& getGroupStatesConst() const;
 
   tesseract_scene_graph::GroupTCPs& getGroupTCPs();
   const tesseract_scene_graph::GroupTCPs& getGroupTCPs() const;

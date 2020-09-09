@@ -78,7 +78,6 @@ public:
       throw std::runtime_error("JointWaypoint: Error parsing Names string");
 
     std::string position_string;
-    ;
     status = tesseract_common::QueryStringText(position_element, position_string);
     if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
       throw std::runtime_error("JointWaypoint: Error parsing Position string");
@@ -115,7 +114,7 @@ public:
     {
       std::string jn = joint_names[0];
       for (std::size_t i = 1; i < joint_names.size(); ++i)
-        jn += " " + joint_names[0];
+        jn += " " + joint_names[i];
 
       xml_joint_names->SetText(jn.c_str());
     }

@@ -62,8 +62,8 @@ bool WaypointInCollision(const Waypoint& waypoint, const ProcessInput& input)
     using namespace tesseract_collision;
     using namespace tesseract_environment;
 
-    auto env = input.tesseract->getEnvironmentConst();
-    auto kin = input.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(input.manip_info.manipulator);
+    auto env = input.tesseract->getEnvironment();
+    auto kin = input.tesseract->getManipulatorManager()->getFwdKinematicSolver(input.manip_info.manipulator);
 
     std::vector<ContactResultMap> collisions;
     tesseract_environment::StateSolver::Ptr state_solver = env->getStateSolver();
@@ -233,7 +233,7 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) co
 
   auto* ci = input.instruction->cast_const<CompositeInstruction>();
   const ManipulatorInfo& manip_info = input.manip_info;
-  const auto fwd_kin = input.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip_info.manipulator);
+  const auto fwd_kin = input.tesseract->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
 
   // Get Composite profile
   std::string profile = ci->getProfile();

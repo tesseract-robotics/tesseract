@@ -21,12 +21,12 @@ namespace tesseract_scene_graph
  * @param version The srdf version number
  * @return Group states
  */
-inline GroupStates parseGroupStates(const tesseract_scene_graph::SceneGraph& scene_graph,
-                                    const GroupNames& group_names,
-                                    const tinyxml2::XMLElement* srdf_xml,
-                                    const std::array<int, 3>& /*version*/)
+inline GroupJointStates parseGroupStates(const tesseract_scene_graph::SceneGraph& scene_graph,
+                                         const GroupNames& group_names,
+                                         const tinyxml2::XMLElement* srdf_xml,
+                                         const std::array<int, 3>& /*version*/)
 {
-  GroupStates group_states;
+  GroupJointStates group_states;
 
   for (const tinyxml2::XMLElement* xml_element = srdf_xml->FirstChildElement("group_state"); xml_element;
        xml_element = xml_element->NextSiblingElement("group_state"))
@@ -52,11 +52,11 @@ inline GroupStates parseGroupStates(const tesseract_scene_graph::SceneGraph& sce
     auto gs = group_states.find(group_name);
     if (gs == group_states.end())
     {
-      group_states[group_name] = JointStates();
+      group_states[group_name] = GroupsJointStates();
       gs = group_states.find(group_name);
     }
 
-    JointState joint_state;
+    GroupsJointState joint_state;
 
     // get the joint values in the group state
     for (const tinyxml2::XMLElement* joint_xml = xml_element->FirstChildElement("joint"); joint_xml;

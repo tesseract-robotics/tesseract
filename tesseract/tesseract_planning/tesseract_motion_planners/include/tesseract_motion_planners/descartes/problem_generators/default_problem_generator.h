@@ -54,12 +54,12 @@ DefaultDescartesProblemGenerator(const std::string& name,
   const std::string& manipulator_ik_solver = request.instructions.getManipulatorInfo().manipulator_ik_solver;
 
   // Get Manipulator Information
-  prob->manip_fwd_kin = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator);
+  prob->manip_fwd_kin = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(manipulator);
   if (manipulator_ik_solver.empty())
-    prob->manip_inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator);
+    prob->manip_inv_kin = request.tesseract->getManipulatorManager()->getInvKinematicSolver(manipulator);
   else
     prob->manip_inv_kin =
-        request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
+        request.tesseract->getManipulatorManager()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
 
   if (!prob->manip_fwd_kin)
   {
@@ -81,7 +81,7 @@ DefaultDescartesProblemGenerator(const std::string& name,
 
   std::vector<std::string> active_link_names = prob->manip_inv_kin->getActiveLinkNames();
   auto adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-      request.tesseract->getEnvironmentConst()->getSceneGraph(), active_link_names, request.env_state->link_transforms);
+      request.tesseract->getEnvironment()->getSceneGraph(), active_link_names, request.env_state->link_transforms);
   const std::vector<std::string>& active_links = adjacency_map->getActiveLinkNames();
 
   // Flatten the input for planning

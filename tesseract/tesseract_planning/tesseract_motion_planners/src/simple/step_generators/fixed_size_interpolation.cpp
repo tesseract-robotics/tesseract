@@ -79,7 +79,7 @@ CompositeInstruction fixedSizeJointInterpolation(const JointWaypoint& start,
   assert(static_cast<long>(start.joint_names.size()) == start.size());
 
   // Initialize
-  auto inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(mi.manipulator);
+  auto inv_kin = request.tesseract->getManipulatorManager()->getInvKinematicSolver(mi.manipulator);
   auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
   const Eigen::Isometry3d& tcp = mi.tcp;
   assert(start.joint_names.size() == inv_kin->getJointNames().size());
@@ -142,7 +142,7 @@ CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
   assert(static_cast<long>(end.joint_names.size()) == end.size());
 
   // Initialize
-  auto inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(mi.manipulator);
+  auto inv_kin = request.tesseract->getManipulatorManager()->getInvKinematicSolver(mi.manipulator);
   auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
   const Eigen::Isometry3d& tcp = mi.tcp;
   assert(end.joint_names.size() == inv_kin->getJointNames().size());
@@ -203,7 +203,7 @@ CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
       (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
 
   // Initialize
-  auto inv_kin = request.tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(mi.manipulator);
+  auto inv_kin = request.tesseract->getManipulatorManager()->getInvKinematicSolver(mi.manipulator);
   auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
   const Eigen::Isometry3d& tcp = mi.tcp;
 
@@ -281,7 +281,7 @@ CompositeInstruction fixedSizeCartesianInterpolation(const JointWaypoint& start,
       (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
 
   // Initialize
-  auto fwd_kin = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(mi.manipulator);
+  auto fwd_kin = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
   auto world_to_base = request.env_state->link_transforms.at(fwd_kin->getBaseLinkName());
   const Eigen::Isometry3d& tcp = mi.tcp;
 
@@ -328,7 +328,7 @@ CompositeInstruction fixedSizeCartesianInterpolation(const JointWaypoint& start,
       (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
 
   // Initialize
-  auto fwd_kin = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(mi.manipulator);
+  auto fwd_kin = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
   auto world_to_base = request.env_state->link_transforms.at(fwd_kin->getBaseLinkName());
   const Eigen::Isometry3d& tcp = mi.tcp;
 
@@ -372,7 +372,7 @@ CompositeInstruction fixedSizeCartesianInterpolation(const CartesianWaypoint& st
       (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
 
   // Initialize
-  auto fwd_kin = request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(mi.manipulator);
+  auto fwd_kin = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
   auto world_to_base = request.env_state->link_transforms.at(fwd_kin->getBaseLinkName());
   const Eigen::Isometry3d& tcp = mi.tcp;
 

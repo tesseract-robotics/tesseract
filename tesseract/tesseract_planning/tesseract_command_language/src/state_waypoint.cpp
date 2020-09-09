@@ -150,7 +150,7 @@ tinyxml2::XMLElement* StateWaypoint::toXML(tinyxml2::XMLDocument& doc) const
   {
     std::string jn = joint_names[0];
     for (std::size_t i = 1; i < joint_names.size(); ++i)
-      jn += " " + joint_names[0];
+      jn += " " + joint_names[i];
 
     xml_joint_names->SetText(jn.c_str());
   }

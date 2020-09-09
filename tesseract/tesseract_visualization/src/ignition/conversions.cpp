@@ -44,6 +44,20 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_visualization
 {
+bool isMeshWithColor(const std::string& file_path)
+{
+  if (file_path.length() >= 4)
+  {
+    std::string last_four = file_path.substr(file_path.length() - 4);
+    std::string last_four_lower;
+    last_four_lower.resize(4);
+    std::transform(last_four.begin(), last_four.end(), last_four_lower.begin(), ::tolower);
+    return (last_four_lower == ".dae") || (last_four_lower == ".obj");
+  }
+
+  return false;
+}
+
 bool toMsg(ignition::msgs::Scene& scene_msg,
            EntityManager& entity_manager,
            const tesseract_scene_graph::SceneGraph& scene_graph,
@@ -69,7 +83,7 @@ bool toMsg(ignition::msgs::Scene& scene_msg,
       {
         case tesseract_geometry::GeometryType::BOX:
         {
-          ignition::msgs::Visual* gv_msg = model->add_visual();
+          ignition::msgs::Visual* gv_msg = link_msg->add_visual();
           gv_msg->set_id(static_cast<unsigned>(entity_manager.addVisual(gv_name)));
           gv_msg->set_name(gv_name);
           gv_msg->mutable_pose()->CopyFrom(ignition::msgs::Convert(ignition::math::eigen3::convert(vs->origin)));
@@ -83,13 +97,25 @@ bool toMsg(ignition::msgs::Scene& scene_msg,
               ignition::msgs::Convert(ignition::math::Vector3d(shape->getX(), shape->getY(), shape->getZ())));
           geometry_msg.mutable_box()->CopyFrom(shape_geometry_msg);
           gv_msg->mutable_geometry()->CopyFrom(geometry_msg);
-          //          gv_msg.mutable_material()
+
+          if (vs->material != nullptr && vs->material->getName() != "default_tesseract_material" &&
+              vs->material->texture_filename.empty())
+          {
+            const Eigen::Vector4d& rgba = vs->material->color;
+            ignition::msgs::Material shape_material_msg;
+            shape_material_msg.mutable_diffuse()->set_r(static_cast<float>(rgba(0)));
+            shape_material_msg.mutable_diffuse()->set_g(static_cast<float>(rgba(1)));
+            shape_material_msg.mutable_diffuse()->set_b(static_cast<float>(rgba(2)));
+            shape_material_msg.mutable_diffuse()->set_a(static_cast<float>(rgba(3)));
+            gv_msg->mutable_material()->CopyFrom(shape_material_msg);
+          }
+
           gv_msg->set_parent_name(link->getName());
           break;
         }
         case tesseract_geometry::GeometryType::SPHERE:
         {
-          ignition::msgs::Visual* gv_msg = model->add_visual();
+          ignition::msgs::Visual* gv_msg = link_msg->add_visual();
           gv_msg->set_id(static_cast<unsigned>(entity_manager.addVisual(gv_name)));
           gv_msg->set_name(gv_name);
           gv_msg->mutable_pose()->CopyFrom(ignition::msgs::Convert(ignition::math::eigen3::convert(vs->origin)));
@@ -102,13 +128,25 @@ bool toMsg(ignition::msgs::Scene& scene_msg,
           shape_geometry_msg.set_radius(shape->getRadius());
           geometry_msg.mutable_sphere()->CopyFrom(shape_geometry_msg);
           gv_msg->mutable_geometry()->CopyFrom(geometry_msg);
-          //          gv_msg.mutable_material()
+
+          if (vs->material != nullptr && vs->material->getName() != "default_tesseract_material" &&
+              vs->material->texture_filename.empty())
+          {
+            const Eigen::Vector4d& rgba = vs->material->color;
+            ignition::msgs::Material shape_material_msg;
+            shape_material_msg.mutable_diffuse()->set_r(static_cast<float>(rgba(0)));
+            shape_material_msg.mutable_diffuse()->set_g(static_cast<float>(rgba(1)));
+            shape_material_msg.mutable_diffuse()->set_b(static_cast<float>(rgba(2)));
+            shape_material_msg.mutable_diffuse()->set_a(static_cast<float>(rgba(3)));
+            gv_msg->mutable_material()->CopyFrom(shape_material_msg);
+          }
+
           gv_msg->set_parent_name(link->getName());
           break;
         }
         case tesseract_geometry::GeometryType::CYLINDER:
         {
-          ignition::msgs::Visual* gv_msg = model->add_visual();
+          ignition::msgs::Visual* gv_msg = link_msg->add_visual();
           gv_msg->set_id(static_cast<unsigned>(entity_manager.addVisual(gv_name)));
           gv_msg->set_name(gv_name);
           gv_msg->mutable_pose()->CopyFrom(ignition::msgs::Convert(ignition::math::eigen3::convert(vs->origin)));
@@ -122,13 +160,25 @@ bool toMsg(ignition::msgs::Scene& scene_msg,
           shape_geometry_msg.set_length(shape->getLength());
           geometry_msg.mutable_cylinder()->CopyFrom(shape_geometry_msg);
           gv_msg->mutable_geometry()->CopyFrom(geometry_msg);
-          //          gv_msg.mutable_material()
+
+          if (vs->material != nullptr && vs->material->getName() != "default_tesseract_material" &&
+              vs->material->texture_filename.empty())
+          {
+            const Eigen::Vector4d& rgba = vs->material->color;
+            ignition::msgs::Material shape_material_msg;
+            shape_material_msg.mutable_diffuse()->set_r(static_cast<float>(rgba(0)));
+            shape_material_msg.mutable_diffuse()->set_g(static_cast<float>(rgba(1)));
+            shape_material_msg.mutable_diffuse()->set_b(static_cast<float>(rgba(2)));
+            shape_material_msg.mutable_diffuse()->set_a(static_cast<float>(rgba(3)));
+            gv_msg->mutable_material()->CopyFrom(shape_material_msg);
+          }
+
           gv_msg->set_parent_name(link->getName());
           break;
         }
           //      case tesseract_geometry::GeometryType::CONE:
           //      {
-          //          ignition::msgs::Visual* gv_msg = model->add_visual();
+          //          ignition::msgs::Visual* gv_msg = link_msg->add_visual();
           //          gv_msg->set_id(static_cast<unsigned>(entity_manager.addVisual(gv_name)));
           //          gv_msg->set_name(gv_name);
           //          gv_msg->mutable_pose()->CopyFrom(ignition::msgs::Convert(ignition::math::eigen3::convert(vs->origin)));
@@ -142,14 +192,26 @@ bool toMsg(ignition::msgs::Scene& scene_msg,
           //          shape_geometry_msg.set_length(shape->getLength());
           //          geometry_msg.mutable_sphere()->CopyFrom(shape_geometry_msg);
           //          gv_msg->mutable_geometry()->CopyFrom(geometry_msg);
-          //  //          gv_msg.mutable_material()
+          //
+          //          if (vs->material != nullptr && vs->material->getName() != "default_tesseract_material" &&
+          //          vs->material->texture_filename.empty())
+          //          {
+          //            const Eigen::Vector4d& rgba = vs->material->color;
+          //            ignition::msgs::Material shape_material_msg;
+          //            shape_material_msg.mutable_diffuse()->set_r(static_cast<float>(rgba(0)));
+          //            shape_material_msg.mutable_diffuse()->set_g(static_cast<float>(rgba(1)));
+          //            shape_material_msg.mutable_diffuse()->set_b(static_cast<float>(rgba(2)));
+          //            shape_material_msg.mutable_diffuse()->set_a(static_cast<float>(rgba(3)));
+          //            gv_msg->mutable_material()->CopyFrom(shape_material_msg);
+          //          }
+          //
           //          gv_msg->set_parent_name(link->getName());
           //          break;
           //      }
 
           //        case tesseract_geometry::GeometryType::CAPSULE:
           //        {
-          //          ignition::msgs::Visual* gv_msg = model->add_visual();
+          //          ignition::msgs::Visual* gv_msg = link_msg->add_visual();
           //          gv_msg->set_id(static_cast<unsigned>(entity_manager.addVisual(gv_name)));
           //          gv_msg->set_name(gv_name);
           //          gv_msg->mutable_pose()->CopyFrom(ignition::msgs::Convert(ignition::math::eigen3::convert(vs->origin)));
@@ -163,7 +225,19 @@ bool toMsg(ignition::msgs::Scene& scene_msg,
           //          shape_geometry_msg.set_length(shape->getLength());
           //          geometry_msg.mutable_sphere()->CopyFrom(shape_geometry_msg);
           //          gv_msg->mutable_geometry()->CopyFrom(geometry_msg);
-          //  //          gv_msg.mutable_material()
+          //
+          //          if (vs->material != nullptr && vs->material->getName() != "default_tesseract_material" &&
+          //          vs->material->texture_filename.empty())
+          //          {
+          //            const Eigen::Vector4d& rgba = vs->material->color;
+          //            ignition::msgs::Material shape_material_msg;
+          //            shape_material_msg.mutable_diffuse()->set_r(static_cast<float>(rgba(0)));
+          //            shape_material_msg.mutable_diffuse()->set_g(static_cast<float>(rgba(1)));
+          //            shape_material_msg.mutable_diffuse()->set_b(static_cast<float>(rgba(2)));
+          //            shape_material_msg.mutable_diffuse()->set_a(static_cast<float>(rgba(3)));
+          //            gv_msg->mutable_material()->CopyFrom(shape_material_msg);
+          //          }
+          //
           //          gv_msg->set_parent_name(link->getName());
           //          break;
           //        }
@@ -187,9 +261,19 @@ bool toMsg(ignition::msgs::Scene& scene_msg,
                 ignition::msgs::Convert(ignition::math::eigen3::convert(shape->getScale())));
             geometry_msg.mutable_mesh()->CopyFrom(shape_geometry_msg);
             gv_msg->mutable_geometry()->CopyFrom(geometry_msg);
-            //          gv_msg.set_allocated_material()
-            gv_msg->mutable_scale()->CopyFrom(
-                ignition::msgs::Convert(ignition::math::eigen3::convert(shape->getScale())));
+
+            if (!isMeshWithColor(resource->getFilePath()) && vs->material != nullptr &&
+                vs->material->getName() != "default_tesseract_material" && vs->material->texture_filename.empty())
+            {
+              const Eigen::Vector4d& rgba = vs->material->color;
+              ignition::msgs::Material shape_material_msg;
+              shape_material_msg.mutable_diffuse()->set_r(static_cast<float>(rgba(0)));
+              shape_material_msg.mutable_diffuse()->set_g(static_cast<float>(rgba(1)));
+              shape_material_msg.mutable_diffuse()->set_b(static_cast<float>(rgba(2)));
+              shape_material_msg.mutable_diffuse()->set_a(static_cast<float>(rgba(3)));
+              gv_msg->mutable_material()->CopyFrom(shape_material_msg);
+            }
+
             gv_msg->set_parent_name(link->getName());
           }
           else
@@ -215,9 +299,22 @@ bool toMsg(ignition::msgs::Scene& scene_msg,
           {
             ignition::msgs::MeshGeom shape_geometry_msg;
             shape_geometry_msg.set_filename(resource->getFilePath());
+            shape_geometry_msg.mutable_scale()->CopyFrom(
+                ignition::msgs::Convert(ignition::math::eigen3::convert(shape->getScale())));
             geometry_msg.mutable_mesh()->CopyFrom(shape_geometry_msg);
             gv_msg->mutable_geometry()->CopyFrom(geometry_msg);
-            //          gv_msg.set_allocated_material()
+
+            if (!isMeshWithColor(resource->getFilePath()) && vs->material != nullptr &&
+                vs->material->getName() != "default_tesseract_material" && vs->material->texture_filename.empty())
+            {
+              const Eigen::Vector4d& rgba = vs->material->color;
+              ignition::msgs::Material shape_material_msg;
+              shape_material_msg.mutable_diffuse()->set_r(static_cast<float>(rgba(0)));
+              shape_material_msg.mutable_diffuse()->set_g(static_cast<float>(rgba(1)));
+              shape_material_msg.mutable_diffuse()->set_b(static_cast<float>(rgba(2)));
+              shape_material_msg.mutable_diffuse()->set_a(static_cast<float>(rgba(3)));
+              gv_msg->mutable_material()->CopyFrom(shape_material_msg);
+            }
 
             gv_msg->set_parent_name(link->getName());
           }

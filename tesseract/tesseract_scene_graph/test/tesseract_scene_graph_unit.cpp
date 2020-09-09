@@ -541,7 +541,7 @@ TEST(TesseractSceneGraphUnit, TesseractSRDFModelUnit)  // NOLINT
   // Add group states
   auto& group_state = srdf.getGroupStates();
   EXPECT_TRUE(group_state.empty());
-  tesseract_scene_graph::JointState joint_state;
+  tesseract_scene_graph::GroupsJointState joint_state;
   joint_state["joint_1"] = 0;
   joint_state["joint_2"] = 0;
   joint_state["joint_3"] = 0;

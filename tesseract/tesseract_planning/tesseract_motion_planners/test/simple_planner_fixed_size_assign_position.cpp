@@ -81,8 +81,7 @@ protected:
     tesseract_ptr_ = tesseract;
 
     manip_info_.manipulator = "manipulator";
-    joint_names_ =
-        tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator")->getJointNames();
+    joint_names_ = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver("manipulator")->getJointNames();
   }
 };
 
@@ -90,7 +89,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeAssignPositionUnit, Eigen_AssignJo
 {
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
+  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   Eigen::VectorXd vec1 = Eigen::VectorXd::Zero(7);
   JointWaypoint wp1(joint_names_, vec1);
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
@@ -109,7 +108,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeAssignPositionUnit, JointCartesian
 {
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
+  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
@@ -128,7 +127,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeAssignPositionUnit, CartesianJoint
 {
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
+  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Zero(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
@@ -147,12 +146,12 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeAssignPositionUnit, CartesianCarte
 {
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
+  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
   auto composite = fixedSizeAssignJointPosition(wp1, wp2, instr, request, manip_info_, 10);
-  auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip_info_.manipulator);
+  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
   Eigen::VectorXd position = request.env_state->getJointValues(fwd_kin->getJointNames());
   EXPECT_EQ(composite.size(), 10);
   for (const auto& c : composite)
