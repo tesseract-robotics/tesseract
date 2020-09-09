@@ -68,7 +68,7 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
 
   auto* ci = input.instruction->cast_const<CompositeInstruction>();
   const ManipulatorInfo& manip_info = input.manip_info;
-  const auto fwd_kin = input.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip_info.manipulator);
+  const auto fwd_kin = input.tesseract->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
 
   // Get Composite profile
   std::string profile = ci->getProfile();

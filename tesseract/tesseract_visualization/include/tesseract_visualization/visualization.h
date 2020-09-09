@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>
 #include <tesseract_collision/core/types.h>
+#include <tesseract_scene_graph/graph.h>
 #include <tesseract/tesseract.h>
 
 namespace tesseract_planning
@@ -58,14 +59,35 @@ public:
   Visualization& operator=(Visualization&&) = default;
 
   /**
-   * @brief Initialize the visualization
-   *
-   * This is so this can be used as a plugin
-   *
+   * @brief Initialize the visualization tool
    * @param thor The tesseract object
-   * @return True if successful, otherwise false
+   * @return True if successfull, otherwise false
    */
   virtual bool init(tesseract::Tesseract::ConstPtr thor) = 0;
+
+  /**
+   * @brief Some plotters may require connecting to external software.
+   * @return True if connected, otherwise false
+   */
+  virtual bool isConnected() const = 0;
+
+  /**
+   * @brief Wait for connection
+   * @param seconds The number of seconds to wait before returning, if zero it waits indefinitely
+   */
+  virtual void waitForConnection(long seconds = 0) const = 0;
+
+  /**
+   * @brief Plot environment
+   * @param env The environment. If provided a nullptr it should the current environent.
+   */
+  virtual void plotEnvironment(tesseract_environment::Environment::ConstPtr env = nullptr) = 0;
+
+  /**
+   * @brief Plot state of the environment
+   * @param state The state of the environment. If provided a nullptr it should the current state.
+   */
+  virtual void plotEnvironmentState(tesseract_environment::EnvState::ConstPtr state = nullptr) = 0;
 
   /**
    * @brief \deprecated Plot a trajectory using joint_names and a TrajArray

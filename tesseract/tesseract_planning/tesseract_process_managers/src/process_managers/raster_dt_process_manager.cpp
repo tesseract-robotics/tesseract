@@ -92,12 +92,13 @@ bool RasterDTProcessManager::init(ProcessInput input)
     start_instruction.cast<PlanInstruction>()->setPlanType(PlanInstructionType::START);
     ProcessInput raster_input = input[idx];
     raster_input.start_instruction = start_instruction;
-    auto raster_step = taskflow_
-                           .composed_of(raster_taskflow_generator_->generateTaskflow(
-                               raster_input,
-                               std::bind(&RasterDTProcessManager::successCallback, this),
-                               std::bind(&RasterDTProcessManager::failureCallback, this)))
-                           .name("raster_" + std::to_string(idx));
+    auto raster_step =
+        taskflow_
+            .composed_of(raster_taskflow_generator_->generateTaskflow(
+                raster_input,
+                std::bind(&RasterDTProcessManager::successCallback, this, raster_input.instruction->getDescription()),
+                std::bind(&RasterDTProcessManager::failureCallback, this, raster_input.instruction->getDescription())))
+            .name("raster_" + std::to_string(idx));
     raster_tasks_.push_back(raster_step);
   }
 
@@ -116,8 +117,12 @@ bool RasterDTProcessManager::init(ProcessInput input)
     auto transition_from_end_step = taskflow_
                                         .composed_of(transition_taskflow_generator_->generateTaskflow(
                                             transition_from_end_input,
-                                            std::bind(&RasterDTProcessManager::successCallback, this),
-                                            std::bind(&RasterDTProcessManager::failureCallback, this)))
+                                            std::bind(&RasterDTProcessManager::successCallback,
+                                                      this,
+                                                      transition_from_end_input.instruction->getDescription()),
+                                            std::bind(&RasterDTProcessManager::failureCallback,
+                                                      this,
+                                                      transition_from_end_input.instruction->getDescription())))
                                         .name("transition_from_end" + std::to_string(input_idx));
 
     // Each transition is independent and thus depends only on the adjacent rasters
@@ -132,8 +137,12 @@ bool RasterDTProcessManager::init(ProcessInput input)
     auto transition_to_start_step = taskflow_
                                         .composed_of(transition_taskflow_generator_->generateTaskflow(
                                             transition_to_start_input,
-                                            std::bind(&RasterDTProcessManager::successCallback, this),
-                                            std::bind(&RasterDTProcessManager::failureCallback, this)))
+                                            std::bind(&RasterDTProcessManager::successCallback,
+                                                      this,
+                                                      transition_to_start_input.instruction->getDescription()),
+                                            std::bind(&RasterDTProcessManager::failureCallback,
+                                                      this,
+                                                      transition_to_start_input.instruction->getDescription())))
                                         .name("transition_to_start" + std::to_string(input_idx));
 
     // Each transition is independent and thus depends only on the adjacent rasters
@@ -149,24 +158,27 @@ bool RasterDTProcessManager::init(ProcessInput input)
   ProcessInput from_start_input = input[0];
   from_start_input.start_instruction = input.instruction->cast_const<CompositeInstruction>()->getStartInstruction();
   from_start_input.end_instruction_ptr = input[1].results;
-  auto from_start = taskflow_
-                        .composed_of(freespace_taskflow_generator_->generateTaskflow(
-                            from_start_input,
-                            std::bind(&RasterDTProcessManager::successCallback, this),
-                            std::bind(&RasterDTProcessManager::failureCallback, this)))
-                        .name("from_start");
+  auto from_start =
+      taskflow_
+          .composed_of(freespace_taskflow_generator_->generateTaskflow(
+              from_start_input,
+              std::bind(&RasterDTProcessManager::successCallback, this, from_start_input.instruction->getDescription()),
+              std::bind(
+                  &RasterDTProcessManager::failureCallback, this, from_start_input.instruction->getDescription())))
+          .name("from_start");
   raster_tasks_[starting_raster_idx].precede(from_start);
   freespace_tasks_.push_back(from_start);
 
   // Plan to_end - preceded by the last raster
   ProcessInput to_end_input = input[input.size() - 1];
   to_end_input.start_instruction_ptr = input[input.size() - 2].results;
-  auto to_end = taskflow_
-                    .composed_of(freespace_taskflow_generator_->generateTaskflow(
-                        to_end_input,
-                        std::bind(&RasterDTProcessManager::successCallback, this),
-                        std::bind(&RasterDTProcessManager::failureCallback, this)))
-                    .name("to_end");
+  auto to_end =
+      taskflow_
+          .composed_of(freespace_taskflow_generator_->generateTaskflow(
+              to_end_input,
+              std::bind(&RasterDTProcessManager::successCallback, this, to_end_input.instruction->getDescription()),
+              std::bind(&RasterDTProcessManager::failureCallback, this, to_end_input.instruction->getDescription())))
+          .name("to_end");
   raster_tasks_.back().precede(to_end);
   freespace_tasks_.push_back(to_end);
 
@@ -309,13 +321,13 @@ bool RasterDTProcessManager::checkProcessInput(const tesseract_planning::Process
   return true;
 }
 
-void RasterDTProcessManager::successCallback()
+void RasterDTProcessManager::successCallback(std::string message)
 {
-  CONSOLE_BRIDGE_logInform("Task Successful");
+  CONSOLE_BRIDGE_logInform("RasterDTProcessManager Successful: %s", message.c_str());
   success_ &= true;
 }
 
-void RasterDTProcessManager::failureCallback()
+void RasterDTProcessManager::failureCallback(std::string message)
 {
   // For this process, any failure of a sub-TaskFlow indicates a planning failure. Abort all future tasks
   freespace_taskflow_generator_->abort();
@@ -323,6 +335,6 @@ void RasterDTProcessManager::failureCallback()
   raster_taskflow_generator_->abort();
   // Print an error if this is the first failure
   if (success_)
-    CONSOLE_BRIDGE_logError("RasterDTProcessManager Failure");
+    CONSOLE_BRIDGE_logError("RasterDTProcessManager Failure: %s", message.c_str());
   success_ = false;
 }

@@ -83,15 +83,26 @@ bool SRDFModel::initXml(const tesseract_scene_graph::SceneGraph& scene_graph, co
   }
   else
   {
-    CONSOLE_BRIDGE_logWarn("No version number was provided so latest parser will be used.");
+    CONSOLE_BRIDGE_logWarn("SRDF Parser: No version number was provided so latest parser (version: %i.%i.%i) will be "
+                           "used.",
+                           version_[0],
+                           version_[1],
+                           version_[2]);
+    CONSOLE_BRIDGE_logDebug("SRDF Parser: The version number warning can be suppressed by adding the attribute: "
+                            "version=%i.%i.%i",
+                            version_[0],
+                            version_[1],
+                            version_[2]);
   }
 
-  std::tuple<GroupNames, ChainGroups, JointGroups, LinkGroups> groups_info =
+  std::tuple<GroupNames, ChainGroups, JointGroups, LinkGroups, ROPGroups, REPGroups> groups_info =
       parseGroups(scene_graph, srdf_xml, version_);
   group_names_ = std::get<0>(groups_info);
   chain_groups_ = std::get<1>(groups_info);
   joint_groups_ = std::get<2>(groups_info);
   link_groups_ = std::get<3>(groups_info);
+  rop_groups_ = std::get<4>(groups_info);
+  rep_groups_ = std::get<5>(groups_info);
   group_states_ = parseGroupStates(scene_graph, group_names_, srdf_xml, version_);
   group_tcps_ = parseGroupTCPs(scene_graph, srdf_xml, version_);
   group_opw_kinematics_ = parseGroupOPWKinematics(scene_graph, srdf_xml, version_);
@@ -194,6 +205,58 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_group);
   }
 
+  for (const auto& rop : rop_groups_)
+  {
+    tinyxml2::XMLElement* xml_group = doc.NewElement("group");
+    xml_group->SetAttribute("name", rop.first.c_str());
+    tinyxml2::XMLElement* xml_rop = doc.NewElement("rop");
+    tinyxml2::XMLElement* xml_manip = doc.NewElement("manipulator");
+    xml_manip->SetAttribute("group", rop.second.manipulator_group.c_str());
+    xml_manip->SetAttribute("ik_solver", rop.second.manipulator_ik_solver.c_str());
+    xml_manip->SetAttribute("reach", rop.second.manipulator_reach);
+    xml_rop->InsertEndChild(xml_manip);
+
+    tinyxml2::XMLElement* xml_positioner = doc.NewElement("positioner");
+    xml_positioner->SetAttribute("group", rop.second.positioner_group.c_str());
+    xml_positioner->SetAttribute("fk_solver", rop.second.positioner_fk_solver.c_str());
+    for (const auto& pair : rop.second.positioner_sample_resolution)
+    {
+      tinyxml2::XMLElement* xml_joint = doc.NewElement("joint");
+      xml_joint->SetAttribute("name", pair.first.c_str());
+      xml_joint->SetAttribute("resolution", pair.second);
+      xml_positioner->InsertEndChild(xml_joint);
+    }
+    xml_rop->InsertEndChild(xml_positioner);
+    xml_group->InsertEndChild(xml_rop);
+    xml_root->InsertEndChild(xml_group);
+  }
+
+  for (const auto& rep : rep_groups_)
+  {
+    tinyxml2::XMLElement* xml_group = doc.NewElement("group");
+    xml_group->SetAttribute("name", rep.first.c_str());
+    tinyxml2::XMLElement* xml_rep = doc.NewElement("rep");
+    tinyxml2::XMLElement* xml_manip = doc.NewElement("manipulator");
+    xml_manip->SetAttribute("group", rep.second.manipulator_group.c_str());
+    xml_manip->SetAttribute("ik_solver", rep.second.manipulator_ik_solver.c_str());
+    xml_manip->SetAttribute("reach", rep.second.manipulator_reach);
+    xml_rep->InsertEndChild(xml_manip);
+
+    tinyxml2::XMLElement* xml_positioner = doc.NewElement("positioner");
+    xml_positioner->SetAttribute("group", rep.second.positioner_group.c_str());
+    xml_positioner->SetAttribute("fk_solver", rep.second.positioner_fk_solver.c_str());
+    for (const auto& pair : rep.second.positioner_sample_resolution)
+    {
+      tinyxml2::XMLElement* xml_joint = doc.NewElement("joint");
+      xml_joint->SetAttribute("name", pair.first.c_str());
+      xml_joint->SetAttribute("resolution", pair.second);
+      xml_positioner->InsertEndChild(xml_joint);
+    }
+    xml_rep->InsertEndChild(xml_positioner);
+    xml_group->InsertEndChild(xml_rep);
+    xml_root->InsertEndChild(xml_group);
+  }
+
   for (const auto& group_state : group_states_)
   {
     for (const auto& joint_state : group_state.second)  // <chain base_link="base_link" tip_link="tool0" />
@@ -291,6 +354,9 @@ std::string& SRDFModel::getName() { return name_; }
 const AllowedCollisionMatrix& SRDFModel::getAllowedCollisionMatrix() const { return acm_; }
 AllowedCollisionMatrix& SRDFModel::getAllowedCollisionMatrix() { return acm_; };
 
+const GroupNames& SRDFModel::getGroupNames() const { return group_names_; }
+GroupNames& SRDFModel::getGroupNames() { return group_names_; }
+
 const ChainGroups& SRDFModel::getChainGroups() const { return chain_groups_; }
 ChainGroups& SRDFModel::getChainGroups() { return chain_groups_; }
 
@@ -300,11 +366,17 @@ JointGroups& SRDFModel::getJointGroups() { return joint_groups_; }
 const LinkGroups& SRDFModel::getLinkGroups() const { return link_groups_; }
 LinkGroups& SRDFModel::getLinkGroups() { return link_groups_; }
 
+const ROPGroups& SRDFModel::getROPGroups() const { return rop_groups_; }
+ROPGroups& SRDFModel::getROPGroups() { return rop_groups_; }
+
+const REPGroups& SRDFModel::getREPGroups() const { return rep_groups_; }
+REPGroups& SRDFModel::getREPGroups() { return rep_groups_; }
+
 const GroupTCPs& SRDFModel::getGroupTCPs() const { return group_tcps_; }
 GroupTCPs& SRDFModel::getGroupTCPs() { return group_tcps_; }
 
-const GroupStates& SRDFModel::getGroupStates() const { return group_states_; }
-GroupStates& SRDFModel::getGroupStates() { return group_states_; }
+const GroupJointStates& SRDFModel::getGroupStates() const { return group_states_; }
+GroupJointStates& SRDFModel::getGroupStates() { return group_states_; }
 
 const GroupOPWKinematics& SRDFModel::getGroupOPWKinematics() const { return group_opw_kinematics_; }
 GroupOPWKinematics& SRDFModel::getGroupOPWKinematics() { return group_opw_kinematics_; }
@@ -315,6 +387,8 @@ void SRDFModel::clear()
   chain_groups_.clear();
   joint_groups_.clear();
   link_groups_.clear();
+  rop_groups_.clear();
+  rep_groups_.clear();
   group_states_.clear();
   group_tcps_.clear();
   acm_.clearAllowedCollisions();

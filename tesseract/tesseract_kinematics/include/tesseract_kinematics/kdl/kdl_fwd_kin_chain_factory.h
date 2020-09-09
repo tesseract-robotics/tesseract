@@ -51,9 +51,9 @@ public:
     return kin;
   }
 
-  virtual ForwardKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-                                        const std::vector<std::pair<std::string, std::string>>& chains,  // NOLINT
-                                        const std::string name) const
+  ForwardKinematics::Ptr create(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+                                const std::vector<std::pair<std::string, std::string>>& chains,  // NOLINT
+                                const std::string name) const override
   {
     auto kin = std::make_shared<KDLFwdKinChain>();
     if (!kin->init(scene_graph, chains, name))

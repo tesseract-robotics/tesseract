@@ -107,8 +107,8 @@ public:
   bool clear() override;
 
 private:
-  void successCallback();
-  void failureCallback();
+  void successCallback(std::string message);
+  void failureCallback(std::string message);
   bool success_;
 
   TaskflowGenerator::UPtr freespace_taskflow_generator_;

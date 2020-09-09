@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ignition/common/Console.hh>
 #include <ignition/math/eigen3/Conversions.hh>
 #include <chrono>
+#include <numeric>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/ignition/tesseract_ignition_visualization.h>
@@ -50,42 +51,58 @@ static const std::string TOOL_PATH_MODEL_NAME = "tesseract_tool_path_model";
 
 using namespace tesseract_visualization;
 
-bool TesseractIgnitionVisualization::init(tesseract::Tesseract::ConstPtr thor)
+TesseractIgnitionVisualization::TesseractIgnitionVisualization()
 {
-  if (thor == nullptr)
-    return false;
-
-  thor_ = std::move(thor);
   scene_pub_ = node_.Advertise<ignition::msgs::Scene>(DEFAULT_SCENE_TOPIC_NAME);
   pose_pub_ = node_.Advertise<ignition::msgs::Pose_V>(DEFAULT_POSE_TOPIC_NAME);
-  deletion_pub_ = node_.Advertise<ignition::msgs::Pose_V>(DEFAULT_DELETION_TOPIC_NAME);
+  deletion_pub_ = node_.Advertise<ignition::msgs::UInt32_V>(DEFAULT_DELETION_TOPIC_NAME);
+}
 
-  // Wait 10 seconds for a connection to scene topic
-  for (int i = 0; i < 10; ++i)
-    if (!scene_pub_.HasConnections())
+bool TesseractIgnitionVisualization::init(tesseract::Tesseract::ConstPtr thor)
+{
+  thor_ = thor;
+  env_ = thor_->getEnvironment();
+  return (env_ != nullptr);
+}
+
+bool TesseractIgnitionVisualization::isConnected() const
+{
+  return scene_pub_.HasConnections() && pose_pub_.HasConnections() && deletion_pub_.HasConnections();
+}
+
+void TesseractIgnitionVisualization::waitForConnection(long seconds) const
+{
+  if (seconds == 0)
+    seconds = std::numeric_limits<long>::max();
+
+  for (int i = 0; i < seconds; ++i)
+  {
+    if (!isConnected())
       sleep(1);
     else
       break;
-
-  if (scene_pub_.HasConnections())
-  {
-    ignition::msgs::Scene msg;
-    toMsg(msg,
-          entity_manager_,
-          *(thor_->getEnvironmentConst()->getSceneGraph()),
-          thor_->getEnvironmentConst()->getCurrentState()->link_transforms);
-
-    scene_pub_.Publish(msg);
   }
-  else
-  {
-    return false;
-  }
-
-  return true;
 }
 
-void TesseractIgnitionVisualization::sendEnvState(const tesseract_environment::EnvState::Ptr& env_state)
+void TesseractIgnitionVisualization::plotEnvironment(tesseract_environment::Environment::ConstPtr env)
+{
+  if (env == nullptr)
+    env = env_;
+
+  if (env == nullptr)
+    return;
+
+  ignition::msgs::Scene msg;
+  toMsg(msg, entity_manager_, *(env_->getSceneGraph()), env_->getCurrentState()->link_transforms);
+  scene_pub_.Publish(msg);
+}
+
+void TesseractIgnitionVisualization::plotEnvironmentState(tesseract_environment::EnvState::ConstPtr state)
+{
+  sendEnvState(state);
+}
+
+void TesseractIgnitionVisualization::sendEnvState(const tesseract_environment::EnvState::ConstPtr& env_state)
 {
   ignition::msgs::Pose_V pose_v;
   for (const auto& pair : env_state->link_transforms)
@@ -105,7 +122,7 @@ void TesseractIgnitionVisualization::sendEnvState(const tesseract_environment::E
 void TesseractIgnitionVisualization::plotTrajectory(const std::vector<std::string>& joint_names,
                                                     const Eigen::Ref<const tesseract_common::TrajArray>& traj)
 {
-  tesseract_environment::StateSolver::Ptr state_solver = thor_->getEnvironmentConst()->getStateSolver();
+  tesseract_environment::StateSolver::Ptr state_solver = env_->getStateSolver();
 
   std::chrono::duration<double> fp_s(5.0 / static_cast<double>(traj.rows()));
   for (long i = 0; i < traj.rows(); ++i)
@@ -124,7 +141,7 @@ void TesseractIgnitionVisualization::plotTrajectory(const tesseract_common::Join
 void TesseractIgnitionVisualization::plotTrajectory(const tesseract_planning::Instruction& instruction)
 {
   using namespace tesseract_planning;
-  tesseract_environment::StateSolver::Ptr state_solver = thor_->getEnvironmentConst()->getStateSolver();
+  tesseract_environment::StateSolver::Ptr state_solver = env_->getStateSolver();
   std::chrono::duration<double> fp_s(0.1);
   double prev_time = 0;
   if (isCompositeInstruction(instruction))
@@ -338,7 +355,7 @@ void TesseractIgnitionVisualization::plotToolPath(const tesseract_planning::Inst
   model->set_name(model_name);
   model->set_id(static_cast<unsigned>(entity_manager_.addModel(model_name)));
 
-  tesseract_environment::StateSolver::Ptr state_solver = thor_->getEnvironmentConst()->getStateSolver();
+  tesseract_environment::StateSolver::Ptr state_solver = env_->getStateSolver();
   if (isCompositeInstruction(instruction))
   {
     const auto* ci = instruction.cast_const<CompositeInstruction>();
@@ -350,7 +367,7 @@ void TesseractIgnitionVisualization::plotToolPath(const tesseract_planning::Inst
     const Eigen::Isometry3d& tcp = composite_mi.tcp;
     const std::string& working_frame = composite_mi.working_frame;
 
-    auto composite_mi_fwd_kin = thor_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator);
+    auto composite_mi_fwd_kin = thor_->getManipulatorManager()->getFwdKinematicSolver(manipulator);
     if (composite_mi_fwd_kin == nullptr)
     {
       ignerr << "plotToolPath: Manipulator: " << manipulator << " does not exist!" << std::endl;
@@ -374,27 +391,26 @@ void TesseractIgnitionVisualization::plotToolPath(const tesseract_planning::Inst
         const auto* swp = pi->getWaypoint().cast_const<StateWaypoint>();
         assert(static_cast<long>(swp->joint_names.size()) == swp->position.size());
         tesseract_environment::EnvState::Ptr state = state_solver->getState(swp->joint_names, swp->position);
-        addAxis(entity_manager_, *link_msg, cnt, link_name, state->link_transforms[tip_link] * tcp, 1);
+        addAxis(entity_manager_, *link_msg, cnt, link_name, state->link_transforms[tip_link] * tcp, 0.05);
       }
       else if (isJointWaypoint(pi->getWaypoint()))
       {
         const auto* jwp = pi->getWaypoint().cast_const<JointWaypoint>();
         assert(static_cast<long>(jwp->joint_names.size()) == jwp->size());
         tesseract_environment::EnvState::Ptr state = state_solver->getState(jwp->joint_names, *jwp);
-        addAxis(entity_manager_, *link_msg, cnt, link_name, state->link_transforms[tip_link] * tcp, 1);
+        addAxis(entity_manager_, *link_msg, cnt, link_name, state->link_transforms[tip_link] * tcp, 0.05);
       }
       else if (isCartesianWaypoint(pi->getWaypoint()))
       {
         const auto* cwp = pi->getWaypoint().cast_const<CartesianWaypoint>();
         if (working_frame.empty())
         {
-          addAxis(entity_manager_, *link_msg, cnt, link_name, (*cwp) * tcp, 1);
+          addAxis(entity_manager_, *link_msg, cnt, link_name, (*cwp), 0.05);
         }
         else
         {
-          tesseract_environment::EnvState::ConstPtr state = thor_->getEnvironmentConst()->getCurrentState();
-          addAxis(
-              entity_manager_, *link_msg, cnt, link_name, state->link_transforms.at(working_frame) * (*cwp) * tcp, 1);
+          tesseract_environment::EnvState::ConstPtr state = thor_->getEnvironment()->getCurrentState();
+          addAxis(entity_manager_, *link_msg, cnt, link_name, state->link_transforms.at(working_frame) * (*cwp), 0.05);
         }
       }
       else
@@ -421,7 +437,7 @@ void TesseractIgnitionVisualization::plotToolPath(const tesseract_planning::Inst
     const Eigen::Isometry3d& tcp = composite_mi.tcp;
     const std::string& working_frame = composite_mi.working_frame;
 
-    auto composite_mi_fwd_kin = thor_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator);
+    auto composite_mi_fwd_kin = thor_->getManipulatorManager()->getFwdKinematicSolver(manipulator);
     if (composite_mi_fwd_kin == nullptr)
     {
       ignerr << "plotToolPath: Manipulator: " << manipulator << " does not exist!" << std::endl;
@@ -434,26 +450,26 @@ void TesseractIgnitionVisualization::plotToolPath(const tesseract_planning::Inst
       const auto* swp = pi->getWaypoint().cast_const<StateWaypoint>();
       assert(static_cast<long>(swp->joint_names.size()) == swp->position.size());
       tesseract_environment::EnvState::Ptr state = state_solver->getState(swp->joint_names, swp->position);
-      addAxis(entity_manager_, *link_msg, cnt, link_name, state->link_transforms[tip_link] * tcp, 1);
+      addAxis(entity_manager_, *link_msg, cnt, link_name, state->link_transforms[tip_link] * tcp, 0.05);
     }
     else if (isJointWaypoint(pi->getWaypoint()))
     {
       const auto* jwp = pi->getWaypoint().cast_const<JointWaypoint>();
       assert(static_cast<long>(jwp->joint_names.size()) == jwp->size());
       tesseract_environment::EnvState::Ptr state = state_solver->getState(jwp->joint_names, *jwp);
-      addAxis(entity_manager_, *link_msg, cnt, link_name, state->link_transforms[tip_link] * tcp, 1);
+      addAxis(entity_manager_, *link_msg, cnt, link_name, state->link_transforms[tip_link] * tcp, 0.05);
     }
     else if (isCartesianWaypoint(pi->getWaypoint()))
     {
       const auto* cwp = pi->getWaypoint().cast_const<CartesianWaypoint>();
       if (working_frame.empty())
       {
-        addAxis(entity_manager_, *link_msg, cnt, link_name, (*cwp) * tcp, 1);
+        addAxis(entity_manager_, *link_msg, cnt, link_name, (*cwp), 0.05);
       }
       else
       {
-        tesseract_environment::EnvState::ConstPtr state = thor_->getEnvironmentConst()->getCurrentState();
-        addAxis(entity_manager_, *link_msg, cnt, link_name, state->link_transforms.at(working_frame) * (*cwp) * tcp, 1);
+        tesseract_environment::EnvState::ConstPtr state = env_->getCurrentState();
+        addAxis(entity_manager_, *link_msg, cnt, link_name, state->link_transforms.at(working_frame) * (*cwp), 0.05);
       }
     }
     else
@@ -465,6 +481,8 @@ void TesseractIgnitionVisualization::plotToolPath(const tesseract_planning::Inst
   {
     ignerr << "plotTrajectoy: Unsupported Instruction Type!" << std::endl;
   }
+
+  scene_pub_.Publish(scene_msg);
 }
 
 void TesseractIgnitionVisualization::plotContactResults(const std::vector<std::string>& link_names,

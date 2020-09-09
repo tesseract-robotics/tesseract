@@ -19,7 +19,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 tesseract_variables()
 
 # Create target
-add_library(${PROJECT_NAME} SHARED src/tesseract.cpp)
+add_library(${PROJECT_NAME} SHARED src/tesseract.cpp src/manipulator_manager.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC
   tesseract::tesseract_urdf
   tesseract::tesseract_scene_graph

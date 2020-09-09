@@ -60,7 +60,11 @@ int main()
   auto plotter = loader.get();
 
   if (plotter != nullptr)
+  {
     plotter->init(tesseract);
+    plotter->waitForConnection();
+    plotter->plotEnvironment();
+  }
 
   // --------------------
   // Define the program

@@ -93,15 +93,19 @@ int main(int /*argc*/, char** /*argv*/)
   auto plotter = loader.get();
 
   if (plotter != nullptr)
+  {
     plotter->init(tesseract);
+    plotter->waitForConnection();
+    plotter->plotEnvironment();
+  }
 
   ManipulatorInfo manip;
   manip.manipulator = "manipulator";
   manip.manipulator_ik_solver = "OPWInvKin";
 
-  auto fwd_kin = tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract->getInvKinematicsManagerConst()->getInvKinematicSolver(manip.manipulator);
-  auto cur_state = tesseract->getEnvironmentConst()->getCurrentState();
+  auto fwd_kin = tesseract->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = tesseract->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto cur_state = tesseract->getEnvironment()->getCurrentState();
 
   // Specify start location
   JointWaypoint wp0(fwd_kin->getJointNames(), Eigen::VectorXd::Zero(6));

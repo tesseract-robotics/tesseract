@@ -100,7 +100,7 @@ tesseract_common::StatusCode SimpleMotionPlanner::solve(const PlannerRequest& re
   // Initialize
   tesseract_environment::EnvState::ConstPtr current_state = request.env_state;
   tesseract_kinematics::ForwardKinematics::Ptr fwd_kin =
-      request.tesseract->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manipulator);
+      request.tesseract->getManipulatorManager()->getFwdKinematicSolver(manipulator);
   Waypoint start_waypoint{ NullWaypoint() };
 
   // Create seed

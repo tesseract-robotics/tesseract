@@ -66,7 +66,9 @@ bool SimpleProcessManager::init(ProcessInput input)
     input.instruction->print("Generating Taskflow for: ");
   auto task = taskflow_
                   .composed_of(taskflow_generator_->generateTaskflow(
-                      input, [this]() { successCallback(); }, [this]() { failureCallback(); }))
+                      input,
+                      [this, &input]() { successCallback(input.instruction->getDescription()); },
+                      [this, &input]() { failureCallback(input.instruction->getDescription()); }))
                   .name("Simple");
   simple_tasks_.push_back(task);
 
@@ -102,14 +104,14 @@ bool SimpleProcessManager::clear()
   return true;
 }
 
-void SimpleProcessManager::successCallback()
+void SimpleProcessManager::successCallback(std::string message)
 {
-  CONSOLE_BRIDGE_logInform("SimpleProcessManager Successful");
+  CONSOLE_BRIDGE_logInform("SimpleProcessManager Successful: %s", message.c_str());
   success_ = true;
 }
 
-void SimpleProcessManager::failureCallback()
+void SimpleProcessManager::failureCallback(std::string message)
 {
-  CONSOLE_BRIDGE_logInform("SimpleProcessManager Failure");
+  CONSOLE_BRIDGE_logInform("SimpleProcessManager Failure: %s", message.c_str());
   success_ = false;
 }

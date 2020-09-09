@@ -107,9 +107,9 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
 
-  auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver("manipulator");
-  auto inv_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver("manipulator");
-  auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
+  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver("manipulator");
+  auto inv_kin = tesseract_ptr_->getManipulatorManager()->getInvKinematicSolver("manipulator");
+  auto cur_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   // Specify a start waypoint
   CartesianWaypoint wp1 =
@@ -225,9 +225,9 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
 
-  auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver(manip.manipulator);
-  auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
+  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = tesseract_ptr_->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto cur_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   // Specify a start waypoint
   CartesianWaypoint wp1 =
@@ -333,9 +333,9 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
 
-  auto fwd_kin = tesseract_ptr_->getFwdKinematicsManagerConst()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract_ptr_->getInvKinematicsManagerConst()->getInvKinematicSolver(manip.manipulator);
-  auto cur_state = tesseract_ptr_->getEnvironmentConst()->getCurrentState();
+  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = tesseract_ptr_->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto cur_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   // Specify a start waypoint
   CartesianWaypoint wp1 =

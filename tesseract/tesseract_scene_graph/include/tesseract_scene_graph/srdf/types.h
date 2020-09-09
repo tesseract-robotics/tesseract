@@ -19,15 +19,40 @@ struct OPWKinematicParameters
   signed char sign_corrections[6]{ 1, 1, 1, 1, 1, 1 };
 };
 
-using JointState = std::unordered_map<std::string, double>;
-using JointStates = std::unordered_map<std::string, JointState>;
-using GroupStates = std::unordered_map<std::string, JointStates>;
-using TCPs = std::unordered_map<std::string, Eigen::Isometry3d>;
-using GroupTCPs = std::unordered_map<std::string, TCPs>;
-using ChainGroups = std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>>;
-using JointGroups = std::unordered_map<std::string, std::vector<std::string>>;
-using LinkGroups = std::unordered_map<std::string, std::vector<std::string>>;
+struct ROPKinematicParameters
+{
+  std::string manipulator_group;
+  std::string manipulator_ik_solver;
+  double manipulator_reach;
+  std::string positioner_group;
+  std::string positioner_fk_solver;
+  std::unordered_map<std::string, double> positioner_sample_resolution;
+};
+
+struct REPKinematicParameters
+{
+  std::string manipulator_group;
+  std::string manipulator_ik_solver;
+  double manipulator_reach;
+  std::string positioner_group;
+  std::string positioner_fk_solver;
+  std::unordered_map<std::string, double> positioner_sample_resolution;
+};
+
+using GroupsJointState = std::unordered_map<std::string, double>;
+using GroupsJointStates = std::unordered_map<std::string, GroupsJointState>;
+using GroupJointStates = std::unordered_map<std::string, GroupsJointStates>;
+using GroupsTCPs = std::unordered_map<std::string, Eigen::Isometry3d>;
+using GroupTCPs = std::unordered_map<std::string, GroupsTCPs>;
+using ChainGroup = std::vector<std::pair<std::string, std::string>>;
+using ChainGroups = std::unordered_map<std::string, ChainGroup>;
+using JointGroup = std::vector<std::string>;
+using JointGroups = std::unordered_map<std::string, JointGroup>;
+using LinkGroup = std::vector<std::string>;
+using LinkGroups = std::unordered_map<std::string, LinkGroup>;
 using GroupNames = std::vector<std::string>;
+using ROPGroups = std::unordered_map<std::string, ROPKinematicParameters>;
+using REPGroups = std::unordered_map<std::string, REPKinematicParameters>;
 using GroupOPWKinematics = std::unordered_map<std::string, OPWKinematicParameters>;
 
 }  // namespace tesseract_scene_graph
