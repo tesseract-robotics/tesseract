@@ -61,7 +61,7 @@ public:
   /**
    * @brief Initialize the visualization tool
    * @param thor The tesseract object
-   * @return True if successfull, otherwise false
+   * @return True if successful, otherwise false
    */
   virtual bool init(tesseract::Tesseract::ConstPtr thor) = 0;
 
