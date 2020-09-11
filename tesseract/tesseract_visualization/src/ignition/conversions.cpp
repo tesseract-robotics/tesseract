@@ -58,6 +58,27 @@ bool isMeshWithColor(const std::string& file_path)
   return false;
 }
 
+ignition::msgs::Material convert(const Eigen::Vector4d& rgba)
+{
+  ignition::msgs::Material shape_material_msg;
+  shape_material_msg.mutable_ambient()->set_r(static_cast<float>(rgba(0)));
+  shape_material_msg.mutable_ambient()->set_g(static_cast<float>(rgba(1)));
+  shape_material_msg.mutable_ambient()->set_b(static_cast<float>(rgba(2)));
+  shape_material_msg.mutable_ambient()->set_a(static_cast<float>(rgba(3)));
+
+  shape_material_msg.mutable_diffuse()->set_r(static_cast<float>(rgba(0)));
+  shape_material_msg.mutable_diffuse()->set_g(static_cast<float>(rgba(1)));
+  shape_material_msg.mutable_diffuse()->set_b(static_cast<float>(rgba(2)));
+  shape_material_msg.mutable_diffuse()->set_a(static_cast<float>(rgba(3)));
+
+  shape_material_msg.mutable_specular()->set_r(static_cast<float>(rgba(0)));
+  shape_material_msg.mutable_specular()->set_g(static_cast<float>(rgba(1)));
+  shape_material_msg.mutable_specular()->set_b(static_cast<float>(rgba(2)));
+  shape_material_msg.mutable_specular()->set_a(static_cast<float>(rgba(3)));
+
+  return shape_material_msg;
+}
+
 bool toMsg(ignition::msgs::Scene& scene_msg,
            EntityManager& entity_manager,
            const tesseract_scene_graph::SceneGraph& scene_graph,
@@ -101,13 +122,7 @@ bool toMsg(ignition::msgs::Scene& scene_msg,
           if (vs->material != nullptr && vs->material->getName() != "default_tesseract_material" &&
               vs->material->texture_filename.empty())
           {
-            const Eigen::Vector4d& rgba = vs->material->color;
-            ignition::msgs::Material shape_material_msg;
-            shape_material_msg.mutable_diffuse()->set_r(static_cast<float>(rgba(0)));
-            shape_material_msg.mutable_diffuse()->set_g(static_cast<float>(rgba(1)));
-            shape_material_msg.mutable_diffuse()->set_b(static_cast<float>(rgba(2)));
-            shape_material_msg.mutable_diffuse()->set_a(static_cast<float>(rgba(3)));
-            gv_msg->mutable_material()->CopyFrom(shape_material_msg);
+            gv_msg->mutable_material()->CopyFrom(convert(vs->material->color));
           }
 
           gv_msg->set_parent_name(link->getName());
@@ -132,13 +147,7 @@ bool toMsg(ignition::msgs::Scene& scene_msg,
           if (vs->material != nullptr && vs->material->getName() != "default_tesseract_material" &&
               vs->material->texture_filename.empty())
           {
-            const Eigen::Vector4d& rgba = vs->material->color;
-            ignition::msgs::Material shape_material_msg;
-            shape_material_msg.mutable_diffuse()->set_r(static_cast<float>(rgba(0)));
-            shape_material_msg.mutable_diffuse()->set_g(static_cast<float>(rgba(1)));
-            shape_material_msg.mutable_diffuse()->set_b(static_cast<float>(rgba(2)));
-            shape_material_msg.mutable_diffuse()->set_a(static_cast<float>(rgba(3)));
-            gv_msg->mutable_material()->CopyFrom(shape_material_msg);
+            gv_msg->mutable_material()->CopyFrom(convert(vs->material->color));
           }
 
           gv_msg->set_parent_name(link->getName());
@@ -164,13 +173,7 @@ bool toMsg(ignition::msgs::Scene& scene_msg,
           if (vs->material != nullptr && vs->material->getName() != "default_tesseract_material" &&
               vs->material->texture_filename.empty())
           {
-            const Eigen::Vector4d& rgba = vs->material->color;
-            ignition::msgs::Material shape_material_msg;
-            shape_material_msg.mutable_diffuse()->set_r(static_cast<float>(rgba(0)));
-            shape_material_msg.mutable_diffuse()->set_g(static_cast<float>(rgba(1)));
-            shape_material_msg.mutable_diffuse()->set_b(static_cast<float>(rgba(2)));
-            shape_material_msg.mutable_diffuse()->set_a(static_cast<float>(rgba(3)));
-            gv_msg->mutable_material()->CopyFrom(shape_material_msg);
+            gv_msg->mutable_material()->CopyFrom(convert(vs->material->color));
           }
 
           gv_msg->set_parent_name(link->getName());
@@ -196,13 +199,7 @@ bool toMsg(ignition::msgs::Scene& scene_msg,
           //          if (vs->material != nullptr && vs->material->getName() != "default_tesseract_material" &&
           //          vs->material->texture_filename.empty())
           //          {
-          //            const Eigen::Vector4d& rgba = vs->material->color;
-          //            ignition::msgs::Material shape_material_msg;
-          //            shape_material_msg.mutable_diffuse()->set_r(static_cast<float>(rgba(0)));
-          //            shape_material_msg.mutable_diffuse()->set_g(static_cast<float>(rgba(1)));
-          //            shape_material_msg.mutable_diffuse()->set_b(static_cast<float>(rgba(2)));
-          //            shape_material_msg.mutable_diffuse()->set_a(static_cast<float>(rgba(3)));
-          //            gv_msg->mutable_material()->CopyFrom(shape_material_msg);
+          //            gv_msg->mutable_material()->CopyFrom(convert(vs->material->color));
           //          }
           //
           //          gv_msg->set_parent_name(link->getName());
@@ -229,13 +226,7 @@ bool toMsg(ignition::msgs::Scene& scene_msg,
           //          if (vs->material != nullptr && vs->material->getName() != "default_tesseract_material" &&
           //          vs->material->texture_filename.empty())
           //          {
-          //            const Eigen::Vector4d& rgba = vs->material->color;
-          //            ignition::msgs::Material shape_material_msg;
-          //            shape_material_msg.mutable_diffuse()->set_r(static_cast<float>(rgba(0)));
-          //            shape_material_msg.mutable_diffuse()->set_g(static_cast<float>(rgba(1)));
-          //            shape_material_msg.mutable_diffuse()->set_b(static_cast<float>(rgba(2)));
-          //            shape_material_msg.mutable_diffuse()->set_a(static_cast<float>(rgba(3)));
-          //            gv_msg->mutable_material()->CopyFrom(shape_material_msg);
+          //            gv_msg->mutable_material()->CopyFrom(convert(vs->material->color));
           //          }
           //
           //          gv_msg->set_parent_name(link->getName());
@@ -265,13 +256,7 @@ bool toMsg(ignition::msgs::Scene& scene_msg,
             if (!isMeshWithColor(resource->getFilePath()) && vs->material != nullptr &&
                 vs->material->getName() != "default_tesseract_material" && vs->material->texture_filename.empty())
             {
-              const Eigen::Vector4d& rgba = vs->material->color;
-              ignition::msgs::Material shape_material_msg;
-              shape_material_msg.mutable_diffuse()->set_r(static_cast<float>(rgba(0)));
-              shape_material_msg.mutable_diffuse()->set_g(static_cast<float>(rgba(1)));
-              shape_material_msg.mutable_diffuse()->set_b(static_cast<float>(rgba(2)));
-              shape_material_msg.mutable_diffuse()->set_a(static_cast<float>(rgba(3)));
-              gv_msg->mutable_material()->CopyFrom(shape_material_msg);
+              gv_msg->mutable_material()->CopyFrom(convert(vs->material->color));
             }
 
             gv_msg->set_parent_name(link->getName());
@@ -307,13 +292,7 @@ bool toMsg(ignition::msgs::Scene& scene_msg,
             if (!isMeshWithColor(resource->getFilePath()) && vs->material != nullptr &&
                 vs->material->getName() != "default_tesseract_material" && vs->material->texture_filename.empty())
             {
-              const Eigen::Vector4d& rgba = vs->material->color;
-              ignition::msgs::Material shape_material_msg;
-              shape_material_msg.mutable_diffuse()->set_r(static_cast<float>(rgba(0)));
-              shape_material_msg.mutable_diffuse()->set_g(static_cast<float>(rgba(1)));
-              shape_material_msg.mutable_diffuse()->set_b(static_cast<float>(rgba(2)));
-              shape_material_msg.mutable_diffuse()->set_a(static_cast<float>(rgba(3)));
-              gv_msg->mutable_material()->CopyFrom(shape_material_msg);
+              gv_msg->mutable_material()->CopyFrom(convert(vs->material->color));
             }
 
             gv_msg->set_parent_name(link->getName());
