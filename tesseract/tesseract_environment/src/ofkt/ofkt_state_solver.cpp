@@ -141,7 +141,6 @@ StateSolver::Ptr OFKTStateSolver::clone() const
 {
   auto cloned = std::make_shared<OFKTStateSolver>();
   cloned->current_state_ = std::make_shared<EnvState>(*current_state_);
-  cloned->joint_limits_ = joint_limits_;
   cloned->joint_names_ = joint_names_;
   cloned->root_ = std::make_unique<OFKTRootNode>(root_->getLinkName());
   cloned->link_map_[root_->getLinkName()] = cloned->root_.get();
@@ -162,7 +161,7 @@ bool OFKTStateSolver::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_gra
   current_state_->link_transforms[root_name] = root_->getWorldTransformation();
 
   std::vector<std::pair<std::string, std::array<double, 2>>> limits;
-  limits.resize(scene_graph->getJoints().size());
+  limits.reserve(scene_graph->getJoints().size());
   ofkt_builder builder(*this, limits);
 
   std::map<tesseract_scene_graph::SceneGraph::Vertex, size_t> index_map;
@@ -266,7 +265,7 @@ EnvState::ConstPtr OFKTStateSolver::getCurrentState() const { return current_sta
 
 EnvState::Ptr OFKTStateSolver::getRandomState() const
 {
-  return getState(joint_names_, tesseract_common::generateRandomNumber(joint_limits_));
+  return getState(joint_names_, tesseract_common::generateRandomNumber(limits_));
 }
 
 const Eigen::MatrixX2d& OFKTStateSolver::getLimits() const { return limits_; }
