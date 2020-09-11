@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/ignition/tesseract_ignition_visualization.h>
 #include <tesseract_visualization/ignition/conversions.h>
+#include <tesseract_visualization/trajectory_player.h>
 
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/utils/flatten_utils.h>
@@ -142,66 +143,39 @@ void TesseractIgnitionVisualization::plotTrajectory(const tesseract_planning::In
 {
   using namespace tesseract_planning;
   tesseract_environment::StateSolver::Ptr state_solver = env_->getStateSolver();
-  std::chrono::duration<double> fp_s(0.1);
-  double prev_time = 0;
+
+  CompositeInstruction c;
   if (isCompositeInstruction(instruction))
   {
-    const auto* ci = instruction.cast_const<CompositeInstruction>();
-
-    std::vector<std::reference_wrapper<const Instruction>> fi = tesseract_planning::flatten(*ci, moveFilter);
-    for (const auto& i : fi)
-    {
-      assert(isMoveInstruction(i.get()));
-      std::this_thread::sleep_for(fp_s);
-      const auto* mi = i.get().cast_const<MoveInstruction>();
-      if (isStateWaypoint(mi->getWaypoint()))
-      {
-        const auto* swp = mi->getWaypoint().cast_const<StateWaypoint>();
-        double dt = swp->time - prev_time;
-        if (dt > 0)
-          std::this_thread::sleep_for(std::chrono::duration<double>(dt));
-        else
-          std::this_thread::sleep_for(fp_s);
-
-        assert(static_cast<long>(swp->joint_names.size()) == swp->position.size());
-        tesseract_environment::EnvState::Ptr state = state_solver->getState(swp->joint_names, swp->position);
-        sendEnvState(state);
-      }
-      else if (isJointWaypoint(mi->getWaypoint()))
-      {
-        std::this_thread::sleep_for(fp_s);
-        const auto* jwp = mi->getWaypoint().cast_const<JointWaypoint>();
-        assert(static_cast<long>(jwp->joint_names.size()) == jwp->size());
-        tesseract_environment::EnvState::Ptr state = state_solver->getState(jwp->joint_names, *jwp);
-        sendEnvState(state);
-      }
-      else
-      {
-        ignerr << "plotTrajectoy: Unsupported Waypoint Type!" << std::endl;
-      }
-    }
+    c = *(instruction.cast_const<CompositeInstruction>());
   }
   else if (isMoveInstruction(instruction))
   {
-    std::this_thread::sleep_for(fp_s);
     const auto* mi = instruction.cast_const<MoveInstruction>();
-    if (isStateWaypoint(mi->getWaypoint()))
-    {
-      const auto* swp = mi->getWaypoint().cast_const<StateWaypoint>();
-      double dt = swp->time - prev_time;
-      if (dt > 0)
-        std::this_thread::sleep_for(std::chrono::duration<double>(dt));
-      else
-        std::this_thread::sleep_for(fp_s);
+    c.setManipulatorInfo(mi->getManipulatorInfo());
+    c.push_back(instruction);
+  }
+  else
+  {
+    ignerr << "plotTrajectoy: Unsupported Instruction Type!" << std::endl;
+    return;
+  }
 
+  TrajectoryPlayer player;
+  player.setProgram(c);
+  while (!player.isFinished())
+  {
+    tesseract_planning::MoveInstruction mi = player.getNext();
+    if (isStateWaypoint(mi.getWaypoint()))
+    {
+      const auto* swp = mi.getWaypoint().cast_const<StateWaypoint>();
       assert(static_cast<long>(swp->joint_names.size()) == swp->position.size());
       tesseract_environment::EnvState::Ptr state = state_solver->getState(swp->joint_names, swp->position);
       sendEnvState(state);
     }
-    else if (isJointWaypoint(mi->getWaypoint()))
+    else if (isJointWaypoint(mi.getWaypoint()))
     {
-      std::this_thread::sleep_for(fp_s);
-      const auto* jwp = mi->getWaypoint().cast_const<JointWaypoint>();
+      const auto* jwp = mi.getWaypoint().cast_const<JointWaypoint>();
       assert(static_cast<long>(jwp->joint_names.size()) == jwp->size());
       tesseract_environment::EnvState::Ptr state = state_solver->getState(jwp->joint_names, *jwp);
       sendEnvState(state);
@@ -210,10 +184,6 @@ void TesseractIgnitionVisualization::plotTrajectory(const tesseract_planning::In
     {
       ignerr << "plotTrajectoy: Unsupported Waypoint Type!" << std::endl;
     }
-  }
-  else
-  {
-    ignerr << "plotTrajectoy: Unsupported Instruction Type!" << std::endl;
   }
 }
 
