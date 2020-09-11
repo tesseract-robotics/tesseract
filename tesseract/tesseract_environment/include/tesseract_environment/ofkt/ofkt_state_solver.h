@@ -103,7 +103,6 @@ public:
 
 private:
   EnvState::Ptr current_state_{ std::make_shared<EnvState>() }; /**< Current state of the environment */
-  Eigen::MatrixX2d joint_limits_;                               /**< The joint limits */
   std::vector<std::string> joint_names_;                        /**< The active joint names */
   std::unordered_map<std::string, OFKTNode::UPtr> nodes_;       /**< The joint name map to node */
   std::unordered_map<std::string, OFKTNode*> link_map_;         /**< The link name map to node */
