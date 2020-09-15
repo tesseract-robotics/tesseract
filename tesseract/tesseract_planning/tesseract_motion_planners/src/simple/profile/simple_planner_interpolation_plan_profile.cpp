@@ -43,28 +43,28 @@ void SimplePlannerInterpolationPlanProfile::apply()
                                  const PlanInstruction& three,
                                  const PlannerRequest& four,
                                  const ManipulatorInfo& five) {
-    return fixedSizeJointInterpolation(one, two, three, four, five, this->freespace_steps_);
+    return fixedSizeInterpolateStateWaypoint(one, two, three, four, five, this->freespace_steps_);
   };
   joint_cart_freespace = [this](const JointWaypoint& one,
                                 const CartesianWaypoint& two,
                                 const PlanInstruction& three,
                                 const PlannerRequest& four,
                                 const ManipulatorInfo& five) {
-    return fixedSizeJointInterpolation(one, two, three, four, five, this->freespace_steps_);
+    return fixedSizeInterpolateStateWaypoint(one, two, three, four, five, this->freespace_steps_);
   };
   cart_joint_freespace = [this](const CartesianWaypoint& one,
                                 const JointWaypoint& two,
                                 const PlanInstruction& three,
                                 const PlannerRequest& four,
                                 const ManipulatorInfo& five) {
-    return fixedSizeJointInterpolation(one, two, three, four, five, this->freespace_steps_);
+    return fixedSizeInterpolateStateWaypoint(one, two, three, four, five, this->freespace_steps_);
   };
   cart_cart_freespace = [this](const CartesianWaypoint& one,
                                const CartesianWaypoint& two,
                                const PlanInstruction& three,
                                const PlannerRequest& four,
                                const ManipulatorInfo& five) {
-    return fixedSizeJointInterpolation(one, two, three, four, five, this->freespace_steps_);
+    return fixedSizeInterpolateStateWaypoint(one, two, three, four, five, this->freespace_steps_);
   };
 
   // Bind the Linear functions
@@ -73,28 +73,28 @@ void SimplePlannerInterpolationPlanProfile::apply()
                               const PlanInstruction& three,
                               const PlannerRequest& four,
                               const ManipulatorInfo& five) {
-    return fixedSizeCartesianInterpolation(one, two, three, four, five, this->cartesian_steps_);
+    return fixedSizeInterpolateCartStateWaypoint(one, two, three, four, five, this->cartesian_steps_);
   };
   joint_cart_linear = [this](const JointWaypoint& one,
                              const CartesianWaypoint& two,
                              const PlanInstruction& three,
                              const PlannerRequest& four,
                              const ManipulatorInfo& five) {
-    return fixedSizeCartesianInterpolation(one, two, three, four, five, this->cartesian_steps_);
+    return fixedSizeInterpolateCartStateWaypoint(one, two, three, four, five, this->cartesian_steps_);
   };
   cart_joint_linear = [this](const CartesianWaypoint& one,
                              const JointWaypoint& two,
                              const PlanInstruction& three,
                              const PlannerRequest& four,
                              const ManipulatorInfo& five) {
-    return fixedSizeCartesianInterpolation(one, two, three, four, five, this->cartesian_steps_);
+    return fixedSizeInterpolateCartStateWaypoint(one, two, three, four, five, this->cartesian_steps_);
   };
   cart_cart_linear = [this](const CartesianWaypoint& one,
                             const CartesianWaypoint& two,
                             const PlanInstruction& three,
                             const PlannerRequest& four,
                             const ManipulatorInfo& five) {
-    return fixedSizeCartesianInterpolation(one, two, three, four, five, this->cartesian_steps_);
+    return fixedSizeInterpolateCartStateWaypoint(one, two, three, four, five, this->cartesian_steps_);
   };
 }
 

@@ -37,61 +37,61 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-CompositeInstruction fixedSizeJointInterpolation(const JointWaypoint& start,
-                                                 const JointWaypoint& end,
-                                                 const PlanInstruction& base_instruction,
-                                                 const PlannerRequest& request,
-                                                 const ManipulatorInfo& manip_info,
-                                                 int steps);
+CompositeInstruction fixedSizeInterpolateStateWaypoint(const JointWaypoint& start,
+                                                       const JointWaypoint& end,
+                                                       const PlanInstruction& base_instruction,
+                                                       const PlannerRequest& request,
+                                                       const ManipulatorInfo& manip_info,
+                                                       int steps);
 
-CompositeInstruction fixedSizeJointInterpolation(const JointWaypoint& start,
-                                                 const CartesianWaypoint& end,
-                                                 const PlanInstruction& base_instruction,
-                                                 const PlannerRequest& request,
-                                                 const ManipulatorInfo& manip_info,
-                                                 int steps);
+CompositeInstruction fixedSizeInterpolateStateWaypoint(const JointWaypoint& start,
+                                                       const CartesianWaypoint& end,
+                                                       const PlanInstruction& base_instruction,
+                                                       const PlannerRequest& request,
+                                                       const ManipulatorInfo& manip_info,
+                                                       int steps);
 
-CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
-                                                 const JointWaypoint& end,
-                                                 const PlanInstruction& base_instruction,
-                                                 const PlannerRequest& request,
-                                                 const ManipulatorInfo& manip_info,
-                                                 int steps);
+CompositeInstruction fixedSizeInterpolateStateWaypoint(const CartesianWaypoint& start,
+                                                       const JointWaypoint& end,
+                                                       const PlanInstruction& base_instruction,
+                                                       const PlannerRequest& request,
+                                                       const ManipulatorInfo& manip_info,
+                                                       int steps);
 
-CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
-                                                 const CartesianWaypoint& end,
-                                                 const PlanInstruction& base_instruction,
-                                                 const PlannerRequest& request,
-                                                 const ManipulatorInfo& manip_info,
-                                                 int steps);
+CompositeInstruction fixedSizeInterpolateStateWaypoint(const CartesianWaypoint& start,
+                                                       const CartesianWaypoint& end,
+                                                       const PlanInstruction& base_instruction,
+                                                       const PlannerRequest& request,
+                                                       const ManipulatorInfo& manip_info,
+                                                       int steps);
 
-CompositeInstruction fixedSizeCartesianInterpolation(const JointWaypoint& start,
-                                                     const JointWaypoint&,
-                                                     const PlanInstruction& base_instruction,
-                                                     const PlannerRequest& request,
-                                                     const ManipulatorInfo& manip_info,
-                                                     int steps);
+CompositeInstruction fixedSizeInterpolateCartStateWaypoint(const JointWaypoint& start,
+                                                           const JointWaypoint&,
+                                                           const PlanInstruction& base_instruction,
+                                                           const PlannerRequest& request,
+                                                           const ManipulatorInfo& manip_info,
+                                                           int steps);
 
-CompositeInstruction fixedSizeCartesianInterpolation(const JointWaypoint& start,
-                                                     const CartesianWaypoint& end,
-                                                     const PlanInstruction& base_instruction,
-                                                     const PlannerRequest& request,
-                                                     const ManipulatorInfo& manip_info,
-                                                     int steps);
+CompositeInstruction fixedSizeInterpolateCartStateWaypoint(const JointWaypoint& start,
+                                                           const CartesianWaypoint& end,
+                                                           const PlanInstruction& base_instruction,
+                                                           const PlannerRequest& request,
+                                                           const ManipulatorInfo& manip_info,
+                                                           int steps);
 
-CompositeInstruction fixedSizeCartesianInterpolation(const CartesianWaypoint& start,
-                                                     const JointWaypoint& end,
-                                                     const PlanInstruction& base_instruction,
-                                                     const PlannerRequest& request,
-                                                     const ManipulatorInfo& manip_info,
-                                                     int steps);
+CompositeInstruction fixedSizeInterpolateCartStateWaypoint(const CartesianWaypoint& start,
+                                                           const JointWaypoint& end,
+                                                           const PlanInstruction& base_instruction,
+                                                           const PlannerRequest& request,
+                                                           const ManipulatorInfo& manip_info,
+                                                           int steps);
 
-CompositeInstruction fixedSizeCartesianInterpolation(const CartesianWaypoint& start,
-                                                     const CartesianWaypoint& end,
-                                                     const PlanInstruction& base_instruction,
-                                                     const PlannerRequest& request,
-                                                     const ManipulatorInfo& manip_info,
-                                                     int steps);
+CompositeInstruction fixedSizeInterpolateCartStateWaypoint(const CartesianWaypoint& start,
+                                                           const CartesianWaypoint& end,
+                                                           const PlanInstruction& base_instruction,
+                                                           const PlannerRequest& request,
+                                                           const ManipulatorInfo& manip_info,
+                                                           int steps);
 
 }  // namespace tesseract_planning
 
