@@ -153,7 +153,7 @@ public:
 
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const
   {
-    Eigen::IOFormat eigen_format(Eigen::StreamPrecision, 0, " ", " ");
+    Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
     tinyxml2::XMLElement* xml_waypoint = doc.NewElement("Waypoint");
     xml_waypoint->SetAttribute("type", std::to_string(getType()).c_str());
 

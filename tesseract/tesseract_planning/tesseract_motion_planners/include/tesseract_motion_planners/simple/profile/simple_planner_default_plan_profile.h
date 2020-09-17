@@ -37,7 +37,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-class SimplePlannerDefaultPlanProfile : public SimplePlannerPlanProfile
+class DEPRECATED("Please use SimplePlannerLVSDefaultPlanProfile") SimplePlannerDefaultPlanProfile
+  : public SimplePlannerPlanProfile
 {
 public:
   using Ptr = std::shared_ptr<SimplePlannerDefaultPlanProfile>;

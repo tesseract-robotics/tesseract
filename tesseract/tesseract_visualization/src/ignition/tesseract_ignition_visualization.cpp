@@ -331,56 +331,79 @@ void TesseractIgnitionVisualization::plotToolPath(const tesseract_planning::Inst
     const auto* ci = instruction.cast_const<CompositeInstruction>();
 
     // Assume all the plan instructions have the same manipulator as the composite
-    assert(!ci->getManipulatorInfo().isEmpty());
+    assert(!ci->getManipulatorInfo().empty());
     const ManipulatorInfo& composite_mi = ci->getManipulatorInfo();
-    const std::string& manipulator = composite_mi.manipulator;
-    const Eigen::Isometry3d& tcp = composite_mi.tcp;
-    const std::string& working_frame = composite_mi.working_frame;
 
-    auto composite_mi_fwd_kin = thor_->getManipulatorManager()->getFwdKinematicSolver(manipulator);
+    auto composite_mi_fwd_kin = thor_->getManipulatorManager()->getFwdKinematicSolver(composite_mi.manipulator);
     if (composite_mi_fwd_kin == nullptr)
     {
-      ignerr << "plotToolPath: Manipulator: " << manipulator << " does not exist!" << std::endl;
+      ignerr << "plotToolPath: Manipulator: " << composite_mi.manipulator << " does not exist!" << std::endl;
       return;
     }
     const std::string& tip_link = composite_mi_fwd_kin->getTipLinkName();
 
     std::vector<std::reference_wrapper<const Instruction>> fi = tesseract_planning::flatten(*ci, planFilter);
+    if (fi.empty())
+      fi = tesseract_planning::flatten(*ci, moveFilter);
+
     long cnt = 0;
     for (const auto& i : fi)
     {
+      ManipulatorInfo manip_info;
+
       std::string link_name = model_name + std::to_string(++cnt);
       ignition::msgs::Link* link_msg = model->add_link();
       link_msg->set_id(static_cast<unsigned>(entity_manager_.addVisual(link_name)));
       link_msg->set_name(link_name);
 
-      assert(isPlanInstruction(i.get()));
-      const auto* pi = i.get().cast_const<PlanInstruction>();
-      if (isStateWaypoint(pi->getWaypoint()))
+      // Check for updated manipulator information and get waypoint
+      Waypoint wp = NullWaypoint();
+      if (isPlanInstruction(i.get()))
       {
-        const auto* swp = pi->getWaypoint().cast_const<StateWaypoint>();
+        const auto* pi = i.get().cast_const<PlanInstruction>();
+        manip_info = composite_mi.getCombined(pi->getManipulatorInfo());
+        wp = pi->getWaypoint();
+      }
+      else if (isMoveInstruction(i.get()))
+      {
+        const auto* mi = i.get().cast_const<MoveInstruction>();
+        manip_info = composite_mi.getCombined(mi->getManipulatorInfo());
+        wp = mi->getWaypoint();
+      }
+
+      // Extract TCP
+      Eigen::Isometry3d tcp = thor_->findTCP(manip_info);
+
+      if (isStateWaypoint(wp))
+      {
+        const auto* swp = wp.cast_const<StateWaypoint>();
         assert(static_cast<long>(swp->joint_names.size()) == swp->position.size());
         tesseract_environment::EnvState::Ptr state = state_solver->getState(swp->joint_names, swp->position);
         addAxis(entity_manager_, *link_msg, cnt, link_name, state->link_transforms[tip_link] * tcp, 0.05);
       }
-      else if (isJointWaypoint(pi->getWaypoint()))
+      else if (isJointWaypoint(wp))
       {
-        const auto* jwp = pi->getWaypoint().cast_const<JointWaypoint>();
+        const auto* jwp = wp.cast_const<JointWaypoint>();
         assert(static_cast<long>(jwp->joint_names.size()) == jwp->size());
         tesseract_environment::EnvState::Ptr state = state_solver->getState(jwp->joint_names, *jwp);
         addAxis(entity_manager_, *link_msg, cnt, link_name, state->link_transforms[tip_link] * tcp, 0.05);
       }
-      else if (isCartesianWaypoint(pi->getWaypoint()))
+      else if (isCartesianWaypoint(wp))
       {
-        const auto* cwp = pi->getWaypoint().cast_const<CartesianWaypoint>();
-        if (working_frame.empty())
+        const auto* cwp = wp.cast_const<CartesianWaypoint>();
+        if (manip_info.working_frame.empty())
         {
           addAxis(entity_manager_, *link_msg, cnt, link_name, (*cwp), 0.05);
         }
         else
         {
           tesseract_environment::EnvState::ConstPtr state = thor_->getEnvironment()->getCurrentState();
-          addAxis(entity_manager_, *link_msg, cnt, link_name, state->link_transforms.at(working_frame) * (*cwp), 0.05);
+          addAxis(entity_manager_,
+                  *link_msg,
+                  cnt,
+                  link_name,
+                  state->link_transforms.at(manip_info.working_frame) * (*cwp),
+                  0.05);
         }
       }
       else
@@ -401,19 +424,20 @@ void TesseractIgnitionVisualization::plotToolPath(const tesseract_planning::Inst
     const auto* pi = instruction.cast_const<PlanInstruction>();
 
     // Assume all the plan instructions have the same manipulator as the composite
-    assert(!pi->getManipulatorInfo().isEmpty());
+    assert(!pi->getManipulatorInfo().empty());
     const ManipulatorInfo& composite_mi = pi->getManipulatorInfo();
-    const std::string& manipulator = composite_mi.manipulator;
-    const Eigen::Isometry3d& tcp = composite_mi.tcp;
-    const std::string& working_frame = composite_mi.working_frame;
+    ManipulatorInfo manip_info = composite_mi.getCombined(pi->getManipulatorInfo());
 
-    auto composite_mi_fwd_kin = thor_->getManipulatorManager()->getFwdKinematicSolver(manipulator);
+    auto composite_mi_fwd_kin = thor_->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
     if (composite_mi_fwd_kin == nullptr)
     {
-      ignerr << "plotToolPath: Manipulator: " << manipulator << " does not exist!" << std::endl;
+      ignerr << "plotToolPath: Manipulator: " << manip_info.manipulator << " does not exist!" << std::endl;
       return;
     }
     const std::string& tip_link = composite_mi_fwd_kin->getTipLinkName();
+
+    // Extract TCP
+    Eigen::Isometry3d tcp = thor_->findTCP(manip_info);
 
     if (isStateWaypoint(pi->getWaypoint()))
     {
@@ -432,14 +456,19 @@ void TesseractIgnitionVisualization::plotToolPath(const tesseract_planning::Inst
     else if (isCartesianWaypoint(pi->getWaypoint()))
     {
       const auto* cwp = pi->getWaypoint().cast_const<CartesianWaypoint>();
-      if (working_frame.empty())
+      if (manip_info.working_frame.empty())
       {
         addAxis(entity_manager_, *link_msg, cnt, link_name, (*cwp), 0.05);
       }
       else
       {
         tesseract_environment::EnvState::ConstPtr state = env_->getCurrentState();
-        addAxis(entity_manager_, *link_msg, cnt, link_name, state->link_transforms.at(working_frame) * (*cwp), 0.05);
+        addAxis(entity_manager_,
+                *link_msg,
+                cnt,
+                link_name,
+                state->link_transforms.at(manip_info.working_frame) * (*cwp),
+                0.05);
       }
     }
     else
