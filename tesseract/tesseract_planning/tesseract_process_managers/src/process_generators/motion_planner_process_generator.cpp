@@ -73,11 +73,8 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input) const
 
   // Make a non-const copy of the input instructions to update the start/end
   CompositeInstruction instructions = *input.instruction->cast_const<CompositeInstruction>();
-  if (instructions.getManipulatorInfo().isEmpty())
-  {
-    assert(!input.manip_info.isEmpty());
-    instructions.setManipulatorInfo(input.manip_info);
-  }
+  assert(!(input.manip_info.empty() && input.manip_info.empty()));
+  instructions.setManipulatorInfo(instructions.getManipulatorInfo().getCombined(input.manip_info));
 
   // If the start and end waypoints need to be updated prior to planning
   const Instruction* start_instruction = nullptr;

@@ -40,6 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract/manipulator_manager.h>
+#include <tesseract_command_language/manipulator_info.h>
 
 namespace tesseract
 {
@@ -92,6 +93,13 @@ public:
 
   ManipulatorManager::Ptr getManipulatorManager();
   ManipulatorManager::ConstPtr getManipulatorManager() const;
+
+  /**
+   * @brief Find tool center point provided in the manipulator info
+   * @param manip_info The manipulator info
+   * @return The tool center point
+   */
+  Eigen::Isometry3d findTCP(const tesseract_planning::ManipulatorInfo& manip_info) const;
 
   void setResourceLocator(tesseract_scene_graph::ResourceLocator::Ptr locator);
   const tesseract_scene_graph::ResourceLocator::Ptr& getResourceLocator() const;

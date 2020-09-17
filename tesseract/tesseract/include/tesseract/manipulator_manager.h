@@ -82,15 +82,17 @@ public:
   const tesseract_scene_graph::LinkGroup& getLinkGroup(const std::string& group_name) const;
   const tesseract_scene_graph::LinkGroups& getLinkGroups() const;
 
-  bool addROPGroup(const std::string& group_name, const tesseract_scene_graph::ROPKinematicParameters& rop_group);
-  void removeROPGroup(const std::string& group_name);
-  const tesseract_scene_graph::ROPKinematicParameters& getROPGroup(const std::string& group_name) const;
-  const tesseract_scene_graph::ROPGroups& getROPGroups() const;
+  bool addROPKinematicsSolver(const std::string& group_name,
+                              const tesseract_scene_graph::ROPKinematicParameters& rop_group);
+  void removeROPKinematicsSolver(const std::string& group_name);
+  const tesseract_scene_graph::ROPKinematicParameters& getROPKinematicsSolver(const std::string& group_name) const;
+  const tesseract_scene_graph::GroupROPKinematics& getROPKinematicsSolvers() const;
 
-  bool addREPGroup(const std::string& group_name, const tesseract_scene_graph::REPKinematicParameters& rep_group);
-  void removeREPGroup(const std::string& group_name);
-  const tesseract_scene_graph::REPKinematicParameters& getREPGroup(const std::string& group_name) const;
-  const tesseract_scene_graph::REPGroups& getREPGroups() const;
+  bool addREPKinematicsSolver(const std::string& group_name,
+                              const tesseract_scene_graph::REPKinematicParameters& rep_group);
+  void removeREPKinematicsSolver(const std::string& group_name);
+  const tesseract_scene_graph::REPKinematicParameters& getREPKinematicsSolver(const std::string& group_name) const;
+  const tesseract_scene_graph::GroupREPKinematics& getREPKinematicsSolvers() const;
 
   bool addOPWKinematicsSolver(const std::string& group_name,
                               const tesseract_scene_graph::OPWKinematicParameters& opw_params);
@@ -112,6 +114,7 @@ public:
   const Eigen::Isometry3d& getGroupsTCP(const std::string& group_name, const std::string& tcp_name) const;
   const tesseract_scene_graph::GroupsTCPs& getGroupsTCPs(const std::string& group_name) const;
   const tesseract_scene_graph::GroupTCPs& getGroupTCPs() const;
+  bool hasGroupTCP(const std::string& group_name, const std::string& tcp_name) const;
 
   // This is exposed for the SRDF editor should not use in normal applications
   void addAllowedCollision(const std::string& link_1, const std::string& link_2, const std::string& reason);

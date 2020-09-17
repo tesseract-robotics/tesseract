@@ -92,7 +92,7 @@ tinyxml2::XMLElement* PlanInstruction::toXML(tinyxml2::XMLDocument& doc) const
   xml_profile->SetText(getProfile().c_str());
   xml_plan_instruction->InsertEndChild(xml_profile);
 
-  if (!getManipulatorInfo().isEmpty())
+  if (!getManipulatorInfo().empty())
   {
     tinyxml2::XMLElement* xml_manip_info = getManipulatorInfo().toXML(doc);
     xml_plan_instruction->InsertEndChild(xml_manip_info);

@@ -107,9 +107,9 @@ void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
 {
   assert(isPlanInstruction(parent_instruction));
   const auto* base_instruction = parent_instruction.cast_const<PlanInstruction>();
-  assert(!(manip_info.isEmpty() && base_instruction->getManipulatorInfo().isEmpty()));
-  const ManipulatorInfo& mi =
-      (base_instruction->getManipulatorInfo().isEmpty()) ? manip_info : base_instruction->getManipulatorInfo();
+  assert(!(manip_info.empty() && base_instruction->getManipulatorInfo().empty()));
+  ManipulatorInfo mi = manip_info.getCombined(base_instruction->getManipulatorInfo());
+  Eigen::Isometry3d tcp = pci.getTesseract()->findTCP(mi);
 
   trajopt::TermInfo::Ptr ti{ nullptr };
 
@@ -120,12 +120,12 @@ void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
   if (it != active_links.end())
   {
     ti = createDynamicCartesianWaypointTermInfo(
-        cartesian_waypoint, index, mi.working_frame, mi.tcp, cartesian_coeff, pci.kin->getTipLinkName(), term_type);
+        cartesian_waypoint, index, mi.working_frame, tcp, cartesian_coeff, pci.kin->getTipLinkName(), term_type);
   }
   else
   {
     ti = createCartesianWaypointTermInfo(
-        cartesian_waypoint, index, mi.working_frame, mi.tcp, cartesian_coeff, pci.kin->getTipLinkName(), term_type);
+        cartesian_waypoint, index, mi.working_frame, tcp, cartesian_coeff, pci.kin->getTipLinkName(), term_type);
   }
 
   if (term_type == trajopt::TermType::TT_CNT)
@@ -151,7 +151,7 @@ void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
 
 tinyxml2::XMLElement* TrajOptDefaultPlanProfile::toXML(tinyxml2::XMLDocument& doc) const
 {
-  Eigen::IOFormat eigen_format(Eigen::StreamPrecision, 0, " ", " ");
+  Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
 
   tinyxml2::XMLElement* xml_planner = doc.NewElement("Planner");
   xml_planner->SetAttribute("type", std::to_string(1).c_str());

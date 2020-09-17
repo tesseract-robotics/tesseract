@@ -67,10 +67,10 @@ bool ManipulatorManager::init(tesseract_environment::Environment::ConstPtr envir
   for (const auto& group : srdf_model_->getGroupOPWKinematics())
     success &= registerOPWSolver(group.first, group.second);
 
-  for (const auto& group : srdf_model_->getROPGroups())
+  for (const auto& group : srdf_model_->getGroupROPKinematics())
     success &= registerROPSolver(group.first, group.second);
 
-  for (const auto& group : srdf_model_->getREPGroups())
+  for (const auto& group : srdf_model_->getGroupREPKinematics())
     success &= registerREPSolver(group.first, group.second);
 
   return success;
@@ -199,8 +199,8 @@ const tesseract_scene_graph::LinkGroups& ManipulatorManager::getLinkGroups() con
   return srdf_model_->getLinkGroups();
 }
 
-bool ManipulatorManager::addROPGroup(const std::string& group_name,
-                                     const tesseract_scene_graph::ROPKinematicParameters& rop_group)
+bool ManipulatorManager::addROPKinematicsSolver(const std::string& group_name,
+                                                const tesseract_scene_graph::ROPKinematicParameters& rop_group)
 {
   if (hasGroup(group_name))
   {
@@ -208,14 +208,14 @@ bool ManipulatorManager::addROPGroup(const std::string& group_name,
     return false;
   }
 
-  srdf_model_->getROPGroups()[group_name] = rop_group;
+  srdf_model_->getGroupROPKinematics()[group_name] = rop_group;
   srdf_model_->getGroupNames().push_back(group_name);
   return registerROPSolver(group_name, rop_group);
 }
 
-void ManipulatorManager::removeROPGroup(const std::string& group_name)
+void ManipulatorManager::removeROPKinematicsSolver(const std::string& group_name)
 {
-  srdf_model_->getROPGroups().erase(group_name);
+  srdf_model_->getGroupROPKinematics().erase(group_name);
   tesseract_scene_graph::GroupNames& group_names = srdf_model_->getGroupNames();
   group_names.erase(std::remove_if(
       group_names.begin(), group_names.end(), [group_name](const std::string& gn) { return gn == group_name; }));
@@ -224,15 +224,18 @@ void ManipulatorManager::removeROPGroup(const std::string& group_name)
 }
 
 const tesseract_scene_graph::ROPKinematicParameters&
-ManipulatorManager::getROPGroup(const std::string& group_name) const
+ManipulatorManager::getROPKinematicsSolver(const std::string& group_name) const
 {
-  return srdf_model_->getROPGroups().at(group_name);
+  return srdf_model_->getGroupROPKinematics().at(group_name);
 }
 
-const tesseract_scene_graph::ROPGroups& ManipulatorManager::getROPGroups() const { return srdf_model_->getROPGroups(); }
+const tesseract_scene_graph::GroupROPKinematics& ManipulatorManager::getROPKinematicsSolvers() const
+{
+  return srdf_model_->getGroupROPKinematics();
+}
 
-bool ManipulatorManager::addREPGroup(const std::string& group_name,
-                                     const tesseract_scene_graph::REPKinematicParameters& rep_group)
+bool ManipulatorManager::addREPKinematicsSolver(const std::string& group_name,
+                                                const tesseract_scene_graph::REPKinematicParameters& rep_group)
 {
   if (hasGroup(group_name))
   {
@@ -240,14 +243,14 @@ bool ManipulatorManager::addREPGroup(const std::string& group_name,
     return false;
   }
 
-  srdf_model_->getREPGroups()[group_name] = rep_group;
+  srdf_model_->getGroupREPKinematics()[group_name] = rep_group;
   srdf_model_->getGroupNames().push_back(group_name);
   return registerREPSolver(group_name, rep_group);
 }
 
-void ManipulatorManager::removeREPGroup(const std::string& group_name)
+void ManipulatorManager::removeREPKinematicsSolver(const std::string& group_name)
 {
-  srdf_model_->getREPGroups().erase(group_name);
+  srdf_model_->getGroupREPKinematics().erase(group_name);
   tesseract_scene_graph::GroupNames& group_names = srdf_model_->getGroupNames();
   group_names.erase(std::remove_if(
       group_names.begin(), group_names.end(), [group_name](const std::string& gn) { return gn == group_name; }));
@@ -256,12 +259,15 @@ void ManipulatorManager::removeREPGroup(const std::string& group_name)
 }
 
 const tesseract_scene_graph::REPKinematicParameters&
-ManipulatorManager::getREPGroup(const std::string& group_name) const
+ManipulatorManager::getREPKinematicsSolver(const std::string& group_name) const
 {
-  return srdf_model_->getREPGroups().at(group_name);
+  return srdf_model_->getGroupREPKinematics().at(group_name);
 }
 
-const tesseract_scene_graph::REPGroups& ManipulatorManager::getREPGroups() const { return srdf_model_->getREPGroups(); }
+const tesseract_scene_graph::GroupREPKinematics& ManipulatorManager::getREPKinematicsSolvers() const
+{
+  return srdf_model_->getGroupREPKinematics();
+}
 
 bool ManipulatorManager::addOPWKinematicsSolver(const std::string& group_name,
                                                 const tesseract_scene_graph::OPWKinematicParameters& opw_params)
@@ -366,6 +372,19 @@ const tesseract_scene_graph::GroupsTCPs& ManipulatorManager::getGroupsTCPs(const
 }
 
 const tesseract_scene_graph::GroupTCPs& ManipulatorManager::getGroupTCPs() const { return srdf_model_->getGroupTCPs(); }
+
+bool ManipulatorManager::hasGroupTCP(const std::string& group_name, const std::string& tcp_name) const
+{
+  auto group_it = srdf_model_->getGroupTCPs().find(group_name);
+  if (group_it == srdf_model_->getGroupTCPs().end())
+    return false;
+
+  auto tcp_it = group_it->second.find(tcp_name);
+  if (tcp_it == group_it->second.end())
+    return false;
+
+  return true;
+}
 
 // This is exposed for the SRDF editor should not use in normal applications
 void ManipulatorManager::addAllowedCollision(const std::string& link_1,
@@ -763,6 +782,14 @@ bool ManipulatorManager::registerOPWSolver(const std::string& group_name,
 bool ManipulatorManager::registerROPSolver(const std::string& group_name,
                                            const tesseract_scene_graph::ROPKinematicParameters& rop_group)
 {
+  tesseract_kinematics::ForwardKinematics::Ptr fwd_kin = getFwdKinematicSolver(group_name);
+  if (fwd_kin == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("Failed to add inverse kinematic ROP solver for manipulator %s to manager!",
+                            group_name.c_str());
+    return false;
+  }
+
   tesseract_kinematics::InverseKinematics::Ptr manip_ik_solver =
       getInvKinematicSolver(rop_group.manipulator_group, rop_group.manipulator_ik_solver);
 
@@ -788,40 +815,39 @@ bool ManipulatorManager::registerROPSolver(const std::string& group_name,
     positioner_sample_resolution(static_cast<long>(i)) = it->second;
   }
 
-  auto rop_inv_kin = std::make_shared<tesseract_kinematics::RobotOnPositionerInvKin>();
-  if (!rop_inv_kin->init(scene_graph_,
-                         manip_ik_solver,
-                         rop_group.manipulator_reach,
-                         positioner_fk_solver,
-                         positioner_sample_resolution,
-                         group_name))
+  auto solver = std::make_shared<tesseract_kinematics::RobotOnPositionerInvKin>();
+  if (!solver->init(scene_graph_,
+                    manip_ik_solver,
+                    rop_group.manipulator_reach,
+                    positioner_fk_solver,
+                    positioner_sample_resolution,
+                    group_name))
     return false;
 
-  if (!addInvKinematicSolver(rop_inv_kin))
-    return false;
-
-  const tesseract_scene_graph::ChainGroups& chain_groups = srdf_model_->getChainGroups();
-  // If both are chains then create a chain forward kinematics object for the group otherwise use joint list
-  if (chain_groups.find(rop_group.manipulator_group) != chain_groups.end() &&
-      chain_groups.find(rop_group.positioner_group) != chain_groups.end())
+  if (!addInvKinematicSolver(solver))
   {
-    tesseract_scene_graph::ChainGroup chain_group;
-    chain_group.push_back(
-        std::make_pair(positioner_fk_solver->getBaseLinkName(), positioner_fk_solver->getTipLinkName()));
-    chain_group.push_back(std::make_pair(manip_ik_solver->getBaseLinkName(), manip_ik_solver->getTipLinkName()));
-
-    return registerDefaultChainSolver(group_name, chain_group);
+    CONSOLE_BRIDGE_logError("Failed to add inverse kinematic ROP solver for manipulator %s to manager!",
+                            group_name.c_str());
+    return false;
   }
 
-  const std::vector<std::string>& manip_joints = manip_ik_solver->getJointNames();
-  tesseract_scene_graph::JointGroup joint_group = positioner_fk_solver->getJointNames();
-  joint_group.insert(joint_group.end(), manip_joints.begin(), manip_joints.end());
-  return registerDefaultJointSolver(group_name, joint_group);
+  // Automatically set ROP Inverse Kinematics as the default for the manipulator
+  setDefaultInvKinematicSolver(solver->getName(), solver->getSolverName());
+
+  return true;
 }
 
 bool ManipulatorManager::registerREPSolver(const std::string& group_name,
                                            const tesseract_scene_graph::REPKinematicParameters& rep_group)
 {
+  tesseract_kinematics::ForwardKinematics::Ptr fwd_kin = getFwdKinematicSolver(group_name);
+  if (fwd_kin == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("Failed to add inverse kinematic REP solver for manipulator %s to manager!",
+                            group_name.c_str());
+    return false;
+  }
+
   tesseract_kinematics::InverseKinematics::Ptr manip_ik_solver =
       getInvKinematicSolver(rep_group.manipulator_group, rep_group.manipulator_ik_solver);
 
@@ -847,36 +873,27 @@ bool ManipulatorManager::registerREPSolver(const std::string& group_name,
     positioner_sample_resolution(static_cast<long>(i)) = it->second;
   }
 
-  auto rep_inv_kin = std::make_shared<tesseract_kinematics::RobotWithExternalPositionerInvKin>();
-  if (!rep_inv_kin->init(scene_graph_,
-                         manip_ik_solver,
-                         rep_group.manipulator_reach,
-                         positioner_fk_solver,
-                         positioner_sample_resolution,
-                         env_->getCurrentState()->link_transforms,
-                         group_name))
+  auto solver = std::make_shared<tesseract_kinematics::RobotWithExternalPositionerInvKin>();
+  if (!solver->init(scene_graph_,
+                    manip_ik_solver,
+                    rep_group.manipulator_reach,
+                    positioner_fk_solver,
+                    positioner_sample_resolution,
+                    env_->getCurrentState()->link_transforms,
+                    group_name))
     return false;
 
-  if (!addInvKinematicSolver(rep_inv_kin))
-    return false;
-
-  const tesseract_scene_graph::ChainGroups& chain_groups = srdf_model_->getChainGroups();
-  // If both are chains then create a chain forward kinematics object for the group otherwise use joint list
-  if (chain_groups.find(rep_group.manipulator_group) != chain_groups.end() &&
-      chain_groups.find(rep_group.positioner_group) != chain_groups.end())
+  if (!addInvKinematicSolver(solver))
   {
-    tesseract_scene_graph::ChainGroup chain_group;
-    chain_group.push_back(
-        std::make_pair(positioner_fk_solver->getTipLinkName(), positioner_fk_solver->getBaseLinkName()));
-    chain_group.push_back(std::make_pair(manip_ik_solver->getBaseLinkName(), manip_ik_solver->getTipLinkName()));
-
-    return registerDefaultChainSolver(group_name, chain_group);
+    CONSOLE_BRIDGE_logError("Failed to add inverse kinematic REP solver for manipulator %s to manager!",
+                            group_name.c_str());
+    return false;
   }
 
-  const std::vector<std::string>& manip_joints = manip_ik_solver->getJointNames();
-  tesseract_scene_graph::JointGroup joint_group = positioner_fk_solver->getJointNames();
-  joint_group.insert(joint_group.end(), manip_joints.begin(), manip_joints.end());
-  return registerDefaultJointSolver(group_name, joint_group);
+  // Automatically set ROP Inverse Kinematics as the default for the manipulator
+  setDefaultInvKinematicSolver(solver->getName(), solver->getSolverName());
+
+  return true;
 }
 
 }  // namespace tesseract
