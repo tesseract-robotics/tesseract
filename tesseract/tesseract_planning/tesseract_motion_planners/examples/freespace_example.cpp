@@ -102,31 +102,6 @@ int main(int /*argc*/, char** /*argv*/)
   manip.manipulator = "manipulator";
   manip.manipulator_ik_solver = "OPWInvKin";
 
-  opw_kinematics::Parameters<double> opw_params;
-  opw_params.a1 = (0.100);
-  opw_params.a2 = (-0.135);
-  opw_params.b = (0.000);
-  opw_params.c1 = (0.615);
-  opw_params.c2 = (0.705);
-  opw_params.c3 = (0.755);
-  opw_params.c4 = (0.085);
-
-  opw_params.offsets[2] = -M_PI / 2.0;
-
-  auto robot_kin = tesseract->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
-  auto opw_kin = std::make_shared<tesseract_kinematics::OPWInvKin>();
-  opw_kin->init(manip.manipulator,
-                opw_params,
-                robot_kin->getBaseLinkName(),
-                robot_kin->getTipLinkName(),
-                robot_kin->getJointNames(),
-                robot_kin->getLinkNames(),
-                robot_kin->getActiveLinkNames(),
-                robot_kin->getLimits());
-
-  tesseract->getManipulatorManager()->addInvKinematicSolver(opw_kin);
-  tesseract->getManipulatorManager()->setDefaultInvKinematicSolver(manip.manipulator, opw_kin->getSolverName());
-
   auto fwd_kin = tesseract->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
   auto inv_kin = tesseract->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
   auto cur_state = tesseract->getEnvironment()->getCurrentState();

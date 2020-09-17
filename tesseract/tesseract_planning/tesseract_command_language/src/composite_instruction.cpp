@@ -96,7 +96,7 @@ tinyxml2::XMLElement* CompositeInstruction::toXML(tinyxml2::XMLDocument& doc) co
   xml_profile->SetText(getProfile().c_str());
   xml_composite_instruction->InsertEndChild(xml_profile);
 
-  if (!getManipulatorInfo().isEmpty())
+  if (!getManipulatorInfo().empty())
   {
     tinyxml2::XMLElement* xml_manip_info = getManipulatorInfo().toXML(doc);
     xml_composite_instruction->InsertEndChild(xml_manip_info);

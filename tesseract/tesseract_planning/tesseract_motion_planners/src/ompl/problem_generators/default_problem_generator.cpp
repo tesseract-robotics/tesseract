@@ -60,17 +60,16 @@ std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const std::string& nam
   tesseract_kinematics::InverseKinematics::Ptr manip_inv_kin_;
 
   // Assume all the plan instructions have the same manipulator as the composite
-  assert(!request.instructions.getManipulatorInfo().isEmpty());
-  const ManipulatorInfo& composite_mi = request.instructions.getManipulatorInfo();
-  const std::string& manipulator = composite_mi.manipulator;
-  const std::string& manipulator_ik_solver = composite_mi.manipulator_ik_solver;
+  assert(!request.instructions.getManipulatorInfo().empty());
 
-  manip_fwd_kin_ = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(manipulator);
-  if (manipulator_ik_solver.empty())
-    manip_inv_kin_ = request.tesseract->getManipulatorManager()->getInvKinematicSolver(manipulator);
+  const ManipulatorInfo& composite_mi = request.instructions.getManipulatorInfo();
+
+  manip_fwd_kin_ = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(composite_mi.manipulator);
+  if (composite_mi.manipulator_ik_solver.empty())
+    manip_inv_kin_ = request.tesseract->getManipulatorManager()->getInvKinematicSolver(composite_mi.manipulator);
   else
-    manip_inv_kin_ =
-        request.tesseract->getManipulatorManager()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
+    manip_inv_kin_ = request.tesseract->getManipulatorManager()->getInvKinematicSolver(
+        composite_mi.manipulator, composite_mi.manipulator_ik_solver);
   if (!manip_fwd_kin_)
   {
     CONSOLE_BRIDGE_logError("No Forward Kinematics solver found");

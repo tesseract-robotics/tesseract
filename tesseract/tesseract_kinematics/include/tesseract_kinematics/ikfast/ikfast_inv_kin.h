@@ -110,7 +110,7 @@ public:
   const std::vector<std::string>& getJointNames() const override;
   const std::vector<std::string>& getLinkNames() const override;
   const std::vector<std::string>& getActiveLinkNames() const;
-  const KinematicLimits& getLimits() const override;
+  const tesseract_common::KinematicLimits& getLimits() const override;
   const std::string& getBaseLinkName() const override;
   const std::string& getTipLinkName() const override;
   const std::string& getName() const override;
@@ -127,13 +127,13 @@ public:
    * @param joint_limits The joint limits for the kinematic chain
    * @return True if successful
    */
-  bool init(const std::string name,
-            const std::string base_link_name,
-            const std::string tip_link_name,
-            const std::vector<std::string> joint_names,
-            const std::vector<std::string> link_names,
-            const std::vector<std::string> active_link_names,
-            const Eigen::MatrixX2d& joint_limits);
+  bool init(std::string name,
+            std::string base_link_name,
+            std::string tip_link_name,
+            std::vector<std::string> joint_names,
+            std::vector<std::string> link_names,
+            std::vector<std::string> active_link_names,
+            tesseract_common::KinematicLimits limits);
 
   /**
    * @brief Checks if kinematics has been initialized
@@ -145,7 +145,7 @@ protected:
   bool initialized_ = false;                   /**< @brief Identifies if the object has been initialized */
   std::string base_link_name_;                 /**< @brief Kinematic base link name */
   std::string tip_link_name_;                  /**< @brief Kinematic tip link name */
-  Eigen::MatrixX2d joint_limits_;              /**< @brief Joint Limits */
+  tesseract_common::KinematicLimits limits_;   /**< @brief Limits */
   std::vector<std::string> joint_names_;       /**< @brief joint names */
   std::vector<std::string> link_names_;        /**< @brief link names */
   std::vector<std::string> active_link_names_; /**< @brief active link names */

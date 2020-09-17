@@ -43,12 +43,11 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name
   std::vector<int> fixed_steps;
 
   // Assume all the plan instructions have the same manipulator as the composite
-  assert(!request.instructions.getManipulatorInfo().isEmpty());
+  assert(!request.instructions.getManipulatorInfo().empty());
   const ManipulatorInfo& composite_mi = request.instructions.getManipulatorInfo();
-  const std::string& manipulator = composite_mi.manipulator;
 
   // Assign Kinematics object
-  pci->kin = pci->getManipulator(manipulator);
+  pci->kin = pci->getManipulator(composite_mi.manipulator);
   std::string link = pci->kin->getTipLinkName();
 
   if (pci->kin == nullptr)
@@ -164,9 +163,8 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name
       const auto* plan_instruction = instruction.cast_const<PlanInstruction>();
 
       // If plan instruction has manipulator information then use it over the one provided by the composite.
-      const Eigen::Isometry3d& tcp = (plan_instruction->getManipulatorInfo().isEmpty()) ?
-                                         composite_mi.tcp :
-                                         plan_instruction->getManipulatorInfo().tcp;
+      ManipulatorInfo manip_info = composite_mi.getCombined(plan_instruction->getManipulatorInfo());
+      Eigen::Isometry3d tcp = request.tesseract->findTCP(manip_info);
 
       assert(isCompositeInstruction(seed_flat[i].get()));
       const auto* seed_composite = seed_flat[i].get().cast_const<tesseract_planning::CompositeInstruction>();
@@ -375,7 +373,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name
 
   // Setup Basic Info
   pci->basic_info.n_steps = index;
-  pci->basic_info.manip = manipulator;
+  pci->basic_info.manip = composite_mi.manipulator;
   pci->basic_info.start_fixed = false;
   pci->basic_info.use_time = false;
   //  pci->basic_info.convex_solver = optimizer;  // TODO: Fix this when port to trajopt_ifopt

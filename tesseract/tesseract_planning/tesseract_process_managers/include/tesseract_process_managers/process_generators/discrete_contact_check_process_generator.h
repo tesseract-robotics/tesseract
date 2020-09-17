@@ -29,7 +29,6 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <atomic>
-#include <limits>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_generator.h>
@@ -69,7 +68,7 @@ private:
 
   std::string name_;
 
-  double longest_valid_segment_length_{ std::numeric_limits<double>::max() };
+  double longest_valid_segment_length_{ 0.1 };
 
   double contact_distance_{ 0 };
 

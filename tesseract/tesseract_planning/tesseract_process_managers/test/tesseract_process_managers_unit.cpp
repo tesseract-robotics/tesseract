@@ -81,11 +81,11 @@ protected:
 TEST_F(TesseractProcessManagerUnit, RasterSimpleMotionPlannerTest)
 {
   tesseract_planning::CompositeInstruction program = rasterExampleProgram();
-  EXPECT_FALSE(program.getManipulatorInfo().isEmpty());
+  EXPECT_FALSE(program.getManipulatorInfo().empty());
 
   program.setManipulatorInfo(manip);
   EXPECT_TRUE(program.hasStartInstruction());
-  EXPECT_FALSE(program.getManipulatorInfo().isEmpty());
+  EXPECT_FALSE(program.getManipulatorInfo().empty());
 
   auto interpolator = std::make_shared<SimpleMotionPlanner>("INTERPOLATOR");
 
@@ -106,17 +106,17 @@ TEST_F(TesseractProcessManagerUnit, RasterSimpleMotionPlannerTest)
   // ten move instruction.
   EXPECT_EQ(((pcnt - 1) * 10) + 1, mcnt);
   EXPECT_TRUE(response.results.hasStartInstruction());
-  EXPECT_FALSE(response.results.getManipulatorInfo().isEmpty());
+  EXPECT_FALSE(response.results.getManipulatorInfo().empty());
 }
 
 TEST_F(TesseractProcessManagerUnit, FreespaceSimpleMotionPlannerTest)
 {
   CompositeInstruction program = freespaceExampleProgram();
-  EXPECT_FALSE(program.getManipulatorInfo().isEmpty());
+  EXPECT_FALSE(program.getManipulatorInfo().empty());
 
   program.setManipulatorInfo(manip);
   EXPECT_TRUE(program.hasStartInstruction());
-  EXPECT_FALSE(program.getManipulatorInfo().isEmpty());
+  EXPECT_FALSE(program.getManipulatorInfo().empty());
 
   auto interpolator = std::make_shared<SimpleMotionPlanner>("INTERPOLATOR");
 
@@ -137,7 +137,7 @@ TEST_F(TesseractProcessManagerUnit, FreespaceSimpleMotionPlannerTest)
   // ten move instruction.
   EXPECT_EQ(((pcnt - 1) * 10) + 1, mcnt);
   EXPECT_TRUE(response.results.hasStartInstruction());
-  EXPECT_FALSE(response.results.getManipulatorInfo().isEmpty());
+  EXPECT_FALSE(response.results.getManipulatorInfo().empty());
 }
 
 TEST_F(TesseractProcessManagerUnit, RasterProcessManagerTest)

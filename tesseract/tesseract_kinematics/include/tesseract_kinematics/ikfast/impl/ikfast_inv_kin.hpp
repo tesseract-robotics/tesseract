@@ -98,11 +98,11 @@ bool IKFastInvKin::calcInvKin(Eigen::VectorXd& solutions,
       harmonizeTowardZero<double>(sol, ikfast_dof);  // Modifies 'sol' in place
 
       // Add solution
-      if (isWithinLimits<double>(Eigen::Map<Eigen::VectorXd>(sol, ikfast_dof), joint_limits_))
+      if (isWithinLimits<double>(Eigen::Map<Eigen::VectorXd>(sol, ikfast_dof), limits_.joint_limits))
         solution_set.insert(end(solution_set), sol, sol + ikfast_dof);
 
       // Add redundant solutions
-      std::vector<double> redundant_sols = getRedundantSolutions(sol, joint_limits_);
+      std::vector<double> redundant_sols = getRedundantSolutions(sol, limits_.joint_limits);
       if (!redundant_sols.empty())
       {
         int num_sol = redundant_sols.size() / ikfast_dof;
@@ -139,7 +139,7 @@ bool IKFastInvKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) con
     return false;
   }
 
-  if (!isWithinLimits<double>(vec, joint_limits_))
+  if (!isWithinLimits<double>(vec, limits_.joint_limits))
     return false;
 
   return true;
@@ -147,13 +147,13 @@ bool IKFastInvKin::checkJoints(const Eigen::Ref<const Eigen::VectorXd>& vec) con
 
 unsigned int IKFastInvKin::numJoints() const { return GetNumJoints(); }
 
-bool IKFastInvKin::init(const std::string name,
-                        const std::string base_link_name,
-                        const std::string tip_link_name,
-                        const std::vector<std::string> joint_names,
-                        const std::vector<std::string> link_names,
-                        const std::vector<std::string> active_link_names,
-                        const Eigen::MatrixX2d& joint_limits)
+bool IKFastInvKin::init(std::string name,
+                        std::string base_link_name,
+                        std::string tip_link_name,
+                        std::vector<std::string> joint_names,
+                        std::vector<std::string> link_names,
+                        std::vector<std::string> active_link_names,
+                        tesseract_common::KinematicLimits limits)
 {
   name_ = std::move(name);
   base_link_name_ = std::move(base_link_name);
@@ -161,7 +161,7 @@ bool IKFastInvKin::init(const std::string name,
   joint_names_ = std::move(joint_names);
   link_names_ = std::move(link_names);
   active_link_names_ = std::move(active_link_names);
-  joint_limits_ = joint_limits;
+  limits_ = limits;
   initialized_ = true;
 
   return initialized_;
@@ -177,7 +177,7 @@ bool IKFastInvKin::init(const IKFastInvKin& kin)
   joint_names_ = kin.joint_names_;
   link_names_ = kin.link_names_;
   active_link_names_ = kin.active_link_names_;
-  joint_limits_ = kin.joint_limits_;
+  limits_ = kin.limits_;
 
   return initialized_;
 }
@@ -185,7 +185,7 @@ bool IKFastInvKin::init(const IKFastInvKin& kin)
 const std::vector<std::string>& IKFastInvKin::getJointNames() const { return joint_names_; }
 const std::vector<std::string>& IKFastInvKin::getLinkNames() const { return link_names_; }
 const std::vector<std::string>& IKFastInvKin::getActiveLinkNames() const { return active_link_names_; }
-const Eigen::MatrixX2d& IKFastInvKin::getLimits() const { return joint_limits_; }
+const tesseract_common::KinematicLimits& IKFastInvKin::getLimits() const { return limits_; }
 const std::string& IKFastInvKin::getBaseLinkName() const { return base_link_name_; }
 const std::string& IKFastInvKin::getTipLinkName() const { return tip_link_name_; }
 const std::string& IKFastInvKin::getName() const { return name_; }

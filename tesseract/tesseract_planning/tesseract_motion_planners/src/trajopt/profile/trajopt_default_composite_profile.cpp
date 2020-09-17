@@ -221,7 +221,7 @@ void TrajOptDefaultCompositeProfile::apply(trajopt::ProblemConstructionInfo& pci
 
 tinyxml2::XMLElement* TrajOptDefaultCompositeProfile::toXML(tinyxml2::XMLDocument& doc) const
 {
-  Eigen::IOFormat eigen_format(Eigen::StreamPrecision, 0, " ", " ");
+  Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
 
   tinyxml2::XMLElement* xml_planner = doc.NewElement("Planner");
   xml_planner->SetAttribute("type", std::to_string(1).c_str());

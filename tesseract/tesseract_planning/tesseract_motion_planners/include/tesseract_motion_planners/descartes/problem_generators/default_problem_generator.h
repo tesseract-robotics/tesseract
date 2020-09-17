@@ -48,18 +48,16 @@ DefaultDescartesProblemGenerator(const std::string& name,
   prob->samplers.clear();
 
   // Assume all the plan instructions have the same manipulator as the composite
-  assert(!request.instructions.getManipulatorInfo().isEmpty());
+  assert(!request.instructions.getManipulatorInfo().empty());
   const ManipulatorInfo& composite_mi = request.instructions.getManipulatorInfo();
-  const std::string& manipulator = request.instructions.getManipulatorInfo().manipulator;
-  const std::string& manipulator_ik_solver = request.instructions.getManipulatorInfo().manipulator_ik_solver;
 
   // Get Manipulator Information
-  prob->manip_fwd_kin = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(manipulator);
-  if (manipulator_ik_solver.empty())
-    prob->manip_inv_kin = request.tesseract->getManipulatorManager()->getInvKinematicSolver(manipulator);
+  prob->manip_fwd_kin = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(composite_mi.manipulator);
+  if (composite_mi.manipulator_ik_solver.empty())
+    prob->manip_inv_kin = request.tesseract->getManipulatorManager()->getInvKinematicSolver(composite_mi.manipulator);
   else
-    prob->manip_inv_kin =
-        request.tesseract->getManipulatorManager()->getInvKinematicSolver(manipulator, manipulator_ik_solver);
+    prob->manip_inv_kin = request.tesseract->getManipulatorManager()->getInvKinematicSolver(
+        composite_mi.manipulator, composite_mi.manipulator_ik_solver);
 
   if (!prob->manip_fwd_kin)
   {
@@ -170,9 +168,8 @@ DefaultDescartesProblemGenerator(const std::string& name,
       const auto* plan_instruction = instruction.template cast_const<PlanInstruction>();
 
       // If plan instruction has manipulator information then use it over the one provided by the composite.
-      const Eigen::Isometry3d& tcp = (plan_instruction->getManipulatorInfo().isEmpty()) ?
-                                         composite_mi.tcp :
-                                         plan_instruction->getManipulatorInfo().tcp;
+      ManipulatorInfo mi = composite_mi.getCombined(plan_instruction->getManipulatorInfo());
+      Eigen::Isometry3d tcp = request.tesseract->findTCP(mi);
 
       // The seed should always have a start instruction
       assert(request.seed.hasStartInstruction());

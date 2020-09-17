@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/tools/multiplan/ParallelPlan.h>
 #include <ompl/base/objectives/PathLengthOptimizationObjective.h>
 #include <ompl/base/goals/GoalStates.h>
+#include <boost/algorithm/string.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/instruction_type.h>
@@ -371,9 +372,9 @@ void OMPLDefaultPlanProfile::applyGoalStates(OMPLProblem& prob,
   const auto dof = prob.manip_fwd_kin->numJoints();
   assert(isPlanInstruction(parent_instruction));
   const auto* base_instruction = parent_instruction.cast_const<PlanInstruction>();
-  assert(!(manip_info.isEmpty() && base_instruction->getManipulatorInfo().isEmpty()));
-  const ManipulatorInfo& mi =
-      (base_instruction->getManipulatorInfo().isEmpty()) ? manip_info : base_instruction->getManipulatorInfo();
+  assert(!(manip_info.empty() && base_instruction->getManipulatorInfo().empty()));
+  ManipulatorInfo mi = manip_info.getCombined(base_instruction->getManipulatorInfo());
+  Eigen::Isometry3d tcp = prob.tesseract->findTCP(mi);
 
   // Check if the waypoint is not relative to the manipulator base coordinate system and at tool0
   Eigen::Isometry3d world_to_waypoint = cartesian_waypoint;
@@ -382,7 +383,7 @@ void OMPLDefaultPlanProfile::applyGoalStates(OMPLProblem& prob,
 
   Eigen::Isometry3d world_to_base_link = prob.env_state->link_transforms.at(prob.manip_inv_kin->getBaseLinkName());
   Eigen::Isometry3d manip_baselink_to_waypoint = world_to_base_link.inverse() * world_to_waypoint;
-  Eigen::Isometry3d manip_baselink_to_tool0 = manip_baselink_to_waypoint * mi.tcp.inverse();
+  Eigen::Isometry3d manip_baselink_to_tool0 = manip_baselink_to_waypoint * tcp.inverse();
 
   if (prob.state_space == OMPLProblemStateSpace::REAL_STATE_SPACE)
   {
@@ -465,9 +466,9 @@ void OMPLDefaultPlanProfile::applyStartStates(OMPLProblem& prob,
   const auto dof = prob.manip_fwd_kin->numJoints();
   assert(isPlanInstruction(parent_instruction));
   const auto* base_instruction = parent_instruction.cast_const<PlanInstruction>();
-  assert(!(manip_info.isEmpty() && base_instruction->getManipulatorInfo().isEmpty()));
-  const ManipulatorInfo& mi =
-      (base_instruction->getManipulatorInfo().isEmpty()) ? manip_info : base_instruction->getManipulatorInfo();
+  assert(!(manip_info.empty() && base_instruction->getManipulatorInfo().empty()));
+  ManipulatorInfo mi = manip_info.getCombined(base_instruction->getManipulatorInfo());
+  Eigen::Isometry3d tcp = prob.tesseract->findTCP(mi);
 
   // Check if the waypoint is not relative to the manipulator base coordinate system and at tool0
   Eigen::Isometry3d world_to_waypoint = cartesian_waypoint;
@@ -476,7 +477,7 @@ void OMPLDefaultPlanProfile::applyStartStates(OMPLProblem& prob,
 
   Eigen::Isometry3d world_to_base_link = prob.env_state->link_transforms.at(prob.manip_inv_kin->getBaseLinkName());
   Eigen::Isometry3d manip_baselink_to_waypoint = world_to_base_link.inverse() * world_to_waypoint;
-  Eigen::Isometry3d manip_baselink_to_tool0 = manip_baselink_to_waypoint * mi.tcp.inverse();
+  Eigen::Isometry3d manip_baselink_to_tool0 = manip_baselink_to_waypoint * tcp.inverse();
 
   if (prob.state_space == OMPLProblemStateSpace::REAL_STATE_SPACE)
   {
@@ -553,7 +554,7 @@ void OMPLDefaultPlanProfile::applyStartStates(OMPLProblem& prob,
 
 tinyxml2::XMLElement* OMPLDefaultPlanProfile::toXML(tinyxml2::XMLDocument& doc) const
 {
-  Eigen::IOFormat eigen_format(Eigen::StreamPrecision, 0, " ", " ");
+  Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
 
   tinyxml2::XMLElement* xml_planner = doc.NewElement("Planner");
   xml_planner->SetAttribute("type", std::to_string(2).c_str());
