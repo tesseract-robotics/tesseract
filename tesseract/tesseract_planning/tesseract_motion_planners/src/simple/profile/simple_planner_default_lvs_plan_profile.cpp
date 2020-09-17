@@ -168,23 +168,33 @@ void SimplePlannerDefaultLVSPlanProfile::apply()
   };
 }
 
-
-const double& SimplePlannerDefaultLVSPlanProfile::getStateLongestValidSegmentLength() { return state_longest_valid_segment_length_; }
+const double& SimplePlannerDefaultLVSPlanProfile::getStateLongestValidSegmentLength()
+{
+  return state_longest_valid_segment_length_;
+}
 void SimplePlannerDefaultLVSPlanProfile::setStateLongestValidSegmentLength(double state_longest_valid_segment_length)
 {
   state_longest_valid_segment_length_ = state_longest_valid_segment_length;
   apply();
 }
 
-const double& SimplePlannerDefaultLVSPlanProfile::getTranslationLongestValidSegmentLength() { return translation_longest_valid_segment_length_; }
-void SimplePlannerDefaultLVSPlanProfile::setTranslationLongestValidSegmentLength(double translation_longest_valid_segment_length)
+const double& SimplePlannerDefaultLVSPlanProfile::getTranslationLongestValidSegmentLength()
+{
+  return translation_longest_valid_segment_length_;
+}
+void SimplePlannerDefaultLVSPlanProfile::setTranslationLongestValidSegmentLength(
+    double translation_longest_valid_segment_length)
 {
   translation_longest_valid_segment_length_ = translation_longest_valid_segment_length;
   apply();
 }
 
-const double& SimplePlannerDefaultLVSPlanProfile::getRotationLongestValidSegmentLength() { return rotation_longest_valid_segment_length_; }
-void SimplePlannerDefaultLVSPlanProfile::setRotationLongestValidSegmentLength(double rotation_longest_valid_segment_length)
+const double& SimplePlannerDefaultLVSPlanProfile::getRotationLongestValidSegmentLength()
+{
+  return rotation_longest_valid_segment_length_;
+}
+void SimplePlannerDefaultLVSPlanProfile::setRotationLongestValidSegmentLength(
+    double rotation_longest_valid_segment_length)
 {
   rotation_longest_valid_segment_length_ = rotation_longest_valid_segment_length;
   apply();
