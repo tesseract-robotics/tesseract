@@ -53,8 +53,8 @@ source_suffix = ['.rst', '.md']
 master_doc = 'index'
 
 # General information about the project.
-project = u'Industrial Training'
-copyright = u'2017, ROS-Industrial'
+project = u'Tesseract'
+copyright = u'2020, ROS-Industrial'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

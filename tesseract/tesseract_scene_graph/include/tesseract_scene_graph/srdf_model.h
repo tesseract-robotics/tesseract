@@ -102,14 +102,6 @@ public:
   const LinkGroups& getLinkGroups() const;
   LinkGroups& getLinkGroups();
 
-  /** @brief Get the map of robot on positioner groups defined for this model */
-  const ROPGroups& getROPGroups() const;
-  ROPGroups& getROPGroups();
-
-  /** @brief Get the map of robot with external positioner groups defined for this model */
-  const REPGroups& getREPGroups() const;
-  REPGroups& getREPGroups();
-
   /** @brief Get the map of group tool center points (TCP) defined for this model */
   const GroupTCPs& getGroupTCPs() const;
   GroupTCPs& getGroupTCPs();
@@ -122,6 +114,14 @@ public:
   const GroupOPWKinematics& getGroupOPWKinematics() const;
   GroupOPWKinematics& getGroupOPWKinematics();
 
+  /** @brief Get the map of robot on positioner groups defined for this model */
+  const GroupROPKinematics& getGroupROPKinematics() const;
+  GroupROPKinematics& getGroupROPKinematics();
+
+  /** @brief Get the map of robot with external positioner groups defined for this model */
+  const GroupREPKinematics& getGroupREPKinematics() const;
+  GroupREPKinematics& getGroupREPKinematics();
+
   /** @brief Clear the model */
   void clear();
 
@@ -131,13 +131,13 @@ private:
   ChainGroups chain_groups_;                  /**< @brief A map of chains groups*/
   JointGroups joint_groups_;                  /**< @brief A map of joint groups */
   LinkGroups link_groups_;                    /**< @brief A map of link groups */
-  ROPGroups rop_groups_;                      /**< @brief A map of robot on positioner groups */
-  REPGroups rep_groups_;                      /**< @brief A map of robot with external positioner groups */
   std::vector<std::string> group_names_;      /**< @brief A vector of group names */
   GroupJointStates group_states_;             /**< @brief A map of group states */
   GroupTCPs group_tcps_;                      /**< @brief A map of group tool center points */
   AllowedCollisionMatrix acm_;                /**< @brief The allowed collision matrix */
   GroupOPWKinematics group_opw_kinematics_;   /**< @brief A map of group opw kinematics data */
+  GroupROPKinematics group_rop_kinematics_;   /**< @brief A map of robot on positioner groups */
+  GroupREPKinematics group_rep_kinematics_;   /**< @brief A map of robot with external positioner groups */
 };
 
 }  // namespace tesseract_scene_graph

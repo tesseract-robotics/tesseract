@@ -43,9 +43,8 @@ CompositeInstruction fixedSizeAssignJointPosition(const Eigen::Ref<const Eigen::
                                                   const ManipulatorInfo& manip_info,
                                                   int steps)
 {
-  assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
-  const ManipulatorInfo& mi =
-      (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
+  assert(!(manip_info.empty() && base_instruction.getManipulatorInfo().empty()));
+  ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
 
   // Get Kinematics Object
   auto fwd_kin = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
@@ -65,6 +64,7 @@ CompositeInstruction fixedSizeAssignJointPosition(const Eigen::Ref<const Eigen::
   for (int i = 1; i <= steps; ++i)
   {
     MoveInstruction move_instruction(StateWaypoint(fwd_kin->getJointNames(), position), mv_type);
+    move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
     composite.push_back(move_instruction);
   }
@@ -105,9 +105,8 @@ CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint& /*sta
                                                   const ManipulatorInfo& manip_info,
                                                   int steps)
 {
-  assert(!(manip_info.isEmpty() && base_instruction.getManipulatorInfo().isEmpty()));
-  const ManipulatorInfo& mi =
-      (base_instruction.getManipulatorInfo().isEmpty()) ? manip_info : base_instruction.getManipulatorInfo();
+  assert(!(manip_info.empty() && base_instruction.getManipulatorInfo().empty()));
+  ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
   auto fwd_kin = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
   Eigen::VectorXd position = request.env_state->getJointValues(fwd_kin->getJointNames());
   return fixedSizeAssignJointPosition(position, base_instruction, request, manip_info, steps);

@@ -51,8 +51,8 @@ using JointGroups = std::unordered_map<std::string, JointGroup>;
 using LinkGroup = std::vector<std::string>;
 using LinkGroups = std::unordered_map<std::string, LinkGroup>;
 using GroupNames = std::vector<std::string>;
-using ROPGroups = std::unordered_map<std::string, ROPKinematicParameters>;
-using REPGroups = std::unordered_map<std::string, REPKinematicParameters>;
+using GroupROPKinematics = std::unordered_map<std::string, ROPKinematicParameters>;
+using GroupREPKinematics = std::unordered_map<std::string, REPKinematicParameters>;
 using GroupOPWKinematics = std::unordered_map<std::string, OPWKinematicParameters>;
 
 }  // namespace tesseract_scene_graph

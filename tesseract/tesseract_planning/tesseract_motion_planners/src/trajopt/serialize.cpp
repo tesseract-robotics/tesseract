@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/trajopt/serialize.h>
 
 static const std::array<int, 3> VERSION{ { 1, 0, 0 } };
-static const Eigen::IOFormat eigen_format(Eigen::StreamPrecision, 0, " ", " ");
+static const Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
 
 namespace tesseract_planning
 {

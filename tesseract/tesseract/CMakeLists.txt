@@ -9,6 +9,7 @@ find_package(tesseract_environment REQUIRED)
 find_package(tesseract_kinematics REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_urdf REQUIRED)
+find_package(tesseract_command_language REQUIRED)
 find_package(cmake_common_scripts REQUIRED)
 
 set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/*)
@@ -28,6 +29,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   tesseract::tesseract_environment_ofkt
   tesseract::tesseract_kinematics_kdl
   tesseract::tesseract_kinematics_opw
+  tesseract::tesseract_command_language
   console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})

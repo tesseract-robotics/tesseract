@@ -383,4 +383,46 @@ void Tesseract::clear()
   environment_ = nullptr;
   manipulator_manager_ = nullptr;
 }
+
+Eigen::Isometry3d Tesseract::findTCP(const tesseract_planning::ManipulatorInfo& manip_info) const
+{
+  Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
+
+  auto composite_mi_fwd_kin = manipulator_manager_->getFwdKinematicSolver(manip_info.manipulator);
+  if (composite_mi_fwd_kin == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("findTCP: Manipulator '%s' does not exist!", manip_info.manipulator.c_str());
+    return tcp;
+  }
+
+  const std::string& tip_link = composite_mi_fwd_kin->getTipLinkName();
+  if (manip_info.tcp.isString())
+  {
+    const std::string& tcp_name = manip_info.tcp.getString();
+    if (manipulator_manager_->hasGroupTCP(manip_info.manipulator, tcp_name))
+    {
+      tcp = manipulator_manager_->getGroupsTCP(manip_info.manipulator, tcp_name);
+    }
+    else
+    {
+      tesseract_environment::EnvState::ConstPtr env_state = environment_->getCurrentState();
+      auto link_it = env_state->link_transforms.find(tcp_name);
+      if (link_it != env_state->link_transforms.end())
+      {
+        tcp = env_state->link_transforms.at(tip_link).inverse() * link_it->second;
+      }
+      else
+      {
+        CONSOLE_BRIDGE_logError("Could not find tcp by name '%s' setting to Identity!", tcp_name.c_str());
+      }
+    }
+  }
+  else if (manip_info.tcp.isTransform())
+  {
+    tcp = manip_info.tcp.getTransform();
+  }
+
+  return tcp;
+}
+
 }  // namespace tesseract

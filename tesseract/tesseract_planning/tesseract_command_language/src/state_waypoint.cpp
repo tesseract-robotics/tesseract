@@ -140,7 +140,7 @@ int StateWaypoint::getType() const { return static_cast<int>(WaypointType::STATE
 
 tinyxml2::XMLElement* StateWaypoint::toXML(tinyxml2::XMLDocument& doc) const
 {
-  Eigen::IOFormat eigen_format(Eigen::StreamPrecision, 0, " ", " ");
+  Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
   tinyxml2::XMLElement* xml_waypoint = doc.NewElement("Waypoint");
   xml_waypoint->SetAttribute("type", std::to_string(getType()).c_str());
 

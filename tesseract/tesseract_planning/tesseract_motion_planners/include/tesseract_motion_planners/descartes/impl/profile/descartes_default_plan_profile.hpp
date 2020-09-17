@@ -165,9 +165,9 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
 {
   assert(isPlanInstruction(parent_instruction));
   const auto* base_instruction = parent_instruction.cast_const<PlanInstruction>();
-  assert(!(manip_info.isEmpty() && base_instruction->getManipulatorInfo().isEmpty()));
-  const ManipulatorInfo& mi =
-      (base_instruction->getManipulatorInfo().isEmpty()) ? manip_info : base_instruction->getManipulatorInfo();
+  assert(!(manip_info.empty() && base_instruction->getManipulatorInfo().empty()));
+  ManipulatorInfo mi = manip_info.getCombined(base_instruction->getManipulatorInfo());
+  Eigen::Isometry3d tcp = prob.tesseract->findTCP(mi);
 
   /* Check if this cartesian waypoint is dynamic
    * (i.e. defined relative to a frame that will move with the kinematic chain) */
@@ -197,7 +197,7 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
   }
 
   auto sampler = std::make_shared<DescartesRobotSampler<FloatType>>(
-      manip_baselink_to_waypoint, target_pose_sampler, prob.manip_inv_kin, ci, mi.tcp, allow_collision, is_valid);
+      manip_baselink_to_waypoint, target_pose_sampler, prob.manip_inv_kin, ci, tcp, allow_collision, is_valid);
   prob.samplers.push_back(std::move(sampler));
 
   if (index != 0)
