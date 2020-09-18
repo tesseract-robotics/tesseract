@@ -60,13 +60,14 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
   // --------------------
   // Check that inputs are valid
   // --------------------
-  if (!isCompositeInstruction(*(input.instruction)))
+  const Instruction* input_instruction = input.getInstruction();
+  if (!isCompositeInstruction(*input_instruction))
   {
     CONSOLE_BRIDGE_logError("Input instruction to FixStateBounds must be a composite instruction");
     return 0;
   }
 
-  auto* ci = input.instruction->cast_const<CompositeInstruction>();
+  const auto* ci = input_instruction->cast_const<CompositeInstruction>();
   const ManipulatorInfo& manip_info = input.manip_info;
   const auto fwd_kin = input.tesseract->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
 

@@ -46,16 +46,16 @@ bool SimpleProcessManager::init(ProcessInput input)
   clear();
 
   // Check the overall input
-  if (!isCompositeInstruction(*(input.instruction)))
+  const Instruction* input_instruction = input.getInstruction();
+  if (!isCompositeInstruction(*input_instruction))
   {
     CONSOLE_BRIDGE_logError("ProcessInput Invalid: input.instructions should be a composite");
     return false;
   }
-  const auto* composite = input.instruction->cast_const<CompositeInstruction>();
+  const auto* composite = input_instruction->cast_const<CompositeInstruction>();
 
   // Check that it has a start instruction
-  if (!composite->hasStartInstruction() && input.start_instruction_ptr == nullptr &&
-      isNullInstruction(input.start_instruction))
+  if (!composite->hasStartInstruction() && isNullInstruction(input.getStartInstruction()))
   {
     CONSOLE_BRIDGE_logError("ProcessInput Invalid: input.instructions should have a start instruction");
     return false;
@@ -63,12 +63,12 @@ bool SimpleProcessManager::init(ProcessInput input)
 
   // Create the dependency graph
   if (console_bridge::getLogLevel() == console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG)
-    input.instruction->print("Generating Taskflow for: ");
+    input_instruction->print("Generating Taskflow for: ");
   auto task = taskflow_
                   .composed_of(taskflow_generator_->generateTaskflow(
                       input,
-                      [this, &input]() { successCallback(input.instruction->getDescription()); },
-                      [this, &input]() { failureCallback(input.instruction->getDescription()); }))
+                      [this, &input]() { successCallback(input.getInstruction()->getDescription()); },
+                      [this, &input]() { failureCallback(input.getInstruction()->getDescription()); }))
                   .name("Simple");
   simple_tasks_.push_back(task);
 
@@ -84,7 +84,12 @@ bool SimpleProcessManager::init(ProcessInput input)
 bool SimpleProcessManager::execute()
 {
   success_ = false;
-  executor_.run(taskflow_).wait();
+  executor_.wait_for_all();
+  executor_.run(taskflow_);
+  executor_.wait_for_all();
+
+  clear();  // I believe clear must be called so memory is cleaned up
+
   return success_;
 }
 

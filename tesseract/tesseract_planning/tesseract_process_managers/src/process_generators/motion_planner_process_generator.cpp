@@ -60,50 +60,36 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input) const
   // --------------------
   // Check that inputs are valid
   // --------------------
-  if (!isCompositeInstruction(*(input.instruction)))
+  const Instruction* input_instruction = input.getInstruction();
+  if (!isCompositeInstruction(*input_instruction))
   {
     CONSOLE_BRIDGE_logError("Input instructions to TrajOpt Planner must be a composite instruction");
     return 0;
   }
-  if (!isCompositeInstruction(*(input.results)))
+
+  Instruction* input_results = input.getResults();
+  if (!isCompositeInstruction(*input_results))
   {
     CONSOLE_BRIDGE_logError("Input seed to TrajOpt Planner must be a composite instruction");
     return 0;
   }
 
   // Make a non-const copy of the input instructions to update the start/end
-  CompositeInstruction instructions = *input.instruction->cast_const<CompositeInstruction>();
+  CompositeInstruction instructions = *input_instruction->cast_const<CompositeInstruction>();
   assert(!(input.manip_info.empty() && input.manip_info.empty()));
   instructions.setManipulatorInfo(instructions.getManipulatorInfo().getCombined(input.manip_info));
 
   // If the start and end waypoints need to be updated prior to planning
-  const Instruction* start_instruction = nullptr;
-  if (input.start_instruction_ptr && !isNullInstruction(*input.start_instruction_ptr))
-  {
-    start_instruction = input.start_instruction_ptr;
-  }
-  else if (!isNullInstruction(input.start_instruction))
-  {
-    start_instruction = &input.start_instruction;
-  }
+  Instruction start_instruction = input.getStartInstruction();
+  Instruction end_instruction = input.getEndInstruction();
 
-  const Instruction* end_instruction = nullptr;
-  if (input.end_instruction_ptr && !isNullInstruction(*input.end_instruction_ptr))
-  {
-    end_instruction = input.end_instruction_ptr;
-  }
-  else if (!isNullInstruction(input.end_instruction))
-  {
-    end_instruction = &input.end_instruction;
-  }
-
-  if (start_instruction)
+  if (!isNullInstruction(start_instruction))
   {
     // add start
-    if (isCompositeInstruction(*start_instruction))
+    if (isCompositeInstruction(start_instruction))
     {
       // if provided a composite instruction as the start instruction it will extract the last move instruction
-      const auto* ci = start_instruction->cast_const<CompositeInstruction>();
+      const auto* ci = start_instruction.cast_const<CompositeInstruction>();
       auto* lmi = getLastMoveInstruction(*ci);
       assert(lmi != nullptr);
       assert(isMoveInstruction(*lmi));
@@ -112,18 +98,28 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input) const
     }
     else
     {
-      assert(isPlanInstruction(*start_instruction));
-      instructions.setStartInstruction(*start_instruction);
-      instructions.getStartInstruction().cast<PlanInstruction>()->setPlanType(PlanInstructionType::START);
+      assert(isPlanInstruction(start_instruction) || isMoveInstruction(start_instruction));
+      if (isPlanInstruction(start_instruction))
+      {
+        instructions.setStartInstruction(start_instruction);
+        instructions.getStartInstruction().cast<PlanInstruction>()->setPlanType(PlanInstructionType::START);
+      }
+      else if (isMoveInstruction(start_instruction))
+      {
+        auto* lmi = start_instruction.cast<MoveInstruction>();
+        PlanInstruction si(
+            lmi->getWaypoint(), PlanInstructionType::START, lmi->getProfile(), lmi->getManipulatorInfo());
+        instructions.setStartInstruction(si);
+      }
     }
   }
-  if (end_instruction)
+  if (!isNullInstruction(end_instruction))
   {
     // add end
-    if (isCompositeInstruction(*end_instruction))
+    if (isCompositeInstruction(end_instruction))
     {
       // if provided a composite instruction as the end instruction it will extract the first move instruction
-      const auto* ci = end_instruction->cast_const<CompositeInstruction>();
+      const auto* ci = end_instruction.cast_const<CompositeInstruction>();
       auto* fmi = getFirstMoveInstruction(*ci);
       assert(fmi != nullptr);
       assert(isMoveInstruction(*fmi));
@@ -131,9 +127,16 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input) const
     }
     else
     {
-      assert(isMoveInstruction(*end_instruction));
+      assert(isMoveInstruction(end_instruction) || isPlanInstruction(end_instruction));
       auto* lpi = getLastPlanInstruction(instructions);
-      lpi->setWaypoint(end_instruction->cast_const<MoveInstruction>()->getWaypoint());
+      if (isMoveInstruction(end_instruction))
+      {
+        lpi->setWaypoint(end_instruction.cast_const<MoveInstruction>()->getWaypoint());
+      }
+      else if (isPlanInstruction(end_instruction))
+      {
+        lpi->setWaypoint(end_instruction.cast_const<PlanInstruction>()->getWaypoint());
+      }
     }
   }
 
@@ -144,7 +147,7 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input) const
   // Fill out request
   // --------------------
   PlannerRequest request;
-  request.seed = *input.results->cast<CompositeInstruction>();
+  request.seed = *input_results->cast<CompositeInstruction>();
   request.env_state = input.tesseract->getEnvironment()->getCurrentState();
   request.tesseract = input.tesseract;
   request.instructions = instructions;
@@ -166,7 +169,7 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input) const
   // --------------------
   if (status)
   {
-    *input.results = response.results;
+    *input_results = response.results;
     CONSOLE_BRIDGE_logDebug("Motion Planner process succeeded");
     return 1;
   }
@@ -174,7 +177,7 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input) const
   CONSOLE_BRIDGE_logInform("%s motion planning failed (%s) for process input: %s",
                            planner_->getName().c_str(),
                            status.message().c_str(),
-                           input.instruction->getDescription().c_str());
+                           input_instruction->getDescription().c_str());
   return 0;
 }
 
