@@ -69,51 +69,53 @@ bool RasterWAADProcessManager::init(ProcessInput input)
   for (std::size_t idx = 1; idx < input.size() - 1; idx += 2)
   {
     // Get the last plan instruction of the approach
-    assert(isCompositeInstruction(*(input[idx][0].instruction)));
-    const auto* aci = input[idx][0].instruction->cast_const<CompositeInstruction>();
+    assert(isCompositeInstruction(*(input[idx][0].getInstruction())));
+    const auto* aci = input[idx][0].getInstruction()->cast_const<CompositeInstruction>();
     auto* ali = getLastPlanInstruction(*aci);
     assert(ali != nullptr);
 
     // Create the process taskflow
     ProcessInput process_input = input[idx][1];
-    process_input.start_instruction = *ali;
+    process_input.setStartInstruction(*ali);
     auto process_step =
         taskflow_
             .composed_of(raster_taskflow_generator_->generateTaskflow(
                 process_input,
                 std::bind(
-                    &RasterWAADProcessManager::successCallback, this, process_input.instruction->getDescription()),
-                std::bind(
-                    &RasterWAADProcessManager::failureCallback, this, process_input.instruction->getDescription())))
+                    &RasterWAADProcessManager::successCallback, this, process_input.getInstruction()->getDescription()),
+                std::bind(&RasterWAADProcessManager::failureCallback,
+                          this,
+                          process_input.getInstruction()->getDescription())))
             .name("raster_" + std::to_string(idx));
 
     // Create Departure Taskflow
     ProcessInput departure_input = input[idx][2];
-    departure_input.start_instruction_ptr = input[idx][1].results;
-    auto departure_step =
-        taskflow_
-            .composed_of(raster_taskflow_generator_->generateTaskflow(
-                departure_input,
-                std::bind(
-                    &RasterWAADProcessManager::successCallback, this, departure_input.instruction->getDescription()),
-                std::bind(
-                    &RasterWAADProcessManager::failureCallback, this, departure_input.instruction->getDescription())))
-            .name("departure_" + std::to_string(idx));
+    departure_input.setStartInstruction(std::vector<std::size_t>({ idx, 1 }));
+    auto departure_step = taskflow_
+                              .composed_of(raster_taskflow_generator_->generateTaskflow(
+                                  departure_input,
+                                  std::bind(&RasterWAADProcessManager::successCallback,
+                                            this,
+                                            departure_input.getInstruction()->getDescription()),
+                                  std::bind(&RasterWAADProcessManager::failureCallback,
+                                            this,
+                                            departure_input.getInstruction()->getDescription())))
+                              .name("departure_" + std::to_string(idx));
 
     // Get Start Plan Instruction for approach
     Instruction start_instruction = NullInstruction();
     if (idx == 1)
     {
-      assert(isCompositeInstruction(*(input[0].instruction)));
-      const auto* ci = input[0].instruction->cast_const<CompositeInstruction>();
+      assert(isCompositeInstruction(*(input[0].getInstruction())));
+      const auto* ci = input[0].getInstruction()->cast_const<CompositeInstruction>();
       const auto* li = getLastPlanInstruction(*ci);
       assert(li != nullptr);
       start_instruction = *li;
     }
     else
     {
-      assert(isCompositeInstruction(*(input[idx - 1].instruction)));
-      const auto* tci = input[idx - 1].instruction->cast_const<CompositeInstruction>();
+      assert(isCompositeInstruction(*(input[idx - 1].getInstruction())));
+      const auto* tci = input[idx - 1].getInstruction()->cast_const<CompositeInstruction>();
       auto* li = getLastPlanInstruction(*tci);
       assert(li != nullptr);
       start_instruction = *li;
@@ -122,17 +124,18 @@ bool RasterWAADProcessManager::init(ProcessInput input)
     // Create the departure taskflow
     start_instruction.cast<PlanInstruction>()->setPlanType(PlanInstructionType::START);
     ProcessInput approach_input = input[idx][0];
-    approach_input.start_instruction = start_instruction;
-    approach_input.end_instruction_ptr = input[idx][1].results;
-    auto approach_step =
-        taskflow_
-            .composed_of(raster_taskflow_generator_->generateTaskflow(
-                approach_input,
-                std::bind(
-                    &RasterWAADProcessManager::successCallback, this, approach_input.instruction->getDescription()),
-                std::bind(
-                    &RasterWAADProcessManager::failureCallback, this, approach_input.instruction->getDescription())))
-            .name("approach_" + std::to_string(idx));
+    approach_input.setStartInstruction(start_instruction);
+    approach_input.setEndInstruction(std::vector<std::size_t>({ idx, 1 }));
+    auto approach_step = taskflow_
+                             .composed_of(raster_taskflow_generator_->generateTaskflow(
+                                 approach_input,
+                                 std::bind(&RasterWAADProcessManager::successCallback,
+                                           this,
+                                           approach_input.getInstruction()->getDescription()),
+                                 std::bind(&RasterWAADProcessManager::failureCallback,
+                                           this,
+                                           approach_input.getInstruction()->getDescription())))
+                             .name("approach_" + std::to_string(idx));
 
     // Each approach and departure depend on raster
     approach_step.succeed(process_step);
@@ -151,17 +154,18 @@ bool RasterWAADProcessManager::init(ProcessInput input)
     // robust because planners could modify composite size, which is rare but does happen when using OMPL where it is
     // not possible to simplify the trajectory to the desired number of states.
     ProcessInput transition_input = input[input_idx];
-    transition_input.start_instruction_ptr = input[input_idx - 1][2].results;
-    transition_input.end_instruction_ptr = input[input_idx + 1][0].results;
-    auto transition_step =
-        taskflow_
-            .composed_of(transition_taskflow_generator_->generateTaskflow(
-                transition_input,
-                std::bind(
-                    &RasterWAADProcessManager::successCallback, this, transition_input.instruction->getDescription()),
-                std::bind(
-                    &RasterWAADProcessManager::failureCallback, this, transition_input.instruction->getDescription())))
-            .name("transition_" + std::to_string(input_idx));
+    transition_input.setStartInstruction(std::vector<std::size_t>({ input_idx - 1, 2 }));
+    transition_input.setEndInstruction(std::vector<std::size_t>({ input_idx + 1, 0 }));
+    auto transition_step = taskflow_
+                               .composed_of(transition_taskflow_generator_->generateTaskflow(
+                                   transition_input,
+                                   std::bind(&RasterWAADProcessManager::successCallback,
+                                             this,
+                                             transition_input.getInstruction()->getDescription()),
+                                   std::bind(&RasterWAADProcessManager::failureCallback,
+                                             this,
+                                             transition_input.getInstruction()->getDescription())))
+                               .name("transition_" + std::to_string(input_idx));
 
     // Each transition is independent and thus depends only on the adjacent rasters approach and departure
     transition_step.succeed(raster_tasks_[starting_raster_idx + transition_idx][2]);
@@ -173,29 +177,33 @@ bool RasterWAADProcessManager::init(ProcessInput input)
 
   // Plan from_start - preceded by the first raster
   ProcessInput from_start_input = input[0];
-  from_start_input.start_instruction = input.instruction->cast_const<CompositeInstruction>()->getStartInstruction();
-  from_start_input.end_instruction_ptr = input[1][0].results;
-  auto from_start =
-      taskflow_
-          .composed_of(freespace_taskflow_generator_->generateTaskflow(
-              from_start_input,
-              std::bind(
-                  &RasterWAADProcessManager::successCallback, this, from_start_input.instruction->getDescription()),
-              std::bind(
-                  &RasterWAADProcessManager::failureCallback, this, from_start_input.instruction->getDescription())))
-          .name("from_start");
+  from_start_input.setStartInstruction(
+      input.getInstruction()->cast_const<CompositeInstruction>()->getStartInstruction());
+  from_start_input.setEndInstruction(std::vector<std::size_t>({ 1, 0 }));
+  auto from_start = taskflow_
+                        .composed_of(freespace_taskflow_generator_->generateTaskflow(
+                            from_start_input,
+                            std::bind(&RasterWAADProcessManager::successCallback,
+                                      this,
+                                      from_start_input.getInstruction()->getDescription()),
+                            std::bind(&RasterWAADProcessManager::failureCallback,
+                                      this,
+                                      from_start_input.getInstruction()->getDescription())))
+                        .name("from_start");
   raster_tasks_[starting_raster_idx][0].precede(from_start);
   freespace_tasks_.push_back(from_start);
 
   // Plan to_end - preceded by the last raster
   ProcessInput to_end_input = input[input.size() - 1];
-  to_end_input.start_instruction_ptr = input[input.size() - 2][2].results;
+  to_end_input.setStartInstruction(std::vector<std::size_t>({ input.size() - 2, 2 }));
   auto to_end =
       taskflow_
           .composed_of(freespace_taskflow_generator_->generateTaskflow(
               to_end_input,
-              std::bind(&RasterWAADProcessManager::successCallback, this, to_end_input.instruction->getDescription()),
-              std::bind(&RasterWAADProcessManager::failureCallback, this, to_end_input.instruction->getDescription())))
+              std::bind(
+                  &RasterWAADProcessManager::successCallback, this, to_end_input.getInstruction()->getDescription()),
+              std::bind(
+                  &RasterWAADProcessManager::failureCallback, this, to_end_input.getInstruction()->getDescription())))
           .name("to_end");
   raster_tasks_.back()[2].precede(to_end);
   freespace_tasks_.push_back(to_end);
@@ -220,7 +228,10 @@ bool RasterWAADProcessManager::execute()
 
   // Wait for currently running taskflows to end.
   executor_.wait_for_all();
-  executor_.run(taskflow_).wait();
+  executor_.run(taskflow_);
+  executor_.wait_for_all();
+
+  clear();  // I believe clear must be called so memory is cleaned up
 
   return success_;
 }
@@ -259,16 +270,16 @@ bool RasterWAADProcessManager::checkProcessInput(const tesseract_planning::Proce
   }
 
   // Check the overall input
-  if (!isCompositeInstruction(*(input.instruction)))
+  const Instruction* input_instruction = input.getInstruction();
+  if (!isCompositeInstruction(*input_instruction))
   {
     CONSOLE_BRIDGE_logError("ProcessInput Invalid: input.instructions should be a composite");
     return false;
   }
-  const auto* composite = input.instruction->cast_const<CompositeInstruction>();
+  const auto* composite = input_instruction->cast_const<CompositeInstruction>();
 
   // Check that it has a start instruction
-  if (!composite->hasStartInstruction() && input.start_instruction_ptr == nullptr &&
-      isNullInstruction(input.start_instruction))
+  if (!composite->hasStartInstruction() && isNullInstruction(input.getStartInstruction()))
   {
     CONSOLE_BRIDGE_logError("ProcessInput Invalid: input.instructions should have a start instruction");
     return false;

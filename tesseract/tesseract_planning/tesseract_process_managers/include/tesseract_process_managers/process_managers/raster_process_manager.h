@@ -103,9 +103,12 @@ private:
   tf::Taskflow taskflow_;
 
   tf::Task global_task_;
+  tf::Task global_post_task_;
   std::vector<tf::Task> freespace_tasks_;
   std::vector<tf::Task> transition_tasks_;
   std::vector<tf::Task> raster_tasks_;
+
+  static void globalPostProcess(ProcessInput input);
 
   /**
    * @brief Checks that the ProcessInput is in the correct format.
