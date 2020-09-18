@@ -225,13 +225,14 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) co
   // --------------------
   // Check that inputs are valid
   // --------------------
-  if (!isCompositeInstruction(*(input.instruction)))
+  const Instruction* input_intruction = input.getInstruction();
+  if (!isCompositeInstruction(*(input_intruction)))
   {
     CONSOLE_BRIDGE_logError("Input instruction to FixStateCollision must be a composite instruction");
     return 0;
   }
 
-  auto* ci = input.instruction->cast_const<CompositeInstruction>();
+  const auto* ci = input_intruction->cast_const<CompositeInstruction>();
   const ManipulatorInfo& manip_info = input.manip_info;
   const auto fwd_kin = input.tesseract->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
 

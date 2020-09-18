@@ -69,25 +69,8 @@ struct ProcessInput
 
   ProcessInput(tesseract::Tesseract::ConstPtr tesseract, const Instruction* instruction, Instruction* seed);
 
-  /**
-   * @brief Creates a sub-ProcessInput from instruction[index] and seed[index]
-   * @param index sub-Instruction used to create the ProcessInput
-   * @return A ProcessInput containing a subset of the original's instructions
-   */
-  ProcessInput operator[](std::size_t index);
-
-  /**
-   * @brief Gets the number of instructions contained in the ProcessInput
-   * @return 1 instruction if not a composite, otherwise size of the composite @todo Should this be -1, becuase
-   * composite size could be 1, 0, or other?
-   */
-  std::size_t size();
-
   /** @brief Tesseract associated with current state of the system */
   const tesseract::Tesseract::ConstPtr tesseract;
-
-  /** @brief Instructions to be carried out by process */
-  const Instruction* instruction;
 
   /** @brief Global Manipulator Information */
   const ManipulatorInfo& manip_info;
@@ -104,14 +87,61 @@ struct ProcessInput
    */
   const PlannerProfileRemapping& composite_profile_remapping;
 
-  /** @brief Results/Seed for this process */
-  Instruction* results;
+  /**
+   * @brief Creates a sub-ProcessInput from instruction[index] and seed[index]
+   * @param index sub-Instruction used to create the ProcessInput
+   * @return A ProcessInput containing a subset of the original's instructions
+   */
+  ProcessInput operator[](std::size_t index);
 
-  // These are used to store alternative start and end instructions
-  Instruction start_instruction;
-  Instruction end_instruction;
-  const Instruction* start_instruction_ptr{ nullptr };
-  const Instruction* end_instruction_ptr{ nullptr };
+  /**
+   * @brief Gets the number of instructions contained in the ProcessInput
+   * @return 1 instruction if not a composite, otherwise size of the composite @todo Should this be -1, becuase
+   * composite size could be 1, 0, or other?
+   */
+  std::size_t size();
+
+  /**
+   * @brief Get the process inputs instructions
+   * @return A const pointer to the instruction
+   */
+  const Instruction* getInstruction() const;
+
+  /**
+   * @brief Get the process inputs results instruction
+   * @return A pointer to the results instruction
+   */
+  Instruction* getResults();
+
+  void setStartInstruction(Instruction start);
+  void setStartInstruction(std::vector<std::size_t> start);
+  Instruction getStartInstruction() const;
+
+  void setEndInstruction(Instruction end);
+  void setEndInstruction(std::vector<std::size_t> end);
+  Instruction getEndInstruction() const;
+
+protected:
+  /** @brief Instructions to be carried out by process */
+  const Instruction* instruction_;
+
+  /** @brief Results/Seed for this process */
+  Instruction* results_;
+
+  /** @brief The indicies used to access this process inputs instructions and results */
+  std::vector<std::size_t> instruction_indice_;
+
+  /** @brief This proccess inputs start instruction */
+  Instruction start_instruction_{ NullInstruction() };
+
+  /** @brief Indices to the start instruction in the results data struction */
+  std::vector<std::size_t> start_instruction_indice_;
+
+  /** @brief This proccess inputs end instruction */
+  Instruction end_instruction_{ NullInstruction() };
+
+  /** @brief Indices to the end instruction in the results data struction */
+  std::vector<std::size_t> end_instruction_indice_;
 };
 
 }  // namespace tesseract_planning

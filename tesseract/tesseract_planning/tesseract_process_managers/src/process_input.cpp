@@ -45,13 +45,11 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                            const ManipulatorInfo& manip_info,
                            Instruction* seed)
   : tesseract(std::move(tesseract))
-  , instruction(instruction)
   , manip_info(manip_info)
   , plan_profile_remapping(EMPTY_PROFILE_MAPPING)
   , composite_profile_remapping(EMPTY_PROFILE_MAPPING)
-  , results(seed)
-  , start_instruction(NullInstruction())
-  , end_instruction(NullInstruction())
+  , instruction_(instruction)
+  , results_(seed)
 {
 }
 
@@ -62,13 +60,11 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                            const PlannerProfileRemapping& composite_profile_remapping,
                            Instruction* seed)
   : tesseract(std::move(tesseract))
-  , instruction(instruction)
   , manip_info(manip_info)
   , plan_profile_remapping(plan_profile_remapping)
   , composite_profile_remapping(composite_profile_remapping)
-  , results(seed)
-  , start_instruction(NullInstruction())
-  , end_instruction(NullInstruction())
+  , instruction_(instruction)
+  , results_(seed)
 {
 }
 
@@ -78,53 +74,174 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                            const PlannerProfileRemapping& composite_profile_remapping,
                            Instruction* seed)
   : tesseract(std::move(tesseract))
-  , instruction(instruction)
   , manip_info(EMPTY_MANIPULATOR_INFO)
   , plan_profile_remapping(plan_profile_remapping)
   , composite_profile_remapping(composite_profile_remapping)
-  , results(seed)
-  , start_instruction(NullInstruction())
-  , end_instruction(NullInstruction())
+  , instruction_(instruction)
+  , results_(seed)
 {
 }
 
 ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract, const Instruction* instruction, Instruction* seed)
   : tesseract(std::move(tesseract))
-  , instruction(instruction)
   , manip_info(EMPTY_MANIPULATOR_INFO)
   , plan_profile_remapping(EMPTY_PROFILE_MAPPING)
   , composite_profile_remapping(EMPTY_PROFILE_MAPPING)
-  , results(seed)
-  , start_instruction(NullInstruction())
-  , end_instruction(NullInstruction())
+  , instruction_(instruction)
+  , results_(seed)
 {
 }
 
 ProcessInput ProcessInput::operator[](std::size_t index)
 {
-  if (isCompositeInstruction(*instruction))
-  {
-    const auto* composite_instruction = instruction->cast_const<CompositeInstruction>();
-    auto* composite_seed = results->cast<CompositeInstruction>();
-    return ProcessInput(tesseract, &(composite_instruction->at(index)), manip_info, &((*composite_seed)[index]));
-  }
+  ProcessInput pi(*this);
+  pi.instruction_indice_.push_back(index);
 
-  if (index > 0)
-    CONSOLE_BRIDGE_logWarn("ProcessInput[] called with index > 0 when component instructions are not "
-                           "CompositeInstructions");
-
-  return ProcessInput(tesseract, nullptr, manip_info, nullptr);
+  return pi;
 }
 
 std::size_t ProcessInput::size()
 {
-  //  if (isCompositeInstruction(instruction) && isCompositeInstruction(results))
-  //    assert(instruction.cast_const<CompositeInstruction>()->size() == results.cast<CompositeInstruction>()->size());
+  const Instruction* ci = instruction_;
+  for (const auto& i : instruction_indice_)
+  {
+    if (isCompositeInstruction(*ci))
+    {
+      const auto* composite = ci->cast_const<CompositeInstruction>();
+      ci = &(composite->at(i));
+    }
+    else
+    {
+      return 0;
+    }
+  }
 
-  if (isCompositeInstruction(*instruction))
-    return instruction->cast_const<CompositeInstruction>()->size();
+  if (isCompositeInstruction(*ci))
+  {
+    const auto* composite = ci->cast_const<CompositeInstruction>();
+    return composite->size();
+  }
 
   return 0;
+}
+
+const Instruction* ProcessInput::getInstruction() const
+{
+  const Instruction* ci = instruction_;
+  for (const auto& i : instruction_indice_)
+  {
+    if (isCompositeInstruction(*ci))
+    {
+      const auto* composite = ci->cast_const<CompositeInstruction>();
+      ci = &(composite->at(i));
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  return ci;
+}
+
+Instruction* ProcessInput::getResults()
+{
+  Instruction* ci = results_;
+  for (const auto& i : instruction_indice_)
+  {
+    if (isCompositeInstruction(*ci))
+    {
+      auto* composite = ci->cast<CompositeInstruction>();
+      ci = &(composite->at(i));
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  return ci;
+}
+
+void ProcessInput::setStartInstruction(Instruction start)
+{
+  start_instruction_ = start;
+  start_instruction_indice_.clear();
+}
+
+void ProcessInput::setStartInstruction(std::vector<std::size_t> start)
+{
+  start_instruction_indice_ = start;
+  start_instruction_ = NullInstruction();
+}
+
+Instruction ProcessInput::getStartInstruction() const
+{
+  if (!isNullInstruction(start_instruction_))
+    return start_instruction_;
+
+  if (start_instruction_indice_.empty())
+    return NullInstruction();
+
+  Instruction* ci = results_;
+  for (const auto& i : start_instruction_indice_)
+  {
+    if (isCompositeInstruction(*ci))
+    {
+      auto* composite = ci->cast<CompositeInstruction>();
+      ci = &(composite->at(i));
+    }
+    else
+    {
+      return NullInstruction();
+    }
+  }
+
+  if (isCompositeInstruction(*ci))
+    return *getLastMoveInstruction(*(ci->cast<CompositeInstruction>()));
+
+  return *ci;
+}
+
+void ProcessInput::setEndInstruction(Instruction end)
+{
+  end_instruction_ = end;
+  end_instruction_indice_.clear();
+}
+
+void ProcessInput::setEndInstruction(std::vector<std::size_t> end)
+{
+  end_instruction_indice_ = end;
+  end_instruction_ = NullInstruction();
+}
+
+Instruction ProcessInput::getEndInstruction() const
+{
+  if (!isNullInstruction(end_instruction_))
+    return end_instruction_;
+
+  if (end_instruction_indice_.empty())
+    return NullInstruction();
+
+  Instruction* ci = results_;
+  for (const auto& i : end_instruction_indice_)
+  {
+    if (isCompositeInstruction(*ci))
+    {
+      auto* composite = ci->cast<CompositeInstruction>();
+      ci = &(composite->at(i));
+    }
+    else
+    {
+      return NullInstruction();
+    }
+  }
+
+  if (isCompositeInstruction(*ci))
+  {
+    auto* composite = ci->cast<CompositeInstruction>();
+    return composite->getStartInstruction();
+  }
+
+  return *ci;
 }
 
 }  // namespace tesseract_planning

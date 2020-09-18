@@ -69,7 +69,8 @@ int ContinuousContactCheckProcessGenerator::conditionalProcess(ProcessInput inpu
   // --------------------
   // Check that inputs are valid
   // --------------------
-  if (!isCompositeInstruction(*(input.results)))
+  Instruction* input_results = input.getResults();
+  if (!isCompositeInstruction(*input_results))
   {
     CONSOLE_BRIDGE_logError("Input seed to TrajOpt Planner must be a composite instruction");
     return 0;
@@ -81,12 +82,12 @@ int ContinuousContactCheckProcessGenerator::conditionalProcess(ProcessInput inpu
       input.tesseract->getEnvironment()->getContinuousContactManager();
   manager->setContactDistanceThreshold(contact_distance_);
 
-  const auto* ci = input.results->cast_const<CompositeInstruction>();
+  const auto* ci = input_results->cast_const<CompositeInstruction>();
   std::vector<tesseract_collision::ContactResultMap> contacts;
   if (contactCheckProgram(contacts, *manager, *state_solver, *ci, longest_valid_segment_length_))
   {
     CONSOLE_BRIDGE_logInform("Results are not contact free for process input: %s!",
-                             input.instruction->getDescription().c_str());
+                             input_results->getDescription().c_str());
     for (std::size_t i = 0; i < contacts.size(); i++)
       for (const auto& contact_vec : contacts[i])
         for (const auto& contact : contact_vec.second)

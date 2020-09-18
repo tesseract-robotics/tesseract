@@ -72,16 +72,16 @@ bool RasterDTProcessManager::init(ProcessInput input)
     Instruction start_instruction = NullInstruction();
     if (idx == 1)
     {
-      assert(isCompositeInstruction(*(input[0].instruction)));
-      const auto* ci = input[0].instruction->cast_const<CompositeInstruction>();
+      assert(isCompositeInstruction(*(input[0].getInstruction())));
+      const auto* ci = input[0].getInstruction()->cast_const<CompositeInstruction>();
       const auto* li = getLastPlanInstruction(*ci);
       assert(li != nullptr);
       start_instruction = *li;
     }
     else
     {
-      assert(isCompositeInstruction(*(input[idx - 1].instruction)));
-      const auto* tci = input[idx - 1].instruction->cast_const<CompositeInstruction>();
+      assert(isCompositeInstruction(*(input[idx - 1].getInstruction())));
+      const auto* tci = input[idx - 1].getInstruction()->cast_const<CompositeInstruction>();
       assert(isCompositeInstruction((*tci)[0]));
       const auto* ci = (*tci)[0].cast_const<CompositeInstruction>();
       auto* li = getLastPlanInstruction(*ci);
@@ -91,13 +91,15 @@ bool RasterDTProcessManager::init(ProcessInput input)
 
     start_instruction.cast<PlanInstruction>()->setPlanType(PlanInstructionType::START);
     ProcessInput raster_input = input[idx];
-    raster_input.start_instruction = start_instruction;
+    raster_input.setStartInstruction(start_instruction);
     auto raster_step =
         taskflow_
             .composed_of(raster_taskflow_generator_->generateTaskflow(
                 raster_input,
-                std::bind(&RasterDTProcessManager::successCallback, this, raster_input.instruction->getDescription()),
-                std::bind(&RasterDTProcessManager::failureCallback, this, raster_input.instruction->getDescription())))
+                std::bind(
+                    &RasterDTProcessManager::successCallback, this, raster_input.getInstruction()->getDescription()),
+                std::bind(
+                    &RasterDTProcessManager::failureCallback, this, raster_input.getInstruction()->getDescription())))
             .name("raster_" + std::to_string(idx));
     raster_tasks_.push_back(raster_step);
   }
@@ -112,17 +114,17 @@ bool RasterDTProcessManager::init(ProcessInput input)
     // robust because planners could modify composite size, which is rare but does happen when using OMPL where it is
     // not possible to simplify the trajectory to the desired number of states.
     ProcessInput transition_from_end_input = input[input_idx][0];
-    transition_from_end_input.start_instruction_ptr = input[input_idx - 1].results;
-    transition_from_end_input.end_instruction_ptr = input[input_idx + 1].results;
+    transition_from_end_input.setStartInstruction(std::vector<std::size_t>({ input_idx - 1 }));
+    transition_from_end_input.setEndInstruction(std::vector<std::size_t>({ input_idx + 1 }));
     auto transition_from_end_step = taskflow_
                                         .composed_of(transition_taskflow_generator_->generateTaskflow(
                                             transition_from_end_input,
                                             std::bind(&RasterDTProcessManager::successCallback,
                                                       this,
-                                                      transition_from_end_input.instruction->getDescription()),
+                                                      transition_from_end_input.getInstruction()->getDescription()),
                                             std::bind(&RasterDTProcessManager::failureCallback,
                                                       this,
-                                                      transition_from_end_input.instruction->getDescription())))
+                                                      transition_from_end_input.getInstruction()->getDescription())))
                                         .name("transition_from_end" + std::to_string(input_idx));
 
     // Each transition is independent and thus depends only on the adjacent rasters
@@ -132,17 +134,17 @@ bool RasterDTProcessManager::init(ProcessInput input)
     transition_tasks_.push_back(transition_from_end_step);
 
     ProcessInput transition_to_start_input = input[input_idx][1];
-    transition_to_start_input.start_instruction_ptr = input[input_idx + 1].results;
-    transition_to_start_input.end_instruction_ptr = input[input_idx - 1].results;
+    transition_to_start_input.setStartInstruction(std::vector<std::size_t>({ input_idx + 1 }));
+    transition_to_start_input.setEndInstruction(std::vector<std::size_t>({ input_idx - 1 }));
     auto transition_to_start_step = taskflow_
                                         .composed_of(transition_taskflow_generator_->generateTaskflow(
                                             transition_to_start_input,
                                             std::bind(&RasterDTProcessManager::successCallback,
                                                       this,
-                                                      transition_to_start_input.instruction->getDescription()),
+                                                      transition_to_start_input.getInstruction()->getDescription()),
                                             std::bind(&RasterDTProcessManager::failureCallback,
                                                       this,
-                                                      transition_to_start_input.instruction->getDescription())))
+                                                      transition_to_start_input.getInstruction()->getDescription())))
                                         .name("transition_to_start" + std::to_string(input_idx));
 
     // Each transition is independent and thus depends only on the adjacent rasters
@@ -156,28 +158,32 @@ bool RasterDTProcessManager::init(ProcessInput input)
 
   // Plan from_start - preceded by the first raster
   ProcessInput from_start_input = input[0];
-  from_start_input.start_instruction = input.instruction->cast_const<CompositeInstruction>()->getStartInstruction();
-  from_start_input.end_instruction_ptr = input[1].results;
+  from_start_input.setStartInstruction(
+      input.getInstruction()->cast_const<CompositeInstruction>()->getStartInstruction());
+  from_start_input.setEndInstruction(std::vector<std::size_t>({ 1 }));
   auto from_start =
       taskflow_
           .composed_of(freespace_taskflow_generator_->generateTaskflow(
               from_start_input,
-              std::bind(&RasterDTProcessManager::successCallback, this, from_start_input.instruction->getDescription()),
               std::bind(
-                  &RasterDTProcessManager::failureCallback, this, from_start_input.instruction->getDescription())))
+                  &RasterDTProcessManager::successCallback, this, from_start_input.getInstruction()->getDescription()),
+              std::bind(
+                  &RasterDTProcessManager::failureCallback, this, from_start_input.getInstruction()->getDescription())))
           .name("from_start");
   raster_tasks_[starting_raster_idx].precede(from_start);
   freespace_tasks_.push_back(from_start);
 
   // Plan to_end - preceded by the last raster
   ProcessInput to_end_input = input[input.size() - 1];
-  to_end_input.start_instruction_ptr = input[input.size() - 2].results;
+  to_end_input.setStartInstruction(std::vector<std::size_t>({ input.size() - 2 }));
   auto to_end =
       taskflow_
           .composed_of(freespace_taskflow_generator_->generateTaskflow(
               to_end_input,
-              std::bind(&RasterDTProcessManager::successCallback, this, to_end_input.instruction->getDescription()),
-              std::bind(&RasterDTProcessManager::failureCallback, this, to_end_input.instruction->getDescription())))
+              std::bind(
+                  &RasterDTProcessManager::successCallback, this, to_end_input.getInstruction()->getDescription()),
+              std::bind(
+                  &RasterDTProcessManager::failureCallback, this, to_end_input.getInstruction()->getDescription())))
           .name("to_end");
   raster_tasks_.back().precede(to_end);
   freespace_tasks_.push_back(to_end);
@@ -202,7 +208,10 @@ bool RasterDTProcessManager::execute()
 
   // Wait for currently running taskflows to end.
   executor_.wait_for_all();
-  executor_.run(taskflow_).wait();
+  executor_.run(taskflow_);
+  executor_.wait_for_all();
+
+  clear();  // I believe clear must be called so memory is cleaned up
 
   return success_;
 }
@@ -241,16 +250,16 @@ bool RasterDTProcessManager::checkProcessInput(const tesseract_planning::Process
   }
 
   // Check the overall input
-  if (!isCompositeInstruction(*(input.instruction)))
+  const Instruction* input_instruction = input.getInstruction();
+  if (!isCompositeInstruction(*input_instruction))
   {
     CONSOLE_BRIDGE_logError("ProcessInput Invalid: input.instructions should be a composite");
     return false;
   }
-  const auto* composite = input.instruction->cast_const<CompositeInstruction>();
+  const auto* composite = input_instruction->cast_const<CompositeInstruction>();
 
   // Check that it has a start instruction
-  if (!composite->hasStartInstruction() && input.start_instruction_ptr == nullptr &&
-      isNullInstruction(input.start_instruction))
+  if (!composite->hasStartInstruction() && isNullInstruction(input.getStartInstruction()))
   {
     CONSOLE_BRIDGE_logError("ProcessInput Invalid: input.instructions should have a start instruction");
     return false;
