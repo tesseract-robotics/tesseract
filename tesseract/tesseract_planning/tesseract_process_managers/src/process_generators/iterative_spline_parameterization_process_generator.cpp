@@ -73,13 +73,14 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
   // --------------------
   // Check that inputs are valid
   // --------------------
-  if (!isCompositeInstruction(*(input.results)))
+  Instruction* input_results = input.getResults();
+  if (!isCompositeInstruction(*input_results))
   {
     CONSOLE_BRIDGE_logError("Input results to iterative spline parameterization must be a composite instruction");
     return 0;
   }
 
-  auto* ci = input.results->cast<CompositeInstruction>();
+  auto* ci = input_results->cast<CompositeInstruction>();
   const ManipulatorInfo& manip_info = ci->getManipulatorInfo();
   const auto fwd_kin = input.tesseract->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
 
@@ -151,7 +152,7 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
                        acceleration_scaling_factors))
   {
     CONSOLE_BRIDGE_logInform("Failed to perform iterative spline time parameterization for process input: %s!",
-                             input.instruction->getDescription().c_str());
+                             input_results->getDescription().c_str());
     return 0;
   }
 

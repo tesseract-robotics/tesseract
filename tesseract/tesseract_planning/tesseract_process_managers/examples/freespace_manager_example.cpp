@@ -102,7 +102,7 @@ int main()
   if (plotter)
   {
     plotter->waitForInput();
-    plotter->plotTrajectory(*(input.results));
+    plotter->plotTrajectory(*(input.getResults()));
   }
 
   std::cout << "Execution Complete" << std::endl;
