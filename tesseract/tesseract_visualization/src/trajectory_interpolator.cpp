@@ -61,7 +61,7 @@ TrajectoryInterpolator::TrajectoryInterpolator(tesseract_planning::CompositeInst
 
     // It is possible for sub composites to start back from zero, this accounts for it
     if (current_time < last_time)
-      last_time = current_time;
+      last_time = 0;
 
     double dt = current_time - last_time;
     total_time += dt;
