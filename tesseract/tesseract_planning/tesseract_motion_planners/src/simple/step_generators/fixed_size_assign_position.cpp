@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-CompositeInstruction fixedSizeAssignJointPosition(const Eigen::Ref<const Eigen::VectorXd>& position,
+CompositeInstruction fixedSizeAssignStateWaypoint(const Eigen::Ref<const Eigen::VectorXd>& position,
                                                   const PlanInstruction& base_instruction,
                                                   const PlannerRequest& request,
                                                   const ManipulatorInfo& manip_info,
@@ -56,7 +56,7 @@ CompositeInstruction fixedSizeAssignJointPosition(const Eigen::Ref<const Eigen::
   else if (base_instruction.isFreespace())
     mv_type = MoveInstructionType::FREESPACE;
   else
-    throw std::runtime_error("fixedSizeAssignJointPosition: Unsupport plan instruction type!");
+    throw std::runtime_error("fixedSizeAssignStateWaypoint: Unsupport plan instruction type!");
 
   CompositeInstruction composite;
   composite.setManipulatorInfo(mi);
@@ -72,7 +72,7 @@ CompositeInstruction fixedSizeAssignJointPosition(const Eigen::Ref<const Eigen::
   return composite;
 }
 
-CompositeInstruction fixedSizeAssignJointPosition(const JointWaypoint& start,
+CompositeInstruction fixedSizeAssignStateWaypoint(const JointWaypoint& start,
                                                   const CartesianWaypoint& /*end*/,
                                                   const PlanInstruction& base_instruction,
                                                   const PlannerRequest& request,
@@ -82,10 +82,10 @@ CompositeInstruction fixedSizeAssignJointPosition(const JointWaypoint& start,
   // Joint waypoints should have joint names
   assert(static_cast<long>(start.joint_names.size()) == start.size());
 
-  return fixedSizeAssignJointPosition(start, base_instruction, request, manip_info, steps);
+  return fixedSizeAssignStateWaypoint(start, base_instruction, request, manip_info, steps);
 }
 
-CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint& /*start*/,
+CompositeInstruction fixedSizeAssignStateWaypoint(const CartesianWaypoint& /*start*/,
                                                   const JointWaypoint& end,
                                                   const PlanInstruction& base_instruction,
                                                   const PlannerRequest& request,
@@ -95,10 +95,10 @@ CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint& /*sta
   // Joint waypoints should have joint names
   assert(static_cast<long>(end.joint_names.size()) == end.size());
 
-  return fixedSizeAssignJointPosition(end, base_instruction, request, manip_info, steps);
+  return fixedSizeAssignStateWaypoint(end, base_instruction, request, manip_info, steps);
 }
 
-CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint& /*start*/,
+CompositeInstruction fixedSizeAssignStateWaypoint(const CartesianWaypoint& /*start*/,
                                                   const CartesianWaypoint& /*end*/,
                                                   const PlanInstruction& base_instruction,
                                                   const PlannerRequest& request,
@@ -109,7 +109,7 @@ CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint& /*sta
   ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
   auto fwd_kin = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
   Eigen::VectorXd position = request.env_state->getJointValues(fwd_kin->getJointNames());
-  return fixedSizeAssignJointPosition(position, base_instruction, request, manip_info, steps);
+  return fixedSizeAssignStateWaypoint(position, base_instruction, request, manip_info, steps);
 }
 
 }  // namespace tesseract_planning

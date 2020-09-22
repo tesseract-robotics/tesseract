@@ -96,7 +96,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointJoint_Join
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
-  auto composite = fixedSizeJointInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10);
+  auto composite = fixedSizeInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 10);
   EXPECT_EQ(composite.size(), 10);
   for (const auto& c : composite)
   {
@@ -116,7 +116,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointCart_Joint
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
-  auto composite = fixedSizeJointInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10);
+  auto composite = fixedSizeInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 10);
   EXPECT_EQ(composite.size(), 10);
   for (const auto& c : composite)
   {
@@ -140,7 +140,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, CartJoint_Joint
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Zero(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
-  auto composite = fixedSizeJointInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10);
+  auto composite = fixedSizeInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 10);
   EXPECT_EQ(composite.size(), 10);
   for (const auto& c : composite)
   {
@@ -160,7 +160,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, CartCart_JointI
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
-  auto composite = fixedSizeJointInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10);
+  auto composite = fixedSizeInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 10);
   EXPECT_EQ(composite.size(), 10);
   for (const auto& c : composite)
   {
@@ -184,7 +184,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointJoint_Cart
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
-  EXPECT_ANY_THROW(fixedSizeCartesianInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10));
+  EXPECT_ANY_THROW(fixedSizeInterpolateCartStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 10));
   /// @todo: Update once implemented
 }
 
@@ -197,7 +197,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, JointCart_Carte
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
-  EXPECT_ANY_THROW(fixedSizeCartesianInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10));
+  EXPECT_ANY_THROW(fixedSizeInterpolateCartStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 10));
   /// @todo: Update once implemented
 }
 
@@ -210,7 +210,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, CartJoint_Carte
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Zero(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
-  EXPECT_ANY_THROW(fixedSizeCartesianInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10));
+  EXPECT_ANY_THROW(fixedSizeInterpolateCartStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 10));
   /// @todo: Update once implemented
 }
 
@@ -223,7 +223,7 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeInterpolationUnit, CartCart_Cartes
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
 
-  EXPECT_ANY_THROW(fixedSizeCartesianInterpolation(wp1, wp2, instr, request, ManipulatorInfo(), 10));
+  EXPECT_ANY_THROW(fixedSizeInterpolateCartStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 10));
   /// @todo: Update once implemented
 }
 

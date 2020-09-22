@@ -39,7 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_planning
 {
 /**
- * @brief fixedSizeAssignJointPosition
+ * @brief fixedSizeAssignStateWaypoint
  *
  * This will create the fixed set of move instruction and assign the provided position for the state waypoint.
  *
@@ -49,13 +49,13 @@ namespace tesseract_planning
  * @param steps The fixed number of steps
  * @return A composite instruction of move instruction with state waypoints
  */
-CompositeInstruction fixedSizeAssignJointPosition(const Eigen::Ref<const Eigen::VectorXd>& position,
+CompositeInstruction fixedSizeAssignStateWaypoint(const Eigen::Ref<const Eigen::VectorXd>& position,
                                                   const PlanInstruction& base_instruction,
                                                   const PlannerRequest& request,
                                                   const ManipulatorInfo& manip_info,
                                                   int steps);
 /**
- * @brief fixedSizeAssignJointPosition
+ * @brief fixedSizeAssignStateWaypoint
  *
  * This will create the fixed set of move instruction and assign the start as the position for the state waypoint.
  *
@@ -67,7 +67,7 @@ CompositeInstruction fixedSizeAssignJointPosition(const Eigen::Ref<const Eigen::
  * @param steps The fixed number of steps
  * @return A composite instruction of move instruction with state waypoints
  */
-CompositeInstruction fixedSizeAssignJointPosition(const JointWaypoint& start,
+CompositeInstruction fixedSizeAssignStateWaypoint(const JointWaypoint& start,
                                                   const CartesianWaypoint& end,
                                                   const PlanInstruction& base_instruction,
                                                   const PlannerRequest& request,
@@ -75,7 +75,7 @@ CompositeInstruction fixedSizeAssignJointPosition(const JointWaypoint& start,
                                                   int steps);
 
 /**
- * @brief fixedSizeAssignJointPosition
+ * @brief fixedSizeAssignStateWaypoint
  *
  * This will create the fixed set of move instruction and assign the end as the position for the state waypoint.
  *
@@ -87,7 +87,7 @@ CompositeInstruction fixedSizeAssignJointPosition(const JointWaypoint& start,
  * @param steps The fixed number of steps
  * @return A composite instruction of move instruction with state waypoints
  */
-CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint& start,
+CompositeInstruction fixedSizeAssignStateWaypoint(const CartesianWaypoint& start,
                                                   const JointWaypoint& end,
                                                   const PlanInstruction& base_instruction,
                                                   const PlannerRequest& request,
@@ -95,7 +95,7 @@ CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint& start
                                                   int steps);
 
 /**
- * @brief fixedSizeAssignJointPosition
+ * @brief fixedSizeAssignStateWaypoint
  *
  * This will create the fixed set of move instruction and assign the current environment state as the position for
  * the state waypoint.
@@ -108,7 +108,7 @@ CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint& start
  * @param steps The fixed number of steps
  * @return A composite instruction of move instruction with state waypoints
  */
-CompositeInstruction fixedSizeAssignJointPosition(const CartesianWaypoint& start,
+CompositeInstruction fixedSizeAssignStateWaypoint(const CartesianWaypoint& start,
                                                   const CartesianWaypoint& end,
                                                   const PlanInstruction& base_instruction,
                                                   const PlannerRequest& request,

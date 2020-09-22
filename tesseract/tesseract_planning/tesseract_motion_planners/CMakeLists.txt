@@ -90,6 +90,7 @@ endif()
 # Simple Planner
 add_library(${PROJECT_NAME}_simple SHARED
   src/simple/simple_motion_planner.cpp
+  src/simple/profile/simple_planner_default_lvs_plan_profile.cpp
   src/simple/profile/simple_planner_default_plan_profile.cpp
   src/simple/profile/simple_planner_interpolation_plan_profile.cpp
   src/simple/step_generators/fixed_size_assign_position.cpp
