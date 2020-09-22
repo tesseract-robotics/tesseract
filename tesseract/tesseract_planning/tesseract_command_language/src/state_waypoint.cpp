@@ -138,6 +138,11 @@ StateWaypoint::StateWaypoint(const tinyxml2::XMLElement& xml_element)
 
 int StateWaypoint::getType() const { return static_cast<int>(WaypointType::STATE_WAYPOINT); }
 
+void StateWaypoint::print(const std::string& prefix) const
+{
+  std::cout << prefix << "State WP: Pos=" << position.transpose() << std::endl;
+}
+
 tinyxml2::XMLElement* StateWaypoint::toXML(tinyxml2::XMLDocument& doc) const
 {
   Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");

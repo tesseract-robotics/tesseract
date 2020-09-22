@@ -24,6 +24,11 @@
  * limitations under the License.
  */
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <iostream>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract_command_language/null_waypoint.h>
 #include <tesseract_command_language/waypoint_type.h>
 
@@ -32,6 +37,8 @@ namespace tesseract_planning
 NullWaypoint::NullWaypoint(const tinyxml2::XMLElement& /*xml_element*/) {}
 
 int NullWaypoint::getType() const { return static_cast<int>(WaypointType::NULL_WAYPOINT); }
+
+void NullWaypoint::print(const std::string& prefix) const { std::cout << prefix << "Null WP"; };
 
 tinyxml2::XMLElement* NullWaypoint::toXML(tinyxml2::XMLDocument& doc) const
 {
