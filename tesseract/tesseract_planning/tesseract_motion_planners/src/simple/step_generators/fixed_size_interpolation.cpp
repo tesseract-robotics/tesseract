@@ -37,12 +37,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-CompositeInstruction fixedSizeJointInterpolation(const JointWaypoint& start,
-                                                 const JointWaypoint& end,
-                                                 const PlanInstruction& base_instruction,
-                                                 const PlannerRequest& /*request*/,
-                                                 const ManipulatorInfo& /*manip_info*/,
-                                                 int steps)
+CompositeInstruction fixedSizeInterpolateStateWaypoint(const JointWaypoint& start,
+                                                       const JointWaypoint& end,
+                                                       const PlanInstruction& base_instruction,
+                                                       const PlannerRequest& /*request*/,
+                                                       const ManipulatorInfo& /*manip_info*/,
+                                                       int steps)
 {
   CompositeInstruction composite;
 
@@ -64,12 +64,12 @@ CompositeInstruction fixedSizeJointInterpolation(const JointWaypoint& start,
   return composite;
 }
 
-CompositeInstruction fixedSizeJointInterpolation(const JointWaypoint& start,
-                                                 const CartesianWaypoint& end,
-                                                 const PlanInstruction& base_instruction,
-                                                 const PlannerRequest& request,
-                                                 const ManipulatorInfo& manip_info,
-                                                 int steps)
+CompositeInstruction fixedSizeInterpolateStateWaypoint(const JointWaypoint& start,
+                                                       const CartesianWaypoint& end,
+                                                       const PlanInstruction& base_instruction,
+                                                       const PlannerRequest& request,
+                                                       const ManipulatorInfo& manip_info,
+                                                       int steps)
 {
   assert(!(manip_info.empty() && base_instruction.getManipulatorInfo().empty()));
   ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
@@ -92,7 +92,7 @@ CompositeInstruction fixedSizeJointInterpolation(const JointWaypoint& start,
   p2 = world_to_base.inverse() * p2;
   Eigen::VectorXd j2, j2_final;
   if (!inv_kin->calcInvKin(j2, p2, j1))
-    throw std::runtime_error("fixedSizeJointInterpolation: failed to find inverse kinematics solution!");
+    throw std::runtime_error("fixedSizeInterpolateStateWaypoint: failed to find inverse kinematics solution!");
 
   // Find closest solution to the start state
   double dist = std::numeric_limits<double>::max();
@@ -126,12 +126,12 @@ CompositeInstruction fixedSizeJointInterpolation(const JointWaypoint& start,
   return composite;
 }
 
-CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
-                                                 const JointWaypoint& end,
-                                                 const PlanInstruction& base_instruction,
-                                                 const PlannerRequest& request,
-                                                 const ManipulatorInfo& manip_info,
-                                                 int steps)
+CompositeInstruction fixedSizeInterpolateStateWaypoint(const CartesianWaypoint& start,
+                                                       const JointWaypoint& end,
+                                                       const PlanInstruction& base_instruction,
+                                                       const PlannerRequest& request,
+                                                       const ManipulatorInfo& manip_info,
+                                                       int steps)
 {
   assert(!(manip_info.empty() && base_instruction.getManipulatorInfo().empty()));
   ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
@@ -152,7 +152,7 @@ CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
   p1 = world_to_base.inverse() * p1;
   Eigen::VectorXd j1, j1_final;
   if (!inv_kin->calcInvKin(j1, p1, end))
-    throw std::runtime_error("fixedSizeJointInterpolation: failed to find inverse kinematics solution!");
+    throw std::runtime_error("fixedSizeInterpolateStateWaypoint: failed to find inverse kinematics solution!");
 
   Eigen::VectorXd j2 = end;
 
@@ -175,7 +175,7 @@ CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
   }
 
   // Linearly interpolate in joint space
-  Eigen::MatrixXd states = interpolate(j1, j2, steps);
+  Eigen::MatrixXd states = interpolate(j1_final, j2, steps);
 
   // Convert to MoveInstructions
   for (long i = 1; i < states.cols(); ++i)
@@ -189,12 +189,12 @@ CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
   return composite;
 }
 
-CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
-                                                 const CartesianWaypoint& end,
-                                                 const PlanInstruction& base_instruction,
-                                                 const PlannerRequest& request,
-                                                 const ManipulatorInfo& manip_info,
-                                                 int steps)
+CompositeInstruction fixedSizeInterpolateStateWaypoint(const CartesianWaypoint& start,
+                                                       const CartesianWaypoint& end,
+                                                       const PlanInstruction& base_instruction,
+                                                       const PlannerRequest& request,
+                                                       const ManipulatorInfo& manip_info,
+                                                       int steps)
 {
   assert(!(manip_info.empty() && base_instruction.getManipulatorInfo().empty()));
   ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
@@ -214,13 +214,13 @@ CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
   p1 = world_to_base.inverse() * p1;
   Eigen::VectorXd j1, j1_final;
   if (!inv_kin->calcInvKin(j1, p1, seed))
-    throw std::runtime_error("fixedSizeJointInterpolation: failed to find inverse kinematics solution!");
+    throw std::runtime_error("fixedSizeInterpolateStateWaypoint: failed to find inverse kinematics solution!");
 
   Eigen::Isometry3d p2 = end * tcp.inverse();
   p2 = world_to_base.inverse() * p2;
   Eigen::VectorXd j2, j2_final;
   if (!inv_kin->calcInvKin(j2, p2, seed))
-    throw std::runtime_error("fixedSizeJointInterpolation: failed to find inverse kinematics solution!");
+    throw std::runtime_error("fixedSizeInterpolateStateWaypoint: failed to find inverse kinematics solution!");
 
   // Find closest solution to the end state
   double dist = std::numeric_limits<double>::max();
@@ -248,7 +248,7 @@ CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
   }
 
   // Linearly interpolate in joint space
-  Eigen::MatrixXd states = interpolate(j1, j2, steps);
+  Eigen::MatrixXd states = interpolate(j1_final, j2_final, steps);
 
   // Convert to MoveInstructions
   for (long i = 1; i < states.cols(); ++i)
@@ -263,12 +263,12 @@ CompositeInstruction fixedSizeJointInterpolation(const CartesianWaypoint& start,
   return composite;
 }
 
-CompositeInstruction fixedSizeCartesianInterpolation(const JointWaypoint& start,
-                                                     const JointWaypoint& end,
-                                                     const PlanInstruction& base_instruction,
-                                                     const PlannerRequest& request,
-                                                     const ManipulatorInfo& manip_info,
-                                                     int steps)
+CompositeInstruction fixedSizeInterpolateCartStateWaypoint(const JointWaypoint& start,
+                                                           const JointWaypoint& end,
+                                                           const PlanInstruction& base_instruction,
+                                                           const PlannerRequest& request,
+                                                           const ManipulatorInfo& manip_info,
+                                                           int steps)
 {
   /// @todo: Need to create a cartesian state waypoint and update the code below
   throw std::runtime_error("Not implemented, PR's are welcome!");
@@ -309,12 +309,12 @@ CompositeInstruction fixedSizeCartesianInterpolation(const JointWaypoint& start,
   return composite;
 }
 
-CompositeInstruction fixedSizeCartesianInterpolation(const JointWaypoint& start,
-                                                     const CartesianWaypoint& end,
-                                                     const PlanInstruction& base_instruction,
-                                                     const PlannerRequest& request,
-                                                     const ManipulatorInfo& manip_info,
-                                                     int steps)
+CompositeInstruction fixedSizeInterpolateCartStateWaypoint(const JointWaypoint& start,
+                                                           const CartesianWaypoint& end,
+                                                           const PlanInstruction& base_instruction,
+                                                           const PlannerRequest& request,
+                                                           const ManipulatorInfo& manip_info,
+                                                           int steps)
 {
   /// @todo: Need to create a cartesian state waypoint and update the code below
   throw std::runtime_error("Not implemented, PR's are welcome!");
@@ -352,12 +352,12 @@ CompositeInstruction fixedSizeCartesianInterpolation(const JointWaypoint& start,
   return composite;
 }
 
-CompositeInstruction fixedSizeCartesianInterpolation(const CartesianWaypoint& start,
-                                                     const JointWaypoint& end,
-                                                     const PlanInstruction& base_instruction,
-                                                     const PlannerRequest& request,
-                                                     const ManipulatorInfo& manip_info,
-                                                     int steps)
+CompositeInstruction fixedSizeInterpolateCartStateWaypoint(const CartesianWaypoint& start,
+                                                           const JointWaypoint& end,
+                                                           const PlanInstruction& base_instruction,
+                                                           const PlannerRequest& request,
+                                                           const ManipulatorInfo& manip_info,
+                                                           int steps)
 {
   /// @todo: Need to create a cartesian state waypoint and update the code below
   throw std::runtime_error("Not implemented, PR's are welcome!");
@@ -395,12 +395,12 @@ CompositeInstruction fixedSizeCartesianInterpolation(const CartesianWaypoint& st
   return composite;
 }
 
-CompositeInstruction fixedSizeCartesianInterpolation(const CartesianWaypoint& start,
-                                                     const CartesianWaypoint& end,
-                                                     const PlanInstruction& base_instruction,
-                                                     const PlannerRequest& /*request*/,
-                                                     const ManipulatorInfo& /*manip_info*/,
-                                                     int steps)
+CompositeInstruction fixedSizeInterpolateCartStateWaypoint(const CartesianWaypoint& start,
+                                                           const CartesianWaypoint& end,
+                                                           const PlanInstruction& base_instruction,
+                                                           const PlannerRequest& /*request*/,
+                                                           const ManipulatorInfo& /*manip_info*/,
+                                                           int steps)
 {
   /// @todo: Need to create a cartesian state waypoint and update the code below
   throw std::runtime_error("Not implemented, PR's are welcome!");
