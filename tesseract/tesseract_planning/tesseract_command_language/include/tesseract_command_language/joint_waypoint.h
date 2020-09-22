@@ -89,6 +89,11 @@ public:
 
   int getType() const { return static_cast<int>(WaypointType::JOINT_WAYPOINT); }
 
+  void print(const std::string& prefix = "") const
+  {
+    std::cout << prefix << "Joint WP: " << this->transpose() << std::endl;
+  };
+
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const
   {
     Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
