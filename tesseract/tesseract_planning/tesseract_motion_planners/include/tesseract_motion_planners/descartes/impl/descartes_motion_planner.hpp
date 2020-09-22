@@ -156,9 +156,11 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
       }
       else if (plan_instruction->isFreespace())
       {
+        assert(result_index > 0);
         // Because descartes does not support freespace it just includes the plan instruction waypoint so we will
         // fill out the results with a joint interpolated trajectory.
-        Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> start(solution.data() + dof * result_index, dof);
+        Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> start(solution.data() + dof * (result_index - 1),
+                                                                            dof);
         Eigen::Map<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1>> stop(solution.data() + dof * result_index++, dof);
 
         // This instruction corresponds to a composite. Set all results in that composite to the results
