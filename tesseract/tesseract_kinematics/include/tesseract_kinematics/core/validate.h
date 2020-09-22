@@ -58,40 +58,85 @@ inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::Const
 {
   // Check name
   if (fwd_kin->getName() != inv_kin->getName())
+  {
+    CONSOLE_BRIDGE_logError("checkKinematics: Manipulator names do not match!");
     return false;
+  }
 
   // Check if number of joints
   if (fwd_kin->numJoints() != inv_kin->numJoints())
+  {
+    CONSOLE_BRIDGE_logError("checkKinematics: Manipulator number of joints do not match!");
     return false;
+  }
 
   // Check link names
-  if (fwd_kin->getLinkNames().size() != inv_kin->getLinkNames().size() ||
-      !std::equal(fwd_kin->getLinkNames().begin(), fwd_kin->getLinkNames().end(), inv_kin->getLinkNames().begin()))
+  std::vector<std::string> l1 = fwd_kin->getLinkNames();
+  std::vector<std::string> l2 = inv_kin->getLinkNames();
+  std::sort(l1.begin(), l1.end());
+  std::sort(l2.begin(), l2.end());
+  if (l1.size() != l1.size())
+  {
+    CONSOLE_BRIDGE_logWarn("checkKinematics: Manipulator link names size do not match!");
     return false;
+  }
+
+  if (!std::equal(l1.begin(), l1.end(), l2.begin()))
+  {
+    CONSOLE_BRIDGE_logWarn("checkKinematics: Manipulator link names do not match!");
+    return false;
+  }
 
   // Check active link names
-  if (fwd_kin->getActiveLinkNames().size() != inv_kin->getActiveLinkNames().size() ||
-      !std::equal(fwd_kin->getActiveLinkNames().begin(),
-                  fwd_kin->getActiveLinkNames().end(),
-                  inv_kin->getActiveLinkNames().begin()))
+  l1 = fwd_kin->getActiveLinkNames();
+  l2 = inv_kin->getActiveLinkNames();
+  std::sort(l1.begin(), l1.end());
+  std::sort(l2.begin(), l2.end());
+  if (l1.size() != l2.size())
+  {
+    CONSOLE_BRIDGE_logWarn("checkKinematics: Manipulator active link names size do not match!");
     return false;
+  }
+
+  if (!std::equal(l1.begin(), l1.end(), l2.begin()))
+  {
+    CONSOLE_BRIDGE_logWarn("checkKinematics: Manipulator active link names do not match!");
+    return false;
+  }
 
   // Check joint names
-  if (fwd_kin->getJointNames().size() != inv_kin->getJointNames().size() ||
-      !std::equal(fwd_kin->getJointNames().begin(), fwd_kin->getJointNames().end(), inv_kin->getJointNames().begin()))
+  if (fwd_kin->getJointNames().size() != inv_kin->getJointNames().size())
+  {
+    CONSOLE_BRIDGE_logError("checkKinematics: Manipulator joint names size do not match!");
     return false;
+  }
+
+  if (!std::equal(fwd_kin->getJointNames().begin(), fwd_kin->getJointNames().end(), inv_kin->getJointNames().begin()))
+  {
+    CONSOLE_BRIDGE_logError("checkKinematics: Manipulator joint names do not match!");
+    return false;
+  }
 
   // Check joint limits
   if (!fwd_kin->getLimits().joint_limits.isApprox(inv_kin->getLimits().joint_limits, tol))
+  {
+    CONSOLE_BRIDGE_logWarn("checkKinematics: Manipulator joint limits do not match within tolerance %f!", tol);
     return false;
+  }
 
   // Check velocity limits
   if (!fwd_kin->getLimits().velocity_limits.isApprox(inv_kin->getLimits().velocity_limits, tol))
+  {
+    CONSOLE_BRIDGE_logWarn("checkKinematics: Manipulator velocity limits do not match within tolerance %f!", tol);
     return false;
+  }
 
   // Check acceleration limits
   if (!fwd_kin->getLimits().acceleration_limits.isApprox(inv_kin->getLimits().acceleration_limits, tol))
+  {
+    CONSOLE_BRIDGE_logWarn("checkKinematics: Manipulator acceleration limits do not match within tolerance %f!", tol);
     return false;
+  }
 
   Eigen::Isometry3d test1;
   Eigen::Isometry3d test2;
@@ -100,19 +145,32 @@ inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::Const
   seed_angles.setZero();
   joint_angles2.setZero();
 
-  for (int t = 0; t < fwd_kin->numJoints(); ++t)
+  int nj = static_cast<int>(fwd_kin->numJoints());
+  for (int t = 0; t < nj; ++t)
   {
     joint_angles2[t] = M_PI / 2;
 
     fwd_kin->calcFwdKin(test1, joint_angles2);
     Eigen::VectorXd sols;
     inv_kin->calcInvKin(sols, test1, seed_angles);
-    int num_sols = sols.size() / fwd_kin->numJoints();
+    int num_sols = static_cast<int>(sols.size()) / nj;
     for (int i = 0; i < num_sols; ++i)
     {
-      fwd_kin->calcFwdKin(test2, sols.middleRows(fwd_kin->numJoints() * i, fwd_kin->numJoints()));
-      if (!test1.isApprox(test2, tol))
+      fwd_kin->calcFwdKin(test2, sols.middleRows(nj * i, nj));
+
+      if ((test1.translation() - test2.translation()).norm() > tol)
+      {
+        CONSOLE_BRIDGE_logWarn("checkKinematics: Manipulator translation norm is greater than tolerance %f!", tol);
         return false;
+      }
+
+      if (Eigen::Quaterniond(test1.linear()).angularDistance(Eigen::Quaterniond(test2.linear())) > tol)
+      {
+        CONSOLE_BRIDGE_logWarn("checkKinematics: Manipulator orientation angular distance is greater than tolerance "
+                               "%f!",
+                               tol);
+        return false;
+      }
     }
 
     joint_angles2[t] = 0;
@@ -142,55 +200,111 @@ inline bool checkKinematics(const tesseract_kinematics::ForwardKinematics::Const
 {
   // Check name
   if (fwd_kin1->getName() != fwd_kin2->getName())
+  {
+    CONSOLE_BRIDGE_logError("checkKinematics: Manipulator names do not match!");
     return false;
+  }
 
   // Check if number of joints
   if (fwd_kin1->numJoints() != fwd_kin2->numJoints())
+  {
+    CONSOLE_BRIDGE_logError("checkKinematics: Manipulator number of joints do not match!");
     return false;
+  }
 
   // Check link names
-  if (fwd_kin1->getLinkNames().size() != fwd_kin2->getLinkNames().size() ||
-      !std::equal(fwd_kin1->getLinkNames().begin(), fwd_kin1->getLinkNames().end(), fwd_kin2->getLinkNames().begin()))
+  std::vector<std::string> l1 = fwd_kin1->getLinkNames();
+  std::vector<std::string> l2 = fwd_kin2->getLinkNames();
+  std::sort(l1.begin(), l1.end());
+  std::sort(l2.begin(), l2.end());
+  if (l1.size() != l1.size())
+  {
+    CONSOLE_BRIDGE_logWarn("checkKinematics: Manipulator link names size do not match!");
     return false;
+  }
+
+  if (!std::equal(l1.begin(), l1.end(), l2.begin()))
+  {
+    CONSOLE_BRIDGE_logWarn("checkKinematics: Manipulator link names do not match!");
+    return false;
+  }
 
   // Check active link names
-  if (fwd_kin1->getActiveLinkNames().size() != fwd_kin2->getActiveLinkNames().size() ||
-      !std::equal(fwd_kin1->getActiveLinkNames().begin(),
-                  fwd_kin1->getActiveLinkNames().end(),
-                  fwd_kin2->getActiveLinkNames().begin()))
+  l1 = fwd_kin1->getActiveLinkNames();
+  l2 = fwd_kin2->getActiveLinkNames();
+  std::sort(l1.begin(), l1.end());
+  std::sort(l2.begin(), l2.end());
+  if (l1.size() != l2.size())
+  {
+    CONSOLE_BRIDGE_logWarn("checkKinematics: Manipulator active link names size do not match!");
     return false;
+  }
+
+  if (!std::equal(l1.begin(), l1.end(), l2.begin()))
+  {
+    CONSOLE_BRIDGE_logWarn("checkKinematics: Manipulator active link names do not match!");
+    return false;
+  }
 
   // Check joint names
-  if (fwd_kin1->getJointNames().size() != fwd_kin2->getJointNames().size() ||
-      !std::equal(
-          fwd_kin1->getJointNames().begin(), fwd_kin1->getJointNames().end(), fwd_kin2->getJointNames().begin()))
+  if (fwd_kin1->getJointNames().size() != fwd_kin2->getJointNames().size())
+  {
+    CONSOLE_BRIDGE_logError("checkKinematics: Manipulator joint names size do not match!");
     return false;
+  }
+
+  if (!std::equal(
+          fwd_kin1->getJointNames().begin(), fwd_kin1->getJointNames().end(), fwd_kin2->getJointNames().begin()))
+  {
+    CONSOLE_BRIDGE_logError("checkKinematics: Manipulator joint names do not match!");
+    return false;
+  }
 
   // Check joint limits
   if (!fwd_kin1->getLimits().joint_limits.isApprox(fwd_kin2->getLimits().joint_limits, tol))
+  {
+    CONSOLE_BRIDGE_logWarn("checkKinematics: Manipulator joint limits do not match within tolerance %f!", tol);
     return false;
+  }
 
   // Check velocity limits
   if (!fwd_kin1->getLimits().velocity_limits.isApprox(fwd_kin2->getLimits().velocity_limits, tol))
+  {
+    CONSOLE_BRIDGE_logWarn("checkKinematics: Manipulator velocity limits do not match within tolerance %f!", tol);
     return false;
+  }
 
   // Check acceleration limits
   if (!fwd_kin1->getLimits().acceleration_limits.isApprox(fwd_kin2->getLimits().acceleration_limits, tol))
+  {
+    CONSOLE_BRIDGE_logWarn("checkKinematics: Manipulator acceleration limits do not match within tolerance %f!", tol);
     return false;
+  }
 
   Eigen::Isometry3d test1;
   Eigen::Isometry3d test2;
   Eigen::VectorXd joint_angles2(fwd_kin1->numJoints());
   joint_angles2.setZero();
 
-  for (int t = 0; t < fwd_kin1->numJoints(); ++t)
+  for (int t = 0; t < static_cast<int>(fwd_kin1->numJoints()); ++t)
   {
     joint_angles2[t] = M_PI / 2;
 
     fwd_kin1->calcFwdKin(test1, joint_angles2);
     fwd_kin2->calcFwdKin(test2, joint_angles2);
-    if (!test1.isApprox(test2, tol))
+
+    if ((test1.translation() - test2.translation()).norm() > tol)
+    {
+      CONSOLE_BRIDGE_logWarn("checkKinematics: Manipulator translation norm is greater than tolerance %f!", tol);
       return false;
+    }
+
+    if (Eigen::Quaterniond(test1.linear()).angularDistance(Eigen::Quaterniond(test2.linear())) > tol)
+    {
+      CONSOLE_BRIDGE_logWarn("checkKinematics: Manipulator orientation angular distance is greater than tolerance %f!",
+                             tol);
+      return false;
+    }
 
     joint_angles2[t] = 0;
   }
