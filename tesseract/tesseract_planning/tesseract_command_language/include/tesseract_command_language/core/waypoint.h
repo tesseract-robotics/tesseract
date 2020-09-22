@@ -47,6 +47,8 @@ struct WaypointInnerBase
 
   virtual int getType() const = 0;
 
+  virtual void print(const std::string& prefix) const = 0;
+
   virtual tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const = 0;
 
   // This is not required for user defined implementation
@@ -73,6 +75,8 @@ struct WaypointInner final : WaypointInnerBase
   std::unique_ptr<WaypointInnerBase> clone() const override { return std::make_unique<WaypointInner>(waypoint_); }
 
   int getType() const final { return waypoint_.getType(); }
+
+  void print(const std::string& prefix) const final { waypoint_.print(prefix); }
 
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const final { return waypoint_.toXML(doc); }
 
@@ -133,6 +137,8 @@ public:
   }
 
   int getType() const { return waypoint_->getType(); }
+
+  void print(const std::string& prefix = "") const { waypoint_->print(prefix); }
 
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const { return waypoint_->toXML(doc); }
 

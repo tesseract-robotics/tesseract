@@ -49,6 +49,8 @@ public:
 
   int getType() const;
 
+  void print(const std::string& prefix = "") const;
+
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const;
 
   /** @brief The joint corresponding to the position vector. */
