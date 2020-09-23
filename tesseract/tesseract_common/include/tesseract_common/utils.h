@@ -150,6 +150,24 @@ inline void trim(std::string& s)
 }
 
 /**
+ * @brief Check if two vector of strings are identical
+ * @param vec1 Vector strings
+ * @param vec2 Vector strings
+ * @param ordered If true order is relavent, othwise if false order is not relavent
+ */
+inline bool isIdentical(const std::vector<std::string>& vec1, const std::vector<std::string>& vec2, bool ordered = true)
+{
+  if (ordered)
+    return std::equal(vec1.begin(), vec1.end(), vec2.begin());
+
+  std::vector<std::string> v1 = vec1;
+  std::vector<std::string> v2 = vec2;
+  std::sort(v1.begin(), v1.end());
+  std::sort(v2.begin(), v2.end());
+  return std::equal(v1.begin(), v1.end(), v2.begin());
+}
+
+/**
  * @brief Query a string value from xml element
  * @param xml_element The xml element to query string from
  * @param value The value to update from the xml element

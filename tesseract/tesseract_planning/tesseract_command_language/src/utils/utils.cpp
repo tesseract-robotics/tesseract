@@ -48,6 +48,50 @@ const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint)
   throw std::runtime_error("Unsupported waypoint type.");
 }
 
+Eigen::VectorXd getJointPosition(const std::vector<std::string>& joint_names, const Waypoint& waypoint)
+{
+  Eigen::VectorXd jv;
+  std::vector<std::string> jn;
+  if (isJointWaypoint(waypoint))
+  {
+    const auto* jwp = waypoint.cast_const<JointWaypoint>();
+    jv = *jwp;
+    jn = jwp->joint_names;
+  }
+  else if (isStateWaypoint(waypoint))
+  {
+    const auto* swp = waypoint.cast_const<StateWaypoint>();
+    jv = swp->position;
+    jn = swp->joint_names;
+  }
+  else
+  {
+    throw std::runtime_error("Unsupported waypoint type.");
+  }
+
+  if (jn.size() == joint_names.size())
+    throw std::runtime_error("Joint name sizes do not match!");
+
+  if (joint_names == jn)
+    return jv;
+
+  Eigen::VectorXd output = jv;
+  for (std::size_t i = 0; i < joint_names.size(); ++i)
+  {
+    if (joint_names[i] == jn[i])
+      continue;
+
+    auto it = std::find(jn.begin(), jn.end(), joint_names[i]);
+    if (it == jn.end())
+      throw std::runtime_error("Joint names do not match!");
+
+    long idx = std::distance(jn.begin(), it);
+    output(static_cast<long>(i)) = jv(static_cast<long>(idx));
+  }
+
+  return output;
+}
+
 bool setJointPosition(Waypoint& waypoint, const Eigen::Ref<const Eigen::VectorXd>& position)
 {
   if (isJointWaypoint(waypoint))

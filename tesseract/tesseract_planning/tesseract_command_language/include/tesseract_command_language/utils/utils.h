@@ -34,9 +34,28 @@
 
 namespace tesseract_planning
 {
-/** @brief Gets joint position from waypoints that contain that information. Throws if waypoint does not directly
- * contain that information*/
+/**
+ * @brief Gets joint position from waypoints that contain that information.
+ *
+ * Throws if waypoint does not directly contain that information
+ *
+ * @return The joint values
+ */
 const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint);
+
+/**
+ * @brief Get the joint positions ordered by the provided joint names
+ *
+ * Throws if waypoint does not directly contain that information
+ *
+ * Also this is an expensive call so the motion planners do not leverage this and they expect the order through out
+ * the program all match.
+ *
+ * @param joint_names The joint names defining the order desired
+ * @param waypoint The waypoint to
+ * @return The joint values ordered by the provied joint_names
+ */
+Eigen::VectorXd getJointPosition(const std::vector<std::string>& joint_names, const Waypoint& waypoint);
 
 /**
  * @brief Set the joint position for waypoints that contain that information
