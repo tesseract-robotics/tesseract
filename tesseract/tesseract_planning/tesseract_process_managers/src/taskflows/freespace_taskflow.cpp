@@ -67,7 +67,7 @@ GraphTaskflow::UPtr createFreespaceTaskflow(bool create_seed,
   ompl_planner->problem_generator = &DefaultOMPLProblemGenerator;
   ompl_planner->plan_profiles = ompl_plan_profiles;
   auto ompl_generator = std::make_unique<MotionPlannerProcessGenerator>(ompl_planner);
-  int ompl_idx = graph->addNode(std::move(ompl_generator), GraphTaskflow::NodeType::CONDITIONAL);
+  int ompl_idx = graph->addNode(std::move(ompl_generator), GraphTaskflow::NodeType::TASK);
 
   // Setup TrajOpt
   auto trajopt_planner = std::make_shared<TrajOptMotionPlanner>();
@@ -89,6 +89,7 @@ GraphTaskflow::UPtr createFreespaceTaskflow(bool create_seed,
   /////////////////
   /// Add Edges ///
   /////////////////
+  auto ON_NONE = GraphTaskflow::SourceChannel::NONE;
   auto ON_SUCCESS = GraphTaskflow::SourceChannel::ON_SUCCESS;
   auto ON_FAILURE = GraphTaskflow::SourceChannel::ON_FAILURE;
   auto PROCESS_NODE = GraphTaskflow::DestinationChannel::PROCESS_NODE;
@@ -101,8 +102,7 @@ GraphTaskflow::UPtr createFreespaceTaskflow(bool create_seed,
     graph->addEdge(interpolator_idx, ON_FAILURE, -1, ERROR_CALLBACK);
   }
 
-  graph->addEdge(ompl_idx, ON_SUCCESS, trajopt_idx, PROCESS_NODE);
-  graph->addEdge(ompl_idx, ON_FAILURE, -1, ERROR_CALLBACK);
+  graph->addEdge(ompl_idx, ON_NONE, trajopt_idx, PROCESS_NODE);
 
   graph->addEdge(trajopt_idx, ON_SUCCESS, contact_check_idx, PROCESS_NODE);
   graph->addEdge(trajopt_idx, ON_FAILURE, -1, ERROR_CALLBACK);
