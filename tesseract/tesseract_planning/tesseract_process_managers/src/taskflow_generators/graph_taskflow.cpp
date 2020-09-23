@@ -182,8 +182,8 @@ tf::Taskflow& GraphTaskflow::generateTaskflow(ProcessInput input,
       {
         throw std::runtime_error("Invalide Edges for process index: " + std::to_string(src_idx));
       }
-      ++src_idx;
     }
+    ++src_idx;
   }
 
   return *taskflow;
