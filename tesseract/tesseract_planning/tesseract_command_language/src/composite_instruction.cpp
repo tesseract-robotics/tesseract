@@ -102,9 +102,12 @@ tinyxml2::XMLElement* CompositeInstruction::toXML(tinyxml2::XMLDocument& doc) co
     xml_composite_instruction->InsertEndChild(xml_manip_info);
   }
 
-  tinyxml2::XMLElement* xml_start_instruction = doc.NewElement("StartInstruction");
-  xml_start_instruction->InsertEndChild(getStartInstruction().toXML(doc));
-  xml_composite_instruction->InsertEndChild(xml_start_instruction);
+  if (!isNullInstruction(getStartInstruction()))
+  {
+    tinyxml2::XMLElement* xml_start_instruction = doc.NewElement("StartInstruction");
+    xml_start_instruction->InsertEndChild(getStartInstruction().toXML(doc));
+    xml_composite_instruction->InsertEndChild(xml_start_instruction);
+  }
 
   for (const auto& i : *this)
     xml_composite_instruction->InsertEndChild(i.toXML(doc));
