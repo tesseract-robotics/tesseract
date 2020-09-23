@@ -299,6 +299,7 @@ OMPLDefaultPlanProfile::OMPLDefaultPlanProfile(const tinyxml2::XMLElement& xml_e
 void OMPLDefaultPlanProfile::setup(OMPLProblem& prob)
 {
   prob.planners = planners;
+  prob.planning_time = planning_time;
   prob.max_solutions = max_solutions;
   prob.simplify = simplify;
   prob.optimize = optimize;
