@@ -52,9 +52,9 @@ public:
 
   tesseract_planning::MoveInstruction getMoveInstruction(double request_duration) const;
 
-  double getMoveInstructionDuration(std::size_t index) const;
+  double getMoveInstructionDuration(long index) const;
 
-  std::size_t getMoveInstructionCount() const;
+  long getMoveInstructionCount() const;
 
   bool empty() const;
 
@@ -64,7 +64,7 @@ private:
   std::vector<std::reference_wrapper<tesseract_planning::Waypoint>> waypoints_;
   std::vector<double> duration_from_previous_;
 
-  void findMoveInstructionIndices(const double& duration, int& before, int& after, double& blend) const;
+  void findMoveInstructionIndices(const double& duration, long& before, long& after, double& blend) const;
 
   tesseract_planning::StateWaypoint interpolate(const tesseract_planning::StateWaypoint& start,
                                                 const tesseract_planning::StateWaypoint& end,
