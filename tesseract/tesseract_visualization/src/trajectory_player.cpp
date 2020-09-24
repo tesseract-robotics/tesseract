@@ -50,7 +50,7 @@ void TrajectoryPlayer::setProgram(tesseract_planning::CompositeInstruction progr
 
 void TrajectoryPlayer::setScale(double scale) { scale_ = scale; }
 
-tesseract_planning::MoveInstruction TrajectoryPlayer::setCurrentTime(int index)
+tesseract_planning::MoveInstruction TrajectoryPlayer::setCurrentTime(long index)
 {
   using tesseract_planning::MoveInstruction;
   using tesseract_planning::MoveInstructionType;
@@ -62,7 +62,7 @@ tesseract_planning::MoveInstruction TrajectoryPlayer::setCurrentTime(int index)
   if (trajectory_->getMoveInstructionCount() > 0)
   {
     if (index > 0)
-      current_duration_ = trajectory_->getMoveInstructionDuration(static_cast<std::size_t>(index));
+      current_duration_ = trajectory_->getMoveInstructionDuration(index);
     else
       current_duration_ = 0;
   }
@@ -130,6 +130,11 @@ tesseract_planning::MoveInstruction TrajectoryPlayer::getNext()
   return trajectory_->getMoveInstruction(current_duration_);
 }
 
+tesseract_planning::MoveInstruction TrajectoryPlayer::getIndex(long index) const
+{
+  return trajectory_->getMoveInstruction(trajectory_->getMoveInstructionDuration(index));
+}
+
 double TrajectoryPlayer::currentDuration() const { return trajectory_duration_; }
 
 bool TrajectoryPlayer::isFinished() const { return finished_; }
@@ -144,5 +149,7 @@ void TrajectoryPlayer::reset()
   start_time_ = std::chrono::high_resolution_clock::now();
   finished_ = false;
 }
+
+long TrajectoryPlayer::size() const { return trajectory_->getMoveInstructionCount(); }
 
 }  // namespace tesseract_visualization
