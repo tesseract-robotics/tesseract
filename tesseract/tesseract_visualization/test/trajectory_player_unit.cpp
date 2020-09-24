@@ -46,12 +46,12 @@ TEST(TesseracTrajectoryPlayerUnit, TrajectoryTest)  // NOLINT
   program.setStartInstruction(start_instruction);
 
   // Define move instructions
-  for (int i = 1; i < 10; ++i)
+  for (long i = 1; i < 10; ++i)
   {
     Eigen::VectorXd p = Eigen::VectorXd::Zero(6);
-    p(0) = i;
+    p(0) = static_cast<double>(i);
     StateWaypoint swp(joint_names, p);
-    swp.time = i;
+    swp.time = static_cast<double>(i);
     MoveInstruction move_f(swp, MoveInstructionType::FREESPACE, "DEFAULT");
     program.push_back(move_f);
   }
@@ -61,20 +61,20 @@ TEST(TesseracTrajectoryPlayerUnit, TrajectoryTest)  // NOLINT
 
   EXPECT_NEAR(player.currentDuration(), 9, 1e-5);
 
-  for (int i = 0; i < 10; ++i)
+  for (long i = 0; i < 10; ++i)
   {
     MoveInstruction mi = player.setCurrentTime(i);
     const auto* swp = mi.getWaypoint().cast_const<StateWaypoint>();
-    EXPECT_NEAR(swp->time, i, 1e-5);
-    EXPECT_NEAR(swp->position(0), i, 1e-5);
+    EXPECT_NEAR(swp->time, static_cast<double>(i), 1e-5);
+    EXPECT_NEAR(swp->position(0), static_cast<double>(i), 1e-5);
   }
 
-  for (int i = 0; i < 10; ++i)
+  for (long i = 0; i < 10; ++i)
   {
-    MoveInstruction mi = player.setCurrentDuration(i);
+    MoveInstruction mi = player.setCurrentDuration(static_cast<double>(i));
     const auto* swp = mi.getWaypoint().cast_const<StateWaypoint>();
-    EXPECT_NEAR(swp->time, i, 1e-5);
-    EXPECT_NEAR(swp->position(0), i, 1e-5);
+    EXPECT_NEAR(swp->time, static_cast<double>(i), 1e-5);
+    EXPECT_NEAR(swp->position(0), static_cast<double>(i), 1e-5);
   }
 
   {
@@ -120,12 +120,12 @@ TEST(TesseracTrajectoryInterpolatorUnit, TrajectoryInterpolatorTest)  // NOLINT
   program.setStartInstruction(start_instruction);
 
   // Define move instructions
-  for (int i = 1; i < 10; ++i)
+  for (long i = 1; i < 10; ++i)
   {
     Eigen::VectorXd p = Eigen::VectorXd::Zero(6);
-    p(0) = i;
+    p(0) = static_cast<double>(i);
     StateWaypoint swp(joint_names, p);
-    swp.time = i;
+    swp.time = static_cast<double>(i);
     MoveInstruction move_f(swp, MoveInstructionType::FREESPACE, "DEFAULT");
     program.push_back(move_f);
   }
@@ -134,13 +134,13 @@ TEST(TesseracTrajectoryInterpolatorUnit, TrajectoryInterpolatorTest)  // NOLINT
 
   EXPECT_EQ(interpolator.getMoveInstructionCount(), 10);
 
-  for (int i = 0; i < 19; ++i)
+  for (long i = 0; i < 19; ++i)
   {
-    MoveInstruction mi = interpolator.getMoveInstruction(i * 0.5);
+    MoveInstruction mi = interpolator.getMoveInstruction(static_cast<double>(i) * 0.5);
     EXPECT_TRUE(isStateWaypoint(mi.getWaypoint()));
     const auto* swp = mi.getWaypoint().cast_const<StateWaypoint>();
-    EXPECT_NEAR(swp->time, i * 0.5, 1e-5);
-    EXPECT_NEAR(swp->position(0), i * 0.5, 1e-5);
+    EXPECT_NEAR(swp->time, static_cast<double>(i) * 0.5, 1e-5);
+    EXPECT_NEAR(swp->position(0), static_cast<double>(i) * 0.5, 1e-5);
   }
 
   // Test above max duration
@@ -151,7 +151,7 @@ TEST(TesseracTrajectoryInterpolatorUnit, TrajectoryInterpolatorTest)  // NOLINT
   EXPECT_NEAR(swp->position(0), 9, 1e-5);
 
   // Test get instruction duration
-  for (std::size_t i = 0; i < 10; ++i)
+  for (long i = 0; i < 10; ++i)
   {
     double duration = interpolator.getMoveInstructionDuration(i);
     EXPECT_NEAR(duration, static_cast<double>(i), 1e-5);

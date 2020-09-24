@@ -48,6 +48,17 @@ const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint)
   throw std::runtime_error("Unsupported waypoint type.");
 }
 
+const std::vector<std::string>& getJointNames(const Waypoint& waypoint)
+{
+  if (isJointWaypoint(waypoint))
+    return waypoint.cast_const<JointWaypoint>()->joint_names;
+
+  if (isStateWaypoint(waypoint))
+    return waypoint.cast_const<StateWaypoint>()->joint_names;
+
+  throw std::runtime_error("Unsupported waypoint type.");
+}
+
 Eigen::VectorXd getJointPosition(const std::vector<std::string>& joint_names, const Waypoint& waypoint)
 {
   Eigen::VectorXd jv;

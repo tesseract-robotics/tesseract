@@ -46,11 +46,13 @@ public:
 
   void setScale(double scale);
 
-  tesseract_planning::MoveInstruction setCurrentTime(int index);
+  tesseract_planning::MoveInstruction setCurrentTime(long index);
 
   tesseract_planning::MoveInstruction setCurrentDuration(double duration);
 
   tesseract_planning::MoveInstruction getNext();
+
+  tesseract_planning::MoveInstruction getIndex(long index) const;
 
   double currentDuration() const;
 
@@ -61,6 +63,8 @@ public:
   bool getLoop() const;
 
   void reset();
+
+  long size() const;
 
 private:
   TrajectoryInterpolator::UPtr trajectory_{ nullptr };
