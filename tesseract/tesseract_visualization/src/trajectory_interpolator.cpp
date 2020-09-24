@@ -72,8 +72,8 @@ TrajectoryInterpolator::TrajectoryInterpolator(tesseract_planning::CompositeInst
 }
 
 void TrajectoryInterpolator::findMoveInstructionIndices(const double& duration,
-                                                        int& before,
-                                                        int& after,
+                                                        long& before,
+                                                        long& after,
                                                         double& blend) const
 {
   if (duration < 0.0)
@@ -111,8 +111,8 @@ tesseract_planning::MoveInstruction TrajectoryInterpolator::getMoveInstruction(d
   if (waypoints_.empty())
     throw std::runtime_error("Invalid duration");
 
-  int before = 0;
-  int after = 0;
+  long before = 0;
+  long after = 0;
   double blend = 1.0;
   findMoveInstructionIndices(request_duration, before, after, blend);
 
@@ -143,18 +143,19 @@ tesseract_planning::MoveInstruction TrajectoryInterpolator::getMoveInstruction(d
   throw std::runtime_error("Invalid duration");
 }
 
-double TrajectoryInterpolator::getMoveInstructionDuration(std::size_t index) const
+double TrajectoryInterpolator::getMoveInstructionDuration(long index) const
 {
   if (waypoints_.empty())
     return 0.0;
 
-  if (index >= waypoints_.size())
-    index = waypoints_.size() - 1;
+  int s = static_cast<int>(waypoints_.size());
+  if (index >= s)
+    index = s - 1;
 
-  return waypoints_[index].get().cast_const<tesseract_planning::StateWaypoint>()->time;
+  return waypoints_[static_cast<std::size_t>(index)].get().cast_const<tesseract_planning::StateWaypoint>()->time;
 }
 
-std::size_t TrajectoryInterpolator::getMoveInstructionCount() const { return waypoints_.size(); }
+long TrajectoryInterpolator::getMoveInstructionCount() const { return static_cast<long>(waypoints_.size()); }
 
 tesseract_planning::StateWaypoint TrajectoryInterpolator::interpolate(const tesseract_planning::StateWaypoint& start,
                                                                       const tesseract_planning::StateWaypoint& end,

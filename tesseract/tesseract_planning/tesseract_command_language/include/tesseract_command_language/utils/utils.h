@@ -38,10 +38,20 @@ namespace tesseract_planning
  * @brief Gets joint position from waypoints that contain that information.
  *
  * Throws if waypoint does not directly contain that information
- *
+ * @param waypoint The waypoint to try and extract the joint position from
  * @return The joint values
  */
 const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint);
+
+/**
+ * @brief Gets joint names from waypoints that contain that information.
+ *
+ * Throws if waypoint does not directly contain that information
+ *
+ * @param waypoint The waypoint to try and extract the joint position from
+ * @return The joint names
+ */
+const std::vector<std::string>& getJointNames(const Waypoint& waypoint);
 
 /**
  * @brief Get the joint positions ordered by the provided joint names
