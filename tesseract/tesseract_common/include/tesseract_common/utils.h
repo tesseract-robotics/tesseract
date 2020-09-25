@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <sstream>
 #include <stdexcept>
 #include <random>
+#include <iomanip>
 #include <ctime>
 #include <Eigen/Geometry>
 #include <iostream>
@@ -165,6 +166,19 @@ inline bool isIdentical(const std::vector<std::string>& vec1, const std::vector<
   std::sort(v1.begin(), v1.end());
   std::sort(v2.begin(), v2.end());
   return std::equal(v1.begin(), v1.end(), v2.begin());
+}
+
+/**
+ * @brief Get Timestamp string
+ * @return Timestamp string
+ */
+inline std::string getTimestampString()
+{
+  std::ostringstream oss;
+  auto t = std::time(nullptr);
+  auto tm = *std::localtime(&t);
+  oss << std::put_time(&tm, "%d-%m-%Y-%H-%M-%S");
+  return oss.str();
 }
 
 /**

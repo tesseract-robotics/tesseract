@@ -73,6 +73,25 @@ public:
    * @return True if successful
    */
   virtual bool clear() = 0;
+
+  /**
+   * @brief Enable/Disable debug for the process manager
+   *
+   * This will add an observer which will print out information on the task as it is executed.
+   *
+   * @param enabled
+   */
+  virtual void enableDebug(bool enabled) = 0;
+
+  /**
+   * @brief Enable/Disable profiling for the process manager
+   *
+   * This will add an observer which will profile task as it is executed. It will save a file in the temp directory
+   * which can be loaded into the taskflow profile webpage.
+   *
+   * @param enabled
+   */
+  virtual void enableProfile(bool enabled) = 0;
 };
 
 }  // namespace tesseract_planning
