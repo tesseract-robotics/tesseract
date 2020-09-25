@@ -22,6 +22,7 @@ tesseract_variables()
 # Create interface
 add_library(${PROJECT_NAME} SHARED
     src/process_input.cpp
+    src/debug_observer.cpp
     src/process_generators/continuous_contact_check_process_generator.cpp
     src/process_generators/discrete_contact_check_process_generator.cpp
     src/process_generators/fix_state_bounds_process_generator.cpp
