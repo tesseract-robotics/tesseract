@@ -27,14 +27,17 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <functional>
 #include <taskflow/taskflow.hpp>
-#include <fstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_managers/raster_waad_dt_process_manager.h>
+#include <tesseract_process_managers/debug_observer.h>
+
 #include <tesseract_command_language/instruction_type.h>
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_command_language/plan_instruction.h>
 #include <tesseract_command_language/utils/get_instruction_utils.h>
+
+#include <tesseract_common/utils.h>
 
 using namespace tesseract_planning;
 
@@ -230,10 +233,13 @@ bool RasterWAADDTProcessManager::init(ProcessInput input)
   freespace_tasks_.push_back(to_end);
 
   // visualizes the taskflow
-  std::ofstream out_data;
-  out_data.open("/tmp/raster_waad_dt_process_manager.dot");
-  taskflow_.dump(out_data);
-  out_data.close();
+  if (debug_)
+  {
+    std::ofstream out_data;
+    out_data.open("/tmp/raster_waad_dt_process_manager-" + tesseract_common::getTimestampString() + ".dot");
+    taskflow_.dump(out_data);
+    out_data.close();
+  }
 
   return true;
 }
@@ -241,6 +247,14 @@ bool RasterWAADDTProcessManager::init(ProcessInput input)
 bool RasterWAADDTProcessManager::execute()
 {
   success_ = true;
+
+  DebugObserver::Ptr debug_observer;
+  std::shared_ptr<tf::TFProfObserver> profile_observer;
+  if (debug_)
+    debug_observer = executor_.make_observer<DebugObserver>("RasterWAADDTProcessManagerObserver");
+
+  if (profile_)
+    profile_observer = executor_.make_observer<tf::TFProfObserver>();
 
   // TODO: Figure out how to cancel execution. This callback is only checked at beginning of the taskflow (ie before
   // restarting)
@@ -251,6 +265,18 @@ bool RasterWAADDTProcessManager::execute()
   executor_.wait_for_all();
   executor_.run(taskflow_);
   executor_.wait_for_all();
+
+  if (debug_observer != nullptr)
+    executor_.remove_observer(debug_observer);
+
+  if (profile_observer != nullptr)
+  {
+    std::ofstream out_data;
+    out_data.open("/tmp/raster_waad_dt_process_manager-" + tesseract_common::getTimestampString() + ".json");
+    profile_observer->dump(out_data);
+    out_data.close();
+    executor_.remove_observer(profile_observer);
+  }
 
   clear();  // I believe clear must be called so memory is cleaned up
 
@@ -278,6 +304,10 @@ bool RasterWAADDTProcessManager::clear()
   raster_tasks_.clear();
   return true;
 }
+
+void RasterWAADDTProcessManager::enableDebug(bool enabled) { debug_ = enabled; }
+
+void RasterWAADDTProcessManager::enableProfile(bool enabled) { profile_ = enabled; }
 
 bool RasterWAADDTProcessManager::checkProcessInput(const tesseract_planning::ProcessInput& input) const
 {
