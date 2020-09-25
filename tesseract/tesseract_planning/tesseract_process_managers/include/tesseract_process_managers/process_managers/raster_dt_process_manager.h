@@ -91,10 +91,16 @@ public:
 
   bool clear() override;
 
+  void enableDebug(bool enabled) override;
+
+  void enableProfile(bool enabled) override;
+
 private:
   void successCallback(std::string message);
   void failureCallback(std::string message);
-  bool success_;
+  bool success_{ false };
+  bool debug_{ false };
+  bool profile_{ false };
 
   TaskflowGenerator::UPtr freespace_taskflow_generator_;
   TaskflowGenerator::UPtr transition_taskflow_generator_;
