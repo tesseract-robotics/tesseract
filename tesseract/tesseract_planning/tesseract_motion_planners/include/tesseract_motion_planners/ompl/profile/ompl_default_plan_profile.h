@@ -101,7 +101,7 @@ public:
   bool collision_check = true;
 
   /** @brief If true, use continuous collision checking */
-  bool collision_continuous = true;
+  bool collision_continuous = false;
 
   /** @brief Max distance over which collisions are checked */
   double collision_safety_margin = 0.00;
