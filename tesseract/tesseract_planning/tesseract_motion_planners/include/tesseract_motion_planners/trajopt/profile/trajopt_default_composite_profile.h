@@ -83,7 +83,7 @@ public:
    * Note: This gets converted to longest_valid_segment_fraction.
    *       longest_valid_segment_fraction = longest_valid_segment_length / state_space.getMaximumExtent()
    */
-  double longest_valid_segment_length = 0.5;
+  double longest_valid_segment_length = 0.1;
 
   /**@brief Special link collision cost distances */
   trajopt::SafetyMarginData::Ptr special_collision_cost{ nullptr };
