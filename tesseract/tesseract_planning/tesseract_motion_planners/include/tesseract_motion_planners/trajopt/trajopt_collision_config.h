@@ -47,19 +47,23 @@ struct CollisionCostConfig
 
   /** @brief If true, a collision cost term will be added to the problem. Default: true*/
   bool enabled = true;
+
   /**
    * @brief Use the weighted sum for each link pair. This reduces the number equations added to the problem
    * If set to true, it is recommended to start with the coeff set to one
    */
   bool use_weighted_sum = false;
+
   /** @brief The evaluator type that will be used for collision checking. */
-  trajopt::CollisionEvaluatorType type = trajopt::CollisionEvaluatorType::CAST_CONTINUOUS;
+  trajopt::CollisionEvaluatorType type = trajopt::CollisionEvaluatorType::DISCRETE_CONTINUOUS;
 
   /** @brief Max distance in which collision costs will be evaluated. */
   double buffer_margin = 0.025;
+
   /** @brief Distance beyond buffer_margin in which collision optimization will be evaluated.
       This is set to 0 by default (effectively disabled) for collision costs.*/
   double safety_margin_buffer = 0.0;
+
   /** @brief The collision coeff/weight */
   double coeff = 20;
 
