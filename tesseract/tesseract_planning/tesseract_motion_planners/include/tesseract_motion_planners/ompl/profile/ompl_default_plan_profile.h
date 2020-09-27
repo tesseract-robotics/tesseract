@@ -121,7 +121,7 @@ public:
    * Note: This gets converted to longest_valid_segment_fraction.
    *       longest_valid_segment_fraction = longest_valid_segment_length / state_space.getMaximumExtent()
    */
-  double longest_valid_segment_length = 0.5;
+  double longest_valid_segment_length = 0.1;
 
   /** @brief This scales the variables search space. Must be same size as number of joints.
    *         If empty it defaults to all ones */
