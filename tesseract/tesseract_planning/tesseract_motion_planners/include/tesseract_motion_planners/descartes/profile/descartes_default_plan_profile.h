@@ -67,7 +67,7 @@ public:
   // Applied during edge evaluation
   bool enable_edge_collision{ false };
   double edge_collision_saftey_margin{ 0 };
-  double edge_longest_valid_segment_length = 0.5;
+  double edge_longest_valid_segment_length = 0.1;
 
   int num_threads{ 1 };
 
