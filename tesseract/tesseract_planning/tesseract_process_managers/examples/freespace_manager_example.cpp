@@ -87,7 +87,7 @@ int main()
   // --------------------
   // Initialize Freespace Manager
   // --------------------
-  SimpleProcessManager freespace_manager(createFreespaceTaskflow(true));
+  SimpleProcessManager freespace_manager(createFreespaceTaskflow(FreespaceTaskflowParams()));
   freespace_manager.init(input);
 
   // --------------------

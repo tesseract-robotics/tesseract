@@ -151,8 +151,8 @@ TEST_F(TesseractProcessManagerUnit, RasterProcessManagerTest)
   ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
 
   // Initialize Freespace Manager
-  auto freespace_taskflow_generator = createFreespaceTaskflow(true);
-  auto transition_taskflow_generator = createFreespaceTaskflow(true);
+  auto freespace_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
+  auto transition_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
   auto raster_taskflow_generator = createCartesianTaskflow(true);
   RasterProcessManager raster_manager(std::move(freespace_taskflow_generator),
                                       std::move(transition_taskflow_generator),
@@ -175,8 +175,8 @@ TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerTest)
   ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
 
   // Initialize Freespace Manager
-  auto freespace_taskflow_generator = createFreespaceTaskflow(true);
-  auto transition_taskflow_generator = createFreespaceTaskflow(true);
+  auto freespace_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
+  auto transition_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
   auto raster_taskflow_generator = createCartesianTaskflow(true);
   RasterDTProcessManager raster_manager(std::move(freespace_taskflow_generator),
                                         std::move(transition_taskflow_generator),
@@ -199,8 +199,8 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerTest)
   ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
 
   // Initialize Freespace Manager
-  auto freespace_taskflow_generator = createFreespaceTaskflow(true);
-  auto transition_taskflow_generator = createFreespaceTaskflow(true);
+  auto freespace_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
+  auto transition_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
   auto raster_taskflow_generator = createCartesianTaskflow(true);
   RasterWAADProcessManager raster_manager(std::move(freespace_taskflow_generator),
                                           std::move(transition_taskflow_generator),
@@ -223,8 +223,8 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADDTProcessManagerTest)
   ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
 
   // Initialize Freespace Manager
-  auto freespace_taskflow_generator = createFreespaceTaskflow(true);
-  auto transition_taskflow_generator = createFreespaceTaskflow(true);
+  auto freespace_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
+  auto transition_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
   auto raster_taskflow_generator = createCartesianTaskflow(true);
   RasterWAADDTProcessManager raster_manager(std::move(freespace_taskflow_generator),
                                             std::move(transition_taskflow_generator),
