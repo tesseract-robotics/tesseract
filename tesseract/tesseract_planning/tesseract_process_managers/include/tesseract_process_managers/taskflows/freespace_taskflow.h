@@ -33,13 +33,27 @@
 
 namespace tesseract_planning
 {
-GraphTaskflow::UPtr createFreespaceTaskflow(
-    bool create_seed,
-    const SimplePlannerPlanProfileMap& simple_plan_profiles = SimplePlannerPlanProfileMap(),
-    const SimplePlannerCompositeProfileMap& simple_composite_profiles = SimplePlannerCompositeProfileMap(),
-    const OMPLPlanProfileMap& ompl_plan_profiles = OMPLPlanProfileMap(),
-    const TrajOptPlanProfileMap& trajopt_plan_profiles = TrajOptPlanProfileMap(),
-    const TrajOptCompositeProfileMap& trajopt_composite_profiles = TrajOptCompositeProfileMap());
-}
+enum class FreespaceTaskflowType : int
+{
+  DEFAULT = 0,       /**< @brief This will run omp followed by trajopt */
+  TRAJOPT_FIRST = 1, /**< @brief This will run trajopt first then if it fails it will run ompl followed by trajopt */
+};
+
+struct FreespaceTaskflowParams
+{
+  FreespaceTaskflowType type{ FreespaceTaskflowType::DEFAULT };
+  bool enable_simple_planner{ true };
+  bool enable_post_contact_discrete_check{ false };
+  bool enable_post_contact_continuous_check{ true };
+  bool enable_time_parameterization{ true };
+  SimplePlannerPlanProfileMap simple_plan_profiles;
+  SimplePlannerCompositeProfileMap simple_composite_profiles;
+  OMPLPlanProfileMap ompl_plan_profiles;
+  TrajOptPlanProfileMap trajopt_plan_profiles;
+  TrajOptCompositeProfileMap trajopt_composite_profiles;
+};
+
+GraphTaskflow::UPtr createFreespaceTaskflow(FreespaceTaskflowParams params);
+}  // namespace tesseract_planning
 
 #endif  // TESSERACT_PROCESS_MANAGERS_FREESPACE_TASKFLOW_H
