@@ -330,7 +330,7 @@ void TrajOptDefaultCompositeProfile::addCollisionCost(trajopt::ProblemConstructi
   // Create a default collision term info
   trajopt::TermInfo::Ptr ti = createCollisionTermInfo(start_index,
                                                       end_index,
-                                                      collision_cost_config.buffer_margin,
+                                                      collision_cost_config.safety_margin,
                                                       collision_constraint_config.safety_margin_buffer,
                                                       collision_cost_config.type,
                                                       collision_cost_config.use_weighted_sum,

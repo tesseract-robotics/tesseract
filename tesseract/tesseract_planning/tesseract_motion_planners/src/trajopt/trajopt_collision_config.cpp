@@ -78,7 +78,7 @@ CollisionCostConfig::CollisionCostConfig(const tinyxml2::XMLElement& xml_element
     if (!tesseract_common::isNumeric(buffer_margin_string))
       throw std::runtime_error("CollisionCostConfig: BufferMargin is not a numeric values.");
 
-    tesseract_common::toNumeric<double>(buffer_margin_string, buffer_margin);
+    tesseract_common::toNumeric<double>(buffer_margin_string, safety_margin);
   }
 
   if (safety_margin_buffer_element)
@@ -125,7 +125,7 @@ tinyxml2::XMLElement* CollisionCostConfig::toXML(tinyxml2::XMLDocument& doc) con
   xml_coll_cost_config->InsertEndChild(xml_type);
 
   tinyxml2::XMLElement* xml_buffer_margin = doc.NewElement("BufferMargin");
-  xml_buffer_margin->SetText(buffer_margin);
+  xml_buffer_margin->SetText(safety_margin);
   xml_coll_cost_config->InsertEndChild(xml_buffer_margin);
 
   tinyxml2::XMLElement* xml_safety_margin_buffer = doc.NewElement("SafetyMarginBuffer");
