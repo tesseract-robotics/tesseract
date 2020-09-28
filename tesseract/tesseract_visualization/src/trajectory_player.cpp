@@ -50,7 +50,7 @@ void TrajectoryPlayer::setProgram(tesseract_planning::CompositeInstruction progr
 
 void TrajectoryPlayer::setScale(double scale) { scale_ = scale; }
 
-tesseract_planning::MoveInstruction TrajectoryPlayer::setCurrentTime(long index)
+tesseract_planning::MoveInstruction TrajectoryPlayer::setCurrentDurationByIndex(long index)
 {
   using tesseract_planning::MoveInstruction;
   using tesseract_planning::MoveInstructionType;
@@ -130,18 +130,20 @@ tesseract_planning::MoveInstruction TrajectoryPlayer::getNext()
   return trajectory_->getMoveInstruction(current_duration_);
 }
 
-tesseract_planning::MoveInstruction TrajectoryPlayer::getIndex(long index) const
+tesseract_planning::MoveInstruction TrajectoryPlayer::getByIndex(long index) const
 {
   return trajectory_->getMoveInstruction(trajectory_->getMoveInstructionDuration(index));
 }
 
-double TrajectoryPlayer::currentDuration() const { return trajectory_duration_; }
+double TrajectoryPlayer::currentDuration() const { return current_duration_; }
+
+double TrajectoryPlayer::trajectoryDuration() const { return trajectory_duration_; }
 
 bool TrajectoryPlayer::isFinished() const { return finished_; }
 
-void TrajectoryPlayer::setLoop(bool loop) { loop_ = loop; }
+void TrajectoryPlayer::enableLoop(bool loop) { loop_ = loop; }
 
-bool TrajectoryPlayer::getLoop() const { return loop_; }
+bool TrajectoryPlayer::isLoopEnabled() const { return loop_; }
 
 void TrajectoryPlayer::reset()
 {
