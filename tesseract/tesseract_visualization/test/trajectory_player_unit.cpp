@@ -59,11 +59,12 @@ TEST(TesseracTrajectoryPlayerUnit, TrajectoryTest)  // NOLINT
   TrajectoryPlayer player;
   player.setProgram(program);
 
-  EXPECT_NEAR(player.currentDuration(), 9, 1e-5);
+  EXPECT_NEAR(player.trajectoryDuration(), 9, 1e-5);
+  EXPECT_NEAR(player.currentDuration(), 0, 1e-5);
 
   for (long i = 0; i < 10; ++i)
   {
-    MoveInstruction mi = player.setCurrentTime(i);
+    MoveInstruction mi = player.setCurrentDurationByIndex(i);
     const auto* swp = mi.getWaypoint().cast_const<StateWaypoint>();
     EXPECT_NEAR(swp->time, static_cast<double>(i), 1e-5);
     EXPECT_NEAR(swp->position(0), static_cast<double>(i), 1e-5);
@@ -78,7 +79,7 @@ TEST(TesseracTrajectoryPlayerUnit, TrajectoryTest)  // NOLINT
   }
 
   {
-    MoveInstruction mi = player.setCurrentTime(10);
+    MoveInstruction mi = player.setCurrentDurationByIndex(10);
     const auto* swp = mi.getWaypoint().cast_const<StateWaypoint>();
     EXPECT_NEAR(swp->time, 9, 1e-5);
     EXPECT_NEAR(swp->position(0), 9, 1e-5);
@@ -92,7 +93,7 @@ TEST(TesseracTrajectoryPlayerUnit, TrajectoryTest)  // NOLINT
   }
 
   {
-    MoveInstruction mi = player.setCurrentTime(-1);
+    MoveInstruction mi = player.setCurrentDurationByIndex(-1);
     const auto* swp = mi.getWaypoint().cast_const<StateWaypoint>();
     EXPECT_NEAR(swp->time, 0, 1e-5);
     EXPECT_NEAR(swp->position(0), 0, 1e-5);
