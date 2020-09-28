@@ -58,8 +58,7 @@ struct CollisionCostConfig
   trajopt::CollisionEvaluatorType type = trajopt::CollisionEvaluatorType::DISCRETE_CONTINUOUS;
 
   /** @brief Max distance in which collision costs will be evaluated. */
-  double buffer_margin = 0.025;
-
+  double safety_margin = 0.025;
   /** @brief Distance beyond buffer_margin in which collision optimization will be evaluated.
       This is set to 0 by default (effectively disabled) for collision costs.*/
   double safety_margin_buffer = 0.0;

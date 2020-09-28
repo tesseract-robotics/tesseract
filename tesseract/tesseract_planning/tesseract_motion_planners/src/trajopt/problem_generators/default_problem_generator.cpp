@@ -402,7 +402,10 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name
   TrajOptCompositeProfile::Ptr cur_composite_profile{ nullptr };
   auto it_composite = composite_profiles.find(profile);
   if (it_composite == composite_profiles.end())
+  {
+    CONSOLE_BRIDGE_logDebug("Trajopt profile not found. Setting default");
     cur_composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
+  }
   else
     cur_composite_profile = it_composite->second;
 
