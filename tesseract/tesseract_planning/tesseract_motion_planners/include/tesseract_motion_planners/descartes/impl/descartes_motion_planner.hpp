@@ -77,7 +77,19 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
           tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::ErrorInvalidInput, status_category_);
       return response.status;
     }
-    problem = problem_generator(name_, request, plan_profiles);
+
+    try
+    {
+      problem = problem_generator(name_, request, plan_profiles);
+    }
+    catch (std::exception& e)
+    {
+      CONSOLE_BRIDGE_logError("DescartesMotionPlanner failed to generate problem: %s.", e.what());
+      response.status =
+          tesseract_common::StatusCode(DescartesMotionPlannerStatusCategory::ErrorInvalidInput, status_category_);
+      return response.status;
+    }
+
     response.data = problem;
   }
 
