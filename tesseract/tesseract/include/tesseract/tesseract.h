@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/filesystem/path.hpp>
 #include <memory>
 #include <unordered_map>
+#include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract_init_info.h>
@@ -44,6 +45,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract
 {
+/**
+ * @brief Function signature for adding additional callbacks for looking up TCP information
+ *
+ * The function should throw and exception if not located
+ */
+using FindTCPCallbackFn = std::function<Eigen::Isometry3d(const tesseract_planning::ManipulatorInfo&)>;
+
 /**
  * @brief The Tesseract class
  *
@@ -96,10 +104,21 @@ public:
 
   /**
    * @brief Find tool center point provided in the manipulator info
+   * If manipulator information tcp is defined as a string it does the following
+   *    - This first checks if the manipulator manager has tcp defined for the manipulator group
+   *    - Next if not found, it looks up the tcp name in the EnvState along with manipulator tip link to calculate tcp
+   *    - Next if not found, it leverages the user defind callbacks to try an locate the tcp information.
+   *
    * @param manip_info The manipulator info
    * @return The tool center point
    */
   Eigen::Isometry3d findTCP(const tesseract_planning::ManipulatorInfo& manip_info) const;
+
+  /**
+   * @brief This allows for user defined callbacks for looking up TCP information
+   * @param fn User defind callback function for locating TCP information
+   */
+  void addFindTCPCallback(FindTCPCallbackFn fn);
 
   void setResourceLocator(tesseract_scene_graph::ResourceLocator::Ptr locator);
   const tesseract_scene_graph::ResourceLocator::Ptr& getResourceLocator() const;
@@ -109,6 +128,7 @@ private:
   tesseract_environment::Environment::Ptr environment_;
   ManipulatorManager::Ptr manipulator_manager_;
   TesseractInitInfo::Ptr init_info_;
+  std::vector<FindTCPCallbackFn> find_tcp_cb_;
 
   bool registerDefaultContactManagers();
 
