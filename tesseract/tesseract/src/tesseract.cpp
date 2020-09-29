@@ -386,12 +386,12 @@ void Tesseract::clear()
 
 Eigen::Isometry3d Tesseract::findTCP(const tesseract_planning::ManipulatorInfo& manip_info) const
 {
+  if (manip_info.tcp.empty())
+    return Eigen::Isometry3d::Identity();
+
   auto composite_mi_fwd_kin = manipulator_manager_->getFwdKinematicSolver(manip_info.manipulator);
   if (composite_mi_fwd_kin == nullptr)
-  {
-    CONSOLE_BRIDGE_logError("findTCP: Manipulator '%s' does not exist!", manip_info.manipulator.c_str());
-    return Eigen::Isometry3d::Identity();
-  }
+    throw std::runtime_error("findTCP: Manipulator '" + manip_info.manipulator + "' does not exist!");
 
   const std::string& tip_link = composite_mi_fwd_kin->getTipLinkName();
   if (manip_info.tcp.isString())
@@ -421,15 +421,13 @@ Eigen::Isometry3d Tesseract::findTCP(const tesseract_planning::ManipulatorInfo& 
       }
     }
 
-    CONSOLE_BRIDGE_logError("Could not find tcp by name '%s' setting to Identity!", tcp_name.c_str());
-    return Eigen::Isometry3d::Identity();
+    throw std::runtime_error("Could not find tcp by name " + tcp_name + "' setting to Identity!");
   }
 
   if (manip_info.tcp.isTransform())
     return manip_info.tcp.getTransform();
 
-  CONSOLE_BRIDGE_logError("Could not find tcp!");
-  return Eigen::Isometry3d::Identity();
+  throw std::runtime_error("Could not find tcp!");
 }
 
 void Tesseract::addFindTCPCallback(FindTCPCallbackFn fn) { find_tcp_cb_.push_back(fn); }

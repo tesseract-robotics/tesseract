@@ -104,10 +104,13 @@ public:
 
   /**
    * @brief Find tool center point provided in the manipulator info
+   *
    * If manipulator information tcp is defined as a string it does the following
-   *    - This first checks if the manipulator manager has tcp defined for the manipulator group
+   *    - First check if manipulator info is empty, if so return identity
+   *    - Next if not empty, it checks if the manipulator manager has tcp defined for the manipulator group
    *    - Next if not found, it looks up the tcp name in the EnvState along with manipulator tip link to calculate tcp
    *    - Next if not found, it leverages the user defind callbacks to try an locate the tcp information.
+   *    - Next throw an exception, because no tcp information was located.
    *
    * @param manip_info The manipulator info
    * @return The tool center point
