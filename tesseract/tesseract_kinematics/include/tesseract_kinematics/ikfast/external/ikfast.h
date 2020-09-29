@@ -197,7 +197,7 @@ public:
   }
 
   virtual const std::vector<int>& GetFree() const { return _vfree; }
-  virtual const int GetDOF() const { return static_cast<int>(_vbasesol.size()); }
+  virtual int GetDOF() const { return static_cast<int>(_vbasesol.size()); }
 
   virtual void Validate() const
   {
