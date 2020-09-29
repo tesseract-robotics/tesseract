@@ -111,7 +111,17 @@ tesseract_common::StatusCode SimpleMotionPlanner::solve(const PlannerRequest& re
   start_waypoint = start_instruction.getWaypoint();
 
   // Process the instructions into the seed
-  seed = processCompositeInstruction(request.instructions, start_waypoint, request);
+  try
+  {
+    seed = processCompositeInstruction(request.instructions, start_waypoint, request);
+  }
+  catch (std::exception& e)
+  {
+    CONSOLE_BRIDGE_logError("SimplePlanner failed to generate problem: %s.", e.what());
+    response.status =
+        tesseract_common::StatusCode(SimpleMotionPlannerStatusCategory::ErrorInvalidInput, status_category_);
+    return response.status;
+  }
 
   // Set start instruction and Manipulator Information
   seed.setStartInstruction(start_instruction);
