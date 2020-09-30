@@ -92,6 +92,7 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
@@ -105,6 +106,21 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   }
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   EXPECT_TRUE(wp2.isApprox(mi->getWaypoint().cast_const<StateWaypoint>()->position, 1e-5));
+
+  // Ensure equal to minimum number steps when all params set large
+  int min_steps = 5;
+  auto composite_short =
+      LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 6.28, 0.5, 1.57, min_steps);
+  EXPECT_EQ(composite_short.size(), min_steps);
+
+  // Ensure state_longest_valid_segment_length is used
+  double longest_valid_segment_length = 0.05;
+  auto composite_long = LVSInterpolateStateWaypoint(
+      wp1, wp2, instr, request, ManipulatorInfo(), longest_valid_segment_length, 10, 6.28, min_steps);
+  double dist = (wp1 - wp2).norm();
+  int steps = int(dist / longest_valid_segment_length) + 1;
+  EXPECT_TRUE(composite_long.size() > static_cast<std::size_t>(min_steps));
+  EXPECT_EQ(composite_long.size(), steps);
 }
 
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypoint_JointJoint_Linear)  // NOLINT
@@ -112,6 +128,8 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
   PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "TEST_PROFILE", manip_info_);
@@ -125,6 +143,33 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   }
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   EXPECT_TRUE(wp2.isApprox(mi->getWaypoint().cast_const<StateWaypoint>()->position, 1e-5));
+
+  // Ensure equal to minimum number steps when all params set large
+  int min_steps = 5;
+  auto composite_short =
+      LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 6.28, 10, 6.28, min_steps);
+  EXPECT_EQ(composite_short.size(), min_steps);
+
+  // Ensure translation_longest_valid_segment_length is used when large motion given
+  double translation_longest_valid_segment_length = 0.01;
+  auto composite_trans_long = LVSInterpolateStateWaypoint(
+      wp1, wp2, instr, request, ManipulatorInfo(), 6.28, translation_longest_valid_segment_length, 6.28, min_steps);
+  Eigen::Isometry3d p1, p2;
+  fwd_kin->calcFwdKin(p1, wp1);
+  fwd_kin->calcFwdKin(p2, wp2);
+  double trans_dist = (p2.translation() - p1.translation()).norm();
+  int trans_steps = int(trans_dist / translation_longest_valid_segment_length) + 1;
+  EXPECT_TRUE(composite_trans_long.size() > static_cast<std::size_t>(min_steps));
+  EXPECT_EQ(composite_trans_long.size(), trans_steps);
+
+  // Ensure rotation_longest_valid_segment_length is used
+  double rotation_longest_valid_segment_length = 0.01;
+  auto composite_rot_long = LVSInterpolateStateWaypoint(
+      wp1, wp2, instr, request, ManipulatorInfo(), 6.28, 10, rotation_longest_valid_segment_length, min_steps);
+  double rot_dist = Eigen::Quaterniond(p1.linear()).angularDistance(Eigen::Quaterniond(p2.linear()));
+  int rot_steps = int(rot_dist / rotation_longest_valid_segment_length) + 1;
+  EXPECT_TRUE(composite_rot_long.size() > static_cast<std::size_t>(min_steps));
+  EXPECT_EQ(composite_rot_long.size(), rot_steps);
 }
 
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypoint_JointCart_Freespace)  // NOLINT
@@ -132,8 +177,11 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
-  CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
+  CartesianWaypoint wp2;
+  fwd_kin->calcFwdKin(wp2, Eigen::VectorXd::Ones(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
 
   auto composite = LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5);
@@ -145,10 +193,21 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   }
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   const Eigen::VectorXd& last_position = mi->getWaypoint().cast_const<StateWaypoint>()->position;
-  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
-  Eigen::Isometry3d final_pose = Eigen::Isometry3d::Identity();
+  Eigen::Isometry3d final_pose;
   fwd_kin->calcFwdKin(final_pose, last_position);
   EXPECT_TRUE(wp2.isApprox(final_pose, 1e-3));
+
+  // Ensure equal to minimum number steps when all params set large
+  int min_steps = 5;
+  auto composite_short =
+      LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 6.28, 0.5, 1.57, min_steps);
+  EXPECT_EQ(composite_short.size(), min_steps);
+
+  // Ensure state_longest_valid_segment_length is used
+  double longest_valid_segment_length = 0.01;
+  auto composite_long = LVSInterpolateStateWaypoint(
+      wp1, wp2, instr, request, ManipulatorInfo(), longest_valid_segment_length, 10, 6.28, min_steps);
+  EXPECT_TRUE(composite_long.size() > static_cast<std::size_t>(min_steps));
 }
 
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypoint_JointCart_Linear)  // NOLINT
@@ -156,8 +215,12 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  auto fwd_kin = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
-  CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
+  CartesianWaypoint wp2;
+  fwd_kin->calcFwdKin(wp2, Eigen::VectorXd::Ones(7));
+
   PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "TEST_PROFILE", manip_info_);
 
   auto composite = LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5);
@@ -169,10 +232,35 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   }
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   const Eigen::VectorXd& last_position = mi->getWaypoint().cast_const<StateWaypoint>()->position;
-  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
-  Eigen::Isometry3d final_pose = Eigen::Isometry3d::Identity();
+  Eigen::Isometry3d final_pose;
   fwd_kin->calcFwdKin(final_pose, last_position);
   EXPECT_TRUE(wp2.isApprox(final_pose, 1e-3));
+
+  // Ensure equal to minimum number steps when all params set large
+  int min_steps = 5;
+  auto composite_short =
+      LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 6.28, 10, 6.28, min_steps);
+  EXPECT_EQ(composite_short.size(), min_steps);
+
+  // Ensure translation_longest_valid_segment_length is used
+  double translation_longest_valid_segment_length = 0.01;
+  auto composite_trans_long = LVSInterpolateStateWaypoint(
+      wp1, wp2, instr, request, ManipulatorInfo(), 6.28, translation_longest_valid_segment_length, 6.28, min_steps);
+  Eigen::Isometry3d p1;
+  fwd_kin->calcFwdKin(p1, wp1);
+  double trans_dist = (wp2.translation() - p1.translation()).norm();
+  int trans_steps = int(trans_dist / translation_longest_valid_segment_length) + 1;
+  EXPECT_TRUE(composite_trans_long.size() > static_cast<std::size_t>(min_steps));
+  EXPECT_EQ(composite_trans_long.size(), trans_steps);
+
+  // Ensure rotation_longest_valid_segment_length is used
+  double rotation_longest_valid_segment_length = 0.01;
+  auto composite_rot_long = LVSInterpolateStateWaypoint(
+      wp1, wp2, instr, request, ManipulatorInfo(), 6.28, 10, rotation_longest_valid_segment_length, min_steps);
+  double rot_dist = Eigen::Quaterniond(p1.linear()).angularDistance(Eigen::Quaterniond(wp2.linear()));
+  int rot_steps = int(rot_dist / rotation_longest_valid_segment_length) + 1;
+  EXPECT_TRUE(composite_rot_long.size() > static_cast<std::size_t>(min_steps));
+  EXPECT_EQ(composite_rot_long.size(), rot_steps);
 }
 
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypoint_CartJoint_Freespace)  // NOLINT
@@ -180,8 +268,12 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
-  CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
-  JointWaypoint wp2(joint_names_, Eigen::VectorXd::Zero(7));
+
+  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+
+  CartesianWaypoint wp1;
+  fwd_kin->calcFwdKin(wp1, Eigen::VectorXd::Zero(7));
+  JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
 
   auto composite = LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5);
@@ -193,6 +285,18 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   }
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   EXPECT_TRUE(wp2.isApprox(mi->getWaypoint().cast_const<StateWaypoint>()->position, 1e-5));
+
+  // Ensure equal to minimum number steps when all params set large
+  int min_steps = 5;
+  auto composite_short =
+      LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 6.28, 10, 6.28, min_steps);
+  EXPECT_EQ(composite_short.size(), min_steps);
+
+  // Ensure state_longest_valid_segment_length is used
+  double longest_valid_segment_length = 0.01;
+  auto composite_long = LVSInterpolateStateWaypoint(
+      wp1, wp2, instr, request, ManipulatorInfo(), longest_valid_segment_length, 10, 6.28, min_steps);
+  EXPECT_TRUE(composite_long.size() > static_cast<std::size_t>(min_steps));
 }
 
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypoint_CartJoint_Linear)  // NOLINT
@@ -200,8 +304,12 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
-  CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
-  JointWaypoint wp2(joint_names_, Eigen::VectorXd::Zero(7));
+
+  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+
+  CartesianWaypoint wp1;
+  fwd_kin->calcFwdKin(wp1, Eigen::VectorXd::Zero(7));
+  JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
   PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "TEST_PROFILE", manip_info_);
 
   auto composite = LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5);
@@ -213,6 +321,32 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   }
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   EXPECT_TRUE(wp2.isApprox(mi->getWaypoint().cast_const<StateWaypoint>()->position, 1e-5));
+
+  // Ensure equal to minimum number steps when all params set large
+  int min_steps = 5;
+  auto composite_short =
+      LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 6.28, 10, 6.28, min_steps);
+  EXPECT_EQ(composite_short.size(), min_steps);
+
+  // Ensure translation_longest_valid_segment_length is used
+  double translation_longest_valid_segment_length = 0.01;
+  auto composite_trans_long = LVSInterpolateStateWaypoint(
+      wp1, wp2, instr, request, ManipulatorInfo(), 6.28, translation_longest_valid_segment_length, 6.28, min_steps);
+  Eigen::Isometry3d p2;
+  fwd_kin->calcFwdKin(p2, wp2);
+  double trans_dist = (p2.translation() - wp1.translation()).norm();
+  int trans_steps = int(trans_dist / translation_longest_valid_segment_length) + 1;
+  EXPECT_TRUE(composite_trans_long.size() > static_cast<std::size_t>(min_steps));
+  EXPECT_EQ(composite_trans_long.size(), trans_steps);
+
+  // Ensure rotation_longest_valid_segment_length is used
+  double rotation_longest_valid_segment_length = 0.01;
+  auto composite_rot_long = LVSInterpolateStateWaypoint(
+      wp1, wp2, instr, request, ManipulatorInfo(), 6.28, 10, rotation_longest_valid_segment_length, min_steps);
+  double rot_dist = Eigen::Quaterniond(wp1.linear()).angularDistance(Eigen::Quaterniond(p2.linear()));
+  int rot_steps = int(rot_dist / rotation_longest_valid_segment_length) + 1;
+  EXPECT_TRUE(composite_rot_long.size() > static_cast<std::size_t>(min_steps));
+  EXPECT_EQ(composite_rot_long.size(), rot_steps);
 }
 
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypoint_CartCart_Freespace)  // NOLINT
@@ -220,8 +354,13 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
-  CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
-  CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
+
+  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+
+  CartesianWaypoint wp1;
+  fwd_kin->calcFwdKin(wp1, Eigen::VectorXd::Zero(7));
+  CartesianWaypoint wp2;
+  fwd_kin->calcFwdKin(wp2, Eigen::VectorXd::Ones(7));
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
 
   auto composite = LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5);
@@ -233,10 +372,21 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   }
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   const Eigen::VectorXd& last_position = mi->getWaypoint().cast_const<StateWaypoint>()->position;
-  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
   Eigen::Isometry3d final_pose = Eigen::Isometry3d::Identity();
   fwd_kin->calcFwdKin(final_pose, last_position);
   EXPECT_TRUE(wp2.isApprox(final_pose, 1e-3));
+
+  // Ensure equal to minimum number steps when all params set large
+  int min_steps = 5;
+  auto composite_short =
+      LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 6.28, 0.5, 1.57, min_steps);
+  EXPECT_EQ(composite_short.size(), min_steps);
+
+  // Ensure state_longest_valid_segment_length is used
+  double longest_valid_segment_length = 0.01;
+  auto composite_long = LVSInterpolateStateWaypoint(
+      wp1, wp2, instr, request, ManipulatorInfo(), longest_valid_segment_length, 10, 6.28, min_steps);
+  EXPECT_TRUE(composite_long.size() > static_cast<std::size_t>(min_steps));
 }
 
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypoint_CartCart_Linear)  // NOLINT
@@ -244,8 +394,13 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
-  CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
-  CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
+
+  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+
+  CartesianWaypoint wp1;
+  fwd_kin->calcFwdKin(wp1, Eigen::VectorXd::Zero(7));
+  CartesianWaypoint wp2;
+  fwd_kin->calcFwdKin(wp2, Eigen::VectorXd::Ones(7));
   PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "TEST_PROFILE", manip_info_);
 
   auto composite = LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5);
@@ -257,10 +412,33 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   }
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   const Eigen::VectorXd& last_position = mi->getWaypoint().cast_const<StateWaypoint>()->position;
-  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
   Eigen::Isometry3d final_pose = Eigen::Isometry3d::Identity();
   fwd_kin->calcFwdKin(final_pose, last_position);
   EXPECT_TRUE(wp2.isApprox(final_pose, 1e-3));
+
+  // Ensure equal to minimum number steps when all params set large
+  int min_steps = 5;
+  auto composite_short =
+      LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 6.28, 10, 6.28, min_steps);
+  EXPECT_EQ(composite_short.size(), min_steps);
+
+  // Ensure translation_longest_valid_segment_length is used
+  double translation_longest_valid_segment_length = 0.01;
+  auto composite_trans_long = LVSInterpolateStateWaypoint(
+      wp1, wp2, instr, request, ManipulatorInfo(), 6.28, translation_longest_valid_segment_length, 6.28, min_steps);
+  double trans_dist = (wp2.translation() - wp1.translation()).norm();
+  int trans_steps = int(trans_dist / translation_longest_valid_segment_length) + 1;
+  EXPECT_TRUE(composite_trans_long.size() > static_cast<std::size_t>(min_steps));
+  EXPECT_EQ(composite_trans_long.size(), trans_steps);
+
+  // Ensure rotation_longest_valid_segment_length is used
+  double rotation_longest_valid_segment_length = 0.01;
+  auto composite_rot_long = LVSInterpolateStateWaypoint(
+      wp1, wp2, instr, request, ManipulatorInfo(), 6.28, 10, rotation_longest_valid_segment_length, min_steps);
+  double rot_dist = Eigen::Quaterniond(wp1.linear()).angularDistance(Eigen::Quaterniond(wp2.linear()));
+  int rot_steps = int(rot_dist / rotation_longest_valid_segment_length) + 1;
+  EXPECT_TRUE(composite_rot_long.size() > static_cast<std::size_t>(min_steps));
+  EXPECT_EQ(composite_rot_long.size(), rot_steps);
 }
 
 TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateWaypoint_JointJoint_Freespace)  // NOLINT
