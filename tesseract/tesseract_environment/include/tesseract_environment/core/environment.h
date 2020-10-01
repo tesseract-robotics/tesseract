@@ -29,7 +29,8 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <string>
-#include <mutex>
+#include <thread>
+#include <shared_mutex>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -70,6 +71,7 @@ public:
   template <typename S>
   bool init(const tesseract_scene_graph::SceneGraph& scene_graph)
   {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
     initialized_ = false;
     revision_ = 0;
     scene_graph_ = std::make_shared<tesseract_scene_graph::SceneGraph>(scene_graph.getName());
@@ -143,7 +145,10 @@ public:
     }
 
     auto cmd = std::static_pointer_cast<const AddSceneGraphCommand>(commands.at(0));
-    init<S>(*(cmd->getSceneGraph()));
+    {
+      std::unique_lock<std::shared_mutex> lock(mutex_);
+      init<S>(*(cmd->getSceneGraph()));
+    }
 
     for (std::size_t i = 1; i < commands.size(); ++i)
     {
@@ -464,12 +469,7 @@ public:
   virtual bool setActiveDiscreteContactManager(const std::string& name);
 
   /** @brief Get a copy of the environments active discrete contact manager */
-  virtual tesseract_collision::DiscreteContactManager::Ptr getDiscreteContactManager() const
-  {
-    if (!discrete_manager_)
-      return nullptr;
-    return discrete_manager_->clone();
-  }
+  virtual tesseract_collision::DiscreteContactManager::Ptr getDiscreteContactManager() const;
 
   /** @brief Get a copy of the environments available discrete contact manager by name */
   virtual tesseract_collision::DiscreteContactManager::Ptr getDiscreteContactManager(const std::string& name) const;
@@ -482,12 +482,7 @@ public:
   virtual bool setActiveContinuousContactManager(const std::string& name);
 
   /** @brief Get a copy of the environments active continuous contact manager */
-  virtual tesseract_collision::ContinuousContactManager::Ptr getContinuousContactManager() const
-  {
-    if (!continuous_manager_)
-      return nullptr;
-    return continuous_manager_->clone();
-  }
+  virtual tesseract_collision::ContinuousContactManager::Ptr getContinuousContactManager() const;
 
   /** @brief Get a copy of the environments available continuous contact manager by name */
   virtual tesseract_collision::ContinuousContactManager::Ptr getContinuousContactManager(const std::string& name) const;
@@ -499,11 +494,7 @@ public:
    * in the environment.
    */
   bool registerDiscreteContactManager(const std::string& name,
-                                      tesseract_collision::DiscreteContactManagerFactory::CreateMethod create_function)
-  {
-    return discrete_factory_.registar(name, std::move(create_function));
-  }
-
+                                      tesseract_collision::DiscreteContactManagerFactory::CreateMethod create_function);
   /**
    * @brief Set the discrete contact manager
    *
@@ -512,10 +503,7 @@ public:
    */
   bool
   registerContinuousContactManager(const std::string& name,
-                                   tesseract_collision::ContinuousContactManagerFactory::CreateMethod create_function)
-  {
-    return continuous_factory_.registar(name, std::move(create_function));
-  }
+                                   tesseract_collision::ContinuousContactManagerFactory::CreateMethod create_function);
 
   /** @brief Merge a graph into the current environment
    * @param scene_graph Const ref to the graph to be merged (said graph will be copied)
@@ -559,7 +547,8 @@ protected:
   std::string continuous_manager_name_; /**< Name of active continuous contact manager */
   tesseract_collision::DiscreteContactManagerFactory discrete_factory_;     /**< Descrete contact manager factory */
   tesseract_collision::ContinuousContactManagerFactory continuous_factory_; /**< Continuous contact manager factory */
-  mutable std::mutex mutex_; /**< The environment can be accessed from multiple threads, need use mutex throughout */
+  mutable std::shared_mutex mutex_; /**< The environment can be accessed from multiple threads, need use mutex
+                                       throughout */
 
   /** This will update the contact managers transforms */
   void currentStateChanged();
