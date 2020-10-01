@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
-#include <tesseract_motion_planners/simple/profile/simple_planner_default_plan_profile.h>
+#include <tesseract_motion_planners/simple/profile/simple_planner_default_lvs_plan_profile.h>
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/utils/utils.h>
@@ -72,7 +72,7 @@ std::string SimpleMotionPlannerStatusCategory::message(int code) const
 SimpleMotionPlanner::SimpleMotionPlanner(std::string name)
   : MotionPlanner(std::move(name)), status_category_(std::make_shared<const SimpleMotionPlannerStatusCategory>(name_))
 {
-  plan_profiles[DEFAULT_PROFILE_KEY] = std::make_shared<SimplePlannerDefaultPlanProfile>();
+  plan_profiles[DEFAULT_PROFILE_KEY] = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
 }
 
 bool SimpleMotionPlanner::terminate()
@@ -215,7 +215,7 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
 
       std::string profile = getProfileString(plan_instruction->getProfile(), name_, request.plan_profile_remapping);
       SimplePlannerPlanProfile::Ptr start_plan_profile = getProfile<SimplePlannerPlanProfile>(
-          profile, plan_profiles, std::make_shared<SimplePlannerDefaultPlanProfile>());
+          profile, plan_profiles, std::make_shared<SimplePlannerDefaultLVSPlanProfile>());
       if (!start_plan_profile)
         throw std::runtime_error("SimpleMotionPlanner: Invalid start profile");
 
