@@ -39,26 +39,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-class CartesianWaypoint : public Eigen::Isometry3d
+class CartesianWaypoint
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   CartesianWaypoint() = default;
-
-  // This constructor allows you to construct MyVectorType from Eigen expressions
-  template <typename OtherDerived>
-  CartesianWaypoint(const Eigen::MatrixBase<OtherDerived>& other) : Eigen::Isometry3d(other)
-  {
-  }
-
-  // This method allows you to assign Eigen expressions to MyVectorType
-  template <typename OtherDerived>
-  CartesianWaypoint& operator=(const Eigen::MatrixBase<OtherDerived>& other)
-  {
-    this->Eigen::Isometry3d::operator=(other);
-    return *this;
-  }
-
-  CartesianWaypoint(const Eigen::Isometry3d& other) : Eigen::Isometry3d(other) {}
 
   CartesianWaypoint(const tinyxml2::XMLElement& xml_element)
   {
@@ -143,12 +129,6 @@ public:
     }
   }
 
-  CartesianWaypoint& operator=(const Eigen::Isometry3d& other)
-  {
-    this->Eigen::Isometry3d::operator=(other);
-    return *this;
-  }
-
   int getType() const { return static_cast<int>(WaypointType::CARTESIAN_WAYPOINT); }
 
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const
@@ -171,6 +151,105 @@ public:
 
     return xml_waypoint;
   }
+
+  /////////////////////
+  // Eigen Container //
+  /////////////////////
+
+  using ConstLinearPart = Eigen::Isometry3d::ConstLinearPart;
+  using LinearPart = Eigen::Isometry3d::LinearPart;
+  using ConstTranslationPart = Eigen::Isometry3d::ConstTranslationPart;
+  using TranslationPart = Eigen::Isometry3d::TranslationPart;
+
+  ////////////////////////
+  // Eigen Constructors //
+  ////////////////////////
+
+  // This constructor allows you to construct from Eigen expressions
+  template <typename OtherDerived>
+  CartesianWaypoint(const Eigen::MatrixBase<OtherDerived>& other) : waypoint(other)
+  {
+  }
+
+  CartesianWaypoint(const Eigen::Isometry3d& other) : waypoint(other) {}
+
+  ///////////////////
+  // Eigen Methods //
+  ///////////////////
+
+  /** @returns a read-only expression of the linear part of the transformation */
+  inline ConstLinearPart linear() const { return waypoint.linear(); }
+
+  /** @returns a writable expression of the linear part of the transformation */
+  inline LinearPart linear() { return waypoint.linear(); }
+
+  /** @returns a read-only expression of the translation vector of the transformation */
+  inline ConstTranslationPart translation() const { return waypoint.translation(); }
+
+  /** @returns a writable expression of the translation vector of the transformation */
+  inline TranslationPart translation() { return waypoint.translation(); }
+
+  /** @returns true if two are approximate */
+  inline bool isApprox(const Eigen::Isometry3d& other, double prec = 1e-12) { return waypoint.isApprox(other, prec); }
+
+  /////////////////////
+  // Eigen Operators //
+  /////////////////////
+
+  // This method allows you to assign Eigen expressions to MyVectorType
+  template <typename OtherDerived>
+  inline CartesianWaypoint& operator=(const Eigen::MatrixBase<OtherDerived>& other)
+  {
+    waypoint = other;
+    return *this;
+  }
+
+  template <typename OtherDerived>
+  inline CartesianWaypoint& operator*=(const Eigen::MatrixBase<OtherDerived>& other)
+  {
+    waypoint = waypoint * other;
+    return *this;
+  }
+
+  template <typename OtherDerived>
+  inline CartesianWaypoint operator*(const Eigen::MatrixBase<OtherDerived>& other) const
+  {
+    CartesianWaypoint cwp = *this;
+    cwp.waypoint = cwp.waypoint * other;
+    return cwp;
+  }
+
+  inline CartesianWaypoint& operator=(const Eigen::Isometry3d& other)
+  {
+    waypoint = other;
+    return *this;
+  }
+
+  inline CartesianWaypoint& operator*=(const Eigen::Isometry3d& other) { return *this = waypoint * other; }
+
+  inline CartesianWaypoint operator*(const Eigen::Isometry3d& other) const
+  {
+    CartesianWaypoint cwp = *this;
+    cwp.waypoint = cwp.waypoint * other;
+    return cwp;
+  }
+
+  //////////////////////////
+  // Implicit Conversions //
+  //////////////////////////
+
+  /** @return Implicit Conversions to read-only Eigen::Isometry3d */
+  inline operator const Eigen::Isometry3d&() const { return waypoint; }
+
+  /** @return Implicit Conversions to writable Eigen::Isometry3d */
+  inline operator Eigen::Isometry3d&() { return waypoint; }
+
+  //////////////////////////////////
+  // Cartesian Waypoint Container //
+  //////////////////////////////////
+
+  /** @brief The Cartesian Waypoint */
+  Eigen::Isometry3d waypoint;
 };
 
 }  // namespace tesseract_planning
