@@ -117,4 +117,92 @@ tinyxml2::XMLElement* CompositeInstruction::toXML(tinyxml2::XMLDocument& doc) co
   return xml_instruction;
 }
 
+///////////////
+// Iterators //
+///////////////
+CompositeInstruction::iterator CompositeInstruction::begin() { return container_.begin(); }
+CompositeInstruction::const_iterator CompositeInstruction::begin() const { return container_.begin(); }
+CompositeInstruction::iterator CompositeInstruction::end() { return container_.end(); }
+CompositeInstruction::const_iterator CompositeInstruction::end() const { return container_.end(); }
+CompositeInstruction::reverse_iterator CompositeInstruction::rbegin() { return container_.rbegin(); }
+CompositeInstruction::const_reverse_iterator CompositeInstruction::rbegin() const { return container_.rbegin(); }
+CompositeInstruction::reverse_iterator CompositeInstruction::rend() { return container_.rend(); }
+CompositeInstruction::const_reverse_iterator CompositeInstruction::crend() const { return container_.crend(); }
+CompositeInstruction::const_reverse_iterator CompositeInstruction::rend() const { return container_.rend(); }
+CompositeInstruction::const_iterator CompositeInstruction::cbegin() const { return container_.cbegin(); }
+CompositeInstruction::const_iterator CompositeInstruction::cend() const { return container_.cend(); }
+CompositeInstruction::const_reverse_iterator const CompositeInstruction::crbegin() { return container_.crbegin(); }
+CompositeInstruction::const_reverse_iterator const CompositeInstruction::crend() { return container_.crend(); }
+
+//////////////
+// Capacity //
+//////////////
+bool CompositeInstruction::empty() const { return container_.empty(); }
+CompositeInstruction::size_type CompositeInstruction::size() const { return container_.size(); }
+CompositeInstruction::size_type CompositeInstruction::max_size() const { return container_.max_size(); }
+void CompositeInstruction::reserve(size_type n) { container_.reserve(n); }
+CompositeInstruction::size_type CompositeInstruction::capacity() const { return container_.capacity(); }
+void CompositeInstruction::shrink_to_fit() { container_.shrink_to_fit(); }
+
+////////////////////
+// Element Access //
+////////////////////
+CompositeInstruction::reference CompositeInstruction::front() { return container_.front(); }
+CompositeInstruction::const_reference CompositeInstruction::front() const { return container_.front(); }
+CompositeInstruction::reference CompositeInstruction::back() { return container_.back(); }
+CompositeInstruction::const_reference CompositeInstruction::back() const { return container_.back(); }
+CompositeInstruction::reference CompositeInstruction::at(size_type n) { return container_.at(n); }
+CompositeInstruction::const_reference CompositeInstruction::at(size_type n) const { return container_.at(n); }
+CompositeInstruction::pointer CompositeInstruction::data() { return container_.data(); }
+CompositeInstruction::const_pointer CompositeInstruction::data() const { return container_.data(); }
+CompositeInstruction::reference CompositeInstruction::operator[](size_type pos) { return container_[pos]; }
+CompositeInstruction::const_reference CompositeInstruction::operator[](size_type pos) const { return container_[pos]; };
+
+///////////////
+// Modifiers //
+///////////////
+void CompositeInstruction::clear() { container_.clear(); }
+CompositeInstruction::iterator CompositeInstruction::insert(const_iterator p, const value_type& x)
+{
+  return container_.insert(p, x);
+}
+CompositeInstruction::iterator CompositeInstruction::insert(const_iterator p, value_type&& x)
+{
+  return container_.insert(p, x);
+}
+CompositeInstruction::iterator CompositeInstruction::insert(const_iterator p, std::initializer_list<value_type> l)
+{
+  return container_.insert(p, l);
+}
+
+template <class... Args>
+CompositeInstruction::iterator CompositeInstruction::emplace(const_iterator pos, Args&&... args)
+{
+  return container_.emplace(pos, std::forward<Args>(args)...);
+}
+
+CompositeInstruction::iterator CompositeInstruction::erase(const_iterator p) { return container_.erase(p); }
+CompositeInstruction::iterator CompositeInstruction::erase(const_iterator first, const_iterator last)
+{
+  return container_.erase(first, last);
+}
+void CompositeInstruction::push_back(const value_type& x) { container_.push_back(x); }
+void CompositeInstruction::push_back(const value_type&& x) { container_.push_back(x); }
+
+template <typename... Args>
+#if __cplusplus > 201402L
+CompositeInstruction::reference CompositeInstruction::emplace_back(Args&&... args)
+{
+  return container_.emplace_back(std::forward<Args>(args)...);
+}
+#else
+void CompositeInstruction::emplace_back(Args&&... args)
+{
+  container_.emplace_back(std::forward<Args>(args)...);
+}
+#endif
+
+void CompositeInstruction::pop_back() { container_.pop_back(); }
+void CompositeInstruction::swap(std::vector<value_type>& other) { container_.swap(other); }
+
 }  // namespace tesseract_planning
