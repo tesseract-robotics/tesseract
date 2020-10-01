@@ -195,7 +195,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract, 3.14, 1.0, 3.14, 10);
 
   // Create Profiles
   auto plan_profile = std::make_shared<OMPLDefaultPlanProfile>();
@@ -249,7 +249,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   program.push_back(plan_f1);
 
   // Create a new seed
-  seed = generateSeed(program, cur_state, tesseract);
+  seed = generateSeed(program, cur_state, tesseract, 3.14, 1.0, 3.14, 10);
 
   // Update Configuration
   request.instructions = program;
@@ -284,7 +284,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   program.push_back(plan_f1);
 
   // Create a new seed
-  seed = generateSeed(program, cur_state, tesseract);
+  seed = generateSeed(program, cur_state, tesseract, 3.14, 1.0, 3.14, 10);
 
   // Update Configuration
   request.instructions = program;
@@ -345,7 +345,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianGoalPlannerUnit)
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract, 3.14, 1.0, 3.14, 10);
 
   // Create Profiles
   auto plan_profile = std::make_shared<OMPLDefaultPlanProfile>();
@@ -434,7 +434,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract, 3.14, 1.0, 3.14, 10);
 
   // Create Profiles
   auto plan_profile = std::make_shared<OMPLDefaultPlanProfile>();
