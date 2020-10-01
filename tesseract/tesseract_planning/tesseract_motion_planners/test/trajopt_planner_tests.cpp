@@ -205,11 +205,10 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointJoint)  // NOLINT
 
   // Specify a JointWaypoint as the start
   JointWaypoint wp1(joint_names, Eigen::VectorXd::Zero(7));
-  wp1 << 0, 0, 0, -1.57, 0, 0, 0;
+  wp1 = { 0, 0, 0, -1.57, 0, 0, 0 };
 
   // Specify a Joint Waypoint as the finish
-  JointWaypoint wp2(joint_names, Eigen::VectorXd::Zero(7));
-  wp2 << 0, 0, 0, 1.57, 0, 0, 0;
+  JointWaypoint wp2(joint_names, { 0, 0, 0, 1.57, 0, 0, 0 });
 
   // Define Start Instruction
   PlanInstruction start_instruction(wp1, PlanInstructionType::START, "TEST_PROFILE");
