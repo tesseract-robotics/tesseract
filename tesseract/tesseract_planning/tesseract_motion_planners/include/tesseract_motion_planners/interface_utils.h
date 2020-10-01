@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
-#include <tesseract_motion_planners/simple/profile/simple_planner_default_plan_profile.h>
+#include <tesseract_motion_planners/simple/profile/simple_planner_default_lvs_plan_profile.h>
 
 namespace tesseract_planning
 {
@@ -42,8 +42,10 @@ namespace tesseract_planning
 inline CompositeInstruction generateSeed(const CompositeInstruction& instructions,
                                          const tesseract_environment::EnvState::ConstPtr& current_state,
                                          const tesseract::Tesseract::ConstPtr& tesseract,
-                                         int freespace_steps = 10,
-                                         int cartesian_steps = 10)
+                                         double state_longest_valid_segment_length = 5 * M_PI / 180,
+                                         double translation_longest_valid_segment_length = 0.15,
+                                         double rotation_longest_valid_segment_length = 5 * M_PI / 180,
+                                         int min_steps = 1)
 {
   // Fill out request and response
   PlannerRequest request;
@@ -55,7 +57,10 @@ inline CompositeInstruction generateSeed(const CompositeInstruction& instruction
   // Set up planner
   SimpleMotionPlanner planner;
 
-  auto profile = std::make_shared<SimplePlannerDefaultPlanProfile>(freespace_steps, cartesian_steps);
+  auto profile = std::make_shared<SimplePlannerDefaultLVSPlanProfile>(state_longest_valid_segment_length,
+                                                                      translation_longest_valid_segment_length,
+                                                                      rotation_longest_valid_segment_length,
+                                                                      min_steps);
   planner.plan_profiles[instructions.getProfile()] = profile;
   auto flat = flattenProgram(instructions);
   for (const auto& i : flat)

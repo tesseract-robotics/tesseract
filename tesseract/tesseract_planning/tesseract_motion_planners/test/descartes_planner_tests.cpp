@@ -132,7 +132,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_, 3.14, 1.0, 3.14, 10);
 
   // Create Profiles
   auto plan_profile = std::make_shared<DescartesDefaultPlanProfileD>();
@@ -249,7 +249,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_, 3.14, 1.0, 3.14, 10);
 
   // Create Profiles
   auto plan_profile = std::make_shared<DescartesDefaultPlanProfileD>();
@@ -356,7 +356,7 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_, 2, 2);
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_, 3.14, 1.0, 3.14, 2);
 
   // Create Profiles
   auto plan_profile = std::make_shared<DescartesDefaultPlanProfileD>();
