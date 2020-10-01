@@ -100,7 +100,6 @@ target_link_libraries(create_convex_hull PUBLIC tesseract::tesseract_common tess
 target_compile_options(create_convex_hull PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_clang_tidy(create_convex_hull ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(create_convex_hull PRIVATE VERSION ${TESSERACT_CXX_VERSION})
-target_code_coverage(create_convex_hull ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
 target_compile_definitions(create_convex_hull PRIVATE "-DBT_USE_DOUBLE_PRECISION")
 target_include_directories(create_convex_hull PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 target_include_directories(create_convex_hull SYSTEM PUBLIC
