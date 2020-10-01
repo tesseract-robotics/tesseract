@@ -32,7 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
-#include <tesseract_motion_planners/simple/profile/simple_planner_default_plan_profile.h>
+#include <tesseract_motion_planners/simple/profile/simple_planner_default_lvs_plan_profile.h>
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/utils/utils.h>
@@ -71,7 +71,7 @@ std::string SimpleMotionPlannerStatusCategory::message(int code) const
 SimpleMotionPlanner::SimpleMotionPlanner(std::string name)
   : MotionPlanner(std::move(name)), status_category_(std::make_shared<const SimpleMotionPlannerStatusCategory>(name_))
 {
-  plan_profiles["DEFAULT"] = std::make_shared<SimplePlannerDefaultPlanProfile>();
+  plan_profiles["DEFAULT"] = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
 }
 
 bool SimpleMotionPlanner::terminate()
@@ -219,7 +219,7 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
       SimplePlannerPlanProfile::Ptr start_plan_profile{ nullptr };
       auto it = plan_profiles.find(profile);
       if (it == plan_profiles.end())
-        start_plan_profile = std::make_shared<SimplePlannerDefaultPlanProfile>();
+        start_plan_profile = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
       else
         start_plan_profile = it->second;
 
