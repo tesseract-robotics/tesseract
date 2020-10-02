@@ -15,7 +15,7 @@ macro(add_benchmark benchmark_name benchmark_file)
       tesseract::tesseract_geometry
       tesseract::tesseract_scene_graph
       console_bridge
-      ${BULLET_LIBRARIES}
+      PkgConfig::bullet
       ${Boost_LIBRARIES}
       octomap octomath
       ${LIBFCL_LIBRARIES}
