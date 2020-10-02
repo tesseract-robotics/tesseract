@@ -16,9 +16,12 @@ find_dependency(console_bridge)
 find_dependency(tesseract_common)
 find_dependency(tesseract_geometry)
 find_dependency(tesseract_support)
-find_dependency(Bullet)
 find_dependency(fcl)
 find_dependency(ccd)
+
+# Find Bullet using PkgConfig which is the recommended way
+find_dependency(PkgConfig)
+pkg_check_modules(bullet REQUIRED IMPORTED_TARGET bullet)
 
 # These targets are necessary for 16.04 builds. Remove when Kinetic support is dropped
 if(NOT TARGET octomap)
