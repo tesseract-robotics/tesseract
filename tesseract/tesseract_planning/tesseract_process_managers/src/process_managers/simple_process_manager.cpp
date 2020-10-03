@@ -68,12 +68,13 @@ bool SimpleProcessManager::init(ProcessInput input)
   // Create the dependency graph
   if (console_bridge::getLogLevel() == console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG)
     input_instruction->print("Generating Taskflow for: ");
-  auto task = taskflow_
-                  .composed_of(taskflow_generator_->generateTaskflow(
-                      input,
-                      [this, &input]() { successCallback(input.getInstruction()->getDescription()); },
-                      [this, &input]() { failureCallback(input.getInstruction()->getDescription()); }))
-                  .name("Simple");
+  auto task =
+      taskflow_
+          .composed_of(taskflow_generator_->generateTaskflow(
+              input,
+              std::bind(&SimpleProcessManager::successCallback, this, input.getInstruction()->getDescription()),
+              std::bind(&SimpleProcessManager::failureCallback, this, input.getInstruction()->getDescription())))
+          .name("Simple");
   simple_tasks_.push_back(task);
 
   // Dump the taskflow
