@@ -50,9 +50,7 @@ public:
                                   bool allow_collision = false,
                                   bool debug = false);
 
-  bool evaluate(const descartes_light::Rung_<FloatType>& from,
-                const descartes_light::Rung_<FloatType>& to,
-                std::vector<typename descartes_light::LadderGraph<FloatType>::EdgeList>& edges) override;
+  std::pair<bool, FloatType> considerEdge(const FloatType* start, const FloatType* end) override;
 
 protected:
   /** @brief The tesseract state solver */
@@ -75,22 +73,6 @@ protected:
   bool allow_collision_;
   /** @brief Enable debug information to be printed to the terminal */
   bool debug_;
-  /** @brief The number of joints */
-  std::size_t dof_;
-
-  /**
-   * @brief Check continuous and discrete collision between two states
-   * @param out Output edge lists
-   * @param start Start state
-   * @param end End state
-   * @param next_idx Next idex
-   * @param find_best Indicate if best solution should be found
-   */
-  void considerEdge(typename descartes_light::LadderGraph<FloatType>::EdgeList& out,
-                    const FloatType* start,
-                    const FloatType* end,
-                    std::size_t next_idx,
-                    bool find_best);
 
   /**
    * @brief Check if two links are allowed to be in collision

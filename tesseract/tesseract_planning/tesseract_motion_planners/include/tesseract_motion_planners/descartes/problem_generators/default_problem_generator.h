@@ -44,7 +44,6 @@ DefaultDescartesProblemGenerator(const std::string& name,
 
   // Clear descartes data
   prob->edge_evaluators.clear();
-  prob->timing_constraints.clear();
   prob->samplers.clear();
 
   // Assume all the plan instructions have the same manipulator as the composite
