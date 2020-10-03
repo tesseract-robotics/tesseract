@@ -68,7 +68,7 @@ private:
 
   std::string name_;
 
-  double longest_valid_segment_length_{ 0.05 };
+  double longest_valid_segment_length_{ 0.005 };
 
   double contact_distance_{ 0 };
 
