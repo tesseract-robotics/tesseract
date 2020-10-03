@@ -39,7 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <descartes_samplers/samplers/axial_symmetric_sampler.h>
 #include <descartes_samplers/samplers/cartesian_point_sampler.h>
 #include <descartes_samplers/samplers/fixed_joint_pose_sampler.h>
-#include <descartes_samplers/evaluators/distance_edge_evaluator.h>
+#include <descartes_samplers/evaluators/timing_edge_evaluator.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -94,8 +94,7 @@ tesseract_common::StatusCode DescartesMotionPlanner<FloatType>::solve(const Plan
   }
 
   descartes_light::Solver<FloatType> graph_builder(problem->manip_inv_kin->numJoints());
-  if (!graph_builder.build(
-          problem->samplers, problem->timing_constraints, problem->edge_evaluators, problem->num_threads))
+  if (!graph_builder.build(problem->samplers, problem->edge_evaluators, problem->num_threads))
   {
     //    CONSOLE_BRIDGE_logError("Failed to build vertices");
     //    for (const auto& i : graph_builder.getFailedVertices())
