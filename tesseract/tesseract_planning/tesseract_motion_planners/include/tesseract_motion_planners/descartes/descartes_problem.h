@@ -53,7 +53,6 @@ struct DescartesProblem
 
   // These are required for descartes
   std::vector<typename descartes_light::EdgeEvaluator<FloatType>::Ptr> edge_evaluators;
-  std::vector<descartes_core::TimingConstraint<FloatType>> timing_constraints;
   std::vector<typename descartes_light::PositionSampler<FloatType>::Ptr> samplers;
   int num_threads = descartes_light::Solver<double>::getMaxThreads();
 };

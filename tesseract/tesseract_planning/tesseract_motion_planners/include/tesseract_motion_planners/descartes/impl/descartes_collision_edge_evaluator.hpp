@@ -46,7 +46,8 @@ DescartesCollisionEdgeEvaluator<FloatType>::DescartesCollisionEdgeEvaluator(
     double longest_valid_segment_length,
     bool allow_collision,
     bool debug)
-  : state_solver_(collision_env->getStateSolver())
+  : descartes_light::EdgeEvaluator<FloatType>(joint_names.size())
+  , state_solver_(collision_env->getStateSolver())
   , acm_(*(collision_env->getAllowedCollisionMatrix()))
   , active_link_names_(std::move(active_links))
   , joint_names_(std::move(joint_names))
@@ -56,7 +57,6 @@ DescartesCollisionEdgeEvaluator<FloatType>::DescartesCollisionEdgeEvaluator(
   , longest_valid_segment_length_(longest_valid_segment_length)
   , allow_collision_(allow_collision)
   , debug_(debug)
-  , dof_(joint_names_.size())
 {
   discrete_contact_manager_->setActiveCollisionObjects(active_link_names_);
   discrete_contact_manager_->setContactDistanceThreshold(collision_safety_margin_);
@@ -76,50 +76,13 @@ DescartesCollisionEdgeEvaluator<FloatType>::DescartesCollisionEdgeEvaluator(
 }
 
 template <typename FloatType>
-bool DescartesCollisionEdgeEvaluator<FloatType>::evaluate(
-    const descartes_light::Rung_<FloatType>& from,
-    const descartes_light::Rung_<FloatType>& to,
-    std::vector<typename descartes_light::LadderGraph<FloatType>::EdgeList>& edges)
-{
-  assert(from.data.size() % dof_ == 0);
-  assert(to.data.size() % dof_ == 0);
-  const auto n_start = from.data.size() / dof_;
-  const auto n_end = to.data.size() / dof_;
-
-  // Allocate
-  edges.resize(n_start);
-
-  for (std::size_t i = 0; i < n_start; ++i)
-  {
-    const auto* start_vertex = from.data.data() + dof_ * i;
-    for (std::size_t j = 0; j < n_end; ++j)
-    {
-      const auto* end_vertex = to.data.data() + dof_ * j;
-
-      // Consider the edge:
-      considerEdge(edges[i], start_vertex, end_vertex, j, allow_collision_);
-    }
-  }
-
-  for (const auto& rung : edges)
-    if (!rung.empty())
-      return true;
-
-  return false;
-}
-
-template <typename FloatType>
-void DescartesCollisionEdgeEvaluator<FloatType>::considerEdge(
-    typename descartes_light::LadderGraph<FloatType>::EdgeList& out,
-    const FloatType* start,
-    const FloatType* end,
-    std::size_t next_idx,
-    bool find_best)
+std::pair<bool, FloatType> DescartesCollisionEdgeEvaluator<FloatType>::considerEdge(const FloatType* start,
+                                                                                    const FloatType* end)
 {
   // Happens in two phases:
   // 1. Compute the transform of all objects
-  tesseract_common::TrajArray segment(2, dof_);
-  for (size_t i = 0; i < dof_; ++i)
+  tesseract_common::TrajArray segment(2, this->dof_);
+  for (size_t i = 0; i < this->dof_; ++i)
   {
     segment(0, static_cast<long>(i)) = start[i];
     segment(1, static_cast<long>(i)) = end[i];
@@ -127,21 +90,26 @@ void DescartesCollisionEdgeEvaluator<FloatType>::considerEdge(
 
   std::vector<tesseract_collision::ContactResultMap> discrete_results;
   std::vector<tesseract_collision::ContactResultMap> continuous_results;
-  bool discrete_in_contact = discreteCollisionCheck(discrete_results, segment, find_best);
-  bool continuous_in_contact = continuousCollisionCheck(continuous_results, segment, find_best);
+  bool discrete_in_contact = discreteCollisionCheck(discrete_results, segment, allow_collision_);
+  bool continuous_in_contact = continuousCollisionCheck(continuous_results, segment, allow_collision_);
 
   if (!discrete_in_contact && !continuous_in_contact)
-    out.emplace_back(0, next_idx);
-  else if (!discrete_in_contact && continuous_in_contact && find_best)
-    out.emplace_back(collision_safety_margin_ - continuous_results.begin()->begin()->second[0].distance, next_idx);
-  else if (discrete_in_contact && !continuous_in_contact && find_best)
-    out.emplace_back(collision_safety_margin_ - discrete_results.begin()->begin()->second[0].distance, next_idx);
-  else if (discrete_in_contact && continuous_in_contact && find_best)
+    return std::make_pair(true, 0);
+
+  if (!discrete_in_contact && continuous_in_contact && allow_collision_)
+    return std::make_pair(true, collision_safety_margin_ - continuous_results.begin()->begin()->second[0].distance);
+
+  if (discrete_in_contact && !continuous_in_contact && allow_collision_)
+    return std::make_pair(true, collision_safety_margin_ - discrete_results.begin()->begin()->second[0].distance);
+
+  if (discrete_in_contact && continuous_in_contact && allow_collision_)
   {
     double d = collision_safety_margin_ - discrete_results.begin()->begin()->second[0].distance;
     double c = collision_safety_margin_ - continuous_results.begin()->begin()->second[0].distance;
-    out.emplace_back(std::max(d, c), next_idx);
+    return std::make_pair(true, std::max(d, c));
   }
+
+  return std::make_pair(false, 0);
 }
 
 template <typename FloatType>

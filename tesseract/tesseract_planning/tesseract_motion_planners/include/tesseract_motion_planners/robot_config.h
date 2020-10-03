@@ -28,6 +28,18 @@
 
 namespace tesseract_planning
 {
+/**
+ * @brief The RobotConfig enum
+ *
+ * The first letter refers to 'Flip vs No-Flip', think of the human arm as the robot this would relate to wrist flipped
+ * or not flipped.
+ *   - Which is indicated by flipping the sign of J5 requiring J4 and J6 to move by +/-180 degrees
+ * The second letter refers to 'Up vs Down' think of the human arm as the robot this would relate to elbow up or down
+ *   - Which is indicated, J3 is greater than or less than 90 degrees and tool0 positiion x is positive or negative
+ * The third letter refers to 'Front vs Back' think of the human arm as the robot this would relate to arm in front or
+ * back
+ *
+ */
 enum class RobotConfig
 {
   NUT = 0,

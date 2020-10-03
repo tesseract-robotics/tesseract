@@ -163,7 +163,6 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerFixedPoses)  // NOLINT
       auto problem = DefaultDescartesProblemGenerator<double>(
           single_descartes_planner.getName(), request, single_descartes_planner.plan_profiles);
       EXPECT_EQ(problem->samplers.size(), 11);
-      EXPECT_EQ(problem->timing_constraints.size(), 11);
       EXPECT_EQ(problem->edge_evaluators.size(), 10);
     }
 
@@ -276,7 +275,6 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerAxialSymetric)  // NOLINT
       single_descartes_planner.getName(), request, single_descartes_planner.plan_profiles);
   problem->num_threads = 1;
   EXPECT_EQ(problem->samplers.size(), 11);
-  EXPECT_EQ(problem->timing_constraints.size(), 11);
   EXPECT_EQ(problem->edge_evaluators.size(), 10);
 
   PlannerResponse single_planner_response;
@@ -384,7 +382,6 @@ TEST_F(TesseractPlanningDescartesUnit, DescartesPlannerCollisionEdgeEvaluator)  
   auto problem = DefaultDescartesProblemGenerator<double>(
       single_descartes_planner.getName(), request, single_descartes_planner.plan_profiles);
   EXPECT_EQ(problem->samplers.size(), 3);
-  EXPECT_EQ(problem->timing_constraints.size(), 3);
   EXPECT_EQ(problem->edge_evaluators.size(), 2);
   EXPECT_EQ(problem->num_threads, 1);
 

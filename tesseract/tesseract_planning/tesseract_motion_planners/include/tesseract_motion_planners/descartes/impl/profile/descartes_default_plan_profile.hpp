@@ -207,10 +207,12 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
     {
       if (enable_edge_collision)
       {
-        auto compound_evaluator = std::make_shared<descartes_light::CompoundEdgeEvaluator<FloatType>>();
-        compound_evaluator->push_back(std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(
-            prob.manip_inv_kin->numJoints()));
-        compound_evaluator->push_back(
+        auto compound_evaluator =
+            std::make_shared<descartes_light::CompoundEdgeEvaluator<FloatType>>(prob.manip_inv_kin->numJoints());
+        compound_evaluator->evaluators.push_back(
+            std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(
+                prob.manip_inv_kin->numJoints()));
+        compound_evaluator->evaluators.push_back(
             std::make_shared<DescartesCollisionEdgeEvaluator<FloatType>>(prob.tesseract->getEnvironment(),
                                                                          active_links,
                                                                          prob.manip_inv_kin->getJointNames(),
@@ -231,10 +233,6 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
       prob.edge_evaluators.push_back(edge_evaluator(prob));
     }
   }
-
-  // Add timing Constraint
-  prob.timing_constraints.push_back(
-      descartes_core::TimingConstraint<FloatType>(static_cast<FloatType>(timing_constraint)));
 
   // Add isValid function
   if (is_valid == nullptr)
@@ -265,10 +263,12 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
     {
       if (enable_edge_collision)
       {
-        auto compound_evaluator = std::make_shared<descartes_light::CompoundEdgeEvaluator<FloatType>>();
-        compound_evaluator->push_back(std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(
-            prob.manip_inv_kin->numJoints()));
-        compound_evaluator->push_back(
+        auto compound_evaluator =
+            std::make_shared<descartes_light::CompoundEdgeEvaluator<FloatType>>(prob.manip_inv_kin->numJoints());
+        compound_evaluator->evaluators.push_back(
+            std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(
+                prob.manip_inv_kin->numJoints()));
+        compound_evaluator->evaluators.push_back(
             std::make_shared<DescartesCollisionEdgeEvaluator<FloatType>>(prob.tesseract->getEnvironment(),
                                                                          active_links,
                                                                          prob.manip_inv_kin->getJointNames(),
@@ -289,10 +289,6 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
       prob.edge_evaluators.push_back(edge_evaluator(prob));
     }
   }
-
-  // Add timing Constraint
-  prob.timing_constraints.push_back(
-      descartes_core::TimingConstraint<FloatType>(static_cast<FloatType>(timing_constraint)));
 
   // Add isValid function
   if (is_valid == nullptr)
