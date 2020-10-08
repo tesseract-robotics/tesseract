@@ -8,10 +8,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/state_solver.h>
+#include <tesseract_environment/kdl/visibility_control.h>
 
 namespace tesseract_environment
 {
-class KDLStateSolver : public StateSolver
+class TESSERACT_ENVIRONMENT_KDL_PUBLIC KDLStateSolver : public StateSolver
 {
 public:
   using Ptr = std::shared_ptr<KDLStateSolver>;

@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/bullet/tesseract_compound_collision_algorithm.h>
+#include <tesseract_collision/bullet/visibility_control.h>
 
 class btDispatcher;
 class btCollisionObject;
@@ -55,7 +56,8 @@ namespace tesseract_collision_bullet
  * with the collision shape. I don't believe this will be an issue since all of the other callback in Bullet accept
  * both.
  */
-class TesseractCompoundCompoundCollisionAlgorithm : public TesseractCompoundCollisionAlgorithm  // NOLINT
+class TESSERACT_COLLISION_BULLET_LOCAL TesseractCompoundCompoundCollisionAlgorithm
+  : public TesseractCompoundCollisionAlgorithm  // NOLINT
 {
   class btHashedSimplePairCache* m_childCollisionAlgorithmCache;
   btSimplePairArray m_removePairs;
@@ -72,6 +74,10 @@ public:
                                               bool isSwapped);
 
   ~TesseractCompoundCompoundCollisionAlgorithm() override;
+  TesseractCompoundCompoundCollisionAlgorithm(const TesseractCompoundCompoundCollisionAlgorithm&) = default;
+  TesseractCompoundCompoundCollisionAlgorithm& operator=(const TesseractCompoundCompoundCollisionAlgorithm&) = default;
+  TesseractCompoundCompoundCollisionAlgorithm(TesseractCompoundCompoundCollisionAlgorithm&&) = default;
+  TesseractCompoundCompoundCollisionAlgorithm& operator=(TesseractCompoundCompoundCollisionAlgorithm&&) = default;
 
   void processCollision(const btCollisionObjectWrapper* body0Wrap,
                         const btCollisionObjectWrapper* body1Wrap,

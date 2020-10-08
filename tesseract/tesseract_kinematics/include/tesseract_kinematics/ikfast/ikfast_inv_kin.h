@@ -27,6 +27,7 @@
 #define TESSERACT_KINEMATICS_IKFAST_INV_KIN_H
 
 #include <tesseract_kinematics/core/inverse_kinematics.h>
+#include <tesseract_kinematics/ikfast/visibility_control.h>
 
 namespace tesseract_kinematics
 {
@@ -79,7 +80,7 @@ namespace tesseract_kinematics
  * }
  *
 */
-class IKFastInvKin : public InverseKinematics
+class TESSERACT_KINEMATICS_IKFAST_PUBLIC IKFastInvKin : public InverseKinematics
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

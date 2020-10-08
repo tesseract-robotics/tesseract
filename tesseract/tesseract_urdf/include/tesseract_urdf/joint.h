@@ -41,10 +41,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/mimic.h>
 #include <tesseract_urdf/origin.h>
 #include <tesseract_urdf/safety_controller.h>
+#include <tesseract_urdf/visibility_control.h>
 
 namespace tesseract_urdf
 {
-class JointStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_URDF_LOCAL JointStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   JointStatusCategory(std::string joint_name = "") : name_("JointStatusCategory"), joint_name_(std::move(joint_name)) {}

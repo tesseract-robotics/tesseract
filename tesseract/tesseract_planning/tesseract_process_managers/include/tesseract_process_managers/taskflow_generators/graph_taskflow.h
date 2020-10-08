@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/taskflow_generator.h>
 #include <tesseract_process_managers/process_generator.h>
+#include <tesseract_process_managers/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -43,7 +44,7 @@ namespace tesseract_planning
  * @brief This class generates taskflow graph. It allows you to connect different channels from the source to the
  *        destination process
  */
-class GraphTaskflow : public TaskflowGenerator
+class TESSERACT_PROCESS_MANAGERS_PUBLIC GraphTaskflow : public TaskflowGenerator
 {
 public:
   using UPtr = std::unique_ptr<GraphTaskflow>;

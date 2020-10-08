@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_time_parameterization VERSION 0.1.0 LANGUAGES CXX)
 
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+
 find_package(console_bridge REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_command_language REQUIRED)
@@ -14,9 +17,11 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 # Load variable for clang tidy args, compiler options and cxx version
 tesseract_variables()
 
-add_library(${PROJECT_NAME} SHARED src/iterative_spline_parameterization)
+add_library(${PROJECT_NAME} src/iterative_spline_parameterization)
+target_process_export(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} PUBLIC console_bridge tesseract::tesseract_common tesseract::tesseract_command_language)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})

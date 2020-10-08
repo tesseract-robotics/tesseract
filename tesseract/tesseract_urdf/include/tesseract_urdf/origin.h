@@ -36,9 +36,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/algorithm/string.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_urdf/visibility_control.h>
+
 namespace tesseract_urdf
 {
-class OriginStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_URDF_LOCAL OriginStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   OriginStatusCategory() : name_("OriginStatusCategory") {}

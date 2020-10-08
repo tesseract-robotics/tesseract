@@ -33,10 +33,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_motion_planners/ompl/visibility_control.h>
+
 namespace tesseract_planning
 {
 /** @brief Create a single state validity checker from multiple */
-class CompoundStateValidator : public ompl::base::StateValidityChecker
+class TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC CompoundStateValidator : public ompl::base::StateValidityChecker
 {
 public:
   CompoundStateValidator();

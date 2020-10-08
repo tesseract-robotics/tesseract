@@ -33,12 +33,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/ompl/profile/ompl_default_plan_profile.h>
+#include <tesseract_motion_planners/ompl/visibility_control.h>
 
 namespace tesseract_planning
 {
-std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const std::string& name,
-                                                          const PlannerRequest& request,
-                                                          const OMPLPlanProfileMap& plan_profiles);
+TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC std::vector<OMPLProblem::Ptr>
+DefaultOMPLProblemGenerator(const std::string& name,
+                            const PlannerRequest& request,
+                            const OMPLPlanProfileMap& plan_profiles);
 
 }  // namespace tesseract_planning
 #endif

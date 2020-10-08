@@ -34,11 +34,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
+#include <tesseract_motion_planners/simple/visibility_control.h>
 
 namespace tesseract_planning
 {
-class DEPRECATED("Please use SimplePlannerLVSDefaultPlanProfile") SimplePlannerDefaultPlanProfile
-  : public SimplePlannerPlanProfile
+class DEPRECATED("Please use SimplePlannerLVSDefaultPlanProfile")
+    TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC SimplePlannerDefaultPlanProfile : public SimplePlannerPlanProfile
 {
 public:
   using Ptr = std::shared_ptr<SimplePlannerDefaultPlanProfile>;

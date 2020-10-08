@@ -34,9 +34,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <cassert>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/visibility_control.h>
+
 namespace tesseract_common
 {
-class StatusCategory
+class TESSERACT_COMMON_PUBLIC StatusCategory
 {
 public:
   using Ptr = std::shared_ptr<StatusCategory>;
@@ -63,7 +65,7 @@ public:
   }
 };
 
-class GeneralStatusCategory : public StatusCategory
+class TESSERACT_COMMON_PUBLIC GeneralStatusCategory : public StatusCategory
 {
 public:
   GeneralStatusCategory(std::string name = "GeneralStatus") : name_(std::move(name)) {}
@@ -108,7 +110,7 @@ private:
   std::string name_;
 };
 
-class StatusCode
+class TESSERACT_COMMON_PUBLIC StatusCode
 {
 public:
   using Ptr = std::shared_ptr<StatusCode>;

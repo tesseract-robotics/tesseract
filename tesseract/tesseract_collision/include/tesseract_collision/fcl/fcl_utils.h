@@ -54,6 +54,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/types.h>
 #include <tesseract_collision/core/common.h>
 #include <tesseract_collision/fcl/fcl_collision_object_wrapper.h>
+#include <tesseract_collision/fcl/visibility_control.h>
 
 namespace tesseract_collision
 {
@@ -76,7 +77,7 @@ enum CollisionFilterGroups
  * @brief This is a Tesseract link collision object wrapper which add items specific to tesseract. It is a wrapper
  * around a tesseract link which may contain several collision objects.
  */
-class CollisionObjectWrapper
+class TESSERACT_COLLISION_FCL_LOCAL CollisionObjectWrapper
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -176,7 +177,7 @@ protected:
   double contact_distance_{ 0 }; /**< @brief The contact distance threshold */
 };
 
-CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom);
+TESSERACT_COLLISION_FCL_LOCAL CollisionGeometryPtr createShapePrimitive(const CollisionShapeConstPtr& geom);
 
 using COW = CollisionObjectWrapper;
 using Link2COW = std::map<std::string, COW::Ptr>;
@@ -258,9 +259,9 @@ inline void updateCollisionObjectFilters(const std::vector<std::string>& active,
   }
 }
 
-bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data);
+TESSERACT_COLLISION_FCL_LOCAL bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data);
 
-bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data);
+TESSERACT_COLLISION_FCL_LOCAL bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data);
 
 }  // namespace tesseract_collision_fcl
 }  // namespace tesseract_collision

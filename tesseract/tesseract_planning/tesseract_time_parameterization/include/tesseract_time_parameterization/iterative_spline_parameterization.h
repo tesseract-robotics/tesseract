@@ -44,6 +44,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/command_language.h>
+#include <tesseract_time_parameterization/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -74,7 +75,7 @@ namespace tesseract_planning
 /// If this is a problem, try retuning (increasing) the limits.
 ///
 
-class IterativeSplineParameterization
+class TESSERACT_TIME_PARAMETERIZATION_PUBLIC IterativeSplineParameterization
 {
 public:
   IterativeSplineParameterization(bool add_points = true);

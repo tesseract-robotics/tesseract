@@ -23,10 +23,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef TESSERACT_GEOMETRY_GEOMETRY_LOADER_H
+#define TESSERACT_GEOMETRY_GEOMETRY_LOADER_H
 
 #include <tesseract_geometry/mesh_parser.h>
-
-#pragma once
 
 namespace tesseract_geometry
 {
@@ -70,3 +70,5 @@ createConvexMeshFromBytes(const std::string& url,
 }
 
 }  // namespace tesseract_geometry
+
+#endif  // TESSERACT_GEOMETRY_GEOMETRY_LOADER_H

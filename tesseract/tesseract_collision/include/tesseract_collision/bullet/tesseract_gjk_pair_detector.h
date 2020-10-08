@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 class btConvexPenetrationDepthSolver;
 
 #include <tesseract_collision/core/types.h>
+#include <tesseract_collision/bullet/visibility_control.h>
 
 namespace tesseract_collision
 {
@@ -49,7 +50,7 @@ namespace tesseract_collision_bullet
  *
  * Note: This will not be able to be removed.
  */
-class TesseractGjkPairDetector : public btDiscreteCollisionDetectorInterface
+class TESSERACT_COLLISION_BULLET_LOCAL TesseractGjkPairDetector : public btDiscreteCollisionDetectorInterface
 {
   btVector3 m_cachedSeparatingAxis;
   btConvexPenetrationDepthSolver* m_penetrationDepthSolver;

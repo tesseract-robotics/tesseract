@@ -35,6 +35,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_motion_planners/ompl/visibility_control.h>
+
 namespace tesseract_planning
 {
 /**
@@ -45,7 +47,7 @@ namespace tesseract_planning
  * gantry with two linear axis with a robot attached. When
  * sampling near you may want to scale down the rail sampling.
  */
-class WeightedRealVectorStateSampler : public ompl::base::StateSampler
+class TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC WeightedRealVectorStateSampler : public ompl::base::StateSampler
 {
 public:
   WeightedRealVectorStateSampler(const ompl::base::StateSpace* space,

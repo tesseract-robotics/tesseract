@@ -34,10 +34,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/joint.h>
+#include <tesseract_urdf/visibility_control.h>
 
 namespace tesseract_urdf
 {
-class DynamicsStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_URDF_LOCAL DynamicsStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   DynamicsStatusCategory() : name_("DynamicsStatusCategory") {}

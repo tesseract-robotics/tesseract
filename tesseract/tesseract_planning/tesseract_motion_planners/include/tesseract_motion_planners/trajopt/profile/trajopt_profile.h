@@ -35,10 +35,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/core/instruction.h>
 #include <tesseract_command_language/manipulator_info.h>
+#include <tesseract_motion_planners/trajopt/visibility_control.h>
 
 namespace tesseract_planning
 {
-class TrajOptPlanProfile
+class TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC TrajOptPlanProfile
 {
 public:
   using Ptr = std::shared_ptr<TrajOptPlanProfile>;
@@ -61,7 +62,7 @@ public:
   virtual tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const = 0;
 };
 
-class TrajOptCompositeProfile
+class TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC TrajOptCompositeProfile
 {
 public:
   using Ptr = std::shared_ptr<TrajOptCompositeProfile>;

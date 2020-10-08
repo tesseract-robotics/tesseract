@@ -36,11 +36,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_visualization/visualization.h>
 #include <tesseract_visualization/ignition/entity_manager.h>
 #include <tesseract_environment/core/environment.h>
+#include <tesseract_visualization/ignition/visibility_control.h>
 
 namespace tesseract_visualization
 {
 /** @brief The Tesseract Ignition Vizualization class */
-class TesseractIgnitionVisualization : public tesseract_visualization::Visualization
+class TESSERACT_VISUALIZATION_IGNITION_PUBLIC TesseractIgnitionVisualization
+  : public tesseract_visualization::Visualization
 {
 public:
   using Ptr = std::shared_ptr<TesseractIgnitionVisualization>;

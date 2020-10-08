@@ -35,10 +35,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_urdf/origin.h>
+#include <tesseract_urdf/visibility_control.h>
 
 namespace tesseract_urdf
 {
-class InertialStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_URDF_LOCAL InertialStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   InertialStatusCategory() : name_("InertialStatusCategory") {}

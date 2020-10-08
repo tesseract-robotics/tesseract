@@ -31,14 +31,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/core/instruction.h>
+#include <tesseract_command_language/visibility_control.h>
 
 namespace tesseract_planning
 {
-std::shared_ptr<tinyxml2::XMLDocument> toXMLDocument(const Instruction& instruction);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC std::shared_ptr<tinyxml2::XMLDocument> toXMLDocument(const Instruction& instruction);
 
-bool toXMLFile(const Instruction& instruction, const std::string& file_path);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC bool toXMLFile(const Instruction& instruction, const std::string& file_path);
 
-std::string toXMLString(const Instruction& instruction);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC std::string toXMLString(const Instruction& instruction);
 
 }  // namespace tesseract_planning
 #endif  // TESSERACT_COMMAND_LANGUAGE_SERIALIZE_H

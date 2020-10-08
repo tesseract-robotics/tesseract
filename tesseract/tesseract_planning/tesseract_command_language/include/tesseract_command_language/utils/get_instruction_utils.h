@@ -30,6 +30,7 @@
 #include <tesseract_command_language/move_instruction.h>
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_command_language/utils/filter_functions.h>
+#include <tesseract_command_language/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -40,9 +41,10 @@ namespace tesseract_planning
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The first Instruction (Const)
  */
-const Instruction* getFirstInstruction(const CompositeInstruction& composite_instruction,
-                                       locateFilterFn locate_filter = nullptr,
-                                       bool process_child_composites = true);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC const Instruction*
+getFirstInstruction(const CompositeInstruction& composite_instruction,
+                    locateFilterFn locate_filter = nullptr,
+                    bool process_child_composites = true);
 
 /**
  * @brief Get the first Instruction in a Composite Instruction that is identified by the filter
@@ -51,9 +53,9 @@ const Instruction* getFirstInstruction(const CompositeInstruction& composite_ins
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The first Instruction (Non-Const)
  */
-Instruction* getFirstInstruction(CompositeInstruction& composite_instruction,
-                                 locateFilterFn locate_filter = nullptr,
-                                 bool process_child_composites = true);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC Instruction* getFirstInstruction(CompositeInstruction& composite_instruction,
+                                                                   locateFilterFn locate_filter = nullptr,
+                                                                   bool process_child_composites = true);
 
 /**
  * @brief Get the last Instruction in a Composite Instruction that is identified by the filter
@@ -62,9 +64,10 @@ Instruction* getFirstInstruction(CompositeInstruction& composite_instruction,
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The Last Instruction (Const)
  */
-const Instruction* getLastInstruction(const CompositeInstruction& composite_instruction,
-                                      locateFilterFn locate_filter = nullptr,
-                                      bool process_child_composites = true);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC const Instruction*
+getLastInstruction(const CompositeInstruction& composite_instruction,
+                   locateFilterFn locate_filter = nullptr,
+                   bool process_child_composites = true);
 
 /**
  * @brief Get the last Instruction in a Composite Instruction that is identified by the filter
@@ -73,9 +76,9 @@ const Instruction* getLastInstruction(const CompositeInstruction& composite_inst
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The Last Instruction (Non-Const)
  */
-Instruction* getLastInstruction(CompositeInstruction& composite_instruction,
-                                locateFilterFn locate_filter = nullptr,
-                                bool process_child_composites = true);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC Instruction* getLastInstruction(CompositeInstruction& composite_instruction,
+                                                                  locateFilterFn locate_filter = nullptr,
+                                                                  bool process_child_composites = true);
 
 /**
  * @brief Get the first Move Instruction in a Composite Instruction
@@ -204,9 +207,9 @@ inline const PlanInstruction* getLastPlanInstruction(const CompositeInstruction&
  * @param process_child_composites Indicate if child Composite Instructions should be searched
  * @return The number of Instructions
  */
-long getInstructionCount(const CompositeInstruction& composite_instruction,
-                         locateFilterFn locate_filter = nullptr,
-                         bool process_child_composites = true);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC long getInstructionCount(const CompositeInstruction& composite_instruction,
+                                                           locateFilterFn locate_filter = nullptr,
+                                                           bool process_child_composites = true);
 
 /**
  * @brief Get number of Move Instruction in a Composite Instruction
