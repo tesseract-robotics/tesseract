@@ -42,12 +42,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/srdf/types.h>
+#include <tesseract_scene_graph/visibility_control.h>
 
 /// Main namespace
 namespace tesseract_scene_graph
 {
 /** @brief Representation of semantic information about the robot */
-class SRDFModel
+class TESSERACT_SCENE_GRAPH_PUBLIC SRDFModel
 {
 public:
   using Ptr = std::shared_ptr<SRDFModel>;

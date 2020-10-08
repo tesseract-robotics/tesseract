@@ -40,6 +40,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_environment/core/visibility_control.h>
+
 namespace tesseract_environment
 {
 /**
@@ -49,7 +51,7 @@ namespace tesseract_environment
  * possible to get the joint transform using the child link transfrom of the joint, but they are both provided for
  * convience. Also the joint values used to calculated the link/joint transfroms is provided.
  */
-struct EnvState
+struct TESSERACT_ENVIRONMENT_CORE_PUBLIC EnvState
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -79,7 +81,7 @@ struct EnvState
 /**
  * @brief The AdjacencyMapPair struct
  */
-struct AdjacencyMapPair
+struct TESSERACT_ENVIRONMENT_CORE_PUBLIC AdjacencyMapPair
 {
   using Ptr = std::shared_ptr<AdjacencyMapPair>;
   using ConstPtr = std::shared_ptr<const AdjacencyMapPair>;
@@ -88,7 +90,7 @@ struct AdjacencyMapPair
   Eigen::Isometry3d transform; /**< @brief A transform from the kinematic link (link_name) to the adjacent link */
 };
 
-class AdjacencyMap
+class TESSERACT_ENVIRONMENT_CORE_PUBLIC AdjacencyMap
 {
 public:
   using Ptr = std::shared_ptr<AdjacencyMap>;

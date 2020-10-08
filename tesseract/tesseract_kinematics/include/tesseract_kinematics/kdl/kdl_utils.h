@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/parser/kdl_parser.h>
+#include <tesseract_kinematics/kdl/visibility_control.h>
 
 namespace tesseract_kinematics
 {
@@ -138,7 +139,7 @@ inline void KDLToEigen(const KDL::JntArray& joints, Eigen::Ref<Eigen::VectorXd> 
  * This contains common data extracted when parsing
  * a kdl chain from the scene graph
  */
-struct KDLChainData
+struct TESSERACT_KINEMATICS_KDL_LOCAL KDLChainData
 {
   KDL::Chain robot_chain;                    /**< KDL Chain object */
   KDL::Tree kdl_tree;                        /**< KDL tree object */

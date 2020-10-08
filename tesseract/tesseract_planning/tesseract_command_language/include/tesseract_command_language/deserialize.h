@@ -32,28 +32,32 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/core/instruction.h>
+#include <tesseract_command_language/visibility_control.h>
 
 namespace tesseract_planning
 {
 using WaypointParserFn = std::function<Waypoint(const tinyxml2::XMLElement&, int)>;
 using InstructionParserFn = std::function<Instruction(const tinyxml2::XMLElement&, int, WaypointParserFn)>;
 
-Waypoint defaultWaypointParser(const tinyxml2::XMLElement& xml_element, int type);
-Instruction defaultInstructionParser(const tinyxml2::XMLElement& xml_element,
-                                     int type,
-                                     WaypointParserFn waypoint_parser);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC Waypoint defaultWaypointParser(const tinyxml2::XMLElement& xml_element, int type);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC Instruction defaultInstructionParser(const tinyxml2::XMLElement& xml_element,
+                                                                       int type,
+                                                                       WaypointParserFn waypoint_parser);
 
-Instruction fromXMLDocument(const tinyxml2::XMLDocument& xml_doc,
-                            InstructionParserFn instruction_parser = defaultInstructionParser,
-                            WaypointParserFn waypoint_parser = defaultWaypointParser);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC Instruction
+fromXMLDocument(const tinyxml2::XMLDocument& xml_doc,
+                InstructionParserFn instruction_parser = defaultInstructionParser,
+                WaypointParserFn waypoint_parser = defaultWaypointParser);
 
-Instruction fromXMLFile(const std::string& file_path,
-                        InstructionParserFn instruction_parser = defaultInstructionParser,
-                        WaypointParserFn waypoint_parser = defaultWaypointParser);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC Instruction
+fromXMLFile(const std::string& file_path,
+            InstructionParserFn instruction_parser = defaultInstructionParser,
+            WaypointParserFn waypoint_parser = defaultWaypointParser);
 
-Instruction fromXMLString(const std::string& xml_string,
-                          InstructionParserFn instruction_parser = defaultInstructionParser,
-                          WaypointParserFn waypoint_parser = defaultWaypointParser);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC Instruction
+fromXMLString(const std::string& xml_string,
+              InstructionParserFn instruction_parser = defaultInstructionParser,
+              WaypointParserFn waypoint_parser = defaultWaypointParser);
 
 }  // namespace tesseract_planning
 

@@ -29,10 +29,11 @@
 #include <tesseract_process_managers/taskflow_generators/graph_taskflow.h>
 #include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
 #include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
+#include <tesseract_process_managers/visibility_control.h>
 
 namespace tesseract_planning
 {
-struct DescartesTaskflowParams
+struct TESSERACT_PROCESS_MANAGERS_PUBLIC DescartesTaskflowParams
 {
   bool enable_simple_planner{ true };
   bool enable_post_contact_discrete_check{ false };
@@ -43,7 +44,7 @@ struct DescartesTaskflowParams
   DescartesPlanProfileMap<double> descartes_plan_profiles;
 };
 
-GraphTaskflow::UPtr createDescartesTaskflow(DescartesTaskflowParams params);
+TESSERACT_PROCESS_MANAGERS_PUBLIC GraphTaskflow::UPtr createDescartesTaskflow(DescartesTaskflowParams params);
 }  // namespace tesseract_planning
 
 #endif  // TESSERACT_PROCESS_MANAGERS_DESCARTES_TASKFLOW_H

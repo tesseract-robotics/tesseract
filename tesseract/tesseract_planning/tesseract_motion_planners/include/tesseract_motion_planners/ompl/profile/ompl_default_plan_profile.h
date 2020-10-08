@@ -37,6 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/ompl_planner_configurator.h>
 #include <tesseract_motion_planners/ompl/profile/ompl_profile.h>
 #include <tesseract_motion_planners/ompl/types.h>
+#include <tesseract_motion_planners/ompl/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -45,7 +46,7 @@ namespace tesseract_planning
  * every plan instruction will be its a seperate ompl motion plan and therefore planning information is relevent
  * for this motion planner in the profile.
  */
-class OMPLDefaultPlanProfile : public OMPLPlanProfile
+class TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC OMPLDefaultPlanProfile : public OMPLPlanProfile
 {
 public:
   using Ptr = std::shared_ptr<OMPLDefaultPlanProfile>;

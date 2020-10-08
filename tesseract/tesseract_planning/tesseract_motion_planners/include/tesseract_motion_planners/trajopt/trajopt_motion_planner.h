@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/planner.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
+#include <tesseract_motion_planners/trajopt/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -43,7 +44,7 @@ using TrajOptProblemGeneratorFn = std::function<trajopt::TrajOptProb::Ptr(const 
                                                                           const TrajOptPlanProfileMap&,
                                                                           const TrajOptCompositeProfileMap&)>;
 
-class TrajOptMotionPlanner : public MotionPlanner
+class TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC TrajOptMotionPlanner : public MotionPlanner
 {
 public:
   /** @brief Construct a basic planner */
@@ -102,7 +103,8 @@ protected:
   std::shared_ptr<const TrajOptMotionPlannerStatusCategory> status_category_; /** @brief The planners status codes */
 };
 
-class TrajOptMotionPlannerStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC TrajOptMotionPlannerStatusCategory
+  : public tesseract_common::StatusCategory
 {
 public:
   TrajOptMotionPlannerStatusCategory(std::string name);

@@ -33,10 +33,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_geometry/impl/capsule.h>
+#include <tesseract_urdf/visibility_control.h>
 
 namespace tesseract_urdf
 {
-class CapsuleStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_URDF_LOCAL CapsuleStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   CapsuleStatusCategory() : name_("CapsuleStatusCategory") {}

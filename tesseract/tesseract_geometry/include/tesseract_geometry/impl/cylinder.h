@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
-class Cylinder : public Geometry
+class TESSERACT_GEOMETRY_PUBLIC Cylinder : public Geometry
 {
 public:
   using Ptr = std::shared_ptr<Cylinder>;

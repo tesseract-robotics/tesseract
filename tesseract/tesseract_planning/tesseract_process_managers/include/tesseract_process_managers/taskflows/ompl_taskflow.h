@@ -29,10 +29,11 @@
 #include <tesseract_process_managers/taskflow_generators/graph_taskflow.h>
 #include <tesseract_motion_planners/ompl/profile/ompl_profile.h>
 #include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
+#include <tesseract_process_managers/visibility_control.h>
 
 namespace tesseract_planning
 {
-GraphTaskflow::UPtr createOMPLTaskflow(
+TESSERACT_PROCESS_MANAGERS_PUBLIC GraphTaskflow::UPtr createOMPLTaskflow(
     bool create_seed,
     const SimplePlannerPlanProfileMap& simple_plan_profiles = SimplePlannerPlanProfileMap(),
     const SimplePlannerCompositeProfileMap& simple_composite_profiles = SimplePlannerCompositeProfileMap(),

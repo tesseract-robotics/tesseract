@@ -23,18 +23,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_MOTION_PLANNERS_DISCRETE_MOTION_VALIDATOR_H
-#define TESSERACT_MOTION_PLANNERS_DISCRETE_MOTION_VALIDATOR_H
+#ifndef TESSERACT_MOTION_PLANNERS_OMPL_DISCRETE_MOTION_VALIDATOR_H
+#define TESSERACT_MOTION_PLANNERS_OMPL_DISCRETE_MOTION_VALIDATOR_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/MotionValidator.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#include <tesseract_motion_planners/ompl/visibility_control.h>
 
 namespace tesseract_planning
 {
 /** @brief Continuous collision check between two states */
-class DiscreteMotionValidator : public ompl::base::MotionValidator
+class TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC DiscreteMotionValidator : public ompl::base::MotionValidator
 {
 public:
   DiscreteMotionValidator(const ompl::base::SpaceInformationPtr& space_info);
@@ -47,4 +48,4 @@ public:
 };
 }  // namespace tesseract_planning
 
-#endif  // TESSERACT_MOTION_PLANNERS_DISCRETE_MOTION_VALIDATOR_H
+#endif  // TESSERACT_MOTION_PLANNERS_OMPL_DISCRETE_MOTION_VALIDATOR_H

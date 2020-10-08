@@ -30,6 +30,7 @@
 #include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
 #include <tesseract_motion_planners/ompl/profile/ompl_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
+#include <tesseract_process_managers/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -39,7 +40,7 @@ enum class FreespaceTaskflowType : int
   TRAJOPT_FIRST = 1, /**< @brief This will run trajopt first then if it fails it will run ompl followed by trajopt */
 };
 
-struct FreespaceTaskflowParams
+struct TESSERACT_PROCESS_MANAGERS_PUBLIC FreespaceTaskflowParams
 {
   FreespaceTaskflowType type{ FreespaceTaskflowType::DEFAULT };
   bool enable_simple_planner{ true };
@@ -53,7 +54,7 @@ struct FreespaceTaskflowParams
   TrajOptCompositeProfileMap trajopt_composite_profiles;
 };
 
-GraphTaskflow::UPtr createFreespaceTaskflow(FreespaceTaskflowParams params);
+TESSERACT_PROCESS_MANAGERS_PUBLIC GraphTaskflow::UPtr createFreespaceTaskflow(FreespaceTaskflowParams params);
 }  // namespace tesseract_planning
 
 #endif  // TESSERACT_PROCESS_MANAGERS_FREESPACE_TASKFLOW_H

@@ -30,6 +30,7 @@
 #include <tesseract_command_language/move_instruction.h>
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_command_language/utils/filter_functions.h>
+#include <tesseract_command_language/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -39,8 +40,8 @@ namespace tesseract_planning
  * @param filter Used to filter only what should be considered. Should return true to include otherwise false
  * @return A new flattened vector referencing the original instruction elements
  */
-std::vector<std::reference_wrapper<Instruction>> flatten(CompositeInstruction& composite_instruction,
-                                                         flattenFilterFn filter = nullptr);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC std::vector<std::reference_wrapper<Instruction>>
+flatten(CompositeInstruction& composite_instruction, flattenFilterFn filter = nullptr);
 
 /**
  * @brief Flattens a CompositeInstruction into a vector of Instruction&
@@ -48,8 +49,8 @@ std::vector<std::reference_wrapper<Instruction>> flatten(CompositeInstruction& c
  * @param filter Used to filter only what should be considered. Should return true to include otherwise false
  * @return A new flattened vector referencing the original instruction elements
  */
-std::vector<std::reference_wrapper<const Instruction>> flatten(const CompositeInstruction& composite_instruction,
-                                                               flattenFilterFn filter = nullptr);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC std::vector<std::reference_wrapper<const Instruction>>
+flatten(const CompositeInstruction& composite_instruction, flattenFilterFn filter = nullptr);
 
 /**
  * @brief Flattens a composite instruction to the same pattern as the pattern composite instruction. ie, an element of
@@ -61,9 +62,10 @@ std::vector<std::reference_wrapper<const Instruction>> flatten(const CompositeIn
  * @param filter Used to filter only what should be considered. Should return true to include otherwise false
  * @return A new flattened vector referencing the original instruction elements
  */
-std::vector<std::reference_wrapper<Instruction>> flattenToPattern(CompositeInstruction& composite_instruction,
-                                                                  const CompositeInstruction& pattern,
-                                                                  flattenFilterFn filter = nullptr);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC std::vector<std::reference_wrapper<Instruction>>
+flattenToPattern(CompositeInstruction& composite_instruction,
+                 const CompositeInstruction& pattern,
+                 flattenFilterFn filter = nullptr);
 
 /**
  * @brief Flattens a composite instruction to the same pattern as the pattern composite instruction. ie, an element of
@@ -73,7 +75,7 @@ std::vector<std::reference_wrapper<Instruction>> flattenToPattern(CompositeInstr
  * @param filter Used to filter only what should be considered. Should return true to include otherwise false
  * @return A new flattened vector referencing the original instruction elements
  */
-std::vector<std::reference_wrapper<const Instruction>>
+TESSERACT_COMMAND_LANGUAGE_PUBLIC std::vector<std::reference_wrapper<const Instruction>>
 flattenToPattern(const CompositeInstruction& composite_instruction,
                  const CompositeInstruction& pattern,
                  flattenFilterFn filter = nullptr);

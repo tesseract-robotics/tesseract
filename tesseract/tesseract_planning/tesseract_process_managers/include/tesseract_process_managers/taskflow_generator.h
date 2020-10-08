@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_input.h>
+#include <tesseract_process_managers/visibility_control.h>
 
 // Forward Declare
 namespace tf
@@ -42,7 +43,7 @@ class Taskflow;
 namespace tesseract_planning
 {
 /** @brief Base class for generating a taskflow */
-class TaskflowGenerator
+class TESSERACT_PROCESS_MANAGERS_PUBLIC TaskflowGenerator
 {
 public:
   using UPtr = std::unique_ptr<TaskflowGenerator>;

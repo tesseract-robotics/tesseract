@@ -26,6 +26,13 @@
 #ifndef TESSERACT_MOTION_PLANNERS_ROBOT_CONFIG_H
 #define TESSERACT_MOTION_PLANNERS_ROBOT_CONFIG_H
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <Eigen/Geometry>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_kinematics/core/forward_kinematics.h>
+
 namespace tesseract_planning
 {
 /**

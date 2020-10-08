@@ -52,7 +52,7 @@ GraphTaskflow::UPtr createCartesianTaskflow(bool create_seed,
   ///////////////////
 
   // Setup Interpolator
-  int interpolator_idx;
+  int interpolator_idx{ -1 };
   if (create_seed)
   {
     auto interpolator = std::make_shared<SimpleMotionPlanner>("Interpolator");

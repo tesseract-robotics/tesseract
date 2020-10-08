@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_motion_planners/core/types.h>
+#include <tesseract_motion_planners/simple/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -62,7 +63,7 @@ using CartCartStepGenerator = std::function<CompositeInstruction(const Cartesian
  * @brief Plan Profile for the simple planner. It defines some functions that handle each of the waypoint cases. The
  * planner then simply loops over all of the plan instructions and calls the correct function
  */
-class SimplePlannerPlanProfile
+class TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC SimplePlannerPlanProfile
 {
 public:
   using Ptr = std::shared_ptr<SimplePlannerPlanProfile>;
@@ -79,7 +80,7 @@ public:
   CartCartStepGenerator cart_cart_linear;
 };
 
-class SimplePlannerCompositeProfile
+class TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC SimplePlannerCompositeProfile
 {
 public:
   using Ptr = std::shared_ptr<SimplePlannerCompositeProfile>;

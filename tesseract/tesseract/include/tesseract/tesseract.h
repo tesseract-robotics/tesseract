@@ -42,6 +42,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract/manipulator_manager.h>
 #include <tesseract_command_language/manipulator_info.h>
+#include <tesseract/visibility_control.h>
 
 namespace tesseract
 {
@@ -59,7 +60,7 @@ using FindTCPCallbackFn = std::function<Eigen::Isometry3d(const tesseract_planni
  * It also provides several construction methods for loading from urdf, srdf
  *
  */
-class Tesseract
+class TESSERACT_PUBLIC Tesseract
 {
 public:
   using Ptr = std::shared_ptr<Tesseract>;

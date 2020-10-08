@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_motion_planners/core/types.h>
+#include <tesseract_motion_planners/simple/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -49,11 +50,12 @@ namespace tesseract_planning
  * @param steps The fixed number of steps
  * @return A composite instruction of move instruction with state waypoints
  */
-CompositeInstruction fixedSizeAssignStateWaypoint(const Eigen::Ref<const Eigen::VectorXd>& position,
-                                                  const PlanInstruction& base_instruction,
-                                                  const PlannerRequest& request,
-                                                  const ManipulatorInfo& manip_info,
-                                                  int steps);
+TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
+fixedSizeAssignStateWaypoint(const Eigen::Ref<const Eigen::VectorXd>& position,
+                             const PlanInstruction& base_instruction,
+                             const PlannerRequest& request,
+                             const ManipulatorInfo& manip_info,
+                             int steps);
 /**
  * @brief fixedSizeAssignStateWaypoint
  *
@@ -67,12 +69,13 @@ CompositeInstruction fixedSizeAssignStateWaypoint(const Eigen::Ref<const Eigen::
  * @param steps The fixed number of steps
  * @return A composite instruction of move instruction with state waypoints
  */
-CompositeInstruction fixedSizeAssignStateWaypoint(const JointWaypoint& start,
-                                                  const CartesianWaypoint& end,
-                                                  const PlanInstruction& base_instruction,
-                                                  const PlannerRequest& request,
-                                                  const ManipulatorInfo& manip_info,
-                                                  int steps);
+TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
+fixedSizeAssignStateWaypoint(const JointWaypoint& start,
+                             const CartesianWaypoint& end,
+                             const PlanInstruction& base_instruction,
+                             const PlannerRequest& request,
+                             const ManipulatorInfo& manip_info,
+                             int steps);
 
 /**
  * @brief fixedSizeAssignStateWaypoint
@@ -87,12 +90,13 @@ CompositeInstruction fixedSizeAssignStateWaypoint(const JointWaypoint& start,
  * @param steps The fixed number of steps
  * @return A composite instruction of move instruction with state waypoints
  */
-CompositeInstruction fixedSizeAssignStateWaypoint(const CartesianWaypoint& start,
-                                                  const JointWaypoint& end,
-                                                  const PlanInstruction& base_instruction,
-                                                  const PlannerRequest& request,
-                                                  const ManipulatorInfo& manip_info,
-                                                  int steps);
+TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
+fixedSizeAssignStateWaypoint(const CartesianWaypoint& start,
+                             const JointWaypoint& end,
+                             const PlanInstruction& base_instruction,
+                             const PlannerRequest& request,
+                             const ManipulatorInfo& manip_info,
+                             int steps);
 
 /**
  * @brief fixedSizeAssignStateWaypoint
@@ -108,12 +112,13 @@ CompositeInstruction fixedSizeAssignStateWaypoint(const CartesianWaypoint& start
  * @param steps The fixed number of steps
  * @return A composite instruction of move instruction with state waypoints
  */
-CompositeInstruction fixedSizeAssignStateWaypoint(const CartesianWaypoint& start,
-                                                  const CartesianWaypoint& end,
-                                                  const PlanInstruction& base_instruction,
-                                                  const PlannerRequest& request,
-                                                  const ManipulatorInfo& manip_info,
-                                                  int steps);
+TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
+fixedSizeAssignStateWaypoint(const CartesianWaypoint& start,
+                             const CartesianWaypoint& end,
+                             const PlanInstruction& base_instruction,
+                             const PlannerRequest& request,
+                             const ManipulatorInfo& manip_info,
+                             int steps);
 
 }  // namespace tesseract_planning
 

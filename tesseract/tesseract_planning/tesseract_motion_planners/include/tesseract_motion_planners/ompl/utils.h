@@ -36,13 +36,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>
 #include <tesseract_motion_planners/ompl/ompl_problem.h>
+#include <tesseract_motion_planners/ompl/visibility_control.h>
 
 namespace tesseract_planning
 {
-Eigen::Map<Eigen::VectorXd> RealVectorStateSpaceExtractor(const ompl::base::State* s1, unsigned dimension);
+TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC Eigen::Map<Eigen::VectorXd>
+RealVectorStateSpaceExtractor(const ompl::base::State* s1, unsigned dimension);
 
 #ifndef OMPL_LESS_1_4_0
-Eigen::Map<Eigen::VectorXd> ConstrainedStateSpaceExtractor(const ompl::base::State* s1);
+TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC Eigen::Map<Eigen::VectorXd>
+ConstrainedStateSpaceExtractor(const ompl::base::State* s1);
 #endif
 
 /**
@@ -51,7 +54,8 @@ Eigen::Map<Eigen::VectorXd> ConstrainedStateSpaceExtractor(const ompl::base::Sta
  * @param extractor This function understands the type of state space and converts it to an eigen vector.
  * @return Tesseract TrajArray
  */
-tesseract_common::TrajArray toTrajArray(const ompl::geometric::PathGeometric& path, OMPLStateExtractor extractor);
+TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC tesseract_common::TrajArray
+toTrajArray(const ompl::geometric::PathGeometric& path, OMPLStateExtractor extractor);
 
 /**
  * @brief Given longest valid fraction and length it will set the correct information of the state space
@@ -59,9 +63,9 @@ tesseract_common::TrajArray toTrajArray(const ompl::geometric::PathGeometric& pa
  * @param longest_valid_segment_fraction
  * @param longest_valid_segment_length
  */
-void processLongestValidSegment(const ompl::base::StateSpacePtr& state_space_ptr,
-                                double longest_valid_segment_fraction,
-                                double longest_valid_segment_length);
+TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC void processLongestValidSegment(const ompl::base::StateSpacePtr& state_space_ptr,
+                                                                      double longest_valid_segment_fraction,
+                                                                      double longest_valid_segment_length);
 
 /**
  * @brief For the provided problem check if the state is in collision
@@ -70,9 +74,9 @@ void processLongestValidSegment(const ompl::base::StateSpacePtr& state_space_ptr
  * @param contact_map Map of contact results. Will be empty if return true
  * @return True if in collision otherwise false
  */
-bool checkStateInCollision(OMPLProblem& prob,
-                           const Eigen::VectorXd& state,
-                           tesseract_collision::ContactResultMap& contact_map);
+TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC bool checkStateInCollision(OMPLProblem& prob,
+                                                                 const Eigen::VectorXd& state,
+                                                                 tesseract_collision::ContactResultMap& contact_map);
 
 /**
  * @brief For the provided problem check if the state is in collision
@@ -80,7 +84,7 @@ bool checkStateInCollision(OMPLProblem& prob,
  * @param state The joint state
  * @return True if in collision otherwise false
  */
-bool checkStateInCollision(OMPLProblem& prob, const Eigen::VectorXd& state);
+TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC bool checkStateInCollision(OMPLProblem& prob, const Eigen::VectorXd& state);
 
 }  // namespace tesseract_planning
 

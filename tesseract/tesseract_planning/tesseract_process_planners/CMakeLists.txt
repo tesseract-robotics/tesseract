@@ -9,7 +9,7 @@ set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/*)
 
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 
-add_library(${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME}
   src/${PROJECT_NAME}/process_definition.cpp
   src/${PROJECT_NAME}/process_segment_definition.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_common tesseract::tesseract_motion_planners_core)
