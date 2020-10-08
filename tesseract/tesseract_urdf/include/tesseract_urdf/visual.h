@@ -40,10 +40,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/origin.h>
 #include <tesseract_urdf/material.h>
 #include <tesseract_urdf/geometry.h>
+#include <tesseract_urdf/visibility_control.h>
 
 namespace tesseract_urdf
 {
-class VisualStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_URDF_LOCAL VisualStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   VisualStatusCategory() : name_("VisualStatusCategory") {}

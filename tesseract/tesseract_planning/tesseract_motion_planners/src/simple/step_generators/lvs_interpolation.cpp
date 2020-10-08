@@ -24,8 +24,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_MOTION_PLANNERS_LVS_INTERPOLATION_H
-#define TESSERACT_MOTION_PLANNERS_LVS_INTERPOLATION_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -37,7 +35,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_motion_planners/simple/step_generators/lvs_interpolation.h>
-#include <tesseract_command_language/plan_instruction.h>
 
 namespace tesseract_planning
 {
@@ -677,5 +674,3 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const CartesianWaypoint& st
 }
 
 }  // namespace tesseract_planning
-
-#endif  // TESSERACT_MOTION_PLANNERS_SIMPLE_PROFILE_H

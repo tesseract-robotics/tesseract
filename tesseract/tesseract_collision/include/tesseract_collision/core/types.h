@@ -40,6 +40,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_common/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_collision/core/visibility_control.h>
+
 namespace tesseract_collision
 {
 using CollisionShapesConst = std::vector<tesseract_geometry::Geometry::ConstPtr>;
@@ -76,7 +78,7 @@ static const std::vector<std::string> ContactTestTypeStrings = {
   "LIMITED",
 };
 
-struct ContactResult
+struct TESSERACT_COLLISION_CORE_PUBLIC ContactResult
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -161,7 +163,7 @@ using ContactResultMap = tesseract_common::AlignedMap<std::pair<std::string, std
 using IsContactResultValidFn = std::function<bool(const ContactResult&)>;
 
 /** @brief The ContactRequest struct */
-struct ContactRequest
+struct TESSERACT_COLLISION_CORE_PUBLIC ContactRequest
 {
   /** @brief This controls the exit condition for the contact test type */
   ContactTestType type{ ContactTestType::ALL };
@@ -212,7 +214,7 @@ inline std::size_t flattenResults(ContactResultMap&& m, ContactResultVector& v)
  * @brief This data is intended only to be used internal to the collision checkers as a container and should not
  *        be externally used by other libraries or packages.
  */
-struct ContactTestData
+struct TESSERACT_COLLISION_CORE_LOCAL ContactTestData
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

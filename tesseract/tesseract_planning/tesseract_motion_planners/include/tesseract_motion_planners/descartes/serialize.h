@@ -31,14 +31,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
+#include <tesseract_motion_planners/descartes/visibility_control.h>
 
 namespace tesseract_planning
 {
-std::shared_ptr<tinyxml2::XMLDocument> toXMLDocument(const DescartesPlanProfile<double>& plan_profile);
+TESSERACT_MOTION_PLANNERS_DESCARTES_PUBLIC std::shared_ptr<tinyxml2::XMLDocument>
+toXMLDocument(const DescartesPlanProfile<double>& plan_profile);
 
-bool toXMLFile(const DescartesPlanProfile<double>& plan_profile, const std::string& file_path);
+TESSERACT_MOTION_PLANNERS_DESCARTES_PUBLIC bool toXMLFile(const DescartesPlanProfile<double>& plan_profile,
+                                                          const std::string& file_path);
 
-std::string toXMLString(const DescartesPlanProfile<double>& plan_profile);
+TESSERACT_MOTION_PLANNERS_DESCARTES_PUBLIC std::string toXMLString(const DescartesPlanProfile<double>& plan_profile);
 
 }  // namespace tesseract_planning
 #endif  // TESSERACT_MOTION_PLANNERS_DESCARTES_SERIALIZE_H

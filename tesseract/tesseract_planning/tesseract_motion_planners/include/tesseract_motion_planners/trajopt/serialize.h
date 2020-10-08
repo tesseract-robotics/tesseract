@@ -31,20 +31,25 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
+#include <tesseract_motion_planners/trajopt/visibility_control.h>
 
 namespace tesseract_planning
 {
-std::shared_ptr<tinyxml2::XMLDocument> toXMLDocument(const TrajOptPlanProfile& plan_profile);
+TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC std::shared_ptr<tinyxml2::XMLDocument>
+toXMLDocument(const TrajOptPlanProfile& plan_profile);
 
-bool toXMLFile(const TrajOptPlanProfile& plan_profile, const std::string& file_path);
+TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC bool toXMLFile(const TrajOptPlanProfile& plan_profile,
+                                                        const std::string& file_path);
 
-std::string toXMLString(const TrajOptPlanProfile& plan_profile);
+TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC std::string toXMLString(const TrajOptPlanProfile& plan_profile);
 
-std::shared_ptr<tinyxml2::XMLDocument> toXMLDocument(const TrajOptCompositeProfile& composite_profile);
+TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC std::shared_ptr<tinyxml2::XMLDocument>
+toXMLDocument(const TrajOptCompositeProfile& composite_profile);
 
-bool toXMLFile(const TrajOptCompositeProfile& composite_profile, const std::string& file_path);
+TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC bool toXMLFile(const TrajOptCompositeProfile& composite_profile,
+                                                        const std::string& file_path);
 
-std::string toXMLString(const TrajOptCompositeProfile& composite_profile);
+TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC std::string toXMLString(const TrajOptCompositeProfile& composite_profile);
 
 }  // namespace tesseract_planning
 #endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_SERIALIZE_H

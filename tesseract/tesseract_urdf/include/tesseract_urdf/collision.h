@@ -38,10 +38,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_urdf/origin.h>
 #include <tesseract_urdf/geometry.h>
+#include <tesseract_urdf/visibility_control.h>
 
 namespace tesseract_urdf
 {
-class CollisionStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_URDF_LOCAL CollisionStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   CollisionStatusCategory() : name_("CollisionStatusCategory") {}

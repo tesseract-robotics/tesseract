@@ -28,6 +28,7 @@
 
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_scene_graph/graph.h>
+#include <tesseract_kinematics/core/visibility_control.h>
 
 namespace tesseract_kinematics
 {
@@ -38,7 +39,7 @@ enum class InverseKinematicsFactoryType
   GRAPH = 2
 };
 
-class InverseKinematicsFactory
+class TESSERACT_KINEMATICS_CORE_PUBLIC InverseKinematicsFactory
 {
 public:
   using Ptr = std::shared_ptr<InverseKinematicsFactory>;

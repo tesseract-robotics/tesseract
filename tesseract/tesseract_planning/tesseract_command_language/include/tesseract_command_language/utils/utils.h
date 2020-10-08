@@ -31,6 +31,7 @@
 #include <tesseract_command_language/utils/filter_functions.h>
 #include <tesseract_command_language/utils/flatten_utils.h>
 #include <tesseract_command_language/utils/get_instruction_utils.h>
+#include <tesseract_command_language/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -41,7 +42,7 @@ namespace tesseract_planning
  * @param waypoint The waypoint to try and extract the joint position from
  * @return The joint values
  */
-const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint);
 
 /**
  * @brief Gets joint names from waypoints that contain that information.
@@ -51,7 +52,7 @@ const Eigen::VectorXd& getJointPosition(const Waypoint& waypoint);
  * @param waypoint The waypoint to try and extract the joint position from
  * @return The joint names
  */
-const std::vector<std::string>& getJointNames(const Waypoint& waypoint);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC const std::vector<std::string>& getJointNames(const Waypoint& waypoint);
 
 /**
  * @brief Get the joint positions ordered by the provided joint names
@@ -65,7 +66,8 @@ const std::vector<std::string>& getJointNames(const Waypoint& waypoint);
  * @param waypoint The waypoint to
  * @return The joint values ordered by the provied joint_names
  */
-Eigen::VectorXd getJointPosition(const std::vector<std::string>& joint_names, const Waypoint& waypoint);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC Eigen::VectorXd getJointPosition(const std::vector<std::string>& joint_names,
+                                                                   const Waypoint& waypoint);
 
 /**
  * @brief Set the joint position for waypoints that contain that information
@@ -73,7 +75,8 @@ Eigen::VectorXd getJointPosition(const std::vector<std::string>& joint_names, co
  * @param position Joint position
  * @return true if successful (if the waypoint is a supported type)
  */
-bool setJointPosition(Waypoint& waypoint, const Eigen::Ref<const Eigen::VectorXd>& position);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC bool setJointPosition(Waypoint& waypoint,
+                                                        const Eigen::Ref<const Eigen::VectorXd>& position);
 
 /**
  * @brief Checks if a waypoint is
@@ -81,7 +84,8 @@ bool setJointPosition(Waypoint& waypoint, const Eigen::Ref<const Eigen::VectorXd
  * @param limits Matrix2d of limits with first column being lower limits and second column being upper limits
  * @return True if the waypoit falls within the joint limits
  */
-bool isWithinJointLimits(const Waypoint& wp, const Eigen::Ref<const Eigen::MatrixX2d>& limits);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC bool isWithinJointLimits(const Waypoint& wp,
+                                                           const Eigen::Ref<const Eigen::MatrixX2d>& limits);
 
 /**
  * @brief Clamps a waypoint to be within joint limits
@@ -90,9 +94,9 @@ bool isWithinJointLimits(const Waypoint& wp, const Eigen::Ref<const Eigen::Matri
  * @param max_deviation. Max deviation that will be clamped
  * @return True if successful or if the waypoint doesn't contain that information.
  */
-bool clampToJointLimits(Waypoint& wp,
-                        const Eigen::Ref<const Eigen::MatrixX2d>& limits,
-                        double max_deviation = std::numeric_limits<double>::max());
+TESSERACT_COMMAND_LANGUAGE_PUBLIC bool clampToJointLimits(Waypoint& wp,
+                                                          const Eigen::Ref<const Eigen::MatrixX2d>& limits,
+                                                          double max_deviation = std::numeric_limits<double>::max());
 
 /**
  * @brief Clamps a waypoint to be within joint limits
@@ -101,16 +105,17 @@ bool clampToJointLimits(Waypoint& wp,
  * @param max_deviation. Max deviation that will be clamped
  * @return True if successful or if the waypoint doesn't contain that information.
  */
-bool clampToJointLimits(Waypoint& wp,
-                        const Eigen::Ref<const Eigen::MatrixX2d>& limits,
-                        const Eigen::Ref<const Eigen::VectorXd>& max_deviation);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC bool clampToJointLimits(Waypoint& wp,
+                                                          const Eigen::Ref<const Eigen::MatrixX2d>& limits,
+                                                          const Eigen::Ref<const Eigen::VectorXd>& max_deviation);
 
 /**
  * @brief This creates a seed by looping over and replacing every plan instruction with a composite instruction
  * @param instructions
  * @return
  */
-CompositeInstruction generateSkeletonSeed(const CompositeInstruction& composite_instructions);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC CompositeInstruction
+generateSkeletonSeed(const CompositeInstruction& composite_instructions);
 
 /**
  * @brief This loops over the instructions validates the structure
@@ -121,8 +126,8 @@ CompositeInstruction generateSkeletonSeed(const CompositeInstruction& composite_
  * @param composite_seed
  * @return
  */
-bool validateSeedStructure(const CompositeInstruction& composite_instructions,
-                           const CompositeInstruction& composite_seed);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC bool validateSeedStructure(const CompositeInstruction& composite_instructions,
+                                                             const CompositeInstruction& composite_seed);
 
 }  // namespace tesseract_planning
 

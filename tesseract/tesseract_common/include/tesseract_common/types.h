@@ -36,6 +36,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/visibility_control.h>
+
 namespace tesseract_common
 {
 template <typename T>
@@ -59,7 +61,7 @@ using TransformMap = AlignedMap<std::string, Eigen::Isometry3d>;
 using TrajArray = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
 /** @brief Represents a joint trajectory */
-struct JointTrajectory
+struct TESSERACT_COMMON_PUBLIC JointTrajectory
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -68,7 +70,7 @@ struct JointTrajectory
 };
 
 /** @brief Store kinematic limits */
-struct KinematicLimits
+struct TESSERACT_COMMON_PUBLIC KinematicLimits
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

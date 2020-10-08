@@ -40,6 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/joint.h>
 #include <tesseract_scene_graph/allowed_collision_matrix.h>
+#include <tesseract_scene_graph/visibility_control.h>
 
 /* definition of basic boost::graph properties */
 namespace boost
@@ -93,7 +94,7 @@ using EdgeProperty = boost::property<boost::edge_joint_t, Joint::Ptr, boost::pro
 
 using Graph = boost::
     adjacency_list<boost::listS, boost::listS, boost::bidirectionalS, VertexProperty, EdgeProperty, GraphProperty>;
-class SceneGraph : public Graph
+class TESSERACT_SCENE_GRAPH_PUBLIC SceneGraph : public Graph
 {
 public:
   /**

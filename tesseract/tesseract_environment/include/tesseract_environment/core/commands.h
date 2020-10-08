@@ -28,11 +28,16 @@
 #ifndef TESSERACT_ENVIRONMENT_COMMANDS_H
 #define TESSERACT_ENVIRONMENT_COMMANDS_H
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
+#include <Eigen/Geometry>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract_scene_graph/joint.h>
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/graph.h>
-#include <Eigen/Geometry>
+#include <tesseract_environment/core/visibility_control.h>
 
 namespace tesseract_environment
 {
@@ -53,7 +58,7 @@ enum class CommandType
   ADD_SCENE_GRAPH = 12
 };
 
-class Command
+class TESSERACT_ENVIRONMENT_CORE_PUBLIC Command
 {
 public:
   using Ptr = std::shared_ptr<Command>;
@@ -75,7 +80,7 @@ private:
 
 using Commands = std::vector<Command::ConstPtr>;
 
-class AddCommand : public Command
+class TESSERACT_ENVIRONMENT_CORE_PUBLIC AddCommand : public Command
 {
 public:
   AddCommand(tesseract_scene_graph::Link::ConstPtr link, tesseract_scene_graph::Joint::ConstPtr joint)
@@ -91,7 +96,7 @@ private:
   tesseract_scene_graph::Joint::ConstPtr joint_;
 };
 
-class MoveLinkCommand : public Command
+class TESSERACT_ENVIRONMENT_CORE_PUBLIC MoveLinkCommand : public Command
 {
 public:
   MoveLinkCommand(tesseract_scene_graph::Joint::ConstPtr joint)
@@ -105,7 +110,7 @@ private:
   tesseract_scene_graph::Joint::ConstPtr joint_;
 };
 
-class MoveJointCommand : public Command
+class TESSERACT_ENVIRONMENT_CORE_PUBLIC MoveJointCommand : public Command
 {
 public:
   MoveJointCommand(std::string joint_name, std::string parent_link)
@@ -121,7 +126,7 @@ private:
   std::string parent_link_;
 };
 
-class RemoveLinkCommand : public Command
+class TESSERACT_ENVIRONMENT_CORE_PUBLIC RemoveLinkCommand : public Command
 {
 public:
   RemoveLinkCommand(std::string link_name) : Command(CommandType::REMOVE_LINK), link_name_(std::move(link_name)) {}
@@ -132,7 +137,7 @@ private:
   std::string link_name_;
 };
 
-class RemoveJointCommand : public Command
+class TESSERACT_ENVIRONMENT_CORE_PUBLIC RemoveJointCommand : public Command
 {
 public:
   RemoveJointCommand(std::string joint_name) : Command(CommandType::REMOVE_JOINT), joint_name_(std::move(joint_name)) {}
@@ -143,7 +148,7 @@ private:
   std::string joint_name_;
 };
 
-class ChangeLinkOriginCommand : public Command
+class TESSERACT_ENVIRONMENT_CORE_PUBLIC ChangeLinkOriginCommand : public Command
 {
 public:
   ChangeLinkOriginCommand(std::string link_name, const Eigen::Isometry3d& origin)
@@ -159,7 +164,7 @@ private:
   Eigen::Isometry3d origin_;
 };
 
-class ChangeJointOriginCommand : public Command
+class TESSERACT_ENVIRONMENT_CORE_PUBLIC ChangeJointOriginCommand : public Command
 {
 public:
   ChangeJointOriginCommand(std::string joint_name, const Eigen::Isometry3d& origin)
@@ -175,7 +180,7 @@ private:
   Eigen::Isometry3d origin_;
 };
 
-class ChangeLinkCollisionEnabledCommand : public Command
+class TESSERACT_ENVIRONMENT_CORE_PUBLIC ChangeLinkCollisionEnabledCommand : public Command
 {
 public:
   ChangeLinkCollisionEnabledCommand(std::string link_name, bool enabled)
@@ -191,7 +196,7 @@ private:
   bool enabled_;
 };
 
-class ChangeLinkVisibilityCommand : public Command
+class TESSERACT_ENVIRONMENT_CORE_PUBLIC ChangeLinkVisibilityCommand : public Command
 {
 public:
   ChangeLinkVisibilityCommand(std::string link_name, bool enabled)
@@ -207,7 +212,7 @@ private:
   bool enabled_;
 };
 
-class AddAllowedCollisionCommand : public Command
+class TESSERACT_ENVIRONMENT_CORE_PUBLIC AddAllowedCollisionCommand : public Command
 {
 public:
   AddAllowedCollisionCommand(std::string link_name1, std::string link_name2, std::string reason)
@@ -228,7 +233,7 @@ private:
   std::string reason_;
 };
 
-class RemoveAllowedCollisionCommand : public Command
+class TESSERACT_ENVIRONMENT_CORE_PUBLIC RemoveAllowedCollisionCommand : public Command
 {
 public:
   RemoveAllowedCollisionCommand(std::string link_name1, std::string link_name2)
@@ -246,7 +251,7 @@ private:
   std::string link_name2_;
 };
 
-class RemoveAllowedCollisionLinkCommand : public Command
+class TESSERACT_ENVIRONMENT_CORE_PUBLIC RemoveAllowedCollisionLinkCommand : public Command
 {
 public:
   RemoveAllowedCollisionLinkCommand(std::string link_name)
@@ -260,7 +265,7 @@ private:
   std::string link_name_;
 };
 
-class AddSceneGraphCommand : public Command
+class TESSERACT_ENVIRONMENT_CORE_PUBLIC AddSceneGraphCommand : public Command
 {
 public:
   AddSceneGraphCommand(const tesseract_scene_graph::SceneGraph& scene_graph,

@@ -32,13 +32,14 @@
 #define TESSERACT_ENVIRONMENT_OFKT_NODES_H
 
 #include <tesseract_environment/ofkt/ofkt_node.h>
+#include <tesseract_environment/ofkt/visibility_control.h>
 
 namespace tesseract_environment
 {
 /*********************************************************************/
 /*************************** BASE NODE *******************************/
 /*********************************************************************/
-class OFKTBaseNode : public OFKTNode
+class TESSERACT_ENVIRONMENT_OFKT_LOCAL OFKTBaseNode : public OFKTNode
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -105,7 +106,7 @@ protected:
 /*********************************************************************/
 /*************************** ROOT NODE *******************************/
 /*********************************************************************/
-class OFKTRootNode : public OFKTBaseNode
+class TESSERACT_ENVIRONMENT_OFKT_LOCAL OFKTRootNode : public OFKTBaseNode
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -132,7 +133,7 @@ private:
 /**********************************************************************/
 /*************************** FIXED NODE *******************************/
 /**********************************************************************/
-class OFKTFixedNode : public OFKTBaseNode
+class TESSERACT_ENVIRONMENT_OFKT_LOCAL OFKTFixedNode : public OFKTBaseNode
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -152,7 +153,7 @@ private:
 /*********************************************************************/
 /************************* REVOLUTE NODE *****************************/
 /*********************************************************************/
-class OFKTRevoluteNode : public OFKTBaseNode
+class TESSERACT_ENVIRONMENT_OFKT_LOCAL OFKTRevoluteNode : public OFKTBaseNode
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -182,7 +183,7 @@ private:
 /*********************************************************************/
 /************************ CONTINUOUS NODE ****************************/
 /*********************************************************************/
-class OFKTContinuousNode : public OFKTBaseNode
+class TESSERACT_ENVIRONMENT_OFKT_LOCAL OFKTContinuousNode : public OFKTBaseNode
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -208,7 +209,7 @@ private:
 /*********************************************************************/
 /************************* PRISMATIC NODE ****************************/
 /*********************************************************************/
-class OFKTPrismaticNode : public OFKTBaseNode
+class TESSERACT_ENVIRONMENT_OFKT_LOCAL OFKTPrismaticNode : public OFKTBaseNode
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

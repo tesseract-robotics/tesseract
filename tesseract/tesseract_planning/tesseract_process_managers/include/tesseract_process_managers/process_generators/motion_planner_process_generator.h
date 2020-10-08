@@ -32,13 +32,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_generator.h>
+#include <tesseract_process_managers/visibility_control.h>
 
 namespace tesseract_planning
 {
 // Forward Declare
 class MotionPlanner;
 
-class MotionPlannerProcessGenerator : public ProcessGenerator
+class TESSERACT_PROCESS_MANAGERS_PUBLIC MotionPlannerProcessGenerator : public ProcessGenerator
 {
 public:
   using UPtr = std::unique_ptr<MotionPlannerProcessGenerator>;

@@ -40,10 +40,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/impl/mesh.h>
 #include <tesseract_geometry/impl/convex_mesh.h>
 #include <tesseract_collision/core/common.h>
+#include <tesseract_urdf/visibility_control.h>
 
 namespace tesseract_urdf
 {
-class ConvexMeshStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_URDF_LOCAL ConvexMeshStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   ConvexMeshStatusCategory() : name_("ConvexMeshStatusCategory") {}

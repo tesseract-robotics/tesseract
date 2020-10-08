@@ -33,10 +33,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_input.h>
+#include <tesseract_process_managers/visibility_control.h>
 
 namespace tesseract_planning
 {
-class ProcessManager
+class TESSERACT_PROCESS_MANAGERS_PUBLIC ProcessManager
 {
 public:
   using Ptr = std::shared_ptr<ProcessManager>;

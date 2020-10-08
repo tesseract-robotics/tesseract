@@ -32,10 +32,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_generator.h>
+#include <tesseract_process_managers/visibility_control.h>
 
 namespace tesseract_planning
 {
-class DiscreteContactCheckProcessGenerator : public ProcessGenerator
+class TESSERACT_PROCESS_MANAGERS_PUBLIC DiscreteContactCheckProcessGenerator : public ProcessGenerator
 {
 public:
   using UPtr = std::unique_ptr<DiscreteContactCheckProcessGenerator>;

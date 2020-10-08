@@ -34,64 +34,73 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_motion_planners/core/types.h>
+#include <tesseract_motion_planners/simple/visibility_control.h>
 
 namespace tesseract_planning
 {
-CompositeInstruction fixedSizeInterpolateStateWaypoint(const JointWaypoint& start,
-                                                       const JointWaypoint& end,
-                                                       const PlanInstruction& base_instruction,
-                                                       const PlannerRequest& request,
-                                                       const ManipulatorInfo& manip_info,
-                                                       int steps);
+TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
+fixedSizeInterpolateStateWaypoint(const JointWaypoint& start,
+                                  const JointWaypoint& end,
+                                  const PlanInstruction& base_instruction,
+                                  const PlannerRequest& request,
+                                  const ManipulatorInfo& manip_info,
+                                  int steps);
 
-CompositeInstruction fixedSizeInterpolateStateWaypoint(const JointWaypoint& start,
-                                                       const CartesianWaypoint& end,
-                                                       const PlanInstruction& base_instruction,
-                                                       const PlannerRequest& request,
-                                                       const ManipulatorInfo& manip_info,
-                                                       int steps);
+TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
+fixedSizeInterpolateStateWaypoint(const JointWaypoint& start,
+                                  const CartesianWaypoint& end,
+                                  const PlanInstruction& base_instruction,
+                                  const PlannerRequest& request,
+                                  const ManipulatorInfo& manip_info,
+                                  int steps);
 
-CompositeInstruction fixedSizeInterpolateStateWaypoint(const CartesianWaypoint& start,
-                                                       const JointWaypoint& end,
-                                                       const PlanInstruction& base_instruction,
-                                                       const PlannerRequest& request,
-                                                       const ManipulatorInfo& manip_info,
-                                                       int steps);
+TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
+fixedSizeInterpolateStateWaypoint(const CartesianWaypoint& start,
+                                  const JointWaypoint& end,
+                                  const PlanInstruction& base_instruction,
+                                  const PlannerRequest& request,
+                                  const ManipulatorInfo& manip_info,
+                                  int steps);
 
-CompositeInstruction fixedSizeInterpolateStateWaypoint(const CartesianWaypoint& start,
-                                                       const CartesianWaypoint& end,
-                                                       const PlanInstruction& base_instruction,
-                                                       const PlannerRequest& request,
-                                                       const ManipulatorInfo& manip_info,
-                                                       int steps);
+TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
+fixedSizeInterpolateStateWaypoint(const CartesianWaypoint& start,
+                                  const CartesianWaypoint& end,
+                                  const PlanInstruction& base_instruction,
+                                  const PlannerRequest& request,
+                                  const ManipulatorInfo& manip_info,
+                                  int steps);
 
-CompositeInstruction fixedSizeInterpolateCartStateWaypoint(const JointWaypoint& start,
-                                                           const JointWaypoint&,
-                                                           const PlanInstruction& base_instruction,
-                                                           const PlannerRequest& request,
-                                                           const ManipulatorInfo& manip_info,
-                                                           int steps);
+TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
+fixedSizeInterpolateCartStateWaypoint(const JointWaypoint& start,
+                                      const JointWaypoint&,
+                                      const PlanInstruction& base_instruction,
+                                      const PlannerRequest& request,
+                                      const ManipulatorInfo& manip_info,
+                                      int steps);
 
-CompositeInstruction fixedSizeInterpolateCartStateWaypoint(const JointWaypoint& start,
-                                                           const CartesianWaypoint& end,
-                                                           const PlanInstruction& base_instruction,
-                                                           const PlannerRequest& request,
-                                                           const ManipulatorInfo& manip_info,
-                                                           int steps);
+TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
+fixedSizeInterpolateCartStateWaypoint(const JointWaypoint& start,
+                                      const CartesianWaypoint& end,
+                                      const PlanInstruction& base_instruction,
+                                      const PlannerRequest& request,
+                                      const ManipulatorInfo& manip_info,
+                                      int steps);
 
-CompositeInstruction fixedSizeInterpolateCartStateWaypoint(const CartesianWaypoint& start,
-                                                           const JointWaypoint& end,
-                                                           const PlanInstruction& base_instruction,
-                                                           const PlannerRequest& request,
-                                                           const ManipulatorInfo& manip_info,
-                                                           int steps);
+TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
+fixedSizeInterpolateCartStateWaypoint(const CartesianWaypoint& start,
+                                      const JointWaypoint& end,
+                                      const PlanInstruction& base_instruction,
+                                      const PlannerRequest& request,
+                                      const ManipulatorInfo& manip_info,
+                                      int steps);
 
-CompositeInstruction fixedSizeInterpolateCartStateWaypoint(const CartesianWaypoint& start,
-                                                           const CartesianWaypoint& end,
-                                                           const PlanInstruction& base_instruction,
-                                                           const PlannerRequest& request,
-                                                           const ManipulatorInfo& manip_info,
-                                                           int steps);
+TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
+fixedSizeInterpolateCartStateWaypoint(const CartesianWaypoint& start,
+                                      const CartesianWaypoint& end,
+                                      const PlanInstruction& base_instruction,
+                                      const PlannerRequest& request,
+                                      const ManipulatorInfo& manip_info,
+                                      int steps);
 
 }  // namespace tesseract_planning
 

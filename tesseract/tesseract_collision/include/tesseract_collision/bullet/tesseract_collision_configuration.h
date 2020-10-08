@@ -46,6 +46,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_collision/bullet/visibility_control.h>
+
 namespace tesseract_collision
 {
 namespace tesseract_collision_bullet
@@ -58,7 +60,7 @@ namespace tesseract_collision_bullet
  *     - Compound to Compound
  *     - Convex to Convex
  */
-class TesseractCollisionConfiguration : public btDefaultCollisionConfiguration
+class TESSERACT_COLLISION_BULLET_LOCAL TesseractCollisionConfiguration : public btDefaultCollisionConfiguration
 {
 public:
   TesseractCollisionConfiguration(

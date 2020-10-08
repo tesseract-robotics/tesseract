@@ -46,7 +46,7 @@ GraphTaskflow::UPtr createDescartesTaskflow(DescartesTaskflowParams params)
   ///////////////////
 
   // Setup Interpolator
-  int interpolator_idx;
+  int interpolator_idx{ -1 };
   if (params.enable_simple_planner)
   {
     auto interpolator = std::make_shared<SimpleMotionPlanner>("Interpolator");
@@ -64,7 +64,7 @@ GraphTaskflow::UPtr createDescartesTaskflow(DescartesTaskflowParams params)
   int descartes_idx = graph->addNode(std::move(descartes_generator), GraphTaskflow::NodeType::CONDITIONAL);
 
   // Add Final Continuous Contact Check of trajectory
-  int contact_check_idx;
+  int contact_check_idx{ -1 };
   if (params.enable_post_contact_continuous_check)
   {
     auto contact_check_generator = std::make_unique<ContinuousContactCheckProcessGenerator>();
@@ -77,7 +77,7 @@ GraphTaskflow::UPtr createDescartesTaskflow(DescartesTaskflowParams params)
   }
 
   // Time parameterization trajectory
-  int time_parameterization_idx;
+  int time_parameterization_idx{ -1 };
   if (params.enable_time_parameterization)
   {
     auto time_parameterization_generator = std::make_unique<IterativeSplineParameterizationProcessGenerator>();

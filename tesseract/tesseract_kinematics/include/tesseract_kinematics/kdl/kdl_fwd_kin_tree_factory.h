@@ -25,12 +25,14 @@
  */
 #ifndef TESSERACT_KINEMATICS_KDL_FWD_KIN_TREE_FACTORY_H
 #define TESSERACT_KINEMATICS_KDL_FWD_KIN_TREE_FACTORY_H
+
 #include <tesseract_kinematics/core/forward_kinematics_factory.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_tree.h>
+#include <tesseract_kinematics/kdl/visibility_control.h>
 
 namespace tesseract_kinematics
 {
-class KDLFwdKinTreeFactory : public ForwardKinematicsFactory
+class TESSERACT_KINEMATICS_KDL_PUBLIC KDLFwdKinTreeFactory : public ForwardKinematicsFactory
 {
 public:
   KDLFwdKinTreeFactory() : name_(KDLFwdKinTree().getSolverName()) {}

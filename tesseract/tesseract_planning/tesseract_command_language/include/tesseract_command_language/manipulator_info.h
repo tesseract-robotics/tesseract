@@ -36,11 +36,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/core/waypoint.h>
 #include <tesseract_command_language/instruction_type.h>
 #include <tesseract_common/utils.h>
+#include <tesseract_command_language/visibility_control.h>
 
 namespace tesseract_planning
 {
 /** @brief Manipulator Info Tool Center Point Definition */
-class ToolCenterPoint
+class TESSERACT_COMMAND_LANGUAGE_PUBLIC ToolCenterPoint
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -98,7 +99,7 @@ protected:
 /**
  * @brief Contains information about a robot manipulator
  */
-struct ManipulatorInfo
+struct TESSERACT_COMMAND_LANGUAGE_PUBLIC ManipulatorInfo
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

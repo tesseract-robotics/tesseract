@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract VERSION 0.1.0 LANGUAGES CXX)
 
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+
+find_package(Eigen3 REQUIRED)
 find_package(Boost COMPONENTS system REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
@@ -20,7 +24,8 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 tesseract_variables()
 
 # Create target
-add_library(${PROJECT_NAME} SHARED src/tesseract.cpp src/manipulator_manager.cpp)
+add_library(${PROJECT_NAME} src/tesseract.cpp src/manipulator_manager.cpp)
+target_process_export(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} PUBLIC
   tesseract::tesseract_urdf
   tesseract::tesseract_scene_graph
@@ -32,6 +37,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   tesseract::tesseract_command_language
   console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
@@ -40,7 +46,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
     ${Boost_INCLUDE_DIRS}
-    $<TARGET_PROPERTY:tesseract::tesseract_common,INTERFACE_INCLUDE_DIRECTORIES>) #tesseract::tesseract_common Due to bug in catkin, there is an open PR
+    ${EIGEN3_INCLUDE_DIRS})
 
 configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
 

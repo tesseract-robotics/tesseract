@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.6.0)
 project(tesseract_collision VERSION 0.1.0 LANGUAGES CXX)
 
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+
 find_package(Eigen3 REQUIRED)
 find_package(Boost COMPONENTS system thread program_options REQUIRED)
 find_package(octomap REQUIRED)
@@ -39,8 +42,10 @@ tesseract_variables()
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core INTERFACE)
+target_process_export(${PROJECT_NAME}_core INTERFACE)
 target_link_libraries(${PROJECT_NAME}_core INTERFACE tesseract::tesseract_common tesseract::tesseract_geometry PkgConfig::bullet ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_core INTERFACE ${TESSERACT_COMPILE_OPTIONS})
+target_compile_definitions(${PROJECT_NAME}_core INTERFACE ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME}_core ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_core INTERFACE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(${PROJECT_NAME}_core INTERFACE ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
@@ -52,7 +57,7 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM INTERFACE
     ${Boost_INCLUDE_DIRS})
 
 # Create target for Bullet implementation
-add_library(${PROJECT_NAME}_bullet SHARED
+add_library(${PROJECT_NAME}_bullet
   src/bullet/bullet_cast_bvh_manager.cpp
   src/bullet/bullet_cast_simple_manager.cpp
   src/bullet/bullet_discrete_bvh_manager.cpp
@@ -64,8 +69,10 @@ add_library(${PROJECT_NAME}_bullet SHARED
   src/bullet/tesseract_convex_convex_algorithm.cpp
   src/bullet/tesseract_gjk_pair_detector.cpp
 )
+target_process_export(${PROJECT_NAME}_bullet)
 target_link_libraries(${PROJECT_NAME}_bullet PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_geometry PkgConfig::bullet console_bridge octomap octomath)
 target_compile_options(${PROJECT_NAME}_bullet PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_compile_definitions(${PROJECT_NAME}_bullet PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME}_bullet ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_bullet PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(${PROJECT_NAME}_bullet ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
@@ -77,12 +84,14 @@ target_include_directories(${PROJECT_NAME}_bullet SYSTEM PUBLIC
     ${Boost_INCLUDE_DIRS})
 
 # Create target for FCL implementation
-add_library(${PROJECT_NAME}_fcl SHARED
+add_library(${PROJECT_NAME}_fcl
   src/fcl/fcl_discrete_managers.cpp
   src/fcl/fcl_utils.cpp
   src/fcl/fcl_collision_object_wrapper.cpp)
+target_process_export(${PROJECT_NAME}_fcl)
 target_link_libraries(${PROJECT_NAME}_fcl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_geometry PkgConfig::bullet console_bridge octomap octomath fcl)
 target_compile_options(${PROJECT_NAME}_fcl PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_compile_definitions(${PROJECT_NAME}_fcl PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME}_fcl ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_fcl PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(${PROJECT_NAME}_fcl ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
@@ -97,9 +106,9 @@ target_include_directories(${PROJECT_NAME}_fcl SYSTEM PUBLIC
 add_executable(create_convex_hull src/create_convex_hull.cpp)
 target_link_libraries(create_convex_hull PUBLIC tesseract::tesseract_common tesseract::tesseract_geometry console_bridge PkgConfig::bullet ${Boost_LIBRARIES} octomap octomath)
 target_compile_options(create_convex_hull PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_compile_definitions(create_convex_hull PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(create_convex_hull ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(create_convex_hull PRIVATE VERSION ${TESSERACT_CXX_VERSION})
-target_compile_definitions(create_convex_hull PRIVATE "-DBT_USE_DOUBLE_PRECISION")
 target_include_directories(create_convex_hull PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 target_include_directories(create_convex_hull SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}
@@ -110,6 +119,7 @@ target_include_directories(create_convex_hull SYSTEM PUBLIC
 add_library(${PROJECT_NAME}_test_suite INTERFACE)
 target_link_libraries(${PROJECT_NAME}_test_suite INTERFACE tesseract::tesseract_support tesseract::tesseract_geometry ${PROJECT_NAME}_core)
 target_compile_options(${PROJECT_NAME}_test_suite INTERFACE ${TESSERACT_COMPILE_OPTIONS})
+target_compile_definitions(${PROJECT_NAME}_test_suite INTERFACE ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME}_test_suite ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_test_suite INTERFACE VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(${PROJECT_NAME}_test_suite INTERFACE ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})

@@ -32,6 +32,7 @@
 #include <tesseract_environment/core/utils.h>
 #include <console_bridge/console.h>
 #include <trajopt/utils.hpp>
+#include <tesseract_motion_planners/core/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -59,7 +60,7 @@ inline PostPlanCheckType operator&(PostPlanCheckType lhs, PostPlanCheckType rhs)
 /**
  * @brief Class for performing validation checks on a planned trajectory
  */
-class TrajectoryValidator
+class TESSERACT_MOTION_PLANNERS_CORE_PUBLIC TrajectoryValidator
 {
 public:
   using Ptr = std::shared_ptr<TrajectoryValidator>;
