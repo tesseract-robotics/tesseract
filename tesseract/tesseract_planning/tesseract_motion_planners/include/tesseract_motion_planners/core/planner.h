@@ -34,10 +34,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/status_code.h>
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/core/trajectory_validator.h>
+#include <tesseract_motion_planners/core/visibility_control.h>
 
 namespace tesseract_planning
 {
-class MotionPlanner
+class TESSERACT_MOTION_PLANNERS_CORE_PUBLIC MotionPlanner
 {
 public:
   /** @brief Construct a basic planner */

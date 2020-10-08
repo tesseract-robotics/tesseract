@@ -37,6 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/instruction_type.h>
 #include <tesseract_command_language/manipulator_info.h>
 #include <tesseract_command_language/null_instruction.h>
+#include <tesseract_command_language/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -47,7 +48,7 @@ enum class CompositeInstructionOrder
   ORDERED_AND_REVERABLE  // Can go forward or reverse the order
 };
 
-class CompositeInstruction
+class TESSERACT_COMMAND_LANGUAGE_PUBLIC CompositeInstruction
 {
 public:
   using Ptr = std::shared_ptr<CompositeInstruction>;

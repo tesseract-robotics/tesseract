@@ -39,11 +39,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>
 #include <tesseract_scene_graph/graph.h>
+#include <tesseract_kinematics/core/visibility_control.h>
 
 namespace tesseract_kinematics
 {
 /** @brief Forward kinematics functions. */
-class ForwardKinematics
+class TESSERACT_KINEMATICS_CORE_PUBLIC ForwardKinematics
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

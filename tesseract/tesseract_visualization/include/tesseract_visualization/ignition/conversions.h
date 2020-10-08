@@ -34,15 +34,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_visualization/ignition/entity_manager.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_common/types.h>
+#include <tesseract_visualization/ignition/visibility_control.h>
 
 namespace tesseract_visualization
 {
-bool isMeshWithColor(const std::string& file_path);
+TESSERACT_VISUALIZATION_IGNITION_PUBLIC bool isMeshWithColor(const std::string& file_path);
 
-bool toMsg(ignition::msgs::Scene& scene_msg,
-           EntityManager& entity_manager,
-           const tesseract_scene_graph::SceneGraph& scene_graph,
-           const tesseract_common::TransformMap& link_transforms);
+TESSERACT_VISUALIZATION_IGNITION_PUBLIC bool toMsg(ignition::msgs::Scene& scene_msg,
+                                                   EntityManager& entity_manager,
+                                                   const tesseract_scene_graph::SceneGraph& scene_graph,
+                                                   const tesseract_common::TransformMap& link_transforms);
 }  // namespace tesseract_visualization
 
 #endif  // TESSERACT_VISUALIZATION_IGNITION_CONVERSIONS_H

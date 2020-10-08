@@ -39,10 +39,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/inertial.h>
 #include <tesseract_urdf/visual.h>
 #include <tesseract_urdf/collision.h>
+#include <tesseract_urdf/visibility_control.h>
 
 namespace tesseract_urdf
 {
-class LinkStatusCategory : public tesseract_common::StatusCategory
+class TESSERACT_URDF_LOCAL LinkStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   LinkStatusCategory(std::string link_name = "") : name_("LinkStatusCategory"), link_name_(std::move(link_name)) {}

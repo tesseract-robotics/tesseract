@@ -34,10 +34,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
+#include <tesseract_collision/core/visibility_control.h>
 
 namespace tesseract_collision
 {
-class ContinuousContactManager
+class TESSERACT_COLLISION_CORE_PUBLIC ContinuousContactManager
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

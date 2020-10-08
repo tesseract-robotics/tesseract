@@ -25,12 +25,14 @@
  */
 #ifndef TESSERACT_KINEMATICS_KDL_INV_KIN_CHAIN_LMA_FACTORY_H
 #define TESSERACT_KINEMATICS_KDL_INV_KIN_CHAIN_LMA_FACTORY_H
+
 #include <tesseract_kinematics/core/inverse_kinematics_factory.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_lma.h>
+#include <tesseract_kinematics/kdl/visibility_control.h>
 
 namespace tesseract_kinematics
 {
-class KDLInvKinChainLMAFactory : public InverseKinematicsFactory
+class TESSERACT_KINEMATICS_KDL_PUBLIC KDLInvKinChainLMAFactory : public InverseKinematicsFactory
 {
 public:
   KDLInvKinChainLMAFactory() : name_(KDLInvKinChainLMA().getSolverName()) {}

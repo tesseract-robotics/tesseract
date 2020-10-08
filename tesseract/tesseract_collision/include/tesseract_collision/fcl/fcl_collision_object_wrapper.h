@@ -32,6 +32,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_collision/fcl/visibility_control.h>
+
 namespace tesseract_collision
 {
 namespace tesseract_collision_fcl
@@ -41,7 +43,7 @@ namespace tesseract_collision_fcl
  *
  * This significantly improves performance when making distance requests if performing a contact tests type FIRST.
  */
-class FCLCollisionObjectWrapper : public fcl::CollisionObject<double>
+class TESSERACT_COLLISION_FCL_LOCAL FCLCollisionObjectWrapper : public fcl::CollisionObject<double>
 {
 public:
   FCLCollisionObjectWrapper(const std::shared_ptr<fcl::CollisionGeometry<double>>& cgeom);

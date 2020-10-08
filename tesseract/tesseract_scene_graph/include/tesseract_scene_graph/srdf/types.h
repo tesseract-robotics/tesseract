@@ -9,17 +9,19 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_scene_graph/visibility_control.h>
+
 namespace tesseract_scene_graph
 {
 /** @brief A structure to hold opw kinematics data */
-struct OPWKinematicParameters
+struct TESSERACT_SCENE_GRAPH_PUBLIC OPWKinematicParameters
 {
   double a1{ 0 }, a2{ 0 }, b{ 0 }, c1{ 0 }, c2{ 0 }, c3{ 0 }, c4{ 0 };
   double offsets[6]{ 0, 0, 0, 0, 0, 0 };
   signed char sign_corrections[6]{ 1, 1, 1, 1, 1, 1 };
 };
 
-struct ROPKinematicParameters
+struct TESSERACT_SCENE_GRAPH_PUBLIC ROPKinematicParameters
 {
   std::string manipulator_group;
   std::string manipulator_ik_solver;
@@ -29,7 +31,7 @@ struct ROPKinematicParameters
   std::unordered_map<std::string, double> positioner_sample_resolution;
 };
 
-struct REPKinematicParameters
+struct TESSERACT_SCENE_GRAPH_PUBLIC REPKinematicParameters
 {
   std::string manipulator_group;
   std::string manipulator_ik_solver;

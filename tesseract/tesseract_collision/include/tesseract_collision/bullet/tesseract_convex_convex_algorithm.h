@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_collision/core/types.h>
+#include <tesseract_collision/bullet/visibility_control.h>
 
 class btConvexPenetrationDepthSolver;
 
@@ -64,7 +65,7 @@ namespace tesseract_collision_bullet
  *
  * Note: This will not be able to be removed.
  */
-class TesseractConvexConvexAlgorithm : public btActivatingCollisionAlgorithm
+class TESSERACT_COLLISION_BULLET_LOCAL TesseractConvexConvexAlgorithm : public btActivatingCollisionAlgorithm
 {
 #ifdef USE_SEPDISTANCE_UTIL2
   btConvexSeparatingDistanceUtil m_sepDistance;

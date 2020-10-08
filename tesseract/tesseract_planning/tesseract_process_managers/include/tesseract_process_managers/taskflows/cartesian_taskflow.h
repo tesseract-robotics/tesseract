@@ -30,10 +30,11 @@
 #include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
 #include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
+#include <tesseract_process_managers/visibility_control.h>
 
 namespace tesseract_planning
 {
-GraphTaskflow::UPtr createCartesianTaskflow(
+TESSERACT_PROCESS_MANAGERS_PUBLIC GraphTaskflow::UPtr createCartesianTaskflow(
     bool create_seed,
     const SimplePlannerPlanProfileMap& simple_plan_profiles = SimplePlannerPlanProfileMap(),
     const SimplePlannerCompositeProfileMap& simple_composite_profiles = SimplePlannerCompositeProfileMap(),

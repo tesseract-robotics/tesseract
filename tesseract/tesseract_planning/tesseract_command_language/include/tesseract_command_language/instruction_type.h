@@ -26,6 +26,8 @@
 #ifndef TESSERACT_COMMAND_LANGUAGE_INSTRUCTION_TYPE_H
 #define TESSERACT_COMMAND_LANGUAGE_INSTRUCTION_TYPE_H
 
+#include <tesseract_command_language/visibility_control.h>
+
 namespace tesseract_planning
 {
 class Instruction;
@@ -60,21 +62,21 @@ enum class InstructionType : int
   USER_DEFINED = 1000
 };
 
-bool isCommentInstruction(const Instruction& instruction);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC bool isCommentInstruction(const Instruction& instruction);
 
-bool isVariableInstruction(const Instruction& instruction);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC bool isVariableInstruction(const Instruction& instruction);
 
-bool isAnalogInstruction(const Instruction& instruction);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC bool isAnalogInstruction(const Instruction& instruction);
 
-bool isIOInstruction(const Instruction& instruction);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC bool isIOInstruction(const Instruction& instruction);
 
-bool isCompositeInstruction(const Instruction& instruction);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC bool isCompositeInstruction(const Instruction& instruction);
 
-bool isMoveInstruction(const Instruction& instruction);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC bool isMoveInstruction(const Instruction& instruction);
 
-bool isPlanInstruction(const Instruction& instruction);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC bool isPlanInstruction(const Instruction& instruction);
 
-bool isNullInstruction(const Instruction& instruction);
+TESSERACT_COMMAND_LANGUAGE_PUBLIC bool isNullInstruction(const Instruction& instruction);
 
 }  // namespace tesseract_planning
 

@@ -32,10 +32,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_generator.h>
+#include <tesseract_process_managers/visibility_control.h>
 
 namespace tesseract_planning
 {
-struct FixStateCollisionProfile
+struct TESSERACT_PROCESS_MANAGERS_PUBLIC FixStateCollisionProfile
 {
   using Ptr = std::shared_ptr<FixStateCollisionProfile>;
   using ConstPtr = std::shared_ptr<const FixStateCollisionProfile>;
@@ -65,7 +66,7 @@ using FixStateCollisionProfileMap = std::unordered_map<std::string, FixStateColl
  * @brief This generator modifies the const input instructions in order to push waypoints that are in collision out of
  * collision
  */
-class FixStateCollisionProcessGenerator : public ProcessGenerator
+class TESSERACT_PROCESS_MANAGERS_PUBLIC FixStateCollisionProcessGenerator : public ProcessGenerator
 {
 public:
   using UPtr = std::unique_ptr<FixStateCollisionProcessGenerator>;

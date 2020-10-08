@@ -32,13 +32,15 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_visualization/ignition/visibility_control.h>
+
 namespace tesseract_visualization
 {
 static const int NULL_ENTITY_ID = -1;
 using EntityID = int;
 using EntityMap = std::unordered_map<std::string, EntityID>;
 
-class EntityManager
+class TESSERACT_VISUALIZATION_IGNITION_PUBLIC EntityManager
 {
 public:
   /**

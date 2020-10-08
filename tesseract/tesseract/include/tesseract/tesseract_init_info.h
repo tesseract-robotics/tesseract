@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/srdf_model.h>
+#include <tesseract/visibility_control.h>
 
 namespace tesseract
 {
@@ -56,7 +57,7 @@ enum class TesseractInitType
 Note: Recreating a Tesseract does not guarantee that it is identical to the Tesseract associate with this construction
 info since the kinmeatics managers could have changed and it does not include the environment command history. This will
 simply recreate the Tesseract as it was at construction.  */
-struct TesseractInitInfo
+struct TESSERACT_PUBLIC TesseractInitInfo
 {
   using Ptr = std::shared_ptr<TesseractInitInfo>;
   using ConstPtr = std::shared_ptr<const TesseractInitInfo>;

@@ -38,6 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/ompl_planner_configurator.h>
 #include <tesseract/tesseract.h>
 #include <tesseract_environment/core/environment.h>
+#include <tesseract_motion_planners/ompl/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -61,7 +62,7 @@ enum class OMPLProblemStateSpace
   SE3_STATE_SPACE,
 };
 
-struct OMPLProblem
+struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC OMPLProblem
 {
   using Ptr = std::shared_ptr<OMPLProblem>;
   using ConstPtr = std::shared_ptr<const OMPLProblem>;

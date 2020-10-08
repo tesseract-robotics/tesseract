@@ -48,10 +48,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/joint.h>
 #include <tesseract_geometry/geometry.h>
+#include <tesseract_scene_graph/visibility_control.h>
 
 namespace tesseract_scene_graph
 {
-class Material
+class TESSERACT_SCENE_GRAPH_PUBLIC Material
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -78,7 +79,7 @@ private:
 
 static auto DEFAULT_TESSERACT_MATERIAL = std::make_shared<Material>("default_tesseract_material");
 
-class Inertial
+class TESSERACT_SCENE_GRAPH_PUBLIC Inertial
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -99,7 +100,7 @@ public:
   }
 };
 
-class Visual
+class TESSERACT_SCENE_GRAPH_PUBLIC Visual
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -124,7 +125,7 @@ public:
   std::string name;
 };
 
-class Collision
+class TESSERACT_SCENE_GRAPH_PUBLIC Collision
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -146,7 +147,7 @@ public:
   std::string name;
 };
 
-class Link
+class TESSERACT_SCENE_GRAPH_PUBLIC Link
 {
 public:
   using Ptr = std::shared_ptr<Link>;

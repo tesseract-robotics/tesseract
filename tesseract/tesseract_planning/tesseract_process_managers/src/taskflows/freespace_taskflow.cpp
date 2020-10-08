@@ -48,7 +48,7 @@ GraphTaskflow::UPtr createFreespaceTaskflowDefault(const FreespaceTaskflowParams
   ///////////////////
 
   // Setup Interpolator
-  int interpolator_idx;
+  int interpolator_idx{ -1 };
   if (params.enable_simple_planner)
   {
     auto interpolator = std::make_shared<SimpleMotionPlanner>("Interpolator");
@@ -87,7 +87,7 @@ GraphTaskflow::UPtr createFreespaceTaskflowDefault(const FreespaceTaskflowParams
   }
 
   // Time parameterization trajectory
-  int time_parameterization_idx;
+  int time_parameterization_idx{ -1 };
   if (params.enable_time_parameterization)
   {
     auto time_parameterization_generator = std::make_unique<IterativeSplineParameterizationProcessGenerator>();
@@ -147,7 +147,7 @@ GraphTaskflow::UPtr createFreespaceTaskflowTrajOptFirst(const FreespaceTaskflowP
   ///////////////////
 
   // Setup Interpolator
-  int interpolator_idx;
+  int interpolator_idx{ -1 };
   if (params.enable_simple_planner)
   {
     auto interpolator = std::make_shared<SimpleMotionPlanner>("Interpolator");
@@ -194,7 +194,7 @@ GraphTaskflow::UPtr createFreespaceTaskflowTrajOptFirst(const FreespaceTaskflowP
   }
 
   // Time parameterization trajectory
-  int time_parameterization_idx;
+  int time_parameterization_idx{ -1 };
   if (params.enable_time_parameterization)
   {
     auto time_parameterization_generator = std::make_unique<IterativeSplineParameterizationProcessGenerator>();

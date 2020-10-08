@@ -44,13 +44,14 @@
 #include <tesseract_collision/bullet/bullet_utils.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_collision/bullet/tesseract_collision_configuration.h>
+#include <tesseract_collision/bullet/visibility_control.h>
 
 namespace tesseract_collision
 {
 namespace tesseract_collision_bullet
 {
 /** @brief A BVH implementaiton of a tesseract contact manager */
-class BulletCastBVHManager : public ContinuousContactManager
+class TESSERACT_COLLISION_BULLET_PUBLIC BulletCastBVHManager : public ContinuousContactManager
 {
 public:
   using Ptr = std::shared_ptr<BulletCastBVHManager>;

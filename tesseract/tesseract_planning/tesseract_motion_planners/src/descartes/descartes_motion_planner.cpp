@@ -24,11 +24,12 @@
  * limitations under the License.
  */
 #include <tesseract_motion_planners/descartes/impl/descartes_motion_planner.hpp>
+#include <tesseract_motion_planners/descartes/visibility_control.h>
 
 namespace tesseract_planning
 {
 // Explicit template instantiation
-template class DescartesMotionPlanner<float>;
-template class DescartesMotionPlanner<double>;
+template class TESSERACT_MOTION_PLANNERS_DESCARTES_PUBLIC DescartesMotionPlanner<float>;
+template class TESSERACT_MOTION_PLANNERS_DESCARTES_PUBLIC DescartesMotionPlanner<double>;
 
 }  // namespace tesseract_planning

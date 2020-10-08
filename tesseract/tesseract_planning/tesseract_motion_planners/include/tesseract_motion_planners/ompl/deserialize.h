@@ -30,18 +30,21 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/profile/ompl_default_plan_profile.h>
+#include <tesseract_motion_planners/ompl/visibility_control.h>
 
 namespace tesseract_planning
 {
-OMPLDefaultPlanProfile omplPlanParser(const tinyxml2::XMLElement& xml_element);
+TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC OMPLDefaultPlanProfile omplPlanParser(const tinyxml2::XMLElement& xml_element);
 
-OMPLDefaultPlanProfile omplPlanFromXMLElement(const tinyxml2::XMLElement* profile_xml);
+TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC OMPLDefaultPlanProfile
+omplPlanFromXMLElement(const tinyxml2::XMLElement* profile_xml);
 
-OMPLDefaultPlanProfile omplPlanFromXMLDocument(const tinyxml2::XMLDocument& xml_doc);
+TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC OMPLDefaultPlanProfile
+omplPlanFromXMLDocument(const tinyxml2::XMLDocument& xml_doc);
 
-OMPLDefaultPlanProfile omplPlanFromXMLFile(const std::string& file_path);
+TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC OMPLDefaultPlanProfile omplPlanFromXMLFile(const std::string& file_path);
 
-OMPLDefaultPlanProfile omplPlanFromXMLString(const std::string& xml_string);
+TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC OMPLDefaultPlanProfile omplPlanFromXMLString(const std::string& xml_string);
 
 }  // namespace tesseract_planning
 

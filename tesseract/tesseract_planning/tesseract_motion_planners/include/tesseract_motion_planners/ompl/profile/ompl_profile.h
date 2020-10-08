@@ -35,10 +35,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/core/instruction.h>
 #include <tesseract_command_language/manipulator_info.h>
 #include <tesseract_motion_planners/ompl/ompl_problem.h>
+#include <tesseract_motion_planners/ompl/visibility_control.h>
 
 namespace tesseract_planning
 {
-class OMPLPlanProfile
+class TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC OMPLPlanProfile
 {
 public:
   using Ptr = std::shared_ptr<OMPLPlanProfile>;

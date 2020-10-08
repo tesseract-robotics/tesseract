@@ -44,13 +44,14 @@
 
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/fcl/fcl_utils.h>
+#include <tesseract_collision/fcl/visibility_control.h>
 
 namespace tesseract_collision
 {
 namespace tesseract_collision_fcl
 {
 /** @brief A FCL implementation of the discrete contact manager */
-class FCLDiscreteBVHManager : public DiscreteContactManager
+class TESSERACT_COLLISION_FCL_PUBLIC FCLDiscreteBVHManager : public DiscreteContactManager
 {
 public:
   using Ptr = std::shared_ptr<FCLDiscreteBVHManager>;

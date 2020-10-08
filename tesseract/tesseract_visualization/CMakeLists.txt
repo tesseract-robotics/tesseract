@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_visualization VERSION 0.1.0 LANGUAGES CXX)
 
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+
 find_package(Eigen3 REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_collision REQUIRED)
@@ -39,12 +42,14 @@ else()
   set(TESSERACT_VISUALIZATION_PLUGIN_PATH ${CMAKE_INSTALL_PREFIX}/lib)
 endif()
 
-add_library(${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME}
     src/visualization_loader.cpp
     src/trajectory_interpolator.cpp
     src/trajectory_player.cpp)
+target_process_export(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract tesseract::tesseract_environment_core tesseract::tesseract_scene_graph tesseract::tesseract_command_language tesseract::tesseract_collision_core tesseract::tesseract_common console_bridge ${class_loader_LIBRARIES})
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
@@ -65,9 +70,10 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
 
 list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
 if (IGNITION_FOUND)
-  add_library(${PROJECT_NAME}_ignition SHARED
+  add_library(${PROJECT_NAME}_ignition
       src/ignition/entity_manager.cpp
       src/ignition/conversions.cpp)
+  target_process_export(${PROJECT_NAME}_ignition)
   target_link_libraries(${PROJECT_NAME}_ignition PUBLIC
     tesseract::tesseract_scene_graph
     tesseract::tesseract_common
@@ -75,6 +81,7 @@ if (IGNITION_FOUND)
     ${IGNITION-MSGS_LIBRARIES}
     console_bridge)
   target_compile_options(${PROJECT_NAME}_ignition PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+  target_compile_definitions(${PROJECT_NAME}_ignition PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
   target_clang_tidy(${PROJECT_NAME}_ignition ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
   target_cxx_version(${PROJECT_NAME}_ignition PUBLIC VERSION ${TESSERACT_CXX_VERSION})
   target_code_coverage(${PROJECT_NAME}_ignition ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
@@ -85,8 +92,9 @@ if (IGNITION_FOUND)
     ${IGNITION-COMMON_INCLUDE_DIRS}
     ${IGNITION-MSGS_INCLUDE_DIRS})
 
-  add_library(${PROJECT_NAME}_ignition_visualization SHARED
+  add_library(${PROJECT_NAME}_ignition_visualization
       src/ignition/tesseract_ignition_visualization.cpp)
+  target_process_export(${PROJECT_NAME}_ignition_visualization)
   target_link_libraries(${PROJECT_NAME}_ignition_visualization PUBLIC
     ${PROJECT_NAME}
     ${PROJECT_NAME}_ignition
@@ -98,6 +106,7 @@ if (IGNITION_FOUND)
     ${IGNITION-MSGS_LIBRARIES}
     console_bridge)
   target_compile_options(${PROJECT_NAME}_ignition_visualization PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+  target_compile_definitions(${PROJECT_NAME}_ignition_visualization PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
   target_clang_tidy(${PROJECT_NAME}_ignition_visualization ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
   target_cxx_version(${PROJECT_NAME}_ignition_visualization PUBLIC VERSION ${TESSERACT_CXX_VERSION})
   target_code_coverage(${PROJECT_NAME}_ignition_visualization ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
@@ -109,11 +118,12 @@ if (IGNITION_FOUND)
     ${IGNITION-TRANSPORT_INCLUDE_DIRS}
     ${IGNITION-MSGS_INCLUDE_DIRS})
 
-  add_library(${PROJECT_NAME}_ignition_visualization_plugin SHARED
+  add_library(${PROJECT_NAME}_ignition_visualization_plugin
       src/ignition/tesseract_ignition_visualization_plugin.cpp)
   target_link_libraries(${PROJECT_NAME}_ignition_visualization_plugin PUBLIC
     ${PROJECT_NAME}_ignition_visualization ${class_loader_LIBRARIES})
   target_compile_options(${PROJECT_NAME}_ignition_visualization_plugin PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+  target_compile_definitions(${PROJECT_NAME}_ignition_visualization_plugin PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
   target_cxx_version(${PROJECT_NAME}_ignition_visualization_plugin PUBLIC VERSION ${TESSERACT_CXX_VERSION})
   target_include_directories(${PROJECT_NAME}_ignition_visualization_plugin PUBLIC
       "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"

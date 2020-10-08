@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/core/waypoint.h>
 #include <tesseract_command_language/instruction_type.h>
 #include <tesseract_command_language/manipulator_info.h>
+#include <tesseract_command_language/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -46,7 +47,7 @@ enum class MoveInstructionType : int
   START = 3 /**< This indicates it is a start instruction. */
 };
 
-class MoveInstruction
+class TESSERACT_COMMAND_LANGUAGE_PUBLIC MoveInstruction
 {
 public:
   using Ptr = std::shared_ptr<MoveInstruction>;

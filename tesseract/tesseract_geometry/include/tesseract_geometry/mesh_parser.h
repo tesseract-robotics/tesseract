@@ -63,11 +63,11 @@ namespace tesseract_geometry
  */
 
 template <class T>
-inline std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
-                                                       const aiNode* node,
-                                                       const aiMatrix4x4& parent_transform,
-                                                       const Eigen::Vector3d& scale,
-                                                       tesseract_common::Resource::Ptr resource)
+std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
+                                                const aiNode* node,
+                                                const aiMatrix4x4& parent_transform,
+                                                const Eigen::Vector3d& scale,
+                                                tesseract_common::Resource::Ptr resource)
 {
   std::vector<std::shared_ptr<T>> meshes;
 
@@ -129,9 +129,9 @@ inline std::vector<std::shared_ptr<T>> extractMeshData(const aiScene* scene,
  * @return A list of tesseract meshes
  */
 template <class T>
-inline std::vector<std::shared_ptr<T>> createMeshFromAsset(const aiScene* scene,
-                                                           const Eigen::Vector3d& scale,
-                                                           tesseract_common::Resource::Ptr resource)
+std::vector<std::shared_ptr<T>> createMeshFromAsset(const aiScene* scene,
+                                                    const Eigen::Vector3d& scale,
+                                                    tesseract_common::Resource::Ptr resource)
 {
   if (!scene->HasMeshes())
   {
@@ -159,10 +159,10 @@ inline std::vector<std::shared_ptr<T>> createMeshFromAsset(const aiScene* scene,
  * @return
  */
 template <class T>
-inline std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& path,
-                                                          Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
-                                                          bool triangulate = false,
-                                                          bool flatten = false)
+std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& path,
+                                                   Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
+                                                   bool triangulate = false,
+                                                   bool flatten = false)
 {
   // Create an instance of the Importer class
   Assimp::Importer importer;
@@ -223,10 +223,10 @@ inline std::vector<std::shared_ptr<T>> createMeshFromPath(const std::string& pat
  * @return
  */
 template <class T>
-inline std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::Resource::Ptr resource,
-                                                              Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
-                                                              bool triangulate = false,
-                                                              bool flatten = false)
+std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::Resource::Ptr resource,
+                                                       Eigen::Vector3d scale = Eigen::Vector3d(1, 1, 1),
+                                                       bool triangulate = false,
+                                                       bool flatten = false)
 {
   if (!resource)
     return std::vector<std::shared_ptr<T>>();

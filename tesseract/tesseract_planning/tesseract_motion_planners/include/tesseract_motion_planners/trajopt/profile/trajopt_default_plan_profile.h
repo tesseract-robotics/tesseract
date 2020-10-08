@@ -34,10 +34,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
+#include <tesseract_motion_planners/trajopt/visibility_control.h>
 
 namespace tesseract_planning
 {
-class TrajOptDefaultPlanProfile : public TrajOptPlanProfile
+class TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC TrajOptDefaultPlanProfile : public TrajOptPlanProfile
 {
 public:
   using Ptr = std::shared_ptr<TrajOptDefaultPlanProfile>;

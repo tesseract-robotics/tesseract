@@ -30,18 +30,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/descartes/profile/descartes_default_plan_profile.h>
+#include <tesseract_motion_planners/descartes/visibility_control.h>
 
 namespace tesseract_planning
 {
-DescartesDefaultPlanProfile<double> descartesPlanParser(const tinyxml2::XMLElement& xml_element);
+TESSERACT_MOTION_PLANNERS_DESCARTES_PUBLIC DescartesDefaultPlanProfile<double>
+descartesPlanParser(const tinyxml2::XMLElement& xml_element);
 
-DescartesDefaultPlanProfile<double> descartesPlanFromXMLElement(const tinyxml2::XMLElement* profile_xml);
+TESSERACT_MOTION_PLANNERS_DESCARTES_PUBLIC DescartesDefaultPlanProfile<double>
+descartesPlanFromXMLElement(const tinyxml2::XMLElement* profile_xml);
 
-DescartesDefaultPlanProfile<double> descartesPlanFromXMLDocument(const tinyxml2::XMLDocument& xml_doc);
+TESSERACT_MOTION_PLANNERS_DESCARTES_PUBLIC DescartesDefaultPlanProfile<double>
+descartesPlanFromXMLDocument(const tinyxml2::XMLDocument& xml_doc);
 
-DescartesDefaultPlanProfile<double> descartesPlanFromXMLFile(const std::string& file_path);
+TESSERACT_MOTION_PLANNERS_DESCARTES_PUBLIC DescartesDefaultPlanProfile<double>
+descartesPlanFromXMLFile(const std::string& file_path);
 
-DescartesDefaultPlanProfile<double> descartesPlanFromXMLString(const std::string& xml_string);
+TESSERACT_MOTION_PLANNERS_DESCARTES_PUBLIC DescartesDefaultPlanProfile<double>
+descartesPlanFromXMLString(const std::string& xml_string);
 
 }  // namespace tesseract_planning
 

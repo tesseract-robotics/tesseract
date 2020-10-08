@@ -32,11 +32,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_command_language/visibility_control.h>
+
 namespace tesseract_planning
 {
 namespace detail
 {
-struct WaypointInnerBase
+struct TESSERACT_COMMAND_LANGUAGE_LOCAL WaypointInnerBase
 {
   WaypointInnerBase() = default;
   virtual ~WaypointInnerBase() = default;
@@ -87,7 +89,7 @@ struct WaypointInner final : WaypointInnerBase
 
 }  // namespace detail
 
-class Waypoint
+class TESSERACT_COMMAND_LANGUAGE_PUBLIC Waypoint
 {
   template <typename T>
   using uncvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
