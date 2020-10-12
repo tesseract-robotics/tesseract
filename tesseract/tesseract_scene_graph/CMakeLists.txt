@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_scene_graph VERSION 0.1.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+if(WIN32)
+  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
 
 find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -20,14 +21,12 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 tesseract_variables()
 
 add_library(${PROJECT_NAME} src/graph.cpp src/resource_locator.cpp src/srdf_model.cpp)
-target_process_export(${PROJECT_NAME})
-target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract_geometry tesseract::tesseract_common orocos-kdl console_bridge ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${Boost_LIBRARIES} tesseract::tesseract_geometry tesseract::tesseract_common orocos-kdl console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
-target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
+target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} Boost_USE_STATIC_LIBS=OFF Boost_USE_MULTITHREADED=ON Boost_USE_STATIC_RUNTIME=OFF)
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(${PROJECT_NAME} ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
-target_compile_definitions(${PROJECT_NAME} PUBLIC Boost_USE_STATIC_LIBS=OFF Boost_USE_MULTITHREADED=ON Boost_USE_STATIC_RUNTIME=OFF)
 target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")

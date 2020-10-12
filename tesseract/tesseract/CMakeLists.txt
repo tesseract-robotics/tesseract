@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract VERSION 0.1.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+if(WIN32)
+  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
 
 find_package(Eigen3 REQUIRED)
 find_package(Boost COMPONENTS system REQUIRED)
@@ -25,7 +26,6 @@ tesseract_variables()
 
 # Create target
 add_library(${PROJECT_NAME} src/tesseract.cpp src/manipulator_manager.cpp)
-target_process_export(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} PUBLIC
   tesseract::tesseract_urdf
   tesseract::tesseract_scene_graph

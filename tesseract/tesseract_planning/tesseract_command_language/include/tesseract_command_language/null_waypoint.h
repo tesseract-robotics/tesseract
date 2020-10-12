@@ -32,11 +32,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <string>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_command_language/visibility_control.h>
-
 namespace tesseract_planning
 {
-class TESSERACT_COMMAND_LANGUAGE_PUBLIC NullWaypoint
+class NullWaypoint
 {
 public:
   NullWaypoint() = default;

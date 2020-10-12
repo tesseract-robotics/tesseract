@@ -2,6 +2,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <Eigen/Geometry>
+#include <tesseract_common/utils.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/urdf_parser.h>
@@ -468,7 +469,7 @@ TEST(TesseractURDFUnit, LoadURDFUnit)  // NOLINT
   EXPECT_TRUE(g->isAcyclic());
 
   // Save Graph
-  g->saveDOT("/tmp/tesseract_urdf_import.dot");
+  g->saveDOT(tesseract_common::getTempPath() + "tesseract_urdf_import.dot");
 
   // Get Shortest Path
   SceneGraph::Path path = g->getShortestPath("link_1", "link_4");

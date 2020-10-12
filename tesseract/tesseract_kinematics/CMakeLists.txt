@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_kinematics VERSION 0.1.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+if(WIN32)
+  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
 
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
@@ -24,7 +25,6 @@ tesseract_variables()
 add_library(${PROJECT_NAME}_core
   src/core/rop_inverse_kinematics.cpp
   src/core/rep_inverse_kinematics.cpp)
-target_process_export(${PROJECT_NAME}_core)
 target_link_libraries(${PROJECT_NAME}_core PUBLIC tesseract::tesseract_scene_graph console_bridge)
 target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_compile_definitions(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -39,7 +39,6 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM PUBLIC
 
 # Create ikfast kinematics interface
 add_library(${PROJECT_NAME}_ikfast INTERFACE)
-target_process_export(${PROJECT_NAME}_ikfast INTERFACE)
 target_link_libraries(${PROJECT_NAME}_ikfast INTERFACE ${PROJECT_NAME}_core console_bridge)
 target_compile_definitions(${PROJECT_NAME}_ikfast INTERFACE -DIKFAST_NO_MAIN -DIKFAST_CLIBRARY -DIKFAST_HAS_LIBRARY)
 target_compile_options(${PROJECT_NAME}_ikfast INTERFACE ${TESSERACT_COMPILE_OPTIONS})
@@ -60,7 +59,6 @@ add_library(${PROJECT_NAME}_kdl
   src/kdl/kdl_inv_kin_chain_lma.cpp
   src/kdl/kdl_inv_kin_chain_nr.cpp
 )
-target_process_export(${PROJECT_NAME}_kdl)
 target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph orocos-kdl console_bridge)
 target_compile_options(${PROJECT_NAME}_kdl PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_compile_definitions(${PROJECT_NAME}_kdl PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -79,7 +77,6 @@ target_include_directories(${PROJECT_NAME}_kdl SYSTEM PUBLIC
 
 # Add OPW implementation of tesseract_kinematics
 add_library(${PROJECT_NAME}_opw src/opw/opw_inv_kin.cpp)
-target_process_export(${PROJECT_NAME}_opw)
 target_link_libraries(${PROJECT_NAME}_opw PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph opw_kinematics::opw_kinematics console_bridge)
 target_compile_options(${PROJECT_NAME}_opw PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_compile_definitions(${PROJECT_NAME}_opw PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})

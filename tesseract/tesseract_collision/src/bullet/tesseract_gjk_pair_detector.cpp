@@ -35,10 +35,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 // must be above the machine epsilon
 #ifdef BT_USE_DOUBLE_PRECISION
 #define REL_ERROR2 btScalar(1.0e-12)
-btScalar gGjkEpaPenetrationTolerance = 1.0e-12;
+static btScalar gGjkEpaPenetrationTolerance = 1.0e-12;
 #else
 #define REL_ERROR2 btScalar(1.0e-6)
-btScalar gGjkEpaPenetrationTolerance = 0.001;
+static btScalar gGjkEpaPenetrationTolerance = 0.001;
 #endif
 
 namespace tesseract_collision

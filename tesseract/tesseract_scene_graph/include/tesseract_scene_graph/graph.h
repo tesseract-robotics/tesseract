@@ -34,13 +34,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/graph/depth_first_search.hpp>
 #include <boost/graph/breadth_first_search.hpp>
 #include <string>
+#include <list>
 #include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/joint.h>
 #include <tesseract_scene_graph/allowed_collision_matrix.h>
-#include <tesseract_scene_graph/visibility_control.h>
 
 /* definition of basic boost::graph properties */
 namespace boost
@@ -94,7 +94,8 @@ using EdgeProperty = boost::property<boost::edge_joint_t, Joint::Ptr, boost::pro
 
 using Graph = boost::
     adjacency_list<boost::listS, boost::listS, boost::bidirectionalS, VertexProperty, EdgeProperty, GraphProperty>;
-class TESSERACT_SCENE_GRAPH_PUBLIC SceneGraph : public Graph
+
+class SceneGraph : public Graph
 {
 public:
   /**
@@ -119,7 +120,14 @@ public:
   SceneGraph(SceneGraph&& other) = default;
   SceneGraph& operator=(SceneGraph&& other) = default;
 
+  /**
+   * @brief Clone the scene graph
+   * @return The cloned scene graph
+   */
   SceneGraph::Ptr clone() const;
+
+  /** @brief Clear the scene graph */
+  void clear();
 
   /**
    * @brief Sets the graph name
@@ -389,7 +397,13 @@ public:
    */
   void saveDOT(const std::string& path) const;
 
-  Path getShortestPath(const std::string& root, const std::string& tip) const;
+  /**
+   * @brief Get the shortest path between two links
+   * @param root The base link
+   * @param tip The tip link
+   * @return The shortest path between the two links
+   */
+  Path getShortestPath(const std::string& root, const std::string& tip);
 
   /**
    * @brief Get the graph vertex by name

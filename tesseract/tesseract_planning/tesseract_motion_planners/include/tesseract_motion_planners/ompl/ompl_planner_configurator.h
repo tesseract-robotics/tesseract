@@ -39,8 +39,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_motion_planners/ompl/visibility_control.h>
-
 namespace tesseract_planning
 {
 enum class OMPLPlannerType
@@ -61,7 +59,7 @@ enum class OMPLPlannerType
   SPARS = 13
 };
 
-struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC OMPLPlannerConfigurator
+struct OMPLPlannerConfigurator
 {
   using Ptr = std::shared_ptr<OMPLPlannerConfigurator>;
   using ConstPtr = std::shared_ptr<const OMPLPlannerConfigurator>;
@@ -80,7 +78,7 @@ struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC OMPLPlannerConfigurator
   virtual tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const = 0;
 };
 
-struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC SBLConfigurator : public OMPLPlannerConfigurator
+struct SBLConfigurator : public OMPLPlannerConfigurator
 {
   SBLConfigurator() = default;
   ~SBLConfigurator() override = default;
@@ -102,7 +100,7 @@ struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC SBLConfigurator : public OMPLPlanne
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
-struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC ESTConfigurator : public OMPLPlannerConfigurator
+struct ESTConfigurator : public OMPLPlannerConfigurator
 {
   ESTConfigurator() = default;
   ~ESTConfigurator() override = default;
@@ -127,7 +125,7 @@ struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC ESTConfigurator : public OMPLPlanne
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
-struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC LBKPIECE1Configurator : public OMPLPlannerConfigurator
+struct LBKPIECE1Configurator : public OMPLPlannerConfigurator
 {
   LBKPIECE1Configurator() = default;
   ~LBKPIECE1Configurator() override = default;
@@ -155,7 +153,7 @@ struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC LBKPIECE1Configurator : public OMPL
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
-struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC BKPIECE1Configurator : public OMPLPlannerConfigurator
+struct BKPIECE1Configurator : public OMPLPlannerConfigurator
 {
   BKPIECE1Configurator() = default;
   ~BKPIECE1Configurator() override = default;
@@ -186,7 +184,7 @@ struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC BKPIECE1Configurator : public OMPLP
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
-struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC KPIECE1Configurator : public OMPLPlannerConfigurator
+struct KPIECE1Configurator : public OMPLPlannerConfigurator
 {
   KPIECE1Configurator() = default;
   ~KPIECE1Configurator() override = default;
@@ -220,7 +218,7 @@ struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC KPIECE1Configurator : public OMPLPl
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
-struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC BiTRRTConfigurator : public OMPLPlannerConfigurator
+struct BiTRRTConfigurator : public OMPLPlannerConfigurator
 {
   BiTRRTConfigurator() = default;
   ~BiTRRTConfigurator() override = default;
@@ -258,7 +256,7 @@ struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC BiTRRTConfigurator : public OMPLPla
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
-struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC RRTConfigurator : public OMPLPlannerConfigurator
+struct RRTConfigurator : public OMPLPlannerConfigurator
 {
   RRTConfigurator() = default;
   ~RRTConfigurator() override = default;
@@ -283,7 +281,7 @@ struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC RRTConfigurator : public OMPLPlanne
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
-struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC RRTConnectConfigurator : public OMPLPlannerConfigurator
+struct RRTConnectConfigurator : public OMPLPlannerConfigurator
 {
   RRTConnectConfigurator() = default;
   ~RRTConnectConfigurator() override = default;
@@ -305,7 +303,7 @@ struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC RRTConnectConfigurator : public OMP
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
-struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC RRTstarConfigurator : public OMPLPlannerConfigurator
+struct RRTstarConfigurator : public OMPLPlannerConfigurator
 {
   RRTstarConfigurator() = default;
   ~RRTstarConfigurator() override = default;
@@ -333,7 +331,7 @@ struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC RRTstarConfigurator : public OMPLPl
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
-struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC TRRTConfigurator : public OMPLPlannerConfigurator
+struct TRRTConfigurator : public OMPLPlannerConfigurator
 {
   TRRTConfigurator() = default;
   ~TRRTConfigurator() override = default;
@@ -370,7 +368,7 @@ struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC TRRTConfigurator : public OMPLPlann
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
-struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC PRMConfigurator : public OMPLPlannerConfigurator
+struct PRMConfigurator : public OMPLPlannerConfigurator
 {
   PRMConfigurator() = default;
   ~PRMConfigurator() override = default;
@@ -392,7 +390,7 @@ struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC PRMConfigurator : public OMPLPlanne
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
-struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC PRMstarConfigurator : public OMPLPlannerConfigurator
+struct PRMstarConfigurator : public OMPLPlannerConfigurator
 {
   PRMstarConfigurator() = default;
   ~PRMstarConfigurator() override = default;
@@ -411,7 +409,7 @@ struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC PRMstarConfigurator : public OMPLPl
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
-struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC LazyPRMstarConfigurator : public OMPLPlannerConfigurator
+struct LazyPRMstarConfigurator : public OMPLPlannerConfigurator
 {
   LazyPRMstarConfigurator() = default;
   ~LazyPRMstarConfigurator() override = default;
@@ -430,7 +428,7 @@ struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC LazyPRMstarConfigurator : public OM
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };
 
-struct TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC SPARSConfigurator : public OMPLPlannerConfigurator
+struct SPARSConfigurator : public OMPLPlannerConfigurator
 {
   SPARSConfigurator() = default;
   ~SPARSConfigurator() override = default;

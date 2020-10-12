@@ -40,16 +40,15 @@
  */
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <fcl/geometry/bvh/BVH_model.h>
-#include <fcl/geometry/shape/box.h>
-#include <fcl/geometry/shape/cylinder.h>
-#include <fcl/geometry/shape/convex.h>
-#include <fcl/geometry/shape/plane.h>
-#include <fcl/geometry/shape/sphere.h>
-#include <fcl/geometry/shape/cone.h>
-#include <fcl/geometry/shape/capsule.h>
-#include <fcl/geometry/octree/octree.h>
-#include <boost/thread/mutex.hpp>
+#include <fcl/geometry/bvh/BVH_model-inl.h>
+#include <fcl/geometry/shape/box-inl.h>
+#include <fcl/geometry/shape/cylinder-inl.h>
+#include <fcl/geometry/shape/convex-inl.h>
+#include <fcl/geometry/shape/plane-inl.h>
+#include <fcl/geometry/shape/sphere-inl.h>
+#include <fcl/geometry/shape/cone-inl.h>
+#include <fcl/geometry/shape/capsule-inl.h>
+#include <fcl/geometry/octree/octree-inl.h>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -126,9 +125,9 @@ CollisionGeometryPtr createShapePrimitive(const tesseract_geometry::ConvexMesh::
 
   if (vertice_count > 0 && face_count > 0)
   {
-    auto faces = std::make_shared<std::vector<int>>(geom->getFaces()->data(),
-                                                    geom->getFaces()->data() + geom->getFaces()->size());
-    return std::make_shared<fcl::Convexd>(geom->getVertices(), face_count, faces);
+    auto faces = std::make_shared<const std::vector<int>>(geom->getFaces()->data(),
+                                                          geom->getFaces()->data() + geom->getFaces()->size());
+    return std::make_shared<fcl::Convexd>(geom->getVertices(), face_count, faces, false);
   }
 
   CONSOLE_BRIDGE_logError("The mesh is empty!");

@@ -33,15 +33,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
-#include <tesseract_motion_planners/trajopt/visibility_control.h>
 
 namespace tesseract_planning
 {
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC trajopt::TrajOptProb::Ptr
-DefaultTrajoptProblemGenerator(const std::string& name,
-                               const PlannerRequest& request,
-                               const TrajOptPlanProfileMap& plan_profiles,
-                               const TrajOptCompositeProfileMap& composite_profiles);
+trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name,
+                                                         const PlannerRequest& request,
+                                                         const TrajOptPlanProfileMap& plan_profiles,
+                                                         const TrajOptCompositeProfileMap& composite_profiles);
 
 }  // namespace tesseract_planning
 #endif

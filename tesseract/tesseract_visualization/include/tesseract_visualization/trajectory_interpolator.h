@@ -35,11 +35,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/command_language.h>
-#include <tesseract_visualization/visibility_control.h>
 
 namespace tesseract_visualization
 {
-class TESSERACT_VISUALIZATION_PUBLIC TrajectoryInterpolator
+class TrajectoryInterpolator
 {
 public:
   using UPtr = std::unique_ptr<TrajectoryInterpolator>;

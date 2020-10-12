@@ -35,7 +35,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/taskflow_generator.h>
 #include <tesseract_process_managers/process_generator.h>
-#include <tesseract_process_managers/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -51,7 +50,7 @@ using SequentialProcesses = std::vector<std::pair<ProcessGenerator::UPtr, Sequen
 /** @brief This class generates taskflows for a sequential failure tree. Each process is executed in order until one
  * succeeds. Between each process, the validator tasks are executed (if not empty). For a process to succeed, the
  * process itself must succeed and all of the validators must succeed*/
-class TESSERACT_PROCESS_MANAGERS_PUBLIC SequentialTaskflow : public TaskflowGenerator
+class SequentialTaskflow : public TaskflowGenerator
 {
 public:
   using UPtr = std::unique_ptr<SequentialTaskflow>;

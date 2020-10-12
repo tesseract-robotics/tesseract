@@ -23,25 +23,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-macro(target_process_export target)
-  set(options INTERFACE)
-  cmake_parse_arguments(ARG "${options}" "" "" ${ARGN})
-
-  string(TOUPPER "${target}" EXPORT_PREFIX)
-
-  if (NOT DEFINED ${EXPORT_PREFIX}_LIBRARY_SHARED)
-    set(${EXPORT_PREFIX}_LIBRARY_SHARED ON)
-  endif()
-
-  if(NOT BUILD_SHARED_LIBS)
-    if (ARG_INTERFACE)
-      target_compile_definitions(${PROJECT_NAME} INTERFACE "${EXPORT_PREFIX}_STATIC_LIBRARY")
-    else()
-      target_compile_definitions(${PROJECT_NAME} PUBLIC "${EXPORT_PREFIX}_STATIC_LIBRARY")
-    endif()
-  endif()
-endmacro()
-
 macro(tesseract_variables)
   if (NOT DEFINED BUILD_SHARED_LIBS)
     set(BUILD_SHARED_LIBS ON)

@@ -34,12 +34,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_visualization/trajectory_interpolator.h>
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_command_language/move_instruction.h>
-#include <tesseract_visualization/visibility_control.h>
 
 namespace tesseract_visualization
 {
 /** @brief Enables the ability to play a trajectory provided by the set program */
-class TESSERACT_VISUALIZATION_PUBLIC TrajectoryPlayer
+class TrajectoryPlayer
 {
 public:
   TrajectoryPlayer() = default;

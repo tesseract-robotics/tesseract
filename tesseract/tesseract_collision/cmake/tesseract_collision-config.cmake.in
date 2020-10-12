@@ -18,10 +18,14 @@ find_dependency(tesseract_geometry)
 find_dependency(tesseract_support)
 find_dependency(fcl)
 find_dependency(ccd)
+find_package(Bullet REQUIRED NAMES bullet Bullet)
 
-# Find Bullet using PkgConfig which is the recommended way
-find_dependency(PkgConfig)
-pkg_check_modules(bullet REQUIRED IMPORTED_TARGET bullet)
+# This was required for windows to find things in tesseract_ext before the system
+include_directories(BEFORE ${FCL_INCLUDE_DIRS})
+link_directories(BEFORE ${FCL_LIBRARY_DIRS})
+
+include_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
+link_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS}")
 
 # These targets are necessary for 16.04 builds. Remove when Kinetic support is dropped
 if(NOT TARGET octomap)

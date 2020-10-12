@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_motion_planners VERSION 0.1.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+if(WIN32)
+  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
 
 find_package(Boost REQUIRED)
 find_package(console_bridge REQUIRED)
@@ -25,7 +26,6 @@ tesseract_variables()
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core src/core/utils.cpp)
-target_process_export(${PROJECT_NAME}_core)
 target_link_libraries(${PROJECT_NAME}_core PUBLIC tesseract::tesseract tesseract::tesseract_common tesseract::tesseract_command_language trajopt::trajopt console_bridge)
 target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_compile_definitions(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -48,7 +48,6 @@ add_library(${PROJECT_NAME}_descartes
   src/descartes/profile/descartes_default_plan_profile.cpp
   src/descartes/serialize.cpp
   src/descartes/deserialize.cpp)
-target_process_export(${PROJECT_NAME}_descartes)
 target_link_libraries(${PROJECT_NAME}_descartes PUBLIC ${PROJECT_NAME}_core descartes::descartes_light descartes::descartes_samplers)
 target_compile_options(${PROJECT_NAME}_descartes PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_compile_definitions(${PROJECT_NAME}_descartes PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -80,7 +79,6 @@ set(OMPL_SRC src/ompl/ompl_motion_planner.cpp
 #endif()
 
 add_library(${PROJECT_NAME}_ompl ${OMPL_SRC})
-target_process_export(${PROJECT_NAME}_ompl)
 target_link_libraries(${PROJECT_NAME}_ompl PUBLIC ${PROJECT_NAME}_core ${OMPL_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_ompl PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_compile_definitions(${PROJECT_NAME}_ompl PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -105,7 +103,6 @@ add_library(${PROJECT_NAME}_simple
   src/simple/step_generators/fixed_size_assign_position.cpp
   src/simple/step_generators/fixed_size_interpolation.cpp
   src/simple/step_generators/lvs_interpolation.cpp)
-target_process_export(${PROJECT_NAME}_simple)
 target_link_libraries(${PROJECT_NAME}_simple PUBLIC ${Boost_LIBRARIES} ${PROJECT_NAME}_core)
 target_compile_options(${PROJECT_NAME}_simple PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_compile_definitions(${PROJECT_NAME}_simple PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -129,7 +126,6 @@ add_library(${PROJECT_NAME}_trajopt
   src/trajopt/problem_generators/default_problem_generator.cpp
   src/trajopt/serialize.cpp
   src/trajopt/deserialize.cpp)
-target_process_export(${PROJECT_NAME}_trajopt)
 target_link_libraries(${PROJECT_NAME}_trajopt PUBLIC ${Boost_LIBRARIES} ${PROJECT_NAME}_core trajopt::trajopt trajopt::trajopt_utils trajopt::trajopt_sco)
 target_compile_options(${PROJECT_NAME}_trajopt PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_compile_definitions(${PROJECT_NAME}_trajopt PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})

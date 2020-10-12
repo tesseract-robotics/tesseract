@@ -46,11 +46,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_urdf/convex_mesh.h>
 #include <tesseract_urdf/sdf_mesh.h>
 #include <tesseract_urdf/octomap.h>
-#include <tesseract_urdf/visibility_control.h>
 
 namespace tesseract_urdf
 {
-class TESSERACT_URDF_LOCAL GeometryStatusCategory : public tesseract_common::StatusCategory
+class GeometryStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   GeometryStatusCategory() : name_("GeometryStatusCategory") {}

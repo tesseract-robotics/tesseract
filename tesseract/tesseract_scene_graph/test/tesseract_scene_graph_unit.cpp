@@ -5,6 +5,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <iostream>
 #include <fstream>
 #include <tesseract_geometry/geometries.h>
+#include <tesseract_common/utils.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
@@ -123,7 +124,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
   checkSceneGraph(g);
 
   // Save Graph
-  g.saveDOT("/tmp/graph_acyclic_tree_example.dot");
+  g.saveDOT(tesseract_common::getTempPath() + "graph_acyclic_tree_example.dot");
 
   // Test if the graph is Acyclic
   std::cout << "Is Acyclic: " << g.isAcyclic() << std::endl;
@@ -150,7 +151,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
   checkSceneGraph(g);
 
   Joint joint_5("joint_5");
-  joint_5.parent_to_joint_origin_transform.translation()(1) = 1.25;
+  joint_5.parent_to_joint_origin_transform.translation()(1) = 1.5;
   joint_5.parent_link_name = "link_5";
   joint_5.child_link_name = "link_4";
   joint_5.type = JointType::CONTINUOUS;
@@ -160,7 +161,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
   checkSceneGraph(g);
 
   // Save Graph
-  g.saveDOT("/tmp/graph_acyclic_not_tree_example.dot");
+  g.saveDOT(tesseract_common::getTempPath() + "graph_acyclic_not_tree_example.dot");
 
   // Test if the graph is Acyclic
   std::cout << "Is Acyclic: " << g.isAcyclic() << std::endl;
@@ -181,7 +182,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
   checkSceneGraph(g);
 
   // Save Graph
-  g.saveDOT("/tmp/graph_cyclic_not_tree_example.dot");
+  g.saveDOT(tesseract_common::getTempPath() + "graph_cyclic_not_tree_example.dot");
 
   // Test if the graph is Acyclic
   std::cout << "Is Acyclic: " << g.isAcyclic() << std::endl;
@@ -211,7 +212,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphUnit)  // NOLINT
   std::cout << (g.getName().c_str()) << std::endl;
 
   // Should throw since this is a directory and not a file
-  EXPECT_ANY_THROW(g.saveDOT("/tmp/"));
+  EXPECT_ANY_THROW(g.saveDOT(tesseract_common::getTempPath()));
 }
 
 std::string locateResource(const std::string& url)
@@ -568,12 +569,12 @@ TEST(TesseractSceneGraphUnit, TesseractSRDFModelUnit)  // NOLINT
   acm.addAllowedCollision("link_3", "link_4", "Adjacent");
   acm.addAllowedCollision("link_4", "link_5", "Adjacent");
   EXPECT_FALSE(srdf.getAllowedCollisionMatrix().getAllAllowedCollisions().empty());
-  srdf.saveToFile("/tmp/test.srdf");
+  srdf.saveToFile(tesseract_common::getTempPath() + "test.srdf");
 
   SceneGraph g = buildTestSceneGraph();
 
   tesseract_scene_graph::SRDFModel srdf_reload;
-  srdf_reload.initFile(g, "/tmp/test.srdf");
+  srdf_reload.initFile(g, tesseract_common::getTempPath() + "test.srdf");
   EXPECT_TRUE(srdf_reload.getName() == "test_srdf");
   EXPECT_FALSE(srdf_reload.getChainGroups().empty());
   EXPECT_FALSE(srdf_reload.getJointGroups().empty());
@@ -593,7 +594,7 @@ TEST(TesseractSceneGraphUnit, TesseractSRDFModelUnit)  // NOLINT
   EXPECT_TRUE(srdf_reload.getGroupTCPs()["manipulator_link"].find("laser") !=
               srdf_reload.getGroupTCPs()["manipulator_link"].end());
   EXPECT_FALSE(srdf_reload.getAllowedCollisionMatrix().getAllAllowedCollisions().empty());
-  srdf_reload.saveToFile("/tmp/test_reload.srdf");
+  srdf_reload.saveToFile(tesseract_common::getTempPath() + "test_reload.srdf");
 }
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertEmptyUnit)  // NOLINT
@@ -633,7 +634,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertEmptyUnit)  // NOLINT
   }
 
   // Save Graph
-  ng.saveDOT("/tmp/graph_insert_empty_example.dot");
+  ng.saveDOT(tesseract_common::getTempPath() + "graph_insert_empty_example.dot");
 }
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointNoPrefixUnit)  // NOLINT
@@ -719,7 +720,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithoutJointWithPrefixUni
   }
 
   // Save Graph
-  ng.saveDOT("/tmp/graph_insert_example.dot");
+  ng.saveDOT(tesseract_common::getTempPath() + "graph_insert_example.dot");
 }
 
 TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit)  // NOLINT
@@ -774,7 +775,7 @@ TEST(TesseractSceneGraphUnit, TesseractSceneGraphInsertWithJointWithPrefixUnit) 
   }
 
   // Save Graph
-  ng.saveDOT("/tmp/graph_insert_with_joint_example.dot");
+  ng.saveDOT(tesseract_common::getTempPath() + "graph_insert_with_joint_example.dot");
 }
 
 int main(int argc, char** argv)
