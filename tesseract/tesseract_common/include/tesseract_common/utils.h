@@ -39,6 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <iostream>
 #include <algorithm>
 #include <tinyxml2.h>
+#include <boost/filesystem.hpp>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -51,6 +52,16 @@ static std::mt19937 mersenne{ static_cast<std::mt19937::result_type>(std::time(n
 /** @brief Random number generator */
 inline std::mt19937 mersenne{ static_cast<std::mt19937::result_type>(std::time(nullptr)) };
 #endif
+
+/**
+ * @brief Get the host temp directory path
+ * @return The host temp directory path
+ */
+inline std::string getTempPath()
+{
+  return boost::filesystem::temp_directory_path().string() +
+         std::string(1, boost::filesystem::path::preferred_separator);
+}
 
 /**
  * @brief Determine if a string is a number

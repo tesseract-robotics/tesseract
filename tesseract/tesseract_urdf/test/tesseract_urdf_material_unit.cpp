@@ -2,6 +2,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <Eigen/Geometry>
+#include <tesseract_urdf/urdf_parser.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/material.h>
@@ -11,7 +12,7 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
 {
   auto m = std::make_shared<tesseract_scene_graph::Material>("test_material");
   m->color = Eigen::Vector4d(1, .5, .5, 1);
-  m->texture_filename = "/tmp/texture.txt";
+  m->texture_filename = tesseract_common::getTempPath() + "texture.txt";
 
   {
     std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
@@ -20,7 +21,8 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
 
     std::string str = R"(<material name="test_material" extra="0 0 0">
                            <color rgba="1 .5 .5 1" extra="0 0 0"/>
-                           <texture filename="/tmp/texture.txt" extra="0 0 0"/>
+                           <texture filename=")" +
+                      m->texture_filename + R"("extra="0 0 0"/>
                          </material>)";
     tesseract_scene_graph::Material::Ptr elem;
     auto status =
@@ -31,7 +33,7 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
     EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(elem->getName() == "test_material");
     EXPECT_TRUE(elem->color.isApprox(Eigen::Vector4d(1, .5, .5, 1), 1e-8));
-    EXPECT_TRUE(elem->texture_filename == "/tmp/texture.txt");
+    EXPECT_TRUE(elem->texture_filename == tesseract_common::getTempPath() + "texture.txt");
   }
 
   {
@@ -64,7 +66,7 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
     EXPECT_FALSE(status->message().empty());
     EXPECT_TRUE(elem->getName() == "test_material");
     EXPECT_TRUE(elem->color.isApprox(Eigen::Vector4d(1, .5, .5, 1), 1e-8));
-    EXPECT_TRUE(elem->texture_filename == "/tmp/texture.txt");
+    EXPECT_TRUE(elem->texture_filename == tesseract_common::getTempPath() + "texture.txt");
   }
 
   {
@@ -130,7 +132,8 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
 
     std::string str = R"(<material name="test_material">
                            <color rgba="1 .5 .5 a"/>
-                           <texture filename="/tmp/texture.txt"/>
+                           <texture filename=")" +
+                      m->texture_filename + R"("/>
                          </material>)";
     tesseract_scene_graph::Material::Ptr elem;
     auto status =
@@ -146,7 +149,8 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
 
     std::string str = R"(<material name="test_material">
                            <color rgba="1 .5 a 1"/>
-                           <texture filename="/tmp/texture.txt"/>
+                           <texture filename=")" +
+                      m->texture_filename + R"("/>
                          </material>)";
     tesseract_scene_graph::Material::Ptr elem;
     auto status =
@@ -162,7 +166,8 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
 
     std::string str = R"(<material name="test_material">
                            <color rgba="1 a .5 1"/>
-                           <texture filename="/tmp/texture.txt"/>
+                           <texture filename=")" +
+                      m->texture_filename + R"("/>
                          </material>)";
     tesseract_scene_graph::Material::Ptr elem;
     auto status =
@@ -178,7 +183,8 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
 
     std::string str = R"(<material name="test_material">
                            <color rgba="a .5 .5 1"/>
-                           <texture filename="/tmp/texture.txt"/>
+                           <texture filename=")" +
+                      m->texture_filename + R"("/>
                          </material>)";
     tesseract_scene_graph::Material::Ptr elem;
     auto status =
@@ -194,7 +200,8 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
 
     std::string str = R"(<material name="test_material">
                            <color rgba="1 .5 .5 1 1"/>
-                           <texture filename="/tmp/texture.txt"/>
+                           <texture filename=")" +
+                      m->texture_filename + R"("/>
                          </material>)";
     tesseract_scene_graph::Material::Ptr elem;
     auto status =
@@ -210,7 +217,8 @@ TEST(TesseractURDFUnit, parse_material)  // NOLINT
 
     std::string str = R"(<material name="test_material">
                            <color rgba=""/>
-                           <texture filename="/tmp/texture.txt"/>
+                           <texture filename=")" +
+                      m->texture_filename + R"("/>
                          </material>)";
     tesseract_scene_graph::Material::Ptr elem;
     auto status =

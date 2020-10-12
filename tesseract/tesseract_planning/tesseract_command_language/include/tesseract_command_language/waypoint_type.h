@@ -26,8 +26,6 @@
 #ifndef TESSERACT_COMMAND_LANGUAGE_WAYPOINT_TYPE_H
 #define TESSERACT_COMMAND_LANGUAGE_WAYPOINT_TYPE_H
 
-#include <tesseract_command_language/visibility_control.h>
-
 namespace tesseract_planning
 {
 class Waypoint;
@@ -50,13 +48,13 @@ enum class WaypointType : int
   USER_DEFINED = 1000
 };
 
-TESSERACT_COMMAND_LANGUAGE_PUBLIC bool isCartesianWaypoint(const Waypoint& waypoint);
+bool isCartesianWaypoint(const Waypoint& waypoint);
 
-TESSERACT_COMMAND_LANGUAGE_PUBLIC bool isJointWaypoint(const Waypoint& waypoint);
+bool isJointWaypoint(const Waypoint& waypoint);
 
-TESSERACT_COMMAND_LANGUAGE_PUBLIC bool isStateWaypoint(const Waypoint& waypoint);
+bool isStateWaypoint(const Waypoint& waypoint);
 
-TESSERACT_COMMAND_LANGUAGE_PUBLIC bool isNullWaypoint(const Waypoint& waypoint);
+bool isNullWaypoint(const Waypoint& waypoint);
 
 }  // namespace tesseract_planning
 #endif  // TESSERACT_COMMAND_LANGUAGE_WAYPOINT_TYPE_H

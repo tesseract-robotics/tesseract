@@ -10,27 +10,23 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <unordered_map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_scene_graph/visibility_control.h>
-
 namespace tesseract_scene_graph
 {
-class TESSERACT_SCENE_GRAPH_PUBLIC AllowedCollisionMatrix
+using LinkNamesPair = std::pair<std::string, std::string>;
+struct PairHash
+{
+  std::size_t operator()(const LinkNamesPair& pair) const { return std::hash<std::string>()(pair.first + pair.second); }
+};
+
+using AllowedCollisionEntries = std::unordered_map<LinkNamesPair, std::string, PairHash>;
+
+class AllowedCollisionMatrix
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   using Ptr = std::shared_ptr<AllowedCollisionMatrix>;
   using ConstPtr = std::shared_ptr<const AllowedCollisionMatrix>;
-
-  using LinkNamesPair = std::pair<const std::string, const std::string>;
-  struct PairHash
-  {
-    std::size_t operator()(const LinkNamesPair& pair) const
-    {
-      return std::hash<std::string>()(pair.first + pair.second);
-    }
-  };
-  using AllowedCollisionEntries = std::unordered_map<LinkNamesPair, std::string, PairHash>;
 
   AllowedCollisionMatrix() = default;
   virtual ~AllowedCollisionMatrix() = default;

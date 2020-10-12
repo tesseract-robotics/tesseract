@@ -28,11 +28,10 @@
 
 #include <tesseract_kinematics/core/inverse_kinematics_factory.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_nr.h>
-#include <tesseract_kinematics/kdl/visibility_control.h>
 
 namespace tesseract_kinematics
 {
-class TESSERACT_KINEMATICS_KDL_PUBLIC KDLInvKinChainNRFactory : public InverseKinematicsFactory
+class KDLInvKinChainNRFactory : public InverseKinematicsFactory
 {
 public:
   KDLInvKinChainNRFactory() : name_(KDLInvKinChainNR().getSolverName()) {}

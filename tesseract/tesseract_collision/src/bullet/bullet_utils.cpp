@@ -46,14 +46,16 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <BulletCollision/CollisionDispatch/btConvexConvexAlgorithm.h>
 #include <BulletCollision/CollisionShapes/btShapeHull.h>
-#include <BulletCollision/Gimpact/btGImpactShape.h>
+#include <BulletCollision/Gimpact/btTriangleShapeEx.h>
 #include <boost/thread/mutex.hpp>
 #include <memory>
 #include <octomap/octomap.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 // Bullet adds a margin of 5cm to which is an extern variable, so we set it to zero.
+#ifndef _MSC_VER
 btScalar gDbvtMargin = 0;
+#endif
 
 namespace tesseract_collision
 {

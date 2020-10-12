@@ -30,12 +30,11 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <ompl/base/MotionValidator.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
-#include <tesseract_motion_planners/ompl/visibility_control.h>
 
 namespace tesseract_planning
 {
 /** @brief Continuous collision check between two states */
-class TESSERACT_MOTION_PLANNERS_OMPL_PUBLIC DiscreteMotionValidator : public ompl::base::MotionValidator
+class DiscreteMotionValidator : public ompl::base::MotionValidator
 {
 public:
   DiscreteMotionValidator(const ompl::base::SpaceInformationPtr& space_info);

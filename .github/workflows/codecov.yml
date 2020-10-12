@@ -1,0 +1,58 @@
+name: CodeCov
+
+on:
+  push:
+    branches:
+      - master
+      - feature/CommandLanguage
+  pull_request:
+  schedule:
+    - cron: '0 5 * * *'
+
+jobs:
+  industrial_ci:
+    name: CodeCov
+    runs-on: ubuntu-latest
+    env:
+      CI_NAME: CodeCov
+      OS_NAME: ubuntu
+      OS_CODE_NAME: bionic
+      ROS_DISTRO: melodic
+      ROS_REPO: main
+      UPSTREAM_WORKSPACE: 'github:swri-robotics/descartes_light#feature/CommandLanguage github:Jmeyer1292/opw_kinematics#master github:ethz-adrl/ifopt#master github:ros-industrial/cmake_common_scripts#master'
+      TARGET_WORKSPACE: '. github:ros-industrial-consortium/trajopt_ros#feature/CommandLanguage github:mpowelson/cpp-taskflow#catkinized'
+      ROSDEP_SKIP_KEYS: "bullet3 cmake_common_scripts iwyu fcl"
+      DOCKER_IMAGE: "rosindustrial/tesseract:melodic"
+      CCACHE_DIR: "/home/runner/work/tesseract/tesseract/CodeCov/.ccache"
+      UPSTREAM_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Release"
+      TARGET_CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DTESSERACT_ENABLE_TESTING=ON -DTESSERACT_CODE_COVERAGE=ON"
+      AFTER_SCRIPT: 'catkin build -w $target_ws --no-deps --verbose tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_motion_planners tesseract_scene_graph tesseract_urdf --make-args ccov-all
+                     && bash <(curl -s https://codecov.io/bash) -t c4af0da7-9fc3-4d3c-bb2e-6b2523ddd382 -s $target_ws/build -f *all-merged.info'
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Free Disk Space
+        run: |
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          sudo apt clean
+          docker rmi $(docker image ls -aq)
+          df -h
+
+      - name: Prepare ccache timestamp
+        id: ccache_cache_timestamp
+        shell: cmake -P {0}
+        run: |
+          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
+          message("::set-output name=timestamp::${current_date}")
+
+      - name: ccache cache files
+        uses: actions/cache@v1.1.0
+        with:
+          path: ${{ env.CI_NAME }}/.ccache
+          key: ${{ env.CI_NAME }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: |
+            ${{ env.CI_NAME }}-ccache-
+
+      - uses: 'ros-industrial/industrial_ci@master'
+        env: ${{env}}

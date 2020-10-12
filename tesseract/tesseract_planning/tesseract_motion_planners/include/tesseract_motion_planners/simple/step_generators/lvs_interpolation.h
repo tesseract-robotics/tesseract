@@ -34,7 +34,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_motion_planners/core/types.h>
-#include <tesseract_motion_planners/simple/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -66,16 +65,15 @@ namespace tesseract_planning
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
-TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
-LVSInterpolateStateWaypoint(const JointWaypoint& start,
-                            const JointWaypoint& end,
-                            const PlanInstruction& base_instruction,
-                            const PlannerRequest& request,
-                            const ManipulatorInfo& manip_info,
-                            double state_longest_valid_segment_length,
-                            double translation_longest_valid_segment_length,
-                            double rotation_longest_valid_segment_length,
-                            int min_steps);
+CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
+                                                 const JointWaypoint& end,
+                                                 const PlanInstruction& base_instruction,
+                                                 const PlannerRequest& request,
+                                                 const ManipulatorInfo& manip_info,
+                                                 double state_longest_valid_segment_length,
+                                                 double translation_longest_valid_segment_length,
+                                                 double rotation_longest_valid_segment_length,
+                                                 int min_steps);
 
 /**
  * @brief LVSInterpolateStateWaypoint(JointWaypoint to CartesianWaypoint)
@@ -92,16 +90,15 @@ LVSInterpolateStateWaypoint(const JointWaypoint& start,
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
-TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
-LVSInterpolateStateWaypoint(const JointWaypoint& start,
-                            const CartesianWaypoint& end,
-                            const PlanInstruction& base_instruction,
-                            const PlannerRequest& request,
-                            const ManipulatorInfo& manip_info,
-                            double state_longest_valid_segment_length,
-                            double translation_longest_valid_segment_length,
-                            double rotation_longest_valid_segment_length,
-                            int min_steps);
+CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
+                                                 const CartesianWaypoint& end,
+                                                 const PlanInstruction& base_instruction,
+                                                 const PlannerRequest& request,
+                                                 const ManipulatorInfo& manip_info,
+                                                 double state_longest_valid_segment_length,
+                                                 double translation_longest_valid_segment_length,
+                                                 double rotation_longest_valid_segment_length,
+                                                 int min_steps);
 
 /**
  * @brief LVSInterpolateStateWaypoint(JointWaypoint to JointWaypoint)
@@ -131,16 +128,15 @@ LVSInterpolateStateWaypoint(const JointWaypoint& start,
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
-TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
-LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
-                            const JointWaypoint& end,
-                            const PlanInstruction& base_instruction,
-                            const PlannerRequest& request,
-                            const ManipulatorInfo& manip_info,
-                            double state_longest_valid_segment_length,
-                            double translation_longest_valid_segment_length,
-                            double rotation_longest_valid_segment_length,
-                            int min_steps);
+CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
+                                                 const JointWaypoint& end,
+                                                 const PlanInstruction& base_instruction,
+                                                 const PlannerRequest& request,
+                                                 const ManipulatorInfo& manip_info,
+                                                 double state_longest_valid_segment_length,
+                                                 double translation_longest_valid_segment_length,
+                                                 double rotation_longest_valid_segment_length,
+                                                 int min_steps);
 
 /**
  * @brief LVSInterpolateStateWaypoint(JointWaypoint to JointWaypoint)
@@ -170,16 +166,15 @@ LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
-TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
-LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
-                            const CartesianWaypoint& end,
-                            const PlanInstruction& base_instruction,
-                            const PlannerRequest& request,
-                            const ManipulatorInfo& manip_info,
-                            double state_longest_valid_segment_length,
-                            double translation_longest_valid_segment_length,
-                            double rotation_longest_valid_segment_length,
-                            int min_steps);
+CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
+                                                 const CartesianWaypoint& end,
+                                                 const PlanInstruction& base_instruction,
+                                                 const PlannerRequest& request,
+                                                 const ManipulatorInfo& manip_info,
+                                                 double state_longest_valid_segment_length,
+                                                 double translation_longest_valid_segment_length,
+                                                 double rotation_longest_valid_segment_length,
+                                                 int min_steps);
 
 /**
  * @brief LVSInterpolateCartStateWaypoint(JointWaypoint to JointWaypoint)
@@ -209,16 +204,15 @@ LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
-TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
-LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
-                                const JointWaypoint& end,
-                                const PlanInstruction& base_instruction,
-                                const PlannerRequest& request,
-                                const ManipulatorInfo& manip_info,
-                                double state_longest_valid_segment_length,
-                                double translation_longest_valid_segment_length,
-                                double rotation_longest_valid_segment_length,
-                                int min_steps);
+CompositeInstruction LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
+                                                     const JointWaypoint& end,
+                                                     const PlanInstruction& base_instruction,
+                                                     const PlannerRequest& request,
+                                                     const ManipulatorInfo& manip_info,
+                                                     double state_longest_valid_segment_length,
+                                                     double translation_longest_valid_segment_length,
+                                                     double rotation_longest_valid_segment_length,
+                                                     int min_steps);
 
 /**
  * @brief LVSInterpolateCartStateWaypoint(JointWaypoint to CartesianWaypoint)
@@ -248,16 +242,15 @@ LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
-TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
-LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
-                                const CartesianWaypoint& end,
-                                const PlanInstruction& base_instruction,
-                                const PlannerRequest& request,
-                                const ManipulatorInfo& manip_info,
-                                double state_longest_valid_segment_length,
-                                double translation_longest_valid_segment_length,
-                                double rotation_longest_valid_segment_length,
-                                int min_steps);
+CompositeInstruction LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
+                                                     const CartesianWaypoint& end,
+                                                     const PlanInstruction& base_instruction,
+                                                     const PlannerRequest& request,
+                                                     const ManipulatorInfo& manip_info,
+                                                     double state_longest_valid_segment_length,
+                                                     double translation_longest_valid_segment_length,
+                                                     double rotation_longest_valid_segment_length,
+                                                     int min_steps);
 
 /**
  * @brief LVSInterpolateCartStateWaypoint(CartesianWaypoint to JointWaypoint)
@@ -287,16 +280,15 @@ LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
-TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
-LVSInterpolateCartStateWaypoint(const CartesianWaypoint& start,
-                                const JointWaypoint& end,
-                                const PlanInstruction& base_instruction,
-                                const PlannerRequest& request,
-                                const ManipulatorInfo& manip_info,
-                                double state_longest_valid_segment_length,
-                                double translation_longest_valid_segment_length,
-                                double rotation_longest_valid_segment_length,
-                                int min_steps);
+CompositeInstruction LVSInterpolateCartStateWaypoint(const CartesianWaypoint& start,
+                                                     const JointWaypoint& end,
+                                                     const PlanInstruction& base_instruction,
+                                                     const PlannerRequest& request,
+                                                     const ManipulatorInfo& manip_info,
+                                                     double state_longest_valid_segment_length,
+                                                     double translation_longest_valid_segment_length,
+                                                     double rotation_longest_valid_segment_length,
+                                                     int min_steps);
 
 /**
  * @brief LVSInterpolateCartStateWaypoint(CartesianWaypoint to CartesianWaypoint)
@@ -326,16 +318,15 @@ LVSInterpolateCartStateWaypoint(const CartesianWaypoint& start,
  * @param min_steps The minimum number of steps for the plan
  * @return A composite instruction of move instruction with state waypoints
  **/
-TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC CompositeInstruction
-LVSInterpolateCartStateWaypoint(const CartesianWaypoint& start,
-                                const CartesianWaypoint& end,
-                                const PlanInstruction& base_instruction,
-                                const PlannerRequest& request,
-                                const ManipulatorInfo& manip_info,
-                                double state_longest_valid_segment_length,
-                                double translation_longest_valid_segment_length,
-                                double rotation_longest_valid_segment_length,
-                                int min_steps);
+CompositeInstruction LVSInterpolateCartStateWaypoint(const CartesianWaypoint& start,
+                                                     const CartesianWaypoint& end,
+                                                     const PlanInstruction& base_instruction,
+                                                     const PlannerRequest& request,
+                                                     const ManipulatorInfo& manip_info,
+                                                     double state_longest_valid_segment_length,
+                                                     double translation_longest_valid_segment_length,
+                                                     double rotation_longest_valid_segment_length,
+                                                     int min_steps);
 }  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_SIMPLE_PROFILE_H

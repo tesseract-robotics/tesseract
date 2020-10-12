@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_visualization VERSION 0.1.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+if(WIN32)
+  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
 
 find_package(Eigen3 REQUIRED)
 find_package(console_bridge REQUIRED)
@@ -46,7 +47,6 @@ add_library(${PROJECT_NAME}
     src/visualization_loader.cpp
     src/trajectory_interpolator.cpp
     src/trajectory_player.cpp)
-target_process_export(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract tesseract::tesseract_environment_core tesseract::tesseract_scene_graph tesseract::tesseract_command_language tesseract::tesseract_collision_core tesseract::tesseract_common console_bridge ${class_loader_LIBRARIES})
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -73,7 +73,6 @@ if (IGNITION_FOUND)
   add_library(${PROJECT_NAME}_ignition
       src/ignition/entity_manager.cpp
       src/ignition/conversions.cpp)
-  target_process_export(${PROJECT_NAME}_ignition)
   target_link_libraries(${PROJECT_NAME}_ignition PUBLIC
     tesseract::tesseract_scene_graph
     tesseract::tesseract_common
@@ -94,7 +93,6 @@ if (IGNITION_FOUND)
 
   add_library(${PROJECT_NAME}_ignition_visualization
       src/ignition/tesseract_ignition_visualization.cpp)
-  target_process_export(${PROJECT_NAME}_ignition_visualization)
   target_link_libraries(${PROJECT_NAME}_ignition_visualization PUBLIC
     ${PROJECT_NAME}
     ${PROJECT_NAME}_ignition

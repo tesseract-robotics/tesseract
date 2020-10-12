@@ -1,21 +1,19 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_geometry VERSION 0.1.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+if(WIN32)
+  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
 find_package(Eigen3 REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(octomap REQUIRED)
 find_package(cmake_common_scripts REQUIRED)
-
-find_package(ASSIMP QUIET)
-if (NOT ASSIMP_FOUND)
-  find_package(PkgConfig REQUIRED)
-  # assimp is required, so REQUIRE the second attempt
-  pkg_check_modules(ASSIMP REQUIRED assimp)
-endif()
+find_package(assimp REQUIRED)
+link_directories(${assimp_LIBRARY_DIRS})
 
 # These targets are necessary for 16.04 builds. Remove when Kinetic support is dropped
 if(NOT TARGET octomap)
@@ -37,8 +35,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 tesseract_variables()
 
 add_library(${PROJECT_NAME} INTERFACE)
-target_process_export(${PROJECT_NAME} INTERFACE)
-target_link_libraries(${PROJECT_NAME} INTERFACE tesseract::tesseract_common console_bridge octomap octomath ${ASSIMP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} INTERFACE tesseract::tesseract_common console_bridge octomap octomath ${assimp_LIBRARIES})
 target_compile_options(${PROJECT_NAME} INTERFACE ${TESSERACT_COMPILE_OPTIONS})
 target_compile_definitions(${PROJECT_NAME} INTERFACE ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
@@ -48,6 +45,7 @@ target_include_directories(${PROJECT_NAME} INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE
+    ${assimp_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIRS})
 
 configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
@@ -58,6 +56,10 @@ install(DIRECTORY include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
 )
+
+install(FILES
+  "${CMAKE_CURRENT_LIST_DIR}/cmake/Findassimp.cmake"
+  DESTINATION lib/cmake/${PROJECT_NAME})
 
 # ADD Examples
 add_subdirectory(examples)

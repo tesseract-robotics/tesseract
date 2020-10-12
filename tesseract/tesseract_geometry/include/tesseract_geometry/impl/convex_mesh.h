@@ -38,7 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
-class TESSERACT_GEOMETRY_PUBLIC ConvexMesh : public Geometry
+class ConvexMesh : public Geometry
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

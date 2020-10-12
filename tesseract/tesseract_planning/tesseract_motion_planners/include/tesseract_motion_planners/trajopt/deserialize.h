@@ -31,38 +31,28 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
-#include <tesseract_motion_planners/trajopt/visibility_control.h>
 
 namespace tesseract_planning
 {
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC TrajOptDefaultPlanProfile
-trajOptPlanParser(const tinyxml2::XMLElement& xml_element);
+TrajOptDefaultPlanProfile trajOptPlanParser(const tinyxml2::XMLElement& xml_element);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC TrajOptDefaultPlanProfile
-trajOptPlanFromXMLElement(const tinyxml2::XMLElement* profile_xml);
+TrajOptDefaultPlanProfile trajOptPlanFromXMLElement(const tinyxml2::XMLElement* profile_xml);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC TrajOptDefaultPlanProfile
-trajOptPlanFromXMLDocument(const tinyxml2::XMLDocument& xml_doc);
+TrajOptDefaultPlanProfile trajOptPlanFromXMLDocument(const tinyxml2::XMLDocument& xml_doc);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC TrajOptDefaultPlanProfile trajOptPlanFromXMLFile(const std::string& file_path);
+TrajOptDefaultPlanProfile trajOptPlanFromXMLFile(const std::string& file_path);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC TrajOptDefaultPlanProfile
-trajOptPlanFromXMLString(const std::string& xml_string);
+TrajOptDefaultPlanProfile trajOptPlanFromXMLString(const std::string& xml_string);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC TrajOptDefaultCompositeProfile
-trajOptCompositeParser(const tinyxml2::XMLElement& xml_element);
+TrajOptDefaultCompositeProfile trajOptCompositeParser(const tinyxml2::XMLElement& xml_element);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC TrajOptDefaultCompositeProfile
-trajOptCompositeFromXMLElement(const tinyxml2::XMLElement* profile_xml);
+TrajOptDefaultCompositeProfile trajOptCompositeFromXMLElement(const tinyxml2::XMLElement* profile_xml);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC TrajOptDefaultCompositeProfile
-trajOptCompositeFromXMLDocument(const tinyxml2::XMLDocument& xml_doc);
+TrajOptDefaultCompositeProfile trajOptCompositeFromXMLDocument(const tinyxml2::XMLDocument& xml_doc);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC TrajOptDefaultCompositeProfile
-trajOptCompositeFromXMLFile(const std::string& file_path);
+TrajOptDefaultCompositeProfile trajOptCompositeFromXMLFile(const std::string& file_path);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC TrajOptDefaultCompositeProfile
-trajOptCompositeFromXMLString(const std::string& xml_string);
+TrajOptDefaultCompositeProfile trajOptCompositeFromXMLString(const std::string& xml_string);
 
 }  // namespace tesseract_planning
 
