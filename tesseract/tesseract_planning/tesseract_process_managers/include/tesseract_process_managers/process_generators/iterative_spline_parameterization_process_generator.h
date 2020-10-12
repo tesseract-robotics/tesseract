@@ -33,11 +33,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_generator.h>
 #include <tesseract_time_parameterization/iterative_spline_parameterization.h>
-#include <tesseract_process_managers/visibility_control.h>
 
 namespace tesseract_planning
 {
-struct TESSERACT_PROCESS_MANAGERS_PUBLIC IterativeSplineParameterizationProfile
+struct IterativeSplineParameterizationProfile
 {
   using Ptr = std::shared_ptr<IterativeSplineParameterizationProfile>;
   using ConstPtr = std::shared_ptr<const IterativeSplineParameterizationProfile>;
@@ -54,7 +53,7 @@ struct TESSERACT_PROCESS_MANAGERS_PUBLIC IterativeSplineParameterizationProfile
 using IterativeSplineParameterizationProfileMap =
     std::unordered_map<std::string, IterativeSplineParameterizationProfile::Ptr>;
 
-class TESSERACT_PROCESS_MANAGERS_PUBLIC IterativeSplineParameterizationProcessGenerator : public ProcessGenerator
+class IterativeSplineParameterizationProcessGenerator : public ProcessGenerator
 {
 public:
   using UPtr = std::unique_ptr<IterativeSplineParameterizationProcessGenerator>;

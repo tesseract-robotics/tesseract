@@ -215,7 +215,8 @@ bool RasterWAADProcessManager::init(ProcessInput input)
   if (debug_)
   {
     std::ofstream out_data;
-    out_data.open("/tmp/raster_waad_process_manager-" + tesseract_common::getTimestampString() + ".dot");
+    out_data.open(tesseract_common::getTempPath() + "raster_waad_process_manager-" +
+                  tesseract_common::getTimestampString() + ".dot");
     taskflow_.dump(out_data);
     out_data.close();
   }
@@ -248,7 +249,8 @@ bool RasterWAADProcessManager::execute()
   if (profile_observer != nullptr)
   {
     std::ofstream out_data;
-    out_data.open("/tmp/raster_waad_process_manager-" + tesseract_common::getTimestampString() + ".json");
+    out_data.open(tesseract_common::getTempPath() + "raster_waad_process_manager-" +
+                  tesseract_common::getTimestampString() + ".json");
     profile_observer->dump(out_data);
     out_data.close();
     executor_.remove_observer(profile_observer);

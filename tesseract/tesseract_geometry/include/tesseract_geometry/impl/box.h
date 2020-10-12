@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_geometry
 {
-class TESSERACT_GEOMETRY_PUBLIC Box : public Geometry
+class Box : public Geometry
 {
 public:
   using Ptr = std::shared_ptr<Box>;

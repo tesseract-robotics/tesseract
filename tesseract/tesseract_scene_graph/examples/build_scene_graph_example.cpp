@@ -1,6 +1,11 @@
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
-#include <tesseract_scene_graph/graph.h>
 #include <iostream>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_scene_graph/graph.h>
+#include <tesseract_common/utils.h>
 
 using namespace tesseract_scene_graph;
 
@@ -86,7 +91,7 @@ int main(int /*argc*/, char** /*argv*/)
     CONSOLE_BRIDGE_logInform(child_link.c_str());
 
   // Save Graph
-  g.saveDOT("/tmp/graph_acyclic_tree_example.dot");
+  g.saveDOT(tesseract_common::getTempPath() + "graph_acyclic_tree_example.dot");
 
   // Test if the graph is Acyclic
   bool is_acyclic = g.isAcyclic();
@@ -116,7 +121,7 @@ int main(int /*argc*/, char** /*argv*/)
   g.addJoint(std::move(joint_5));
 
   // Save new graph
-  g.saveDOT("/tmp/graph_acyclic_not_tree_example.dot");
+  g.saveDOT(tesseract_common::getTempPath() + "graph_acyclic_not_tree_example.dot");
 
   // Test again if the graph is Acyclic
   is_acyclic = g.isAcyclic();

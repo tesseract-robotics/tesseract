@@ -42,7 +42,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract
 {
-Tesseract::Tesseract() : init_info_(new TesseractInitInfo()) { clear(); }
+Tesseract::Tesseract() { clear(); }
 
 bool Tesseract::isInitialized() const { return initialized_; }
 
@@ -51,6 +51,7 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
   if (!scene_graph)
     return false;
   clear();
+  init_info_ = std::make_shared<TesseractInitInfo>();
   init_info_->type = TesseractInitType::SCENE_GRAPH;
   init_info_->scene_graph = scene_graph->clone();
 
@@ -84,6 +85,7 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph,
   if (!scene_graph || !srdf_model)
     return false;
   clear();
+  init_info_ = std::make_shared<TesseractInitInfo>();
   init_info_->type = TesseractInitType::SCENE_GRAPH_SRDF_MODEL;
   init_info_->scene_graph = scene_graph->clone();
   init_info_->srdf_model = std::make_shared<tesseract_scene_graph::SRDFModel>(*srdf_model);
@@ -112,6 +114,7 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph,
 bool Tesseract::init(const std::string& urdf_string, const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   clear();
+  init_info_ = std::make_shared<TesseractInitInfo>();
   init_info_->type = TesseractInitType::URDF_STRING;
   init_info_->urdf_string = urdf_string;
   init_info_->resource_locator = locator;
@@ -153,6 +156,7 @@ bool Tesseract::init(const std::string& urdf_string,
                      const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   clear();
+  init_info_ = std::make_shared<TesseractInitInfo>();
   init_info_->type = TesseractInitType::URDF_STRING_SRDF_STRING;
   init_info_->urdf_string = urdf_string;
   init_info_->srdf_string = srdf_string;
@@ -202,6 +206,7 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
                      const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   clear();
+  init_info_ = std::make_shared<TesseractInitInfo>();
   init_info_->type = TesseractInitType::URDF_PATH;
   init_info_->urdf_path = urdf_path;
   init_info_->resource_locator = locator;
@@ -243,6 +248,7 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
                      const tesseract_scene_graph::ResourceLocator::Ptr& locator)
 {
   clear();
+  init_info_ = std::make_shared<TesseractInitInfo>();
   init_info_->type = TesseractInitType::URDF_PATH_SRDF_PATH;
   init_info_->urdf_path = urdf_path;
   init_info_->srdf_path = srdf_path;
@@ -291,6 +297,7 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
 bool Tesseract::init(const tesseract_environment::Environment& env, const ManipulatorManager& manipulator_manager)
 {
   clear();
+  init_info_ = std::make_shared<TesseractInitInfo>();
   init_info_->type = TesseractInitType::ENVIRONMENT_MANIPULATOR_MANAGER;
   init_info_->environment = env.clone();
   init_info_->manipulator_manager = manipulator_manager.clone(init_info_->environment);
@@ -393,6 +400,8 @@ void Tesseract::clear()
   initialized_ = false;
   environment_ = nullptr;
   manipulator_manager_ = nullptr;
+  init_info_ = nullptr;
+  find_tcp_cb_.clear();
 }
 
 Eigen::Isometry3d Tesseract::findTCP(const tesseract_planning::ManipulatorInfo& manip_info) const

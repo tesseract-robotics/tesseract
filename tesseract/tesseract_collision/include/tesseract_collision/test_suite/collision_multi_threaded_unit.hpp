@@ -73,9 +73,9 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
   EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.1, 1e-5);
   checker.setCollisionObjectsTransform(location);
 
-  unsigned num_threads = 4;
-  std::vector<ContactResultVector> result_vector(num_threads);
-  std::vector<DiscreteContactManager::Ptr> contact_manager(num_threads);
+  long num_threads = 4;
+  std::vector<ContactResultVector> result_vector(static_cast<std::size_t>(num_threads));
+  std::vector<DiscreteContactManager::Ptr> contact_manager(static_cast<std::size_t>(num_threads));
   contact_manager[0] = checker.clone();
   contact_manager[1] = checker.clone();
   contact_manager[2] = checker.clone();
@@ -84,7 +84,7 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
   auto start_time = std::chrono::high_resolution_clock::now();
 
 #pragma omp parallel for num_threads(num_threads) shared(location)
-  for (unsigned i = 0; i < num_threads; ++i)  // NOLINT
+  for (long i = 0; i < num_threads; ++i)  // NOLINT
   {
     const int tn = omp_get_thread_num();
     CONSOLE_BRIDGE_logDebug("Thread (ID: %i): %i of %i", tn, i, num_threads);
@@ -129,9 +129,9 @@ inline void runTest(DiscreteContactManager& checker, bool use_convex_mesh = fals
 
   CONSOLE_BRIDGE_logInform("DT: %f ms", std::chrono::duration<double, std::milli>(end_time - start_time).count());
 
-  for (unsigned i = 0; i < num_threads; ++i)
+  for (long i = 0; i < num_threads; ++i)
   {
-    EXPECT_TRUE(result_vector[i].size() == 2700);
+    EXPECT_TRUE(result_vector[static_cast<std::size_t>(i)].size() == 2700);
   }
 }
 }  // namespace test_suite

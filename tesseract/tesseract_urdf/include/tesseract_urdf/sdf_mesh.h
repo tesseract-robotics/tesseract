@@ -40,11 +40,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_geometry/mesh_parser.h>
-#include <tesseract_urdf/visibility_control.h>
 
 namespace tesseract_urdf
 {
-class TESSERACT_URDF_LOCAL SDFMeshStatusCategory : public tesseract_common::StatusCategory
+class SDFMeshStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   SDFMeshStatusCategory() : name_("SDFMeshStatusCategory") {}

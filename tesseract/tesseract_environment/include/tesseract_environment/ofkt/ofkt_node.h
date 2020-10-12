@@ -40,7 +40,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/joint.h>
-#include <tesseract_environment/ofkt/visibility_control.h>
 
 namespace tesseract_environment
 {
@@ -53,7 +52,7 @@ namespace tesseract_environment
  *   - World Transformation: W = W(parent) * L
  *
  */
-class TESSERACT_ENVIRONMENT_OFKT_LOCAL OFKTNode
+class OFKTNode
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

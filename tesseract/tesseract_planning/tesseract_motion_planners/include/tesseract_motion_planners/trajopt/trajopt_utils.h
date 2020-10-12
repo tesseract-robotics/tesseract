@@ -33,42 +33,37 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/cartesian_waypoint.h>
 #include <tesseract_command_language/joint_waypoint.h>
-#include <tesseract_motion_planners/trajopt/visibility_control.h>
 
 namespace tesseract_planning
 {
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC trajopt::TermInfo::Ptr
-createCartesianWaypointTermInfo(const Eigen::Isometry3d& c_wp,
-                                int index,
-                                std::string working_frame,
-                                Eigen::Isometry3d tcp,
-                                const Eigen::VectorXd& coeffs,
-                                std::string link,
-                                trajopt::TermType type);
+trajopt::TermInfo::Ptr createCartesianWaypointTermInfo(const Eigen::Isometry3d& c_wp,
+                                                       int index,
+                                                       std::string working_frame,
+                                                       Eigen::Isometry3d tcp,
+                                                       const Eigen::VectorXd& coeffs,
+                                                       std::string link,
+                                                       trajopt::TermType type);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC trajopt::TermInfo::Ptr
-createDynamicCartesianWaypointTermInfo(const Eigen::Isometry3d& c_wp,
-                                       int index,
-                                       std::string working_frame,
-                                       const Eigen::Isometry3d& tcp,
-                                       const Eigen::VectorXd& coeffs,
-                                       const std::string& link,
-                                       trajopt::TermType type);
+trajopt::TermInfo::Ptr createDynamicCartesianWaypointTermInfo(const Eigen::Isometry3d& c_wp,
+                                                              int index,
+                                                              std::string working_frame,
+                                                              const Eigen::Isometry3d& tcp,
+                                                              const Eigen::VectorXd& coeffs,
+                                                              const std::string& link,
+                                                              trajopt::TermType type);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC trajopt::TermInfo::Ptr
-createNearJointStateTermInfo(const Eigen::VectorXd& target,
-                             const std::vector<std::string>& joint_names,
-                             int index,
-                             const Eigen::VectorXd& coeffs,
-                             trajopt::TermType type);
+trajopt::TermInfo::Ptr createNearJointStateTermInfo(const Eigen::VectorXd& target,
+                                                    const std::vector<std::string>& joint_names,
+                                                    int index,
+                                                    const Eigen::VectorXd& coeffs,
+                                                    trajopt::TermType type);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC trajopt::TermInfo::Ptr
-createJointWaypointTermInfo(const Eigen::VectorXd& j_wp,
-                            int index,
-                            const Eigen::VectorXd& coeffs,
-                            trajopt::TermType type);
+trajopt::TermInfo::Ptr createJointWaypointTermInfo(const Eigen::VectorXd& j_wp,
+                                                   int index,
+                                                   const Eigen::VectorXd& coeffs,
+                                                   trajopt::TermType type);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC trajopt::TermInfo::Ptr createCollisionTermInfo(
+trajopt::TermInfo::Ptr createCollisionTermInfo(
     int start_index,
     int end_index,
     double collision_safety_margin,
@@ -80,58 +75,50 @@ TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC trajopt::TermInfo::Ptr createCollisionT
     double longest_valid_segment_length = 0.5,
     trajopt::TermType type = trajopt::TermType::TT_COST);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC trajopt::TermInfo::Ptr
-createSmoothVelocityTermInfo(int start_index,
-                             int end_index,
-                             int n_joints,
-                             double coeff = 5.0,
-                             trajopt::TermType type = trajopt::TermType::TT_COST);
+trajopt::TermInfo::Ptr createSmoothVelocityTermInfo(int start_index,
+                                                    int end_index,
+                                                    int n_joints,
+                                                    double coeff = 5.0,
+                                                    trajopt::TermType type = trajopt::TermType::TT_COST);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC trajopt::TermInfo::Ptr
-createSmoothVelocityTermInfo(int start_index,
-                             int end_index,
-                             const Eigen::Ref<const Eigen::VectorXd>& coeff,
-                             trajopt::TermType type = trajopt::TermType::TT_COST);
+trajopt::TermInfo::Ptr createSmoothVelocityTermInfo(int start_index,
+                                                    int end_index,
+                                                    const Eigen::Ref<const Eigen::VectorXd>& coeff,
+                                                    trajopt::TermType type = trajopt::TermType::TT_COST);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC trajopt::TermInfo::Ptr
-createSmoothAccelerationTermInfo(int start_index,
-                                 int end_index,
-                                 int n_joints,
-                                 double coeff = 1.0,
-                                 trajopt::TermType type = trajopt::TermType::TT_COST);
+trajopt::TermInfo::Ptr createSmoothAccelerationTermInfo(int start_index,
+                                                        int end_index,
+                                                        int n_joints,
+                                                        double coeff = 1.0,
+                                                        trajopt::TermType type = trajopt::TermType::TT_COST);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC trajopt::TermInfo::Ptr
-createSmoothAccelerationTermInfo(int start_index,
-                                 int end_index,
-                                 const Eigen::Ref<const Eigen::VectorXd>& coeff,
-                                 trajopt::TermType type = trajopt::TermType::TT_COST);
+trajopt::TermInfo::Ptr createSmoothAccelerationTermInfo(int start_index,
+                                                        int end_index,
+                                                        const Eigen::Ref<const Eigen::VectorXd>& coeff,
+                                                        trajopt::TermType type = trajopt::TermType::TT_COST);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC trajopt::TermInfo::Ptr
-createSmoothJerkTermInfo(int start_index,
-                         int end_index,
-                         int n_joints,
-                         double coeff = 1.0,
-                         trajopt::TermType type = trajopt::TermType::TT_COST);
+trajopt::TermInfo::Ptr createSmoothJerkTermInfo(int start_index,
+                                                int end_index,
+                                                int n_joints,
+                                                double coeff = 1.0,
+                                                trajopt::TermType type = trajopt::TermType::TT_COST);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC trajopt::TermInfo::Ptr
-createSmoothJerkTermInfo(int start_index,
-                         int end_index,
-                         const Eigen::Ref<const Eigen::VectorXd>& coeff,
-                         trajopt::TermType type = trajopt::TermType::TT_COST);
+trajopt::TermInfo::Ptr createSmoothJerkTermInfo(int start_index,
+                                                int end_index,
+                                                const Eigen::Ref<const Eigen::VectorXd>& coeff,
+                                                trajopt::TermType type = trajopt::TermType::TT_COST);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC trajopt::TermInfo::Ptr
-createUserDefinedTermInfo(int start_index,
-                          int end_index,
-                          sco::VectorOfVector::func error_function,
-                          sco::MatrixOfVector::func jacobian_function,
-                          trajopt::TermType type);
+trajopt::TermInfo::Ptr createUserDefinedTermInfo(int start_index,
+                                                 int end_index,
+                                                 sco::VectorOfVector::func error_function,
+                                                 sco::MatrixOfVector::func jacobian_function,
+                                                 trajopt::TermType type);
 
-TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC trajopt::TermInfo::Ptr
-createAvoidSingularityTermInfo(int start_index,
-                               int end_index,
-                               const std::string& link,
-                               double coeff = 5.0,
-                               trajopt::TermType type = trajopt::TermType::TT_COST);
+trajopt::TermInfo::Ptr createAvoidSingularityTermInfo(int start_index,
+                                                      int end_index,
+                                                      const std::string& link,
+                                                      double coeff = 5.0,
+                                                      trajopt::TermType type = trajopt::TermType::TT_COST);
 }  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_UTILS_H

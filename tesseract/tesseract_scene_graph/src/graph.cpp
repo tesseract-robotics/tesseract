@@ -63,6 +63,14 @@ SceneGraph::Ptr SceneGraph::clone() const
   return cloned_graph;
 }
 
+void SceneGraph::clear()
+{
+  Graph::clear();
+  link_map_.clear();
+  joint_map_.clear();
+  acm_->clearAllowedCollisions();
+}
+
 void SceneGraph::setName(const std::string& name)
 {
   boost::set_property(static_cast<Graph&>(*this), boost::graph_name, name);

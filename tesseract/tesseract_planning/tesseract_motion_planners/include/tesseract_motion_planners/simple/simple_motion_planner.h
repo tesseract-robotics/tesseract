@@ -35,7 +35,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/planner.h>
 #include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
-#include <tesseract_motion_planners/simple/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -46,7 +45,7 @@ class SimpleMotionPlannerStatusCategory;
  * of the PlanInstructions and then calls the appropriate function from the profile. These functions do not depend on
  * the seed, so this may be used to initialize the seed appropriately using e.g. linear interpolation.
  */
-class TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC SimpleMotionPlanner : public MotionPlanner
+class SimpleMotionPlanner : public MotionPlanner
 {
 public:
   using Ptr = std::shared_ptr<SimpleMotionPlanner>;
@@ -108,8 +107,7 @@ protected:
                                                    const PlannerRequest& request) const;
 };
 
-class TESSERACT_MOTION_PLANNERS_SIMPLE_PUBLIC SimpleMotionPlannerStatusCategory
-  : public tesseract_common::StatusCategory
+class SimpleMotionPlannerStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   SimpleMotionPlannerStatusCategory(std::string name);

@@ -41,6 +41,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/descartes/serialize.h>
 #include <tesseract_motion_planners/descartes/deserialize.h>
 
+#include <tesseract_common/utils.h>
+
 using namespace tesseract_planning;
 
 TrajOptDefaultCompositeProfile getTrajOptCompositeProfile()
@@ -126,15 +128,17 @@ TEST(TesseractMotionPlannersTrajoptSerializeUnit, SerializeTrajoptDefaultComposi
 {
   // Write program to file
   TrajOptDefaultCompositeProfile comp_profile = getTrajOptCompositeProfile();
-  EXPECT_TRUE(toXMLFile(comp_profile, "/tmp/trajopt_default_composite_example_input.xml"));
+  EXPECT_TRUE(toXMLFile(comp_profile, tesseract_common::getTempPath() + "trajopt_default_composite_example_input.xml"));
 
   // Import file
-  TrajOptDefaultCompositeProfile imported_comp_profile = trajOptCompositeFromXMLFile("/tmp/"
-                                                                                     "trajopt_default_composite_"
-                                                                                     "example_input.xml");
+  TrajOptDefaultCompositeProfile imported_comp_profile =
+      trajOptCompositeFromXMLFile(tesseract_common::getTempPath() + ""
+                                                                    "trajopt_default_composite_"
+                                                                    "example_input.xml");
 
   // Re-write file and compare changed from default term
-  EXPECT_TRUE(toXMLFile(imported_comp_profile, "/tmp/trajopt_default_composite_example_input2.xml"));
+  EXPECT_TRUE(toXMLFile(imported_comp_profile,
+                        tesseract_common::getTempPath() + "trajopt_default_composite_example_input2.xml"));
   EXPECT_TRUE(comp_profile.smooth_velocities == imported_comp_profile.smooth_velocities);
 }
 
@@ -142,14 +146,20 @@ TEST(TesseractMotionPlannersTrajoptSerializeUnit, SerializeTrajoptDefaultPlanToX
 {
   // Write program to file
   TrajOptDefaultPlanProfile plan_profile = getTrajOptPlanProfile();
-  EXPECT_TRUE(toXMLFile(plan_profile, "/tmp/trajopt_default_plan_example_input.xml"));
+  EXPECT_TRUE(toXMLFile(plan_profile, tesseract_common::getTempPath() + "trajopt_default_plan_example_input.xml"));
 
   // Import file
-  TrajOptDefaultPlanProfile imported_plan_profile = trajOptPlanFromXMLFile("/tmp/"
-                                                                           "trajopt_default_plan_example_input.xml");
+  TrajOptDefaultPlanProfile imported_plan_profile = trajOptPlanFromXMLFile(tesseract_common::getTempPath() + ""
+                                                                                                             "trajopt_"
+                                                                                                             "default_"
+                                                                                                             "plan_"
+                                                                                                             "example_"
+                                                                                                             "input."
+                                                                                                             "xml");
 
   // Re-write file and compare changed from default term
-  EXPECT_TRUE(toXMLFile(imported_plan_profile, "/tmp/trajopt_default_plan_example_input2.xml"));
+  EXPECT_TRUE(
+      toXMLFile(imported_plan_profile, tesseract_common::getTempPath() + "trajopt_default_plan_example_input2.xml"));
   EXPECT_TRUE(plan_profile.term_type == imported_plan_profile.term_type);
 }
 
@@ -157,13 +167,16 @@ TEST(TesseractMotionPlannersOMPLSerializeUnit, SerializeOMPLDefaultPlanToXml)  /
 {
   // Write program to file
   OMPLDefaultPlanProfile plan_profile = getOMPLPlanProfile();
-  EXPECT_TRUE(toXMLFile(plan_profile, "/tmp/ompl_default_plan_example_input.xml"));
+  EXPECT_TRUE(toXMLFile(plan_profile, tesseract_common::getTempPath() + "ompl_default_plan_example_input.xml"));
 
   // Import file
-  OMPLDefaultPlanProfile imported_plan_profile = omplPlanFromXMLFile("/tmp/ompl_default_plan_example_input.xml");
+  OMPLDefaultPlanProfile imported_plan_profile = omplPlanFromXMLFile(tesseract_common::getTempPath() + "ompl_default_"
+                                                                                                       "plan_example_"
+                                                                                                       "input.xml");
 
   // Re-write file and compare changed from default term
-  EXPECT_TRUE(toXMLFile(imported_plan_profile, "/tmp/ompl_default_plan_example_input2.xml"));
+  EXPECT_TRUE(
+      toXMLFile(imported_plan_profile, tesseract_common::getTempPath() + "ompl_default_plan_example_input2.xml"));
   EXPECT_TRUE(plan_profile.simplify == imported_plan_profile.simplify);
 }
 
@@ -171,15 +184,26 @@ TEST(TesseractMotionPlannersDescartesSerializeUnit, SerializeDescartesDefaultPla
 {
   // Write program to file
   DescartesDefaultPlanProfileD plan_profile = genDescartesPlanProfile();
-  EXPECT_TRUE(toXMLFile(plan_profile, "/tmp/descartes_default_plan_example_input.xml"));
+  EXPECT_TRUE(toXMLFile(plan_profile, tesseract_common::getTempPath() + "descartes_default_plan_example_input.xml"));
 
   // Import file
-  DescartesDefaultPlanProfileD imported_plan_profile = descartesPlanFromXMLFile("/tmp/"
-                                                                                "descartes_default_plan_example_input."
-                                                                                "xml");
+  DescartesDefaultPlanProfileD imported_plan_profile = descartesPlanFromXMLFile(tesseract_common::getTempPath() + ""
+                                                                                                                  "desc"
+                                                                                                                  "arte"
+                                                                                                                  "s_"
+                                                                                                                  "defa"
+                                                                                                                  "ult_"
+                                                                                                                  "plan"
+                                                                                                                  "_exa"
+                                                                                                                  "mple"
+                                                                                                                  "_inp"
+                                                                                                                  "ut."
+                                                                                                                  "xm"
+                                                                                                                  "l");
 
   // Re-write file and compare changed from default term
-  EXPECT_TRUE(toXMLFile(imported_plan_profile, "/tmp/descartes_default_plan_example_input2.xml"));
+  EXPECT_TRUE(
+      toXMLFile(imported_plan_profile, tesseract_common::getTempPath() + "descartes_default_plan_example_input2.xml"));
   EXPECT_TRUE(plan_profile.enable_edge_collision == imported_plan_profile.enable_edge_collision);
 }
 

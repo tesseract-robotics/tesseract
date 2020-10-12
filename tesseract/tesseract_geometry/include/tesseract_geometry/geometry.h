@@ -32,8 +32,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_geometry/visibility_control.h>
-
 namespace tesseract_geometry
 {
 enum GeometryType
@@ -53,7 +51,7 @@ static const std::vector<std::string> GeometryTypeStrings = {
   "SPHERE", "CYLINDER", "CAPSULE", "CONE", "BOX", "PLANE", "MESH", "CONVEX_MESH", "SDF_MESH", "OCTREE"
 };
 
-class TESSERACT_GEOMETRY_PUBLIC Geometry
+class Geometry
 {
 public:
   using Ptr = std::shared_ptr<Geometry>;

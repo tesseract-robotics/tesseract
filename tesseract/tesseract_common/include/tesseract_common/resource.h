@@ -34,21 +34,24 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <sstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_common/visibility_control.h>
-
 namespace tesseract_common
 {
 /**
  * @brief Represents resource data available from a file or url
  *
  */
-class TESSERACT_COMMON_PUBLIC Resource
+class Resource
 {
 public:
   using Ptr = std::shared_ptr<Resource>;
   using ConstPtr = std::shared_ptr<const Resource>;
 
+  Resource() = default;
   virtual ~Resource() = default;
+  Resource(const Resource&) = delete;
+  Resource& operator=(const Resource&) = delete;
+  Resource(Resource&&) = delete;
+  Resource& operator=(Resource&&) = delete;
 
   /**
    * @brief Returns true if the located resource is a local file
@@ -86,7 +89,7 @@ public:
   virtual std::shared_ptr<std::istream> getResourceContentStream() = 0;
 };
 
-class TESSERACT_COMMON_PUBLIC BytesResource : public tesseract_common::Resource
+class BytesResource : public tesseract_common::Resource
 {
 public:
   BytesResource(std::string url, std::vector<uint8_t> bytes)
@@ -100,11 +103,17 @@ public:
     url_ = std::move(url);
     bytes_ = std::vector<uint8_t>(bytes, bytes + bytes_len);
   }
-  virtual bool isFile() override { return false; }
-  virtual std::string getUrl() override { return url_; }
-  virtual std::string getFilePath() override { return ""; }
-  virtual std::vector<uint8_t> getResourceContents() override { return bytes_; }
-  virtual std::shared_ptr<std::istream> getResourceContentStream() override
+  ~BytesResource() override = default;
+  BytesResource(const BytesResource&) = delete;
+  BytesResource& operator=(const BytesResource&) = delete;
+  BytesResource(BytesResource&&) = delete;
+  BytesResource& operator=(BytesResource&&) = delete;
+
+  bool isFile() override { return false; }
+  std::string getUrl() override { return url_; }
+  std::string getFilePath() override { return ""; }
+  std::vector<uint8_t> getResourceContents() override { return bytes_; }
+  std::shared_ptr<std::istream> getResourceContentStream() override
   {
     std::shared_ptr<std::stringstream> o = std::make_shared<std::stringstream>();
     o->write((const char*)&bytes_.at(0), bytes_.size());

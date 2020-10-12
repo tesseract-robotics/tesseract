@@ -35,7 +35,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 #include <tesseract_kinematics/core/forward_kinematics.h>
-#include <tesseract_kinematics/core/visibility_control.h>
 
 namespace tesseract_kinematics
 {
@@ -45,7 +44,7 @@ namespace tesseract_kinematics
  * In this kinematic arrangement the base link is the tip link of the external positioner and the tip link is the
  * tip link of the manipulator. Therefore all provided target poses are expected to the tip link of the positioner.
  */
-class TESSERACT_KINEMATICS_CORE_PUBLIC RobotWithExternalPositionerInvKin : public InverseKinematics
+class RobotWithExternalPositionerInvKin : public InverseKinematics
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

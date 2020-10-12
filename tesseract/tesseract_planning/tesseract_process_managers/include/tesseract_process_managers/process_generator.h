@@ -33,7 +33,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_input.h>
-#include <tesseract_process_managers/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -43,7 +42,7 @@ namespace tesseract_planning
  *
  * Only unique pointers should be used because of the ability to abort the process.
  */
-class TESSERACT_PROCESS_MANAGERS_PUBLIC ProcessGenerator
+class ProcessGenerator
 {
 public:
   using UPtr = std::unique_ptr<ProcessGenerator>;

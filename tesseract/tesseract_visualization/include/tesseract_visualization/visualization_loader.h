@@ -33,7 +33,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_visualization/visualization.h>
-#include <tesseract_visualization/visibility_control.h>
 
 namespace tesseract_visualization
 {
@@ -41,7 +40,7 @@ namespace tesseract_visualization
  * @brief This is used to dynamically load tesseract visualizer.
  * This class must remain around for the life of the loaded visualization class.
  */
-class TESSERACT_VISUALIZATION_PUBLIC VisualizationLoader
+class VisualizationLoader
 {
 public:
   /** @brief This will attempt to load the tesseract_ignition visualizer provided by snap package */

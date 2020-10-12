@@ -35,7 +35,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/manipulator_info.h>
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract/tesseract.h>
-#include <tesseract_process_managers/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -45,7 +44,7 @@ namespace tesseract_planning
  * Note that it does not have ownership of any of its members (except the pointer). This means that if a ProcessInput
  * spawns a child that is a subset, it does not have to remain in scope as the references will still be valid
  */
-struct TESSERACT_PROCESS_MANAGERS_PUBLIC ProcessInput
+struct ProcessInput
 {
   using Ptr = std::shared_ptr<ProcessInput>;
   using ConstPtr = std::shared_ptr<const ProcessInput>;
