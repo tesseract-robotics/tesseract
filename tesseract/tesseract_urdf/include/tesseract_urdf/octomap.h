@@ -37,7 +37,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_urdf/octree.h>
-#include <tesseract_urdf/visibility_control.h>
 
 #ifdef TESSERACT_PARSE_POINT_CLOUDS
 #include <tesseract_urdf/point_cloud.h>
@@ -45,7 +44,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_urdf
 {
-class TESSERACT_URDF_LOCAL OctomapStatusCategory : public tesseract_common::StatusCategory
+class OctomapStatusCategory : public tesseract_common::StatusCategory
 {
 public:
   OctomapStatusCategory() : name_("OctomapStatusCategory") {}

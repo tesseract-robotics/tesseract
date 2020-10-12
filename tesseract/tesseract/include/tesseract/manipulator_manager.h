@@ -37,11 +37,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_kinematics/core/forward_kinematics_factory.h>
 #include <tesseract_kinematics/core/inverse_kinematics_factory.h>
-#include <tesseract/visibility_control.h>
 
 namespace tesseract
 {
-class TESSERACT_PUBLIC ManipulatorManager
+class ManipulatorManager
 {
 public:
   using Ptr = std::shared_ptr<ManipulatorManager>;

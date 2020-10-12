@@ -1,7 +1,12 @@
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <iostream>
 #include <console_bridge/console.h>
 #include <tesseract_scene_graph/graph.h>
+#include <tesseract_common/utils.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract_urdf/urdf_parser.h>
-#include <iostream>
 
 using namespace tesseract_scene_graph;
 using namespace tesseract_urdf;
@@ -60,5 +65,5 @@ int main(int /*argc*/, char** /*argv*/)
   CONSOLE_BRIDGE_logInform(toString(g->isAcyclic()).c_str());
 
   // Save graph
-  g->saveDOT("/tmp/tesseract_urdf_import.dot");
+  g->saveDOT(tesseract_common::getTempPath() + "tesseract_urdf_import.dot");
 }

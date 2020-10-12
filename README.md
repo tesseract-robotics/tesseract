@@ -1,7 +1,16 @@
 # Tesseract
 
-[![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/CI/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions?query=branch%3Amaster+)
 [![codecov](https://codecov.io/gh/ros-industrial-consortium/tesseract/branch/master/graph/badge.svg)](https://codecov.io/gh/ros-industrial-consortium/tesseract)
+
+Platform             | CI Status
+---------------------|:---------
+Linux (Focal)        | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Focal-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
+Linux (Bionic)       | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Bionic-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
+Linux (Xenial)       | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Xenial-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
+Windows              | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Windows-Noetic-Build/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
+Lint  (Clang-Format) | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/Clang-Format/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
+Lint  (CodeCov)      | [![Build Status](https://github.com/ros-industrial-consortium/tesseract/workflows/CodeCov/badge.svg)](https://github.com/ros-industrial-consortium/tesseract/actions)
+
 [![Github Issues](https://img.shields.io/github/issues/ros-industrial-consortium/tesseract.svg)](http://github.com/ros-industrial-consortium/tesseract/issues)
 
 [![license - apache 2.0](https://img.shields.io/:license-Apache%202.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -129,3 +138,11 @@ cd gh_pages
 sphinx-build . output
 ```
 Now open gh_pages/output/index.rst and remove *output* directory before commiting changes.
+
+## Debugging Windows Build
+
+- Search Directories CI
+  - dir /s /b c:\opt\ros\noetic\*assimp*
+- Location of ROS Windows Builds
+  - https://ros-win.visualstudio.com/ros-win/_build
+  - https://ros-win.visualstudio.com/ros-win/_build/results?buildId=8711&view=artifacts&type=publishedArtifacts

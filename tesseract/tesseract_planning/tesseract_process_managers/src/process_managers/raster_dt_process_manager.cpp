@@ -195,7 +195,8 @@ bool RasterDTProcessManager::init(ProcessInput input)
   if (debug_)
   {
     std::ofstream out_data;
-    out_data.open("/tmp/raster_dt_process_manager-" + tesseract_common::getTimestampString() + ".dot");
+    out_data.open(tesseract_common::getTempPath() + "raster_dt_process_manager-" +
+                  tesseract_common::getTimestampString() + ".dot");
     taskflow_.dump(out_data);
     out_data.close();
   }
@@ -231,7 +232,8 @@ bool RasterDTProcessManager::execute()
   if (profile_observer != nullptr)
   {
     std::ofstream out_data;
-    out_data.open("/tmp/raster_dt_process_manager-" + tesseract_common::getTimestampString() + ".json");
+    out_data.open(tesseract_common::getTempPath() + "raster_dt_process_manager-" +
+                  tesseract_common::getTimestampString() + ".json");
     profile_observer->dump(out_data);
     out_data.close();
     executor_.remove_observer(profile_observer);

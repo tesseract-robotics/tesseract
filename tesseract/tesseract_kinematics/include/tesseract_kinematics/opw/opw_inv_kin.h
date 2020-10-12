@@ -32,12 +32,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/inverse_kinematics.h>
-#include <tesseract_kinematics/opw/visibility_control.h>
 
 namespace tesseract_kinematics
 {
 /**@brief OPW Inverse Kinematics Implmentation. */
-class TESSERACT_KINEMATICS_OPW_PUBLIC OPWInvKin : public InverseKinematics
+class OPWInvKin : public InverseKinematics
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

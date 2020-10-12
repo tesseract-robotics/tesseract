@@ -32,14 +32,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/visibility_control.h>
-
 namespace tesseract_planning
 {
 /**
  * @brief This is currently simple debug observer which prints a message when each of the functions below are called.
  */
-class TESSERACT_PROCESS_MANAGERS_PUBLIC DebugObserver : public tf::ObserverInterface
+class DebugObserver : public tf::ObserverInterface
 {
 public:
   using Ptr = std::shared_ptr<DebugObserver>;

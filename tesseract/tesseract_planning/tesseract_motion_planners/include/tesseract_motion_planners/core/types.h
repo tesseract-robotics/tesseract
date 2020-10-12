@@ -30,7 +30,6 @@
 #include <tesseract_common/status_code.h>
 #include <tesseract_common/types.h>
 #include <tesseract_command_language/command_language.h>
-#include <tesseract_motion_planners/core/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -43,7 +42,7 @@ namespace tesseract_planning
  */
 using PlannerProfileRemapping = std::unordered_map<std::string, std::unordered_map<std::string, std::string>>;
 
-struct TESSERACT_MOTION_PLANNERS_CORE_PUBLIC PlannerRequest
+struct PlannerRequest
 {
   std::string name;                                    /**< @brief The name of the process manager to use */
   tesseract::Tesseract::ConstPtr tesseract;            /**< @brief Tesseract */
@@ -79,7 +78,7 @@ struct TESSERACT_MOTION_PLANNERS_CORE_PUBLIC PlannerRequest
   std::shared_ptr<void> data;
 };
 
-struct TESSERACT_MOTION_PLANNERS_CORE_PUBLIC PlannerResponse
+struct PlannerResponse
 {
   CompositeInstruction results;
   tesseract_common::StatusCode status;                                     /**< @brief The status information */

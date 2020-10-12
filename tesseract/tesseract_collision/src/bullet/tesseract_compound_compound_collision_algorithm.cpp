@@ -22,6 +22,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <LinearMath/btQuickprof.h>
 #include <BulletCollision/CollisionDispatch/btCollisionObject.h>
 #include <BulletCollision/CollisionShapes/btCompoundShape.h>
+#include <BulletCollision/CollisionShapes/btCollisionShape.h>
 #include <BulletCollision/BroadphaseCollision/btDbvt.h>
 #include <BulletCollision/NarrowPhaseCollision/btPersistentManifold.h>
 #include <LinearMath/btIDebugDraw.h>

@@ -34,14 +34,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
-#include <tesseract_motion_planners/trajopt/visibility_control.h>
 
 namespace tesseract_planning
 {
 /**
  * @brief Config settings for collision cost terms.
  */
-struct TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC CollisionCostConfig
+struct CollisionCostConfig
 {
   CollisionCostConfig() = default;
   CollisionCostConfig(const tinyxml2::XMLElement& xml_element);
@@ -73,7 +72,7 @@ struct TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC CollisionCostConfig
 /**
  * @brief Config settings for collision constraint terms.
  */
-struct TESSERACT_MOTION_PLANNERS_TRAJOPT_PUBLIC CollisionConstraintConfig
+struct CollisionConstraintConfig
 {
   CollisionConstraintConfig() = default;
   CollisionConstraintConfig(const tinyxml2::XMLElement& xml_element);

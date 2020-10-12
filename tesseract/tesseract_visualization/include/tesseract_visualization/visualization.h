@@ -36,7 +36,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/types.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract/tesseract.h>
-#include <tesseract_visualization/visibility_control.h>
 
 namespace tesseract_planning
 {
@@ -46,7 +45,7 @@ class Instruction;
 namespace tesseract_visualization
 {
 /** @brief The Vizualization class */
-class TESSERACT_VISUALIZATION_PUBLIC Visualization
+class Visualization
 {
 public:
   using Ptr = std::shared_ptr<Visualization>;

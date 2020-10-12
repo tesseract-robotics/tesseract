@@ -27,39 +27,45 @@
 #define TESSERACT_COMMON_MACROS_H
 
 // clang-format off
-
 #if defined(__GNUC__) || defined(__clang__)
+
 #define DEPRECATED(X) __attribute__((deprecated(X)))
-#elif defined(_MSC_VER)
-#define DEPRECATED(X) __declspec(deprecated(X))
-#else
-#pragma message("WARNING: You need to implement DEPRECATED for this compiler")
-#define DEPRECATED(X)
-#endif
 
 #if defined(__clang__)
-#define TESSERACT_COMMON_IGNORE_WARNINGS_PUSH				\
-  _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wall\"") \
-  _Pragma("GCC diagnostic ignored \"-Wint-to-pointer-cast\"")		\
-  _Pragma("GCC diagnostic ignored \"-Wunused-parameter\"")		\
-  _Pragma("GCC diagnostic ignored \"-Winconsistent-missing-override\"")	\
-  _Pragma("GCC diagnostic ignored \"-Wconversion\"")			\
-  _Pragma("GCC diagnostic ignored \"-Wfloat-conversion\"")		\
-  _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")
+#define TESSERACT_COMMON_IGNORE_WARNINGS_PUSH				                                                                   \
+  _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wall\"")                                           \
+     _Pragma("GCC diagnostic ignored \"-Wint-to-pointer-cast\"")		                                                   \
+         _Pragma("GCC diagnostic ignored \"-Wunused-parameter\"")		                                                   \
+             _Pragma("GCC diagnostic ignored \"-Winconsistent-missing-override\"")	                                   \
+                 _Pragma("GCC diagnostic ignored \"-Wconversion\"")			                                               \
+                     _Pragma("GCC diagnostic ignored \"-Wfloat-conversion\"")		                                       \
+                         _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")
 #else
-#define TESSERACT_COMMON_IGNORE_WARNINGS_PUSH				\
-  _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wall\"") \
-  _Pragma("GCC diagnostic ignored \"-Wint-to-pointer-cast\"")		\
-  _Pragma("GCC diagnostic ignored \"-Wunused-parameter\"")		\
-  _Pragma("GCC diagnostic ignored \"-Wsuggest-override\"")		\
-  _Pragma("GCC diagnostic ignored \"-Wconversion\"")			\
-  _Pragma("GCC diagnostic ignored \"-Wfloat-conversion\"")		\
-  _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")
+#define TESSERACT_COMMON_IGNORE_WARNINGS_PUSH                                                                          \
+  _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wall\"")                                           \
+      _Pragma("GCC diagnostic ignored \"-Wint-to-pointer-cast\"")                                                      \
+          _Pragma("GCC diagnostic ignored \"-Wunused-parameter\"")                                                     \
+              _Pragma("GCC diagnostic ignored \"-Wsuggest-override\"")                                                 \
+                  _Pragma("GCC diagnostic ignored \"-Wconversion\"")                                                   \
+                      _Pragma("GCC diagnostic ignored \"-Wfloat-conversion\"")                                         \
+                          _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")
 #endif
-  
+
 #define TESSERACT_COMMON_IGNORE_WARNINGS_POP _Pragma("GCC diagnostic pop")
+
+#elif defined(_MSC_VER)
+#define DEPRECATED(X) __declspec(deprecated(X))
+#define TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#define TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#else
+#pragma message("WARNING: You need to implement MACROS for this compiler")
+#define DEPRECATED(X)
+#define TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#define TESSERACT_COMMON_IGNORE_WARNINGS_POP
+#endif
 
 #define UNUSED(x) (void)(x)
 
 // clang-format on
+
 #endif  // TESSERACT_COMMON_MACROS_H

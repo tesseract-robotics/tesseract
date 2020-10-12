@@ -41,11 +41,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/continuous_contact_manager_factory.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_environment/core/state_solver.h>
-#include <tesseract_environment/core/visibility_control.h>
 
 namespace tesseract_environment
 {
-class TESSERACT_ENVIRONMENT_CORE_PUBLIC Environment
+class Environment
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

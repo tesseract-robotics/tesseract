@@ -31,9 +31,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <BulletCollision/BroadphaseCollision/btDbvt.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_collision/bullet/visibility_control.h>
-
-class btDispatcher;
 class btCollisionObject;
 class btCollisionShape;
 
@@ -54,8 +51,7 @@ namespace tesseract_collision_bullet
  * with the collision shape. I don't believe this will be an issue since all of the other callback in Bullet accept
  * both.
  */
-class TESSERACT_COLLISION_BULLET_LOCAL TesseractCompoundCollisionAlgorithm
-  : public btActivatingCollisionAlgorithm  // NOLINT
+class TesseractCompoundCollisionAlgorithm : public btActivatingCollisionAlgorithm  // NOLINT
 {
   btNodeStack stack2;
   btManifoldArray manifoldArray;

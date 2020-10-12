@@ -2,6 +2,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 #include <Eigen/Geometry>
+#include <tesseract_common/utils.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/octree.h>
@@ -25,7 +26,7 @@ TEST(TesseractURDFUnit, parse_octree)  // NOLINT
   //                                             -0.5f + static_cast<float>(y * delta),
   //                                             -0.5f + static_cast<float>(z * delta)));
 
-  //    pcl::io::savePCDFile("/tmp/box_pcd.pcd", full_cloud, true);
+  //    pcl::io::savePCDFile(tesseract_common::getTempPath() + "box_pcd.pcd", full_cloud, true);
   //  }
 
   {

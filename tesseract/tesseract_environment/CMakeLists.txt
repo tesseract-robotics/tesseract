@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_environment VERSION 0.1.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+if(WIN32)
+  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
 
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
@@ -22,7 +23,6 @@ tesseract_variables()
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core src/core/environment.cpp)
-target_process_export(${PROJECT_NAME}_core)
 target_link_libraries(${PROJECT_NAME}_core PUBLIC tesseract::tesseract_common tesseract::tesseract_collision_core tesseract::tesseract_scene_graph)
 target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_compile_definitions(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -36,7 +36,6 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_kdl src/kdl/kdl_state_solver.cpp)
-target_process_export(${PROJECT_NAME}_kdl)
 target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph orocos-kdl console_bridge)
 target_compile_options(${PROJECT_NAME}_kdl PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_compile_definitions(${PROJECT_NAME}_kdl PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -51,7 +50,6 @@ target_include_directories(${PROJECT_NAME}_kdl SYSTEM PUBLIC
     ${orocos_kdl_INCLUDE_DIRS}) # Orocos did not export target correctly
 
 add_library(${PROJECT_NAME}_ofkt src/ofkt/ofkt_state_solver.cpp src/ofkt/ofkt_nodes.cpp)
-target_process_export(${PROJECT_NAME}_ofkt)
 target_link_libraries(${PROJECT_NAME}_ofkt PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph console_bridge)
 target_compile_options(${PROJECT_NAME}_ofkt PRIVATE ${TESSERACT_COMPILE_OPTIONS})
 target_compile_definitions(${PROJECT_NAME}_ofkt PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})

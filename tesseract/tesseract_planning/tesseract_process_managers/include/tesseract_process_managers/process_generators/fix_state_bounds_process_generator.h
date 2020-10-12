@@ -33,11 +33,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_generator.h>
 #include <tesseract_time_parameterization/iterative_spline_parameterization.h>
-#include <tesseract_process_managers/visibility_control.h>
 
 namespace tesseract_planning
 {
-struct TESSERACT_PROCESS_MANAGERS_PUBLIC FixStateBoundsProfile
+struct FixStateBoundsProfile
 {
   using Ptr = std::shared_ptr<FixStateBoundsProfile>;
   using ConstPtr = std::shared_ptr<const FixStateBoundsProfile>;
@@ -64,7 +63,7 @@ using FixStateBoundsProfileMap = std::unordered_map<std::string, FixStateBoundsP
  * @brief This generator modifies the const input instructions in order to push waypoints that are outside of their
  * limits back within them.
  */
-class TESSERACT_PROCESS_MANAGERS_PUBLIC FixStateBoundsProcessGenerator : public ProcessGenerator
+class FixStateBoundsProcessGenerator : public ProcessGenerator
 {
 public:
   using UPtr = std::unique_ptr<FixStateBoundsProcessGenerator>;

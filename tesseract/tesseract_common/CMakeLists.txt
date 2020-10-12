@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_common VERSION 0.1.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+if(WIN32)
+  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
 
 include(cmake/tesseract_macros.cmake)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
+find_package(Boost COMPONENTS system filesystem program_options REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(TinyXML2 REQUIRED)
 find_package(cmake_common_scripts REQUIRED)
@@ -19,8 +21,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 tesseract_variables()
 
 add_library(${PROJECT_NAME} INTERFACE)
-target_process_export(${PROJECT_NAME} INTERFACE)
-target_link_libraries(${PROJECT_NAME} INTERFACE ${TinyXML2_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} INTERFACE ${TinyXML2_LIBRARIES} ${Boost_LIBRARIES})
 target_compile_options(${PROJECT_NAME} INTERFACE ${TESSERACT_COMPILE_OPTIONS})
 target_compile_definitions(${PROJECT_NAME} INTERFACE ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
@@ -30,6 +31,7 @@ target_include_directories(${PROJECT_NAME} INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE
+    ${Boost_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIRS}
     ${TinyXML2_INCLUDE_DIRS})
 

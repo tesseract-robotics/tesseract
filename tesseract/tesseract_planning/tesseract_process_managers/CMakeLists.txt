@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(tesseract_process_managers VERSION 0.1.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+if(WIN32)
+  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
 
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
@@ -46,7 +47,6 @@ add_library(${PROJECT_NAME}
     src/taskflows/trajopt_taskflow.cpp
     src/taskflows/cartesian_taskflow.cpp
     src/taskflows/freespace_taskflow.cpp)
-target_process_export(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} PUBLIC
     console_bridge
     Taskflow::Taskflow

@@ -7,6 +7,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 #include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_common/utils.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_environment/core/types.h>
@@ -137,7 +138,7 @@ void runAddandRemoveLinkTest()
               env->getCurrentState()->joint_transforms.end());
   EXPECT_TRUE(env->getCurrentState()->joints.find(joint_name1) == env->getCurrentState()->joints.end());
 
-  env->getSceneGraph()->saveDOT("/tmp/before_remove_link_unit.dot");
+  env->getSceneGraph()->saveDOT(tesseract_common::getTempPath() + "before_remove_link_unit.dot");
 
   env->removeLink(link_name1);
   link_names = env->getLinkNames();
@@ -157,7 +158,7 @@ void runAddandRemoveLinkTest()
               env->getCurrentState()->joint_transforms.end());
   EXPECT_TRUE(env->getCurrentState()->joints.find(joint_name1) == env->getCurrentState()->joints.end());
 
-  env->getSceneGraph()->saveDOT("/tmp/after_remove_link_unit.dot");
+  env->getSceneGraph()->saveDOT(tesseract_common::getTempPath() + "after_remove_link_unit.dot");
 
   // Test against double removing
   EXPECT_FALSE(env->removeLink(link_name1));
@@ -215,7 +216,7 @@ void runMoveLinkandJointTest()
               env->getCurrentState()->joint_transforms.end());
   EXPECT_TRUE(env->getCurrentState()->joints.find(joint_name2) == env->getCurrentState()->joints.end());
 
-  env->getSceneGraph()->saveDOT("/tmp/before_move_joint_unit.dot");
+  env->getSceneGraph()->saveDOT(tesseract_common::getTempPath() + "before_move_joint_unit.dot");
 
   env->moveJoint(joint_name1, "tool0");
   link_names = env->getLinkNames();
@@ -236,7 +237,7 @@ void runMoveLinkandJointTest()
               env->getCurrentState()->joint_transforms.end());
   EXPECT_TRUE(env->getCurrentState()->joints.find(joint_name2) == env->getCurrentState()->joints.end());
 
-  env->getSceneGraph()->saveDOT("/tmp/after_move_joint_unit.dot");
+  env->getSceneGraph()->saveDOT(tesseract_common::getTempPath() + "after_move_joint_unit.dot");
 }
 
 template <typename S>
@@ -261,7 +262,7 @@ void runChangeJointOriginTest()
               env->getCurrentState()->joint_transforms.end());
   EXPECT_TRUE(env->getCurrentState()->joints.find(joint_name1) == env->getCurrentState()->joints.end());
 
-  env->getSceneGraph()->saveDOT("/tmp/before_change_joint_origin_unit.dot");
+  env->getSceneGraph()->saveDOT(tesseract_common::getTempPath() + "before_change_joint_origin_unit.dot");
 
   Eigen::Isometry3d new_origin = Eigen::Isometry3d::Identity();
   new_origin.translation()(0) += 1.234;
@@ -272,7 +273,7 @@ void runChangeJointOriginTest()
   EXPECT_TRUE(env->getCurrentState()->link_transforms.at(link_name1).isApprox(new_origin));
   EXPECT_TRUE(env->getCurrentState()->joint_transforms.at(joint_name1).isApprox(new_origin));
 
-  env->getSceneGraph()->saveDOT("/tmp/after_change_joint_origin_unit.dot");
+  env->getSceneGraph()->saveDOT(tesseract_common::getTempPath() + "after_change_joint_origin_unit.dot");
 }
 
 template <typename S>
