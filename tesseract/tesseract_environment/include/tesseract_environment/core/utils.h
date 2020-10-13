@@ -342,7 +342,7 @@ inline bool checkTrajectory(std::vector<tesseract_collision::ContactResultMap>& 
   bool found = false;
 
   contacts.reserve(static_cast<size_t>(traj.rows()));
-  for (int iStep = 0; iStep < traj.rows() - 1; ++iStep)
+  for (int iStep = 0; iStep < traj.rows(); ++iStep)
   {
     tesseract_environment::EnvState::Ptr state = state_solver.getState(joint_names, traj.row(iStep));
     if (checkTrajectoryState(contacts, manager, state, request, verbose))
