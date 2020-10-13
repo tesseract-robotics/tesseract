@@ -79,6 +79,20 @@ int DiscreteContactCheckProcessGenerator::conditionalProcess(ProcessInput input)
       input.tesseract->getEnvironment()->getDiscreteContactManager();
   manager->setContactDistanceThreshold(contact_distance_);
 
+  // Set the active links based on the manipulator
+  std::vector<std::string> active_links_manip;
+  {
+    tesseract_environment::AdjacencyMap::Ptr adjacency_map_manip =
+        std::make_shared<tesseract_environment::AdjacencyMap>(
+            input.tesseract->getEnvironment()->getSceneGraph(),
+            input.tesseract->getManipulatorManager()
+                ->getFwdKinematicSolver(input.manip_info.manipulator)
+                ->getActiveLinkNames(),
+            input.tesseract->getEnvironment()->getCurrentState()->link_transforms);
+    active_links_manip = adjacency_map_manip->getActiveLinkNames();
+  }
+  manager->setActiveCollisionObjects(active_links_manip);
+
   const auto* ci = input_result->cast_const<CompositeInstruction>();
   std::vector<tesseract_collision::ContactResultMap> contacts;
   if (contactCheckProgram(contacts, *manager, *state_solver, *ci, longest_valid_segment_length_))
