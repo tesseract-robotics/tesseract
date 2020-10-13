@@ -323,6 +323,7 @@ inline bool contactCheckProgram(std::vector<tesseract_collision::ContactResultMa
                                     tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST),
                                 bool verbose = false)
 {
+  assert(longest_valid_segment_length > 0);
   bool found = false;
 
   // Flatten results
@@ -483,6 +484,7 @@ inline bool contactCheckProgram(std::vector<tesseract_collision::ContactResultMa
                                     tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST),
                                 bool verbose = false)
 {
+  assert(longest_valid_segment_length > 0);
   bool found = false;
 
   // Flatten results
