@@ -47,6 +47,11 @@ ContinuousContactCheckProcessGenerator::ContinuousContactCheckProcessGenerator(d
   , longest_valid_segment_length_(longest_valid_segment_length)
   , contact_distance_(contact_distance)
 {
+  if (longest_valid_segment_length_ <= 0)
+  {
+    CONSOLE_BRIDGE_logWarn("ContinuousContactCheckProcessGenerator: Invalid longest valid segment. Defaulting to 0.05");
+    longest_valid_segment_length_ = 0.05;
+  }
 }
 
 const std::string& ContinuousContactCheckProcessGenerator::getName() const { return name_; }
