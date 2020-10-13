@@ -77,6 +77,7 @@ void KDLStateSolver::setState(const std::unordered_map<std::string, double>& joi
 
 void KDLStateSolver::setState(const std::vector<std::string>& joint_names, const std::vector<double>& joint_values)
 {
+  assert(joint_names.size() == joint_values.size());
   for (auto i = 0u; i < joint_names.size(); ++i)
   {
     if (setJointValuesHelper(kdl_jnt_array_, joint_names[i], joint_values[i]))
@@ -91,6 +92,7 @@ void KDLStateSolver::setState(const std::vector<std::string>& joint_names, const
 void KDLStateSolver::setState(const std::vector<std::string>& joint_names,
                               const Eigen::Ref<const Eigen::VectorXd>& joint_values)
 {
+  assert(static_cast<Eigen::Index>(joint_names.size()) == joint_values.size());
   for (auto i = 0u; i < joint_names.size(); ++i)
   {
     if (setJointValuesHelper(kdl_jnt_array_, joint_names[i], joint_values[i]))
