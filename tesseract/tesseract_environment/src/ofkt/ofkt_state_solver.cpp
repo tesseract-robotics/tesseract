@@ -242,6 +242,7 @@ EnvState::Ptr OFKTStateSolver::getState(const std::unordered_map<std::string, do
 EnvState::Ptr OFKTStateSolver::getState(const std::vector<std::string>& joint_names,
                                         const std::vector<double>& joint_values) const
 {
+  assert(joint_names.size() == joint_values.size());
   auto state = std::make_shared<EnvState>(*current_state_);
   for (std::size_t i = 0; i < joint_names.size(); ++i)
     state->joints[joint_names[i]] = joint_values[i];
@@ -253,6 +254,7 @@ EnvState::Ptr OFKTStateSolver::getState(const std::vector<std::string>& joint_na
 EnvState::Ptr OFKTStateSolver::getState(const std::vector<std::string>& joint_names,
                                         const Eigen::Ref<const Eigen::VectorXd>& joint_values) const
 {
+  assert(static_cast<Eigen::Index>(joint_names.size()) == joint_values.size());
   auto state = std::make_shared<EnvState>(*current_state_);
   for (std::size_t i = 0; i < joint_names.size(); ++i)
     state->joints[joint_names[i]] = joint_values[static_cast<long>(i)];
