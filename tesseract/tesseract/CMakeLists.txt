@@ -62,3 +62,8 @@ if (TESSERACT_ENABLE_TESTING)
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
 endif()
+
+if (TESSERACT_ENABLE_BENCHMARKING)
+  add_subdirectory(test/benchmarks)
+endif()
+
