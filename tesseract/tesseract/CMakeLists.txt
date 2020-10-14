@@ -56,3 +56,9 @@ install(DIRECTORY include/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
  )
+
+if (TESSERACT_ENABLE_TESTING)
+  enable_testing()
+  add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
+  add_subdirectory(test)
+endif()
