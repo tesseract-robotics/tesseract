@@ -336,11 +336,16 @@ Tesseract::Ptr Tesseract::clone() const
 {
   auto clone = std::make_shared<Tesseract>();
 
-  clone->init(init_info_);
+  if (environment_)
+    clone->environment_ = environment_->clone();
 
-  clone->environment_ = environment_->clone();
-  clone->manipulator_manager_->clone(clone->environment_);
+  if (clone->environment_)
+    if (manipulator_manager_)
+      clone->manipulator_manager_ = manipulator_manager_->clone(clone->environment_);
+
   clone->init_info_ = init_info_;
+  clone->initialized_ = initialized_;
+  clone->find_tcp_cb_ = find_tcp_cb_;
 
   return clone;
 }
@@ -367,6 +372,8 @@ ManipulatorManager::ConstPtr Tesseract::getManipulatorManager() const { return m
 bool Tesseract::registerDefaultContactManagers()
 {
   using namespace tesseract_collision;
+  if (!environment_)
+    return false;
 
   // Register contact manager
   environment_->registerDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name(),
