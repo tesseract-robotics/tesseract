@@ -48,6 +48,8 @@ bool Tesseract::isInitialized() const { return initialized_; }
 
 bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
 {
+  if (!scene_graph)
+    return false;
   clear();
   init_info_->type = TesseractInitType::SCENE_GRAPH;
   init_info_->scene_graph = scene_graph->clone();
@@ -79,6 +81,8 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
 bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph,
                      tesseract_scene_graph::SRDFModel::Ptr srdf_model)
 {
+  if (!scene_graph || !srdf_model)
+    return false;
   clear();
   init_info_->type = TesseractInitType::SCENE_GRAPH_SRDF_MODEL;
   init_info_->scene_graph = scene_graph->clone();
