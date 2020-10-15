@@ -9,10 +9,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-inline CompositeInstruction freespaceExampleProgram()
+inline CompositeInstruction freespaceExampleProgramIIWA(std::string composite_profile = DEFAULT_PROFILE_KEY,
+                                                        std::string freespace_profile = DEFAULT_PROFILE_KEY)
 {
-  CompositeInstruction program(
-      "freespace_composite", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator"));
+  CompositeInstruction program(composite_profile, CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator"));
 
   // Start Joint Position for the program
   std::vector<std::string> joint_names = { "joint_a1", "joint_a2", "joint_a3", "joint_a4",
@@ -23,7 +23,27 @@ inline CompositeInstruction freespaceExampleProgram()
 
   // Define target pose
   Waypoint wp2 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.2, 0.2, 1.0));
-  PlanInstruction plan_f0(wp2, PlanInstructionType::FREESPACE, "DEFAULT");
+  PlanInstruction plan_f0(wp2, PlanInstructionType::FREESPACE, freespace_profile);
+  plan_f0.setDescription("freespace_motion");
+  program.push_back(plan_f0);
+
+  return program;
+}
+
+inline CompositeInstruction freespaceExampleProgramABB(std::string composite_profile = DEFAULT_PROFILE_KEY,
+                                                       std::string freespace_profile = DEFAULT_PROFILE_KEY)
+{
+  CompositeInstruction program(composite_profile, CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator"));
+
+  // Start Joint Position for the program
+  std::vector<std::string> joint_names = { "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6" };
+  Waypoint wp1 = StateWaypoint(joint_names, Eigen::VectorXd::Zero(6));
+  PlanInstruction start_instruction(wp1, PlanInstructionType::START);
+  program.setStartInstruction(start_instruction);
+
+  // Define target pose
+  Waypoint wp2 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.2, 0.2, 1.0));
+  PlanInstruction plan_f0(wp2, PlanInstructionType::FREESPACE, freespace_profile);
   plan_f0.setDescription("freespace_motion");
   program.push_back(plan_f0);
 
