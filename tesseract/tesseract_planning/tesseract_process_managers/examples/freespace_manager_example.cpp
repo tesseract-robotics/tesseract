@@ -69,7 +69,7 @@ int main()
   // --------------------
   // Define the program
   // --------------------
-  CompositeInstruction program = freespaceExampleProgram();
+  CompositeInstruction program = freespaceExampleProgramIIWA();
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
 
