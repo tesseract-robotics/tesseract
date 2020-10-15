@@ -7,7 +7,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
+#include <tesseract_motion_planners/simple/profile/simple_planner_default_plan_profile.h>
 #include <tesseract_motion_planners/core/utils.h>
+#include <tesseract_motion_planners/interface_utils.h>
 
 #include <tesseract_process_managers/process_input.h>
 #include <tesseract_process_managers/process_managers/raster_process_manager.h>
@@ -17,6 +19,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_process_managers/process_managers/raster_dt_process_manager.h>
 #include <tesseract_process_managers/process_managers/raster_waad_process_manager.h>
 #include <tesseract_process_managers/process_managers/raster_waad_dt_process_manager.h>
+#include <tesseract_process_managers/process_generators/seed_min_length_process_generator.h>
 #include <tesseract_process_managers/taskflows/cartesian_taskflow.h>
 #include <tesseract_process_managers/taskflows/freespace_taskflow.h>
 #include <tesseract_process_managers/taskflows/descartes_taskflow.h>
@@ -83,7 +86,45 @@ protected:
   }
 };
 
-TEST_F(TesseractProcessManagerUnit, RasterSimpleMotionPlannerTest)
+TEST_F(TesseractProcessManagerUnit, SeedMinLengthProcessGeneratorTest)
+{
+  tesseract_planning::CompositeInstruction program = freespaceExampleProgramABB();
+  EXPECT_FALSE(program.getManipulatorInfo().empty());
+
+  program.setManipulatorInfo(manip);
+  EXPECT_TRUE(program.hasStartInstruction());
+  EXPECT_FALSE(program.getManipulatorInfo().empty());
+
+  // Define the Process Input
+  auto cur_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_);
+
+  Instruction program_instruction = program;
+  Instruction seed_instruction = seed;
+
+  long current_length = getMoveInstructionCount(seed);
+  ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed_instruction);
+
+  SeedMinLengthProcessGenerator smlpg(current_length);
+  EXPECT_TRUE(smlpg.generateConditionalTask(input)() == 1);
+  long final_length = getMoveInstructionCount(*(input.getResults()->cast_const<CompositeInstruction>()));
+  EXPECT_TRUE(final_length == current_length);
+
+  SeedMinLengthProcessGenerator smlpg2(2 * current_length);
+  EXPECT_TRUE(smlpg2.generateConditionalTask(input)() == 1);
+  long final_length2 = getMoveInstructionCount(*(input.getResults()->cast_const<CompositeInstruction>()));
+  EXPECT_TRUE(final_length2 >= (2 * current_length));
+
+  seed_instruction = seed;
+  ProcessInput input2(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed_instruction);
+
+  SeedMinLengthProcessGenerator smlpg3(3 * current_length);
+  EXPECT_TRUE(smlpg3.generateConditionalTask(input2)() == 1);
+  long final_length3 = getMoveInstructionCount(*(input2.getResults()->cast_const<CompositeInstruction>()));
+  EXPECT_TRUE(final_length3 >= (3 * current_length));
+}
+
+TEST_F(TesseractProcessManagerUnit, RasterSimpleMotionPlannerDefaultPlanProfileTest)
 {
   tesseract_planning::CompositeInstruction program = rasterExampleProgram();
   EXPECT_FALSE(program.getManipulatorInfo().empty());
@@ -101,6 +142,8 @@ TEST_F(TesseractProcessManagerUnit, RasterSimpleMotionPlannerTest)
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   PlannerResponse response;
+  interpolator->plan_profiles["RASTER"] = std::make_shared<SimplePlannerDefaultPlanProfile>();
+  interpolator->plan_profiles["freespace_profile"] = std::make_shared<SimplePlannerDefaultPlanProfile>();
   auto status = interpolator->solve(request, response);
   EXPECT_TRUE(status);
 
@@ -114,9 +157,9 @@ TEST_F(TesseractProcessManagerUnit, RasterSimpleMotionPlannerTest)
   EXPECT_FALSE(response.results.getManipulatorInfo().empty());
 }
 
-TEST_F(TesseractProcessManagerUnit, FreespaceSimpleMotionPlannerTest)
+TEST_F(TesseractProcessManagerUnit, RasterSimpleMotionPlannerDefaultLVSPlanProfileTest)
 {
-  CompositeInstruction program = freespaceExampleProgram();
+  tesseract_planning::CompositeInstruction program = rasterExampleProgram();
   EXPECT_FALSE(program.getManipulatorInfo().empty());
 
   program.setManipulatorInfo(manip);
@@ -132,6 +175,39 @@ TEST_F(TesseractProcessManagerUnit, FreespaceSimpleMotionPlannerTest)
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   PlannerResponse response;
+  interpolator->plan_profiles["RASTER"] = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
+  interpolator->plan_profiles["freespace_profile"] = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
+  auto status = interpolator->solve(request, response);
+  EXPECT_TRUE(status);
+
+  auto mcnt = getMoveInstructionCount(response.results);
+
+  // The first plan instruction is the start instruction and every other plan instruction should be converted into
+  // ten move instruction.
+  EXPECT_EQ(152, mcnt);
+  EXPECT_TRUE(response.results.hasStartInstruction());
+  EXPECT_FALSE(response.results.getManipulatorInfo().empty());
+}
+
+TEST_F(TesseractProcessManagerUnit, FreespaceSimpleMotionPlannerDefaultPlanProfileTest)
+{
+  CompositeInstruction program = freespaceExampleProgramABB(DEFAULT_PROFILE_KEY, DEFAULT_PROFILE_KEY);
+  EXPECT_FALSE(program.getManipulatorInfo().empty());
+
+  program.setManipulatorInfo(manip);
+  EXPECT_TRUE(program.hasStartInstruction());
+  EXPECT_FALSE(program.getManipulatorInfo().empty());
+
+  auto interpolator = std::make_shared<SimpleMotionPlanner>("INTERPOLATOR");
+
+  // Create Planning Request
+  PlannerRequest request;
+  request.instructions = program;
+  request.tesseract = tesseract_ptr_;
+  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+
+  PlannerResponse response;
+  interpolator->plan_profiles[DEFAULT_PROFILE_KEY] = std::make_shared<SimplePlannerDefaultPlanProfile>();
   auto status = interpolator->solve(request, response);
   EXPECT_TRUE(status);
 
@@ -141,6 +217,37 @@ TEST_F(TesseractProcessManagerUnit, FreespaceSimpleMotionPlannerTest)
   // The first plan instruction is the start instruction and every other plan instruction should be converted into
   // ten move instruction.
   EXPECT_EQ(((pcnt - 1) * 10) + 1, mcnt);
+  EXPECT_TRUE(response.results.hasStartInstruction());
+  EXPECT_FALSE(response.results.getManipulatorInfo().empty());
+}
+
+TEST_F(TesseractProcessManagerUnit, FreespaceSimpleMotionPlannerDefaultLVSPlanProfileTest)
+{
+  CompositeInstruction program = freespaceExampleProgramABB(DEFAULT_PROFILE_KEY, DEFAULT_PROFILE_KEY);
+  EXPECT_FALSE(program.getManipulatorInfo().empty());
+
+  program.setManipulatorInfo(manip);
+  EXPECT_TRUE(program.hasStartInstruction());
+  EXPECT_FALSE(program.getManipulatorInfo().empty());
+
+  auto interpolator = std::make_shared<SimpleMotionPlanner>("INTERPOLATOR");
+
+  // Create Planning Request
+  PlannerRequest request;
+  request.instructions = program;
+  request.tesseract = tesseract_ptr_;
+  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+
+  PlannerResponse response;
+  interpolator->plan_profiles[DEFAULT_PROFILE_KEY] = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
+  auto status = interpolator->solve(request, response);
+  EXPECT_TRUE(status);
+
+  auto mcnt = getMoveInstructionCount(response.results);
+
+  // The first plan instruction is the start instruction and every other plan instruction should be converted into
+  // ten move instruction.
+  EXPECT_EQ(33, mcnt);
   EXPECT_TRUE(response.results.hasStartInstruction());
   EXPECT_FALSE(response.results.getManipulatorInfo().empty());
 }

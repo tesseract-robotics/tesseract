@@ -53,6 +53,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
   assert(static_cast<long>(end.joint_names.size()) == end.size());
 
   assert(!(manip_info.empty() && base_instruction.getManipulatorInfo().empty()));
+  ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
 
   CompositeInstruction composite;
 
@@ -60,8 +61,6 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
   {
     // Find number of states based on cartesian
     // Then find values
-    const ManipulatorInfo& mi =
-        (base_instruction.getManipulatorInfo().empty()) ? manip_info : base_instruction.getManipulatorInfo();
 
     // Initialize
     auto fwd_kin = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
@@ -137,12 +136,10 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
                                                  int min_steps)
 {
   assert(!(manip_info.empty() && base_instruction.getManipulatorInfo().empty()));
+  ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
 
   // Joint waypoints should have joint names
   assert(static_cast<long>(start.joint_names.size()) == start.size());
-
-  const ManipulatorInfo& mi =
-      (base_instruction.getManipulatorInfo().empty()) ? manip_info : base_instruction.getManipulatorInfo();
 
   // Initialize
   auto inv_kin = request.tesseract->getManipulatorManager()->getInvKinematicSolver(mi.manipulator);
@@ -251,12 +248,10 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
                                                  int min_steps)
 {
   assert(!(manip_info.empty() && base_instruction.getManipulatorInfo().empty()));
+  ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
 
   // Joint waypoints should have joint names
   assert(static_cast<long>(end.joint_names.size()) == end.size());
-
-  const ManipulatorInfo& mi =
-      (base_instruction.getManipulatorInfo().empty()) ? manip_info : base_instruction.getManipulatorInfo();
 
   // Initialize
   auto inv_kin = request.tesseract->getManipulatorManager()->getInvKinematicSolver(mi.manipulator);
@@ -365,9 +360,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
                                                  int min_steps)
 {
   assert(!(manip_info.empty() && base_instruction.getManipulatorInfo().empty()));
-
-  const ManipulatorInfo& mi =
-      (base_instruction.getManipulatorInfo().empty()) ? manip_info : base_instruction.getManipulatorInfo();
+  ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
 
   // Initialize
   auto inv_kin = request.tesseract->getManipulatorManager()->getInvKinematicSolver(mi.manipulator);
@@ -410,7 +403,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
       /// @todo: May be nice to add contact checking to find best solution, but may not be neccessary because this is
       /// used to generate the seed.
       auto j2_solution = j2.middleRows(j * dof, dof);
-      double d = (j2 - j1).norm();
+      double d = (j2_solution - j1_solution).norm();
       if (d < dist)
       {
         j1_final = j1_solution;
@@ -486,8 +479,7 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
   throw std::runtime_error("Not implemented, PR's are welcome!");
 
   assert(!(manip_info.empty() && base_instruction.getManipulatorInfo().empty()));
-  const ManipulatorInfo& mi =
-      (base_instruction.getManipulatorInfo().empty()) ? manip_info : base_instruction.getManipulatorInfo();
+  ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
 
   // Initialize
   auto fwd_kin = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
@@ -546,8 +538,7 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
   throw std::runtime_error("Not implemented, PR's are welcome!");
 
   assert(!(manip_info.empty() && base_instruction.getManipulatorInfo().empty()));
-  const ManipulatorInfo& mi =
-      (base_instruction.getManipulatorInfo().empty()) ? manip_info : base_instruction.getManipulatorInfo();
+  ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
 
   // Initialize
   auto fwd_kin = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
@@ -603,8 +594,7 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const CartesianWaypoint& st
   throw std::runtime_error("Not implemented, PR's are welcome!");
 
   assert(!(manip_info.empty() && base_instruction.getManipulatorInfo().empty()));
-  const ManipulatorInfo& mi =
-      (base_instruction.getManipulatorInfo().empty()) ? manip_info : base_instruction.getManipulatorInfo();
+  ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
 
   // Initialize
   auto fwd_kin = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
