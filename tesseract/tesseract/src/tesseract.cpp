@@ -60,7 +60,7 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
   }
   environment_const_ = environment_;
   srdf_model_ = std::make_shared<tesseract_scene_graph::SRDFModel>();
-  srdf_model_->getName() = scene_graph->getName();
+  srdf_model_->getName() = init_info_->scene_graph->getName();
   srdf_model_const_ = srdf_model_;
 
   registerDefaultContactManagers();
