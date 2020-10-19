@@ -329,6 +329,8 @@ public:
    */
   virtual bool changeJointOrigin(const std::string& joint_name, const Eigen::Isometry3d& new_origin);
 
+  virtual bool changeJointLimits(const std::string& joint_name, const tesseract_scene_graph::JointLimits limits);
+
   /**
    * @brief Set whether a link should be considered during collision checking
    * @param enabled True if should be condisdered during collision checking, otherwise false
