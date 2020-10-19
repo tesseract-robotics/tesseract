@@ -172,6 +172,14 @@ bool Environment::applyCommand(const Command& command)
       }
       break;
     }
+
+    case tesseract_environment::CommandType::CHANGE_JOINT_LIMITS:
+    {
+      const auto& cmd = static_cast<const tesseract_environment::ChangeJointLimitsCommand&>(command);
+      if (!changeJointLimits(cmd.getJointName(), cmd.getLimits()))
+        return false;
+      break;
+    }
     default:
     {
       CONSOLE_BRIDGE_logError("Unhandled environment command");
@@ -356,6 +364,20 @@ bool Environment::changeJointOrigin(const std::string& joint_name, const Eigen::
 
   ++revision_;
   commands_.push_back(std::make_shared<ChangeJointOriginCommand>(joint_name, new_origin));
+
+  environmentChanged();
+
+  return true;
+}
+
+bool Environment::changeJointLimits(const std::string& joint_name, const tesseract_scene_graph::JointLimits limits)
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (!scene_graph_->changeJointLimits(joint_name, limits))
+    return false;
+
+  ++revision_;
+  commands_.push_back(std::make_shared<ChangeJointLimitsCommand>(joint_name, limits));
 
   environmentChanged();
 
