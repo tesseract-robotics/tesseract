@@ -340,6 +340,39 @@ bool SceneGraph::changeJointOrigin(const std::string& name, const Eigen::Isometr
   return true;
 }
 
+bool SceneGraph::changeJointLimits(const std::string& name, const JointLimits& limits)
+{
+  auto found = joint_map_.find(name);
+
+  if (found == joint_map_.end())
+  {
+    CONSOLE_BRIDGE_logWarn("Tried to change Joint limit with name (%s) which does not exist in scene graph.",
+                           name.c_str());
+    return false;
+  }
+
+  found->second.first->limits->lower = limits.lower;
+  found->second.first->limits->upper = limits.upper;
+  found->second.first->limits->effort = limits.effort;
+  found->second.first->limits->velocity = limits.velocity;
+  found->second.first->limits->acceleration = limits.acceleration;
+
+  return true;
+}
+
+JointLimits::ConstPtr SceneGraph::getJointLimits(const std::string& name)
+{
+  auto found = joint_map_.find(name);
+
+  if (found == joint_map_.end())
+  {
+    CONSOLE_BRIDGE_logWarn("SceneGraph::getJointLimits tried to find Joint with name (%s) which does not exist in scene graph.",
+                           name.c_str());
+    return nullptr;
+  }
+  return found->second.first->limits;
+}
+
 void SceneGraph::addAllowedCollision(const std::string& link_name1,
                                      const std::string& link_name2,
                                      const std::string& reason)
