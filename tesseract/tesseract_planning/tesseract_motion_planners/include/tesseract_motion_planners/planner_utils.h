@@ -134,10 +134,23 @@ inline std::string getProfileString(const std::string& profile,
 
 template <typename ProfileType>
 std::shared_ptr<ProfileType>
-getProfile(const std::string& profile, const std::unordered_map<std::string, std::shared_ptr<ProfileType>>& profile_map)
+getProfile(const std::string& profile, const std::unordered_map<std::string, std::shared_ptr<ProfileType>>& profile_map, std::string default_profile = "DEFAULT")
 {
+  std::string profile_string = profile;
   std::shared_ptr<ProfileType> results;
-  auto it = profile_map.find(profile);
+  auto it = profile_map.find(profile_string);
+
+  // If profile not found, look for default_profile.
+  if (it == profile_map.end())
+  {
+    profile_string = default_profile;
+    CONSOLE_BRIDGE_logDebug("Profile %s was not found. Setting to %s. Available profiles:", default_profile.c_str(), profile.c_str());
+    for (const auto& pair : profile_map)
+      CONSOLE_BRIDGE_logDebug("%s", pair.first.c_str());
+    it = profile_map.find(profile_string);
+  }
+
+  // If default_profile not found, print an error
   if (it == profile_map.end())
   {
     CONSOLE_BRIDGE_logError("Profile %s was not found. Available profiles:", profile.c_str());
