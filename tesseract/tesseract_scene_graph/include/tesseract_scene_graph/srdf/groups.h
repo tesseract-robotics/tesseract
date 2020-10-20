@@ -135,7 +135,7 @@ parseGroups(const tesseract_scene_graph::SceneGraph& scene_graph,
     }
   }
 
-  return std::make_tuple(group_names, chain_groups, link_groups, joint_groups);
+  return std::make_tuple(group_names, chain_groups, joint_groups, link_groups);
 }
 }  // namespace tesseract_scene_graph
 
