@@ -132,30 +132,29 @@ inline std::string getProfileString(const std::string& profile,
   return results;
 }
 
+/**
+ * @brief Gets the profile specified from the profile map
+ * @param profile The requested profile
+ * @param profile_map map that contains the profiles
+ * @param default_profile Profile that is returned if the requested profile is not found in the map. Default = nullptr
+ * @return The profile requested if found. Otherwise the default_profile
+ */
 template <typename ProfileType>
 std::shared_ptr<ProfileType>
-getProfile(const std::string& profile, const std::unordered_map<std::string, std::shared_ptr<ProfileType>>& profile_map, std::string default_profile = "DEFAULT")
+getProfile(const std::string& profile,
+           const std::unordered_map<std::string, std::shared_ptr<ProfileType>>& profile_map,
+           std::shared_ptr<ProfileType> default_profile = nullptr)
 {
-  std::string profile_string = profile;
   std::shared_ptr<ProfileType> results;
-  auto it = profile_map.find(profile_string);
+  auto it = profile_map.find(profile);
 
-  // If profile not found, look for default_profile.
   if (it == profile_map.end())
   {
-    profile_string = default_profile;
-    CONSOLE_BRIDGE_logDebug("Profile %s was not found. Setting to %s. Available profiles:", default_profile.c_str(), profile.c_str());
+    CONSOLE_BRIDGE_logDebug("Profile %s was not found. Using default if available. Available profiles:",
+                            profile.c_str());
     for (const auto& pair : profile_map)
       CONSOLE_BRIDGE_logDebug("%s", pair.first.c_str());
-    it = profile_map.find(profile_string);
-  }
-
-  // If default_profile not found, print an error
-  if (it == profile_map.end())
-  {
-    CONSOLE_BRIDGE_logError("Profile %s was not found. Available profiles:", profile.c_str());
-    for (const auto& pair : profile_map)
-      CONSOLE_BRIDGE_logError("%s", pair.first.c_str());
+    results = default_profile;
   }
   else
     results = it->second;

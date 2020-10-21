@@ -146,7 +146,8 @@ std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const std::string& nam
       // Get Plan Profile
       std::string profile = plan_instruction->getProfile();
       profile = getProfileString(profile, name, request.plan_profile_remapping);
-      auto cur_plan_profile = getProfile<OMPLPlanProfile>(profile, plan_profiles);
+      auto cur_plan_profile =
+          getProfile<OMPLPlanProfile>(profile, plan_profiles, std::make_shared<OMPLDefaultPlanProfile>());
       if (!cur_plan_profile)
         throw std::runtime_error("OMPLMotionPlannerDefaultConfig: Invalid profile");
 

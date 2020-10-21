@@ -88,7 +88,8 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
   // Get Plan Profile
   std::string profile = ci->getProfile();
   profile = getProfileString(profile, name_, input.composite_profile_remapping);
-  auto cur_composite_profile = getProfile<IterativeSplineParameterizationProfile>(profile, composite_profiles);
+  auto cur_composite_profile = getProfile<IterativeSplineParameterizationProfile>(
+      profile, composite_profiles, std::make_shared<IterativeSplineParameterizationProfile>());
   if (!cur_composite_profile)
     cur_composite_profile = std::make_shared<IterativeSplineParameterizationProfile>();
 
@@ -112,7 +113,8 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
 
     // Check for remapping of the plan profile
     std::string remap = getProfileString(profile, name_, input.plan_profile_remapping);
-    auto cur_composite_profile = getProfile<IterativeSplineParameterizationProfile>(profile, composite_profiles);
+    auto cur_composite_profile = getProfile<IterativeSplineParameterizationProfile>(
+        profile, composite_profiles, std::make_shared<IterativeSplineParameterizationProfile>());
 
     // If there is a move profile associated with it, override the parameters
     auto it = move_profiles.find(profile);

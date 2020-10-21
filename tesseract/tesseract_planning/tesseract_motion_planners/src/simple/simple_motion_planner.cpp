@@ -215,7 +215,8 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
       assert(is_cwp2 || is_jwp2 || is_swp2);
 
       std::string profile = getProfileString(plan_instruction->getProfile(), name_, request.plan_profile_remapping);
-      SimplePlannerPlanProfile::Ptr start_plan_profile = getProfile<SimplePlannerPlanProfile>(profile, plan_profiles);
+      SimplePlannerPlanProfile::Ptr start_plan_profile = getProfile<SimplePlannerPlanProfile>(
+          profile, plan_profiles, std::make_shared<SimplePlannerDefaultPlanProfile>());
       if (!start_plan_profile)
         throw std::runtime_error("SimpleMotionPlanner: Invalid start profile");
 

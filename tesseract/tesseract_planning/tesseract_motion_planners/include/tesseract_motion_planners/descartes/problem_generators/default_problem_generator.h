@@ -121,7 +121,8 @@ DefaultDescartesProblemGenerator(const std::string& name,
   }
 
   profile = getProfileString(profile, name, request.plan_profile_remapping);
-  auto cur_plan_profile = getProfile<DescartesPlanProfile<FloatType>>(profile, plan_profiles);
+  auto cur_plan_profile = getProfile<DescartesPlanProfile<FloatType>>(
+      profile, plan_profiles, std::make_shared<DescartesDefaultPlanProfile<FloatType>>());
   if (!cur_plan_profile)
     throw std::runtime_error("DescartesMotionPlannerConfig: Invalid profile");
 
@@ -167,7 +168,8 @@ DefaultDescartesProblemGenerator(const std::string& name,
       // Get Plan Profile
       std::string profile = plan_instruction->getProfile();
       profile = getProfileString(profile, name, request.plan_profile_remapping);
-      auto cur_plan_profile = getProfile<DescartesPlanProfile<FloatType>>(profile, plan_profiles);
+      auto cur_plan_profile = getProfile<DescartesPlanProfile<FloatType>>(
+          profile, plan_profiles, std::make_shared<DescartesDefaultPlanProfile<FloatType>>());
       if (!cur_plan_profile)
         throw std::runtime_error("DescartesMotionPlannerConfig: Invalid profile");
 
