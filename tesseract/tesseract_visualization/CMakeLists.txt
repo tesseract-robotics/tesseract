@@ -48,7 +48,8 @@ add_library(${PROJECT_NAME}
     src/trajectory_interpolator.cpp
     src/trajectory_player.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract tesseract::tesseract_environment_core tesseract::tesseract_scene_graph tesseract::tesseract_command_language tesseract::tesseract_collision_core tesseract::tesseract_common console_bridge ${class_loader_LIBRARIES})
-target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
+target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
@@ -79,7 +80,8 @@ if (IGNITION_FOUND)
     ${IGNITION-COMMON_LIBRARIES}
     ${IGNITION-MSGS_LIBRARIES}
     console_bridge)
-  target_compile_options(${PROJECT_NAME}_ignition PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+  target_compile_options(${PROJECT_NAME}_ignition PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
+  target_compile_options(${PROJECT_NAME}_ignition PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
   target_compile_definitions(${PROJECT_NAME}_ignition PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
   target_clang_tidy(${PROJECT_NAME}_ignition ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
   target_cxx_version(${PROJECT_NAME}_ignition PUBLIC VERSION ${TESSERACT_CXX_VERSION})
@@ -103,7 +105,8 @@ if (IGNITION_FOUND)
     ${IGNITION-TRANSPORT_LIBRARIES}
     ${IGNITION-MSGS_LIBRARIES}
     console_bridge)
-  target_compile_options(${PROJECT_NAME}_ignition_visualization PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+  target_compile_options(${PROJECT_NAME}_ignition_visualization PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
+  target_compile_options(${PROJECT_NAME}_ignition_visualization PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
   target_compile_definitions(${PROJECT_NAME}_ignition_visualization PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
   target_clang_tidy(${PROJECT_NAME}_ignition_visualization ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
   target_cxx_version(${PROJECT_NAME}_ignition_visualization PUBLIC VERSION ${TESSERACT_CXX_VERSION})
@@ -120,7 +123,7 @@ if (IGNITION_FOUND)
       src/ignition/tesseract_ignition_visualization_plugin.cpp)
   target_link_libraries(${PROJECT_NAME}_ignition_visualization_plugin PUBLIC
     ${PROJECT_NAME}_ignition_visualization ${class_loader_LIBRARIES})
-  target_compile_options(${PROJECT_NAME}_ignition_visualization_plugin PRIVATE ${TESSERACT_COMPILE_OPTIONS})
+  target_compile_options(${PROJECT_NAME}_ignition_visualization_plugin PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE} ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
   target_compile_definitions(${PROJECT_NAME}_ignition_visualization_plugin PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
   target_cxx_version(${PROJECT_NAME}_ignition_visualization_plugin PUBLIC VERSION ${TESSERACT_CXX_VERSION})
   target_include_directories(${PROJECT_NAME}_ignition_visualization_plugin PUBLIC
