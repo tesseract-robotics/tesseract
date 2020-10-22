@@ -42,6 +42,11 @@ InverseKinematics::Ptr RobotWithExternalPositionerInvKin::clone() const
   return cloned_invkin;
 }
 
+bool RobotWithExternalPositionerInvKin::update()
+{
+  return init(scene_graph_, manip_inv_kin_, manip_reach_, positioner_fwd_kin_, positioner_sample_resolution_, name_);
+}
+
 bool RobotWithExternalPositionerInvKin::calcInvKinHelper(std::vector<double>& solutions,
                                                          const Eigen::Isometry3d& pose,
                                                          const Eigen::Ref<const Eigen::VectorXd>& seed) const

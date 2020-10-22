@@ -59,6 +59,12 @@ public:
   ForwardKinematics& operator=(ForwardKinematics&&) = delete;
 
   /**
+   * @brief Updates kinematics if kinematic parameters have changed
+   * @return True if successful
+   */
+  virtual bool update() = 0;
+
+  /**
    * @brief Calculates tool pose of robot chain
    * @param pose Transform of end-of-tip relative to root
    * @param joint_angles Vector of joint angles (size must match number of joints in robot chain)

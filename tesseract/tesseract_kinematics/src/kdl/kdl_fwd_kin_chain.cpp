@@ -44,6 +44,11 @@ ForwardKinematics::Ptr KDLFwdKinChain::clone() const
   return cloned_fwdkin;
 }
 
+bool KDLFwdKinChain::update()
+{
+  return init(scene_graph_, kdl_data_.base_name, kdl_data_.tip_name, name_);
+}
+
 bool KDLFwdKinChain::calcFwdKinHelper(Eigen::Isometry3d& pose,
                                       const Eigen::Ref<const Eigen::VectorXd>& joint_angles,
                                       int segment_num) const
