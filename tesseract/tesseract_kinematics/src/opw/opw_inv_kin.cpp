@@ -42,6 +42,11 @@ InverseKinematics::Ptr OPWInvKin::clone() const
   return cloned_invkin;
 }
 
+bool OPWInvKin::update()
+{
+  return init(name_, params_, base_link_name_, tip_link_name_, joint_names_, link_names_, active_link_names_, limits_);
+}
+
 bool OPWInvKin::calcInvKin(Eigen::VectorXd& solutions,
                            const Eigen::Isometry3d& pose,
                            const Eigen::Ref<const Eigen::VectorXd>& /*seed*/) const
