@@ -66,6 +66,8 @@ public:
 
   ForwardKinematics::Ptr clone() const override;
 
+  bool update() override;
+
   bool calcFwdKin(Eigen::Isometry3d& pose, const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const override;
 
   bool calcFwdKin(tesseract_common::VectorIsometry3d& poses,

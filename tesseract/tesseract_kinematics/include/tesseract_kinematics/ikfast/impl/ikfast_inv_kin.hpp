@@ -50,6 +50,11 @@ InverseKinematics::Ptr IKFastInvKin::clone() const
   return std::move(cloned_invkin);
 }
 
+bool IKFastInvKin::update()
+{
+  return init(name_, base_link_name_, tip_link_name_, joint_names_, link_names_, active_link_names_, limits_);
+}
+
 bool IKFastInvKin::calcInvKin(Eigen::VectorXd& solutions,
                               const Eigen::Isometry3d& pose,
                               const Eigen::Ref<const Eigen::VectorXd>& seed) const

@@ -45,6 +45,11 @@ InverseKinematics::Ptr KDLInvKinChainNR::clone() const
   return cloned_invkin;
 }
 
+bool KDLInvKinChainNR::update()
+{
+    return init(scene_graph_, kdl_data_.base_name, kdl_data_.tip_name, name_);
+}
+
 bool KDLInvKinChainNR::calcInvKinHelper(Eigen::VectorXd& solutions,
                                         const Eigen::Isometry3d& pose,
                                         const Eigen::Ref<const Eigen::VectorXd>& seed,
