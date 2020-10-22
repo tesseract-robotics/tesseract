@@ -57,7 +57,7 @@ template <typename FloatType>
 DescartesMotionPlanner<FloatType>::DescartesMotionPlanner(std::string name)
   : MotionPlanner(name), status_category_(std::make_shared<const DescartesMotionPlannerStatusCategory>(name))
 {
-  plan_profiles["DEFAULT"] = std::make_shared<DescartesDefaultPlanProfile<FloatType>>();
+  plan_profiles[DEFAULT_PROFILE_KEY] = std::make_shared<DescartesDefaultPlanProfile<FloatType>>();
 }
 
 template <typename FloatType>
