@@ -14,6 +14,12 @@ find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(cmake_common_scripts REQUIRED)
 
+if(NOT TARGET console_bridge::console_bridge)
+  add_library(console_bridge::console_bridge INTERFACE IMPORTED)
+  set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${console_bridge_INCLUDE_DIRS}")
+  set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_LINK_LIBRARIES "${console_bridge_LIBRARIES}")
+endif()
+
 set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/* /*/bullet/LinearMath/* /*/bullet/BulletCollision/*)
 
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
@@ -37,7 +43,7 @@ target_include_directories(${PROJECT_NAME}_core SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_kdl src/kdl/kdl_state_solver.cpp)
-target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph orocos-kdl console_bridge)
+target_link_libraries(${PROJECT_NAME}_kdl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph orocos-kdl console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME}_kdl PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_kdl PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_kdl PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -52,7 +58,7 @@ target_include_directories(${PROJECT_NAME}_kdl SYSTEM PUBLIC
     ${orocos_kdl_INCLUDE_DIRS}) # Orocos did not export target correctly
 
 add_library(${PROJECT_NAME}_ofkt src/ofkt/ofkt_state_solver.cpp src/ofkt/ofkt_nodes.cpp)
-target_link_libraries(${PROJECT_NAME}_ofkt PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph console_bridge)
+target_link_libraries(${PROJECT_NAME}_ofkt PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_scene_graph console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME}_ofkt PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_ofkt PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_ofkt PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})

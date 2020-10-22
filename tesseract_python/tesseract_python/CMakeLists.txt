@@ -89,11 +89,10 @@ target_include_directories(${SWIG_MODULE_tesseract_python_REAL_NAME} PUBLIC
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${SWIG_MODULE_tesseract_python_REAL_NAME}  SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}
-    ${console_bridge_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
     ${TinyXML2_INCLUDE_DIRS}
-	${PYTHON_INCLUDE_DIRS}
-	${NUMPY_INCLUDE_DIR}
+    ${PYTHON_INCLUDE_DIRS}
+    ${NUMPY_INCLUDE_DIR}
     $<TARGET_PROPERTY:tesseract::tesseract,INTERFACE_INCLUDE_DIRECTORIES>)
 
 set_target_properties(${SWIG_MODULE_tesseract_python_REAL_NAME}

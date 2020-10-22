@@ -15,6 +15,12 @@ find_package(cmake_common_scripts REQUIRED)
 find_package(assimp REQUIRED)
 link_directories(${assimp_LIBRARY_DIRS})
 
+if(NOT TARGET console_bridge::console_bridge)
+  add_library(console_bridge::console_bridge INTERFACE IMPORTED)
+  set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${console_bridge_INCLUDE_DIRS}")
+  set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_LINK_LIBRARIES "${console_bridge_LIBRARIES}")
+endif()
+
 # These targets are necessary for 16.04 builds. Remove when Kinetic support is dropped
 if(NOT TARGET octomap)
   add_library(octomap INTERFACE IMPORTED)
@@ -35,7 +41,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 tesseract_variables()
 
 add_library(${PROJECT_NAME} INTERFACE)
-target_link_libraries(${PROJECT_NAME} INTERFACE tesseract::tesseract_common console_bridge octomap octomath ${assimp_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} INTERFACE tesseract::tesseract_common console_bridge::console_bridge octomap octomath ${assimp_LIBRARIES})
 target_compile_options(${PROJECT_NAME} INTERFACE ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} INTERFACE ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})

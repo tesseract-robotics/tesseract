@@ -29,18 +29,13 @@ jobs:
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64
         call "C:\opt\ros\%ROS_DISTRO%\x64\setup.bat"
 
-        choco install console_bridge -y --no-progress
-        choco install clapack -y --no-progress
-        choco install openblas -y --no-progress
-
-        set PATH=D:\a\tesseract\tesseract\install_isolated\bin;C:\opt\rosdeps\x64\bin;C:\opt\rosdeps\x64\lib;%PATH%
-        set LD_LIBRARY_PATH=D:\a\tesseract\tesseract\install_isolated\lib;C:\opt\rosdeps\x64\lib;%LD_LIBRARY_PATH%
-        set CMAKE_PREFIX_PATH=D:\a\tesseract\tesseract\install_isolated\CMake;C:\opt\rosdeps\x64;%CMAKE_PREFIX_PATH%
-        set PKG_CONFIG_PATH=D:\a\tesseract\tesseract\install_isolated\lib\pkgconfig;C:\opt\rosdeps\x64\lib\pkgconfig;%PKG_CONFIG_PATH%
-
         set
 
+        rosdep update
+
         vcs import --input "${{ github.workspace }}/src/tesseract/dependencies.rosinstall" src/
+
+        rosdep install -q --from-paths . --ignore-src -y
 
         catkin_make_isolated --install --force-cmake --only-pkg-with-deps tesseract tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_scene_graph tesseract_support tesseract_urdf tesseract_visualization --cmake-args -DCMAKE_BUILD_TYPE=Release
         call "D:\a\tesseract\tesseract\install_isolated\setup.bat"

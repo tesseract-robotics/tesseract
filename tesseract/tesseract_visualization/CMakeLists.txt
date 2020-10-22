@@ -22,6 +22,12 @@ find_package(ignition-transport8 QUIET)
 find_package(ignition-msgs5 QUIET)
 find_package(ignition-math6-eigen3 QUIET)
 
+if(NOT TARGET console_bridge::console_bridge)
+  add_library(console_bridge::console_bridge INTERFACE IMPORTED)
+  set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${console_bridge_INCLUDE_DIRS}")
+  set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_LINK_LIBRARIES "${console_bridge_LIBRARIES}")
+endif()
+
 set(IGNITION_FOUND FALSE)
 if (ignition-common3_FOUND AND ignition-transport8_FOUND AND ignition-msgs5_FOUND AND ignition-math6-eigen3_FOUND)
   set(IGNITION_FOUND TRUE)
@@ -47,7 +53,7 @@ add_library(${PROJECT_NAME}
     src/visualization_loader.cpp
     src/trajectory_interpolator.cpp
     src/trajectory_player.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract tesseract::tesseract_environment_core tesseract::tesseract_scene_graph tesseract::tesseract_command_language tesseract::tesseract_collision_core tesseract::tesseract_common console_bridge ${class_loader_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC tesseract::tesseract tesseract::tesseract_environment_core tesseract::tesseract_scene_graph tesseract::tesseract_command_language tesseract::tesseract_collision_core tesseract::tesseract_common console_bridge::console_bridge ${class_loader_LIBRARIES})
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -79,7 +85,7 @@ if (IGNITION_FOUND)
     tesseract::tesseract_common
     ${IGNITION-COMMON_LIBRARIES}
     ${IGNITION-MSGS_LIBRARIES}
-    console_bridge)
+    console_bridge::console_bridge)
   target_compile_options(${PROJECT_NAME}_ignition PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
   target_compile_options(${PROJECT_NAME}_ignition PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
   target_compile_definitions(${PROJECT_NAME}_ignition PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -104,7 +110,7 @@ if (IGNITION_FOUND)
     ${IGNITION-COMMON_LIBRARIES}
     ${IGNITION-TRANSPORT_LIBRARIES}
     ${IGNITION-MSGS_LIBRARIES}
-    console_bridge)
+    console_bridge::console_bridge)
   target_compile_options(${PROJECT_NAME}_ignition_visualization PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
   target_compile_options(${PROJECT_NAME}_ignition_visualization PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
   target_compile_definitions(${PROJECT_NAME}_ignition_visualization PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
