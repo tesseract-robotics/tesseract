@@ -13,6 +13,12 @@ find_package(tesseract_geometry REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(cmake_common_scripts REQUIRED)
 
+if(NOT TARGET console_bridge::console_bridge)
+  add_library(console_bridge::console_bridge INTERFACE IMPORTED)
+  set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${console_bridge_INCLUDE_DIRS}")
+  set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_LINK_LIBRARIES "${console_bridge_LIBRARIES}")
+endif()
+
 set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/*)
 
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
@@ -21,7 +27,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 tesseract_variables()
 
 add_library(${PROJECT_NAME} src/graph.cpp src/resource_locator.cpp src/srdf_model.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC ${Boost_LIBRARIES} tesseract::tesseract_geometry tesseract::tesseract_common orocos-kdl console_bridge)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${Boost_LIBRARIES} tesseract::tesseract_geometry tesseract::tesseract_common orocos-kdl console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} Boost_USE_STATIC_LIBS=OFF Boost_USE_MULTITHREADED=ON Boost_USE_STATIC_RUNTIME=OFF)
@@ -33,7 +39,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}
-    ${console_bridge_INCLUDE_DIRS}
     ${orocos_kdl_INCLUDE_DIRS} # Orocos did not export target correctly
     ${Boost_INCLUDE_DIRS})
 

@@ -22,6 +22,11 @@ link_directories(BEFORE ${FCL_LIBRARY_DIRS})
 include_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
 link_directories(BEFORE "${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS}")
 
+if(NOT TARGET console_bridge::console_bridge)
+  add_library(console_bridge::console_bridge INTERFACE IMPORTED)
+  set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${console_bridge_INCLUDE_DIRS}")
+  set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_LINK_LIBRARIES "${console_bridge_LIBRARIES}")
+endif()
 
 # These targets are necessary for 16.04 builds. Remove when Kinetic support is dropped
 if(NOT TARGET octomap)
@@ -71,7 +76,7 @@ add_library(${PROJECT_NAME}_bullet
   src/bullet/tesseract_convex_convex_algorithm.cpp
   src/bullet/tesseract_gjk_pair_detector.cpp
 )
-target_link_libraries(${PROJECT_NAME}_bullet PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_geometry console_bridge octomap octomath)
+target_link_libraries(${PROJECT_NAME}_bullet PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_geometry console_bridge::console_bridge octomap octomath)
 target_link_libraries(${PROJECT_NAME}_bullet PUBLIC ${BULLET_LIBRARIES})
 target_compile_options(${PROJECT_NAME}_bullet PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_bullet PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
@@ -92,7 +97,7 @@ add_library(${PROJECT_NAME}_fcl
   src/fcl/fcl_discrete_managers.cpp
   src/fcl/fcl_utils.cpp
   src/fcl/fcl_collision_object_wrapper.cpp)
-target_link_libraries(${PROJECT_NAME}_fcl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_geometry fcl ${BULLET_LIBRARIES} console_bridge octomap octomath)
+target_link_libraries(${PROJECT_NAME}_fcl PUBLIC ${PROJECT_NAME}_core tesseract::tesseract_geometry fcl ${BULLET_LIBRARIES} console_bridge::console_bridge octomap octomath)
 target_compile_options(${PROJECT_NAME}_fcl PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_fcl PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_fcl PUBLIC ${TESSERACT_COMPILE_DEFINITIONS} ${BULLET_DEFINITIONS})
@@ -139,7 +144,7 @@ set(PACKAGE_LIBRARIES ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME
 if (NOT MSVC)
   # Create target for creating convex hull's from meshes
   add_executable(create_convex_hull src/create_convex_hull.cpp)
-  target_link_libraries(create_convex_hull PUBLIC ${PROJECT_NAME}_core ${BULLET_LIBRARIES} tesseract::tesseract_common tesseract::tesseract_geometry ${Boost_LIBRARIES} console_bridge octomap octomath)
+  target_link_libraries(create_convex_hull PUBLIC ${PROJECT_NAME}_core ${BULLET_LIBRARIES} tesseract::tesseract_common tesseract::tesseract_geometry ${Boost_LIBRARIES} console_bridge::console_bridge octomap octomath)
   target_compile_options(create_convex_hull PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE} ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
   target_compile_definitions(create_convex_hull PRIVATE ${TESSERACT_COMPILE_DEFINITIONS} ${BULLET_DEFINITIONS})
   target_clang_tidy(create_convex_hull ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})

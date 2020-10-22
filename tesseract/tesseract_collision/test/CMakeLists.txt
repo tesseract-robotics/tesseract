@@ -41,7 +41,7 @@ include(GoogleTest)
 
 macro(add_gtest test_name test_file)
   add_executable(${test_name} ${test_file})
-  target_link_libraries(${test_name} PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME}_test_suite ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl tesseract::tesseract_geometry tesseract::tesseract_scene_graph console_bridge ${Boost_LIBRARIES} octomap octomath ${LIBFCL_LIBRARIES})
+  target_link_libraries(${test_name} PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME}_test_suite ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl tesseract::tesseract_geometry tesseract::tesseract_scene_graph console_bridge::console_bridge ${Boost_LIBRARIES} octomap octomath ${LIBFCL_LIBRARIES})
   target_compile_options(${test_name} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE} ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
   target_compile_definitions(${test_name} PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
   target_clang_tidy(${test_name} ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})

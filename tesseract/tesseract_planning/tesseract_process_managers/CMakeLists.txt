@@ -17,6 +17,12 @@ find_package(tesseract_motion_planners REQUIRED)
 find_package(tesseract_time_parameterization REQUIRED)
 find_package(cmake_common_scripts REQUIRED)
 
+if(NOT TARGET console_bridge::console_bridge)
+  add_library(console_bridge::console_bridge INTERFACE IMPORTED)
+  set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${console_bridge_INCLUDE_DIRS}")
+  set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_LINK_LIBRARIES "${console_bridge_LIBRARIES}")
+endif()
+
 set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/*)
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 
@@ -48,7 +54,7 @@ add_library(${PROJECT_NAME}
     src/taskflows/cartesian_taskflow.cpp
     src/taskflows/freespace_taskflow.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC
-    console_bridge
+    console_bridge::console_bridge
     Taskflow::Taskflow
     tesseract::tesseract_common
     tesseract::tesseract_command_language
