@@ -17,6 +17,12 @@ find_package(trajopt REQUIRED)
 find_package(trajopt_sco REQUIRED)
 find_package(cmake_common_scripts REQUIRED)
 
+if(NOT TARGET console_bridge::console_bridge)
+  add_library(console_bridge::console_bridge INTERFACE IMPORTED)
+  set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${console_bridge_INCLUDE_DIRS}")
+  set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_LINK_LIBRARIES "${console_bridge_LIBRARIES}")
+endif()
+
 set(COVERAGE_EXCLUDE /usr/* /opt/* ${CMAKE_CURRENT_LIST_DIR}/test/* /*/gtest/* /*/include/descartes_light/* /*/include/opw_kinematics/* /*/include/trajopt/* /*/include/trajopt_sco/*)
 
 add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
@@ -26,7 +32,7 @@ tesseract_variables()
 
 # Create interface for core
 add_library(${PROJECT_NAME}_core src/core/utils.cpp)
-target_link_libraries(${PROJECT_NAME}_core PUBLIC tesseract::tesseract tesseract::tesseract_common tesseract::tesseract_command_language trajopt::trajopt console_bridge)
+target_link_libraries(${PROJECT_NAME}_core PUBLIC tesseract::tesseract tesseract::tesseract_common tesseract::tesseract_command_language trajopt::trajopt console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
