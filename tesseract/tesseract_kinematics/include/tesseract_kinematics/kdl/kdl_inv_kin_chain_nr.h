@@ -63,6 +63,8 @@ public:
 
   InverseKinematics::Ptr clone() const override;
 
+  bool update() override;
+
   bool calcInvKin(Eigen::VectorXd& solutions,
                   const Eigen::Isometry3d& pose,
                   const Eigen::Ref<const Eigen::VectorXd>& seed) const override;

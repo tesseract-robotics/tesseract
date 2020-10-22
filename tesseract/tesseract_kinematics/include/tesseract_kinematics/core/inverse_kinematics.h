@@ -58,6 +58,12 @@ public:
   InverseKinematics& operator=(InverseKinematics&&) = delete;
 
   /**
+   * @brief Updates kinematics if kinematic parameters have changed
+   * @return True if successful
+   */
+  virtual bool update() = 0;
+
+  /**
    * @brief Calculates joint solutions given a pose.
    * @param solutions A vector of solutions, so check the size of the vector to determine the number of solutions
    * @param pose Transform of end-of-tip relative to root (base link)
