@@ -50,7 +50,7 @@ int main()
   // --------------------
   tesseract_scene_graph::ResourceLocator::Ptr locator =
       std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
-  tesseract::Tesseract::Ptr tesseract = std::make_shared<tesseract::Tesseract>();
+  auto tesseract = std::make_shared<tesseract::Tesseract>();
   boost::filesystem::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400.urdf");
   boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400.srdf");
   tesseract->init(urdf_path, srdf_path, locator);
