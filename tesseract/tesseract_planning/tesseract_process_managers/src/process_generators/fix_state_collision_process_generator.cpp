@@ -37,13 +37,50 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-/**
- * @brief Checks if a waypoint is in collision
- * @param waypoint Must be a waypoint for which getJointPosition will return a position
- * @param input Process Input associated with waypoint. Needed for kinematics, etc.
- * @return True if in collision
- */
-bool WaypointInCollision(const Waypoint& waypoint, const ProcessInput& input)
+bool StateInCollision(const Eigen::Ref<Eigen::VectorXd>& start_pos,
+                      const ProcessInput& input,
+                      const FixStateCollisionProfile& profile)
+{
+  using namespace tesseract_collision;
+  using namespace tesseract_environment;
+
+  auto env = input.tesseract->getEnvironment();
+  auto kin = input.tesseract->getManipulatorManager()->getFwdKinematicSolver(input.manip_info.manipulator);
+
+  std::vector<ContactResultMap> collisions;
+  tesseract_environment::StateSolver::Ptr state_solver = env->getStateSolver();
+  DiscreteContactManager::Ptr manager = env->getDiscreteContactManager();
+  AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
+      env->getSceneGraph(), kin->getActiveLinkNames(), env->getCurrentState()->link_transforms);
+
+  manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
+  manager->setContactDistanceThreshold(profile.safety_margin);
+  collisions.clear();
+
+  tesseract_common::TrajArray traj(1, start_pos.size());
+  traj.row(0) = start_pos.transpose();
+
+  // This never returns any collisions
+  if (!checkTrajectory(collisions, *manager, *state_solver, kin->getJointNames(), traj))
+  {
+    CONSOLE_BRIDGE_logDebug("No collisions found");
+    return false;
+  }
+  else
+  {
+    CONSOLE_BRIDGE_logDebug("Waypoint is not contact free!");
+    for (std::size_t i = 0; i < collisions.size(); i++)
+      for (const auto& contact_vec : collisions[i])
+        for (const auto& contact : contact_vec.second)
+          CONSOLE_BRIDGE_logDebug(("timestep: " + std::to_string(i) + " Links: " + contact.link_names[0] + ", " +
+                                   contact.link_names[1] + " Dist: " + std::to_string(contact.distance))
+                                      .c_str());
+  }
+
+  return true;
+}
+
+bool WaypointInCollision(const Waypoint& waypoint, const ProcessInput& input, const FixStateCollisionProfile& profile)
 {
   // Get position associated with waypoint
   Eigen::VectorXd start_pos;
@@ -56,56 +93,9 @@ bool WaypointInCollision(const Waypoint& waypoint, const ProcessInput& input)
     CONSOLE_BRIDGE_logError("WaypointInCollision error: %s", e.what());
     return false;
   }
-
-  // Check if there are collisions
-  {
-    using namespace tesseract_collision;
-    using namespace tesseract_environment;
-
-    auto env = input.tesseract->getEnvironment();
-    auto kin = input.tesseract->getManipulatorManager()->getFwdKinematicSolver(input.manip_info.manipulator);
-
-    std::vector<ContactResultMap> collisions;
-    tesseract_environment::StateSolver::Ptr state_solver = env->getStateSolver();
-    DiscreteContactManager::Ptr manager = env->getDiscreteContactManager();
-    AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
-        env->getSceneGraph(), kin->getActiveLinkNames(), env->getCurrentState()->link_transforms);
-
-    manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
-    manager->setContactDistanceThreshold(0);
-    collisions.clear();
-
-    tesseract_common::TrajArray traj(1, start_pos.size());
-    traj.row(0) = start_pos.transpose();
-
-    // This never returns any collisions
-    if (!checkTrajectory(collisions, *manager, *state_solver, kin->getJointNames(), traj))
-    {
-      CONSOLE_BRIDGE_logDebug("No collisions found");
-      return false;
-    }
-    else
-    {
-      CONSOLE_BRIDGE_logDebug("Waypoint is not contact free!");
-      for (std::size_t i = 0; i < collisions.size(); i++)
-        for (const auto& contact_vec : collisions[i])
-          for (const auto& contact : contact_vec.second)
-            CONSOLE_BRIDGE_logDebug(("timestep: " + std::to_string(i) + " Links: " + contact.link_names[0] + ", " +
-                                     contact.link_names[1] + " Dist: " + std::to_string(contact.distance))
-                                        .c_str());
-    }
-  }
-
-  return true;
+  return StateInCollision(start_pos, input, profile);
 }
 
-/**
- * @brief Takes a waypoint and uses a small trajopt problem to push it out of collision if necessary
- * @param waypoint Must be a waypoint for which getJointPosition will return a position
- * @param input Process Input associated with waypoint. Needed for kinematics, etc.
- * @param profile Profile containing needed params
- * @return True if successful
- */
 bool MoveWaypointFromCollisionTrajopt(Waypoint& waypoint,
                                       const ProcessInput& input,
                                       const FixStateCollisionProfile& profile)
@@ -199,6 +189,47 @@ bool MoveWaypointFromCollisionTrajopt(Waypoint& waypoint,
   return setJointPosition(waypoint, results);
 }
 
+bool MoveWaypointFromCollisionRandomSampler(Waypoint& waypoint,
+                                            const ProcessInput& input,
+                                            const FixStateCollisionProfile& profile)
+{
+  // Get position associated with waypoint
+  Eigen::VectorXd start_pos;
+  try
+  {
+    start_pos = getJointPosition(waypoint);
+  }
+  catch (std::runtime_error& e)
+  {
+    CONSOLE_BRIDGE_logError("MoveWaypointFromCollision error: %s", e.what());
+    return false;
+  }
+
+  const auto kin = input.tesseract->getManipulatorManager()->getFwdKinematicSolver(input.manip_info.manipulator);
+  Eigen::MatrixXd limits = kin->getLimits().joint_limits;
+  Eigen::VectorXd range = limits.col(1).array() - limits.col(0).array();
+  Eigen::VectorXd pos_sampling_limits = range * profile.jiggle_factor;
+  Eigen::VectorXd neg_sampline_limits = range * -profile.jiggle_factor;
+
+  for (int i = 0; i < profile.sampling_attempts; i++)
+  {
+    Eigen::VectorXd start_sampled_pos =
+        start_pos + Eigen::VectorXd::Random(start_pos.size()) * range * profile.jiggle_factor;
+
+    // Make sure it doesn't violate joint limits
+    Eigen::VectorXd sampled_pos = start_sampled_pos;
+    sampled_pos = sampled_pos.cwiseMax(limits.col(0));
+    sampled_pos = sampled_pos.cwiseMin(limits.col(1));
+
+    if (!StateInCollision(sampled_pos, input, profile))
+    {
+      return setJointPosition(waypoint, sampled_pos);
+    }
+  }
+
+  return false;
+}
+
 FixStateCollisionProcessGenerator::FixStateCollisionProcessGenerator(std::string name) : name_(std::move(name))
 {
   // Register default profile
@@ -268,11 +299,13 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) co
       if (instr_const_ptr)
       {
         PlanInstruction* mutable_instruction = const_cast<PlanInstruction*>(instr_const_ptr);
-        if (WaypointInCollision(mutable_instruction->getWaypoint(), input))
+        if (WaypointInCollision(mutable_instruction->getWaypoint(), input, *cur_composite_profile))
         {
           CONSOLE_BRIDGE_logInform("FixStateCollisionProcessGenerator is modifying the const input instructions");
           if (!MoveWaypointFromCollisionTrajopt(mutable_instruction->getWaypoint(), input, *cur_composite_profile))
-            return 0;
+            if (!MoveWaypointFromCollisionRandomSampler(
+                    mutable_instruction->getWaypoint(), input, *cur_composite_profile))
+              return 0;
         }
       }
     }
@@ -283,11 +316,13 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) co
       if (instr_const_ptr)
       {
         PlanInstruction* mutable_instruction = const_cast<PlanInstruction*>(instr_const_ptr);
-        if (WaypointInCollision(mutable_instruction->getWaypoint(), input))
+        if (WaypointInCollision(mutable_instruction->getWaypoint(), input, *cur_composite_profile))
         {
           CONSOLE_BRIDGE_logInform("FixStateCollisionProcessGenerator is modifying the const input instructions");
           if (!MoveWaypointFromCollisionTrajopt(mutable_instruction->getWaypoint(), input, *cur_composite_profile))
-            return 0;
+            if (!MoveWaypointFromCollisionRandomSampler(
+                    mutable_instruction->getWaypoint(), input, *cur_composite_profile))
+              return 0;
         }
       }
     }
@@ -304,7 +339,8 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) co
       bool in_collision = false;
       for (const auto& instruction : flattened)
       {
-        in_collision |= WaypointInCollision(instruction.get().cast_const<PlanInstruction>()->getWaypoint(), input);
+        in_collision |= WaypointInCollision(
+            instruction.get().cast_const<PlanInstruction>()->getWaypoint(), input, *cur_composite_profile);
       }
       if (!in_collision)
         break;
@@ -316,7 +352,8 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) co
         Instruction* mutable_instruction = const_cast<Instruction*>(instr_const_ptr);
         PlanInstruction* plan = mutable_instruction->cast<PlanInstruction>();
         if (!MoveWaypointFromCollisionTrajopt(plan->getWaypoint(), input, *cur_composite_profile))
-          return 0;
+          if (!MoveWaypointFromCollisionRandomSampler(plan->getWaypoint(), input, *cur_composite_profile))
+            return 0;
       }
     }
     break;
