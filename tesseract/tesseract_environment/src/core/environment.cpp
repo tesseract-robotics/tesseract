@@ -47,7 +47,7 @@ bool Environment::applyCommands(const Commands& commands)
   return true;
 }
 
-bool Environment::applyCommand(const std::vector<Command>& commands)
+bool Environment::applyCommands(const std::vector<Command>& commands)
 {
   for (const auto& command : commands)
     if (!applyCommand(command))

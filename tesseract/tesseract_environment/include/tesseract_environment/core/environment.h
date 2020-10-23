@@ -185,7 +185,7 @@ public:
    * @return true if successful. If returned false, then only a partial set of commands have been applied. Call
    * getCommandHistory to check. Some commands are not checked for success
    */
-  bool applyCommand(const std::vector<Command>& commands);
+  bool applyCommands(const std::vector<Command>& commands);
 
   /**
    * @brief Apply command to the environment
