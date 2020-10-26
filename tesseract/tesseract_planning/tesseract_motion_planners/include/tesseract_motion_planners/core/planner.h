@@ -72,9 +72,6 @@ public:
   /** @brief Clear the data structures used by the planner */
   virtual void clear() = 0;
 
-  /** @brief Set to DEFAULT. Default profiles are given this name. */
-  static const std::string DEFAULT_PROFILE_KEY;
-
 protected:
   std::string name_; /**< @brief The name of this planner */
 };

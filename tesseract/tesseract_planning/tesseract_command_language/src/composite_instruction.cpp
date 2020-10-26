@@ -52,7 +52,7 @@ void CompositeInstruction::setDescription(const std::string& description) { desc
 
 void CompositeInstruction::setProfile(const std::string& profile)
 {
-  profile_ = (profile.empty()) ? "DEFAULT" : profile;
+  profile_ = (profile.empty()) ? DEFAULT_PROFILE_KEY : profile;
 }
 const std::string& CompositeInstruction::getProfile() const { return profile_; }
 
