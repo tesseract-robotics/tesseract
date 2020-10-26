@@ -230,6 +230,26 @@ bool MoveWaypointFromCollisionRandomSampler(Waypoint& waypoint,
   return false;
 }
 
+bool ApplyCorrectionWorkflow(Waypoint& waypoint, const ProcessInput& input, const FixStateCollisionProfile& profile)
+{
+  for (const auto& method : profile.correction_workflow)
+  {
+    switch (method)
+    {
+      case FixStateCollisionProfile::CorrectionMethod::NONE:
+        return false;  // No correction and in collision, so return false
+      case FixStateCollisionProfile::CorrectionMethod::TRAJOPT:
+        if (MoveWaypointFromCollisionTrajopt(waypoint, input, profile))
+          return true;
+      case FixStateCollisionProfile::CorrectionMethod::RANDOM_SAMPLER:
+        if (MoveWaypointFromCollisionRandomSampler(waypoint, input, profile))
+          return true;
+    }
+  }
+  // If all methods have tried without returning, then correction failed
+  return false;
+}
+
 FixStateCollisionProcessGenerator::FixStateCollisionProcessGenerator(std::string name) : name_(std::move(name))
 {
   // Register default profile
@@ -302,10 +322,8 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) co
         if (WaypointInCollision(mutable_instruction->getWaypoint(), input, *cur_composite_profile))
         {
           CONSOLE_BRIDGE_logInform("FixStateCollisionProcessGenerator is modifying the const input instructions");
-          if (!MoveWaypointFromCollisionTrajopt(mutable_instruction->getWaypoint(), input, *cur_composite_profile))
-            if (!MoveWaypointFromCollisionRandomSampler(
-                    mutable_instruction->getWaypoint(), input, *cur_composite_profile))
-              return 0;
+          if (!ApplyCorrectionWorkflow(mutable_instruction->getWaypoint(), input, *cur_composite_profile))
+            return 0;
         }
       }
     }
@@ -319,10 +337,8 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) co
         if (WaypointInCollision(mutable_instruction->getWaypoint(), input, *cur_composite_profile))
         {
           CONSOLE_BRIDGE_logInform("FixStateCollisionProcessGenerator is modifying the const input instructions");
-          if (!MoveWaypointFromCollisionTrajopt(mutable_instruction->getWaypoint(), input, *cur_composite_profile))
-            if (!MoveWaypointFromCollisionRandomSampler(
-                    mutable_instruction->getWaypoint(), input, *cur_composite_profile))
-              return 0;
+          if (!ApplyCorrectionWorkflow(mutable_instruction->getWaypoint(), input, *cur_composite_profile))
+            return 0;
         }
       }
     }
@@ -351,9 +367,9 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) co
         const Instruction* instr_const_ptr = &instruction.get();
         Instruction* mutable_instruction = const_cast<Instruction*>(instr_const_ptr);
         PlanInstruction* plan = mutable_instruction->cast<PlanInstruction>();
-        if (!MoveWaypointFromCollisionTrajopt(plan->getWaypoint(), input, *cur_composite_profile))
-          if (!MoveWaypointFromCollisionRandomSampler(plan->getWaypoint(), input, *cur_composite_profile))
-            return 0;
+
+        if (!ApplyCorrectionWorkflow(plan->getWaypoint(), input, *cur_composite_profile))
+          return 0;
       }
     }
     break;

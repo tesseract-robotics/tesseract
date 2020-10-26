@@ -48,10 +48,22 @@ struct FixStateCollisionProfile
     DISABLED
   };
 
+  /** @brief Used to specify method used to correct states in collision */
+  enum class CorrectionMethod
+  {
+    NONE,
+    TRAJOPT,
+    RANDOM_SAMPLER
+  };
+
   FixStateCollisionProfile(Settings mode = Settings::ALL) : mode(mode) {}
 
   /** @brief Sets which terms will be corrected  */
   Settings mode;
+
+  /** @brief Order that correction methods will be applied. These will be attempted in order until one succeeds or all
+   * have been tried */
+  std::vector<CorrectionMethod> correction_workflow{ CorrectionMethod::TRAJOPT, CorrectionMethod::RANDOM_SAMPLER };
 
   /** @brief Percent of the total joint range that a joint will be allowed to be adjusted */
   double jiggle_factor{ 0.02 };
@@ -145,5 +157,7 @@ bool MoveWaypointFromCollisionTrajopt(Waypoint& waypoint,
 bool MoveWaypointFromCollisionRandomSampler(Waypoint& waypoint,
                                             const ProcessInput& input,
                                             const FixStateCollisionProfile& profile);
+
+bool ApplyCorrectionWorkflow(Waypoint& waypoint, const ProcessInput& input, const FixStateCollisionProfile& profile);
 }  // namespace tesseract_planning
 #endif  // TESSERACT_PROCESS_MANAGERS_FIX_STATE_BOUNDS_PROCESS_GENERATOR_H
