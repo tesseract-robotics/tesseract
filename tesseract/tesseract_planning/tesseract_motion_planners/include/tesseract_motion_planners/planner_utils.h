@@ -31,6 +31,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_command_language/constants.h>
+#include <tesseract_kinematics/core/forward_kinematics.h>
 #include <tesseract_motion_planners/robot_config.h>
 #include <tesseract_motion_planners/core/types.h>
 
@@ -115,7 +118,7 @@ bool isValidState(const tesseract_kinematics::ForwardKinematics::ConstPtr& robot
 inline std::string getProfileString(const std::string& profile,
                                     const std::string& planner_name,
                                     const PlannerProfileRemapping& profile_remapping,
-                                    std::string default_profile = "DEFAULT")
+                                    std::string default_profile = DEFAULT_PROFILE_KEY)
 {
   std::string results = profile;
   if (profile.empty())
