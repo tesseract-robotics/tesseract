@@ -46,6 +46,7 @@ add_library(${PROJECT_NAME}
     src/process_generators/fix_state_collision_process_generator.cpp
     src/process_generators/iterative_spline_parameterization_process_generator.cpp
     src/process_generators/motion_planner_process_generator.cpp
+    src/process_generators/profile_switch_process_generator.cpp
     src/process_managers/raster_process_manager.cpp
     src/process_managers/raster_dt_process_manager.cpp
     src/process_managers/raster_waad_process_manager.cpp
