@@ -241,9 +241,11 @@ bool ApplyCorrectionWorkflow(Waypoint& waypoint, const ProcessInput& input, cons
       case FixStateCollisionProfile::CorrectionMethod::TRAJOPT:
         if (MoveWaypointFromCollisionTrajopt(waypoint, input, profile))
           return true;
+        break;
       case FixStateCollisionProfile::CorrectionMethod::RANDOM_SAMPLER:
         if (MoveWaypointFromCollisionRandomSampler(waypoint, input, profile))
           return true;
+        break;
     }
   }
   // If all methods have tried without returning, then correction failed
