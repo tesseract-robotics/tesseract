@@ -124,9 +124,8 @@ tesseract_common::StatusCode SimpleMotionPlanner::solve(const PlannerRequest& re
     return response.status;
   }
 
-  // Set start instruction and Manipulator Information
+  // Set start instruction
   seed.setStartInstruction(start_instruction);
-  seed.setManipulatorInfo(request.instructions.getManipulatorInfo());
 
   // Fill out the response
   response.results = seed;
@@ -191,7 +190,7 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
                                                                       const PlannerRequest& request) const
 {
   Waypoint start_waypoint = initial_start_waypoint;
-  CompositeInstruction seed;
+  CompositeInstruction seed(instructions.getProfile(), instructions.getOrder(), instructions.getManipulatorInfo());
   for (const auto& instruction : instructions)
   {
     if (isCompositeInstruction(instruction))
