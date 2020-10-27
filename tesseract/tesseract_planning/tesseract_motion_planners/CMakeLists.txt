@@ -19,6 +19,9 @@ find_package(cmake_common_scripts REQUIRED)
 # serialization was required because ompl does not include find_dependency for its required dependencies
 find_package(Boost REQUIRED COMPONENTS serialization system filesystem program_options)
 
+# there is an issue when building on windows with the ROS distro where it includes an incorrect path
+list(REMOVE_ITEM OMPL_INCLUDE_DIRS "/include/eigen3")
+
 if(NOT TARGET console_bridge::console_bridge)
   add_library(console_bridge::console_bridge INTERFACE IMPORTED)
   set_target_properties(console_bridge::console_bridge PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${console_bridge_INCLUDE_DIRS})
