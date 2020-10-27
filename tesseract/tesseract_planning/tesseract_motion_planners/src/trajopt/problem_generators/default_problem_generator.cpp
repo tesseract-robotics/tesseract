@@ -28,6 +28,7 @@
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
 #include <tesseract_motion_planners/core/utils.h>
+#include <tesseract_motion_planners/planner_utils.h>
 
 namespace tesseract_planning
 {
@@ -105,25 +106,11 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name
     start_waypoint = swp;
   }
 
-  // Get Plan Profile
-  if (profile.empty())
-    profile = "DEFAULT";
-
-  // Check for remapping of profile
-  auto remap = request.plan_profile_remapping.find(name);
-  if (remap != request.plan_profile_remapping.end())
-  {
-    auto p = remap->second.find(profile);
-    if (p != remap->second.end())
-      profile = p->second;
-  }
-
-  TrajOptPlanProfile::Ptr start_plan_profile{ nullptr };
-  auto it = plan_profiles.find(profile);
-  if (it == plan_profiles.end())
-    start_plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
-  else
-    start_plan_profile = it->second;
+  profile = getProfileString(profile, name, request.plan_profile_remapping);
+  TrajOptPlanProfile::Ptr start_plan_profile =
+      getProfile<TrajOptPlanProfile>(profile, plan_profiles, std::make_shared<TrajOptDefaultPlanProfile>());
+  if (!start_plan_profile)
+    throw std::runtime_error("TrajOptPlannerUniversalConfig: Invalid profile");
 
   // Add start seed state
   assert(request.seed.hasStartInstruction());
@@ -170,26 +157,11 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name
       const auto* seed_composite = seed_flat[i].get().cast_const<tesseract_planning::CompositeInstruction>();
       auto interpolate_cnt = static_cast<int>(seed_composite->size());
 
-      // Get Plan Profile
-      std::string profile = plan_instruction->getProfile();
-      if (profile.empty())
-        profile = "DEFAULT";
-
-      // Check for remapping of profile
-      auto remap = request.plan_profile_remapping.find(name);
-      if (remap != request.plan_profile_remapping.end())
-      {
-        auto p = remap->second.find(profile);
-        if (p != remap->second.end())
-          profile = p->second;
-      }
-
-      TrajOptPlanProfile::Ptr cur_plan_profile{ nullptr };
-      auto it = plan_profiles.find(profile);
-      if (it == plan_profiles.end())
-        cur_plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
-      else
-        cur_plan_profile = it->second;
+      std::string profile = getProfileString(plan_instruction->getProfile(), name, request.plan_profile_remapping);
+      TrajOptPlanProfile::Ptr cur_plan_profile =
+          getProfile<TrajOptPlanProfile>(profile, plan_profiles, std::make_shared<TrajOptDefaultPlanProfile>());
+      if (!start_plan_profile)
+        throw std::runtime_error("TrajOptPlannerUniversalConfig: Invalid profile");
 
       if (plan_instruction->isLinear())
       {
@@ -385,29 +357,11 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name
   for (long i = 0; i < pci->basic_info.n_steps; ++i)
     pci->init_info.data.row(i) = seed_states[static_cast<std::size_t>(i)];
 
-  // Apply Composite Profile
-  profile = request.instructions.getProfile();
-  if (profile.empty())
-    profile = "DEFAULT";
-
-  // Check for remapping of profile
-  remap = request.composite_profile_remapping.find(name);
-  if (remap != request.composite_profile_remapping.end())
-  {
-    auto p = remap->second.find(profile);
-    if (p != remap->second.end())
-      profile = p->second;
-  }
-
-  TrajOptCompositeProfile::Ptr cur_composite_profile{ nullptr };
-  auto it_composite = composite_profiles.find(profile);
-  if (it_composite == composite_profiles.end())
-  {
-    CONSOLE_BRIDGE_logDebug("Trajopt profile not found. Setting default");
-    cur_composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
-  }
-  else
-    cur_composite_profile = it_composite->second;
+  profile = getProfileString(profile, name, request.composite_profile_remapping);
+  TrajOptCompositeProfile::Ptr cur_composite_profile = getProfile<TrajOptCompositeProfile>(
+      profile, composite_profiles, std::make_shared<TrajOptDefaultCompositeProfile>());
+  if (!cur_composite_profile)
+    throw std::runtime_error("TrajOptPlannerUniversalConfig: Invalid profile");
 
   cur_composite_profile->apply(*pci, 0, pci->basic_info.n_steps - 1, composite_mi, active_links, fixed_steps);
 

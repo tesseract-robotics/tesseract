@@ -37,6 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/utils/utils.h>
 #include <tesseract_command_language/state_waypoint.h>
+#include <tesseract_motion_planners/planner_utils.h>
 
 using namespace trajopt;
 
@@ -71,7 +72,7 @@ std::string SimpleMotionPlannerStatusCategory::message(int code) const
 SimpleMotionPlanner::SimpleMotionPlanner(std::string name)
   : MotionPlanner(std::move(name)), status_category_(std::make_shared<const SimpleMotionPlannerStatusCategory>(name_))
 {
-  plan_profiles["DEFAULT"] = std::make_shared<SimplePlannerDefaultPlanProfile>();
+  plan_profiles[DEFAULT_PROFILE_KEY] = std::make_shared<SimplePlannerDefaultPlanProfile>();
 }
 
 bool SimpleMotionPlanner::terminate()
@@ -213,25 +214,11 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
       assert(is_cwp1 || is_jwp1 || is_swp1);
       assert(is_cwp2 || is_jwp2 || is_swp2);
 
-      std::string profile = plan_instruction->getProfile();
-      if (profile.empty())
-        profile = "DEFAULT";
-
-      // Check for remapping of profile
-      auto remap = request.plan_profile_remapping.find(name_);
-      if (remap != request.plan_profile_remapping.end())
-      {
-        auto p = remap->second.find(profile);
-        if (p != remap->second.end())
-          profile = p->second;
-      }
-
-      SimplePlannerPlanProfile::Ptr start_plan_profile{ nullptr };
-      auto it = plan_profiles.find(profile);
-      if (it == plan_profiles.end())
-        start_plan_profile = std::make_shared<SimplePlannerDefaultPlanProfile>();
-      else
-        start_plan_profile = it->second;
+      std::string profile = getProfileString(plan_instruction->getProfile(), name_, request.plan_profile_remapping);
+      SimplePlannerPlanProfile::Ptr start_plan_profile = getProfile<SimplePlannerPlanProfile>(
+          profile, plan_profiles, std::make_shared<SimplePlannerDefaultPlanProfile>());
+      if (!start_plan_profile)
+        throw std::runtime_error("SimpleMotionPlanner: Invalid start profile");
 
       if (plan_instruction->isLinear())
       {
