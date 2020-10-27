@@ -89,6 +89,15 @@ public:
    */
   const Eigen::Isometry3d& getTransform() const;
 
+  bool operator==(const ToolCenterPoint& other) const
+  {
+    bool ret_val = true;
+    ret_val &= (type_ == other.type_);
+    ret_val &= (name_ == other.name_);
+    ret_val &= (transform_.isApprox(transform_, 1e-5));
+    return ret_val;
+  }
+
 protected:
   int type_{ 0 };
   std::string name_;
@@ -134,6 +143,16 @@ struct ManipulatorInfo
   bool empty() const;
 
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const;
+
+  bool operator==(const ManipulatorInfo& other) const
+  {
+    bool ret_val = true;
+    ret_val &= (manipulator == other.manipulator);
+    ret_val &= (manipulator_ik_solver == other.manipulator_ik_solver);
+    ret_val &= (tcp == other.tcp);
+    ret_val &= (working_frame == other.working_frame);
+    return ret_val;
+  }
 };
 }  // namespace tesseract_planning
 
