@@ -428,6 +428,58 @@ TEST(TesseractCommandLanguageUtilsUnit, clampToJointLimits)
   }
 }
 
+TEST(TesseractCommandLanguageUtilsUnit, generateSkeletonSeed)
+{
+  // Create a composite
+  CompositeInstruction composite;
+  composite.setDescription("generateSkeletonSeed: Composite");
+  composite.setProfile("COMPOSITE_PROFILE");
+  std::size_t i_max = 4;
+
+  for (std::size_t i = 0; i < i_max; i++)
+  {
+    Waypoint wp = CartesianWaypoint(Eigen::Isometry3d::Identity());
+    PlanInstruction instruction(wp, PlanInstructionType::LINEAR);
+    instruction.setDescription("PlanInstruction");
+    instruction.setProfile("CART_PROFILE");
+    composite.push_back(instruction);
+  }
+
+  // generateSkeletonSeed
+  auto skeleton = generateSkeletonSeed(composite);
+
+  // Check that high level composite is correct
+  EXPECT_EQ(skeleton.getProfile(), composite.getProfile());
+  EXPECT_EQ(skeleton.getOrder(), composite.getOrder());
+  EXPECT_EQ(skeleton.getDescription(), composite.getDescription());
+  EXPECT_EQ(skeleton.getManipulatorInfo(), composite.getManipulatorInfo());
+  // TODO: Test startInstruction
+
+  // Check that each PlanInstruction has been turned into a CompositeInstruction
+  // Check that CompositeInstructions are recursively handled (TODO)
+  // Check that non-PlanInstructions are passed through (TODO)
+  ASSERT_EQ(skeleton.size(), composite.size());
+  for (std::size_t i = 0; i < i_max; i++)
+  {
+    const auto& skeleton_i = skeleton[i];
+    const auto& composite_i = composite[i];
+    if (isPlanInstruction(composite_i))
+    {
+      ASSERT_TRUE(isCompositeInstruction(skeleton_i));
+      const auto cast = skeleton_i.cast_const<CompositeInstruction>();
+
+      EXPECT_EQ(cast->getProfile(), composite_i.cast_const<PlanInstruction>()->getProfile());
+      EXPECT_EQ(cast->getOrder(), CompositeInstructionOrder::ORDERED);
+      EXPECT_EQ(cast->getDescription(), "PlanInstruction");
+      EXPECT_EQ(cast->getManipulatorInfo(), composite_i.cast_const<PlanInstruction>()->getManipulatorInfo());
+    }
+    else
+    {
+      EXPECT_EQ(skeleton_i.getType(), composite_i.getType());
+    }
+  }
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
