@@ -101,7 +101,7 @@ CompositeInstruction getProgram()
     transition_from_start.setDescription("transition_from_start");
     transition_from_start.push_back(plan_f1);
 
-    CompositeInstruction transitions("DEFAULT", CompositeInstructionOrder::UNORDERED);
+    CompositeInstruction transitions(DEFAULT_PROFILE_KEY, CompositeInstructionOrder::UNORDERED);
     transitions.setDescription("transitions");
     transitions.push_back(transition_from_start);
     transitions.push_back(transition_from_end);
@@ -130,7 +130,7 @@ CompositeInstruction getProgram()
     transition_from_start.setDescription("transition_from_start");
     transition_from_start.push_back(plan_f1);
 
-    CompositeInstruction transitions("DEFAULT", CompositeInstructionOrder::UNORDERED);
+    CompositeInstruction transitions(DEFAULT_PROFILE_KEY, CompositeInstructionOrder::UNORDERED);
     transitions.setDescription("transitions");
     transitions.push_back(transition_from_start);
     transitions.push_back(transition_from_end);

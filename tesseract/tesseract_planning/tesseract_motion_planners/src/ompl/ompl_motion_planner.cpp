@@ -39,6 +39,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/ompl/ompl_motion_planner.h>
 #include <tesseract_motion_planners/ompl/continuous_motion_validator.h>
 #include <tesseract_motion_planners/ompl/discrete_motion_validator.h>
+#include <tesseract_motion_planners/ompl/profile/ompl_default_plan_profile.h>
 #include <tesseract_motion_planners/ompl/weighted_real_vector_state_sampler.h>
 #include <tesseract_motion_planners/core/utils.h>
 
@@ -89,6 +90,7 @@ bool checkGoalState(const ompl::base::ProblemDefinitionPtr& prob_def,
 OMPLMotionPlanner::OMPLMotionPlanner(std::string name)
   : MotionPlanner(std::move(name)), status_category_(std::make_shared<const OMPLMotionPlannerStatusCategory>(name_))
 {
+  plan_profiles[DEFAULT_PROFILE_KEY] = std::make_shared<OMPLDefaultPlanProfile>();
 }
 
 bool OMPLMotionPlanner::terminate()
