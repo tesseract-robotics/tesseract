@@ -94,13 +94,14 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
-  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
+  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
 
   auto composite = LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5);
   for (const auto& c : composite)
   {
     EXPECT_TRUE(isMoveInstruction(c));
     EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+    EXPECT_EQ(c.cast_const<MoveInstruction>()->getProfile(), instr.getProfile());
   }
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   EXPECT_TRUE(wp2.isApprox(mi->getWaypoint().cast_const<StateWaypoint>()->position, 1e-5));
@@ -113,13 +114,14 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
-  PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "DEFAULT", manip_info_);
+  PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "TEST_PROFILE", manip_info_);
 
   auto composite = LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5);
   for (const auto& c : composite)
   {
     EXPECT_TRUE(isMoveInstruction(c));
     EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+    EXPECT_EQ(c.cast_const<MoveInstruction>()->getProfile(), instr.getProfile());
   }
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   EXPECT_TRUE(wp2.isApprox(mi->getWaypoint().cast_const<StateWaypoint>()->position, 1e-5));
@@ -132,13 +134,14 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
-  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
+  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
 
   auto composite = LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5);
   for (const auto& c : composite)
   {
     EXPECT_TRUE(isMoveInstruction(c));
     EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+    EXPECT_EQ(c.cast_const<MoveInstruction>()->getProfile(), instr.getProfile());
   }
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   const Eigen::VectorXd& last_position = mi->getWaypoint().cast_const<StateWaypoint>()->position;
@@ -155,13 +158,14 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
-  PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "DEFAULT", manip_info_);
+  PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "TEST_PROFILE", manip_info_);
 
   auto composite = LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5);
   for (const auto& c : composite)
   {
     EXPECT_TRUE(isMoveInstruction(c));
     EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+    EXPECT_EQ(c.cast_const<MoveInstruction>()->getProfile(), instr.getProfile());
   }
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   const Eigen::VectorXd& last_position = mi->getWaypoint().cast_const<StateWaypoint>()->position;
@@ -178,13 +182,14 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Zero(7));
-  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
+  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
 
   auto composite = LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5);
   for (const auto& c : composite)
   {
     EXPECT_TRUE(isMoveInstruction(c));
     EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+    EXPECT_EQ(c.cast_const<MoveInstruction>()->getProfile(), instr.getProfile());
   }
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   EXPECT_TRUE(wp2.isApprox(mi->getWaypoint().cast_const<StateWaypoint>()->position, 1e-5));
@@ -197,13 +202,14 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Zero(7));
-  PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "DEFAULT", manip_info_);
+  PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "TEST_PROFILE", manip_info_);
 
   auto composite = LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5);
   for (const auto& c : composite)
   {
     EXPECT_TRUE(isMoveInstruction(c));
     EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+    EXPECT_EQ(c.cast_const<MoveInstruction>()->getProfile(), instr.getProfile());
   }
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   EXPECT_TRUE(wp2.isApprox(mi->getWaypoint().cast_const<StateWaypoint>()->position, 1e-5));
@@ -216,13 +222,14 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
-  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
+  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
 
   auto composite = LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5);
   for (const auto& c : composite)
   {
     EXPECT_TRUE(isMoveInstruction(c));
     EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+    EXPECT_EQ(c.cast_const<MoveInstruction>()->getProfile(), instr.getProfile());
   }
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   const Eigen::VectorXd& last_position = mi->getWaypoint().cast_const<StateWaypoint>()->position;
@@ -239,13 +246,14 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
-  PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "DEFAULT", manip_info_);
+  PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "TEST_PROFILE", manip_info_);
 
   auto composite = LVSInterpolateStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5);
   for (const auto& c : composite)
   {
     EXPECT_TRUE(isMoveInstruction(c));
     EXPECT_TRUE(isStateWaypoint(c.cast_const<MoveInstruction>()->getWaypoint()));
+    EXPECT_EQ(c.cast_const<MoveInstruction>()->getProfile(), instr.getProfile());
   }
   const auto* mi = composite.back().cast_const<MoveInstruction>();
   const Eigen::VectorXd& last_position = mi->getWaypoint().cast_const<StateWaypoint>()->position;
@@ -262,7 +270,7 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateW
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
-  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
+  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
 
   EXPECT_ANY_THROW(LVSInterpolateCartStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5));
   /// @todo: Update once implemented
@@ -275,7 +283,7 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateW
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
-  PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "DEFAULT", manip_info_);
+  PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "TEST_PROFILE", manip_info_);
 
   EXPECT_ANY_THROW(LVSInterpolateCartStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5));
   /// @todo: Update once implemented
@@ -288,7 +296,7 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateW
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
-  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
+  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
 
   EXPECT_ANY_THROW(LVSInterpolateCartStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5));
   /// @todo: Update once implemented
@@ -301,7 +309,7 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateW
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
-  PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "DEFAULT", manip_info_);
+  PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "TEST_PROFILE", manip_info_);
 
   EXPECT_ANY_THROW(LVSInterpolateCartStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5));
   /// @todo: Update once implemented
@@ -314,7 +322,7 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateW
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Zero(7));
-  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
+  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
 
   EXPECT_ANY_THROW(LVSInterpolateCartStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5));
   /// @todo: Update once implemented
@@ -327,7 +335,7 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateW
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Zero(7));
-  PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "DEFAULT", manip_info_);
+  PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "TEST_PROFILE", manip_info_);
 
   EXPECT_ANY_THROW(LVSInterpolateCartStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5));
   /// @todo: Update once implemented
@@ -340,7 +348,7 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateW
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
-  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "DEFAULT", manip_info_);
+  PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
 
   EXPECT_ANY_THROW(LVSInterpolateCartStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5));
   /// @todo: Update once implemented
@@ -353,7 +361,7 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateCartStateW
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
   CartesianWaypoint wp1 = Eigen::Isometry3d::Identity();
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
-  PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "DEFAULT", manip_info_);
+  PlanInstruction instr(wp1, PlanInstructionType::LINEAR, "TEST_PROFILE", manip_info_);
 
   EXPECT_ANY_THROW(LVSInterpolateCartStateWaypoint(wp1, wp2, instr, request, ManipulatorInfo(), 3.14, 0.5, 1.57, 5));
   /// @todo: Update once implemented
