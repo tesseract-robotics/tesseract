@@ -28,6 +28,7 @@
 
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_motion_planners/descartes/descartes_problem.h>
+#include <tesseract_motion_planners/planner_utils.h>
 #include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
 #include <tesseract_motion_planners/descartes/profile/descartes_default_plan_profile.h>
 #include <tesseract_kinematics/core/validate.h>
@@ -119,25 +120,11 @@ DefaultDescartesProblemGenerator(const std::string& name,
     start_waypoint = swp;
   }
 
-  // Check Start Profile
-  if (profile.empty())
-    profile = "DEFAULT";
-
-  // Check for remapping of profile
-  auto remap = request.plan_profile_remapping.find(name);
-  if (remap != request.plan_profile_remapping.end())
-  {
-    auto p = remap->second.find(profile);
-    if (p != remap->second.end())
-      profile = p->second;
-  }
-
-  typename DescartesPlanProfile<FloatType>::Ptr cur_plan_profile{ nullptr };
-  auto it = plan_profiles.find(profile);
-  if (it == plan_profiles.end())
-    cur_plan_profile = std::make_shared<DescartesDefaultPlanProfile<FloatType>>();
-  else
-    cur_plan_profile = it->second;
+  profile = getProfileString(profile, name, request.plan_profile_remapping);
+  auto cur_plan_profile = getProfile<DescartesPlanProfile<FloatType>>(
+      profile, plan_profiles, std::make_shared<DescartesDefaultPlanProfile<FloatType>>());
+  if (!cur_plan_profile)
+    throw std::runtime_error("DescartesMotionPlannerConfig: Invalid profile");
 
   // Add start waypoint
   if (isCartesianWaypoint(start_waypoint))
@@ -180,24 +167,11 @@ DefaultDescartesProblemGenerator(const std::string& name,
 
       // Get Plan Profile
       std::string profile = plan_instruction->getProfile();
-      if (profile.empty())
-        profile = "DEFAULT";
-
-      // Check for remapping of profile
-      auto remap = request.plan_profile_remapping.find(name);
-      if (remap != request.plan_profile_remapping.end())
-      {
-        auto p = remap->second.find(profile);
-        if (p != remap->second.end())
-          profile = p->second;
-      }
-
-      typename DescartesPlanProfile<FloatType>::Ptr cur_plan_profile{ nullptr };
-      auto it = plan_profiles.find(profile);
-      if (it == plan_profiles.end())
-        cur_plan_profile = std::make_shared<DescartesDefaultPlanProfile<FloatType>>();
-      else
-        cur_plan_profile = it->second;
+      profile = getProfileString(profile, name, request.plan_profile_remapping);
+      auto cur_plan_profile = getProfile<DescartesPlanProfile<FloatType>>(
+          profile, plan_profiles, std::make_shared<DescartesDefaultPlanProfile<FloatType>>());
+      if (!cur_plan_profile)
+        throw std::runtime_error("DescartesMotionPlannerConfig: Invalid profile");
 
       if (plan_instruction->isLinear())
       {

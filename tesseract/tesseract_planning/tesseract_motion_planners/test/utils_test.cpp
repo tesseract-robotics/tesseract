@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract/tesseract.h>
 #include <tesseract_motion_planners/core/utils.h>
+#include <tesseract_motion_planners/planner_utils.h>
 #include <tesseract_command_language/plan_instruction.h>
 
 using namespace tesseract;
@@ -86,6 +87,40 @@ TEST_F(TesseractPlanningUtilsUnit, GenerateSeed)  // NOLINT
 {
   EXPECT_TRUE(true);
 }
+
+TEST_F(TesseractPlanningUtilsUnit, GetProfileStringTest)
+{
+  std::string input_profile = "";
+  std::string planner_name = "Planner_1";
+  std::string default_planner = "TEST_DEFAULT";
+
+  std::unordered_map<std::string, std::string> remap;
+  remap["profile_1"] = "profile_1_remapped";
+  PlannerProfileRemapping remapping;
+  remapping["Planner_2"] = remap;
+
+  // Empty input profile
+  std::string output_profile = getProfileString(input_profile, planner_name, remapping);
+  EXPECT_EQ(output_profile, "DEFAULT");
+  output_profile = getProfileString(input_profile, planner_name, remapping, default_planner);
+  EXPECT_EQ(output_profile, default_planner);
+
+  // Planner name doesn't match
+  input_profile = "profile_1";
+  output_profile = getProfileString(input_profile, planner_name, remapping, default_planner);
+  EXPECT_EQ(input_profile, output_profile);
+
+  // Profile name doesn't match
+  input_profile = "doesnt_match";
+  output_profile = getProfileString(input_profile, "Planner_2", remapping, default_planner);
+  EXPECT_EQ(input_profile, output_profile);
+
+  // Successful remap
+  input_profile = "profile_1";
+  output_profile = getProfileString(input_profile, "Planner_2", remapping, default_planner);
+  EXPECT_EQ(output_profile, "profile_1_remapped");
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

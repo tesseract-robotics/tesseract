@@ -26,6 +26,7 @@
 
 #include <tesseract_kinematics/core/validate.h>
 #include <tesseract/tesseract.h>
+#include <tesseract_motion_planners/planner_utils.h>
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/ompl/problem_generators/default_problem_generator.h>
 #include <tesseract_command_language/utils/utils.h>
@@ -144,24 +145,11 @@ std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const std::string& nam
 
       // Get Plan Profile
       std::string profile = plan_instruction->getProfile();
-      if (profile.empty())
-        profile = "DEFAULT";
-
-      // Check for remapping of profile
-      auto remap = request.plan_profile_remapping.find(name);
-      if (remap != request.plan_profile_remapping.end())
-      {
-        auto p = remap->second.find(profile);
-        if (p != remap->second.end())
-          profile = p->second;
-      }
-
-      typename OMPLPlanProfile::Ptr cur_plan_profile{ nullptr };
-      auto it = plan_profiles.find(profile);
-      if (it == plan_profiles.end())
-        cur_plan_profile = std::make_shared<OMPLDefaultPlanProfile>();
-      else
-        cur_plan_profile = it->second;
+      profile = getProfileString(profile, name, request.plan_profile_remapping);
+      auto cur_plan_profile =
+          getProfile<OMPLPlanProfile>(profile, plan_profiles, std::make_shared<OMPLDefaultPlanProfile>());
+      if (!cur_plan_profile)
+        throw std::runtime_error("OMPLMotionPlannerDefaultConfig: Invalid profile");
 
       /** @todo Should check that the joint names match the order of the manipulator */
       OMPLProblem::Ptr sub_prob = CreateOMPLSubProblem(request, manip_fwd_kin_, manip_inv_kin_, active_link_names_);

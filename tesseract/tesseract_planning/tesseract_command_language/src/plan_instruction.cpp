@@ -49,7 +49,10 @@ void PlanInstruction::setManipulatorInfo(ManipulatorInfo info) { manipulator_inf
 const ManipulatorInfo& PlanInstruction::getManipulatorInfo() const { return manipulator_info_; }
 ManipulatorInfo& PlanInstruction::getManipulatorInfo() { return manipulator_info_; }
 
-void PlanInstruction::setProfile(const std::string& profile) { profile_ = (profile.empty()) ? "DEFAULT" : profile; }
+void PlanInstruction::setProfile(const std::string& profile)
+{
+  profile_ = (profile.empty()) ? DEFAULT_PROFILE_KEY : profile;
+}
 const std::string& PlanInstruction::getProfile() const { return profile_; }
 
 int PlanInstruction::getType() const { return type_; }
