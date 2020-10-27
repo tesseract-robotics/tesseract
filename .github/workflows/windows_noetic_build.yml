@@ -38,5 +38,5 @@ jobs:
         rosdep install -q --from-paths . --ignore-src -y
 
         catkin_make_isolated --install --force-cmake --only-pkg-with-deps tesseract tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_scene_graph tesseract_support tesseract_urdf tesseract_visualization tesseract_motion_planners tesseract_process_managers --cmake-args -DCMAKE_BUILD_TYPE=Release
-        call "D:\a\tesseract\tesseract\install_isolated\setup.bat"
-        catkin_make_isolated --install --force-cmake --pkg tesseract tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_scene_graph tesseract_support tesseract_urdf tesseract_visualization tesseract_motion_planners tesseract_process_managers --cmake-args -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=ON
+        : call "D:\a\tesseract\tesseract\install_isolated\setup.bat"
+        : catkin_make_isolated --install --force-cmake --pkg tesseract tesseract_collision tesseract_common tesseract_environment tesseract_geometry tesseract_kinematics tesseract_scene_graph tesseract_support tesseract_urdf tesseract_visualization tesseract_motion_planners tesseract_process_managers --cmake-args -DCMAKE_BUILD_TYPE=Release -DTESSERACT_ENABLE_TESTING=ON
