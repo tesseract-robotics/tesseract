@@ -211,6 +211,7 @@ bool MoveWaypointFromCollisionRandomSampler(Waypoint& waypoint,
   Eigen::VectorXd pos_sampling_limits = range * profile.jiggle_factor;
   Eigen::VectorXd neg_sampline_limits = range * -profile.jiggle_factor;
 
+  assert(start_pos.size() == range.size());
   for (int i = 0; i < profile.sampling_attempts; i++)
   {
     Eigen::VectorXd start_sampled_pos =
