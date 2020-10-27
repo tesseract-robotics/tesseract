@@ -65,10 +65,10 @@ public:
 
   explicit Command(CommandType type) : type_(type) {}
   virtual ~Command() = default;
-  Command(const Command&) = default;
-  Command& operator=(const Command&) = default;
-  Command(Command&&) = default;
-  Command& operator=(Command&&) = default;
+  Command(const Command&) = delete;
+  Command& operator=(const Command&) = delete;
+  Command(Command&&) = delete;
+  Command& operator=(Command&&) = delete;
 
   CommandType getType() const { return type_; }
 
