@@ -66,6 +66,7 @@ CompositeInstruction fixedSizeAssignStateWaypoint(const Eigen::Ref<const Eigen::
     MoveInstruction move_instruction(StateWaypoint(fwd_kin->getJointNames(), position), mv_type);
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
+    move_instruction.setProfile(base_instruction.getProfile());
     composite.push_back(move_instruction);
   }
 

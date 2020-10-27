@@ -97,6 +97,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
       MoveInstruction move_instruction(StateWaypoint(start.joint_names, states.col(i)), MoveInstructionType::LINEAR);
       move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
       move_instruction.setDescription(base_instruction.getDescription());
+      move_instruction.setProfile(base_instruction.getProfile());
       composite.push_back(move_instruction);
     }
   }
@@ -117,6 +118,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
       MoveInstruction move_instruction(StateWaypoint(start.joint_names, states.col(i)), MoveInstructionType::FREESPACE);
       move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
       move_instruction.setDescription(base_instruction.getDescription());
+      move_instruction.setProfile(base_instruction.getProfile());
       composite.push_back(move_instruction);
     }
   }
@@ -209,6 +211,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
       MoveInstruction move_instruction(StateWaypoint(start.joint_names, states.col(i)), MoveInstructionType::LINEAR);
       move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
       move_instruction.setDescription(base_instruction.getDescription());
+      move_instruction.setProfile(base_instruction.getProfile());
       composite.push_back(move_instruction);
     }
   }
@@ -229,6 +232,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
       MoveInstruction move_instruction(StateWaypoint(start.joint_names, states.col(i)), MoveInstructionType::FREESPACE);
       move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
       move_instruction.setDescription(base_instruction.getDescription());
+      move_instruction.setProfile(base_instruction.getProfile());
       composite.push_back(move_instruction);
     }
   }
@@ -321,6 +325,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
       MoveInstruction move_instruction(StateWaypoint(end.joint_names, states.col(i)), MoveInstructionType::LINEAR);
       move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
       move_instruction.setDescription(base_instruction.getDescription());
+      move_instruction.setProfile(base_instruction.getProfile());
       composite.push_back(move_instruction);
     }
   }
@@ -341,6 +346,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
       MoveInstruction move_instruction(StateWaypoint(end.joint_names, states.col(i)), MoveInstructionType::FREESPACE);
       move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
       move_instruction.setDescription(base_instruction.getDescription());
+      move_instruction.setProfile(base_instruction.getProfile());
       composite.push_back(move_instruction);
     }
   }
@@ -437,6 +443,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
                                        MoveInstructionType::LINEAR);
       move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
       move_instruction.setDescription(base_instruction.getDescription());
+      move_instruction.setProfile(base_instruction.getProfile());
       composite.push_back(move_instruction);
     }
   }
@@ -458,6 +465,7 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
                                        MoveInstructionType::FREESPACE);
       move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
       move_instruction.setDescription(base_instruction.getDescription());
+      move_instruction.setProfile(base_instruction.getProfile());
       composite.push_back(move_instruction);
     }
   }
@@ -517,6 +525,7 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
     tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(pose), MoveInstructionType::LINEAR);
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
+    move_instruction.setProfile(base_instruction.getProfile());
     composite.push_back(move_instruction);
   }
 
@@ -573,6 +582,7 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
     tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(pose), MoveInstructionType::LINEAR);
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
+    move_instruction.setProfile(base_instruction.getProfile());
     composite.push_back(move_instruction);
   }
 
@@ -629,6 +639,7 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const CartesianWaypoint& st
     tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(pose), MoveInstructionType::LINEAR);
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
+    move_instruction.setProfile(base_instruction.getProfile());
     composite.push_back(move_instruction);
   }
 
@@ -668,6 +679,7 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const CartesianWaypoint& st
     tesseract_planning::MoveInstruction move_instruction(CartesianWaypoint(pose), MoveInstructionType::LINEAR);
     move_instruction.setManipulatorInfo(base_instruction.getManipulatorInfo());
     move_instruction.setDescription(base_instruction.getDescription());
+    move_instruction.setProfile(base_instruction.getProfile());
     composite.push_back(move_instruction);
   }
   return composite;
