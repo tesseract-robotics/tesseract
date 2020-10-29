@@ -136,6 +136,92 @@ inline CompositeInstruction rasterExampleProgram()
   return program;
 }
 
+inline CompositeInstruction rasterOnlyExampleProgram()
+{
+  CompositeInstruction program("raster_program", CompositeInstructionOrder::ORDERED, ManipulatorInfo("manipulator"));
+
+  Waypoint wp1 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8, -0.3, 0.8) *
+                                   Eigen::Quaterniond(0, 0, -1.0, 0));
+
+  // Define start instruction
+  PlanInstruction start_instruction(wp1, PlanInstructionType::START);
+  start_instruction.setDescription("Start Instruction");
+  program.setStartInstruction(start_instruction);
+
+  for (int i = 0; i < 4; ++i)
+  {
+    double x = 0.8 + (i * 0.1);
+    Waypoint wp1 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(x, -0.3, 0.8) *
+                                     Eigen::Quaterniond(0, 0, -1.0, 0));
+    Waypoint wp2 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(x, -0.2, 0.8) *
+                                     Eigen::Quaterniond(0, 0, -1.0, 0));
+    Waypoint wp3 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(x, -0.1, 0.8) *
+                                     Eigen::Quaterniond(0, 0, -1.0, 0));
+    Waypoint wp4 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(x, 0.0, 0.8) *
+                                     Eigen::Quaterniond(0, 0, -1.0, 0));
+    Waypoint wp5 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(x, 0.1, 0.8) *
+                                     Eigen::Quaterniond(0, 0, -1.0, 0));
+    Waypoint wp6 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(x, 0.2, 0.8) *
+                                     Eigen::Quaterniond(0, 0, -1.0, 0));
+    Waypoint wp7 = CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(x, 0.3, 0.8) *
+                                     Eigen::Quaterniond(0, 0, -1.0, 0));
+
+    CompositeInstruction raster_segment;
+    raster_segment.setDescription("Raster #" + std::to_string(i + 1));
+    if (i == 0 || i == 2)
+    {
+      raster_segment.push_back(PlanInstruction(wp2, PlanInstructionType::LINEAR, "RASTER"));
+      raster_segment.push_back(PlanInstruction(wp3, PlanInstructionType::LINEAR, "RASTER"));
+      raster_segment.push_back(PlanInstruction(wp4, PlanInstructionType::LINEAR, "RASTER"));
+      raster_segment.push_back(PlanInstruction(wp5, PlanInstructionType::LINEAR, "RASTER"));
+      raster_segment.push_back(PlanInstruction(wp6, PlanInstructionType::LINEAR, "RASTER"));
+      raster_segment.push_back(PlanInstruction(wp7, PlanInstructionType::LINEAR, "RASTER"));
+    }
+    else
+    {
+      raster_segment.push_back(PlanInstruction(wp6, PlanInstructionType::LINEAR, "RASTER"));
+      raster_segment.push_back(PlanInstruction(wp5, PlanInstructionType::LINEAR, "RASTER"));
+      raster_segment.push_back(PlanInstruction(wp4, PlanInstructionType::LINEAR, "RASTER"));
+      raster_segment.push_back(PlanInstruction(wp3, PlanInstructionType::LINEAR, "RASTER"));
+      raster_segment.push_back(PlanInstruction(wp2, PlanInstructionType::LINEAR, "RASTER"));
+      raster_segment.push_back(PlanInstruction(wp1, PlanInstructionType::LINEAR, "RASTER"));
+    }
+    program.push_back(raster_segment);
+
+    // Add transition
+    if (i == 0 || i == 2)
+    {
+      Waypoint wp7 =
+          CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8 + ((i + 1) * 0.1), 0.3, 0.8) *
+                            Eigen::Quaterniond(0, 0, -1.0, 0));
+
+      PlanInstruction plan_f1(wp7, PlanInstructionType::FREESPACE, "freespace_profile");
+      plan_f1.setDescription("transition_from_end_plan");
+
+      CompositeInstruction transition;
+      transition.setDescription("transition_from_end");
+      transition.push_back(plan_f1);
+      program.push_back(transition);
+    }
+    else if (i == 1)
+    {
+      Waypoint wp1 =
+          CartesianWaypoint(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0.8 + ((i + 1) * 0.1), -0.3, 0.8) *
+                            Eigen::Quaterniond(0, 0, -1.0, 0));
+
+      PlanInstruction plan_f1(wp1, PlanInstructionType::FREESPACE, "freespace_profile");
+      plan_f1.setDescription("transition_from_end_plan");
+
+      CompositeInstruction transition;
+      transition.setDescription("transition_from_end");
+      transition.push_back(plan_f1);
+      program.push_back(transition);
+    }
+  }
+
+  return program;
+}
+
 }  // namespace tesseract_planning
 
 #endif
