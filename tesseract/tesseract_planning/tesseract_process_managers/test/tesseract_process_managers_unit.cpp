@@ -11,11 +11,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_input.h>
 #include <tesseract_process_managers/process_managers/raster_process_manager.h>
+#include <tesseract_process_managers/process_managers/raster_global_process_manager.h>
+#include <tesseract_process_managers/process_managers/raster_only_process_manager.h>
+#include <tesseract_process_managers/process_managers/raster_only_global_process_manager.h>
 #include <tesseract_process_managers/process_managers/raster_dt_process_manager.h>
 #include <tesseract_process_managers/process_managers/raster_waad_process_manager.h>
 #include <tesseract_process_managers/process_managers/raster_waad_dt_process_manager.h>
 #include <tesseract_process_managers/taskflows/cartesian_taskflow.h>
 #include <tesseract_process_managers/taskflows/freespace_taskflow.h>
+#include <tesseract_process_managers/taskflows/descartes_taskflow.h>
+#include <tesseract_process_managers/taskflows/trajopt_taskflow.h>
 
 #include "raster_example_program.h"
 #include "raster_dt_example_program.h"
@@ -158,6 +163,97 @@ TEST_F(TesseractProcessManagerUnit, RasterProcessManagerTest)
                                       std::move(transition_taskflow_generator),
                                       std::move(raster_taskflow_generator),
                                       1);
+  EXPECT_TRUE(raster_manager.init(input));
+
+  // Solve
+  EXPECT_TRUE(raster_manager.execute());
+}
+
+TEST_F(TesseractProcessManagerUnit, RasterGlobalProcessManagerTest)
+{
+  // Define the program
+  CompositeInstruction program = rasterExampleProgram();
+  const Instruction program_instruction{ program };
+  Instruction seed = generateSkeletonSeed(program);
+
+  // Define the Process Input
+  ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
+
+  // Create taskflows
+  tesseract_planning::DescartesTaskflowParams descartes_params;
+  descartes_params.enable_simple_planner = true;
+  descartes_params.enable_post_contact_discrete_check = false;
+  descartes_params.enable_post_contact_continuous_check = false;
+  descartes_params.enable_time_parameterization = false;
+  auto global_taskflow_generator = createDescartesTaskflow(descartes_params);
+
+  tesseract_planning::FreespaceTaskflowParams freespace_params;
+  freespace_params.type = tesseract_planning::FreespaceTaskflowType::TRAJOPT_FIRST;
+  freespace_params.enable_simple_planner = false;
+
+  auto freespace_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams(freespace_params));
+  auto transition_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams(freespace_params));
+  auto raster_taskflow_generator = createTrajOptTaskflow(false);
+  RasterGlobalProcessManager raster_manager(std::move(global_taskflow_generator),
+                                            std::move(freespace_taskflow_generator),
+                                            std::move(transition_taskflow_generator),
+                                            std::move(raster_taskflow_generator),
+                                            1);
+  EXPECT_TRUE(raster_manager.init(input));
+
+  // Solve
+  EXPECT_TRUE(raster_manager.execute());
+}
+
+TEST_F(TesseractProcessManagerUnit, RasterOnlyProcessManagerTest)
+{
+  // Define the program
+  CompositeInstruction program = rasterOnlyExampleProgram();
+  const Instruction program_instruction{ program };
+  Instruction seed = generateSkeletonSeed(program);
+
+  // Define the Process Input
+  ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
+
+  // Creat Taskflows
+  auto transition_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
+  auto raster_taskflow_generator = createCartesianTaskflow(true);
+  RasterOnlyProcessManager raster_manager(
+      std::move(transition_taskflow_generator), std::move(raster_taskflow_generator), 1);
+  EXPECT_TRUE(raster_manager.init(input));
+
+  // Solve
+  EXPECT_TRUE(raster_manager.execute());
+}
+
+TEST_F(TesseractProcessManagerUnit, RasterOnlyGlobalProcessManagerTest)
+{
+  // Define the program
+  CompositeInstruction program = rasterOnlyExampleProgram();
+  const Instruction program_instruction{ program };
+  Instruction seed = generateSkeletonSeed(program);
+
+  // Define the Process Input
+  ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
+
+  // Create taskflows
+  tesseract_planning::DescartesTaskflowParams descartes_params;
+  descartes_params.enable_simple_planner = true;
+  descartes_params.enable_post_contact_discrete_check = false;
+  descartes_params.enable_post_contact_continuous_check = false;
+  descartes_params.enable_time_parameterization = false;
+  auto global_taskflow_generator = createDescartesTaskflow(descartes_params);
+
+  tesseract_planning::FreespaceTaskflowParams freespace_params;
+  freespace_params.type = tesseract_planning::FreespaceTaskflowType::TRAJOPT_FIRST;
+  freespace_params.enable_simple_planner = false;
+
+  auto transition_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams(freespace_params));
+  auto raster_taskflow_generator = createTrajOptTaskflow(false);
+  RasterOnlyGlobalProcessManager raster_manager(std::move(global_taskflow_generator),
+                                                std::move(transition_taskflow_generator),
+                                                std::move(raster_taskflow_generator),
+                                                1);
   EXPECT_TRUE(raster_manager.init(input));
 
   // Solve
