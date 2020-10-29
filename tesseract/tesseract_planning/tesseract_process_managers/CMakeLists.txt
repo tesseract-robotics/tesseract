@@ -48,6 +48,9 @@ add_library(${PROJECT_NAME}
     src/process_generators/motion_planner_process_generator.cpp
     src/process_generators/profile_switch_process_generator.cpp
     src/process_managers/raster_process_manager.cpp
+    src/process_managers/raster_global_process_manager.cpp
+    src/process_managers/raster_only_process_manager.cpp
+    src/process_managers/raster_only_global_process_manager.cpp
     src/process_managers/raster_dt_process_manager.cpp
     src/process_managers/raster_waad_process_manager.cpp
     src/process_managers/raster_waad_dt_process_manager.cpp
