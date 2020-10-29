@@ -1,5 +1,5 @@
 ﻿/**
- * @file raster_process_manager.h
+ * @file raster_only_global_process_manager.h
  * @brief Plans raster paths
  *
  * @author Matthew Powelson
@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_RASTER_PROCESS_MANAGER_H
-#define TESSERACT_PROCESS_MANAGERS_RASTER_PROCESS_MANAGER_H
+#ifndef TESSERACT_PROCESS_MANAGERS_RASTER_ONLY_GLOBAL_PROCESS_MANAGER_H
+#define TESSERACT_PROCESS_MANAGERS_RASTER_ONLY_GLOBAL_PROCESS_MANAGER_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -50,31 +50,29 @@ namespace tesseract_planning
  *
  * Composite
  * {
- *   Composite - from start
  *   Composite - Raster segment
  *   Composite - Transitions
  *   Composite - Raster segment
  *   Composite - Transitions
  *   Composite - Raster segment
- *   Composite - to end
  * }
  */
-class RasterProcessManager : public ProcessManager
+class RasterOnlyGlobalProcessManager : public ProcessManager
 {
 public:
-  using Ptr = std::shared_ptr<RasterProcessManager>;
-  using ConstPtr = std::shared_ptr<const RasterProcessManager>;
+  using Ptr = std::shared_ptr<RasterOnlyGlobalProcessManager>;
+  using ConstPtr = std::shared_ptr<const RasterOnlyGlobalProcessManager>;
 
-  RasterProcessManager(TaskflowGenerator::UPtr freespace_taskflow_generator,
-                       TaskflowGenerator::UPtr transition_taskflow_generator,
-                       TaskflowGenerator::UPtr raster_taskflow_generator,
-                       std::size_t n = std::thread::hardware_concurrency());
+  RasterOnlyGlobalProcessManager(TaskflowGenerator::UPtr global_taskflow_generator,
+                                 TaskflowGenerator::UPtr transition_taskflow_generator,
+                                 TaskflowGenerator::UPtr raster_taskflow_generator,
+                                 std::size_t n = std::thread::hardware_concurrency());
 
-  ~RasterProcessManager() override = default;
-  RasterProcessManager(const RasterProcessManager&) = delete;
-  RasterProcessManager& operator=(const RasterProcessManager&) = delete;
-  RasterProcessManager(RasterProcessManager&&) = delete;
-  RasterProcessManager& operator=(RasterProcessManager&&) = delete;
+  ~RasterOnlyGlobalProcessManager() override = default;
+  RasterOnlyGlobalProcessManager(const RasterOnlyGlobalProcessManager&) = delete;
+  RasterOnlyGlobalProcessManager& operator=(const RasterOnlyGlobalProcessManager&) = delete;
+  RasterOnlyGlobalProcessManager(RasterOnlyGlobalProcessManager&&) = delete;
+  RasterOnlyGlobalProcessManager& operator=(RasterOnlyGlobalProcessManager&&) = delete;
 
   bool init(ProcessInput input) override;
 
@@ -95,15 +93,18 @@ private:
   bool debug_{ false };
   bool profile_{ false };
 
-  TaskflowGenerator::UPtr freespace_taskflow_generator_;
+  TaskflowGenerator::UPtr global_taskflow_generator_;
   TaskflowGenerator::UPtr transition_taskflow_generator_;
   TaskflowGenerator::UPtr raster_taskflow_generator_;
   tf::Executor executor_;
   tf::Taskflow taskflow_;
 
-  std::vector<tf::Task> freespace_tasks_;
+  tf::Task global_task_;
+  tf::Task global_post_task_;
   std::vector<tf::Task> transition_tasks_;
   std::vector<tf::Task> raster_tasks_;
+
+  static void globalPostProcess(ProcessInput input);
 
   /**
    * @brief Checks that the ProcessInput is in the correct format.
