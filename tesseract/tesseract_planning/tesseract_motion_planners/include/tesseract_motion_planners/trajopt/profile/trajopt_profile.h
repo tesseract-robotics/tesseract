@@ -58,14 +58,14 @@ public:
   TrajOptPlanProfile& operator=(TrajOptPlanProfile&&) = default;
 
   virtual void apply(trajopt::ProblemConstructionInfo& pci,
-                     const Eigen::Isometry3d& cartesian_waypoint,
+                     const CartesianWaypoint& cartesian_waypoint,
                      const Instruction& parent_instruction,
                      const ManipulatorInfo& manip_info,
                      const std::vector<std::string>& active_links,
                      int index) const = 0;
 
   virtual void apply(trajopt::ProblemConstructionInfo& pci,
-                     const Eigen::VectorXd& joint_waypoint,
+                     const JointWaypoint& joint_waypoint,
                      const Instruction& parent_instruction,
                      const ManipulatorInfo& manip_info,
                      const std::vector<std::string>& active_links,
