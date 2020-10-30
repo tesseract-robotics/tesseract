@@ -174,9 +174,9 @@ GraphTaskflow::UPtr createFreespaceTaskflowTrajOptFirst(const FreespaceTaskflowP
 
   // Setup TrajOpt 2
   auto trajopt_planner2 = std::make_shared<TrajOptMotionPlanner>();
-  trajopt_planner->problem_generator = &DefaultTrajoptProblemGenerator;
-  trajopt_planner->plan_profiles = params.trajopt_plan_profiles;
-  trajopt_planner->composite_profiles = params.trajopt_composite_profiles;
+  trajopt_planner2->problem_generator = &DefaultTrajoptProblemGenerator;
+  trajopt_planner2->plan_profiles = params.trajopt_plan_profiles;
+  trajopt_planner2->composite_profiles = params.trajopt_composite_profiles;
   auto trajopt_generator2 = std::make_unique<MotionPlannerProcessGenerator>(trajopt_planner2);
   int trajopt_idx2 = graph->addNode(std::move(trajopt_generator2), GraphTaskflow::NodeType::CONDITIONAL);
 
