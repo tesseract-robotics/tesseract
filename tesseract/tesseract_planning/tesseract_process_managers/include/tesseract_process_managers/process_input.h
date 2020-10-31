@@ -52,28 +52,37 @@ struct ProcessInput
   ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                const Instruction* instruction,
                const ManipulatorInfo& manip_info,
-               Instruction* seed);
+               Instruction* seed,
+               bool verbose = false);
 
   ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                const Instruction* instruction,
                const ManipulatorInfo& manip_info,
                const PlannerProfileRemapping& plan_profile_remapping,
                const PlannerProfileRemapping& composite_profile_remapping,
-               Instruction* seed);
+               Instruction* seed,
+               bool verbose = false);
 
   ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                const Instruction* instruction,
                const PlannerProfileRemapping& plan_profile_remapping,
                const PlannerProfileRemapping& composite_profile_remapping,
-               Instruction* seed);
+               Instruction* seed,
+               bool verbose = false);
 
-  ProcessInput(tesseract::Tesseract::ConstPtr tesseract, const Instruction* instruction, Instruction* seed);
+  ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
+               const Instruction* instruction,
+               Instruction* seed,
+               bool verbose = false);
 
   /** @brief Tesseract associated with current state of the system */
   const tesseract::Tesseract::ConstPtr tesseract;
 
   /** @brief Global Manipulator Information */
   const ManipulatorInfo& manip_info;
+
+  /** @brief Verbose Output */
+  bool verbose{ false };
 
   /**
    * @brief This allows the remapping of the Plan Profile identified in the command language to a specific profile for a
