@@ -160,7 +160,7 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input) const
   PlannerResponse response;
 
   bool verbose = false;
-  if (console_bridge::getLogLevel() == console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG)
+  if (input.verbose || console_bridge::getLogLevel() == console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG)
     verbose = true;
   auto status = planner_->solve(request, response, verbose);
 

@@ -43,9 +43,11 @@ static const PlannerProfileRemapping EMPTY_PROFILE_MAPPING;
 ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                            const Instruction* instruction,
                            const ManipulatorInfo& manip_info,
-                           Instruction* seed)
+                           Instruction* seed,
+                           bool verbose)
   : tesseract(std::move(tesseract))
   , manip_info(manip_info)
+  , verbose(verbose)
   , plan_profile_remapping(EMPTY_PROFILE_MAPPING)
   , composite_profile_remapping(EMPTY_PROFILE_MAPPING)
   , instruction_(instruction)
@@ -58,9 +60,11 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                            const ManipulatorInfo& manip_info,
                            const PlannerProfileRemapping& plan_profile_remapping,
                            const PlannerProfileRemapping& composite_profile_remapping,
-                           Instruction* seed)
+                           Instruction* seed,
+                           bool verbose)
   : tesseract(std::move(tesseract))
   , manip_info(manip_info)
+  , verbose(verbose)
   , plan_profile_remapping(plan_profile_remapping)
   , composite_profile_remapping(composite_profile_remapping)
   , instruction_(instruction)
@@ -72,9 +76,11 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                            const Instruction* instruction,
                            const PlannerProfileRemapping& plan_profile_remapping,
                            const PlannerProfileRemapping& composite_profile_remapping,
-                           Instruction* seed)
+                           Instruction* seed,
+                           bool verbose)
   : tesseract(std::move(tesseract))
   , manip_info(EMPTY_MANIPULATOR_INFO)
+  , verbose(verbose)
   , plan_profile_remapping(plan_profile_remapping)
   , composite_profile_remapping(composite_profile_remapping)
   , instruction_(instruction)
@@ -82,9 +88,13 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
 {
 }
 
-ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract, const Instruction* instruction, Instruction* seed)
+ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
+                           const Instruction* instruction,
+                           Instruction* seed,
+                           bool verbose)
   : tesseract(std::move(tesseract))
   , manip_info(EMPTY_MANIPULATOR_INFO)
+  , verbose(verbose)
   , plan_profile_remapping(EMPTY_PROFILE_MAPPING)
   , composite_profile_remapping(EMPTY_PROFILE_MAPPING)
   , instruction_(instruction)
