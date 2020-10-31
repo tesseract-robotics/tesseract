@@ -357,7 +357,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name
   for (long i = 0; i < pci->basic_info.n_steps; ++i)
     pci->init_info.data.row(i) = seed_states[static_cast<std::size_t>(i)];
 
-  profile = getProfileString(profile, name, request.composite_profile_remapping);
+  profile = getProfileString(request.instructions.getProfile(), name, request.composite_profile_remapping);
   TrajOptCompositeProfile::Ptr cur_composite_profile = getProfile<TrajOptCompositeProfile>(
       profile, composite_profiles, std::make_shared<TrajOptDefaultCompositeProfile>());
   if (!cur_composite_profile)
