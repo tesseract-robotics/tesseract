@@ -126,6 +126,10 @@ TEST_F(TesseractProcessManagerUnit, SeedMinLengthProcessGeneratorTest)
 
 TEST_F(TesseractProcessManagerUnit, RasterSimpleMotionPlannerDefaultPlanProfileTest)
 {
+  // Define the program
+  std::string freespace_profile = DEFAULT_PROFILE_KEY;
+  std::string process_profile = "PROCESS";
+
   tesseract_planning::CompositeInstruction program = rasterExampleProgram();
   EXPECT_FALSE(program.getManipulatorInfo().empty());
 
@@ -142,8 +146,8 @@ TEST_F(TesseractProcessManagerUnit, RasterSimpleMotionPlannerDefaultPlanProfileT
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   PlannerResponse response;
-  interpolator->plan_profiles["RASTER"] = std::make_shared<SimplePlannerDefaultPlanProfile>();
-  interpolator->plan_profiles["freespace_profile"] = std::make_shared<SimplePlannerDefaultPlanProfile>();
+  interpolator->plan_profiles[process_profile] = std::make_shared<SimplePlannerDefaultPlanProfile>();
+  interpolator->plan_profiles[freespace_profile] = std::make_shared<SimplePlannerDefaultPlanProfile>();
   auto status = interpolator->solve(request, response);
   EXPECT_TRUE(status);
 
@@ -159,6 +163,9 @@ TEST_F(TesseractProcessManagerUnit, RasterSimpleMotionPlannerDefaultPlanProfileT
 
 TEST_F(TesseractProcessManagerUnit, RasterSimpleMotionPlannerDefaultLVSPlanProfileTest)
 {
+  std::string freespace_profile = DEFAULT_PROFILE_KEY;
+  std::string process_profile = "PROCESS";
+
   tesseract_planning::CompositeInstruction program = rasterExampleProgram();
   EXPECT_FALSE(program.getManipulatorInfo().empty());
 
@@ -175,8 +182,8 @@ TEST_F(TesseractProcessManagerUnit, RasterSimpleMotionPlannerDefaultLVSPlanProfi
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   PlannerResponse response;
-  interpolator->plan_profiles["RASTER"] = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
-  interpolator->plan_profiles["freespace_profile"] = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
+  interpolator->plan_profiles[process_profile] = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
+  interpolator->plan_profiles[freespace_profile] = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
   auto status = interpolator->solve(request, response);
   EXPECT_TRUE(status);
 
@@ -184,7 +191,7 @@ TEST_F(TesseractProcessManagerUnit, RasterSimpleMotionPlannerDefaultLVSPlanProfi
 
   // The first plan instruction is the start instruction and every other plan instruction should be converted into
   // ten move instruction.
-  EXPECT_EQ(152, mcnt);
+  EXPECT_EQ(168, mcnt);
   EXPECT_TRUE(response.results.hasStartInstruction());
   EXPECT_FALSE(response.results.getManipulatorInfo().empty());
 }
@@ -252,10 +259,13 @@ TEST_F(TesseractProcessManagerUnit, FreespaceSimpleMotionPlannerDefaultLVSPlanPr
   EXPECT_FALSE(response.results.getManipulatorInfo().empty());
 }
 
-TEST_F(TesseractProcessManagerUnit, RasterProcessManagerTest)
+TEST_F(TesseractProcessManagerUnit, RasterProcessManagerDefaultPlanProfileTest)
 {
   // Define the program
-  CompositeInstruction program = rasterExampleProgram();
+  std::string freespace_profile = DEFAULT_PROFILE_KEY;
+  std::string process_profile = "PROCESS";
+
+  CompositeInstruction program = rasterExampleProgram(freespace_profile, process_profile);
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
 
@@ -263,23 +273,71 @@ TEST_F(TesseractProcessManagerUnit, RasterProcessManagerTest)
   ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
 
   // Initialize Freespace Manager
-  auto freespace_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
-  auto transition_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
-  auto raster_taskflow_generator = createCartesianTaskflow(true);
+  auto default_simple_plan_profile = std::make_shared<SimplePlannerDefaultPlanProfile>();
+  FreespaceTaskflowParams fparams;
+  fparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+  CartesianTaskflowParams cparams;
+  cparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+
+  auto freespace_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto transition_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto raster_taskflow_generator = createCartesianTaskflow(cparams);
   RasterProcessManager raster_manager(std::move(freespace_taskflow_generator),
                                       std::move(transition_taskflow_generator),
                                       std::move(raster_taskflow_generator),
                                       1);
+
   EXPECT_TRUE(raster_manager.init(input));
 
   // Solve
   EXPECT_TRUE(raster_manager.execute());
 }
 
-TEST_F(TesseractProcessManagerUnit, RasterGlobalProcessManagerTest)
+TEST_F(TesseractProcessManagerUnit, RasterProcessManagerDefaultLVSPlanProfileTest)
 {
   // Define the program
-  CompositeInstruction program = rasterExampleProgram();
+  std::string freespace_profile = DEFAULT_PROFILE_KEY;
+  std::string process_profile = "PROCESS";
+
+  CompositeInstruction program = rasterExampleProgram(freespace_profile, process_profile);
+  const Instruction program_instruction{ program };
+  Instruction seed = generateSkeletonSeed(program);
+
+  // Define the Process Input
+  ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
+
+  // Initialize Freespace Manager
+  auto default_simple_plan_profile = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
+  FreespaceTaskflowParams fparams;
+  fparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+  CartesianTaskflowParams cparams;
+  cparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+
+  auto freespace_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto transition_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto raster_taskflow_generator = createCartesianTaskflow(cparams);
+  RasterProcessManager raster_manager(std::move(freespace_taskflow_generator),
+                                      std::move(transition_taskflow_generator),
+                                      std::move(raster_taskflow_generator),
+                                      1);
+
+  EXPECT_TRUE(raster_manager.init(input));
+
+  // Solve
+  EXPECT_TRUE(raster_manager.execute());
+}
+
+TEST_F(TesseractProcessManagerUnit, RasterGlobalProcessManagerDefaultPlanProfileTest)
+{
+  // Define the program
+  std::string freespace_profile = DEFAULT_PROFILE_KEY;
+  std::string process_profile = "PROCESS";
+
+  CompositeInstruction program = rasterExampleProgram(freespace_profile, process_profile);
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
 
@@ -287,35 +345,99 @@ TEST_F(TesseractProcessManagerUnit, RasterGlobalProcessManagerTest)
   ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
 
   // Create taskflows
+  auto default_simple_plan_profile = std::make_shared<SimplePlannerDefaultPlanProfile>();
   tesseract_planning::DescartesTaskflowParams descartes_params;
   descartes_params.enable_simple_planner = true;
   descartes_params.enable_post_contact_discrete_check = false;
   descartes_params.enable_post_contact_continuous_check = false;
   descartes_params.enable_time_parameterization = false;
+  descartes_params.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  descartes_params.simple_plan_profiles[process_profile] = default_simple_plan_profile;
   auto global_taskflow_generator = createDescartesTaskflow(descartes_params);
 
-  tesseract_planning::FreespaceTaskflowParams freespace_params;
-  freespace_params.type = tesseract_planning::FreespaceTaskflowType::TRAJOPT_FIRST;
-  freespace_params.enable_simple_planner = false;
+  FreespaceTaskflowParams fparams;
+  fparams.type = tesseract_planning::FreespaceTaskflowType::TRAJOPT_FIRST;
+  fparams.enable_simple_planner = false;
+  fparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
 
-  auto freespace_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams(freespace_params));
-  auto transition_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams(freespace_params));
-  auto raster_taskflow_generator = createTrajOptTaskflow(false);
+  TrajOptTaskflowParams cparams;
+  cparams.enable_simple_planner = false;
+  cparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+
+  auto freespace_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto transition_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto raster_taskflow_generator = createTrajOptTaskflow(cparams);
   RasterGlobalProcessManager raster_manager(std::move(global_taskflow_generator),
                                             std::move(freespace_taskflow_generator),
                                             std::move(transition_taskflow_generator),
                                             std::move(raster_taskflow_generator),
                                             1);
+
   EXPECT_TRUE(raster_manager.init(input));
 
   // Solve
   EXPECT_TRUE(raster_manager.execute());
 }
 
-TEST_F(TesseractProcessManagerUnit, RasterOnlyProcessManagerTest)
+TEST_F(TesseractProcessManagerUnit, RasterGlobalProcessManagerDefaultLVSPlanProfileTest)
 {
   // Define the program
-  CompositeInstruction program = rasterOnlyExampleProgram();
+  std::string freespace_profile = DEFAULT_PROFILE_KEY;
+  std::string process_profile = "PROCESS";
+
+  CompositeInstruction program = rasterExampleProgram(freespace_profile, process_profile);
+  const Instruction program_instruction{ program };
+  Instruction seed = generateSkeletonSeed(program);
+
+  // Define the Process Input
+  ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
+
+  // Create taskflows
+  auto default_simple_plan_profile = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
+  tesseract_planning::DescartesTaskflowParams descartes_params;
+  descartes_params.enable_simple_planner = true;
+  descartes_params.enable_post_contact_discrete_check = false;
+  descartes_params.enable_post_contact_continuous_check = false;
+  descartes_params.enable_time_parameterization = false;
+  descartes_params.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  descartes_params.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+  auto global_taskflow_generator = createDescartesTaskflow(descartes_params);
+
+  FreespaceTaskflowParams fparams;
+  fparams.type = tesseract_planning::FreespaceTaskflowType::TRAJOPT_FIRST;
+  fparams.enable_simple_planner = false;
+  fparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+
+  TrajOptTaskflowParams cparams;
+  cparams.enable_simple_planner = false;
+  cparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+
+  auto freespace_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto transition_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto raster_taskflow_generator = createTrajOptTaskflow(cparams);
+  RasterGlobalProcessManager raster_manager(std::move(global_taskflow_generator),
+                                            std::move(freespace_taskflow_generator),
+                                            std::move(transition_taskflow_generator),
+                                            std::move(raster_taskflow_generator),
+                                            1);
+
+  EXPECT_TRUE(raster_manager.init(input));
+
+  // Solve
+  EXPECT_TRUE(raster_manager.execute());
+}
+
+TEST_F(TesseractProcessManagerUnit, RasterOnlyProcessManagerDefaultPlanProfileTest)
+{
+  // Define the program
+  std::string freespace_profile = DEFAULT_PROFILE_KEY;
+  std::string process_profile = "PROCESS";
+
+  CompositeInstruction program = rasterOnlyExampleProgram(freespace_profile, process_profile);
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
 
@@ -323,8 +445,16 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyProcessManagerTest)
   ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
 
   // Creat Taskflows
-  auto transition_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
-  auto raster_taskflow_generator = createCartesianTaskflow(true);
+  auto default_simple_plan_profile = std::make_shared<SimplePlannerDefaultPlanProfile>();
+  FreespaceTaskflowParams fparams;
+  fparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+  CartesianTaskflowParams cparams;
+  cparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+
+  auto transition_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto raster_taskflow_generator = createCartesianTaskflow(cparams);
   RasterOnlyProcessManager raster_manager(
       std::move(transition_taskflow_generator), std::move(raster_taskflow_generator), 1);
   EXPECT_TRUE(raster_manager.init(input));
@@ -333,10 +463,45 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyProcessManagerTest)
   EXPECT_TRUE(raster_manager.execute());
 }
 
-TEST_F(TesseractProcessManagerUnit, RasterOnlyGlobalProcessManagerTest)
+TEST_F(TesseractProcessManagerUnit, RasterOnlyProcessManagerDefaultLVSPlanProfileTest)
 {
   // Define the program
-  CompositeInstruction program = rasterOnlyExampleProgram();
+  std::string freespace_profile = DEFAULT_PROFILE_KEY;
+  std::string process_profile = "PROCESS";
+
+  CompositeInstruction program = rasterOnlyExampleProgram(freespace_profile, process_profile);
+  const Instruction program_instruction{ program };
+  Instruction seed = generateSkeletonSeed(program);
+
+  // Define the Process Input
+  ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
+
+  // Creat Taskflows
+  auto default_simple_plan_profile = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
+  FreespaceTaskflowParams fparams;
+  fparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+  CartesianTaskflowParams cparams;
+  cparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+
+  auto transition_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto raster_taskflow_generator = createCartesianTaskflow(cparams);
+  RasterOnlyProcessManager raster_manager(
+      std::move(transition_taskflow_generator), std::move(raster_taskflow_generator), 1);
+  EXPECT_TRUE(raster_manager.init(input));
+
+  // Solve
+  EXPECT_TRUE(raster_manager.execute());
+}
+
+TEST_F(TesseractProcessManagerUnit, RasterOnlyGlobalProcessManagerDefaultPlanProfileTest)
+{
+  // Define the program
+  std::string freespace_profile = DEFAULT_PROFILE_KEY;
+  std::string process_profile = "PROCESS";
+
+  CompositeInstruction program = rasterOnlyExampleProgram(freespace_profile, process_profile);
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
 
@@ -344,33 +509,97 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyGlobalProcessManagerTest)
   ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
 
   // Create taskflows
+  auto default_simple_plan_profile = std::make_shared<SimplePlannerDefaultPlanProfile>();
   tesseract_planning::DescartesTaskflowParams descartes_params;
   descartes_params.enable_simple_planner = true;
   descartes_params.enable_post_contact_discrete_check = false;
   descartes_params.enable_post_contact_continuous_check = false;
   descartes_params.enable_time_parameterization = false;
+  descartes_params.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  descartes_params.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+
   auto global_taskflow_generator = createDescartesTaskflow(descartes_params);
 
-  tesseract_planning::FreespaceTaskflowParams freespace_params;
-  freespace_params.type = tesseract_planning::FreespaceTaskflowType::TRAJOPT_FIRST;
-  freespace_params.enable_simple_planner = false;
+  FreespaceTaskflowParams fparams;
+  fparams.type = tesseract_planning::FreespaceTaskflowType::TRAJOPT_FIRST;
+  fparams.enable_simple_planner = false;
+  fparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
 
-  auto transition_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams(freespace_params));
-  auto raster_taskflow_generator = createTrajOptTaskflow(false);
+  TrajOptTaskflowParams cparams;
+  cparams.enable_simple_planner = false;
+  cparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+
+  auto transition_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto raster_taskflow_generator = createTrajOptTaskflow(cparams);
   RasterOnlyGlobalProcessManager raster_manager(std::move(global_taskflow_generator),
                                                 std::move(transition_taskflow_generator),
                                                 std::move(raster_taskflow_generator),
                                                 1);
+
   EXPECT_TRUE(raster_manager.init(input));
 
   // Solve
   EXPECT_TRUE(raster_manager.execute());
 }
 
-TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerTest)
+TEST_F(TesseractProcessManagerUnit, RasterOnlyGlobalProcessManagerDefaultLVSPlanProfileTest)
 {
   // Define the program
-  CompositeInstruction program = rasterDTExampleProgram();
+  std::string freespace_profile = DEFAULT_PROFILE_KEY;
+  std::string process_profile = "PROCESS";
+
+  CompositeInstruction program = rasterOnlyExampleProgram(freespace_profile, process_profile);
+  const Instruction program_instruction{ program };
+  Instruction seed = generateSkeletonSeed(program);
+
+  // Define the Process Input
+  ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
+
+  // Create taskflows
+  auto default_simple_plan_profile = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
+  tesseract_planning::DescartesTaskflowParams descartes_params;
+  descartes_params.enable_simple_planner = true;
+  descartes_params.enable_post_contact_discrete_check = false;
+  descartes_params.enable_post_contact_continuous_check = false;
+  descartes_params.enable_time_parameterization = false;
+  descartes_params.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  descartes_params.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+
+  auto global_taskflow_generator = createDescartesTaskflow(descartes_params);
+
+  FreespaceTaskflowParams fparams;
+  fparams.type = tesseract_planning::FreespaceTaskflowType::TRAJOPT_FIRST;
+  fparams.enable_simple_planner = false;
+  fparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+
+  TrajOptTaskflowParams cparams;
+  cparams.enable_simple_planner = false;
+  cparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+
+  auto transition_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto raster_taskflow_generator = createTrajOptTaskflow(cparams);
+  RasterOnlyGlobalProcessManager raster_manager(std::move(global_taskflow_generator),
+                                                std::move(transition_taskflow_generator),
+                                                std::move(raster_taskflow_generator),
+                                                1);
+
+  EXPECT_TRUE(raster_manager.init(input));
+
+  // Solve
+  EXPECT_TRUE(raster_manager.execute());
+}
+
+TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerDefaultPlanProfileTest)
+{
+  // Define the program
+  std::string freespace_profile = DEFAULT_PROFILE_KEY;
+  std::string process_profile = "PROCESS";
+
+  CompositeInstruction program = rasterDTExampleProgram(freespace_profile, process_profile);
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
 
@@ -378,9 +607,17 @@ TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerTest)
   ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
 
   // Initialize Freespace Manager
-  auto freespace_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
-  auto transition_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
-  auto raster_taskflow_generator = createCartesianTaskflow(true);
+  auto default_simple_plan_profile = std::make_shared<SimplePlannerDefaultPlanProfile>();
+  FreespaceTaskflowParams fparams;
+  fparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+  CartesianTaskflowParams cparams;
+  cparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+
+  auto freespace_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto transition_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto raster_taskflow_generator = createCartesianTaskflow(cparams);
   RasterDTProcessManager raster_manager(std::move(freespace_taskflow_generator),
                                         std::move(transition_taskflow_generator),
                                         std::move(raster_taskflow_generator),
@@ -391,10 +628,13 @@ TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerTest)
   EXPECT_TRUE(raster_manager.execute());
 }
 
-TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerTest)
+TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerDefaultLVSPlanProfileTest)
 {
   // Define the program
-  CompositeInstruction program = rasterWAADExampleProgram();
+  std::string freespace_profile = DEFAULT_PROFILE_KEY;
+  std::string process_profile = "PROCESS";
+
+  CompositeInstruction program = rasterDTExampleProgram(freespace_profile, process_profile);
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
 
@@ -402,9 +642,58 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerTest)
   ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
 
   // Initialize Freespace Manager
-  auto freespace_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
-  auto transition_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
-  auto raster_taskflow_generator = createCartesianTaskflow(true);
+  auto default_simple_plan_profile = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
+  FreespaceTaskflowParams fparams;
+  fparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+  CartesianTaskflowParams cparams;
+  cparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+
+  auto freespace_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto transition_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto raster_taskflow_generator = createCartesianTaskflow(cparams);
+  RasterDTProcessManager raster_manager(std::move(freespace_taskflow_generator),
+                                        std::move(transition_taskflow_generator),
+                                        std::move(raster_taskflow_generator),
+                                        1);
+  EXPECT_TRUE(raster_manager.init(input));
+
+  // Solve
+  EXPECT_TRUE(raster_manager.execute());
+}
+
+TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerDefaultPlanProfileTest)
+{
+  // Define the program
+  std::string freespace_profile = DEFAULT_PROFILE_KEY;
+  std::string approach_profile = "APPROACH";
+  std::string process_profile = "PROCESS";
+  std::string departure_profile = "DEPARTURE";
+  CompositeInstruction program =
+      rasterWAADExampleProgram(freespace_profile, approach_profile, process_profile, departure_profile);
+  const Instruction program_instruction{ program };
+  Instruction seed = generateSkeletonSeed(program);
+
+  // Define the Process Input
+  ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
+
+  // Initialize Freespace Manager
+  auto default_simple_plan_profile = std::make_shared<SimplePlannerDefaultPlanProfile>();
+  FreespaceTaskflowParams fparams;
+  fparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[approach_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[departure_profile] = default_simple_plan_profile;
+  CartesianTaskflowParams cparams;
+  cparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[approach_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[departure_profile] = default_simple_plan_profile;
+
+  auto freespace_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto transition_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto raster_taskflow_generator = createCartesianTaskflow(cparams);
   RasterWAADProcessManager raster_manager(std::move(freespace_taskflow_generator),
                                           std::move(transition_taskflow_generator),
                                           std::move(raster_taskflow_generator),
@@ -415,10 +704,15 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerTest)
   EXPECT_TRUE(raster_manager.execute());
 }
 
-TEST_F(TesseractProcessManagerUnit, RasterWAADDTProcessManagerTest)
+TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerDefaultLVSPlanProfileTest)
 {
   // Define the program
-  CompositeInstruction program = rasterWAADDTExampleProgram();
+  std::string freespace_profile = DEFAULT_PROFILE_KEY;
+  std::string approach_profile = "APPROACH";
+  std::string process_profile = "PROCESS";
+  std::string departure_profile = "DEPARTURE";
+  CompositeInstruction program =
+      rasterWAADExampleProgram(freespace_profile, approach_profile, process_profile, departure_profile);
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
 
@@ -426,9 +720,105 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADDTProcessManagerTest)
   ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
 
   // Initialize Freespace Manager
-  auto freespace_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
-  auto transition_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
-  auto raster_taskflow_generator = createCartesianTaskflow(true);
+  auto default_simple_plan_profile = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
+  FreespaceTaskflowParams fparams;
+  fparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[approach_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[departure_profile] = default_simple_plan_profile;
+  CartesianTaskflowParams cparams;
+  cparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[approach_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[departure_profile] = default_simple_plan_profile;
+
+  auto freespace_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto transition_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto raster_taskflow_generator = createCartesianTaskflow(cparams);
+  RasterWAADProcessManager raster_manager(std::move(freespace_taskflow_generator),
+                                          std::move(transition_taskflow_generator),
+                                          std::move(raster_taskflow_generator),
+                                          1);
+  EXPECT_TRUE(raster_manager.init(input));
+
+  // Solve
+  EXPECT_TRUE(raster_manager.execute());
+}
+
+TEST_F(TesseractProcessManagerUnit, RasterWAADDTProcessManagerDefaultPlanProfileTest)
+{
+  // Define the program
+  std::string freespace_profile = DEFAULT_PROFILE_KEY;
+  std::string approach_profile = "APPROACH";
+  std::string process_profile = "PROCESS";
+  std::string departure_profile = "DEPARTURE";
+
+  CompositeInstruction program =
+      rasterWAADDTExampleProgram(freespace_profile, approach_profile, process_profile, departure_profile);
+  const Instruction program_instruction{ program };
+  Instruction seed = generateSkeletonSeed(program);
+
+  // Define the Process Input
+  ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
+
+  // Initialize Freespace Manager
+  auto default_simple_plan_profile = std::make_shared<SimplePlannerDefaultPlanProfile>();
+  FreespaceTaskflowParams fparams;
+  fparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[approach_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[departure_profile] = default_simple_plan_profile;
+  CartesianTaskflowParams cparams;
+  cparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[approach_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[departure_profile] = default_simple_plan_profile;
+
+  auto freespace_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto transition_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto raster_taskflow_generator = createCartesianTaskflow(cparams);
+  RasterWAADDTProcessManager raster_manager(std::move(freespace_taskflow_generator),
+                                            std::move(transition_taskflow_generator),
+                                            std::move(raster_taskflow_generator),
+                                            1);
+  EXPECT_TRUE(raster_manager.init(input));
+
+  // Solve
+  EXPECT_TRUE(raster_manager.execute());
+}
+
+TEST_F(TesseractProcessManagerUnit, RasterWAADDTProcessManagerDefaultLVSPlanProfileTest)
+{
+  // Define the program
+  std::string freespace_profile = DEFAULT_PROFILE_KEY;
+  std::string approach_profile = "APPROACH";
+  std::string process_profile = "PROCESS";
+  std::string departure_profile = "DEPARTURE";
+
+  CompositeInstruction program =
+      rasterWAADDTExampleProgram(freespace_profile, approach_profile, process_profile, departure_profile);
+  const Instruction program_instruction{ program };
+  Instruction seed = generateSkeletonSeed(program);
+
+  // Define the Process Input
+  ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed);
+
+  // Initialize Freespace Manager
+  auto default_simple_plan_profile = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
+  FreespaceTaskflowParams fparams;
+  fparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[approach_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+  fparams.simple_plan_profiles[departure_profile] = default_simple_plan_profile;
+  CartesianTaskflowParams cparams;
+  cparams.simple_plan_profiles[freespace_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[approach_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[process_profile] = default_simple_plan_profile;
+  cparams.simple_plan_profiles[departure_profile] = default_simple_plan_profile;
+
+  auto freespace_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto transition_taskflow_generator = createFreespaceTaskflow(fparams);
+  auto raster_taskflow_generator = createCartesianTaskflow(cparams);
   RasterWAADDTProcessManager raster_manager(std::move(freespace_taskflow_generator),
                                             std::move(transition_taskflow_generator),
                                             std::move(raster_taskflow_generator),
