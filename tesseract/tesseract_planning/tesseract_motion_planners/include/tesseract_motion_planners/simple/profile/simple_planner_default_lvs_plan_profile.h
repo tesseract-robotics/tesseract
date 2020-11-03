@@ -44,7 +44,7 @@ public:
   using ConstPtr = std::shared_ptr<const SimplePlannerDefaultLVSPlanProfile>;
 
   SimplePlannerDefaultLVSPlanProfile(double state_longest_valid_segment_length = 5 * M_PI / 180,
-                                     double translation_longest_valid_segment_length = 0.15,
+                                     double translation_longest_valid_segment_length = 0.1,
                                      double rotation_longest_valid_segment_length = 5 * M_PI / 180,
                                      int min_steps = 1);
 
