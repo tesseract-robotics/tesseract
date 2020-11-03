@@ -28,6 +28,7 @@
 #include <tesseract_process_managers/process_generators/continuous_contact_check_process_generator.h>
 #include <tesseract_process_managers/process_generators/discrete_contact_check_process_generator.h>
 #include <tesseract_process_managers/process_generators/iterative_spline_parameterization_process_generator.h>
+#include <tesseract_process_managers/process_generators/seed_min_length_process_generator.h>
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
 
@@ -57,6 +58,12 @@ GraphTaskflow::UPtr createFreespaceTaskflowDefault(const FreespaceTaskflowParams
     auto interpolator_generator = std::make_unique<MotionPlannerProcessGenerator>(interpolator);
     interpolator_idx = graph->addNode(std::move(interpolator_generator), GraphTaskflow::NodeType::CONDITIONAL);
   }
+
+  // Setup Seed Min Length Process Generator
+  // This is required because trajopt requires a minimum length trajectory. This is used to correct the seed if it is
+  // to short.
+  auto seed_min_length_generator = std::make_unique<SeedMinLengthProcessGenerator>();
+  int seed_min_length_idx = graph->addNode(std::move(seed_min_length_generator), GraphTaskflow::NodeType::CONDITIONAL);
 
   // Setup OMPL
   auto ompl_planner = std::make_shared<OMPLMotionPlanner>();
@@ -106,9 +113,12 @@ GraphTaskflow::UPtr createFreespaceTaskflowDefault(const FreespaceTaskflowParams
 
   if (params.enable_simple_planner)
   {
-    graph->addEdge(interpolator_idx, ON_SUCCESS, ompl_idx, PROCESS_NODE);
+    graph->addEdge(interpolator_idx, ON_SUCCESS, seed_min_length_idx, PROCESS_NODE);
     graph->addEdge(interpolator_idx, ON_FAILURE, -1, ERROR_CALLBACK);
   }
+
+  graph->addEdge(seed_min_length_idx, ON_SUCCESS, ompl_idx, PROCESS_NODE);
+  graph->addEdge(seed_min_length_idx, ON_FAILURE, -1, ERROR_CALLBACK);
 
   graph->addEdge(ompl_idx, ON_NONE, trajopt_idx, PROCESS_NODE);
 
@@ -156,6 +166,12 @@ GraphTaskflow::UPtr createFreespaceTaskflowTrajOptFirst(const FreespaceTaskflowP
     auto interpolator_generator = std::make_unique<MotionPlannerProcessGenerator>(interpolator);
     interpolator_idx = graph->addNode(std::move(interpolator_generator), GraphTaskflow::NodeType::CONDITIONAL);
   }
+
+  // Setup Seed Min Length Process Generator
+  // This is required because trajopt requires a minimum length trajectory. This is used to correct the seed if it is
+  // to short.
+  auto seed_min_length_generator = std::make_unique<SeedMinLengthProcessGenerator>();
+  int seed_min_length_idx = graph->addNode(std::move(seed_min_length_generator), GraphTaskflow::NodeType::CONDITIONAL);
 
   // Setup TrajOpt
   auto trajopt_planner = std::make_shared<TrajOptMotionPlanner>();
@@ -212,9 +228,12 @@ GraphTaskflow::UPtr createFreespaceTaskflowTrajOptFirst(const FreespaceTaskflowP
 
   if (params.enable_simple_planner)
   {
-    graph->addEdge(interpolator_idx, ON_SUCCESS, ompl_idx, PROCESS_NODE);
+    graph->addEdge(interpolator_idx, ON_SUCCESS, seed_min_length_idx, PROCESS_NODE);
     graph->addEdge(interpolator_idx, ON_FAILURE, -1, ERROR_CALLBACK);
   }
+
+  graph->addEdge(seed_min_length_idx, ON_SUCCESS, trajopt_idx, PROCESS_NODE);
+  graph->addEdge(seed_min_length_idx, ON_FAILURE, -1, ERROR_CALLBACK);
 
   graph->addEdge(trajopt_idx, ON_FAILURE, ompl_idx, PROCESS_NODE);
   if (params.enable_post_contact_continuous_check || params.enable_post_contact_discrete_check)

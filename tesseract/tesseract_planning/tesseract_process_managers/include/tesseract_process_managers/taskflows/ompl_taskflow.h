@@ -32,11 +32,18 @@
 
 namespace tesseract_planning
 {
-GraphTaskflow::UPtr createOMPLTaskflow(
-    bool create_seed,
-    const SimplePlannerPlanProfileMap& simple_plan_profiles = SimplePlannerPlanProfileMap(),
-    const SimplePlannerCompositeProfileMap& simple_composite_profiles = SimplePlannerCompositeProfileMap(),
-    const OMPLPlanProfileMap& ompl_plan_profiles = OMPLPlanProfileMap());
-}
+struct OMPLTaskflowParams
+{
+  bool enable_simple_planner{ true };
+  bool enable_post_contact_discrete_check{ false };
+  bool enable_post_contact_continuous_check{ true };
+  bool enable_time_parameterization{ true };
+  SimplePlannerPlanProfileMap simple_plan_profiles;
+  SimplePlannerCompositeProfileMap simple_composite_profiles;
+  OMPLPlanProfileMap ompl_plan_profiles;
+};
+
+GraphTaskflow::UPtr createOMPLTaskflow(OMPLTaskflowParams params);
+}  // namespace tesseract_planning
 
 #endif  // TESSERACT_PROCESS_MANAGERS_OMPL_TASKFLOW_H

@@ -90,7 +90,7 @@ int main()
   // --------------------
   auto freespace_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
   auto transition_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
-  auto raster_taskflow_generator = createCartesianTaskflow(true);
+  auto raster_taskflow_generator = createCartesianTaskflow(CartesianTaskflowParams());
   RasterProcessManager raster_manager(std::move(freespace_taskflow_generator),
                                       std::move(transition_taskflow_generator),
                                       std::move(raster_taskflow_generator));
