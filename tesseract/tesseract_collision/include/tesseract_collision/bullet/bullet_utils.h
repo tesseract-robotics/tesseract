@@ -132,17 +132,11 @@ public:
   using Ptr = std::shared_ptr<CollisionObjectWrapper>;
   using ConstPtr = std::shared_ptr<const CollisionObjectWrapper>;
 
+  CollisionObjectWrapper() = default;
   CollisionObjectWrapper(std::string name,
                          const int& type_id,
                          CollisionShapesConst shapes,
                          tesseract_common::VectorIsometry3d shape_poses);
-
-  /** @brief This is a special constructor used by the clone method */
-  CollisionObjectWrapper(std::string name,
-                         const int& type_id,
-                         CollisionShapesConst shapes,
-                         tesseract_common::VectorIsometry3d shape_poses,
-                         std::vector<std::shared_ptr<void>> data);
 
   short int m_collisionFilterGroup;
   short int m_collisionFilterMask;
@@ -188,7 +182,12 @@ public:
    */
   std::shared_ptr<CollisionObjectWrapper> clone()
   {
-    auto clone_cow = std::make_shared<CollisionObjectWrapper>(m_name, m_type_id, m_shapes, m_shape_poses, m_data);
+    auto clone_cow = std::make_shared<CollisionObjectWrapper>();
+    clone_cow->m_name = m_name;
+    clone_cow->m_type_id = m_type_id;
+    clone_cow->m_shapes = m_shapes;
+    clone_cow->m_shape_poses = m_shape_poses;
+    clone_cow->m_data = m_data;
     clone_cow->setCollisionShape(getCollisionShape());
     clone_cow->setWorldTransform(getWorldTransform());
     clone_cow->m_collisionFilterGroup = m_collisionFilterGroup;
@@ -198,16 +197,7 @@ public:
     return clone_cow;
   }
 
-  template <class T>
-  void manage(T* t)
-  {  // manage memory of this object
-    m_data.push_back(std::shared_ptr<T>(t));
-  }
-  template <class T>
-  void manage(std::shared_ptr<T> t)
-  {
-    m_data.push_back(t);
-  }
+  void manage(const std::shared_ptr<btCollisionShape>& t) { m_data.push_back(t); }
 
 protected:
   std::string m_name;                               /**< @brief The name of the collision object */
@@ -215,8 +205,8 @@ protected:
   CollisionShapesConst m_shapes;                    /**< @brief The shapes that define the collison object */
   tesseract_common::VectorIsometry3d m_shape_poses; /**< @brief The shpaes poses information */
 
-  std::vector<std::shared_ptr<void>> m_data; /**< @brief This manages the collision shape pointer so they get destroyed
-                                              */
+  /** @brief This manages the collision shape pointer so they get destroyed */
+  std::vector<std::shared_ptr<btCollisionShape>> m_data;
 };
 
 using COW = CollisionObjectWrapper;
@@ -898,9 +888,9 @@ private:
  * bullet collision shape by calling getUserIndex function.
  * @return Bullet collision shape.
  */
-btCollisionShape* createShapePrimitive(const CollisionShapeConstPtr& geom,
-                                       CollisionObjectWrapper* cow,
-                                       int shape_index);
+std::shared_ptr<btCollisionShape> createShapePrimitive(const CollisionShapeConstPtr& geom,
+                                                       CollisionObjectWrapper* cow,
+                                                       int shape_index);
 
 /**
  * @brief Update a collision objects filters
@@ -939,7 +929,7 @@ inline COW::Ptr createCollisionObject(const std::string& name,
     return nullptr;
   }
 
-  COW::Ptr new_cow(new COW(name, type_id, shapes, shape_poses));
+  auto new_cow = std::make_shared<COW>(name, type_id, shapes, shape_poses);
 
   new_cow->m_enabled = enabled;
   new_cow->setContactProcessingThreshold(BULLET_DEFAULT_CONTACT_DISTANCE);
@@ -1036,17 +1026,18 @@ inline COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
     assert(convex->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE);  // This checks if the collision object is already a
                                                                  // cast collision object
 
-    auto* shape = new CastHullShape(convex, tf);
+    auto shape = std::make_shared<CastHullShape>(convex, tf);
     assert(shape != nullptr);
 
     new_cow->manage(shape);
-    new_cow->setCollisionShape(shape);
+    new_cow->setCollisionShape(shape.get());
   }
   else if (btBroadphaseProxy::isCompound(new_cow->getCollisionShape()->getShapeType()))
   {
     assert(dynamic_cast<btCompoundShape*>(new_cow->getCollisionShape()) != nullptr);
     auto* compound = static_cast<btCompoundShape*>(new_cow->getCollisionShape());
-    auto* new_compound = new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, compound->getNumChildShapes());
+    auto new_compound =
+        std::make_shared<btCompoundShape>(BULLET_COMPOUND_USE_DYNAMIC_AABB, compound->getNumChildShapes());
 
     for (int i = 0; i < compound->getNumChildShapes(); ++i)
     {
@@ -1057,18 +1048,18 @@ inline COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
 
         btTransform geomTrans = compound->getChildTransform(i);
 
-        auto* subshape = new CastHullShape(convex, tf);
+        auto subshape = std::make_shared<CastHullShape>(convex, tf);
         assert(subshape != nullptr);
 
         new_cow->manage(subshape);
         subshape->setMargin(BULLET_MARGIN);
-        new_compound->addChildShape(geomTrans, subshape);
+        new_compound->addChildShape(geomTrans, subshape.get());
       }
       else if (btBroadphaseProxy::isCompound(compound->getChildShape(i)->getShapeType()))
       {
         auto* second_compound = static_cast<btCompoundShape*>(compound->getChildShape(i));
-        auto* new_second_compound =
-            new btCompoundShape(BULLET_COMPOUND_USE_DYNAMIC_AABB, second_compound->getNumChildShapes());
+        auto new_second_compound =
+            std::make_shared<btCompoundShape>(BULLET_COMPOUND_USE_DYNAMIC_AABB, second_compound->getNumChildShapes());
         for (int j = 0; j < second_compound->getNumChildShapes(); ++j)
         {
           assert(!btBroadphaseProxy::isCompound(second_compound->getChildShape(j)->getShapeType()));
@@ -1079,12 +1070,12 @@ inline COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
 
           btTransform geomTrans = second_compound->getChildTransform(j);
 
-          auto* subshape = new CastHullShape(convex, tf);
+          auto subshape = std::make_shared<CastHullShape>(convex, tf);
           assert(subshape != nullptr);
 
           new_cow->manage(subshape);
           subshape->setMargin(BULLET_MARGIN);
-          new_second_compound->addChildShape(geomTrans, subshape);
+          new_second_compound->addChildShape(geomTrans, subshape.get());
         }
 
         btTransform geomTrans = compound->getChildTransform(i);
@@ -1095,7 +1086,7 @@ inline COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
                                                         // but has an effect when
                                                         // negative
 
-        new_compound->addChildShape(geomTrans, new_second_compound);
+        new_compound->addChildShape(geomTrans, new_second_compound.get());
       }
       else
       {
@@ -1108,7 +1099,7 @@ inline COW::Ptr makeCastCollisionObject(const COW::Ptr& cow)
                                              // but has an effect when
                                              // negative
     new_cow->manage(new_compound);
-    new_cow->setCollisionShape(new_compound);
+    new_cow->setCollisionShape(new_compound.get());
     new_cow->setWorldTransform(cow->getWorldTransform());
   }
   else

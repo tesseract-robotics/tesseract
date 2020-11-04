@@ -50,8 +50,8 @@ static const tesseract_common::VectorIsometry3d EMPTY_COLLISION_SHAPES_TRANSFORM
 
 FCLDiscreteBVHManager::FCLDiscreteBVHManager()
 {
-  static_manager_ = std::unique_ptr<fcl::BroadPhaseCollisionManagerd>(new fcl::DynamicAABBTreeCollisionManagerd());
-  dynamic_manager_ = std::unique_ptr<fcl::BroadPhaseCollisionManagerd>(new fcl::DynamicAABBTreeCollisionManagerd());
+  static_manager_ = std::make_unique<fcl::DynamicAABBTreeCollisionManagerd>();
+  dynamic_manager_ = std::make_unique<fcl::DynamicAABBTreeCollisionManagerd>();
   contact_distance_ = 0;
 }
 
