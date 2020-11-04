@@ -10,7 +10,7 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
   tesseract::BulletContactChecker checker;
 
   // Add box to checker
-  tesseract::CollisionShapePtr box(new shapes::Box(1, 1, 1));
+  tesseract::CollisionShapePtr box = std::make_shared<shapes::Box>(1, 1, 1);
   Eigen::Isometry3d box_pose;
   box_pose.setIdentity();
 
@@ -24,7 +24,7 @@ TEST(TesseractConvexConcaveUnit, ConvexConcaveUnit)
   checker.addObject("box_link", 0, obj1_shapes, obj1_poses, obj1_types);
 
   // Add box to checker
-  tesseract::CollisionShapePtr thin_box(new shapes::Box(0.1, 1, 1));
+  tesseract::CollisionShapePtr thin_box = std::make_shared<shapes::Box>(0.1, 1, 1);
   Eigen::Isometry3d thin_box_pose;
   thin_box_pose.setIdentity();
 

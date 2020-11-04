@@ -65,7 +65,7 @@ BulletDiscreteSimpleManager::BulletDiscreteSimpleManager()
 
 DiscreteContactManager::Ptr BulletDiscreteSimpleManager::clone() const
 {
-  BulletDiscreteSimpleManager::Ptr manager(new BulletDiscreteSimpleManager());
+  auto manager = std::make_shared<BulletDiscreteSimpleManager>();
 
   for (const auto& cow : link2cow_)
   {

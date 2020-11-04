@@ -79,7 +79,7 @@ BulletCastBVHManager::~BulletCastBVHManager()
 
 ContinuousContactManager::Ptr BulletCastBVHManager::clone() const
 {
-  BulletCastBVHManager::Ptr manager(new BulletCastBVHManager());
+  auto manager = std::make_shared<BulletCastBVHManager>();
 
   for (const auto& cow : link2cow_)
   {

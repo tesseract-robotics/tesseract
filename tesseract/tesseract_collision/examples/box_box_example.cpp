@@ -19,7 +19,7 @@ int main(int /*argc*/, char** /*argv*/)
   tesseract_collision_bullet::BulletDiscreteBVHManager checker;
 
   // Add box to checker
-  CollisionShapePtr box(new Box(1, 1, 1));
+  CollisionShapePtr box = std::make_shared<Box>(1, 1, 1);
   Eigen::Isometry3d box_pose;
   box_pose.setIdentity();
 
@@ -31,7 +31,7 @@ int main(int /*argc*/, char** /*argv*/)
   checker.addCollisionObject("box_link", 0, obj1_shapes, obj1_poses);
 
   // Add thin box to checker which is disabled
-  CollisionShapePtr thin_box(new Box(0.1, 1, 1));
+  CollisionShapePtr thin_box = std::make_shared<Box>(0.1, 1, 1);
   Eigen::Isometry3d thin_box_pose;
   thin_box_pose.setIdentity();
 
@@ -50,10 +50,10 @@ int main(int /*argc*/, char** /*argv*/)
   loadSimplePlyFile(std::string(DATA_DIR) + "/box_2m.ply", mesh_vertices, mesh_faces);
 
   // This is required because convex hull cannot have multiple faces on the same plane.
-  std::shared_ptr<tesseract_common::VectorVector3d> ch_verticies(new tesseract_common::VectorVector3d());
-  std::shared_ptr<Eigen::VectorXi> ch_faces(new Eigen::VectorXi());
+  auto ch_verticies = std::make_shared<tesseract_common::VectorVector3d>();
+  auto ch_faces = std::make_shared<Eigen::VectorXi>();
   int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
-  second_box.reset(new ConvexMesh(ch_verticies, ch_faces, ch_num_faces));
+  second_box = std::make_shared<ConvexMesh>(ch_verticies, ch_faces, ch_num_faces);
 
   Eigen::Isometry3d second_box_pose;
   second_box_pose.setIdentity();
