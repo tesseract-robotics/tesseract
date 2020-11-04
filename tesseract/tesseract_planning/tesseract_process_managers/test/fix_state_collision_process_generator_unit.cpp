@@ -67,7 +67,7 @@ protected:
 
 TEST_F(FixStateCollisionProcessGeneratorUnit, StateInCollisionTest)
 {
-  CompositeInstruction program = freespaceExampleProgram();
+  CompositeInstruction program = freespaceExampleProgramABB();
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
   ProcessInput input(tesseract_ptr_, &program_instruction, manip_, &seed);
@@ -93,7 +93,7 @@ TEST_F(FixStateCollisionProcessGeneratorUnit, StateInCollisionTest)
 
 TEST_F(FixStateCollisionProcessGeneratorUnit, WaypointInCollisionTest)
 {
-  CompositeInstruction program = freespaceExampleProgram();
+  CompositeInstruction program = freespaceExampleProgramABB();
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
   ProcessInput input(tesseract_ptr_, &program_instruction, manip_, &seed);
@@ -125,7 +125,7 @@ TEST_F(FixStateCollisionProcessGeneratorUnit, WaypointInCollisionTest)
 
 TEST_F(FixStateCollisionProcessGeneratorUnit, MoveWaypointFromCollisionRandomSamplerTest)
 {
-  CompositeInstruction program = freespaceExampleProgram();
+  CompositeInstruction program = freespaceExampleProgramABB();
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
   ProcessInput input(tesseract_ptr_, &program_instruction, manip_, &seed);
@@ -156,7 +156,7 @@ TEST_F(FixStateCollisionProcessGeneratorUnit, MoveWaypointFromCollisionRandomSam
 
 TEST_F(FixStateCollisionProcessGeneratorUnit, MoveWaypointFromCollisionTrajoptTest)
 {
-  CompositeInstruction program = freespaceExampleProgram();
+  CompositeInstruction program = freespaceExampleProgramABB();
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
   ProcessInput input(tesseract_ptr_, &program_instruction, manip_, &seed);

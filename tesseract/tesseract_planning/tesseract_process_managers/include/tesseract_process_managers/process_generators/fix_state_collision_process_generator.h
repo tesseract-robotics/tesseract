@@ -124,7 +124,7 @@ private:
  * @param input Process Input associated with waypoint. Needed for kinematics, etc.
  * @return True if in collision
  */
-bool StateInCollision(const Eigen::Ref<Eigen::VectorXd>& start_pos,
+bool StateInCollision(const Eigen::Ref<const Eigen::VectorXd>& start_pos,
                       const ProcessInput& input,
                       const FixStateCollisionProfile& profile);
 

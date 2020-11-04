@@ -37,7 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-bool StateInCollision(const Eigen::Ref<Eigen::VectorXd>& start_pos,
+bool StateInCollision(const Eigen::Ref<const Eigen::VectorXd>& start_pos,
                       const ProcessInput& input,
                       const FixStateCollisionProfile& profile)
 {
@@ -215,7 +215,7 @@ bool MoveWaypointFromCollisionRandomSampler(Waypoint& waypoint,
   for (int i = 0; i < profile.sampling_attempts; i++)
   {
     Eigen::VectorXd start_sampled_pos =
-        start_pos + Eigen::VectorXd::Random(start_pos.size()) * range * profile.jiggle_factor;
+        start_pos + Eigen::VectorXd::Random(start_pos.size()).cwiseProduct(range) * profile.jiggle_factor;
 
     // Make sure it doesn't violate joint limits
     Eigen::VectorXd sampled_pos = start_sampled_pos;
