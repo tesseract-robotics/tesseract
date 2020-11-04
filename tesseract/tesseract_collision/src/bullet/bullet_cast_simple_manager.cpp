@@ -64,7 +64,7 @@ BulletCastSimpleManager::BulletCastSimpleManager()
 
 ContinuousContactManager::Ptr BulletCastSimpleManager::clone() const
 {
-  BulletCastSimpleManager::Ptr manager(new BulletCastSimpleManager());
+  auto manager = std::make_shared<BulletCastSimpleManager>();
 
   for (const auto& cow : link2cow_)
   {

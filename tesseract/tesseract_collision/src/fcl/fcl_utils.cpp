@@ -366,31 +366,6 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
   }
 }
 
-CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
-                                               const int& type_id,
-                                               CollisionShapesConst shapes,
-                                               tesseract_common::VectorIsometry3d shape_poses,
-                                               std::vector<CollisionGeometryPtr> collision_geometries,
-                                               const std::vector<CollisionObjectPtr>& collision_objects)
-  : name_(std::move(name))
-  , type_id_(type_id)
-  , shapes_(std::move(shapes))
-  , shape_poses_(std::move(shape_poses))
-  , collision_geometries_(std::move(collision_geometries))
-{
-  collision_objects_.reserve(collision_objects.size());
-  collision_objects_raw_.reserve(collision_objects.size());
-  for (const auto& co : collision_objects)
-  {
-    auto collObj = std::make_shared<FCLCollisionObjectWrapper>(*co);
-    collObj->setUserData(this);
-    collObj->setTransform(co->getTransform());
-    collObj->updateAABB();
-    collision_objects_.push_back(collObj);
-    collision_objects_raw_.push_back(collObj.get());
-  }
-}
-
 int CollisionObjectWrapper::getShapeIndex(const fcl::CollisionObjectd* co) const
 {
   auto it = std::find_if(collision_objects_.begin(), collision_objects_.end(), [&co](const CollisionObjectPtr& c) {

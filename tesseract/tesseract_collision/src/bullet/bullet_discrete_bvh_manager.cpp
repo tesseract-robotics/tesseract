@@ -75,7 +75,7 @@ BulletDiscreteBVHManager::~BulletDiscreteBVHManager()
 
 DiscreteContactManager::Ptr BulletDiscreteBVHManager::clone() const
 {
-  BulletDiscreteBVHManager::Ptr manager(new BulletDiscreteBVHManager());
+  auto manager = std::make_shared<BulletDiscreteBVHManager>();
 
   for (const auto& cow : link2cow_)
   {

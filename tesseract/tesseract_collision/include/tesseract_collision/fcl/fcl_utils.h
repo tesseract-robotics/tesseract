@@ -84,6 +84,7 @@ public:
   using Ptr = std::shared_ptr<CollisionObjectWrapper>;
   using ConstPtr = std::shared_ptr<const CollisionObjectWrapper>;
 
+  CollisionObjectWrapper() = default;
   CollisionObjectWrapper(std::string name,
                          const int& type_id,
                          CollisionShapesConst shapes,
@@ -137,8 +138,25 @@ public:
   std::vector<CollisionObjectRawPtr>& getCollisionObjectsRaw() { return collision_objects_raw_; }
   std::shared_ptr<CollisionObjectWrapper> clone() const
   {
-    CollisionObjectWrapper::Ptr clone_cow(
-        new CollisionObjectWrapper(name_, type_id_, shapes_, shape_poses_, collision_geometries_, collision_objects_));
+    auto clone_cow = std::make_shared<CollisionObjectWrapper>();
+    clone_cow->name_ = name_;
+    clone_cow->type_id_ = type_id_;
+    clone_cow->shapes_ = shapes_;
+    clone_cow->shape_poses_ = shape_poses_;
+    clone_cow->collision_geometries_ = collision_geometries_;
+
+    clone_cow->collision_objects_.reserve(collision_objects_.size());
+    clone_cow->collision_objects_raw_.reserve(collision_objects_.size());
+    for (const auto& co : collision_objects_)
+    {
+      auto collObj = std::make_shared<FCLCollisionObjectWrapper>(*co);
+      collObj->setUserData(clone_cow.get());
+      collObj->setTransform(co->getTransform());
+      collObj->updateAABB();
+      clone_cow->collision_objects_.push_back(collObj);
+      clone_cow->collision_objects_raw_.push_back(collObj.get());
+    }
+
     clone_cow->m_collisionFilterGroup = m_collisionFilterGroup;
     clone_cow->m_collisionFilterMask = m_collisionFilterMask;
     clone_cow->m_enabled = m_enabled;
@@ -153,13 +171,6 @@ public:
   int getShapeIndex(const fcl::CollisionObjectd* co) const;
 
 protected:
-  CollisionObjectWrapper(std::string name,
-                         const int& type_id,
-                         CollisionShapesConst shapes,
-                         tesseract_common::VectorIsometry3d shape_poses,
-                         std::vector<CollisionGeometryPtr> collision_geometries,
-                         const std::vector<CollisionObjectPtr>& collision_objects);
-
   std::string name_;             // name of the collision object
   int type_id_;                  // user defined type id
   Eigen::Isometry3d world_pose_; /**< @brief Collision Object World Transformation */
