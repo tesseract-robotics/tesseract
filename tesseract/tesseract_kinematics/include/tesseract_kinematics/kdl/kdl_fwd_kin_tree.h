@@ -92,16 +92,19 @@ public:
 
   const tesseract_common::KinematicLimits& getLimits() const override;
 
-  tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const { return scene_graph_; }
-  unsigned int numJoints() const override { return static_cast<unsigned>(joint_list_.size()); }
-  const std::string& getBaseLinkName() const override { return scene_graph_->getRoot(); }
-  const std::string& getTipLinkName() const override
-  {
-    return link_list_.back();
-  }  // TODO: Should make this be
-     // provided
-  const std::string& getName() const override { return name_; }
-  const std::string& getSolverName() const override { return solver_name_; }
+  void setLimits(tesseract_common::KinematicLimits limits) override;
+
+  unsigned int numJoints() const override;
+
+  const std::string& getBaseLinkName() const override;
+
+  const std::string& getTipLinkName() const override;  // TODO: Should make this be provided
+
+  const std::string& getName() const override;
+
+  const std::string& getSolverName() const override;
+
+  tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const;
 
   /**
    * @brief Initializes Forward Kinematics as tree
@@ -121,15 +124,7 @@ public:
    * @brief Checks if kinematics has been initialized
    * @return True if init() has completed successfully
    */
-  bool checkInitialized() const
-  {
-    if (!initialized_)
-    {
-      CONSOLE_BRIDGE_logError("Kinematics has not been initialized!");
-    }
-
-    return initialized_;
-  }
+  bool checkInitialized() const;
 
 private:
   bool initialized_{ false };                               /**< Identifies if the object has been initialized */

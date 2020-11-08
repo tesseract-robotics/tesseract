@@ -225,6 +225,28 @@ const std::vector<std::string>& KDLFwdKinChain::getActiveLinkNames() const
 
 const tesseract_common::KinematicLimits& KDLFwdKinChain::getLimits() const { return kdl_data_.limits; }
 
+void KDLFwdKinChain::setLimits(tesseract_common::KinematicLimits limits)
+{
+  unsigned int nj = numJoints();
+  if (limits.joint_limits.size() != nj || limits.velocity_limits.size() != nj ||
+      limits.acceleration_limits.size() != nj)
+    throw std::runtime_error("Kinematics limits assigned are invalid!");
+
+  kdl_data_.limits = std::move(limits);
+}
+
+tesseract_scene_graph::SceneGraph::ConstPtr KDLFwdKinChain::getSceneGraph() const { return scene_graph_; }
+
+unsigned int KDLFwdKinChain::numJoints() const { return kdl_data_.robot_chain.getNrOfJoints(); }
+
+const std::string& KDLFwdKinChain::getBaseLinkName() const { return kdl_data_.base_name; }
+
+const std::string& KDLFwdKinChain::getTipLinkName() const { return kdl_data_.tip_name; }
+
+const std::string& KDLFwdKinChain::getName() const { return name_; }
+
+const std::string& KDLFwdKinChain::getSolverName() const { return solver_name_; }
+
 bool KDLFwdKinChain::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
                           const std::vector<std::pair<std::string, std::string>>& chains,
                           std::string name)

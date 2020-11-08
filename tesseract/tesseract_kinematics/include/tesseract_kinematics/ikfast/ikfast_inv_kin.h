@@ -113,6 +113,7 @@ public:
   const std::vector<std::string>& getLinkNames() const override;
   const std::vector<std::string>& getActiveLinkNames() const;
   const tesseract_common::KinematicLimits& getLimits() const override;
+  void setLimits(tesseract_common::KinematicLimits limits) override;
   const std::string& getBaseLinkName() const override;
   const std::string& getTipLinkName() const override;
   const std::string& getName() const override;

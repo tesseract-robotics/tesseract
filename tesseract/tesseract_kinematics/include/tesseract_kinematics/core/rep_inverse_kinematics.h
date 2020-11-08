@@ -82,6 +82,8 @@ public:
 
   const tesseract_common::KinematicLimits& getLimits() const override;
 
+  void setLimits(tesseract_common::KinematicLimits limits) override;
+
   tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const;
   unsigned int numJoints() const override;
   const std::string& getBaseLinkName() const override;
