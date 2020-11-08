@@ -191,6 +191,17 @@ const std::vector<std::string>& IKFastInvKin::getJointNames() const { return joi
 const std::vector<std::string>& IKFastInvKin::getLinkNames() const { return link_names_; }
 const std::vector<std::string>& IKFastInvKin::getActiveLinkNames() const { return active_link_names_; }
 const tesseract_common::KinematicLimits& IKFastInvKin::getLimits() const { return limits_; }
+
+void IKFastInvKin:: ::setLimits(tesseract_common::KinematicLimits limits)
+{
+  unsigned int nj = numJoints();
+  if (limits.joint_limits.size() != nj || limits.velocity_limits.size() != nj ||
+      limits.acceleration_limits.size() != nj)
+    throw std::runtime_error("Kinematics limits assigned are invalid!");
+
+  limits_ = std::move(limits);
+}
+
 const std::string& IKFastInvKin::getBaseLinkName() const { return base_link_name_; }
 const std::string& IKFastInvKin::getTipLinkName() const { return tip_link_name_; }
 const std::string& IKFastInvKin::getName() const { return name_; }

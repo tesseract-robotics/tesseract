@@ -154,6 +154,28 @@ const std::vector<std::string>& KDLInvKinChainLMA::getActiveLinkNames() const
 
 const tesseract_common::KinematicLimits& KDLInvKinChainLMA::getLimits() const { return kdl_data_.limits; }
 
+void KDLInvKinChainLMA::setLimits(tesseract_common::KinematicLimits limits)
+{
+  unsigned int nj = numJoints();
+  if (limits.joint_limits.size() != nj || limits.velocity_limits.size() != nj ||
+      limits.acceleration_limits.size() != nj)
+    throw std::runtime_error("Kinematics limits assigned are invalid!");
+
+  kdl_data_.limits = std::move(limits);
+}
+
+unsigned int KDLInvKinChainLMA::numJoints() const { return kdl_data_.robot_chain.getNrOfJoints(); }
+
+const std::string& KDLInvKinChainLMA::getBaseLinkName() const { return kdl_data_.base_name; }
+
+const std::string& KDLInvKinChainLMA::getTipLinkName() const { return kdl_data_.tip_name; }
+
+const std::string& KDLInvKinChainLMA::getName() const { return name_; }
+
+const std::string& KDLInvKinChainLMA::getSolverName() const { return solver_name_; }
+
+tesseract_scene_graph::SceneGraph::ConstPtr KDLInvKinChainLMA::getSceneGraph() const { return scene_graph_; }
+
 bool KDLInvKinChainLMA::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
                              const std::vector<std::pair<std::string, std::string>>& chains,
                              std::string name)
@@ -205,6 +227,16 @@ bool KDLInvKinChainLMA::init(const KDLInvKinChainLMA& kin)
   kdl_data_ = kin.kdl_data_;
   ik_solver_ = std::make_unique<KDL::ChainIkSolverPos_LMA>(kdl_data_.robot_chain);
   scene_graph_ = kin.scene_graph_;
+
+  return initialized_;
+}
+
+bool KDLInvKinChainLMA::checkInitialized() const
+{
+  if (!initialized_)
+  {
+    CONSOLE_BRIDGE_logError("Kinematics has not been initialized!");
+  }
 
   return initialized_;
 }

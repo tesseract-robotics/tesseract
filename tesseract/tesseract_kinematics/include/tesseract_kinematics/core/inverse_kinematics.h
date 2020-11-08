@@ -124,7 +124,7 @@ public:
    * @brief Setter for kinematic limits (joint, velocity, acceleration, etc.)
    * @param Kinematic Limits
    */
-  //  virtual void setLimits(tesseract_common::KinematicLimits& limits) = 0;
+  virtual void setLimits(tesseract_common::KinematicLimits limits) = 0;
 
   /**
    * @brief Number of joints in robot
