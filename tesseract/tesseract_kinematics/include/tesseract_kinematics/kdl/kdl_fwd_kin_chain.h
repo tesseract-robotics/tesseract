@@ -94,12 +94,19 @@ public:
 
   const tesseract_common::KinematicLimits& getLimits() const override;
 
-  tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const { return scene_graph_; }
-  unsigned int numJoints() const override { return kdl_data_.robot_chain.getNrOfJoints(); }
-  const std::string& getBaseLinkName() const override { return kdl_data_.base_name; }
-  const std::string& getTipLinkName() const override { return kdl_data_.tip_name; }
-  const std::string& getName() const override { return name_; }
-  const std::string& getSolverName() const override { return solver_name_; }
+  void setLimits(tesseract_common::KinematicLimits limits) override;
+
+  unsigned int numJoints() const override;
+
+  const std::string& getBaseLinkName() const override;
+
+  const std::string& getTipLinkName() const override;
+
+  const std::string& getName() const override;
+
+  const std::string& getSolverName() const override;
+
+  tesseract_scene_graph::SceneGraph::ConstPtr getSceneGraph() const;
 
   /**
    * @brief Initializes Forward Kinematics as chain
