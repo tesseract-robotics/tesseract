@@ -345,12 +345,49 @@ public:
   virtual bool changeJointOrigin(const std::string& joint_name, const Eigen::Isometry3d& new_origin);
 
   /**
-   * @brief Changes the limits associated with a joint
+   * @brief Changes the position limits associated with a joint
    * @param joint_name Name of the joint to be updated
-   * @param limits New limits to be set as the joint limits
+   * @param limits New position limits to be set as the joint limits
    * @return
    */
-  virtual bool changeJointLimits(const std::string& joint_name, const tesseract_scene_graph::JointLimits& limits);
+  virtual bool changeJointPositionLimits(const std::string& joint_name, double lower, double upper);
+
+  /**
+   * @brief Changes the position limits associated with a joint
+   * @param limits A map of joint names to new position limits
+   * @return
+   */
+  virtual bool changeJointPositionLimits(const std::unordered_map<std::string, std::pair<double, double>>& limits);
+
+  /**
+   * @brief Changes the velocity limits associated with a joint
+   * @param joint_name Name of the joint to be updated
+   * @param limits New velocity limits to be set as the joint limits
+   * @return
+   */
+  virtual bool changeJointVelocityLimits(const std::string& joint_name, double limit);
+
+  /**
+   * @brief Changes the velocity limits associated with a joint
+   * @param limits A map of joint names to new velocity limits
+   * @return
+   */
+  virtual bool changeJointVelocityLimits(const std::unordered_map<std::string, double>& limits);
+
+  /**
+   * @brief Changes the acceleration limits associated with a joint
+   * @param joint_name Name of the joint to be updated
+   * @param limits New acceleration limits to be set as the joint limits
+   * @return
+   */
+  virtual bool changeJointAccelerationLimits(const std::string& joint_name, double limit);
+
+  /**
+   * @brief Changes the acceleration limits associated with a joint
+   * @param limits A map of joint names to new acceleration limits
+   * @return
+   */
+  virtual bool changeJointAccelerationLimits(const std::unordered_map<std::string, double>& limits);
 
   /**
    * @brief Gets the limits associated with a joint
