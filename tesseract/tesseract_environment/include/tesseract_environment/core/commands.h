@@ -55,7 +55,9 @@ enum class CommandType
   REMOVE_ALLOWED_COLLISION = 10,
   REMOVE_ALLOWED_COLLISION_LINK = 11,
   ADD_SCENE_GRAPH = 12,
-  CHANGE_JOINT_LIMITS = 13
+  CHANGE_JOINT_POSITION_LIMITS = 13,
+  CHANGE_JOINT_VELOCITY_LIMITS = 14,
+  CHANGE_JOINT_ACCELERATION_LIMITS = 15
 };
 
 class Command
@@ -288,19 +290,68 @@ private:
   std::string prefix_;
 };
 
-class ChangeJointLimitsCommand : public Command
+class ChangeJointPositionLimitsCommand : public Command
 {
 public:
-  ChangeJointLimitsCommand(std::string joint_name, tesseract_scene_graph::JointLimits joint_limits)
-    : Command(CommandType::CHANGE_JOINT_LIMITS), joint_name_(std::move(joint_name)), joint_limits_(joint_limits)
+  ChangeJointPositionLimitsCommand(std::string joint_name, double lower, double upper)
+    : Command(CommandType::CHANGE_JOINT_POSITION_LIMITS)
+    , limits_({ std::make_pair(joint_name, std::make_pair(lower, upper)) })
   {
+    assert(upper > lower);
   }
-  const std::string& getJointName() const { return joint_name_; }
-  const tesseract_scene_graph::JointLimits& getLimits() const { return joint_limits_; }
+
+  ChangeJointPositionLimitsCommand(std::unordered_map<std::string, std::pair<double, double>> limits)
+    : Command(CommandType::CHANGE_JOINT_POSITION_LIMITS), limits_(std::move(limits))
+  {
+    assert(std::all_of(limits_.begin(), limits_.end(), [](const auto& p) { return p.second.second > p.second.first; }));
+  }
+
+  const std::unordered_map<std::string, std::pair<double, double>>& getLimits() const { return limits_; }
 
 private:
-  std::string joint_name_;
-  tesseract_scene_graph::JointLimits joint_limits_;
+  std::unordered_map<std::string, std::pair<double, double>> limits_;
+};
+
+class ChangeJointVelocityLimitsCommand : public Command
+{
+public:
+  ChangeJointVelocityLimitsCommand(std::string joint_name, double limit)
+    : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS), limits_({ std::make_pair(joint_name, limit) })
+  {
+    assert(limit > 0);
+  }
+
+  ChangeJointVelocityLimitsCommand(std::unordered_map<std::string, double> limits)
+    : Command(CommandType::CHANGE_JOINT_VELOCITY_LIMITS), limits_(std::move(limits))
+  {
+    assert(std::all_of(limits_.begin(), limits_.end(), [](const auto& p) { return p.second > 0; }));
+  }
+
+  const std::unordered_map<std::string, double>& getLimits() const { return limits_; }
+
+private:
+  std::unordered_map<std::string, double> limits_;
+};
+
+class ChangeJointAccelerationLimitsCommand : public Command
+{
+public:
+  ChangeJointAccelerationLimitsCommand(std::string joint_name, double limit)
+    : Command(CommandType::CHANGE_JOINT_ACCELERATION_LIMITS), limits_({ std::make_pair(joint_name, limit) })
+  {
+    assert(limit > 0);
+  }
+
+  ChangeJointAccelerationLimitsCommand(std::unordered_map<std::string, double> limits)
+    : Command(CommandType::CHANGE_JOINT_ACCELERATION_LIMITS), limits_(std::move(limits))
+  {
+    assert(std::all_of(limits_.begin(), limits_.end(), [](const auto& p) { return p.second > 0; }));
+  }
+
+  const std::unordered_map<std::string, double>& getLimits() const { return limits_; }
+
+private:
+  std::unordered_map<std::string, double> limits_;
 };
 
 }  // namespace tesseract_environment
