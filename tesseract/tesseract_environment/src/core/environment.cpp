@@ -172,11 +172,24 @@ bool Environment::applyCommand(const Command& command)
       }
       break;
     }
-
-    case tesseract_environment::CommandType::CHANGE_JOINT_LIMITS:
+    case tesseract_environment::CommandType::CHANGE_JOINT_POSITION_LIMITS:
     {
-      const auto& cmd = static_cast<const tesseract_environment::ChangeJointLimitsCommand&>(command);
-      if (!changeJointLimits(cmd.getJointName(), cmd.getLimits()))
+      const auto& cmd = static_cast<const tesseract_environment::ChangeJointPositionLimitsCommand&>(command);
+      if (!changeJointPositionLimits(cmd.getLimits()))
+        return false;
+      break;
+    }
+    case tesseract_environment::CommandType::CHANGE_JOINT_VELOCITY_LIMITS:
+    {
+      const auto& cmd = static_cast<const tesseract_environment::ChangeJointVelocityLimitsCommand&>(command);
+      if (!changeJointVelocityLimits(cmd.getLimits()))
+        return false;
+      break;
+    }
+    case tesseract_environment::CommandType::CHANGE_JOINT_ACCELERATION_LIMITS:
+    {
+      const auto& cmd = static_cast<const tesseract_environment::ChangeJointAccelerationLimitsCommand&>(command);
+      if (!changeJointAccelerationLimits(cmd.getLimits()))
         return false;
       break;
     }
@@ -370,10 +383,18 @@ bool Environment::changeJointOrigin(const std::string& joint_name, const Eigen::
   return true;
 }
 
-bool Environment::changeJointLimits(const std::string& joint_name, const tesseract_scene_graph::JointLimits& limits)
+bool Environment::changeJointPositionLimits(const std::string& joint_name, double lower, double upper)
 {
   std::lock_guard<std::mutex> lock(mutex_);
-  if (!scene_graph_->changeJointLimits(joint_name, limits))
+  tesseract_scene_graph::JointLimits::ConstPtr jl = scene_graph_->getJointLimits(joint_name);
+  if (jl == nullptr)
+    return false;
+
+  tesseract_scene_graph::JointLimits jl_copy = *jl;
+  jl_copy.lower = lower;
+  jl_copy.upper = upper;
+
+  if (!scene_graph_->changeJointLimits(joint_name, jl_copy))
     return false;
 
   // TODO: Only change joint limits rather than completely rebuilding kinematics
@@ -381,7 +402,142 @@ bool Environment::changeJointLimits(const std::string& joint_name, const tessera
     return false;
 
   ++revision_;
-  commands_.push_back(std::make_shared<ChangeJointLimitsCommand>(joint_name, limits));
+  commands_.push_back(std::make_shared<ChangeJointPositionLimitsCommand>(joint_name, lower, upper));
+
+  environmentChanged();
+
+  return true;
+}
+
+bool Environment::changeJointPositionLimits(const std::unordered_map<std::string, std::pair<double, double> >& limits)
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  for (const auto& l : limits)
+  {
+    tesseract_scene_graph::JointLimits::ConstPtr jl = scene_graph_->getJointLimits(l.first);
+    if (jl == nullptr)
+      return false;
+
+    tesseract_scene_graph::JointLimits jl_copy = *jl;
+    jl_copy.lower = l.second.first;
+    jl_copy.upper = l.second.second;
+
+    if (!scene_graph_->changeJointLimits(l.first, jl_copy))
+      return false;
+  }
+
+  // TODO: Only change joint limits rather than completely rebuilding kinematics
+  if (!manipulator_manager_->update())
+    return false;
+
+  ++revision_;
+  commands_.push_back(std::make_shared<ChangeJointPositionLimitsCommand>(limits));
+
+  environmentChanged();
+
+  return true;
+}
+
+bool Environment::changeJointVelocityLimits(const std::string& joint_name, double limit)
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  tesseract_scene_graph::JointLimits::ConstPtr jl = scene_graph_->getJointLimits(joint_name);
+  if (jl == nullptr)
+    return false;
+
+  tesseract_scene_graph::JointLimits jl_copy = *jl;
+  jl_copy.velocity = limit;
+
+  if (!scene_graph_->changeJointLimits(joint_name, jl_copy))
+    return false;
+
+  // TODO: Only change joint limits rather than completely rebuilding kinematics
+  if (!manipulator_manager_->update())
+    return false;
+
+  ++revision_;
+  commands_.push_back(std::make_shared<ChangeJointVelocityLimitsCommand>(joint_name, limit));
+
+  environmentChanged();
+
+  return true;
+}
+
+bool Environment::changeJointVelocityLimits(const std::unordered_map<std::string, double>& limits)
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  for (const auto& l : limits)
+  {
+    tesseract_scene_graph::JointLimits::ConstPtr jl = scene_graph_->getJointLimits(l.first);
+    if (jl == nullptr)
+      return false;
+
+    tesseract_scene_graph::JointLimits jl_copy = *jl;
+    jl_copy.velocity = l.second;
+
+    if (!scene_graph_->changeJointLimits(l.first, jl_copy))
+      return false;
+  }
+
+  // TODO: Only change joint limits rather than completely rebuilding kinematics
+  if (!manipulator_manager_->update())
+    return false;
+
+  ++revision_;
+  commands_.push_back(std::make_shared<ChangeJointVelocityLimitsCommand>(limits));
+
+  environmentChanged();
+
+  return true;
+}
+
+bool Environment::changeJointAccelerationLimits(const std::string& joint_name, double limit)
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  tesseract_scene_graph::JointLimits::ConstPtr jl = scene_graph_->getJointLimits(joint_name);
+  if (jl == nullptr)
+    return false;
+
+  tesseract_scene_graph::JointLimits jl_copy = *jl;
+  jl_copy.acceleration = limit;
+
+  if (!scene_graph_->changeJointLimits(joint_name, jl_copy))
+    return false;
+
+  // TODO: Only change joint limits rather than completely rebuilding kinematics
+  if (!manipulator_manager_->update())
+    return false;
+
+  ++revision_;
+  commands_.push_back(std::make_shared<ChangeJointAccelerationLimitsCommand>(joint_name, limit));
+
+  environmentChanged();
+
+  return true;
+}
+
+bool Environment::changeJointAccelerationLimits(const std::unordered_map<std::string, double>& limits)
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  for (const auto& l : limits)
+  {
+    tesseract_scene_graph::JointLimits::ConstPtr jl = scene_graph_->getJointLimits(l.first);
+    if (jl == nullptr)
+      return false;
+
+    tesseract_scene_graph::JointLimits jl_copy = *jl;
+    jl_copy.acceleration = l.second;
+
+    if (!scene_graph_->changeJointLimits(l.first, jl_copy))
+      return false;
+  }
+
+  // TODO: Only change joint limits rather than completely rebuilding kinematics
+  if (!manipulator_manager_->update())
+    return false;
+
+  ++revision_;
+  commands_.push_back(std::make_shared<ChangeJointAccelerationLimitsCommand>(limits));
 
   environmentChanged();
 

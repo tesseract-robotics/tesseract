@@ -392,18 +392,19 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
 
         break;
       }
-      case tesseract_environment::CommandType::CHANGE_JOINT_LIMITS:
+      case tesseract_environment::CommandType::CHANGE_JOINT_POSITION_LIMITS:
       {
-        const auto& cmd = static_cast<const tesseract_environment::ChangeJointLimitsCommand&>(*command);
+        const auto& cmd = static_cast<const tesseract_environment::ChangeJointPositionLimitsCommand&>(*command);
+        const std::unordered_map<std::string, std::pair<double, double>>& limits = cmd.getLimits();
         // Loop through all names until we find the one we need
         for (std::size_t i = 0; i < joint_names_.size(); i++)
         {
+          auto it = limits.find(joint_names_[i]);
           // Assign the lower/upper. Velocity, acceleration, and effort are ignored
-          if (joint_names_[i] == cmd.getJointName())
+          if (it != limits.end())
           {
-            limits_(static_cast<Eigen::Index>(i), 0) = cmd.getLimits().lower;
-            limits_(static_cast<Eigen::Index>(i), 1) = cmd.getLimits().upper;
-            break;
+            limits_(static_cast<Eigen::Index>(i), 0) = it->second.first;
+            limits_(static_cast<Eigen::Index>(i), 1) = it->second.second;
           }
         }
 
