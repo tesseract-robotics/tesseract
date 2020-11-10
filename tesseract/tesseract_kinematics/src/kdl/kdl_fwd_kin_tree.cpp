@@ -45,11 +45,7 @@ ForwardKinematics::Ptr KDLFwdKinTree::clone() const
   return cloned_fwdkin;
 }
 
-bool KDLFwdKinTree::update()
-{
-  return init(scene_graph_, joint_list_, name_, input_start_state_);
-}
-
+bool KDLFwdKinTree::update() { return init(scene_graph_, joint_list_, name_, input_start_state_); }
 
 KDL::JntArray KDLFwdKinTree::getKDLJntArray(const std::vector<std::string>& joint_names,
                                             const Eigen::Ref<const Eigen::VectorXd>& joint_angles) const

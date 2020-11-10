@@ -121,6 +121,12 @@ public:
   virtual const tesseract_common::KinematicLimits& getLimits() const = 0;
 
   /**
+   * @brief Setter for kinematic limits (joint, velocity, acceleration, etc.)
+   * @param Kinematic Limits
+   */
+  //  virtual void setLimits(tesseract_common::KinematicLimits& limits) = 0;
+
+  /**
    * @brief Number of joints in robot
    * @return Number of joints in robot
    */

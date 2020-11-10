@@ -138,8 +138,9 @@ private:
   std::string name_;                                        /**< Name of the kinematic chain */
   std::string solver_name_{ "KDLFwdKinTree" };              /**< Name of this solver */
   std::vector<std::string> joint_list_;                     /**< List of joint names */
-  KDL::JntArray start_state_;  /**< Intial state of the tree. Should include all joints in the model. */
-  std::unordered_map<std::string, double> input_start_state_; /**< Input start state before it has been translated into KDL types */
+  KDL::JntArray start_state_; /**< Intial state of the tree. Should include all joints in the model. */
+  std::unordered_map<std::string, double> input_start_state_; /**< Input start state before it has been translated into
+                                                                 KDL types */
   std::vector<int> joint_qnr_; /**< The kdl segment number corrisponding to joint in joint_lists_ */
   std::unordered_map<std::string, unsigned int> joint_to_qnr_; /**< The tree joint name to qnr */
   std::vector<std::string> link_list_;                         /**< List of link names */

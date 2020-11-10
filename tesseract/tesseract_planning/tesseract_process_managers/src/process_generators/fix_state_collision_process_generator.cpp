@@ -45,7 +45,8 @@ bool StateInCollision(const Eigen::Ref<const Eigen::VectorXd>& start_pos,
   using namespace tesseract_environment;
 
   auto env = input.tesseract->getEnvironment();
-  auto kin = input.tesseract->getManipulatorManager()->getFwdKinematicSolver(input.manip_info.manipulator);
+  auto kin =
+      input.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(input.manip_info.manipulator);
 
   std::vector<ContactResultMap> collisions;
   tesseract_environment::StateSolver::Ptr state_solver = env->getStateSolver();
@@ -205,7 +206,8 @@ bool MoveWaypointFromCollisionRandomSampler(Waypoint& waypoint,
     return false;
   }
 
-  const auto kin = input.tesseract->getManipulatorManager()->getFwdKinematicSolver(input.manip_info.manipulator);
+  const auto kin =
+      input.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(input.manip_info.manipulator);
   Eigen::MatrixXd limits = kin->getLimits().joint_limits;
   Eigen::VectorXd range = limits.col(1).array() - limits.col(0).array();
   Eigen::VectorXd pos_sampling_limits = range * profile.jiggle_factor;
@@ -288,7 +290,8 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) co
 
   const auto* ci = input_intruction->cast_const<CompositeInstruction>();
   const ManipulatorInfo& manip_info = input.manip_info;
-  const auto fwd_kin = input.tesseract->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
+  const auto fwd_kin =
+      input.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
 
   // Get Composite profile
   std::string profile = ci->getProfile();

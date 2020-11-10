@@ -81,7 +81,10 @@ protected:
     tesseract_ptr_ = tesseract;
 
     manip_info_.manipulator = "manipulator";
-    joint_names_ = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver("manipulator")->getJointNames();
+    joint_names_ = tesseract_ptr_->getEnvironment()
+                       ->getManipulatorManager()
+                       ->getFwdKinematicSolver("manipulator")
+                       ->getJointNames();
   }
 };
 
@@ -154,7 +157,8 @@ TEST_F(TesseractPlanningSimplePlannerFixedSizeAssignPositionUnit, CartesianCarte
   CartesianWaypoint wp2 = Eigen::Isometry3d::Identity();
   PlanInstruction instr(wp1, PlanInstructionType::FREESPACE, "TEST_PROFILE", manip_info_);
   auto composite = fixedSizeAssignStateWaypoint(wp1, wp2, instr, request, manip_info_, 10);
-  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+  auto fwd_kin =
+      tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
   Eigen::VectorXd position = request.env_state->getJointValues(fwd_kin->getJointNames());
   EXPECT_EQ(composite.size(), 10);
   for (const auto& c : composite)
