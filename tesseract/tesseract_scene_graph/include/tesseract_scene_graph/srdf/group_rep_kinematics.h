@@ -12,7 +12,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/srdf/types.h>
+#include <tesseract_scene_graph/kinematics_information.h>
 
 namespace tesseract_scene_graph
 {

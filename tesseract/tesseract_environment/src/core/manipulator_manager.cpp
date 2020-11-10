@@ -24,7 +24,7 @@
  * limitations under the License.
  */
 
-#include <tesseract_environment/manipulator_manager/manipulator_manager.h>
+#include <tesseract_environment/core/manipulator_manager.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain_factory.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_tree_factory.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_lma_factory.h>
@@ -36,12 +36,12 @@
 namespace tesseract_environment
 {
 bool ManipulatorManager::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
-                              tesseract_scene_graph::SRDFModel::Ptr srdf_model)
+                              tesseract_scene_graph::KinematicsInformation kinematics_information)
 {
   scene_graph_ = std::move(scene_graph);
-  srdf_model_ = std::move(srdf_model);
+  kinematics_information_.clear();
 
-  if (scene_graph_ == nullptr || srdf_model_ == nullptr)
+  if (scene_graph_ == nullptr)
     return false;
 
   fwd_kin_chain_default_factory_ = std::make_shared<tesseract_kinematics::KDLFwdKinChainFactory>();
@@ -53,26 +53,7 @@ bool ManipulatorManager::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_
   inv_kin_chain_default_factory_ = std::make_shared<tesseract_kinematics::KDLInvKinChainLMAFactory>();
   registerInvKinematicsFactory(inv_kin_chain_default_factory_);
 
-  bool success = true;
-  for (const auto& group : srdf_model_->getChainGroups())
-    success &= registerDefaultChainSolver(group.first, group.second);
-
-  for (const auto& group : srdf_model_->getJointGroups())
-    success &= registerDefaultJointSolver(group.first, group.second);
-
-  //  for (const auto& group : srdf_model_->getLinkGroups())
-  //    success &= registerDefaultLinkSolver(group.first, group.second);
-
-  for (const auto& group : srdf_model_->getGroupOPWKinematics())
-    success &= registerOPWSolver(group.first, group.second);
-
-  for (const auto& group : srdf_model_->getGroupROPKinematics())
-    success &= registerROPSolver(group.first, group.second);
-
-  for (const auto& group : srdf_model_->getGroupREPKinematics())
-    success &= registerREPSolver(group.first, group.second);
-
-  return success;
+  return addKinematicsInformation(kinematics_information);
 }
 
 bool ManipulatorManager::update()
@@ -91,20 +72,98 @@ ManipulatorManager::Ptr ManipulatorManager::clone(tesseract_scene_graph::SceneGr
 {
   auto cloned_manager = std::make_shared<ManipulatorManager>(*this);
   cloned_manager->scene_graph_ = std::move(scene_graph);
-  cloned_manager->srdf_model_ = std::make_shared<tesseract_scene_graph::SRDFModel>(*srdf_model_);
   return cloned_manager;
 }
 
-tesseract_scene_graph::SRDFModel::ConstPtr ManipulatorManager::getSRDFModel() const { return srdf_model_; }
+bool ManipulatorManager::addKinematicsInformation(
+    const tesseract_scene_graph::KinematicsInformation& kinematics_information)
+{
+  bool success = true;
+
+  tesseract_scene_graph::GroupNames& gn = kinematics_information_.group_names;
+  const tesseract_scene_graph::GroupNames& cgn = kinematics_information.group_names;
+  gn.insert(gn.end(), cgn.begin(), cgn.end());
+
+  tesseract_scene_graph::ChainGroups& cg = kinematics_information_.chain_groups;
+  const tesseract_scene_graph::ChainGroups& ccg = kinematics_information.chain_groups;
+  cg.insert(ccg.begin(), ccg.end());
+
+  tesseract_scene_graph::JointGroups& jg = kinematics_information_.joint_groups;
+  const tesseract_scene_graph::JointGroups& cjg = kinematics_information.joint_groups;
+  jg.insert(cjg.begin(), cjg.end());
+
+  tesseract_scene_graph::LinkGroups& lg = kinematics_information_.link_groups;
+  const tesseract_scene_graph::LinkGroups& clg = kinematics_information.link_groups;
+  lg.insert(clg.begin(), clg.end());
+
+  tesseract_scene_graph::GroupTCPs& gtcps = kinematics_information_.group_tcps;
+  const tesseract_scene_graph::GroupTCPs& cgtcps = kinematics_information.group_tcps;
+  for (const auto& t : cgtcps)
+  {
+    auto it = gtcps.find(t.first);
+    if (it == gtcps.end())
+      gtcps[t.first] = t.second;
+    else
+      it->second.insert(t.second.begin(), t.second.end());
+  }
+
+  tesseract_scene_graph::GroupJointStates& gjs = kinematics_information_.group_states;
+  const tesseract_scene_graph::GroupJointStates& cgjs = kinematics_information.group_states;
+  for (const auto& t : cgjs)
+  {
+    auto it = gjs.find(t.first);
+    if (it == gjs.end())
+      gjs[t.first] = t.second;
+    else
+      it->second.insert(t.second.begin(), t.second.end());
+  }
+
+  tesseract_scene_graph::GroupOPWKinematics& gopwk = kinematics_information_.group_opw_kinematics;
+  const tesseract_scene_graph::GroupOPWKinematics& cgopwk = kinematics_information.group_opw_kinematics;
+  gopwk.insert(cgopwk.begin(), cgopwk.end());
+
+  tesseract_scene_graph::GroupROPKinematics& gropk = kinematics_information_.group_rop_kinematics;
+  const tesseract_scene_graph::GroupROPKinematics& cgropk = kinematics_information.group_rop_kinematics;
+  gropk.insert(cgropk.begin(), cgropk.end());
+
+  tesseract_scene_graph::GroupREPKinematics& grepk = kinematics_information_.group_rep_kinematics;
+  const tesseract_scene_graph::GroupREPKinematics& cgrepk = kinematics_information.group_rep_kinematics;
+  grepk.insert(cgrepk.begin(), cgrepk.end());
+
+  for (const auto& group : kinematics_information.chain_groups)
+    success &= registerDefaultChainSolver(group.first, group.second);
+
+  for (const auto& group : kinematics_information.joint_groups)
+    success &= registerDefaultJointSolver(group.first, group.second);
+
+  //  for (const auto& group : kinematics_information_.link_groups)
+  //    success &= registerDefaultLinkSolver(group.first, group.second);
+
+  for (const auto& group : kinematics_information.group_opw_kinematics)
+    success &= registerOPWSolver(group.first, group.second);
+
+  for (const auto& group : kinematics_information.group_rop_kinematics)
+    success &= registerROPSolver(group.first, group.second);
+
+  for (const auto& group : kinematics_information.group_rep_kinematics)
+    success &= registerREPSolver(group.first, group.second);
+
+  return success;
+}
+
+const tesseract_scene_graph::KinematicsInformation& ManipulatorManager::getKinematicsInformation() const
+{
+  return kinematics_information_;
+}
 
 const tesseract_scene_graph::GroupNames& ManipulatorManager::getGroupNames() const
 {
-  return srdf_model_->getGroupNames();
+  return kinematics_information_.group_names;
 }
 
 bool ManipulatorManager::hasGroup(const std::string& group_name) const
 {
-  const tesseract_scene_graph::GroupNames& group_names = srdf_model_->getGroupNames();
+  const tesseract_scene_graph::GroupNames& group_names = kinematics_information_.group_names;
   return std::find(group_names.begin(), group_names.end(), group_name) != group_names.end();
 }
 
@@ -117,15 +176,15 @@ bool ManipulatorManager::addChainGroup(const std::string& group_name,
     return false;
   }
 
-  srdf_model_->getChainGroups()[group_name] = chain_group;
-  srdf_model_->getGroupNames().push_back(group_name);
+  kinematics_information_.chain_groups[group_name] = chain_group;
+  kinematics_information_.group_names.push_back(group_name);
   return registerDefaultChainSolver(group_name, chain_group);
 }
 
 void ManipulatorManager::removeChainGroup(const std::string& group_name)
 {
-  srdf_model_->getChainGroups().erase(group_name);
-  tesseract_scene_graph::GroupNames& group_names = srdf_model_->getGroupNames();
+  kinematics_information_.chain_groups.erase(group_name);
+  tesseract_scene_graph::GroupNames& group_names = kinematics_information_.group_names;
   group_names.erase(std::remove_if(
       group_names.begin(), group_names.end(), [group_name](const std::string& gn) { return gn == group_name; }));
   removeFwdKinematicSolver(group_name);
@@ -134,12 +193,12 @@ void ManipulatorManager::removeChainGroup(const std::string& group_name)
 
 const tesseract_scene_graph::ChainGroup& ManipulatorManager::getChainGroup(const std::string& group_name) const
 {
-  return srdf_model_->getChainGroups().at(group_name);
+  return kinematics_information_.chain_groups.at(group_name);
 }
 
 const tesseract_scene_graph::ChainGroups& ManipulatorManager::getChainGroups() const
 {
-  return srdf_model_->getChainGroups();
+  return kinematics_information_.chain_groups;
 }
 
 bool ManipulatorManager::addJointGroup(const std::string& group_name,
@@ -151,15 +210,15 @@ bool ManipulatorManager::addJointGroup(const std::string& group_name,
     return false;
   }
 
-  srdf_model_->getJointGroups()[group_name] = joint_group;
-  srdf_model_->getGroupNames().push_back(group_name);
+  kinematics_information_.joint_groups[group_name] = joint_group;
+  kinematics_information_.group_names.push_back(group_name);
   return registerDefaultJointSolver(group_name, joint_group);
 }
 
 void ManipulatorManager::removeJointGroup(const std::string& group_name)
 {
-  srdf_model_->getJointGroups().erase(group_name);
-  tesseract_scene_graph::GroupNames& group_names = srdf_model_->getGroupNames();
+  kinematics_information_.joint_groups.erase(group_name);
+  tesseract_scene_graph::GroupNames& group_names = kinematics_information_.group_names;
   group_names.erase(std::remove_if(
       group_names.begin(), group_names.end(), [group_name](const std::string& gn) { return gn == group_name; }));
   removeFwdKinematicSolver(group_name);
@@ -168,12 +227,12 @@ void ManipulatorManager::removeJointGroup(const std::string& group_name)
 
 const tesseract_scene_graph::JointGroup& ManipulatorManager::getJointGroup(const std::string& group_name) const
 {
-  return srdf_model_->getJointGroups().at(group_name);
+  return kinematics_information_.joint_groups.at(group_name);
 }
 
 const tesseract_scene_graph::JointGroups& ManipulatorManager::getJointGroups() const
 {
-  return srdf_model_->getJointGroups();
+  return kinematics_information_.joint_groups;
 }
 
 bool ManipulatorManager::addLinkGroup(const std::string& group_name, const tesseract_scene_graph::LinkGroup& link_group)
@@ -184,15 +243,15 @@ bool ManipulatorManager::addLinkGroup(const std::string& group_name, const tesse
     return false;
   }
 
-  srdf_model_->getLinkGroups()[group_name] = link_group;
-  srdf_model_->getGroupNames().push_back(group_name);
+  kinematics_information_.link_groups[group_name] = link_group;
+  kinematics_information_.group_names.push_back(group_name);
   return registerDefaultLinkSolver(group_name, link_group);
 }
 
 void ManipulatorManager::removeLinkGroup(const std::string& group_name)
 {
-  srdf_model_->getLinkGroups().erase(group_name);
-  tesseract_scene_graph::GroupNames& group_names = srdf_model_->getGroupNames();
+  kinematics_information_.link_groups.erase(group_name);
+  tesseract_scene_graph::GroupNames& group_names = kinematics_information_.group_names;
   group_names.erase(std::remove_if(
       group_names.begin(), group_names.end(), [group_name](const std::string& gn) { return gn == group_name; }));
   removeFwdKinematicSolver(group_name);
@@ -201,12 +260,12 @@ void ManipulatorManager::removeLinkGroup(const std::string& group_name)
 
 const tesseract_scene_graph::LinkGroup& ManipulatorManager::getLinkGroup(const std::string& group_name) const
 {
-  return srdf_model_->getLinkGroups().at(group_name);
+  return kinematics_information_.link_groups.at(group_name);
 }
 
 const tesseract_scene_graph::LinkGroups& ManipulatorManager::getLinkGroups() const
 {
-  return srdf_model_->getLinkGroups();
+  return kinematics_information_.link_groups;
 }
 
 bool ManipulatorManager::addROPKinematicsSolver(const std::string& group_name,
@@ -218,15 +277,15 @@ bool ManipulatorManager::addROPKinematicsSolver(const std::string& group_name,
     return false;
   }
 
-  srdf_model_->getGroupROPKinematics()[group_name] = rop_group;
-  srdf_model_->getGroupNames().push_back(group_name);
+  kinematics_information_.group_rop_kinematics[group_name] = rop_group;
+  kinematics_information_.group_names.push_back(group_name);
   return registerROPSolver(group_name, rop_group);
 }
 
 void ManipulatorManager::removeROPKinematicsSolver(const std::string& group_name)
 {
-  srdf_model_->getGroupROPKinematics().erase(group_name);
-  tesseract_scene_graph::GroupNames& group_names = srdf_model_->getGroupNames();
+  kinematics_information_.group_rop_kinematics.erase(group_name);
+  tesseract_scene_graph::GroupNames& group_names = kinematics_information_.group_names;
   group_names.erase(std::remove_if(
       group_names.begin(), group_names.end(), [group_name](const std::string& gn) { return gn == group_name; }));
   removeFwdKinematicSolver(group_name);
@@ -236,12 +295,12 @@ void ManipulatorManager::removeROPKinematicsSolver(const std::string& group_name
 const tesseract_scene_graph::ROPKinematicParameters&
 ManipulatorManager::getROPKinematicsSolver(const std::string& group_name) const
 {
-  return srdf_model_->getGroupROPKinematics().at(group_name);
+  return kinematics_information_.group_rop_kinematics.at(group_name);
 }
 
 const tesseract_scene_graph::GroupROPKinematics& ManipulatorManager::getROPKinematicsSolvers() const
 {
-  return srdf_model_->getGroupROPKinematics();
+  return kinematics_information_.group_rop_kinematics;
 }
 
 bool ManipulatorManager::addREPKinematicsSolver(const std::string& group_name,
@@ -253,15 +312,15 @@ bool ManipulatorManager::addREPKinematicsSolver(const std::string& group_name,
     return false;
   }
 
-  srdf_model_->getGroupREPKinematics()[group_name] = rep_group;
-  srdf_model_->getGroupNames().push_back(group_name);
+  kinematics_information_.group_rep_kinematics[group_name] = rep_group;
+  kinematics_information_.group_names.push_back(group_name);
   return registerREPSolver(group_name, rep_group);
 }
 
 void ManipulatorManager::removeREPKinematicsSolver(const std::string& group_name)
 {
-  srdf_model_->getGroupREPKinematics().erase(group_name);
-  tesseract_scene_graph::GroupNames& group_names = srdf_model_->getGroupNames();
+  kinematics_information_.group_rep_kinematics.erase(group_name);
+  tesseract_scene_graph::GroupNames& group_names = kinematics_information_.group_names;
   group_names.erase(std::remove_if(
       group_names.begin(), group_names.end(), [group_name](const std::string& gn) { return gn == group_name; }));
   removeFwdKinematicSolver(group_name);
@@ -271,12 +330,12 @@ void ManipulatorManager::removeREPKinematicsSolver(const std::string& group_name
 const tesseract_scene_graph::REPKinematicParameters&
 ManipulatorManager::getREPKinematicsSolver(const std::string& group_name) const
 {
-  return srdf_model_->getGroupREPKinematics().at(group_name);
+  return kinematics_information_.group_rep_kinematics.at(group_name);
 }
 
 const tesseract_scene_graph::GroupREPKinematics& ManipulatorManager::getREPKinematicsSolvers() const
 {
-  return srdf_model_->getGroupREPKinematics();
+  return kinematics_information_.group_rep_kinematics;
 }
 
 bool ManipulatorManager::addOPWKinematicsSolver(const std::string& group_name,
@@ -288,24 +347,24 @@ bool ManipulatorManager::addOPWKinematicsSolver(const std::string& group_name,
     return false;
   }
 
-  srdf_model_->getGroupOPWKinematics()[group_name] = opw_params;
+  kinematics_information_.group_opw_kinematics[group_name] = opw_params;
   return registerOPWSolver(group_name, opw_params);
 }
 
 void ManipulatorManager::removeOPWKinematicsSovler(const std::string& group_name)
 {
-  srdf_model_->getGroupOPWKinematics().erase(group_name);
+  kinematics_information_.group_opw_kinematics.erase(group_name);
 }
 
 const tesseract_scene_graph::OPWKinematicParameters&
 ManipulatorManager::getOPWKinematicsSolver(const std::string& group_name) const
 {
-  return srdf_model_->getGroupOPWKinematics().at(group_name);
+  return kinematics_information_.group_opw_kinematics.at(group_name);
 }
 
 const tesseract_scene_graph::GroupOPWKinematics& ManipulatorManager::getOPWKinematicsSolvers() const
 {
-  return srdf_model_->getGroupOPWKinematics();
+  return kinematics_information_.group_opw_kinematics;
 }
 
 bool ManipulatorManager::addGroupJointState(const std::string& group_name,
@@ -318,34 +377,34 @@ bool ManipulatorManager::addGroupJointState(const std::string& group_name,
     return false;
   }
 
-  srdf_model_->getGroupStates()[group_name][state_name] = joint_state;
+  kinematics_information_.group_states[group_name][state_name] = joint_state;
   // @TODO should check if within limits
   return true;
 }
 
 void ManipulatorManager::removeGroupJointState(const std::string& group_name, const std::string& state_name)
 {
-  srdf_model_->getGroupStates()[group_name].erase(state_name);
+  kinematics_information_.group_states[group_name].erase(state_name);
 
-  if (srdf_model_->getGroupStates()[group_name].empty())
-    srdf_model_->getGroupStates().erase(group_name);
+  if (kinematics_information_.group_states[group_name].empty())
+    kinematics_information_.group_states.erase(group_name);
 }
 
 const tesseract_scene_graph::GroupsJointState&
 ManipulatorManager::getGroupsJointState(const std::string& group_name, const std::string& state_name) const
 {
-  return srdf_model_->getGroupStates().at(group_name).at(state_name);
+  return kinematics_information_.group_states.at(group_name).at(state_name);
 }
 
 const tesseract_scene_graph::GroupsJointStates&
 ManipulatorManager::getGroupsJointStates(const std::string& group_name) const
 {
-  return srdf_model_->getGroupStates().at(group_name);
+  return kinematics_information_.group_states.at(group_name);
 }
 
 const tesseract_scene_graph::GroupJointStates& ManipulatorManager::getGroupJointStates() const
 {
-  return srdf_model_->getGroupStates();
+  return kinematics_information_.group_states;
 }
 
 bool ManipulatorManager::addGroupTCP(const std::string& group_name,
@@ -358,35 +417,38 @@ bool ManipulatorManager::addGroupTCP(const std::string& group_name,
     return false;
   }
 
-  srdf_model_->getGroupTCPs()[group_name][tcp_name] = tcp;
+  kinematics_information_.group_tcps[group_name][tcp_name] = tcp;
   return true;
 }
 
 void ManipulatorManager::removeGroupTCP(const std::string& group_name, const std::string& tcp_name)
 {
-  srdf_model_->getGroupTCPs().at(group_name).at(tcp_name);
+  kinematics_information_.group_tcps.at(group_name).at(tcp_name);
 
-  if (srdf_model_->getGroupTCPs()[group_name].empty())
-    srdf_model_->getGroupTCPs().erase(group_name);
+  if (kinematics_information_.group_tcps[group_name].empty())
+    kinematics_information_.group_tcps.erase(group_name);
 }
 
 const Eigen::Isometry3d& ManipulatorManager::getGroupsTCP(const std::string& group_name,
                                                           const std::string& tcp_name) const
 {
-  return srdf_model_->getGroupTCPs().at(group_name).at(tcp_name);
+  return kinematics_information_.group_tcps.at(group_name).at(tcp_name);
 }
 
 const tesseract_scene_graph::GroupsTCPs& ManipulatorManager::getGroupsTCPs(const std::string& group_name) const
 {
-  return srdf_model_->getGroupTCPs().at(group_name);
+  return kinematics_information_.group_tcps.at(group_name);
 }
 
-const tesseract_scene_graph::GroupTCPs& ManipulatorManager::getGroupTCPs() const { return srdf_model_->getGroupTCPs(); }
+const tesseract_scene_graph::GroupTCPs& ManipulatorManager::getGroupTCPs() const
+{
+  return kinematics_information_.group_tcps;
+}
 
 bool ManipulatorManager::hasGroupTCP(const std::string& group_name, const std::string& tcp_name) const
 {
-  auto group_it = srdf_model_->getGroupTCPs().find(group_name);
-  if (group_it == srdf_model_->getGroupTCPs().end())
+  auto group_it = kinematics_information_.group_tcps.find(group_name);
+  if (group_it == kinematics_information_.group_tcps.end())
     return false;
 
   auto tcp_it = group_it->second.find(tcp_name);
@@ -395,26 +457,6 @@ bool ManipulatorManager::hasGroupTCP(const std::string& group_name, const std::s
 
   return true;
 }
-
-// This is exposed for the SRDF editor should not use in normal applications
-void ManipulatorManager::addAllowedCollision(const std::string& link_1,
-                                             const std::string& link_2,
-                                             const std::string& reason)
-{
-  srdf_model_->getAllowedCollisionMatrix().addAllowedCollision(link_1, link_2, reason);
-}
-
-void ManipulatorManager::removeAllowedCollision(const std::string& link_1, const std::string& link_2)
-{
-  srdf_model_->getAllowedCollisionMatrix().removeAllowedCollision(link_1, link_2);
-}
-
-const tesseract_scene_graph::AllowedCollisionMatrix& ManipulatorManager::getAllowedCollisionMatrix() const
-{
-  return srdf_model_->getAllowedCollisionMatrix();
-}
-
-void ManipulatorManager::clearAllowedCollisions() { srdf_model_->getAllowedCollisionMatrix().clearAllowedCollisions(); }
 
 bool ManipulatorManager::registerFwdKinematicsFactory(tesseract_kinematics::ForwardKinematicsFactory::ConstPtr factory)
 {
@@ -472,7 +514,10 @@ bool ManipulatorManager::addFwdKinematicSolver(const tesseract_kinematics::Forwa
   // If default solver does not exist for this manipulator set this solver as the default.
   auto it2 = fwd_kin_manipulators_default_.find(solver->getName());
   if (it2 == fwd_kin_manipulators_default_.end())
+  {
     fwd_kin_manipulators_default_[solver->getName()] = solver;
+    kinematics_information_.group_default_fwd_kin[solver->getName()] = solver->getSolverName();
+  }
 
   return true;
 }
@@ -494,6 +539,7 @@ void ManipulatorManager::removeFwdKinematicSolver(const std::string& manipulator
   }
 
   fwd_kin_manipulators_default_.erase(manipulator);
+  kinematics_information_.group_default_fwd_kin.erase(manipulator);
 }
 
 std::vector<std::string> ManipulatorManager::getAvailableFwdKinematicsManipulators() const
@@ -513,6 +559,7 @@ bool ManipulatorManager::setDefaultFwdKinematicSolver(const std::string& manipul
     return false;
 
   fwd_kin_manipulators_default_[manipulator] = it->second;
+  kinematics_information_.group_default_fwd_kin[manipulator] = name;
 
   return true;
 }
@@ -593,7 +640,10 @@ bool ManipulatorManager::addInvKinematicSolver(const tesseract_kinematics::Inver
   // If default solver does not exist for this manipulator set this solver as the default.
   auto it2 = inv_kin_manipulators_default_.find(solver->getName());
   if (it2 == inv_kin_manipulators_default_.end())
+  {
     inv_kin_manipulators_default_[solver->getName()] = solver;
+    kinematics_information_.group_default_inv_kin[solver->getName()] = solver->getSolverName();
+  }
 
   return true;
 }
@@ -615,6 +665,7 @@ void ManipulatorManager::removeInvKinematicSolver(const std::string& manipulator
   }
 
   inv_kin_manipulators_default_.erase(manipulator);
+  kinematics_information_.group_default_inv_kin.erase(manipulator);
 }
 
 std::vector<std::string> ManipulatorManager::getAvailableInvKinematicsManipulators() const
@@ -634,6 +685,7 @@ bool ManipulatorManager::setDefaultInvKinematicSolver(const std::string& manipul
     return false;
 
   inv_kin_manipulators_default_[manipulator] = it->second;
+  kinematics_information_.group_default_inv_kin[manipulator] = name;
 
   return true;
 }
