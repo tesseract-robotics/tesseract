@@ -31,7 +31,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 # Load variable for clang tidy args, compiler options and cxx version
 tesseract_variables()
 
-add_library(${PROJECT_NAME} src/graph.cpp src/resource_locator.cpp src/srdf_model.cpp)
+add_library(${PROJECT_NAME} src/graph.cpp src/resource_locator.cpp src/srdf_model.cpp src/kinematics_information.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${Boost_LIBRARIES} tesseract::tesseract_geometry tesseract::tesseract_common orocos-kdl console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME} PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})

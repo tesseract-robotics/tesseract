@@ -308,28 +308,32 @@ void runChangeJointLimitsTest()
     EXPECT_NEAR(limits->effort, 0, 1e-5);
   }
   {
-    JointLimits limits = *(env->getJointLimits("joint_a1"));
-    limits.lower = 1.00;
-    limits.upper = 2.00;
-    limits.velocity = 3.00;
-    limits.acceleration = 4.00;
-    limits.effort = 5.00;
-    env->changeJointLimits("joint_a1", limits);
+    double new_lower = 1.0;
+    double new_upper = 2.0;
+    double new_velocity = 3.0;
+    double new_acceleration = 4.0;
+
+    int revision = env->getRevision();
+    env->changeJointPositionLimits("joint_a1", new_lower, new_upper);
+    EXPECT_EQ(revision + 1, env->getRevision());
+    env->changeJointVelocityLimits("joint_a1", new_velocity);
+    EXPECT_EQ(revision + 2, env->getRevision());
+    env->changeJointAccelerationLimits("joint_a1", new_acceleration);
+    EXPECT_EQ(revision + 3, env->getRevision());
 
     // Check that the environment returns the correct limits
     JointLimits new_limits = *(env->getJointLimits("joint_a1"));
-    EXPECT_NEAR(limits.lower, new_limits.lower, 1e-5);
-    EXPECT_NEAR(limits.upper, new_limits.upper, 1e-5);
-    EXPECT_NEAR(limits.velocity, new_limits.velocity, 1e-5);
-    EXPECT_NEAR(limits.acceleration, new_limits.acceleration, 1e-5);
-    EXPECT_NEAR(limits.effort, new_limits.effort, 1e-5);
+    EXPECT_NEAR(new_limits.lower, new_lower, 1e-5);
+    EXPECT_NEAR(new_limits.upper, new_upper, 1e-5);
+    EXPECT_NEAR(new_limits.velocity, new_velocity, 1e-5);
+    EXPECT_NEAR(new_limits.acceleration, new_acceleration, 1e-5);
 
     // Check that the manipulator correctly set the limits
     auto kin = env->getManipulatorManager()->getFwdKinematicSolver("manipulator");
-    EXPECT_NEAR(kin->getLimits().joint_limits(0, 0), limits.lower, 1e-5);
-    EXPECT_NEAR(kin->getLimits().joint_limits(0, 1), limits.upper, 1e-5);
-    EXPECT_NEAR(kin->getLimits().velocity_limits(0), limits.velocity, 1e-5);
-    EXPECT_NEAR(kin->getLimits().acceleration_limits(0), limits.acceleration, 1e-5);
+    EXPECT_NEAR(kin->getLimits().joint_limits(0, 0), new_lower, 1e-5);
+    EXPECT_NEAR(kin->getLimits().joint_limits(0, 1), new_upper, 1e-5);
+    EXPECT_NEAR(kin->getLimits().velocity_limits(0), new_velocity, 1e-5);
+    EXPECT_NEAR(kin->getLimits().acceleration_limits(0), new_acceleration, 1e-5);
   }
 }
 
