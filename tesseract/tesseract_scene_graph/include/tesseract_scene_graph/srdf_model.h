@@ -41,7 +41,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/srdf/types.h>
+#include <tesseract_scene_graph/kinematics_information.h>
+#include <tesseract_scene_graph/allowed_collision_matrix.h>
 
 /// Main namespace
 namespace tesseract_scene_graph
@@ -86,58 +87,18 @@ public:
   const AllowedCollisionMatrix& getAllowedCollisionMatrix() const;
   AllowedCollisionMatrix& getAllowedCollisionMatrix();
 
-  /** @brief Get the group names for this model */
-  const GroupNames& getGroupNames() const;
-  GroupNames& getGroupNames();
-
-  /** @brief Get the map of chain groups defined for this model */
-  const ChainGroups& getChainGroups() const;
-  ChainGroups& getChainGroups();
-
-  /** @brief Get the map of joint groups defined for this model */
-  const JointGroups& getJointGroups() const;
-  JointGroups& getJointGroups();
-
-  /** @brief Get the map of link groups defined for this model */
-  const LinkGroups& getLinkGroups() const;
-  LinkGroups& getLinkGroups();
-
-  /** @brief Get the map of group tool center points (TCP) defined for this model */
-  const GroupTCPs& getGroupTCPs() const;
-  GroupTCPs& getGroupTCPs();
-
-  /** @brief Get the map of group states defined for this model */
-  const GroupJointStates& getGroupStates() const;
-  GroupJointStates& getGroupStates();
-
-  /** @brief Get the map of group opw kinematics defined for this model */
-  const GroupOPWKinematics& getGroupOPWKinematics() const;
-  GroupOPWKinematics& getGroupOPWKinematics();
-
-  /** @brief Get the map of robot on positioner groups defined for this model */
-  const GroupROPKinematics& getGroupROPKinematics() const;
-  GroupROPKinematics& getGroupROPKinematics();
-
-  /** @brief Get the map of robot with external positioner groups defined for this model */
-  const GroupREPKinematics& getGroupREPKinematics() const;
-  GroupREPKinematics& getGroupREPKinematics();
+  /** @brief Get the kinematics information */
+  const KinematicsInformation& getKinematicsInformation() const;
+  KinematicsInformation& getKinematicsInformation();
 
   /** @brief Clear the model */
   void clear();
 
 private:
-  std::string name_{ "undefined" };           /**< @brief The name of the srdf model */
-  std::array<int, 3> version_{ { 1, 0, 0 } }; /**< @brief The version number major.minor[.patch] */
-  ChainGroups chain_groups_;                  /**< @brief A map of chains groups*/
-  JointGroups joint_groups_;                  /**< @brief A map of joint groups */
-  LinkGroups link_groups_;                    /**< @brief A map of link groups */
-  std::vector<std::string> group_names_;      /**< @brief A vector of group names */
-  GroupJointStates group_states_;             /**< @brief A map of group states */
-  GroupTCPs group_tcps_;                      /**< @brief A map of group tool center points */
-  AllowedCollisionMatrix acm_;                /**< @brief The allowed collision matrix */
-  GroupOPWKinematics group_opw_kinematics_;   /**< @brief A map of group opw kinematics data */
-  GroupROPKinematics group_rop_kinematics_;   /**< @brief A map of robot on positioner groups */
-  GroupREPKinematics group_rep_kinematics_;   /**< @brief A map of robot with external positioner groups */
+  std::string name_{ "undefined" };              /**< @brief The name of the srdf model */
+  std::array<int, 3> version_{ { 1, 0, 0 } };    /**< @brief The version number major.minor[.patch] */
+  AllowedCollisionMatrix acm_;                   /**< @brief The allowed collision matrix */
+  KinematicsInformation kinematics_information_; /**< @brief A map of group opw kinematics data */
 };
 
 }  // namespace tesseract_scene_graph

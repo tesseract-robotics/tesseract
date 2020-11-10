@@ -99,15 +99,16 @@ bool SRDFModel::initXml(const tesseract_scene_graph::SceneGraph& scene_graph, co
 
   std::tuple<GroupNames, ChainGroups, JointGroups, LinkGroups> groups_info =
       parseGroups(scene_graph, srdf_xml, version_);
-  group_names_ = std::get<0>(groups_info);
-  chain_groups_ = std::get<1>(groups_info);
-  joint_groups_ = std::get<2>(groups_info);
-  link_groups_ = std::get<3>(groups_info);
-  group_states_ = parseGroupStates(scene_graph, group_names_, srdf_xml, version_);
-  group_tcps_ = parseGroupTCPs(scene_graph, srdf_xml, version_);
-  group_opw_kinematics_ = parseGroupOPWKinematics(scene_graph, srdf_xml, version_);
-  group_rop_kinematics_ = parseGroupROPKinematics(scene_graph, srdf_xml, version_);
-  group_rep_kinematics_ = parseGroupREPKinematics(scene_graph, srdf_xml, version_);
+  kinematics_information_.group_names = std::get<0>(groups_info);
+  kinematics_information_.chain_groups = std::get<1>(groups_info);
+  kinematics_information_.joint_groups = std::get<2>(groups_info);
+  kinematics_information_.link_groups = std::get<3>(groups_info);
+  kinematics_information_.group_states =
+      parseGroupStates(scene_graph, kinematics_information_.group_names, srdf_xml, version_);
+  kinematics_information_.group_tcps = parseGroupTCPs(scene_graph, srdf_xml, version_);
+  kinematics_information_.group_opw_kinematics = parseGroupOPWKinematics(scene_graph, srdf_xml, version_);
+  kinematics_information_.group_rop_kinematics = parseGroupROPKinematics(scene_graph, srdf_xml, version_);
+  kinematics_information_.group_rep_kinematics = parseGroupREPKinematics(scene_graph, srdf_xml, version_);
   acm_ = parseDisabledCollisions(scene_graph, srdf_xml, version_);
 
   return true;
@@ -167,7 +168,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
       "version",
       (std::to_string(version_[0]) + "." + std::to_string(version_[1]) + "." + std::to_string(version_[2])).c_str());
 
-  for (const auto& chain : chain_groups_)
+  for (const auto& chain : kinematics_information_.chain_groups)
   {
     tinyxml2::XMLElement* xml_group = doc.NewElement("group");
     xml_group->SetAttribute("name", chain.first.c_str());
@@ -181,7 +182,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_group);
   }
 
-  for (const auto& joint : joint_groups_)
+  for (const auto& joint : kinematics_information_.joint_groups)
   {
     tinyxml2::XMLElement* xml_group = doc.NewElement("group");
     xml_group->SetAttribute("name", joint.first.c_str());
@@ -194,7 +195,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_group);
   }
 
-  for (const auto& link : link_groups_)
+  for (const auto& link : kinematics_information_.link_groups)
   {
     tinyxml2::XMLElement* xml_group = doc.NewElement("group");
     xml_group->SetAttribute("name", link.first.c_str());
@@ -207,7 +208,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_group);
   }
 
-  for (const auto& rop : group_rop_kinematics_)
+  for (const auto& rop : kinematics_information_.group_rop_kinematics)
   {
     tinyxml2::XMLElement* xml_group_rop = doc.NewElement("group_rop");
     xml_group_rop->SetAttribute("group", rop.first.c_str());
@@ -231,7 +232,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_group_rop);
   }
 
-  for (const auto& rep : group_rep_kinematics_)
+  for (const auto& rep : kinematics_information_.group_rep_kinematics)
   {
     tinyxml2::XMLElement* xml_group_rep = doc.NewElement("group_rep");
     xml_group_rep->SetAttribute("group", rep.first.c_str());
@@ -255,7 +256,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_group_rep);
   }
 
-  for (const auto& group_state : group_states_)
+  for (const auto& group_state : kinematics_information_.group_states)
   {
     for (const auto& joint_state : group_state.second)  // <chain base_link="base_link" tip_link="tool0" />
     {
@@ -275,7 +276,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
   }
 
   Eigen::IOFormat eigen_format(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ");
-  for (const auto& group_tcp : group_tcps_)
+  for (const auto& group_tcp : kinematics_information_.group_tcps)
   {
     tinyxml2::XMLElement* xml_group_tcps = doc.NewElement("group_tcps");
     xml_group_tcps->SetAttribute("group", group_tcp.first.c_str());
@@ -299,7 +300,7 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_group_tcps);
   }
 
-  for (const auto& group_opw : group_opw_kinematics_)
+  for (const auto& group_opw : kinematics_information_.group_opw_kinematics)
   {
     tinyxml2::XMLElement* xml_group_opw = doc.NewElement("group_opw");
     xml_group_opw->SetAttribute("group", group_opw.first.c_str());
@@ -352,45 +353,14 @@ std::string& SRDFModel::getName() { return name_; }
 const AllowedCollisionMatrix& SRDFModel::getAllowedCollisionMatrix() const { return acm_; }
 AllowedCollisionMatrix& SRDFModel::getAllowedCollisionMatrix() { return acm_; };
 
-const GroupNames& SRDFModel::getGroupNames() const { return group_names_; }
-GroupNames& SRDFModel::getGroupNames() { return group_names_; }
-
-const ChainGroups& SRDFModel::getChainGroups() const { return chain_groups_; }
-ChainGroups& SRDFModel::getChainGroups() { return chain_groups_; }
-
-const JointGroups& SRDFModel::getJointGroups() const { return joint_groups_; }
-JointGroups& SRDFModel::getJointGroups() { return joint_groups_; }
-
-const LinkGroups& SRDFModel::getLinkGroups() const { return link_groups_; }
-LinkGroups& SRDFModel::getLinkGroups() { return link_groups_; }
-
-const GroupROPKinematics& SRDFModel::getGroupROPKinematics() const { return group_rop_kinematics_; }
-GroupROPKinematics& SRDFModel::getGroupROPKinematics() { return group_rop_kinematics_; }
-
-const GroupREPKinematics& SRDFModel::getGroupREPKinematics() const { return group_rep_kinematics_; }
-GroupREPKinematics& SRDFModel::getGroupREPKinematics() { return group_rep_kinematics_; }
-
-const GroupTCPs& SRDFModel::getGroupTCPs() const { return group_tcps_; }
-GroupTCPs& SRDFModel::getGroupTCPs() { return group_tcps_; }
-
-const GroupJointStates& SRDFModel::getGroupStates() const { return group_states_; }
-GroupJointStates& SRDFModel::getGroupStates() { return group_states_; }
-
-const GroupOPWKinematics& SRDFModel::getGroupOPWKinematics() const { return group_opw_kinematics_; }
-GroupOPWKinematics& SRDFModel::getGroupOPWKinematics() { return group_opw_kinematics_; }
+const KinematicsInformation& SRDFModel::getKinematicsInformation() const { return kinematics_information_; };
+KinematicsInformation& SRDFModel::getKinematicsInformation() { return kinematics_information_; };
 
 void SRDFModel::clear()
 {
   name_ = "";
-  chain_groups_.clear();
-  joint_groups_.clear();
-  link_groups_.clear();
-  group_rop_kinematics_.clear();
-  group_rep_kinematics_.clear();
-  group_states_.clear();
-  group_tcps_.clear();
   acm_.clearAllowedCollisions();
-  group_opw_kinematics_.clear();
+  kinematics_information_.clear();
 }
 
 }  // namespace tesseract_scene_graph

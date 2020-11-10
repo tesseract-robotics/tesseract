@@ -34,6 +34,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+int Environment::getRevision() const { return revision_; }
+
+const Commands& Environment::getCommandHistory() const { return commands_; }
+
 bool Environment::applyCommands(const Commands& commands)
 {
   for (const auto& command : commands)
@@ -193,6 +197,13 @@ bool Environment::applyCommand(const Command& command)
         return false;
       break;
     }
+    case tesseract_environment::CommandType::ADD_KINEMATICS_INFORMATION:
+    {
+      const auto& cmd = static_cast<const tesseract_environment::AddKinematicsInformationCommand&>(command);
+      if (!manipulator_manager_->addKinematicsInformation(cmd.getKinematicsInformation()))
+        return false;
+      break;
+    }
     default:
     {
       CONSOLE_BRIDGE_logError("Unhandled environment command");
@@ -202,6 +213,29 @@ bool Environment::applyCommand(const Command& command)
 
   return true;
 }
+
+bool Environment::checkInitialized() const { return initialized_; }
+
+const tesseract_scene_graph::SceneGraph::ConstPtr& Environment::getSceneGraph() const { return scene_graph_const_; }
+
+ManipulatorManager::Ptr Environment::getManipulatorManager() { return manipulator_manager_; }
+
+ManipulatorManager::ConstPtr Environment::getManipulatorManager() const { return manipulator_manager_; }
+
+bool Environment::addKinematicsInformation(const tesseract_scene_graph::KinematicsInformation& kin_info)
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (!manipulator_manager_->addKinematicsInformation(kin_info))
+    return false;
+
+  ++revision_;
+  commands_.push_back(std::make_shared<AddKinematicsInformationCommand>(kin_info));
+  return true;
+}
+
+void Environment::setName(const std::string& name) { scene_graph_->setName(name); }
+
+const std::string& Environment::getName() const { return scene_graph_->getName(); }
 
 void Environment::setState(const std::unordered_map<std::string, double>& joints)
 {
@@ -248,6 +282,8 @@ EnvState::Ptr Environment::getState(const std::vector<std::string>& joint_names,
 
   return state;
 }
+
+EnvState::ConstPtr Environment::getCurrentState() const { return current_state_; }
 
 bool Environment::addLink(tesseract_scene_graph::Link link)
 {
@@ -772,6 +808,22 @@ bool Environment::setActiveContinuousContactManager(const std::string& name)
   return true;
 }
 
+tesseract_collision::DiscreteContactManager::Ptr Environment::getDiscreteContactManager() const
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (!discrete_manager_)
+    return nullptr;
+  return discrete_manager_->clone();
+}
+
+tesseract_collision::ContinuousContactManager::Ptr Environment::getContinuousContactManager() const
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (!continuous_manager_)
+    return nullptr;
+  return continuous_manager_->clone();
+}
+
 tesseract_collision::ContinuousContactManager::Ptr
 Environment::getContinuousContactManager(const std::string& name) const
 {
@@ -784,6 +836,22 @@ Environment::getContinuousContactManager(const std::string& name) const
   }
 
   return manager;
+}
+
+bool Environment::registerDiscreteContactManager(
+    const std::string& name,
+    tesseract_collision::DiscreteContactManagerFactory::CreateMethod create_function)
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  return discrete_factory_.registar(name, std::move(create_function));
+}
+
+bool Environment::registerContinuousContactManager(
+    const std::string& name,
+    tesseract_collision::ContinuousContactManagerFactory::CreateMethod create_function)
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  return continuous_factory_.registar(name, std::move(create_function));
 }
 
 tesseract_collision::DiscreteContactManager::Ptr

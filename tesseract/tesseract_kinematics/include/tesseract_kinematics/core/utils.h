@@ -223,11 +223,12 @@ inline static bool dampedPInv(const Eigen::Ref<const Eigen::MatrixXd>& A,
  * @return Kinematics map between group name and kinematics object
  */
 template <class Chain_T, class Tree_T>
-ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
-                                                 const tesseract_scene_graph::SRDFModel& srdf_model)
+ForwardKinematicsConstPtrMap
+createKinematicsMap(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_graph,
+                    const tesseract_scene_graph::KinematicsInformation& kinematics_information)
 {
   ForwardKinematicsConstPtrMap manipulators;
-  for (const auto& group : srdf_model.getChainGroups())
+  for (const auto& group : kinematics_information.chain_groups)
   {
     if (!group.second.empty())
     {
@@ -246,7 +247,7 @@ ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::Sc
     }
   }
 
-  for (const auto& group : srdf_model.getJointGroups())
+  for (const auto& group : kinematics_information.joint_groups)
   {
     if (!group.second.empty())
     {
@@ -265,7 +266,7 @@ ForwardKinematicsConstPtrMap createKinematicsMap(const tesseract_scene_graph::Sc
     }
   }
 
-  for (const auto& group : srdf_model.getLinkGroups())
+  for (const auto& group : kinematics_information.link_groups)
   {
     // TODO: Need to add other options
     if (!group.second.empty())

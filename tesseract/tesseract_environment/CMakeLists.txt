@@ -34,7 +34,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 tesseract_variables()
 
 # Create interface for core
-add_library(${PROJECT_NAME}_core src/core/environment.cpp src/manipulator_manager/manipulator_manager.cpp)
+add_library(${PROJECT_NAME}_core src/core/environment.cpp src/core/manipulator_manager.cpp)
 target_link_libraries(${PROJECT_NAME}_core PUBLIC
   tesseract::tesseract_common
   tesseract::tesseract_collision_core

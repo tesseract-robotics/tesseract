@@ -33,7 +33,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/srdf_model.h>
-#include <tesseract_scene_graph/srdf/types.h>
 #include <tesseract_kinematics/core/forward_kinematics_factory.h>
 #include <tesseract_kinematics/core/inverse_kinematics_factory.h>
 
@@ -52,7 +51,8 @@ public:
   ManipulatorManager(ManipulatorManager&&) = default;
   ManipulatorManager& operator=(ManipulatorManager&&) = default;
 
-  bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph, tesseract_scene_graph::SRDFModel::Ptr srdf_model);
+  bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
+            tesseract_scene_graph::KinematicsInformation kinematics_information);
 
   /**
    * @brief Updates all of the stored solvers
@@ -66,8 +66,11 @@ public:
    */
   ManipulatorManager::Ptr clone(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph) const;
 
-  /** @brief Get the SRDF Model */
-  tesseract_scene_graph::SRDFModel::ConstPtr getSRDFModel() const;
+  /** @brief Kinematics Information */
+  bool addKinematicsInformation(const tesseract_scene_graph::KinematicsInformation& kinematics_information);
+
+  /** @brief Get the kinematics information */
+  const tesseract_scene_graph::KinematicsInformation& getKinematicsInformation() const;
 
   /** @brief Get Group Names */
   const tesseract_scene_graph::GroupNames& getGroupNames() const;
@@ -121,12 +124,6 @@ public:
   const tesseract_scene_graph::GroupsTCPs& getGroupsTCPs(const std::string& group_name) const;
   const tesseract_scene_graph::GroupTCPs& getGroupTCPs() const;
   bool hasGroupTCP(const std::string& group_name, const std::string& tcp_name) const;
-
-  // This is exposed for the SRDF editor should not use in normal applications
-  void addAllowedCollision(const std::string& link_1, const std::string& link_2, const std::string& reason);
-  void removeAllowedCollision(const std::string& link_1, const std::string& link_2);
-  void clearAllowedCollisions();
-  const tesseract_scene_graph::AllowedCollisionMatrix& getAllowedCollisionMatrix() const;
 
   /**
    * @brief Register a forward kinematics factory
@@ -301,7 +298,7 @@ public:
   tesseract_kinematics::InverseKinematics::Ptr getInvKinematicSolver(const std::string& manipulator) const;
 
 private:
-  tesseract_scene_graph::SRDFModel::Ptr srdf_model_;
+  tesseract_scene_graph::KinematicsInformation kinematics_information_;
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;
   tesseract_kinematics::ForwardKinematicsFactory::ConstPtr fwd_kin_chain_default_factory_;
   tesseract_kinematics::ForwardKinematicsFactory::ConstPtr fwd_kin_tree_default_factory_;
