@@ -392,6 +392,23 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
 
         break;
       }
+      case tesseract_environment::CommandType::CHANGE_JOINT_LIMITS:
+      {
+        const auto& cmd = static_cast<const tesseract_environment::ChangeJointLimitsCommand&>(*command);
+        // Loop through all names until we find the one we need
+        for (std::size_t i = 0; i < joint_names_.size(); i++)
+        {
+          // Assign the lower/upper. Velocity, acceleration, and effort are ignored
+          if (joint_names_[i] == cmd.getJointName())
+          {
+            limits_(static_cast<Eigen::Index>(i), 0) = cmd.getLimits().lower;
+            limits_(static_cast<Eigen::Index>(i), 1) = cmd.getLimits().upper;
+            break;
+          }
+        }
+
+        break;
+      }
       default:
       {
         throw std::runtime_error("OFKTStateSolver: Unhandled environment command");

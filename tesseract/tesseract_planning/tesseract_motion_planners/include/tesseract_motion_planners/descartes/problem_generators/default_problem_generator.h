@@ -52,11 +52,13 @@ DefaultDescartesProblemGenerator(const std::string& name,
   const ManipulatorInfo& composite_mi = request.instructions.getManipulatorInfo();
 
   // Get Manipulator Information
-  prob->manip_fwd_kin = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(composite_mi.manipulator);
+  prob->manip_fwd_kin =
+      request.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(composite_mi.manipulator);
   if (composite_mi.manipulator_ik_solver.empty())
-    prob->manip_inv_kin = request.tesseract->getManipulatorManager()->getInvKinematicSolver(composite_mi.manipulator);
+    prob->manip_inv_kin =
+        request.tesseract->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(composite_mi.manipulator);
   else
-    prob->manip_inv_kin = request.tesseract->getManipulatorManager()->getInvKinematicSolver(
+    prob->manip_inv_kin = request.tesseract->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(
         composite_mi.manipulator, composite_mi.manipulator_ik_solver);
 
   if (!prob->manip_fwd_kin)

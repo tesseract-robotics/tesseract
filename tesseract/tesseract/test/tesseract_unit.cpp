@@ -84,10 +84,6 @@ TEST(TesseractUnit, TesseractURDFPathSRDFPathLocatorInitUnit)  // NOLINT
 {
 }
 
-TEST(TesseractUnit, TesseractEnvironmentManipulatorManagerInitUnit)  // NOLINT
-{
-}
-
 TEST(TesseractUnit, TesseractInitInfoInitUnit)  // NOLINT
 {
 }

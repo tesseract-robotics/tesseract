@@ -36,15 +36,13 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 tesseract_variables()
 
 # Create target
-add_library(${PROJECT_NAME} src/tesseract.cpp src/manipulator_manager.cpp)
+add_library(${PROJECT_NAME} src/tesseract.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC
   tesseract::tesseract_urdf
   tesseract::tesseract_scene_graph
   tesseract::tesseract_collision_bullet
   tesseract::tesseract_environment_kdl
   tesseract::tesseract_environment_ofkt
-  tesseract::tesseract_kinematics_kdl
-  tesseract::tesseract_kinematics_opw
   tesseract::tesseract_command_language
   console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME} PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})

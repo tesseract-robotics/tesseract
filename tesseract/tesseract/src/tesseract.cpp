@@ -66,13 +66,6 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
   auto srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
   srdf->getName() = scene_graph->getName();
 
-  manipulator_manager_ = std::make_shared<ManipulatorManager>();
-  if (!manipulator_manager_->init(environment_, srdf))
-  {
-    CONSOLE_BRIDGE_logError("Failed to initialize manipulator manager.");
-    return false;
-  }
-
   registerDefaultContactManagers();
 
   initialized_ = true;
@@ -92,16 +85,9 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph,
 
   // Construct Environment from Scene Graph
   environment_ = std::make_shared<tesseract_environment::Environment>();
-  if (!environment_->init<tesseract_environment::OFKTStateSolver>(*scene_graph))
+  if (!environment_->init<tesseract_environment::OFKTStateSolver>(*scene_graph, srdf_model))
   {
     CONSOLE_BRIDGE_logError("Failed to initialize environment.");
-    return false;
-  }
-
-  manipulator_manager_ = std::make_shared<ManipulatorManager>();
-  if (!manipulator_manager_->init(environment_, std::make_shared<tesseract_scene_graph::SRDFModel>(*srdf_model)))
-  {
-    CONSOLE_BRIDGE_logError("Failed to initialize manipulator manager.");
     return false;
   }
 
@@ -132,16 +118,6 @@ bool Tesseract::init(const std::string& urdf_string, const tesseract_scene_graph
   if (!environment_->init<tesseract_environment::OFKTStateSolver>(*scene_graph))
   {
     CONSOLE_BRIDGE_logError("Failed to initialize environment.");
-    return false;
-  }
-
-  auto srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
-  srdf->getName() = scene_graph->getName();
-
-  manipulator_manager_ = std::make_shared<ManipulatorManager>();
-  if (!manipulator_manager_->init(environment_, srdf))
-  {
-    CONSOLE_BRIDGE_logError("Failed to initialize manipulator manager.");
     return false;
   }
 
@@ -183,16 +159,9 @@ bool Tesseract::init(const std::string& urdf_string,
 
   // Construct Environment
   environment_ = std::make_shared<tesseract_environment::Environment>();
-  if (!environment_->init<tesseract_environment::OFKTStateSolver>(*scene_graph))
+  if (!environment_->init<tesseract_environment::OFKTStateSolver>(*scene_graph, srdf))
   {
     CONSOLE_BRIDGE_logError("Failed to initialize environment.");
-    return false;
-  }
-
-  manipulator_manager_ = std::make_shared<ManipulatorManager>();
-  if (!manipulator_manager_->init(environment_, srdf))
-  {
-    CONSOLE_BRIDGE_logError("Failed to initialize manipulator manager.");
     return false;
   }
 
@@ -224,16 +193,6 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
   if (!environment_->init<tesseract_environment::OFKTStateSolver>(*scene_graph))
   {
     CONSOLE_BRIDGE_logError("Failed to initialize environment.");
-    return false;
-  }
-
-  auto srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
-  srdf->getName() = scene_graph->getName();
-
-  manipulator_manager_ = std::make_shared<ManipulatorManager>();
-  if (!manipulator_manager_->init(environment_, srdf))
-  {
-    CONSOLE_BRIDGE_logError("Failed to initialize manipulator manager.");
     return false;
   }
 
@@ -275,16 +234,9 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
 
   // Construct Environment
   environment_ = std::make_shared<tesseract_environment::Environment>();
-  if (!environment_->init<tesseract_environment::OFKTStateSolver>(*scene_graph))
+  if (!environment_->init<tesseract_environment::OFKTStateSolver>(*scene_graph, srdf))
   {
     CONSOLE_BRIDGE_logError("Failed to initialize environment.");
-    return false;
-  }
-
-  manipulator_manager_ = std::make_shared<ManipulatorManager>();
-  if (!manipulator_manager_->init(environment_, srdf))
-  {
-    CONSOLE_BRIDGE_logError("Failed to initialize manipulator manager.");
     return false;
   }
 
@@ -294,15 +246,12 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
   return true;
 }
 
-bool Tesseract::init(const tesseract_environment::Environment& env, const ManipulatorManager& manipulator_manager)
+bool Tesseract::init(const tesseract_environment::Environment& env)
 {
   clear();
   init_info_ = std::make_shared<TesseractInitInfo>();
-  init_info_->type = TesseractInitType::ENVIRONMENT_MANIPULATOR_MANAGER;
+  init_info_->type = TesseractInitType::ENVIRONMENT;
   init_info_->environment = env.clone();
-  init_info_->manipulator_manager = manipulator_manager.clone(init_info_->environment);
-  environment_ = env.clone();
-  manipulator_manager_ = manipulator_manager.clone(environment_);
   initialized_ = true;
   return initialized_;
 }
@@ -329,8 +278,8 @@ bool Tesseract::init(const TesseractInitInfo::Ptr& init_info)
     case TesseractInitType::URDF_PATH_SRDF_PATH:
       init(init_info->urdf_path, init_info->srdf_path, init_info->resource_locator);
       break;
-    case TesseractInitType::ENVIRONMENT_MANIPULATOR_MANAGER:
-      init(*init_info->environment, *init_info->manipulator_manager);
+    case TesseractInitType::ENVIRONMENT:
+      init(*init_info->environment);
       break;
     default:
       CONSOLE_BRIDGE_logError("Unsupported TesseractInitInfo type.");
@@ -345,10 +294,6 @@ Tesseract::Ptr Tesseract::clone() const
 
   if (environment_)
     clone->environment_ = environment_->clone();
-
-  if (clone->environment_)
-    if (manipulator_manager_)
-      clone->manipulator_manager_ = manipulator_manager_->clone(clone->environment_);
 
   clone->init_info_ = init_info_;
   clone->initialized_ = initialized_;
@@ -372,8 +317,14 @@ const tesseract_scene_graph::ResourceLocator::Ptr& Tesseract::getResourceLocator
 tesseract_environment::Environment::Ptr Tesseract::getEnvironment() { return environment_; }
 tesseract_environment::Environment::ConstPtr Tesseract::getEnvironment() const { return environment_; }
 
-ManipulatorManager::Ptr Tesseract::getManipulatorManager() { return manipulator_manager_; }
-ManipulatorManager::ConstPtr Tesseract::getManipulatorManager() const { return manipulator_manager_; }
+tesseract_environment::ManipulatorManager::Ptr Tesseract::getManipulatorManager()
+{
+  return environment_->getManipulatorManager();
+}
+tesseract_environment::ManipulatorManager::ConstPtr Tesseract::getManipulatorManager() const
+{
+  return environment_->getManipulatorManager();
+}
 
 /** @brief registerDefaultContactManagers */
 bool Tesseract::registerDefaultContactManagers()
@@ -399,7 +350,6 @@ void Tesseract::clear()
 {
   initialized_ = false;
   environment_ = nullptr;
-  manipulator_manager_ = nullptr;
   init_info_ = nullptr;
   find_tcp_cb_.clear();
 }
@@ -409,7 +359,7 @@ Eigen::Isometry3d Tesseract::findTCP(const tesseract_planning::ManipulatorInfo& 
   if (manip_info.tcp.empty())
     return Eigen::Isometry3d::Identity();
 
-  auto composite_mi_fwd_kin = manipulator_manager_->getFwdKinematicSolver(manip_info.manipulator);
+  auto composite_mi_fwd_kin = environment_->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
   if (composite_mi_fwd_kin == nullptr)
     throw std::runtime_error("findTCP: Manipulator '" + manip_info.manipulator + "' does not exist!");
 
@@ -418,8 +368,8 @@ Eigen::Isometry3d Tesseract::findTCP(const tesseract_planning::ManipulatorInfo& 
   {
     // Check Manipulator Manager for TCP
     const std::string& tcp_name = manip_info.tcp.getString();
-    if (manipulator_manager_->hasGroupTCP(manip_info.manipulator, tcp_name))
-      return manipulator_manager_->getGroupsTCP(manip_info.manipulator, tcp_name);
+    if (environment_->getManipulatorManager()->hasGroupTCP(manip_info.manipulator, tcp_name))
+      return environment_->getManipulatorManager()->getGroupsTCP(manip_info.manipulator, tcp_name);
 
     // Check Environment for links and calculate TCP
     tesseract_environment::EnvState::ConstPtr env_state = environment_->getCurrentState();
