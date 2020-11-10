@@ -288,13 +288,11 @@ private:
   std::string prefix_;
 };
 
-class TESSERACT_ENVIRONMENT_CORE_PUBLIC ChangeJointLimitsCommand : public Command
+class ChangeJointLimitsCommand : public Command
 {
 public:
   ChangeJointLimitsCommand(std::string joint_name, tesseract_scene_graph::JointLimits joint_limits)
-    : Command(CommandType::CHANGE_JOINT_LIMITS)
-    , joint_name_(std::move(joint_name))
-    , joint_limits_(std::move(joint_limits))
+    : Command(CommandType::CHANGE_JOINT_LIMITS), joint_name_(std::move(joint_name)), joint_limits_(joint_limits)
   {
   }
   const std::string& getJointName() const { return joint_name_; }

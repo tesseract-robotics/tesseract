@@ -24,7 +24,7 @@
  * limitations under the License.
  */
 
-#include <tesseract/manipulator_manager.h>
+#include <tesseract_environment/manipulator_manager/manipulator_manager.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain_factory.h>
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_tree_factory.h>
 #include <tesseract_kinematics/kdl/kdl_inv_kin_chain_lma_factory.h>
@@ -33,16 +33,15 @@
 #include <tesseract_kinematics/core/rop_inverse_kinematics.h>
 #include <tesseract_kinematics/core/rep_inverse_kinematics.h>
 
-namespace tesseract
+namespace tesseract_environment
 {
-bool ManipulatorManager::init(tesseract_environment::Environment::ConstPtr environment,
+bool ManipulatorManager::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
                               tesseract_scene_graph::SRDFModel::Ptr srdf_model)
 {
-  env_ = std::move(environment);
-  scene_graph_ = std::move(env_->getSceneGraph());
+  scene_graph_ = std::move(scene_graph);
   srdf_model_ = std::move(srdf_model);
 
-  if (scene_graph_ == nullptr || srdf_model_ == nullptr || env_ == nullptr)
+  if (scene_graph_ == nullptr || srdf_model_ == nullptr)
     return false;
 
   fwd_kin_chain_default_factory_ = std::make_shared<tesseract_kinematics::KDLFwdKinChainFactory>();
@@ -88,11 +87,10 @@ bool ManipulatorManager::update()
   return success;
 }
 
-ManipulatorManager::Ptr ManipulatorManager::clone(tesseract_environment::Environment::ConstPtr environment) const
+ManipulatorManager::Ptr ManipulatorManager::clone(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph) const
 {
   auto cloned_manager = std::make_shared<ManipulatorManager>(*this);
-  cloned_manager->env_ = std::move(environment);
-  cloned_manager->scene_graph_ = std::move(cloned_manager->env_->getSceneGraph());
+  cloned_manager->scene_graph_ = std::move(scene_graph);
   cloned_manager->srdf_model_ = std::make_shared<tesseract_scene_graph::SRDFModel>(*srdf_model_);
   return cloned_manager;
 }
@@ -463,7 +461,7 @@ ManipulatorManager::getFwdKinematicFactory(const std::string& name) const
   return nullptr;
 }
 
-bool ManipulatorManager::addFwdKinematicSolver(const tesseract_kinematics::ForwardKinematics::ConstPtr& solver)
+bool ManipulatorManager::addFwdKinematicSolver(const tesseract_kinematics::ForwardKinematics::Ptr& solver)
 {
   auto it = fwd_kin_manipulators_.find(std::make_pair(solver->getName(), solver->getSolverName()));
   if (it != fwd_kin_manipulators_.end())
@@ -584,7 +582,7 @@ ManipulatorManager::getInvKinematicFactory(const std::string& name) const
   return nullptr;
 }
 
-bool ManipulatorManager::addInvKinematicSolver(const tesseract_kinematics::InverseKinematics::ConstPtr& solver)
+bool ManipulatorManager::addInvKinematicSolver(const tesseract_kinematics::InverseKinematics::Ptr& solver)
 {
   auto it = inv_kin_manipulators_.find(std::make_pair(solver->getName(), solver->getSolverName()));
   if (it != inv_kin_manipulators_.end())
@@ -891,7 +889,6 @@ bool ManipulatorManager::registerREPSolver(const std::string& group_name,
                     rep_group.manipulator_reach,
                     positioner_fk_solver,
                     positioner_sample_resolution,
-                    env_->getCurrentState()->link_transforms,
                     group_name))
     return false;
 
@@ -908,4 +905,4 @@ bool ManipulatorManager::registerREPSolver(const std::string& group_name,
   return true;
 }
 
-}  // namespace tesseract
+}  // namespace tesseract_environment

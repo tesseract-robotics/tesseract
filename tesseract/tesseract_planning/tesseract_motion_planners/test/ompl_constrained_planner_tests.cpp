@@ -135,7 +135,7 @@ TEST(OMPLConstraintPlanner, OMPLConstraintPlannerUnit)  // NOLINT
   EXPECT_TRUE(tesseract->init(urdf_path, srdf_path, locator));
 
   // Step 3: Create ompl planner config and populate it
-  auto kin = tesseract->getManipulatorManager()->getFwdKinematicSolver("manipulator");
+  auto kin = tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver("manipulator");
   std::vector<double> swp = start_state;
   std::vector<double> ewp = end_state;
 

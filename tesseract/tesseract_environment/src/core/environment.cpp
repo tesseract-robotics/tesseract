@@ -370,10 +370,14 @@ bool Environment::changeJointOrigin(const std::string& joint_name, const Eigen::
   return true;
 }
 
-bool Environment::changeJointLimits(const std::string& joint_name, const tesseract_scene_graph::JointLimits limits)
+bool Environment::changeJointLimits(const std::string& joint_name, const tesseract_scene_graph::JointLimits& limits)
 {
   std::lock_guard<std::mutex> lock(mutex_);
   if (!scene_graph_->changeJointLimits(joint_name, limits))
+    return false;
+
+  // TODO: Only change joint limits rather than completely rebuilding kinematics
+  if (!manipulator_manager_->update())
     return false;
 
   ++revision_;
@@ -382,6 +386,11 @@ bool Environment::changeJointLimits(const std::string& joint_name, const tessera
   environmentChanged();
 
   return true;
+}
+
+tesseract_scene_graph::JointLimits::ConstPtr Environment::getJointLimits(const std::string& joint_name) const
+{
+  return scene_graph_->getJointLimits(joint_name);
 }
 
 void Environment::setLinkCollisionEnabled(const std::string& name, bool enabled)
@@ -817,6 +826,7 @@ Environment::Ptr Environment::clone() const
   cloned_env->commands_ = commands_;
   cloned_env->scene_graph_ = scene_graph_->clone();
   cloned_env->scene_graph_const_ = cloned_env->scene_graph_;
+  cloned_env->manipulator_manager_ = manipulator_manager_->clone(cloned_env->getSceneGraph());
   cloned_env->current_state_ = std::make_shared<EnvState>(*current_state_);
   cloned_env->state_solver_ = state_solver_->clone();
   cloned_env->link_names_ = link_names_;

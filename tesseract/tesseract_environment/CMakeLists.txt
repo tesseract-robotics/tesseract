@@ -10,6 +10,7 @@ find_package(Eigen3 REQUIRED)
 find_package(orocos_kdl REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_collision REQUIRED)
+find_package(tesseract_kinematics REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(cmake_common_scripts REQUIRED)
@@ -33,8 +34,13 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE})
 tesseract_variables()
 
 # Create interface for core
-add_library(${PROJECT_NAME}_core src/core/environment.cpp)
-target_link_libraries(${PROJECT_NAME}_core PUBLIC tesseract::tesseract_common tesseract::tesseract_collision_core tesseract::tesseract_scene_graph)
+add_library(${PROJECT_NAME}_core src/core/environment.cpp src/manipulator_manager/manipulator_manager.cpp)
+target_link_libraries(${PROJECT_NAME}_core PUBLIC
+  tesseract::tesseract_common
+  tesseract::tesseract_collision_core
+  tesseract::tesseract_scene_graph
+  tesseract::tesseract_kinematics_kdl
+  tesseract::tesseract_kinematics_opw)
 target_compile_options(${PROJECT_NAME}_core PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
 target_compile_options(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_core PUBLIC ${TESSERACT_COMPILE_DEFINITIONS})
@@ -76,7 +82,7 @@ target_include_directories(${PROJECT_NAME}_ofkt PUBLIC
 target_include_directories(${PROJECT_NAME}_ofkt SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS})
 
-configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME}_core ${PROJECT_NAME}_kdl ${PROJECT_NAME}_ofkt)
+  configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME}_core ${PROJECT_NAME}_kdl ${PROJECT_NAME}_ofkt)
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}

@@ -83,7 +83,10 @@ protected:
     tesseract_ptr_ = tesseract;
 
     manip_info_.manipulator = "manipulator";
-    joint_names_ = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver("manipulator")->getJointNames();
+    joint_names_ = tesseract_ptr_->getEnvironment()
+                       ->getManipulatorManager()
+                       ->getFwdKinematicSolver("manipulator")
+                       ->getJointNames();
   }
 };
 
@@ -128,7 +131,8 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
-  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+  auto fwd_kin =
+      tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
 
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   JointWaypoint wp2(joint_names_, Eigen::VectorXd::Ones(7));
@@ -177,7 +181,8 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
-  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+  auto fwd_kin =
+      tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
 
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   CartesianWaypoint wp2;
@@ -215,7 +220,8 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   PlannerRequest request;
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
-  auto fwd_kin = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+  auto fwd_kin =
+      request.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
 
   JointWaypoint wp1(joint_names_, Eigen::VectorXd::Zero(7));
   CartesianWaypoint wp2;
@@ -269,7 +275,8 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
-  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+  auto fwd_kin =
+      tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
 
   CartesianWaypoint wp1;
   fwd_kin->calcFwdKin(wp1, Eigen::VectorXd::Zero(7));
@@ -305,7 +312,8 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
-  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+  auto fwd_kin =
+      tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
 
   CartesianWaypoint wp1;
   fwd_kin->calcFwdKin(wp1, Eigen::VectorXd::Zero(7));
@@ -355,7 +363,8 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
-  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+  auto fwd_kin =
+      tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
 
   CartesianWaypoint wp1;
   fwd_kin->calcFwdKin(wp1, Eigen::VectorXd::Zero(7));
@@ -395,7 +404,8 @@ TEST_F(TesseractPlanningSimplePlannerLVSInterpolationUnit, InterpolateStateWaypo
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
-  auto fwd_kin = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
+  auto fwd_kin =
+      tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info_.manipulator);
 
   CartesianWaypoint wp1;
   fwd_kin->calcFwdKin(wp1, Eigen::VectorXd::Zero(7));

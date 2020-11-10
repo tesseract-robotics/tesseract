@@ -34,11 +34,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/srdf_model.h>
 #include <tesseract_scene_graph/srdf/types.h>
-#include <tesseract_environment/core/environment.h>
 #include <tesseract_kinematics/core/forward_kinematics_factory.h>
 #include <tesseract_kinematics/core/inverse_kinematics_factory.h>
 
-namespace tesseract
+namespace tesseract_environment
 {
 class ManipulatorManager
 {
@@ -53,7 +52,7 @@ public:
   ManipulatorManager(ManipulatorManager&&) = default;
   ManipulatorManager& operator=(ManipulatorManager&&) = default;
 
-  bool init(tesseract_environment::Environment::ConstPtr environment, tesseract_scene_graph::SRDFModel::Ptr srdf_model);
+  bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph, tesseract_scene_graph::SRDFModel::Ptr srdf_model);
 
   /**
    * @brief Updates all of the stored solvers
@@ -63,9 +62,9 @@ public:
 
   /**
    * @brief This will clone the manager and assign the new environment object
-   * @param environment The environment the clone is associated with.
+   * @param environment The SceneGraph the clone is associated with.
    */
-  ManipulatorManager::Ptr clone(tesseract_environment::Environment::ConstPtr environment) const;
+  ManipulatorManager::Ptr clone(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph) const;
 
   /** @brief Get the SRDF Model */
   tesseract_scene_graph::SRDFModel::ConstPtr getSRDFModel() const;
@@ -169,7 +168,7 @@ public:
    * @param solver The solver
    * @return
    */
-  bool addFwdKinematicSolver(const tesseract_kinematics::ForwardKinematics::ConstPtr& solver);
+  bool addFwdKinematicSolver(const tesseract_kinematics::ForwardKinematics::Ptr& solver);
 
   /**
    * @brief Remove a forward kinematic solver for a given manipulator
@@ -255,7 +254,7 @@ public:
    * @param solver The solver
    * @return
    */
-  bool addInvKinematicSolver(const tesseract_kinematics::InverseKinematics::ConstPtr& solver);
+  bool addInvKinematicSolver(const tesseract_kinematics::InverseKinematics::Ptr& solver);
 
   /**
    * @brief Remove a inverse kinematic solver for a given manipulator
@@ -303,18 +302,15 @@ public:
 
 private:
   tesseract_scene_graph::SRDFModel::Ptr srdf_model_;
-  tesseract_environment::Environment::ConstPtr env_;
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;
   tesseract_kinematics::ForwardKinematicsFactory::ConstPtr fwd_kin_chain_default_factory_;
   tesseract_kinematics::ForwardKinematicsFactory::ConstPtr fwd_kin_tree_default_factory_;
   tesseract_kinematics::InverseKinematicsFactory::ConstPtr inv_kin_chain_default_factory_;
   std::unordered_map<std::string, tesseract_kinematics::ForwardKinematicsFactory::ConstPtr> fwd_kin_factories_;
-  std::map<std::pair<std::string, std::string>, tesseract_kinematics::ForwardKinematics::Ptr>
-      fwd_kin_manipulators_;
+  std::map<std::pair<std::string, std::string>, tesseract_kinematics::ForwardKinematics::Ptr> fwd_kin_manipulators_;
   std::unordered_map<std::string, tesseract_kinematics::ForwardKinematics::Ptr> fwd_kin_manipulators_default_;
   std::unordered_map<std::string, tesseract_kinematics::InverseKinematicsFactory::ConstPtr> inv_kin_factories_;
-  std::map<std::pair<std::string, std::string>, tesseract_kinematics::InverseKinematics::Ptr>
-      inv_kin_manipulators_;
+  std::map<std::pair<std::string, std::string>, tesseract_kinematics::InverseKinematics::Ptr> inv_kin_manipulators_;
   std::unordered_map<std::string, tesseract_kinematics::InverseKinematics::Ptr> inv_kin_manipulators_default_;
 
   bool registerDefaultChainSolver(const std::string& group_name, const tesseract_scene_graph::ChainGroup& chain_group);
@@ -325,5 +321,6 @@ private:
   bool registerROPSolver(const std::string& group_name, const tesseract_scene_graph::ROPKinematicParameters& rop_group);
   bool registerREPSolver(const std::string& group_name, const tesseract_scene_graph::REPKinematicParameters& rep_group);
 };
-}  // namespace tesseract
+}  // namespace tesseract_environment
+
 #endif  // TESSERACT_MANIPULATOR_MANAGER_H
