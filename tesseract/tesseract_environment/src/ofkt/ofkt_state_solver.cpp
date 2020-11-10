@@ -364,6 +364,7 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
       case tesseract_environment::CommandType::ADD_ALLOWED_COLLISION:
       case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION:
       case tesseract_environment::CommandType::REMOVE_ALLOWED_COLLISION_LINK:
+      case tesseract_environment::CommandType::ADD_KINEMATICS_INFORMATION:
       {
         break;
       }
@@ -408,6 +409,11 @@ void OFKTStateSolver::onEnvironmentChanged(const Commands& commands)
           }
         }
 
+        break;
+      }
+      case tesseract_environment::CommandType::CHANGE_JOINT_VELOCITY_LIMITS:
+      case tesseract_environment::CommandType::CHANGE_JOINT_ACCELERATION_LIMITS:
+      {
         break;
       }
       default:

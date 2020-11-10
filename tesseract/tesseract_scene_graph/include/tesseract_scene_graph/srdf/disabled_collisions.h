@@ -10,7 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/srdf/types.h>
+#include <tesseract_scene_graph/allowed_collision_matrix.h>
 
 namespace tesseract_scene_graph
 {

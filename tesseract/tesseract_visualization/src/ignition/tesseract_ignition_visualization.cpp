@@ -334,7 +334,8 @@ void TesseractIgnitionVisualization::plotToolPath(const tesseract_planning::Inst
     assert(!ci->getManipulatorInfo().empty());
     const ManipulatorInfo& composite_mi = ci->getManipulatorInfo();
 
-    auto composite_mi_fwd_kin = thor_->getManipulatorManager()->getFwdKinematicSolver(composite_mi.manipulator);
+    auto composite_mi_fwd_kin =
+        thor_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(composite_mi.manipulator);
     if (composite_mi_fwd_kin == nullptr)
     {
       ignerr << "plotToolPath: Manipulator: " << composite_mi.manipulator << " does not exist!" << std::endl;
@@ -428,7 +429,8 @@ void TesseractIgnitionVisualization::plotToolPath(const tesseract_planning::Inst
     const ManipulatorInfo& composite_mi = pi->getManipulatorInfo();
     ManipulatorInfo manip_info = composite_mi.getCombined(pi->getManipulatorInfo());
 
-    auto composite_mi_fwd_kin = thor_->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
+    auto composite_mi_fwd_kin =
+        thor_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
     if (composite_mi_fwd_kin == nullptr)
     {
       ignerr << "plotToolPath: Manipulator: " << manip_info.manipulator << " does not exist!" << std::endl;

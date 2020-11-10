@@ -37,6 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/joint.h>
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/graph.h>
+#include <tesseract_scene_graph/kinematics_information.h>
 
 namespace tesseract_environment
 {
@@ -57,7 +58,8 @@ enum class CommandType
   ADD_SCENE_GRAPH = 12,
   CHANGE_JOINT_POSITION_LIMITS = 13,
   CHANGE_JOINT_VELOCITY_LIMITS = 14,
-  CHANGE_JOINT_ACCELERATION_LIMITS = 15
+  CHANGE_JOINT_ACCELERATION_LIMITS = 15,
+  ADD_KINEMATICS_INFORMATION = 16
 };
 
 class Command
@@ -288,6 +290,23 @@ private:
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_;
   tesseract_scene_graph::Joint::ConstPtr joint_;
   std::string prefix_;
+};
+
+class AddKinematicsInformationCommand : public Command
+{
+public:
+  AddKinematicsInformationCommand(tesseract_scene_graph::KinematicsInformation kinematics_information)
+    : Command(CommandType::ADD_KINEMATICS_INFORMATION), kinematics_information_(std::move(kinematics_information))
+  {
+  }
+
+  const tesseract_scene_graph::KinematicsInformation& getKinematicsInformation() const
+  {
+    return kinematics_information_;
+  }
+
+private:
+  tesseract_scene_graph::KinematicsInformation kinematics_information_;
 };
 
 class ChangeJointPositionLimitsCommand : public Command
