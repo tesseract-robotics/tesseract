@@ -55,16 +55,29 @@ SceneGraph::Ptr getSceneGraph()
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
+tesseract_scene_graph::SRDFModel::Ptr getSRDFModel(const SceneGraph::Ptr& scene_graph)
+{
+  std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
+
+  tesseract_scene_graph::SRDFModel::Ptr srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
+  srdf->initFile(*scene_graph, path);
+
+  return srdf;
+}
+
 template <typename S>
 Environment::Ptr getEnvironment()
 {
   tesseract_scene_graph::SceneGraph::Ptr scene_graph = getSceneGraph();
   EXPECT_TRUE(scene_graph != nullptr);
 
+  auto srdf = getSRDFModel(scene_graph);
+  EXPECT_TRUE(srdf != nullptr);
+
   auto env = std::make_shared<Environment>();
   EXPECT_TRUE(env != nullptr);
 
-  bool success = env->init<S>(*scene_graph);
+  bool success = env->init<S>(*scene_graph, srdf);
   EXPECT_TRUE(success);
 
   // Register contact manager
@@ -274,6 +287,50 @@ void runChangeJointOriginTest()
   EXPECT_TRUE(env->getCurrentState()->joint_transforms.at(joint_name1).isApprox(new_origin));
 
   env->getSceneGraph()->saveDOT(tesseract_common::getTempPath() + "after_change_joint_origin_unit.dot");
+}
+
+template <typename S>
+void runChangeJointLimitsTest()
+{
+  // Get the environment
+  auto env = getEnvironment<S>();
+
+  {
+    JointLimits::ConstPtr limits = env->getJointLimits("not_in_graph");
+    EXPECT_TRUE(limits == nullptr);
+  }
+  {
+    // Note that this will fail artificially if the urdf is changed for some reason
+    JointLimits::ConstPtr limits = env->getJointLimits("joint_a1");
+    EXPECT_NEAR(limits->lower, -2.9668, 1e-5);
+    EXPECT_NEAR(limits->upper, 2.9668, 1e-5);
+    EXPECT_NEAR(limits->velocity, 1.4834, 1e-5);
+    EXPECT_NEAR(limits->effort, 0, 1e-5);
+  }
+  {
+    JointLimits limits = *(env->getJointLimits("joint_a1"));
+    limits.lower = 1.00;
+    limits.upper = 2.00;
+    limits.velocity = 3.00;
+    limits.acceleration = 4.00;
+    limits.effort = 5.00;
+    env->changeJointLimits("joint_a1", limits);
+
+    // Check that the environment returns the correct limits
+    JointLimits new_limits = *(env->getJointLimits("joint_a1"));
+    EXPECT_NEAR(limits.lower, new_limits.lower, 1e-5);
+    EXPECT_NEAR(limits.upper, new_limits.upper, 1e-5);
+    EXPECT_NEAR(limits.velocity, new_limits.velocity, 1e-5);
+    EXPECT_NEAR(limits.acceleration, new_limits.acceleration, 1e-5);
+    EXPECT_NEAR(limits.effort, new_limits.effort, 1e-5);
+
+    // Check that the manipulator correctly set the limits
+    auto kin = env->getManipulatorManager()->getFwdKinematicSolver("manipulator");
+    EXPECT_NEAR(kin->getLimits().joint_limits(0, 0), limits.lower, 1e-5);
+    EXPECT_NEAR(kin->getLimits().joint_limits(0, 1), limits.upper, 1e-5);
+    EXPECT_NEAR(kin->getLimits().velocity_limits(0), limits.velocity, 1e-5);
+    EXPECT_NEAR(kin->getLimits().acceleration_limits(0), limits.acceleration, 1e-5);
+  }
 }
 
 template <typename S>
@@ -687,6 +744,12 @@ TEST(TesseractEnvironmentUnit, EnvChangeJointOrigin)  // NOLINT
 {
   runChangeJointOriginTest<KDLStateSolver>();
   runChangeJointOriginTest<OFKTStateSolver>();
+}
+
+TEST(TesseractEnvironmentUnit, EnvChangeJointLimits)  // NOLINT
+{
+  runChangeJointLimitsTest<KDLStateSolver>();
+  runChangeJointLimitsTest<OFKTStateSolver>();
 }
 
 TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLINT

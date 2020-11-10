@@ -65,11 +65,13 @@ std::vector<OMPLProblem::Ptr> DefaultOMPLProblemGenerator(const std::string& nam
 
   const ManipulatorInfo& composite_mi = request.instructions.getManipulatorInfo();
 
-  manip_fwd_kin_ = request.tesseract->getManipulatorManager()->getFwdKinematicSolver(composite_mi.manipulator);
+  manip_fwd_kin_ =
+      request.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(composite_mi.manipulator);
   if (composite_mi.manipulator_ik_solver.empty())
-    manip_inv_kin_ = request.tesseract->getManipulatorManager()->getInvKinematicSolver(composite_mi.manipulator);
+    manip_inv_kin_ =
+        request.tesseract->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(composite_mi.manipulator);
   else
-    manip_inv_kin_ = request.tesseract->getManipulatorManager()->getInvKinematicSolver(
+    manip_inv_kin_ = request.tesseract->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(
         composite_mi.manipulator, composite_mi.manipulator_ik_solver);
   if (!manip_fwd_kin_)
   {

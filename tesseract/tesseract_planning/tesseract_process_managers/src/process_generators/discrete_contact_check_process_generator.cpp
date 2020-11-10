@@ -90,7 +90,8 @@ int DiscreteContactCheckProcessGenerator::conditionalProcess(ProcessInput input)
     tesseract_environment::AdjacencyMap::Ptr adjacency_map_manip =
         std::make_shared<tesseract_environment::AdjacencyMap>(
             input.tesseract->getEnvironment()->getSceneGraph(),
-            input.tesseract->getManipulatorManager()
+            input.tesseract->getEnvironment()
+                ->getManipulatorManager()
                 ->getFwdKinematicSolver(input.manip_info.manipulator)
                 ->getActiveLinkNames(),
             input.tesseract->getEnvironment()->getCurrentState()->link_transforms);

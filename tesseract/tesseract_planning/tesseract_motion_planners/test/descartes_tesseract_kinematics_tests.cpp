@@ -126,8 +126,8 @@ protected:
     tesseract_ptr_ = tesseract;
 
     // Set up the kinematics objects
-    kdl_fk_ = tesseract_ptr_->getManipulatorManager()->getFwdKinematicSolver("manipulator");
-    kdl_ik_ = tesseract_ptr_->getManipulatorManager()->getInvKinematicSolver("manipulator");
+    kdl_fk_ = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver("manipulator");
+    kdl_ik_ = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getInvKinematicSolver("manipulator");
 
     descartes_tesseract_kinematics_d_ =
         std::make_shared<tesseract_planning::DescartesTesseractKinematics<double>>(kdl_fk_, kdl_ik_);

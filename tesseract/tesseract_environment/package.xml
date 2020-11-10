@@ -12,6 +12,7 @@
 
   <depend>tesseract_collision</depend>
   <depend>tesseract_geometry</depend>
+  <depend>tesseract_kinematics</depend>
   <depend>tesseract_scene_graph</depend>
   <depend>tesseract_common</depend>
   <build_depend>cmake_common_scripts</build_depend>

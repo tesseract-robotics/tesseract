@@ -366,7 +366,8 @@ JointLimits::ConstPtr SceneGraph::getJointLimits(const std::string& name)
 
   if (found == joint_map_.end())
   {
-    CONSOLE_BRIDGE_logWarn("SceneGraph::getJointLimits tried to find Joint with name (%s) which does not exist in scene graph.",
+    CONSOLE_BRIDGE_logWarn("SceneGraph::getJointLimits tried to find Joint with name (%s) which does not exist in "
+                           "scene graph.",
                            name.c_str());
     return nullptr;
   }

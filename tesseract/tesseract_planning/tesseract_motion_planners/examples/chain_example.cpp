@@ -103,8 +103,8 @@ int main(int /*argc*/, char** /*argv*/)
   manip.manipulator = "manipulator";
   manip.manipulator_ik_solver = "OPWInvKin";
 
-  auto fwd_kin = tesseract->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto fwd_kin = tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = tesseract->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
   auto cur_state = tesseract->getEnvironment()->getCurrentState();
 
   // Specify start location

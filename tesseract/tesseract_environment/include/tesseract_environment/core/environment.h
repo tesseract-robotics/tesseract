@@ -41,6 +41,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/continuous_contact_manager_factory.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_environment/core/state_solver.h>
+#include <tesseract_environment/manipulator_manager/manipulator_manager.h>
 
 namespace tesseract_environment
 {
@@ -68,7 +69,8 @@ public:
    * @return True if successful, otherwise false
    */
   template <typename S>
-  bool init(const tesseract_scene_graph::SceneGraph& scene_graph)
+  bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
+            tesseract_scene_graph::SRDFModel::Ptr srdf_model = nullptr)
   {
     initialized_ = false;
     revision_ = 0;
@@ -108,6 +110,16 @@ public:
       CONSOLE_BRIDGE_logError("The environment state solver failed to initialize");
       return false;
     }
+
+    if (!srdf_model)
+    {
+      CONSOLE_BRIDGE_logDebug("Environment is being initialized without an SRDF Model. Manipulators will not be "
+                              "registered");
+      srdf_model = std::make_shared<tesseract_scene_graph::SRDFModel>();
+      srdf_model->getName() = scene_graph_->getName();
+    }
+    manipulator_manager_ = std::make_shared<ManipulatorManager>();
+    manipulator_manager_->init(scene_graph_, srdf_model);
 
     is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed,
                                        scene_graph_,
@@ -206,6 +218,9 @@ public:
    * @return SceneGraphConstPtr
    */
   virtual const tesseract_scene_graph::SceneGraph::ConstPtr& getSceneGraph() const { return scene_graph_const_; }
+
+  ManipulatorManager::Ptr getManipulatorManager() { return manipulator_manager_; }
+  ManipulatorManager::ConstPtr getManipulatorManager() const { return manipulator_manager_; }
 
   /** @brief Give the environment a name */
   virtual void setName(const std::string& name) { scene_graph_->setName(name); }
@@ -329,7 +344,20 @@ public:
    */
   virtual bool changeJointOrigin(const std::string& joint_name, const Eigen::Isometry3d& new_origin);
 
-  virtual bool changeJointLimits(const std::string& joint_name, const tesseract_scene_graph::JointLimits limits);
+  /**
+   * @brief Changes the limits associated with a joint
+   * @param joint_name Name of the joint to be updated
+   * @param limits New limits to be set as the joint limits
+   * @return
+   */
+  virtual bool changeJointLimits(const std::string& joint_name, const tesseract_scene_graph::JointLimits& limits);
+
+  /**
+   * @brief Gets the limits associated with a joint
+   * @param joint_name Name of the joint to be updated
+   * @return The joint limits set for the given joint
+   */
+  virtual tesseract_scene_graph::JointLimits::ConstPtr getJointLimits(const std::string& joint_name) const;
 
   /**
    * @brief Set whether a link should be considered during collision checking
@@ -547,6 +575,7 @@ protected:
   Commands commands_;         /**< The history of commands applied to the environment after intialization */
   tesseract_scene_graph::SceneGraph::Ptr scene_graph_;            /**< Tesseract Scene Graph */
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_const_; /**< Tesseract Scene Graph Const */
+  ManipulatorManager::Ptr manipulator_manager_;                   /**< Managers for the kinematics objects */
   EnvState::Ptr current_state_;                                   /**< Current state of the environment */
   StateSolver::Ptr state_solver_;                                 /**< Tesseract State Solver */
   std::vector<std::string> link_names_;                           /**< A vector of link names */

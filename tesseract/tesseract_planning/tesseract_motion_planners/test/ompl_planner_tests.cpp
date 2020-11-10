@@ -170,8 +170,8 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   addBox(*(tesseract->getEnvironment()));
 
   // Step 3: Create ompl planner config and populate it
-  auto fwd_kin = tesseract->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto fwd_kin = tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = tesseract->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
   auto cur_state = tesseract->getEnvironment()->getCurrentState();
 
   // Specify a start waypoint
@@ -318,8 +318,8 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianGoalPlannerUnit)
   addBox(*(tesseract->getEnvironment()));
 
   // Step 3: Create ompl planner config and populate it
-  auto fwd_kin = tesseract->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto fwd_kin = tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = tesseract->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
   auto cur_state = tesseract->getEnvironment()->getCurrentState();
 
   // Specify a start waypoint
@@ -407,8 +407,8 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
   addBox(*(tesseract->getEnvironment()));
 
   // Step 3: Create ompl planner config and populate it
-  auto fwd_kin = tesseract->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto fwd_kin = tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = tesseract->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
   auto cur_state = tesseract->getEnvironment()->getCurrentState();
 
   // Specify a start waypoint
@@ -493,7 +493,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
 //  addBox(*(tesseract->getEnvironment()));
 
 //  // Step 3: Create ompl planner config and populate it
-//  auto kin = tesseract->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+//  auto kin = tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
 //  std::vector<double> swp = start_state;
 //  std::vector<double> ewp = end_state;
 
