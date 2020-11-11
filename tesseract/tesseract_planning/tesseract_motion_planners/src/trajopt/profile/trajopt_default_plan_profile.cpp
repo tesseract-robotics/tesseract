@@ -132,6 +132,9 @@ void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
     pci.cnt_infos.push_back(ti);
   else
     pci.cost_infos.push_back(ti);
+
+  // Add constraints from error functions if available.
+  addConstraintErrorFunctions(pci, index);
 }
 
 void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
@@ -147,6 +150,23 @@ void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
     pci.cnt_infos.push_back(ti);
   else
     pci.cost_infos.push_back(ti);
+}
+
+void TrajOptDefaultPlanProfile::addConstraintErrorFunctions(trajopt::ProblemConstructionInfo& pci, int index) const
+{
+  for (std::size_t i = 0; i < constraint_error_functions.size(); ++i)
+  {
+    auto& c = constraint_error_functions[i];
+    trajopt::TermInfo::Ptr ti =
+        createUserDefinedTermInfo(index, index, std::get<0>(c), std::get<1>(c), trajopt::TT_CNT);
+
+    // Update the term info with the (possibly) new start and end state indices for which to apply this cost
+    std::shared_ptr<trajopt::UserDefinedTermInfo> ef = std::static_pointer_cast<trajopt::UserDefinedTermInfo>(ti);
+    ef->constraint_type = std::get<2>(c);
+    ef->coeff = std::get<3>(c);
+
+    pci.cnt_infos.push_back(ef);
+  }
 }
 
 tinyxml2::XMLElement* TrajOptDefaultPlanProfile::toXML(tinyxml2::XMLDocument& doc) const

@@ -88,7 +88,7 @@ public:
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 
 protected:
-  void addConstraintErrorFunctions(trajopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;
+  void addConstraintErrorFunctions(trajopt::ProblemConstructionInfo& pci, int index) const;
 
   void addAvoidSingularity(trajopt::ProblemConstructionInfo& pci, const std::vector<int>& fixed_steps) const;
 };
