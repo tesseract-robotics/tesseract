@@ -295,7 +295,7 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   fcl::DistanceRequestd fcl_request(true, true);
   double d = fcl::distance(o1, o2, fcl_request, fcl_result);
 
-  if (d < cdata->contact_distance)
+  if (d < cdata->collision_margin_data.getMaxCollisionMargin())
   {
     Eigen::Isometry3d tf1 = cd1->getCollisionObjectsTransform();
     Eigen::Isometry3d tf2 = cd2->getCollisionObjectsTransform();

@@ -124,8 +124,8 @@ inline void runTest(DiscreteContactManager& checker)
   // Test when object is in collision (Closest Feature Edge to Edge)
   ///////////////////////////////////////////////////////////////////
   checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
-  checker.setContactDistanceThreshold(0);
-  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.0, 1e-5);
+  checker.setCollisionMarginData(CollisionMarginData(0));
+  EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.0, 1e-5);
 
   // Test when object is inside another
   tesseract_common::TransformMap location;
@@ -164,8 +164,8 @@ inline void runTest(DiscreteContactManager& checker)
   result.clear();
   result_vector.clear();
 
-  checker.setContactDistanceThreshold(0.55);
-  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.55, 1e-5);
+  checker.setCollisionMarginData(CollisionMarginData(0.55));
+  EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.55, 1e-5);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   flattenResults(std::move(result), result_vector);
 
@@ -194,8 +194,8 @@ inline void runTest(DiscreteContactManager& checker)
   // The closest feature of the mesh should be edge to edge
   // Use different method for setting transforms
   checker.setCollisionObjectsTransform("sphere1_link", location["sphere1_link"]);
-  checker.setContactDistanceThreshold(0.55);
-  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.55, 1e-5);
+  checker.setCollisionMarginData(CollisionMarginData(0.55));
+  EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.55, 1e-5);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   flattenResults(std::move(result), result_vector);
 
