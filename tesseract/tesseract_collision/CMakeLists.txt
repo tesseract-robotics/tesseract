@@ -117,6 +117,15 @@ target_include_directories(${PROJECT_NAME}_fcl SYSTEM PUBLIC
     ${EIGEN3_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS})
 
+  # Create target that profiles the collision checkers.
+add_executable(${PROJECT_NAME}_profile src/collision_profile.cpp)
+target_link_libraries(${PROJECT_NAME}_profile PRIVATE ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl tesseract::tesseract_geometry tesseract::tesseract_support ${BULLET_LIBRARIES} ${Boost_LIBRARIES} ${OCTOMAP_LIBRARIES} ${LIBFCL_LIBRARIES})
+target_compile_options(${PROJECT_NAME}_profile PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE})
+target_compile_definitions(${PROJECT_NAME}_profile INTERFACE ${TESSERACT_COMPILE_DEFINITIONS})
+target_clang_tidy(${PROJECT_NAME}_profile ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
+target_cxx_version(${PROJECT_NAME}_profile PRIVATE VERSION ${TESSERACT_CXX_VERSION})
+target_code_coverage(${PROJECT_NAME}_profile PRIVATE ALL EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENABLE_TESTING})
+
 # Create test suite interface
 add_library(${PROJECT_NAME}_test_suite INTERFACE)
 target_link_libraries(${PROJECT_NAME}_test_suite INTERFACE tesseract::tesseract_support tesseract::tesseract_geometry ${PROJECT_NAME}_core)
@@ -144,7 +153,7 @@ target_include_directories(${PROJECT_NAME}_test_suite_benchmarks INTERFACE
 target_include_directories(${PROJECT_NAME}_test_suite_benchmarks SYSTEM INTERFACE
     ${EIGEN3_INCLUDE_DIRS})
 
-set(PACKAGE_LIBRARIES ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${PROJECT_NAME}_test_suite ${PROJECT_NAME}_test_suite_benchmarks)
+set(PACKAGE_LIBRARIES ${PROJECT_NAME}_core ${PROJECT_NAME}_bullet ${PROJECT_NAME}_fcl ${PROJECT_NAME}_test_suite ${PROJECT_NAME}_test_suite_benchmarks ${PROJECT_NAME}_profile)
 
 if (NOT MSVC)
   # Create target for creating convex hull's from meshes
