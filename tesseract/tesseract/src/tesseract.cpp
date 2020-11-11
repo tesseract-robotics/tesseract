@@ -63,9 +63,6 @@ bool Tesseract::init(tesseract_scene_graph::SceneGraph::Ptr scene_graph)
     return false;
   }
 
-  auto srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
-  srdf->getName() = scene_graph->getName();
-
   registerDefaultContactManagers();
 
   initialized_ = true;
@@ -249,10 +246,16 @@ bool Tesseract::init(const boost::filesystem::path& urdf_path,
 bool Tesseract::init(const tesseract_environment::Environment& env)
 {
   clear();
-  init_info_ = std::make_shared<TesseractInitInfo>();
-  init_info_->type = TesseractInitType::ENVIRONMENT;
-  init_info_->environment = env.clone();
-  initialized_ = true;
+
+  environment_ = env.clone();
+  initialized_ = (environment_ != nullptr);
+  if (initialized_)
+  {
+    init_info_ = std::make_shared<TesseractInitInfo>();
+    init_info_->type = TesseractInitType::ENVIRONMENT;
+    init_info_->environment = env.clone();
+  }
+
   return initialized_;
 }
 
