@@ -114,8 +114,8 @@ runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest
   // Test when object is in collision
   //////////////////////////////////////
   checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
-  checker.setContactDistanceThreshold(0.1);
-  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.1, 1e-5);
+  checker.setCollisionMarginData(CollisionMarginData(0.1));
+  EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Test when object is inside another
   tesseract_common::TransformMap location;

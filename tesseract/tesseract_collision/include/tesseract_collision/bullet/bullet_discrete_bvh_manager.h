@@ -102,7 +102,11 @@ public:
 
   void setContactDistanceThreshold(double contact_distance) override;
 
+  void setCollisionMarginData(CollisionMarginData collision_margin_data) override;
+
   double getContactDistanceThreshold() const override;
+
+  const CollisionMarginData& getCollisionMarginData() const override;
 
   void setIsContactAllowedFn(IsContactAllowedFn fn) override;
 

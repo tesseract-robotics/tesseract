@@ -89,8 +89,8 @@ inline void runTestTyped(DiscreteContactManager& checker, double tol, ContactTes
   // Test when object is in collision
   //////////////////////////////////////
   checker.setActiveCollisionObjects({ "octomap_link", "sphere_link" });
-  checker.setContactDistanceThreshold(0.1);
-  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.1, 1e-5);
+  checker.setCollisionMarginData(CollisionMarginData(0.1));
+  EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
   tesseract_common::TransformMap location;

@@ -58,6 +58,27 @@ using TransformMap = AlignedMap<std::string, Eigen::Isometry3d>;
 
 using TrajArray = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
+using LinkNamesPair = std::pair<std::string, std::string>;
+struct PairHash
+{
+  std::size_t operator()(const LinkNamesPair& pair) const { return std::hash<std::string>()(pair.first + pair.second); }
+};
+/**
+ * @brief Create a pair of strings, where the pair.first is always <= pair.second.
+ *
+ * This is commonly used along with PairHash as the key to an unordered_map<LinkNamesPair, Type, PairHash>
+ * @param link_name1 First link name
+ * @param link_name2 Second link anme
+ * @return LinkNamesPair a lexicographically sorted pair of strings
+ */
+static inline LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::string& link_name2)
+{
+  if (link_name1 <= link_name2)
+    return std::make_pair(link_name1, link_name2);
+
+  return std::make_pair(link_name2, link_name1);
+}
+
 /** @brief Represents a joint trajectory */
 struct JointTrajectory
 {
