@@ -34,6 +34,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/types.h>
+
 namespace tesseract_scene_graph
 {
 /** @brief A structure to hold opw kinematics data */
@@ -67,8 +69,8 @@ struct REPKinematicParameters
 using GroupsJointState = std::unordered_map<std::string, double>;
 using GroupsJointStates = std::unordered_map<std::string, GroupsJointState>;
 using GroupJointStates = std::unordered_map<std::string, GroupsJointStates>;
-using GroupsTCPs = std::unordered_map<std::string, Eigen::Isometry3d>;
-using GroupTCPs = std::unordered_map<std::string, GroupsTCPs>;
+using GroupsTCPs = tesseract_common::AlignedMap<std::string, Eigen::Isometry3d>;
+using GroupTCPs = tesseract_common::AlignedMap<std::string, GroupsTCPs>;
 using ChainGroup = std::vector<std::pair<std::string, std::string>>;
 using ChainGroups = std::unordered_map<std::string, ChainGroup>;
 using JointGroup = std::vector<std::string>;
@@ -87,6 +89,8 @@ using GroupDefaultKinematicsSolver = std::unordered_map<std::string, std::string
  */
 struct KinematicsInformation
 {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   /** @brief A vector of group names */
   std::vector<std::string> group_names;
 
