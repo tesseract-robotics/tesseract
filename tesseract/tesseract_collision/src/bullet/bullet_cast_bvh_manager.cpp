@@ -63,7 +63,7 @@ BulletCastBVHManager::BulletCastBVHManager()
   broadphase_ = std::make_unique<btDbvtBroadphase>();
   broadphase_->getOverlappingPairCache()->setOverlapFilterCallback(&broadphase_overlap_cb_);
 
-  contact_test_data_.contact_distance = 0;
+  contact_test_data_.collision_margin_data = CollisionMarginData(0);
 }
 
 BulletCastBVHManager::~BulletCastBVHManager()
@@ -90,12 +90,13 @@ ContinuousContactManager::Ptr BulletCastBVHManager::clone() const
 
     new_cow->setWorldTransform(cow.second->getWorldTransform());
 
-    new_cow->setContactProcessingThreshold(static_cast<btScalar>(contact_test_data_.contact_distance));
+    new_cow->setContactProcessingThreshold(
+        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin()));
     manager->addCollisionObject(new_cow);
   }
 
   manager->setActiveCollisionObjects(active_);
-  manager->setContactDistanceThreshold(contact_test_data_.contact_distance);
+  manager->setCollisionMarginData(contact_test_data_.collision_margin_data);
   manager->setIsContactAllowedFn(contact_test_data_.fn);
 
   return manager;
@@ -406,9 +407,33 @@ void BulletCastBVHManager::setActiveCollisionObjects(const std::vector<std::stri
 }
 
 const std::vector<std::string>& BulletCastBVHManager::getActiveCollisionObjects() const { return active_; }
+
+void BulletCastBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
+{
+  contact_test_data_.collision_margin_data = collision_margin_data;
+
+  for (auto& co : link2cow_)
+  {
+    COW::Ptr& cow = co.second;
+    cow->setContactProcessingThreshold(
+        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin()));
+    if (cow->getBroadphaseHandle())
+      updateBroadphaseAABB(cow, broadphase_, dispatcher_);
+  }
+
+  for (auto& co : link2castcow_)
+  {
+    COW::Ptr& cow = co.second;
+    cow->setContactProcessingThreshold(
+        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin()));
+    if (cow->getBroadphaseHandle())
+      updateBroadphaseAABB(cow, broadphase_, dispatcher_);
+  }
+}
+
 void BulletCastBVHManager::setContactDistanceThreshold(double contact_distance)
 {
-  contact_test_data_.contact_distance = contact_distance;
+  contact_test_data_.collision_margin_data = CollisionMarginData(contact_distance);
 
   for (auto& co : link2cow_)
   {
@@ -427,7 +452,14 @@ void BulletCastBVHManager::setContactDistanceThreshold(double contact_distance)
   }
 }
 
-double BulletCastBVHManager::getContactDistanceThreshold() const { return contact_test_data_.contact_distance; }
+double BulletCastBVHManager::getContactDistanceThreshold() const
+{
+  return contact_test_data_.collision_margin_data.getMaxCollisionMargin();
+}
+const CollisionMarginData& BulletCastBVHManager::getCollisionMarginData() const
+{
+  return contact_test_data_.collision_margin_data;
+}
 void BulletCastBVHManager::setIsContactAllowedFn(IsContactAllowedFn fn) { contact_test_data_.fn = fn; }
 IsContactAllowedFn BulletCastBVHManager::getIsContactAllowedFn() const { return contact_test_data_.fn; }
 void BulletCastBVHManager::contactTest(ContactResultMap& collisions, const ContactRequest& request)
@@ -440,7 +472,8 @@ void BulletCastBVHManager::contactTest(ContactResultMap& collisions, const Conta
 
   btOverlappingPairCache* pairCache = broadphase_->getOverlappingPairCache();
 
-  CastBroadphaseContactResultCallback cc(contact_test_data_, contact_test_data_.contact_distance);
+  CastBroadphaseContactResultCallback cc(contact_test_data_,
+                                         contact_test_data_.collision_margin_data.getMaxCollisionMargin());
 
   TesseractCollisionPairCallback collisionCallback(dispatch_info_, dispatcher_.get(), cc);
 

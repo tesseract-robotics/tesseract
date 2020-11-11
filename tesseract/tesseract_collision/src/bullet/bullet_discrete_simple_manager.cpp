@@ -60,7 +60,7 @@ BulletDiscreteSimpleManager::BulletDiscreteSimpleManager()
   dispatcher_->setDispatcherFlags(dispatcher_->getDispatcherFlags() &
                                   ~btCollisionDispatcher::CD_USE_RELATIVE_CONTACT_BREAKING_THRESHOLD);
 
-  contact_test_data_.contact_distance = 0;
+  contact_test_data_.collision_margin_data = CollisionMarginData(0);
 }
 
 DiscreteContactManager::Ptr BulletDiscreteSimpleManager::clone() const
@@ -76,12 +76,13 @@ DiscreteContactManager::Ptr BulletDiscreteSimpleManager::clone() const
 
     new_cow->setWorldTransform(cow.second->getWorldTransform());
 
-    new_cow->setContactProcessingThreshold(static_cast<btScalar>(contact_test_data_.contact_distance));
+    new_cow->setContactProcessingThreshold(
+        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin()));
     manager->addCollisionObject(new_cow);
   }
 
   manager->setActiveCollisionObjects(active_);
-  manager->setContactDistanceThreshold(contact_test_data_.contact_distance);
+  manager->setCollisionMarginData(contact_test_data_.collision_margin_data);
   manager->setIsContactAllowedFn(contact_test_data_.fn);
 
   return manager;
@@ -209,15 +210,33 @@ void BulletDiscreteSimpleManager::setActiveCollisionObjects(const std::vector<st
 }
 
 const std::vector<std::string>& BulletDiscreteSimpleManager::getActiveCollisionObjects() const { return active_; }
+
+void BulletDiscreteSimpleManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
+{
+  contact_test_data_.collision_margin_data = collision_margin_data;
+
+  for (auto& co : link2cow_)
+    co.second->setContactProcessingThreshold(
+        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin()));
+}
+
 void BulletDiscreteSimpleManager::setContactDistanceThreshold(double contact_distance)
 {
-  contact_test_data_.contact_distance = contact_distance;
+  contact_test_data_.collision_margin_data = CollisionMarginData(contact_distance);
 
   for (auto& co : link2cow_)
     co.second->setContactProcessingThreshold(static_cast<btScalar>(contact_distance));
 }
 
-double BulletDiscreteSimpleManager::getContactDistanceThreshold() const { return contact_test_data_.contact_distance; }
+double BulletDiscreteSimpleManager::getContactDistanceThreshold() const
+{
+  return contact_test_data_.collision_margin_data.getMaxCollisionMargin();
+}
+
+const CollisionMarginData& BulletDiscreteSimpleManager::getCollisionMarginData() const
+{
+  return contact_test_data_.collision_margin_data;
+}
 void BulletDiscreteSimpleManager::setIsContactAllowedFn(IsContactAllowedFn fn) { contact_test_data_.fn = fn; }
 IsContactAllowedFn BulletDiscreteSimpleManager::getIsContactAllowedFn() const { return contact_test_data_.fn; }
 void BulletDiscreteSimpleManager::contactTest(ContactResultMap& collisions, const ContactRequest& request)

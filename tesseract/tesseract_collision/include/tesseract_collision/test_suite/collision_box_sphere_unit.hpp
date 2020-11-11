@@ -130,8 +130,8 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   // Test when object is in collision
   //////////////////////////////////////
   checker.setActiveCollisionObjects({ "box_link", "sphere_link" });
-  checker.setContactDistanceThreshold(0.1);
-  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.1, 1e-5);
+  checker.setCollisionMarginData(CollisionMarginData(0.1));
+  EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
   tesseract_common::TransformMap location;
@@ -198,8 +198,8 @@ inline void runTestPrimitive(DiscreteContactManager& checker)
   result.clear();
   result_vector.clear();
 
-  checker.setContactDistanceThreshold(0.251);
-  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.251, 1e-5);
+  checker.setCollisionMarginData(CollisionMarginData(0.251));
+  EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.251, 1e-5);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   flattenResults(std::move(result), result_vector);
 
@@ -239,8 +239,8 @@ inline void runTestConvex(DiscreteContactManager& checker)
   // Test when object is in collision
   //////////////////////////////////////
   checker.setActiveCollisionObjects({ "box_link", "sphere_link" });
-  checker.setContactDistanceThreshold(0.1);
-  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.1, 1e-5);
+  checker.setCollisionMarginData(CollisionMarginData(0.1));
+  EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
   tesseract_common::TransformMap location;
@@ -301,8 +301,8 @@ inline void runTestConvex(DiscreteContactManager& checker)
   result.clear();
   result_vector.clear();
 
-  checker.setContactDistanceThreshold(0.27);
-  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.27, 1e-5);
+  checker.setCollisionMarginData(CollisionMarginData(0.27));
+  EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.27, 1e-5);
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
   flattenResults(std::move(result), result_vector);
 

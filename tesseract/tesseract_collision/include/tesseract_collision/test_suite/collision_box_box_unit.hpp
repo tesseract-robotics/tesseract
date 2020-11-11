@@ -131,8 +131,8 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
   // Test when object is inside another
   //////////////////////////////////////
   checker.setActiveCollisionObjects({ "box_link", "second_box_link" });
-  checker.setContactDistanceThreshold(0.1);
-  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.1, 1e-5);
+  checker.setCollisionMarginData(CollisionMarginData(0.1));
+  EXPECT_NEAR(checker.getCollisionMarginData().getPairCollisionMarginData("box_link", "second_box_link"), 0.1, 1e-5);
 
   // Set the collision object transforms
   tesseract_common::TransformMap location;
@@ -176,58 +176,127 @@ inline void runTestTyped(DiscreteContactManager& checker, ContactTestType test_t
   EXPECT_NEAR(result_vector[0].normal[2], idx[2] * 0.0, 0.001);
 
   ////////////////////////////////////////////////
-  // Test object is out side the contact distance
+  // Test object is outside the contact distance
   ////////////////////////////////////////////////
-  location["box_link"].translation() = Eigen::Vector3d(1.60, 0, 0);
-  result = ContactResultMap();
-  result.clear();
-  result_vector.clear();
+  {
+    location["box_link"].translation() = Eigen::Vector3d(1.60, 0, 0);
+    result = ContactResultMap();
+    result.clear();
+    result_vector.clear();
 
-  // Use different method for setting transforms
-  std::vector<std::string> names = { "box_link" };
-  tesseract_common::VectorIsometry3d transforms = { location["box_link"] };
-  checker.setCollisionObjectsTransform(names, transforms);
-  checker.contactTest(result, test_type);
-  flattenResults(std::move(result), result_vector);
+    // Use different method for setting transforms
+    std::vector<std::string> names = { "box_link" };
+    tesseract_common::VectorIsometry3d transforms = { location["box_link"] };
+    checker.setCollisionObjectsTransform(names, transforms);
+    checker.contactTest(result, test_type);
+    flattenResults(std::move(result), result_vector);
 
-  EXPECT_TRUE(result_vector.empty());
+    EXPECT_TRUE(result_vector.empty());
+  }
+  ////////////////////////////////////////////////
+  // Test object is outside the contact distance only for this link pair
+  ////////////////////////////////////////////////
+  {
+    CollisionMarginData data = checker.getCollisionMarginData();
+    data.setPairCollisionMarginData("not_box_link", "also_not_box_link", 1.7);
+    checker.setCollisionMarginData(data);
 
+    EXPECT_EQ(checker.getCollisionMarginData().getMaxCollisionMargin(), 1.7);
+    EXPECT_NEAR(checker.getCollisionMarginData().getPairCollisionMarginData("box_link", "second_box_link"), 0.1, 1e-5);
+    location["box_link"].translation() = Eigen::Vector3d(1.60, 0, 0);
+    result = ContactResultMap();
+    result.clear();
+    result_vector.clear();
+
+    // Use different method for setting transforms
+    std::vector<std::string> names = { "box_link" };
+    tesseract_common::VectorIsometry3d transforms = { location["box_link"] };
+    checker.setCollisionObjectsTransform(names, transforms);
+    checker.contactTest(result, test_type);
+    flattenResults(std::move(result), result_vector);
+
+    EXPECT_TRUE(result_vector.empty());
+  }
+  /////////////////////////////////////////////
+  // Test object inside the contact distance only for this link pair
+  /////////////////////////////////////////////
+  {
+    result = ContactResultMap();
+    result.clear();
+    result_vector.clear();
+
+    CollisionMarginData data(0.1);
+    data.setPairCollisionMarginData("box_link", "second_box_link", 0.25);
+
+    checker.setCollisionMarginData(data);
+    EXPECT_NEAR(checker.getCollisionMarginData().getPairCollisionMarginData("box_link", "second_box_link"), 0.25, 1e-5);
+    EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.25, 1e-5);
+    checker.contactTest(result, ContactRequest(test_type));
+    flattenResults(std::move(result), result_vector);
+
+    EXPECT_TRUE(!result_vector.empty());
+    EXPECT_NEAR(result_vector[0].distance, 0.1, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[0][1], result_vector[0].nearest_points[1][1], 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
+
+    idx = { 0, 1, 1 };
+    if (result_vector[0].link_names[0] != "box_link")
+      idx = { 1, 0, -1 };
+
+    if (result_vector[0].single_contact_point)
+    {
+      EXPECT_NEAR(result_vector[0].nearest_points[0][0], result_vector[0].nearest_points[1][0], 0.001);
+      EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][0] - (1.1)) > 0.001 &&
+                   std::abs(result_vector[0].nearest_points[0][0] - (1.0)) > 0.001);
+    }
+    else
+    {
+      EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 1.1, 0.001);
+      EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], 1.0, 0.001);
+    }
+
+    EXPECT_NEAR(result_vector[0].normal[0], idx[2] * -1.0, 0.001);
+    EXPECT_NEAR(result_vector[0].normal[1], idx[2] * 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].normal[2], idx[2] * 0.0, 0.001);
+  }
   /////////////////////////////////////////////
   // Test object inside the contact distance
   /////////////////////////////////////////////
-  result = ContactResultMap();
-  result.clear();
-  result_vector.clear();
-
-  checker.setContactDistanceThreshold(0.25);
-  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.25, 1e-5);
-  checker.contactTest(result, ContactRequest(test_type));
-  flattenResults(std::move(result), result_vector);
-
-  EXPECT_TRUE(!result_vector.empty());
-  EXPECT_NEAR(result_vector[0].distance, 0.1, 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[0][1], result_vector[0].nearest_points[1][1], 0.001);
-  EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
-
-  idx = { 0, 1, 1 };
-  if (result_vector[0].link_names[0] != "box_link")
-    idx = { 1, 0, -1 };
-
-  if (result_vector[0].single_contact_point)
   {
-    EXPECT_NEAR(result_vector[0].nearest_points[0][0], result_vector[0].nearest_points[1][0], 0.001);
-    EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][0] - (1.1)) > 0.001 &&
-                 std::abs(result_vector[0].nearest_points[0][0] - (1.0)) > 0.001);
-  }
-  else
-  {
-    EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 1.1, 0.001);
-    EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], 1.0, 0.001);
-  }
+    result = ContactResultMap();
+    result.clear();
+    result_vector.clear();
 
-  EXPECT_NEAR(result_vector[0].normal[0], idx[2] * -1.0, 0.001);
-  EXPECT_NEAR(result_vector[0].normal[1], idx[2] * 0.0, 0.001);
-  EXPECT_NEAR(result_vector[0].normal[2], idx[2] * 0.0, 0.001);
+    checker.setCollisionMarginData(CollisionMarginData(0.25));
+    EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.25, 1e-5);
+    checker.contactTest(result, ContactRequest(test_type));
+    flattenResults(std::move(result), result_vector);
+
+    EXPECT_TRUE(!result_vector.empty());
+    EXPECT_NEAR(result_vector[0].distance, 0.1, 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[0][1], result_vector[0].nearest_points[1][1], 0.001);
+    EXPECT_NEAR(result_vector[0].nearest_points[0][2], result_vector[0].nearest_points[1][2], 0.001);
+
+    idx = { 0, 1, 1 };
+    if (result_vector[0].link_names[0] != "box_link")
+      idx = { 1, 0, -1 };
+
+    if (result_vector[0].single_contact_point)
+    {
+      EXPECT_NEAR(result_vector[0].nearest_points[0][0], result_vector[0].nearest_points[1][0], 0.001);
+      EXPECT_FALSE(std::abs(result_vector[0].nearest_points[0][0] - (1.1)) > 0.001 &&
+                   std::abs(result_vector[0].nearest_points[0][0] - (1.0)) > 0.001);
+    }
+    else
+    {
+      EXPECT_NEAR(result_vector[0].nearest_points[idx[0]][0], 1.1, 0.001);
+      EXPECT_NEAR(result_vector[0].nearest_points[idx[1]][0], 1.0, 0.001);
+    }
+
+    EXPECT_NEAR(result_vector[0].normal[0], idx[2] * -1.0, 0.001);
+    EXPECT_NEAR(result_vector[0].normal[1], idx[2] * 0.0, 0.001);
+    EXPECT_NEAR(result_vector[0].normal[2], idx[2] * 0.0, 0.001);
+  }
 }
 }  // namespace detail
 

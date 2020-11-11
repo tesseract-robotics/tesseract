@@ -102,7 +102,11 @@ public:
 
   void setContactDistanceThreshold(double contact_distance) override;
 
+  void setCollisionMarginData(CollisionMarginData collision_margin_data) override;
+
   double getContactDistanceThreshold() const override;
+
+  const CollisionMarginData& getCollisionMarginData() const override;
 
   void setIsContactAllowedFn(IsContactAllowedFn fn) override;
 
@@ -126,7 +130,7 @@ private:
   Link2COW link2cow_;               /**< @brief A map of all (static and active) collision objects being managed */
   std::vector<std::string> active_; /**< @brief A list of the active collision objects */
   std::vector<std::string> collision_objects_; /**< @brief A list of the collision objects */
-  double contact_distance_;                    /**< @brief The contact distance threshold */
+  CollisionMarginData collision_margin_data_;  /**< @brief The contact distance threshold */
   IsContactAllowedFn fn_;                      /**< @brief The is allowed collision function */
   std::size_t fcl_co_count_{ 0 };              /**< @brief The number fcl collision objects */
 

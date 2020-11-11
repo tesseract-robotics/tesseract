@@ -67,7 +67,7 @@ int main(int /*argc*/, char** /*argv*/)
 
   CONSOLE_BRIDGE_logInform("Test when object is inside another");
   checker.setActiveCollisionObjects({ "box_link", "second_box_link" });
-  checker.setContactDistanceThreshold(0.1);
+  checker.setCollisionMarginData(CollisionMarginData(0.1));
 
   // Set the collision object transforms
   tesseract_common::TransformMap location;

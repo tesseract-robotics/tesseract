@@ -52,7 +52,7 @@ FCLDiscreteBVHManager::FCLDiscreteBVHManager()
 {
   static_manager_ = std::make_unique<fcl::DynamicAABBTreeCollisionManagerd>();
   dynamic_manager_ = std::make_unique<fcl::DynamicAABBTreeCollisionManagerd>();
-  contact_distance_ = 0;
+  collision_margin_data_ = CollisionMarginData(0);
 }
 
 DiscreteContactManager::Ptr FCLDiscreteBVHManager::clone() const
@@ -63,7 +63,7 @@ DiscreteContactManager::Ptr FCLDiscreteBVHManager::clone() const
     manager->addCollisionObject(cow.second->clone());
 
   manager->setActiveCollisionObjects(active_);
-  manager->setContactDistanceThreshold(contact_distance_);
+  manager->setContactDistanceThreshold(collision_margin_data_.getMaxCollisionMargin());
   manager->setIsContactAllowedFn(fn_);
 
   return manager;
@@ -263,15 +263,15 @@ void FCLDiscreteBVHManager::setActiveCollisionObjects(const std::vector<std::str
 }
 
 const std::vector<std::string>& FCLDiscreteBVHManager::getActiveCollisionObjects() const { return active_; }
-void FCLDiscreteBVHManager::setContactDistanceThreshold(double contact_distance)
+void FCLDiscreteBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
 {
-  contact_distance_ = contact_distance;
+  collision_margin_data_ = collision_margin_data;
   static_update_.clear();
   dynamic_update_.clear();
 
   for (auto& cow : link2cow_)
   {
-    cow.second->setContactDistanceThreshold(contact_distance_ / 2.0);
+    cow.second->setContactDistanceThreshold(collision_margin_data_.getMaxCollisionMargin() / 2.0);
     std::vector<CollisionObjectRawPtr>& co = cow.second->getCollisionObjectsRaw();
     if (cow.second->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
     {
@@ -290,7 +290,38 @@ void FCLDiscreteBVHManager::setContactDistanceThreshold(double contact_distance)
     dynamic_manager_->update(dynamic_update_);
 }
 
-double FCLDiscreteBVHManager::getContactDistanceThreshold() const { return contact_distance_; }
+void FCLDiscreteBVHManager::setContactDistanceThreshold(double contact_distance)
+{
+  collision_margin_data_ = CollisionMarginData(contact_distance);
+  static_update_.clear();
+  dynamic_update_.clear();
+
+  for (auto& cow : link2cow_)
+  {
+    cow.second->setContactDistanceThreshold(collision_margin_data_.getMaxCollisionMargin() / 2.0);
+    std::vector<CollisionObjectRawPtr>& co = cow.second->getCollisionObjectsRaw();
+    if (cow.second->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
+    {
+      static_update_.insert(static_update_.end(), co.begin(), co.end());
+    }
+    else
+    {
+      dynamic_update_.insert(dynamic_update_.end(), co.begin(), co.end());
+    }
+  }
+
+  if (!static_update_.empty())
+    static_manager_->update(static_update_);
+
+  if (!dynamic_update_.empty())
+    dynamic_manager_->update(dynamic_update_);
+}
+
+double FCLDiscreteBVHManager::getContactDistanceThreshold() const
+{
+  return collision_margin_data_.getMaxCollisionMargin();
+}
+const CollisionMarginData& FCLDiscreteBVHManager::getCollisionMarginData() const { return collision_margin_data_; }
 void FCLDiscreteBVHManager::setIsContactAllowedFn(IsContactAllowedFn fn) { fn_ = fn; }
 IsContactAllowedFn FCLDiscreteBVHManager::getIsContactAllowedFn() const { return fn_; }
 
@@ -324,8 +355,8 @@ void selfCollisionContactTest(ContactTestData& cdata,
 
 void FCLDiscreteBVHManager::contactTest(ContactResultMap& collisions, const ContactRequest& request)
 {
-  ContactTestData cdata(active_, contact_distance_, fn_, request, collisions);
-  if (contact_distance_ > 0 && request.calculate_distance)
+  ContactTestData cdata(active_, collision_margin_data_, fn_, request, collisions);
+  if (collision_margin_data_.getMaxCollisionMargin() > 0 && request.calculate_distance)
   {
     // TODO: Should the order be flipped?
     if (!static_manager_->empty())
