@@ -119,8 +119,8 @@ inline void runTest(ContinuousContactManager& checker)
   // Test when object is inside another
   //////////////////////////////////////
   checker.setActiveCollisionObjects({ "moving_box_link" });
-  checker.setContactDistanceThreshold(0.1);
-  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.1, 1e-5);
+  checker.setCollisionMarginData(CollisionMarginData(0.1));
+  EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the collision object transforms
   std::vector<std::string> names = { "static_box_link" };

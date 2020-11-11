@@ -139,8 +139,8 @@ inline void runTestPrimitive(ContinuousContactManager& checker)
   // Test when object is in collision at cc_time 0.5
   ///////////////////////////////////////////////////
   checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
-  checker.setContactDistanceThreshold(0.1);
-  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.1, 1e-5);
+  checker.setCollisionMarginData(CollisionMarginData(0.1));
+  EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the start location
   tesseract_common::TransformMap location_start;
@@ -283,8 +283,8 @@ inline void runTestConvex(ContinuousContactManager& checker)
   // Test when object is in collision at cc_time 0.5
   ///////////////////////////////////////////////////
   checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
-  checker.setContactDistanceThreshold(0.1);
-  EXPECT_NEAR(checker.getContactDistanceThreshold(), 0.1, 1e-5);
+  checker.setCollisionMarginData(CollisionMarginData(0.1));
+  EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
 
   // Set the start location
   tesseract_common::TransformMap location_start;

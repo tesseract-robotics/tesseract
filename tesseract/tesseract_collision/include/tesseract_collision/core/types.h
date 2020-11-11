@@ -203,11 +203,87 @@ inline std::size_t flattenCopyResults(const ContactResultMap& m, ContactResultVe
   return v.size();
 }
 
-// Need to mark depricated
+// Need to mark deprecated
 inline std::size_t flattenResults(ContactResultMap&& m, ContactResultVector& v)
 {
   return flattenMoveResults(std::move(m), v);
 }
+
+/** @brief Stores information about how the margins allowed between collision objects */
+struct CollisionMarginData
+{
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+  using Ptr = std::shared_ptr<CollisionMarginData>;
+  using ConstPtr = std::shared_ptr<const CollisionMarginData>;
+
+  CollisionMarginData(const double& default_collision_margin = 0)
+    : default_collision_margin_(default_collision_margin), max_collision_margin_(default_collision_margin)
+  {
+  }
+
+  /**
+   * @brief Set the margin for a given contact pair
+   *
+   * The order of the object names does not matter, that is handled internal to
+   * the class.
+   *
+   * @param obj1 The first object name. Order doesn't matter
+   * @param obj2 The Second object name. Order doesn't matter
+   * @param collision_margin contacts with distance < collision_margin are considered in collision
+   */
+  void setPairCollisionMarginData(const std::string& obj1, const std::string& obj2, const double& collision_margin)
+  {
+    auto key = tesseract_common::makeOrderedLinkPair(obj1, obj2);
+    lookup_table_[key] = collision_margin;
+
+    if (collision_margin > max_collision_margin_)
+    {
+      max_collision_margin_ = collision_margin;
+    }
+  }
+
+  /**
+   * @brief Get the pairs collision margin data
+   *
+   * If a collision margin for the request pair does not exist it returns the default collision margin data.
+   *
+   * @param obj1 The first object name
+   * @param obj2 The second object name
+   * @return A Vector2d[Contact Distance Threshold, Coefficient]
+   */
+  const double& getPairCollisionMarginData(const std::string& obj1, const std::string& obj2) const
+  {
+    auto key = tesseract_common::makeOrderedLinkPair(obj1, obj2);
+    const auto it = lookup_table_.find(key);
+
+    if (it != lookup_table_.end())
+    {
+      return it->second;
+    }
+
+    return default_collision_margin_;
+  }
+
+  /**
+   * @brief Get the largest collision margin
+   *
+   * This used when setting the contact distance in the contact manager.
+   *
+   * @return Max contact distance threshold
+   */
+  const double& getMaxCollisionMargin() const { return max_collision_margin_; }
+
+private:
+  /// Stores the collision margin used if no pair-specific one is set
+  double default_collision_margin_;
+
+  /// Stores the largest collision margin
+  double max_collision_margin_;
+
+  /// A map of link pair names to contact distance
+  std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash> lookup_table_;
+};
 
 /**
  * @brief This data is intended only to be used internal to the collision checkers as a container and should not
@@ -219,11 +295,15 @@ struct ContactTestData
 
   ContactTestData() = default;
   ContactTestData(const std::vector<std::string>& active,
-                  double contact_distance,
+                  CollisionMarginData collision_margin_data,
                   IsContactAllowedFn fn,
                   ContactRequest req,
                   ContactResultMap& res)
-    : active(&active), contact_distance(contact_distance), fn(std::move(fn)), req(std::move(req)), res(&res)
+    : active(&active)
+    , collision_margin_data(std::move(collision_margin_data))
+    , fn(std::move(fn))
+    , req(std::move(req))
+    , res(&res)
   {
   }
 
@@ -231,7 +311,7 @@ struct ContactTestData
   const std::vector<std::string>* active{ nullptr };
 
   /** @brief The current contact_distance threshold */
-  double contact_distance{ 0 };
+  CollisionMarginData collision_margin_data{ 0 };
 
   /** @brief The allowed collision function used to check if two links should be excluded from collision checking */
   IsContactAllowedFn fn{ nullptr };

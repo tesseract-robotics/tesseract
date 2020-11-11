@@ -103,6 +103,14 @@ inline bool isContactAllowed(const std::string& name1,
   return false;
 }
 
+/**
+ * @brief processResult Processes the ContactResult based on the information in the ContactTestData
+ * @param cdata Information used to process the results
+ * @param contact Contacts from the collision checkers that will be processed
+ * @param key Link pair used as a key to look up pair specific settings
+ * @param found Specifies whether or not a collision has already been found
+ * @return Pointer to the ContactResult.
+ */
 inline ContactResult* processResult(ContactTestData& cdata,
                                     ContactResult& contact,
                                     const std::pair<std::string, std::string>& key,
@@ -116,13 +124,19 @@ inline ContactResult* processResult(ContactTestData& cdata,
     ContactResultVector data;
     if (cdata.req.type == ContactTestType::FIRST)
     {
-      data.emplace_back(contact);
-      cdata.done = true;
+      if (contact.distance < cdata.collision_margin_data.getPairCollisionMarginData(key.first, key.second))
+      {
+        data.emplace_back(contact);
+        cdata.done = true;
+      }
     }
     else
     {
-      data.reserve(100);  // TODO: Need better way to initialize this
-      data.emplace_back(contact);
+      if (contact.distance < cdata.collision_margin_data.getPairCollisionMarginData(key.first, key.second))
+      {
+        data.reserve(100);  // TODO: Need better way to initialize this
+        data.emplace_back(contact);
+      }
     }
 
     return &(cdata.res->insert(std::make_pair(key, data)).first->second.back());
@@ -132,16 +146,22 @@ inline ContactResult* processResult(ContactTestData& cdata,
   ContactResultVector& dr = (*cdata.res)[key];
   if (cdata.req.type == ContactTestType::ALL)
   {
-    dr.emplace_back(contact);
-    return &(dr.back());
+    if (contact.distance < cdata.collision_margin_data.getPairCollisionMarginData(key.first, key.second))
+    {
+      dr.emplace_back(contact);
+      return &(dr.back());
+    }
   }
 
   if (cdata.req.type == ContactTestType::CLOSEST)
   {
-    if (contact.distance < dr[0].distance)
+    if (contact.distance < cdata.collision_margin_data.getPairCollisionMarginData(key.first, key.second))
     {
-      dr[0] = contact;
-      return &(dr[0]);
+      if (contact.distance < dr[0].distance)
+      {
+        dr[0] = contact;
+        return &(dr[0]);
+      }
     }
   }
   //    else if (cdata.cdata.condition == DistanceRequestType::LIMITED)

@@ -8,17 +8,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
 #include <Eigen/Eigen>
 #include <unordered_map>
+#include <tesseract_common/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_scene_graph
 {
-using LinkNamesPair = std::pair<std::string, std::string>;
-struct PairHash
-{
-  std::size_t operator()(const LinkNamesPair& pair) const { return std::hash<std::string>()(pair.first + pair.second); }
-};
-
-using AllowedCollisionEntries = std::unordered_map<LinkNamesPair, std::string, PairHash>;
+using AllowedCollisionEntries =
+    std::unordered_map<tesseract_common::LinkNamesPair, std::string, tesseract_common::PairHash>;
 
 class AllowedCollisionMatrix
 {
@@ -45,7 +41,7 @@ public:
                                    const std::string& link_name2,
                                    const std::string& reason)
   {
-    auto link_pair = makeOrderedLinkPair(link_name1, link_name2);
+    auto link_pair = tesseract_common::makeOrderedLinkPair(link_name1, link_name2);
     lookup_table_[link_pair] = reason;
   }
 
@@ -64,7 +60,7 @@ public:
    */
   virtual void removeAllowedCollision(const std::string& link_name1, const std::string& link_name2)
   {
-    auto link_pair = makeOrderedLinkPair(link_name1, link_name2);
+    auto link_pair = tesseract_common::makeOrderedLinkPair(link_name1, link_name2);
     lookup_table_.erase(link_pair);
   }
 
@@ -95,7 +91,7 @@ public:
    */
   virtual bool isCollisionAllowed(const std::string& link_name1, const std::string& link_name2) const
   {
-    auto link_pair = makeOrderedLinkPair(link_name1, link_name2);
+    auto link_pair = tesseract_common::makeOrderedLinkPair(link_name1, link_name2);
     return (lookup_table_.find(link_pair) != lookup_table_.end());
   }
 
@@ -123,20 +119,6 @@ public:
 
 private:
   AllowedCollisionEntries lookup_table_;
-
-  /**
-   * @brief Create a pair of strings, where the pair.first is always <= pair.second
-   * @param link_name1 First link name
-   * @param link_name2 Second link anme
-   * @return LinkNamesPair a lexicographically sorted pair of strings
-   */
-  static inline LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::string& link_name2)
-  {
-    if (link_name1 <= link_name2)
-      return std::make_pair(link_name1, link_name2);
-
-    return std::make_pair(link_name2, link_name1);
-  }
 };
 
 }  // namespace tesseract_scene_graph
