@@ -41,6 +41,8 @@ namespace tesseract_environment
 class ManipulatorManager
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   using Ptr = std::shared_ptr<ManipulatorManager>;
   using ConstPtr = std::shared_ptr<const ManipulatorManager>;
 
