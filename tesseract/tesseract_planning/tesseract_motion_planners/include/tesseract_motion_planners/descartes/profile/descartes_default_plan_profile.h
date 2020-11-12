@@ -35,8 +35,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/descartes/descartes_utils.h>
 #include <tesseract_motion_planners/descartes/types.h>
 
-#include <descartes_light/interface/edge_evaluator.h>
-
 namespace tesseract_planning
 {
 template <typename FloatType>
@@ -58,6 +56,9 @@ public:
     return tesseract_common::VectorIsometry3d({ tool_pose });
   };
   DescartesEdgeEvaluatorAllocatorFn<FloatType> edge_evaluator{ nullptr };
+
+  // If not provided it adds a joint limit is valid function
+  DescartesVertexEvaluatorAllocatorFn<FloatType> vertex_evaluator{ nullptr };
   double timing_constraint = std::numeric_limits<FloatType>::max();
 
   // Applied to sampled states
@@ -68,11 +69,8 @@ public:
   bool enable_edge_collision{ false };
   double edge_collision_saftey_margin{ 0 };
   double edge_longest_valid_segment_length = 0.1;
-
   int num_threads{ 1 };
-
   bool allow_collision{ false };
-  DescartesIsValidFn<FloatType> is_valid;  // If not provided it adds a joint limit is valid function
   bool debug{ false };
 
   void apply(DescartesProblem<FloatType>& prob,
