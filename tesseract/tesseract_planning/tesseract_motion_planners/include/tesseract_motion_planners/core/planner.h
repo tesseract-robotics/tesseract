@@ -40,13 +40,15 @@ namespace tesseract_planning
 class MotionPlanner
 {
 public:
+  using Ptr = std::shared_ptr<MotionPlanner>;
+  using ConstPtr = std::shared_ptr<const MotionPlanner>;
   /** @brief Construct a basic planner */
   MotionPlanner(std::string name) : name_(std::move(name)) {}
   virtual ~MotionPlanner() = default;
-  MotionPlanner(const MotionPlanner&) = default;
-  MotionPlanner& operator=(const MotionPlanner&) = default;
-  MotionPlanner(MotionPlanner&&) = default;
-  MotionPlanner& operator=(MotionPlanner&&) = default;
+  MotionPlanner(const MotionPlanner&) = delete;
+  MotionPlanner& operator=(const MotionPlanner&) = delete;
+  MotionPlanner(MotionPlanner&&) = delete;
+  MotionPlanner& operator=(MotionPlanner&&) = delete;
 
   /** @brief Get the name of this planner */
   const std::string& getName() const { return name_; }

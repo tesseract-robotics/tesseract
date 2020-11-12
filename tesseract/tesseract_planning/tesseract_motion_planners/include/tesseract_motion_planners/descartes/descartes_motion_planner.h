@@ -32,10 +32,10 @@ public:
   DescartesMotionPlanner(std::string name = "DESCARTES");
 
   ~DescartesMotionPlanner() override = default;
-  DescartesMotionPlanner(const DescartesMotionPlanner&) = default;
-  DescartesMotionPlanner& operator=(const DescartesMotionPlanner&) = default;
-  DescartesMotionPlanner(DescartesMotionPlanner&&) noexcept = default;
-  DescartesMotionPlanner& operator=(DescartesMotionPlanner&&) noexcept = default;
+  DescartesMotionPlanner(const DescartesMotionPlanner&) = delete;
+  DescartesMotionPlanner& operator=(const DescartesMotionPlanner&) = delete;
+  DescartesMotionPlanner(DescartesMotionPlanner&&) noexcept = delete;
+  DescartesMotionPlanner& operator=(DescartesMotionPlanner&&) noexcept = delete;
 
   DescartesProblemGeneratorFn<FloatType> problem_generator;
 
