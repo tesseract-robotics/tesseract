@@ -50,10 +50,10 @@ public:
   TrajOptMotionPlanner(std::string name = "TRAJOPT");
 
   ~TrajOptMotionPlanner() override = default;
-  TrajOptMotionPlanner(const TrajOptMotionPlanner&) = default;
-  TrajOptMotionPlanner& operator=(const TrajOptMotionPlanner&) = default;
-  TrajOptMotionPlanner(TrajOptMotionPlanner&&) = default;
-  TrajOptMotionPlanner& operator=(TrajOptMotionPlanner&&) = default;
+  TrajOptMotionPlanner(const TrajOptMotionPlanner&) = delete;
+  TrajOptMotionPlanner& operator=(const TrajOptMotionPlanner&) = delete;
+  TrajOptMotionPlanner(TrajOptMotionPlanner&&) = delete;
+  TrajOptMotionPlanner& operator=(TrajOptMotionPlanner&&) = delete;
 
   TrajOptProblemGeneratorFn problem_generator;
 

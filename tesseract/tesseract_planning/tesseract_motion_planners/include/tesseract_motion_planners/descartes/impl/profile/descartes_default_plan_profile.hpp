@@ -196,8 +196,25 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
     manip_baselink_to_waypoint = world_to_base_link.inverse() * world_to_waypoint;
   }
 
-  auto sampler = std::make_shared<DescartesRobotSampler<FloatType>>(
-      manip_baselink_to_waypoint, target_pose_sampler, prob.manip_inv_kin, ci, tcp, allow_collision, is_valid);
+  // Add vertex evaluator
+  std::shared_ptr<descartes_light::PositionSampler<FloatType>> sampler;
+  if (vertex_evaluator == nullptr)
+  {
+    auto ve =
+        std::make_shared<DescartesJointLimitsVertexEvaluator<FloatType>>(prob.manip_inv_kin->getLimits().joint_limits);
+    sampler = std::make_shared<DescartesRobotSampler<FloatType>>(
+        manip_baselink_to_waypoint, target_pose_sampler, prob.manip_inv_kin, ci, tcp, allow_collision, ve);
+  }
+  else
+  {
+    sampler = std::make_shared<DescartesRobotSampler<FloatType>>(manip_baselink_to_waypoint,
+                                                                 target_pose_sampler,
+                                                                 prob.manip_inv_kin,
+                                                                 ci,
+                                                                 tcp,
+                                                                 allow_collision,
+                                                                 vertex_evaluator(prob));
+  }
   prob.samplers.push_back(std::move(sampler));
 
   if (index != 0)
@@ -233,12 +250,6 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
       prob.edge_evaluators.push_back(edge_evaluator(prob));
     }
   }
-
-  // Add isValid function
-  if (is_valid == nullptr)
-    is_valid = std::bind(&tesseract_kinematics::isWithinLimits<FloatType>,
-                         std::placeholders::_1,
-                         prob.manip_inv_kin->getLimits().joint_limits);
 
   prob.num_threads = num_threads;
 }
@@ -289,12 +300,6 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
       prob.edge_evaluators.push_back(edge_evaluator(prob));
     }
   }
-
-  // Add isValid function
-  if (is_valid == nullptr)
-    is_valid = std::bind(&tesseract_kinematics::isWithinLimits<FloatType>,
-                         std::placeholders::_1,
-                         prob.manip_inv_kin->getLimits().joint_limits);
 
   prob.num_threads = num_threads;
 }

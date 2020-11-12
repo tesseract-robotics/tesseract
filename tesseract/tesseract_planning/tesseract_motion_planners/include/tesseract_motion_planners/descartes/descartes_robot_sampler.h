@@ -62,7 +62,7 @@ public:
                         typename descartes_light::CollisionInterface<FloatType>::Ptr collision,
                         const Eigen::Isometry3d& tcp,
                         bool allow_collision,
-                        DescartesIsValidFn<FloatType> is_valid);
+                        typename DescartesVertexEvaluator<FloatType>::Ptr is_valid);
 
   bool sample(std::vector<FloatType>& solution_set) override;
 
@@ -75,7 +75,8 @@ private:
   bool allow_collision_;    /**< @brief If true and no valid solution was found it will return the best of the worst */
   int dof_;                 /**< @brief The number of joints in the robot */
   Eigen::VectorXd ik_seed_; /**< @brief The seed for inverse kinematics which is zeros */
-  DescartesIsValidFn<FloatType> is_valid_; /**< @brief This is a user defined function to filter out solution */
+  typename DescartesVertexEvaluator<FloatType>::Ptr is_valid_; /**< @brief This is the vertex evaluator to filter out
+                                                                  solution */
 
   /**
    * @brief Check if a solution is passes collision test
