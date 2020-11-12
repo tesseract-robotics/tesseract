@@ -31,6 +31,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
 #include <functional>
 #include <descartes_light/interface/edge_evaluator.h>
+#include <tesseract_motion_planners/descartes/descartes_vertex_evaluator.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/descartes/descartes_problem.h>
@@ -38,13 +39,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 namespace tesseract_planning
 {
 /**
- * @brief This is used for passing a function to tesseract descartes samplers that filters out invalid solutions.
+ * @brief This is used for tesseract descartes samplers that filters out invalid solutions.
  *
  * Example: This would be used to filter out solution outside of custom joint limits.
  *
  */
 template <typename FloatType>
-using DescartesIsValidFn = std::function<bool(const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 1> >&)>;
+using DescartesVertexEvaluatorAllocatorFn =
+    std::function<typename DescartesVertexEvaluator<FloatType>::Ptr(const DescartesProblem<FloatType>&)>;
 
 /**
  * @brief This is used to create edge evaluator within tesseract, to allow thread safe creation of descartes edge

@@ -55,10 +55,10 @@ public:
   SimpleMotionPlanner(std::string name = "SIMPLE_PLANNER");
 
   ~SimpleMotionPlanner() override = default;
-  SimpleMotionPlanner(const SimpleMotionPlanner&) = default;
-  SimpleMotionPlanner& operator=(const SimpleMotionPlanner&) = default;
-  SimpleMotionPlanner(SimpleMotionPlanner&&) = default;
-  SimpleMotionPlanner& operator=(SimpleMotionPlanner&&) = default;
+  SimpleMotionPlanner(const SimpleMotionPlanner&) = delete;
+  SimpleMotionPlanner& operator=(const SimpleMotionPlanner&) = delete;
+  SimpleMotionPlanner(SimpleMotionPlanner&&) = delete;
+  SimpleMotionPlanner& operator=(SimpleMotionPlanner&&) = delete;
 
   /**
    * @brief The available composite profiles
