@@ -242,6 +242,7 @@ bool KDLFwdKinTree::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph
                          const std::unordered_map<std::string, double>& start_state)
 {
   initialized_ = false;
+  kdl_tree_ = KDL::Tree();
 
   if (scene_graph == nullptr)
   {
