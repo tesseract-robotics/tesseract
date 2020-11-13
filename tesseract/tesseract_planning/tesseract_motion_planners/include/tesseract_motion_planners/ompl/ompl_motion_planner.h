@@ -56,7 +56,9 @@ class OMPLMotionPlanner : public MotionPlanner
 {
 public:
   /** @brief Construct a planner */
-  OMPLMotionPlanner(std::string name = "OMPL");
+  OMPLMotionPlanner();
+
+  const std::string& getName() const override;
 
   OMPLProblemGeneratorFn problem_generator;
 
@@ -95,7 +97,12 @@ public:
 
   void clear() override;
 
+  MotionPlanner::Ptr clone() const override;
+
 protected:
+  /** @brief Name of planner */
+  std::string name_{ "OMPL" };
+
   /** @brief The planners status codes */
   std::shared_ptr<const OMPLMotionPlannerStatusCategory> status_category_;
 
