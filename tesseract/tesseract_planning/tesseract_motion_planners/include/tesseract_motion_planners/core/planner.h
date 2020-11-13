@@ -43,7 +43,7 @@ public:
   using Ptr = std::shared_ptr<MotionPlanner>;
   using ConstPtr = std::shared_ptr<const MotionPlanner>;
   /** @brief Construct a basic planner */
-  MotionPlanner(std::string name) : name_(std::move(name)) {}
+  MotionPlanner() = default;
   virtual ~MotionPlanner() = default;
   MotionPlanner(const MotionPlanner&) = delete;
   MotionPlanner& operator=(const MotionPlanner&) = delete;
@@ -51,7 +51,7 @@ public:
   MotionPlanner& operator=(MotionPlanner&&) = delete;
 
   /** @brief Get the name of this planner */
-  const std::string& getName() const { return name_; }
+  virtual const std::string& getName() const = 0;
 
   /**
    * @brief Solve the planner request problem
@@ -74,8 +74,8 @@ public:
   /** @brief Clear the data structures used by the planner */
   virtual void clear() = 0;
 
-protected:
-  std::string name_; /**< @brief The name of this planner */
+  /** @brief Clone the motion planner */
+  virtual MotionPlanner::Ptr clone() const = 0;
 };
 }  // namespace tesseract_planning
 #endif  // TESSERACT_PLANNING_PLANNER_H

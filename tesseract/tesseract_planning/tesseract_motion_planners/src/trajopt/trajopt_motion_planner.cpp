@@ -73,12 +73,14 @@ std::string TrajOptMotionPlannerStatusCategory::message(int code) const
   }
 }
 
-TrajOptMotionPlanner::TrajOptMotionPlanner(std::string name)
-  : MotionPlanner(std::move(name)), status_category_(std::make_shared<const TrajOptMotionPlannerStatusCategory>(name_))
+TrajOptMotionPlanner::TrajOptMotionPlanner()
+  : status_category_(std::make_shared<const TrajOptMotionPlannerStatusCategory>(name_))
 {
   plan_profiles[DEFAULT_PROFILE_KEY] = std::make_shared<TrajOptDefaultPlanProfile>();
   composite_profiles[DEFAULT_PROFILE_KEY] = std::make_shared<TrajOptDefaultCompositeProfile>();
 }
+
+const std::string& TrajOptMotionPlanner::getName() const { return name_; }
 
 bool TrajOptMotionPlanner::terminate()
 {
@@ -91,6 +93,8 @@ void TrajOptMotionPlanner::clear()
   params = sco::BasicTrustRegionSQPParameters();
   callbacks.clear();
 }
+
+MotionPlanner::Ptr TrajOptMotionPlanner::clone() const { return std::make_shared<TrajOptMotionPlanner>(); }
 
 tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& request,
                                                          PlannerResponse& response,
