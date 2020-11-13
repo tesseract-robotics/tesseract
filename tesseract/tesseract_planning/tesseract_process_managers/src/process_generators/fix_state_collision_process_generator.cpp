@@ -49,20 +49,16 @@ bool StateInCollision(const Eigen::Ref<const Eigen::VectorXd>& start_pos,
       input.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(input.manip_info.manipulator);
 
   std::vector<ContactResultMap> collisions;
-  tesseract_environment::StateSolver::Ptr state_solver = env->getStateSolver();
   DiscreteContactManager::Ptr manager = env->getDiscreteContactManager();
   AdjacencyMap::Ptr adjacency_map = std::make_shared<tesseract_environment::AdjacencyMap>(
       env->getSceneGraph(), kin->getActiveLinkNames(), env->getCurrentState()->link_transforms);
 
   manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
-  manager->setContactDistanceThreshold(profile.safety_margin);
+  manager->setCollisionMarginData(CollisionMarginData(profile.safety_margin));
   collisions.clear();
 
-  tesseract_common::TrajArray traj(1, start_pos.size());
-  traj.row(0) = start_pos.transpose();
-
-  // This never returns any collisions
-  if (!checkTrajectory(collisions, *manager, *state_solver, kin->getJointNames(), traj))
+  tesseract_environment::EnvState::Ptr state = env->getState(kin->getJointNames(), start_pos);
+  if (!checkTrajectoryState(collisions, *manager, state, tesseract_collision::ContactTestType::FIRST, false))
   {
     CONSOLE_BRIDGE_logDebug("No collisions found");
     return false;
