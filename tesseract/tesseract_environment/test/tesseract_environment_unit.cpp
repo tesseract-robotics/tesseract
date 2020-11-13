@@ -335,6 +335,21 @@ void runChangeJointLimitsTest()
     EXPECT_NEAR(kin->getLimits().velocity_limits(0), new_velocity, 1e-5);
     EXPECT_NEAR(kin->getLimits().acceleration_limits(0), new_acceleration, 1e-5);
   }
+  {
+    Eigen::MatrixX2d original;
+    Eigen::MatrixX2d new_limits;
+    {
+      auto kin = env->getManipulatorManager()->getFwdKinematicSolver("manipulator");
+      original = kin->getLimits().joint_limits;
+    }
+    env->changeJointPositionLimits("joint_a1", 0, 1);
+    {
+      auto kin = env->getManipulatorManager()->getFwdKinematicSolver("manipulator");
+      new_limits = kin->getLimits().joint_limits;
+    }
+    EXPECT_EQ(original.rows(), new_limits.rows());
+    EXPECT_EQ(original.cols(), new_limits.cols());
+  }
 }
 
 template <typename S>
