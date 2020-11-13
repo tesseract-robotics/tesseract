@@ -29,13 +29,14 @@ class DescartesMotionPlanner : public MotionPlanner
 {
 public:
   /** @brief Construct a basic planner */
-  DescartesMotionPlanner(std::string name = "DESCARTES");
-
+  DescartesMotionPlanner();
   ~DescartesMotionPlanner() override = default;
   DescartesMotionPlanner(const DescartesMotionPlanner&) = delete;
   DescartesMotionPlanner& operator=(const DescartesMotionPlanner&) = delete;
   DescartesMotionPlanner(DescartesMotionPlanner&&) noexcept = delete;
   DescartesMotionPlanner& operator=(DescartesMotionPlanner&&) noexcept = delete;
+
+  const std::string& getName() const override;
 
   DescartesProblemGeneratorFn<FloatType> problem_generator;
 
@@ -65,8 +66,11 @@ public:
 
   void clear() override;
 
+  MotionPlanner::Ptr clone() const override;
+
 private:
   /** @brief The planners status codes */
+  std::string name_{ "DESCARTES" };
   std::shared_ptr<const DescartesMotionPlannerStatusCategory> status_category_;
 };
 

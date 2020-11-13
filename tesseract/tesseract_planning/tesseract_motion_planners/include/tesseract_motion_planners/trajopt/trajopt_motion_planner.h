@@ -47,13 +47,15 @@ class TrajOptMotionPlanner : public MotionPlanner
 {
 public:
   /** @brief Construct a basic planner */
-  TrajOptMotionPlanner(std::string name = "TRAJOPT");
+  TrajOptMotionPlanner();
 
   ~TrajOptMotionPlanner() override = default;
   TrajOptMotionPlanner(const TrajOptMotionPlanner&) = delete;
   TrajOptMotionPlanner& operator=(const TrajOptMotionPlanner&) = delete;
   TrajOptMotionPlanner(TrajOptMotionPlanner&&) = delete;
   TrajOptMotionPlanner& operator=(TrajOptMotionPlanner&&) = delete;
+
+  const std::string& getName() const override;
 
   TrajOptProblemGeneratorFn problem_generator;
 
@@ -98,7 +100,10 @@ public:
 
   void clear() override;
 
+  MotionPlanner::Ptr clone() const override;
+
 protected:
+  std::string name_{ "TRAJOPT" };
   std::shared_ptr<const TrajOptMotionPlannerStatusCategory> status_category_; /** @brief The planners status codes */
 };
 
