@@ -181,6 +181,7 @@ bool KDLInvKinChainLMA::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_g
                              std::string name)
 {
   initialized_ = false;
+  kdl_data_ = KDLChainData();
 
   if (scene_graph == nullptr)
   {
