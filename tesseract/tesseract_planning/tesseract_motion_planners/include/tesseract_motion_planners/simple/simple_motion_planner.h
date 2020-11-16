@@ -108,7 +108,7 @@ protected:
                                       const tesseract_kinematics::ForwardKinematics::Ptr& fwd_kin) const;
 
   CompositeInstruction processCompositeInstruction(const CompositeInstruction& instructions,
-                                                   const Waypoint& initial_start_waypoint,
+                                                   Waypoint& start_waypoint,
                                                    const PlannerRequest& request) const;
 };
 

@@ -196,10 +196,9 @@ SimpleMotionPlanner::getStartInstruction(const PlannerRequest& request,
 }
 
 CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const CompositeInstruction& instructions,
-                                                                      const Waypoint& initial_start_waypoint,
+                                                                      Waypoint& start_waypoint,
                                                                       const PlannerRequest& request) const
 {
-  Waypoint start_waypoint = initial_start_waypoint;
   CompositeInstruction seed(instructions.getProfile(), instructions.getOrder(), instructions.getManipulatorInfo());
   for (const auto& instruction : instructions)
   {
