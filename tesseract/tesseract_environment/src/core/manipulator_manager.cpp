@@ -56,16 +56,167 @@ bool ManipulatorManager::init(tesseract_scene_graph::SceneGraph::ConstPtr scene_
   return addKinematicsInformation(kinematics_information);
 }
 
-bool ManipulatorManager::update()
+void ManipulatorManager::onEnvironmentChanged(const Commands& commands)
 {
-  bool success = true;
-  for (auto& fk : fwd_kin_manipulators_)
-    success &= fk.second->update();
+  for (auto it = commands.begin() + revision_; it != commands.end(); ++it)
+  {
+    const Command::ConstPtr& command = *it;
+    if (!command)
+      throw std::runtime_error("ManipulatorManager: Commands constains nullptr's");
 
-  for (auto& ik : inv_kin_manipulators_)
-    success &= ik.second->update();
+    switch (command->getType())
+    {
+      case CommandType::CHANGE_JOINT_POSITION_LIMITS:
+      {
+        const auto& cmd = static_cast<const tesseract_environment::ChangeJointPositionLimitsCommand&>(*command);
+        const std::unordered_map<std::string, std::pair<double, double>>& cmd_limits = cmd.getLimits();
+        for (auto& fk : fwd_kin_manipulators_)
+        {
+          tesseract_common::KinematicLimits limits = fk.second->getLimits();
+          const std::vector<std::string>& joint_names = fk.second->getJointNames();
+          bool changed = false;
+          for (std::size_t i = 0; i < joint_names.size(); ++i)
+          {
+            auto it = cmd_limits.find(joint_names[i]);
+            if (it != cmd_limits.end())
+            {
+              limits.joint_limits(static_cast<Eigen::Index>(i), 0) = it->second.first;
+              limits.joint_limits(static_cast<Eigen::Index>(i), 1) = it->second.second;
+              changed = true;
+            }
+          }
+          if (changed)
+            fk.second->setLimits(limits);
+        }
 
-  return success;
+        for (auto& ik : inv_kin_manipulators_)
+        {
+          tesseract_common::KinematicLimits limits = ik.second->getLimits();
+          const std::vector<std::string>& joint_names = ik.second->getJointNames();
+          bool changed = false;
+          for (std::size_t i = 0; i < joint_names.size(); ++i)
+          {
+            auto it = cmd_limits.find(joint_names[i]);
+            if (it != cmd_limits.end())
+            {
+              limits.joint_limits(static_cast<Eigen::Index>(i), 0) = it->second.first;
+              limits.joint_limits(static_cast<Eigen::Index>(i), 1) = it->second.second;
+              changed = true;
+            }
+          }
+          if (changed)
+            ik.second->setLimits(limits);
+        }
+        break;
+      }
+      case CommandType::CHANGE_JOINT_VELOCITY_LIMITS:
+      {
+        const auto& cmd = static_cast<const tesseract_environment::ChangeJointVelocityLimitsCommand&>(*command);
+        const std::unordered_map<std::string, double>& cmd_limits = cmd.getLimits();
+        for (auto& fk : fwd_kin_manipulators_)
+        {
+          tesseract_common::KinematicLimits limits = fk.second->getLimits();
+          const std::vector<std::string>& joint_names = fk.second->getJointNames();
+          bool changed = false;
+          for (std::size_t i = 0; i < joint_names.size(); ++i)
+          {
+            auto it = cmd_limits.find(joint_names[i]);
+            if (it != cmd_limits.end())
+            {
+              limits.velocity_limits(static_cast<Eigen::Index>(i)) = it->second;
+              changed = true;
+            }
+          }
+          if (changed)
+            fk.second->setLimits(limits);
+        }
+
+        for (auto& ik : inv_kin_manipulators_)
+        {
+          tesseract_common::KinematicLimits limits = ik.second->getLimits();
+          const std::vector<std::string>& joint_names = ik.second->getJointNames();
+          bool changed = false;
+          for (std::size_t i = 0; i < joint_names.size(); ++i)
+          {
+            auto it = cmd_limits.find(joint_names[i]);
+            if (it != cmd_limits.end())
+            {
+              limits.velocity_limits(static_cast<Eigen::Index>(i)) = it->second;
+              changed = true;
+            }
+          }
+          if (changed)
+            ik.second->setLimits(limits);
+        }
+        break;
+      }
+      case CommandType::CHANGE_JOINT_ACCELERATION_LIMITS:
+      {
+        const auto& cmd = static_cast<const tesseract_environment::ChangeJointAccelerationLimitsCommand&>(*command);
+        const std::unordered_map<std::string, double>& cmd_limits = cmd.getLimits();
+        for (auto& fk : fwd_kin_manipulators_)
+        {
+          tesseract_common::KinematicLimits limits = fk.second->getLimits();
+          const std::vector<std::string>& joint_names = fk.second->getJointNames();
+          bool changed = false;
+          for (std::size_t i = 0; i < joint_names.size(); ++i)
+          {
+            auto it = cmd_limits.find(joint_names[i]);
+            if (it != cmd_limits.end())
+            {
+              limits.acceleration_limits(static_cast<Eigen::Index>(i)) = it->second;
+              changed = true;
+            }
+          }
+          if (changed)
+            fk.second->setLimits(limits);
+        }
+
+        for (auto& ik : inv_kin_manipulators_)
+        {
+          tesseract_common::KinematicLimits limits = ik.second->getLimits();
+          const std::vector<std::string>& joint_names = ik.second->getJointNames();
+          bool changed = false;
+          for (std::size_t i = 0; i < joint_names.size(); ++i)
+          {
+            auto it = cmd_limits.find(joint_names[i]);
+            if (it != cmd_limits.end())
+            {
+              limits.acceleration_limits(static_cast<Eigen::Index>(i)) = it->second;
+              changed = true;
+            }
+          }
+          if (changed)
+            ik.second->setLimits(limits);
+        }
+        break;
+      }
+      case CommandType::ADD_KINEMATICS_INFORMATION:
+      {
+        const auto& cmd = static_cast<const tesseract_environment::AddKinematicsInformationCommand&>(*command);
+        addKinematicsInformation(cmd.getKinematicsInformation());
+        break;
+      }
+      case CommandType::CHANGE_LINK_VISIBILITY:
+      case CommandType::CHANGE_LINK_COLLISION_ENABLED:
+      case CommandType::ADD_ALLOWED_COLLISION:
+      case CommandType::REMOVE_ALLOWED_COLLISION_LINK:
+      {
+        break;
+      }
+      default:
+      {
+        for (auto& fk : fwd_kin_manipulators_)
+          fk.second->update();
+
+        for (auto& ik : inv_kin_manipulators_)
+          ik.second->update();
+        break;
+      }
+    }
+  }
+
+  revision_ = static_cast<int>(commands.size());
 }
 
 ManipulatorManager::Ptr ManipulatorManager::clone(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph) const

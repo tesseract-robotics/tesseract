@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/srdf_model.h>
 #include <tesseract_kinematics/core/forward_kinematics_factory.h>
 #include <tesseract_kinematics/core/inverse_kinematics_factory.h>
+#include <tesseract_environment/core/commands.h>
 
 namespace tesseract_environment
 {
@@ -55,12 +56,6 @@ public:
 
   bool init(tesseract_scene_graph::SceneGraph::ConstPtr scene_graph,
             tesseract_scene_graph::KinematicsInformation kinematics_information);
-
-  /**
-   * @brief Updates all of the stored solvers
-   * @return True if successful
-   */
-  bool update();
 
   /**
    * @brief This will clone the manager and assign the new environment object
@@ -311,6 +306,7 @@ private:
   std::unordered_map<std::string, tesseract_kinematics::InverseKinematicsFactory::ConstPtr> inv_kin_factories_;
   std::map<std::pair<std::string, std::string>, tesseract_kinematics::InverseKinematics::Ptr> inv_kin_manipulators_;
   std::unordered_map<std::string, tesseract_kinematics::InverseKinematics::Ptr> inv_kin_manipulators_default_;
+  int revision_{ 0 };
 
   bool registerDefaultChainSolver(const std::string& group_name, const tesseract_scene_graph::ChainGroup& chain_group);
   bool registerDefaultJointSolver(const std::string& group_name, const tesseract_scene_graph::JointGroup& joint_group);
@@ -319,6 +315,11 @@ private:
                          const tesseract_scene_graph::OPWKinematicParameters& opw_params);
   bool registerROPSolver(const std::string& group_name, const tesseract_scene_graph::ROPKinematicParameters& rop_group);
   bool registerREPSolver(const std::string& group_name, const tesseract_scene_graph::REPKinematicParameters& rep_group);
+
+  /** @brief Apply environment command to update kinematics if needed */
+  void onEnvironmentChanged(const Commands& commands);
+
+  friend class Environment;
 };
 }  // namespace tesseract_environment
 
