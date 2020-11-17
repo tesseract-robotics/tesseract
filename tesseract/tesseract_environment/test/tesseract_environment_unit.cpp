@@ -76,9 +76,11 @@ Environment::Ptr getEnvironment()
 
   auto env = std::make_shared<Environment>();
   EXPECT_TRUE(env != nullptr);
+  EXPECT_EQ(0, env->getRevision());
 
   bool success = env->init<S>(*scene_graph, srdf);
   EXPECT_TRUE(success);
+  EXPECT_EQ(2, env->getRevision());
 
   // Register contact manager
   EXPECT_TRUE(env->registerDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name(),

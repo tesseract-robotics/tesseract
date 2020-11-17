@@ -248,7 +248,7 @@ bool Tesseract::init(const tesseract_environment::Environment& env)
   clear();
 
   environment_ = env.clone();
-  initialized_ = (environment_ != nullptr);
+  initialized_ = (environment_ != nullptr && environment_->checkInitialized());
   if (initialized_)
   {
     init_info_ = std::make_shared<TesseractInitInfo>();
@@ -305,7 +305,13 @@ Tesseract::Ptr Tesseract::clone() const
   return clone;
 }
 
-bool Tesseract::reset() { return init(init_info_); }
+bool Tesseract::reset()
+{
+  if (!initialized_)
+    return false;
+
+  return init(init_info_);
+}
 
 void Tesseract::setResourceLocator(tesseract_scene_graph::ResourceLocator::Ptr locator)
 {

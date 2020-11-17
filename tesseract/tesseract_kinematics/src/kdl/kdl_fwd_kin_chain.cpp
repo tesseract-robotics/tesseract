@@ -228,7 +228,7 @@ const tesseract_common::KinematicLimits& KDLFwdKinChain::getLimits() const { ret
 void KDLFwdKinChain::setLimits(tesseract_common::KinematicLimits limits)
 {
   unsigned int nj = numJoints();
-  if (limits.joint_limits.size() != nj || limits.velocity_limits.size() != nj ||
+  if (limits.joint_limits.rows() != nj || limits.velocity_limits.size() != nj ||
       limits.acceleration_limits.size() != nj)
     throw std::runtime_error("Kinematics limits assigned are invalid!");
 
