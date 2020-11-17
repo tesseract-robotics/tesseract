@@ -125,17 +125,19 @@ public:
     else
     {
       manipulator_manager_->init(scene_graph_, srdf_model->getKinematicsInformation());
-    }
 
-    // Add this to the command history.
-    ++revision_;
-    commands_.push_back(
-        std::make_shared<AddKinematicsInformationCommand>(manipulator_manager_->getKinematicsInformation()));
+      // Add this to the command history.
+      ++revision_;
+      commands_.push_back(
+          std::make_shared<AddKinematicsInformationCommand>(manipulator_manager_->getKinematicsInformation()));
+    }
 
     is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed,
                                        scene_graph_,
                                        std::placeholders::_1,
                                        std::placeholders::_2);
+
+    manipulator_manager_->revision_ = revision_;
 
     initialized_ = true;
 
@@ -180,6 +182,10 @@ public:
     return true;
   }
 
+  /**
+   * @brief Clone the environment
+   * @return A clone of the environment
+   */
   Environment::Ptr clone() const;
 
   /**
