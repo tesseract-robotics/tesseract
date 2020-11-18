@@ -72,7 +72,7 @@ void MoveInstruction::setDescription(const std::string& description) { descripti
 
 void MoveInstruction::print(std::string prefix) const
 {
-  std::cout << prefix + "Move Instruction, Type: " << getType() << ", Plan Type: " << static_cast<int>(move_type_)
+  std::cout << prefix + "Move Instruction, Type: " << getType() << ", Move Type: " << static_cast<int>(move_type_)
             << ", ";
   getWaypoint().print();
   std::cout << ", Description: " << getDescription() << std::endl;
