@@ -178,6 +178,85 @@ Instruction startInstructionfromXML(const tinyxml2::XMLElement& start_instructio
   return instruction_parser(*instruction_xml, type, waypoint_parser);
 }
 
+Instruction getWaitInstruction(const tinyxml2::XMLElement& instruction_element)
+{
+  const tinyxml2::XMLElement* wait_element = instruction_element.FirstChildElement("WaitInstruction");
+  if (!wait_element)
+    throw std::runtime_error("Missing Child Element WaitInstruction.");
+
+  const tinyxml2::XMLElement* description_element = wait_element->FirstChildElement("Description");
+
+  std::string description;
+  if (description_element)
+  {
+    tinyxml2::XMLError status = tesseract_common::QueryStringText(description_element, description);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("fromXML: Error parsing Description string");
+  }
+
+  int wait_type{ -1 };
+  tinyxml2::XMLError status = wait_element->QueryIntAttribute("type", &wait_type);
+  if (status != tinyxml2::XML_SUCCESS)
+    throw std::runtime_error("fromXML: Failed to parse wait instruction type attribute.");
+
+  if (wait_type == static_cast<int>(WaitInstructionType::TIME))
+  {
+    double wait_time{ 0 };
+    tinyxml2::XMLError status = wait_element->QueryDoubleAttribute("time", &wait_time);
+    if (status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("fromXML: Failed to parse wait instruction time attribute.");
+
+    WaitInstruction wait_instruction(wait_time);
+    wait_instruction.setDescription(description);
+    return wait_instruction;
+  }
+
+  int wait_io{ -1 };
+  status = wait_element->QueryIntAttribute("io", &wait_io);
+  if (status != tinyxml2::XML_SUCCESS)
+    throw std::runtime_error("fromXML: Failed to parse wait instruction io attribute.");
+  WaitInstruction wait_instruction(static_cast<WaitInstructionType>(wait_type), wait_io);
+  wait_instruction.setDescription(description);
+  return wait_instruction;
+}
+
+Instruction getTimerInstruction(const tinyxml2::XMLElement& instruction_element)
+{
+  const tinyxml2::XMLElement* timer_element = instruction_element.FirstChildElement("TimerInstruction");
+  if (!timer_element)
+    throw std::runtime_error("Missing Child Element TimerInstruction.");
+
+  const tinyxml2::XMLElement* description_element = timer_element->FirstChildElement("Description");
+
+  std::string description;
+  if (description_element)
+  {
+    tinyxml2::XMLError status = tesseract_common::QueryStringText(description_element, description);
+    if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
+      throw std::runtime_error("fromXML: Error parsing Description string");
+  }
+
+  int timer_type{ -1 };
+  tinyxml2::XMLError status = timer_element->QueryIntAttribute("type", &timer_type);
+  if (status != tinyxml2::XML_SUCCESS)
+    throw std::runtime_error("fromXML: Failed to parse timer instruction type attribute.");
+
+  double timer_time{ 0 };
+  status = timer_element->QueryDoubleAttribute("time", &timer_time);
+  if (status != tinyxml2::XML_SUCCESS)
+    throw std::runtime_error("fromXML: Failed to parse timer instruction time attribute.");
+
+  int timer_io{ -1 };
+  status = timer_element->QueryIntAttribute("io", &timer_io);
+  if (status != tinyxml2::XML_SUCCESS)
+    throw std::runtime_error("fromXML: Failed to parse timer instruction io attribute.");
+
+  TimerInstruction timer_instruction(static_cast<TimerInstructionType>(timer_type), timer_time, timer_io);
+  timer_instruction.setDescription(description);
+
+  return timer_instruction;
+}
+
 Instruction getCompositeInstruction(const tinyxml2::XMLElement& instruction_element,
                                     InstructionParserFn instruction_parser,
                                     WaypointParserFn waypoint_parser)
@@ -256,6 +335,14 @@ Instruction defaultInstructionParser(const tinyxml2::XMLElement& xml_element,
     case static_cast<int>(InstructionType::MOVE_INSTRUCTION):
     {
       return getMoveInstruction(xml_element, waypoint_parser);
+    }
+    case static_cast<int>(InstructionType::WAIT_INSTRUCTION):
+    {
+      return getWaitInstruction(xml_element);
+    }
+    case static_cast<int>(InstructionType::TIMER_INSTRUCTION):
+    {
+      return getTimerInstruction(xml_element);
     }
     case static_cast<int>(InstructionType::COMPOSITE_INSTRUCTION):
     {

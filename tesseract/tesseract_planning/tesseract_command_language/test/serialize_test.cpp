@@ -156,6 +156,17 @@ CompositeInstruction getProgram()
   to_end.push_back(plan_f2);
   program.push_back(to_end);
 
+  // Add a wait instruction
+  WaitInstruction wait_instruction_time(1.5);
+  program.push_back(wait_instruction_time);
+
+  WaitInstruction wait_instruction_io(WaitInstructionType::DIGITAL_INPUT_LOW, 10);
+  program.push_back(wait_instruction_io);
+
+  // Add a timer instruction
+  TimerInstruction timer_instruction(TimerInstructionType::DIGITAL_OUTPUT_LOW, 3.1, 5);
+  program.push_back(timer_instruction);
+
   return program;
 }
 
