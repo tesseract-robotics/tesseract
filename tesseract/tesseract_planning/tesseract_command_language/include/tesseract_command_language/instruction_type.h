@@ -56,6 +56,12 @@ enum class InstructionType : int
   // Everything before must be a comment Instruction
   COMMENT_INSTRUCTION = 70,
 
+  // Everything before must be a wait Instruction
+  WAIT_INSTRUCTION = 80,
+
+  // Everything before must be a timer Instruction
+  TIMER_INSTRUCTION = 90,
+
   // User defined types must be larger than this
   USER_DEFINED = 1000
 };
