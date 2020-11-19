@@ -98,5 +98,13 @@ private:
 
   void process(ProcessInput input) const;
 };
+
+class FixStateBoundsProcessInfo : public ProcessInfo
+{
+public:
+  FixStateBoundsProcessInfo(std::string name = "Fix State Bounds") : ProcessInfo(std::move(name)) {}
+
+  std::vector<tesseract_collision::ContactResultMap> contact_results;
+};
 }  // namespace tesseract_planning
 #endif  // TESSERACT_PROCESS_MANAGERS_FIX_STATE_BOUNDS_PROCESS_GENERATOR_H

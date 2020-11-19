@@ -281,13 +281,18 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) co
   if (abort_)
     return 0;
 
+  auto info = std::make_shared<FixStateCollisionProcessInfo>(name_);
+  info->return_value = 0;
+  input.addProcessInfo(info);
+
   // --------------------
   // Check that inputs are valid
   // --------------------
   const Instruction* input_intruction = input.getInstruction();
   if (!isCompositeInstruction(*(input_intruction)))
   {
-    CONSOLE_BRIDGE_logError("Input instruction to FixStateCollision must be a composite instruction");
+    info->message = "Input seed to FixStateCollision must be a composite instruction";
+    CONSOLE_BRIDGE_logError("%s", info->message.c_str());
     return 0;
   }
 
@@ -358,6 +363,7 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) co
       if (flattened.empty())
       {
         CONSOLE_BRIDGE_logWarn("FixStateCollisionProcessGenerator found no PlanInstructions to process");
+        info->return_value = 1;
         return 1;
       }
 
@@ -383,10 +389,12 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) co
     }
     break;
     case FixStateCollisionProfile::Settings::DISABLED:
+      info->return_value = 1;
       return 1;
   }
 
   CONSOLE_BRIDGE_logDebug("FixStateCollisionProcessGenerator succeeded");
+  info->return_value = 1;
   return 1;
 }
 

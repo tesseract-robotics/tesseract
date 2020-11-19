@@ -84,7 +84,7 @@ int DiscreteContactCheckProcessGenerator::conditionalProcess(ProcessInput input)
   Instruction* input_result = input.getResults();
   if (!isCompositeInstruction(*input_result))
   {
-    info->message = "Input seed to TrajOpt Planner must be a composite instruction";
+    info->message = "Input seed to DiscreteContactCheckProcessGenerator must be a composite instruction";
     CONSOLE_BRIDGE_logError("%s", info->message.c_str());
     return 0;
   }

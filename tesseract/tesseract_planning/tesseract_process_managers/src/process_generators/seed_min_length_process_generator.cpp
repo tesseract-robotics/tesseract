@@ -65,6 +65,10 @@ int SeedMinLengthProcessGenerator::conditionalProcess(ProcessInput input) const
   if (abort_)
     return 0;
 
+  auto info = std::make_shared<SeedMinLengthProcessInfo>(name_);
+  info->return_value = 0;
+  input.addProcessInfo(info);
+
   // Check that inputs are valid
   Instruction* input_results = input.getResults();
   if (!isCompositeInstruction(*input_results))
@@ -76,7 +80,10 @@ int SeedMinLengthProcessGenerator::conditionalProcess(ProcessInput input) const
   CompositeInstruction& results = *(input_results->cast<CompositeInstruction>());
   long cnt = getMoveInstructionCount(results);
   if (cnt >= min_length_)
+  {
+    info->return_value = 1;
     return 1;
+  }
 
   Instruction start_instruction = results.getStartInstruction();
   int subdivisions = static_cast<int>(std::ceil(static_cast<double>(min_length_) / static_cast<double>(cnt))) + 1;
@@ -89,6 +96,7 @@ int SeedMinLengthProcessGenerator::conditionalProcess(ProcessInput input) const
   results = new_results;
 
   CONSOLE_BRIDGE_logDebug("Seed Min Length Process Generator Succeeded!");
+  info->return_value = 1;
   return 1;
 }
 

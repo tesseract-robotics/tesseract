@@ -94,5 +94,13 @@ private:
 
   void process(ProcessInput input) const;
 };
+class IterativeSplineParameterizationProcessInfo : public ProcessInfo
+{
+public:
+  IterativeSplineParameterizationProcessInfo(std::string name = "Iterative Spline Parameterization")
+    : ProcessInfo(std::move(name))
+  {
+  }
+};
 }  // namespace tesseract_planning
 #endif  // TESSERACT_PROCESS_MANAGERS_ITERATIVE_SPLINE_PARAMETERIZATION_PROCESS_GENERATOR_H

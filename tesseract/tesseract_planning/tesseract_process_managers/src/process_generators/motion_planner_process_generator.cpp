@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file motion_planner_process_generator.cpp
  * @brief Perform motion planning
  *
@@ -57,20 +57,28 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input) const
 {
   if (abort_)
     return 0;
+
+  auto info = std::make_shared<MotionPlannerProcessInfo>(name_);
+  info->return_value = 0;
+  input.addProcessInfo(info);
+
   // --------------------
   // Check that inputs are valid
   // --------------------
   const Instruction* input_instruction = input.getInstruction();
   if (!isCompositeInstruction(*input_instruction))
   {
-    CONSOLE_BRIDGE_logError("Input instructions to TrajOpt Planner must be a composite instruction");
+    info->message =
+        "Input instructions to MotionPlannerProcessGenerator: " + name_ + " must be a composite instruction";
+    CONSOLE_BRIDGE_logError("%s", info->message.c_str());
     return 0;
   }
 
   Instruction* input_results = input.getResults();
   if (!isCompositeInstruction(*input_results))
   {
-    CONSOLE_BRIDGE_logError("Input seed to TrajOpt Planner must be a composite instruction");
+    info->message = "Input seed to MotionPlannerProcessGenerator: " + name_ + " must be a composite instruction";
+    CONSOLE_BRIDGE_logError("%s", info->message.c_str());
     return 0;
   }
 
@@ -171,6 +179,7 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input) const
   {
     *input_results = response.results;
     CONSOLE_BRIDGE_logDebug("Motion Planner process succeeded");
+    info->return_value = 1;
     return 1;
   }
 
@@ -178,6 +187,7 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input) const
                            planner_->getName().c_str(),
                            status.message().c_str(),
                            input_instruction->getDescription().c_str());
+  info->message = status.message();
   return 0;
 }
 

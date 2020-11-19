@@ -59,6 +59,10 @@ int ProfileSwitchProcessGenerator::conditionalProcess(ProcessInput input) const
   if (abort_)
     return 0;
 
+  auto info = std::make_shared<ProfileSwitchProcessInfo>(name_);
+  info->return_value = 0;
+  input.addProcessInfo(info);
+
   // --------------------
   // Check that inputs are valid
   // --------------------
@@ -78,6 +82,7 @@ int ProfileSwitchProcessGenerator::conditionalProcess(ProcessInput input) const
   if (!cur_composite_profile)
   {
     CONSOLE_BRIDGE_logWarn("ProfileSwitchProfile invalid. Returning 1");
+    info->return_value = 1;
     return 1;
   }
 

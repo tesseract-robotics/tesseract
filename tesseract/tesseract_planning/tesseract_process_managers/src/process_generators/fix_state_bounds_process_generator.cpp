@@ -57,13 +57,18 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
   if (abort_)
     return 0;
 
+  auto info = std::make_shared<FixStateBoundsProcessInfo>(name_);
+  info->return_value = 0;
+  input.addProcessInfo(info);
+
   // --------------------
   // Check that inputs are valid
   // --------------------
   const Instruction* input_instruction = input.getInstruction();
   if (!isCompositeInstruction(*input_instruction))
   {
-    CONSOLE_BRIDGE_logError("Input instruction to FixStateBounds must be a composite instruction");
+    info->message = "Input instruction to FixStateBounds must be a composite instruction";
+    CONSOLE_BRIDGE_logError("%s", info->message.c_str());
     return 0;
   }
 
@@ -97,7 +102,10 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
     cur_composite_profile = it->second;
 
   if (cur_composite_profile->mode == FixStateBoundsProfile::Settings::DISABLED)
+  {
+    info->return_value = 1;
     return 1;
+  }
 
   auto limits = fwd_kin->getLimits().joint_limits;
   switch (cur_composite_profile->mode)
@@ -140,6 +148,7 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
       if (flattened.empty())
       {
         CONSOLE_BRIDGE_logWarn("FixStateBoundsProcessGenerator found no PlanInstructions to process");
+        info->return_value = 1;
         return 1;
       }
 
@@ -163,10 +172,12 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
     }
     break;
     case FixStateBoundsProfile::Settings::DISABLED:
+      info->return_value = 1;
       return 1;
   }
 
   CONSOLE_BRIDGE_logDebug("FixStateBoundsProcessGenerator succeeded");
+  info->return_value = 1;
   return 1;
 }
 

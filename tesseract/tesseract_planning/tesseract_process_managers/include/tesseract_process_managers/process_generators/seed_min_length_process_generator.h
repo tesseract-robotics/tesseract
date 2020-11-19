@@ -79,6 +79,12 @@ private:
                  Instruction& start_instruction,
                  int subdivisions) const;
 };
+
+class SeedMinLengthProcessInfo : public ProcessInfo
+{
+public:
+  SeedMinLengthProcessInfo(std::string name = "Seed Min Length") : ProcessInfo(std::move(name)) {}
+};
 }  // namespace tesseract_planning
 
 #endif  // TESSERACT_PROCESS_MANAGERS_SEED_MIN_LENGTH_PROCESS_GENERATOR_H

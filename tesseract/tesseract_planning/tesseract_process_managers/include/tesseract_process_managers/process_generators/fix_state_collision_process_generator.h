@@ -87,7 +87,7 @@ class FixStateCollisionProcessGenerator : public ProcessGenerator
 public:
   using UPtr = std::unique_ptr<FixStateCollisionProcessGenerator>;
 
-  FixStateCollisionProcessGenerator(std::string name = "FixStateCollision");
+  FixStateCollisionProcessGenerator(std::string name = "Fix State Collision");
 
   ~FixStateCollisionProcessGenerator() override = default;
   FixStateCollisionProcessGenerator(const FixStateCollisionProcessGenerator&) = delete;
@@ -116,6 +116,14 @@ private:
   int conditionalProcess(ProcessInput input) const;
 
   void process(ProcessInput input) const;
+};
+
+class FixStateCollisionProcessInfo : public ProcessInfo
+{
+public:
+  FixStateCollisionProcessInfo(std::string name = "Fix State Collision") : ProcessInfo(std::move(name)) {}
+
+  std::vector<tesseract_collision::ContactResultMap> contact_results;
 };
 
 /**

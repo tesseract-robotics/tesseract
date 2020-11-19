@@ -71,6 +71,10 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
   if (abort_)
     return 0;
 
+  auto info = std::make_shared<IterativeSplineParameterizationProcessInfo>(name_);
+  info->return_value = 0;
+  input.addProcessInfo(info);
+
   // --------------------
   // Check that inputs are valid
   // --------------------
@@ -99,6 +103,7 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
   if (flattened.empty())
   {
     CONSOLE_BRIDGE_logWarn("Iterative spline time parameterization found no MoveInstructions to process");
+    info->return_value = 1;
     return 1;
   }
 
@@ -139,6 +144,7 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
   }
 
   CONSOLE_BRIDGE_logDebug("Iterative spline time parameterization succeeded");
+  return_value = 1;
   return 1;
 }
 

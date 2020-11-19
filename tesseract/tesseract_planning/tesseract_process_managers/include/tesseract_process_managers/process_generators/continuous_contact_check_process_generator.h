@@ -74,5 +74,16 @@ private:
 
   void process(ProcessInput input) const;
 };
+
+class ContinuousContactCheckProcessInfo : public ProcessInfo
+{
+public:
+  ContinuousContactCheckProcessInfo(std::string name = "Continuous Contact Check Trajectory")
+    : ProcessInfo(std::move(name))
+  {
+  }
+
+  std::vector<tesseract_collision::ContactResultMap> contact_results;
+};
 }  // namespace tesseract_planning
 #endif  // TESSERACT_PROCESS_MANAGERS_CONTINUOUS_CONTACT_CHECK_PROCESS_GENERATOR_H

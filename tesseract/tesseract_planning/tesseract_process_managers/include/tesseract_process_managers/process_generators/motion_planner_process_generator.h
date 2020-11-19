@@ -73,6 +73,12 @@ private:
   void process(ProcessInput input) const;
 };
 
+class MotionPlannerProcessInfo : public ProcessInfo
+{
+public:
+  MotionPlannerProcessInfo(std::string name = "Motion Planner Process Generator") : ProcessInfo(std::move(name)) {}
+};
+
 }  // namespace tesseract_planning
 
 #endif

@@ -75,13 +75,18 @@ int ContinuousContactCheckProcessGenerator::conditionalProcess(ProcessInput inpu
   if (abort_)
     return 0;
 
+  auto info = std::make_shared<ContinuousContactCheckProcessInfo>(name_);
+  info->return_value = 0;
+  input.addProcessInfo(info);
+
   // --------------------
   // Check that inputs are valid
   // --------------------
   Instruction* input_results = input.getResults();
   if (!isCompositeInstruction(*input_results))
   {
-    CONSOLE_BRIDGE_logError("Input seed to TrajOpt Planner must be a composite instruction");
+    info->message = "Input seed to ContinuousContactCheckProcessGenerator must be a composite instruction";
+    CONSOLE_BRIDGE_logError("%s", info->message.c_str());
     return 0;
   }
 
@@ -118,10 +123,12 @@ int ContinuousContactCheckProcessGenerator::conditionalProcess(ProcessInput inpu
           CONSOLE_BRIDGE_logDebug(("timestep: " + std::to_string(i) + " Links: " + contact.link_names[0] + ", " +
                                    contact.link_names[1] + " Dist: " + std::to_string(contact.distance))
                                       .c_str());
+    info->contact_results = contacts;
     return 0;
   }
 
   CONSOLE_BRIDGE_logDebug("Continuous contact check succeeded");
+  info->return_value = 1;
   return 1;
 }
 
