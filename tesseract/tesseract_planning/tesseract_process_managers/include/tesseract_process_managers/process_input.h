@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
+#include <map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/core/instruction.h>
@@ -38,6 +39,21 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
+class ProcessInfo
+{
+public:
+  using Ptr = std::shared_ptr<ProcessInfo>;
+  using ConstPtr = std::shared_ptr<const ProcessInfo>;
+
+  ProcessInfo(std::string name = "") : message(std::move(name)) {}
+
+  int return_value;
+
+  std::string name;
+
+  std::string message;
+};
+
 /**
  * @brief This struct is passed as an input to each process in the decision tree
  *
@@ -130,6 +146,10 @@ struct ProcessInput
   void setEndInstruction(std::vector<std::size_t> end);
   Instruction getEndInstruction() const;
 
+  void addProcessInfo(const ProcessInfo::ConstPtr& process_info);
+  const ProcessInfo::ConstPtr& getProcessInfo(const std::string& process_id);
+  const std::map<std::string, ProcessInfo::ConstPtr>& getProcessInfoMap();
+
 protected:
   /** @brief Instructions to be carried out by process */
   const Instruction* instruction_;
@@ -151,6 +171,8 @@ protected:
 
   /** @brief Indices to the end instruction in the results data struction */
   std::vector<std::size_t> end_instruction_indice_;
+
+  std::map<std::string, ProcessInfo::ConstPtr> process_info_map_;
 };
 
 }  // namespace tesseract_planning
