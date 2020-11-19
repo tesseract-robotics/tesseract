@@ -53,6 +53,7 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
   , instruction_(instruction)
   , results_(seed)
 {
+  process_info_map_ = std::make_shared<ProcessInfoMap>();
 }
 
 ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
@@ -70,6 +71,7 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
   , instruction_(instruction)
   , results_(seed)
 {
+  process_info_map_ = std::make_shared<ProcessInfoMap>();
 }
 
 ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
@@ -86,6 +88,7 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
   , instruction_(instruction)
   , results_(seed)
 {
+  process_info_map_ = std::make_shared<ProcessInfoMap>();
 }
 
 ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
@@ -100,11 +103,13 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
   , instruction_(instruction)
   , results_(seed)
 {
+  process_info_map_ = std::make_shared<ProcessInfoMap>();
 }
 
 ProcessInput ProcessInput::operator[](std::size_t index)
 {
   ProcessInput pi(*this);
+  pi.process_info_map_ = process_info_map_;
   pi.instruction_indice_.push_back(index);
 
   return pi;
@@ -257,8 +262,8 @@ Instruction ProcessInput::getEndInstruction() const
 void ProcessInput::addProcessInfo(const ProcessInfo::ConstPtr& process_info)
 {
   // todo Mutex lock
-  process_info_map_[process_info->name] = process_info;
+  (*process_info_map_)[process_info->name] = process_info;
 }
-const ProcessInfo::ConstPtr& ProcessInput::getProcessInfo(const std::string& name) { return process_info_map_[name]; }
-const std::map<std::string, ProcessInfo::ConstPtr>& ProcessInput::getProcessInfoMap() { return process_info_map_; }
+const ProcessInfo::ConstPtr& ProcessInput::getProcessInfo(const std::string& name) { return (*process_info_map_)[name]; }
+const std::map<std::string, ProcessInfo::ConstPtr>& ProcessInput::getProcessInfoMap() { return (*process_info_map_); }
 }  // namespace tesseract_planning

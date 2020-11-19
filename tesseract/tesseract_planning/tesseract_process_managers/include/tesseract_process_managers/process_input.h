@@ -54,6 +54,8 @@ public:
   std::string message;
 };
 
+using ProcessInfoMap = std::map<std::string, ProcessInfo::ConstPtr>;
+
 /**
  * @brief This struct is passed as an input to each process in the decision tree
  *
@@ -148,7 +150,7 @@ struct ProcessInput
 
   void addProcessInfo(const ProcessInfo::ConstPtr& process_info);
   const ProcessInfo::ConstPtr& getProcessInfo(const std::string& process_id);
-  const std::map<std::string, ProcessInfo::ConstPtr>& getProcessInfoMap();
+  const ProcessInfoMap& getProcessInfoMap();
 
 protected:
   /** @brief Instructions to be carried out by process */
@@ -172,7 +174,7 @@ protected:
   /** @brief Indices to the end instruction in the results data struction */
   std::vector<std::size_t> end_instruction_indice_;
 
-  std::map<std::string, ProcessInfo::ConstPtr> process_info_map_;
+  std::shared_ptr<ProcessInfoMap> process_info_map_;
 };
 
 }  // namespace tesseract_planning
