@@ -54,7 +54,20 @@ public:
   std::string message;
 };
 
-using ProcessInfoMap = std::map<std::string, ProcessInfo::ConstPtr>;
+/** @brief A threadsafe container for ProcessInfos */
+struct ProcessInfoContainer
+{
+  void addProcessInfo(ProcessInfo::ConstPtr process_info);
+
+  ProcessInfo::ConstPtr operator[](std::size_t index);
+
+  /** @brief Get a copy of the process_info_vec in case it gets resized*/
+  std::vector<ProcessInfo::ConstPtr> getProcessInfoVec();
+
+private:
+  std::mutex mutex;
+  std::vector<ProcessInfo::ConstPtr> process_info_vec;
+};
 
 /**
  * @brief This struct is passed as an input to each process in the decision tree
@@ -149,8 +162,8 @@ struct ProcessInput
   Instruction getEndInstruction() const;
 
   void addProcessInfo(const ProcessInfo::ConstPtr& process_info);
-  const ProcessInfo::ConstPtr& getProcessInfo(const std::string& process_id);
-  const ProcessInfoMap& getProcessInfoMap();
+  ProcessInfo::ConstPtr getProcessInfo(const std::size_t& index);
+  std::vector<ProcessInfo::ConstPtr> getProcessInfoVec();
 
 protected:
   /** @brief Instructions to be carried out by process */
@@ -174,7 +187,7 @@ protected:
   /** @brief Indices to the end instruction in the results data struction */
   std::vector<std::size_t> end_instruction_indice_;
 
-  std::shared_ptr<ProcessInfoMap> process_info_map_;
+  std::shared_ptr<ProcessInfoContainer> process_infos;
 };
 
 }  // namespace tesseract_planning
