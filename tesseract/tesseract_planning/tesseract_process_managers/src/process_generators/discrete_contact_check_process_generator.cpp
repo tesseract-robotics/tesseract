@@ -35,19 +35,25 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-DiscreteContactCheckProcessGenerator::DiscreteContactCheckProcessGenerator(std::string name) : name_(std::move(name)) {}
+DiscreteContactCheckProcessGenerator::DiscreteContactCheckProcessGenerator(std::string name) : name_(std::move(name))
+{
+  config.type = tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE;
+  config.longest_valid_segment_length = 0.05;
+  config.collision_margin_data = tesseract_collision::CollisionMarginData(0);
+}
 
 DiscreteContactCheckProcessGenerator::DiscreteContactCheckProcessGenerator(double longest_valid_segment_length,
                                                                            double contact_distance,
                                                                            std::string name)
   : name_(std::move(name))
-  , longest_valid_segment_length_(longest_valid_segment_length)
-  , contact_distance_(contact_distance)
 {
-  if (longest_valid_segment_length_ <= 0)
+  config.longest_valid_segment_length = longest_valid_segment_length;
+  config.type = tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE;
+  config.collision_margin_data = tesseract_collision::CollisionMarginData(contact_distance);
+  if (config.longest_valid_segment_length <= 0)
   {
     CONSOLE_BRIDGE_logWarn("DiscreteContactCheckProcessGenerator: Invalid longest valid segment. Defaulting to 0.05");
-    longest_valid_segment_length_ = 0.05;
+    config.longest_valid_segment_length = 0.05;
   }
 }
 
@@ -82,7 +88,7 @@ int DiscreteContactCheckProcessGenerator::conditionalProcess(ProcessInput input)
   tesseract_environment::StateSolver::Ptr state_solver = input.tesseract->getEnvironment()->getStateSolver();
   tesseract_collision::DiscreteContactManager::Ptr manager =
       input.tesseract->getEnvironment()->getDiscreteContactManager();
-  manager->setContactDistanceThreshold(contact_distance_);
+  manager->setCollisionMarginData(config.collision_margin_data);
 
   // Set the active links based on the manipulator
   std::vector<std::string> active_links_manip;
@@ -101,7 +107,7 @@ int DiscreteContactCheckProcessGenerator::conditionalProcess(ProcessInput input)
 
   const auto* ci = input_result->cast_const<CompositeInstruction>();
   std::vector<tesseract_collision::ContactResultMap> contacts;
-  if (contactCheckProgram(contacts, *manager, *state_solver, *ci, longest_valid_segment_length_))
+  if (contactCheckProgram(contacts, *manager, *state_solver, *ci, config))
   {
     CONSOLE_BRIDGE_logInform("Results are not contact free for process intput: %s !",
                              input_result->getDescription().c_str());

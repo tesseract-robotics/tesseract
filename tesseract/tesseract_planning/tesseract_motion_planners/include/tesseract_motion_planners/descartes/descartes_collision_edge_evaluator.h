@@ -34,6 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
+#include <tesseract_collision/core/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
@@ -45,8 +46,7 @@ public:
   DescartesCollisionEdgeEvaluator(const tesseract_environment::Environment::ConstPtr& collision_env,
                                   std::vector<std::string> active_links,
                                   std::vector<std::string> joint_names,
-                                  double collision_safety_margin = 0.025,
-                                  double longest_valid_segment_length = 0.5,
+                                  tesseract_collision::CollisionCheckConfig config,
                                   bool allow_collision = false,
                                   bool debug = false);
 
@@ -66,9 +66,7 @@ protected:
   /** @brief The discrete contact manager */
   tesseract_collision::ContinuousContactManager::Ptr continuous_contact_manager_;
   /** @brief The minimum allowed collision distance */
-  double collision_safety_margin_;
-  /** @brief Used to check collisions between two state if norm(state0-state1) > longest_valid_segment_length. */
-  double longest_valid_segment_length_;
+  tesseract_collision::CollisionCheckConfig collision_check_config_;
   /** @brief If true and no valid edges are found it will return the one with the lowest cost */
   bool allow_collision_;
   /** @brief Enable debug information to be printed to the terminal */

@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <Eigen/Geometry>
+#include <tesseract_collision/core/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
@@ -67,8 +68,7 @@ public:
 
   // Applied during edge evaluation
   bool enable_edge_collision{ false };
-  double edge_collision_saftey_margin{ 0 };
-  double edge_longest_valid_segment_length = 0.1;
+  tesseract_collision::CollisionCheckConfig edge_collision_check_config;
   int num_threads{ 1 };
   bool allow_collision{ false };
   bool debug{ false };

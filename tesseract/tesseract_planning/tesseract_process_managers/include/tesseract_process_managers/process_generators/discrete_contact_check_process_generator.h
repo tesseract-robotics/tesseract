@@ -62,15 +62,13 @@ public:
 
   void setAbort(bool abort) override;
 
+  tesseract_collision::CollisionCheckConfig config;
+
 private:
   /** @brief If true, all tasks return immediately. Workaround for https://github.com/taskflow/taskflow/issues/201 */
   std::atomic<bool> abort_{ false };
 
   std::string name_;
-
-  double longest_valid_segment_length_{ 0.005 };
-
-  double contact_distance_{ 0 };
 
   int conditionalProcess(ProcessInput input) const;
 

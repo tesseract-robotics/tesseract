@@ -42,8 +42,7 @@ DescartesCollisionEdgeEvaluator<FloatType>::DescartesCollisionEdgeEvaluator(
     const tesseract_environment::Environment::ConstPtr& collision_env,
     std::vector<std::string> active_links,
     std::vector<std::string> joint_names,
-    double collision_safety_margin,
-    double longest_valid_segment_length,
+    tesseract_collision::CollisionCheckConfig config,
     bool allow_collision,
     bool debug)
   : descartes_light::EdgeEvaluator<FloatType>(joint_names.size())
@@ -53,13 +52,12 @@ DescartesCollisionEdgeEvaluator<FloatType>::DescartesCollisionEdgeEvaluator(
   , joint_names_(std::move(joint_names))
   , discrete_contact_manager_(collision_env->getDiscreteContactManager())
   , continuous_contact_manager_(collision_env->getContinuousContactManager())
-  , collision_safety_margin_(collision_safety_margin)
-  , longest_valid_segment_length_(longest_valid_segment_length)
+  , collision_check_config_(std::move(config))
   , allow_collision_(allow_collision)
   , debug_(debug)
 {
   discrete_contact_manager_->setActiveCollisionObjects(active_link_names_);
-  discrete_contact_manager_->setContactDistanceThreshold(collision_safety_margin_);
+  discrete_contact_manager_->setCollisionMarginData(collision_check_config_.collision_margin_data);
   discrete_contact_manager_->setIsContactAllowedFn(
       std::bind(&tesseract_planning::DescartesCollisionEdgeEvaluator<FloatType>::isContactAllowed,
                 this,
@@ -67,7 +65,7 @@ DescartesCollisionEdgeEvaluator<FloatType>::DescartesCollisionEdgeEvaluator(
                 std::placeholders::_2));
 
   continuous_contact_manager_->setActiveCollisionObjects(active_link_names_);
-  continuous_contact_manager_->setContactDistanceThreshold(collision_safety_margin_);
+  continuous_contact_manager_->setCollisionMarginData(collision_check_config_.collision_margin_data);
   continuous_contact_manager_->setIsContactAllowedFn(
       std::bind(&tesseract_planning::DescartesCollisionEdgeEvaluator<FloatType>::isContactAllowed,
                 this,
@@ -95,6 +93,10 @@ std::pair<bool, FloatType> DescartesCollisionEdgeEvaluator<FloatType>::considerE
 
   if (!discrete_in_contact && !continuous_in_contact)
     return std::make_pair(true, 0);
+
+  // TODO: Update this to consider link pairs
+  auto collision_safety_margin_ =
+      static_cast<FloatType>(collision_check_config_.collision_margin_data.getMaxCollisionMargin());
 
   if (!discrete_in_contact && continuous_in_contact && allow_collision_)
     return std::make_pair(true, collision_safety_margin_ - continuous_results.begin()->begin()->second[0].distance);
@@ -144,16 +146,16 @@ bool DescartesCollisionEdgeEvaluator<FloatType>::continuousCollisionCheck(
     ss = state_solver_managers_[hash];
   }
   mutex_.unlock();
+  tesseract_collision::CollisionCheckConfig config = collision_check_config_;
+  if (config.type == tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE ||
+      config.type == tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS)
+    config.type = tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS;
+  else
+    config.type = tesseract_collision::CollisionEvaluatorType::CONTINUOUS;
+  config.contact_request.type =
+      (find_best) ? tesseract_collision::ContactTestType::CLOSEST : tesseract_collision::ContactTestType::FIRST;
 
-  return tesseract_environment::checkTrajectory(results,
-                                                *cm,
-                                                *ss,
-                                                joint_names_,
-                                                segment,
-                                                longest_valid_segment_length_,
-                                                (find_best) ? tesseract_collision::ContactTestType::CLOSEST :
-                                                              tesseract_collision::ContactTestType::FIRST,
-                                                debug_);
+  return tesseract_environment::checkTrajectory(results, *cm, *ss, joint_names_, segment, config);
 }
 
 template <typename FloatType>
@@ -183,15 +185,16 @@ bool DescartesCollisionEdgeEvaluator<FloatType>::discreteCollisionCheck(
   }
   mutex_.unlock();
 
-  return tesseract_environment::checkTrajectory(results,
-                                                *cm,
-                                                *ss,
-                                                joint_names_,
-                                                segment,
-                                                longest_valid_segment_length_,
-                                                (find_best) ? tesseract_collision::ContactTestType::CLOSEST :
-                                                              tesseract_collision::ContactTestType::FIRST,
-                                                debug_);
+  tesseract_collision::CollisionCheckConfig config = collision_check_config_;
+  if (config.type == tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE ||
+      config.type == tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS)
+    config.type = tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE;
+  else
+    config.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
+  config.contact_request.type =
+      (find_best) ? tesseract_collision::ContactTestType::CLOSEST : tesseract_collision::ContactTestType::FIRST;
+
+  return tesseract_environment::checkTrajectory(results, *cm, *ss, joint_names_, segment, config);
 }
 
 }  // namespace tesseract_planning
