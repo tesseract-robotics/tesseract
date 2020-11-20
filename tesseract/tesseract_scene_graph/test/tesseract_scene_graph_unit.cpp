@@ -13,6 +13,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_scene_graph/srdf_model.h>
 #include <tesseract_scene_graph/parser/kdl_parser.h>
+#include <tesseract_scene_graph/srdf/group_opw_kinematics.h>
 
 // getLinks and getJoint use an internal map so need to check against graph
 void checkSceneGraph(tesseract_scene_graph::SceneGraph& scene_graph)
@@ -345,6 +346,44 @@ TEST(TesseractSceneGraphUnit, LoadSRDFUnit)  // NOLINT
 
   g.clearAllowedCollisions();
   EXPECT_EQ(acm->getAllAllowedCollisions().size(), 0);
+}
+
+TEST(TesseractSceneGraphUnit, LoadSRDFOPWKinematicsUnit)  // NOLINT
+{
+  using namespace tesseract_scene_graph;
+  SceneGraph g;
+
+  std::string xml_string =
+      R"(<robot name="abb_irb2400">
+           <group_opw group="manipulator" a1="0.1" a2="-0.135" b="0" c1="0.615" c2="0.705" c3="0.755" c4="0.085" offsets="0.0 0.0 -1.570796 0.0 0.0 0.0" sign_corrections="1 1 1 -1 1 1"/>
+         </robot>)";
+  tinyxml2::XMLDocument xml_doc;
+  EXPECT_TRUE(xml_doc.Parse(xml_string.c_str()) == tinyxml2::XML_SUCCESS);
+
+  tinyxml2::XMLElement* element = xml_doc.FirstChildElement("robot");
+  EXPECT_TRUE(element != nullptr);
+
+  GroupOPWKinematics opw_groups = parseGroupOPWKinematics(g, element, std::array<int, 3>({ 1, 0, 0 }));
+  OPWKinematicParameters opw = opw_groups["manipulator"];
+  EXPECT_NEAR(opw.a1, 0.1, 1e-8);
+  EXPECT_NEAR(opw.a2, -0.135, 1e-8);
+  EXPECT_NEAR(opw.b, 0.0, 1e-8);
+  EXPECT_NEAR(opw.c1, 0.615, 1e-8);
+  EXPECT_NEAR(opw.c2, 0.705, 1e-8);
+  EXPECT_NEAR(opw.c3, 0.755, 1e-8);
+  EXPECT_NEAR(opw.c4, 0.085, 1e-8);
+  EXPECT_NEAR(opw.offsets[0], 0.0, 1e-8);
+  EXPECT_NEAR(opw.offsets[1], 0.0, 1e-8);
+  EXPECT_NEAR(opw.offsets[2], -1.570796, 1e-8);
+  EXPECT_NEAR(opw.offsets[3], 0.0, 1e-8);
+  EXPECT_NEAR(opw.offsets[4], 0.0, 1e-8);
+  EXPECT_NEAR(opw.offsets[5], 0.0, 1e-8);
+  EXPECT_EQ(opw.sign_corrections[0], 1);
+  EXPECT_EQ(opw.sign_corrections[1], 1);
+  EXPECT_EQ(opw.sign_corrections[2], 1);
+  EXPECT_EQ(opw.sign_corrections[3], -1);
+  EXPECT_EQ(opw.sign_corrections[4], 1);
+  EXPECT_EQ(opw.sign_corrections[5], 1);
 }
 
 void printKDLTree(const KDL::SegmentMap::const_iterator& link, const std::string& prefix)
