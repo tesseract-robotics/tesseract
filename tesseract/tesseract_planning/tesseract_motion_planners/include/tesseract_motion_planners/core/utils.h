@@ -246,148 +246,164 @@ flattenProgramToPattern(const CompositeInstruction& composite_instruction, const
 
 /**
  * @brief Should perform a continuous collision check over the trajectory.
- * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
- * @param manager A continuous contact manager
- * @param state_solver The environment state solver
- * @param program The program to check for collisions
- * @param request Contact request data
- * @param verbose Print out found collisions
- * @return True if collision was found, otherwise false.
- */
-inline bool contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& contacts,
-                                tesseract_collision::ContinuousContactManager& manager,
-                                const tesseract_environment::StateSolver& state_solver,
-                                const CompositeInstruction& program,
-                                const tesseract_collision::ContactRequest& request =
-                                    tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST),
-                                bool verbose = false)
-{
-  bool found = false;
-
-  // Flatten results
-  std::vector<std::reference_wrapper<const Instruction>> mi = flatten(program, moveFilter);
-
-  contacts.reserve(mi.size());
-  for (std::size_t iStep = 0; iStep < mi.size() - 1; ++iStep)
-  {
-    const auto* swp0 = mi.at(iStep).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
-    const auto* swp1 = mi.at(iStep + 1).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
-    tesseract_environment::EnvState::Ptr state0 = state_solver.getState(swp0->joint_names, swp0->position);
-    tesseract_environment::EnvState::Ptr state1 = state_solver.getState(swp1->joint_names, swp1->position);
-
-    if (checkTrajectorySegment(contacts, manager, state0, state1, request, verbose))
-    {
-      found = true;
-      if (verbose)
-      {
-        std::stringstream ss;
-        ss << "Discrete collision detected at step: " << iStep << " of " << (mi.size() - 1) << std::endl;
-
-        ss << "     Names:";
-        for (const auto& name : swp0->joint_names)
-          ss << " " << name;
-
-        ss << std::endl
-           << "    State0: " << swp0->position << std::endl
-           << "    State1: " << swp1->position << std::endl;
-
-        CONSOLE_BRIDGE_logError(ss.str().c_str());
-      }
-    }
-
-    if (found && (request.type == tesseract_collision::ContactTestType::FIRST))
-      break;
-  }
-
-  return found;
-}
-
-/**
- * @brief Should perform a continuous collision check over the trajectory.
- * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
+ * @param contacts A vector of vector of ContactMap where each index corresponds to a timestep
  * @param manager A continuous contact manager
  * @param state_solver The environment state solver
  * @param program The program to check for contacts
- * @param longest_valid_segment_length Used to check collisions between two state if norm(state0-state1) >
- * longest_valid_segment_length.
- * @param request Contact request data
- * @param verbose Print out found collisions
+ * @param config CollisionCheckConfig used to specify collision check settings
  * @return True if collision was found, otherwise false.
  */
 inline bool contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& contacts,
                                 tesseract_collision::ContinuousContactManager& manager,
                                 const tesseract_environment::StateSolver& state_solver,
                                 const CompositeInstruction& program,
-                                double longest_valid_segment_length,
-                                const tesseract_collision::ContactRequest& request =
-                                    tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST),
-                                bool verbose = false)
+                                const tesseract_collision::CollisionCheckConfig& config)
 {
-  assert(longest_valid_segment_length > 0);
+  if (config.type != tesseract_collision::CollisionEvaluatorType::CONTINUOUS &&
+      config.type != tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS)
+    throw std::runtime_error("contactCheckProgram was given an CollisionEvaluatorType that is inconsistent with the "
+                             "ContactManager type (Continuous)");
   bool found = false;
 
-  // Flatten results
-  std::vector<std::reference_wrapper<const Instruction>> mi = flatten(program, moveFilter);
-
-  contacts.reserve(mi.size() - 1);
-  for (std::size_t iStep = 0; iStep < mi.size() - 1; ++iStep)
+  if (config.type == tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS)
   {
-    const auto* swp0 = mi.at(iStep).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
-    const auto* swp1 = mi.at(iStep + 1).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
+    assert(config.longest_valid_segment_length > 0);
 
-    // TODO: Should check joint names and make sure they are in the same order
-    double dist = (swp1->position - swp0->position).norm();
-    if (dist > longest_valid_segment_length)
+    // Flatten results
+    std::vector<std::reference_wrapper<const Instruction>> mi = flatten(program, moveFilter);
+
+    contacts.reserve(mi.size() - 1);
+    for (std::size_t iStep = 0; iStep < mi.size() - 1; ++iStep)
     {
-      long cnt = static_cast<long>(std::ceil(dist / longest_valid_segment_length)) + 1;
-      tesseract_common::TrajArray subtraj(cnt, swp0->position.size());
-      for (long iVar = 0; iVar < swp0->position.size(); ++iVar)
-        subtraj.col(iVar) = Eigen::VectorXd::LinSpaced(cnt, swp0->position(iVar), swp1->position(iVar));
+      const auto* swp0 = mi.at(iStep).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
+      const auto* swp1 =
+          mi.at(iStep + 1).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
 
-      for (int iSubStep = 0; iSubStep < subtraj.rows() - 1; ++iSubStep)
+      // TODO: Should check joint names and make sure they are in the same order
+      double dist = (swp1->position - swp0->position).norm();
+      if (dist > config.longest_valid_segment_length)
       {
-        tesseract_environment::EnvState::Ptr state0 = state_solver.getState(swp0->joint_names, subtraj.row(iSubStep));
-        tesseract_environment::EnvState::Ptr state1 =
-            state_solver.getState(swp0->joint_names, subtraj.row(iSubStep + 1));
-        if (checkTrajectorySegment(contacts, manager, state0, state1, request, verbose))
+        long cnt = static_cast<long>(std::ceil(dist / config.longest_valid_segment_length)) + 1;
+        tesseract_common::TrajArray subtraj(cnt, swp0->position.size());
+        for (long iVar = 0; iVar < swp0->position.size(); ++iVar)
+          subtraj.col(iVar) = Eigen::VectorXd::LinSpaced(cnt, swp0->position(iVar), swp1->position(iVar));
+
+        for (int iSubStep = 0; iSubStep < subtraj.rows() - 1; ++iSubStep)
         {
-          found = true;
-          if (verbose)
+          tesseract_environment::EnvState::Ptr state0 = state_solver.getState(swp0->joint_names, subtraj.row(iSubStep));
+          tesseract_environment::EnvState::Ptr state1 =
+              state_solver.getState(swp0->joint_names, subtraj.row(iSubStep + 1));
+          if (checkTrajectorySegment(contacts, manager, state0, state1, config))
           {
-            std::stringstream ss;
-            ss << "Continuous collision detected at step: " << iStep << " of " << (mi.size() - 1)
-               << " substep: " << iSubStep << std::endl;
+            found = true;
+            if (console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)
+            {
+              std::stringstream ss;
+              ss << "Continuous collision detected at step: " << iStep << " of " << (mi.size() - 1)
+                 << " substep: " << iSubStep << std::endl;
 
-            ss << "     Names:";
-            for (const auto& name : swp0->joint_names)
-              ss << " " << name;
+              ss << "     Names:";
+              for (const auto& name : swp0->joint_names)
+                ss << " " << name;
 
-            ss << std::endl
-               << "    State0: " << subtraj.row(iSubStep) << std::endl
-               << "    State1: " << subtraj.row(iSubStep + 1) << std::endl;
+              ss << std::endl
+                 << "    State0: " << subtraj.row(iSubStep) << std::endl
+                 << "    State1: " << subtraj.row(iSubStep + 1) << std::endl;
 
-            CONSOLE_BRIDGE_logError(ss.str().c_str());
+              CONSOLE_BRIDGE_logError(ss.str().c_str());
+            }
           }
+
+          if (found && (config.contact_request.type == tesseract_collision::ContactTestType::FIRST))
+            break;
         }
 
-        if (found && (request.type == tesseract_collision::ContactTestType::FIRST))
+        if (found && (config.contact_request.type == tesseract_collision::ContactTestType::FIRST))
           break;
       }
+      else
+      {
+        // Flatten results
+        std::vector<std::reference_wrapper<const Instruction>> mi = flatten(program, moveFilter);
 
-      if (found && (request.type == tesseract_collision::ContactTestType::FIRST))
-        break;
+        contacts.reserve(mi.size() - 1);
+        for (std::size_t iStep = 0; iStep < mi.size() - 1; ++iStep)
+        {
+          const auto* swp0 =
+              mi.at(iStep).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
+          const auto* swp1 =
+              mi.at(iStep + 1).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
+
+          // TODO: Should check joint names and make sure they are in the same order
+          double dist = (swp1->position - swp0->position).norm();
+          if (dist > config.longest_valid_segment_length)
+          {
+            long cnt = static_cast<long>(std::ceil(dist / config.longest_valid_segment_length)) + 1;
+            tesseract_common::TrajArray subtraj(cnt, swp0->position.size());
+            for (long iVar = 0; iVar < swp0->position.size(); ++iVar)
+              subtraj.col(iVar) = Eigen::VectorXd::LinSpaced(cnt, swp0->position(iVar), swp1->position(iVar));
+
+            for (int iSubStep = 0; iSubStep < subtraj.rows() - 1; ++iSubStep)
+            {
+              tesseract_environment::EnvState::Ptr state0 =
+                  state_solver.getState(swp0->joint_names, subtraj.row(iSubStep));
+              tesseract_environment::EnvState::Ptr state1 =
+                  state_solver.getState(swp0->joint_names, subtraj.row(iSubStep + 1));
+              if (checkTrajectorySegment(contacts, manager, state0, state1, config))
+              {
+                found = true;
+                if (console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)
+                {
+                  std::stringstream ss;
+                  ss << "Continuous collision detected at step: " << iStep << " of " << (mi.size() - 1)
+                     << " substep: " << iSubStep << std::endl;
+
+                  ss << "     Names:";
+                  for (const auto& name : swp0->joint_names)
+                    ss << " " << name;
+
+                  ss << std::endl
+                     << "    State0: " << subtraj.row(iSubStep) << std::endl
+                     << "    State1: " << subtraj.row(iSubStep + 1) << std::endl;
+
+                  CONSOLE_BRIDGE_logError(ss.str().c_str());
+                }
+              }
+
+              if (found && (config.contact_request.type == tesseract_collision::ContactTestType::FIRST))
+                break;
+            }
+
+            if (found && (config.contact_request.type == tesseract_collision::ContactTestType::FIRST))
+              break;
+          }
+        }
+      }
     }
-    else
+  }
+  else
+  {
+    bool found = false;
+
+    // Flatten results
+    std::vector<std::reference_wrapper<const Instruction>> mi = flatten(program, moveFilter);
+
+    contacts.reserve(mi.size());
+    for (std::size_t iStep = 0; iStep < mi.size() - 1; ++iStep)
     {
+      const auto* swp0 = mi.at(iStep).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
+      const auto* swp1 =
+          mi.at(iStep + 1).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
       tesseract_environment::EnvState::Ptr state0 = state_solver.getState(swp0->joint_names, swp0->position);
       tesseract_environment::EnvState::Ptr state1 = state_solver.getState(swp1->joint_names, swp1->position);
-      if (checkTrajectorySegment(contacts, manager, state0, state1, request, verbose))
+
+      if (checkTrajectorySegment(contacts, manager, state0, state1, config))
       {
         found = true;
-        if (verbose)
+        if (console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)
         {
           std::stringstream ss;
-          ss << "Continuous collision detected at step: " << iStep << " of " << (mi.size() - 1) << std::endl;
+          ss << "Discrete collision detected at step: " << iStep << " of " << (mi.size() - 1) << std::endl;
 
           ss << "     Names:";
           for (const auto& name : swp0->joint_names)
@@ -401,151 +417,131 @@ inline bool contactCheckProgram(std::vector<tesseract_collision::ContactResultMa
         }
       }
 
-      if (found && (request.type == tesseract_collision::ContactTestType::FIRST))
+      if (found && (config.contact_request.type == tesseract_collision::ContactTestType::FIRST))
         break;
     }
   }
-
   return found;
 }
 
 /**
  * @brief Should perform a discrete collision check over the trajectory
- * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
+ * @param contacts A vector of vector of ContactMap where each index corresponds to a timestep
  * @param manager A continuous contact manager
  * @param state_solver The environment state solver
  * @param program The program to check for contacts
- * @param request Contact request data
- * @param verbose Print out found collisions
+ * @param config CollisionCheckConfig used to specify collision check settings
  * @return True if collision was found, otherwise false.
  */
 inline bool contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& contacts,
                                 tesseract_collision::DiscreteContactManager& manager,
                                 const tesseract_environment::StateSolver& state_solver,
                                 const CompositeInstruction& program,
-                                const tesseract_collision::ContactRequest& request =
-                                    tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST),
-                                bool verbose = false)
+                                const tesseract_collision::CollisionCheckConfig& config)
 {
+  if (config.type != tesseract_collision::CollisionEvaluatorType::DISCRETE &&
+      config.type != tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE)
+    throw std::runtime_error("contactCheckProgram was given an CollisionEvaluatorType that is inconsistent with the "
+                             "ContactManager type (Discrete)");
   bool found = false;
 
-  // Flatten results
-  std::vector<std::reference_wrapper<const Instruction>> mi = flatten(program, moveFilter);
-
-  contacts.reserve(mi.size());
-  for (std::size_t iStep = 0; iStep < mi.size() - 1; ++iStep)
+  if (config.type == tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE)
   {
-    const auto* swp0 = mi.at(iStep).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
+    assert(config.longest_valid_segment_length > 0);
 
-    tesseract_environment::EnvState::Ptr state = state_solver.getState(swp0->joint_names, swp0->position);
-    if (checkTrajectoryState(contacts, manager, state, request, verbose))
+    // Flatten results
+    std::vector<std::reference_wrapper<const Instruction>> mi = flatten(program, moveFilter);
+
+    contacts.reserve(mi.size());
+    for (std::size_t iStep = 0; iStep < mi.size(); ++iStep)
     {
-      found = true;
-      if (verbose)
+      const auto* swp0 = mi.at(iStep).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
+      const StateWaypoint* swp1 = nullptr;
+
+      double dist = -1;
+      if (iStep < mi.size() - 1)
       {
-        std::stringstream ss;
-        ss << "Discrete collision detected at step: " << iStep << " of " << (mi.size() - 1) << std::endl;
-
-        ss << "     Names:";
-        for (const auto& name : swp0->joint_names)
-          ss << " " << name;
-
-        ss << std::endl << "    State0: " << swp0->position << std::endl;
-
-        CONSOLE_BRIDGE_logError(ss.str().c_str());
+        swp1 = mi.at(iStep + 1).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
+        dist = (swp1->position - swp0->position).norm();
       }
-    }
 
-    if (found && (request.type == tesseract_collision::ContactTestType::FIRST))
-      break;
-  }
-
-  return found;
-}
-
-/**
- * @brief Should perform a discrete collision check over the trajectory
- * @param contacts A vector of vector of ContactMap where each indicie corrisponds to a timestep
- * @param manager A continuous contact manager
- * @param state_solver The environment state solver
- * @param program The program to check for contacts
- * @param longest_valid_segment_length Used to check collisions between two state if norm(state0-state1) >
- * longest_valid_segment_length.
- * @param request Contact request data
- * @param verbose Print out found collisions
- * @return True if collision was found, otherwise false.
- */
-inline bool contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& contacts,
-                                tesseract_collision::DiscreteContactManager& manager,
-                                const tesseract_environment::StateSolver& state_solver,
-                                const CompositeInstruction& program,
-                                double longest_valid_segment_length,
-                                const tesseract_collision::ContactRequest& request =
-                                    tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST),
-                                bool verbose = false)
-{
-  assert(longest_valid_segment_length > 0);
-  bool found = false;
-
-  // Flatten results
-  std::vector<std::reference_wrapper<const Instruction>> mi = flatten(program, moveFilter);
-
-  contacts.reserve(mi.size());
-  for (std::size_t iStep = 0; iStep < mi.size(); ++iStep)
-  {
-    const auto* swp0 = mi.at(iStep).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
-    const StateWaypoint* swp1 = nullptr;
-
-    double dist = -1;
-    if (iStep < mi.size() - 1)
-    {
-      swp1 = mi.at(iStep + 1).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
-      dist = (swp1->position - swp0->position).norm();
-    }
-
-    if (dist > 0 && dist > longest_valid_segment_length)
-    {
-      int cnt = static_cast<int>(std::ceil(dist / longest_valid_segment_length)) + 1;
-      tesseract_common::TrajArray subtraj(cnt, swp0->position.size());
-      for (long iVar = 0; iVar < swp0->position.size(); ++iVar)
-        subtraj.col(iVar) = Eigen::VectorXd::LinSpaced(cnt, swp0->position(iVar), swp1->position(iVar));
-
-      for (int iSubStep = 0; iSubStep < subtraj.rows() - 1; ++iSubStep)
+      if (dist > 0 && dist > config.longest_valid_segment_length)
       {
-        tesseract_environment::EnvState::Ptr state = state_solver.getState(swp0->joint_names, subtraj.row(iSubStep));
-        if (checkTrajectoryState(contacts, manager, state, request, verbose))
+        int cnt = static_cast<int>(std::ceil(dist / config.longest_valid_segment_length)) + 1;
+        tesseract_common::TrajArray subtraj(cnt, swp0->position.size());
+        for (long iVar = 0; iVar < swp0->position.size(); ++iVar)
+          subtraj.col(iVar) = Eigen::VectorXd::LinSpaced(cnt, swp0->position(iVar), swp1->position(iVar));
+
+        for (int iSubStep = 0; iSubStep < subtraj.rows() - 1; ++iSubStep)
+        {
+          tesseract_environment::EnvState::Ptr state = state_solver.getState(swp0->joint_names, subtraj.row(iSubStep));
+          if (checkTrajectoryState(contacts, manager, state, config))
+          {
+            found = true;
+            if (console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)
+            {
+              std::stringstream ss;
+              ss << "Discrete collision detected at step: " << iStep << " of " << (mi.size() - 1)
+                 << " substate: " << iSubStep << std::endl;
+
+              ss << "     Names:";
+              for (const auto& name : swp0->joint_names)
+                ss << " " << name;
+
+              ss << std::endl << "    State: " << subtraj.row(iSubStep) << std::endl;
+
+              CONSOLE_BRIDGE_logError(ss.str().c_str());
+            }
+          }
+
+          if (found && (config.contact_request.type == tesseract_collision::ContactTestType::FIRST))
+            break;
+        }
+
+        if (found && (config.contact_request.type == tesseract_collision::ContactTestType::FIRST))
+          break;
+      }
+      else
+      {
+        tesseract_environment::EnvState::Ptr state = state_solver.getState(swp0->joint_names, swp0->position);
+        if (checkTrajectoryState(contacts, manager, state, config))
         {
           found = true;
-          if (verbose)
+          if (console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)
           {
             std::stringstream ss;
-            ss << "Discrete collision detected at step: " << iStep << " of " << (mi.size() - 1)
-               << " substate: " << iSubStep << std::endl;
+            ss << "Discrete collision detected at step: " << iStep << " of " << (mi.size() - 1) << std::endl;
 
             ss << "     Names:";
             for (const auto& name : swp0->joint_names)
               ss << " " << name;
 
-            ss << std::endl << "    State: " << subtraj.row(iSubStep) << std::endl;
+            ss << std::endl << "    State: " << swp0->position << std::endl;
 
             CONSOLE_BRIDGE_logError(ss.str().c_str());
           }
         }
 
-        if (found && (request.type == tesseract_collision::ContactTestType::FIRST))
+        if (found && (config.contact_request.type == tesseract_collision::ContactTestType::FIRST))
           break;
       }
-
-      if (found && (request.type == tesseract_collision::ContactTestType::FIRST))
-        break;
     }
-    else
+  }
+  else
+  {
+    // Flatten results
+    std::vector<std::reference_wrapper<const Instruction>> mi = flatten(program, moveFilter);
+
+    contacts.reserve(mi.size());
+    for (std::size_t iStep = 0; iStep < mi.size() - 1; ++iStep)
     {
+      const auto* swp0 = mi.at(iStep).get().cast_const<MoveInstruction>()->getWaypoint().cast_const<StateWaypoint>();
+
       tesseract_environment::EnvState::Ptr state = state_solver.getState(swp0->joint_names, swp0->position);
-      if (checkTrajectoryState(contacts, manager, state, request, verbose))
+      if (checkTrajectoryState(contacts, manager, state, config))
       {
         found = true;
-        if (verbose)
+        if (console_bridge::getLogLevel() > console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_INFO)
         {
           std::stringstream ss;
           ss << "Discrete collision detected at step: " << iStep << " of " << (mi.size() - 1) << std::endl;
@@ -554,20 +550,79 @@ inline bool contactCheckProgram(std::vector<tesseract_collision::ContactResultMa
           for (const auto& name : swp0->joint_names)
             ss << " " << name;
 
-          ss << std::endl << "    State: " << swp0->position << std::endl;
+          ss << std::endl << "    State0: " << swp0->position << std::endl;
 
           CONSOLE_BRIDGE_logError(ss.str().c_str());
         }
       }
 
-      if (found && (request.type == tesseract_collision::ContactTestType::FIRST))
+      if (found && (config.contact_request.type == tesseract_collision::ContactTestType::FIRST))
         break;
     }
   }
-
   return found;
 }
 
+/// Deprecated overloads
+inline bool DEPRECATED("Please use overload with CollisionCheckConfig")
+    contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                        tesseract_collision::ContinuousContactManager& manager,
+                        const tesseract_environment::StateSolver& state_solver,
+                        const CompositeInstruction& program,
+                        const tesseract_collision::ContactRequest& request =
+                            tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST))
+{
+  tesseract_collision::CollisionCheckConfig config;
+  config.contact_request = request;
+  config.type = tesseract_collision::CollisionEvaluatorType::CONTINUOUS;
+  return contactCheckProgram(contacts, manager, state_solver, program, config);
+}
+
+inline bool DEPRECATED("Please use overload with CollisionCheckConfig")
+    contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                        tesseract_collision::ContinuousContactManager& manager,
+                        const tesseract_environment::StateSolver& state_solver,
+                        const CompositeInstruction& program,
+                        double longest_valid_segment_length,
+                        const tesseract_collision::ContactRequest& request =
+                            tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST))
+{
+  tesseract_collision::CollisionCheckConfig config;
+  config.contact_request = request;
+  config.type = tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS;
+  config.longest_valid_segment_length = longest_valid_segment_length;
+  return contactCheckProgram(contacts, manager, state_solver, program, config);
+}
+
+inline bool DEPRECATED("Please use overload with CollisionCheckConfig")
+    contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                        tesseract_collision::DiscreteContactManager& manager,
+                        const tesseract_environment::StateSolver& state_solver,
+                        const CompositeInstruction& program,
+                        const tesseract_collision::ContactRequest& request =
+                            tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST))
+{
+  tesseract_collision::CollisionCheckConfig config;
+  config.contact_request = request;
+  config.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
+  return contactCheckProgram(contacts, manager, state_solver, program, config);
+}
+
+inline bool DEPRECATED("Please use overload with CollisionCheckConfig")
+    contactCheckProgram(std::vector<tesseract_collision::ContactResultMap>& contacts,
+                        tesseract_collision::DiscreteContactManager& manager,
+                        const tesseract_environment::StateSolver& state_solver,
+                        const CompositeInstruction& program,
+                        double longest_valid_segment_length,
+                        const tesseract_collision::ContactRequest& request =
+                            tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST))
+{
+  tesseract_collision::CollisionCheckConfig config;
+  config.contact_request = request;
+  config.type = tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE;
+  config.longest_valid_segment_length = longest_valid_segment_length;
+  return contactCheckProgram(contacts, manager, state_solver, program, config);
+}
 }  // namespace tesseract_planning
 
 #endif  // TESSERACT_PLANNING_UTILS_H

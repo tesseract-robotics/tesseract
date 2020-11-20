@@ -54,13 +54,15 @@ bool StateInCollision(const Eigen::Ref<const Eigen::VectorXd>& start_pos,
       env->getSceneGraph(), kin->getActiveLinkNames(), env->getCurrentState()->link_transforms);
 
   manager->setActiveCollisionObjects(adjacency_map->getActiveLinkNames());
-  manager->setCollisionMarginData(CollisionMarginData(profile.safety_margin));
+  manager->setCollisionMarginData(profile.collision_check_config.collision_margin_data);
   collisions.clear();
 
   tesseract_environment::EnvState::Ptr state = env->getState(kin->getJointNames(), start_pos);
-  if (!checkTrajectoryState(collisions, *manager, state, tesseract_collision::ContactTestType::FIRST, false))
+  if (!checkTrajectoryState(collisions, *manager, state, profile.collision_check_config))
   {
     CONSOLE_BRIDGE_logDebug("No collisions found");
+    if (profile.collision_check_config.type == tesseract_collision::CollisionEvaluatorType::LVS_DISCRETE)
+      CONSOLE_BRIDGE_logDebug("StateInCollision does not support longest valid segment logic");
     return false;
   }
   else
@@ -154,7 +156,8 @@ bool MoveWaypointFromCollisionTrajopt(Waypoint& waypoint,
     collision->evaluator_type = trajopt::CollisionEvaluatorType::SINGLE_TIMESTEP;
     collision->first_step = 0;
     collision->last_step = 0;
-    collision->info = createSafetyMarginDataVector(pci.basic_info.n_steps, profile.safety_margin, 1);
+    collision->info = createSafetyMarginDataVector(
+        pci.basic_info.n_steps, profile.collision_check_config.collision_margin_data.getMaxCollisionMargin(), 1);
     collision->use_weighted_sum = true;
     pci.cnt_infos.push_back(collision);
   }
@@ -166,7 +169,8 @@ bool MoveWaypointFromCollisionTrajopt(Waypoint& waypoint,
     collision->evaluator_type = trajopt::CollisionEvaluatorType::SINGLE_TIMESTEP;
     collision->first_step = 0;
     collision->last_step = 0;
-    collision->info = createSafetyMarginDataVector(pci.basic_info.n_steps, profile.safety_margin, 20);
+    collision->info = createSafetyMarginDataVector(
+        pci.basic_info.n_steps, profile.collision_check_config.collision_margin_data.getMaxCollisionMargin(), 20);
     collision->use_weighted_sum = true;
     pci.cost_infos.push_back(collision);
   }
@@ -254,7 +258,10 @@ bool ApplyCorrectionWorkflow(Waypoint& waypoint, const ProcessInput& input, cons
 FixStateCollisionProcessGenerator::FixStateCollisionProcessGenerator(std::string name) : name_(std::move(name))
 {
   // Register default profile
-  composite_profiles["DEFAULT"] = std::make_shared<FixStateCollisionProfile>();
+  auto default_profile = std::make_shared<FixStateCollisionProfile>();
+  default_profile->collision_check_config.contact_request.type = tesseract_collision::ContactTestType::FIRST;
+  default_profile->collision_check_config.type = tesseract_collision::CollisionEvaluatorType::DISCRETE;
+  composite_profiles["DEFAULT"] = default_profile;
 }
 
 const std::string& FixStateCollisionProcessGenerator::getName() const { return name_; }

@@ -325,6 +325,37 @@ struct ContactTestData
   /** @brief Indicate if search is finished */
   bool done{ false };
 };
-}  // namespace tesseract_collision
 
+/**
+ * @brief High level descriptor used in planners and utilities to specify what kind of collision check is desired.
+ *
+ * DISCRETE - Discrete contact manager using only steps specified
+ * LVS_DISCRETE - Discrete contact manager interpolating using longest valid segment
+ * CONTINUOUS - Continuous contact manager using only steps specified
+ * LVS_CONTINUOUS - Continuous contact manager interpolating using longest valid segment
+ */
+enum class CollisionEvaluatorType
+{
+  DISCRETE,
+  LVS_DISCRETE,
+  CONTINUOUS,
+  LVS_CONTINUOUS
+};
+
+/**
+ * @brief This is a high level structure containing common information that collision checking utilities need. The goal
+ * of this config is to allow all collision checking utilities and planners to use the same datastructure
+ */
+struct CollisionCheckConfig
+{
+  /** @brief Stores information about how the margins allowed between collision objects*/
+  CollisionMarginData collision_margin_data;
+  /** @brief ContactRequest that will be used for this check. Default test type: FIRST*/
+  tesseract_collision::ContactRequest contact_request{ tesseract_collision::ContactTestType::FIRST };
+  /** @brief Specifies the type of collision check to be performed. Default: DISCRETE */
+  CollisionEvaluatorType type{ CollisionEvaluatorType::DISCRETE };
+  /** @brief Longest valid segment to use if type supports lvs. Default: 0.005*/
+  double longest_valid_segment_length{ 0.005 };
+};
+}  // namespace tesseract_collision
 #endif  // TESSERACT_COLLISION_TYPES_H

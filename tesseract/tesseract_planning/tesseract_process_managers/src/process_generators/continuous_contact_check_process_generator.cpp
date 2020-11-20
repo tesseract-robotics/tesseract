@@ -38,19 +38,23 @@ namespace tesseract_planning
 ContinuousContactCheckProcessGenerator::ContinuousContactCheckProcessGenerator(std::string name)
   : name_(std::move(name))
 {
+  config.type = tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS;
+  config.longest_valid_segment_length = 0.05;
+  config.collision_margin_data = tesseract_collision::CollisionMarginData(0);
 }
 
 ContinuousContactCheckProcessGenerator::ContinuousContactCheckProcessGenerator(double longest_valid_segment_length,
                                                                                double contact_distance,
                                                                                std::string name)
   : name_(std::move(name))
-  , longest_valid_segment_length_(longest_valid_segment_length)
-  , contact_distance_(contact_distance)
 {
-  if (longest_valid_segment_length_ <= 0)
+  config.longest_valid_segment_length = longest_valid_segment_length;
+  config.type = tesseract_collision::CollisionEvaluatorType::LVS_CONTINUOUS;
+  config.collision_margin_data = tesseract_collision::CollisionMarginData(contact_distance);
+  if (config.longest_valid_segment_length <= 0)
   {
     CONSOLE_BRIDGE_logWarn("ContinuousContactCheckProcessGenerator: Invalid longest valid segment. Defaulting to 0.05");
-    longest_valid_segment_length_ = 0.05;
+    config.longest_valid_segment_length = 0.05;
   }
 }
 
@@ -85,7 +89,7 @@ int ContinuousContactCheckProcessGenerator::conditionalProcess(ProcessInput inpu
   tesseract_environment::StateSolver::Ptr state_solver = input.tesseract->getEnvironment()->getStateSolver();
   tesseract_collision::ContinuousContactManager::Ptr manager =
       input.tesseract->getEnvironment()->getContinuousContactManager();
-  manager->setContactDistanceThreshold(contact_distance_);
+  manager->setCollisionMarginData(config.collision_margin_data);
 
   // Set the active links based on the manipulator
   std::vector<std::string> active_links_manip;
@@ -104,7 +108,7 @@ int ContinuousContactCheckProcessGenerator::conditionalProcess(ProcessInput inpu
 
   const auto* ci = input_results->cast_const<CompositeInstruction>();
   std::vector<tesseract_collision::ContactResultMap> contacts;
-  if (contactCheckProgram(contacts, *manager, *state_solver, *ci, longest_valid_segment_length_))
+  if (contactCheckProgram(contacts, *manager, *state_solver, *ci, config))
   {
     CONSOLE_BRIDGE_logInform("Results are not contact free for process input: %s!",
                              input_results->getDescription().c_str());
