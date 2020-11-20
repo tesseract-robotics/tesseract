@@ -97,6 +97,5 @@ struct KinematicLimits
   Eigen::VectorXd velocity_limits;
   Eigen::VectorXd acceleration_limits;
 };
-
 }  // namespace tesseract_common
 #endif  // TESSERACT_COMMON_TYPES_H
