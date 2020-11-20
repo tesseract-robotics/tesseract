@@ -16,6 +16,7 @@ using namespace tesseract_kinematics;
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
 using namespace tesseract_planning;
+using namespace tesseract_collision;
 
 std::string locateResource(const std::string& url)
 {
@@ -83,11 +84,11 @@ TEST_F(FixStateCollisionProcessGeneratorUnit, StateInCollisionTest)
   EXPECT_FALSE(StateInCollision(state, input, profile));
 
   // Check that the safety margin is obeyed
-  profile.safety_margin = 0.1;
+  profile.collision_check_config.collision_margin_data = CollisionMarginData(0.1);
   state[0] = 0.0;
   state[1] = 1.05;
   EXPECT_TRUE(StateInCollision(state, input, profile));
-  profile.safety_margin = 0.01;
+  profile.collision_check_config.collision_margin_data = CollisionMarginData(0.01);
   EXPECT_FALSE(StateInCollision(state, input, profile));
 }
 
@@ -111,11 +112,11 @@ TEST_F(FixStateCollisionProcessGeneratorUnit, WaypointInCollisionTest)
   EXPECT_FALSE(WaypointInCollision(waypoint, input, profile));
 
   // Check that the safety margin is obeyed
-  profile.safety_margin = 0.1;
+  profile.collision_check_config.collision_margin_data = CollisionMarginData(0.1);
   waypoint[0] = 0.0;
   waypoint[1] = 1.05;
   EXPECT_TRUE(WaypointInCollision(waypoint, input, profile));
-  profile.safety_margin = 0.01;
+  profile.collision_check_config.collision_margin_data = CollisionMarginData(0.01);
   EXPECT_FALSE(WaypointInCollision(waypoint, input, profile));
 
   // Check that it catches invalid inputs correctly
@@ -136,7 +137,7 @@ TEST_F(FixStateCollisionProcessGeneratorUnit, MoveWaypointFromCollisionRandomSam
   JointWaypoint waypoint({ "boxbot_x_joint", "boxbot_y_joint" }, state);
 
   // Check that the safety margin is obeyed
-  profile.safety_margin = 0.1;
+  profile.collision_check_config.collision_margin_data = CollisionMarginData(0.1);
   profile.jiggle_factor = 1.0;
   waypoint[0] = 0.0;
   waypoint[1] = 1.09;
@@ -167,7 +168,7 @@ TEST_F(FixStateCollisionProcessGeneratorUnit, MoveWaypointFromCollisionTrajoptTe
   JointWaypoint waypoint({ "boxbot_x_joint", "boxbot_y_joint" }, state);
 
   // Check that the safety margin is obeyed
-  profile.safety_margin = 0.1;
+  profile.collision_check_config.collision_margin_data = CollisionMarginData(0.1);
   profile.jiggle_factor = 1.0;
   waypoint[0] = 0.0;
   waypoint[1] = 1.09;

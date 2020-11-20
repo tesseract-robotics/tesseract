@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <descartes_light/interface/collision_interface.h>
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
+#include <tesseract_collision/core/types.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
@@ -102,8 +103,8 @@ private:
   std::vector<std::string> active_link_names_;                       /**< @brief A vector of active link names */
   std::vector<std::string> joint_names_;                             /**< @brief A vector of joint names */
   tesseract_collision::DiscreteContactManager::Ptr contact_manager_; /**< @brief The discrete contact manager */
-  double collision_safety_margin_; /**< @brief The minimum allowed collision distance */
-  bool debug_;                     /**< @brief Enable debug information to be printed to the terminal */
+  tesseract_collision::CollisionCheckConfig collision_check_config_;
+  bool debug_; /**< @brief Enable debug information to be printed to the terminal */
 };
 
 using DescartesCollisionF = DescartesCollision<float>;

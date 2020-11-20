@@ -108,7 +108,8 @@ DescartesDefaultPlanProfile<FloatType>::DescartesDefaultPlanProfile(const tinyxm
         throw std::runtime_error("DescartesPlanProfile: EdgeCollisions: CollisionSafetyMargin is not a numeric "
                                  "values.");
 
-      tesseract_common::toNumeric<double>(coll_safety_margin_string, edge_collision_saftey_margin);
+      /** @todo Update XML */
+      //      tesseract_common::toNumeric<double>(coll_safety_margin_string, edge_collision_saftey_margin);
     }
 
     if (long_valid_seg_len_element)
@@ -123,7 +124,8 @@ DescartesDefaultPlanProfile<FloatType>::DescartesDefaultPlanProfile(const tinyxm
         throw std::runtime_error("DescartesPlanProfile: EdgeCollisions: LongestValidSegmentLength is not a numeric "
                                  "values.");
 
-      tesseract_common::toNumeric<double>(long_valid_seg_len_string, edge_longest_valid_segment_length);
+      /** @todo Update XML */
+      //      tesseract_common::toNumeric<double>(long_valid_seg_len_string, edge_longest_valid_segment_length);
     }
   }
 
@@ -233,8 +235,7 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
             std::make_shared<DescartesCollisionEdgeEvaluator<FloatType>>(prob.tesseract->getEnvironment(),
                                                                          active_links,
                                                                          prob.manip_inv_kin->getJointNames(),
-                                                                         edge_collision_saftey_margin,
-                                                                         edge_longest_valid_segment_length,
+                                                                         edge_collision_check_config,
                                                                          allow_collision,
                                                                          debug));
         prob.edge_evaluators.push_back(compound_evaluator);
@@ -283,8 +284,7 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
             std::make_shared<DescartesCollisionEdgeEvaluator<FloatType>>(prob.tesseract->getEnvironment(),
                                                                          active_links,
                                                                          prob.manip_inv_kin->getJointNames(),
-                                                                         edge_collision_saftey_margin,
-                                                                         edge_longest_valid_segment_length,
+                                                                         edge_collision_check_config,
                                                                          allow_collision,
                                                                          debug));
         prob.edge_evaluators.push_back(compound_evaluator);
@@ -328,13 +328,14 @@ tinyxml2::XMLElement* DescartesDefaultPlanProfile<FloatType>::toXML(tinyxml2::XM
   edge_collisions_enabled->SetText(enable_edge_collision);
   edge_collisions->InsertEndChild(edge_collisions_enabled);
 
-  tinyxml2::XMLElement* edge_collisions_safety_margin = doc.NewElement("CollisionSafetyMargin");
-  edge_collisions_safety_margin->SetText(edge_collision_saftey_margin);
-  edge_collisions->InsertEndChild(edge_collisions_safety_margin);
+  /** @todo Update XML */
+  //  tinyxml2::XMLElement* edge_collisions_safety_margin = doc.NewElement("CollisionSafetyMargin");
+  //  edge_collisions_safety_margin->SetText(edge_collision_saftey_margin);
+  //  edge_collisions->InsertEndChild(edge_collisions_safety_margin);
 
-  tinyxml2::XMLElement* edge_collisions_long_valid_seg_len = doc.NewElement("LongestValidSegmentLength");
-  edge_collisions_long_valid_seg_len->SetText(edge_longest_valid_segment_length);
-  edge_collisions->InsertEndChild(edge_collisions_long_valid_seg_len);
+  //  tinyxml2::XMLElement* edge_collisions_long_valid_seg_len = doc.NewElement("LongestValidSegmentLength");
+  //  edge_collisions_long_valid_seg_len->SetText(edge_longest_valid_segment_length);
+  //  edge_collisions->InsertEndChild(edge_collisions_long_valid_seg_len);
 
   xml_descartes->InsertEndChild(edge_collisions);
 

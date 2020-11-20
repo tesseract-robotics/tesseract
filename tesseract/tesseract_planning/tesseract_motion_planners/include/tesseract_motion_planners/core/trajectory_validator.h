@@ -29,6 +29,7 @@
 #include <type_traits>
 #include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
+#include <tesseract_collision/core/types.h>
 #include <tesseract_environment/core/utils.h>
 #include <console_bridge/console.h>
 #include <trajopt/utils.hpp>
@@ -65,13 +66,8 @@ public:
   using Ptr = std::shared_ptr<TrajectoryValidator>;
 
   TrajectoryValidator(tesseract_collision::ContinuousContactManager::Ptr continuous_manager = nullptr,
-                      tesseract_collision::DiscreteContactManager::Ptr discrete_manager = nullptr,
-                      double longest_valid_segment_length = 0.01,
-                      bool verbose = false)
-    : continuous_contact_manager_(std::move(continuous_manager))
-    , discrete_contact_manager_(std::move(discrete_manager))
-    , longest_valid_segment_length_(longest_valid_segment_length)
-    , verbose_(verbose)
+                      tesseract_collision::DiscreteContactManager::Ptr discrete_manager = nullptr)
+    : continuous_contact_manager_(std::move(continuous_manager)), discrete_contact_manager_(std::move(discrete_manager))
   {
   }
 
@@ -88,8 +84,7 @@ public:
                                const PostPlanCheckType& check_type,
                                const tesseract_environment::StateSolver& state_solver,
                                const std::vector<std::string>& joint_names,
-                               const tesseract_collision::ContactRequest& request =
-                                   tesseract_collision::ContactRequest(tesseract_collision::ContactTestType::FIRST))
+                               const tesseract_collision::CollisionCheckConfig& config)
   {
     bool valid = true;
     using T = std::underlying_type<PostPlanCheckType>::type;
@@ -106,7 +101,7 @@ public:
       {
         std::vector<tesseract_collision::ContactResultMap> contacts;
         bool in_collision = tesseract_environment::checkTrajectory(
-            contacts, *discrete_contact_manager_, state_solver, joint_names, trajectory, request, verbose_);
+            contacts, *discrete_contact_manager_, state_solver, joint_names, trajectory, config);
         valid &= !in_collision;
       }
       else
@@ -124,14 +119,8 @@ public:
       if (discrete_contact_manager_)
       {
         std::vector<tesseract_collision::ContactResultMap> contacts;
-        bool in_collision = tesseract_environment::checkTrajectory(contacts,
-                                                                   *discrete_contact_manager_,
-                                                                   state_solver,
-                                                                   joint_names,
-                                                                   trajectory,
-                                                                   longest_valid_segment_length_,
-                                                                   request,
-                                                                   verbose_);
+        bool in_collision = tesseract_environment::checkTrajectory(
+            contacts, *discrete_contact_manager_, state_solver, joint_names, trajectory, config);
         valid &= !in_collision;
       }
       else
@@ -149,14 +138,8 @@ public:
       if (continuous_contact_manager_)
       {
         std::vector<tesseract_collision::ContactResultMap> contacts;
-        bool in_collision = tesseract_environment::checkTrajectory(contacts,
-                                                                   *continuous_contact_manager_,
-                                                                   state_solver,
-                                                                   joint_names,
-                                                                   trajectory,
-                                                                   longest_valid_segment_length_,
-                                                                   request,
-                                                                   verbose_);
+        bool in_collision = tesseract_environment::checkTrajectory(
+            contacts, *continuous_contact_manager_, state_solver, joint_names, trajectory, config);
         valid &= !in_collision;
       }
       else
@@ -172,9 +155,6 @@ public:
 protected:
   tesseract_collision::ContinuousContactManager::Ptr continuous_contact_manager_;
   tesseract_collision::DiscreteContactManager::Ptr discrete_contact_manager_;
-
-  double longest_valid_segment_length_;
-  bool verbose_;
 };
 
 }  // namespace tesseract_planning
