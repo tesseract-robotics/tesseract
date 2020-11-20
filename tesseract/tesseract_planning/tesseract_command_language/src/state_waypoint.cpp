@@ -38,6 +38,8 @@ namespace tesseract_planning
 StateWaypoint::StateWaypoint(std::vector<std::string> joint_names, const Eigen::Ref<const Eigen::VectorXd>& position)
   : joint_names(std::move(joint_names)), position(position)
 {
+  if (static_cast<Eigen::Index>(this->joint_names.size()) != this->position.size())
+    throw std::runtime_error("StateWaypoint: joint_names is not the same size as position!");
 }
 
 StateWaypoint::StateWaypoint(const tinyxml2::XMLElement& xml_element)
