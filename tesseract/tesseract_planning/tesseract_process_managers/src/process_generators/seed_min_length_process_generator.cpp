@@ -50,22 +50,22 @@ SeedMinLengthProcessGenerator::SeedMinLengthProcessGenerator(long min_length, st
 
 const std::string& SeedMinLengthProcessGenerator::getName() const { return name_; }
 
-std::function<void()> SeedMinLengthProcessGenerator::generateTask(ProcessInput input)
+std::function<void()> SeedMinLengthProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
 {
-  return [=]() { process(input); };
+  return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> SeedMinLengthProcessGenerator::generateConditionalTask(ProcessInput input)
+std::function<int()> SeedMinLengthProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
 {
-  return [=]() { return conditionalProcess(input); };
+  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
-int SeedMinLengthProcessGenerator::conditionalProcess(ProcessInput input) const
+int SeedMinLengthProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
   if (abort_)
     return 0;
 
-  auto info = std::make_shared<SeedMinLengthProcessInfo>(name_);
+  auto info = std::make_shared<SeedMinLengthProcessInfo>(unique_id, name_);
   info->return_value = 0;
   input.addProcessInfo(info);
 
@@ -100,7 +100,10 @@ int SeedMinLengthProcessGenerator::conditionalProcess(ProcessInput input) const
   return 1;
 }
 
-void SeedMinLengthProcessGenerator::process(ProcessInput input) const { conditionalProcess(input); }
+void SeedMinLengthProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+{
+  conditionalProcess(input, unique_id);
+}
 
 bool SeedMinLengthProcessGenerator::getAbort() const { return abort_; }
 void SeedMinLengthProcessGenerator::setAbort(bool abort) { abort_ = abort; }

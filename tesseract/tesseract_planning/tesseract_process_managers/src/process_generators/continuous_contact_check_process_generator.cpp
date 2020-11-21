@@ -60,22 +60,23 @@ ContinuousContactCheckProcessGenerator::ContinuousContactCheckProcessGenerator(d
 
 const std::string& ContinuousContactCheckProcessGenerator::getName() const { return name_; }
 
-std::function<void()> ContinuousContactCheckProcessGenerator::generateTask(ProcessInput input)
+std::function<void()> ContinuousContactCheckProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
 {
-  return [=]() { process(input); };
+  return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> ContinuousContactCheckProcessGenerator::generateConditionalTask(ProcessInput input)
+std::function<int()> ContinuousContactCheckProcessGenerator::generateConditionalTask(ProcessInput input,
+                                                                                     std::size_t unique_id)
 {
-  return [=]() { return conditionalProcess(input); };
+  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
-int ContinuousContactCheckProcessGenerator::conditionalProcess(ProcessInput input) const
+int ContinuousContactCheckProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
   if (abort_)
     return 0;
 
-  auto info = std::make_shared<ContinuousContactCheckProcessInfo>(name_);
+  auto info = std::make_shared<ContinuousContactCheckProcessInfo>(unique_id, name_);
   info->return_value = 0;
   input.addProcessInfo(info);
 
@@ -132,7 +133,10 @@ int ContinuousContactCheckProcessGenerator::conditionalProcess(ProcessInput inpu
   return 1;
 }
 
-void ContinuousContactCheckProcessGenerator::process(ProcessInput input) const { conditionalProcess(input); }
+void ContinuousContactCheckProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+{
+  conditionalProcess(input, unique_id);
+}
 
 bool ContinuousContactCheckProcessGenerator::getAbort() const { return abort_; }
 void ContinuousContactCheckProcessGenerator::setAbort(bool abort) { abort_ = abort; }

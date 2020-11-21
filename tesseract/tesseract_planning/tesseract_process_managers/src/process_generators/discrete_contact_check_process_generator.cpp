@@ -59,22 +59,23 @@ DiscreteContactCheckProcessGenerator::DiscreteContactCheckProcessGenerator(doubl
 
 const std::string& DiscreteContactCheckProcessGenerator::getName() const { return name_; }
 
-std::function<void()> DiscreteContactCheckProcessGenerator::generateTask(ProcessInput input)
+std::function<void()> DiscreteContactCheckProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
 {
-  return [=]() { process(input); };
+  return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> DiscreteContactCheckProcessGenerator::generateConditionalTask(ProcessInput input)
+std::function<int()> DiscreteContactCheckProcessGenerator::generateConditionalTask(ProcessInput input,
+                                                                                   std::size_t unique_id)
 {
-  return [=]() { return conditionalProcess(input); };
+  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
-int DiscreteContactCheckProcessGenerator::conditionalProcess(ProcessInput input) const
+int DiscreteContactCheckProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
   if (abort_)
     return 0;
 
-  auto info = std::make_shared<DiscreteContactCheckProcessInfo>(name_);
+  auto info = std::make_shared<DiscreteContactCheckProcessInfo>(unique_id, name_);
   info->return_value = 0;
   input.addProcessInfo(info);
 
@@ -131,7 +132,10 @@ int DiscreteContactCheckProcessGenerator::conditionalProcess(ProcessInput input)
   return 1;
 }
 
-void DiscreteContactCheckProcessGenerator::process(ProcessInput input) const { conditionalProcess(input); }
+void DiscreteContactCheckProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+{
+  conditionalProcess(input, unique_id);
+}
 
 bool DiscreteContactCheckProcessGenerator::getAbort() const { return abort_; }
 void DiscreteContactCheckProcessGenerator::setAbort(bool abort) { abort_ = abort; }

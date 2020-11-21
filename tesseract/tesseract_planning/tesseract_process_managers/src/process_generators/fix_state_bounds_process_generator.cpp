@@ -42,22 +42,22 @@ FixStateBoundsProcessGenerator::FixStateBoundsProcessGenerator(std::string name)
 
 const std::string& FixStateBoundsProcessGenerator::getName() const { return name_; }
 
-std::function<void()> FixStateBoundsProcessGenerator::generateTask(ProcessInput input)
+std::function<void()> FixStateBoundsProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
 {
-  return [=]() { process(input); };
+  return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> FixStateBoundsProcessGenerator::generateConditionalTask(ProcessInput input)
+std::function<int()> FixStateBoundsProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
 {
-  return [=]() { return conditionalProcess(input); };
+  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
-int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
+int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
   if (abort_)
     return 0;
 
-  auto info = std::make_shared<FixStateBoundsProcessInfo>(name_);
+  auto info = std::make_shared<FixStateBoundsProcessInfo>(unique_id, name_);
   info->return_value = 0;
   input.addProcessInfo(info);
 
@@ -181,7 +181,10 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
   return 1;
 }
 
-void FixStateBoundsProcessGenerator::process(ProcessInput input) const { conditionalProcess(input); }
+void FixStateBoundsProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+{
+  conditionalProcess(input, unique_id);
+}
 
 bool FixStateBoundsProcessGenerator::getAbort() const { return abort_; }
 void FixStateBoundsProcessGenerator::setAbort(bool abort) { abort_ = abort; }

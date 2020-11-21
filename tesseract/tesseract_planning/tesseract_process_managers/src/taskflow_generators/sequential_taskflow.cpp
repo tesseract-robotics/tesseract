@@ -67,14 +67,18 @@ tf::Taskflow& SequentialTaskflow::generateTaskflow(ProcessInput input,
     {
       case SequentialTaskType::TASK:
       {
-        tf::Task task = taskflow->emplace(process.first->generateTask(input)).name(process.first->getName());
+        tf::Task task = taskflow->placeholder();
+        task.work(process.first->generateTask(input, task.hash_value()));
+        task.name(process.first->getName());
         process_tasks_.push_back(task);
         break;
       }
       case SequentialTaskType::CONDITIONAL_EXIT_ON_FAILURE:
       case SequentialTaskType::CONDITIONAL_EXIT_ON_SUCCESS:
       {
-        tf::Task task = taskflow->emplace(process.first->generateConditionalTask(input)).name(process.first->getName());
+        tf::Task task = taskflow->placeholder();
+        task.work(process.first->generateConditionalTask(input, task.hash_value()));
+        task.name(process.first->getName());
         process_tasks_.push_back(task);
         break;
       }

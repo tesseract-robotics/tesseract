@@ -45,11 +45,13 @@ public:
   using Ptr = std::shared_ptr<ProcessInfo>;
   using ConstPtr = std::shared_ptr<const ProcessInfo>;
 
-  ProcessInfo(std::string name = "") : message(std::move(name)) {}
+  ProcessInfo(std::size_t unique_id, std::string name = "") : unique_id(unique_id), message(std::move(name)) {}
 
   int return_value;
 
-  std::string name;
+  std::size_t unique_id;
+
+  std::string process_name;
 
   std::string message;
 };
@@ -62,11 +64,11 @@ struct ProcessInfoContainer
   ProcessInfo::ConstPtr operator[](std::size_t index);
 
   /** @brief Get a copy of the process_info_vec in case it gets resized*/
-  std::vector<ProcessInfo::ConstPtr> getProcessInfoVec();
+  std::map<std::size_t, ProcessInfo::ConstPtr> getProcessInfoMap();
 
 private:
-  std::mutex mutex;
-  std::vector<ProcessInfo::ConstPtr> process_info_vec;
+  std::mutex mutex_;
+  std::map<std::size_t, ProcessInfo::ConstPtr> process_info_map_;
 };
 
 /**
@@ -163,7 +165,7 @@ struct ProcessInput
 
   void addProcessInfo(const ProcessInfo::ConstPtr& process_info);
   ProcessInfo::ConstPtr getProcessInfo(const std::size_t& index);
-  std::vector<ProcessInfo::ConstPtr> getProcessInfoVec();
+  std::map<std::size_t, ProcessInfo::ConstPtr> getProcessInfoMap();
 
 protected:
   /** @brief Instructions to be carried out by process */

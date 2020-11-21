@@ -43,22 +43,22 @@ MotionPlannerProcessGenerator::MotionPlannerProcessGenerator(std::shared_ptr<Mot
 
 const std::string& MotionPlannerProcessGenerator::getName() const { return name_; }
 
-std::function<void()> MotionPlannerProcessGenerator::generateTask(ProcessInput input)
+std::function<void()> MotionPlannerProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
 {
-  return [=]() { process(input); };
+  return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> MotionPlannerProcessGenerator::generateConditionalTask(ProcessInput input)
+std::function<int()> MotionPlannerProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
 {
-  return [=]() { return conditionalProcess(input); };
+  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
-int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input) const
+int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
   if (abort_)
     return 0;
 
-  auto info = std::make_shared<MotionPlannerProcessInfo>(name_);
+  auto info = std::make_shared<MotionPlannerProcessInfo>(unique_id, name_);
   info->return_value = 0;
   input.addProcessInfo(info);
 
@@ -191,7 +191,10 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input) const
   return 0;
 }
 
-void MotionPlannerProcessGenerator::process(ProcessInput input) const { conditionalProcess(input); }
+void MotionPlannerProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+{
+  conditionalProcess(input, unique_id);
+}
 
 bool MotionPlannerProcessGenerator::getAbort() const { return abort_; }
 void MotionPlannerProcessGenerator::setAbort(bool abort) { abort_ = abort; }

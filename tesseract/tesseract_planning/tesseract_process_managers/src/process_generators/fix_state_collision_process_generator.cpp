@@ -266,22 +266,23 @@ FixStateCollisionProcessGenerator::FixStateCollisionProcessGenerator(std::string
 
 const std::string& FixStateCollisionProcessGenerator::getName() const { return name_; }
 
-std::function<void()> FixStateCollisionProcessGenerator::generateTask(ProcessInput input)
+std::function<void()> FixStateCollisionProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
 {
-  return [=]() { process(input); };
+  return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> FixStateCollisionProcessGenerator::generateConditionalTask(ProcessInput input)
+std::function<int()> FixStateCollisionProcessGenerator::generateConditionalTask(ProcessInput input,
+                                                                                std::size_t unique_id)
 {
-  return [=]() { return conditionalProcess(input); };
+  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
-int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) const
+int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
   if (abort_)
     return 0;
 
-  auto info = std::make_shared<FixStateCollisionProcessInfo>(name_);
+  auto info = std::make_shared<FixStateCollisionProcessInfo>(unique_id, name_);
   info->return_value = 0;
   input.addProcessInfo(info);
 
@@ -398,7 +399,10 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) co
   return 1;
 }
 
-void FixStateCollisionProcessGenerator::process(ProcessInput input) const { conditionalProcess(input); }
+void FixStateCollisionProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+{
+  conditionalProcess(input, unique_id);
+}
 
 bool FixStateCollisionProcessGenerator::getAbort() const { return abort_; }
 void FixStateCollisionProcessGenerator::setAbort(bool abort) { abort_ = abort; }

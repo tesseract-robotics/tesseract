@@ -44,22 +44,22 @@ ProfileSwitchProcessGenerator::ProfileSwitchProcessGenerator(std::string name) :
 
 const std::string& ProfileSwitchProcessGenerator::getName() const { return name_; }
 
-std::function<void()> ProfileSwitchProcessGenerator::generateTask(ProcessInput input)
+std::function<void()> ProfileSwitchProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
 {
-  return [=]() { process(input); };
+  return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> ProfileSwitchProcessGenerator::generateConditionalTask(ProcessInput input)
+std::function<int()> ProfileSwitchProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
 {
-  return [=]() { return conditionalProcess(input); };
+  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
-int ProfileSwitchProcessGenerator::conditionalProcess(ProcessInput input) const
+int ProfileSwitchProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
   if (abort_)
     return 0;
 
-  auto info = std::make_shared<ProfileSwitchProcessInfo>(name_);
+  auto info = std::make_shared<ProfileSwitchProcessInfo>(unique_id, name_);
   info->return_value = 0;
   input.addProcessInfo(info);
 
@@ -91,7 +91,10 @@ int ProfileSwitchProcessGenerator::conditionalProcess(ProcessInput input) const
   return cur_composite_profile->return_value;
 }
 
-void ProfileSwitchProcessGenerator::process(ProcessInput input) const { conditionalProcess(input); }
+void ProfileSwitchProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+{
+  conditionalProcess(input, unique_id);
+}
 
 bool ProfileSwitchProcessGenerator::getAbort() const { return abort_; }
 void ProfileSwitchProcessGenerator::setAbort(bool abort) { abort_ = abort; }

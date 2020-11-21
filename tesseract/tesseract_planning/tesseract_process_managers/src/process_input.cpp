@@ -42,20 +42,20 @@ static const PlannerProfileRemapping EMPTY_PROFILE_MAPPING;
 
 void ProcessInfoContainer::addProcessInfo(ProcessInfo::ConstPtr process_info)
 {
-  std::unique_lock<std::mutex> lock(mutex);
-  process_info_vec.push_back(std::move(process_info));
+  std::unique_lock<std::mutex> lock(mutex_);
+  process_info_map_[process_info->unique_id] = std::move(process_info);
 }
 
 ProcessInfo::ConstPtr ProcessInfoContainer::operator[](std::size_t index)
 {
-  std::unique_lock<std::mutex> lock(mutex);
-  return process_info_vec[index];
+  std::unique_lock<std::mutex> lock(mutex_);
+  return process_info_map_[index];
 }
 
-std::vector<ProcessInfo::ConstPtr> ProcessInfoContainer::getProcessInfoVec()
+std::map<std::size_t, ProcessInfo::ConstPtr> ProcessInfoContainer::getProcessInfoMap()
 {
-  std::unique_lock<std::mutex> lock(mutex);
-  return process_info_vec;
+  std::unique_lock<std::mutex> lock(mutex_);
+  return process_info_map_;
 }
 
 ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
@@ -281,5 +281,8 @@ void ProcessInput::addProcessInfo(const ProcessInfo::ConstPtr& process_info)
   process_infos->addProcessInfo(process_info);
 }
 ProcessInfo::ConstPtr ProcessInput::getProcessInfo(const std::size_t& index) { return (*process_infos)[index]; }
-std::vector<ProcessInfo::ConstPtr> ProcessInput::getProcessInfoVec() { return process_infos->getProcessInfoVec(); }
+std::map<std::size_t, ProcessInfo::ConstPtr> ProcessInput::getProcessInfoMap()
+{
+  return process_infos->getProcessInfoMap();
+}
 }  // namespace tesseract_planning
