@@ -1,9 +1,11 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
+#include <type_traits>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/utils.h>
+#include <tesseract_common/sfinae_utils.h>
 
 TEST(TesseractCommonUnit, isNumeric)  // NOLINT
 {
@@ -137,6 +139,26 @@ TEST(TesseractCommonUnit, trim)  // NOLINT
   s = check3;
   tesseract_common::trim(s);
   EXPECT_EQ(s, check_trimmed);
+}
+
+struct TestHasMemberFunction
+{
+  bool update() const { return true; }
+};
+
+struct TestMissingMemberFunction
+{
+  bool missingUpdate() const { return false; }
+};
+
+CREATE_MEMBER_CHECK(update);
+
+TEST(TesseractCommonUnit, sfinaeHasMemberFunction)  // NOLINT
+{
+  bool t_true = has_member_update<TestHasMemberFunction>::value;
+  bool t_false = has_member_update<TestMissingMemberFunction>::value;
+  EXPECT_TRUE(t_true);
+  EXPECT_FALSE(t_false);
 }
 
 int main(int argc, char** argv)
