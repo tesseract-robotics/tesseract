@@ -33,10 +33,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/sfinae_utils.h>
+
 namespace tesseract_planning
 {
-namespace detail
+namespace detail_waypoint
 {
+CREATE_MEMBER_CHECK(getType);
+CREATE_MEMBER_CHECK(print);
+CREATE_MEMBER_CHECK(toXML);
+
 struct WaypointInnerBase
 {
   WaypointInnerBase() = default;
@@ -62,7 +68,12 @@ struct WaypointInnerBase
 template <typename T>
 struct WaypointInner final : WaypointInnerBase
 {
-  WaypointInner() = default;
+  WaypointInner()
+  {
+    static_assert(has_member_getType<T>::value, "Class does not have member function 'getType'");
+    static_assert(has_member_print<T>::value, "Class does not have member function 'print'");
+    static_assert(has_member_toXML<T>::value, "Class does not have member function 'toXML'");
+  }
   ~WaypointInner() override = default;
   WaypointInner(const WaypointInner&) = delete;
   WaypointInner(WaypointInner&&) = delete;
@@ -70,8 +81,18 @@ struct WaypointInner final : WaypointInnerBase
   WaypointInner& operator=(WaypointInner&&) = delete;
 
   // Constructors from T (copy and move variants).
-  explicit WaypointInner(T waypoint) : waypoint_(std::move(waypoint)) {}
-  explicit WaypointInner(T&& waypoint) : waypoint_(std::move(waypoint)) {}
+  explicit WaypointInner(T waypoint) : waypoint_(std::move(waypoint))
+  {
+    static_assert(has_member_getType<T>::value, "Class does not have member function 'getType'");
+    static_assert(has_member_print<T>::value, "Class does not have member function 'print'");
+    static_assert(has_member_toXML<T>::value, "Class does not have member function 'toXML'");
+  }
+  explicit WaypointInner(T&& waypoint) : waypoint_(std::move(waypoint))
+  {
+    static_assert(has_member_getType<T>::value, "Class does not have member function 'getType'");
+    static_assert(has_member_print<T>::value, "Class does not have member function 'print'");
+    static_assert(has_member_toXML<T>::value, "Class does not have member function 'toXML'");
+  }
 
   std::unique_ptr<WaypointInnerBase> clone() const override { return std::make_unique<WaypointInner>(waypoint_); }
 
@@ -86,7 +107,7 @@ struct WaypointInner final : WaypointInnerBase
   T waypoint_;
 };
 
-}  // namespace detail
+}  // namespace detail_waypoint
 
 class Waypoint
 {
@@ -104,7 +125,7 @@ public:
 
   template <typename T, generic_ctor_enabler<T> = 0>
   Waypoint(T&& waypoint)  // NOLINT
-    : waypoint_(std::make_unique<detail::WaypointInner<uncvref_t<T>>>(waypoint))
+    : waypoint_(std::make_unique<detail_waypoint::WaypointInner<uncvref_t<T>>>(waypoint))
   {
   }
 
@@ -156,7 +177,7 @@ public:
   }
 
 private:
-  std::unique_ptr<detail::WaypointInnerBase> waypoint_;
+  std::unique_ptr<detail_waypoint::WaypointInnerBase> waypoint_;
 };
 
 }  // namespace tesseract_planning

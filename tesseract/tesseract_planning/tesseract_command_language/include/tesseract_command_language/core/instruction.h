@@ -33,11 +33,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/core/waypoint.h>
+#include <tesseract_common/sfinae_utils.h>
 
 namespace tesseract_planning
 {
-namespace detail
+namespace detail_instruction
 {
+CREATE_MEMBER_CHECK(getType);
+CREATE_MEMBER_CHECK(getDescription);
+CREATE_MEMBER_CHECK(setDescription);
+CREATE_MEMBER_CHECK(print);
+
 struct InstructionInnerBase
 {
   InstructionInnerBase() = default;
@@ -67,7 +73,13 @@ struct InstructionInnerBase
 template <typename T>
 struct InstructionInner final : InstructionInnerBase
 {
-  InstructionInner() = default;
+  InstructionInner()
+  {
+    static_assert(has_member_getType<T>::value, "Class does not have member function 'getType'");
+    static_assert(has_member_getDescription<T>::value, "Class does not have member function 'getDescription'");
+    static_assert(has_member_setDescription<T>::value, "Class does not have member function 'setDescription'");
+    static_assert(has_member_print<T>::value, "Class does not have member function 'print'");
+  }
   ~InstructionInner() override = default;
   InstructionInner(const InstructionInner&) = delete;
   InstructionInner(InstructionInner&&) = delete;
@@ -75,8 +87,21 @@ struct InstructionInner final : InstructionInnerBase
   InstructionInner& operator=(InstructionInner&&) = delete;
 
   // Constructors from T (copy and move variants).
-  explicit InstructionInner(T instruction) : instruction_(std::move(instruction)) {}
-  explicit InstructionInner(T&& instruction) : instruction_(std::move(instruction)) {}
+  explicit InstructionInner(T instruction) : instruction_(std::move(instruction))
+  {
+    static_assert(has_member_getType<T>::value, "Class does not have member function 'getType'");
+    static_assert(has_member_getDescription<T>::value, "Class does not have member function 'getDescription'");
+    static_assert(has_member_setDescription<T>::value, "Class does not have member function 'setDescription'");
+    static_assert(has_member_print<T>::value, "Class does not have member function 'print'");
+  }
+
+  explicit InstructionInner(T&& instruction) : instruction_(std::move(instruction))
+  {
+    static_assert(has_member_getType<T>::value, "Class does not have member function 'getType'");
+    static_assert(has_member_getDescription<T>::value, "Class does not have member function 'getDescription'");
+    static_assert(has_member_setDescription<T>::value, "Class does not have member function 'setDescription'");
+    static_assert(has_member_print<T>::value, "Class does not have member function 'print'");
+  }
 
   std::unique_ptr<InstructionInnerBase> clone() const override
   {
@@ -98,7 +123,7 @@ struct InstructionInner final : InstructionInnerBase
   T instruction_;
 };
 
-}  // namespace detail
+}  // namespace detail_instruction
 
 class Instruction
 {
@@ -116,7 +141,7 @@ public:
 
   template <typename T, generic_ctor_enabler<T> = 0>
   Instruction(T&& instruction)  // NOLINT
-    : instruction_(std::make_unique<detail::InstructionInner<uncvref_t<T>>>(instruction))
+    : instruction_(std::make_unique<detail_instruction::InstructionInner<uncvref_t<T>>>(instruction))
   {
   }
 
@@ -172,7 +197,7 @@ public:
   }
 
 private:
-  std::unique_ptr<detail::InstructionInnerBase> instruction_;
+  std::unique_ptr<detail_instruction::InstructionInnerBase> instruction_;
 };
 
 }  // namespace tesseract_planning
