@@ -60,20 +60,25 @@ ContinuousContactCheckProcessGenerator::ContinuousContactCheckProcessGenerator(d
 
 const std::string& ContinuousContactCheckProcessGenerator::getName() const { return name_; }
 
-std::function<void()> ContinuousContactCheckProcessGenerator::generateTask(ProcessInput input)
+std::function<void()> ContinuousContactCheckProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
 {
-  return [=]() { process(input); };
+  return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> ContinuousContactCheckProcessGenerator::generateConditionalTask(ProcessInput input)
+std::function<int()> ContinuousContactCheckProcessGenerator::generateConditionalTask(ProcessInput input,
+                                                                                     std::size_t unique_id)
 {
-  return [=]() { return conditionalProcess(input); };
+  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
-int ContinuousContactCheckProcessGenerator::conditionalProcess(ProcessInput input) const
+int ContinuousContactCheckProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
   if (abort_)
     return 0;
+
+  auto info = std::make_shared<ContinuousContactCheckProcessInfo>(unique_id, name_);
+  info->return_value = 0;
+  input.addProcessInfo(info);
 
   // --------------------
   // Check that inputs are valid
@@ -81,7 +86,8 @@ int ContinuousContactCheckProcessGenerator::conditionalProcess(ProcessInput inpu
   Instruction* input_results = input.getResults();
   if (!isCompositeInstruction(*input_results))
   {
-    CONSOLE_BRIDGE_logError("Input seed to TrajOpt Planner must be a composite instruction");
+    info->message = "Input seed to ContinuousContactCheckProcessGenerator must be a composite instruction";
+    CONSOLE_BRIDGE_logError("%s", info->message.c_str());
     return 0;
   }
 
@@ -118,16 +124,25 @@ int ContinuousContactCheckProcessGenerator::conditionalProcess(ProcessInput inpu
           CONSOLE_BRIDGE_logDebug(("timestep: " + std::to_string(i) + " Links: " + contact.link_names[0] + ", " +
                                    contact.link_names[1] + " Dist: " + std::to_string(contact.distance))
                                       .c_str());
+    info->contact_results = contacts;
     return 0;
   }
 
   CONSOLE_BRIDGE_logDebug("Continuous contact check succeeded");
+  info->return_value = 1;
   return 1;
 }
 
-void ContinuousContactCheckProcessGenerator::process(ProcessInput input) const { conditionalProcess(input); }
+void ContinuousContactCheckProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+{
+  conditionalProcess(input, unique_id);
+}
 
 bool ContinuousContactCheckProcessGenerator::getAbort() const { return abort_; }
 void ContinuousContactCheckProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 
+ContinuousContactCheckProcessInfo::ContinuousContactCheckProcessInfo(std::size_t unique_id, std::string name)
+  : ProcessInfo(unique_id, std::move(name))
+{
+}
 }  // namespace tesseract_planning

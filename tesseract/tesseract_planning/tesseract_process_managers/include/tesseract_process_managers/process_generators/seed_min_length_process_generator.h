@@ -54,9 +54,9 @@ public:
 
   const std::string& getName() const override;
 
-  std::function<void()> generateTask(ProcessInput input) override;
+  std::function<void()> generateTask(ProcessInput input, std::size_t unique_id) override;
 
-  std::function<int()> generateConditionalTask(ProcessInput input) override;
+  std::function<int()> generateConditionalTask(ProcessInput input, std::size_t unique_id) override;
 
   bool getAbort() const override;
 
@@ -70,14 +70,20 @@ private:
 
   long min_length_{ 10 };
 
-  int conditionalProcess(ProcessInput input) const;
+  int conditionalProcess(ProcessInput input, std::size_t unique_id) const;
 
-  void process(ProcessInput input) const;
+  void process(ProcessInput input, std::size_t unique_id) const;
 
   void subdivide(CompositeInstruction& composite,
                  const CompositeInstruction& current_composite,
                  Instruction& start_instruction,
                  int subdivisions) const;
+};
+
+class SeedMinLengthProcessInfo : public ProcessInfo
+{
+public:
+  SeedMinLengthProcessInfo(std::size_t unique_id, std::string name = "Seed Min Length");
 };
 }  // namespace tesseract_planning
 

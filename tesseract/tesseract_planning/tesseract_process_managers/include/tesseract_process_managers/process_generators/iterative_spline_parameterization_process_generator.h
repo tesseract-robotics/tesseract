@@ -71,9 +71,9 @@ public:
 
   const std::string& getName() const override;
 
-  std::function<void()> generateTask(ProcessInput input) override;
+  std::function<void()> generateTask(ProcessInput input, std::size_t unique_id) override;
 
-  std::function<int()> generateConditionalTask(ProcessInput input) override;
+  std::function<int()> generateConditionalTask(ProcessInput input, std::size_t unique_id) override;
 
   bool getAbort() const override;
 
@@ -90,9 +90,15 @@ private:
 
   IterativeSplineParameterization solver_;
 
-  int conditionalProcess(ProcessInput input) const;
+  int conditionalProcess(ProcessInput input, std::size_t unique_id) const;
 
-  void process(ProcessInput input) const;
+  void process(ProcessInput input, std::size_t unique_id) const;
+};
+class IterativeSplineParameterizationProcessInfo : public ProcessInfo
+{
+public:
+  IterativeSplineParameterizationProcessInfo(std::size_t unique_id,
+                                             std::string name = "Iterative Spline Parameterization");
 };
 }  // namespace tesseract_planning
 #endif  // TESSERACT_PROCESS_MANAGERS_ITERATIVE_SPLINE_PARAMETERIZATION_PROCESS_GENERATOR_H

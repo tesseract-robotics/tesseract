@@ -42,20 +42,24 @@ FixStateBoundsProcessGenerator::FixStateBoundsProcessGenerator(std::string name)
 
 const std::string& FixStateBoundsProcessGenerator::getName() const { return name_; }
 
-std::function<void()> FixStateBoundsProcessGenerator::generateTask(ProcessInput input)
+std::function<void()> FixStateBoundsProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
 {
-  return [=]() { process(input); };
+  return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> FixStateBoundsProcessGenerator::generateConditionalTask(ProcessInput input)
+std::function<int()> FixStateBoundsProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
 {
-  return [=]() { return conditionalProcess(input); };
+  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
-int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
+int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
   if (abort_)
     return 0;
+
+  auto info = std::make_shared<FixStateBoundsProcessInfo>(unique_id, name_);
+  info->return_value = 0;
+  input.addProcessInfo(info);
 
   // --------------------
   // Check that inputs are valid
@@ -63,7 +67,8 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
   const Instruction* input_instruction = input.getInstruction();
   if (!isCompositeInstruction(*input_instruction))
   {
-    CONSOLE_BRIDGE_logError("Input instruction to FixStateBounds must be a composite instruction");
+    info->message = "Input instruction to FixStateBounds must be a composite instruction";
+    CONSOLE_BRIDGE_logError("%s", info->message.c_str());
     return 0;
   }
 
@@ -97,7 +102,10 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
     cur_composite_profile = it->second;
 
   if (cur_composite_profile->mode == FixStateBoundsProfile::Settings::DISABLED)
+  {
+    info->return_value = 1;
     return 1;
+  }
 
   auto limits = fwd_kin->getLimits().joint_limits;
   switch (cur_composite_profile->mode)
@@ -140,6 +148,7 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
       if (flattened.empty())
       {
         CONSOLE_BRIDGE_logWarn("FixStateBoundsProcessGenerator found no PlanInstructions to process");
+        info->return_value = 1;
         return 1;
       }
 
@@ -163,16 +172,25 @@ int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input) const
     }
     break;
     case FixStateBoundsProfile::Settings::DISABLED:
+      info->return_value = 1;
       return 1;
   }
 
   CONSOLE_BRIDGE_logDebug("FixStateBoundsProcessGenerator succeeded");
+  info->return_value = 1;
   return 1;
 }
 
-void FixStateBoundsProcessGenerator::process(ProcessInput input) const { conditionalProcess(input); }
+void FixStateBoundsProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+{
+  conditionalProcess(input, unique_id);
+}
 
 bool FixStateBoundsProcessGenerator::getAbort() const { return abort_; }
 void FixStateBoundsProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 
+FixStateBoundsProcessInfo::FixStateBoundsProcessInfo(std::size_t unique_id, std::string name)
+  : ProcessInfo(unique_id, std::move(name))
+{
+}
 }  // namespace tesseract_planning

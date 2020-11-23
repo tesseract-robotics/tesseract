@@ -68,13 +68,17 @@ tf::Taskflow& GraphTaskflow::generateTaskflow(ProcessInput input,
     {
       case NodeType::TASK:
       {
-        tf::Task task = taskflow->emplace(node.process->generateTask(input)).name(node.process->getName());
+        tf::Task task = taskflow->placeholder();
+        task.work(node.process->generateTask(input, task.hash_value()));
+        task.name(node.process->getName());
         process_tasks_.push_back(task);
         break;
       }
       case NodeType::CONDITIONAL:
       {
-        tf::Task task = taskflow->emplace(node.process->generateConditionalTask(input)).name(node.process->getName());
+        tf::Task task = taskflow->placeholder();
+        task.work(node.process->generateConditionalTask(input, task.hash_value()));
+        task.name(node.process->getName());
         process_tasks_.push_back(task);
         break;
       }

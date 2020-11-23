@@ -50,20 +50,24 @@ SeedMinLengthProcessGenerator::SeedMinLengthProcessGenerator(long min_length, st
 
 const std::string& SeedMinLengthProcessGenerator::getName() const { return name_; }
 
-std::function<void()> SeedMinLengthProcessGenerator::generateTask(ProcessInput input)
+std::function<void()> SeedMinLengthProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
 {
-  return [=]() { process(input); };
+  return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> SeedMinLengthProcessGenerator::generateConditionalTask(ProcessInput input)
+std::function<int()> SeedMinLengthProcessGenerator::generateConditionalTask(ProcessInput input, std::size_t unique_id)
 {
-  return [=]() { return conditionalProcess(input); };
+  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
-int SeedMinLengthProcessGenerator::conditionalProcess(ProcessInput input) const
+int SeedMinLengthProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
   if (abort_)
     return 0;
+
+  auto info = std::make_shared<SeedMinLengthProcessInfo>(unique_id, name_);
+  info->return_value = 0;
+  input.addProcessInfo(info);
 
   // Check that inputs are valid
   Instruction* input_results = input.getResults();
@@ -76,7 +80,10 @@ int SeedMinLengthProcessGenerator::conditionalProcess(ProcessInput input) const
   CompositeInstruction& results = *(input_results->cast<CompositeInstruction>());
   long cnt = getMoveInstructionCount(results);
   if (cnt >= min_length_)
+  {
+    info->return_value = 1;
     return 1;
+  }
 
   Instruction start_instruction = results.getStartInstruction();
   int subdivisions = static_cast<int>(std::ceil(static_cast<double>(min_length_) / static_cast<double>(cnt))) + 1;
@@ -89,10 +96,14 @@ int SeedMinLengthProcessGenerator::conditionalProcess(ProcessInput input) const
   results = new_results;
 
   CONSOLE_BRIDGE_logDebug("Seed Min Length Process Generator Succeeded!");
+  info->return_value = 1;
   return 1;
 }
 
-void SeedMinLengthProcessGenerator::process(ProcessInput input) const { conditionalProcess(input); }
+void SeedMinLengthProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+{
+  conditionalProcess(input, unique_id);
+}
 
 bool SeedMinLengthProcessGenerator::getAbort() const { return abort_; }
 void SeedMinLengthProcessGenerator::setAbort(bool abort) { abort_ = abort; }
@@ -148,5 +159,8 @@ void SeedMinLengthProcessGenerator::subdivide(CompositeInstruction& composite,
     }
   }
 }
-
+SeedMinLengthProcessInfo::SeedMinLengthProcessInfo(std::size_t unique_id, std::string name)
+  : ProcessInfo(unique_id, std::move(name))
+{
+}
 }  // namespace tesseract_planning

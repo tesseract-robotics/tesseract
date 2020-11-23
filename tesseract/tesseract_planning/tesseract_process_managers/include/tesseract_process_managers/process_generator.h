@@ -65,14 +65,14 @@ public:
    * @param input The process input
    * @return Task
    */
-  virtual std::function<void()> generateTask(ProcessInput input) = 0;
+  virtual std::function<void()> generateTask(ProcessInput input, std::size_t unique_id) = 0;
 
   /**
    * @brief Generate Conditional Task
    * @param input The process input
    * @return Conditional Task
    */
-  virtual std::function<int()> generateConditionalTask(ProcessInput input) = 0;
+  virtual std::function<int()> generateConditionalTask(ProcessInput input, std::size_t unique_id) = 0;
 
   /**
    * @brief Get the abort flag
