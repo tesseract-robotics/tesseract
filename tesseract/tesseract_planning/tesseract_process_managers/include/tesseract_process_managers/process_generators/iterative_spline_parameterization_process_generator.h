@@ -98,10 +98,7 @@ class IterativeSplineParameterizationProcessInfo : public ProcessInfo
 {
 public:
   IterativeSplineParameterizationProcessInfo(std::size_t unique_id,
-                                             std::string name = "Iterative Spline Parameterization")
-    : ProcessInfo(unique_id, std::move(name))
-  {
-  }
+                                             std::string name = "Iterative Spline Parameterization");
 };
 }  // namespace tesseract_planning
 #endif  // TESSERACT_PROCESS_MANAGERS_ITERATIVE_SPLINE_PARAMETERIZATION_PROCESS_GENERATOR_H

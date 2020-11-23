@@ -87,10 +87,7 @@ private:
 class ProfileSwitchProcessInfo : public ProcessInfo
 {
 public:
-  ProfileSwitchProcessInfo(std::size_t unique_id, std::string name = "Profile Switch")
-    : ProcessInfo(unique_id, std::move(name))
-  {
-  }
+  ProfileSwitchProcessInfo(std::size_t unique_id, std::string name = "Profile Switch");
 };
 }  // namespace tesseract_planning
 #endif  // TESSERACT_PROCESS_MANAGERS_PROFILE_SWITCH_PROCESS_GENERATOR_H

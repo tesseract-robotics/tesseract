@@ -121,10 +121,7 @@ private:
 class FixStateCollisionProcessInfo : public ProcessInfo
 {
 public:
-  FixStateCollisionProcessInfo(std::size_t unique_id, std::string name = "Fix State Collision")
-    : ProcessInfo(unique_id, std::move(name))
-  {
-  }
+  FixStateCollisionProcessInfo(std::size_t unique_id, std::string name = "Fix State Collision");
 
   std::vector<tesseract_collision::ContactResultMap> contact_results;
 };

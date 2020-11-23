@@ -158,4 +158,9 @@ void IterativeSplineParameterizationProcessGenerator::process(ProcessInput input
 bool IterativeSplineParameterizationProcessGenerator::getAbort() const { return abort_; }
 void IterativeSplineParameterizationProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 
+IterativeSplineParameterizationProcessInfo::IterativeSplineParameterizationProcessInfo(std::size_t unique_id,
+                                           std::string name)
+  : ProcessInfo(unique_id, std::move(name))
+{
+}
 }  // namespace tesseract_planning

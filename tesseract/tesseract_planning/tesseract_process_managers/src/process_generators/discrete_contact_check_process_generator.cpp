@@ -140,4 +140,8 @@ void DiscreteContactCheckProcessGenerator::process(ProcessInput input, std::size
 bool DiscreteContactCheckProcessGenerator::getAbort() const { return abort_; }
 void DiscreteContactCheckProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 
+DiscreteContactCheckProcessInfo::DiscreteContactCheckProcessInfo(std::size_t unique_id, std::string name)
+  : ProcessInfo(unique_id, std::move(name))
+{
+}
 }  // namespace tesseract_planning

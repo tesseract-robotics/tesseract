@@ -199,4 +199,8 @@ void MotionPlannerProcessGenerator::process(ProcessInput input, std::size_t uniq
 bool MotionPlannerProcessGenerator::getAbort() const { return abort_; }
 void MotionPlannerProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 
+MotionPlannerProcessInfo::MotionPlannerProcessInfo(std::size_t unique_id, std::string name)
+  : ProcessInfo(unique_id, std::move(name))
+{
+}
 }  // namespace tesseract_planning

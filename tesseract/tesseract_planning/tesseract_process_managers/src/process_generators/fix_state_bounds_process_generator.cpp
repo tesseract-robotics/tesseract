@@ -189,4 +189,8 @@ void FixStateBoundsProcessGenerator::process(ProcessInput input, std::size_t uni
 bool FixStateBoundsProcessGenerator::getAbort() const { return abort_; }
 void FixStateBoundsProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 
+FixStateBoundsProcessInfo::FixStateBoundsProcessInfo(std::size_t unique_id, std::string name)
+  : ProcessInfo(unique_id, std::move(name))
+{
+}
 }  // namespace tesseract_planning

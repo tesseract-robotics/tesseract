@@ -76,10 +76,7 @@ private:
 class MotionPlannerProcessInfo : public ProcessInfo
 {
 public:
-  MotionPlannerProcessInfo(std::size_t unique_id, std::string name = "Motion Planner Process Generator")
-    : ProcessInfo(unique_id, std::move(name))
-  {
-  }
+  MotionPlannerProcessInfo(std::size_t unique_id, std::string name = "Motion Planner Process Generator");
 };
 
 }  // namespace tesseract_planning

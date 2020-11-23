@@ -83,10 +83,7 @@ private:
 class SeedMinLengthProcessInfo : public ProcessInfo
 {
 public:
-  SeedMinLengthProcessInfo(std::size_t unique_id, std::string name = "Seed Min Length")
-    : ProcessInfo(unique_id, std::move(name))
-  {
-  }
+  SeedMinLengthProcessInfo(std::size_t unique_id, std::string name = "Seed Min Length");
 };
 }  // namespace tesseract_planning
 

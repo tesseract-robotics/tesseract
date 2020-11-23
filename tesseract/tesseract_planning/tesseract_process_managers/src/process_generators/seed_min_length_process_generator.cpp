@@ -159,5 +159,8 @@ void SeedMinLengthProcessGenerator::subdivide(CompositeInstruction& composite,
     }
   }
 }
-
+SeedMinLengthProcessInfo::SeedMinLengthProcessInfo(std::size_t unique_id, std::string name)
+  : ProcessInfo(unique_id, std::move(name))
+{
+}
 }  // namespace tesseract_planning

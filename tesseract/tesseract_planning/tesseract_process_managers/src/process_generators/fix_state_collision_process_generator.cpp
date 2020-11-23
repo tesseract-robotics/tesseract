@@ -407,4 +407,9 @@ void FixStateCollisionProcessGenerator::process(ProcessInput input, std::size_t 
 bool FixStateCollisionProcessGenerator::getAbort() const { return abort_; }
 void FixStateCollisionProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 
+FixStateCollisionProcessInfo::FixStateCollisionProcessInfo(std::size_t unique_id, std::string name)
+  : ProcessInfo(unique_id, std::move(name))
+{
+}
+
 }  // namespace tesseract_planning

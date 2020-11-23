@@ -79,10 +79,7 @@ private:
 class DiscreteContactCheckProcessInfo : public ProcessInfo
 {
 public:
-  DiscreteContactCheckProcessInfo(std::size_t unique_id, std::string name = "Discrete Contact Check Trajectory")
-    : ProcessInfo(unique_id, std::move(name))
-  {
-  }
+  DiscreteContactCheckProcessInfo(std::size_t unique_id, std::string name = "Discrete Contact Check Trajectory");
 
   std::vector<tesseract_collision::ContactResultMap> contact_results;
 };

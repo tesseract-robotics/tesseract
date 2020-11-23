@@ -78,10 +78,7 @@ private:
 class ContinuousContactCheckProcessInfo : public ProcessInfo
 {
 public:
-  ContinuousContactCheckProcessInfo(std::size_t unique_id, std::string name = "Continuous Contact Check Trajectory")
-    : ProcessInfo(unique_id, std::move(name))
-  {
-  }
+  ContinuousContactCheckProcessInfo(std::size_t unique_id, std::string name = "Continuous Contact Check Trajectory");
 
   std::vector<tesseract_collision::ContactResultMap> contact_results;
 };
