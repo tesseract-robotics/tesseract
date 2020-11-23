@@ -159,7 +159,7 @@ bool IterativeSplineParameterizationProcessGenerator::getAbort() const { return 
 void IterativeSplineParameterizationProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 
 IterativeSplineParameterizationProcessInfo::IterativeSplineParameterizationProcessInfo(std::size_t unique_id,
-                                           std::string name)
+                                                                                       std::string name)
   : ProcessInfo(unique_id, std::move(name))
 {
 }
