@@ -87,7 +87,7 @@ class FixStateCollisionProcessGenerator : public ProcessGenerator
 public:
   using UPtr = std::unique_ptr<FixStateCollisionProcessGenerator>;
 
-  FixStateCollisionProcessGenerator(std::string name = "FixStateCollision");
+  FixStateCollisionProcessGenerator(std::string name = "Fix State Collision");
 
   ~FixStateCollisionProcessGenerator() override = default;
   FixStateCollisionProcessGenerator(const FixStateCollisionProcessGenerator&) = delete;
@@ -97,9 +97,9 @@ public:
 
   const std::string& getName() const override;
 
-  std::function<void()> generateTask(ProcessInput input) override;
+  std::function<void()> generateTask(ProcessInput input, std::size_t unique_id) override;
 
-  std::function<int()> generateConditionalTask(ProcessInput input) override;
+  std::function<int()> generateConditionalTask(ProcessInput input, std::size_t unique_id) override;
 
   bool getAbort() const override;
 
@@ -113,9 +113,17 @@ private:
 
   std::string name_;
 
-  int conditionalProcess(ProcessInput input) const;
+  int conditionalProcess(ProcessInput input, std::size_t unique_id) const;
 
-  void process(ProcessInput input) const;
+  void process(ProcessInput input, std::size_t unique_id) const;
+};
+
+class FixStateCollisionProcessInfo : public ProcessInfo
+{
+public:
+  FixStateCollisionProcessInfo(std::size_t unique_id, std::string name = "Fix State Collision");
+
+  std::vector<tesseract_collision::ContactResultMap> contact_results;
 };
 
 /**

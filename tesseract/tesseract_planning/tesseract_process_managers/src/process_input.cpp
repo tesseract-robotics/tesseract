@@ -40,6 +40,24 @@ namespace tesseract_planning
 static const ManipulatorInfo EMPTY_MANIPULATOR_INFO;
 static const PlannerProfileRemapping EMPTY_PROFILE_MAPPING;
 
+void ProcessInfoContainer::addProcessInfo(ProcessInfo::ConstPtr process_info)
+{
+  std::unique_lock<std::mutex> lock(mutex_);
+  process_info_map_[process_info->unique_id] = std::move(process_info);
+}
+
+ProcessInfo::ConstPtr ProcessInfoContainer::operator[](std::size_t index)
+{
+  std::unique_lock<std::mutex> lock(mutex_);
+  return process_info_map_[index];
+}
+
+std::map<std::size_t, ProcessInfo::ConstPtr> ProcessInfoContainer::getProcessInfoMap()
+{
+  std::unique_lock<std::mutex> lock(mutex_);
+  return process_info_map_;
+}
+
 ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                            const Instruction* instruction,
                            const ManipulatorInfo& manip_info,
@@ -53,6 +71,7 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
   , instruction_(instruction)
   , results_(seed)
 {
+  process_infos = std::make_shared<ProcessInfoContainer>();
 }
 
 ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
@@ -70,6 +89,7 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
   , instruction_(instruction)
   , results_(seed)
 {
+  process_infos = std::make_shared<ProcessInfoContainer>();
 }
 
 ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
@@ -86,6 +106,7 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
   , instruction_(instruction)
   , results_(seed)
 {
+  process_infos = std::make_shared<ProcessInfoContainer>();
 }
 
 ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
@@ -100,6 +121,7 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
   , instruction_(instruction)
   , results_(seed)
 {
+  process_infos = std::make_shared<ProcessInfoContainer>();
 }
 
 ProcessInput ProcessInput::operator[](std::size_t index)
@@ -254,4 +276,13 @@ Instruction ProcessInput::getEndInstruction() const
   return *ci;
 }
 
+void ProcessInput::addProcessInfo(const ProcessInfo::ConstPtr& process_info)
+{
+  process_infos->addProcessInfo(process_info);
+}
+ProcessInfo::ConstPtr ProcessInput::getProcessInfo(const std::size_t& index) { return (*process_infos)[index]; }
+std::map<std::size_t, ProcessInfo::ConstPtr> ProcessInput::getProcessInfoMap()
+{
+  return process_infos->getProcessInfoMap();
+}
 }  // namespace tesseract_planning
