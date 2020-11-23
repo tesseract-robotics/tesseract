@@ -29,6 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
+#include <map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/core/instruction.h>
@@ -38,6 +39,38 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
+class ProcessInfo
+{
+public:
+  using Ptr = std::shared_ptr<ProcessInfo>;
+  using ConstPtr = std::shared_ptr<const ProcessInfo>;
+
+  ProcessInfo(std::size_t unique_id, std::string name = "") : unique_id(unique_id), message(std::move(name)) {}
+
+  int return_value;
+
+  std::size_t unique_id;
+
+  std::string process_name;
+
+  std::string message;
+};
+
+/** @brief A threadsafe container for ProcessInfos */
+struct ProcessInfoContainer
+{
+  void addProcessInfo(ProcessInfo::ConstPtr process_info);
+
+  ProcessInfo::ConstPtr operator[](std::size_t index);
+
+  /** @brief Get a copy of the process_info_vec in case it gets resized*/
+  std::map<std::size_t, ProcessInfo::ConstPtr> getProcessInfoMap();
+
+private:
+  std::mutex mutex_;
+  std::map<std::size_t, ProcessInfo::ConstPtr> process_info_map_;
+};
+
 /**
  * @brief This struct is passed as an input to each process in the decision tree
  *
@@ -130,6 +163,10 @@ struct ProcessInput
   void setEndInstruction(std::vector<std::size_t> end);
   Instruction getEndInstruction() const;
 
+  void addProcessInfo(const ProcessInfo::ConstPtr& process_info);
+  ProcessInfo::ConstPtr getProcessInfo(const std::size_t& index);
+  std::map<std::size_t, ProcessInfo::ConstPtr> getProcessInfoMap();
+
 protected:
   /** @brief Instructions to be carried out by process */
   const Instruction* instruction_;
@@ -151,6 +188,8 @@ protected:
 
   /** @brief Indices to the end instruction in the results data struction */
   std::vector<std::size_t> end_instruction_indice_;
+
+  std::shared_ptr<ProcessInfoContainer> process_infos;
 };
 
 }  // namespace tesseract_planning

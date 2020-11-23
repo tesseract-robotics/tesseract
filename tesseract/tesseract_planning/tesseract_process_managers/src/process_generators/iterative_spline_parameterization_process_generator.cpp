@@ -56,20 +56,26 @@ IterativeSplineParameterizationProcessGenerator::IterativeSplineParameterization
 
 const std::string& IterativeSplineParameterizationProcessGenerator::getName() const { return name_; }
 
-std::function<void()> IterativeSplineParameterizationProcessGenerator::generateTask(ProcessInput input)
+std::function<void()> IterativeSplineParameterizationProcessGenerator::generateTask(ProcessInput input,
+                                                                                    std::size_t unique_id)
 {
-  return [=]() { process(input); };
+  return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> IterativeSplineParameterizationProcessGenerator::generateConditionalTask(ProcessInput input)
+std::function<int()> IterativeSplineParameterizationProcessGenerator::generateConditionalTask(ProcessInput input,
+                                                                                              std::size_t unique_id)
 {
-  return [=]() { return conditionalProcess(input); };
+  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
-int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessInput input) const
+int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
   if (abort_)
     return 0;
+
+  auto info = std::make_shared<IterativeSplineParameterizationProcessInfo>(unique_id, name_);
+  info->return_value = 0;
+  input.addProcessInfo(info);
 
   // --------------------
   // Check that inputs are valid
@@ -99,6 +105,7 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
   if (flattened.empty())
   {
     CONSOLE_BRIDGE_logWarn("Iterative spline time parameterization found no MoveInstructions to process");
+    info->return_value = 1;
     return 1;
   }
 
@@ -139,12 +146,21 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
   }
 
   CONSOLE_BRIDGE_logDebug("Iterative spline time parameterization succeeded");
+  info->return_value = 1;
   return 1;
 }
 
-void IterativeSplineParameterizationProcessGenerator::process(ProcessInput input) const { conditionalProcess(input); }
+void IterativeSplineParameterizationProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+{
+  conditionalProcess(input, unique_id);
+}
 
 bool IterativeSplineParameterizationProcessGenerator::getAbort() const { return abort_; }
 void IterativeSplineParameterizationProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 
+IterativeSplineParameterizationProcessInfo::IterativeSplineParameterizationProcessInfo(std::size_t unique_id,
+                                                                                       std::string name)
+  : ProcessInfo(unique_id, std::move(name))
+{
+}
 }  // namespace tesseract_planning

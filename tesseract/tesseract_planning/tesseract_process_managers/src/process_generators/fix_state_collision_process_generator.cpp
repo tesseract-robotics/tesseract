@@ -266,20 +266,25 @@ FixStateCollisionProcessGenerator::FixStateCollisionProcessGenerator(std::string
 
 const std::string& FixStateCollisionProcessGenerator::getName() const { return name_; }
 
-std::function<void()> FixStateCollisionProcessGenerator::generateTask(ProcessInput input)
+std::function<void()> FixStateCollisionProcessGenerator::generateTask(ProcessInput input, std::size_t unique_id)
 {
-  return [=]() { process(input); };
+  return [=]() { process(input, unique_id); };
 }
 
-std::function<int()> FixStateCollisionProcessGenerator::generateConditionalTask(ProcessInput input)
+std::function<int()> FixStateCollisionProcessGenerator::generateConditionalTask(ProcessInput input,
+                                                                                std::size_t unique_id)
 {
-  return [=]() { return conditionalProcess(input); };
+  return [=]() { return conditionalProcess(input, unique_id); };
 }
 
-int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) const
+int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
   if (abort_)
     return 0;
+
+  auto info = std::make_shared<FixStateCollisionProcessInfo>(unique_id, name_);
+  info->return_value = 0;
+  input.addProcessInfo(info);
 
   // --------------------
   // Check that inputs are valid
@@ -287,7 +292,8 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) co
   const Instruction* input_intruction = input.getInstruction();
   if (!isCompositeInstruction(*(input_intruction)))
   {
-    CONSOLE_BRIDGE_logError("Input instruction to FixStateCollision must be a composite instruction");
+    info->message = "Input seed to FixStateCollision must be a composite instruction";
+    CONSOLE_BRIDGE_logError("%s", info->message.c_str());
     return 0;
   }
 
@@ -358,6 +364,7 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) co
       if (flattened.empty())
       {
         CONSOLE_BRIDGE_logWarn("FixStateCollisionProcessGenerator found no PlanInstructions to process");
+        info->return_value = 1;
         return 1;
       }
 
@@ -383,16 +390,26 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input) co
     }
     break;
     case FixStateCollisionProfile::Settings::DISABLED:
+      info->return_value = 1;
       return 1;
   }
 
   CONSOLE_BRIDGE_logDebug("FixStateCollisionProcessGenerator succeeded");
+  info->return_value = 1;
   return 1;
 }
 
-void FixStateCollisionProcessGenerator::process(ProcessInput input) const { conditionalProcess(input); }
+void FixStateCollisionProcessGenerator::process(ProcessInput input, std::size_t unique_id) const
+{
+  conditionalProcess(input, unique_id);
+}
 
 bool FixStateCollisionProcessGenerator::getAbort() const { return abort_; }
 void FixStateCollisionProcessGenerator::setAbort(bool abort) { abort_ = abort; }
+
+FixStateCollisionProcessInfo::FixStateCollisionProcessInfo(std::size_t unique_id, std::string name)
+  : ProcessInfo(unique_id, std::move(name))
+{
+}
 
 }  // namespace tesseract_planning

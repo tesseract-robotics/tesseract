@@ -78,9 +78,9 @@ public:
 
   const std::string& getName() const override;
 
-  std::function<void()> generateTask(ProcessInput input) override;
+  std::function<void()> generateTask(ProcessInput input, std::size_t unique_id) override;
 
-  std::function<int()> generateConditionalTask(ProcessInput input) override;
+  std::function<int()> generateConditionalTask(ProcessInput input, std::size_t unique_id) override;
 
   bool getAbort() const override;
 
@@ -94,9 +94,17 @@ private:
 
   std::string name_;
 
-  int conditionalProcess(ProcessInput input) const;
+  int conditionalProcess(ProcessInput input, std::size_t unique_id) const;
 
-  void process(ProcessInput input) const;
+  void process(ProcessInput input, std::size_t unique_id) const;
+};
+
+class FixStateBoundsProcessInfo : public ProcessInfo
+{
+public:
+  FixStateBoundsProcessInfo(std::size_t unique_id, std::string name = "Fix State Bounds");
+
+  std::vector<tesseract_collision::ContactResultMap> contact_results;
 };
 }  // namespace tesseract_planning
 #endif  // TESSERACT_PROCESS_MANAGERS_FIX_STATE_BOUNDS_PROCESS_GENERATOR_H

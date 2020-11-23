@@ -32,6 +32,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_generator.h>
+#include <tesseract_process_managers/process_input.h>
 
 namespace tesseract_planning
 {
@@ -54,9 +55,9 @@ public:
 
   const std::string& getName() const override;
 
-  std::function<void()> generateTask(ProcessInput input) override;
+  std::function<void()> generateTask(ProcessInput input, std::size_t unique_id) override;
 
-  std::function<int()> generateConditionalTask(ProcessInput input) override;
+  std::function<int()> generateConditionalTask(ProcessInput input, std::size_t unique_id) override;
 
   bool getAbort() const override;
 
@@ -70,9 +71,17 @@ private:
 
   std::string name_;
 
-  int conditionalProcess(ProcessInput input) const;
+  int conditionalProcess(ProcessInput input, std::size_t unique_id) const;
 
-  void process(ProcessInput input) const;
+  void process(ProcessInput input, std::size_t unique_id) const;
+};
+
+class DiscreteContactCheckProcessInfo : public ProcessInfo
+{
+public:
+  DiscreteContactCheckProcessInfo(std::size_t unique_id, std::string name = "Discrete Contact Check Trajectory");
+
+  std::vector<tesseract_collision::ContactResultMap> contact_results;
 };
 
 }  // namespace tesseract_planning
