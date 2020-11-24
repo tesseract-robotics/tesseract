@@ -144,14 +144,26 @@ TEST(TesseractCommonUnit, trim)  // NOLINT
 struct TestHasMemberFunction
 {
   bool update() const { return true; }
+  int add(int a) const { return a + 1; }
+};
+
+struct TestHasMemberWithArgFunction
+{
+  bool update(std::shared_ptr<TestHasMemberWithArgFunction>& p) { return (p == nullptr); }
+  double add(double a, double b) const { return a + b; }
 };
 
 struct TestMissingMemberFunction
 {
   bool missingUpdate() const { return false; }
+  double add(int a) const { return a + 1; }
 };
 
 CREATE_MEMBER_CHECK(update);
+CREATE_MEMBER_FUNC_INVOCABLE_CHECK(update, std::shared_ptr<T>&);
+CREATE_MEMBER_FUNC_INVOCABLE_CHECK(add, double, double);
+CREATE_MEMBER_FUNC_RETURN_TYPE_CHECK(add, int, int);
+CREATE_MEMBER_FUNC_SIGNATURE_CHECK(add, double, double, double);
 
 TEST(TesseractCommonUnit, sfinaeHasMemberFunction)  // NOLINT
 {
@@ -159,6 +171,34 @@ TEST(TesseractCommonUnit, sfinaeHasMemberFunction)  // NOLINT
   bool t_false = has_member_update<TestMissingMemberFunction>::value;
   EXPECT_TRUE(t_true);
   EXPECT_FALSE(t_false);
+}
+
+TEST(TesseractCommonUnit, sfinaeHasMemberFunctionInvocable)  // NOLINT
+{
+  bool i_update_true = has_member_func_invocable_update<TestHasMemberWithArgFunction>::value;
+  bool i_add_true = has_member_func_invocable_add<TestHasMemberWithArgFunction>::value;
+  bool i_update_false = has_member_func_invocable_update<TestHasMemberFunction>::value;
+  bool i_add_false = has_member_func_invocable_add<TestHasMemberFunction>::value;
+  EXPECT_TRUE(i_update_true);
+  EXPECT_TRUE(i_add_true);
+  EXPECT_FALSE(i_update_false);
+  EXPECT_FALSE(i_add_false);
+}
+
+TEST(TesseractCommonUnit, sfinaeHasMemberFunctionWithReturnType)  // NOLINT
+{
+  bool i_add_true = has_member_func_return_type_add<TestHasMemberFunction>::value;
+  bool t_add_false = has_member_func_return_type_add<TestMissingMemberFunction>::value;
+  EXPECT_TRUE(i_add_true);
+  EXPECT_FALSE(t_add_false);
+}
+
+TEST(TesseractCommonUnit, sfinaeHasMemberFunctionSignature)  // NOLINT
+{
+  bool i_add_true = has_member_func_signature_add<TestHasMemberWithArgFunction>::value;
+  bool t_add_false = has_member_func_signature_add<TestMissingMemberFunction>::value;
+  EXPECT_TRUE(i_add_true);
+  EXPECT_FALSE(t_add_false);
 }
 
 int main(int argc, char** argv)
