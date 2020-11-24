@@ -223,6 +223,17 @@ struct CollisionMarginData
   }
 
   /**
+   * @brief Set the default collision margin
+   * @param default_collision_margin New default collision margin
+   */
+  void setDefaultCollisionMarginData(const double& default_collision_margin)
+  {
+    default_collision_margin_ = default_collision_margin;
+    if (default_collision_margin_ > max_collision_margin_)
+      max_collision_margin_ = default_collision_margin_;
+  }
+
+  /**
    * @brief Set the margin for a given contact pair
    *
    * The order of the object names does not matter, that is handled internal to
@@ -273,6 +284,30 @@ struct CollisionMarginData
    * @return Max contact distance threshold
    */
   const double& getMaxCollisionMargin() const { return max_collision_margin_; }
+
+  /**
+   * @brief Increment all margins by input amount. Useful for inflating or reducing margins
+   * @param increment Amount to increment margins
+   */
+  void incrementMargins(const double& increment)
+  {
+    default_collision_margin_ += increment;
+    max_collision_margin_ += increment;
+    for (auto& pair : lookup_table_)
+      pair.second += increment;
+  }
+
+  /**
+   * @brief Scale all margins by input value
+   * @param scale Value by which all margins are multipled
+   */
+  void scaleMargins(const double& scale)
+  {
+    default_collision_margin_ *= scale;
+    max_collision_margin_ *= scale;
+    for (auto& pair : lookup_table_)
+      pair.second *= scale;
+  }
 
 private:
   /// Stores the collision margin used if no pair-specific one is set
@@ -348,12 +383,23 @@ enum class CollisionEvaluatorType
  */
 struct CollisionCheckConfig
 {
+  CollisionCheckConfig(double default_margin = 0,
+                       ContactRequest request = ContactRequest(),
+                       CollisionEvaluatorType type = CollisionEvaluatorType::DISCRETE,
+                       double longest_valid_segment_length = 0.005)
+    : collision_margin_data(default_margin)
+    , contact_request(std::move(request))
+    , type(type)
+    , longest_valid_segment_length(longest_valid_segment_length)
+  {
+  }
+
   /** @brief Stores information about how the margins allowed between collision objects*/
   CollisionMarginData collision_margin_data;
   /** @brief ContactRequest that will be used for this check. Default test type: FIRST*/
-  tesseract_collision::ContactRequest contact_request{ tesseract_collision::ContactTestType::FIRST };
+  ContactRequest contact_request;
   /** @brief Specifies the type of collision check to be performed. Default: DISCRETE */
-  CollisionEvaluatorType type{ CollisionEvaluatorType::DISCRETE };
+  CollisionEvaluatorType type;
   /** @brief Longest valid segment to use if type supports lvs. Default: 0.005*/
   double longest_valid_segment_length{ 0.005 };
 };
