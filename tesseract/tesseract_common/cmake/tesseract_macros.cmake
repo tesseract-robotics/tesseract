@@ -78,5 +78,5 @@ macro(tesseract_variables)
     endif()
   endif()
 
-  set(TESSERACT_CXX_VERSION 14)
+  set(TESSERACT_CXX_VERSION 17)
 endmacro()
