@@ -43,6 +43,12 @@ CREATE_MEMBER_CHECK(getType);
 CREATE_MEMBER_CHECK(getDescription);
 CREATE_MEMBER_CHECK(setDescription);
 CREATE_MEMBER_CHECK(print);
+CREATE_MEMBER_CHECK(toXML);
+CREATE_MEMBER_FUNC_SIGNATURE_NOARGS_CHECK(getType, int);
+CREATE_MEMBER_FUNC_SIGNATURE_NOARGS_CHECK(getDescription, const std::string&);
+CREATE_MEMBER_FUNC_SIGNATURE_CHECK(setDescription, void, const std::string&);
+CREATE_MEMBER_FUNC_SIGNATURE_CHECK(print, void, std::string);
+CREATE_MEMBER_FUNC_SIGNATURE_CHECK(toXML, tinyxml2::XMLElement*, tinyxml2::XMLDocument&);
 
 struct InstructionInnerBase
 {
@@ -79,6 +85,14 @@ struct InstructionInner final : InstructionInnerBase
     static_assert(has_member_getDescription<T>::value, "Class does not have member function 'getDescription'");
     static_assert(has_member_setDescription<T>::value, "Class does not have member function 'setDescription'");
     static_assert(has_member_print<T>::value, "Class does not have member function 'print'");
+    static_assert(has_member_toXML<T>::value, "Class does not have member function 'toXML'");
+    static_assert(has_member_func_signature_getType<T>::value, "Class 'getType' function has incorrect signature");
+    static_assert(has_member_func_signature_getDescription<T>::value,
+                  "Class 'getDescription' function has incorrect signature");
+    static_assert(has_member_func_signature_setDescription<T>::value,
+                  "Class 'setDescription' function has incorrect signature");
+    static_assert(has_member_func_signature_print<T>::value, "Class 'print' function has incorrect signature");
+    static_assert(has_member_func_signature_toXML<T>::value, "Class 'toXML' function has incorrect signature");
   }
   ~InstructionInner() override = default;
   InstructionInner(const InstructionInner&) = delete;
@@ -93,6 +107,14 @@ struct InstructionInner final : InstructionInnerBase
     static_assert(has_member_getDescription<T>::value, "Class does not have member function 'getDescription'");
     static_assert(has_member_setDescription<T>::value, "Class does not have member function 'setDescription'");
     static_assert(has_member_print<T>::value, "Class does not have member function 'print'");
+    static_assert(has_member_toXML<T>::value, "Class does not have member function 'toXML'");
+    static_assert(has_member_func_signature_getType<T>::value, "Class 'getType' function has incorrect signature");
+    static_assert(has_member_func_signature_getDescription<T>::value,
+                  "Class 'getDescription' function has incorrect signature");
+    static_assert(has_member_func_signature_setDescription<T>::value,
+                  "Class 'setDescription' function has incorrect signature");
+    static_assert(has_member_func_signature_print<T>::value, "Class 'print' function has incorrect signature");
+    static_assert(has_member_func_signature_toXML<T>::value, "Class 'toXML' function has incorrect signature");
   }
 
   explicit InstructionInner(T&& instruction) : instruction_(std::move(instruction))
@@ -101,6 +123,14 @@ struct InstructionInner final : InstructionInnerBase
     static_assert(has_member_getDescription<T>::value, "Class does not have member function 'getDescription'");
     static_assert(has_member_setDescription<T>::value, "Class does not have member function 'setDescription'");
     static_assert(has_member_print<T>::value, "Class does not have member function 'print'");
+    static_assert(has_member_toXML<T>::value, "Class does not have member function 'toXML'");
+    static_assert(has_member_func_signature_getType<T>::value, "Class 'getType' function has incorrect signature");
+    static_assert(has_member_func_signature_getDescription<T>::value,
+                  "Class 'getDescription' function has incorrect signature");
+    static_assert(has_member_func_signature_setDescription<T>::value,
+                  "Class 'setDescription' function has incorrect signature");
+    static_assert(has_member_func_signature_print<T>::value, "Class 'print' function has incorrect signature");
+    static_assert(has_member_func_signature_toXML<T>::value, "Class 'toXML' function has incorrect signature");
   }
 
   std::unique_ptr<InstructionInnerBase> clone() const override

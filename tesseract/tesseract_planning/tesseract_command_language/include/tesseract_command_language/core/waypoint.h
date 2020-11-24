@@ -42,6 +42,9 @@ namespace detail_waypoint
 CREATE_MEMBER_CHECK(getType);
 CREATE_MEMBER_CHECK(print);
 CREATE_MEMBER_CHECK(toXML);
+CREATE_MEMBER_FUNC_SIGNATURE_NOARGS_CHECK(getType, int);
+CREATE_MEMBER_FUNC_SIGNATURE_CHECK(print, void, std::string);
+CREATE_MEMBER_FUNC_SIGNATURE_CHECK(toXML, tinyxml2::XMLElement*, tinyxml2::XMLDocument&);
 
 struct WaypointInnerBase
 {
@@ -73,6 +76,9 @@ struct WaypointInner final : WaypointInnerBase
     static_assert(has_member_getType<T>::value, "Class does not have member function 'getType'");
     static_assert(has_member_print<T>::value, "Class does not have member function 'print'");
     static_assert(has_member_toXML<T>::value, "Class does not have member function 'toXML'");
+    static_assert(has_member_func_signature_getType<T>::value, "Class 'getType' function has incorrect signature");
+    static_assert(has_member_func_signature_print<T>::value, "Class 'print' function has incorrect signature");
+    static_assert(has_member_func_signature_toXML<T>::value, "Class 'toXML' function has incorrect signature");
   }
   ~WaypointInner() override = default;
   WaypointInner(const WaypointInner&) = delete;
@@ -86,12 +92,18 @@ struct WaypointInner final : WaypointInnerBase
     static_assert(has_member_getType<T>::value, "Class does not have member function 'getType'");
     static_assert(has_member_print<T>::value, "Class does not have member function 'print'");
     static_assert(has_member_toXML<T>::value, "Class does not have member function 'toXML'");
+    static_assert(has_member_func_signature_getType<T>::value, "Class 'getType' function has incorrect signature");
+    static_assert(has_member_func_signature_print<T>::value, "Class 'print' function has incorrect signature");
+    static_assert(has_member_func_signature_toXML<T>::value, "Class 'toXML' function has incorrect signature");
   }
   explicit WaypointInner(T&& waypoint) : waypoint_(std::move(waypoint))
   {
     static_assert(has_member_getType<T>::value, "Class does not have member function 'getType'");
     static_assert(has_member_print<T>::value, "Class does not have member function 'print'");
     static_assert(has_member_toXML<T>::value, "Class does not have member function 'toXML'");
+    static_assert(has_member_func_signature_getType<T>::value, "Class 'getType' function has incorrect signature");
+    static_assert(has_member_func_signature_print<T>::value, "Class 'print' function has incorrect signature");
+    static_assert(has_member_func_signature_toXML<T>::value, "Class 'toXML' function has incorrect signature");
   }
 
   std::unique_ptr<WaypointInnerBase> clone() const override { return std::make_unique<WaypointInner>(waypoint_); }
