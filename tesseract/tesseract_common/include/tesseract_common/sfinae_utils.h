@@ -84,6 +84,126 @@ struct has_member
         tesseract_common::has_member<Alias_##member<tesseract_common::ambiguate<T, AmbiguitySeed_##member>>,           \
                                      Alias_##member<AmbiguitySeed_##member>>::value;                                   \
   }
+
+/**
+ * @brief Check if a member function is invocable with the provided input types
+ * @details
+ *   Check if the class has a function named add which takes two double as arguments
+ *   CREATE_MEMBER_FUNC_INVOCABLE_CHECK(add, double, double)
+ *   bool has_add_invocable = has_member_func_invocable_add<class_to_check_for_add_invocable>::value;
+ */
+#define CREATE_MEMBER_FUNC_INVOCABLE_CHECK(func_name, ...)                                                             \
+                                                                                                                       \
+  template <typename T, typename = std::true_type>                                                                     \
+  struct has_member_func_invocable_##func_name : std::false_type                                                       \
+  {                                                                                                                    \
+  };                                                                                                                   \
+                                                                                                                       \
+  template <typename T>                                                                                                \
+  struct has_member_func_invocable_##func_name<                                                                        \
+      T,                                                                                                               \
+      std::integral_constant<bool, std::is_invocable<decltype(&T::func_name), T, __VA_ARGS__>::value>>                 \
+    : std::true_type                                                                                                   \
+  {                                                                                                                    \
+  };
+
+/**
+ * @brief Check if a member function has a given return type with input parameters
+ * @details
+ *   Check if the class has a function named add with return type followed function parameters
+ *   CREATE_MEMBER_FUNC_RETURN_TYPE_CHECK(add, double, double, double)
+ *   bool has_add_return_type = has_member_func_return_type_add<class_to_check_for_add_return_type>::value;
+ */
+#define CREATE_MEMBER_FUNC_RETURN_TYPE_CHECK(func_name, return_type, ...)                                              \
+                                                                                                                       \
+  template <typename T, typename = std::true_type>                                                                     \
+  struct has_member_func_return_type_##func_name : std::false_type                                                     \
+  {                                                                                                                    \
+  };                                                                                                                   \
+                                                                                                                       \
+  template <typename T>                                                                                                \
+  struct has_member_func_return_type_##func_name<                                                                      \
+      T,                                                                                                               \
+      std::integral_constant<bool,                                                                                     \
+                             std::is_same<typename std::invoke_result<decltype(&T::func_name), T, __VA_ARGS__>::type,  \
+                                          return_type>::value>> : std::true_type                                       \
+  {                                                                                                                    \
+  };
+
+/**
+ * @brief Check if a member function has a given return type that takes no arguments
+ * @details
+ *   Check if the class has a function named add with return type
+ *   CREATE_MEMBER_FUNC_RETURN_TYPE_NOARGS_CHECK(update, bool)
+ *   bool has_update_return_type = has_member_func_return_type_update<class_to_check_for_update_return_type>::value;
+ */
+#define CREATE_MEMBER_FUNC_RETURN_TYPE_NOARGS_CHECK(func_name, return_type)                                            \
+                                                                                                                       \
+  template <typename T, typename = std::true_type>                                                                     \
+  struct has_member_func_return_type_##func_name : std::false_type                                                     \
+  {                                                                                                                    \
+  };                                                                                                                   \
+                                                                                                                       \
+  template <typename T>                                                                                                \
+  struct has_member_func_return_type_##func_name<                                                                      \
+      T,                                                                                                               \
+      std::integral_constant<                                                                                          \
+          bool,                                                                                                        \
+          std::is_same<typename std::invoke_result<decltype(&T::func_name), T>::type, return_type>::value>>            \
+    : std::true_type                                                                                                   \
+  {                                                                                                                    \
+  };
+
+/**
+ * @brief Check if a member function has a given return type
+ * @details
+ *   Check if the class has a function named add with return type followed function parameters
+ *   CREATE_MEMBER_FUNC_SIGNATURE_CHECK(add, double, double, double)
+ *   bool has_add_signature = has_member_func_signature_add<class_to_check_for_add_signature>::value;
+ */
+#define CREATE_MEMBER_FUNC_SIGNATURE_CHECK(func_name, return_type, ...)                                                \
+                                                                                                                       \
+  template <typename T, typename = std::true_type>                                                                     \
+  struct has_member_func_signature_##func_name : std::false_type                                                       \
+  {                                                                                                                    \
+  };                                                                                                                   \
+                                                                                                                       \
+  template <typename T>                                                                                                \
+  struct has_member_func_signature_##func_name<                                                                        \
+      T,                                                                                                               \
+      std::integral_constant<                                                                                          \
+          bool,                                                                                                        \
+          std::is_invocable<decltype(&T::func_name), T, __VA_ARGS__>::value &&                                         \
+              std::is_same<typename std::invoke_result<decltype(&T::func_name), T, __VA_ARGS__>::type,                 \
+                           return_type>::value>> : std::true_type                                                      \
+  {                                                                                                                    \
+  };
+
+/**
+ * @brief Check if a member function has a given return type that takes no arguments
+ * @details
+ *   Check if the class has a function named add with return type
+ *   CREATE_MEMBER_FUNC_SIGNATURE_NOARGS_CHECK(add, double)
+ *   bool has_add_signature = has_member_func_signature_add<class_to_check_for_add_signature>::value;
+ */
+#define CREATE_MEMBER_FUNC_SIGNATURE_NOARGS_CHECK(func_name, return_type)                                              \
+                                                                                                                       \
+  template <typename T, typename = std::true_type>                                                                     \
+  struct has_member_func_signature_##func_name : std::false_type                                                       \
+  {                                                                                                                    \
+  };                                                                                                                   \
+                                                                                                                       \
+  template <typename T>                                                                                                \
+  struct has_member_func_signature_##func_name<                                                                        \
+      T,                                                                                                               \
+      std::integral_constant<                                                                                          \
+          bool,                                                                                                        \
+          std::is_invocable<decltype(&T::func_name), T>::value &&                                                      \
+              std::is_same<typename std::invoke_result<decltype(&T::func_name), T>::type, return_type>::value>>        \
+    : std::true_type                                                                                                   \
+  {                                                                                                                    \
+  };
+
 }  // namespace tesseract_common
 
 #endif  // TESSEACT_COMMON_SFINAE_UTILS_H
