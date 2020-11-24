@@ -47,7 +47,7 @@ int main(int /*argc*/, char** /*argv*/)
 
   tesseract_common::VectorVector3d mesh_vertices;
   Eigen::VectorXi mesh_faces;
-  loadSimplePlyFile(std::string(DATA_DIR) + "/box_2m.ply", mesh_vertices, mesh_faces);
+  loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/box_2m.ply", mesh_vertices, mesh_faces);
 
   // This is required because convex hull cannot have multiple faces on the same plane.
   auto ch_verticies = std::make_shared<tesseract_common::VectorVector3d>();
