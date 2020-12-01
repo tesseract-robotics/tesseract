@@ -217,7 +217,7 @@ struct CollisionMarginData
   using Ptr = std::shared_ptr<CollisionMarginData>;
   using ConstPtr = std::shared_ptr<const CollisionMarginData>;
 
-  CollisionMarginData(const double& default_collision_margin = 0)
+  CollisionMarginData(double default_collision_margin = 0)
     : default_collision_margin_(default_collision_margin), max_collision_margin_(default_collision_margin)
   {
   }
