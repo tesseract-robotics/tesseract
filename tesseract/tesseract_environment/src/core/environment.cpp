@@ -204,6 +204,42 @@ bool Environment::applyCommand(const Command& command)
         return false;
       break;
     }
+    case tesseract_environment::CommandType::CHANGE_DEFAULT_CONTACT_MARGIN:
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      const auto& cmd = static_cast<const tesseract_environment::ChangeDefaultContactMarginCommand&>(command);
+      tesseract_collision::CollisionMarginData collision_data = continuous_manager_->getCollisionMarginData();
+      collision_data.setDefaultCollisionMarginData(cmd.getDefaultCollisionMargin());
+      continuous_manager_->setCollisionMarginData(collision_data);
+      discrete_manager_->setCollisionMarginData(collision_data);
+
+      ++revision_;
+      commands_.push_back(
+          std::make_shared<tesseract_environment::ChangeDefaultContactMarginCommand>(cmd.getDefaultCollisionMargin()));
+
+      environmentChanged();
+
+      break;
+    }
+    case tesseract_environment::CommandType::CHANGE_PAIR_CONTACT_MARGIN:
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      const auto& cmd = static_cast<const tesseract_environment::ChangePairContactMarginCommand&>(command);
+      tesseract_collision::CollisionMarginData collision_data = continuous_manager_->getCollisionMarginData();
+      for (const auto& link_pair : cmd.getPairCollisionMarginData())
+        collision_data.setPairCollisionMarginData(link_pair.first.first, link_pair.first.second, link_pair.second);
+
+      continuous_manager_->setCollisionMarginData(collision_data);
+      discrete_manager_->setCollisionMarginData(collision_data);
+
+      ++revision_;
+      commands_.push_back(
+          std::make_shared<tesseract_environment::ChangePairContactMarginCommand>(cmd.getPairCollisionMarginData()));
+
+      environmentChanged();
+
+      break;
+    }
     default:
     {
       CONSOLE_BRIDGE_logError("Unhandled environment command");
