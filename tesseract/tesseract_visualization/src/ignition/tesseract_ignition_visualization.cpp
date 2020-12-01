@@ -94,7 +94,7 @@ void TesseractIgnitionVisualization::plotEnvironment(tesseract_environment::Envi
     return;
 
   ignition::msgs::Scene msg;
-  toMsg(msg, entity_manager_, *(env_->getSceneGraph()), env_->getCurrentState()->link_transforms);
+  toMsg(msg, entity_manager_, *(env->getSceneGraph()), env->getCurrentState()->link_transforms);
   scene_pub_.Publish(msg);
 }
 
