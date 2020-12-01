@@ -86,12 +86,8 @@ void OFKTStateSolver::cloneHelper(OFKTStateSolver& cloned, const OFKTNode* node)
     {
       const auto* cn = static_cast<const OFKTRevoluteNode*>(child);
 
-      auto n = std::make_unique<OFKTRevoluteNode>(parent_node,
-                                                  cn->getLinkName(),
-                                                  cn->getJointName(),
-                                                  cn->getStaticTransformation(),
-                                                  cn->getAxis(),
-                                                  cn->getJointLimits());
+      auto n = std::make_unique<OFKTRevoluteNode>(
+          parent_node, cn->getLinkName(), cn->getJointName(), cn->getStaticTransformation(), cn->getAxis());
       n->local_tf_ = cn->getLocalTransformation();
       n->world_tf_ = cn->getWorldTransformation();
       n->joint_value_ = cn->getJointValue();
@@ -539,12 +535,8 @@ void OFKTStateSolver::addNode(const tesseract_scene_graph::Joint::ConstPtr& join
     case tesseract_scene_graph::JointType::REVOLUTE:
     {
       OFKTNode* parent_node = link_map_[parent_link_name];
-      auto n = std::make_unique<OFKTRevoluteNode>(parent_node,
-                                                  child_link_name,
-                                                  joint_name,
-                                                  joint->parent_to_joint_origin_transform,
-                                                  joint->axis,
-                                                  Eigen::Vector2d(joint->limits->lower, joint->limits->upper));
+      auto n = std::make_unique<OFKTRevoluteNode>(
+          parent_node, child_link_name, joint_name, joint->parent_to_joint_origin_transform, joint->axis);
       link_map_[child_link_name] = n.get();
       parent_node->addChild(n.get());
       current_state_->joints[joint_name] = 0;

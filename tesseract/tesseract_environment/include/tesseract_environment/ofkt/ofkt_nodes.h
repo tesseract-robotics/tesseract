@@ -161,18 +161,15 @@ public:
                    std::string link_name,
                    std::string joint_name,
                    Eigen::Isometry3d static_tf,
-                   Eigen::Vector3d axis,
-                   Eigen::Vector2d joint_limits);
+                   Eigen::Vector3d axis);
 
   void storeJointValue(double joint_value) override;
   void computeAndStoreLocalTransformation() override;
   Eigen::Isometry3d computeLocalTransformation(double joint_value) const override;
   const Eigen::Vector3d& getAxis() const;
-  const Eigen::Vector2d& getJointLimits() const;
 
 private:
   Eigen::Vector3d axis_;
-  Eigen::Vector2d joint_limits_;
 
   void computeAndStoreLocalTransformationImpl();
 

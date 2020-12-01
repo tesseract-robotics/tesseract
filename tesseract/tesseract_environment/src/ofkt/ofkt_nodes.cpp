@@ -191,47 +191,19 @@ OFKTRevoluteNode::OFKTRevoluteNode(OFKTNode* parent,
                                    std::string link_name,
                                    std::string joint_name,
                                    Eigen::Isometry3d static_tf,
-                                   Eigen::Vector3d axis,
-                                   Eigen::Vector2d joint_limits)
+                                   Eigen::Vector3d axis)
   : OFKTBaseNode(tesseract_scene_graph::JointType::REVOLUTE,
                  parent,
                  std::move(link_name),
                  std::move(joint_name),
                  static_tf)
   , axis_(axis.normalized())
-  , joint_limits_(joint_limits)
 {
-  if (joint_limits_[1] < joint_limits_[0])
-    throw std::runtime_error("OFKTRevoluteNode: Invalid joint limits!");
-
-  if (tesseract_common::almostEqualRelativeAndAbs(joint_limits_[0], joint_limits_[1], 1e-5))
-    throw std::runtime_error("OFKTRevoluteNode: Invalid joint limits!");
-
   computeAndStoreLocalTransformationImpl();
   OFKTBaseNode::computeAndStoreWorldTransformation();
 }
 
-void OFKTRevoluteNode::storeJointValue(double joint_value)
-{
-  if (joint_value > joint_limits_[1])
-  {
-    CONSOLE_BRIDGE_logDebug("OFKTRevoluteNode: Joint value (%f) is above the upper limits (%f), setting to upper "
-                            "limit.",
-                            joint_value,
-                            joint_limits_[1]);
-    joint_value = joint_limits_[1];
-  }
-  else if (joint_value < joint_limits_[0])
-  {
-    CONSOLE_BRIDGE_logDebug("OFKTRevoluteNode: Joint value (%f) is below the lower limits (%f), setting to lower "
-                            "limit.",
-                            joint_value,
-                            joint_limits_[0]);
-    joint_value = joint_limits_[0];
-  }
-
-  OFKTBaseNode::storeJointValue(joint_value);
-}
+void OFKTRevoluteNode::storeJointValue(double joint_value) { OFKTBaseNode::storeJointValue(joint_value); }
 
 void OFKTRevoluteNode::computeAndStoreLocalTransformationImpl()
 {
@@ -244,29 +216,10 @@ void OFKTRevoluteNode::computeAndStoreLocalTransformation() { computeAndStoreLoc
 
 Eigen::Isometry3d OFKTRevoluteNode::computeLocalTransformation(double joint_value) const
 {
-  if (joint_value > joint_limits_[1])
-  {
-    CONSOLE_BRIDGE_logDebug("OFKTRevoluteNode: Joint value (%f) is above the upper limits (%f), setting to upper "
-                            "limit.",
-                            joint_value,
-                            joint_limits_[1]);
-    joint_value = joint_limits_[1];
-  }
-  else if (joint_value < joint_limits_[0])
-  {
-    CONSOLE_BRIDGE_logDebug("OFKTRevoluteNode: Joint value (%f) is below the lower limits (%f), setting to lower "
-                            "limit.",
-                            joint_value,
-                            joint_limits_[0]);
-    joint_value = joint_limits_[0];
-  }
-
   return static_tf_ * Eigen::AngleAxisd(joint_value, axis_);
 }
 
 const Eigen::Vector3d& OFKTRevoluteNode::getAxis() const { return axis_; }
-
-const Eigen::Vector2d& OFKTRevoluteNode::getJointLimits() const { return joint_limits_; }
 
 /*********************************************************************/
 /************************ CONTINUOUS NODE ****************************/
