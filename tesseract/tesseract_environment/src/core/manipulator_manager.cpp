@@ -201,6 +201,8 @@ void ManipulatorManager::onEnvironmentChanged(const Commands& commands)
       case CommandType::CHANGE_LINK_COLLISION_ENABLED:
       case CommandType::ADD_ALLOWED_COLLISION:
       case CommandType::REMOVE_ALLOWED_COLLISION_LINK:
+      case CommandType::CHANGE_DEFAULT_CONTACT_MARGIN:
+      case CommandType::CHANGE_PAIR_CONTACT_MARGIN:
       {
         break;
       }

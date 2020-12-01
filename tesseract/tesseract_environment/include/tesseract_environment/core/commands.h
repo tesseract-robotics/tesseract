@@ -38,6 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/kinematics_information.h>
+#include <tesseract_collision/core/types.h>
 
 namespace tesseract_environment
 {
@@ -59,7 +60,9 @@ enum class CommandType
   CHANGE_JOINT_POSITION_LIMITS = 13,
   CHANGE_JOINT_VELOCITY_LIMITS = 14,
   CHANGE_JOINT_ACCELERATION_LIMITS = 15,
-  ADD_KINEMATICS_INFORMATION = 16
+  ADD_KINEMATICS_INFORMATION = 16,
+  CHANGE_DEFAULT_CONTACT_MARGIN = 17,
+  CHANGE_PAIR_CONTACT_MARGIN = 18
 };
 
 class Command
@@ -371,6 +374,39 @@ public:
 
 private:
   std::unordered_map<std::string, double> limits_;
+};
+
+class ChangeDefaultContactMarginCommand : public Command
+{
+public:
+  ChangeDefaultContactMarginCommand(double default_margin)
+    : Command(CommandType::CHANGE_DEFAULT_CONTACT_MARGIN), default_margin_(default_margin)
+  {
+  }
+
+  double getDefaultCollisionMargin() const { return default_margin_; }
+
+private:
+  double default_margin_{ 0 };
+};
+
+class ChangePairContactMarginCommand : public Command
+{
+public:
+  ChangePairContactMarginCommand(
+      std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash> link_pair_margin)
+    : Command(CommandType::CHANGE_PAIR_CONTACT_MARGIN), link_pair_margin_(std::move(link_pair_margin))
+  {
+  }
+
+  const std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash>&
+  getPairCollisionMarginData() const
+  {
+    return link_pair_margin_;
+  }
+
+private:
+  std::unordered_map<tesseract_common::LinkNamesPair, double, tesseract_common::PairHash> link_pair_margin_;
 };
 
 }  // namespace tesseract_environment
