@@ -1,6 +1,6 @@
 /**
- * @file raster_waad_dt_process_manager.h
- * @brief Plans raster paths with approach, departure and dual transitions
+ * @file raster_waad_taskflow.h
+ * @brief Plans raster paths with approach and departure
  *
  * @author Levi Armstrong
  * @date August 28, 2020
@@ -23,8 +23,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_RASTER_WAAD_DT_PROCESS_MANAGER_H
-#define TESSERACT_PROCESS_MANAGERS_RASTER_WAAD_DT_PROCESS_MANAGER_H
+#ifndef TESSERACT_PROCESS_MANAGERS_RASTER_WAAD_TASKFLOW_H
+#define TESSERACT_PROCESS_MANAGERS_RASTER_WAAD_TASKFLOW_H
+
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <functional>
@@ -34,7 +35,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <taskflow/taskflow.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/process_manager.h>
 #include <tesseract_process_managers/taskflow_generator.h>
 
 namespace tesseract_planning
@@ -57,22 +57,14 @@ namespace tesseract_planning
  *     Composite process
  *     Composite departure
  *   }
- *   Unordered Composite - Transitions
- *   {
- *     Composite - Transition from end
- *     Composite - Transition to start
- *   }
+ *   Composite - Transitions
  *   Composite - Raster segment
  *   {
  *     Composite approach
  *     Composite process
  *     Composite departure
  *   }
- *   Unordered Composite - Transitions
- *   {
- *     Composite - Transition from end
- *     Composite - Transition to start
- *   }
+ *   Composite - Transitions
  *   Composite - Raster segment
  *   {
  *     Composite approach
@@ -82,49 +74,45 @@ namespace tesseract_planning
  *   Composite - to end
  * }
  */
-class RasterWAADDTProcessManager : public ProcessManager
+class RasterWAADTaskflow : public TaskflowGenerator
 {
 public:
-  using Ptr = std::shared_ptr<RasterWAADDTProcessManager>;
-  using ConstPtr = std::shared_ptr<const RasterWAADDTProcessManager>;
+  using UPtr = std::unique_ptr<RasterWAADTaskflow>;
 
-  RasterWAADDTProcessManager(TaskflowGenerator::UPtr freespace_taskflow_generator,
-                             TaskflowGenerator::UPtr transition_taskflow_generator,
-                             TaskflowGenerator::UPtr raster_taskflow_generator,
-                             std::size_t n = std::thread::hardware_concurrency());
-  ~RasterWAADDTProcessManager() override = default;
-  RasterWAADDTProcessManager(const RasterWAADDTProcessManager&) = delete;
-  RasterWAADDTProcessManager& operator=(const RasterWAADDTProcessManager&) = delete;
-  RasterWAADDTProcessManager(RasterWAADDTProcessManager&&) = delete;
-  RasterWAADDTProcessManager& operator=(RasterWAADDTProcessManager&&) = delete;
+  RasterWAADTaskflow(TaskflowGenerator::UPtr freespace_taskflow_generator,
+                     TaskflowGenerator::UPtr transition_taskflow_generator,
+                     TaskflowGenerator::UPtr raster_taskflow_generator,
+                     std::string name = "RasterWAADTaskflow");
+  ~RasterWAADTaskflow() override = default;
+  RasterWAADTaskflow(const RasterWAADTaskflow&) = delete;
+  RasterWAADTaskflow& operator=(const RasterWAADTaskflow&) = delete;
+  RasterWAADTaskflow(RasterWAADTaskflow&&) = delete;
+  RasterWAADTaskflow& operator=(RasterWAADTaskflow&&) = delete;
 
-  bool init(ProcessInput input) override;
+  const std::string& getName() const override;
 
-  bool execute() override;
+  tf::Taskflow& generateTaskflow(ProcessInput input,
+                                 std::function<void()> done_cb,
+                                 std::function<void()> error_cb) override;
 
-  bool terminate() override;
+  void abort() override;
 
-  bool clear() override;
+  void reset() override;
 
-  void enableDebug(bool enabled) override;
-
-  void enableProfile(bool enabled) override;
+  void clear() override;
 
 private:
-  void successCallback(std::string message);
-  void failureCallback(std::string message);
-  bool success_{ false };
-  bool debug_{ false };
-  bool profile_{ false };
-
   TaskflowGenerator::UPtr freespace_taskflow_generator_;
   TaskflowGenerator::UPtr transition_taskflow_generator_;
   TaskflowGenerator::UPtr raster_taskflow_generator_;
-  tf::Executor executor_;
+  std::string name_;
   tf::Taskflow taskflow_;
   std::vector<tf::Task> freespace_tasks_;
   std::vector<tf::Task> transition_tasks_;
   std::vector<std::array<tf::Task, 3>> raster_tasks_;
+
+  void successCallback(std::string message, std::function<void()> user_callback);
+  void failureCallback(std::string message, std::function<void()> user_callback);
 
   /**
    * @brief Checks that the ProcessInput is in the correct format.
@@ -135,4 +123,5 @@ private:
 };
 
 }  // namespace tesseract_planning
-#endif  // TESSERACT_PROCESS_MANAGERS_RASTER_WAAD_DT_PROCESS_MANAGER_H
+
+#endif  // TESSERACT_PROCESS_MANAGERS_RASTER_WAAD_TASKFLOW_H

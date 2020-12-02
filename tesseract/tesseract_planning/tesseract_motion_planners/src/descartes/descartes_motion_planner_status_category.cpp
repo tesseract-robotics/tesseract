@@ -43,6 +43,10 @@ std::string DescartesMotionPlannerStatusCategory::message(int code) const
     {
       return "Found valid solution";
     }
+    case ErrorInvalidInput:
+    {
+      return "Failed invalid input";
+    }
     case ErrorFailedToBuildGraph:
     {
       return "Failed to build graph";

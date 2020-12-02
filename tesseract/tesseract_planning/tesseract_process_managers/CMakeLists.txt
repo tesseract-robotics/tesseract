@@ -40,6 +40,7 @@ include(GenerateExportHeader)
 add_library(${PROJECT_NAME}
     src/process_input.cpp
     src/debug_observer.cpp
+    src/process_planning_server.cpp
     src/process_generators/continuous_contact_check_process_generator.cpp
     src/process_generators/discrete_contact_check_process_generator.cpp
     src/process_generators/fix_state_bounds_process_generator.cpp
@@ -48,16 +49,15 @@ add_library(${PROJECT_NAME}
     src/process_generators/motion_planner_process_generator.cpp
     src/process_generators/profile_switch_process_generator.cpp
     src/process_generators/seed_min_length_process_generator.cpp
-    src/process_managers/raster_process_manager.cpp
-    src/process_managers/raster_global_process_manager.cpp
-    src/process_managers/raster_only_process_manager.cpp
-    src/process_managers/raster_only_global_process_manager.cpp
-    src/process_managers/raster_dt_process_manager.cpp
-    src/process_managers/raster_waad_process_manager.cpp
-    src/process_managers/raster_waad_dt_process_manager.cpp
     src/process_managers/simple_process_manager.cpp
-    src/taskflow_generators/sequential_taskflow.cpp
     src/taskflow_generators/graph_taskflow.cpp
+    src/taskflow_generators/raster_taskflow.cpp
+    src/taskflow_generators/raster_global_taskflow.cpp
+    src/taskflow_generators/raster_only_taskflow.cpp
+    src/taskflow_generators/raster_only_global_taskflow.cpp
+    src/taskflow_generators/raster_dt_taskflow.cpp
+    src/taskflow_generators/raster_waad_taskflow.cpp
+    src/taskflow_generators/raster_waad_dt_taskflow.cpp
     src/taskflows/descartes_taskflow.cpp
     src/taskflows/ompl_taskflow.cpp
     src/taskflows/trajopt_taskflow.cpp

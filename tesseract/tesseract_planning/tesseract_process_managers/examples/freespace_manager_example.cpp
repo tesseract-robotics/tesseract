@@ -10,8 +10,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <freespace_example_program.h>
 
 #include <tesseract_command_language/utils/utils.h>
-#include <tesseract_process_managers/taskflows/freespace_taskflow.h>
-#include <tesseract_process_managers/process_managers/simple_process_manager.h>
+#include <tesseract_process_managers/process_planning_server.h>
 #include <tesseract_visualization/visualization_loader.h>
 
 using namespace tesseract_planning;
@@ -62,47 +61,34 @@ int main()
   if (plotter != nullptr)
   {
     plotter->init(tesseract);
-    plotter->waitForConnection();
-    plotter->plotEnvironment();
+    plotter->waitForConnection(3);
+    if (plotter->isConnected())
+      plotter->plotEnvironment();
   }
 
-  // --------------------
+  // Create Process Planning Server
+  ProcessPlanningServer planning_server(std::make_shared<TesseractCache>(tesseract), 1);
+
+  // Create Process Planning Request
+  ProcessPlanningRequest request;
+  request.name = process_planner_names::FREESPACE_PLANNER_NAME;
+
   // Define the program
-  // --------------------
   CompositeInstruction program = freespaceExampleProgramIIWA();
-  const Instruction program_instruction{ program };
-  Instruction seed = generateSkeletonSeed(program);
+  request.instructions = Instruction(program);
 
-  // --------------------
   // Print Diagnostics
-  // --------------------
-  program_instruction.print("Program: ");
+  request.instructions.print("Program: ");
 
-  // --------------------
-  // Define the Process Input
-  // --------------------
-  ProcessInput input(tesseract, &program_instruction, program.getManipulatorInfo(), &seed);
-  std::cout << "Input size: " << input.size() << std::endl;
+  // Solve process plan
+  ProcessPlanningFuture response = planning_server.run(request);
+  planning_server.waitForAll();
 
-  // --------------------
-  // Initialize Freespace Manager
-  // --------------------
-  SimpleProcessManager freespace_manager(createFreespaceTaskflow(FreespaceTaskflowParams()));
-  freespace_manager.init(input);
-
-  // --------------------
-  // Solve
-  // --------------------
-  if (!freespace_manager.execute())
-  {
-    CONSOLE_BRIDGE_logError("Execution Failed");
-  }
-
-  // Plot Trajectory
-  if (plotter)
+  // Plot Process Trajectory
+  if (plotter != nullptr && plotter->isConnected())
   {
     plotter->waitForInput();
-    plotter->plotTrajectory(*(input.getResults()));
+    plotter->plotTrajectory(*(response.results));
   }
 
   std::cout << "Execution Complete" << std::endl;
