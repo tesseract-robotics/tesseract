@@ -1,5 +1,5 @@
 ﻿/**
- * @file raster_global_process_manager.h
+ * @file raster_global_taskflow.h
  * @brief Plans raster paths
  *
  * @author Matthew Powelson
@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_RASTER_GLOBAL_PROCESS_MANAGER_H
-#define TESSERACT_PROCESS_MANAGERS_RASTER_GLOBAL_PROCESS_MANAGER_H
+#ifndef TESSERACT_PROCESS_MANAGERS_RASTER_GLOBAL_TASKFLOW_H
+#define TESSERACT_PROCESS_MANAGERS_RASTER_GLOBAL_TASKFLOW_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -34,7 +34,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <taskflow/taskflow.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/process_manager.h>
 #include <tesseract_process_managers/taskflow_generator.h>
 
 namespace tesseract_planning
@@ -59,48 +58,41 @@ namespace tesseract_planning
  *   Composite - to end
  * }
  */
-class RasterGlobalProcessManager : public ProcessManager
+class RasterGlobalTaskflow : public TaskflowGenerator
 {
 public:
-  using Ptr = std::shared_ptr<RasterGlobalProcessManager>;
-  using ConstPtr = std::shared_ptr<const RasterGlobalProcessManager>;
+  using UPtr = std::unique_ptr<RasterGlobalTaskflow>;
 
-  RasterGlobalProcessManager(TaskflowGenerator::UPtr global_taskflow_generator,
-                             TaskflowGenerator::UPtr freespace_taskflow_generator,
-                             TaskflowGenerator::UPtr transition_taskflow_generator,
-                             TaskflowGenerator::UPtr raster_taskflow_generator,
-                             std::size_t n = std::thread::hardware_concurrency());
+  RasterGlobalTaskflow(TaskflowGenerator::UPtr global_taskflow_generator,
+                       TaskflowGenerator::UPtr freespace_taskflow_generator,
+                       TaskflowGenerator::UPtr transition_taskflow_generator,
+                       TaskflowGenerator::UPtr raster_taskflow_generator,
+                       std::string name = "RasterGlobalTaskflow");
 
-  ~RasterGlobalProcessManager() override = default;
-  RasterGlobalProcessManager(const RasterGlobalProcessManager&) = delete;
-  RasterGlobalProcessManager& operator=(const RasterGlobalProcessManager&) = delete;
-  RasterGlobalProcessManager(RasterGlobalProcessManager&&) = delete;
-  RasterGlobalProcessManager& operator=(RasterGlobalProcessManager&&) = delete;
+  ~RasterGlobalTaskflow() override = default;
+  RasterGlobalTaskflow(const RasterGlobalTaskflow&) = delete;
+  RasterGlobalTaskflow& operator=(const RasterGlobalTaskflow&) = delete;
+  RasterGlobalTaskflow(RasterGlobalTaskflow&&) = delete;
+  RasterGlobalTaskflow& operator=(RasterGlobalTaskflow&&) = delete;
 
-  bool init(ProcessInput input) override;
+  const std::string& getName() const override;
 
-  bool execute() override;
+  tf::Taskflow& generateTaskflow(ProcessInput input,
+                                 std::function<void()> done_cb,
+                                 std::function<void()> error_cb) override;
 
-  bool terminate() override;
+  void abort() override;
 
-  bool clear() override;
+  void reset() override;
 
-  void enableDebug(bool enabled) override;
-
-  void enableProfile(bool enabled) override;
+  void clear() override;
 
 private:
-  void successCallback(std::string message);
-  void failureCallback(std::string message);
-  bool success_{ false };
-  bool debug_{ false };
-  bool profile_{ false };
-
   TaskflowGenerator::UPtr global_taskflow_generator_;
   TaskflowGenerator::UPtr freespace_taskflow_generator_;
   TaskflowGenerator::UPtr transition_taskflow_generator_;
   TaskflowGenerator::UPtr raster_taskflow_generator_;
-  tf::Executor executor_;
+  std::string name_;
   tf::Taskflow taskflow_;
 
   tf::Task global_task_;
@@ -110,6 +102,9 @@ private:
   std::vector<tf::Task> raster_tasks_;
 
   static void globalPostProcess(ProcessInput input);
+
+  void successCallback(std::string message, std::function<void()> user_callback);
+  void failureCallback(std::string message, std::function<void()> user_callback);
 
   /**
    * @brief Checks that the ProcessInput is in the correct format.

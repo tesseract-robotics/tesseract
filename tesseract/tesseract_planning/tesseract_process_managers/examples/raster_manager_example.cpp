@@ -9,9 +9,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/tesseract.h>
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/utils/utils.h>
-#include <tesseract_process_managers/process_managers/raster_process_manager.h>
-#include <tesseract_process_managers/taskflows/freespace_taskflow.h>
-#include <tesseract_process_managers/taskflows/cartesian_taskflow.h>
+#include <tesseract_process_managers/process_planning_server.h>
 #include <tesseract_visualization/visualization_loader.h>
 
 using namespace tesseract_planning;
@@ -62,54 +60,34 @@ int main()
   if (plotter != nullptr)
   {
     plotter->init(tesseract);
-    plotter->waitForConnection();
-    plotter->plotEnvironment();
+    plotter->waitForConnection(3);
+    if (plotter->isConnected())
+      plotter->plotEnvironment();
   }
 
-  // --------------------
+  // Create Process Planning Server
+  ProcessPlanningServer planning_server(std::make_shared<TesseractCache>(tesseract), 1);
+
+  // Create Process Planning Request
+  ProcessPlanningRequest request;
+  request.name = process_planner_names::RASTER_G_FT_PLANNER_NAME;
+
   // Define the program
-  // --------------------
   CompositeInstruction program = rasterExampleProgram();
-  const Instruction program_instruction{ program };
-  Instruction seed = generateSkeletonSeed(program);
+  request.instructions = Instruction(program);
 
-  // --------------------
   // Print Diagnostics
-  // --------------------
-  program_instruction.print("Program: ");
-  seed.print("Seed:    ");
+  request.instructions.print("Program: ");
 
-  // --------------------
-  // Define the Process Input
-  // --------------------
-  ProcessInput input(tesseract, &program_instruction, program.getManipulatorInfo(), &seed);
-  std::cout << "Input size: " << input.size() << std::endl;
+  // Solve process plan
+  ProcessPlanningFuture response = planning_server.run(request);
+  planning_server.waitForAll();
 
-  // --------------------
-  // Initialize Freespace Manager
-  // --------------------
-  auto freespace_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
-  auto transition_taskflow_generator = createFreespaceTaskflow(FreespaceTaskflowParams());
-  auto raster_taskflow_generator = createCartesianTaskflow(CartesianTaskflowParams());
-  RasterProcessManager raster_manager(std::move(freespace_taskflow_generator),
-                                      std::move(transition_taskflow_generator),
-                                      std::move(raster_taskflow_generator));
-  if (!raster_manager.init(input))
-    CONSOLE_BRIDGE_logError("Initialization Failed");
-
-  // --------------------
-  // Solve
-  // --------------------
-  if (!raster_manager.execute())
-  {
-    CONSOLE_BRIDGE_logError("Execution Failed");
-  }
-
-  // Plot OMPL Trajectory
-  if (plotter)
+  // Plot Process Trajectory
+  if (plotter != nullptr && plotter->isConnected())
   {
     plotter->waitForInput();
-    plotter->plotTrajectory(*(input.getResults()));
+    plotter->plotTrajectory(*(response.results));
   }
 
   std::cout << "Execution Complete" << std::endl;
