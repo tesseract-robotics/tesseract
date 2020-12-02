@@ -1,5 +1,5 @@
 ﻿/**
- * @file raster_process_manager.h
+ * @file raster_only_global_taskflow.h
  * @brief Plans raster paths
  *
  * @author Matthew Powelson
@@ -23,8 +23,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESSERACT_PROCESS_MANAGERS_RASTER_PROCESS_MANAGER_H
-#define TESSERACT_PROCESS_MANAGERS_RASTER_PROCESS_MANAGER_H
+#ifndef TESSERACT_PROCESS_MANAGERS_RASTER_ONLY_GLOBAL_TASKFLOW_H
+#define TESSERACT_PROCESS_MANAGERS_RASTER_ONLY_GLOBAL_TASKFLOW_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
@@ -34,13 +34,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <taskflow/taskflow.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/process_manager.h>
 #include <tesseract_process_managers/taskflow_generator.h>
 
 namespace tesseract_planning
 {
 /**
- * @brief This class provides a process manager for a raster process.
+ * @brief This class provides a taskflow for a raster process.
  *
  * Given a ProcessInput in the correct format, it handles the creation of the process dependencies and uses Taskflow to
  * execute them efficiently in a parallel based on those dependencies.
@@ -50,60 +49,57 @@ namespace tesseract_planning
  *
  * Composite
  * {
- *   Composite - from start
  *   Composite - Raster segment
  *   Composite - Transitions
  *   Composite - Raster segment
  *   Composite - Transitions
  *   Composite - Raster segment
- *   Composite - to end
  * }
  */
-class RasterProcessManager : public ProcessManager
+class RasterOnlyGlobalTaskflow : public TaskflowGenerator
 {
 public:
-  using Ptr = std::shared_ptr<RasterProcessManager>;
-  using ConstPtr = std::shared_ptr<const RasterProcessManager>;
+  using UPtr = std::unique_ptr<RasterOnlyGlobalTaskflow>;
 
-  RasterProcessManager(TaskflowGenerator::UPtr freespace_taskflow_generator,
-                       TaskflowGenerator::UPtr transition_taskflow_generator,
-                       TaskflowGenerator::UPtr raster_taskflow_generator,
-                       std::size_t n = std::thread::hardware_concurrency());
+  RasterOnlyGlobalTaskflow(TaskflowGenerator::UPtr global_taskflow_generator,
+                           TaskflowGenerator::UPtr transition_taskflow_generator,
+                           TaskflowGenerator::UPtr raster_taskflow_generator,
+                           std::string name = "RasterOnlyGlobalTaskflow");
 
-  ~RasterProcessManager() override = default;
-  RasterProcessManager(const RasterProcessManager&) = delete;
-  RasterProcessManager& operator=(const RasterProcessManager&) = delete;
-  RasterProcessManager(RasterProcessManager&&) = delete;
-  RasterProcessManager& operator=(RasterProcessManager&&) = delete;
+  ~RasterOnlyGlobalTaskflow() override = default;
+  RasterOnlyGlobalTaskflow(const RasterOnlyGlobalTaskflow&) = delete;
+  RasterOnlyGlobalTaskflow& operator=(const RasterOnlyGlobalTaskflow&) = delete;
+  RasterOnlyGlobalTaskflow(RasterOnlyGlobalTaskflow&&) = delete;
+  RasterOnlyGlobalTaskflow& operator=(RasterOnlyGlobalTaskflow&&) = delete;
 
-  bool init(ProcessInput input) override;
+  const std::string& getName() const override;
 
-  bool execute() override;
+  tf::Taskflow& generateTaskflow(ProcessInput input,
+                                 std::function<void()> done_cb,
+                                 std::function<void()> error_cb) override;
 
-  bool terminate() override;
+  void abort() override;
 
-  bool clear() override;
+  void reset() override;
 
-  void enableDebug(bool enabled) override;
-
-  void enableProfile(bool enabled) override;
+  void clear() override;
 
 private:
-  void successCallback(std::string message);
-  void failureCallback(std::string message);
-  bool success_{ false };
-  bool debug_{ false };
-  bool profile_{ false };
-
-  TaskflowGenerator::UPtr freespace_taskflow_generator_;
+  TaskflowGenerator::UPtr global_taskflow_generator_;
   TaskflowGenerator::UPtr transition_taskflow_generator_;
   TaskflowGenerator::UPtr raster_taskflow_generator_;
-  tf::Executor executor_;
+  std::string name_;
   tf::Taskflow taskflow_;
 
-  std::vector<tf::Task> freespace_tasks_;
+  tf::Task global_task_;
+  tf::Task global_post_task_;
   std::vector<tf::Task> transition_tasks_;
   std::vector<tf::Task> raster_tasks_;
+
+  static void globalPostProcess(ProcessInput input);
+
+  void successCallback(std::string message, std::function<void()> user_callback);
+  void failureCallback(std::string message, std::function<void()> user_callback);
 
   /**
    * @brief Checks that the ProcessInput is in the correct format.

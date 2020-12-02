@@ -1,5 +1,5 @@
 /**
- * @file raster_waad_process_manager.cpp
+ * @file raster_waad_taskflow.cpp
  * @brief Plans raster paths with approach and departure
  *
  * @author Levi Armstrong
@@ -29,8 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <taskflow/taskflow.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/process_managers/raster_waad_process_manager.h>
-#include <tesseract_process_managers/debug_observer.h>
+#include <tesseract_process_managers/taskflow_generators/raster_waad_taskflow.h>
 
 #include <tesseract_command_language/instruction_type.h>
 #include <tesseract_command_language/composite_instruction.h>
@@ -41,25 +40,29 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract_planning;
 
-RasterWAADProcessManager::RasterWAADProcessManager(TaskflowGenerator::UPtr freespace_taskflow_generator,
-                                                   TaskflowGenerator::UPtr transition_taskflow_generator,
-                                                   TaskflowGenerator::UPtr raster_taskflow_generator,
-                                                   std::size_t n)
+RasterWAADTaskflow::RasterWAADTaskflow(TaskflowGenerator::UPtr freespace_taskflow_generator,
+                                       TaskflowGenerator::UPtr transition_taskflow_generator,
+                                       TaskflowGenerator::UPtr raster_taskflow_generator,
+                                       std::string name)
   : freespace_taskflow_generator_(std::move(freespace_taskflow_generator))
   , transition_taskflow_generator_(std::move(transition_taskflow_generator))
   , raster_taskflow_generator_(std::move(raster_taskflow_generator))
-  , executor_(n)
-  , taskflow_("RasterWAADProcessManagerTaskflow")
+  , name_(name)
+  , taskflow_(name)
 {
 }
 
-bool RasterWAADProcessManager::init(ProcessInput input)
+const std::string& RasterWAADTaskflow::getName() const { return name_; }
+
+tf::Taskflow& RasterWAADTaskflow::generateTaskflow(ProcessInput input,
+                                                   std::function<void()> done_cb,
+                                                   std::function<void()> error_cb)
 {
   // This should make all of the isComposite checks so that you can safely cast below
   if (!checkProcessInput(input))
   {
     CONSOLE_BRIDGE_logError("Invalid Process Input");
-    return false;
+    throw std::runtime_error("Invalid Process Input");
   }
 
   // Clear the process manager
@@ -80,16 +83,18 @@ bool RasterWAADProcessManager::init(ProcessInput input)
     // Create the process taskflow
     ProcessInput process_input = input[idx][1];
     process_input.setStartInstruction(*ali);
-    auto process_step =
-        taskflow_
-            .composed_of(raster_taskflow_generator_->generateTaskflow(
-                process_input,
-                std::bind(
-                    &RasterWAADProcessManager::successCallback, this, process_input.getInstruction()->getDescription()),
-                std::bind(&RasterWAADProcessManager::failureCallback,
-                          this,
-                          process_input.getInstruction()->getDescription())))
-            .name("raster_" + std::to_string(idx));
+    auto process_step = taskflow_
+                            .composed_of(raster_taskflow_generator_->generateTaskflow(
+                                process_input,
+                                std::bind(&RasterWAADTaskflow::successCallback,
+                                          this,
+                                          process_input.getInstruction()->getDescription(),
+                                          done_cb),
+                                std::bind(&RasterWAADTaskflow::failureCallback,
+                                          this,
+                                          process_input.getInstruction()->getDescription(),
+                                          error_cb)))
+                            .name("raster_" + std::to_string(idx));
 
     // Create Departure Taskflow
     ProcessInput departure_input = input[idx][2];
@@ -97,12 +102,14 @@ bool RasterWAADProcessManager::init(ProcessInput input)
     auto departure_step = taskflow_
                               .composed_of(raster_taskflow_generator_->generateTaskflow(
                                   departure_input,
-                                  std::bind(&RasterWAADProcessManager::successCallback,
+                                  std::bind(&RasterWAADTaskflow::successCallback,
                                             this,
-                                            departure_input.getInstruction()->getDescription()),
-                                  std::bind(&RasterWAADProcessManager::failureCallback,
+                                            departure_input.getInstruction()->getDescription(),
+                                            done_cb),
+                                  std::bind(&RasterWAADTaskflow::failureCallback,
                                             this,
-                                            departure_input.getInstruction()->getDescription())))
+                                            departure_input.getInstruction()->getDescription(),
+                                            error_cb)))
                               .name("departure_" + std::to_string(idx));
 
     // Get Start Plan Instruction for approach
@@ -132,12 +139,14 @@ bool RasterWAADProcessManager::init(ProcessInput input)
     auto approach_step = taskflow_
                              .composed_of(raster_taskflow_generator_->generateTaskflow(
                                  approach_input,
-                                 std::bind(&RasterWAADProcessManager::successCallback,
+                                 std::bind(&RasterWAADTaskflow::successCallback,
                                            this,
-                                           approach_input.getInstruction()->getDescription()),
-                                 std::bind(&RasterWAADProcessManager::failureCallback,
+                                           approach_input.getInstruction()->getDescription(),
+                                           done_cb),
+                                 std::bind(&RasterWAADTaskflow::failureCallback,
                                            this,
-                                           approach_input.getInstruction()->getDescription())))
+                                           approach_input.getInstruction()->getDescription(),
+                                           error_cb)))
                              .name("approach_" + std::to_string(idx));
 
     // Each approach and departure depend on raster
@@ -162,12 +171,14 @@ bool RasterWAADProcessManager::init(ProcessInput input)
     auto transition_step = taskflow_
                                .composed_of(transition_taskflow_generator_->generateTaskflow(
                                    transition_input,
-                                   std::bind(&RasterWAADProcessManager::successCallback,
+                                   std::bind(&RasterWAADTaskflow::successCallback,
                                              this,
-                                             transition_input.getInstruction()->getDescription()),
-                                   std::bind(&RasterWAADProcessManager::failureCallback,
+                                             transition_input.getInstruction()->getDescription(),
+                                             done_cb),
+                                   std::bind(&RasterWAADTaskflow::failureCallback,
                                              this,
-                                             transition_input.getInstruction()->getDescription())))
+                                             transition_input.getInstruction()->getDescription(),
+                                             error_cb)))
                                .name("transition_" + std::to_string(input_idx));
 
     // Each transition is independent and thus depends only on the adjacent rasters approach and departure
@@ -186,12 +197,14 @@ bool RasterWAADProcessManager::init(ProcessInput input)
   auto from_start = taskflow_
                         .composed_of(freespace_taskflow_generator_->generateTaskflow(
                             from_start_input,
-                            std::bind(&RasterWAADProcessManager::successCallback,
+                            std::bind(&RasterWAADTaskflow::successCallback,
                                       this,
-                                      from_start_input.getInstruction()->getDescription()),
-                            std::bind(&RasterWAADProcessManager::failureCallback,
+                                      from_start_input.getInstruction()->getDescription(),
+                                      done_cb),
+                            std::bind(&RasterWAADTaskflow::failureCallback,
                                       this,
-                                      from_start_input.getInstruction()->getDescription())))
+                                      from_start_input.getInstruction()->getDescription(),
+                                      error_cb)))
                         .name("from_start");
   raster_tasks_[starting_raster_idx][0].precede(from_start);
   freespace_tasks_.push_back(from_start);
@@ -204,74 +217,35 @@ bool RasterWAADProcessManager::init(ProcessInput input)
           .composed_of(freespace_taskflow_generator_->generateTaskflow(
               to_end_input,
               std::bind(
-                  &RasterWAADProcessManager::successCallback, this, to_end_input.getInstruction()->getDescription()),
-              std::bind(
-                  &RasterWAADProcessManager::failureCallback, this, to_end_input.getInstruction()->getDescription())))
+                  &RasterWAADTaskflow::successCallback, this, to_end_input.getInstruction()->getDescription(), done_cb),
+              std::bind(&RasterWAADTaskflow::failureCallback,
+                        this,
+                        to_end_input.getInstruction()->getDescription(),
+                        error_cb)))
           .name("to_end");
   raster_tasks_.back()[2].precede(to_end);
   freespace_tasks_.push_back(to_end);
 
-  // visualizes the taskflow
-  if (debug_)
-  {
-    std::ofstream out_data;
-    out_data.open(tesseract_common::getTempPath() + "raster_waad_process_manager-" +
-                  tesseract_common::getTimestampString() + ".dot");
-    taskflow_.dump(out_data);
-    out_data.close();
-  }
-
-  return true;
+  return taskflow_;
 }
 
-bool RasterWAADProcessManager::execute()
-{
-  success_ = true;
-
-  DebugObserver::Ptr debug_observer;
-  std::shared_ptr<tf::TFProfObserver> profile_observer;
-  if (debug_)
-    debug_observer = executor_.make_observer<DebugObserver>("RasterWAADProcessManagerObserver");
-
-  // TODO: Figure out how to cancel execution. This callback is only checked at beginning of the taskflow (ie before
-  // restarting)
-  //  executor.run_until(taskflow, [this]() { std::cout << "Checking if done: " << this->done << std::endl; return
-  //  this->done;});
-
-  // Wait for currently running taskflows to end.
-  executor_.wait_for_all();
-  executor_.run(taskflow_);
-  executor_.wait_for_all();
-
-  if (debug_observer != nullptr)
-    executor_.remove_observer(debug_observer);
-
-  if (profile_observer != nullptr)
-  {
-    std::ofstream out_data;
-    out_data.open(tesseract_common::getTempPath() + "raster_waad_process_manager-" +
-                  tesseract_common::getTimestampString() + ".json");
-    profile_observer->dump(out_data);
-    out_data.close();
-    executor_.remove_observer(profile_observer);
-  }
-
-  clear();  // I believe clear must be called so memory is cleaned up
-
-  return success_;
-}
-
-bool RasterWAADProcessManager::terminate()
+void RasterWAADTaskflow::abort()
 {
   freespace_taskflow_generator_->abort();
   transition_taskflow_generator_->abort();
   raster_taskflow_generator_->abort();
 
   CONSOLE_BRIDGE_logError("Terminating Taskflow");
-  return false;
 }
 
-bool RasterWAADProcessManager::clear()
+void RasterWAADTaskflow::reset()
+{
+  freespace_taskflow_generator_->reset();
+  transition_taskflow_generator_->reset();
+  raster_taskflow_generator_->reset();
+}
+
+void RasterWAADTaskflow::clear()
 
 {
   freespace_taskflow_generator_->clear();
@@ -280,14 +254,9 @@ bool RasterWAADProcessManager::clear()
   taskflow_.clear();
   freespace_tasks_.clear();
   raster_tasks_.clear();
-  return true;
 }
 
-void RasterWAADProcessManager::enableDebug(bool enabled) { debug_ = enabled; }
-
-void RasterWAADProcessManager::enableProfile(bool enabled) { profile_ = enabled; }
-
-bool RasterWAADProcessManager::checkProcessInput(const tesseract_planning::ProcessInput& input) const
+bool RasterWAADTaskflow::checkProcessInput(const tesseract_planning::ProcessInput& input) const
 {
   // -------------
   // Check Input
@@ -376,20 +345,21 @@ bool RasterWAADProcessManager::checkProcessInput(const tesseract_planning::Proce
   return true;
 }
 
-void RasterWAADProcessManager::successCallback(std::string message)
+void RasterWAADTaskflow::successCallback(std::string message, std::function<void()> user_callback)
 {
-  CONSOLE_BRIDGE_logInform("RasterWAADProcessManager Successful: %s", message.c_str());
-  success_ &= true;
+  CONSOLE_BRIDGE_logInform("%s Successful: %s", name_.c_str(), message.c_str());
+  if (user_callback)
+    user_callback();
 }
 
-void RasterWAADProcessManager::failureCallback(std::string message)
+void RasterWAADTaskflow::failureCallback(std::string message, std::function<void()> user_callback)
 {
   // For this process, any failure of a sub-TaskFlow indicates a planning failure. Abort all future tasks
   freespace_taskflow_generator_->abort();
   transition_taskflow_generator_->abort();
   raster_taskflow_generator_->abort();
   // Print an error if this is the first failure
-  if (success_)
-    CONSOLE_BRIDGE_logError("RasterWAADProcessManager Failure: %s", message.c_str());
-  success_ = false;
+  CONSOLE_BRIDGE_logError("%s Failure: %s", name_.c_str(), message.c_str());
+  if (user_callback)
+    user_callback();
 }

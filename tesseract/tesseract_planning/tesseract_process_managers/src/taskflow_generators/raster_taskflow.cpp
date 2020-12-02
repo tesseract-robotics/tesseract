@@ -1,5 +1,5 @@
 ﻿/**
- * @file raster_process_manager.cpp
+ * @file raster_taskflow.cpp
  * @brief Plans raster paths
  *
  * @author Matthew Powelson
@@ -29,8 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <taskflow/taskflow.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/process_managers/raster_process_manager.h>
-#include <tesseract_process_managers/debug_observer.h>
+#include <tesseract_process_managers/taskflow_generators/raster_taskflow.h>
 
 #include <tesseract_command_language/instruction_type.h>
 #include <tesseract_command_language/composite_instruction.h>
@@ -41,25 +40,29 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract_planning;
 
-RasterProcessManager::RasterProcessManager(TaskflowGenerator::UPtr freespace_taskflow_generator,
-                                           TaskflowGenerator::UPtr transition_taskflow_generator,
-                                           TaskflowGenerator::UPtr raster_taskflow_generator,
-                                           std::size_t n)
+RasterTaskflow::RasterTaskflow(TaskflowGenerator::UPtr freespace_taskflow_generator,
+                               TaskflowGenerator::UPtr transition_taskflow_generator,
+                               TaskflowGenerator::UPtr raster_taskflow_generator,
+                               std::string name)
   : freespace_taskflow_generator_(std::move(freespace_taskflow_generator))
   , transition_taskflow_generator_(std::move(transition_taskflow_generator))
   , raster_taskflow_generator_(std::move(raster_taskflow_generator))
-  , executor_(n)
-  , taskflow_("RasterProcessManagerTaskflow")
+  , name_(name)
+  , taskflow_(name)
 {
 }
 
-bool RasterProcessManager::init(ProcessInput input)
+const std::string& RasterTaskflow::getName() const { return name_; }
+
+tf::Taskflow& RasterTaskflow::generateTaskflow(ProcessInput input,
+                                               std::function<void()> done_cb,
+                                               std::function<void()> error_cb)
 {
   // This should make all of the isComposite checks so that you can safely cast below
   if (!checkProcessInput(input))
   {
     CONSOLE_BRIDGE_logError("Invalid Process Input");
-    return false;
+    throw std::runtime_error("Invalid Process Input");
   }
 
   // Clear the process manager
@@ -103,9 +106,9 @@ bool RasterProcessManager::init(ProcessInput input)
             .composed_of(raster_taskflow_generator_->generateTaskflow(
                 raster_input,
                 std::bind(
-                    &RasterProcessManager::successCallback, this, raster_input.getInstruction()->getDescription()),
+                    &RasterTaskflow::successCallback, this, raster_input.getInstruction()->getDescription(), done_cb),
                 std::bind(
-                    &RasterProcessManager::failureCallback, this, raster_input.getInstruction()->getDescription())))
+                    &RasterTaskflow::failureCallback, this, raster_input.getInstruction()->getDescription(), error_cb)))
             .name("Raster #" + std::to_string((idx - 1) / 2) + ": " + raster_input.getInstruction()->getDescription());
     raster_tasks_.push_back(raster_step);
   }
@@ -122,16 +125,19 @@ bool RasterProcessManager::init(ProcessInput input)
     ProcessInput transition_input = input[input_idx];
     transition_input.setStartInstruction(std::vector<std::size_t>({ input_idx - 1 }));
     transition_input.setEndInstruction(std::vector<std::size_t>({ input_idx + 1 }));
-    auto transition_step =
-        taskflow_
-            .composed_of(transition_taskflow_generator_->generateTaskflow(
-                transition_input,
-                std::bind(
-                    &RasterProcessManager::successCallback, this, transition_input.getInstruction()->getDescription()),
-                std::bind(
-                    &RasterProcessManager::failureCallback, this, transition_input.getInstruction()->getDescription())))
-            .name("Transition #" + std::to_string(transition_idx) + ": " +
-                  transition_input.getInstruction()->getDescription());
+    auto transition_step = taskflow_
+                               .composed_of(transition_taskflow_generator_->generateTaskflow(
+                                   transition_input,
+                                   std::bind(&RasterTaskflow::successCallback,
+                                             this,
+                                             transition_input.getInstruction()->getDescription(),
+                                             done_cb),
+                                   std::bind(&RasterTaskflow::failureCallback,
+                                             this,
+                                             transition_input.getInstruction()->getDescription(),
+                                             error_cb)))
+                               .name("Transition #" + std::to_string(transition_idx) + ": " +
+                                     transition_input.getInstruction()->getDescription());
 
     // Each transition is independent and thus depends only on the adjacent rasters
     transition_step.succeed(raster_tasks_[starting_raster_idx + transition_idx]);
@@ -151,9 +157,11 @@ bool RasterProcessManager::init(ProcessInput input)
           .composed_of(freespace_taskflow_generator_->generateTaskflow(
               from_start_input,
               std::bind(
-                  &RasterProcessManager::successCallback, this, from_start_input.getInstruction()->getDescription()),
-              std::bind(
-                  &RasterProcessManager::failureCallback, this, from_start_input.getInstruction()->getDescription())))
+                  &RasterTaskflow::successCallback, this, from_start_input.getInstruction()->getDescription(), done_cb),
+              std::bind(&RasterTaskflow::failureCallback,
+                        this,
+                        from_start_input.getInstruction()->getDescription(),
+                        error_cb)))
           .name("From Start: " + from_start_input.getInstruction()->getDescription());
   raster_tasks_[starting_raster_idx].precede(from_start);
   freespace_tasks_.push_back(from_start);
@@ -166,76 +174,34 @@ bool RasterProcessManager::init(ProcessInput input)
       taskflow_
           .composed_of(freespace_taskflow_generator_->generateTaskflow(
               to_end_input,
-              std::bind(&RasterProcessManager::successCallback, this, to_end_input.getInstruction()->getDescription()),
-              std::bind(&RasterProcessManager::failureCallback, this, to_end_input.getInstruction()->getDescription())))
+              std::bind(
+                  &RasterTaskflow::successCallback, this, to_end_input.getInstruction()->getDescription(), done_cb),
+              std::bind(
+                  &RasterTaskflow::failureCallback, this, to_end_input.getInstruction()->getDescription(), error_cb)))
           .name("To End: " + to_end_input.getInstruction()->getDescription());
   raster_tasks_.back().precede(to_end);
   freespace_tasks_.push_back(to_end);
 
-  // visualizes the taskflow
-  if (debug_)
-  {
-    std::ofstream out_data;
-    out_data.open(tesseract_common::getTempPath() + "raster_process_manager-" + tesseract_common::getTimestampString() +
-                  ".dot");
-    taskflow_.dump(out_data);
-    out_data.close();
-  }
-
-  return true;
+  return taskflow_;
 }
 
-bool RasterProcessManager::execute()
-{
-  success_ = true;
-
-  DebugObserver::Ptr debug_observer;
-  std::shared_ptr<tf::TFProfObserver> profile_observer;
-  if (debug_)
-    debug_observer = executor_.make_observer<DebugObserver>("RasterProcessManagerObserver");
-
-  if (profile_)
-    profile_observer = executor_.make_observer<tf::TFProfObserver>();
-
-  // TODO: Figure out how to cancel execution. This callback is only checked at beginning of the taskflow (ie before
-  // restarting)
-  //  executor.run_until(taskflow, [this]() { std::cout << "Checking if done: " << this->done << std::endl; return
-  //  this->done;});
-
-  // Wait for currently running taskflows to end.
-  executor_.wait_for_all();
-  executor_.run(taskflow_);
-  executor_.wait_for_all();
-
-  if (debug_observer != nullptr)
-    executor_.remove_observer(debug_observer);
-
-  if (profile_observer != nullptr)
-  {
-    std::ofstream out_data;
-    out_data.open(tesseract_common::getTempPath() + "raster_process_manager_profile-" +
-                  tesseract_common::getTimestampString() + ".json");
-    profile_observer->dump(out_data);
-    out_data.close();
-    executor_.remove_observer(profile_observer);
-  }
-
-  clear();  // I believe clear must be called so memory is cleaned up
-
-  return success_;
-}
-
-bool RasterProcessManager::terminate()
+void RasterTaskflow::abort()
 {
   freespace_taskflow_generator_->abort();
   transition_taskflow_generator_->abort();
   raster_taskflow_generator_->abort();
 
   CONSOLE_BRIDGE_logError("Terminating Taskflow");
-  return false;
 }
 
-bool RasterProcessManager::clear()
+void RasterTaskflow::reset()
+{
+  freespace_taskflow_generator_->reset();
+  transition_taskflow_generator_->reset();
+  raster_taskflow_generator_->reset();
+}
+
+void RasterTaskflow::clear()
 
 {
   freespace_taskflow_generator_->clear();
@@ -244,15 +210,9 @@ bool RasterProcessManager::clear()
   taskflow_.clear();
   freespace_tasks_.clear();
   raster_tasks_.clear();
-
-  return true;
 }
 
-void RasterProcessManager::enableDebug(bool enabled) { debug_ = enabled; }
-
-void RasterProcessManager::enableProfile(bool enabled) { profile_ = enabled; }
-
-bool RasterProcessManager::checkProcessInput(const tesseract_planning::ProcessInput& input) const
+bool RasterTaskflow::checkProcessInput(const tesseract_planning::ProcessInput& input) const
 {
   // -------------
   // Check Input
@@ -307,13 +267,14 @@ bool RasterProcessManager::checkProcessInput(const tesseract_planning::ProcessIn
   return true;
 }
 
-void RasterProcessManager::successCallback(std::string message)
+void RasterTaskflow::successCallback(std::string message, std::function<void()> user_callback)
 {
-  CONSOLE_BRIDGE_logInform("%s", message.c_str());
-  success_ &= true;
+  CONSOLE_BRIDGE_logInform("%s Successful: %s", name_.c_str(), message.c_str());
+  if (user_callback)
+    user_callback();
 }
 
-void RasterProcessManager::failureCallback(std::string message)
+void RasterTaskflow::failureCallback(std::string message, std::function<void()> user_callback)
 {
   // For this process, any failure of a sub-TaskFlow indicates a planning failure. Abort all future tasks
   freespace_taskflow_generator_->abort();
@@ -321,7 +282,7 @@ void RasterProcessManager::failureCallback(std::string message)
   raster_taskflow_generator_->abort();
 
   // Print an error if this is the first failure
-  if (success_)
-    CONSOLE_BRIDGE_logError("RasterProcessManager Failure: %s", message.c_str());
-  success_ = false;
+  CONSOLE_BRIDGE_logError("%s Failure: %s", name_.c_str(), message.c_str());
+  if (user_callback)
+    user_callback();
 }
