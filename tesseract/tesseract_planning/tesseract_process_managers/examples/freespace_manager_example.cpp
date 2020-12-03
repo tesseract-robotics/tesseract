@@ -68,6 +68,7 @@ int main()
 
   // Create Process Planning Server
   ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract), 1);
+  planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
   ProcessPlanningRequest request;

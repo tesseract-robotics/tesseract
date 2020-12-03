@@ -264,6 +264,7 @@ TEST_F(TesseractProcessManagerUnit, RasterProcessManagerDefaultPlanProfileTest)
 {
   // Create Process Planning Server
   ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
   ProcessPlanningRequest request;
@@ -287,7 +288,7 @@ TEST_F(TesseractProcessManagerUnit, RasterProcessManagerDefaultPlanProfileTest)
   planning_server.waitForAll();
 
   // Confirm that the task is finished
-  EXPECT_TRUE(response.isReady());
+  EXPECT_TRUE(response.ready());
 
   // Solve
   EXPECT_TRUE(*(response.success));
@@ -297,6 +298,7 @@ TEST_F(TesseractProcessManagerUnit, RasterProcessManagerDefaultLVSPlanProfileTes
 {
   // Create Process Planning Server
   ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
   ProcessPlanningRequest request;
@@ -320,7 +322,7 @@ TEST_F(TesseractProcessManagerUnit, RasterProcessManagerDefaultLVSPlanProfileTes
   planning_server.waitForAll();
 
   // Confirm that the task is finished
-  EXPECT_TRUE(response.isReady());
+  EXPECT_TRUE(response.ready());
 
   // Solve
   EXPECT_TRUE(*(response.success));
@@ -330,6 +332,7 @@ TEST_F(TesseractProcessManagerUnit, RasterGlobalProcessManagerDefaultPlanProfile
 {
   // Create Process Planning Server
   ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
   ProcessPlanningRequest request;
@@ -353,7 +356,7 @@ TEST_F(TesseractProcessManagerUnit, RasterGlobalProcessManagerDefaultPlanProfile
   planning_server.waitForAll();
 
   // Confirm that the task is finished
-  EXPECT_TRUE(response.isReady());
+  EXPECT_TRUE(response.ready());
 
   // Solve
   EXPECT_TRUE(*(response.success));
@@ -363,6 +366,7 @@ TEST_F(TesseractProcessManagerUnit, RasterGlobalProcessManagerDefaultLVSPlanProf
 {
   // Create Process Planning Server
   ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
   ProcessPlanningRequest request;
@@ -386,7 +390,7 @@ TEST_F(TesseractProcessManagerUnit, RasterGlobalProcessManagerDefaultLVSPlanProf
   planning_server.waitForAll();
 
   // Confirm that the task is finished
-  EXPECT_TRUE(response.isReady());
+  EXPECT_TRUE(response.ready());
 
   // Solve
   EXPECT_TRUE(*(response.success));
@@ -396,6 +400,7 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyProcessManagerDefaultPlanProfileTe
 {
   // Create Process Planning Server
   ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
   ProcessPlanningRequest request;
@@ -419,7 +424,7 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyProcessManagerDefaultPlanProfileTe
   planning_server.waitForAll();
 
   // Confirm that the task is finished
-  EXPECT_TRUE(response.isReady());
+  EXPECT_TRUE(response.ready());
 
   // Solve
   EXPECT_TRUE(*(response.success));
@@ -429,6 +434,7 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyProcessManagerDefaultLVSPlanProfil
 {
   // Create Process Planning Server
   ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
   ProcessPlanningRequest request;
@@ -452,7 +458,7 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyProcessManagerDefaultLVSPlanProfil
   planning_server.waitForAll();
 
   // Confirm that the task is finished
-  EXPECT_TRUE(response.isReady());
+  EXPECT_TRUE(response.ready());
 
   // Solve
   EXPECT_TRUE(*(response.success));
@@ -462,6 +468,7 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyGlobalProcessManagerDefaultPlanPro
 {
   // Create Process Planning Server
   ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
   ProcessPlanningRequest request;
@@ -485,7 +492,7 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyGlobalProcessManagerDefaultPlanPro
   planning_server.waitForAll();
 
   // Confirm that the task is finished
-  EXPECT_TRUE(response.isReady());
+  EXPECT_TRUE(response.ready());
 
   // Solve
   EXPECT_TRUE(*(response.success));
@@ -495,6 +502,7 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyGlobalProcessManagerDefaultLVSPlan
 {
   // Create Process Planning Server
   ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
   ProcessPlanningRequest request;
@@ -518,7 +526,7 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyGlobalProcessManagerDefaultLVSPlan
   planning_server.waitForAll();
 
   // Confirm that the task is finished
-  EXPECT_TRUE(response.isReady());
+  EXPECT_TRUE(response.ready());
 
   // Solve
   EXPECT_TRUE(*(response.success));
@@ -528,6 +536,7 @@ TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerDefaultPlanProfileTest
 {
   // Create Process Planning Server
   ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
   ProcessPlanningRequest request;
@@ -551,7 +560,7 @@ TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerDefaultPlanProfileTest
   planning_server.waitForAll();
 
   // Confirm that the task is finished
-  EXPECT_TRUE(response.isReady());
+  EXPECT_TRUE(response.ready());
 
   // Solve
   EXPECT_TRUE(*(response.success));
@@ -561,6 +570,7 @@ TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerDefaultLVSPlanProfileT
 {
   // Create Process Planning Server
   ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
   ProcessPlanningRequest request;
@@ -584,7 +594,7 @@ TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerDefaultLVSPlanProfileT
   planning_server.waitForAll();
 
   // Confirm that the task is finished
-  EXPECT_TRUE(response.isReady());
+  EXPECT_TRUE(response.ready());
 
   // Solve
   EXPECT_TRUE(*(response.success));
@@ -594,6 +604,7 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerDefaultPlanProfileTe
 {
   // Create Process Planning Server
   ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
   ProcessPlanningRequest request;
@@ -622,7 +633,7 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerDefaultPlanProfileTe
   planning_server.waitForAll();
 
   // Confirm that the task is finished
-  EXPECT_TRUE(response.isReady());
+  EXPECT_TRUE(response.ready());
 
   // Solve
   EXPECT_TRUE(*(response.success));
@@ -632,6 +643,7 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerDefaultLVSPlanProfil
 {
   // Create Process Planning Server
   ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
   ProcessPlanningRequest request;
@@ -660,7 +672,7 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerDefaultLVSPlanProfil
   planning_server.waitForAll();
 
   // Confirm that the task is finished
-  EXPECT_TRUE(response.isReady());
+  EXPECT_TRUE(response.ready());
 
   // Solve
   EXPECT_TRUE(*(response.success));
@@ -670,6 +682,7 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADDTProcessManagerDefaultPlanProfile
 {
   // Create Process Planning Server
   ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
   ProcessPlanningRequest request;
@@ -698,7 +711,7 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADDTProcessManagerDefaultPlanProfile
   planning_server.waitForAll();
 
   // Confirm that the task is finished
-  EXPECT_TRUE(response.isReady());
+  EXPECT_TRUE(response.ready());
 
   // Solve
   EXPECT_TRUE(*(response.success));
@@ -708,6 +721,7 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADDTProcessManagerDefaultLVSPlanProf
 {
   // Create Process Planning Server
   ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
   ProcessPlanningRequest request;
@@ -736,7 +750,7 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADDTProcessManagerDefaultLVSPlanProf
   planning_server.waitForAll();
 
   // Confirm that the task is finished
-  EXPECT_TRUE(response.isReady());
+  EXPECT_TRUE(response.ready());
 
   // Solve
   EXPECT_TRUE(*(response.success));
