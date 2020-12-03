@@ -27,8 +27,7 @@
 #define TESSERACT_PROCESS_MANAGERS_DESCARTES_TASKFLOW_H
 
 #include <tesseract_process_managers/taskflow_generators/graph_taskflow.h>
-#include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
-#include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
+#include <tesseract_motion_planners/core/profile_dictionary.h>
 
 namespace tesseract_planning
 {
@@ -38,9 +37,7 @@ struct DescartesTaskflowParams
   bool enable_post_contact_discrete_check{ false };
   bool enable_post_contact_continuous_check{ true };
   bool enable_time_parameterization{ true };
-  SimplePlannerPlanProfileMap simple_plan_profiles;
-  SimplePlannerCompositeProfileMap simple_composite_profiles;
-  DescartesPlanProfileMap<double> descartes_plan_profiles;
+  ProfileDictionary::ConstPtr profiles;
 };
 
 GraphTaskflow::UPtr createDescartesTaskflow(DescartesTaskflowParams params);

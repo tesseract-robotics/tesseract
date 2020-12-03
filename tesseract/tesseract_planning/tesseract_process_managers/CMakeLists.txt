@@ -41,6 +41,7 @@ add_library(${PROJECT_NAME}
     src/process_input.cpp
     src/debug_observer.cpp
     src/process_planning_server.cpp
+    src/process_environment_cache.cpp
     src/process_generators/continuous_contact_check_process_generator.cpp
     src/process_generators/discrete_contact_check_process_generator.cpp
     src/process_generators/fix_state_bounds_process_generator.cpp
