@@ -35,6 +35,20 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_process_managers/taskflows/freespace_taskflow.h>
 #include <tesseract_process_managers/taskflows/ompl_taskflow.h>
 #include <tesseract_process_managers/taskflows/trajopt_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/graph_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/raster_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/raster_global_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/raster_only_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/raster_only_global_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/raster_dt_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/raster_waad_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/raster_waad_dt_taskflow.h>
+
+#include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
+#include <tesseract_motion_planners/ompl/profile/ompl_profile.h>
+#include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
+#include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
 
 #include <tesseract_command_language/utils/utils.h>
 
@@ -379,6 +393,18 @@ TaskflowGenerator::UPtr createRasterOnlyGlobalCTGenerator(const ProcessPlanningR
 ProcessPlanningServer::ProcessPlanningServer(EnvironmentCache::Ptr cache, size_t n)
   : cache_(std::move(cache)), executor_(std::make_shared<tf::Executor>(n))
 {
+}
+
+void ProcessPlanningServer::registerProcessPlanner(const std::string& name, ProcessPlannerGeneratorFn generator)
+{
+  if (process_planners_.find(name) != process_planners_.end())
+    CONSOLE_BRIDGE_logDebug("Process planner %s already exist so replacing with new generator.", name.c_str());
+
+  process_planners_[name] = generator;
+}
+
+void ProcessPlanningServer::loadDefaultProcessPlanners()
+{
   registerProcessPlanner(process_planner_names::TRAJOPT_PLANNER_NAME, &createTrajOptGenerator);
   registerProcessPlanner(process_planner_names::OMPL_PLANNER_NAME, &createRasterGenerator);
   registerProcessPlanner(process_planner_names::DESCARTES_PLANNER_NAME, &createRasterGenerator);
@@ -400,12 +426,9 @@ ProcessPlanningServer::ProcessPlanningServer(EnvironmentCache::Ptr cache, size_t
   registerProcessPlanner(process_planner_names::RASTER_O_G_CT_PLANNER_NAME, &createRasterOnlyGlobalCTGenerator);
 }
 
-void ProcessPlanningServer::registerProcessPlanner(const std::string& name, ProcessPlannerGeneratorFn generator)
+bool ProcessPlanningServer::hasProcessPlanner(const std::string& name) const
 {
-  if (process_planners_.find(name) != process_planners_.end())
-    CONSOLE_BRIDGE_logDebug("Process planner %s already exist so replacing with new generator.", name.c_str());
-
-  process_planners_[name] = generator;
+  return (process_planners_.find(name) != process_planners_.end());
 }
 
 ProcessPlanningFuture ProcessPlanningServer::run(const ProcessPlanningRequest& request)
