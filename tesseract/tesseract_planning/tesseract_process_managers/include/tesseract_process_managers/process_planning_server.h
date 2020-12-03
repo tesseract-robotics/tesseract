@@ -29,9 +29,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <mutex>
-#include <shared_mutex>
-#include <thread>
 #include <string>
 #include <taskflow/taskflow.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -41,12 +38,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/core/instruction.h>
 #include <tesseract_command_language/null_instruction.h>
 
+#include <tesseract_motion_planners/core/profile_dictionary.h>
 #include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
 #include <tesseract_motion_planners/ompl/profile/ompl_profile.h>
 #include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
 #include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
 
+#include <tesseract_process_managers/process_environment_cache.h>
 #include <tesseract_process_managers/taskflow_generators/graph_taskflow.h>
 #include <tesseract_process_managers/taskflow_generators/raster_taskflow.h>
 #include <tesseract_process_managers/taskflow_generators/raster_global_taskflow.h>
@@ -84,8 +83,7 @@ static const std::string RASTER_FT_DT_PLANNER_NAME = "RasterFTDTPlanner";
 /** @brief Raster planner with approach and departure using freespace planner for transitions */
 static const std::string RASTER_FT_WAAD_PLANNER_NAME = "RasterFTWAADPlanner";
 
-/** @brief Raster planner with approach and departure using freespace planner for transitions providing dual transitions
- */
+/** @brief Raster planner with approach and departure using freespace planner for transitions with dual transitions */
 static const std::string RASTER_FT_WAAD_DT_PLANNER_NAME = "RasterFTWAADDTPlanner";
 
 /** @brief Raster planner using cartesian planner for transitions */
@@ -97,8 +95,7 @@ static const std::string RASTER_CT_DT_PLANNER_NAME = "RasterCTDTPlanner";
 /** @brief Raster planner with approach and departure using cartesian planner for transitions */
 static const std::string RASTER_CT_WAAD_PLANNER_NAME = "RasterCTWAADPlanner";
 
-/** @brief Raster planner with approach and departure using cartesian planner for transitions providing dual transitions
- */
+/** @brief Raster planner with approach and departure using cartesian planner for transitions wit dual transitions */
 static const std::string RASTER_CT_WAAD_DT_PLANNER_NAME = "RasterCTWAADDTPlanner";
 
 /** @brief Raster planner performs global plan first then macro planning using freespace planner for transitions */
@@ -119,52 +116,6 @@ static const std::string RASTER_O_G_FT_PLANNER_NAME = "RasterOGFTPlanner";
 /** @brief Raster only planner performs global plan first then macro planning using cartesian planner for transitions */
 static const std::string RASTER_O_G_CT_PLANNER_NAME = "RasterOGCTPlanner";
 }  // namespace process_planner_names
-
-class TesseractCache
-{
-public:
-  using Ptr = std::shared_ptr<TesseractCache>;
-  using ConstPtr = std::shared_ptr<const TesseractCache>;
-
-  TesseractCache(tesseract::Tesseract::Ptr env);
-
-  /**
-   * @brief Set the cache size used to hold tesseract objects for motion planning
-   * @param size The size of the cache.
-   */
-  virtual void setCacheSize(long size);
-
-  /**
-   * @brief Get the cache size used to hold tesseract objects for motion planning
-   * @return The size of the cache.
-   */
-  virtual long getCacheSize() const;
-
-  /** @brief If the environment has changed it will rebuild the cache of tesseract objects */
-  virtual void refreshCache();
-
-  /**
-   * @brief This will pop a Tesseract object from the queue
-   * @details This will first call refreshCache to ensure it has an updated tesseract then proceed
-   */
-  virtual tesseract::Tesseract::Ptr getCachedTesseract();
-
-protected:
-  /** @brief The tesseract_object used to create the cache */
-  tesseract::Tesseract::Ptr tesseract_;
-
-  /** @brief The environment revision number at the time the cache was populated */
-  int cache_env_revision_{ 0 };
-
-  /** @brief The assigned cache size */
-  std::size_t cache_size_{ 5 };
-
-  /** @brief A vector of cached Tesseact objects */
-  std::deque<tesseract::Tesseract::Ptr> cache_;
-
-  /** @brief The mutex used when reading and writing to cache_ */
-  mutable std::shared_mutex cache_mutex_;
-};
 
 struct ProcessPlanningRequest
 {
@@ -220,15 +171,23 @@ struct ProcessPlanningFuture
   bool isReady() const { return (process_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready); }
 };
 
-using ProcessPlannerGeneratorFn = std::function<TaskflowGenerator::UPtr(const ProcessPlanningRequest& request)>;
+using ProcessPlannerGeneratorFn =
+    std::function<TaskflowGenerator::UPtr(const ProcessPlanningRequest& request, ProfileDictionary::ConstPtr profiles)>;
 
 class ProcessPlanningServer
 {
 public:
-  ProcessPlanningServer(TesseractCache::Ptr cache, size_t n = std::thread::hardware_concurrency());
-  virtual ~ProcessPlanningServer() = default;
+  using Ptr = std::shared_ptr<ProcessPlanningServer>;
+  using ConstPtr = std::shared_ptr<const ProcessPlanningServer>;
 
-  bool registerProcessPlanner(const std::string& name, ProcessPlannerGeneratorFn generator);
+  ProcessPlanningServer(EnvironmentCache::Ptr cache, size_t n = std::thread::hardware_concurrency());
+  virtual ~ProcessPlanningServer() = default;
+  ProcessPlanningServer(const ProcessPlanningServer&) = default;
+  ProcessPlanningServer& operator=(const ProcessPlanningServer&) = default;
+  ProcessPlanningServer(ProcessPlanningServer&&) = default;
+  ProcessPlanningServer& operator=(ProcessPlanningServer&&) = default;
+
+  void registerProcessPlanner(const std::string& name, ProcessPlannerGeneratorFn generator);
 
   ProcessPlanningFuture run(const ProcessPlanningRequest& request);
 
@@ -236,63 +195,16 @@ public:
 
   void waitForAll();
 
-  /** @brief Get and modify profiles */
-  TrajOptCompositeProfileMap& getTrajOptCompositeProfiles();
-  const TrajOptCompositeProfileMap& getTrajOptCompositeProfiles() const;
+  ProfileDictionary::Ptr getProfiles();
 
-  TrajOptPlanProfileMap& getTrajOptPlanProfiles();
-  const TrajOptPlanProfileMap& getTrajOptPlanProfiles() const;
-
-  DescartesPlanProfileMap<double>& getDescartesPlanProfiles();
-  const DescartesPlanProfileMap<double>& getDescartesPlanProfiles() const;
-
-  OMPLPlanProfileMap& getOMPLPlanProfiles();
-  const OMPLPlanProfileMap& getOMPLPlanProfiles() const;
-
-  SimplePlannerCompositeProfileMap& getSimplePlannerCompositeProfiles();
-  const SimplePlannerCompositeProfileMap& getSimplePlannerCompositeProfiles() const;
-
-  SimplePlannerPlanProfileMap& getSimplePlannerPlanProfiles();
-  const SimplePlannerPlanProfileMap& getSimplePlannerPlanProfiles() const;
+  ProfileDictionary::ConstPtr getProfiles() const;
 
 protected:
-  TesseractCache::Ptr cache_;
+  EnvironmentCache::Ptr cache_;
   std::shared_ptr<tf::Executor> executor_;
 
   std::unordered_map<std::string, ProcessPlannerGeneratorFn> process_planners_;
-
-  /** @brief Trajopt available composite profiles */
-  TrajOptCompositeProfileMap trajopt_composite_profiles_;
-
-  /**@brief The trajopt available plan profiles */
-  TrajOptPlanProfileMap trajopt_plan_profiles_;
-
-  /** @brief The Descartes available plan profiles */
-  DescartesPlanProfileMap<double> descartes_plan_profiles_;
-
-  /** @brief The OMPL available plan profiles */
-  OMPLPlanProfileMap ompl_plan_profiles_;
-
-  /** @brief The Simple Planner available plan profiles */
-  SimplePlannerPlanProfileMap simple_plan_profiles_;
-
-  /** @brief The Simple Planner available composite profiles */
-  SimplePlannerCompositeProfileMap simple_composite_profiles_;
-
-  RasterTaskflow::UPtr createRasterTaskflow(const ProcessPlanningRequest& request);
-  RasterOnlyTaskflow::UPtr createRasterOnlyTaskflow(const ProcessPlanningRequest& request);
-  RasterGlobalTaskflow::UPtr createRasterGlobalTaskflow(const ProcessPlanningRequest& request);
-  RasterDTTaskflow::UPtr createRasterDTTaskflow(const ProcessPlanningRequest& request);
-  RasterWAADTaskflow::UPtr createRasterWAADTaskflow(const ProcessPlanningRequest& request);
-  RasterWAADDTTaskflow::UPtr createRasterWAADDTTaskflow(const ProcessPlanningRequest& request);
-  RasterOnlyGlobalTaskflow::UPtr createRasterOnlyGlobalTaskflow(const ProcessPlanningRequest& request);
-  RasterTaskflow::UPtr createRasterCTTaskflow(const ProcessPlanningRequest& request);
-  RasterOnlyTaskflow::UPtr createRasterOnlyCTTaskflow(const ProcessPlanningRequest& request);
-  RasterDTTaskflow::UPtr createRasterCTDTTaskflow(const ProcessPlanningRequest& request);
-  RasterWAADTaskflow::UPtr createRasterCTWAADTaskflow(const ProcessPlanningRequest& request);
-  RasterWAADDTTaskflow::UPtr createRasterCTWAADDTTaskflow(const ProcessPlanningRequest& request);
-  RasterGlobalTaskflow::UPtr createRasterGlobalCTTaskflow(const ProcessPlanningRequest& request);
-  RasterOnlyGlobalTaskflow::UPtr createRasterOnlyGlobalCTTaskflow(const ProcessPlanningRequest& request);
+  ProfileDictionary::Ptr profiles_{ std::make_shared<ProfileDictionary>() };
 };
 
 }  // namespace tesseract_planning

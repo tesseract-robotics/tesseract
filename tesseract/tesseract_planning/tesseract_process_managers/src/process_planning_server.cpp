@@ -40,68 +40,370 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-TesseractCache::TesseractCache(tesseract::Tesseract::Ptr env) : tesseract_(std::move(env)) {}
-void TesseractCache::setCacheSize(long size)
+TaskflowGenerator::UPtr createTrajOptGenerator(const ProcessPlanningRequest& request,
+                                               ProfileDictionary::ConstPtr profiles)
 {
-  std::unique_lock<std::shared_mutex> lock(cache_mutex_);
-  cache_size_ = static_cast<std::size_t>(size);
+  TrajOptTaskflowParams params;
+  params.enable_simple_planner = isNullInstruction(request.seed);
+  params.profiles = profiles;
+  return createTrajOptTaskflow(params);
 }
 
-long TesseractCache::getCacheSize() const { return static_cast<long>(cache_size_); }
-
-void TesseractCache::refreshCache()
+TaskflowGenerator::UPtr createOMPLGenerator(const ProcessPlanningRequest& request, ProfileDictionary::ConstPtr profiles)
 {
-  std::unique_lock<std::shared_mutex> lock(cache_mutex_);
-  tesseract::Tesseract::Ptr thor;
-
-  int rev = tesseract_->getEnvironment()->getRevision();
-  if (rev != cache_env_revision_ || cache_.empty())
-  {
-    thor = tesseract_->clone();
-    cache_env_revision_ = rev;
-  }
-
-  if (thor != nullptr)
-  {
-    cache_.clear();
-    for (std::size_t i = 0; i < cache_size_; ++i)
-      cache_.push_back(thor->clone());
-  }
-  else if (cache_.size() <= 2)
-  {
-    for (std::size_t i = (cache_.size() - 1); i < cache_size_; ++i)
-      cache_.push_back(cache_.front()->clone());
-  }
+  OMPLTaskflowParams params;
+  params.enable_simple_planner = isNullInstruction(request.seed);
+  params.profiles = profiles;
+  return createOMPLTaskflow(params);
 }
 
-tesseract::Tesseract::Ptr TesseractCache::getCachedTesseract()
+TaskflowGenerator::UPtr createDescartesGenerator(const ProcessPlanningRequest& request,
+                                                 ProfileDictionary::ConstPtr profiles)
 {
-  // This is to make sure the cached items are updated if needed
-  refreshCache();
-
-  tesseract_environment::EnvState current_state;
-  current_state = *(tesseract_->getEnvironment()->getCurrentState());
-
-  std::unique_lock<std::shared_mutex> lock(cache_mutex_);
-  tesseract::Tesseract::Ptr t = cache_.back();
-
-  // Update to the current joint values
-  t->getEnvironment()->setState(current_state.joints);
-
-  cache_.pop_back();
-
-  return t;
+  DescartesTaskflowParams params;
+  params.enable_simple_planner = isNullInstruction(request.seed);
+  params.profiles = profiles;
+  return createDescartesTaskflow(params);
 }
 
-ProcessPlanningServer::ProcessPlanningServer(TesseractCache::Ptr cache, size_t n)
+TaskflowGenerator::UPtr createCartesianGenerator(const ProcessPlanningRequest& request,
+                                                 ProfileDictionary::ConstPtr profiles)
+{
+  CartesianTaskflowParams params;
+  params.enable_simple_planner = isNullInstruction(request.seed);
+  params.profiles = profiles;
+  return createCartesianTaskflow(params);
+}
+
+TaskflowGenerator::UPtr createFreespaceGenerator(const ProcessPlanningRequest& request,
+                                                 ProfileDictionary::ConstPtr profiles)
+{
+  FreespaceTaskflowParams params;
+  params.enable_simple_planner = isNullInstruction(request.seed);
+  params.profiles = profiles;
+  return createFreespaceTaskflow(params);
+}
+
+TaskflowGenerator::UPtr createRasterGenerator(const ProcessPlanningRequest& request,
+                                              ProfileDictionary::ConstPtr profiles)
+{
+  // Create Freespace and Transition Taskflows
+  FreespaceTaskflowParams fparams;
+  fparams.enable_simple_planner = isNullInstruction(request.seed);
+  fparams.profiles = profiles;
+  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(fparams);
+  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(fparams);
+
+  // Create Raster Taskflow
+  CartesianTaskflowParams cparams;
+  cparams.enable_simple_planner = isNullInstruction(request.seed);
+  cparams.profiles = profiles;
+  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cparams);
+
+  return std::make_unique<RasterTaskflow>(
+      std::move(freespace_task), std::move(transition_task), std::move(raster_task));
+}
+
+TaskflowGenerator::UPtr createRasterOnlyGenerator(const ProcessPlanningRequest& request,
+                                                  ProfileDictionary::ConstPtr profiles)
+{
+  // Create Freespace and Transition Taskflows
+  FreespaceTaskflowParams tparams;
+  tparams.enable_simple_planner = isNullInstruction(request.seed);
+  tparams.profiles = profiles;
+  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(tparams);
+
+  // Create Raster Taskflow
+  CartesianTaskflowParams cparams;
+  cparams.enable_simple_planner = isNullInstruction(request.seed);
+  cparams.profiles = profiles;
+  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cparams);
+
+  return std::make_unique<RasterOnlyTaskflow>(std::move(transition_task), std::move(raster_task));
+}
+
+TaskflowGenerator::UPtr createRasterGlobalGenerator(const ProcessPlanningRequest& request,
+                                                    ProfileDictionary::ConstPtr profiles)
+{
+  DescartesTaskflowParams global_params;
+  global_params.enable_simple_planner = isNullInstruction(request.seed);
+  global_params.enable_post_contact_discrete_check = false;
+  global_params.enable_post_contact_continuous_check = false;
+  global_params.enable_time_parameterization = false;
+  global_params.profiles = profiles;
+  GraphTaskflow::UPtr global_task = createDescartesTaskflow(global_params);
+
+  FreespaceTaskflowParams freespace_params;
+  freespace_params.type = FreespaceTaskflowType::TRAJOPT_FIRST;
+  freespace_params.enable_simple_planner = false;
+  freespace_params.profiles = profiles;
+  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(freespace_params);
+  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(freespace_params);
+
+  TrajOptTaskflowParams raster_params;
+  raster_params.enable_simple_planner = false;
+  raster_params.profiles = profiles;
+  GraphTaskflow::UPtr raster_task = createTrajOptTaskflow(raster_params);
+
+  return std::make_unique<RasterGlobalTaskflow>(
+      std::move(global_task), std::move(freespace_task), std::move(transition_task), std::move(raster_task));
+}
+
+TaskflowGenerator::UPtr createRasterDTGenerator(const ProcessPlanningRequest& request,
+                                                ProfileDictionary::ConstPtr profiles)
+{
+  // Create Freespace and Transition Taskflows
+  FreespaceTaskflowParams fparams;
+  fparams.enable_simple_planner = isNullInstruction(request.seed);
+  fparams.profiles = profiles;
+  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(fparams);
+  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(fparams);
+
+  // Create Raster Taskflow
+  CartesianTaskflowParams cparams;
+  cparams.enable_simple_planner = isNullInstruction(request.seed);
+  cparams.profiles = profiles;
+  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cparams);
+
+  return std::make_unique<RasterDTTaskflow>(
+      std::move(freespace_task), std::move(transition_task), std::move(raster_task));
+}
+
+TaskflowGenerator::UPtr createRasterWAADGenerator(const ProcessPlanningRequest& request,
+                                                  ProfileDictionary::ConstPtr profiles)
+{
+  // Create Freespace and Transition Taskflows
+  FreespaceTaskflowParams fparams;
+  fparams.enable_simple_planner = isNullInstruction(request.seed);
+  fparams.profiles = profiles;
+  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(fparams);
+  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(fparams);
+
+  // Create Raster Taskflow
+  CartesianTaskflowParams cparams;
+  cparams.enable_simple_planner = isNullInstruction(request.seed);
+  cparams.profiles = profiles;
+  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cparams);
+
+  return std::make_unique<RasterWAADTaskflow>(
+      std::move(freespace_task), std::move(transition_task), std::move(raster_task));
+}
+
+TaskflowGenerator::UPtr createRasterWAADDTGenerator(const ProcessPlanningRequest& request,
+                                                    ProfileDictionary::ConstPtr profiles)
+{
+  // Create Freespace and Transition Taskflows
+  FreespaceTaskflowParams fparams;
+  fparams.enable_simple_planner = isNullInstruction(request.seed);
+  fparams.profiles = profiles;
+  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(fparams);
+  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(fparams);
+
+  // Create Raster Taskflow
+  CartesianTaskflowParams cparams;
+  cparams.enable_simple_planner = isNullInstruction(request.seed);
+  cparams.profiles = profiles;
+  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cparams);
+
+  return std::make_unique<RasterWAADDTTaskflow>(
+      std::move(freespace_task), std::move(transition_task), std::move(raster_task));
+}
+
+TaskflowGenerator::UPtr createRasterOnlyGlobalGenerator(const ProcessPlanningRequest& request,
+                                                        ProfileDictionary::ConstPtr profiles)
+{
+  DescartesTaskflowParams global_params;
+  global_params.enable_simple_planner = isNullInstruction(request.seed);
+  global_params.enable_post_contact_discrete_check = false;
+  global_params.enable_post_contact_continuous_check = false;
+  global_params.enable_time_parameterization = false;
+  global_params.profiles = profiles;
+  GraphTaskflow::UPtr global_task = createDescartesTaskflow(global_params);
+
+  FreespaceTaskflowParams transition_params;
+  transition_params.type = FreespaceTaskflowType::TRAJOPT_FIRST;
+  transition_params.enable_simple_planner = false;
+  transition_params.profiles = profiles;
+  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(transition_params);
+
+  TrajOptTaskflowParams raster_params;
+  raster_params.enable_simple_planner = false;
+  raster_params.profiles = profiles;
+  GraphTaskflow::UPtr raster_task = createTrajOptTaskflow(raster_params);
+
+  return std::make_unique<RasterOnlyGlobalTaskflow>(
+      std::move(global_task), std::move(transition_task), std::move(raster_task));
+}
+
+TaskflowGenerator::UPtr createRasterCTGenerator(const ProcessPlanningRequest& request,
+                                                ProfileDictionary::ConstPtr profiles)
+{
+  // Create Freespace and Transition Taskflows
+  FreespaceTaskflowParams freespace_params;
+  freespace_params.enable_simple_planner = isNullInstruction(request.seed);
+  freespace_params.profiles = profiles;
+  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(freespace_params);
+
+  // Create Raster Taskflow
+  CartesianTaskflowParams cartesian_params;
+  cartesian_params.enable_simple_planner = isNullInstruction(request.seed);
+  cartesian_params.profiles = profiles;
+  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cartesian_params);
+  GraphTaskflow::UPtr transition_task = createCartesianTaskflow(cartesian_params);
+
+  return std::make_unique<RasterTaskflow>(
+      std::move(freespace_task), std::move(transition_task), std::move(raster_task));
+}
+
+TaskflowGenerator::UPtr createRasterOnlyCTGenerator(const ProcessPlanningRequest& request,
+                                                    ProfileDictionary::ConstPtr profiles)
+{
+  // Create Transition and Raster Taskflow
+  CartesianTaskflowParams cartesian_params;
+  cartesian_params.enable_simple_planner = isNullInstruction(request.seed);
+  cartesian_params.profiles = profiles;
+  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cartesian_params);
+  GraphTaskflow::UPtr transition_task = createCartesianTaskflow(cartesian_params);
+
+  return std::make_unique<RasterOnlyTaskflow>(std::move(transition_task), std::move(raster_task));
+}
+
+TaskflowGenerator::UPtr createRasterCTDTGenerator(const ProcessPlanningRequest& request,
+                                                  ProfileDictionary::ConstPtr profiles)
+{
+  // Create Freespace and Transition Taskflows
+  FreespaceTaskflowParams freespace_params;
+  freespace_params.enable_simple_planner = isNullInstruction(request.seed);
+  freespace_params.profiles = profiles;
+  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(freespace_params);
+
+  // Create Raster Taskflow
+  CartesianTaskflowParams cartesian_params;
+  cartesian_params.enable_simple_planner = isNullInstruction(request.seed);
+  cartesian_params.profiles = profiles;
+  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cartesian_params);
+  GraphTaskflow::UPtr transition_task = createCartesianTaskflow(cartesian_params);
+
+  return std::make_unique<RasterDTTaskflow>(
+      std::move(freespace_task), std::move(transition_task), std::move(raster_task));
+}
+
+TaskflowGenerator::UPtr createRasterCTWAADGenerator(const ProcessPlanningRequest& request,
+                                                    ProfileDictionary::ConstPtr profiles)
+{
+  // Create Freespace and Transition Taskflows
+  FreespaceTaskflowParams freespace_params;
+  freespace_params.enable_simple_planner = isNullInstruction(request.seed);
+  freespace_params.profiles = profiles;
+  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(freespace_params);
+
+  // Create Raster Taskflow
+  CartesianTaskflowParams cartesian_params;
+  cartesian_params.enable_simple_planner = isNullInstruction(request.seed);
+  cartesian_params.profiles = profiles;
+  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cartesian_params);
+  GraphTaskflow::UPtr transition_task = createCartesianTaskflow(cartesian_params);
+
+  return std::make_unique<RasterWAADTaskflow>(
+      std::move(freespace_task), std::move(transition_task), std::move(raster_task));
+}
+
+TaskflowGenerator::UPtr createRasterCTWAADDTGenerator(const ProcessPlanningRequest& request,
+                                                      ProfileDictionary::ConstPtr profiles)
+{
+  // Create Freespace and Transition Taskflows
+  FreespaceTaskflowParams freespace_params;
+  freespace_params.enable_simple_planner = isNullInstruction(request.seed);
+  freespace_params.profiles = profiles;
+  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(freespace_params);
+
+  // Create Raster Taskflow
+  CartesianTaskflowParams cartesian_params;
+  cartesian_params.enable_simple_planner = isNullInstruction(request.seed);
+  cartesian_params.profiles = profiles;
+  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cartesian_params);
+  GraphTaskflow::UPtr transition_task = createCartesianTaskflow(cartesian_params);
+
+  return std::make_unique<RasterWAADDTTaskflow>(
+      std::move(freespace_task), std::move(transition_task), std::move(raster_task));
+}
+
+TaskflowGenerator::UPtr createRasterGlobalCTGenerator(const ProcessPlanningRequest& request,
+                                                      ProfileDictionary::ConstPtr profiles)
+{
+  DescartesTaskflowParams global_params;
+  global_params.enable_simple_planner = isNullInstruction(request.seed);
+  global_params.enable_post_contact_discrete_check = false;
+  global_params.enable_post_contact_continuous_check = false;
+  global_params.enable_time_parameterization = false;
+  global_params.profiles = profiles;
+  GraphTaskflow::UPtr global_task = createDescartesTaskflow(global_params);
+
+  FreespaceTaskflowParams freespace_params;
+  freespace_params.type = FreespaceTaskflowType::TRAJOPT_FIRST;
+  freespace_params.enable_simple_planner = false;
+  freespace_params.profiles = profiles;
+  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(freespace_params);
+
+  TrajOptTaskflowParams raster_params;
+  raster_params.enable_simple_planner = false;
+  raster_params.profiles = profiles;
+  GraphTaskflow::UPtr raster_task = createTrajOptTaskflow(raster_params);
+  GraphTaskflow::UPtr transition_task = createTrajOptTaskflow(raster_params);
+
+  return std::make_unique<RasterGlobalTaskflow>(
+      std::move(global_task), std::move(freespace_task), std::move(transition_task), std::move(raster_task));
+}
+
+TaskflowGenerator::UPtr createRasterOnlyGlobalCTGenerator(const ProcessPlanningRequest& request,
+                                                          ProfileDictionary::ConstPtr profiles)
+{
+  DescartesTaskflowParams global_params;
+  global_params.enable_simple_planner = isNullInstruction(request.seed);
+  global_params.enable_post_contact_discrete_check = false;
+  global_params.enable_post_contact_continuous_check = false;
+  global_params.enable_time_parameterization = false;
+  global_params.profiles = profiles;
+  GraphTaskflow::UPtr global_task = createDescartesTaskflow(global_params);
+
+  TrajOptTaskflowParams raster_params;
+  raster_params.enable_simple_planner = false;
+  raster_params.profiles = profiles;
+  GraphTaskflow::UPtr raster_task = createTrajOptTaskflow(raster_params);
+  GraphTaskflow::UPtr transition_task = createTrajOptTaskflow(raster_params);
+
+  return std::make_unique<RasterOnlyGlobalTaskflow>(
+      std::move(global_task), std::move(transition_task), std::move(raster_task));
+}
+
+ProcessPlanningServer::ProcessPlanningServer(EnvironmentCache::Ptr cache, size_t n)
   : cache_(std::move(cache)), executor_(std::make_shared<tf::Executor>(n))
 {
+  registerProcessPlanner(process_planner_names::TRAJOPT_PLANNER_NAME, &createTrajOptGenerator);
+  registerProcessPlanner(process_planner_names::OMPL_PLANNER_NAME, &createRasterGenerator);
+  registerProcessPlanner(process_planner_names::DESCARTES_PLANNER_NAME, &createRasterGenerator);
+  registerProcessPlanner(process_planner_names::CARTESIAN_PLANNER_NAME, &createRasterGenerator);
+  registerProcessPlanner(process_planner_names::FREESPACE_PLANNER_NAME, &createRasterGenerator);
+  registerProcessPlanner(process_planner_names::RASTER_FT_PLANNER_NAME, &createRasterGenerator);
+  registerProcessPlanner(process_planner_names::RASTER_O_FT_PLANNER_NAME, &createRasterOnlyGenerator);
+  registerProcessPlanner(process_planner_names::RASTER_G_FT_PLANNER_NAME, &createRasterGlobalGenerator);
+  registerProcessPlanner(process_planner_names::RASTER_FT_DT_PLANNER_NAME, &createRasterDTGenerator);
+  registerProcessPlanner(process_planner_names::RASTER_FT_WAAD_PLANNER_NAME, &createRasterWAADGenerator);
+  registerProcessPlanner(process_planner_names::RASTER_FT_WAAD_DT_PLANNER_NAME, &createRasterWAADDTGenerator);
+  registerProcessPlanner(process_planner_names::RASTER_O_G_FT_PLANNER_NAME, &createRasterOnlyGlobalGenerator);
+  registerProcessPlanner(process_planner_names::RASTER_CT_PLANNER_NAME, &createRasterCTGenerator);
+  registerProcessPlanner(process_planner_names::RASTER_O_CT_PLANNER_NAME, &createRasterOnlyCTGenerator);
+  registerProcessPlanner(process_planner_names::RASTER_CT_DT_PLANNER_NAME, &createRasterCTDTGenerator);
+  registerProcessPlanner(process_planner_names::RASTER_CT_WAAD_PLANNER_NAME, &createRasterCTWAADGenerator);
+  registerProcessPlanner(process_planner_names::RASTER_CT_WAAD_DT_PLANNER_NAME, &createRasterCTWAADDTGenerator);
+  registerProcessPlanner(process_planner_names::RASTER_G_CT_PLANNER_NAME, &createRasterGlobalCTGenerator);
+  registerProcessPlanner(process_planner_names::RASTER_O_G_CT_PLANNER_NAME, &createRasterOnlyGlobalCTGenerator);
 }
 
-bool ProcessPlanningServer::registerProcessPlanner(const std::string& name, ProcessPlannerGeneratorFn generator)
+void ProcessPlanningServer::registerProcessPlanner(const std::string& name, ProcessPlannerGeneratorFn generator)
 {
   if (process_planners_.find(name) != process_planners_.end())
-    CONSOLE_BRIDGE_logDebug("Process planner %s already exist so replacing with new generator.", name);
+    CONSOLE_BRIDGE_logDebug("Process planner %s already exist so replacing with new generator.", name.c_str());
 
   process_planners_[name] = generator;
 }
@@ -124,84 +426,11 @@ ProcessPlanningFuture ProcessPlanningServer::run(const ProcessPlanningRequest& r
   else
     response.results = std::make_unique<Instruction>(generateSkeletonSeed(*composite_program));
 
-  if (request.name == process_planner_names::TRAJOPT_PLANNER_NAME)
+  auto it = process_planners_.find(request.name);
+  if (it != process_planners_.end())
   {
-    TrajOptTaskflowParams params;
-    params.enable_simple_planner = isNullInstruction(request.seed);
-    params.simple_plan_profiles = simple_plan_profiles_;
-    params.simple_composite_profiles = simple_composite_profiles_;
-    params.trajopt_plan_profiles = trajopt_plan_profiles_;
-    params.trajopt_composite_profiles = trajopt_composite_profiles_;
-    response.taskflow_generator = createTrajOptTaskflow(params);
+    response.taskflow_generator = it->second(request, profiles_);
   }
-  else if (request.name == process_planner_names::OMPL_PLANNER_NAME)
-  {
-    OMPLTaskflowParams params;
-    params.enable_simple_planner = isNullInstruction(request.seed);
-    params.simple_plan_profiles = simple_plan_profiles_;
-    params.simple_composite_profiles = simple_composite_profiles_;
-    params.ompl_plan_profiles = ompl_plan_profiles_;
-    response.taskflow_generator = createOMPLTaskflow(params);
-  }
-  else if (request.name == process_planner_names::DESCARTES_PLANNER_NAME)
-  {
-    DescartesTaskflowParams params;
-    params.enable_simple_planner = isNullInstruction(request.seed);
-    params.simple_plan_profiles = simple_plan_profiles_;
-    params.simple_composite_profiles = simple_composite_profiles_;
-    params.descartes_plan_profiles = descartes_plan_profiles_;
-    response.taskflow_generator = createDescartesTaskflow(params);
-  }
-  else if (request.name == process_planner_names::CARTESIAN_PLANNER_NAME)
-  {
-    CartesianTaskflowParams params;
-    params.enable_simple_planner = isNullInstruction(request.seed);
-    params.simple_plan_profiles = simple_plan_profiles_;
-    params.simple_composite_profiles = simple_composite_profiles_;
-    params.descartes_plan_profiles = descartes_plan_profiles_;
-    params.trajopt_plan_profiles = trajopt_plan_profiles_;
-    params.trajopt_composite_profiles = trajopt_composite_profiles_;
-    response.taskflow_generator = createCartesianTaskflow(params);
-  }
-  else if (request.name == process_planner_names::FREESPACE_PLANNER_NAME)
-  {
-    FreespaceTaskflowParams params;
-    params.enable_simple_planner = isNullInstruction(request.seed);
-    params.simple_plan_profiles = simple_plan_profiles_;
-    params.simple_composite_profiles = simple_composite_profiles_;
-    params.ompl_plan_profiles = ompl_plan_profiles_;
-    params.trajopt_plan_profiles = trajopt_plan_profiles_;
-    params.trajopt_composite_profiles = trajopt_composite_profiles_;
-    response.taskflow_generator = createFreespaceTaskflow(params);
-  }
-  else if (request.name == process_planner_names::RASTER_FT_PLANNER_NAME)
-    response.taskflow_generator = createRasterTaskflow(request);
-  else if (request.name == process_planner_names::RASTER_O_FT_PLANNER_NAME)
-    response.taskflow_generator = createRasterOnlyTaskflow(request);
-  else if (request.name == process_planner_names::RASTER_G_FT_PLANNER_NAME)
-    response.taskflow_generator = createRasterGlobalTaskflow(request);
-  else if (request.name == process_planner_names::RASTER_FT_DT_PLANNER_NAME)
-    response.taskflow_generator = createRasterDTTaskflow(request);
-  else if (request.name == process_planner_names::RASTER_FT_WAAD_PLANNER_NAME)
-    response.taskflow_generator = createRasterWAADTaskflow(request);
-  else if (request.name == process_planner_names::RASTER_FT_WAAD_DT_PLANNER_NAME)
-    response.taskflow_generator = createRasterWAADDTTaskflow(request);
-  else if (request.name == process_planner_names::RASTER_O_G_FT_PLANNER_NAME)
-    response.taskflow_generator = createRasterOnlyGlobalTaskflow(request);
-  else if (request.name == process_planner_names::RASTER_CT_PLANNER_NAME)
-    response.taskflow_generator = createRasterDTTaskflow(request);
-  else if (request.name == process_planner_names::RASTER_O_CT_PLANNER_NAME)
-    response.taskflow_generator = createRasterOnlyCTTaskflow(request);
-  else if (request.name == process_planner_names::RASTER_CT_DT_PLANNER_NAME)
-    response.taskflow_generator = createRasterCTDTTaskflow(request);
-  else if (request.name == process_planner_names::RASTER_CT_WAAD_PLANNER_NAME)
-    response.taskflow_generator = createRasterCTWAADTaskflow(request);
-  else if (request.name == process_planner_names::RASTER_CT_WAAD_DT_PLANNER_NAME)
-    response.taskflow_generator = createRasterCTWAADDTTaskflow(request);
-  else if (request.name == process_planner_names::RASTER_G_CT_PLANNER_NAME)
-    response.taskflow_generator = createRasterGlobalCTTaskflow(request);
-  else if (request.name == process_planner_names::RASTER_O_G_CT_PLANNER_NAME)
-    response.taskflow_generator = createRasterOnlyGlobalCTTaskflow(request);
   else
   {
     CONSOLE_BRIDGE_logError("Requested motion planner is not supported!");
@@ -209,7 +438,7 @@ ProcessPlanningFuture ProcessPlanningServer::run(const ProcessPlanningRequest& r
   }
 
   assert(response.taskflow_generator != nullptr);
-  tesseract::Tesseract::Ptr tc = cache_->getCachedTesseract();
+  tesseract::Tesseract::Ptr tc = cache_->getCachedEnvironment();
 
   // Set the env state if provided
   if (request.env_state != nullptr)
@@ -250,430 +479,8 @@ std::future<void> ProcessPlanningServer::run(tf::Taskflow& taskflow) { return ex
 
 void ProcessPlanningServer::waitForAll() { executor_->wait_for_all(); }
 
-TrajOptCompositeProfileMap& ProcessPlanningServer::getTrajOptCompositeProfiles() { return trajopt_composite_profiles_; }
+ProfileDictionary::Ptr ProcessPlanningServer::getProfiles() { return profiles_; }
 
-const TrajOptCompositeProfileMap& ProcessPlanningServer::getTrajOptCompositeProfiles() const
-{
-  return trajopt_composite_profiles_;
-}
+ProfileDictionary::ConstPtr ProcessPlanningServer::getProfiles() const { return profiles_; }
 
-TrajOptPlanProfileMap& ProcessPlanningServer::getTrajOptPlanProfiles() { return trajopt_plan_profiles_; }
-
-const TrajOptPlanProfileMap& ProcessPlanningServer::getTrajOptPlanProfiles() const { return trajopt_plan_profiles_; }
-
-DescartesPlanProfileMap<double>& ProcessPlanningServer::getDescartesPlanProfiles() { return descartes_plan_profiles_; }
-
-const DescartesPlanProfileMap<double>& ProcessPlanningServer::getDescartesPlanProfiles() const
-{
-  return descartes_plan_profiles_;
-}
-
-OMPLPlanProfileMap& ProcessPlanningServer::getOMPLPlanProfiles() { return ompl_plan_profiles_; }
-
-const OMPLPlanProfileMap& ProcessPlanningServer::getOMPLPlanProfiles() const { return ompl_plan_profiles_; }
-
-SimplePlannerCompositeProfileMap& ProcessPlanningServer::getSimplePlannerCompositeProfiles()
-{
-  return simple_composite_profiles_;
-}
-
-const SimplePlannerCompositeProfileMap& ProcessPlanningServer::getSimplePlannerCompositeProfiles() const
-{
-  return simple_composite_profiles_;
-}
-
-SimplePlannerPlanProfileMap& ProcessPlanningServer::getSimplePlannerPlanProfiles() { return simple_plan_profiles_; }
-
-const SimplePlannerPlanProfileMap& ProcessPlanningServer::getSimplePlannerPlanProfiles() const
-{
-  return simple_plan_profiles_;
-}
-
-RasterTaskflow::UPtr ProcessPlanningServer::createRasterTaskflow(const ProcessPlanningRequest& request)
-{
-  // Create Freespace and Transition Taskflows
-  FreespaceTaskflowParams fparams;
-  fparams.enable_simple_planner = isNullInstruction(request.seed);
-  fparams.simple_plan_profiles = simple_plan_profiles_;
-  fparams.simple_composite_profiles = simple_composite_profiles_;
-  fparams.ompl_plan_profiles = ompl_plan_profiles_;
-  fparams.trajopt_plan_profiles = trajopt_plan_profiles_;
-  fparams.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(fparams);
-  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(fparams);
-
-  // Create Raster Taskflow
-  CartesianTaskflowParams cparams;
-  cparams.enable_simple_planner = isNullInstruction(request.seed);
-  cparams.simple_plan_profiles = simple_plan_profiles_;
-  cparams.simple_composite_profiles = simple_composite_profiles_;
-  cparams.descartes_plan_profiles = descartes_plan_profiles_;
-  cparams.trajopt_plan_profiles = trajopt_plan_profiles_;
-  cparams.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cparams);
-
-  return std::make_unique<RasterTaskflow>(
-      std::move(freespace_task), std::move(transition_task), std::move(raster_task));
-}
-
-RasterOnlyTaskflow::UPtr ProcessPlanningServer::createRasterOnlyTaskflow(const ProcessPlanningRequest& request)
-{
-  // Create Freespace and Transition Taskflows
-  FreespaceTaskflowParams tparams;
-  tparams.enable_simple_planner = isNullInstruction(request.seed);
-  tparams.simple_plan_profiles = simple_plan_profiles_;
-  tparams.simple_composite_profiles = simple_composite_profiles_;
-  tparams.ompl_plan_profiles = ompl_plan_profiles_;
-  tparams.trajopt_plan_profiles = trajopt_plan_profiles_;
-  tparams.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(tparams);
-
-  // Create Raster Taskflow
-  CartesianTaskflowParams cparams;
-  cparams.enable_simple_planner = isNullInstruction(request.seed);
-  cparams.simple_plan_profiles = simple_plan_profiles_;
-  cparams.simple_composite_profiles = simple_composite_profiles_;
-  cparams.descartes_plan_profiles = descartes_plan_profiles_;
-  cparams.trajopt_plan_profiles = trajopt_plan_profiles_;
-  cparams.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cparams);
-
-  return std::make_unique<RasterOnlyTaskflow>(std::move(transition_task), std::move(raster_task));
-}
-
-RasterGlobalTaskflow::UPtr ProcessPlanningServer::createRasterGlobalTaskflow(const ProcessPlanningRequest& request)
-{
-  DescartesTaskflowParams global_params;
-  global_params.enable_simple_planner = isNullInstruction(request.seed);
-  global_params.enable_post_contact_discrete_check = false;
-  global_params.enable_post_contact_continuous_check = false;
-  global_params.enable_time_parameterization = false;
-  global_params.simple_plan_profiles = simple_plan_profiles_;
-  global_params.simple_composite_profiles = simple_composite_profiles_;
-  global_params.descartes_plan_profiles = descartes_plan_profiles_;
-  GraphTaskflow::UPtr global_task = createDescartesTaskflow(global_params);
-
-  FreespaceTaskflowParams freespace_params;
-  freespace_params.type = FreespaceTaskflowType::TRAJOPT_FIRST;
-  freespace_params.enable_simple_planner = false;
-  freespace_params.simple_plan_profiles = simple_plan_profiles_;
-  freespace_params.simple_composite_profiles = simple_composite_profiles_;
-  freespace_params.ompl_plan_profiles = ompl_plan_profiles_;
-  freespace_params.trajopt_plan_profiles = trajopt_plan_profiles_;
-  freespace_params.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(freespace_params);
-  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(freespace_params);
-
-  TrajOptTaskflowParams raster_params;
-  raster_params.enable_simple_planner = false;
-  raster_params.simple_plan_profiles = simple_plan_profiles_;
-  raster_params.simple_composite_profiles = simple_composite_profiles_;
-  raster_params.trajopt_plan_profiles = trajopt_plan_profiles_;
-  raster_params.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr raster_task = createTrajOptTaskflow(raster_params);
-
-  return std::make_unique<RasterGlobalTaskflow>(
-      std::move(global_task), std::move(freespace_task), std::move(transition_task), std::move(raster_task));
-}
-
-RasterDTTaskflow::UPtr ProcessPlanningServer::createRasterDTTaskflow(const ProcessPlanningRequest& request)
-{
-  // Create Freespace and Transition Taskflows
-  FreespaceTaskflowParams fparams;
-  fparams.enable_simple_planner = isNullInstruction(request.seed);
-  fparams.simple_plan_profiles = simple_plan_profiles_;
-  fparams.simple_composite_profiles = simple_composite_profiles_;
-  fparams.ompl_plan_profiles = ompl_plan_profiles_;
-  fparams.trajopt_plan_profiles = trajopt_plan_profiles_;
-  fparams.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(fparams);
-  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(fparams);
-
-  // Create Raster Taskflow
-  CartesianTaskflowParams cparams;
-  cparams.enable_simple_planner = isNullInstruction(request.seed);
-  cparams.simple_plan_profiles = simple_plan_profiles_;
-  cparams.simple_composite_profiles = simple_composite_profiles_;
-  cparams.descartes_plan_profiles = descartes_plan_profiles_;
-  cparams.trajopt_plan_profiles = trajopt_plan_profiles_;
-  cparams.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cparams);
-
-  return std::make_unique<RasterDTTaskflow>(
-      std::move(freespace_task), std::move(transition_task), std::move(raster_task));
-}
-
-RasterWAADTaskflow::UPtr ProcessPlanningServer::createRasterWAADTaskflow(const ProcessPlanningRequest& request)
-{
-  // Create Freespace and Transition Taskflows
-  FreespaceTaskflowParams fparams;
-  fparams.enable_simple_planner = isNullInstruction(request.seed);
-  fparams.simple_plan_profiles = simple_plan_profiles_;
-  fparams.simple_composite_profiles = simple_composite_profiles_;
-  fparams.ompl_plan_profiles = ompl_plan_profiles_;
-  fparams.trajopt_plan_profiles = trajopt_plan_profiles_;
-  fparams.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(fparams);
-  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(fparams);
-
-  // Create Raster Taskflow
-  CartesianTaskflowParams cparams;
-  cparams.enable_simple_planner = isNullInstruction(request.seed);
-  cparams.simple_plan_profiles = simple_plan_profiles_;
-  cparams.simple_composite_profiles = simple_composite_profiles_;
-  cparams.descartes_plan_profiles = descartes_plan_profiles_;
-  cparams.trajopt_plan_profiles = trajopt_plan_profiles_;
-  cparams.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cparams);
-
-  return std::make_unique<RasterWAADTaskflow>(
-      std::move(freespace_task), std::move(transition_task), std::move(raster_task));
-}
-
-RasterWAADDTTaskflow::UPtr ProcessPlanningServer::createRasterWAADDTTaskflow(const ProcessPlanningRequest& request)
-{
-  // Create Freespace and Transition Taskflows
-  FreespaceTaskflowParams fparams;
-  fparams.enable_simple_planner = isNullInstruction(request.seed);
-  fparams.simple_plan_profiles = simple_plan_profiles_;
-  fparams.simple_composite_profiles = simple_composite_profiles_;
-  fparams.ompl_plan_profiles = ompl_plan_profiles_;
-  fparams.trajopt_plan_profiles = trajopt_plan_profiles_;
-  fparams.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(fparams);
-  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(fparams);
-
-  // Create Raster Taskflow
-  CartesianTaskflowParams cparams;
-  cparams.enable_simple_planner = isNullInstruction(request.seed);
-  cparams.simple_plan_profiles = simple_plan_profiles_;
-  cparams.simple_composite_profiles = simple_composite_profiles_;
-  cparams.descartes_plan_profiles = descartes_plan_profiles_;
-  cparams.trajopt_plan_profiles = trajopt_plan_profiles_;
-  cparams.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cparams);
-
-  return std::make_unique<RasterWAADDTTaskflow>(
-      std::move(freespace_task), std::move(transition_task), std::move(raster_task));
-}
-
-RasterOnlyGlobalTaskflow::UPtr
-ProcessPlanningServer::createRasterOnlyGlobalTaskflow(const ProcessPlanningRequest& request)
-{
-  DescartesTaskflowParams global_params;
-  global_params.enable_simple_planner = isNullInstruction(request.seed);
-  global_params.enable_post_contact_discrete_check = false;
-  global_params.enable_post_contact_continuous_check = false;
-  global_params.enable_time_parameterization = false;
-  global_params.simple_plan_profiles = simple_plan_profiles_;
-  global_params.simple_composite_profiles = simple_composite_profiles_;
-  global_params.descartes_plan_profiles = descartes_plan_profiles_;
-  GraphTaskflow::UPtr global_task = createDescartesTaskflow(global_params);
-
-  FreespaceTaskflowParams transition_params;
-  transition_params.type = FreespaceTaskflowType::TRAJOPT_FIRST;
-  transition_params.enable_simple_planner = false;
-  transition_params.simple_plan_profiles = simple_plan_profiles_;
-  transition_params.simple_composite_profiles = simple_composite_profiles_;
-  transition_params.ompl_plan_profiles = ompl_plan_profiles_;
-  transition_params.trajopt_plan_profiles = trajopt_plan_profiles_;
-  transition_params.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(transition_params);
-
-  TrajOptTaskflowParams raster_params;
-  raster_params.enable_simple_planner = false;
-  raster_params.simple_plan_profiles = simple_plan_profiles_;
-  raster_params.simple_composite_profiles = simple_composite_profiles_;
-  raster_params.trajopt_plan_profiles = trajopt_plan_profiles_;
-  raster_params.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr raster_task = createTrajOptTaskflow(raster_params);
-
-  return std::make_unique<RasterOnlyGlobalTaskflow>(
-      std::move(global_task), std::move(transition_task), std::move(raster_task));
-}
-
-RasterTaskflow::UPtr ProcessPlanningServer::createRasterCTTaskflow(const ProcessPlanningRequest& request)
-{
-  // Create Freespace and Transition Taskflows
-  FreespaceTaskflowParams freespace_params;
-  freespace_params.enable_simple_planner = isNullInstruction(request.seed);
-  freespace_params.simple_plan_profiles = simple_plan_profiles_;
-  freespace_params.simple_composite_profiles = simple_composite_profiles_;
-  freespace_params.ompl_plan_profiles = ompl_plan_profiles_;
-  freespace_params.trajopt_plan_profiles = trajopt_plan_profiles_;
-  freespace_params.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(freespace_params);
-
-  // Create Raster Taskflow
-  CartesianTaskflowParams cartesian_params;
-  cartesian_params.enable_simple_planner = isNullInstruction(request.seed);
-  cartesian_params.simple_plan_profiles = simple_plan_profiles_;
-  cartesian_params.simple_composite_profiles = simple_composite_profiles_;
-  cartesian_params.descartes_plan_profiles = descartes_plan_profiles_;
-  cartesian_params.trajopt_plan_profiles = trajopt_plan_profiles_;
-  cartesian_params.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cartesian_params);
-  GraphTaskflow::UPtr transition_task = createCartesianTaskflow(cartesian_params);
-
-  return std::make_unique<RasterTaskflow>(
-      std::move(freespace_task), std::move(transition_task), std::move(raster_task));
-}
-
-RasterOnlyTaskflow::UPtr ProcessPlanningServer::createRasterOnlyCTTaskflow(const ProcessPlanningRequest& request)
-{
-  // Create Transition and Raster Taskflow
-  CartesianTaskflowParams cartesian_params;
-  cartesian_params.enable_simple_planner = isNullInstruction(request.seed);
-  cartesian_params.simple_plan_profiles = simple_plan_profiles_;
-  cartesian_params.simple_composite_profiles = simple_composite_profiles_;
-  cartesian_params.descartes_plan_profiles = descartes_plan_profiles_;
-  cartesian_params.trajopt_plan_profiles = trajopt_plan_profiles_;
-  cartesian_params.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cartesian_params);
-  GraphTaskflow::UPtr transition_task = createCartesianTaskflow(cartesian_params);
-
-  return std::make_unique<RasterOnlyTaskflow>(std::move(transition_task), std::move(raster_task));
-}
-
-RasterDTTaskflow::UPtr ProcessPlanningServer::createRasterCTDTTaskflow(const ProcessPlanningRequest& request)
-{
-  // Create Freespace and Transition Taskflows
-  FreespaceTaskflowParams freespace_params;
-  freespace_params.enable_simple_planner = isNullInstruction(request.seed);
-  freespace_params.simple_plan_profiles = simple_plan_profiles_;
-  freespace_params.simple_composite_profiles = simple_composite_profiles_;
-  freespace_params.ompl_plan_profiles = ompl_plan_profiles_;
-  freespace_params.trajopt_plan_profiles = trajopt_plan_profiles_;
-  freespace_params.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(freespace_params);
-
-  // Create Raster Taskflow
-  CartesianTaskflowParams cartesian_params;
-  cartesian_params.enable_simple_planner = isNullInstruction(request.seed);
-  cartesian_params.simple_plan_profiles = simple_plan_profiles_;
-  cartesian_params.simple_composite_profiles = simple_composite_profiles_;
-  cartesian_params.descartes_plan_profiles = descartes_plan_profiles_;
-  cartesian_params.trajopt_plan_profiles = trajopt_plan_profiles_;
-  cartesian_params.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cartesian_params);
-  GraphTaskflow::UPtr transition_task = createCartesianTaskflow(cartesian_params);
-
-  return std::make_unique<RasterDTTaskflow>(
-      std::move(freespace_task), std::move(transition_task), std::move(raster_task));
-}
-
-RasterWAADTaskflow::UPtr ProcessPlanningServer::createRasterCTWAADTaskflow(const ProcessPlanningRequest& request)
-{
-  // Create Freespace and Transition Taskflows
-  FreespaceTaskflowParams freespace_params;
-  freespace_params.enable_simple_planner = isNullInstruction(request.seed);
-  freespace_params.simple_plan_profiles = simple_plan_profiles_;
-  freespace_params.simple_composite_profiles = simple_composite_profiles_;
-  freespace_params.ompl_plan_profiles = ompl_plan_profiles_;
-  freespace_params.trajopt_plan_profiles = trajopt_plan_profiles_;
-  freespace_params.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(freespace_params);
-
-  // Create Raster Taskflow
-  CartesianTaskflowParams cartesian_params;
-  cartesian_params.enable_simple_planner = isNullInstruction(request.seed);
-  cartesian_params.simple_plan_profiles = simple_plan_profiles_;
-  cartesian_params.simple_composite_profiles = simple_composite_profiles_;
-  cartesian_params.descartes_plan_profiles = descartes_plan_profiles_;
-  cartesian_params.trajopt_plan_profiles = trajopt_plan_profiles_;
-  cartesian_params.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cartesian_params);
-  GraphTaskflow::UPtr transition_task = createCartesianTaskflow(cartesian_params);
-
-  return std::make_unique<RasterWAADTaskflow>(
-      std::move(freespace_task), std::move(transition_task), std::move(raster_task));
-}
-
-RasterWAADDTTaskflow::UPtr ProcessPlanningServer::createRasterCTWAADDTTaskflow(const ProcessPlanningRequest& request)
-{
-  // Create Freespace and Transition Taskflows
-  FreespaceTaskflowParams freespace_params;
-  freespace_params.enable_simple_planner = isNullInstruction(request.seed);
-  freespace_params.simple_plan_profiles = simple_plan_profiles_;
-  freespace_params.simple_composite_profiles = simple_composite_profiles_;
-  freespace_params.ompl_plan_profiles = ompl_plan_profiles_;
-  freespace_params.trajopt_plan_profiles = trajopt_plan_profiles_;
-  freespace_params.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(freespace_params);
-
-  // Create Raster Taskflow
-  CartesianTaskflowParams cartesian_params;
-  cartesian_params.enable_simple_planner = isNullInstruction(request.seed);
-  cartesian_params.simple_plan_profiles = simple_plan_profiles_;
-  cartesian_params.simple_composite_profiles = simple_composite_profiles_;
-  cartesian_params.descartes_plan_profiles = descartes_plan_profiles_;
-  cartesian_params.trajopt_plan_profiles = trajopt_plan_profiles_;
-  cartesian_params.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cartesian_params);
-  GraphTaskflow::UPtr transition_task = createCartesianTaskflow(cartesian_params);
-
-  return std::make_unique<RasterWAADDTTaskflow>(
-      std::move(freespace_task), std::move(transition_task), std::move(raster_task));
-}
-
-RasterGlobalTaskflow::UPtr ProcessPlanningServer::createRasterGlobalCTTaskflow(const ProcessPlanningRequest& request)
-{
-  DescartesTaskflowParams global_params;
-  global_params.enable_simple_planner = isNullInstruction(request.seed);
-  global_params.enable_post_contact_discrete_check = false;
-  global_params.enable_post_contact_continuous_check = false;
-  global_params.enable_time_parameterization = false;
-  global_params.simple_plan_profiles = simple_plan_profiles_;
-  global_params.simple_composite_profiles = simple_composite_profiles_;
-  global_params.descartes_plan_profiles = descartes_plan_profiles_;
-  GraphTaskflow::UPtr global_task = createDescartesTaskflow(global_params);
-
-  FreespaceTaskflowParams freespace_params;
-  freespace_params.type = FreespaceTaskflowType::TRAJOPT_FIRST;
-  freespace_params.enable_simple_planner = false;
-  freespace_params.simple_plan_profiles = simple_plan_profiles_;
-  freespace_params.simple_composite_profiles = simple_composite_profiles_;
-  freespace_params.ompl_plan_profiles = ompl_plan_profiles_;
-  freespace_params.trajopt_plan_profiles = trajopt_plan_profiles_;
-  freespace_params.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(freespace_params);
-
-  TrajOptTaskflowParams raster_params;
-  raster_params.enable_simple_planner = false;
-  raster_params.simple_plan_profiles = simple_plan_profiles_;
-  raster_params.simple_composite_profiles = simple_composite_profiles_;
-  raster_params.trajopt_plan_profiles = trajopt_plan_profiles_;
-  raster_params.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr raster_task = createTrajOptTaskflow(raster_params);
-  GraphTaskflow::UPtr transition_task = createTrajOptTaskflow(raster_params);
-
-  return std::make_unique<RasterGlobalTaskflow>(
-      std::move(global_task), std::move(freespace_task), std::move(transition_task), std::move(raster_task));
-}
-
-RasterOnlyGlobalTaskflow::UPtr
-ProcessPlanningServer::createRasterOnlyGlobalCTTaskflow(const ProcessPlanningRequest& request)
-{
-  DescartesTaskflowParams global_params;
-  global_params.enable_simple_planner = isNullInstruction(request.seed);
-  global_params.enable_post_contact_discrete_check = false;
-  global_params.enable_post_contact_continuous_check = false;
-  global_params.enable_time_parameterization = false;
-  global_params.simple_plan_profiles = simple_plan_profiles_;
-  global_params.simple_composite_profiles = simple_composite_profiles_;
-  global_params.descartes_plan_profiles = descartes_plan_profiles_;
-  GraphTaskflow::UPtr global_task = createDescartesTaskflow(global_params);
-
-  TrajOptTaskflowParams raster_params;
-  raster_params.enable_simple_planner = false;
-  raster_params.simple_plan_profiles = simple_plan_profiles_;
-  raster_params.simple_composite_profiles = simple_composite_profiles_;
-  raster_params.trajopt_plan_profiles = trajopt_plan_profiles_;
-  raster_params.trajopt_composite_profiles = trajopt_composite_profiles_;
-  GraphTaskflow::UPtr raster_task = createTrajOptTaskflow(raster_params);
-  GraphTaskflow::UPtr transition_task = createTrajOptTaskflow(raster_params);
-
-  return std::make_unique<RasterOnlyGlobalTaskflow>(
-      std::move(global_task), std::move(transition_task), std::move(raster_task));
-}
 }  // namespace tesseract_planning
