@@ -31,9 +31,11 @@
 #include <tesseract_process_managers/process_generators/iterative_spline_parameterization_process_generator.h>
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
+#include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
 
 #include <tesseract_motion_planners/descartes/descartes_motion_planner.h>
 #include <tesseract_motion_planners/descartes/problem_generators/default_problem_generator.h>
+#include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
 
 namespace tesseract_planning
 {
@@ -50,8 +52,14 @@ GraphTaskflow::UPtr createDescartesTaskflow(DescartesTaskflowParams params)
   if (params.enable_simple_planner)
   {
     auto interpolator = std::make_shared<SimpleMotionPlanner>("Interpolator");
-    interpolator->plan_profiles = params.simple_plan_profiles;
-    interpolator->composite_profiles = params.simple_composite_profiles;
+    if (params.profiles)
+    {
+      if (params.profiles->hasProfileEntry<SimplePlannerPlanProfile>())
+        interpolator->plan_profiles = params.profiles->getProfileEntry<SimplePlannerPlanProfile>();
+
+      if (params.profiles->hasProfileEntry<SimplePlannerCompositeProfile>())
+        interpolator->composite_profiles = params.profiles->getProfileEntry<SimplePlannerCompositeProfile>();
+    }
     auto interpolator_generator = std::make_unique<MotionPlannerProcessGenerator>(interpolator);
     interpolator_idx = graph->addNode(std::move(interpolator_generator), GraphTaskflow::NodeType::CONDITIONAL);
   }
@@ -59,7 +67,11 @@ GraphTaskflow::UPtr createDescartesTaskflow(DescartesTaskflowParams params)
   // Setup Descartes
   auto descartes_planner = std::make_shared<DescartesMotionPlanner<double>>();
   descartes_planner->problem_generator = &DefaultDescartesProblemGenerator<double>;
-  descartes_planner->plan_profiles = params.descartes_plan_profiles;
+  if (params.profiles)
+  {
+    if (params.profiles->hasProfileEntry<DescartesPlanProfile<double>>())
+      descartes_planner->plan_profiles = params.profiles->getProfileEntry<DescartesPlanProfile<double>>();
+  }
   auto descartes_generator = std::make_unique<MotionPlannerProcessGenerator>(descartes_planner);
   int descartes_idx = graph->addNode(std::move(descartes_generator), GraphTaskflow::NodeType::CONDITIONAL);
 

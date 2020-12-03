@@ -30,9 +30,11 @@
 #include <tesseract_process_managers/process_generators/iterative_spline_parameterization_process_generator.h>
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
+#include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
 
 #include <tesseract_motion_planners/ompl/ompl_motion_planner.h>
 #include <tesseract_motion_planners/ompl/problem_generators/default_problem_generator.h>
+#include <tesseract_motion_planners/ompl/profile/ompl_profile.h>
 
 namespace tesseract_planning
 {
@@ -49,8 +51,14 @@ GraphTaskflow::UPtr createOMPLTaskflow(OMPLTaskflowParams params)
   if (params.enable_simple_planner)
   {
     auto interpolator = std::make_shared<SimpleMotionPlanner>("Interpolator");
-    interpolator->plan_profiles = params.simple_plan_profiles;
-    interpolator->composite_profiles = params.simple_composite_profiles;
+    if (params.profiles)
+    {
+      if (params.profiles->hasProfileEntry<SimplePlannerPlanProfile>())
+        interpolator->plan_profiles = params.profiles->getProfileEntry<SimplePlannerPlanProfile>();
+
+      if (params.profiles->hasProfileEntry<SimplePlannerCompositeProfile>())
+        interpolator->composite_profiles = params.profiles->getProfileEntry<SimplePlannerCompositeProfile>();
+    }
     auto interpolator_generator = std::make_unique<MotionPlannerProcessGenerator>(interpolator);
     interpolator_idx = graph->addNode(std::move(interpolator_generator), GraphTaskflow::NodeType::CONDITIONAL);
   }
@@ -58,7 +66,11 @@ GraphTaskflow::UPtr createOMPLTaskflow(OMPLTaskflowParams params)
   // Setup OMPL
   auto ompl_planner = std::make_shared<OMPLMotionPlanner>();
   ompl_planner->problem_generator = &DefaultOMPLProblemGenerator;
-  ompl_planner->plan_profiles = params.ompl_plan_profiles;
+  if (params.profiles)
+  {
+    if (params.profiles->hasProfileEntry<OMPLPlanProfile>())
+      ompl_planner->plan_profiles = params.profiles->getProfileEntry<OMPLPlanProfile>();
+  }
   auto ompl_generator = std::make_unique<MotionPlannerProcessGenerator>(ompl_planner);
   int ompl_idx = graph->addNode(std::move(ompl_generator), GraphTaskflow::NodeType::CONDITIONAL);
 

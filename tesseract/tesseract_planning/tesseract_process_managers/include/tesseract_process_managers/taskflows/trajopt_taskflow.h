@@ -27,8 +27,7 @@
 #define TESSERACT_PROCESS_MANAGERS_TRAJOPT_TASKFLOW_H
 
 #include <tesseract_process_managers/taskflow_generators/graph_taskflow.h>
-#include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
-#include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
+#include <tesseract_motion_planners/core/profile_dictionary.h>
 
 namespace tesseract_planning
 {
@@ -38,10 +37,7 @@ struct TrajOptTaskflowParams
   bool enable_post_contact_discrete_check{ false };
   bool enable_post_contact_continuous_check{ true };
   bool enable_time_parameterization{ true };
-  SimplePlannerPlanProfileMap simple_plan_profiles;
-  SimplePlannerCompositeProfileMap simple_composite_profiles;
-  TrajOptPlanProfileMap trajopt_plan_profiles;
-  TrajOptCompositeProfileMap trajopt_composite_profiles;
+  ProfileDictionary::ConstPtr profiles;
 };
 
 GraphTaskflow::UPtr createTrajOptTaskflow(TrajOptTaskflowParams params);
