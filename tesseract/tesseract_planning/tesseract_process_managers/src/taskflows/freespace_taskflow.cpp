@@ -31,12 +31,15 @@
 #include <tesseract_process_managers/process_generators/seed_min_length_process_generator.h>
 
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
+#include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
 
 #include <tesseract_motion_planners/ompl/ompl_motion_planner.h>
 #include <tesseract_motion_planners/ompl/problem_generators/default_problem_generator.h>
+#include <tesseract_motion_planners/ompl/profile/ompl_profile.h>
 
 #include <tesseract_motion_planners/trajopt/trajopt_motion_planner.h>
 #include <tesseract_motion_planners/trajopt/problem_generators/default_problem_generator.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
 
 namespace tesseract_planning
 {
@@ -53,8 +56,14 @@ GraphTaskflow::UPtr createFreespaceTaskflowDefault(const FreespaceTaskflowParams
   if (params.enable_simple_planner)
   {
     auto interpolator = std::make_shared<SimpleMotionPlanner>("Interpolator");
-    interpolator->plan_profiles = params.simple_plan_profiles;
-    interpolator->composite_profiles = params.simple_composite_profiles;
+    if (params.profiles)
+    {
+      if (params.profiles->hasProfileEntry<SimplePlannerPlanProfile>())
+        interpolator->plan_profiles = params.profiles->getProfileEntry<SimplePlannerPlanProfile>();
+
+      if (params.profiles->hasProfileEntry<SimplePlannerCompositeProfile>())
+        interpolator->composite_profiles = params.profiles->getProfileEntry<SimplePlannerCompositeProfile>();
+    }
     auto interpolator_generator = std::make_unique<MotionPlannerProcessGenerator>(interpolator);
     interpolator_idx = graph->addNode(std::move(interpolator_generator), GraphTaskflow::NodeType::CONDITIONAL);
   }
@@ -68,15 +77,25 @@ GraphTaskflow::UPtr createFreespaceTaskflowDefault(const FreespaceTaskflowParams
   // Setup OMPL
   auto ompl_planner = std::make_shared<OMPLMotionPlanner>();
   ompl_planner->problem_generator = &DefaultOMPLProblemGenerator;
-  ompl_planner->plan_profiles = params.ompl_plan_profiles;
+  if (params.profiles)
+  {
+    if (params.profiles->hasProfileEntry<OMPLPlanProfile>())
+      ompl_planner->plan_profiles = params.profiles->getProfileEntry<OMPLPlanProfile>();
+  }
   auto ompl_generator = std::make_unique<MotionPlannerProcessGenerator>(ompl_planner);
   int ompl_idx = graph->addNode(std::move(ompl_generator), GraphTaskflow::NodeType::TASK);
 
   // Setup TrajOpt
   auto trajopt_planner = std::make_shared<TrajOptMotionPlanner>();
   trajopt_planner->problem_generator = &DefaultTrajoptProblemGenerator;
-  trajopt_planner->plan_profiles = params.trajopt_plan_profiles;
-  trajopt_planner->composite_profiles = params.trajopt_composite_profiles;
+  if (params.profiles)
+  {
+    if (params.profiles->hasProfileEntry<TrajOptPlanProfile>())
+      trajopt_planner->plan_profiles = params.profiles->getProfileEntry<TrajOptPlanProfile>();
+
+    if (params.profiles->hasProfileEntry<TrajOptCompositeProfile>())
+      trajopt_planner->composite_profiles = params.profiles->getProfileEntry<TrajOptCompositeProfile>();
+  }
   auto trajopt_generator = std::make_unique<MotionPlannerProcessGenerator>(trajopt_planner);
   int trajopt_idx = graph->addNode(std::move(trajopt_generator), GraphTaskflow::NodeType::CONDITIONAL);
 
@@ -161,8 +180,14 @@ GraphTaskflow::UPtr createFreespaceTaskflowTrajOptFirst(const FreespaceTaskflowP
   if (params.enable_simple_planner)
   {
     auto interpolator = std::make_shared<SimpleMotionPlanner>("Interpolator");
-    interpolator->plan_profiles = params.simple_plan_profiles;
-    interpolator->composite_profiles = params.simple_composite_profiles;
+    if (params.profiles)
+    {
+      if (params.profiles->hasProfileEntry<SimplePlannerPlanProfile>())
+        interpolator->plan_profiles = params.profiles->getProfileEntry<SimplePlannerPlanProfile>();
+
+      if (params.profiles->hasProfileEntry<SimplePlannerCompositeProfile>())
+        interpolator->composite_profiles = params.profiles->getProfileEntry<SimplePlannerCompositeProfile>();
+    }
     auto interpolator_generator = std::make_unique<MotionPlannerProcessGenerator>(interpolator);
     interpolator_idx = graph->addNode(std::move(interpolator_generator), GraphTaskflow::NodeType::CONDITIONAL);
   }
@@ -176,23 +201,39 @@ GraphTaskflow::UPtr createFreespaceTaskflowTrajOptFirst(const FreespaceTaskflowP
   // Setup TrajOpt
   auto trajopt_planner = std::make_shared<TrajOptMotionPlanner>();
   trajopt_planner->problem_generator = &DefaultTrajoptProblemGenerator;
-  trajopt_planner->plan_profiles = params.trajopt_plan_profiles;
-  trajopt_planner->composite_profiles = params.trajopt_composite_profiles;
+  if (params.profiles)
+  {
+    if (params.profiles->hasProfileEntry<TrajOptPlanProfile>())
+      trajopt_planner->plan_profiles = params.profiles->getProfileEntry<TrajOptPlanProfile>();
+
+    if (params.profiles->hasProfileEntry<TrajOptCompositeProfile>())
+      trajopt_planner->composite_profiles = params.profiles->getProfileEntry<TrajOptCompositeProfile>();
+  }
   auto trajopt_generator = std::make_unique<MotionPlannerProcessGenerator>(trajopt_planner);
   int trajopt_idx = graph->addNode(std::move(trajopt_generator), GraphTaskflow::NodeType::CONDITIONAL);
 
   // Setup OMPL
   auto ompl_planner = std::make_shared<OMPLMotionPlanner>();
   ompl_planner->problem_generator = &DefaultOMPLProblemGenerator;
-  ompl_planner->plan_profiles = params.ompl_plan_profiles;
+  if (params.profiles)
+  {
+    if (params.profiles->hasProfileEntry<OMPLPlanProfile>())
+      ompl_planner->plan_profiles = params.profiles->getProfileEntry<OMPLPlanProfile>();
+  }
   auto ompl_generator = std::make_unique<MotionPlannerProcessGenerator>(ompl_planner);
   int ompl_idx = graph->addNode(std::move(ompl_generator), GraphTaskflow::NodeType::CONDITIONAL);
 
   // Setup TrajOpt 2
   auto trajopt_planner2 = std::make_shared<TrajOptMotionPlanner>();
   trajopt_planner2->problem_generator = &DefaultTrajoptProblemGenerator;
-  trajopt_planner2->plan_profiles = params.trajopt_plan_profiles;
-  trajopt_planner2->composite_profiles = params.trajopt_composite_profiles;
+  if (params.profiles)
+  {
+    if (params.profiles->hasProfileEntry<TrajOptPlanProfile>())
+      trajopt_planner2->plan_profiles = params.profiles->getProfileEntry<TrajOptPlanProfile>();
+
+    if (params.profiles->hasProfileEntry<TrajOptCompositeProfile>())
+      trajopt_planner2->composite_profiles = params.profiles->getProfileEntry<TrajOptCompositeProfile>();
+  }
   auto trajopt_generator2 = std::make_unique<MotionPlannerProcessGenerator>(trajopt_planner2);
   int trajopt_idx2 = graph->addNode(std::move(trajopt_generator2), GraphTaskflow::NodeType::CONDITIONAL);
 
