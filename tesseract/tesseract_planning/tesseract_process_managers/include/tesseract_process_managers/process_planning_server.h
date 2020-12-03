@@ -39,21 +39,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/null_instruction.h>
 
 #include <tesseract_motion_planners/core/profile_dictionary.h>
-#include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
-#include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
-#include <tesseract_motion_planners/ompl/profile/ompl_profile.h>
-#include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
-#include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
-
 #include <tesseract_process_managers/process_environment_cache.h>
-#include <tesseract_process_managers/taskflow_generators/graph_taskflow.h>
-#include <tesseract_process_managers/taskflow_generators/raster_taskflow.h>
-#include <tesseract_process_managers/taskflow_generators/raster_global_taskflow.h>
-#include <tesseract_process_managers/taskflow_generators/raster_only_taskflow.h>
-#include <tesseract_process_managers/taskflow_generators/raster_only_global_taskflow.h>
-#include <tesseract_process_managers/taskflow_generators/raster_dt_taskflow.h>
-#include <tesseract_process_managers/taskflow_generators/raster_waad_taskflow.h>
-#include <tesseract_process_managers/taskflow_generators/raster_waad_dt_taskflow.h>
+#include <tesseract_process_managers/taskflow_generator.h>
 
 namespace tesseract_planning
 {
@@ -168,7 +155,35 @@ struct ProcessPlanningFuture
   std::unique_ptr<const PlannerProfileRemapping> plan_profile_remapping;
   std::unique_ptr<const PlannerProfileRemapping> composite_profile_remapping;
   TaskflowGenerator::UPtr taskflow_generator;
-  bool isReady() const { return (process_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready); }
+
+  /** @brief Clear all content */
+  void clear()
+  {
+    *success = true;
+    input = nullptr;
+    results = nullptr;
+    global_manip_info = nullptr;
+    plan_profile_remapping = nullptr;
+    composite_profile_remapping = nullptr;
+    taskflow_generator->clear();
+    taskflow_generator = nullptr;
+  }
+
+  // These methods are used for checking the status of the future
+  bool ready() const { return (process_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready); }
+  void wait() const { process_future.wait(); }
+
+  template <typename R, typename P>
+  std::future_status waitFor(const std::chrono::duration<R, P>& duration) const
+  {
+    return process_future.wait_for(duration);
+  }
+
+  template <typename C, typename D>
+  std::future_status waitUntil(const std::chrono::time_point<C, D>& abs) const
+  {
+    return process_future.wait_until(abs);
+  }
 };
 
 using ProcessPlannerGeneratorFn =
@@ -188,6 +203,9 @@ public:
   ProcessPlanningServer& operator=(ProcessPlanningServer&&) = default;
 
   void registerProcessPlanner(const std::string& name, ProcessPlannerGeneratorFn generator);
+  void loadDefaultProcessPlanners();
+
+  bool hasProcessPlanner(const std::string& name) const;
 
   ProcessPlanningFuture run(const ProcessPlanningRequest& request);
 
