@@ -418,7 +418,7 @@ public:
    * @param tip The tip link
    * @return The shortest path between the two links
    */
-  Path getShortestPath(const std::string& root, const std::string& tip);
+  Path getShortestPath(const std::string& root, const std::string& tip) const;
 
   /**
    * @brief Get the graph vertex by name
