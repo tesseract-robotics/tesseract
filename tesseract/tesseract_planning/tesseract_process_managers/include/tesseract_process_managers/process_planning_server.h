@@ -187,7 +187,7 @@ struct ProcessPlanningFuture
 };
 
 using ProcessPlannerGeneratorFn =
-    std::function<TaskflowGenerator::UPtr(const ProcessPlanningRequest& request, ProfileDictionary::ConstPtr profiles)>;
+    std::function<TaskflowGenerator::UPtr(bool enable_simple_planner, ProfileDictionary::ConstPtr profiles)>;
 
 class ProcessPlanningServer
 {
@@ -206,6 +206,7 @@ public:
   void loadDefaultProcessPlanners();
 
   bool hasProcessPlanner(const std::string& name) const;
+  std::vector<std::string> getAvailableProcessPlanners() const;
 
   ProcessPlanningFuture run(const ProcessPlanningRequest& request);
 
