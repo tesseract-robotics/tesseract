@@ -369,7 +369,7 @@ public:
    */
   void saveDOT(const std::string& path) const;
 
-  Path getShortestPath(const std::string& root, const std::string& tip);
+  Path getShortestPath(const std::string& root, const std::string& tip) const;
 
   // static inline Graph copyGraph(const Graph& graph)
   //{
