@@ -560,9 +560,9 @@ void SceneGraph::saveDOT(const std::string& path) const
   dot_file << "}";
 }
 
-SceneGraph::Path SceneGraph::getShortestPath(const std::string& root, const std::string& tip)
+SceneGraph::Path SceneGraph::getShortestPath(const std::string& root, const std::string& tip) const
 {
-  const auto& graph = static_cast<const Graph&>(*this);
+  const Graph& graph = *this;
   Vertex s = getVertex(root);
 
   std::map<Vertex, Vertex> predicessor_map;
