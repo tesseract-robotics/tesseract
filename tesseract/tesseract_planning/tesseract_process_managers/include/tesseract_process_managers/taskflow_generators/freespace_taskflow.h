@@ -1,6 +1,6 @@
 /**
- * @file simple_freespace_taskflow.h
- * @brief Simple Freespace Graph Taskflow
+ * @file freespace_taskflow.h
+ * @brief Freespace Graph Taskflow
  *
  * @author Levi Armstrong
  * @date August 27, 2020
@@ -26,6 +26,14 @@
 #ifndef TESSERACT_PROCESS_MANAGERS_FREESPACE_TASKFLOW_H
 #define TESSERACT_PROCESS_MANAGERS_FREESPACE_TASKFLOW_H
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <functional>
+#include <vector>
+#include <thread>
+#include <taskflow/taskflow.hpp>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract_process_managers/taskflow_generators/graph_taskflow.h>
 #include <tesseract_motion_planners/core/profile_dictionary.h>
 
@@ -47,7 +55,44 @@ struct FreespaceTaskflowParams
   ProfileDictionary::ConstPtr profiles;
 };
 
-GraphTaskflow::UPtr createFreespaceTaskflow(FreespaceTaskflowParams params);
-}  // namespace tesseract_planning
+class FreespaceTaskflow : public TaskflowGenerator
+{
+public:
+  using UPtr = std::unique_ptr<FreespaceTaskflow>;
 
+  FreespaceTaskflow(FreespaceTaskflowParams params, std::string name = "FreespaceTaskflow");
+  ~FreespaceTaskflow() override = default;
+  FreespaceTaskflow(const FreespaceTaskflow&) = delete;
+  FreespaceTaskflow& operator=(const FreespaceTaskflow&) = delete;
+  FreespaceTaskflow(FreespaceTaskflow&&) = delete;
+  FreespaceTaskflow& operator=(FreespaceTaskflow&&) = delete;
+
+  const std::string& getName() const override;
+
+  tf::Taskflow& generateTaskflow(ProcessInput input,
+                                 std::function<void()> done_cb,
+                                 std::function<void()> error_cb) override;
+
+  void abort() override;
+
+  void reset() override;
+
+  void clear() override;
+
+private:
+  std::string name_;
+  FreespaceTaskflowParams params_;
+  GraphTaskflow::UPtr generator_;
+
+  void successCallback(std::function<void()> user_callback);
+  void failureCallback(std::function<void()> user_callback);
+
+  /**
+   * @brief Checks that the ProcessInput is in the correct format.
+   * @param input ProcessInput to be checked
+   * @return True if in the correct format
+   */
+  bool checkProcessInput(const ProcessInput& input) const;
+};
+}  // namespace tesseract_planning
 #endif  // TESSERACT_PROCESS_MANAGERS_FREESPACE_TASKFLOW_H

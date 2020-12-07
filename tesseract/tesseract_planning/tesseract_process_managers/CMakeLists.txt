@@ -59,11 +59,11 @@ add_library(${PROJECT_NAME}
     src/taskflow_generators/raster_dt_taskflow.cpp
     src/taskflow_generators/raster_waad_taskflow.cpp
     src/taskflow_generators/raster_waad_dt_taskflow.cpp
-    src/taskflows/descartes_taskflow.cpp
-    src/taskflows/ompl_taskflow.cpp
-    src/taskflows/trajopt_taskflow.cpp
-    src/taskflows/cartesian_taskflow.cpp
-    src/taskflows/freespace_taskflow.cpp)
+    src/taskflow_generators/descartes_taskflow.cpp
+    src/taskflow_generators/ompl_taskflow.cpp
+    src/taskflow_generators/trajopt_taskflow.cpp
+    src/taskflow_generators/cartesian_taskflow.cpp
+    src/taskflow_generators/freespace_taskflow.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC
     console_bridge::console_bridge
     Taskflow::Taskflow
