@@ -42,26 +42,25 @@ tf::Taskflow& GraphTaskflow::generateTaskflow(ProcessInput input,
                                               std::function<void()> done_cb,
                                               std::function<void()> error_cb)
 {
-  // Create and store the taskflow
+  // Create Taskflow and Container
   auto taskflow = std::make_shared<tf::Taskflow>(name_);
-  taskflow_objects_.push_back(taskflow);
-
-  // Add "Done" task
-  std::size_t done_task_idx = process_tasks_.size();
-  if (done_cb)
-    process_tasks_.push_back(taskflow->emplace(done_cb).name("Done Callback"));
-  else
-    process_tasks_.push_back(taskflow->emplace([&]() { std::cout << "Done GraphTaskflow\n"; }).name("Done Callback"));
+  TaskflowContainer container;
 
   // Add "Error" task
-  std::size_t error_task_idx = process_tasks_.size();
   if (error_cb)
-    process_tasks_.push_back(taskflow->emplace(error_cb).name("Error Callback"));
+    container.outputs.push_back(taskflow->emplace(error_cb).name("Error Callback"));
   else
-    process_tasks_.push_back(taskflow->emplace([&]() { std::cout << "Error GraphTaskflow\n"; }).name("Error Callback"));
+    container.outputs.push_back(
+        taskflow->emplace([&]() { std::cout << "Error GraphTaskflow\n"; }).name("Error Callback"));
+
+  // Add "Done" task
+  if (done_cb)
+    container.outputs.push_back(taskflow->emplace(done_cb).name("Done Callback"));
+  else
+    container.outputs.push_back(
+        taskflow->emplace([&]() { std::cout << "Done GraphTaskflow\n"; }).name("Done Callback"));
 
   // Generate process tasks for each node using its process generator
-  std::size_t first_task_idx = process_tasks_.size();
   for (auto& node : nodes_)
   {
     switch (node.process_type)
@@ -71,7 +70,7 @@ tf::Taskflow& GraphTaskflow::generateTaskflow(ProcessInput input,
         tf::Task task = taskflow->placeholder();
         task.work(node.process->generateTask(input, task.hash_value()));
         task.name(node.process->getName());
-        process_tasks_.push_back(task);
+        container.tasks.push_back(task);
         break;
       }
       case NodeType::CONDITIONAL:
@@ -79,7 +78,7 @@ tf::Taskflow& GraphTaskflow::generateTaskflow(ProcessInput input,
         tf::Task task = taskflow->placeholder();
         task.work(node.process->generateConditionalTask(input, task.hash_value()));
         task.name(node.process->getName());
-        process_tasks_.push_back(task);
+        container.tasks.push_back(task);
         break;
       }
     }
@@ -88,16 +87,16 @@ tf::Taskflow& GraphTaskflow::generateTaskflow(ProcessInput input,
   std::size_t src_idx = 0;
   for (auto& node : nodes_)
   {
-    std::size_t src = src_idx + first_task_idx;
+    std::size_t src = src_idx;
     if (node.process_type == NodeType::TASK)
     {
       assert(node.edges.size() == 1);
       if (node.edges[0].dest_channel == DestinationChannel::PROCESS_NODE)
-        process_tasks_[src].precede(process_tasks_[static_cast<std::size_t>(node.edges[0].dest) + first_task_idx]);
+        container.tasks[src].precede(container.tasks[static_cast<std::size_t>(node.edges[0].dest)]);
       else if (node.edges[0].dest_channel == DestinationChannel::DONE_CALLBACK)
-        process_tasks_[src].precede(process_tasks_[done_task_idx]);
+        container.tasks[src].precede(container.outputs[1]);
       else if (node.edges[0].dest_channel == DestinationChannel::ERROR_CALLBACK)
-        process_tasks_[src].precede(process_tasks_[error_task_idx]);
+        container.tasks[src].precede(container.outputs[0]);
     }
     else if (node.process_type == NodeType::CONDITIONAL)
     {
@@ -107,80 +106,80 @@ tf::Taskflow& GraphTaskflow::generateTaskflow(ProcessInput input,
       {
         if (node.edges[0].src_channel == SourceChannel::ON_SUCCESS &&
             node.edges[1].src_channel == SourceChannel::ON_FAILURE)
-          process_tasks_[src].precede(process_tasks_[static_cast<std::size_t>(node.edges[1].dest) + first_task_idx],
-                                      process_tasks_[static_cast<std::size_t>(node.edges[0].dest) + first_task_idx]);
+          container.tasks[src].precede(container.tasks[static_cast<std::size_t>(node.edges[1].dest)],
+                                       container.tasks[static_cast<std::size_t>(node.edges[0].dest)]);
         else if (node.edges[1].src_channel == SourceChannel::ON_SUCCESS &&
                  node.edges[0].src_channel == SourceChannel::ON_FAILURE)
-          process_tasks_[src].precede(process_tasks_[static_cast<std::size_t>(node.edges[0].dest) + first_task_idx],
-                                      process_tasks_[static_cast<std::size_t>(node.edges[1].dest) + first_task_idx]);
+          container.tasks[src].precede(container.tasks[static_cast<std::size_t>(node.edges[0].dest)],
+                                       container.tasks[static_cast<std::size_t>(node.edges[1].dest)]);
       }
       else if (node.edges[0].dest_channel == DestinationChannel::PROCESS_NODE &&
                node.edges[1].dest_channel == DestinationChannel::DONE_CALLBACK)
       {
         if (node.edges[0].src_channel == SourceChannel::ON_SUCCESS &&
             node.edges[1].src_channel == SourceChannel::ON_FAILURE)
-          process_tasks_[src].precede(process_tasks_[done_task_idx],
-                                      process_tasks_[static_cast<std::size_t>(node.edges[0].dest) + first_task_idx]);
+          container.tasks[src].precede(container.outputs[1],
+                                       container.tasks[static_cast<std::size_t>(node.edges[0].dest)]);
         else if (node.edges[1].src_channel == SourceChannel::ON_SUCCESS &&
                  node.edges[0].src_channel == SourceChannel::ON_FAILURE)
-          process_tasks_[src].precede(process_tasks_[static_cast<std::size_t>(node.edges[0].dest) + first_task_idx],
-                                      process_tasks_[done_task_idx]);
+          container.tasks[src].precede(container.tasks[static_cast<std::size_t>(node.edges[0].dest)],
+                                       container.outputs[1]);
       }
       else if (node.edges[0].dest_channel == DestinationChannel::PROCESS_NODE &&
                node.edges[1].dest_channel == DestinationChannel::ERROR_CALLBACK)
       {
         if (node.edges[0].src_channel == SourceChannel::ON_SUCCESS &&
             node.edges[1].src_channel == SourceChannel::ON_FAILURE)
-          process_tasks_[src].precede(process_tasks_[error_task_idx],
-                                      process_tasks_[static_cast<std::size_t>(node.edges[0].dest) + first_task_idx]);
+          container.tasks[src].precede(container.outputs[0],
+                                       container.tasks[static_cast<std::size_t>(node.edges[0].dest)]);
         else if (node.edges[1].src_channel == SourceChannel::ON_SUCCESS &&
                  node.edges[0].src_channel == SourceChannel::ON_FAILURE)
-          process_tasks_[src].precede(process_tasks_[static_cast<std::size_t>(node.edges[0].dest) + first_task_idx],
-                                      process_tasks_[error_task_idx]);
+          container.tasks[src].precede(container.tasks[static_cast<std::size_t>(node.edges[0].dest)],
+                                       container.outputs[0]);
       }
       else if (node.edges[0].dest_channel == DestinationChannel::DONE_CALLBACK &&
                node.edges[1].dest_channel == DestinationChannel::PROCESS_NODE)
       {
         if (node.edges[0].src_channel == SourceChannel::ON_SUCCESS &&
             node.edges[1].src_channel == SourceChannel::ON_FAILURE)
-          process_tasks_[src].precede(process_tasks_[static_cast<std::size_t>(node.edges[1].dest) + first_task_idx],
-                                      process_tasks_[done_task_idx]);
+          container.tasks[src].precede(container.tasks[static_cast<std::size_t>(node.edges[1].dest)],
+                                       container.outputs[1]);
         else if (node.edges[1].src_channel == SourceChannel::ON_SUCCESS &&
                  node.edges[0].src_channel == SourceChannel::ON_FAILURE)
-          process_tasks_[src].precede(process_tasks_[done_task_idx],
-                                      process_tasks_[static_cast<std::size_t>(node.edges[1].dest) + first_task_idx]);
+          container.tasks[src].precede(container.outputs[1],
+                                       container.tasks[static_cast<std::size_t>(node.edges[1].dest)]);
       }
       else if (node.edges[0].dest_channel == DestinationChannel::ERROR_CALLBACK &&
                node.edges[1].dest_channel == DestinationChannel::PROCESS_NODE)
       {
         if (node.edges[0].src_channel == SourceChannel::ON_SUCCESS &&
             node.edges[1].src_channel == SourceChannel::ON_FAILURE)
-          process_tasks_[src].precede(process_tasks_[static_cast<std::size_t>(node.edges[1].dest) + first_task_idx],
-                                      process_tasks_[error_task_idx]);
+          container.tasks[src].precede(container.tasks[static_cast<std::size_t>(node.edges[1].dest)],
+                                       container.outputs[0]);
         else if (node.edges[1].src_channel == SourceChannel::ON_SUCCESS &&
                  node.edges[0].src_channel == SourceChannel::ON_FAILURE)
-          process_tasks_[src].precede(process_tasks_[error_task_idx],
-                                      process_tasks_[static_cast<std::size_t>(node.edges[1].dest) + first_task_idx]);
+          container.tasks[src].precede(container.outputs[0],
+                                       container.tasks[static_cast<std::size_t>(node.edges[1].dest)]);
       }
       else if (node.edges[0].dest_channel == DestinationChannel::DONE_CALLBACK &&
                node.edges[1].dest_channel == DestinationChannel::ERROR_CALLBACK)
       {
         if (node.edges[0].src_channel == SourceChannel::ON_SUCCESS &&
             node.edges[1].src_channel == SourceChannel::ON_FAILURE)
-          process_tasks_[src].precede(process_tasks_[error_task_idx], process_tasks_[done_task_idx]);
+          container.tasks[src].precede(container.outputs[0], container.outputs[1]);
         else if (node.edges[1].src_channel == SourceChannel::ON_SUCCESS &&
                  node.edges[0].src_channel == SourceChannel::ON_FAILURE)
-          process_tasks_[src].precede(process_tasks_[done_task_idx], process_tasks_[error_task_idx]);
+          container.tasks[src].precede(container.outputs[1], container.outputs[0]);
       }
       else if (node.edges[0].dest_channel == DestinationChannel::ERROR_CALLBACK &&
                node.edges[1].dest_channel == DestinationChannel::DONE_CALLBACK)
       {
         if (node.edges[0].src_channel == SourceChannel::ON_SUCCESS &&
             node.edges[1].src_channel == SourceChannel::ON_FAILURE)
-          process_tasks_[src].precede(process_tasks_[done_task_idx], process_tasks_[error_task_idx]);
+          container.tasks[src].precede(container.outputs[1], container.outputs[0]);
         else if (node.edges[1].src_channel == SourceChannel::ON_SUCCESS &&
                  node.edges[0].src_channel == SourceChannel::ON_FAILURE)
-          process_tasks_[src].precede(process_tasks_[error_task_idx], process_tasks_[done_task_idx]);
+          container.tasks[src].precede(container.outputs[0], container.outputs[1]);
       }
       else
       {
@@ -190,6 +189,7 @@ tf::Taskflow& GraphTaskflow::generateTaskflow(ProcessInput input,
     ++src_idx;
   }
 
+  taskflow_objects_.emplace_back(taskflow, container);
   return *taskflow;
 }
 
@@ -211,7 +211,6 @@ void GraphTaskflow::clear()
 {
   reset();
   taskflow_objects_.clear();
-  process_tasks_.clear();
 }
 
 int GraphTaskflow::addNode(ProcessGenerator::UPtr process, NodeType process_type)

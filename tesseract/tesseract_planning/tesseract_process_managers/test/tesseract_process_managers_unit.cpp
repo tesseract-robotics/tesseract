@@ -20,11 +20,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_process_managers/taskflow_generators/raster_dt_taskflow.h>
 #include <tesseract_process_managers/taskflow_generators/raster_waad_taskflow.h>
 #include <tesseract_process_managers/taskflow_generators/raster_waad_dt_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/cartesian_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/freespace_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/descartes_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/trajopt_taskflow.h>
 #include <tesseract_process_managers/process_generators/seed_min_length_process_generator.h>
-#include <tesseract_process_managers/taskflows/cartesian_taskflow.h>
-#include <tesseract_process_managers/taskflows/freespace_taskflow.h>
-#include <tesseract_process_managers/taskflows/descartes_taskflow.h>
-#include <tesseract_process_managers/taskflows/trajopt_taskflow.h>
 
 #include "raster_example_program.h"
 #include "raster_dt_example_program.h"
