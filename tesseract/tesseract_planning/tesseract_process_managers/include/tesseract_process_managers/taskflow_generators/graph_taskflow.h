@@ -125,8 +125,7 @@ private:
   std::atomic<bool> abort_{ false };
 
   std::vector<Node> nodes_;
-  std::vector<std::shared_ptr<tf::Taskflow>> taskflow_objects_;
-  std::vector<tf::Task> process_tasks_;
+  std::vector<std::pair<std::shared_ptr<tf::Taskflow>, TaskflowContainer>> taskflow_objects_;
   std::string name_;
 };
 

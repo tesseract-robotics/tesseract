@@ -41,6 +41,12 @@ class Taskflow;
 
 namespace tesseract_planning
 {
+struct TaskflowContainer
+{
+  std::vector<tf::Task> tasks;
+  std::vector<tf::Task> outputs;
+};
+
 /** @brief Base class for generating a taskflow */
 class TaskflowGenerator
 {

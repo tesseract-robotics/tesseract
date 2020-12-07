@@ -31,11 +31,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_planning_server.h>
 #include <tesseract_process_managers/debug_observer.h>
-#include <tesseract_process_managers/taskflows/cartesian_taskflow.h>
-#include <tesseract_process_managers/taskflows/descartes_taskflow.h>
-#include <tesseract_process_managers/taskflows/freespace_taskflow.h>
-#include <tesseract_process_managers/taskflows/ompl_taskflow.h>
-#include <tesseract_process_managers/taskflows/trajopt_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/cartesian_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/descartes_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/freespace_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/ompl_taskflow.h>
+#include <tesseract_process_managers/taskflow_generators/trajopt_taskflow.h>
 #include <tesseract_process_managers/taskflow_generators/graph_taskflow.h>
 #include <tesseract_process_managers/taskflow_generators/raster_taskflow.h>
 #include <tesseract_process_managers/taskflow_generators/raster_global_taskflow.h>
@@ -60,7 +60,7 @@ TaskflowGenerator::UPtr createTrajOptGenerator(bool enable_simple_planner, Profi
   TrajOptTaskflowParams params;
   params.enable_simple_planner = enable_simple_planner;
   params.profiles = profiles;
-  return createTrajOptTaskflow(params);
+  return std::make_unique<TrajOptTaskflow>(params);
 }
 
 TaskflowGenerator::UPtr createOMPLGenerator(bool enable_simple_planner, ProfileDictionary::ConstPtr profiles)
@@ -68,7 +68,7 @@ TaskflowGenerator::UPtr createOMPLGenerator(bool enable_simple_planner, ProfileD
   OMPLTaskflowParams params;
   params.enable_simple_planner = enable_simple_planner;
   params.profiles = profiles;
-  return createOMPLTaskflow(params);
+  return std::make_unique<OMPLTaskflow>(params);
 }
 
 TaskflowGenerator::UPtr createDescartesGenerator(bool enable_simple_planner, ProfileDictionary::ConstPtr profiles)
@@ -76,7 +76,7 @@ TaskflowGenerator::UPtr createDescartesGenerator(bool enable_simple_planner, Pro
   DescartesTaskflowParams params;
   params.enable_simple_planner = enable_simple_planner;
   params.profiles = profiles;
-  return createDescartesTaskflow(params);
+  return std::make_unique<DescartesTaskflow>(params);
 }
 
 TaskflowGenerator::UPtr createCartesianGenerator(bool enable_simple_planner, ProfileDictionary::ConstPtr profiles)
@@ -84,7 +84,7 @@ TaskflowGenerator::UPtr createCartesianGenerator(bool enable_simple_planner, Pro
   CartesianTaskflowParams params;
   params.enable_simple_planner = enable_simple_planner;
   params.profiles = profiles;
-  return createCartesianTaskflow(params);
+  return std::make_unique<CartesianTaskflow>(params);
 }
 
 TaskflowGenerator::UPtr createFreespaceGenerator(bool enable_simple_planner, ProfileDictionary::ConstPtr profiles)
@@ -92,7 +92,7 @@ TaskflowGenerator::UPtr createFreespaceGenerator(bool enable_simple_planner, Pro
   FreespaceTaskflowParams params;
   params.enable_simple_planner = enable_simple_planner;
   params.profiles = profiles;
-  return createFreespaceTaskflow(params);
+  return std::make_unique<FreespaceTaskflow>(params);
 }
 
 TaskflowGenerator::UPtr createRasterGenerator(bool enable_simple_planner, ProfileDictionary::ConstPtr profiles)
@@ -101,14 +101,14 @@ TaskflowGenerator::UPtr createRasterGenerator(bool enable_simple_planner, Profil
   FreespaceTaskflowParams fparams;
   fparams.enable_simple_planner = enable_simple_planner;
   fparams.profiles = profiles;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(fparams);
-  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(fparams);
+  TaskflowGenerator::UPtr freespace_task = std::make_unique<FreespaceTaskflow>(fparams);
+  TaskflowGenerator::UPtr transition_task = std::make_unique<FreespaceTaskflow>(fparams);
 
   // Create Raster Taskflow
   CartesianTaskflowParams cparams;
   cparams.enable_simple_planner = enable_simple_planner;
   cparams.profiles = profiles;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cparams);
+  TaskflowGenerator::UPtr raster_task = std::make_unique<CartesianTaskflow>(cparams);
 
   return std::make_unique<RasterTaskflow>(
       std::move(freespace_task), std::move(transition_task), std::move(raster_task));
@@ -120,13 +120,13 @@ TaskflowGenerator::UPtr createRasterOnlyGenerator(bool enable_simple_planner, Pr
   FreespaceTaskflowParams tparams;
   tparams.enable_simple_planner = enable_simple_planner;
   tparams.profiles = profiles;
-  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(tparams);
+  TaskflowGenerator::UPtr transition_task = std::make_unique<FreespaceTaskflow>(tparams);
 
   // Create Raster Taskflow
   CartesianTaskflowParams cparams;
   cparams.enable_simple_planner = enable_simple_planner;
   cparams.profiles = profiles;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cparams);
+  TaskflowGenerator::UPtr raster_task = std::make_unique<CartesianTaskflow>(cparams);
 
   return std::make_unique<RasterOnlyTaskflow>(std::move(transition_task), std::move(raster_task));
 }
@@ -139,19 +139,19 @@ TaskflowGenerator::UPtr createRasterGlobalGenerator(bool enable_simple_planner, 
   global_params.enable_post_contact_continuous_check = false;
   global_params.enable_time_parameterization = false;
   global_params.profiles = profiles;
-  GraphTaskflow::UPtr global_task = createDescartesTaskflow(global_params);
+  TaskflowGenerator::UPtr global_task = std::make_unique<DescartesTaskflow>(global_params);
 
   FreespaceTaskflowParams freespace_params;
   freespace_params.type = FreespaceTaskflowType::TRAJOPT_FIRST;
   freespace_params.enable_simple_planner = false;
   freespace_params.profiles = profiles;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(freespace_params);
-  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(freespace_params);
+  TaskflowGenerator::UPtr freespace_task = std::make_unique<FreespaceTaskflow>(freespace_params);
+  TaskflowGenerator::UPtr transition_task = std::make_unique<FreespaceTaskflow>(freespace_params);
 
   TrajOptTaskflowParams raster_params;
   raster_params.enable_simple_planner = false;
   raster_params.profiles = profiles;
-  GraphTaskflow::UPtr raster_task = createTrajOptTaskflow(raster_params);
+  TaskflowGenerator::UPtr raster_task = std::make_unique<TrajOptTaskflow>(raster_params);
 
   return std::make_unique<RasterGlobalTaskflow>(
       std::move(global_task), std::move(freespace_task), std::move(transition_task), std::move(raster_task));
@@ -163,14 +163,14 @@ TaskflowGenerator::UPtr createRasterDTGenerator(bool enable_simple_planner, Prof
   FreespaceTaskflowParams fparams;
   fparams.enable_simple_planner = enable_simple_planner;
   fparams.profiles = profiles;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(fparams);
-  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(fparams);
+  TaskflowGenerator::UPtr freespace_task = std::make_unique<FreespaceTaskflow>(fparams);
+  TaskflowGenerator::UPtr transition_task = std::make_unique<FreespaceTaskflow>(fparams);
 
   // Create Raster Taskflow
   CartesianTaskflowParams cparams;
   cparams.enable_simple_planner = enable_simple_planner;
   cparams.profiles = profiles;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cparams);
+  TaskflowGenerator::UPtr raster_task = std::make_unique<CartesianTaskflow>(cparams);
 
   return std::make_unique<RasterDTTaskflow>(
       std::move(freespace_task), std::move(transition_task), std::move(raster_task));
@@ -182,14 +182,14 @@ TaskflowGenerator::UPtr createRasterWAADGenerator(bool enable_simple_planner, Pr
   FreespaceTaskflowParams fparams;
   fparams.enable_simple_planner = enable_simple_planner;
   fparams.profiles = profiles;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(fparams);
-  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(fparams);
+  TaskflowGenerator::UPtr freespace_task = std::make_unique<FreespaceTaskflow>(fparams);
+  TaskflowGenerator::UPtr transition_task = std::make_unique<FreespaceTaskflow>(fparams);
 
   // Create Raster Taskflow
   CartesianTaskflowParams cparams;
   cparams.enable_simple_planner = enable_simple_planner;
   cparams.profiles = profiles;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cparams);
+  TaskflowGenerator::UPtr raster_task = std::make_unique<CartesianTaskflow>(cparams);
 
   return std::make_unique<RasterWAADTaskflow>(
       std::move(freespace_task), std::move(transition_task), std::move(raster_task));
@@ -201,14 +201,14 @@ TaskflowGenerator::UPtr createRasterWAADDTGenerator(bool enable_simple_planner, 
   FreespaceTaskflowParams fparams;
   fparams.enable_simple_planner = enable_simple_planner;
   fparams.profiles = profiles;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(fparams);
-  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(fparams);
+  TaskflowGenerator::UPtr freespace_task = std::make_unique<FreespaceTaskflow>(fparams);
+  TaskflowGenerator::UPtr transition_task = std::make_unique<FreespaceTaskflow>(fparams);
 
   // Create Raster Taskflow
   CartesianTaskflowParams cparams;
   cparams.enable_simple_planner = enable_simple_planner;
   cparams.profiles = profiles;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cparams);
+  TaskflowGenerator::UPtr raster_task = std::make_unique<CartesianTaskflow>(cparams);
 
   return std::make_unique<RasterWAADDTTaskflow>(
       std::move(freespace_task), std::move(transition_task), std::move(raster_task));
@@ -223,18 +223,18 @@ TaskflowGenerator::UPtr createRasterOnlyGlobalGenerator(bool enable_simple_plann
   global_params.enable_post_contact_continuous_check = false;
   global_params.enable_time_parameterization = false;
   global_params.profiles = profiles;
-  GraphTaskflow::UPtr global_task = createDescartesTaskflow(global_params);
+  TaskflowGenerator::UPtr global_task = std::make_unique<DescartesTaskflow>(global_params);
 
   FreespaceTaskflowParams transition_params;
   transition_params.type = FreespaceTaskflowType::TRAJOPT_FIRST;
   transition_params.enable_simple_planner = false;
   transition_params.profiles = profiles;
-  GraphTaskflow::UPtr transition_task = createFreespaceTaskflow(transition_params);
+  TaskflowGenerator::UPtr transition_task = std::make_unique<FreespaceTaskflow>(transition_params);
 
   TrajOptTaskflowParams raster_params;
   raster_params.enable_simple_planner = false;
   raster_params.profiles = profiles;
-  GraphTaskflow::UPtr raster_task = createTrajOptTaskflow(raster_params);
+  TaskflowGenerator::UPtr raster_task = std::make_unique<TrajOptTaskflow>(raster_params);
 
   return std::make_unique<RasterOnlyGlobalTaskflow>(
       std::move(global_task), std::move(transition_task), std::move(raster_task));
@@ -246,14 +246,14 @@ TaskflowGenerator::UPtr createRasterCTGenerator(bool enable_simple_planner, Prof
   FreespaceTaskflowParams freespace_params;
   freespace_params.enable_simple_planner = enable_simple_planner;
   freespace_params.profiles = profiles;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(freespace_params);
+  TaskflowGenerator::UPtr freespace_task = std::make_unique<FreespaceTaskflow>(freespace_params);
 
   // Create Raster Taskflow
   CartesianTaskflowParams cartesian_params;
   cartesian_params.enable_simple_planner = enable_simple_planner;
   cartesian_params.profiles = profiles;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cartesian_params);
-  GraphTaskflow::UPtr transition_task = createCartesianTaskflow(cartesian_params);
+  TaskflowGenerator::UPtr raster_task = std::make_unique<CartesianTaskflow>(cartesian_params);
+  TaskflowGenerator::UPtr transition_task = std::make_unique<CartesianTaskflow>(cartesian_params);
 
   return std::make_unique<RasterTaskflow>(
       std::move(freespace_task), std::move(transition_task), std::move(raster_task));
@@ -265,8 +265,8 @@ TaskflowGenerator::UPtr createRasterOnlyCTGenerator(bool enable_simple_planner, 
   CartesianTaskflowParams cartesian_params;
   cartesian_params.enable_simple_planner = enable_simple_planner;
   cartesian_params.profiles = profiles;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cartesian_params);
-  GraphTaskflow::UPtr transition_task = createCartesianTaskflow(cartesian_params);
+  TaskflowGenerator::UPtr raster_task = std::make_unique<CartesianTaskflow>(cartesian_params);
+  TaskflowGenerator::UPtr transition_task = std::make_unique<CartesianTaskflow>(cartesian_params);
 
   return std::make_unique<RasterOnlyTaskflow>(std::move(transition_task), std::move(raster_task));
 }
@@ -277,14 +277,14 @@ TaskflowGenerator::UPtr createRasterCTDTGenerator(bool enable_simple_planner, Pr
   FreespaceTaskflowParams freespace_params;
   freespace_params.enable_simple_planner = enable_simple_planner;
   freespace_params.profiles = profiles;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(freespace_params);
+  TaskflowGenerator::UPtr freespace_task = std::make_unique<FreespaceTaskflow>(freespace_params);
 
   // Create Raster Taskflow
   CartesianTaskflowParams cartesian_params;
   cartesian_params.enable_simple_planner = enable_simple_planner;
   cartesian_params.profiles = profiles;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cartesian_params);
-  GraphTaskflow::UPtr transition_task = createCartesianTaskflow(cartesian_params);
+  TaskflowGenerator::UPtr raster_task = std::make_unique<CartesianTaskflow>(cartesian_params);
+  TaskflowGenerator::UPtr transition_task = std::make_unique<CartesianTaskflow>(cartesian_params);
 
   return std::make_unique<RasterDTTaskflow>(
       std::move(freespace_task), std::move(transition_task), std::move(raster_task));
@@ -296,14 +296,14 @@ TaskflowGenerator::UPtr createRasterCTWAADGenerator(bool enable_simple_planner, 
   FreespaceTaskflowParams freespace_params;
   freespace_params.enable_simple_planner = enable_simple_planner;
   freespace_params.profiles = profiles;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(freespace_params);
+  TaskflowGenerator::UPtr freespace_task = std::make_unique<FreespaceTaskflow>(freespace_params);
 
   // Create Raster Taskflow
   CartesianTaskflowParams cartesian_params;
   cartesian_params.enable_simple_planner = enable_simple_planner;
   cartesian_params.profiles = profiles;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cartesian_params);
-  GraphTaskflow::UPtr transition_task = createCartesianTaskflow(cartesian_params);
+  TaskflowGenerator::UPtr raster_task = std::make_unique<CartesianTaskflow>(cartesian_params);
+  TaskflowGenerator::UPtr transition_task = std::make_unique<CartesianTaskflow>(cartesian_params);
 
   return std::make_unique<RasterWAADTaskflow>(
       std::move(freespace_task), std::move(transition_task), std::move(raster_task));
@@ -315,14 +315,14 @@ TaskflowGenerator::UPtr createRasterCTWAADDTGenerator(bool enable_simple_planner
   FreespaceTaskflowParams freespace_params;
   freespace_params.enable_simple_planner = enable_simple_planner;
   freespace_params.profiles = profiles;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(freespace_params);
+  TaskflowGenerator::UPtr freespace_task = std::make_unique<FreespaceTaskflow>(freespace_params);
 
   // Create Raster Taskflow
   CartesianTaskflowParams cartesian_params;
   cartesian_params.enable_simple_planner = enable_simple_planner;
   cartesian_params.profiles = profiles;
-  GraphTaskflow::UPtr raster_task = createCartesianTaskflow(cartesian_params);
-  GraphTaskflow::UPtr transition_task = createCartesianTaskflow(cartesian_params);
+  TaskflowGenerator::UPtr raster_task = std::make_unique<CartesianTaskflow>(cartesian_params);
+  TaskflowGenerator::UPtr transition_task = std::make_unique<CartesianTaskflow>(cartesian_params);
 
   return std::make_unique<RasterWAADDTTaskflow>(
       std::move(freespace_task), std::move(transition_task), std::move(raster_task));
@@ -336,19 +336,19 @@ TaskflowGenerator::UPtr createRasterGlobalCTGenerator(bool enable_simple_planner
   global_params.enable_post_contact_continuous_check = false;
   global_params.enable_time_parameterization = false;
   global_params.profiles = profiles;
-  GraphTaskflow::UPtr global_task = createDescartesTaskflow(global_params);
+  TaskflowGenerator::UPtr global_task = std::make_unique<DescartesTaskflow>(global_params);
 
   FreespaceTaskflowParams freespace_params;
   freespace_params.type = FreespaceTaskflowType::TRAJOPT_FIRST;
   freespace_params.enable_simple_planner = false;
   freespace_params.profiles = profiles;
-  GraphTaskflow::UPtr freespace_task = createFreespaceTaskflow(freespace_params);
+  TaskflowGenerator::UPtr freespace_task = std::make_unique<FreespaceTaskflow>(freespace_params);
 
   TrajOptTaskflowParams raster_params;
   raster_params.enable_simple_planner = false;
   raster_params.profiles = profiles;
-  GraphTaskflow::UPtr raster_task = createTrajOptTaskflow(raster_params);
-  GraphTaskflow::UPtr transition_task = createTrajOptTaskflow(raster_params);
+  TaskflowGenerator::UPtr raster_task = std::make_unique<TrajOptTaskflow>(raster_params);
+  TaskflowGenerator::UPtr transition_task = std::make_unique<TrajOptTaskflow>(raster_params);
 
   return std::make_unique<RasterGlobalTaskflow>(
       std::move(global_task), std::move(freespace_task), std::move(transition_task), std::move(raster_task));
@@ -363,13 +363,13 @@ TaskflowGenerator::UPtr createRasterOnlyGlobalCTGenerator(bool enable_simple_pla
   global_params.enable_post_contact_continuous_check = false;
   global_params.enable_time_parameterization = false;
   global_params.profiles = profiles;
-  GraphTaskflow::UPtr global_task = createDescartesTaskflow(global_params);
+  TaskflowGenerator::UPtr global_task = std::make_unique<DescartesTaskflow>(global_params);
 
   TrajOptTaskflowParams raster_params;
   raster_params.enable_simple_planner = false;
   raster_params.profiles = profiles;
-  GraphTaskflow::UPtr raster_task = createTrajOptTaskflow(raster_params);
-  GraphTaskflow::UPtr transition_task = createTrajOptTaskflow(raster_params);
+  TaskflowGenerator::UPtr raster_task = std::make_unique<TrajOptTaskflow>(raster_params);
+  TaskflowGenerator::UPtr transition_task = std::make_unique<TrajOptTaskflow>(raster_params);
 
   return std::make_unique<RasterOnlyGlobalTaskflow>(
       std::move(global_task), std::move(transition_task), std::move(raster_task));

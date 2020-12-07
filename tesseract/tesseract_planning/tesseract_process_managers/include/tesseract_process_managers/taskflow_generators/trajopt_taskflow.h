@@ -26,6 +26,14 @@
 #ifndef TESSERACT_PROCESS_MANAGERS_TRAJOPT_TASKFLOW_H
 #define TESSERACT_PROCESS_MANAGERS_TRAJOPT_TASKFLOW_H
 
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <functional>
+#include <vector>
+#include <thread>
+#include <taskflow/taskflow.hpp>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
 #include <tesseract_process_managers/taskflow_generators/graph_taskflow.h>
 #include <tesseract_motion_planners/core/profile_dictionary.h>
 
@@ -40,6 +48,44 @@ struct TrajOptTaskflowParams
   ProfileDictionary::ConstPtr profiles;
 };
 
-GraphTaskflow::UPtr createTrajOptTaskflow(TrajOptTaskflowParams params);
+class TrajOptTaskflow : public TaskflowGenerator
+{
+public:
+  using UPtr = std::unique_ptr<TrajOptTaskflow>;
+
+  TrajOptTaskflow(TrajOptTaskflowParams params, std::string name = "TrajOptTaskflow");
+  ~TrajOptTaskflow() override = default;
+  TrajOptTaskflow(const TrajOptTaskflow&) = delete;
+  TrajOptTaskflow& operator=(const TrajOptTaskflow&) = delete;
+  TrajOptTaskflow(TrajOptTaskflow&&) = delete;
+  TrajOptTaskflow& operator=(TrajOptTaskflow&&) = delete;
+
+  const std::string& getName() const override;
+
+  tf::Taskflow& generateTaskflow(ProcessInput input,
+                                 std::function<void()> done_cb,
+                                 std::function<void()> error_cb) override;
+
+  void abort() override;
+
+  void reset() override;
+
+  void clear() override;
+
+private:
+  std::string name_;
+  TrajOptTaskflowParams params_;
+  GraphTaskflow::UPtr generator_;
+
+  void successCallback(std::function<void()> user_callback);
+  void failureCallback(std::function<void()> user_callback);
+
+  /**
+   * @brief Checks that the ProcessInput is in the correct format.
+   * @param input ProcessInput to be checked
+   * @return True if in the correct format
+   */
+  bool checkProcessInput(const ProcessInput& input) const;
+};
 }  // namespace tesseract_planning
 #endif  // TESSERACT_PROCESS_MANAGERS_TRAJOPT_TASKFLOW_H
