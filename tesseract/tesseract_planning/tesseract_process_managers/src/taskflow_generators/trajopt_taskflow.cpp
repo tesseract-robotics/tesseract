@@ -1,6 +1,6 @@
 /**
- * @file simple_cartesian_taskflow.h
- * @brief Simple Cartesian Graph Taskflow
+ * @file trajopt_taskflow.cpp
+ * @brief TrajOpt Graph Taskflow
  *
  * @author Levi Armstrong
  * @date August 27, 2020
@@ -23,7 +23,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tesseract_process_managers/taskflows/cartesian_taskflow.h>
+#include <tesseract_common/macros.h>
+TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <functional>
+TESSERACT_COMMON_IGNORE_WARNINGS_POP
+
+#include <tesseract_process_managers/taskflow_generators/trajopt_taskflow.h>
+
 #include <tesseract_process_managers/process_generators/motion_planner_process_generator.h>
 #include <tesseract_process_managers/process_generators/continuous_contact_check_process_generator.h>
 #include <tesseract_process_managers/process_generators/discrete_contact_check_process_generator.h>
@@ -33,24 +39,15 @@
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
 #include <tesseract_motion_planners/simple/profile/simple_planner_profile.h>
 
-#include <tesseract_motion_planners/descartes/descartes_motion_planner.h>
-#include <tesseract_motion_planners/descartes/problem_generators/default_problem_generator.h>
-#include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
-
 #include <tesseract_motion_planners/trajopt/trajopt_motion_planner.h>
 #include <tesseract_motion_planners/trajopt/problem_generators/default_problem_generator.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
 
-namespace tesseract_planning
-{
-GraphTaskflow::UPtr createCartesianTaskflow(CartesianTaskflowParams params)
-{
-  auto graph = std::make_unique<GraphTaskflow>();
+using namespace tesseract_planning;
 
-  ///////////////////
-  /// Add Process ///
-  ///////////////////
-
+TrajOptTaskflow::TrajOptTaskflow(TrajOptTaskflowParams params, std::string name)
+  : name_(name), params_(params), generator_(std::make_unique<GraphTaskflow>(name_))
+{
   // Setup Interpolator
   int interpolator_idx{ -1 };
   if (params.enable_simple_planner)
@@ -65,25 +62,15 @@ GraphTaskflow::UPtr createCartesianTaskflow(CartesianTaskflowParams params)
         interpolator->composite_profiles = params.profiles->getProfileEntry<SimplePlannerCompositeProfile>();
     }
     auto interpolator_generator = std::make_unique<MotionPlannerProcessGenerator>(interpolator);
-    interpolator_idx = graph->addNode(std::move(interpolator_generator), GraphTaskflow::NodeType::CONDITIONAL);
+    interpolator_idx = generator_->addNode(std::move(interpolator_generator), GraphTaskflow::NodeType::CONDITIONAL);
   }
 
   // Setup Seed Min Length Process Generator
   // This is required because trajopt requires a minimum length trajectory. This is used to correct the seed if it is
   // to short.
   auto seed_min_length_generator = std::make_unique<SeedMinLengthProcessGenerator>();
-  int seed_min_length_idx = graph->addNode(std::move(seed_min_length_generator), GraphTaskflow::NodeType::CONDITIONAL);
-
-  // Setup Descartes
-  auto descartes_planner = std::make_shared<DescartesMotionPlanner<double>>();
-  descartes_planner->problem_generator = &DefaultDescartesProblemGenerator<double>;
-  if (params.profiles)
-  {
-    if (params.profiles->hasProfileEntry<DescartesPlanProfile<double>>())
-      descartes_planner->plan_profiles = params.profiles->getProfileEntry<DescartesPlanProfile<double>>();
-  }
-  auto descartes_generator = std::make_unique<MotionPlannerProcessGenerator>(descartes_planner);
-  int descartes_idx = graph->addNode(std::move(descartes_generator), GraphTaskflow::NodeType::CONDITIONAL);
+  int seed_min_length_idx =
+      generator_->addNode(std::move(seed_min_length_generator), GraphTaskflow::NodeType::CONDITIONAL);
 
   // Setup TrajOpt
   auto trajopt_planner = std::make_shared<TrajOptMotionPlanner>();
@@ -97,19 +84,19 @@ GraphTaskflow::UPtr createCartesianTaskflow(CartesianTaskflowParams params)
       trajopt_planner->composite_profiles = params.profiles->getProfileEntry<TrajOptCompositeProfile>();
   }
   auto trajopt_generator = std::make_unique<MotionPlannerProcessGenerator>(trajopt_planner);
-  int trajopt_idx = graph->addNode(std::move(trajopt_generator), GraphTaskflow::NodeType::CONDITIONAL);
+  int trajopt_idx = generator_->addNode(std::move(trajopt_generator), GraphTaskflow::NodeType::CONDITIONAL);
 
   // Add Final Continuous Contact Check of trajectory
   int contact_check_idx{ -1 };
   if (params.enable_post_contact_continuous_check)
   {
     auto contact_check_generator = std::make_unique<ContinuousContactCheckProcessGenerator>();
-    contact_check_idx = graph->addNode(std::move(contact_check_generator), GraphTaskflow::NodeType::CONDITIONAL);
+    contact_check_idx = generator_->addNode(std::move(contact_check_generator), GraphTaskflow::NodeType::CONDITIONAL);
   }
   else if (params.enable_post_contact_discrete_check)
   {
     auto contact_check_generator = std::make_unique<DiscreteContactCheckProcessGenerator>();
-    contact_check_idx = graph->addNode(std::move(contact_check_generator), GraphTaskflow::NodeType::CONDITIONAL);
+    contact_check_idx = generator_->addNode(std::move(contact_check_generator), GraphTaskflow::NodeType::CONDITIONAL);
   }
 
   // Time parameterization trajectory
@@ -118,8 +105,9 @@ GraphTaskflow::UPtr createCartesianTaskflow(CartesianTaskflowParams params)
   {
     auto time_parameterization_generator = std::make_unique<IterativeSplineParameterizationProcessGenerator>();
     time_parameterization_idx =
-        graph->addNode(std::move(time_parameterization_generator), GraphTaskflow::NodeType::CONDITIONAL);
+        generator_->addNode(std::move(time_parameterization_generator), GraphTaskflow::NodeType::CONDITIONAL);
   }
+
   /////////////////
   /// Add Edges ///
   /////////////////
@@ -128,42 +116,95 @@ GraphTaskflow::UPtr createCartesianTaskflow(CartesianTaskflowParams params)
   auto PROCESS_NODE = GraphTaskflow::DestinationChannel::PROCESS_NODE;
   auto ERROR_CALLBACK = GraphTaskflow::DestinationChannel::ERROR_CALLBACK;
   auto DONE_CALLBACK = GraphTaskflow::DestinationChannel::DONE_CALLBACK;
-
   if (params.enable_simple_planner)
   {
-    graph->addEdge(interpolator_idx, ON_SUCCESS, seed_min_length_idx, PROCESS_NODE);
-    graph->addEdge(interpolator_idx, ON_FAILURE, -1, ERROR_CALLBACK);
+    generator_->addEdge(interpolator_idx, ON_SUCCESS, seed_min_length_idx, PROCESS_NODE);
+    generator_->addEdge(interpolator_idx, ON_FAILURE, -1, ERROR_CALLBACK);
   }
 
-  graph->addEdge(seed_min_length_idx, ON_SUCCESS, descartes_idx, PROCESS_NODE);
-  graph->addEdge(seed_min_length_idx, ON_FAILURE, -1, ERROR_CALLBACK);
+  generator_->addEdge(seed_min_length_idx, ON_SUCCESS, trajopt_idx, PROCESS_NODE);
+  generator_->addEdge(seed_min_length_idx, ON_FAILURE, -1, ERROR_CALLBACK);
 
-  graph->addEdge(descartes_idx, ON_SUCCESS, trajopt_idx, PROCESS_NODE);
-  graph->addEdge(descartes_idx, ON_FAILURE, -1, ERROR_CALLBACK);
-
-  graph->addEdge(trajopt_idx, ON_FAILURE, -1, ERROR_CALLBACK);
+  generator_->addEdge(trajopt_idx, ON_FAILURE, -1, ERROR_CALLBACK);
   if (params.enable_post_contact_continuous_check || params.enable_post_contact_discrete_check)
-    graph->addEdge(trajopt_idx, ON_SUCCESS, contact_check_idx, PROCESS_NODE);
+    generator_->addEdge(trajopt_idx, ON_SUCCESS, contact_check_idx, PROCESS_NODE);
   else if (params.enable_time_parameterization)
-    graph->addEdge(trajopt_idx, ON_SUCCESS, time_parameterization_idx, PROCESS_NODE);
+    generator_->addEdge(trajopt_idx, ON_SUCCESS, time_parameterization_idx, PROCESS_NODE);
   else
-    graph->addEdge(trajopt_idx, ON_SUCCESS, -1, DONE_CALLBACK);
+    generator_->addEdge(trajopt_idx, ON_SUCCESS, -1, DONE_CALLBACK);
 
   if (params.enable_post_contact_continuous_check || params.enable_post_contact_discrete_check)
   {
-    graph->addEdge(contact_check_idx, ON_FAILURE, -1, ERROR_CALLBACK);
+    generator_->addEdge(contact_check_idx, ON_FAILURE, -1, ERROR_CALLBACK);
     if (params.enable_time_parameterization)
-      graph->addEdge(contact_check_idx, ON_SUCCESS, time_parameterization_idx, PROCESS_NODE);
+      generator_->addEdge(contact_check_idx, ON_SUCCESS, time_parameterization_idx, PROCESS_NODE);
     else
-      graph->addEdge(contact_check_idx, ON_SUCCESS, -1, DONE_CALLBACK);
+      generator_->addEdge(contact_check_idx, ON_SUCCESS, -1, DONE_CALLBACK);
   }
 
   if (params.enable_time_parameterization)
   {
-    graph->addEdge(time_parameterization_idx, ON_SUCCESS, -1, DONE_CALLBACK);
-    graph->addEdge(time_parameterization_idx, ON_FAILURE, -1, ERROR_CALLBACK);
+    generator_->addEdge(time_parameterization_idx, ON_SUCCESS, -1, DONE_CALLBACK);
+    generator_->addEdge(time_parameterization_idx, ON_FAILURE, -1, ERROR_CALLBACK);
+  }
+}
+
+const std::string& TrajOptTaskflow::getName() const { return name_; }
+
+tf::Taskflow& TrajOptTaskflow::generateTaskflow(ProcessInput input,
+                                                std::function<void()> done_cb,
+                                                std::function<void()> error_cb)
+{
+  // This should make all of the isComposite checks so that you can safely cast below
+  if (!checkProcessInput(input))
+  {
+    CONSOLE_BRIDGE_logError("Invalid Process Input");
+    throw std::runtime_error("Invalid Process Input");
   }
 
-  return graph;
+  return generator_->generateTaskflow(input, done_cb, error_cb);
 }
-}  // namespace tesseract_planning
+
+void TrajOptTaskflow::abort() { generator_->abort(); }
+
+void TrajOptTaskflow::reset() { generator_->reset(); }
+
+void TrajOptTaskflow::clear() { generator_->clear(); }
+
+bool TrajOptTaskflow::checkProcessInput(const tesseract_planning::ProcessInput& input) const
+{
+  // Check Input
+  if (!input.tesseract)
+  {
+    CONSOLE_BRIDGE_logError("ProcessInput tesseract is a nullptr");
+    return false;
+  }
+
+  // Check the overall input
+  const Instruction* input_instruction = input.getInstruction();
+  if (!isCompositeInstruction(*input_instruction))
+  {
+    CONSOLE_BRIDGE_logError("ProcessInput Invalid: input.instructions should be a composite");
+    return false;
+  }
+
+  return true;
+}
+
+void TrajOptTaskflow::successCallback(std::function<void()> user_callback)
+{
+  CONSOLE_BRIDGE_logInform("%s Successful", name_.c_str());
+  if (user_callback)
+    user_callback();
+}
+
+void TrajOptTaskflow::failureCallback(std::function<void()> user_callback)
+{
+  // For this process, any failure of a sub-TaskFlow indicates a planning failure. Abort all future tasks
+  generator_->abort();
+
+  // Print an error if this is the first failure
+  CONSOLE_BRIDGE_logError("%s Failure", name_.c_str());
+  if (user_callback)
+    user_callback();
+}
