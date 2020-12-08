@@ -280,8 +280,8 @@ void ProcessInput::addProcessInfo(const ProcessInfo::ConstPtr& process_info)
 {
   process_infos->addProcessInfo(process_info);
 }
-ProcessInfo::ConstPtr ProcessInput::getProcessInfo(const std::size_t& index) { return (*process_infos)[index]; }
-std::map<std::size_t, ProcessInfo::ConstPtr> ProcessInput::getProcessInfoMap()
+ProcessInfo::ConstPtr ProcessInput::getProcessInfo(const std::size_t& index) const { return (*process_infos)[index]; }
+std::map<std::size_t, ProcessInfo::ConstPtr> ProcessInput::getProcessInfoMap() const
 {
   return process_infos->getProcessInfoMap();
 }
