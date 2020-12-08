@@ -45,7 +45,13 @@ public:
   using Ptr = std::shared_ptr<ProcessInfo>;
   using ConstPtr = std::shared_ptr<const ProcessInfo>;
 
-  ProcessInfo(std::size_t unique_id, std::string name = "") : unique_id(unique_id), message(std::move(name)) {}
+  ProcessInfo(std::size_t unique_id, std::string name = "") : unique_id(unique_id), process_name(std::move(name)) {}
+
+  virtual ~ProcessInfo() = default;
+  ProcessInfo(const ProcessInfo&) = default;
+  ProcessInfo& operator=(const ProcessInfo&) = default;
+  ProcessInfo(ProcessInfo&&) = default;
+  ProcessInfo& operator=(ProcessInfo&&) = default;
 
   int return_value;
 
@@ -164,8 +170,8 @@ struct ProcessInput
   Instruction getEndInstruction() const;
 
   void addProcessInfo(const ProcessInfo::ConstPtr& process_info);
-  ProcessInfo::ConstPtr getProcessInfo(const std::size_t& index);
-  std::map<std::size_t, ProcessInfo::ConstPtr> getProcessInfoMap();
+  ProcessInfo::ConstPtr getProcessInfo(const std::size_t& index) const;
+  std::map<std::size_t, ProcessInfo::ConstPtr> getProcessInfoMap() const;
 
 protected:
   /** @brief Instructions to be carried out by process */
