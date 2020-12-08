@@ -71,7 +71,7 @@ TEST_F(FixStateCollisionProcessGeneratorUnit, StateInCollisionTest)
   CompositeInstruction program = freespaceExampleProgramABB();
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
-  ProcessInput input(tesseract_ptr_, &program_instruction, manip_, &seed);
+  ProcessInput input(tesseract_ptr_, &program_instruction, manip_, &seed, nullptr);
 
   FixStateCollisionProfile profile;
 
@@ -110,7 +110,7 @@ TEST_F(FixStateCollisionProcessGeneratorUnit, WaypointInCollisionTest)
   CompositeInstruction program = freespaceExampleProgramABB();
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
-  ProcessInput input(tesseract_ptr_, &program_instruction, manip_, &seed);
+  ProcessInput input(tesseract_ptr_, &program_instruction, manip_, &seed, nullptr);
 
   FixStateCollisionProfile profile;
 
@@ -157,7 +157,7 @@ TEST_F(FixStateCollisionProcessGeneratorUnit, MoveWaypointFromCollisionRandomSam
   CompositeInstruction program = freespaceExampleProgramABB();
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
-  ProcessInput input(tesseract_ptr_, &program_instruction, manip_, &seed);
+  ProcessInput input(tesseract_ptr_, &program_instruction, manip_, &seed, nullptr);
 
   FixStateCollisionProfile profile;
 
@@ -189,7 +189,7 @@ TEST_F(FixStateCollisionProcessGeneratorUnit, MoveWaypointFromCollisionTrajoptTe
   CompositeInstruction program = freespaceExampleProgramABB();
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
-  ProcessInput input(tesseract_ptr_, &program_instruction, manip_, &seed);
+  ProcessInput input(tesseract_ptr_, &program_instruction, manip_, &seed, nullptr);
 
   FixStateCollisionProfile profile;
 

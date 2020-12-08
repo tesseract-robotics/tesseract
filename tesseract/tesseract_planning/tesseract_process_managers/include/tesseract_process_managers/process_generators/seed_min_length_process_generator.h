@@ -30,7 +30,6 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
-#include <atomic>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_process_managers/process_generator.h>
@@ -58,14 +57,7 @@ public:
 
   std::function<int()> generateConditionalTask(ProcessInput input, std::size_t unique_id) override;
 
-  bool getAbort() const override;
-
-  void setAbort(bool abort) override;
-
 private:
-  /** @brief If true, all tasks return immediately. Workaround for https://github.com/taskflow/taskflow/issues/201 */
-  std::atomic<bool> abort_{ false };
-
   std::string name_;
 
   long min_length_{ 10 };
