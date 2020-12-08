@@ -48,15 +48,14 @@ RasterDTTaskflow::RasterDTTaskflow(TaskflowGenerator::UPtr freespace_taskflow_ge
   , transition_taskflow_generator_(std::move(transition_taskflow_generator))
   , raster_taskflow_generator_(std::move(raster_taskflow_generator))
   , name_(name)
-  , taskflow_(name)
 {
 }
 
 const std::string& RasterDTTaskflow::getName() const { return name_; }
 
-tf::Taskflow& RasterDTTaskflow::generateTaskflow(ProcessInput input,
-                                                 std::function<void()> done_cb,
-                                                 std::function<void()> error_cb)
+TaskflowContainer RasterDTTaskflow::generateTaskflow(ProcessInput input,
+                                                     std::function<void()> done_cb,
+                                                     std::function<void()> error_cb)
 {
   // This should make all of the isComposite checks so that you can safely cast below
   if (!checkProcessInput(input))
@@ -65,13 +64,13 @@ tf::Taskflow& RasterDTTaskflow::generateTaskflow(ProcessInput input,
     throw std::runtime_error("Invalid Process Input");
   }
 
-  // Clear the process manager
-  clear();
-
-  // Store the current size of the tasks so that we can add from_start later
-  std::size_t starting_raster_idx = raster_tasks_.size();
+  TaskflowContainer container;
+  container.taskflow = std::make_unique<tf::Taskflow>(name_);
+  container.input = container.taskflow->emplace([]() {}).name(name_ + ": Input Task");
+  std::vector<tf::Task> tasks;
 
   // Generate all of the raster tasks. They don't depend on anything
+  std::size_t raster_idx = 0;
   for (std::size_t idx = 1; idx < input.size() - 1; idx += 2)
   {
     // Get Start Plan Instruction
@@ -98,18 +97,17 @@ tf::Taskflow& RasterDTTaskflow::generateTaskflow(ProcessInput input,
     start_instruction.cast<PlanInstruction>()->setPlanType(PlanInstructionType::START);
     ProcessInput raster_input = input[idx];
     raster_input.setStartInstruction(start_instruction);
+    TaskflowContainer sub_container = raster_taskflow_generator_->generateTaskflow(
+        raster_input,
+        std::bind(&successTask, input, name_, raster_input.getInstruction()->getDescription(), done_cb),
+        std::bind(&failureTask, input, name_, raster_input.getInstruction()->getDescription(), error_cb));
+
     auto raster_step =
-        taskflow_
-            .composed_of(raster_taskflow_generator_->generateTaskflow(
-                raster_input,
-                std::bind(
-                    &RasterDTTaskflow::successCallback, this, raster_input.getInstruction()->getDescription(), done_cb),
-                std::bind(&RasterDTTaskflow::failureCallback,
-                          this,
-                          raster_input.getInstruction()->getDescription(),
-                          error_cb)))
-            .name("raster_" + std::to_string(idx));
-    raster_tasks_.push_back(raster_step);
+        container.taskflow->composed_of(*(sub_container.taskflow)).name("raster_" + std::to_string(raster_idx + 1));
+    container.containers.push_back(std::move(sub_container));
+    container.input.precede(raster_step);
+    tasks.push_back(raster_step);
+    raster_idx++;
   }
 
   // Loop over all transitions
@@ -124,46 +122,34 @@ tf::Taskflow& RasterDTTaskflow::generateTaskflow(ProcessInput input,
     ProcessInput transition_from_end_input = input[input_idx][0];
     transition_from_end_input.setStartInstruction(std::vector<std::size_t>({ input_idx - 1 }));
     transition_from_end_input.setEndInstruction(std::vector<std::size_t>({ input_idx + 1 }));
-    auto transition_from_end_step = taskflow_
-                                        .composed_of(transition_taskflow_generator_->generateTaskflow(
-                                            transition_from_end_input,
-                                            std::bind(&RasterDTTaskflow::successCallback,
-                                                      this,
-                                                      transition_from_end_input.getInstruction()->getDescription(),
-                                                      done_cb),
-                                            std::bind(&RasterDTTaskflow::failureCallback,
-                                                      this,
-                                                      transition_from_end_input.getInstruction()->getDescription(),
-                                                      error_cb)))
-                                        .name("transition_from_end" + std::to_string(input_idx));
+    TaskflowContainer sub_container1 = transition_taskflow_generator_->generateTaskflow(
+        transition_from_end_input,
+        std::bind(&successTask, input, name_, transition_from_end_input.getInstruction()->getDescription(), done_cb),
+        std::bind(&failureTask, input, name_, transition_from_end_input.getInstruction()->getDescription(), error_cb));
+
+    auto transition_from_end_step = container.taskflow->composed_of(*(sub_container1.taskflow))
+                                        .name("transition_from_end_" + std::to_string(transition_idx + 1));
+    container.containers.push_back(std::move(sub_container1));
 
     // Each transition is independent and thus depends only on the adjacent rasters
-    transition_from_end_step.succeed(raster_tasks_[starting_raster_idx + transition_idx]);
-    transition_from_end_step.succeed(raster_tasks_[starting_raster_idx + transition_idx + 1]);
-
-    transition_tasks_.push_back(transition_from_end_step);
+    transition_from_end_step.succeed(tasks[transition_idx]);
+    transition_from_end_step.succeed(tasks[transition_idx + 1]);
 
     ProcessInput transition_to_start_input = input[input_idx][1];
     transition_to_start_input.setStartInstruction(std::vector<std::size_t>({ input_idx + 1 }));
     transition_to_start_input.setEndInstruction(std::vector<std::size_t>({ input_idx - 1 }));
-    auto transition_to_start_step = taskflow_
-                                        .composed_of(transition_taskflow_generator_->generateTaskflow(
-                                            transition_to_start_input,
-                                            std::bind(&RasterDTTaskflow::successCallback,
-                                                      this,
-                                                      transition_to_start_input.getInstruction()->getDescription(),
-                                                      done_cb),
-                                            std::bind(&RasterDTTaskflow::failureCallback,
-                                                      this,
-                                                      transition_to_start_input.getInstruction()->getDescription(),
-                                                      error_cb)))
-                                        .name("transition_to_start" + std::to_string(input_idx));
+    TaskflowContainer sub_container2 = transition_taskflow_generator_->generateTaskflow(
+        transition_to_start_input,
+        std::bind(&successTask, input, name_, transition_to_start_input.getInstruction()->getDescription(), done_cb),
+        std::bind(&failureTask, input, name_, transition_to_start_input.getInstruction()->getDescription(), error_cb));
+
+    auto transition_to_start_step = container.taskflow->composed_of(*(sub_container2.taskflow))
+                                        .name("transition_to_start" + std::to_string(transition_idx + 1));
+    container.containers.push_back(std::move(sub_container2));
 
     // Each transition is independent and thus depends only on the adjacent rasters
-    transition_to_start_step.succeed(raster_tasks_[starting_raster_idx + transition_idx]);
-    transition_to_start_step.succeed(raster_tasks_[starting_raster_idx + transition_idx + 1]);
-
-    transition_tasks_.push_back(transition_to_start_step);
+    transition_to_start_step.succeed(tasks[transition_idx]);
+    transition_to_start_step.succeed(tasks[transition_idx + 1]);
 
     transition_idx++;
   }
@@ -173,64 +159,28 @@ tf::Taskflow& RasterDTTaskflow::generateTaskflow(ProcessInput input,
   from_start_input.setStartInstruction(
       input.getInstruction()->cast_const<CompositeInstruction>()->getStartInstruction());
   from_start_input.setEndInstruction(std::vector<std::size_t>({ 1 }));
-  auto from_start = taskflow_
-                        .composed_of(freespace_taskflow_generator_->generateTaskflow(
-                            from_start_input,
-                            std::bind(&RasterDTTaskflow::successCallback,
-                                      this,
-                                      from_start_input.getInstruction()->getDescription(),
-                                      done_cb),
-                            std::bind(&RasterDTTaskflow::failureCallback,
-                                      this,
-                                      from_start_input.getInstruction()->getDescription(),
-                                      error_cb)))
-                        .name("from_start");
-  raster_tasks_[starting_raster_idx].precede(from_start);
-  freespace_tasks_.push_back(from_start);
+  TaskflowContainer sub_container1 = freespace_taskflow_generator_->generateTaskflow(
+      from_start_input,
+      std::bind(&successTask, input, name_, from_start_input.getInstruction()->getDescription(), done_cb),
+      std::bind(&failureTask, input, name_, from_start_input.getInstruction()->getDescription(), error_cb));
+
+  auto from_start = container.taskflow->composed_of(*(sub_container1.taskflow)).name("from_start");
+  container.containers.push_back(std::move(sub_container1));
+  tasks[0].precede(from_start);
 
   // Plan to_end - preceded by the last raster
   ProcessInput to_end_input = input[input.size() - 1];
   to_end_input.setStartInstruction(std::vector<std::size_t>({ input.size() - 2 }));
-  auto to_end =
-      taskflow_
-          .composed_of(freespace_taskflow_generator_->generateTaskflow(
-              to_end_input,
-              std::bind(
-                  &RasterDTTaskflow::successCallback, this, to_end_input.getInstruction()->getDescription(), done_cb),
-              std::bind(
-                  &RasterDTTaskflow::failureCallback, this, to_end_input.getInstruction()->getDescription(), error_cb)))
-          .name("to_end");
-  raster_tasks_.back().precede(to_end);
-  freespace_tasks_.push_back(to_end);
+  TaskflowContainer sub_container2 = freespace_taskflow_generator_->generateTaskflow(
+      to_end_input,
+      std::bind(&successTask, input, name_, to_end_input.getInstruction()->getDescription(), done_cb),
+      std::bind(&failureTask, input, name_, to_end_input.getInstruction()->getDescription(), error_cb));
 
-  return taskflow_;
-}
+  auto to_end = container.taskflow->composed_of(*(sub_container2.taskflow)).name("to_end");
+  container.containers.push_back(std::move(sub_container2));
+  tasks.back().precede(to_end);
 
-void RasterDTTaskflow::abort()
-{
-  freespace_taskflow_generator_->abort();
-  transition_taskflow_generator_->abort();
-  raster_taskflow_generator_->abort();
-
-  CONSOLE_BRIDGE_logError("Terminating Taskflow");
-}
-
-void RasterDTTaskflow::reset()
-{
-  freespace_taskflow_generator_->reset();
-  transition_taskflow_generator_->reset();
-  raster_taskflow_generator_->reset();
-}
-
-void RasterDTTaskflow::clear()
-
-{
-  freespace_taskflow_generator_->clear();
-  transition_taskflow_generator_->clear();
-  raster_taskflow_generator_->clear();
-  taskflow_.clear();
-  freespace_tasks_.clear();
-  raster_tasks_.clear();
+  return container;
 }
 
 bool RasterDTTaskflow::checkProcessInput(const tesseract_planning::ProcessInput& input) const
@@ -323,24 +273,4 @@ bool RasterDTTaskflow::checkProcessInput(const tesseract_planning::ProcessInput&
   };
 
   return true;
-}
-
-void RasterDTTaskflow::successCallback(std::string message, std::function<void()> user_callback)
-{
-  CONSOLE_BRIDGE_logInform("%s Successful: %s", name_.c_str(), message.c_str());
-  if (user_callback)
-    user_callback();
-}
-
-void RasterDTTaskflow::failureCallback(std::string message, std::function<void()> user_callback)
-{
-  // For this process, any failure of a sub-TaskFlow indicates a planning failure. Abort all future tasks
-  freespace_taskflow_generator_->abort();
-  transition_taskflow_generator_->abort();
-  raster_taskflow_generator_->abort();
-  // Print an error if this is the first failure
-  CONSOLE_BRIDGE_logError("%s Failure: %s", name_.c_str(), message.c_str());
-
-  if (user_callback)
-    user_callback();
 }

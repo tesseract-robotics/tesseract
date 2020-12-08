@@ -74,32 +74,17 @@ public:
 
   const std::string& getName() const override;
 
-  tf::Taskflow& generateTaskflow(ProcessInput input,
-                                 std::function<void()> done_cb,
-                                 std::function<void()> error_cb) override;
-
-  void abort() override;
-
-  void reset() override;
-
-  void clear() override;
+  TaskflowContainer generateTaskflow(ProcessInput input,
+                                     std::function<void()> done_cb,
+                                     std::function<void()> error_cb) override;
 
 private:
   TaskflowGenerator::UPtr global_taskflow_generator_;
   TaskflowGenerator::UPtr transition_taskflow_generator_;
   TaskflowGenerator::UPtr raster_taskflow_generator_;
   std::string name_;
-  tf::Taskflow taskflow_;
-
-  tf::Task global_task_;
-  tf::Task global_post_task_;
-  std::vector<tf::Task> transition_tasks_;
-  std::vector<tf::Task> raster_tasks_;
 
   static void globalPostProcess(ProcessInput input);
-
-  void successCallback(std::string message, std::function<void()> user_callback);
-  void failureCallback(std::string message, std::function<void()> user_callback);
 
   /**
    * @brief Checks that the ProcessInput is in the correct format.

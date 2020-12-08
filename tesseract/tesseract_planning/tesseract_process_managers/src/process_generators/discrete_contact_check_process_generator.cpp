@@ -72,7 +72,7 @@ std::function<int()> DiscreteContactCheckProcessGenerator::generateConditionalTa
 
 int DiscreteContactCheckProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
-  if (abort_)
+  if (input.isAborted())
     return 0;
 
   auto info = std::make_shared<DiscreteContactCheckProcessInfo>(unique_id, name_);
@@ -136,9 +136,6 @@ void DiscreteContactCheckProcessGenerator::process(ProcessInput input, std::size
 {
   conditionalProcess(input, unique_id);
 }
-
-bool DiscreteContactCheckProcessGenerator::getAbort() const { return abort_; }
-void DiscreteContactCheckProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 
 DiscreteContactCheckProcessInfo::DiscreteContactCheckProcessInfo(std::size_t unique_id, std::string name)
   : ProcessInfo(unique_id, std::move(name))

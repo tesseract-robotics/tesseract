@@ -33,18 +33,16 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <taskflow/taskflow.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/taskflow_generators/graph_taskflow.h>
+#include <tesseract_process_managers/taskflow_generator.h>
 #include <tesseract_motion_planners/core/profile_dictionary.h>
 
 namespace tesseract_planning
 {
 struct OMPLTaskflowParams
 {
-  bool enable_simple_planner{ true };
   bool enable_post_contact_discrete_check{ false };
   bool enable_post_contact_continuous_check{ true };
   bool enable_time_parameterization{ true };
-  ProfileDictionary::ConstPtr profiles;
 };
 
 class OMPLTaskflow : public TaskflowGenerator
@@ -61,23 +59,13 @@ public:
 
   const std::string& getName() const override;
 
-  tf::Taskflow& generateTaskflow(ProcessInput input,
-                                 std::function<void()> done_cb,
-                                 std::function<void()> error_cb) override;
-
-  void abort() override;
-
-  void reset() override;
-
-  void clear() override;
+  TaskflowContainer generateTaskflow(ProcessInput input,
+                                     std::function<void()> done_cb,
+                                     std::function<void()> error_cb) override;
 
 private:
   std::string name_;
   OMPLTaskflowParams params_;
-  GraphTaskflow::UPtr generator_;
-
-  void successCallback(std::function<void()> user_callback);
-  void failureCallback(std::function<void()> user_callback);
 
   /**
    * @brief Checks that the ProcessInput is in the correct format.

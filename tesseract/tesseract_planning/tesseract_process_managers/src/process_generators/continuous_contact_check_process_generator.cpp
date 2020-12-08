@@ -73,7 +73,7 @@ std::function<int()> ContinuousContactCheckProcessGenerator::generateConditional
 
 int ContinuousContactCheckProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
-  if (abort_)
+  if (input.isAborted())
     return 0;
 
   auto info = std::make_shared<ContinuousContactCheckProcessInfo>(unique_id, name_);
@@ -137,9 +137,6 @@ void ContinuousContactCheckProcessGenerator::process(ProcessInput input, std::si
 {
   conditionalProcess(input, unique_id);
 }
-
-bool ContinuousContactCheckProcessGenerator::getAbort() const { return abort_; }
-void ContinuousContactCheckProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 
 ContinuousContactCheckProcessInfo::ContinuousContactCheckProcessInfo(std::size_t unique_id, std::string name)
   : ProcessInfo(unique_id, std::move(name))

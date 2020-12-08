@@ -48,15 +48,14 @@ RasterOnlyGlobalTaskflow::RasterOnlyGlobalTaskflow(TaskflowGenerator::UPtr globa
   , transition_taskflow_generator_(std::move(transition_taskflow_generator))
   , raster_taskflow_generator_(std::move(raster_taskflow_generator))
   , name_(name)
-  , taskflow_(name)
 {
 }
 
 const std::string& RasterOnlyGlobalTaskflow::getName() const { return name_; }
 
-tf::Taskflow& RasterOnlyGlobalTaskflow::generateTaskflow(ProcessInput input,
-                                                         std::function<void()> done_cb,
-                                                         std::function<void()> error_cb)
+TaskflowContainer RasterOnlyGlobalTaskflow::generateTaskflow(ProcessInput input,
+                                                             std::function<void()> done_cb,
+                                                             std::function<void()> error_cb)
 {
   // This should make all of the isComposite checks so that you can safely cast below
   if (!checkProcessInput(input))
@@ -65,26 +64,25 @@ tf::Taskflow& RasterOnlyGlobalTaskflow::generateTaskflow(ProcessInput input,
     throw std::runtime_error("Invalid Process Input");
   }
 
-  // Clear the process manager
-  clear();
-
-  // Store the current size of the tasks so that we can add from_start later
-  std::size_t starting_raster_idx = raster_tasks_.size();
+  TaskflowContainer container;
+  container.taskflow = std::make_unique<tf::Taskflow>(name_);
+  std::vector<tf::Task> tasks;
 
   const Instruction* input_instruction = input.getInstruction();
-  global_task_ =
-      taskflow_
-          .composed_of(global_taskflow_generator_->generateTaskflow(
-              input,
-              std::bind(&RasterOnlyGlobalTaskflow::successCallback, this, input_instruction->getDescription(), done_cb),
-              std::bind(
-                  &RasterOnlyGlobalTaskflow::failureCallback, this, input_instruction->getDescription(), error_cb)))
-          .name("global");
+  TaskflowContainer sub_container = global_taskflow_generator_->generateTaskflow(
+      input,
+      std::bind(&successTask, input, name_, input_instruction->getDescription(), done_cb),
+      std::bind(&failureTask, input, name_, input_instruction->getDescription(), error_cb));
 
-  global_post_task_ = taskflow_.emplace([input]() { globalPostProcess(input); }).name("global post process");
-  global_task_.precede(global_post_task_);
+  container.input = container.taskflow->composed_of(*(sub_container.taskflow)).name("global");
+  container.containers.push_back(std::move(sub_container));
+
+  auto global_post_task =
+      container.taskflow->emplace([input]() { globalPostProcess(input); }).name("global post process");
+  container.input.precede(global_post_task);
 
   // Generate all of the raster tasks. They don't depend on anything
+  std::size_t raster_idx = 0;
   for (std::size_t idx = 0; idx < input.size(); idx += 2)
   {
     ProcessInput raster_input = input[idx];
@@ -96,21 +94,18 @@ tf::Taskflow& RasterOnlyGlobalTaskflow::generateTaskflow(ProcessInput input,
     if (idx < (input.size() - 1))
       raster_input.setEndInstruction(std::vector<std::size_t>({ idx + 1 }));
 
+    TaskflowContainer sub_container = raster_taskflow_generator_->generateTaskflow(
+        raster_input,
+        std::bind(&successTask, input, name_, raster_input.getInstruction()->getDescription(), done_cb),
+        std::bind(&failureTask, input, name_, raster_input.getInstruction()->getDescription(), error_cb));
+
     auto raster_step =
-        taskflow_
-            .composed_of(
-                raster_taskflow_generator_->generateTaskflow(raster_input,
-                                                             std::bind(&RasterOnlyGlobalTaskflow::successCallback,
-                                                                       this,
-                                                                       raster_input.getInstruction()->getDescription(),
-                                                                       done_cb),
-                                                             std::bind(&RasterOnlyGlobalTaskflow::failureCallback,
-                                                                       this,
-                                                                       raster_input.getInstruction()->getDescription(),
-                                                                       error_cb)))
-            .name("Raster #" + std::to_string(idx / 2) + ": " + raster_input.getInstruction()->getDescription());
-    global_post_task_.precede(raster_step);
-    raster_tasks_.push_back(raster_step);
+        container.taskflow->composed_of(*(sub_container.taskflow))
+            .name("Raster #" + std::to_string(raster_idx + 1) + ": " + raster_input.getInstruction()->getDescription());
+    container.containers.push_back(std::move(sub_container));
+    global_post_task.precede(raster_step);
+    tasks.push_back(raster_step);
+    raster_idx++;
   }
 
   // Loop over all transitions
@@ -125,63 +120,24 @@ tf::Taskflow& RasterOnlyGlobalTaskflow::generateTaskflow(ProcessInput input,
     ProcessInput transition_input = input[input_idx];
     transition_input.setStartInstruction(std::vector<std::size_t>({ input_idx - 1 }));
     transition_input.setEndInstruction(std::vector<std::size_t>({ input_idx + 1 }));
-    auto transition_step = taskflow_
-                               .composed_of(transition_taskflow_generator_->generateTaskflow(
-                                   transition_input,
-                                   std::bind(&RasterOnlyGlobalTaskflow::successCallback,
-                                             this,
-                                             transition_input.getInstruction()->getDescription(),
-                                             done_cb),
-                                   std::bind(&RasterOnlyGlobalTaskflow::failureCallback,
-                                             this,
-                                             transition_input.getInstruction()->getDescription(),
-                                             error_cb)))
-                               .name("Transition #" + std::to_string(transition_idx) + ": " +
+    TaskflowContainer sub_container = transition_taskflow_generator_->generateTaskflow(
+        transition_input,
+        std::bind(&successTask, input, name_, transition_input.getInstruction()->getDescription(), done_cb),
+        std::bind(&failureTask, input, name_, transition_input.getInstruction()->getDescription(), error_cb));
+
+    auto transition_step = container.taskflow->composed_of(*(sub_container.taskflow))
+                               .name("Transition #" + std::to_string(transition_idx + 1) + ": " +
                                      transition_input.getInstruction()->getDescription());
+    container.containers.push_back(std::move(sub_container));
 
     // Each transition is independent and thus depends only on the adjacent rasters
-    transition_step.succeed(raster_tasks_[starting_raster_idx + transition_idx]);
-    transition_step.succeed(raster_tasks_[starting_raster_idx + transition_idx + 1]);
+    transition_step.succeed(tasks[transition_idx]);
+    transition_step.succeed(tasks[transition_idx + 1]);
 
-    transition_tasks_.push_back(transition_step);
     transition_idx++;
   }
 
-  // visualizes the taskflow
-  std::ofstream out_data;
-  out_data.open(tesseract_common::getTempPath() + "raster_only_global_process_manager.dot");
-  taskflow_.dump(out_data);
-  out_data.close();
-
-  return taskflow_;
-}
-
-void RasterOnlyGlobalTaskflow::abort()
-{
-  global_taskflow_generator_->abort();
-  transition_taskflow_generator_->abort();
-  raster_taskflow_generator_->abort();
-
-  CONSOLE_BRIDGE_logError("Terminating Taskflow");
-}
-
-void RasterOnlyGlobalTaskflow::reset()
-{
-  global_taskflow_generator_->reset();
-  transition_taskflow_generator_->reset();
-  raster_taskflow_generator_->reset();
-}
-
-void RasterOnlyGlobalTaskflow::clear()
-
-{
-  global_taskflow_generator_->clear();
-  global_task_.reset();
-  global_post_task_.reset();
-  transition_taskflow_generator_->clear();
-  raster_taskflow_generator_->clear();
-  taskflow_.clear();
-  raster_tasks_.clear();
+  return container;
 }
 
 void RasterOnlyGlobalTaskflow::globalPostProcess(ProcessInput input)
@@ -241,24 +197,4 @@ bool RasterOnlyGlobalTaskflow::checkProcessInput(const tesseract_planning::Proce
   }
 
   return true;
-}
-
-void RasterOnlyGlobalTaskflow::successCallback(std::string message, std::function<void()> user_callback)
-{
-  CONSOLE_BRIDGE_logInform("%s Successful: %s", name_.c_str(), message.c_str());
-  if (user_callback)
-    user_callback();
-}
-
-void RasterOnlyGlobalTaskflow::failureCallback(std::string message, std::function<void()> user_callback)
-{
-  // For this process, any failure of a sub-TaskFlow indicates a planning failure. Abort all future tasks
-  global_taskflow_generator_->abort();
-  transition_taskflow_generator_->abort();
-  raster_taskflow_generator_->abort();
-
-  // Print an error if this is the first failure
-  CONSOLE_BRIDGE_logError("%s Failure: %s", name_.c_str(), message.c_str());
-  if (user_callback)
-    user_callback();
 }

@@ -56,7 +56,7 @@ std::function<int()> ProfileSwitchProcessGenerator::generateConditionalTask(Proc
 
 int ProfileSwitchProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
-  if (abort_)
+  if (input.isAborted())
     return 0;
 
   auto info = std::make_shared<ProfileSwitchProcessInfo>(unique_id, name_);
@@ -95,9 +95,6 @@ void ProfileSwitchProcessGenerator::process(ProcessInput input, std::size_t uniq
 {
   conditionalProcess(input, unique_id);
 }
-
-bool ProfileSwitchProcessGenerator::getAbort() const { return abort_; }
-void ProfileSwitchProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 
 ProfileSwitchProcessInfo::ProfileSwitchProcessInfo(std::size_t unique_id, std::string name)
   : ProcessInfo(unique_id, std::move(name))

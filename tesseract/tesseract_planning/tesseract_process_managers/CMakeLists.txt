@@ -42,6 +42,8 @@ add_library(${PROJECT_NAME}
     src/debug_observer.cpp
     src/process_planning_server.cpp
     src/process_environment_cache.cpp
+    src/process_interface.cpp
+    src/process_info.cpp
     src/process_generators/continuous_contact_check_process_generator.cpp
     src/process_generators/discrete_contact_check_process_generator.cpp
     src/process_generators/fix_state_bounds_process_generator.cpp
@@ -51,7 +53,6 @@ add_library(${PROJECT_NAME}
     src/process_generators/profile_switch_process_generator.cpp
     src/process_generators/seed_min_length_process_generator.cpp
     src/process_managers/simple_process_manager.cpp
-    src/taskflow_generators/graph_taskflow.cpp
     src/taskflow_generators/raster_taskflow.cpp
     src/taskflow_generators/raster_global_taskflow.cpp
     src/taskflow_generators/raster_only_taskflow.cpp
