@@ -62,7 +62,7 @@ std::function<int()> SeedMinLengthProcessGenerator::generateConditionalTask(Proc
 
 int SeedMinLengthProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
-  if (abort_)
+  if (input.isAborted())
     return 0;
 
   auto info = std::make_shared<SeedMinLengthProcessInfo>(unique_id, name_);
@@ -104,9 +104,6 @@ void SeedMinLengthProcessGenerator::process(ProcessInput input, std::size_t uniq
 {
   conditionalProcess(input, unique_id);
 }
-
-bool SeedMinLengthProcessGenerator::getAbort() const { return abort_; }
-void SeedMinLengthProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 
 void SeedMinLengthProcessGenerator::subdivide(CompositeInstruction& composite,
                                               const CompositeInstruction& current_composite,

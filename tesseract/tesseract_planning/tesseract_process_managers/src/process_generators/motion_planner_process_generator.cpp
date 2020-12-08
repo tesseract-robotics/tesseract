@@ -55,7 +55,7 @@ std::function<int()> MotionPlannerProcessGenerator::generateConditionalTask(Proc
 
 int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
-  if (abort_)
+  if (input.isAborted())
     return 0;
 
   auto info = std::make_shared<MotionPlannerProcessInfo>(unique_id, name_);
@@ -168,7 +168,7 @@ int MotionPlannerProcessGenerator::conditionalProcess(ProcessInput input, std::s
   PlannerResponse response;
 
   bool verbose = false;
-  if (input.verbose || console_bridge::getLogLevel() == console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG)
+  if (console_bridge::getLogLevel() == console_bridge::LogLevel::CONSOLE_BRIDGE_LOG_DEBUG)
     verbose = true;
   auto status = planner_->solve(request, response, verbose);
 
@@ -195,9 +195,6 @@ void MotionPlannerProcessGenerator::process(ProcessInput input, std::size_t uniq
 {
   conditionalProcess(input, unique_id);
 }
-
-bool MotionPlannerProcessGenerator::getAbort() const { return abort_; }
-void MotionPlannerProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 
 MotionPlannerProcessInfo::MotionPlannerProcessInfo(std::size_t unique_id, std::string name)
   : ProcessInfo(unique_id, std::move(name))

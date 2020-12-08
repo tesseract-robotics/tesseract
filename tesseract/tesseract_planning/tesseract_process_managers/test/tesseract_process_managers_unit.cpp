@@ -104,7 +104,7 @@ TEST_F(TesseractProcessManagerUnit, SeedMinLengthProcessGeneratorTest)
   Instruction seed_instruction = seed;
 
   long current_length = getMoveInstructionCount(seed);
-  ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed_instruction);
+  ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed_instruction, nullptr);
 
   SeedMinLengthProcessGenerator smlpg(current_length);
   EXPECT_TRUE(smlpg.generateConditionalTask(input, 1)() == 1);
@@ -117,7 +117,7 @@ TEST_F(TesseractProcessManagerUnit, SeedMinLengthProcessGeneratorTest)
   EXPECT_TRUE(final_length2 >= (2 * current_length));
 
   seed_instruction = seed;
-  ProcessInput input2(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed_instruction);
+  ProcessInput input2(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed_instruction, nullptr);
 
   SeedMinLengthProcessGenerator smlpg3(3 * current_length);
   EXPECT_TRUE(smlpg3.generateConditionalTask(input, 3)() == 1);
@@ -291,7 +291,7 @@ TEST_F(TesseractProcessManagerUnit, RasterProcessManagerDefaultPlanProfileTest)
   EXPECT_TRUE(response.ready());
 
   // Solve
-  EXPECT_TRUE(*(response.success));
+  EXPECT_TRUE(response.interface->isSuccessful());
 }
 
 TEST_F(TesseractProcessManagerUnit, RasterProcessManagerDefaultLVSPlanProfileTest)
@@ -325,7 +325,7 @@ TEST_F(TesseractProcessManagerUnit, RasterProcessManagerDefaultLVSPlanProfileTes
   EXPECT_TRUE(response.ready());
 
   // Solve
-  EXPECT_TRUE(*(response.success));
+  EXPECT_TRUE(response.interface->isSuccessful());
 }
 
 TEST_F(TesseractProcessManagerUnit, RasterGlobalProcessManagerDefaultPlanProfileTest)
@@ -359,7 +359,7 @@ TEST_F(TesseractProcessManagerUnit, RasterGlobalProcessManagerDefaultPlanProfile
   EXPECT_TRUE(response.ready());
 
   // Solve
-  EXPECT_TRUE(*(response.success));
+  EXPECT_TRUE(response.interface->isSuccessful());
 }
 
 TEST_F(TesseractProcessManagerUnit, RasterGlobalProcessManagerDefaultLVSPlanProfileTest)
@@ -393,7 +393,7 @@ TEST_F(TesseractProcessManagerUnit, RasterGlobalProcessManagerDefaultLVSPlanProf
   EXPECT_TRUE(response.ready());
 
   // Solve
-  EXPECT_TRUE(*(response.success));
+  EXPECT_TRUE(response.interface->isSuccessful());
 }
 
 TEST_F(TesseractProcessManagerUnit, RasterOnlyProcessManagerDefaultPlanProfileTest)
@@ -427,7 +427,7 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyProcessManagerDefaultPlanProfileTe
   EXPECT_TRUE(response.ready());
 
   // Solve
-  EXPECT_TRUE(*(response.success));
+  EXPECT_TRUE(response.interface->isSuccessful());
 }
 
 TEST_F(TesseractProcessManagerUnit, RasterOnlyProcessManagerDefaultLVSPlanProfileTest)
@@ -461,7 +461,7 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyProcessManagerDefaultLVSPlanProfil
   EXPECT_TRUE(response.ready());
 
   // Solve
-  EXPECT_TRUE(*(response.success));
+  EXPECT_TRUE(response.interface->isSuccessful());
 }
 
 TEST_F(TesseractProcessManagerUnit, RasterOnlyGlobalProcessManagerDefaultPlanProfileTest)
@@ -495,7 +495,7 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyGlobalProcessManagerDefaultPlanPro
   EXPECT_TRUE(response.ready());
 
   // Solve
-  EXPECT_TRUE(*(response.success));
+  EXPECT_TRUE(response.interface->isSuccessful());
 }
 
 TEST_F(TesseractProcessManagerUnit, RasterOnlyGlobalProcessManagerDefaultLVSPlanProfileTest)
@@ -529,7 +529,7 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyGlobalProcessManagerDefaultLVSPlan
   EXPECT_TRUE(response.ready());
 
   // Solve
-  EXPECT_TRUE(*(response.success));
+  EXPECT_TRUE(response.interface->isSuccessful());
 }
 
 TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerDefaultPlanProfileTest)
@@ -563,7 +563,7 @@ TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerDefaultPlanProfileTest
   EXPECT_TRUE(response.ready());
 
   // Solve
-  EXPECT_TRUE(*(response.success));
+  EXPECT_TRUE(response.interface->isSuccessful());
 }
 
 TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerDefaultLVSPlanProfileTest)
@@ -597,7 +597,7 @@ TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerDefaultLVSPlanProfileT
   EXPECT_TRUE(response.ready());
 
   // Solve
-  EXPECT_TRUE(*(response.success));
+  EXPECT_TRUE(response.interface->isSuccessful());
 }
 
 TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerDefaultPlanProfileTest)
@@ -636,7 +636,7 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerDefaultPlanProfileTe
   EXPECT_TRUE(response.ready());
 
   // Solve
-  EXPECT_TRUE(*(response.success));
+  EXPECT_TRUE(response.interface->isSuccessful());
 }
 
 TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerDefaultLVSPlanProfileTest)
@@ -675,7 +675,7 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerDefaultLVSPlanProfil
   EXPECT_TRUE(response.ready());
 
   // Solve
-  EXPECT_TRUE(*(response.success));
+  EXPECT_TRUE(response.interface->isSuccessful());
 }
 
 TEST_F(TesseractProcessManagerUnit, RasterWAADDTProcessManagerDefaultPlanProfileTest)
@@ -714,7 +714,7 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADDTProcessManagerDefaultPlanProfile
   EXPECT_TRUE(response.ready());
 
   // Solve
-  EXPECT_TRUE(*(response.success));
+  EXPECT_TRUE(response.interface->isSuccessful());
 }
 
 TEST_F(TesseractProcessManagerUnit, RasterWAADDTProcessManagerDefaultLVSPlanProfileTest)
@@ -753,7 +753,7 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADDTProcessManagerDefaultLVSPlanProf
   EXPECT_TRUE(response.ready());
 
   // Solve
-  EXPECT_TRUE(*(response.success));
+  EXPECT_TRUE(response.interface->isSuccessful());
 }
 
 int main(int argc, char** argv)

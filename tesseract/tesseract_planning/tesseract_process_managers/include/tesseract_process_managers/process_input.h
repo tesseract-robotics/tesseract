@@ -29,53 +29,23 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
+#include <atomic>
 #include <map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_process_managers/process_interface.h>
+#include <tesseract_process_managers/process_info.h>
+
+#include <tesseract_motion_planners/core/profile_dictionary.h>
+#include <tesseract_motion_planners/core/types.h>
+
 #include <tesseract_command_language/core/instruction.h>
 #include <tesseract_command_language/manipulator_info.h>
-#include <tesseract_motion_planners/core/types.h>
+
 #include <tesseract/tesseract.h>
 
 namespace tesseract_planning
 {
-class ProcessInfo
-{
-public:
-  using Ptr = std::shared_ptr<ProcessInfo>;
-  using ConstPtr = std::shared_ptr<const ProcessInfo>;
-
-  ProcessInfo(std::size_t unique_id, std::string name = "") : unique_id(unique_id), process_name(std::move(name)) {}
-
-  virtual ~ProcessInfo() = default;
-  ProcessInfo(const ProcessInfo&) = default;
-  ProcessInfo& operator=(const ProcessInfo&) = default;
-  ProcessInfo(ProcessInfo&&) = default;
-  ProcessInfo& operator=(ProcessInfo&&) = default;
-
-  int return_value;
-
-  std::size_t unique_id;
-
-  std::string process_name;
-
-  std::string message;
-};
-
-/** @brief A threadsafe container for ProcessInfos */
-struct ProcessInfoContainer
-{
-  void addProcessInfo(ProcessInfo::ConstPtr process_info);
-
-  ProcessInfo::ConstPtr operator[](std::size_t index);
-
-  /** @brief Get a copy of the process_info_vec in case it gets resized*/
-  std::map<std::size_t, ProcessInfo::ConstPtr> getProcessInfoMap();
-
-private:
-  std::mutex mutex_;
-  std::map<std::size_t, ProcessInfo::ConstPtr> process_info_map_;
-};
 
 /**
  * @brief This struct is passed as an input to each process in the decision tree
@@ -92,7 +62,7 @@ struct ProcessInput
                const Instruction* instruction,
                const ManipulatorInfo& manip_info,
                Instruction* seed,
-               bool verbose = false);
+               ProfileDictionary::ConstPtr profiles);
 
   ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                const Instruction* instruction,
@@ -100,28 +70,25 @@ struct ProcessInput
                const PlannerProfileRemapping& plan_profile_remapping,
                const PlannerProfileRemapping& composite_profile_remapping,
                Instruction* seed,
-               bool verbose = false);
+               ProfileDictionary::ConstPtr profiles);
 
   ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                const Instruction* instruction,
                const PlannerProfileRemapping& plan_profile_remapping,
                const PlannerProfileRemapping& composite_profile_remapping,
                Instruction* seed,
-               bool verbose = false);
+               ProfileDictionary::ConstPtr profiles);
 
   ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                const Instruction* instruction,
                Instruction* seed,
-               bool verbose = false);
+               ProfileDictionary::ConstPtr profiles);
 
   /** @brief Tesseract associated with current state of the system */
   const tesseract::Tesseract::ConstPtr tesseract;
 
   /** @brief Global Manipulator Information */
   const ManipulatorInfo& manip_info;
-
-  /** @brief Verbose Output */
-  bool verbose{ false };
 
   /**
    * @brief This allows the remapping of the Plan Profile identified in the command language to a specific profile for a
@@ -134,6 +101,9 @@ struct ProcessInput
    * for a given motion planner.
    */
   const PlannerProfileRemapping& composite_profile_remapping;
+
+  /** @brief The Profiles to use */
+  const ProfileDictionary::ConstPtr profiles;
 
   /**
    * @brief Creates a sub-ProcessInput from instruction[index] and seed[index]
@@ -160,6 +130,22 @@ struct ProcessInput
    * @return A pointer to the results instruction
    */
   Instruction* getResults();
+
+  /** @brief The process interface for checking success and aborting active process */
+  ProcessInterface::Ptr getProcessInterface();
+
+  /**
+   * @brief Check if process has been aborted
+   * @details This accesses the internal process interface class
+   * @return True if aborted otherwise false;
+   */
+  bool isAborted() const;
+
+  /**
+   * @brief Abort the process intput
+   * @details This accesses the internal process interface class to abort the process
+   */
+  void abort();
 
   void setStartInstruction(Instruction start);
   void setStartInstruction(std::vector<std::size_t> start);
@@ -195,7 +181,10 @@ protected:
   /** @brief Indices to the end instruction in the results data struction */
   std::vector<std::size_t> end_instruction_indice_;
 
-  std::shared_ptr<ProcessInfoContainer> process_infos;
+  std::shared_ptr<ProcessInfoContainer> process_infos_{ std::make_shared<ProcessInfoContainer>() };
+
+  /** @brief Used to store if process input is aborted which is thread safe */
+  ProcessInterface::Ptr interface_{ std::make_shared<ProcessInterface>() };
 };
 
 }  // namespace tesseract_planning

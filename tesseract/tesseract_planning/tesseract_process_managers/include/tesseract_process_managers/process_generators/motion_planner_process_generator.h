@@ -26,11 +26,6 @@
 #ifndef TESSERACT_PROCESS_MANAGERS_MOTION_PLANNER_PROCESS_GENERATOR_H
 #define TESSERACT_PROCESS_MANAGERS_MOTION_PLANNER_PROCESS_GENERATOR_H
 
-#include <tesseract_common/macros.h>
-TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <atomic>
-TESSERACT_COMMON_IGNORE_WARNINGS_POP
-
 #include <tesseract_process_managers/process_generator.h>
 
 namespace tesseract_planning
@@ -56,14 +51,7 @@ public:
 
   std::function<int()> generateConditionalTask(ProcessInput input, std::size_t unique_id) override;
 
-  bool getAbort() const override;
-
-  void setAbort(bool abort) override;
-
 private:
-  /** @brief If true, all tasks return immediately. Workaround for https://github.com/taskflow/taskflow/issues/201 */
-  std::atomic<bool> abort_{ false };
-
   std::shared_ptr<MotionPlanner> planner_{ nullptr };
 
   std::string name_;

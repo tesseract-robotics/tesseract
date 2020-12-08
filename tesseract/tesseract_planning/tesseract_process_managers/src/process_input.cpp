@@ -40,38 +40,19 @@ namespace tesseract_planning
 static const ManipulatorInfo EMPTY_MANIPULATOR_INFO;
 static const PlannerProfileRemapping EMPTY_PROFILE_MAPPING;
 
-void ProcessInfoContainer::addProcessInfo(ProcessInfo::ConstPtr process_info)
-{
-  std::unique_lock<std::mutex> lock(mutex_);
-  process_info_map_[process_info->unique_id] = std::move(process_info);
-}
-
-ProcessInfo::ConstPtr ProcessInfoContainer::operator[](std::size_t index)
-{
-  std::unique_lock<std::mutex> lock(mutex_);
-  return process_info_map_[index];
-}
-
-std::map<std::size_t, ProcessInfo::ConstPtr> ProcessInfoContainer::getProcessInfoMap()
-{
-  std::unique_lock<std::mutex> lock(mutex_);
-  return process_info_map_;
-}
-
 ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                            const Instruction* instruction,
                            const ManipulatorInfo& manip_info,
                            Instruction* seed,
-                           bool verbose)
+                           ProfileDictionary::ConstPtr profiles)
   : tesseract(std::move(tesseract))
   , manip_info(manip_info)
-  , verbose(verbose)
   , plan_profile_remapping(EMPTY_PROFILE_MAPPING)
   , composite_profile_remapping(EMPTY_PROFILE_MAPPING)
+  , profiles(std::move(profiles))
   , instruction_(instruction)
   , results_(seed)
 {
-  process_infos = std::make_shared<ProcessInfoContainer>();
 }
 
 ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
@@ -80,16 +61,15 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                            const PlannerProfileRemapping& plan_profile_remapping,
                            const PlannerProfileRemapping& composite_profile_remapping,
                            Instruction* seed,
-                           bool verbose)
+                           ProfileDictionary::ConstPtr profiles)
   : tesseract(std::move(tesseract))
   , manip_info(manip_info)
-  , verbose(verbose)
   , plan_profile_remapping(plan_profile_remapping)
   , composite_profile_remapping(composite_profile_remapping)
+  , profiles(std::move(profiles))
   , instruction_(instruction)
   , results_(seed)
 {
-  process_infos = std::make_shared<ProcessInfoContainer>();
 }
 
 ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
@@ -97,31 +77,29 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                            const PlannerProfileRemapping& plan_profile_remapping,
                            const PlannerProfileRemapping& composite_profile_remapping,
                            Instruction* seed,
-                           bool verbose)
+                           ProfileDictionary::ConstPtr profiles)
   : tesseract(std::move(tesseract))
   , manip_info(EMPTY_MANIPULATOR_INFO)
-  , verbose(verbose)
   , plan_profile_remapping(plan_profile_remapping)
   , composite_profile_remapping(composite_profile_remapping)
+  , profiles(std::move(profiles))
   , instruction_(instruction)
   , results_(seed)
 {
-  process_infos = std::make_shared<ProcessInfoContainer>();
 }
 
 ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                            const Instruction* instruction,
                            Instruction* seed,
-                           bool verbose)
+                           ProfileDictionary::ConstPtr profiles)
   : tesseract(std::move(tesseract))
   , manip_info(EMPTY_MANIPULATOR_INFO)
-  , verbose(verbose)
   , plan_profile_remapping(EMPTY_PROFILE_MAPPING)
   , composite_profile_remapping(EMPTY_PROFILE_MAPPING)
+  , profiles(std::move(profiles))
   , instruction_(instruction)
   , results_(seed)
 {
-  process_infos = std::make_shared<ProcessInfoContainer>();
 }
 
 ProcessInput ProcessInput::operator[](std::size_t index)
@@ -192,6 +170,12 @@ Instruction* ProcessInput::getResults()
   }
   return ci;
 }
+
+ProcessInterface::Ptr ProcessInput::getProcessInterface() { return interface_; }
+
+bool ProcessInput::isAborted() const { return interface_->isAborted(); }
+
+void ProcessInput::abort() { interface_->abort(); }
 
 void ProcessInput::setStartInstruction(Instruction start)
 {
@@ -278,11 +262,16 @@ Instruction ProcessInput::getEndInstruction() const
 
 void ProcessInput::addProcessInfo(const ProcessInfo::ConstPtr& process_info)
 {
-  process_infos->addProcessInfo(process_info);
+  process_infos_->addProcessInfo(process_info);
 }
-ProcessInfo::ConstPtr ProcessInput::getProcessInfo(const std::size_t& index) const { return (*process_infos)[index]; }
+
+ProcessInfo::ConstPtr ProcessInput::getProcessInfo(const std::size_t& index) const
+{
+  return (*process_infos_)[index];
+}
+
 std::map<std::size_t, ProcessInfo::ConstPtr> ProcessInput::getProcessInfoMap() const
 {
-  return process_infos->getProcessInfoMap();
+  return process_infos_->getProcessInfoMap();
 }
 }  // namespace tesseract_planning
