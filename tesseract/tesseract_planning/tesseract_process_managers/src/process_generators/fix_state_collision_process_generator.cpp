@@ -291,7 +291,7 @@ std::function<int()> FixStateCollisionProcessGenerator::generateConditionalTask(
 
 int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
-  if (abort_)
+  if (input.isAborted())
     return 0;
 
   auto info = std::make_shared<FixStateCollisionProcessInfo>(unique_id, name_);
@@ -424,9 +424,6 @@ void FixStateCollisionProcessGenerator::process(ProcessInput input, std::size_t 
 {
   conditionalProcess(input, unique_id);
 }
-
-bool FixStateCollisionProcessGenerator::getAbort() const { return abort_; }
-void FixStateCollisionProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 
 FixStateCollisionProcessInfo::FixStateCollisionProcessInfo(std::size_t unique_id, std::string name)
   : ProcessInfo(unique_id, std::move(name))

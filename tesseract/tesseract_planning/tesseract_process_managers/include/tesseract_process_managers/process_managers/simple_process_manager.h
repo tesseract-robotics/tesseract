@@ -78,16 +78,13 @@ public:
   void enableProfile(bool enabled) override;
 
 private:
-  void successCallback(std::string message);
-  void failureCallback(std::string message);
-  bool success_{ false };
+  std::shared_ptr<ProcessInput> process_input_;
   bool debug_{ false };
   bool profile_{ false };
 
   TaskflowGenerator::UPtr taskflow_generator_;
   tf::Executor executor_;
-  tf::Taskflow taskflow_;
-  std::vector<tf::Task> simple_tasks_;
+  TaskflowContainer taskflow_container_;
 };
 
 }  // namespace tesseract_planning

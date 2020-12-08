@@ -33,13 +33,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <typeindex>
 #include <unordered_map>
 #include <memory>
+#include <shared_mutex>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
 /**
  * @brief This class is used to store profiles for motion planning and process planning
- * @details
+ * @details This is a thread safe class
  *    A ProfileEntry<T> is a std::unordered_map<std::string, std::shared_ptr<T>>
  *      - The key is the profile name
  *      - Where std::shared_ptr<T> is the profile
@@ -54,18 +55,21 @@ public:
   template <typename T>
   bool hasProfileEntry() const
   {
+    std::shared_lock lock(mutex_);
     return (profiles_.find(std::type_index(typeid(T))) != profiles_.end());
   }
 
   template <typename T>
   void removeProfileEntry()
   {
+    std::unique_lock lock(mutex_);
     profiles_.erase(std::type_index(typeid(T)));
   }
 
   template <typename T>
-  const std::unordered_map<std::string, std::shared_ptr<T>>& getProfileEntry() const
+  std::unordered_map<std::string, std::shared_ptr<T>> getProfileEntry() const
   {
+    std::shared_lock lock(mutex_);
     auto it = profiles_.find(std::type_index(typeid(T)));
     if (it != profiles_.end())
       return std::any_cast<const std::unordered_map<std::string, std::shared_ptr<T>>&>(it->second);
@@ -77,6 +81,7 @@ public:
   template <typename T>
   void addProfile(const std::string& profile_name, std::shared_ptr<T> profile)
   {
+    std::unique_lock lock(mutex_);
     auto it = profiles_.find(std::type_index(typeid(T)));
     if (it != profiles_.end())
     {
@@ -91,8 +96,9 @@ public:
   }
 
   template <typename T>
-  std::shared_ptr<T> getProfile(const std::string& profile_name)
+  std::shared_ptr<T> getProfile(const std::string& profile_name) const
   {
+    std::shared_lock lock(mutex_);
     auto it = profiles_.find(std::type_index(typeid(T)));
     if (it != profiles_.end())
       return std::any_cast<std::unordered_map<std::string, std::shared_ptr<T>>&>(it->second)[profile_name];
@@ -103,6 +109,7 @@ public:
   template <typename T>
   void removeProfile(const std::string& profile_name)
   {
+    std::unique_lock lock(mutex_);
     auto it = profiles_.find(std::type_index(typeid(T)));
     if (it != profiles_.end())
       std::any_cast<std::unordered_map<std::string, std::shared_ptr<T>>&>(it->second).erase(profile_name);
@@ -110,6 +117,7 @@ public:
 
 protected:
   std::unordered_map<std::type_index, std::any> profiles_;
+  mutable std::shared_mutex mutex_;
 };
 }  // namespace tesseract_planning
 #endif  // TESSERACT_MOTION_PLANNERS_PROFILE_DICTIONARY_H

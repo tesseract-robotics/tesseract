@@ -70,7 +70,7 @@ std::function<int()> IterativeSplineParameterizationProcessGenerator::generateCo
 
 int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
-  if (abort_)
+  if (input.isAborted())
     return 0;
 
   auto info = std::make_shared<IterativeSplineParameterizationProcessInfo>(unique_id, name_);
@@ -154,9 +154,6 @@ void IterativeSplineParameterizationProcessGenerator::process(ProcessInput input
 {
   conditionalProcess(input, unique_id);
 }
-
-bool IterativeSplineParameterizationProcessGenerator::getAbort() const { return abort_; }
-void IterativeSplineParameterizationProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 
 IterativeSplineParameterizationProcessInfo::IterativeSplineParameterizationProcessInfo(std::size_t unique_id,
                                                                                        std::string name)

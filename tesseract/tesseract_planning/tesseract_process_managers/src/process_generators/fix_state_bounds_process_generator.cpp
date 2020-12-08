@@ -54,7 +54,7 @@ std::function<int()> FixStateBoundsProcessGenerator::generateConditionalTask(Pro
 
 int FixStateBoundsProcessGenerator::conditionalProcess(ProcessInput input, std::size_t unique_id) const
 {
-  if (abort_)
+  if (input.isAborted())
     return 0;
 
   auto info = std::make_shared<FixStateBoundsProcessInfo>(unique_id, name_);
@@ -185,9 +185,6 @@ void FixStateBoundsProcessGenerator::process(ProcessInput input, std::size_t uni
 {
   conditionalProcess(input, unique_id);
 }
-
-bool FixStateBoundsProcessGenerator::getAbort() const { return abort_; }
-void FixStateBoundsProcessGenerator::setAbort(bool abort) { abort_ = abort; }
 
 FixStateBoundsProcessInfo::FixStateBoundsProcessInfo(std::size_t unique_id, std::string name)
   : ProcessInfo(unique_id, std::move(name))

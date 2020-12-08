@@ -44,103 +44,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 using namespace tesseract_planning;
 
-OMPLTaskflow::OMPLTaskflow(OMPLTaskflowParams params, std::string name)
-  : name_(name), params_(params), generator_(std::make_unique<GraphTaskflow>(name_))
-{
-  // Setup Interpolator
-  int interpolator_idx{ -1 };
-  if (params.enable_simple_planner)
-  {
-    auto interpolator = std::make_shared<SimpleMotionPlanner>("Interpolator");
-    if (params.profiles)
-    {
-      if (params.profiles->hasProfileEntry<SimplePlannerPlanProfile>())
-        interpolator->plan_profiles = params.profiles->getProfileEntry<SimplePlannerPlanProfile>();
-
-      if (params.profiles->hasProfileEntry<SimplePlannerCompositeProfile>())
-        interpolator->composite_profiles = params.profiles->getProfileEntry<SimplePlannerCompositeProfile>();
-    }
-    auto interpolator_generator = std::make_unique<MotionPlannerProcessGenerator>(interpolator);
-    interpolator_idx = generator_->addNode(std::move(interpolator_generator), GraphTaskflow::NodeType::CONDITIONAL);
-  }
-
-  // Setup OMPL
-  auto ompl_planner = std::make_shared<OMPLMotionPlanner>();
-  ompl_planner->problem_generator = &DefaultOMPLProblemGenerator;
-  if (params.profiles)
-  {
-    if (params.profiles->hasProfileEntry<OMPLPlanProfile>())
-      ompl_planner->plan_profiles = params.profiles->getProfileEntry<OMPLPlanProfile>();
-  }
-  auto ompl_generator = std::make_unique<MotionPlannerProcessGenerator>(ompl_planner);
-  int ompl_idx = generator_->addNode(std::move(ompl_generator), GraphTaskflow::NodeType::CONDITIONAL);
-
-  // Add Final Continuous Contact Check of trajectory
-  int contact_check_idx{ -1 };
-  if (params.enable_post_contact_continuous_check)
-  {
-    auto contact_check_generator = std::make_unique<ContinuousContactCheckProcessGenerator>();
-    contact_check_idx = generator_->addNode(std::move(contact_check_generator), GraphTaskflow::NodeType::CONDITIONAL);
-  }
-  else if (params.enable_post_contact_discrete_check)
-  {
-    auto contact_check_generator = std::make_unique<DiscreteContactCheckProcessGenerator>();
-    contact_check_idx = generator_->addNode(std::move(contact_check_generator), GraphTaskflow::NodeType::CONDITIONAL);
-  }
-
-  // Time parameterization trajectory
-  int time_parameterization_idx{ -1 };
-  if (params.enable_time_parameterization)
-  {
-    auto time_parameterization_generator = std::make_unique<IterativeSplineParameterizationProcessGenerator>();
-    time_parameterization_idx =
-        generator_->addNode(std::move(time_parameterization_generator), GraphTaskflow::NodeType::CONDITIONAL);
-  }
-
-  /////////////////
-  /// Add Edges ///
-  /////////////////
-  auto ON_SUCCESS = GraphTaskflow::SourceChannel::ON_SUCCESS;
-  auto ON_FAILURE = GraphTaskflow::SourceChannel::ON_FAILURE;
-  auto PROCESS_NODE = GraphTaskflow::DestinationChannel::PROCESS_NODE;
-  auto ERROR_CALLBACK = GraphTaskflow::DestinationChannel::ERROR_CALLBACK;
-  auto DONE_CALLBACK = GraphTaskflow::DestinationChannel::DONE_CALLBACK;
-
-  if (params.enable_simple_planner)
-  {
-    generator_->addEdge(interpolator_idx, ON_SUCCESS, ompl_idx, PROCESS_NODE);
-    generator_->addEdge(interpolator_idx, ON_FAILURE, -1, ERROR_CALLBACK);
-  }
-
-  generator_->addEdge(ompl_idx, ON_FAILURE, -1, ERROR_CALLBACK);
-  if (params.enable_post_contact_continuous_check || params.enable_post_contact_discrete_check)
-    generator_->addEdge(ompl_idx, ON_SUCCESS, contact_check_idx, PROCESS_NODE);
-  else if (params.enable_time_parameterization)
-    generator_->addEdge(ompl_idx, ON_SUCCESS, time_parameterization_idx, PROCESS_NODE);
-  else
-    generator_->addEdge(ompl_idx, ON_SUCCESS, -1, DONE_CALLBACK);
-
-  if (params.enable_post_contact_continuous_check || params.enable_post_contact_discrete_check)
-  {
-    generator_->addEdge(contact_check_idx, ON_FAILURE, -1, ERROR_CALLBACK);
-    if (params.enable_time_parameterization)
-      generator_->addEdge(contact_check_idx, ON_SUCCESS, time_parameterization_idx, PROCESS_NODE);
-    else
-      generator_->addEdge(contact_check_idx, ON_SUCCESS, -1, DONE_CALLBACK);
-  }
-
-  if (params.enable_time_parameterization)
-  {
-    generator_->addEdge(time_parameterization_idx, ON_SUCCESS, -1, DONE_CALLBACK);
-    generator_->addEdge(time_parameterization_idx, ON_FAILURE, -1, ERROR_CALLBACK);
-  }
-}
+OMPLTaskflow::OMPLTaskflow(OMPLTaskflowParams params, std::string name) : name_(name), params_(params) {}
 
 const std::string& OMPLTaskflow::getName() const { return name_; }
 
-tf::Taskflow& OMPLTaskflow::generateTaskflow(ProcessInput input,
-                                             std::function<void()> done_cb,
-                                             std::function<void()> error_cb)
+TaskflowContainer OMPLTaskflow::generateTaskflow(ProcessInput input,
+                                                 std::function<void()> done_cb,
+                                                 std::function<void()> error_cb)
 {
   // This should make all of the isComposite checks so that you can safely cast below
   if (!checkProcessInput(input))
@@ -149,14 +59,113 @@ tf::Taskflow& OMPLTaskflow::generateTaskflow(ProcessInput input,
     throw std::runtime_error("Invalid Process Input");
   }
 
-  return generator_->generateTaskflow(input, done_cb, error_cb);
+  TaskflowContainer container;
+  container.taskflow = std::make_unique<tf::Taskflow>(name_);
+
+  // Add "Error" task
+  auto error_fn = [=]() { failureTask(input, name_, "", error_cb); };
+  tf::Task error_task = container.taskflow->emplace(error_fn).name("Error Callback");
+  container.outputs.push_back(error_task);
+
+  // Add "Done" task
+  auto done_fn = [=]() { successTask(input, name_, "", done_cb); };
+  tf::Task done_task = container.taskflow->emplace(done_fn).name("Done Callback");
+  container.outputs.push_back(done_task);
+
+  // Add has seed check
+  tf::Task has_seed_task = container.taskflow->emplace([=]() { return hasSeedTask(input); }).name("Has Seed Check");
+
+  tf::Task interpolator_task = container.taskflow->placeholder();
+  tf::Task ompl_task = container.taskflow->placeholder();
+
+  has_seed_task.precede(interpolator_task, ompl_task);
+  interpolator_task.precede(error_task, ompl_task);
+
+  // Setup Interpolator
+  auto interpolator = std::make_shared<SimpleMotionPlanner>("Interpolator");
+  if (input.profiles)
+  {
+    if (input.profiles->hasProfileEntry<SimplePlannerPlanProfile>())
+      interpolator->plan_profiles = input.profiles->getProfileEntry<SimplePlannerPlanProfile>();
+
+    if (input.profiles->hasProfileEntry<SimplePlannerCompositeProfile>())
+      interpolator->composite_profiles = input.profiles->getProfileEntry<SimplePlannerCompositeProfile>();
+  }
+  ProcessGenerator::UPtr interpolator_generator = std::make_unique<MotionPlannerProcessGenerator>(interpolator);
+  interpolator_task.work(interpolator_generator->generateConditionalTask(input, interpolator_task.hash_value()));
+  interpolator_task.name(interpolator_generator->getName());
+  container.generators.push_back(std::move(interpolator_generator));
+
+  // Setup TrajOpt
+  auto ompl_planner = std::make_shared<OMPLMotionPlanner>();
+  ompl_planner->problem_generator = &DefaultOMPLProblemGenerator;
+  if (input.profiles)
+  {
+    if (input.profiles->hasProfileEntry<OMPLPlanProfile>())
+      ompl_planner->plan_profiles = input.profiles->getProfileEntry<OMPLPlanProfile>();
+  }
+  ProcessGenerator::UPtr ompl_generator = std::make_unique<MotionPlannerProcessGenerator>(ompl_planner);
+  ompl_task.work(ompl_generator->generateConditionalTask(input, ompl_task.hash_value()));
+  ompl_task.name(ompl_generator->getName());
+  container.generators.push_back(std::move(ompl_generator));
+
+  ProcessGenerator::UPtr contact_check_generator;
+  bool has_contact_check = (params_.enable_post_contact_continuous_check || params_.enable_post_contact_discrete_check);
+  if (has_contact_check)
+  {
+    if (params_.enable_post_contact_continuous_check)
+      contact_check_generator = std::make_unique<ContinuousContactCheckProcessGenerator>();
+    else if (params_.enable_post_contact_discrete_check)
+      contact_check_generator = std::make_unique<DiscreteContactCheckProcessGenerator>();
+  }
+
+  ProcessGenerator::UPtr time_parameterization_generator;
+  if (params_.enable_time_parameterization)
+    time_parameterization_generator = std::make_unique<IterativeSplineParameterizationProcessGenerator>();
+
+  // Add Final Continuous Contact Check of trajectory and Time parameterization trajectory
+  if (has_contact_check && params_.enable_time_parameterization)
+  {
+    tf::Task contact_task = container.taskflow->placeholder();
+    contact_task.work(contact_check_generator->generateConditionalTask(input, contact_task.hash_value()));
+    contact_task.name(contact_check_generator->getName());
+    ompl_task.precede(error_task, contact_task);
+    container.generators.push_back(std::move(contact_check_generator));
+
+    tf::Task time_task = container.taskflow->placeholder();
+    time_task.work(time_parameterization_generator->generateConditionalTask(input, time_task.hash_value()));
+    time_task.name(time_parameterization_generator->getName());
+    container.generators.push_back(std::move(time_parameterization_generator));
+    contact_task.precede(error_task, time_task);
+    time_task.precede(error_task, done_task);
+    container.generators.push_back(std::move(time_parameterization_generator));
+  }
+  else if (has_contact_check && !params_.enable_time_parameterization)
+  {
+    tf::Task contact_task = container.taskflow->placeholder();
+    contact_task.work(contact_check_generator->generateConditionalTask(input, contact_task.hash_value()));
+    contact_task.name(contact_check_generator->getName());
+    ompl_task.precede(error_task, contact_task);
+    contact_task.precede(error_task, done_task);
+    container.generators.push_back(std::move(contact_check_generator));
+  }
+  else if (!has_contact_check && params_.enable_time_parameterization)
+  {
+    tf::Task time_task = container.taskflow->placeholder();
+    time_task.work(time_parameterization_generator->generateConditionalTask(input, time_task.hash_value()));
+    time_task.name(time_parameterization_generator->getName());
+    container.generators.push_back(std::move(time_parameterization_generator));
+    ompl_task.precede(error_task, time_task);
+    time_task.precede(error_task, done_task);
+    container.generators.push_back(std::move(time_parameterization_generator));
+  }
+  else
+  {
+    ompl_task.precede(error_task, done_task);
+  }
+
+  return container;
 }
-
-void OMPLTaskflow::abort() { generator_->abort(); }
-
-void OMPLTaskflow::reset() { generator_->reset(); }
-
-void OMPLTaskflow::clear() { generator_->clear(); }
 
 bool OMPLTaskflow::checkProcessInput(const tesseract_planning::ProcessInput& input) const
 {
@@ -176,22 +185,4 @@ bool OMPLTaskflow::checkProcessInput(const tesseract_planning::ProcessInput& inp
   }
 
   return true;
-}
-
-void OMPLTaskflow::successCallback(std::function<void()> user_callback)
-{
-  CONSOLE_BRIDGE_logInform("%s Successful", name_.c_str());
-  if (user_callback)
-    user_callback();
-}
-
-void OMPLTaskflow::failureCallback(std::function<void()> user_callback)
-{
-  // For this process, any failure of a sub-TaskFlow indicates a planning failure. Abort all future tasks
-  generator_->abort();
-
-  // Print an error if this is the first failure
-  CONSOLE_BRIDGE_logError("%s Failure", name_.c_str());
-  if (user_callback)
-    user_callback();
 }
