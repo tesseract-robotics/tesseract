@@ -39,7 +39,8 @@ namespace tesseract_planning
 {
 bool StateInCollision(const Eigen::Ref<const Eigen::VectorXd>& start_pos,
                       const ProcessInput& input,
-                      const FixStateCollisionProfile& profile)
+                      const FixStateCollisionProfile& profile,
+                      tesseract_collision::ContactResultMap& contacts)
 {
   using namespace tesseract_collision;
   using namespace tesseract_environment;
@@ -70,16 +71,22 @@ bool StateInCollision(const Eigen::Ref<const Eigen::VectorXd>& start_pos,
     CONSOLE_BRIDGE_logDebug("Waypoint is not contact free!");
     for (std::size_t i = 0; i < collisions.size(); i++)
       for (const auto& contact_vec : collisions[i])
+      {
         for (const auto& contact : contact_vec.second)
           CONSOLE_BRIDGE_logDebug(("timestep: " + std::to_string(i) + " Links: " + contact.link_names[0] + ", " +
                                    contact.link_names[1] + " Dist: " + std::to_string(contact.distance))
                                       .c_str());
+        contacts = collisions[i];
+      }
   }
 
   return true;
 }
 
-bool WaypointInCollision(const Waypoint& waypoint, const ProcessInput& input, const FixStateCollisionProfile& profile)
+bool WaypointInCollision(const Waypoint& waypoint,
+                         const ProcessInput& input,
+                         const FixStateCollisionProfile& profile,
+                         tesseract_collision::ContactResultMap& contacts)
 {
   // Get position associated with waypoint
   Eigen::VectorXd start_pos;
@@ -92,7 +99,7 @@ bool WaypointInCollision(const Waypoint& waypoint, const ProcessInput& input, co
     CONSOLE_BRIDGE_logError("WaypointInCollision error: %s", e.what());
     return false;
   }
-  return StateInCollision(start_pos, input, profile);
+  return StateInCollision(start_pos, input, profile, contacts);
 }
 
 bool MoveWaypointFromCollisionTrajopt(Waypoint& waypoint,
@@ -224,7 +231,8 @@ bool MoveWaypointFromCollisionRandomSampler(Waypoint& waypoint,
     sampled_pos = sampled_pos.cwiseMax(limits.col(0));
     sampled_pos = sampled_pos.cwiseMin(limits.col(1));
 
-    if (!StateInCollision(sampled_pos, input, profile))
+    tesseract_collision::ContactResultMap contacts;
+    if (!StateInCollision(sampled_pos, input, profile, contacts))
     {
       return setJointPosition(waypoint, sampled_pos);
     }
@@ -233,7 +241,10 @@ bool MoveWaypointFromCollisionRandomSampler(Waypoint& waypoint,
   return false;
 }
 
-bool ApplyCorrectionWorkflow(Waypoint& waypoint, const ProcessInput& input, const FixStateCollisionProfile& profile)
+bool ApplyCorrectionWorkflow(Waypoint& waypoint,
+                             const ProcessInput& input,
+                             const FixStateCollisionProfile& profile,
+                             tesseract_collision::ContactResultMap& contacts)
 {
   for (const auto& method : profile.correction_workflow)
   {
@@ -252,6 +263,7 @@ bool ApplyCorrectionWorkflow(Waypoint& waypoint, const ProcessInput& input, cons
     }
   }
   // If all methods have tried without returning, then correction failed
+  WaypointInCollision(waypoint, input, profile, contacts);
   return false;
 }
 
@@ -334,10 +346,13 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input, st
       if (instr_const_ptr)
       {
         PlanInstruction* mutable_instruction = const_cast<PlanInstruction*>(instr_const_ptr);
-        if (WaypointInCollision(mutable_instruction->getWaypoint(), input, *cur_composite_profile))
+        info->contact_results.resize(1);
+        if (WaypointInCollision(
+                mutable_instruction->getWaypoint(), input, *cur_composite_profile, info->contact_results[0]))
         {
           CONSOLE_BRIDGE_logInform("FixStateCollisionProcessGenerator is modifying the const input instructions");
-          if (!ApplyCorrectionWorkflow(mutable_instruction->getWaypoint(), input, *cur_composite_profile))
+          if (!ApplyCorrectionWorkflow(
+                  mutable_instruction->getWaypoint(), input, *cur_composite_profile, info->contact_results[0]))
             return 0;
         }
       }
@@ -349,10 +364,13 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input, st
       if (instr_const_ptr)
       {
         PlanInstruction* mutable_instruction = const_cast<PlanInstruction*>(instr_const_ptr);
-        if (WaypointInCollision(mutable_instruction->getWaypoint(), input, *cur_composite_profile))
+        info->contact_results.resize(1);
+        if (WaypointInCollision(
+                mutable_instruction->getWaypoint(), input, *cur_composite_profile, info->contact_results[0]))
         {
           CONSOLE_BRIDGE_logInform("FixStateCollisionProcessGenerator is modifying the const input instructions");
-          if (!ApplyCorrectionWorkflow(mutable_instruction->getWaypoint(), input, *cur_composite_profile))
+          if (!ApplyCorrectionWorkflow(
+                  mutable_instruction->getWaypoint(), input, *cur_composite_profile, info->contact_results[0]))
             return 0;
         }
       }
@@ -361,6 +379,7 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input, st
     case FixStateCollisionProfile::Settings::ALL:
     {
       auto flattened = flatten(*ci, planFilter);
+      info->contact_results.resize(flattened.size());
       if (flattened.empty())
       {
         CONSOLE_BRIDGE_logWarn("FixStateCollisionProcessGenerator found no PlanInstructions to process");
@@ -369,22 +388,24 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input, st
       }
 
       bool in_collision = false;
-      for (const auto& instruction : flattened)
+      for (std::size_t i = 0; i < flattened.size(); i++)
       {
-        in_collision |= WaypointInCollision(
-            instruction.get().cast_const<PlanInstruction>()->getWaypoint(), input, *cur_composite_profile);
+        in_collision |= WaypointInCollision(flattened[i].get().cast_const<PlanInstruction>()->getWaypoint(),
+                                            input,
+                                            *cur_composite_profile,
+                                            info->contact_results[i]);
       }
       if (!in_collision)
         break;
 
       CONSOLE_BRIDGE_logInform("FixStateCollisionProcessGenerator is modifying the const input instructions");
-      for (const auto& instruction : flattened)
+      for (std::size_t i = 0; i < flattened.size(); i++)
       {
-        const Instruction* instr_const_ptr = &instruction.get();
+        const Instruction* instr_const_ptr = &flattened[i].get();
         Instruction* mutable_instruction = const_cast<Instruction*>(instr_const_ptr);
         PlanInstruction* plan = mutable_instruction->cast<PlanInstruction>();
 
-        if (!ApplyCorrectionWorkflow(plan->getWaypoint(), input, *cur_composite_profile))
+        if (!ApplyCorrectionWorkflow(plan->getWaypoint(), input, *cur_composite_profile, info->contact_results[i]))
           return 0;
       }
     }

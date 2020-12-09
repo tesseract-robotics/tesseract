@@ -134,7 +134,8 @@ public:
  */
 bool StateInCollision(const Eigen::Ref<const Eigen::VectorXd>& start_pos,
                       const ProcessInput& input,
-                      const FixStateCollisionProfile& profile);
+                      const FixStateCollisionProfile& profile,
+                      tesseract_collision::ContactResultMap& contacts);
 
 /**
  * @brief Checks if a waypoint is in collision
@@ -142,7 +143,10 @@ bool StateInCollision(const Eigen::Ref<const Eigen::VectorXd>& start_pos,
  * @param input Process Input associated with waypoint. Needed for kinematics, etc.
  * @return True if in collision
  */
-bool WaypointInCollision(const Waypoint& waypoint, const ProcessInput& input, const FixStateCollisionProfile& profile);
+bool WaypointInCollision(const Waypoint& waypoint,
+                         const ProcessInput& input,
+                         const FixStateCollisionProfile& profile,
+                         tesseract_collision::ContactResultMap& contacts);
 
 /**
  * @brief Takes a waypoint and uses a small trajopt problem to push it out of collision if necessary
