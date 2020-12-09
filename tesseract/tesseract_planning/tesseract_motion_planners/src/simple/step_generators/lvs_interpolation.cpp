@@ -400,6 +400,40 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
     int state_steps = int(joint_dist / state_longest_valid_segment_length) + 1;
     steps = std::max(steps, state_steps);
   }
+  else if (found_j1)
+  {
+    double dist = std::numeric_limits<double>::max();
+    const auto dof = inv_kin->numJoints();
+    long j1_num_solutions = j1.size() / dof;
+    j1_final = j1.middleRows(0, dof);
+    for (long i = 0; i < j1_num_solutions; ++i)
+    {
+      auto j1_solution = j1.middleRows(i * dof, dof);
+      double d = (seed - j1_solution).norm();
+      if (d < dist)
+      {
+        j1_final = j1_solution;
+        dist = d;
+      }
+    }
+  }
+  else if (found_j2)
+  {
+    double dist = std::numeric_limits<double>::max();
+    const auto dof = inv_kin->numJoints();
+    long j2_num_solutions = j2.size() / dof;
+    j2_final = j2.middleRows(0, dof);
+    for (long i = 0; i < j2_num_solutions; ++i)
+    {
+      auto j2_solution = j2.middleRows(i * dof, dof);
+      double d = (seed - j2_solution).norm();
+      if (d < dist)
+      {
+        j2_final = j2_solution;
+        dist = d;
+      }
+    }
+  }
 
   // Check min steps requirement
   steps = std::max(steps, min_steps);
