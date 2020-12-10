@@ -316,7 +316,7 @@ void OMPLDefaultPlanProfile::setup(OMPLProblem& prob) const
     }
     else
     {
-      Eigen::VectorXd weights = Eigen::VectorXd::Constant(1, dof, 1);
+      Eigen::VectorXd weights = Eigen::VectorXd::Ones(dof);
       rss->setStateSamplerAllocator(std::bind(
           &OMPLDefaultPlanProfile::allocWeightedRealVectorStateSampler, this, std::placeholders::_1, weights, limits));
     }
@@ -592,7 +592,7 @@ tinyxml2::XMLElement* OMPLDefaultPlanProfile::toXML(tinyxml2::XMLDocument& doc) 
   xml_long_valid_seg_len->SetText(longest_valid_segment_length);
   xml_ompl->InsertEndChild(xml_long_valid_seg_len);
 
-  // TODO: Add plugins for weights_alocator state_sampler_allocator, optimization_objective_allocator, svc_allocator,
+  // TODO: Add plugins for state_sampler_allocator, optimization_objective_allocator, svc_allocator,
   // mv_allocator
 
   xml_planner->InsertEndChild(xml_ompl);

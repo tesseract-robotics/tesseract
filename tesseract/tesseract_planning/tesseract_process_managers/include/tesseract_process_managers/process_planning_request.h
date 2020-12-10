@@ -45,7 +45,7 @@ namespace tesseract_planning
 {
 struct ProcessPlanningRequest
 {
-  /** @brief The name of the planner to use */
+  /** @brief The name of the Process Pipeline (aka. Taskflow) to use */
   std::string name;
 
   /** @brief  This should an xml string of the command language instructions */

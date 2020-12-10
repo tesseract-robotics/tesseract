@@ -376,7 +376,7 @@ ProcessPlanningFuture ProcessPlanningServer::run(const ProcessPlanningRequest& r
   auto it = process_planners_.find(request.name);
   if (it == process_planners_.end())
   {
-    CONSOLE_BRIDGE_logError("Requested motion planner is not supported!");
+    CONSOLE_BRIDGE_logError("Requested motion Process Pipeline (aka. Taskflow) is not supported!");
     return response;
   }
 
@@ -392,7 +392,6 @@ ProcessPlanningFuture ProcessPlanningServer::run(const ProcessPlanningRequest& r
     return response;
   }
 
-  //  response.process_manager->enableDebug(request.debug);
   //  response.process_manager->enableProfile(request.profile);
   ProcessInput process_input(tc,
                              response.input.get(),
