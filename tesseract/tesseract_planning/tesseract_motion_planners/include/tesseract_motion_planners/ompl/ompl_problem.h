@@ -52,6 +52,8 @@ using StateValidityCheckerAllocator =
 using MotionValidatorAllocator =
     std::function<ompl::base::MotionValidatorPtr(const ompl::base::SpaceInformationPtr&, const OMPLProblem&)>;
 
+using WeightsAllocator = std::function<Eigen::VectorXd(const ompl::base::SpaceInformationPtr&, const OMPLProblem&)>;
+
 enum class OMPLProblemStateSpace
 {
   REAL_STATE_SPACE,

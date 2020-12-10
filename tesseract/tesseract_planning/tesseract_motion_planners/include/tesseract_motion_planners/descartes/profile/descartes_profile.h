@@ -58,20 +58,20 @@ public:
                      const Instruction& parent_instruction,
                      const ManipulatorInfo& manip_info,
                      const std::vector<std::string>& active_links,
-                     int index) = 0;
+                     int index) const = 0;
 
   virtual void apply(DescartesProblem<FloatType>& prob,
                      const Eigen::VectorXd& joint_waypoint,
                      const Instruction& parent_instruction,
                      const ManipulatorInfo& manip_info,
                      const std::vector<std::string>& active_links,
-                     int index) = 0;
+                     int index) const = 0;
 
   virtual tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const = 0;
 };
 
 template <typename FloatType>
-using DescartesPlanProfileMap = std::unordered_map<std::string, typename DescartesPlanProfile<FloatType>::Ptr>;
+using DescartesPlanProfileMap = std::unordered_map<std::string, typename DescartesPlanProfile<FloatType>::ConstPtr>;
 
 /** @todo Currently descartes does not have support of composite profile everything is handled by the plan profile */
 }  // namespace tesseract_planning

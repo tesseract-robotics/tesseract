@@ -153,7 +153,7 @@ add_dependencies(run_tests ${PROJECT_NAME}_serialize_unit)
 
 # Profile Dictionary Tests
 add_executable(${PROJECT_NAME}_profile_dictionary_unit profile_dictionary_tests.cpp)
-target_link_libraries(${PROJECT_NAME}_profile_dictionary_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME}_core)
+target_link_libraries(${PROJECT_NAME}_profile_dictionary_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME}_core ${PROJECT_NAME}_trajopt)
 target_compile_options(${PROJECT_NAME}_profile_dictionary_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE} ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_profile_dictionary_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME}_profile_dictionary_unit ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})

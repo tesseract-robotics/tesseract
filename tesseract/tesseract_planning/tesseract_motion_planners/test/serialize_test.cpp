@@ -80,8 +80,6 @@ OMPLDefaultPlanProfile getOMPLPlanProfile()
 {
   OMPLDefaultPlanProfile ompl_profile;
 
-  ompl_profile.weights = Eigen::VectorXd::Ones(6) * 10;
-
   ompl_profile.simplify = true;
 
   ompl_profile.planners.push_back(std::make_shared<const SBLConfigurator>());

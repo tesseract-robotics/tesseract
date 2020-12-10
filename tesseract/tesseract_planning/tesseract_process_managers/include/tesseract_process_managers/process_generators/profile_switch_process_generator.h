@@ -37,7 +37,7 @@ struct ProfileSwitchProfile
 
   int return_value;
 };
-using ProfileSwitchProfileMap = std::unordered_map<std::string, ProfileSwitchProfile::Ptr>;
+using ProfileSwitchProfileMap = std::unordered_map<std::string, ProfileSwitchProfile::ConstPtr>;
 
 /**
  * @brief This generator simply returns a value specified in the composite profile. This can be used to switch execution
