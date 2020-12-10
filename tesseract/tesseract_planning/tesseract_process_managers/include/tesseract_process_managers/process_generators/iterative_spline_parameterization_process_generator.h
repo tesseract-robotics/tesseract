@@ -46,7 +46,7 @@ struct IterativeSplineParameterizationProfile
   double max_acceleration_scaling_factor = 1.0;
 };
 using IterativeSplineParameterizationProfileMap =
-    std::unordered_map<std::string, IterativeSplineParameterizationProfile::Ptr>;
+    std::unordered_map<std::string, IterativeSplineParameterizationProfile::ConstPtr>;
 
 class IterativeSplineParameterizationProcessGenerator : public ProcessGenerator
 {

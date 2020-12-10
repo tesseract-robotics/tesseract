@@ -123,10 +123,6 @@ public:
    */
   double longest_valid_segment_length = 0.1;
 
-  /** @brief This scales the variables search space. Must be same size as number of joints.
-   *         If empty it defaults to all ones */
-  Eigen::VectorXd weights;
-
   /** @brief The state sampler allocator. This can be null and it will use Tesseract default state sampler allocator. */
   ompl::base::StateSamplerAllocator state_sampler_allocator;
 
@@ -141,35 +137,35 @@ public:
    * ContinuousMotionValidator */
   MotionValidatorAllocator mv_allocator;
 
-  void setup(OMPLProblem& prob) override;
+  void setup(OMPLProblem& prob) const override;
 
   void applyGoalStates(OMPLProblem& prob,
                        const Eigen::Isometry3d& cartesian_waypoint,
                        const Instruction& parent_instruction,
                        const ManipulatorInfo& manip_info,
                        const std::vector<std::string>& active_links,
-                       int index) override;
+                       int index) const override;
 
   void applyGoalStates(OMPLProblem& prob,
                        const Eigen::VectorXd& joint_waypoint,
                        const Instruction& parent_instruction,
                        const ManipulatorInfo& manip_info,
                        const std::vector<std::string>& active_links,
-                       int index) override;
+                       int index) const override;
 
   void applyStartStates(OMPLProblem& prob,
                         const Eigen::Isometry3d& cartesian_waypoint,
                         const Instruction& parent_instruction,
                         const ManipulatorInfo& manip_info,
                         const std::vector<std::string>& active_links,
-                        int index) override;
+                        int index) const override;
 
   void applyStartStates(OMPLProblem& prob,
                         const Eigen::VectorXd& joint_waypoint,
                         const Instruction& parent_instruction,
                         const ManipulatorInfo& manip_info,
                         const std::vector<std::string>& active_links,
-                        int index) override;
+                        int index) const override;
 
   /**
    * @brief Default State sampler which uses the weights information to scale the sampled state. This is use full
@@ -178,6 +174,7 @@ public:
    * @return OMPL state sampler shared pointer
    */
   ompl::base::StateSamplerPtr allocWeightedRealVectorStateSampler(const ompl::base::StateSpace* space,
+                                                                  const Eigen::VectorXd& weights,
                                                                   const Eigen::MatrixX2d& limits) const;
 
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
@@ -185,16 +182,16 @@ public:
 protected:
   bool processStartAndGoalState(OMPLProblem& prob,
                                 const tesseract_environment::Environment::ConstPtr& env,
-                                const tesseract_kinematics::ForwardKinematics::ConstPtr& kin);
+                                const tesseract_kinematics::ForwardKinematics::ConstPtr& kin) const;
   ompl::base::StateValidityCheckerPtr
   processStateValidator(OMPLProblem& prob,
                         const tesseract_environment::Environment::ConstPtr& env,
-                        const tesseract_kinematics::ForwardKinematics::ConstPtr& kin);
+                        const tesseract_kinematics::ForwardKinematics::ConstPtr& kin) const;
   void processMotionValidator(ompl::base::StateValidityCheckerPtr svc_without_collision,
                               OMPLProblem& prob,
                               const tesseract_environment::Environment::ConstPtr& env,
-                              const tesseract_kinematics::ForwardKinematics::ConstPtr& kin);
-  void processOptimizationObjective(OMPLProblem& prob);
+                              const tesseract_kinematics::ForwardKinematics::ConstPtr& kin) const;
+  void processOptimizationObjective(OMPLProblem& prob) const;
 };
 }  // namespace tesseract_planning
 #endif  // TESSERACT_MOTION_PLANNERS_OMPL_OMPL_DEFAULT_PLAN_PROFILE_H

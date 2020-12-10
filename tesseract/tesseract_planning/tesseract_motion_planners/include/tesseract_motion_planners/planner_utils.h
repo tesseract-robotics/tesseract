@@ -143,12 +143,12 @@ inline std::string getProfileString(const std::string& profile,
  * @return The profile requested if found. Otherwise the default_profile
  */
 template <typename ProfileType>
-std::shared_ptr<ProfileType>
+std::shared_ptr<const ProfileType>
 getProfile(const std::string& profile,
-           const std::unordered_map<std::string, std::shared_ptr<ProfileType>>& profile_map,
-           std::shared_ptr<ProfileType> default_profile = nullptr)
+           const std::unordered_map<std::string, std::shared_ptr<const ProfileType>>& profile_map,
+           std::shared_ptr<const ProfileType> default_profile = nullptr)
 {
-  std::shared_ptr<ProfileType> results;
+  std::shared_ptr<const ProfileType> results;
   auto it = profile_map.find(profile);
 
   if (it == profile_map.end())

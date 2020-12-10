@@ -52,40 +52,40 @@ public:
   OMPLPlanProfile& operator=(OMPLPlanProfile&&) noexcept = default;
   OMPLPlanProfile(const tinyxml2::XMLElement& xml_element);
 
-  virtual void setup(OMPLProblem& prob) = 0;
+  virtual void setup(OMPLProblem& prob) const = 0;
 
   virtual void applyGoalStates(OMPLProblem& prob,
                                const Eigen::Isometry3d& cartesian_waypoint,
                                const Instruction& parent_instruction,
                                const ManipulatorInfo& manip_info,
                                const std::vector<std::string>& active_links,
-                               int index) = 0;
+                               int index) const = 0;
 
   virtual void applyGoalStates(OMPLProblem& prob,
                                const Eigen::VectorXd& joint_waypoint,
                                const Instruction& parent_instruction,
                                const ManipulatorInfo& manip_info,
                                const std::vector<std::string>& active_links,
-                               int index) = 0;
+                               int index) const = 0;
 
   virtual void applyStartStates(OMPLProblem& prob,
                                 const Eigen::Isometry3d& cartesian_waypoint,
                                 const Instruction& parent_instruction,
                                 const ManipulatorInfo& manip_info,
                                 const std::vector<std::string>& active_links,
-                                int index) = 0;
+                                int index) const = 0;
 
   virtual void applyStartStates(OMPLProblem& prob,
                                 const Eigen::VectorXd& joint_waypoint,
                                 const Instruction& parent_instruction,
                                 const ManipulatorInfo& manip_info,
                                 const std::vector<std::string>& active_links,
-                                int index) = 0;
+                                int index) const = 0;
 
   virtual tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const = 0;
 };
 
-using OMPLPlanProfileMap = std::unordered_map<std::string, OMPLPlanProfile::Ptr>;
+using OMPLPlanProfileMap = std::unordered_map<std::string, OMPLPlanProfile::ConstPtr>;
 
 /** @todo Currently OMPL does not have support of composite profile everything is handled by the plan profile */
 
