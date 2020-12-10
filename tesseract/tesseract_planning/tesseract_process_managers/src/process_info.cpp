@@ -32,19 +32,19 @@ ProcessInfo::ProcessInfo(std::size_t unique_id, std::string name) : unique_id(un
 
 void ProcessInfoContainer::addProcessInfo(ProcessInfo::ConstPtr process_info)
 {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::unique_lock<std::shared_mutex> lock(mutex_);
   process_info_map_[process_info->unique_id] = std::move(process_info);
 }
 
 ProcessInfo::ConstPtr ProcessInfoContainer::operator[](std::size_t index) const
 {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::shared_lock<std::shared_mutex> lock(mutex_);
   return process_info_map_.at(index);
 }
 
 std::map<std::size_t, ProcessInfo::ConstPtr> ProcessInfoContainer::getProcessInfoMap() const
 {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::shared_lock<std::shared_mutex> lock(mutex_);
   return process_info_map_;
 }
 

@@ -29,7 +29,7 @@
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <memory>
-#include <mutex>
+#include <shared_mutex>
 #include <map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -68,7 +68,7 @@ struct ProcessInfoContainer
   std::map<std::size_t, ProcessInfo::ConstPtr> getProcessInfoMap() const;
 
 private:
-  mutable std::mutex mutex_;
+  mutable std::shared_mutex mutex_;
   std::map<std::size_t, ProcessInfo::ConstPtr> process_info_map_;
 };
 }  // namespace tesseract_planning
