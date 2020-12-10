@@ -215,10 +215,13 @@ inline bool isCompositeEmpty(const CompositeInstruction& composite)
  * @brief Check if the input has a seed
  * @details It checks if a any composite instruction is empty in the results data structure
  * @param input The process input
- * @return One if already has a seed otherwise zero
+ * @return One if seed exists, otherwise zero
  */
 inline int hasSeedTask(ProcessInput input)  // NOLINT
 {
+  if (input.has_seed)
+    return 1;
+
   assert(isCompositeInstruction(*(input.getResults())));
   if (isCompositeInstruction(*(input.getResults())))
   {
