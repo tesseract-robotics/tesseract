@@ -193,7 +193,7 @@ void TrajOptDefaultCompositeProfile::apply(trajopt::ProblemConstructionInfo& pci
                                            int end_index,
                                            const ManipulatorInfo& /*manip_info*/,
                                            const std::vector<std::string>& /*active_links*/,
-                                           const std::vector<int>& fixed_indices)
+                                           const std::vector<int>& fixed_indices) const
 {
   // -------- Construct the problem ------------
   // -------------------------------------------

@@ -46,7 +46,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-
 /**
  * @brief This struct is passed as an input to each process in the decision tree
  *

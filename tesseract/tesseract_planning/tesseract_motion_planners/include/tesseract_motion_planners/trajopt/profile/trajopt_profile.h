@@ -49,14 +49,14 @@ public:
                      const Instruction& parent_instruction,
                      const ManipulatorInfo& manip_info,
                      const std::vector<std::string>& active_links,
-                     int index) = 0;
+                     int index) const = 0;
 
   virtual void apply(trajopt::ProblemConstructionInfo& pci,
                      const Eigen::VectorXd& joint_waypoint,
                      const Instruction& parent_instruction,
                      const ManipulatorInfo& manip_info,
                      const std::vector<std::string>& active_links,
-                     int index) = 0;
+                     int index) const = 0;
 
   virtual tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const = 0;
 };
@@ -72,13 +72,13 @@ public:
                      int end_index,
                      const ManipulatorInfo& manip_info,
                      const std::vector<std::string>& active_links,
-                     const std::vector<int>& fixed_indices) = 0;
+                     const std::vector<int>& fixed_indices) const = 0;
 
   virtual tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const = 0;
 };
 
-using TrajOptCompositeProfileMap = std::unordered_map<std::string, TrajOptCompositeProfile::Ptr>;
-using TrajOptPlanProfileMap = std::unordered_map<std::string, TrajOptPlanProfile::Ptr>;
+using TrajOptCompositeProfileMap = std::unordered_map<std::string, TrajOptCompositeProfile::ConstPtr>;
+using TrajOptPlanProfileMap = std::unordered_map<std::string, TrajOptPlanProfile::ConstPtr>;
 }  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_TRAJOPT_PROFILE_H

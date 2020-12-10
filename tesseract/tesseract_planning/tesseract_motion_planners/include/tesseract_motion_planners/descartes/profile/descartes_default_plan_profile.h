@@ -78,14 +78,14 @@ public:
              const Instruction& parent_instruction,
              const ManipulatorInfo& manip_info,
              const std::vector<std::string>& active_links,
-             int index) override;
+             int index) const override;
 
   void apply(DescartesProblem<FloatType>& prob,
              const Eigen::VectorXd& joint_waypoint,
              const Instruction& parent_instruction,
              const ManipulatorInfo& manip_info,
              const std::vector<std::string>& active_links,
-             int index) override;
+             int index) const override;
 
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 };

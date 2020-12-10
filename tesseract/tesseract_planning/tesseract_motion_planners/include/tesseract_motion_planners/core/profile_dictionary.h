@@ -52,67 +52,73 @@ public:
   using Ptr = std::shared_ptr<ProfileDictionary>;
   using ConstPtr = std::shared_ptr<const ProfileDictionary>;
 
-  template <typename T>
+  template <typename ProfileType>
   bool hasProfileEntry() const
   {
     std::shared_lock lock(mutex_);
-    return (profiles_.find(std::type_index(typeid(T))) != profiles_.end());
+    return (profiles_.find(std::type_index(typeid(ProfileType))) != profiles_.end());
   }
 
-  template <typename T>
+  template <typename ProfileType>
   void removeProfileEntry()
   {
     std::unique_lock lock(mutex_);
-    profiles_.erase(std::type_index(typeid(T)));
+    profiles_.erase(std::type_index(typeid(ProfileType)));
   }
 
-  template <typename T>
-  std::unordered_map<std::string, std::shared_ptr<T>> getProfileEntry() const
+  template <typename ProfileType>
+  std::unordered_map<std::string, std::shared_ptr<const ProfileType>> getProfileEntry() const
   {
     std::shared_lock lock(mutex_);
-    auto it = profiles_.find(std::type_index(typeid(T)));
+    auto it = profiles_.find(std::type_index(typeid(ProfileType)));
     if (it != profiles_.end())
-      return std::any_cast<const std::unordered_map<std::string, std::shared_ptr<T>>&>(it->second);
+      return std::any_cast<const std::unordered_map<std::string, std::shared_ptr<const ProfileType>>&>(it->second);
 
     throw std::runtime_error("Profile entry does not exist for type name " +
-                             std::string(std::type_index(typeid(T)).name()));
+                             std::string(std::type_index(typeid(ProfileType)).name()));
   }
 
-  template <typename T>
-  void addProfile(const std::string& profile_name, std::shared_ptr<T> profile)
+  template <typename ProfileType>
+  void addProfile(const std::string& profile_name, std::shared_ptr<const ProfileType> profile)
   {
     std::unique_lock lock(mutex_);
-    auto it = profiles_.find(std::type_index(typeid(T)));
+    auto it = profiles_.find(std::type_index(typeid(ProfileType)));
     if (it != profiles_.end())
     {
-      std::any_cast<std::unordered_map<std::string, std::shared_ptr<T>>&>(it->second)[profile_name] = profile;
+      std::any_cast<std::unordered_map<std::string, std::shared_ptr<const ProfileType>>&>(it->second)[profile_name] =
+          profile;
     }
     else
     {
-      std::unordered_map<std::string, std::shared_ptr<T>> new_entry;
+      std::unordered_map<std::string, std::shared_ptr<const ProfileType>> new_entry;
       new_entry[profile_name] = profile;
-      profiles_[std::type_index(typeid(T))] = new_entry;
+      profiles_[std::type_index(typeid(ProfileType))] = new_entry;
     }
   }
 
-  template <typename T>
-  std::shared_ptr<T> getProfile(const std::string& profile_name) const
+  template <typename ProfileType>
+  std::shared_ptr<const ProfileType> getProfile(const std::string& profile_name) const
   {
     std::shared_lock lock(mutex_);
-    auto it = profiles_.find(std::type_index(typeid(T)));
+    auto it = profiles_.find(std::type_index(typeid(ProfileType)));
     if (it != profiles_.end())
-      return std::any_cast<std::unordered_map<std::string, std::shared_ptr<T>>&>(it->second)[profile_name];
+    {
+      const auto& profile_map =
+          std::any_cast<const std::unordered_map<std::string, std::shared_ptr<const ProfileType>>&>(it->second);
+      return profile_map.at(profile_name);
+    }
 
     return nullptr;
   }
 
-  template <typename T>
+  template <typename ProfileType>
   void removeProfile(const std::string& profile_name)
   {
     std::unique_lock lock(mutex_);
-    auto it = profiles_.find(std::type_index(typeid(T)));
+    auto it = profiles_.find(std::type_index(typeid(ProfileType)));
     if (it != profiles_.end())
-      std::any_cast<std::unordered_map<std::string, std::shared_ptr<T>>&>(it->second).erase(profile_name);
+      std::any_cast<std::unordered_map<std::string, std::shared_ptr<const ProfileType>>&>(it->second)
+          .erase(profile_name);
   }
 
 protected:
