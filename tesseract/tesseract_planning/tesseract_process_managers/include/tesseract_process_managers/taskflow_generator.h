@@ -58,17 +58,39 @@ namespace tesseract_planning
  */
 struct TaskflowContainer
 {
-  // If not nullptr this should be added using taskflow composition.
+  /**
+   * @brief If not a nullptr this should be added using taskflow composition.
+   * @details If a nullptr then input and outputs may be used.
+   */
   std::unique_ptr<tf::Taskflow> taskflow;
 
-  // These should only be used if taskflow is a nullptr. It not nullptr they have been assigned to this taskflow
+  /**
+   * @brief The input task associated with a taskflow
+   * @warning If taskflow is not a nullptr, then input is associated with the above taskflow and connections cannot span
+   * multiple taskflows
+   */
   tf::Task input;
+
+  /**
+   * @brief The output task associated with a taskflow
+   * @warning If taskflow is not a nullptr, then input is associated with the above taskflow and connections cannot span
+   * multiple taskflows
+   */
   std::vector<tf::Task> outputs;
 
-  // These are containers for things that must stay around during execution of taskflow
+  /**
+   * @brief TaskflowContainer's associated with the taskflow
+   * @details This must stay around during execution of taskflow
+   */
   std::vector<TaskflowContainer> containers;
+
+  /**
+   * @brief ProcessGenerator's associated with the taskflow
+   * @details This must stay around during execution of taskflow
+   */
   std::vector<ProcessGenerator::UPtr> generators;
 
+  /** @brief Clear the Taskflow Container */
   void clear()
   {
     taskflow->clear();
