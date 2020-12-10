@@ -45,19 +45,33 @@ namespace tesseract_planning
 {
 /**
  * @brief This contains the result for the process planning request
- * @details Must chec the status before access the results to know if available.
+ * @details Must check the status before access the results to know if available.
  * @note This must not go out of scope until the process has finished
  */
 struct ProcessPlanningFuture
 {
+  /** @brief This is the future return from taskflow executor.run, used to check if process has finished */
   std::future<void> process_future;
+
+  /** @brief This is used to abort the associated process and check if the process was successful */
   ProcessInterface::Ptr interface;
+
+  /** @brief The stored input to the process */
   std::unique_ptr<Instruction> input;
+
+  /** @brief The results to the process */
   std::unique_ptr<Instruction> results;
+
+  /** @brief The stored global manipulator info */
   std::unique_ptr<const ManipulatorInfo> global_manip_info;
+
+  /** @brief The stored plan profile remapping */
   std::unique_ptr<const PlannerProfileRemapping> plan_profile_remapping;
+
+  /** @brief The stored composite profile remapping */
   std::unique_ptr<const PlannerProfileRemapping> composite_profile_remapping;
 
+  /** @brief The taskflow container returned from the TaskflowGenerator that must remain during taskflow execution */
   TaskflowContainer taskflow_container;
 
   /** @brief Clear all content */
@@ -72,16 +86,29 @@ struct ProcessPlanningFuture
     taskflow_container.clear();
   }
 
-  // These methods are used for checking the status of the future
+  /**
+   * @brief This checks if the process has finished
+   * @return True if the process finished, otherwise false
+   */
   bool ready() const { return (process_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready); }
+
+  /** @brief Wait until the process has finished */
   void wait() const { process_future.wait(); }
 
+  /**
+   * @brief Check if a process has finished for a given duration
+   * @return The future status
+   */
   template <typename R, typename P>
   std::future_status waitFor(const std::chrono::duration<R, P>& duration) const
   {
     return process_future.wait_for(duration);
   }
 
+  /**
+   * @brief Check if a process has finished up to a given time point
+   * @return The future status
+   */
   template <typename C, typename D>
   std::future_status waitUntil(const std::chrono::time_point<C, D>& abs) const
   {

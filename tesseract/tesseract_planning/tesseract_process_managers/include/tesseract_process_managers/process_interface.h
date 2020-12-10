@@ -36,17 +36,26 @@ namespace tesseract_planning
 {
 /**
  * @brief This is a thread safe class used for aborting a process along with checking if a process was succesful
- * @default If a process failed then the process has been abort by some child process
+ * @details If a process failed then the process has been abort by some child process
  */
 class ProcessInterface
 {
 public:
   using Ptr = std::shared_ptr<ProcessInterface>;
 
+  /**
+   * @brief Check if the process was aborted
+   * @return True if aborted, otherwise false
+   */
   bool isAborted() const;
 
+  /**
+   * @brief Check if the process finished without error
+   * @return True if the process was not aborted, otherwise false
+   */
   bool isSuccessful() const;
 
+  /** @brief Abort the process associated with this interface */
   void abort();
 
 protected:

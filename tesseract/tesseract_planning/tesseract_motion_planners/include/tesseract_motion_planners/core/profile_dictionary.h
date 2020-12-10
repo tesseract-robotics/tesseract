@@ -41,9 +41,9 @@ namespace tesseract_planning
 /**
  * @brief This class is used to store profiles for motion planning and process planning
  * @details This is a thread safe class
- *    A ProfileEntry<T> is a std::unordered_map<std::string, std::shared_ptr<T>>
+ *    A ProfileEntry<T> is a std::unordered_map<std::string, std::shared_ptr<const T>>
  *      - The key is the profile name
- *      - Where std::shared_ptr<T> is the profile
+ *      - Where std::shared_ptr<const T> is the profile
  *    The ProfleEntry<T> is also stored in std::unordered_map where the key here is the std::type_index(typeid(T))
  */
 class ProfileDictionary
@@ -52,6 +52,10 @@ public:
   using Ptr = std::shared_ptr<ProfileDictionary>;
   using ConstPtr = std::shared_ptr<const ProfileDictionary>;
 
+  /**
+   * @brief Check if a profile entry exists
+   * @return True if exists, otherwise false
+   */
   template <typename ProfileType>
   bool hasProfileEntry() const
   {
@@ -59,6 +63,7 @@ public:
     return (profiles_.find(std::type_index(typeid(ProfileType))) != profiles_.end());
   }
 
+  /** @brief Remove a profile entry */
   template <typename ProfileType>
   void removeProfileEntry()
   {
@@ -66,6 +71,10 @@ public:
     profiles_.erase(std::type_index(typeid(ProfileType)));
   }
 
+  /**
+   * @brief Get a profile entry
+   * @return The profile map associated with the profile entry
+   */
   template <typename ProfileType>
   std::unordered_map<std::string, std::shared_ptr<const ProfileType>> getProfileEntry() const
   {
@@ -78,6 +87,11 @@ public:
                              std::string(std::type_index(typeid(ProfileType)).name()));
   }
 
+  /**
+   * @brief Add a profile
+   * @param profile_name The profile name
+   * @param profile The profile to add
+   */
   template <typename ProfileType>
   void addProfile(const std::string& profile_name, std::shared_ptr<const ProfileType> profile)
   {
@@ -96,6 +110,12 @@ public:
     }
   }
 
+  /**
+   * @brief Get a profile by name
+   * @details Check if the profile exist before calling this function, if missing an exception is thrown
+   * @param profile_name The profile name
+   * @return The profile
+   */
   template <typename ProfileType>
   std::shared_ptr<const ProfileType> getProfile(const std::string& profile_name) const
   {
@@ -111,6 +131,10 @@ public:
     return nullptr;
   }
 
+  /**
+   * @brief Remove a profile
+   * @param profile_name The profile to be removed
+   */
   template <typename ProfileType>
   void removeProfile(const std::string& profile_name)
   {
