@@ -44,12 +44,14 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                            const Instruction* instruction,
                            const ManipulatorInfo& manip_info,
                            Instruction* seed,
+                           bool has_seed,
                            ProfileDictionary::ConstPtr profiles)
   : tesseract(std::move(tesseract))
   , manip_info(manip_info)
   , plan_profile_remapping(EMPTY_PROFILE_MAPPING)
   , composite_profile_remapping(EMPTY_PROFILE_MAPPING)
   , profiles(std::move(profiles))
+  , has_seed(has_seed)
   , instruction_(instruction)
   , results_(seed)
 {
@@ -61,12 +63,14 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                            const PlannerProfileRemapping& plan_profile_remapping,
                            const PlannerProfileRemapping& composite_profile_remapping,
                            Instruction* seed,
+                           bool has_seed,
                            ProfileDictionary::ConstPtr profiles)
   : tesseract(std::move(tesseract))
   , manip_info(manip_info)
   , plan_profile_remapping(plan_profile_remapping)
   , composite_profile_remapping(composite_profile_remapping)
   , profiles(std::move(profiles))
+  , has_seed(has_seed)
   , instruction_(instruction)
   , results_(seed)
 {
@@ -77,12 +81,14 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                            const PlannerProfileRemapping& plan_profile_remapping,
                            const PlannerProfileRemapping& composite_profile_remapping,
                            Instruction* seed,
+                           bool has_seed,
                            ProfileDictionary::ConstPtr profiles)
   : tesseract(std::move(tesseract))
   , manip_info(EMPTY_MANIPULATOR_INFO)
   , plan_profile_remapping(plan_profile_remapping)
   , composite_profile_remapping(composite_profile_remapping)
   , profiles(std::move(profiles))
+  , has_seed(has_seed)
   , instruction_(instruction)
   , results_(seed)
 {
@@ -91,12 +97,14 @@ ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
 ProcessInput::ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                            const Instruction* instruction,
                            Instruction* seed,
+                           bool has_seed,
                            ProfileDictionary::ConstPtr profiles)
   : tesseract(std::move(tesseract))
   , manip_info(EMPTY_MANIPULATOR_INFO)
   , plan_profile_remapping(EMPTY_PROFILE_MAPPING)
   , composite_profile_remapping(EMPTY_PROFILE_MAPPING)
   , profiles(std::move(profiles))
+  , has_seed(has_seed)
   , instruction_(instruction)
   , results_(seed)
 {
