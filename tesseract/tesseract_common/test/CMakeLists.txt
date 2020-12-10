@@ -42,7 +42,7 @@ add_dependencies(${PROJECT_NAME}_unit ${PROJECT_NAME})
 add_dependencies(run_tests ${PROJECT_NAME}_unit)
 
 add_executable(${PROJECT_NAME}_clone_cache_unit clone_cache_unit.cpp)
-target_link_libraries(${PROJECT_NAME}_clone_cache_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME} console_bridge)
+target_link_libraries(${PROJECT_NAME}_clone_cache_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME} console_bridge::console_bridge)
 target_compile_options(${PROJECT_NAME}_clone_cache_unit PRIVATE ${TESSERACT_COMPILE_OPTIONS_PRIVATE} ${TESSERACT_COMPILE_OPTIONS_PUBLIC})
 target_compile_definitions(${PROJECT_NAME}_clone_cache_unit PRIVATE ${TESSERACT_COMPILE_DEFINITIONS})
 target_clang_tidy(${PROJECT_NAME}_clone_cache_unit ARGUMENTS ${TESSERACT_CLANG_TIDY_ARGS} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
