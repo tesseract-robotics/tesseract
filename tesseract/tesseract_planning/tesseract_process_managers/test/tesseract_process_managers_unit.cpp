@@ -104,7 +104,8 @@ TEST_F(TesseractProcessManagerUnit, SeedMinLengthProcessGeneratorTest)
   Instruction seed_instruction = seed;
 
   long current_length = getMoveInstructionCount(seed);
-  ProcessInput input(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed_instruction, nullptr);
+  ProcessInput input(
+      tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed_instruction, true, nullptr);
 
   SeedMinLengthProcessGenerator smlpg(current_length);
   EXPECT_TRUE(smlpg.generateConditionalTask(input, 1)() == 1);
@@ -117,7 +118,8 @@ TEST_F(TesseractProcessManagerUnit, SeedMinLengthProcessGeneratorTest)
   EXPECT_TRUE(final_length2 >= (2 * current_length));
 
   seed_instruction = seed;
-  ProcessInput input2(tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed_instruction, nullptr);
+  ProcessInput input2(
+      tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed_instruction, true, nullptr);
 
   SeedMinLengthProcessGenerator smlpg3(3 * current_length);
   EXPECT_TRUE(smlpg3.generateConditionalTask(input, 3)() == 1);
