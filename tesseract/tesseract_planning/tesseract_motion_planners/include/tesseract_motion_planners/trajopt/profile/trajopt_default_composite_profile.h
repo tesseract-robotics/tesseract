@@ -95,7 +95,7 @@ public:
              int end_index,
              const ManipulatorInfo& manip_info,
              const std::vector<std::string>& active_links,
-             const std::vector<int>& fixed_indices) override;
+             const std::vector<int>& fixed_indices) const override;
 
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 

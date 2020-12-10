@@ -103,7 +103,7 @@ void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
                                       const Instruction& parent_instruction,
                                       const ManipulatorInfo& manip_info,
                                       const std::vector<std::string>& active_links,
-                                      int index)
+                                      int index) const
 {
   assert(isPlanInstruction(parent_instruction));
   const auto* base_instruction = parent_instruction.cast_const<PlanInstruction>();
@@ -142,7 +142,7 @@ void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
                                       const Instruction& /*parent_instruction*/,
                                       const ManipulatorInfo& /*manip_info*/,
                                       const std::vector<std::string>& /*active_links*/,
-                                      int index)
+                                      int index) const
 {
   auto ti = createJointWaypointTermInfo(joint_waypoint, index, joint_coeff, term_type);
 

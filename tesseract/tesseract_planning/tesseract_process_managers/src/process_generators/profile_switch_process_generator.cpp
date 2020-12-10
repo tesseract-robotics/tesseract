@@ -77,7 +77,7 @@ int ProfileSwitchProcessGenerator::conditionalProcess(ProcessInput input, std::s
 
   // Get the profile
   std::string profile = getProfileString(ci->getProfile(), name_, input.composite_profile_remapping);
-  ProfileSwitchProfile::Ptr cur_composite_profile =
+  ProfileSwitchProfile::ConstPtr cur_composite_profile =
       getProfile<ProfileSwitchProfile>(profile, composite_profiles, std::make_shared<ProfileSwitchProfile>());
   if (!cur_composite_profile)
   {

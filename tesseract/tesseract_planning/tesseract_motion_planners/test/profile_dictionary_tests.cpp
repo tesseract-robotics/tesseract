@@ -37,40 +37,41 @@ struct ProfileBase
 
 struct ProfileTest : public ProfileBase
 {
+  ProfileTest() = default;
+  ProfileTest(int a) { this->a = a; }
 };
 
 using namespace tesseract_planning;
 
 TEST(TesseractPlanningProfileDictionaryUnit, ProfileDictionaryTest)
 {
-  //  ProfileDictionary profiles;
+  ProfileDictionary profiles;
 
-  //  EXPECT_FALSE(profiles.hasProfileEntry<ProfileBase>());
+  EXPECT_FALSE(profiles.hasProfileEntry<ProfileBase>());
 
-  //  profiles.addProfile<ProfileBase>("key", std::make_shared<ProfileTest>());
+  profiles.addProfile<ProfileBase>("key", std::make_shared<ProfileTest>());
 
-  //  EXPECT_TRUE(profiles.hasProfileEntry<ProfileBase>());
+  EXPECT_TRUE(profiles.hasProfileEntry<ProfileBase>());
 
-  //  auto profile = profiles.getProfile<ProfileBase>("key");
+  auto profile = profiles.getProfile<ProfileBase>("key");
 
-  //  EXPECT_TRUE(profile != nullptr);
-  //  EXPECT_EQ(profile->a, 0);
+  EXPECT_TRUE(profile != nullptr);
+  EXPECT_EQ(profile->a, 0);
 
-  //  profile->a = 10;
+  profiles.addProfile<ProfileBase>("key", std::make_shared<ProfileTest>(10));
+  auto profile_check = profiles.getProfile<ProfileBase>("key");
+  EXPECT_TRUE(profile_check != nullptr);
+  EXPECT_EQ(profile_check->a, 10);
 
-  //  auto profile_check = profiles.getProfile<ProfileBase>("key");
-  //  EXPECT_TRUE(profile_check != nullptr);
-  //  EXPECT_EQ(profile_check->a, 10);
+  auto profile_map = profiles.getProfileEntry<ProfileBase>();
+  auto it = profile_map.find("key");
+  EXPECT_TRUE(it != profile_map.end());
+  EXPECT_EQ(it->second->a, 10);
 
-  //  auto profile_map = profiles.getProfileEntry<ProfileBase>();
-  //  auto it = profile_map.find("key");
-  //  EXPECT_TRUE(it != profile_map.end());
-  //  EXPECT_EQ(it->second->a, 10);
-
-  //  it->second->a = 20;
-  //  auto profile_check2 = profiles.getProfile<ProfileBase>("key");
-  //  EXPECT_TRUE(profile_check2 != nullptr);
-  //  EXPECT_EQ(profile_check2->a, 20);
+  profiles.addProfile<ProfileBase>("key", std::make_shared<ProfileTest>(20));
+  auto profile_check2 = profiles.getProfile<ProfileBase>("key");
+  EXPECT_TRUE(profile_check2 != nullptr);
+  EXPECT_EQ(profile_check2->a, 20);
 }
 
 int main(int argc, char** argv)
