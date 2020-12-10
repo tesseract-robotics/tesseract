@@ -2,7 +2,7 @@
 <package format="2">
   <name>tesseract_common</name>
   <version>0.1.0</version>
-  <description>Contains common macros, utils and type used throughout</description>
+  <description>Contains common macros, utils and types used throughout</description>
   <maintainer email="Levi.Armstrong@swri.org">Levi Armstrong</maintainer>
   <license>Apache 2.0</license>
   <author>Levi Armstrong</author>
@@ -10,6 +10,7 @@
   <build_depend>cmake_common_scripts</build_depend>
   <build_depend>eigen</build_depend>
   <build_export_depend>eigen</build_export_depend>
+  <depend>libconsole-bridge-dev</depend>
   <depend>tinyxml2</depend>
 
   <test_depend>gtest</test_depend>
