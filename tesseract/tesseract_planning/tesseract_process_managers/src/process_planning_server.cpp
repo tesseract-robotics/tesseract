@@ -117,10 +117,16 @@ ProcessPlanningFuture ProcessPlanningServer::run(const ProcessPlanningRequest& r
   ManipulatorInfo mi = composite_program->getManipulatorInfo();
   response.global_manip_info = std::make_unique<const ManipulatorInfo>(mi);
 
+  bool has_seed{ false };
   if (!isNullInstruction(request.seed))
+  {
+    has_seed = true;
     response.results = std::make_unique<Instruction>(request.seed);
+  }
   else
+  {
     response.results = std::make_unique<Instruction>(generateSkeletonSeed(*composite_program));
+  }
 
   auto it = process_planners_.find(request.name);
   if (it == process_planners_.end())
@@ -147,6 +153,7 @@ ProcessPlanningFuture ProcessPlanningServer::run(const ProcessPlanningRequest& r
                              *(response.plan_profile_remapping),
                              *(response.composite_profile_remapping),
                              response.results.get(),
+                             has_seed,
                              profiles_);
   response.interface = process_input.getProcessInterface();
   response.taskflow_container = it->second->generateTaskflow(process_input, nullptr, nullptr);

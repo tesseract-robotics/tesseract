@@ -61,6 +61,7 @@ struct ProcessInput
                const Instruction* instruction,
                const ManipulatorInfo& manip_info,
                Instruction* seed,
+               bool has_seed,
                ProfileDictionary::ConstPtr profiles);
 
   ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
@@ -69,6 +70,7 @@ struct ProcessInput
                const PlannerProfileRemapping& plan_profile_remapping,
                const PlannerProfileRemapping& composite_profile_remapping,
                Instruction* seed,
+               bool has_seed,
                ProfileDictionary::ConstPtr profiles);
 
   ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
@@ -76,11 +78,13 @@ struct ProcessInput
                const PlannerProfileRemapping& plan_profile_remapping,
                const PlannerProfileRemapping& composite_profile_remapping,
                Instruction* seed,
+               bool has_seed,
                ProfileDictionary::ConstPtr profiles);
 
   ProcessInput(tesseract::Tesseract::ConstPtr tesseract,
                const Instruction* instruction,
                Instruction* seed,
+               bool has_seed,
                ProfileDictionary::ConstPtr profiles);
 
   /** @brief Tesseract associated with current state of the system */
@@ -103,6 +107,13 @@ struct ProcessInput
 
   /** @brief The Profiles to use */
   const ProfileDictionary::ConstPtr profiles;
+
+  /**
+   * @brief This indicates if a seed was provided
+   * @details In the case of the raster process planner a skeleton seed is provided which make it
+   * computationaly intensive to determine if a seed was provide so this was added.
+   */
+  const bool has_seed{ false };
 
   /**
    * @brief Creates a sub-ProcessInput from instruction[index] and seed[index]
