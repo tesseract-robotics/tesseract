@@ -28,7 +28,10 @@
 
 namespace tesseract_planning
 {
-ProcessEnvironmentCache::ProcessEnvironmentCache(tesseract::Tesseract::Ptr env) : tesseract_(std::move(env)) {}
+ProcessEnvironmentCache::ProcessEnvironmentCache(tesseract::Tesseract::ConstPtr env, std::size_t cache_size)
+  : tesseract_(std::move(env)), cache_size_(cache_size)
+{
+}
 
 void ProcessEnvironmentCache::setCacheSize(long size)
 {

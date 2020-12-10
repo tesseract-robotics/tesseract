@@ -79,7 +79,7 @@ public:
   using Ptr = std::shared_ptr<ProcessEnvironmentCache>;
   using ConstPtr = std::shared_ptr<const ProcessEnvironmentCache>;
 
-  ProcessEnvironmentCache(tesseract::Tesseract::Ptr env);
+  ProcessEnvironmentCache(tesseract::Tesseract::ConstPtr env, std::size_t cache_size = 5);
 
   /**
    * @brief Set the cache size used to hold tesseract objects for motion planning
@@ -104,7 +104,7 @@ public:
 
 protected:
   /** @brief The tesseract_object used to create the cache */
-  tesseract::Tesseract::Ptr tesseract_;
+  tesseract::Tesseract::ConstPtr tesseract_;
 
   /** @brief The environment revision number at the time the cache was populated */
   int cache_env_revision_{ 0 };
