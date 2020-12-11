@@ -24,7 +24,7 @@
  * limitations under the License.
  */
 
-#include <tesseract_process_managers/process_interface.h>
+#include <tesseract_process_managers/core/process_interface.h>
 
 namespace tesseract_planning
 {

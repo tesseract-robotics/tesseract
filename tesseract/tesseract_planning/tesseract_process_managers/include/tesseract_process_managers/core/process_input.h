@@ -33,8 +33,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <map>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/process_interface.h>
-#include <tesseract_process_managers/process_info.h>
+#include <tesseract_process_managers/core/process_interface.h>
+#include <tesseract_process_managers/core/process_info.h>
 
 #include <tesseract_motion_planners/core/profile_dictionary.h>
 #include <tesseract_motion_planners/core/types.h>

@@ -33,8 +33,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <taskflow/taskflow.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/process_input.h>
-#include <tesseract_process_managers/process_generator.h>
+#include <tesseract_process_managers/core/process_input.h>
+#include <tesseract_process_managers/core/process_generator.h>
 
 // Forward Declare
 namespace tf

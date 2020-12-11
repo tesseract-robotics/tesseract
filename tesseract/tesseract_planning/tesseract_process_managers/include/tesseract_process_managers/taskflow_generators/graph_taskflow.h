@@ -34,8 +34,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <taskflow/taskflow.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/taskflow_generator.h>
-#include <tesseract_process_managers/process_generator.h>
+#include <tesseract_process_managers/core/taskflow_generator.h>
+#include <tesseract_process_managers/core/process_generator.h>
 
 namespace tesseract_planning
 {

@@ -35,10 +35,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/core/profile_dictionary.h>
 
-#include <tesseract_process_managers/process_environment_cache.h>
-#include <tesseract_process_managers/taskflow_generator.h>
-#include <tesseract_process_managers/process_planning_request.h>
-#include <tesseract_process_managers/process_planning_future.h>
+#include <tesseract_process_managers/core/process_environment_cache.h>
+#include <tesseract_process_managers/core/taskflow_generator.h>
+#include <tesseract_process_managers/core/process_planning_request.h>
+#include <tesseract_process_managers/core/process_planning_future.h>
 
 namespace tesseract_planning
 {

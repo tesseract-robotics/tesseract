@@ -24,7 +24,7 @@
  * limitations under the License.
  */
 
-#include <tesseract_process_managers/process_environment_cache.h>
+#include <tesseract_process_managers/core/process_environment_cache.h>
 
 namespace tesseract_planning
 {

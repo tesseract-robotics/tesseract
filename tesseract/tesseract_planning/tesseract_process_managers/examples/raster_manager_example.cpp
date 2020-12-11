@@ -9,7 +9,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract/tesseract.h>
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/utils/utils.h>
-#include <tesseract_process_managers/process_planning_server.h>
+#include <tesseract_process_managers/core/process_planning_server.h>
 #include <tesseract_visualization/visualization_loader.h>
 
 using namespace tesseract_planning;
