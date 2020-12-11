@@ -42,6 +42,15 @@ The planning framework (Tesseract) was designed to be light weight, limiting the
 * [Doxygen](https://ros-industrial-consortium.github.io/tesseract/)
 * [Benchmark](https://ros-industrial-consortium.github.io/tesseract/dev/bench)
 
+## Evolution
+
+[![Tesseract Evolution Video](gh_pages/_static/tesseract_evolution.png)](https://www.youtube.com/watch?v=rxlzlsSBxAY)
+
+How to create:
+
+* Create Video: `gource -1280x720 -seconds-per-day 0.2 --auto-skip-seconds 0.2 --disable-bloom -background d0d3d4 --hide filenames,mouse,progress -o - | ffmpeg -y -r 60 -f image2pipe -vcodec ppm -i - -vcodec libx264 -preset ultrafast -pix_fmt yuv420p -crf 1 -threads 0 -bf 0 gource.mp4`
+* Create Gif: `ffmpeg -i gource.mp4 -r 10 -vf "scale=800:-1,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" tesseract_evolution.gif`
+
 ## TODO's
 
 Warning: These packages are under heavy development and are subject to change.
