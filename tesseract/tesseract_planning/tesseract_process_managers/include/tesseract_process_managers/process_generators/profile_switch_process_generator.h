@@ -24,7 +24,7 @@
 #ifndef TESSERACT_PROCESS_MANAGERS_PROFILE_SWITCH_PROCESS_GENERATOR_H
 #define TESSERACT_PROCESS_MANAGERS_PROFILE_SWITCH_PROCESS_GENERATOR_H
 
-#include <tesseract_process_managers/process_generator.h>
+#include <tesseract_process_managers/core/process_generator.h>
 
 namespace tesseract_planning
 {

@@ -26,7 +26,7 @@
 #ifndef TESSERACT_PROCESS_MANAGERS_DEFAULT_PROCESS_PLANNERS_H
 #define TESSERACT_PROCESS_MANAGERS_DEFAULT_PROCESS_PLANNERS_H
 
-#include <tesseract_process_managers/taskflow_generator.h>
+#include <tesseract_process_managers/core/taskflow_generator.h>
 
 namespace tesseract_planning
 {
