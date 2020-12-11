@@ -24,7 +24,7 @@
  * limitations under the License.
  */
 
-#include <tesseract_process_managers/default_process_planners.h>
+#include <tesseract_process_managers/core/default_process_planners.h>
 #include <tesseract_process_managers/taskflow_generators/cartesian_taskflow.h>
 #include <tesseract_process_managers/taskflow_generators/descartes_taskflow.h>
 #include <tesseract_process_managers/taskflow_generators/freespace_taskflow.h>

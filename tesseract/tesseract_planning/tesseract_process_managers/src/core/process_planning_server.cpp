@@ -29,9 +29,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/process_planning_server.h>
-#include <tesseract_process_managers/debug_observer.h>
-#include <tesseract_process_managers/default_process_planners.h>
+#include <tesseract_process_managers/core/process_planning_server.h>
+#include <tesseract_process_managers/core/debug_observer.h>
+#include <tesseract_process_managers/core/default_process_planners.h>
 
 #include <tesseract_motion_planners/descartes/profile/descartes_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_profile.h>
