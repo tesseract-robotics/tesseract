@@ -157,10 +157,10 @@ public:
  * @param message A detailed message
  * @param user_callback A user callback function
  */
-inline void successTask(ProcessInput /*instruction*/,                   // NOLINT
-                        std::string name,                               // NOLINT
-                        std::string message,                            // NOLINT
-                        std::function<void()> user_callback = nullptr)  // NOLINT
+inline void successTask(const ProcessInput& /*instruction*/,
+                        const std::string& name,
+                        const std::string& message,
+                        const std::function<void()>& user_callback = nullptr)
 {
   CONSOLE_BRIDGE_logInform("%s Successful: %s", name.c_str(), message.c_str());
   if (user_callback)
@@ -174,10 +174,10 @@ inline void successTask(ProcessInput /*instruction*/,                   // NOLIN
  * @param message A detailed message
  * @param user_callback A user callback function
  */
-inline void failureTask(ProcessInput instruction,                       // NOLINT
-                        std::string name,                               // NOLINT
-                        std::string message,                            // NOLINT
-                        std::function<void()> user_callback = nullptr)  // NOLINT
+inline void failureTask(ProcessInput instruction,
+                        const std::string& name,
+                        const std::string& message,
+                        const std::function<void()>& user_callback = nullptr)
 {
   // Call abort on the process input
   instruction.abort();
@@ -217,7 +217,7 @@ inline bool isCompositeEmpty(const CompositeInstruction& composite)
  * @param input The process input
  * @return One if seed exists, otherwise zero
  */
-inline int hasSeedTask(ProcessInput input)  // NOLINT
+inline int hasSeedTask(ProcessInput input)
 {
   if (input.has_seed)
     return 1;
