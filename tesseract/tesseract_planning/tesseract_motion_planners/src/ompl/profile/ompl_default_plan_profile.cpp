@@ -42,7 +42,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/continuous_motion_validator.h>
 #include <tesseract_motion_planners/ompl/discrete_motion_validator.h>
-#include <tesseract_motion_planners/ompl/weighted_real_vector_state_sampler.h>
 #include <tesseract_motion_planners/ompl/state_collision_validator.h>
 #include <tesseract_motion_planners/ompl/compound_state_validator.h>
 
@@ -312,13 +311,14 @@ void OMPLDefaultPlanProfile::setup(OMPLProblem& prob) const
 
     if (state_sampler_allocator)
     {
-      rss->setStateSamplerAllocator(state_sampler_allocator);
+      rss->setStateSamplerAllocator(
+          [=](const ompl::base::StateSpace* space) { return state_sampler_allocator(space, prob); });
     }
     else
     {
       Eigen::VectorXd weights = Eigen::VectorXd::Ones(dof);
-      rss->setStateSamplerAllocator(std::bind(
-          &OMPLDefaultPlanProfile::allocWeightedRealVectorStateSampler, this, std::placeholders::_1, weights, limits));
+      rss->setStateSamplerAllocator(
+          std::bind(&allocWeightedRealVectorStateSampler, std::placeholders::_1, weights, limits));
     }
 
     state_space_ptr = rss;
@@ -665,14 +665,6 @@ void OMPLDefaultPlanProfile::processOptimizationObjective(OMPLProblem& prob) con
     prob.simple_setup->getProblemDefinition()->setOptimizationObjective(
         optimization_objective_allocator(prob.simple_setup->getSpaceInformation(), prob));
   }
-}
-
-ompl::base::StateSamplerPtr
-OMPLDefaultPlanProfile::allocWeightedRealVectorStateSampler(const ompl::base::StateSpace* space,
-                                                            const Eigen::VectorXd& weights,
-                                                            const Eigen::MatrixX2d& limits) const
-{
-  return std::make_shared<WeightedRealVectorStateSampler>(space, weights, limits);
 }
 
 }  // namespace tesseract_planning

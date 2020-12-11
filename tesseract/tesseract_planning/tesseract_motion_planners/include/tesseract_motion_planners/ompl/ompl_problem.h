@@ -43,6 +43,9 @@ namespace tesseract_planning
 {
 struct OMPLProblem;
 
+using StateSamplerAllocator =
+    std::function<ompl::base::StateSamplerPtr(const ompl::base::StateSpace*, const OMPLProblem&)>;
+
 using OptimizationObjectiveAllocator =
     std::function<ompl::base::OptimizationObjectivePtr(const ompl::base::SpaceInformationPtr&, const OMPLProblem&)>;
 

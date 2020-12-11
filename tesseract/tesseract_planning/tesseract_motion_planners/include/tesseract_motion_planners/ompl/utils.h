@@ -82,6 +82,16 @@ bool checkStateInCollision(OMPLProblem& prob,
  */
 bool checkStateInCollision(OMPLProblem& prob, const Eigen::VectorXd& state);
 
+/**
+ * @brief Default State sampler which uses the weights information to scale the sampled state. This is use full
+ * when you state space has mixed units like meters and radian.
+ * @param space The ompl state space.
+ * @return OMPL state sampler shared pointer
+ */
+ompl::base::StateSamplerPtr allocWeightedRealVectorStateSampler(const ompl::base::StateSpace* space,
+                                                                const Eigen::VectorXd& weights,
+                                                                const Eigen::MatrixX2d& limits);
+
 }  // namespace tesseract_planning
 
 #endif  // TESSERACT_MOTION_PLANNERS_OMPL_UTILS_H
