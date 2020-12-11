@@ -124,7 +124,7 @@ public:
   double longest_valid_segment_length = 0.1;
 
   /** @brief The state sampler allocator. This can be null and it will use Tesseract default state sampler allocator. */
-  ompl::base::StateSamplerAllocator state_sampler_allocator;
+  StateSamplerAllocator state_sampler_allocator;
 
   /** @brief Set the optimization objective function allocator. Default is to minimize path length */
   OptimizationObjectiveAllocator optimization_objective_allocator;
@@ -166,16 +166,6 @@ public:
                         const ManipulatorInfo& manip_info,
                         const std::vector<std::string>& active_links,
                         int index) const override;
-
-  /**
-   * @brief Default State sampler which uses the weights information to scale the sampled state. This is use full
-   * when you state space has mixed units like meters and radian.
-   * @param space The ompl state space.
-   * @return OMPL state sampler shared pointer
-   */
-  ompl::base::StateSamplerPtr allocWeightedRealVectorStateSampler(const ompl::base::StateSpace* space,
-                                                                  const Eigen::VectorXd& weights,
-                                                                  const Eigen::MatrixX2d& limits) const;
 
   tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const override;
 

@@ -36,6 +36,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/utils.h>
+#include <tesseract_motion_planners/ompl/weighted_real_vector_state_sampler.h>
 
 namespace tesseract_planning
 {
@@ -106,6 +107,13 @@ bool checkStateInCollision(OMPLProblem& prob, const Eigen::VectorXd& state)
 {
   tesseract_collision::ContactResultMap contact_map;
   return checkStateInCollision(prob, state, contact_map);
+}
+
+ompl::base::StateSamplerPtr allocWeightedRealVectorStateSampler(const ompl::base::StateSpace* space,
+                                                                const Eigen::VectorXd& weights,
+                                                                const Eigen::MatrixX2d& limits)
+{
+  return std::make_shared<WeightedRealVectorStateSampler>(space, weights, limits);
 }
 
 }  // namespace tesseract_planning
