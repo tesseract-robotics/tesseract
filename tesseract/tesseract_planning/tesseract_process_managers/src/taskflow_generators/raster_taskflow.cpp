@@ -102,8 +102,8 @@ TaskflowContainer RasterTaskflow::generateTaskflow(ProcessInput input,
     raster_input.setStartInstruction(start_instruction);
     TaskflowContainer sub_container = raster_taskflow_generator_->generateTaskflow(
         raster_input,
-        std::bind(&successTask, input, name_, raster_input.getInstruction()->getDescription(), done_cb),
-        std::bind(&failureTask, input, name_, raster_input.getInstruction()->getDescription(), error_cb));
+        [=]() { successTask(input, name_, raster_input.getInstruction()->getDescription(), done_cb); },
+        [=]() { failureTask(input, name_, raster_input.getInstruction()->getDescription(), error_cb); });
 
     auto raster_step =
         container.taskflow->composed_of(*(sub_container.taskflow))
@@ -128,8 +128,8 @@ TaskflowContainer RasterTaskflow::generateTaskflow(ProcessInput input,
     transition_input.setEndInstruction(std::vector<std::size_t>({ input_idx + 1 }));
     TaskflowContainer sub_container = transition_taskflow_generator_->generateTaskflow(
         transition_input,
-        std::bind(&successTask, input, name_, transition_input.getInstruction()->getDescription(), done_cb),
-        std::bind(&failureTask, input, name_, transition_input.getInstruction()->getDescription(), error_cb));
+        [=]() { successTask(input, name_, transition_input.getInstruction()->getDescription(), done_cb); },
+        [=]() { failureTask(input, name_, transition_input.getInstruction()->getDescription(), error_cb); });
 
     auto transition_step = container.taskflow->composed_of(*(sub_container.taskflow))
                                .name("Transition #" + std::to_string(transition_idx + 1) + ": " +
@@ -149,8 +149,9 @@ TaskflowContainer RasterTaskflow::generateTaskflow(ProcessInput input,
   from_start_input.setEndInstruction(std::vector<std::size_t>({ 1 }));
   TaskflowContainer sub_container1 = freespace_taskflow_generator_->generateTaskflow(
       from_start_input,
-      std::bind(&successTask, input, name_, from_start_input.getInstruction()->getDescription(), done_cb),
-      std::bind(&failureTask, input, name_, from_start_input.getInstruction()->getDescription(), error_cb));
+      [=]() { successTask(input, name_, from_start_input.getInstruction()->getDescription(), done_cb); },
+      [=]() { failureTask(input, name_, from_start_input.getInstruction()->getDescription(), error_cb); });
+
   auto from_start = container.taskflow->composed_of(*(sub_container1.taskflow))
                         .name("From Start: " + from_start_input.getInstruction()->getDescription());
   container.containers.push_back(std::move(sub_container1));
@@ -161,8 +162,9 @@ TaskflowContainer RasterTaskflow::generateTaskflow(ProcessInput input,
   to_end_input.setStartInstruction(std::vector<std::size_t>({ input.size() - 2 }));
   TaskflowContainer sub_container2 = freespace_taskflow_generator_->generateTaskflow(
       to_end_input,
-      std::bind(&successTask, input, name_, to_end_input.getInstruction()->getDescription(), done_cb),
-      std::bind(&failureTask, input, name_, to_end_input.getInstruction()->getDescription(), error_cb));
+      [=]() { successTask(input, name_, to_end_input.getInstruction()->getDescription(), done_cb); },
+      [=]() { failureTask(input, name_, to_end_input.getInstruction()->getDescription(), error_cb); });
+
   auto to_end = container.taskflow->composed_of(*(sub_container2.taskflow))
                     .name("To End: " + to_end_input.getInstruction()->getDescription());
   container.containers.push_back(std::move(sub_container2));

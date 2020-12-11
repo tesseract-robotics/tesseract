@@ -73,8 +73,8 @@ bool SimpleProcessManager::init(ProcessInput input)
     input_instruction->print("Generating Taskflow for: ");
   taskflow_container_ = taskflow_generator_->generateTaskflow(
       input,
-      std::bind(&successTask, input, "SimpleProcessManager", input.getInstruction()->getDescription(), nullptr),
-      std::bind(&failureTask, input, "SimpleProcessManager", input.getInstruction()->getDescription(), nullptr));
+      [=]() { successTask(input, "SimpleProcessManager", input.getInstruction()->getDescription(), nullptr); },
+      [=]() { failureTask(input, "SimpleProcessManager", input.getInstruction()->getDescription(), nullptr); });
 
   // Dump the taskflow
   if (debug_)
