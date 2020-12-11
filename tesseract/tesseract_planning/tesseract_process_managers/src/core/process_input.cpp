@@ -30,7 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/process_input.h>
+#include <tesseract_process_managers/core/process_input.h>
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_command_language/instruction_type.h>
 #include <tesseract_command_language/utils/utils.h>

@@ -11,8 +11,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_motion_planners/interface_utils.h>
 
-#include <tesseract_process_managers/process_input.h>
-#include <tesseract_process_managers/process_planning_server.h>
+#include <tesseract_process_managers/core/process_input.h>
+#include <tesseract_process_managers/core/process_planning_server.h>
 #include <tesseract_process_managers/taskflow_generators/raster_taskflow.h>
 #include <tesseract_process_managers/taskflow_generators/raster_global_taskflow.h>
 #include <tesseract_process_managers/taskflow_generators/raster_only_taskflow.h>

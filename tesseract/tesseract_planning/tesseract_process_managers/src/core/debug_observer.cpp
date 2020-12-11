@@ -29,7 +29,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <fstream>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_process_managers/debug_observer.h>
+#include <tesseract_process_managers/core/debug_observer.h>
 
 namespace tesseract_planning
 {
