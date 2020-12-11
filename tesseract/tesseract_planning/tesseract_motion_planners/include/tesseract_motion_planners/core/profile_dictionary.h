@@ -45,6 +45,7 @@ namespace tesseract_planning
  *      - The key is the profile name
  *      - Where std::shared_ptr<const T> is the profile
  *    The ProfleEntry<T> is also stored in std::unordered_map where the key here is the std::type_index(typeid(T))
+ * @note When adding a profile entry the T should be the base class type.
  */
 class ProfileDictionary
 {
@@ -89,12 +90,19 @@ public:
 
   /**
    * @brief Add a profile
+   * @details If the profile entry does not exist it will create one
    * @param profile_name The profile name
    * @param profile The profile to add
    */
   template <typename ProfileType>
   void addProfile(const std::string& profile_name, std::shared_ptr<const ProfileType> profile)
   {
+    if (profile_name.empty())
+      throw std::runtime_error("Adding profile with an empty string as the key!");
+
+    if (profile == nullptr)
+      throw std::runtime_error("Adding profile that is a nullptr");
+
     std::unique_lock lock(mutex_);
     auto it = profiles_.find(std::type_index(typeid(ProfileType)));
     if (it != profiles_.end())
@@ -111,6 +119,27 @@ public:
   }
 
   /**
+   * @brief Check if a profile exists
+   * @details If profile entry does not exist it also returns false
+   * @return True if profile exists, otherwise false
+   */
+  template <typename ProfileType>
+  bool hasProfile(const std::string& profile_name) const
+  {
+    std::shared_lock lock(mutex_);
+    auto it = profiles_.find(std::type_index(typeid(ProfileType)));
+    if (it != profiles_.end())
+    {
+      const auto& profile_map =
+          std::any_cast<const std::unordered_map<std::string, std::shared_ptr<const ProfileType>>&>(it->second);
+      auto it2 = profile_map.find(profile_name);
+      if (it2 != profile_map.end())
+        return true;
+    }
+    return false;
+  }
+
+  /**
    * @brief Get a profile by name
    * @details Check if the profile exist before calling this function, if missing an exception is thrown
    * @param profile_name The profile name
@@ -120,15 +149,10 @@ public:
   std::shared_ptr<const ProfileType> getProfile(const std::string& profile_name) const
   {
     std::shared_lock lock(mutex_);
-    auto it = profiles_.find(std::type_index(typeid(ProfileType)));
-    if (it != profiles_.end())
-    {
-      const auto& profile_map =
-          std::any_cast<const std::unordered_map<std::string, std::shared_ptr<const ProfileType>>&>(it->second);
-      return profile_map.at(profile_name);
-    }
-
-    return nullptr;
+    auto it = profiles_.at(std::type_index(typeid(ProfileType)));
+    const auto& profile_map =
+        std::any_cast<const std::unordered_map<std::string, std::shared_ptr<const ProfileType>>&>(it);
+    return profile_map.at(profile_name);
   }
 
   /**
