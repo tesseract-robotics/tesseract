@@ -41,6 +41,17 @@ struct ProfileTest : public ProfileBase
   ProfileTest(int a) { this->a = a; }
 };
 
+struct ProfileBase2
+{
+  int b{ 0 };
+};
+
+struct ProfileTest2 : public ProfileBase2
+{
+  ProfileTest2() = default;
+  ProfileTest2(int b) { this->b = b; }
+};
+
 using namespace tesseract_planning;
 
 TEST(TesseractPlanningProfileDictionaryUnit, ProfileDictionaryTest)
@@ -52,13 +63,23 @@ TEST(TesseractPlanningProfileDictionaryUnit, ProfileDictionaryTest)
   profiles.addProfile<ProfileBase>("key", std::make_shared<ProfileTest>());
 
   EXPECT_TRUE(profiles.hasProfileEntry<ProfileBase>());
+  EXPECT_TRUE(profiles.hasProfile<ProfileBase>("key"));
 
   auto profile = profiles.getProfile<ProfileBase>("key");
 
   EXPECT_TRUE(profile != nullptr);
   EXPECT_EQ(profile->a, 0);
 
+  // Check add same profile with different key
+  profiles.addProfile<ProfileBase>("key2", profile);
+  EXPECT_TRUE(profiles.hasProfile<ProfileBase>("key2"));
+  auto profile2 = profiles.getProfile<ProfileBase>("key2");
+  EXPECT_TRUE(profile2 != nullptr);
+  EXPECT_EQ(profile2->a, 0);
+
+  // Check replacing a profile
   profiles.addProfile<ProfileBase>("key", std::make_shared<ProfileTest>(10));
+  EXPECT_TRUE(profiles.hasProfile<ProfileBase>("key"));
   auto profile_check = profiles.getProfile<ProfileBase>("key");
   EXPECT_TRUE(profile_check != nullptr);
   EXPECT_EQ(profile_check->a, 10);
@@ -72,6 +93,30 @@ TEST(TesseractPlanningProfileDictionaryUnit, ProfileDictionaryTest)
   auto profile_check2 = profiles.getProfile<ProfileBase>("key");
   EXPECT_TRUE(profile_check2 != nullptr);
   EXPECT_EQ(profile_check2->a, 20);
+
+  // Request a profile entry that does not exist
+  EXPECT_ANY_THROW(profiles.getProfileEntry<int>());
+
+  // Request a profile that does not exist
+  EXPECT_ANY_THROW(profiles.getProfile<ProfileBase>("DoesNotExist"));
+
+  // Check adding a empty key
+  EXPECT_ANY_THROW(profiles.addProfile<ProfileBase>("", std::make_shared<ProfileTest>(20)));
+
+  // Check adding a nullptr profile
+  EXPECT_ANY_THROW(profiles.addProfile<ProfileBase>("key", nullptr));
+
+  // Add different profile entry
+  profiles.addProfile<ProfileBase2>("key", std::make_shared<ProfileTest2>(5));
+  EXPECT_TRUE(profiles.hasProfileEntry<ProfileBase2>());
+  EXPECT_TRUE(profiles.hasProfile<ProfileBase2>("key"));
+  auto profile_check3 = profiles.getProfile<ProfileBase2>("key");
+  EXPECT_TRUE(profile_check3 != nullptr);
+  EXPECT_EQ(profile_check3->b, 5);
+  // Check that other profile entry with same key is not affected
+  auto profile_check4 = profiles.getProfile<ProfileBase>("key");
+  EXPECT_TRUE(profile_check4 != nullptr);
+  EXPECT_EQ(profile_check4->a, 20);
 }
 
 int main(int argc, char** argv)
