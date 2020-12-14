@@ -115,6 +115,10 @@ public:
 
   void setCollisionMarginData(CollisionMarginData collision_margin_data) override;
 
+  void setDefaultCollisionMarginData(double default_collision_margin) override;
+
+  void setPairCollisionMarginData(const std::string& name1, const std::string& name2, double collision_margin) override;
+
   double getContactDistanceThreshold() const override;
 
   const CollisionMarginData& getCollisionMarginData() const override;
@@ -151,6 +155,9 @@ private:
 
   /** @brief Filter collision objects before broadphase check */
   TesseractOverlapFilterCallback broadphase_overlap_cb_;
+
+  /** @brief This function will update internal data when margin data has changed */
+  void onCollisionMarginDataChanged();
 };
 }  // namespace tesseract_collision_bullet
 }  // namespace tesseract_collision
