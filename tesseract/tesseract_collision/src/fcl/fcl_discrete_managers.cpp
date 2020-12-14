@@ -266,55 +266,26 @@ const std::vector<std::string>& FCLDiscreteBVHManager::getActiveCollisionObjects
 void FCLDiscreteBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
 {
   collision_margin_data_ = collision_margin_data;
-  static_update_.clear();
-  dynamic_update_.clear();
+  onCollisionMarginDataChanged();
+}
 
-  for (auto& cow : link2cow_)
-  {
-    cow.second->setContactDistanceThreshold(collision_margin_data_.getMaxCollisionMargin() / 2.0);
-    std::vector<CollisionObjectRawPtr>& co = cow.second->getCollisionObjectsRaw();
-    if (cow.second->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
-    {
-      static_update_.insert(static_update_.end(), co.begin(), co.end());
-    }
-    else
-    {
-      dynamic_update_.insert(dynamic_update_.end(), co.begin(), co.end());
-    }
-  }
+void FCLDiscreteBVHManager::setDefaultCollisionMarginData(double default_collision_margin)
+{
+  collision_margin_data_.setDefaultCollisionMarginData(default_collision_margin);
+  onCollisionMarginDataChanged();
+}
 
-  if (!static_update_.empty())
-    static_manager_->update(static_update_);
-
-  if (!dynamic_update_.empty())
-    dynamic_manager_->update(dynamic_update_);
+void FCLDiscreteBVHManager::setPairCollisionMarginData(const std::string& name1,
+                                                       const std::string& name2,
+                                                       double collision_margin)
+{
+  collision_margin_data_.setPairCollisionMarginData(name1, name2, collision_margin);
+  onCollisionMarginDataChanged();
 }
 
 void FCLDiscreteBVHManager::setContactDistanceThreshold(double contact_distance)
 {
-  collision_margin_data_ = CollisionMarginData(contact_distance);
-  static_update_.clear();
-  dynamic_update_.clear();
-
-  for (auto& cow : link2cow_)
-  {
-    cow.second->setContactDistanceThreshold(collision_margin_data_.getMaxCollisionMargin() / 2.0);
-    std::vector<CollisionObjectRawPtr>& co = cow.second->getCollisionObjectsRaw();
-    if (cow.second->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
-    {
-      static_update_.insert(static_update_.end(), co.begin(), co.end());
-    }
-    else
-    {
-      dynamic_update_.insert(dynamic_update_.end(), co.begin(), co.end());
-    }
-  }
-
-  if (!static_update_.empty())
-    static_manager_->update(static_update_);
-
-  if (!dynamic_update_.empty())
-    dynamic_manager_->update(dynamic_update_);
+  setDefaultCollisionMarginData(contact_distance);
 }
 
 double FCLDiscreteBVHManager::getContactDistanceThreshold() const
@@ -407,6 +378,32 @@ void FCLDiscreteBVHManager::addCollisionObject(COW::Ptr cow)
   // This causes a refit on the bvh tree.
   dynamic_manager_->update();
   static_manager_->update();
+}
+
+void FCLDiscreteBVHManager::onCollisionMarginDataChanged()
+{
+  static_update_.clear();
+  dynamic_update_.clear();
+
+  for (auto& cow : link2cow_)
+  {
+    cow.second->setContactDistanceThreshold(collision_margin_data_.getMaxCollisionMargin() / 2.0);
+    std::vector<CollisionObjectRawPtr>& co = cow.second->getCollisionObjectsRaw();
+    if (cow.second->m_collisionFilterGroup == CollisionFilterGroups::StaticFilter)
+    {
+      static_update_.insert(static_update_.end(), co.begin(), co.end());
+    }
+    else
+    {
+      dynamic_update_.insert(dynamic_update_.end(), co.begin(), co.end());
+    }
+  }
+
+  if (!static_update_.empty())
+    static_manager_->update(static_update_);
+
+  if (!dynamic_update_.empty())
+    dynamic_manager_->update(dynamic_update_);
 }
 }  // namespace tesseract_collision_fcl
 }  // namespace tesseract_collision

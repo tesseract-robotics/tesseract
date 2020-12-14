@@ -167,6 +167,26 @@ public:
   virtual void setCollisionMarginData(CollisionMarginData collision_margin_data) = 0;
 
   /**
+   * @brief Set the default collision margin
+   * @param default_collision_margin New default collision margin
+   */
+  virtual void setDefaultCollisionMarginData(double default_collision_margin) = 0;
+
+  /**
+   * @brief Set the margin for a given contact pair
+   *
+   * The order of the object names does not matter, that is handled internal to
+   * the class.
+   *
+   * @param obj1 The first object name. Order doesn't matter
+   * @param obj2 The Second object name. Order doesn't matter
+   * @param collision_margin contacts with distance < collision_margin are considered in collision
+   */
+  virtual void setPairCollisionMarginData(const std::string& name1,
+                                          const std::string& name2,
+                                          double collision_margin) = 0;
+
+  /**
    * @brief Get the contact distance threshold
    * @return The contact distance
    */
