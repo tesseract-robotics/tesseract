@@ -182,7 +182,7 @@ void ProcessPlanningServer::enableTaskflowProfiling()
     profile_observer_ = executor_->make_observer<tf::TFProfObserver>();
 }
 
-void ProcessPlanningServer::disableTskflowProfiling()
+void ProcessPlanningServer::disableTaskflowProfiling()
 {
   if (profile_observer_ != nullptr)
   {

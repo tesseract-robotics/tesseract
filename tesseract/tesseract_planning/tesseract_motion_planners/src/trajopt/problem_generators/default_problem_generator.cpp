@@ -27,6 +27,7 @@
 #include <tesseract_motion_planners/trajopt/problem_generators/default_problem_generator.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_composite_profile.h>
 #include <tesseract_motion_planners/trajopt/profile/trajopt_default_plan_profile.h>
+#include <tesseract_motion_planners/trajopt/profile/trajopt_default_solver_profile.h>
 #include <tesseract_motion_planners/core/utils.h>
 #include <tesseract_motion_planners/planner_utils.h>
 
@@ -36,7 +37,8 @@ namespace tesseract_planning
 trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name,
                                                          const PlannerRequest& request,
                                                          const TrajOptPlanProfileMap& plan_profiles,
-                                                         const TrajOptCompositeProfileMap& composite_profiles)
+                                                         const TrajOptCompositeProfileMap& composite_profiles,
+                                                         const TrajOptSolverProfileMap& solver_profiles)
 {
   auto pci = std::make_shared<trajopt::ProblemConstructionInfo>(request.tesseract);
 
@@ -58,6 +60,16 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name
     throw std::runtime_error(error_msg);
   }
 
+  // Apply Solver parameters
+  std::string profile = request.instructions.getProfile();
+  profile = getProfileString(profile, name, PlannerProfileRemapping());
+  TrajOptSolverProfile::ConstPtr solver_profile =
+      getProfile<TrajOptSolverProfile>(profile, solver_profiles, std::make_shared<TrajOptDefaultSolverProfile>());
+  if (!solver_profile)
+    throw std::runtime_error("TrajOptSolverConfig: Invalid profile");
+
+  solver_profile->apply(*pci);
+
   // Flatten the input for planning
   auto instructions_flat = flattenProgram(request.instructions);
   auto seed_flat = flattenProgramToPattern(request.seed, request.instructions);
@@ -74,7 +86,6 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name
 
   std::size_t start_index = 0;  // If it has a start instruction then skip first instruction in instructions_flat
   int index = 0;
-  std::string profile;
   Waypoint start_waypoint = NullWaypoint();
   Instruction placeholder_instruction = NullInstruction();
   const Instruction* start_instruction = nullptr;
