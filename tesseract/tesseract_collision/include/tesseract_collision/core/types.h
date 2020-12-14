@@ -226,7 +226,7 @@ struct CollisionMarginData
    * @brief Set the default collision margin
    * @param default_collision_margin New default collision margin
    */
-  void setDefaultCollisionMarginData(const double& default_collision_margin)
+  void setDefaultCollisionMarginData(double default_collision_margin)
   {
     default_collision_margin_ = default_collision_margin;
     if (default_collision_margin_ > max_collision_margin_)
@@ -243,7 +243,7 @@ struct CollisionMarginData
    * @param obj2 The Second object name. Order doesn't matter
    * @param collision_margin contacts with distance < collision_margin are considered in collision
    */
-  void setPairCollisionMarginData(const std::string& obj1, const std::string& obj2, const double& collision_margin)
+  void setPairCollisionMarginData(const std::string& obj1, const std::string& obj2, double collision_margin)
   {
     auto key = tesseract_common::makeOrderedLinkPair(obj1, obj2);
     lookup_table_[key] = collision_margin;
@@ -263,7 +263,7 @@ struct CollisionMarginData
    * @param obj2 The second object name
    * @return A Vector2d[Contact Distance Threshold, Coefficient]
    */
-  const double& getPairCollisionMarginData(const std::string& obj1, const std::string& obj2) const
+  double getPairCollisionMarginData(const std::string& obj1, const std::string& obj2) const
   {
     auto key = tesseract_common::makeOrderedLinkPair(obj1, obj2);
     const auto it = lookup_table_.find(key);
@@ -283,7 +283,7 @@ struct CollisionMarginData
    *
    * @return Max contact distance threshold
    */
-  const double& getMaxCollisionMargin() const { return max_collision_margin_; }
+  double getMaxCollisionMargin() const { return max_collision_margin_; }
 
   /**
    * @brief Increment all margins by input amount. Useful for inflating or reducing margins

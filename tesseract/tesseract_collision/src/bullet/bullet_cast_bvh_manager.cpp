@@ -411,45 +411,26 @@ const std::vector<std::string>& BulletCastBVHManager::getActiveCollisionObjects(
 void BulletCastBVHManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
 {
   contact_test_data_.collision_margin_data = collision_margin_data;
+  onCollisionMarginDataChanged();
+}
 
-  for (auto& co : link2cow_)
-  {
-    COW::Ptr& cow = co.second;
-    cow->setContactProcessingThreshold(
-        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin()));
-    if (cow->getBroadphaseHandle())
-      updateBroadphaseAABB(cow, broadphase_, dispatcher_);
-  }
+void BulletCastBVHManager::setDefaultCollisionMarginData(double default_collision_margin)
+{
+  contact_test_data_.collision_margin_data.setDefaultCollisionMarginData(default_collision_margin);
+  onCollisionMarginDataChanged();
+}
 
-  for (auto& co : link2castcow_)
-  {
-    COW::Ptr& cow = co.second;
-    cow->setContactProcessingThreshold(
-        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin()));
-    if (cow->getBroadphaseHandle())
-      updateBroadphaseAABB(cow, broadphase_, dispatcher_);
-  }
+void BulletCastBVHManager::setPairCollisionMarginData(const std::string& name1,
+                                                      const std::string& name2,
+                                                      double collision_margin)
+{
+  contact_test_data_.collision_margin_data.setPairCollisionMarginData(name1, name2, collision_margin);
+  onCollisionMarginDataChanged();
 }
 
 void BulletCastBVHManager::setContactDistanceThreshold(double contact_distance)
 {
-  contact_test_data_.collision_margin_data = CollisionMarginData(contact_distance);
-
-  for (auto& co : link2cow_)
-  {
-    COW::Ptr& cow = co.second;
-    cow->setContactProcessingThreshold(static_cast<btScalar>(contact_distance));
-    if (cow->getBroadphaseHandle())
-      updateBroadphaseAABB(cow, broadphase_, dispatcher_);
-  }
-
-  for (auto& co : link2castcow_)
-  {
-    COW::Ptr& cow = co.second;
-    cow->setContactProcessingThreshold(static_cast<btScalar>(contact_distance));
-    if (cow->getBroadphaseHandle())
-      updateBroadphaseAABB(cow, broadphase_, dispatcher_);
-  }
+  setDefaultCollisionMarginData(contact_distance);
 }
 
 double BulletCastBVHManager::getContactDistanceThreshold() const
@@ -507,5 +488,26 @@ void BulletCastBVHManager::addCollisionObject(COW::Ptr cow)
                                                              selected_cow->m_collisionFilterMask,
                                                              dispatcher_.get()));
 }
+
+void BulletCastBVHManager::onCollisionMarginDataChanged()
+{
+  btScalar margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
+  for (auto& co : link2cow_)
+  {
+    COW::Ptr& cow = co.second;
+    cow->setContactProcessingThreshold(margin);
+    if (cow->getBroadphaseHandle())
+      updateBroadphaseAABB(cow, broadphase_, dispatcher_);
+  }
+
+  for (auto& co : link2castcow_)
+  {
+    COW::Ptr& cow = co.second;
+    cow->setContactProcessingThreshold(margin);
+    if (cow->getBroadphaseHandle())
+      updateBroadphaseAABB(cow, broadphase_, dispatcher_);
+  }
+}
+
 }  // namespace tesseract_collision_bullet
 }  // namespace tesseract_collision
