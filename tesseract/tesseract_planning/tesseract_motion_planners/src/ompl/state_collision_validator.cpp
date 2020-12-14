@@ -55,7 +55,7 @@ StateCollisionValidator::StateCollisionValidator(const ompl::base::SpaceInformat
   links_ = adj_map.getActiveLinkNames();
 
   contact_manager_->setActiveCollisionObjects(links_);
-  contact_manager_->setContactDistanceThreshold(collision_safety_margin);
+  contact_manager_->setDefaultCollisionMarginData(collision_safety_margin);
 }
 
 bool StateCollisionValidator::isValid(const ompl::base::State* state) const

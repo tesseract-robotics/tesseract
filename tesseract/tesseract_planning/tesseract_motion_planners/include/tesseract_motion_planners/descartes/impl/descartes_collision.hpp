@@ -112,7 +112,7 @@ FloatType DescartesCollision<FloatType>::distance(const FloatType* pos, std::siz
   bool in_contact = checkTrajectoryState(results, *contact_manager_, env_state, config);
 
   if (!in_contact)
-    return static_cast<FloatType>(contact_manager_->getContactDistanceThreshold());
+    return static_cast<FloatType>(contact_manager_->getCollisionMarginData().getMaxCollisionMargin());
 
   return static_cast<FloatType>(results.begin()->begin()->second[0].distance);
 }

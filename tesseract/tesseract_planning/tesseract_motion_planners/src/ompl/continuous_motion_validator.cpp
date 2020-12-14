@@ -55,7 +55,7 @@ ContinuousMotionValidator::ContinuousMotionValidator(const ompl::base::SpaceInfo
   links_ = adj_map.getActiveLinkNames();
 
   continuous_contact_manager_->setActiveCollisionObjects(links_);
-  continuous_contact_manager_->setContactDistanceThreshold(collision_safety_margin);
+  continuous_contact_manager_->setDefaultCollisionMarginData(collision_safety_margin);
 }
 
 bool ContinuousMotionValidator::checkMotion(const ompl::base::State* s1, const ompl::base::State* s2) const

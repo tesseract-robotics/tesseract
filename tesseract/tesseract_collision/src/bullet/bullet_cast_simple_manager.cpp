@@ -329,25 +329,26 @@ const std::vector<std::string>& BulletCastSimpleManager::getActiveCollisionObjec
 void BulletCastSimpleManager::setCollisionMarginData(CollisionMarginData collision_margin_data)
 {
   contact_test_data_.collision_margin_data = collision_margin_data;
+  onCollisionMarginDataChanged();
+}
 
-  for (auto& co : link2cow_)
-    co.second->setContactProcessingThreshold(
-        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin()));
+void BulletCastSimpleManager::setDefaultCollisionMarginData(double default_collision_margin)
+{
+  contact_test_data_.collision_margin_data.setDefaultCollisionMarginData(default_collision_margin);
+  onCollisionMarginDataChanged();
+}
 
-  for (auto& co : link2castcow_)
-    co.second->setContactProcessingThreshold(
-        static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin()));
+void BulletCastSimpleManager::setPairCollisionMarginData(const std::string& name1,
+                                                         const std::string& name2,
+                                                         double collision_margin)
+{
+  contact_test_data_.collision_margin_data.setPairCollisionMarginData(name1, name2, collision_margin);
+  onCollisionMarginDataChanged();
 }
 
 void BulletCastSimpleManager::setContactDistanceThreshold(double contact_distance)
 {
-  contact_test_data_.collision_margin_data = CollisionMarginData(contact_distance);
-
-  for (auto& co : link2cow_)
-    co.second->setContactProcessingThreshold(static_cast<btScalar>(contact_distance));
-
-  for (auto& co : link2castcow_)
-    co.second->setContactProcessingThreshold(static_cast<btScalar>(contact_distance));
+  setDefaultCollisionMarginData(contact_distance);
 }
 
 double BulletCastSimpleManager::getContactDistanceThreshold() const
@@ -446,5 +447,16 @@ void BulletCastSimpleManager::addCollisionObject(COW::Ptr cow)
   else
     cows_.push_back(cow);
 }
+
+void BulletCastSimpleManager::onCollisionMarginDataChanged()
+{
+  btScalar margin = static_cast<btScalar>(contact_test_data_.collision_margin_data.getMaxCollisionMargin());
+  for (auto& co : link2cow_)
+    co.second->setContactProcessingThreshold(margin);
+
+  for (auto& co : link2castcow_)
+    co.second->setContactProcessingThreshold(margin);
+}
+
 }  // namespace tesseract_collision_bullet
 }  // namespace tesseract_collision

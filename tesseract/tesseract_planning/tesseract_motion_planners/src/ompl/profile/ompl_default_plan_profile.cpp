@@ -283,7 +283,7 @@ void OMPLDefaultPlanProfile::setup(OMPLProblem& prob) const
   prob.max_solutions = max_solutions;
   prob.simplify = simplify;
   prob.optimize = optimize;
-  prob.contact_checker->setContactDistanceThreshold(collision_safety_margin);
+  prob.contact_checker->setDefaultCollisionMarginData(collision_safety_margin);
 
   tesseract_environment::Environment::ConstPtr env = prob.tesseract->getEnvironment();
   const std::vector<std::string>& joint_names = prob.manip_fwd_kin->getJointNames();
