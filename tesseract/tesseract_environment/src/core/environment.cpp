@@ -208,10 +208,13 @@ bool Environment::applyCommand(const Command& command)
     {
       std::lock_guard<std::mutex> lock(mutex_);
       const auto& cmd = static_cast<const tesseract_environment::ChangeDefaultContactMarginCommand&>(command);
-      tesseract_collision::CollisionMarginData collision_data = continuous_manager_->getCollisionMarginData();
-      collision_data.setDefaultCollisionMarginData(cmd.getDefaultCollisionMargin());
-      continuous_manager_->setCollisionMarginData(collision_data);
-      discrete_manager_->setCollisionMarginData(collision_data);
+      collision_margin_data_.setDefaultCollisionMarginData(cmd.getDefaultCollisionMargin());
+
+      if (continuous_manager_ != nullptr)
+        continuous_manager_->setDefaultCollisionMarginData(cmd.getDefaultCollisionMargin());
+
+      if (discrete_manager_ != nullptr)
+        discrete_manager_->setDefaultCollisionMarginData(cmd.getDefaultCollisionMargin());
 
       ++revision_;
       commands_.push_back(
@@ -225,12 +228,16 @@ bool Environment::applyCommand(const Command& command)
     {
       std::lock_guard<std::mutex> lock(mutex_);
       const auto& cmd = static_cast<const tesseract_environment::ChangePairContactMarginCommand&>(command);
-      tesseract_collision::CollisionMarginData collision_data = continuous_manager_->getCollisionMarginData();
-      for (const auto& link_pair : cmd.getPairCollisionMarginData())
-        collision_data.setPairCollisionMarginData(link_pair.first.first, link_pair.first.second, link_pair.second);
 
-      continuous_manager_->setCollisionMarginData(collision_data);
-      discrete_manager_->setCollisionMarginData(collision_data);
+      for (const auto& link_pair : cmd.getPairCollisionMarginData())
+        collision_margin_data_.setPairCollisionMarginData(
+            link_pair.first.first, link_pair.first.second, link_pair.second);
+
+      if (continuous_manager_ != nullptr)
+        continuous_manager_->setCollisionMarginData(collision_margin_data_);
+
+      if (discrete_manager_ != nullptr)
+        discrete_manager_->setCollisionMarginData(collision_margin_data_);
 
       ++revision_;
       commands_.push_back(
@@ -891,6 +898,8 @@ Environment::getDiscreteContactManagerHelper(const std::string& name) const
     manager->setActiveCollisionObjects(active_link_names_);
   }
 
+  manager->setCollisionMarginData(collision_margin_data_);
+
   return manager;
 }
 
@@ -918,6 +927,8 @@ Environment::getContinuousContactManagerHelper(const std::string& name) const
 
     manager->setActiveCollisionObjects(active_link_names_);
   }
+
+  manager->setCollisionMarginData(collision_margin_data_);
 
   return manager;
 }
