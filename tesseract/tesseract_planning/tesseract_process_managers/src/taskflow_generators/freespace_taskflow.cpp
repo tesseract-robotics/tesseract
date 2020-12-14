@@ -134,6 +134,9 @@ TaskflowContainer FreespaceTaskflow::generateTaskflow(ProcessInput input,
 
     if (input.profiles->hasProfileEntry<TrajOptCompositeProfile>())
       trajopt_planner->composite_profiles = input.profiles->getProfileEntry<TrajOptCompositeProfile>();
+
+    if (input.profiles->hasProfileEntry<TrajOptSolverProfile>())
+      trajopt_planner->solver_profiles = input.profiles->getProfileEntry<TrajOptSolverProfile>();
   }
   ProcessGenerator::UPtr trajopt_generator = std::make_unique<MotionPlannerProcessGenerator>(trajopt_planner);
   trajopt_task.work(trajopt_generator->generateConditionalTask(input, trajopt_task.hash_value()));
@@ -170,6 +173,9 @@ TaskflowContainer FreespaceTaskflow::generateTaskflow(ProcessInput input,
 
       if (input.profiles->hasProfileEntry<TrajOptCompositeProfile>())
         trajopt_planner2->composite_profiles = input.profiles->getProfileEntry<TrajOptCompositeProfile>();
+
+      if (input.profiles->hasProfileEntry<TrajOptSolverProfile>())
+        trajopt_planner2->solver_profiles = input.profiles->getProfileEntry<TrajOptSolverProfile>();
     }
     ProcessGenerator::UPtr trajopt_generator2 = std::make_unique<MotionPlannerProcessGenerator>(trajopt_planner2);
     trajopt_second_task.work(trajopt_generator2->generateConditionalTask(input, trajopt_second_task.hash_value()));

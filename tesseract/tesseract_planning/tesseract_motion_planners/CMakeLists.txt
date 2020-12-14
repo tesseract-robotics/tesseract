@@ -144,6 +144,7 @@ add_library(${PROJECT_NAME}_trajopt
   src/trajopt/trajopt_utils.cpp
   src/trajopt/profile/trajopt_default_plan_profile.cpp
   src/trajopt/profile/trajopt_default_composite_profile.cpp
+  src/trajopt/profile/trajopt_default_solver_profile.cpp
   src/trajopt/problem_generators/default_problem_generator.cpp
   src/trajopt/serialize.cpp
   src/trajopt/deserialize.cpp)

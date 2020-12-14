@@ -123,7 +123,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& r
 
     try
     {
-      problem = problem_generator(name_, request, plan_profiles, composite_profiles);
+      problem = problem_generator(name_, request, plan_profiles, composite_profiles, solver_profiles);
     }
     catch (std::exception& e)
     {

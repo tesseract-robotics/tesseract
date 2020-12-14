@@ -117,6 +117,9 @@ TaskflowContainer TrajOptTaskflow::generateTaskflow(ProcessInput input,
 
     if (input.profiles->hasProfileEntry<TrajOptCompositeProfile>())
       trajopt_planner->composite_profiles = input.profiles->getProfileEntry<TrajOptCompositeProfile>();
+
+    if (input.profiles->hasProfileEntry<TrajOptSolverProfile>())
+      trajopt_planner->solver_profiles = input.profiles->getProfileEntry<TrajOptSolverProfile>();
   }
   ProcessGenerator::UPtr trajopt_generator = std::make_unique<MotionPlannerProcessGenerator>(trajopt_planner);
   trajopt_task.work(trajopt_generator->generateConditionalTask(input, trajopt_task.hash_value()));

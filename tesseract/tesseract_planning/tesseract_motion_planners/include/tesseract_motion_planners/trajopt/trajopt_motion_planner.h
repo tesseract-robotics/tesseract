@@ -41,7 +41,8 @@ class TrajOptMotionPlannerStatusCategory;
 using TrajOptProblemGeneratorFn = std::function<trajopt::TrajOptProb::Ptr(const std::string&,
                                                                           const PlannerRequest&,
                                                                           const TrajOptPlanProfileMap&,
-                                                                          const TrajOptCompositeProfileMap&)>;
+                                                                          const TrajOptCompositeProfileMap&,
+                                                                          const TrajOptSolverProfileMap&)>;
 
 class TrajOptMotionPlanner : public MotionPlanner
 {
@@ -60,19 +61,23 @@ public:
   TrajOptProblemGeneratorFn problem_generator;
 
   /**
+   * @brief The available solver profiles
+   * @details This is used to look up solver parameters by the planner
+   */
+  TrajOptSolverProfileMap solver_profiles;
+
+  /**
    * @brief The available composite profiles
-   *
-   * Composite instruction is a way to namespace or organize your planning problem. The composite instruction has a
-   * profile which is used for applying multy waypoint costs and constraints like joint smoothing, collision avoidance,
-   * and velocity smoothing.
+   * @details Composite instruction is a way to namespace or organize your planning problem. The composite instruction
+   * has a profile which is used for applying multy waypoint costs and constraints like joint smoothing, collision
+   * avoidance, and velocity smoothing.
    */
   TrajOptCompositeProfileMap composite_profiles;
 
   /**
    * @brief The available plan profiles
-   *
-   * Plan instruction profiles are used to control waypoint specific information like fixed waypoint, toleranced
-   * waypoint, corner distance waypoint, etc.
+   * @details Plan instruction profiles are used to control waypoint specific information like fixed waypoint,
+   * toleranced waypoint, corner distance waypoint, etc.
    */
   TrajOptPlanProfileMap plan_profiles;
 

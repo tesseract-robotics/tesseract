@@ -77,6 +77,18 @@ public:
   virtual tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const = 0;
 };
 
+class TrajOptSolverProfile
+{
+public:
+  using Ptr = std::shared_ptr<TrajOptSolverProfile>;
+  using ConstPtr = std::shared_ptr<const TrajOptSolverProfile>;
+
+  virtual void apply(trajopt::ProblemConstructionInfo& pci) const = 0;
+
+  virtual tinyxml2::XMLElement* toXML(tinyxml2::XMLDocument& doc) const = 0;
+};
+
+using TrajOptSolverProfileMap = std::unordered_map<std::string, TrajOptSolverProfile::ConstPtr>;
 using TrajOptCompositeProfileMap = std::unordered_map<std::string, TrajOptCompositeProfile::ConstPtr>;
 using TrajOptPlanProfileMap = std::unordered_map<std::string, TrajOptPlanProfile::ConstPtr>;
 }  // namespace tesseract_planning
