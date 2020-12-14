@@ -124,7 +124,7 @@ public:
   void enableTaskflowProfiling();
 
   /** @brief This remove the Taskflow profiling observer from the executor if one exists */
-  void disableTskflowProfiling();
+  void disableTaskflowProfiling();
 
   /**
    * @brief Get the profile dictionary associated with the planning server
