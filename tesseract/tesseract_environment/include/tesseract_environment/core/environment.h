@@ -82,6 +82,7 @@ public:
     joint_names_.clear();
     active_link_names_.clear();
     active_joint_names_.clear();
+    collision_margin_data_ = tesseract_collision::CollisionMarginData();
 
     if (!scene_graph_->insertSceneGraph(scene_graph))
     {
@@ -641,6 +642,7 @@ protected:
   std::vector<std::string> active_joint_names_;                   /**< A vector of active joint names */
   tesseract_collision::IsContactAllowedFn is_contact_allowed_fn_; /**< The function used to determine if two objects are
                                                                      allowed in collision */
+  tesseract_collision::CollisionMarginData collision_margin_data_;        /**< The collision margin data */
   tesseract_collision::DiscreteContactManager::Ptr discrete_manager_;     /**< The discrete contact manager object */
   tesseract_collision::ContinuousContactManager::Ptr continuous_manager_; /**< The continuous contact manager object */
   std::string discrete_manager_name_;   /**< Name of active descrete contact manager */
