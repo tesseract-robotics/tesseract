@@ -34,11 +34,12 @@
 namespace tesseract_planning
 {
 /// @todo: Restructure this into several smaller functions that are testable and easier to understand
-trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name,
-                                                         const PlannerRequest& request,
-                                                         const TrajOptPlanProfileMap& plan_profiles,
-                                                         const TrajOptCompositeProfileMap& composite_profiles,
-                                                         const TrajOptSolverProfileMap& solver_profiles)
+std::shared_ptr<trajopt::ProblemConstructionInfo>
+DefaultTrajoptProblemGenerator(const std::string& name,
+                               const PlannerRequest& request,
+                               const TrajOptPlanProfileMap& plan_profiles,
+                               const TrajOptCompositeProfileMap& composite_profiles,
+                               const TrajOptSolverProfileMap& solver_profiles)
 {
   auto pci = std::make_shared<trajopt::ProblemConstructionInfo>(request.tesseract);
 
@@ -359,7 +360,6 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name
   pci->basic_info.manip = composite_mi.manipulator;
   pci->basic_info.start_fixed = false;
   pci->basic_info.use_time = false;
-  //  pci->basic_info.convex_solver = optimizer;  // TODO: Fix this when port to trajopt_ifopt
 
   // Set trajopt seed
   assert(static_cast<long>(seed_states.size()) == pci->basic_info.n_steps);
@@ -376,10 +376,7 @@ trajopt::TrajOptProb::Ptr DefaultTrajoptProblemGenerator(const std::string& name
 
   cur_composite_profile->apply(*pci, 0, pci->basic_info.n_steps - 1, composite_mi, active_links, fixed_steps);
 
-  // Construct Problem
-  trajopt::TrajOptProb::Ptr problem = trajopt::ConstructProblem(*pci);
-
-  return problem;
+  return pci;
 }
 
 }  // namespace tesseract_planning

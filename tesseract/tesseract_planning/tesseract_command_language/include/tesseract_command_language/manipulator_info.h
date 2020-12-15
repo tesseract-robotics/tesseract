@@ -50,14 +50,16 @@ public:
   /**
    * @brief Tool Center Point Defined by name
    * @param name The tool center point name
+   * @param external The external TCP is used when the robot is holding the part verus the tool.
    */
-  ToolCenterPoint(const std::string& name);
+  ToolCenterPoint(const std::string& name, bool external = false);
 
   /**
    * @brief Tool Center Point Defined by transform
    * @param transform The tool center point transform
+   * @param external The external TCP is used when the robot is holding the part verus the tool.
    */
-  ToolCenterPoint(const Eigen::Isometry3d& transform);
+  ToolCenterPoint(const Eigen::Isometry3d& transform, bool external = false);
 
   /**
    * @brief The Tool Center Point is empty
@@ -78,6 +80,19 @@ public:
   bool isTransform() const;
 
   /**
+   * @brief Check if tool center point is and external tcp which mean it is not defined
+   * @details The external TCP is used when the robot is holding the part verus the tool.
+   * @return True if and external TCP, otherwise the false
+   */
+  bool isExternal() const;
+
+  /**
+   * @brief Set the external property
+   * @param value True if external tool center point, otherwise false
+   */
+  void setExternal(bool value);
+
+  /**
    * @brief Get the tool center point name
    * @return Name
    */
@@ -95,6 +110,7 @@ public:
     ret_val &= (type_ == other.type_);
     ret_val &= (name_ == other.name_);
     ret_val &= (transform_.isApprox(transform_, 1e-5));
+    ret_val &= (external_ == other.external_);
     return ret_val;
   }
 
@@ -102,6 +118,9 @@ protected:
   int type_{ 0 };
   std::string name_;
   Eigen::Isometry3d transform_;
+
+  /** @brief The external TCP is used when the robot is holding the part verus the tool. */
+  bool external_{ false };
 };
 
 /**
