@@ -384,7 +384,13 @@ Eigen::Isometry3d Tesseract::findTCP(const tesseract_planning::ManipulatorInfo& 
     tesseract_environment::EnvState::ConstPtr env_state = environment_->getCurrentState();
     auto link_it = env_state->link_transforms.find(tcp_name);
     if (link_it != env_state->link_transforms.end())
-      return env_state->link_transforms.at(tip_link).inverse() * link_it->second;
+    {
+      // If it is external then the tcp is not attached to the robot
+      if (manip_info.tcp.isExternal())
+        return link_it->second;
+      else
+        return env_state->link_transforms.at(tip_link).inverse() * link_it->second;
+    }
 
     // Check callbacks for TCP
     for (const auto& fn : find_tcp_cb_)
