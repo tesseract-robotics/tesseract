@@ -158,7 +158,8 @@ trajopt::TermInfo::Ptr createCollisionTermInfo(int start_index,
   collision->last_step = end_index;
   collision->contact_test_type = contact_test_type;
   collision->longest_valid_segment_length = longest_valid_segment_length;
-  collision->info = trajopt::createSafetyMarginDataVector(end_index - start_index, collision_safety_margin, coeff);
+  collision->info =
+      trajopt::createSafetyMarginDataVector((end_index - start_index) + 1, collision_safety_margin, coeff);
   collision->safety_margin_buffer = collision_safety_margin_buffer;
   return collision;
 }
