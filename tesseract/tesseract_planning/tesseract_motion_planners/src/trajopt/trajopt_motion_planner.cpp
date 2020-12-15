@@ -88,11 +88,7 @@ bool TrajOptMotionPlanner::terminate()
   return false;
 }
 
-void TrajOptMotionPlanner::clear()
-{
-  params = sco::BasicTrustRegionSQPParameters();
-  callbacks.clear();
-}
+void TrajOptMotionPlanner::clear() { callbacks.clear(); }
 
 MotionPlanner::Ptr TrajOptMotionPlanner::clone() const { return std::make_shared<TrajOptMotionPlanner>(); }
 
@@ -106,10 +102,11 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& r
         tesseract_common::StatusCode(TrajOptMotionPlannerStatusCategory::ErrorInvalidInput, status_category_);
     return response.status;
   }
-  trajopt::TrajOptProb::Ptr problem;
+
+  std::shared_ptr<trajopt::ProblemConstructionInfo> pci;
   if (request.data)
   {
-    problem = std::static_pointer_cast<trajopt::TrajOptProb>(request.data);
+    pci = std::static_pointer_cast<trajopt::ProblemConstructionInfo>(request.data);
   }
   else
   {
@@ -123,7 +120,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& r
 
     try
     {
-      problem = problem_generator(name_, request, plan_profiles, composite_profiles, solver_profiles);
+      pci = problem_generator(name_, request, plan_profiles, composite_profiles, solver_profiles);
     }
     catch (std::exception& e)
     {
@@ -133,8 +130,11 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& r
       return response.status;
     }
 
-    response.data = problem;
+    response.data = pci;
   }
+
+  // Construct Problem
+  trajopt::TrajOptProb::Ptr problem = trajopt::ConstructProblem(*pci);
 
   // Set Log Level
   if (verbose)
@@ -144,7 +144,7 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& r
 
   // Create optimizer
   sco::BasicTrustRegionSQP opt(problem);
-  opt.setParameters(params);
+  opt.setParameters(pci->opt_info);
   opt.initialize(trajToDblVec(problem->GetInitTraj()));
 
   // Add all callbacks

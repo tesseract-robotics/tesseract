@@ -36,13 +36,18 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_planning
 {
-ToolCenterPoint::ToolCenterPoint(const std::string& name) : type_(1), name_(name) {}
+ToolCenterPoint::ToolCenterPoint(const std::string& name, bool external) : type_(1), name_(name), external_(external) {}
 
-ToolCenterPoint::ToolCenterPoint(const Eigen::Isometry3d& transform) : type_(2), transform_(transform) {}
+ToolCenterPoint::ToolCenterPoint(const Eigen::Isometry3d& transform, bool external)
+  : type_(2), transform_(transform), external_(external)
+{
+}
 
 bool ToolCenterPoint::empty() const { return (type_ == 0); }
 bool ToolCenterPoint::isString() const { return (type_ == 1); }
 bool ToolCenterPoint::isTransform() const { return (type_ == 2); }
+bool ToolCenterPoint::isExternal() const { return external_; }
+void ToolCenterPoint::setExternal(bool value) { external_ = value; }
 
 const std::string& ToolCenterPoint::getString() const
 {
@@ -179,6 +184,17 @@ ManipulatorInfo::ManipulatorInfo(const tinyxml2::XMLElement& xml_element)
 
       tcp = tcp_name;
     }
+
+    if (tcp_element->Attribute("external") != nullptr)
+    {
+      bool external = false;
+      tinyxml2::XMLError status = tcp_element->QueryBoolAttribute("external", &external);
+
+      if (status != tinyxml2::XML_SUCCESS)
+        throw std::runtime_error("ManipulatorInfo: Error parsing TCP attribute external.");
+
+      tcp.setExternal(external);
+    }
   }
 }
 
@@ -239,6 +255,7 @@ tinyxml2::XMLElement* ManipulatorInfo::toXML(tinyxml2::XMLDocument& doc) const
   {
     tinyxml2::XMLElement* xml_tcp = doc.NewElement("TCP");
     xml_tcp->SetAttribute("name", tcp.getString().c_str());
+    xml_tcp->SetAttribute("external", tcp.isExternal());
     xml_manip_info->InsertEndChild(xml_tcp);
   }
   else if (tcp.isTransform())
@@ -254,6 +271,7 @@ tinyxml2::XMLElement* ManipulatorInfo::toXML(tinyxml2::XMLDocument& doc) const
     wxyz_string << Eigen::Vector4d(q.w(), q.x(), q.y(), q.z()).format(eigen_format);
 
     xml_tcp->SetAttribute("wxyz", wxyz_string.str().c_str());
+    xml_tcp->SetAttribute("external", tcp.isExternal());
     xml_manip_info->InsertEndChild(xml_tcp);
   }
 

@@ -38,11 +38,12 @@ namespace tesseract_planning
 {
 class TrajOptMotionPlannerStatusCategory;
 
-using TrajOptProblemGeneratorFn = std::function<trajopt::TrajOptProb::Ptr(const std::string&,
-                                                                          const PlannerRequest&,
-                                                                          const TrajOptPlanProfileMap&,
-                                                                          const TrajOptCompositeProfileMap&,
-                                                                          const TrajOptSolverProfileMap&)>;
+using TrajOptProblemGeneratorFn =
+    std::function<std::shared_ptr<trajopt::ProblemConstructionInfo>(const std::string&,
+                                                                    const PlannerRequest&,
+                                                                    const TrajOptPlanProfileMap&,
+                                                                    const TrajOptCompositeProfileMap&,
+                                                                    const TrajOptSolverProfileMap&)>;
 
 class TrajOptMotionPlanner : public MotionPlanner
 {
@@ -80,9 +81,6 @@ public:
    * toleranced waypoint, corner distance waypoint, etc.
    */
   TrajOptPlanProfileMap plan_profiles;
-
-  /** @brief Optimization parameters to be used (Optional) */
-  sco::BasicTrustRegionSQPParameters params;
 
   /** @brief Callback functions called on each iteration of the optimization (Optional) */
   std::vector<sco::Optimizer::Callback> callbacks;
