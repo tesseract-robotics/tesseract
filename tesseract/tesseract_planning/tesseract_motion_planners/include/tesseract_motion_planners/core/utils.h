@@ -623,6 +623,18 @@ inline bool DEPRECATED("Please use overload with CollisionCheckConfig")
   config.longest_valid_segment_length = longest_valid_segment_length;
   return contactCheckProgram(contacts, manager, state_solver, program, config);
 }
+
+/**
+ * @brief This generates a naive seed for the provided program
+ * @details This will generate a seed where each plan instruction has a single move instruction associated to it using
+ * the current state.
+ * @param composite_instructions The input program
+ * @param env The environment information
+ * @return The generated seed
+ */
+CompositeInstruction generateNaiveSeed(const CompositeInstruction& composite_instructions,
+                                       const tesseract_environment::Environment& env);
+
 }  // namespace tesseract_planning
 
 #endif  // TESSERACT_PLANNING_UTILS_H
