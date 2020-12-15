@@ -185,11 +185,15 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsJointJoint)  // N
     composite_profile->smooth_jerks = t3;
     composite_profile->collision_constraint_config.enabled = t4;
     composite_profile->collision_cost_config.enabled = t4;
-    trajopt::TrajOptProb::Ptr problem = DefaultTrajoptProblemGenerator(test_planner.getName(),
-                                                                       request,
-                                                                       test_planner.plan_profiles,
-                                                                       test_planner.composite_profiles,
-                                                                       test_planner.solver_profiles);
+
+    std::shared_ptr<trajopt::ProblemConstructionInfo> pci =
+        DefaultTrajoptProblemGenerator(test_planner.getName(),
+                                       request,
+                                       test_planner.plan_profiles,
+                                       test_planner.composite_profiles,
+                                       test_planner.solver_profiles);
+
+    trajopt::TrajOptProb::Ptr problem = trajopt::ConstructProblem(*pci);
 
     EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointVelEqCost>(problem->getCosts())), t1);
     EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointAccEqCost>(problem->getCosts())), t2);
@@ -246,11 +250,14 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointJoint)  // NOLINT
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   {
-    trajopt::TrajOptProb::Ptr problem = DefaultTrajoptProblemGenerator(test_planner.getName(),
-                                                                       request,
-                                                                       test_planner.plan_profiles,
-                                                                       test_planner.composite_profiles,
-                                                                       test_planner.solver_profiles);
+    std::shared_ptr<trajopt::ProblemConstructionInfo> pci =
+        DefaultTrajoptProblemGenerator(test_planner.getName(),
+                                       request,
+                                       test_planner.plan_profiles,
+                                       test_planner.composite_profiles,
+                                       test_planner.solver_profiles);
+
+    trajopt::TrajOptProb::Ptr problem = trajopt::ConstructProblem(*pci);
 
     EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
         problem->getConstraints())));
@@ -262,11 +269,15 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointJoint)  // NOLINT
   }
   {
     plan_profile->term_type = trajopt::TermType::TT_COST;
-    trajopt::TrajOptProb::Ptr problem = DefaultTrajoptProblemGenerator(test_planner.getName(),
-                                                                       request,
-                                                                       test_planner.plan_profiles,
-                                                                       test_planner.composite_profiles,
-                                                                       test_planner.solver_profiles);
+
+    std::shared_ptr<trajopt::ProblemConstructionInfo> pci =
+        DefaultTrajoptProblemGenerator(test_planner.getName(),
+                                       request,
+                                       test_planner.plan_profiles,
+                                       test_planner.composite_profiles,
+                                       test_planner.solver_profiles);
+
+    trajopt::TrajOptProb::Ptr problem = trajopt::ConstructProblem(*pci);
 
     EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
         problem->getConstraints())));
@@ -327,11 +338,14 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointCart)  // NOLINT
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   {
-    trajopt::TrajOptProb::Ptr problem = DefaultTrajoptProblemGenerator(test_planner.getName(),
-                                                                       request,
-                                                                       test_planner.plan_profiles,
-                                                                       test_planner.composite_profiles,
-                                                                       test_planner.solver_profiles);
+    std::shared_ptr<trajopt::ProblemConstructionInfo> pci =
+        DefaultTrajoptProblemGenerator(test_planner.getName(),
+                                       request,
+                                       test_planner.plan_profiles,
+                                       test_planner.composite_profiles,
+                                       test_planner.solver_profiles);
+
+    trajopt::TrajOptProb::Ptr problem = trajopt::ConstructProblem(*pci);
 
     EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
         problem->getConstraints())));
@@ -344,11 +358,14 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointCart)  // NOLINT
 
   {
     plan_profile->term_type = trajopt::TermType::TT_COST;
-    trajopt::TrajOptProb::Ptr problem = DefaultTrajoptProblemGenerator(test_planner.getName(),
-                                                                       request,
-                                                                       test_planner.plan_profiles,
-                                                                       test_planner.composite_profiles,
-                                                                       test_planner.solver_profiles);
+    std::shared_ptr<trajopt::ProblemConstructionInfo> pci =
+        DefaultTrajoptProblemGenerator(test_planner.getName(),
+                                       request,
+                                       test_planner.plan_profiles,
+                                       test_planner.composite_profiles,
+                                       test_planner.solver_profiles);
+
+    trajopt::TrajOptProb::Ptr problem = trajopt::ConstructProblem(*pci);
 
     EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
         problem->getConstraints())));
@@ -413,11 +430,13 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartJoint)  // NOLINT
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   {
-    trajopt::TrajOptProb::Ptr problem = DefaultTrajoptProblemGenerator(test_planner.getName(),
-                                                                       request,
-                                                                       test_planner.plan_profiles,
-                                                                       test_planner.composite_profiles,
-                                                                       test_planner.solver_profiles);
+    std::shared_ptr<trajopt::ProblemConstructionInfo> pci =
+        DefaultTrajoptProblemGenerator(test_planner.getName(),
+                                       request,
+                                       test_planner.plan_profiles,
+                                       test_planner.composite_profiles,
+                                       test_planner.solver_profiles);
+    trajopt::TrajOptProb::Ptr problem = trajopt::ConstructProblem(*pci);
 
     EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
         problem->getConstraints())));
@@ -430,11 +449,13 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartJoint)  // NOLINT
 
   {
     plan_profile->term_type = trajopt::TermType::TT_COST;
-    trajopt::TrajOptProb::Ptr problem = DefaultTrajoptProblemGenerator(test_planner.getName(),
-                                                                       request,
-                                                                       test_planner.plan_profiles,
-                                                                       test_planner.composite_profiles,
-                                                                       test_planner.solver_profiles);
+    std::shared_ptr<trajopt::ProblemConstructionInfo> pci =
+        DefaultTrajoptProblemGenerator(test_planner.getName(),
+                                       request,
+                                       test_planner.plan_profiles,
+                                       test_planner.composite_profiles,
+                                       test_planner.solver_profiles);
+    trajopt::TrajOptProb::Ptr problem = trajopt::ConstructProblem(*pci);
 
     EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
         problem->getConstraints())));
@@ -499,11 +520,13 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartCart)  // NOLINT
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
   {
-    trajopt::TrajOptProb::Ptr problem = DefaultTrajoptProblemGenerator(test_planner.getName(),
-                                                                       request,
-                                                                       test_planner.plan_profiles,
-                                                                       test_planner.composite_profiles,
-                                                                       test_planner.solver_profiles);
+    std::shared_ptr<trajopt::ProblemConstructionInfo> pci =
+        DefaultTrajoptProblemGenerator(test_planner.getName(),
+                                       request,
+                                       test_planner.plan_profiles,
+                                       test_planner.composite_profiles,
+                                       test_planner.solver_profiles);
+    trajopt::TrajOptProb::Ptr problem = trajopt::ConstructProblem(*pci);
 
     EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
         problem->getConstraints())));
@@ -515,11 +538,13 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartCart)  // NOLINT
   }
   {
     plan_profile->term_type = trajopt::TermType::TT_COST;
-    trajopt::TrajOptProb::Ptr problem = DefaultTrajoptProblemGenerator(test_planner.getName(),
-                                                                       request,
-                                                                       test_planner.plan_profiles,
-                                                                       test_planner.composite_profiles,
-                                                                       test_planner.solver_profiles);
+    std::shared_ptr<trajopt::ProblemConstructionInfo> pci =
+        DefaultTrajoptProblemGenerator(test_planner.getName(),
+                                       request,
+                                       test_planner.plan_profiles,
+                                       test_planner.composite_profiles,
+                                       test_planner.solver_profiles);
+    trajopt::TrajOptProb::Ptr problem = trajopt::ConstructProblem(*pci);
 
     EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
         problem->getConstraints())));
@@ -584,6 +609,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsCartCart)  // NOL
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
+  std::shared_ptr<trajopt::ProblemConstructionInfo> pci;
   trajopt::TrajOptProb::Ptr problem;
 
   // Loop over all combinations of these 4. 0001, 0010, 0011, ... , 1111
@@ -600,11 +626,12 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsCartCart)  // NOL
     composite_profile->collision_constraint_config.enabled = t4;
     composite_profile->collision_cost_config.enabled = t4;
 
-    problem = DefaultTrajoptProblemGenerator(test_planner.getName(),
-                                             request,
-                                             test_planner.plan_profiles,
-                                             test_planner.composite_profiles,
-                                             test_planner.solver_profiles);
+    pci = DefaultTrajoptProblemGenerator(test_planner.getName(),
+                                         request,
+                                         test_planner.plan_profiles,
+                                         test_planner.composite_profiles,
+                                         test_planner.solver_profiles);
+    problem = trajopt::ConstructProblem(*pci);
 
     EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointVelEqCost>(problem->getCosts())), t1);
     EXPECT_EQ((tesseract_tests::vectorContainsType<sco::Cost::Ptr, trajopt::JointAccEqCost>(problem->getCosts())), t2);
@@ -675,11 +702,13 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointConstraint)  // NOLINT
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
-  trajopt::TrajOptProb::Ptr problem = DefaultTrajoptProblemGenerator(test_planner.getName(),
-                                                                     request,
-                                                                     test_planner.plan_profiles,
-                                                                     test_planner.composite_profiles,
-                                                                     test_planner.solver_profiles);
+  std::shared_ptr<trajopt::ProblemConstructionInfo> pci =
+      DefaultTrajoptProblemGenerator(test_planner.getName(),
+                                     request,
+                                     test_planner.plan_profiles,
+                                     test_planner.composite_profiles,
+                                     test_planner.solver_profiles);
+  trajopt::TrajOptProb::Ptr problem = trajopt::ConstructProblem(*pci);
 
   EXPECT_TRUE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
       problem->getConstraints())));
@@ -746,11 +775,14 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointCost)  // NOLINT
   request.tesseract = tesseract_ptr_;
   request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
 
-  trajopt::TrajOptProb::Ptr problem = DefaultTrajoptProblemGenerator(test_planner.getName(),
-                                                                     request,
-                                                                     test_planner.plan_profiles,
-                                                                     test_planner.composite_profiles,
-                                                                     test_planner.solver_profiles);
+  std::shared_ptr<trajopt::ProblemConstructionInfo> pci =
+      DefaultTrajoptProblemGenerator(test_planner.getName(),
+                                     request,
+                                     test_planner.plan_profiles,
+                                     test_planner.composite_profiles,
+                                     test_planner.solver_profiles);
+  trajopt::TrajOptProb::Ptr problem = trajopt::ConstructProblem(*pci);
+
   EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::JointPosEqConstraint>(
       problem->getConstraints())));
   EXPECT_FALSE((tesseract_tests::vectorContainsType<sco::Constraint::Ptr, trajopt::TrajOptConstraintFromErrFunc>(

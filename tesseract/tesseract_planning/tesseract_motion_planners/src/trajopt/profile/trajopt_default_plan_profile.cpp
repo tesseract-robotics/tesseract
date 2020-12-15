@@ -119,8 +119,17 @@ void TrajOptDefaultPlanProfile::apply(trajopt::ProblemConstructionInfo& pci,
   auto it = std::find(active_links.begin(), active_links.end(), mi.working_frame);
   if (it != active_links.end())
   {
-    ti = createDynamicCartesianWaypointTermInfo(
-        cartesian_waypoint, index, mi.working_frame, tcp, cartesian_coeff, pci.kin->getTipLinkName(), term_type);
+    if (mi.tcp.isExternal())
+    {
+      // If external, the part is attached to the robot so working frame is passed as link instead of target frame
+      ti = createCartesianWaypointTermInfo(
+          tcp, index, "", cartesian_waypoint, cartesian_coeff, mi.working_frame, term_type);
+    }
+    else
+    {
+      ti = createDynamicCartesianWaypointTermInfo(
+          cartesian_waypoint, index, mi.working_frame, tcp, cartesian_coeff, pci.kin->getTipLinkName(), term_type);
+    }
   }
   else
   {
