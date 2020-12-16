@@ -91,7 +91,7 @@ bool OPWInvKin::calcInvKin(Eigen::VectorXd& /*solutions*/,
                            const Eigen::Ref<const Eigen::VectorXd>& /*seed*/,
                            const std::string& /*link_name*/) const
 {
-  throw std::runtime_error("IKFastInvKin::calcInvKin(Eigen::VectorXd&, const Eigen::Isometry3d&, const "
+  throw std::runtime_error("OPWInvKin::calcInvKin(Eigen::VectorXd&, const Eigen::Isometry3d&, const "
                            "Eigen::Ref<const Eigen::VectorXd>&, const std::string&) Not Supported!");
 }
 
