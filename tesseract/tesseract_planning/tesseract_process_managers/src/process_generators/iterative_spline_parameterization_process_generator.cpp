@@ -89,8 +89,7 @@ int IterativeSplineParameterizationProcessGenerator::conditionalProcess(ProcessI
 
   auto* ci = input_results->cast<CompositeInstruction>();
   const ManipulatorInfo& manip_info = ci->getManipulatorInfo();
-  const auto fwd_kin =
-      input.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
+  const auto fwd_kin = input.env->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
 
   // Get Plan Profile
   std::string profile = ci->getProfile();

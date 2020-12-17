@@ -58,9 +58,9 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
   CompositeInstruction composite;
 
   // Initialize
-  auto fwd_kin = request.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
+  auto fwd_kin = request.env->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
   auto world_to_base = request.env_state->link_transforms.at(fwd_kin->getBaseLinkName());
-  const Eigen::Isometry3d& tcp = request.tesseract->findTCP(mi);
+  const Eigen::Isometry3d& tcp = request.env->findTCP(mi);
 
   // Calculate FK for start and end
   Eigen::Isometry3d p1 = Eigen::Isometry3d::Identity();
@@ -128,10 +128,10 @@ CompositeInstruction LVSInterpolateStateWaypoint(const JointWaypoint& start,
   assert(static_cast<long>(start.joint_names.size()) == start.size());
 
   // Initialize
-  auto inv_kin = request.tesseract->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(mi.manipulator);
-  auto fwd_kin = request.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
+  auto inv_kin = request.env->getManipulatorManager()->getInvKinematicSolver(mi.manipulator);
+  auto fwd_kin = request.env->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
   auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
-  const Eigen::Isometry3d& tcp = request.tesseract->findTCP(mi);
+  const Eigen::Isometry3d& tcp = request.env->findTCP(mi);
 
   Eigen::VectorXd j1 = start;
 
@@ -240,10 +240,10 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
   assert(static_cast<long>(end.joint_names.size()) == end.size());
 
   // Initialize
-  auto inv_kin = request.tesseract->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(mi.manipulator);
-  auto fwd_kin = request.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
+  auto inv_kin = request.env->getManipulatorManager()->getInvKinematicSolver(mi.manipulator);
+  auto fwd_kin = request.env->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
   auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
-  const Eigen::Isometry3d& tcp = request.tesseract->findTCP(mi);
+  const Eigen::Isometry3d& tcp = request.env->findTCP(mi);
 
   // Calculate p1 in kinematics base frame without tcp
   Eigen::Isometry3d p1 = start * tcp.inverse();
@@ -346,9 +346,9 @@ CompositeInstruction LVSInterpolateStateWaypoint(const CartesianWaypoint& start,
   assert(!(manip_info.empty() && base_instruction.getManipulatorInfo().empty()));
   ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
 
-  auto inv_kin = request.tesseract->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(mi.manipulator);
+  auto inv_kin = request.env->getManipulatorManager()->getInvKinematicSolver(mi.manipulator);
   auto world_to_base = request.env_state->link_transforms.at(inv_kin->getBaseLinkName());
-  const Eigen::Isometry3d& tcp = request.tesseract->findTCP(mi);
+  const Eigen::Isometry3d& tcp = request.env->findTCP(mi);
 
   // Get IK seed
   Eigen::VectorXd seed = request.env_state->getJointValues(inv_kin->getJointNames());
@@ -524,9 +524,9 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
   ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
 
   // Initialize
-  auto fwd_kin = request.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
+  auto fwd_kin = request.env->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
   auto world_to_base = request.env_state->link_transforms.at(fwd_kin->getBaseLinkName());
-  const Eigen::Isometry3d& tcp = request.tesseract->findTCP(mi);
+  const Eigen::Isometry3d& tcp = request.env->findTCP(mi);
 
   CompositeInstruction composite;
 
@@ -581,9 +581,9 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const JointWaypoint& start,
   ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
 
   // Initialize
-  auto fwd_kin = request.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
+  auto fwd_kin = request.env->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
   auto world_to_base = request.env_state->link_transforms.at(fwd_kin->getBaseLinkName());
-  const Eigen::Isometry3d& tcp = request.tesseract->findTCP(mi);
+  const Eigen::Isometry3d& tcp = request.env->findTCP(mi);
 
   CompositeInstruction composite;
 
@@ -635,9 +635,9 @@ CompositeInstruction LVSInterpolateCartStateWaypoint(const CartesianWaypoint& st
   ManipulatorInfo mi = manip_info.getCombined(base_instruction.getManipulatorInfo());
 
   // Initialize
-  auto fwd_kin = request.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
+  auto fwd_kin = request.env->getManipulatorManager()->getFwdKinematicSolver(mi.manipulator);
   auto world_to_base = request.env_state->link_transforms.at(fwd_kin->getBaseLinkName());
-  const Eigen::Isometry3d& tcp = request.tesseract->findTCP(mi);
+  const Eigen::Isometry3d& tcp = request.env->findTCP(mi);
 
   CompositeInstruction composite;
 

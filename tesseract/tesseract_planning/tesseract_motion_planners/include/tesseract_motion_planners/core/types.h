@@ -26,7 +26,7 @@
 #ifndef TESSERACT_MOTION_PLANNERS_PLANNER_TYPES_H
 #define TESSERACT_MOTION_PLANNERS_PLANNER_TYPES_H
 
-#include <tesseract/tesseract.h>
+#include <tesseract_environment/core/environment.h>
 #include <tesseract_common/status_code.h>
 #include <tesseract_common/types.h>
 #include <tesseract_command_language/command_language.h>
@@ -45,7 +45,7 @@ using PlannerProfileRemapping = std::unordered_map<std::string, std::unordered_m
 struct PlannerRequest
 {
   std::string name;                                    /**< @brief The name of the process manager to use */
-  tesseract::Tesseract::ConstPtr tesseract;            /**< @brief Tesseract */
+  tesseract_environment::Environment::ConstPtr env;    /**< @brief The environment */
   tesseract_environment::EnvState::ConstPtr env_state; /**< @brief The start state to use for planning */
 
   /**

@@ -3,7 +3,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract/tesseract.h>
+#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/ofkt/ofkt_state_solver.h>
 
 #include <tesseract_motion_planners/core/types.h>
 #include <tesseract_motion_planners/simple/simple_motion_planner.h>
@@ -32,7 +33,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include "raster_waad_dt_example_program.h"
 #include "freespace_example_program.h"
 
-using namespace tesseract;
 using namespace tesseract_kinematics;
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
@@ -68,18 +68,18 @@ std::string locateResource(const std::string& url)
 class TesseractProcessManagerUnit : public ::testing::Test
 {
 protected:
-  Tesseract::Ptr tesseract_ptr_;
+  Environment::Ptr env_;
   ManipulatorInfo manip;
 
   void SetUp() override
   {
     tesseract_scene_graph::ResourceLocator::Ptr locator =
         std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
-    Tesseract::Ptr tesseract = std::make_shared<Tesseract>();
+    Environment::Ptr env = std::make_shared<Environment>();
     boost::filesystem::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400.urdf");
     boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400.srdf");
-    EXPECT_TRUE(tesseract->init(urdf_path, srdf_path, locator));
-    tesseract_ptr_ = tesseract;
+    EXPECT_TRUE(env->init<OFKTStateSolver>(urdf_path, srdf_path, locator));
+    env_ = env;
 
     manip.manipulator = "manipulator";
     manip.manipulator_ik_solver = "OPWInvKin";
@@ -97,15 +97,14 @@ TEST_F(TesseractProcessManagerUnit, SeedMinLengthProcessGeneratorTest)
   EXPECT_FALSE(program.getManipulatorInfo().empty());
 
   // Define the Process Input
-  auto cur_state = tesseract_ptr_->getEnvironment()->getCurrentState();
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_);
+  auto cur_state = env_->getCurrentState();
+  CompositeInstruction seed = generateSeed(program, cur_state, env_);
 
   Instruction program_instruction = program;
   Instruction seed_instruction = seed;
 
   long current_length = getMoveInstructionCount(seed);
-  ProcessInput input(
-      tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed_instruction, true, nullptr);
+  ProcessInput input(env_, &program_instruction, program.getManipulatorInfo(), &seed_instruction, true, nullptr);
 
   SeedMinLengthProcessGenerator smlpg(current_length);
   EXPECT_TRUE(smlpg.generateConditionalTask(input, 1)() == 1);
@@ -118,8 +117,7 @@ TEST_F(TesseractProcessManagerUnit, SeedMinLengthProcessGeneratorTest)
   EXPECT_TRUE(final_length2 >= (2 * current_length));
 
   seed_instruction = seed;
-  ProcessInput input2(
-      tesseract_ptr_, &program_instruction, program.getManipulatorInfo(), &seed_instruction, true, nullptr);
+  ProcessInput input2(env_, &program_instruction, program.getManipulatorInfo(), &seed_instruction, true, nullptr);
 
   SeedMinLengthProcessGenerator smlpg3(3 * current_length);
   EXPECT_TRUE(smlpg3.generateConditionalTask(input, 3)() == 1);
@@ -145,8 +143,8 @@ TEST_F(TesseractProcessManagerUnit, RasterSimpleMotionPlannerDefaultPlanProfileT
   // Create Planning Request
   PlannerRequest request;
   request.instructions = program;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
 
   PlannerResponse response;
   interpolator->plan_profiles[process_profile] = std::make_shared<SimplePlannerDefaultPlanProfile>();
@@ -181,8 +179,8 @@ TEST_F(TesseractProcessManagerUnit, RasterSimpleMotionPlannerDefaultLVSPlanProfi
   // Create Planning Request
   PlannerRequest request;
   request.instructions = program;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
 
   PlannerResponse response;
   interpolator->plan_profiles[process_profile] = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
@@ -213,8 +211,8 @@ TEST_F(TesseractProcessManagerUnit, FreespaceSimpleMotionPlannerDefaultPlanProfi
   // Create Planning Request
   PlannerRequest request;
   request.instructions = program;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
 
   PlannerResponse response;
   interpolator->plan_profiles[DEFAULT_PROFILE_KEY] = std::make_shared<SimplePlannerDefaultPlanProfile>();
@@ -245,8 +243,8 @@ TEST_F(TesseractProcessManagerUnit, FreespaceSimpleMotionPlannerDefaultLVSPlanPr
   // Create Planning Request
   PlannerRequest request;
   request.instructions = program;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
 
   PlannerResponse response;
   interpolator->plan_profiles[DEFAULT_PROFILE_KEY] = std::make_shared<SimplePlannerDefaultLVSPlanProfile>();
@@ -265,7 +263,7 @@ TEST_F(TesseractProcessManagerUnit, FreespaceSimpleMotionPlannerDefaultLVSPlanPr
 TEST_F(TesseractProcessManagerUnit, RasterProcessManagerDefaultPlanProfileTest)
 {
   // Create Process Planning Server
-  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(env_), 1);
   planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
@@ -299,7 +297,7 @@ TEST_F(TesseractProcessManagerUnit, RasterProcessManagerDefaultPlanProfileTest)
 TEST_F(TesseractProcessManagerUnit, RasterProcessManagerDefaultLVSPlanProfileTest)
 {
   // Create Process Planning Server
-  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(env_), 1);
   planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
@@ -333,7 +331,7 @@ TEST_F(TesseractProcessManagerUnit, RasterProcessManagerDefaultLVSPlanProfileTes
 TEST_F(TesseractProcessManagerUnit, RasterGlobalProcessManagerDefaultPlanProfileTest)
 {
   // Create Process Planning Server
-  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(env_), 1);
   planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
@@ -367,7 +365,7 @@ TEST_F(TesseractProcessManagerUnit, RasterGlobalProcessManagerDefaultPlanProfile
 TEST_F(TesseractProcessManagerUnit, RasterGlobalProcessManagerDefaultLVSPlanProfileTest)
 {
   // Create Process Planning Server
-  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(env_), 1);
   planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
@@ -401,7 +399,7 @@ TEST_F(TesseractProcessManagerUnit, RasterGlobalProcessManagerDefaultLVSPlanProf
 TEST_F(TesseractProcessManagerUnit, RasterOnlyProcessManagerDefaultPlanProfileTest)
 {
   // Create Process Planning Server
-  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(env_), 1);
   planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
@@ -435,7 +433,7 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyProcessManagerDefaultPlanProfileTe
 TEST_F(TesseractProcessManagerUnit, RasterOnlyProcessManagerDefaultLVSPlanProfileTest)
 {
   // Create Process Planning Server
-  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(env_), 1);
   planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
@@ -469,7 +467,7 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyProcessManagerDefaultLVSPlanProfil
 TEST_F(TesseractProcessManagerUnit, RasterOnlyGlobalProcessManagerDefaultPlanProfileTest)
 {
   // Create Process Planning Server
-  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(env_), 1);
   planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
@@ -503,7 +501,7 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyGlobalProcessManagerDefaultPlanPro
 TEST_F(TesseractProcessManagerUnit, RasterOnlyGlobalProcessManagerDefaultLVSPlanProfileTest)
 {
   // Create Process Planning Server
-  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(env_), 1);
   planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
@@ -537,7 +535,7 @@ TEST_F(TesseractProcessManagerUnit, RasterOnlyGlobalProcessManagerDefaultLVSPlan
 TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerDefaultPlanProfileTest)
 {
   // Create Process Planning Server
-  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(env_), 1);
   planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
@@ -571,7 +569,7 @@ TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerDefaultPlanProfileTest
 TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerDefaultLVSPlanProfileTest)
 {
   // Create Process Planning Server
-  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(env_), 1);
   planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
@@ -605,7 +603,7 @@ TEST_F(TesseractProcessManagerUnit, RasterDTProcessManagerDefaultLVSPlanProfileT
 TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerDefaultPlanProfileTest)
 {
   // Create Process Planning Server
-  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(env_), 1);
   planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
@@ -644,7 +642,7 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerDefaultPlanProfileTe
 TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerDefaultLVSPlanProfileTest)
 {
   // Create Process Planning Server
-  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(env_), 1);
   planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
@@ -683,7 +681,7 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADProcessManagerDefaultLVSPlanProfil
 TEST_F(TesseractProcessManagerUnit, RasterWAADDTProcessManagerDefaultPlanProfileTest)
 {
   // Create Process Planning Server
-  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(env_), 1);
   planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request
@@ -722,7 +720,7 @@ TEST_F(TesseractProcessManagerUnit, RasterWAADDTProcessManagerDefaultPlanProfile
 TEST_F(TesseractProcessManagerUnit, RasterWAADDTProcessManagerDefaultLVSPlanProfileTest)
 {
   // Create Process Planning Server
-  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract_ptr_), 1);
+  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(env_), 1);
   planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request

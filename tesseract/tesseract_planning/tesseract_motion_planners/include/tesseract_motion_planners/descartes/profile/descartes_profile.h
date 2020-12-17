@@ -34,7 +34,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_command_language/core/instruction.h>
-#include <tesseract_command_language/manipulator_info.h>
+#include <tesseract_command_language/types.h>
 #include <tesseract_motion_planners/descartes/descartes_problem.h>
 
 namespace tesseract_planning

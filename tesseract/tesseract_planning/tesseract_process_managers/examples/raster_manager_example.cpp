@@ -6,7 +6,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <raster_example_program.h>
-#include <tesseract/tesseract.h>
+#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/ofkt/ofkt_state_solver.h>
 #include <tesseract_command_language/command_language.h>
 #include <tesseract_command_language/utils/utils.h>
 #include <tesseract_process_managers/core/process_planning_server.h>
@@ -48,10 +49,10 @@ int main()
   // --------------------
   tesseract_scene_graph::ResourceLocator::Ptr locator =
       std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
-  auto tesseract = std::make_shared<tesseract::Tesseract>();
+  auto env = std::make_shared<tesseract_environment::Environment>();
   boost::filesystem::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400.urdf");
   boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400.srdf");
-  tesseract->init(urdf_path, srdf_path, locator);
+  env->init<tesseract_environment::OFKTStateSolver>(urdf_path, srdf_path, locator);
 
   // Dynamically load ignition visualizer if exist
   tesseract_visualization::VisualizationLoader loader;
@@ -59,14 +60,14 @@ int main()
 
   if (plotter != nullptr)
   {
-    plotter->init(tesseract);
+    plotter->init(env);
     plotter->waitForConnection(3);
     if (plotter->isConnected())
       plotter->plotEnvironment();
   }
 
   // Create Process Planning Server
-  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(tesseract), 1);
+  ProcessPlanningServer planning_server(std::make_shared<ProcessEnvironmentCache>(env), 1);
   planning_server.loadDefaultProcessPlanners();
 
   // Create Process Planning Request

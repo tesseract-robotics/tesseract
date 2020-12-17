@@ -30,6 +30,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <string>
 #include <mutex>
+#include <boost/filesystem/path.hpp>
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
@@ -43,9 +44,19 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/continuous_contact_manager_factory.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/utils.h>
+#include <tesseract_scene_graph/resource_locator.h>
+#include <tesseract_urdf/urdf_parser.h>
+#include <tesseract_common/manipulator_info.h>
 
 namespace tesseract_environment
 {
+/**
+ * @brief Function signature for adding additional callbacks for looking up TCP information
+ *
+ * The function should throw and exception if not located
+ */
+using FindTCPCallbackFn = std::function<Eigen::Isometry3d(const tesseract_common::ManipulatorInfo&)>;
+
 class Environment
 {
 public:
@@ -54,7 +65,12 @@ public:
   using Ptr = std::shared_ptr<Environment>;
   using ConstPtr = std::shared_ptr<const Environment>;
 
-  Environment() = default;
+  /**
+   * @brief Default constructor
+   * @param register_default_contant_managers Indicate if the default contact managers should be registered
+   */
+  Environment(bool register_default_contact_managers = true);
+
   virtual ~Environment() = default;
   Environment(const Environment&) = delete;
   Environment& operator=(const Environment&) = delete;
@@ -73,41 +89,8 @@ public:
   bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
             const tesseract_scene_graph::SRDFModel::ConstPtr& srdf_model = nullptr)
   {
-    initialized_ = false;
-    revision_ = 0;
-    scene_graph_ = std::make_shared<tesseract_scene_graph::SceneGraph>(scene_graph.getName());
-    scene_graph_const_ = scene_graph_;
-    commands_.clear();
-    link_names_.clear();
-    joint_names_.clear();
-    active_link_names_.clear();
-    active_joint_names_.clear();
-    collision_margin_data_ = tesseract_collision::CollisionMarginData();
-
-    if (!scene_graph_->insertSceneGraph(scene_graph))
-    {
-      CONSOLE_BRIDGE_logError("Failed to insert the scene graph");
+    if (!initHelper(scene_graph, srdf_model))
       return false;
-    }
-
-    if (srdf_model != nullptr)
-      processSRDFAllowedCollisions(*scene_graph_, *srdf_model);
-
-    // Add this to the command history. This should always the the first thing in the command history
-    ++revision_;
-    commands_.push_back(std::make_shared<AddSceneGraphCommand>(scene_graph, nullptr, ""));
-
-    if (scene_graph_ == nullptr)
-    {
-      CONSOLE_BRIDGE_logError("Null pointer to Scene Graph");
-      return false;
-    }
-
-    if (!scene_graph_->getLink(scene_graph_->getRoot()))
-    {
-      CONSOLE_BRIDGE_logError("The scene graph has an invalid root.");
-      return false;
-    }
 
     state_solver_ = std::make_shared<S>();
     if (!state_solver_->init(scene_graph_))
@@ -116,35 +99,101 @@ public:
       return false;
     }
 
-    manipulator_manager_ = std::make_shared<ManipulatorManager>();
-    if (!srdf_model)
-    {
-      CONSOLE_BRIDGE_logDebug("Environment is being initialized without an SRDF Model. Manipulators will not be "
-                              "registered");
-      manipulator_manager_->init(scene_graph_, tesseract_scene_graph::KinematicsInformation());
-    }
-    else
-    {
-      manipulator_manager_->init(scene_graph_, srdf_model->getKinematicsInformation());
-
-      // Add this to the command history.
-      ++revision_;
-      commands_.push_back(
-          std::make_shared<AddKinematicsInformationCommand>(manipulator_manager_->getKinematicsInformation()));
-    }
-
-    is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed,
-                                       scene_graph_,
-                                       std::placeholders::_1,
-                                       std::placeholders::_2);
-
-    manipulator_manager_->revision_ = revision_;
-
-    initialized_ = true;
-
     environmentChanged();
 
+    // Register Default Managers, must be called after initialized after initialized_ is set to true
+    if (register_default_contact_managers_)
+      registerDefaultContactManagers();
+
     return initialized_;
+  }
+
+  template <typename S>
+  bool init(const std::string& urdf_string, const tesseract_scene_graph::ResourceLocator::Ptr& locator)
+  {
+    resource_locator_ = locator;
+
+    // Parse urdf string into Scene Graph
+    tesseract_scene_graph::SceneGraph::Ptr scene_graph =
+        tesseract_urdf::parseURDFString(urdf_string, resource_locator_);
+    if (scene_graph == nullptr)
+    {
+      CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+      return false;
+    }
+
+    return init<S>(*scene_graph);
+  }
+
+  template <typename S>
+  bool init(const std::string& urdf_string,
+            const std::string& srdf_string,
+            const tesseract_scene_graph::ResourceLocator::Ptr& locator)
+  {
+    resource_locator_ = locator;
+
+    // Parse urdf string into Scene Graph
+    tesseract_scene_graph::SceneGraph::Ptr scene_graph =
+        tesseract_urdf::parseURDFString(urdf_string, resource_locator_);
+    if (scene_graph == nullptr)
+    {
+      CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+      return false;
+    }
+
+    // Parse srdf string into SRDF Model
+    tesseract_scene_graph::SRDFModel::Ptr srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
+    if (!srdf->initString(*scene_graph, srdf_string))
+    {
+      CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
+      return false;
+    }
+
+    return init<S>(*scene_graph, srdf);
+  }
+
+  template <typename S>
+  bool init(const boost::filesystem::path& urdf_path, const tesseract_scene_graph::ResourceLocator::Ptr& locator)
+  {
+    resource_locator_ = locator;
+
+    // Parse urdf file into Scene Graph
+    tesseract_scene_graph::SceneGraph::Ptr scene_graph =
+        tesseract_urdf::parseURDFFile(urdf_path.string(), resource_locator_);
+    if (scene_graph == nullptr)
+    {
+      CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+      return false;
+    }
+
+    return init<S>(*scene_graph);
+  }
+
+  template <typename S>
+  bool init(const boost::filesystem::path& urdf_path,
+            const boost::filesystem::path& srdf_path,
+            const tesseract_scene_graph::ResourceLocator::Ptr& locator)
+  {
+    resource_locator_ = locator;
+
+    // Parse urdf file into Scene Graph
+    tesseract_scene_graph::SceneGraph::Ptr scene_graph =
+        tesseract_urdf::parseURDFFile(urdf_path.string(), resource_locator_);
+    if (scene_graph == nullptr)
+    {
+      CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+      return false;
+    }
+
+    // Parse srdf file into SRDF Model
+    auto srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
+    if (!srdf->initFile(*scene_graph, srdf_path.string()))
+    {
+      CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
+      return false;
+    }
+
+    return init<S>(*scene_graph, srdf);
   }
 
   /**
@@ -180,6 +229,8 @@ public:
       }
     }
 
+    init_revision_ = revision_;
+
     return true;
   }
 
@@ -188,6 +239,15 @@ public:
    * @return A clone of the environment
    */
   Environment::Ptr clone() const;
+
+  /** @brief reset to initialized state */
+  bool reset();
+
+  /** @brief clear content and uninitialize */
+  void clear();
+
+  /** @brief check if the environment is initialized */
+  bool isInitialized() const;
 
   /**
    * @brief Get the current revision number
@@ -251,6 +311,46 @@ public:
    * @return The manipulator manager const
    */
   virtual ManipulatorManager::ConstPtr getManipulatorManager() const;
+
+  /**
+   * @brief Find tool center point provided in the manipulator info
+   *
+   * If manipulator information tcp is defined as a string it does the following
+   *    - First check if manipulator info is empty, if so return identity
+   *    - Next if not empty, it checks if the manipulator manager has tcp defined for the manipulator group
+   *    - Next if not found, it looks up the tcp name in the EnvState along with manipulator tip link to calculate tcp
+   *    - Next if not found, it leverages the user defind callbacks to try an locate the tcp information.
+   *    - Next throw an exception, because no tcp information was located.
+   *
+   * @param manip_info The manipulator info
+   * @return The tool center point
+   */
+  Eigen::Isometry3d findTCP(const tesseract_common::ManipulatorInfo& manip_info) const;
+
+  /**
+   * @brief This allows for user defined callbacks for looking up TCP information
+   * @param fn User defind callback function for locating TCP information
+   */
+  void addFindTCPCallback(FindTCPCallbackFn fn);
+
+  /**
+   * @brief This get the current find tcp callbacks stored in the environment
+   * @return A vector of callback functions
+   */
+  std::vector<FindTCPCallbackFn> getFindTCPCallbacks() const;
+
+  /**
+   * @brief Set resource locator for environment
+   * @param locator The resource locator
+   */
+  void setResourceLocator(tesseract_scene_graph::ResourceLocator::Ptr locator);
+
+  /**
+   * @brief Get the resource locator assigned
+   * @details This can be a nullptr
+   * @return The resource locator assigned to the environment
+   */
+  tesseract_scene_graph::ResourceLocator::Ptr getResourceLocator() const;
 
   /**
    * @brief Add kinematics information to the environment
@@ -605,6 +705,12 @@ public:
   registerContinuousContactManager(const std::string& name,
                                    tesseract_collision::ContinuousContactManagerFactory::CreateMethod create_function);
 
+  /**
+   * @brief Register Default Contact Managers
+   * @return True if successful, otherwis false
+   */
+  bool registerDefaultContactManagers();
+
   /** @brief Merge a graph into the current environment
    * @param scene_graph Const ref to the graph to be merged (said graph will be copied)
    * @param prefix string Will be prepended to every link and joint of the merged graph
@@ -630,6 +736,7 @@ public:
 protected:
   bool initialized_{ false }; /**< Identifies if the object has been initialized */
   int revision_{ 0 };         /**< This increments when the scene graph is modified */
+  int init_revision_{ 0 };    /**< This is the revision number after initialization used when reset is called */
   Commands commands_;         /**< The history of commands applied to the environment after intialization */
   tesseract_scene_graph::SceneGraph::Ptr scene_graph_;            /**< Tesseract Scene Graph */
   tesseract_scene_graph::SceneGraph::ConstPtr scene_graph_const_; /**< Tesseract Scene Graph Const */
@@ -642,6 +749,15 @@ protected:
   std::vector<std::string> active_joint_names_;                   /**< A vector of active joint names */
   tesseract_collision::IsContactAllowedFn is_contact_allowed_fn_; /**< The function used to determine if two objects are
                                                                      allowed in collision */
+
+  /** @brief A vector of user defined callbacks for locating tool center point */
+  std::vector<FindTCPCallbackFn> find_tcp_cb_;
+
+  /** @brief This indicates that the default collision checker 'Bullet' should be registered */
+  bool register_default_contact_managers_{ true };
+
+  /** @brief Used when initialized by URDF_STRING, URDF_STRING_SRDF_STRING, URDF_PATH, and URDF_PATH_SRDF_PATH */
+  tesseract_scene_graph::ResourceLocator::Ptr resource_locator_;
   tesseract_collision::CollisionMarginData collision_margin_data_;        /**< The collision margin data */
   tesseract_collision::DiscreteContactManager::Ptr discrete_manager_;     /**< The discrete contact manager object */
   tesseract_collision::ContinuousContactManager::Ptr continuous_manager_; /**< The continuous contact manager object */
@@ -667,6 +783,9 @@ private:
   tesseract_collision::DiscreteContactManager::Ptr getDiscreteContactManagerHelper(const std::string& name) const;
 
   tesseract_collision::ContinuousContactManager::Ptr getContinuousContactManagerHelper(const std::string& name) const;
+
+  bool initHelper(const tesseract_scene_graph::SceneGraph& scene_graph,
+                  const tesseract_scene_graph::SRDFModel::ConstPtr& srdf_model = nullptr);
 };
 }  // namespace tesseract_environment
 

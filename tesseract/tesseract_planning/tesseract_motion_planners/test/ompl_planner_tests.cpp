@@ -49,7 +49,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract/tesseract.h>
+#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/ofkt/ofkt_state_solver.h>
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_motion_planners/ompl/ompl_motion_planner.h>
 #include <tesseract_motion_planners/ompl/ompl_planner_configurator.h>
@@ -62,7 +63,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_command_language/utils/utils.h>
 #include <tesseract_motion_planners/interface_utils.h>
 
-using namespace tesseract;
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
 using namespace tesseract_environment;
@@ -158,21 +158,21 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   // Step 1: Load scene and srdf
   tesseract_scene_graph::ResourceLocator::Ptr locator =
       std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
-  Tesseract::Ptr tesseract = std::make_shared<Tesseract>();
+  Environment::Ptr env = std::make_shared<Environment>();
   boost::filesystem::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
   boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
-  EXPECT_TRUE(tesseract->init(urdf_path, srdf_path, locator));
+  EXPECT_TRUE(env->init<OFKTStateSolver>(urdf_path, srdf_path, locator));
 
   ManipulatorInfo manip;
   manip.manipulator = "manipulator";
 
   // Step 2: Add box to environment
-  addBox(*(tesseract->getEnvironment()));
+  addBox(*env);
 
   // Step 3: Create ompl planner config and populate it
-  auto fwd_kin = tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
-  auto cur_state = tesseract->getEnvironment()->getCurrentState();
+  auto fwd_kin = env->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = env->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto cur_state = env->getCurrentState();
 
   // Specify a start waypoint
   JointWaypoint wp1(fwd_kin->getJointNames(),
@@ -195,7 +195,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract, 3.14, 1.0, 3.14, 10);
+  CompositeInstruction seed = generateSeed(program, cur_state, env, 3.14, 1.0, 3.14, 10);
 
   // Create Profiles
   auto plan_profile = std::make_shared<OMPLDefaultPlanProfile>();
@@ -216,8 +216,8 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   PlannerRequest request;
   request.instructions = program;
   request.seed = seed;
-  request.tesseract = tesseract;
-  request.env_state = tesseract->getEnvironment()->getCurrentState();
+  request.env = env;
+  request.env_state = env->getCurrentState();
 
   PlannerResponse planner_response;
   auto status = ompl_planner.solve(request, planner_response);
@@ -249,7 +249,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   program.push_back(plan_f1);
 
   // Create a new seed
-  seed = generateSeed(program, cur_state, tesseract, 3.14, 1.0, 3.14, 10);
+  seed = generateSeed(program, cur_state, env, 3.14, 1.0, 3.14, 10);
 
   // Update Configuration
   request.instructions = program;
@@ -284,7 +284,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespacePlannerUnit)
   program.push_back(plan_f1);
 
   // Create a new seed
-  seed = generateSeed(program, cur_state, tesseract, 3.14, 1.0, 3.14, 10);
+  seed = generateSeed(program, cur_state, env, 3.14, 1.0, 3.14, 10);
 
   // Update Configuration
   request.instructions = program;
@@ -305,22 +305,22 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianGoalPlannerUnit)
   // Step 1: Load scene and srdf
   tesseract_scene_graph::ResourceLocator::Ptr locator =
       std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
-  Tesseract::Ptr tesseract = std::make_shared<Tesseract>();
+  Environment::Ptr env = std::make_shared<Environment>();
   boost::filesystem::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
   boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
-  EXPECT_TRUE(tesseract->init(urdf_path, srdf_path, locator));
+  EXPECT_TRUE(env->init<OFKTStateSolver>(urdf_path, srdf_path, locator));
 
   // Set manipulator
   ManipulatorInfo manip;
   manip.manipulator = "manipulator";
 
   // Step 2: Add box to environment
-  addBox(*(tesseract->getEnvironment()));
+  addBox(*(env));
 
   // Step 3: Create ompl planner config and populate it
-  auto fwd_kin = tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
-  auto cur_state = tesseract->getEnvironment()->getCurrentState();
+  auto fwd_kin = env->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = env->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto cur_state = env->getCurrentState();
 
   // Specify a start waypoint
   JointWaypoint wp1(fwd_kin->getJointNames(),
@@ -345,7 +345,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianGoalPlannerUnit)
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract, 3.14, 1.0, 3.14, 10);
+  CompositeInstruction seed = generateSeed(program, cur_state, env, 3.14, 1.0, 3.14, 10);
 
   // Create Profiles
   auto plan_profile = std::make_shared<OMPLDefaultPlanProfile>();
@@ -366,8 +366,8 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianGoalPlannerUnit)
   PlannerRequest request;
   request.instructions = program;
   request.seed = seed;
-  request.tesseract = tesseract;
-  request.env_state = tesseract->getEnvironment()->getCurrentState();
+  request.env = env;
+  request.env_state = env->getCurrentState();
 
   PlannerResponse planner_response;
   auto status = ompl_planner.solve(request, planner_response);
@@ -394,22 +394,22 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
   // Step 1: Load scene and srdf
   tesseract_scene_graph::ResourceLocator::Ptr locator =
       std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
-  Tesseract::Ptr tesseract = std::make_shared<Tesseract>();
+  Environment::Ptr env = std::make_shared<Environment>();
   boost::filesystem::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
   boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
-  EXPECT_TRUE(tesseract->init(urdf_path, srdf_path, locator));
+  EXPECT_TRUE(env->init<OFKTStateSolver>(urdf_path, srdf_path, locator));
 
   // Set manipulator
   ManipulatorInfo manip;
   manip.manipulator = "manipulator";
 
   // Step 2: Add box to environment
-  addBox(*(tesseract->getEnvironment()));
+  addBox(*(env));
 
   // Step 3: Create ompl planner config and populate it
-  auto fwd_kin = tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
-  auto cur_state = tesseract->getEnvironment()->getCurrentState();
+  auto fwd_kin = env->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = env->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto cur_state = env->getCurrentState();
 
   // Specify a start waypoint
   Eigen::Isometry3d start = Eigen::Isometry3d::Identity();
@@ -434,7 +434,7 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract, 3.14, 1.0, 3.14, 10);
+  CompositeInstruction seed = generateSeed(program, cur_state, env, 3.14, 1.0, 3.14, 10);
 
   // Create Profiles
   auto plan_profile = std::make_shared<OMPLDefaultPlanProfile>();
@@ -455,8 +455,8 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
   PlannerRequest request;
   request.instructions = program;
   request.seed = seed;
-  request.tesseract = tesseract;
-  request.env_state = tesseract->getEnvironment()->getCurrentState();
+  request.env = env;
+  request.env_state = env->getCurrentState();
 
   PlannerResponse planner_response;
   auto status = ompl_planner.solve(request, planner_response);
@@ -490,10 +490,10 @@ TYPED_TEST(OMPLTestFixture, OMPLFreespaceCartesianStartPlannerUnit)
 //  EXPECT_TRUE(tesseract->init(urdf_path, srdf_path, locator));
 
 //  // Step 2: Add box to environment
-//  addBox(*(tesseract->getEnvironment()));
+//  addBox(*(env));
 
 //  // Step 3: Create ompl planner config and populate it
-//  auto kin = tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+//  auto kin = env->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
 //  std::vector<double> swp = start_state;
 //  std::vector<double> ewp = end_state;
 

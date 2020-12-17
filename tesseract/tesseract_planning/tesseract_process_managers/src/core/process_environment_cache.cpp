@@ -28,8 +28,9 @@
 
 namespace tesseract_planning
 {
-ProcessEnvironmentCache::ProcessEnvironmentCache(tesseract::Tesseract::ConstPtr env, std::size_t cache_size)
-  : tesseract_(std::move(env)), cache_size_(cache_size)
+ProcessEnvironmentCache::ProcessEnvironmentCache(tesseract_environment::Environment::ConstPtr env,
+                                                 std::size_t cache_size)
+  : env_(std::move(env)), cache_size_(cache_size)
 {
 }
 
@@ -44,20 +45,20 @@ long ProcessEnvironmentCache::getCacheSize() const { return static_cast<long>(ca
 void ProcessEnvironmentCache::refreshCache()
 {
   std::unique_lock<std::shared_mutex> lock(cache_mutex_);
-  tesseract::Tesseract::Ptr thor;
+  tesseract_environment::Environment::Ptr env;
 
-  int rev = tesseract_->getEnvironment()->getRevision();
+  int rev = env_->getRevision();
   if (rev != cache_env_revision_ || cache_.empty())
   {
-    thor = tesseract_->clone();
+    env = env_->clone();
     cache_env_revision_ = rev;
   }
 
-  if (thor != nullptr)
+  if (env != nullptr)
   {
     cache_.clear();
     for (std::size_t i = 0; i < cache_size_; ++i)
-      cache_.push_back(thor->clone());
+      cache_.push_back(env->clone());
   }
   else if (cache_.size() <= 2)
   {
@@ -66,19 +67,19 @@ void ProcessEnvironmentCache::refreshCache()
   }
 }
 
-tesseract::Tesseract::Ptr ProcessEnvironmentCache::getCachedEnvironment()
+tesseract_environment::Environment::Ptr ProcessEnvironmentCache::getCachedEnvironment()
 {
   // This is to make sure the cached items are updated if needed
   refreshCache();
 
   tesseract_environment::EnvState current_state;
-  current_state = *(tesseract_->getEnvironment()->getCurrentState());
+  current_state = *(env_->getCurrentState());
 
   std::unique_lock<std::shared_mutex> lock(cache_mutex_);
-  tesseract::Tesseract::Ptr t = cache_.back();
+  tesseract_environment::Environment::Ptr t = cache_.back();
 
   // Update to the current joint values
-  t->getEnvironment()->setState(current_state.joints);
+  t->setState(current_state.joints);
 
   cache_.pop_back();
 

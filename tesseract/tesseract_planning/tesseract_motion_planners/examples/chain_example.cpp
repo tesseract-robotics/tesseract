@@ -32,6 +32,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_kinematics/core/utils.h>
 
+#include <tesseract_environment/ofkt/ofkt_state_solver.h>
+
 #include <tesseract_motion_planners/descartes/descartes_collision.h>
 #include <tesseract_motion_planners/descartes/descartes_motion_planner.h>
 #include <tesseract_motion_planners/descartes/descartes_utils.h>
@@ -83,10 +85,10 @@ int main(int /*argc*/, char** /*argv*/)
   // Setup
   tesseract_scene_graph::ResourceLocator::Ptr locator =
       std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
-  auto tesseract = std::make_shared<tesseract::Tesseract>();
+  auto env = std::make_shared<tesseract_environment::Environment>();
   boost::filesystem::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400.urdf");
   boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/abb_irb2400.srdf");
-  tesseract->init(urdf_path, srdf_path, locator);
+  env->init<tesseract_environment::OFKTStateSolver>(urdf_path, srdf_path, locator);
 
   // Dynamically load ignition visualizer if exist
   tesseract_visualization::VisualizationLoader loader;
@@ -94,7 +96,7 @@ int main(int /*argc*/, char** /*argv*/)
 
   if (plotter != nullptr)
   {
-    plotter->init(tesseract);
+    plotter->init(env);
     plotter->waitForConnection();
     plotter->plotEnvironment();
   }
@@ -103,9 +105,9 @@ int main(int /*argc*/, char** /*argv*/)
   manip.manipulator = "manipulator";
   manip.manipulator_ik_solver = "OPWInvKin";
 
-  auto fwd_kin = tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
-  auto cur_state = tesseract->getEnvironment()->getCurrentState();
+  auto fwd_kin = env->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = env->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto cur_state = env->getCurrentState();
 
   // Specify start location
   JointWaypoint wp0(fwd_kin->getJointNames(), Eigen::VectorXd::Zero(6));
@@ -161,13 +163,13 @@ int main(int /*argc*/, char** /*argv*/)
   auto trajopt_composite_profile = std::make_shared<TrajOptDefaultCompositeProfile>();
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract);
+  CompositeInstruction seed = generateSeed(program, cur_state, env);
 
   // Create Planning Request
   PlannerRequest request;
   request.seed = seed;
   request.instructions = program;
-  request.tesseract = tesseract;
+  request.env = env;
   request.env_state = cur_state;
 
   // Solve Descartes Plan

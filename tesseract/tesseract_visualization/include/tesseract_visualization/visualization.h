@@ -35,7 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/types.h>
 #include <tesseract_collision/core/types.h>
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract/tesseract.h>
+#include <tesseract_environment/core/environment.h>
 
 namespace tesseract_planning
 {
@@ -60,10 +60,10 @@ public:
 
   /**
    * @brief Initialize the visualization tool
-   * @param thor The tesseract object
+   * @param env The environment object
    * @return True if successful, otherwise false
    */
-  virtual bool init(tesseract::Tesseract::ConstPtr thor) = 0;
+  virtual bool init(tesseract_environment::Environment::ConstPtr env) = 0;
 
   /**
    * @brief Some plotters may require connecting to external software.

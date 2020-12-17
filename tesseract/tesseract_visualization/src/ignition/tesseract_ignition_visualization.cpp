@@ -59,10 +59,9 @@ TesseractIgnitionVisualization::TesseractIgnitionVisualization()
   deletion_pub_ = node_.Advertise<ignition::msgs::UInt32_V>(DEFAULT_DELETION_TOPIC_NAME);
 }
 
-bool TesseractIgnitionVisualization::init(tesseract::Tesseract::ConstPtr thor)
+bool TesseractIgnitionVisualization::init(tesseract_environment::Environment::ConstPtr env)
 {
-  thor_ = thor;
-  env_ = thor_->getEnvironment();
+  env_ = env;
   return (env_ != nullptr);
 }
 
@@ -332,10 +331,9 @@ void TesseractIgnitionVisualization::plotToolPath(const tesseract_planning::Inst
 
     // Assume all the plan instructions have the same manipulator as the composite
     assert(!ci->getManipulatorInfo().empty());
-    const ManipulatorInfo& composite_mi = ci->getManipulatorInfo();
+    const tesseract_common::ManipulatorInfo& composite_mi = ci->getManipulatorInfo();
 
-    auto composite_mi_fwd_kin =
-        thor_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(composite_mi.manipulator);
+    auto composite_mi_fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(composite_mi.manipulator);
     if (composite_mi_fwd_kin == nullptr)
     {
       ignerr << "plotToolPath: Manipulator: " << composite_mi.manipulator << " does not exist!" << std::endl;
@@ -350,7 +348,7 @@ void TesseractIgnitionVisualization::plotToolPath(const tesseract_planning::Inst
     long cnt = 0;
     for (const auto& i : fi)
     {
-      ManipulatorInfo manip_info;
+      tesseract_common::ManipulatorInfo manip_info;
 
       std::string link_name = model_name + std::to_string(++cnt);
       ignition::msgs::Link* link_msg = model->add_link();
@@ -373,7 +371,7 @@ void TesseractIgnitionVisualization::plotToolPath(const tesseract_planning::Inst
       }
 
       // Extract TCP
-      Eigen::Isometry3d tcp = thor_->findTCP(manip_info);
+      Eigen::Isometry3d tcp = env_->findTCP(manip_info);
 
       if (isStateWaypoint(wp))
       {
@@ -398,7 +396,7 @@ void TesseractIgnitionVisualization::plotToolPath(const tesseract_planning::Inst
         }
         else
         {
-          tesseract_environment::EnvState::ConstPtr state = thor_->getEnvironment()->getCurrentState();
+          tesseract_environment::EnvState::ConstPtr state = env_->getCurrentState();
           addAxis(entity_manager_,
                   *link_msg,
                   cnt,
@@ -426,11 +424,10 @@ void TesseractIgnitionVisualization::plotToolPath(const tesseract_planning::Inst
 
     // Assume all the plan instructions have the same manipulator as the composite
     assert(!pi->getManipulatorInfo().empty());
-    const ManipulatorInfo& composite_mi = pi->getManipulatorInfo();
-    ManipulatorInfo manip_info = composite_mi.getCombined(pi->getManipulatorInfo());
+    const tesseract_common::ManipulatorInfo& composite_mi = pi->getManipulatorInfo();
+    tesseract_common::ManipulatorInfo manip_info = composite_mi.getCombined(pi->getManipulatorInfo());
 
-    auto composite_mi_fwd_kin =
-        thor_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
+    auto composite_mi_fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
     if (composite_mi_fwd_kin == nullptr)
     {
       ignerr << "plotToolPath: Manipulator: " << manip_info.manipulator << " does not exist!" << std::endl;
@@ -439,7 +436,7 @@ void TesseractIgnitionVisualization::plotToolPath(const tesseract_planning::Inst
     const std::string& tip_link = composite_mi_fwd_kin->getTipLinkName();
 
     // Extract TCP
-    Eigen::Isometry3d tcp = thor_->findTCP(manip_info);
+    Eigen::Isometry3d tcp = env_->findTCP(manip_info);
 
     if (isStateWaypoint(pi->getWaypoint()))
     {

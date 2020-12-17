@@ -36,7 +36,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_motion_planners/ompl/types.h>
 #include <tesseract_motion_planners/ompl/ompl_planner_configurator.h>
-#include <tesseract/tesseract.h>
 #include <tesseract_environment/core/environment.h>
 
 namespace tesseract_planning
@@ -72,7 +71,7 @@ struct OMPLProblem
   using ConstUPtr = std::unique_ptr<const OMPLProblem>;
 
   // These are required for Tesseract to configure ompl
-  tesseract::Tesseract::ConstPtr tesseract;
+  tesseract_environment::Environment::ConstPtr env;
   tesseract_environment::EnvState::ConstPtr env_state;
   tesseract_environment::StateSolver::Ptr state_solver;
 
