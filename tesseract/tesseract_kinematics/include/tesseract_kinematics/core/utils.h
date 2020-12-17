@@ -234,7 +234,7 @@ createKinematicsMap(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_gra
     {
       if (manipulators.find(group.first) == manipulators.end())
       {
-        std::shared_ptr<Chain_T> manip(new Chain_T());
+        std::shared_ptr<Chain_T> manip{ std::make_shared<Chain_T>() };
         if (!manip->init(scene_graph, group.second, group.first))
         {
           CONSOLE_BRIDGE_logError("Failed to create kinematic chaing for manipulator %s!", group.first);
@@ -253,7 +253,7 @@ createKinematicsMap(const tesseract_scene_graph::SceneGraph::ConstPtr& scene_gra
     {
       if (manipulators.find(group.first) == manipulators.end())
       {
-        std::shared_ptr<Tree_T> manip(new Tree_T());
+        std::shared_ptr<Tree_T> manip{ std::make_shared<Tree_T>() };
         if (!manip->init(scene_graph, group.second, group.first))
         {
           CONSOLE_BRIDGE_logError("Failed to create kinematic chaing for manipulator %s!", group.first);
