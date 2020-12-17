@@ -25,7 +25,7 @@
  */
 #ifndef TESSERACT_MOTION_PLANNERS_DESCARTES_ROBOT_SAMPLER_H
 #define TESSERACT_MOTION_PLANNERS_DESCARTES_ROBOT_SAMPLER_H
-#include <tesseract/tesseract.h>
+#include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <descartes_light/interface/position_sampler.h>
 #include <descartes_light/interface/collision_interface.h>

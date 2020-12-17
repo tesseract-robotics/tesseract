@@ -3,7 +3,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <gtest/gtest.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract/tesseract.h>
+#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/ofkt/ofkt_state_solver.h>
 #include <tesseract_process_managers/process_generators/fix_state_collision_process_generator.h>
 #include <tesseract_command_language/utils/utils.h>
 #include <tesseract_command_language/joint_waypoint.h>
@@ -11,7 +12,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include "freespace_example_program.h"
 
-using namespace tesseract;
 using namespace tesseract_kinematics;
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
@@ -48,19 +48,19 @@ std::string locateResource(const std::string& url)
 class FixStateCollisionProcessGeneratorUnit : public ::testing::Test
 {
 protected:
-  Tesseract::Ptr tesseract_ptr_;
+  Environment::Ptr env_;
   ManipulatorInfo manip_;
 
   void SetUp() override
   {
     tesseract_scene_graph::ResourceLocator::Ptr locator =
         std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
-    Tesseract::Ptr tesseract = std::make_shared<Tesseract>();
+    Environment::Ptr env = std::make_shared<Environment>();
 
     boost::filesystem::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/boxbot.urdf");
     boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/boxbot.srdf");
-    EXPECT_TRUE(tesseract->init(urdf_path, srdf_path, locator));
-    tesseract_ptr_ = tesseract;
+    EXPECT_TRUE(env->init<OFKTStateSolver>(urdf_path, srdf_path, locator));
+    env_ = env;
 
     manip_.manipulator = "manipulator";
   }
@@ -71,7 +71,7 @@ TEST_F(FixStateCollisionProcessGeneratorUnit, StateInCollisionTest)
   CompositeInstruction program = freespaceExampleProgramABB();
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
-  ProcessInput input(tesseract_ptr_, &program_instruction, manip_, &seed, false, nullptr);
+  ProcessInput input(env_, &program_instruction, manip_, &seed, false, nullptr);
 
   FixStateCollisionProfile profile;
 
@@ -110,7 +110,7 @@ TEST_F(FixStateCollisionProcessGeneratorUnit, WaypointInCollisionTest)
   CompositeInstruction program = freespaceExampleProgramABB();
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
-  ProcessInput input(tesseract_ptr_, &program_instruction, manip_, &seed, false, nullptr);
+  ProcessInput input(env_, &program_instruction, manip_, &seed, false, nullptr);
 
   FixStateCollisionProfile profile;
 
@@ -157,7 +157,7 @@ TEST_F(FixStateCollisionProcessGeneratorUnit, MoveWaypointFromCollisionRandomSam
   CompositeInstruction program = freespaceExampleProgramABB();
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
-  ProcessInput input(tesseract_ptr_, &program_instruction, manip_, &seed, false, nullptr);
+  ProcessInput input(env_, &program_instruction, manip_, &seed, false, nullptr);
 
   FixStateCollisionProfile profile;
 
@@ -189,7 +189,7 @@ TEST_F(FixStateCollisionProcessGeneratorUnit, MoveWaypointFromCollisionTrajoptTe
   CompositeInstruction program = freespaceExampleProgramABB();
   const Instruction program_instruction{ program };
   Instruction seed = generateSkeletonSeed(program);
-  ProcessInput input(tesseract_ptr_, &program_instruction, manip_, &seed, false, nullptr);
+  ProcessInput input(env_, &program_instruction, manip_, &seed, false, nullptr);
 
   FixStateCollisionProfile profile;
 

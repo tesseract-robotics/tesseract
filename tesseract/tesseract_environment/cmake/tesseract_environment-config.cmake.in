@@ -10,6 +10,8 @@ find_dependency(orocos_kdl)
 find_dependency(console_bridge)
 find_dependency(tesseract_collision)
 find_dependency(tesseract_scene_graph)
+find_dependency(tesseract_kinematics)
+find_dependency(tesseract_urdf)
 find_dependency(tesseract_common)
 
 if(NOT TARGET console_bridge::console_bridge)

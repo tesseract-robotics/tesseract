@@ -207,9 +207,9 @@ tesseract_common::StatusCode TrajOptMotionPlanner::solve(const PlannerRequest& r
 bool TrajOptMotionPlanner::checkUserInput(const PlannerRequest& request) const
 {
   // Check that parameters are valid
-  if (request.tesseract == nullptr)
+  if (request.env == nullptr)
   {
-    CONSOLE_BRIDGE_logError("In TrajOptPlannerUniversalConfig: tesseract is a required parameter and has not been set");
+    CONSOLE_BRIDGE_logError("In TrajOptPlannerUniversalConfig: env is a required parameter and has not been set");
     return false;
   }
 

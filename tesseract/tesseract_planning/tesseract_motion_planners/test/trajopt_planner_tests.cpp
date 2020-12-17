@@ -29,6 +29,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <trajopt/problem_description.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_environment/core/environment.h>
+#include <tesseract_environment/ofkt/ofkt_state_solver.h>
+
 #include <tesseract_command_language/plan_instruction.h>
 #include <tesseract_command_language/composite_instruction.h>
 #include <tesseract_command_language/joint_waypoint.h>
@@ -44,7 +47,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 const int NUM_STEPS = 7;
 
 using namespace trajopt;
-using namespace tesseract;
 using namespace tesseract_environment;
 using namespace tesseract_scene_graph;
 using namespace tesseract_collision;
@@ -80,18 +82,18 @@ std::string locateResource(const std::string& url)
 class TesseractPlanningTrajoptUnit : public ::testing::Test
 {
 protected:
-  Tesseract::Ptr tesseract_ptr_;
+  Environment::Ptr env_;
   ManipulatorInfo manip;
 
   void SetUp() override
   {
     tesseract_scene_graph::ResourceLocator::Ptr locator =
         std::make_shared<tesseract_scene_graph::SimpleResourceLocator>(locateResource);
-    Tesseract::Ptr tesseract = std::make_shared<Tesseract>();
+    Environment::Ptr env = std::make_shared<Environment>();
     boost::filesystem::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
     boost::filesystem::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
-    EXPECT_TRUE(tesseract->init(urdf_path, srdf_path, locator));
-    tesseract_ptr_ = tesseract;
+    EXPECT_TRUE(env->init<OFKTStateSolver>(urdf_path, srdf_path, locator));
+    env_ = env;
     manip.manipulator = "manipulator";
     manip.manipulator_ik_solver = "OPWInvKin";
   }
@@ -127,10 +129,10 @@ bool objectIsType(Base unit)
 // This test checks that the boolean flags are adding the correct costs for smoothing and collision
 TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsJointJoint)  // NOLINT
 {
-  auto fwd_kin = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = env_->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
   const std::vector<std::string>& joint_names = fwd_kin->getJointNames();
-  auto cur_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  auto cur_state = env_->getCurrentState();
 
   // Specify a JointWaypoint as the start
   JointWaypoint wp1(joint_names, Eigen::VectorXd::Zero(7));
@@ -153,7 +155,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsJointJoint)  // N
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_, 3.14, 1.0, 3.14, 10);
+  CompositeInstruction seed = generateSeed(program, cur_state, env_, 3.14, 1.0, 3.14, 10);
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
@@ -169,8 +171,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsJointJoint)  // N
   PlannerRequest request;
   request.seed = seed;
   request.instructions = program;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
 
   // Loop over all combinations of these 4. 0001, 0010, 0011, ... , 1111
   for (uint8_t byte = 0; byte < 16; byte++)
@@ -205,10 +207,10 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsJointJoint)  // N
 // This test tests freespace motion b/n 2 joint waypoints
 TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointJoint)  // NOLINT
 {
-  auto fwd_kin = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = env_->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
   const std::vector<std::string>& joint_names = fwd_kin->getJointNames();
-  auto cur_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  auto cur_state = env_->getCurrentState();
 
   // Specify a JointWaypoint as the start
   JointWaypoint wp1(joint_names, Eigen::VectorXd::Zero(7));
@@ -230,7 +232,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointJoint)  // NOLINT
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_, 3.14, 1.0, 3.14, 10);
+  CompositeInstruction seed = generateSeed(program, cur_state, env_, 3.14, 1.0, 3.14, 10);
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
@@ -246,8 +248,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointJoint)  // NOLINT
   PlannerRequest request;
   request.seed = seed;
   request.instructions = program;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
 
   {
     std::shared_ptr<trajopt::ProblemConstructionInfo> pci =
@@ -292,10 +294,10 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointJoint)  // NOLINT
 // This test tests freespace motion b/n 1 joint waypoint and 1 cartesian waypoint
 TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointCart)  // NOLINT
 {
-  auto fwd_kin = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = env_->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
   const std::vector<std::string>& joint_names = fwd_kin->getJointNames();
-  auto cur_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  auto cur_state = env_->getCurrentState();
 
   // Specify a JointWaypoint as the start
   JointWaypoint wp1(joint_names, Eigen::VectorXd::Zero(7));
@@ -318,7 +320,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointCart)  // NOLINT
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_, 3.14, 1.0, 3.14, 10);
+  CompositeInstruction seed = generateSeed(program, cur_state, env_, 3.14, 1.0, 3.14, 10);
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
@@ -334,8 +336,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceJointCart)  // NOLINT
   PlannerRequest request;
   request.seed = seed;
   request.instructions = program;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
 
   {
     std::shared_ptr<trajopt::ProblemConstructionInfo> pci =
@@ -383,10 +385,10 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartJoint)  // NOLINT
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
 
-  auto fwd_kin = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = env_->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
   const std::vector<std::string>& joint_names = fwd_kin->getJointNames();
-  auto cur_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  auto cur_state = env_->getCurrentState();
 
   // Specify a JointWaypoint as the start
   CartesianWaypoint wp1 =
@@ -410,7 +412,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartJoint)  // NOLINT
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_, 3.14, 1.0, 3.14, 10);
+  CompositeInstruction seed = generateSeed(program, cur_state, env_, 3.14, 1.0, 3.14, 10);
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
@@ -426,8 +428,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartJoint)  // NOLINT
   PlannerRequest request;
   request.seed = seed;
   request.instructions = program;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
 
   {
     std::shared_ptr<trajopt::ProblemConstructionInfo> pci =
@@ -473,9 +475,9 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartCart)  // NOLINT
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
 
-  auto fwd_kin = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
-  auto cur_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  auto fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = env_->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto cur_state = env_->getCurrentState();
 
   // Specify a CartesianWaypoint as the start
   CartesianWaypoint wp1 =
@@ -500,7 +502,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartCart)  // NOLINT
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_, 3.14, 1.0, 3.14, 10);
+  CompositeInstruction seed = generateSeed(program, cur_state, env_, 3.14, 1.0, 3.14, 10);
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
@@ -516,8 +518,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptFreespaceCartCart)  // NOLINT
   PlannerRequest request;
   request.seed = seed;
   request.instructions = program;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
 
   {
     std::shared_ptr<trajopt::ProblemConstructionInfo> pci =
@@ -563,9 +565,9 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsCartCart)  // NOL
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
 
-  auto fwd_kin = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
-  auto cur_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  auto fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = env_->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto cur_state = env_->getCurrentState();
 
   // Specify a JointWaypoint as the start
   CartesianWaypoint wp1 =
@@ -590,7 +592,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsCartCart)  // NOL
   program.push_back(plan_f1);
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_, 3.14, 1.0, 3.14, 10);
+  CompositeInstruction seed = generateSeed(program, cur_state, env_, 3.14, 1.0, 3.14, 10);
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
@@ -606,8 +608,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptPlannerBooleanFlagsCartCart)  // NOL
   PlannerRequest request;
   request.seed = seed;
   request.instructions = program;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
 
   std::shared_ptr<trajopt::ProblemConstructionInfo> pci;
   trajopt::TrajOptProb::Ptr problem;
@@ -653,10 +655,10 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointConstraint)  // NOLINT
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
 
-  auto fwd_kin = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = env_->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
   const std::vector<std::string>& joint_names = fwd_kin->getJointNames();
-  auto cur_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  auto cur_state = env_->getCurrentState();
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
@@ -683,7 +685,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointConstraint)  // NOLINT
   }
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_, 3.14, 1.0, 3.14, 10);
+  CompositeInstruction seed = generateSeed(program, cur_state, env_, 3.14, 1.0, 3.14, 10);
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
@@ -699,8 +701,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointConstraint)  // NOLINT
   PlannerRequest request;
   request.seed = seed;
   request.instructions = program;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
 
   std::shared_ptr<trajopt::ProblemConstructionInfo> pci =
       DefaultTrajoptProblemGenerator(test_planner.getName(),
@@ -725,10 +727,10 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointCost)  // NOLINT
   // Create the planner and the responses that will store the results
   PlannerResponse planning_response;
 
-  auto fwd_kin = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
-  auto inv_kin = tesseract_ptr_->getEnvironment()->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
+  auto fwd_kin = env_->getManipulatorManager()->getFwdKinematicSolver(manip.manipulator);
+  auto inv_kin = env_->getManipulatorManager()->getInvKinematicSolver(manip.manipulator);
   const std::vector<std::string>& joint_names = fwd_kin->getJointNames();
-  auto cur_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  auto cur_state = env_->getCurrentState();
 
   // Create a program
   CompositeInstruction program("TEST_PROFILE");
@@ -754,7 +756,7 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointCost)  // NOLINT
   }
 
   // Create a seed
-  CompositeInstruction seed = generateSeed(program, cur_state, tesseract_ptr_, 3.14, 1.0, 3.14, 10);
+  CompositeInstruction seed = generateSeed(program, cur_state, env_, 3.14, 1.0, 3.14, 10);
 
   // Create Profiles
   auto plan_profile = std::make_shared<TrajOptDefaultPlanProfile>();
@@ -772,8 +774,8 @@ TEST_F(TesseractPlanningTrajoptUnit, TrajoptArrayJointCost)  // NOLINT
   PlannerRequest request;
   request.seed = seed;
   request.instructions = program;
-  request.tesseract = tesseract_ptr_;
-  request.env_state = tesseract_ptr_->getEnvironment()->getCurrentState();
+  request.env = env_;
+  request.env_state = env_->getCurrentState();
 
   std::shared_ptr<trajopt::ProblemConstructionInfo> pci =
       DefaultTrajoptProblemGenerator(test_planner.getName(),

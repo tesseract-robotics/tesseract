@@ -27,6 +27,8 @@
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_environment/core/utils.h>
 #include <tesseract_collision/core/common.h>
+#include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
+#include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
 
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <queue>
@@ -34,6 +36,129 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+Environment::Environment(bool register_default_contact_managers)
+  : register_default_contact_managers_(register_default_contact_managers)
+{
+}
+
+bool Environment::reset()
+{
+  Commands init_command;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    if (commands_.empty() || !initialized_)
+      return false;
+
+    init_command.reserve(static_cast<std::size_t>(init_revision_));
+    std::copy(commands_.begin(), commands_.begin() + init_revision_, init_command.begin());
+  }
+
+  clear();
+
+  if (init_command.at(0)->getType() != CommandType::ADD_SCENE_GRAPH)
+  {
+    CONSOLE_BRIDGE_logError("Environment reset failed, first command must be type ADD_SCENE_GRAPH!");
+    return false;
+  }
+
+  auto cmd = std::static_pointer_cast<const AddSceneGraphCommand>(init_command.at(0));
+  initHelper(*(cmd->getSceneGraph()));
+
+  for (std::size_t i = 1; i < init_command.size(); ++i)
+  {
+    if (!applyCommand(*(init_command.at(i))))
+    {
+      CONSOLE_BRIDGE_logError("When initializing environment from command history it failed to apply a command!");
+      return false;
+    }
+  }
+
+  init_revision_ = revision_;
+
+  return initialized_;
+}
+
+void Environment::clear()
+{
+  initialized_ = false;
+  revision_ = 0;
+  init_revision_ = 0;
+  scene_graph_ = nullptr;
+  scene_graph_const_ = nullptr;
+  commands_.clear();
+  link_names_.clear();
+  joint_names_.clear();
+  active_link_names_.clear();
+  active_joint_names_.clear();
+  collision_margin_data_ = tesseract_collision::CollisionMarginData();
+}
+
+bool Environment::initHelper(const tesseract_scene_graph::SceneGraph& scene_graph,
+                             const tesseract_scene_graph::SRDFModel::ConstPtr& srdf_model)
+{
+  clear();
+
+  scene_graph_ = std::make_shared<tesseract_scene_graph::SceneGraph>(scene_graph.getName());
+  scene_graph_const_ = scene_graph_;
+
+  if (!scene_graph_->insertSceneGraph(scene_graph))
+  {
+    CONSOLE_BRIDGE_logError("Failed to insert the scene graph");
+    return false;
+  }
+
+  if (srdf_model != nullptr)
+    processSRDFAllowedCollisions(*scene_graph_, *srdf_model);
+
+  // Add this to the command history. This should always the the first thing in the command history
+  ++revision_;
+  commands_.push_back(std::make_shared<AddSceneGraphCommand>(scene_graph, nullptr, ""));
+
+  if (scene_graph_ == nullptr)
+  {
+    CONSOLE_BRIDGE_logError("Null pointer to Scene Graph");
+    return false;
+  }
+
+  if (!scene_graph_->getLink(scene_graph_->getRoot()))
+  {
+    CONSOLE_BRIDGE_logError("The scene graph has an invalid root.");
+    return false;
+  }
+
+  manipulator_manager_ = std::make_shared<ManipulatorManager>();
+  if (!srdf_model)
+  {
+    CONSOLE_BRIDGE_logDebug("Environment is being initialized without an SRDF Model. Manipulators will not be "
+                            "registered");
+    manipulator_manager_->init(scene_graph_, tesseract_scene_graph::KinematicsInformation());
+  }
+  else
+  {
+    manipulator_manager_->init(scene_graph_, srdf_model->getKinematicsInformation());
+
+    // Add this to the command history.
+    ++revision_;
+    commands_.push_back(
+        std::make_shared<AddKinematicsInformationCommand>(manipulator_manager_->getKinematicsInformation()));
+  }
+
+  is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed,
+                                     scene_graph_,
+                                     std::placeholders::_1,
+                                     std::placeholders::_2);
+
+  manipulator_manager_->revision_ = revision_;
+
+  initialized_ = true;
+  init_revision_ = revision_;
+
+  return initialized_;
+}
+
+bool Environment::isInitialized() const { return initialized_; }
+
 int Environment::getRevision() const { return revision_; }
 
 const Commands& Environment::getCommandHistory() const { return commands_; }
@@ -276,6 +401,61 @@ bool Environment::addKinematicsInformation(const tesseract_scene_graph::Kinemati
 
   return true;
 }
+
+Eigen::Isometry3d Environment::findTCP(const tesseract_common::ManipulatorInfo& manip_info) const
+{
+  if (manip_info.tcp.empty())
+    return Eigen::Isometry3d::Identity();
+
+  auto composite_mi_fwd_kin = manipulator_manager_->getFwdKinematicSolver(manip_info.manipulator);
+  if (composite_mi_fwd_kin == nullptr)
+    throw std::runtime_error("findTCP: Manipulator '" + manip_info.manipulator + "' does not exist!");
+
+  const std::string& tip_link = composite_mi_fwd_kin->getTipLinkName();
+  if (manip_info.tcp.isString())
+  {
+    // Check Manipulator Manager for TCP
+    const std::string& tcp_name = manip_info.tcp.getString();
+    if (manipulator_manager_->hasGroupTCP(manip_info.manipulator, tcp_name))
+      return manipulator_manager_->getGroupsTCP(manip_info.manipulator, tcp_name);
+
+    // Check Environment for links and calculate TCP
+    auto link_it = current_state_->link_transforms.find(tcp_name);
+    if (link_it != current_state_->link_transforms.end())
+    {
+      // If it is external then the tcp is not attached to the robot
+      if (manip_info.tcp.isExternal())
+        return link_it->second;
+      else
+        return current_state_->link_transforms.at(tip_link).inverse() * link_it->second;
+    }
+
+    // Check callbacks for TCP
+    for (const auto& fn : find_tcp_cb_)
+    {
+      try
+      {
+        Eigen::Isometry3d tcp = fn(manip_info);
+        return tcp;
+      }
+      catch (...)
+      {
+        CONSOLE_BRIDGE_logDebug("User Defined Find TCP Callback Failed!");
+      }
+    }
+
+    throw std::runtime_error("Could not find tcp by name " + tcp_name + "' setting to Identity!");
+  }
+
+  if (manip_info.tcp.isTransform())
+    return manip_info.tcp.getTransform();
+
+  throw std::runtime_error("Could not find tcp!");
+}
+
+void Environment::addFindTCPCallback(FindTCPCallbackFn fn) { find_tcp_cb_.push_back(fn); }
+
+std::vector<FindTCPCallbackFn> Environment::getFindTCPCallbacks() const { return find_tcp_cb_; }
 
 void Environment::setName(const std::string& name) { scene_graph_->setName(name); }
 
@@ -874,6 +1054,25 @@ bool Environment::registerContinuousContactManager(
   return continuous_factory_.registar(name, std::move(create_function));
 }
 
+bool Environment::registerDefaultContactManagers()
+{
+  using namespace tesseract_collision;
+  if (!initialized_)
+    return false;
+
+  // Register contact manager
+  registerDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name(),
+                                 &tesseract_collision_bullet::BulletDiscreteBVHManager::create);
+  registerContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name(),
+                                   &tesseract_collision_bullet::BulletCastBVHManager::create);
+
+  // Set Active contact manager
+  setActiveDiscreteContactManager(tesseract_collision_bullet::BulletDiscreteBVHManager::name());
+  setActiveContinuousContactManager(tesseract_collision_bullet::BulletCastBVHManager::name());
+
+  return true;
+}
+
 tesseract_collision::DiscreteContactManager::Ptr
 Environment::getDiscreteContactManagerHelper(const std::string& name) const
 {
@@ -1074,6 +1273,7 @@ Environment::Ptr Environment::clone() const
 
   std::lock_guard<std::mutex> lock(mutex_);
   cloned_env->initialized_ = initialized_;
+  cloned_env->init_revision_ = revision_;
   cloned_env->revision_ = revision_;
   cloned_env->commands_ = commands_;
   cloned_env->scene_graph_ = scene_graph_->clone();
@@ -1085,6 +1285,7 @@ Environment::Ptr Environment::clone() const
   cloned_env->joint_names_ = joint_names_;
   cloned_env->active_link_names_ = active_link_names_;
   cloned_env->active_joint_names_ = active_joint_names_;
+  cloned_env->find_tcp_cb_ = find_tcp_cb_;
   cloned_env->is_contact_allowed_fn_ = std::bind(&tesseract_scene_graph::SceneGraph::isCollisionAllowed,
                                                  cloned_env->scene_graph_,
                                                  std::placeholders::_1,

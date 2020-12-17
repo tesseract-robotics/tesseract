@@ -26,7 +26,6 @@
 #ifndef TESSERACT_MOTION_PLANNERS_IMPL_DESCARTES_DECARTES_MOTION_PLANNER_HPP
 #define TESSERACT_MOTION_PLANNERS_IMPL_DESCARTES_DECARTES_MOTION_PLANNER_HPP
 
-#include <tesseract/tesseract.h>
 #include <tesseract_collision/core/discrete_contact_manager.h>
 #include <tesseract_collision/core/continuous_contact_manager.h>
 #include <tesseract_environment/core/environment.h>
@@ -209,9 +208,9 @@ template <typename FloatType>
 bool DescartesMotionPlanner<FloatType>::checkUserInput(const PlannerRequest& request)
 {
   // Check that parameters are valid
-  if (request.tesseract == nullptr)
+  if (request.env == nullptr)
   {
-    CONSOLE_BRIDGE_logError("In TrajOptPlannerUniversalConfig: tesseract is a required parameter and has not been set");
+    CONSOLE_BRIDGE_logError("In TrajOptPlannerUniversalConfig: env is a required parameter and has not been set");
     return false;
   }
 

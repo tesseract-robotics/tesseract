@@ -37,7 +37,6 @@ add_library(${PROJECT_NAME}
   src/waypoint_type.cpp
   src/serialize.cpp
   src/deserialize.cpp
-  src/manipulator_info.cpp
   src/null_waypoint.cpp
   src/state_waypoint.cpp
   src/utils/flatten_utils.cpp

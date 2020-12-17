@@ -33,7 +33,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <console_bridge/console.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract/tesseract.h>
 #include <tesseract_environment/core/environment.h>
 #include <tesseract_environment/core/types.h>
 #include <tesseract_environment/core/utils.h>

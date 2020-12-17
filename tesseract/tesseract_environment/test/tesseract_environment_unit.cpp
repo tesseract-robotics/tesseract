@@ -5,6 +5,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <vector>
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_collision/bullet/bullet_discrete_bvh_manager.h>
+#include <tesseract_collision/fcl/fcl_discrete_managers.h>
 #include <tesseract_collision/bullet/bullet_cast_bvh_manager.h>
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_common/utils.h>
@@ -74,7 +75,7 @@ Environment::Ptr getEnvironment()
   auto srdf = getSRDFModel(scene_graph);
   EXPECT_TRUE(srdf != nullptr);
 
-  auto env = std::make_shared<Environment>();
+  auto env = std::make_shared<Environment>(false);
   EXPECT_TRUE(env != nullptr);
   EXPECT_EQ(0, env->getRevision());
 

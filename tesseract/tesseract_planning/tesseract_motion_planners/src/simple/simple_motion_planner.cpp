@@ -111,7 +111,7 @@ tesseract_common::StatusCode SimpleMotionPlanner::solve(const PlannerRequest& re
   // Initialize
   tesseract_environment::EnvState::ConstPtr current_state = request.env_state;
   tesseract_kinematics::ForwardKinematics::Ptr fwd_kin =
-      request.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manipulator);
+      request.env->getManipulatorManager()->getFwdKinematicSolver(manipulator);
   Waypoint start_waypoint{ NullWaypoint() };
 
   // Create seed
@@ -443,9 +443,9 @@ CompositeInstruction SimpleMotionPlanner::processCompositeInstruction(const Comp
 bool SimpleMotionPlanner::checkUserInput(const PlannerRequest& request) const
 {
   // Check that parameters are valid
-  if (request.tesseract == nullptr)
+  if (request.env == nullptr)
   {
-    CONSOLE_BRIDGE_logError("In SimpleMotionPlanner: tesseract is a required parameter and has not been set");
+    CONSOLE_BRIDGE_logError("In SimpleMotionPlanner: env is a required parameter and has not been set");
     return false;
   }
 

@@ -45,9 +45,8 @@ bool StateInCollision(const Eigen::Ref<const Eigen::VectorXd>& start_pos,
   using namespace tesseract_collision;
   using namespace tesseract_environment;
 
-  auto env = input.tesseract->getEnvironment();
-  auto kin =
-      input.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(input.manip_info.manipulator);
+  auto env = input.env;
+  auto kin = env->getManipulatorManager()->getFwdKinematicSolver(input.manip_info.manipulator);
 
   std::vector<ContactResultMap> collisions;
   DiscreteContactManager::Ptr manager = env->getDiscreteContactManager();
@@ -122,7 +121,7 @@ bool MoveWaypointFromCollisionTrajopt(Waypoint& waypoint,
   std::size_t num_jnts = static_cast<std::size_t>(start_pos.size());
 
   // Setup trajopt problem with basic info
-  ProblemConstructionInfo pci(input.tesseract);
+  ProblemConstructionInfo pci(input.env);
   pci.basic_info.n_steps = 1;
   pci.basic_info.manip = input.manip_info.manipulator;
   pci.basic_info.start_fixed = false;
@@ -213,8 +212,7 @@ bool MoveWaypointFromCollisionRandomSampler(Waypoint& waypoint,
     return false;
   }
 
-  const auto kin =
-      input.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(input.manip_info.manipulator);
+  const auto kin = input.env->getManipulatorManager()->getFwdKinematicSolver(input.manip_info.manipulator);
   Eigen::MatrixXd limits = kin->getLimits().joint_limits;
   Eigen::VectorXd range = limits.col(1).array() - limits.col(0).array();
   Eigen::VectorXd pos_sampling_limits = range * profile.jiggle_factor;
@@ -311,8 +309,7 @@ int FixStateCollisionProcessGenerator::conditionalProcess(ProcessInput input, st
 
   const auto* ci = input_intruction->cast_const<CompositeInstruction>();
   const ManipulatorInfo& manip_info = input.manip_info;
-  const auto fwd_kin =
-      input.tesseract->getEnvironment()->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
+  const auto fwd_kin = input.env->getManipulatorManager()->getFwdKinematicSolver(manip_info.manipulator);
 
   // Get Composite profile
   std::string profile = ci->getProfile();

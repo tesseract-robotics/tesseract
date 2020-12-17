@@ -285,7 +285,6 @@ void OMPLDefaultPlanProfile::setup(OMPLProblem& prob) const
   prob.optimize = optimize;
   prob.contact_checker->setDefaultCollisionMarginData(collision_safety_margin);
 
-  tesseract_environment::Environment::ConstPtr env = prob.tesseract->getEnvironment();
   const std::vector<std::string>& joint_names = prob.manip_fwd_kin->getJointNames();
   const auto dof = prob.manip_fwd_kin->numJoints();
   const auto& limits = prob.manip_fwd_kin->getLimits().joint_limits;
@@ -330,10 +329,11 @@ void OMPLDefaultPlanProfile::setup(OMPLProblem& prob) const
     prob.simple_setup = std::make_shared<ompl::geometric::SimpleSetup>(state_space_ptr);
 
     // Setup state checking functionality
-    ompl::base::StateValidityCheckerPtr svc_without_collision = processStateValidator(prob, env, prob.manip_fwd_kin);
+    ompl::base::StateValidityCheckerPtr svc_without_collision =
+        processStateValidator(prob, prob.env, prob.manip_fwd_kin);
 
     // Setup motion validation (i.e. collision checking)
-    processMotionValidator(svc_without_collision, prob, env, prob.manip_fwd_kin);
+    processMotionValidator(svc_without_collision, prob, prob.env, prob.manip_fwd_kin);
 
     // make sure the planners run until the time limit, and get the best possible solution
     processOptimizationObjective(prob);
@@ -352,7 +352,7 @@ void OMPLDefaultPlanProfile::applyGoalStates(OMPLProblem& prob,
   const auto* base_instruction = parent_instruction.cast_const<PlanInstruction>();
   assert(!(manip_info.empty() && base_instruction->getManipulatorInfo().empty()));
   ManipulatorInfo mi = manip_info.getCombined(base_instruction->getManipulatorInfo());
-  Eigen::Isometry3d tcp = prob.tesseract->findTCP(mi);
+  Eigen::Isometry3d tcp = prob.env->findTCP(mi);
 
   // Check if the waypoint is not relative to the manipulator base coordinate system and at tool0
   Eigen::Isometry3d world_to_waypoint = cartesian_waypoint;
@@ -446,7 +446,7 @@ void OMPLDefaultPlanProfile::applyStartStates(OMPLProblem& prob,
   const auto* base_instruction = parent_instruction.cast_const<PlanInstruction>();
   assert(!(manip_info.empty() && base_instruction->getManipulatorInfo().empty()));
   ManipulatorInfo mi = manip_info.getCombined(base_instruction->getManipulatorInfo());
-  Eigen::Isometry3d tcp = prob.tesseract->findTCP(mi);
+  Eigen::Isometry3d tcp = prob.env->findTCP(mi);
 
   // Check if the waypoint is not relative to the manipulator base coordinate system and at tool0
   Eigen::Isometry3d world_to_waypoint = cartesian_waypoint;

@@ -289,9 +289,9 @@ MotionPlanner::Ptr OMPLMotionPlanner::clone() const { return std::make_shared<OM
 bool OMPLMotionPlanner::checkUserInput(const PlannerRequest& request) const
 {
   // Check that parameters are valid
-  if (request.tesseract == nullptr)
+  if (request.env == nullptr)
   {
-    CONSOLE_BRIDGE_logError("In TrajOptPlannerUniversalConfig: tesseract is a required parameter and has not been set");
+    CONSOLE_BRIDGE_logError("In TrajOptPlannerUniversalConfig: env is a required parameter and has not been set");
     return false;
   }
 

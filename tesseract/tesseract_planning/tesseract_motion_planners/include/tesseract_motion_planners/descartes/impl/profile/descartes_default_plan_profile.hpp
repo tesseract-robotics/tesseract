@@ -169,7 +169,7 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
   const auto* base_instruction = parent_instruction.cast_const<PlanInstruction>();
   assert(!(manip_info.empty() && base_instruction->getManipulatorInfo().empty()));
   ManipulatorInfo mi = manip_info.getCombined(base_instruction->getManipulatorInfo());
-  Eigen::Isometry3d tcp = prob.tesseract->findTCP(mi);
+  Eigen::Isometry3d tcp = prob.env->findTCP(mi);
 
   /* Check if this cartesian waypoint is dynamic
    * (i.e. defined relative to a frame that will move with the kinematic chain) */
@@ -180,11 +180,8 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
 
   typename descartes_light::CollisionInterface<FloatType>::Ptr ci = nullptr;
   if (enable_collision)
-    ci = std::make_shared<DescartesCollision<FloatType>>(prob.tesseract->getEnvironment(),
-                                                         active_links,
-                                                         prob.manip_inv_kin->getJointNames(),
-                                                         collision_safety_margin,
-                                                         debug);
+    ci = std::make_shared<DescartesCollision<FloatType>>(
+        prob.env, active_links, prob.manip_inv_kin->getJointNames(), collision_safety_margin, debug);
 
   Eigen::Isometry3d manip_baselink_to_waypoint = Eigen::Isometry3d::Identity();
   if (it == active_links.end())
@@ -232,7 +229,7 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
             std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(
                 prob.manip_inv_kin->numJoints()));
         compound_evaluator->evaluators.push_back(
-            std::make_shared<DescartesCollisionEdgeEvaluator<FloatType>>(prob.tesseract->getEnvironment(),
+            std::make_shared<DescartesCollisionEdgeEvaluator<FloatType>>(prob.env,
                                                                          active_links,
                                                                          prob.manip_inv_kin->getJointNames(),
                                                                          edge_collision_check_config,
@@ -281,7 +278,7 @@ void DescartesDefaultPlanProfile<FloatType>::apply(DescartesProblem<FloatType>& 
             std::make_shared<descartes_light::EuclideanDistanceEdgeEvaluator<FloatType>>(
                 prob.manip_inv_kin->numJoints()));
         compound_evaluator->evaluators.push_back(
-            std::make_shared<DescartesCollisionEdgeEvaluator<FloatType>>(prob.tesseract->getEnvironment(),
+            std::make_shared<DescartesCollisionEdgeEvaluator<FloatType>>(prob.env,
                                                                          active_links,
                                                                          prob.manip_inv_kin->getJointNames(),
                                                                          edge_collision_check_config,
